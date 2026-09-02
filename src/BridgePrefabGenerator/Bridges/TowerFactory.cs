@@ -1916,12 +1916,23 @@ internal sealed class TowerFactory
                 var partVertices = ToVectors(moved);
                 points ??= moved;
 
-                models.Add(BuildModel(
+                var model = BuildModel(
                     models.Count == 0 ? name : name + " LOD" + models.Count,
                     part,
                     partVertices,
+                    out var modelError,
                     channels,
-                    dropped));
+                    dropped);
+                if (model == null)
+                {
+                    _report.Defect(modelError ?? string.Format(
+                        CultureInfo.InvariantCulture,
+                        "'{0}' could not be converted to generated geometry; the current derived "
+                        + "prefab was stopped instead of publishing a partial mesh.",
+                        name));
+                    return null;
+                }
+                models.Add(model);
                 all.AddRange(partVertices);
                 totalVertices += partVertices.Length;
                 totalIndices += (int)CountIndices(part);
@@ -2128,12 +2139,40 @@ internal sealed class TowerFactory
     /// stream at the offset and width the mesh says it occupies, and handed on unchanged. Only the
     /// positions are rewritten, and only because they are the one thing this is meant to change.
     /// </summary>
-    private static ModelImporter.Model BuildModel(
-        string name, Mesh mesh, Vector3[] vertices, ICollection<string>? channels = null,
-        bool[]? dropped = null)
+    private static ModelImporter.Model? BuildModel(
+        string name, Mesh mesh, Vector3[] vertices, out string? error,
+        ICollection<string>? channels = null, bool[]? dropped = null)
     {
+        error = null;
         var attributes = new List<ModelImporter.Model.VertexData>();
         var declared = mesh.GetVertexAttributes();
+
+        // Refuse an unsupported layout before allocating any persistent buffers. This used to throw
+        // from the game export path; now the caller records the failure and omits the incomplete
+        // derived prefab without unwinding through the simulation update.
+        foreach (var attribute in declared)
+        {
+            if (FormatSize(attribute.format) == 0)
+            {
+                error = string.Format(
+                    CultureInfo.InvariantCulture,
+                    "'{0}' uses unsupported vertex format {1}; the current derived prefab was "
+                    + "stopped without publishing a partial mesh.",
+                    name, attribute.format);
+                return null;
+            }
+
+            if (attribute.attribute == VertexAttribute.Position
+                && (attribute.format != VertexAttributeFormat.Float32 || attribute.dimension != 3))
+            {
+                error = string.Format(
+                    CultureInfo.InvariantCulture,
+                    "'{0}' stores positions as {1}x{2}, which this exporter cannot rewrite; the "
+                    + "current derived prefab was stopped without publishing a partial mesh.",
+                    name, attribute.format, attribute.dimension);
+                return null;
+            }
+        }
 
         Mesh.MeshDataArray read = default;
         try
@@ -2167,14 +2206,7 @@ internal sealed class TowerFactory
                 if (attribute.attribute == VertexAttribute.Position)
                 {
                     // The one channel that changes. Written in the format the mesh declares for it -
-                    // three floats on every mesh seen so far, and checked rather than assumed.
-                    if (attribute.format != VertexAttributeFormat.Float32 || attribute.dimension != 3)
-                    {
-                        throw new InvalidOperationException(
-                            $"'{name}' stores positions as {attribute.format}x{attribute.dimension}, "
-                            + "which this does not know how to write.");
-                    }
-
+                    // three floats on every mesh seen so far, preflighted above rather than assumed.
                     Buffer.BlockCopy(Flatten(vertices), 0, bytes, 0, bytes.Length);
                 }
                 else
@@ -2296,7 +2328,7 @@ internal sealed class TowerFactory
             case VertexAttributeFormat.SInt8:
                 return 1;
             default:
-                throw new InvalidOperationException($"Unknown vertex format {format}.");
+                return 0;
         }
     }
 

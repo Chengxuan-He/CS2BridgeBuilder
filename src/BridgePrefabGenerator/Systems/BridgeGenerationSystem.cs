@@ -372,6 +372,11 @@ public partial class BridgeGenerationSystem : GameSystemBase
             }
 
             var clone = CloneDeck(cloner, main, exportName, report);
+            if (clone == null)
+            {
+                Finish(report, state, "Export bridge");
+                return;
+            }
             var variant = composer.Apply(
                 clone, style, upper.Width, options, measure: upperSource);
             if (variant != null)
@@ -406,7 +411,7 @@ public partial class BridgeGenerationSystem : GameSystemBase
     /// with it - the authored speed limit, its thumbnail - and an already registered road does not, so
     /// only the first needs those applied.
     /// </summary>
-    private NetGeometryPrefab CloneDeck(
+    private NetGeometryPrefab? CloneDeck(
         PrefabGraphCloner cloner, Deck deck, string exportName, ExportReport report)
     {
         if (deck.Prefab is RoadPrefab roadSource)
@@ -423,8 +428,10 @@ public partial class BridgeGenerationSystem : GameSystemBase
         if (deck.Prefab is NetPrefab netSource)
             return (NetGeometryPrefab)cloner.CloneNet(netSource, exportName);
 
-        throw new InvalidOperationException(
-            $"'{deck.DisplayName}' is not a network prefab and cannot own a double-deck bridge.");
+        report.Defect(
+            $"'{deck.DisplayName}' is not a network prefab and cannot own a double-deck bridge. "
+            + "The current bridge export was stopped without publishing a partial prefab.");
+        return null;
     }
 
     /// <summary>
