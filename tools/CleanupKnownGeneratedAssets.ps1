@@ -327,6 +327,47 @@ if (Test-Path -LiteralPath $importedRoot -PathType Container) {
                 -or $_.Contains($ownedMarker)
         })
     }
+
+    # Towers created by current versions have an ownership name of
+    # [style]-[width]-[complete bridge name]. Older in-game removal deleted only the top-level bridge,
+    # so its name disappeared from export-state.tsv while these RenderPrefabs remained. The geometry
+    # directory was then removed and the orphan loaded with a null mesh on the next launch. Match the
+    # complete generated tower prefix (including a numeric width), never a road-name fragment.
+    $towerStyles = @(
+        'PedestrianDraw', 'CoveredWood', 'SuspensionGolden', 'Suspension',
+        'Extradosed01', 'Extradosed02', 'Extradosed03', 'ExtradosedLarge', 'CableStayed',
+        'TrussArch01', 'TrussArch03', 'TrussArch', 'TiedArch', 'Grand', 'Draw', 'Lift'
+    )
+    $towerPattern = '^(' + (($towerStyles | ForEach-Object { [regex]::Escape($_) }) -join '|') `
+        + ')-[-+]?[0-9]+(?:\.[0-9]+)?-.+'
+    $importedDirectoryNames += @($currentImportedNames | Where-Object {
+        $_ -match $towerPattern
+    })
+
+    # Resolve every RenderPrefab which references Geometry currently owned by this mod. This covers
+    # generated sections whose archetype-derived names intentionally do not carry the bridge name.
+    if (Test-Path -LiteralPath $geometryRoot -PathType Container) {
+        $ownedGeometryIds = [Collections.Generic.HashSet[string]]::new(
+            [StringComparer]::OrdinalIgnoreCase)
+        Get-ChildItem -LiteralPath $geometryRoot -Filter '*.Geometry.cid' -File | ForEach-Object {
+            $id = [IO.File]::ReadAllText($_.FullName).Trim()
+            if ($id -match '^[0-9a-fA-F]{32}$') { $ownedGeometryIds.Add($id) | Out-Null }
+        }
+
+        if ($ownedGeometryIds.Count -gt 0) {
+            foreach ($directory in Get-ChildItem -LiteralPath $importedRoot -Directory) {
+                $prefabFile = Join-Path $directory.FullName ($directory.Name + '.Prefab')
+                if (-not (Test-Path -LiteralPath $prefabFile -PathType Leaf)) { continue }
+                $prefabText = [IO.File]::ReadAllText($prefabFile)
+                foreach ($id in $ownedGeometryIds) {
+                    if ($prefabText.Contains('CID:' + $id)) {
+                        $importedDirectoryNames += $directory.Name
+                        break
+                    }
+                }
+            }
+        }
+    }
 }
 $importedDirectoryNames = @($importedDirectoryNames | Select-Object -Unique)
 
