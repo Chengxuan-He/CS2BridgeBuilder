@@ -334,6 +334,34 @@ internal sealed class TowerFactory
         // The style's own tower correction, added to the tower and not to the cables - see
         // BridgeTowers.BonusFor.
         var byRoad = BridgeTowers.StructureExtraFor(_styleId, deckWidth - authored);
+
+        // TrussArchBridge01's first pillar mesh is the pier visible directly beneath the side arch.
+        // Its authored span differs slightly from both the nominal road width and the separate base
+        // mesh, so adding the road delta cannot make it exactly as wide as the generated truss. The
+        // generated section is already in hand and _cableOuter is its measured outer edge: solve the
+        // required translation from those two archetype geometries instead of introducing another
+        // nominal-width correction. The base remains a distinct authored part and receives the same
+        // translation, as required for a multi-part pillar.
+        if (_styleId == "TrussArch01"
+            && _towerKey == "TrussArchBridge01NetPillar"
+            && _cableOuter > 0f
+            && parts.Length > 0
+            && parts[0]?.m_Mesh is RenderPrefab trussPier)
+        {
+            var pierBounds = trussPier.bounds;
+            var position = parts[0].m_Position.x;
+            var pierOuter = Math.Max(
+                Math.Abs(pierBounds.min.x + position),
+                Math.Abs(pierBounds.max.x + position));
+            var byTruss = 2f * (_cableOuter - pierOuter);
+            _report.Note(string.Format(
+                CultureInfo.InvariantCulture,
+                "{0}: widened {1:0.###} m so the main pier reaches the generated blue truss "
+                + "edge at {2:0.###} m; the nominal road calculation would give {3:0.###} m.",
+                name, byTruss, _cableOuter, byRoad));
+            return byTruss;
+        }
+
         if (_cableOuter <= 0f || parts.Length == 0 || _towerKey == null) return byRoad;
 
         // Only towers whose own distances have been measured, and only where the section they are
@@ -1868,7 +1896,7 @@ internal sealed class TowerFactory
                         _report.Note(string.Format(
                             CultureInfo.InvariantCulture,
                             "{0}: blue x=0 contract after widening the {1} open truss: {2} piece(s), "
-                            + "{3} outer side piece(s) translated, {4} transverse-assembly island(s) "
+                            + "{3} non-centre piece(s) translated rigidly, {4} x=0 piece(s) "
                             + "stretched using one shared full-detail reach, measured width change "
                             + "{5:0.###} m; "
                             + "degenerate triangles {6}->{7}, flipped {8}, finite {9}.",

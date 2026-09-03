@@ -540,27 +540,17 @@ internal static class TowerWidening
             var translated = new bool[components.Length];
             foreach (var component in components)
             {
-                var onLeft = component.Right < -CentreEpsilon;
-                var onRight = component.Left > CentreEpsilon;
-                var reachesLeft = component.Left <= -leftReach + CentreEpsilon;
-                var reachesRight = component.Right >= rightReach - CentreEpsilon;
-                var whollyInLeftSide = onLeft && reachesLeft
-                    && component.Inner >= (leftReach * 0.5f) - CentreEpsilon;
-                var whollyInRightSide = onRight && reachesRight
-                    && component.Inner >= (rightReach * 0.5f) - CentreEpsilon;
-
-                // These are complete side members: they never reach x=0 and are carried rigidly.
-                // Smaller disconnected islands inward of them are authored pieces of the transverse
-                // beam assembly, not independent bridge-width spans; they share the assembly scale.
-                if (whollyInLeftSide || whollyInRightSide)
-                {
-                    translated[component.Id] = true;
-                    rigid++;
-                    continue;
-                }
-
-                if (!component.Aside || reachesLeft || reachesRight) spanning++;
-                else floating++;
+                // CONTRACT rule 8 is the complete classification. Reaching either side of the
+                // measured transverse assembly is not evidence that a part crosses the centre: the
+                // side arches, decorative trusses and deck-edge plates do that too. That former
+                // proxy scaled 1,737 of this mesh's 1,743 islands and produced the broad sheets seen
+                // in game. Only an island whose authored bounds actually touch or straddle x=0 is
+                // stretched. Every other island keeps its exact shape and moves with its own side.
+                var crossesCentre = component.Left <= CentreEpsilon
+                    && component.Right >= -CentreEpsilon;
+                translated[component.Id] = !crossesCentre;
+                if (crossesCentre) spanning++;
+                else rigid++;
             }
 
             for (var index = 0; index < moved.Length; index++)
@@ -569,8 +559,8 @@ internal static class TowerWidening
                 var x = source[index].x;
                 if (translated[component.Id])
                 {
-                    moved[index].x = x
-                        + (component.Left > CentreEpsilon ? shift : -shift);
+                    var centre = (component.Left + component.Right) * 0.5f;
+                    moved[index].x = x + (centre >= 0f ? shift : -shift);
                 }
                 else
                 {
@@ -783,21 +773,16 @@ internal static class TowerWidening
                 throw new InvalidOperationException(
                     "Centre-line widening invariant found an unclassified vertex.");
             var component = components[componentId];
-            var onLeft = component.Right < -CentreEpsilon;
-            var onRight = component.Left > CentreEpsilon;
-            var reachesLeft = component.Left <= -leftReach + CentreEpsilon;
-            var reachesRight = component.Right >= rightReach - CentreEpsilon;
-            var whollyInLeftSide = onLeft && reachesLeft
-                && component.Inner >= (leftReach * 0.5f) - CentreEpsilon;
-            var whollyInRightSide = onRight && reachesRight
-                && component.Inner >= (rightReach * 0.5f) - CentreEpsilon;
-            var translated = whollyInLeftSide || whollyInRightSide;
+            var crossesCentre = component.Left <= CentreEpsilon
+                && component.Right >= -CentreEpsilon;
+            var translated = !crossesCentre;
 
             var x = source[index].x;
             float expected;
             if (translated)
             {
-                expected = x + (component.Left > CentreEpsilon ? shift : -shift);
+                var centre = (component.Left + component.Right) * 0.5f;
+                expected = x + (centre >= 0f ? shift : -shift);
             }
             else if (Math.Abs(x) <= CentreEpsilon)
             {
@@ -811,8 +796,8 @@ internal static class TowerWidening
             if (Math.Abs(moved[index].x - expected) <= CentreEpsilon) continue;
 
             var required = translated
-                ? "rigid translation"
-                : "the shared stretch of the logical member crossing x=0";
+                ? "rigid translation because the part does not reach x=0"
+                : "the shared stretch of the part reaching x=0";
             throw new InvalidOperationException(string.Format(
                 System.Globalization.CultureInfo.InvariantCulture,
                 "Centre-line widening invariant rejected part {0}: source x={1:0.#####}, "
