@@ -637,6 +637,8 @@ public partial class BridgeGenerationSystem : GameSystemBase
     private IReadOnlyList<string> RemoveByName(string exportName, ExportStateStore state, ExportReport report)
     {
         var removed = new List<string>();
+        var removedRoots = new HashSet<PrefabBase>(ReferenceEqualityComparer<PrefabBase>.Instance);
+        var dependencyCandidates = new HashSet<PrefabBase>(ReferenceEqualityComparer<PrefabBase>.Instance);
         // The lower deck, when there is one, is a second asset next to the bridge and has to go too.
         foreach (var name in new[]
                  {
@@ -658,6 +660,11 @@ public partial class BridgeGenerationSystem : GameSystemBase
 
             try
             {
+                // Capture the dependency graph while the root still exists. Deleting only the road
+                // left its generated tower, RenderPrefabs and LODs in ImportedData. A later offline
+                // cleanup removed their Geometry files, so those orphan prefabs loaded next launch
+                // with a valid material batch but a null mesh.
+                PrefabReferenceWalker.CollectInto(prefab, dependencyCandidates);
                 prefab.asset!.Delete();
             }
             catch (Exception exception)
@@ -670,9 +677,69 @@ public partial class BridgeGenerationSystem : GameSystemBase
             RoadBuilderIconExporter.Discard(name);
             report.Removed(name);
             removed.Add(name);
+            removedRoots.Add(prefab);
         }
 
+        if (removed.Count > 0 && (Mod.Setting?.RemoveUnusedDependencies ?? true))
+            RemoveBridgeDependencies(dependencyCandidates, removedRoots, state, report);
+
         return removed;
+    }
+
+    /// <summary>
+    /// Deletes generated prefab dependencies which belonged only to the removed bridge.
+    /// Geometry assets are deliberately retained until restart/offline cleanup: the corresponding
+    /// RenderPrefabs remain registered in the running world, and deleting their Geometry immediately
+    /// would recreate the null-mesh renderer failure during the current session.
+    /// </summary>
+    private void RemoveBridgeDependencies(
+        IReadOnlyCollection<PrefabBase> candidates,
+        HashSet<PrefabBase> removedRoots,
+        ExportStateStore state,
+        ExportReport report)
+    {
+        if (candidates.Count == 0) return;
+
+        var referenced = new HashSet<PrefabBase>(ReferenceEqualityComparer<PrefabBase>.Instance);
+        foreach (var survivorName in state.ExportNames())
+        {
+            var survivor = PrefabCatalog.GetAll(_prefabSystem)
+                .OfType<NetGeometryPrefab>()
+                .FirstOrDefault(candidate => candidate.asset != null
+                    && !candidate.isReadOnly
+                    && string.Equals(candidate.name, survivorName, StringComparison.Ordinal));
+            if (survivor == null)
+            {
+                report.Warning(
+                    $"Kept generated bridge dependencies: surviving export '{survivorName}' is "
+                    + "not loaded, so shared dependencies cannot be identified safely.");
+                return;
+            }
+
+            PrefabReferenceWalker.CollectInto(survivor, referenced);
+        }
+
+        foreach (var candidate in candidates)
+        {
+            if (removedRoots.Contains(candidate)
+                || referenced.Contains(candidate)
+                || candidate.asset == null
+                || candidate.isReadOnly
+                || candidate.isBuiltin)
+                continue;
+
+            try
+            {
+                candidate.asset.Delete();
+                report.RemovedDependency(candidate.name);
+            }
+            catch (Exception exception)
+            {
+                report.Warning(
+                    $"Could not delete unused bridge dependency '{candidate.name}': "
+                    + exception.Message);
+            }
+        }
     }
 
     private void Finish(ExportReport report, ExportStateStore state, string operation)
