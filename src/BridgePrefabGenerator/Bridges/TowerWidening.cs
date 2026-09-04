@@ -540,18 +540,16 @@ internal static class TowerWidening
             var translated = new bool[components.Length];
             foreach (var component in components)
             {
-                // The blue top truss is one authored part split into rods, gussets, pivots and bolts
-                // by the importer. The full-detail profile groups those touching transverse islands
-                // before asking rule 8's question. The logical group reaches x=0, so every island in
-                // it receives one shared stretch; a side arch or decoration is not in that group and
-                // is translated rigidly. Treating each render island as a part tore the top apart.
-                var crossesCentre = profile.OpenTrussPartCrossesCentre(component);
+                // CONTRACT rule 8 is the complete classification. Reaching either side of the
+                // measured transverse assembly is not evidence that a part crosses the centre: the
+                // side arches, decorative trusses and deck-edge plates do that too. That former
+                // proxy scaled 1,737 of this mesh's 1,743 islands and produced the broad sheets seen
+                // in game. Only an island whose authored bounds actually touch or straddle x=0 is
+                // stretched. Every other island keeps its exact shape and moves with its own side.
+                var crossesCentre = component.Left <= CentreEpsilon
+                    && component.Right >= -CentreEpsilon;
                 translated[component.Id] = !crossesCentre;
-                if (crossesCentre)
-                {
-                    spanning++;
-                    if (!component.CrossesCentre) floating++;
-                }
+                if (crossesCentre) spanning++;
                 else rigid++;
             }
 
@@ -575,7 +573,7 @@ internal static class TowerWidening
             }
 
             RequireCentrelineRule(
-                source, moved, components, labels, extra, profile);
+                source, moved, components, labels, extra, leftReach, rightReach);
         }
 
         var degenerateBefore = DegenerateTriangles(source, triangles);
@@ -740,7 +738,8 @@ internal static class TowerWidening
         var profile = Profile.Of(
             new[] { source }, new IReadOnlyList<int>?[] { triangles });
         RequireCentrelineRule(
-            source, moved, components, labels, extra, profile);
+            source, moved, components, labels, extra,
+            profile.OpenTrussLeftReach, profile.OpenTrussRightReach);
     }
 
     private static void RequireCentrelineRule(
@@ -749,7 +748,8 @@ internal static class TowerWidening
         IReadOnlyList<Piece> components,
         IReadOnlyList<int> labels,
         float extra,
-        Profile profile)
+        float leftReach,
+        float rightReach)
     {
         if (source.Length != moved.Length)
             throw new InvalidOperationException(
@@ -759,8 +759,6 @@ internal static class TowerWidening
             throw new InvalidOperationException(
                 "Centre-line widening invariant cannot classify parts without triangle topology.");
 
-        var leftReach = profile.OpenTrussLeftReach;
-        var rightReach = profile.OpenTrussRightReach;
         if (leftReach <= CentreEpsilon || rightReach <= CentreEpsilon)
             throw new InvalidOperationException(
                 "Centre-line widening invariant found no full-detail transverse assembly reach.");
@@ -768,11 +766,6 @@ internal static class TowerWidening
         var shift = extra * 0.5f;
         var leftRatio = Math.Max(0f, (leftReach + shift) / leftReach);
         var rightRatio = Math.Max(0f, (rightReach + shift) / rightReach);
-        var stretches = new bool[components.Count];
-        for (var componentIndex = 0; componentIndex < components.Count; componentIndex++)
-            stretches[componentIndex] = profile.OpenTrussPartCrossesCentre(
-                components[componentIndex]);
-
         for (var index = 0; index < source.Length; index++)
         {
             var componentId = labels[index];
@@ -780,7 +773,8 @@ internal static class TowerWidening
                 throw new InvalidOperationException(
                     "Centre-line widening invariant found an unclassified vertex.");
             var component = components[componentId];
-            var crossesCentre = stretches[componentId];
+            var crossesCentre = component.Left <= CentreEpsilon
+                && component.Right >= -CentreEpsilon;
             var translated = !crossesCentre;
 
             var x = source[index].x;
@@ -802,8 +796,8 @@ internal static class TowerWidening
             if (Math.Abs(moved[index].x - expected) <= CentreEpsilon) continue;
 
             var required = translated
-                ? "rigid translation because the logical part does not reach x=0"
-                : "the shared stretch of the complete logical part reaching x=0";
+                ? "rigid translation because the part does not reach x=0"
+                : "the shared stretch of the part reaching x=0";
             throw new InvalidOperationException(string.Format(
                 System.Globalization.CultureInfo.InvariantCulture,
                 "Centre-line widening invariant rejected part {0}: source x={1:0.#####}, "
@@ -1223,16 +1217,13 @@ internal static class TowerWidening
     /// <summary>One connected piece of material, and where it sits.</summary>
     internal readonly struct Piece
     {
-        internal Piece(
-            int id, float left, float right, float low, float high, float back, float front)
+        internal Piece(int id, float left, float right, float low, float high)
         {
             Id = id;
             Left = left;
             Right = right;
             Low = low;
             High = high;
-            Back = back;
-            Front = front;
         }
 
         /// <summary>Which piece this is, as <see cref="PiecesOf"/> labelled its vertices.</summary>
@@ -1248,29 +1239,15 @@ internal static class TowerWidening
 
         internal float High { get; }
 
-        /// <summary>Longitudinal bounds, used to put split transverse islands back into one part.</summary>
-        internal float Back { get; }
-
-        internal float Front { get; }
-
         /// <summary>Whether it is entirely on one side of the centre line.</summary>
         internal bool Aside => (Left > CentreEpsilon && Right > CentreEpsilon)
             || (Left < -CentreEpsilon && Right < -CentreEpsilon);
-
-        /// <summary>Whether this authored piece itself touches or straddles the bridge centre.</summary>
-        internal bool CrossesCentre => Left <= CentreEpsilon && Right >= -CentreEpsilon;
 
         /// <summary>How far out it reaches, whichever side it is on.</summary>
         internal float Outer => Math.Max(Math.Abs(Left), Math.Abs(Right));
 
         /// <summary>How far in it reaches.</summary>
         internal float Inner => Math.Min(Math.Abs(Left), Math.Abs(Right));
-
-        internal float LateralSpan => Right - Left;
-
-        internal float VerticalSpan => High - Low;
-
-        internal float LongitudinalSpan => Front - Back;
     }
 
     /// <summary>
@@ -1335,8 +1312,6 @@ internal static class TowerWidening
         var right = new List<float>();
         var low = new List<float>();
         var high = new List<float>();
-        var back = new List<float>();
-        var front = new List<float>();
 
         for (var index = 0; index < vertices.Length; index++)
         {
@@ -1349,8 +1324,6 @@ internal static class TowerWidening
                 right.Add(float.MinValue);
                 low.Add(float.MaxValue);
                 high.Add(float.MinValue);
-                back.Add(float.MaxValue);
-                front.Add(float.MinValue);
             }
 
             labels[index] = id;
@@ -1358,94 +1331,15 @@ internal static class TowerWidening
             right[id] = Math.Max(right[id], vertices[index].x);
             low[id] = Math.Min(low[id], vertices[index].y);
             high[id] = Math.Max(high[id], vertices[index].y);
-            back[id] = Math.Min(back[id], vertices[index].z);
-            front[id] = Math.Max(front[id], vertices[index].z);
         }
 
         var pieces = new Piece[left.Count];
         for (var id = 0; id < pieces.Length; id++)
         {
-            pieces[id] = new Piece(
-                id, left[id], right[id], low[id], high[id], back[id], front[id]);
+            pieces[id] = new Piece(id, left[id], right[id], low[id], high[id]);
         }
 
         return pieces;
-    }
-
-    /// <summary>
-    /// Reassembles the blue bridge's transverse top work from the render islands produced by import.
-    ///
-    /// Rule 8 applies to authored parts, not smoothing groups or separately modelled fittings. A
-    /// transverse rod is recognised from its own axes, then joined to the x=0 island it physically
-    /// meets through overlapping height/depth bounds and a joint-sized lateral seam. Longitudinal
-    /// side arches never enter this walk, even where a top rod terminates against them. The result is
-    /// therefore still the x=0 rule: the complete top part crosses and stretches; side parts do not
-    /// and translate.
-    /// </summary>
-    private static Piece[] LogicalOpenTrussParts(Piece[] pieces)
-    {
-        if (pieces.Length == 0) return Array.Empty<Piece>();
-
-        var included = new bool[pieces.Length];
-        var pending = new List<int>();
-        for (var index = 0; index < pieces.Length; index++)
-        {
-            if (!pieces[index].CrossesCentre) continue;
-            included[index] = true;
-            pending.Add(index);
-        }
-
-        // Breadth-first over physical joins. Each pair is considered at most once per accepted
-        // member, avoiding repeated whole-array passes on the 1,700-island full-detail mesh.
-        for (var pendingIndex = 0; pendingIndex < pending.Count; pendingIndex++)
-        {
-            var member = pieces[pending[pendingIndex]];
-            for (var candidateIndex = 0; candidateIndex < pieces.Length; candidateIndex++)
-            {
-                if (included[candidateIndex]) continue;
-                var candidate = pieces[candidateIndex];
-                if (!IsTransverse(candidate)) continue;
-                if (!TouchesTransverseMember(candidate, member)) continue;
-
-                included[candidateIndex] = true;
-                pending.Add(candidateIndex);
-            }
-        }
-
-        var result = new List<Piece>();
-        for (var index = 0; index < pieces.Length; index++)
-        {
-            if (included[index]) result.Add(pieces[index]);
-        }
-        return result.ToArray();
-    }
-
-    private static bool IsTransverse(Piece piece) =>
-        piece.CrossesCentre
-        || piece.LateralSpan + CentreEpsilon >= piece.LongitudinalSpan;
-
-    private static bool ProjectionOverlaps(Piece one, Piece two) =>
-        one.Low <= two.High + CentreEpsilon
-        && one.High >= two.Low - CentreEpsilon
-        && one.Back <= two.Front + CentreEpsilon
-        && one.Front >= two.Back - CentreEpsilon;
-
-    private static bool TouchesTransverseMember(Piece one, Piece two)
-    {
-        if (!ProjectionOverlaps(one, two)) return false;
-
-        var gap = one.Right < two.Left
-            ? two.Left - one.Right
-            : two.Right < one.Left
-                ? one.Left - two.Right
-                : 0f;
-
-        // The admissible seam comes from the two members' own cross-sections. It scales with the
-        // prototype geometry and is not a fixed road-width or bridge-family distance.
-        var oneJoint = Math.Min(one.VerticalSpan, one.LongitudinalSpan);
-        var twoJoint = Math.Min(two.VerticalSpan, two.LongitudinalSpan);
-        var joint = Math.Max(CentreEpsilon, Math.Max(oneJoint, twoJoint));
-        return gap <= joint + CentreEpsilon;
     }
 
     /// <summary>Where a vertex sits, to a millimetre, as a key two vertices can share.</summary>
@@ -1526,12 +1420,6 @@ internal static class TowerWidening
         internal float OpenTrussRightReach { get; private set; }
 
         /// <summary>
-        /// Full-detail islands which together form the logical transverse part crossing x=0. Their
-        /// height/depth footprints are reused to classify the corresponding islands in every LOD.
-        /// </summary>
-        private Piece[] OpenTrussLogicalParts { get; set; } = Array.Empty<Piece>();
-
-        /// <summary>
         /// Measured inner face of an open-truss side assembly. The green side arch and its inner
         /// railing lie outside this boundary and are translated together; the top beam crosses x=0
         /// and is stretched up to it. This is prototype geometry, never a fixed road-width constant.
@@ -1588,20 +1476,25 @@ internal static class TowerWidening
             var height = high - low;
             var bands = height <= CentreEpsilon ? 1 : SpanBands;
 
-            // Open-truss measurements are made from this full-detail scope once. The importer splits
-            // one transverse top part into rods, fittings and pivots. Reassemble the touching islands
-            // first, then measure the complete logical part's real left/right reach. Using half the
-            // mesh bounds here was not a measurement of that part: it gave the centre fitting a much
-            // larger ratio than the rods which meet it and tore the top truss apart.
+            // Open-truss measurements are made from this full-detail scope once. The transverse beam
+            // may be split into disconnected render islands, but every island belongs to the same
+            // logical member crossing x=0 and therefore shares its widest authored reach. Half the
+            // shape's outer reach is only a geometry-derived floor for unusually fragmented imports;
+            // it is not a road-width constant and can never change whether a member crosses x=0.
             var openTrussLeftReach = 0f;
             var openTrussRightReach = 0f;
             var openTrussBoundary = 0f;
-            var openTrussLogicalParts = new List<Piece>();
             for (var shapeIndex = 0; shapeIndex < shapes.Count; shapeIndex++)
             {
                 var shape = shapes[shapeIndex] ?? Array.Empty<float3>();
                 if (shape.Length == 0) continue;
 
+                var shapeOuter = 0f;
+                foreach (var vertex in shape)
+                    shapeOuter = Math.Max(shapeOuter, Math.Abs(vertex.x));
+
+                openTrussLeftReach = Math.Max(openTrussLeftReach, shapeOuter * 0.5f);
+                openTrussRightReach = Math.Max(openTrussRightReach, shapeOuter * 0.5f);
                 openTrussBoundary = Math.Max(
                     openTrussBoundary, ClearSpanOf(shape, SpanBands) * 0.5f);
 
@@ -1610,10 +1503,9 @@ internal static class TowerWidening
                     : null;
                 if (indices == null) continue;
 
-                var logicalParts = LogicalOpenTrussParts(PiecesOf(shape, indices, out _));
-                foreach (var component in logicalParts)
+                foreach (var component in PiecesOf(shape, indices, out _))
                 {
-                    openTrussLogicalParts.Add(component);
+                    if (component.Aside) continue;
                     openTrussLeftReach = Math.Max(
                         openTrussLeftReach, Math.Max(0f, -component.Left));
                     openTrussRightReach = Math.Max(
@@ -1656,30 +1548,8 @@ internal static class TowerWidening
                 Outer = outer,
                 OpenTrussLeftReach = openTrussLeftReach,
                 OpenTrussRightReach = openTrussRightReach,
-                OpenTrussBoundary = openTrussBoundary,
-                OpenTrussLogicalParts = openTrussLogicalParts.ToArray()
+                OpenTrussBoundary = openTrussBoundary
             };
-        }
-
-        /// <summary>
-        /// Applies the full-detail logical-part decision to a mesh island from any LOD. A raw island
-        /// which reaches x=0 is always in the stretched part. A split side island joins it only when
-        /// it is transverse and occupies the same prototype height/depth footprint as the recorded
-        /// top assembly; longitudinal side arches therefore remain rigid translations.
-        /// </summary>
-        internal bool OpenTrussPartCrossesCentre(Piece piece)
-        {
-            if (piece.CrossesCentre) return true;
-            if (!IsTransverse(piece)) return false;
-
-            var reach = Math.Max(OpenTrussLeftReach, OpenTrussRightReach);
-            foreach (var authored in OpenTrussLogicalParts)
-            {
-                if (!TouchesTransverseMember(piece, authored)) continue;
-                if (piece.Inner <= reach + CentreEpsilon) return true;
-            }
-
-            return false;
         }
 
         /// <summary>
