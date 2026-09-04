@@ -1457,17 +1457,19 @@ internal static class TowerWidening
 
     private static bool TouchesTransverseTruss(Piece one, Piece two)
     {
-        // A connection tolerance comes from the members' cross-sections, never their x length. The
-        // former all-pairs union included min(one.x, two.x), so a ten-metre rod was allowed to join an
-        // unrelated island ten metres away. That was the source of the hundreds of false side joins
-        // recorded by the export report.
+        // A diagonal brace can be authored with a deliberate gap between its rod and the centre plate,
+        // so the x-axis reach must be allowed to bridge that importer gap. The lateral member's own
+        // length is valid for x only. It must never become the y/z tolerance: doing that was the old
+        // all-pairs bug which joined unrelated side structure several metres above or along the span.
         var oneJoint = Math.Min(one.VerticalSpan, one.LongitudinalSpan);
         var twoJoint = Math.Min(two.VerticalSpan, two.LongitudinalSpan);
-        var joint = Math.Max(CentreEpsilon, Math.Max(oneJoint, twoJoint));
+        var crossSection = Math.Max(CentreEpsilon, Math.Max(oneJoint, twoJoint));
+        var lateralGap = Math.Max(
+            crossSection, Math.Max(one.LateralSpan, two.LateralSpan));
 
-        return AxisGap(one.Left, one.Right, two.Left, two.Right) <= joint + CentreEpsilon
-            && AxisGap(one.Low, one.High, two.Low, two.High) <= joint + CentreEpsilon
-            && AxisGap(one.Back, one.Front, two.Back, two.Front) <= joint + CentreEpsilon;
+        return AxisGap(one.Left, one.Right, two.Left, two.Right) <= lateralGap + CentreEpsilon
+            && AxisGap(one.Low, one.High, two.Low, two.High) <= crossSection + CentreEpsilon
+            && AxisGap(one.Back, one.Front, two.Back, two.Front) <= crossSection + CentreEpsilon;
     }
 
     /// <summary>Where a vertex sits, to a millimetre, as a key two vertices can share.</summary>
