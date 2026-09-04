@@ -340,8 +340,8 @@ internal sealed class TowerFactory
         // mesh, so adding the road delta cannot make it exactly as wide as the generated truss. The
         // generated section is already in hand and _cableOuter is its measured outer edge: solve the
         // required translation from those two archetype geometries instead of introducing another
-        // nominal-width correction. The separate TrussArch01 prototype base takes its own four-metre
-        // total-width addition through the contract's rigid coordinate map in ExtraForPart.
+        // nominal-width correction. The separate TrussArch01 prototype base is solved against that
+        // same generated truss width in ExtraForPart.
         if (_styleId == "TrussArch01"
             && _towerKey == "TrussArchBridge01NetPillar"
             && _cableOuter > 0f
@@ -421,10 +421,11 @@ internal sealed class TowerFactory
     }
 
     /// <summary>
-    /// Width change for one TrussArch01 prototype part. The main pier stays aligned to the generated
-    /// side truss; the separately authored base is four metres wider in total so its two halves meet
-    /// the side structures. Widen applies this number to the prototype coordinates with
-    /// x -> x + sign(x) * (extra / 2), never with a proportional scale.
+    /// Width change for one TrussArch01 prototype part. The main pier and the separately authored base
+    /// both finish at the measured width of the generated bridge truss. Their prototype meshes start
+    /// at different widths, so they require different deltas; reusing the pier delta or adding a fixed
+    /// correction makes the base wider than the bridge. Widen applies the solved number to the base's
+    /// prototype coordinates with x -> x + sign(x) * (extra / 2), never with a proportional scale.
     /// </summary>
     private float ExtraForPart(ObjectMeshInfo info, float towerExtra, string towerName)
     {
@@ -435,13 +436,18 @@ internal sealed class TowerFactory
                 mesh.name, "TrussArchBridge01NetPillarBase Mesh", StringComparison.Ordinal))
             return towerExtra;
 
-        const float baseTotalWidthAddition = 4f;
+        if (_cableOuter <= 0f) return towerExtra;
+
+        var prototypeWidth = mesh.bounds.max.x - mesh.bounds.min.x;
+        var bridgeWidth = _cableOuter * 2f;
+        var baseExtra = bridgeWidth - prototypeWidth;
         _report.Note(string.Format(
             CultureInfo.InvariantCulture,
             "{0}: TrussArch01 prototype base uses rigid x -> x + sign(x) * delta with "
-            + "delta {1:0.###} m, adding {2:0.###} m to its total width beyond the main pier.",
-            towerName, baseTotalWidthAddition * 0.5f, baseTotalWidthAddition));
-        return towerExtra + baseTotalWidthAddition;
+            + "delta {1:0.###} m; prototype width {2:0.###} m becomes the generated bridge "
+            + "width {3:0.###} m.",
+            towerName, baseExtra * 0.5f, prototypeWidth, bridgeWidth));
+        return baseExtra;
     }
 
 
@@ -2138,8 +2144,8 @@ internal sealed class TowerFactory
 
     /// <summary>
     /// Identifies the TrussArch01 portal body and its LODs. This must not include the separately
-    /// authored base: the base uses the contract's exact sign translation and its own four-metre
-    /// total-width addition.
+    /// authored base: the base uses the contract's exact sign translation and a delta solved from its
+    /// own prototype width to the generated bridge width.
     /// </summary>
     private bool IsBluePrototypeMainPier(RenderPrefab original) =>
         _styleId == "TrussArch01"
