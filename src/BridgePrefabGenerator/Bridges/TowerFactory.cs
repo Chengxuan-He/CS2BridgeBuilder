@@ -340,8 +340,8 @@ internal sealed class TowerFactory
         // mesh, so adding the road delta cannot make it exactly as wide as the generated truss. The
         // generated section is already in hand and _cableOuter is its measured outer edge: solve the
         // required translation from those two archetype geometries instead of introducing another
-        // nominal-width correction. The base remains a distinct authored part and receives the same
-        // translation, as required for a multi-part pillar.
+        // nominal-width correction. The separately authored ground base takes its measured four-metre
+        // extension in ExtraForPart; it is not used to change the pier-to-truss alignment solved here.
         if (_styleId == "TrussArch01"
             && _towerKey == "TrussArchBridge01NetPillar"
             && _cableOuter > 0f
@@ -418,6 +418,30 @@ internal sealed class TowerFactory
         }
 
         return byCables;
+    }
+
+    /// <summary>
+    /// The blue prototype's ground base is a separate authored mesh. In the generated bridge it must
+    /// span four metres beyond the main pier widening to meet the two side trusses; applying that four
+    /// metres to the main pier as well would move the pier past the truss edge which ExtraFor just
+    /// measured. Every other part and every other bridge keeps the common tower widening unchanged.
+    /// </summary>
+    private float ExtraForPart(ObjectMeshInfo info, float towerExtra, string towerName)
+    {
+        if (_styleId != "TrussArch01"
+            || _towerKey != "TrussArchBridge01NetPillar"
+            || info.m_Mesh is not RenderPrefab mesh
+            || !string.Equals(
+                mesh.name, "TrussArchBridge01NetPillarBase Mesh", StringComparison.Ordinal))
+            return towerExtra;
+
+        const float baseExtension = 4f;
+        _report.Note(string.Format(
+            CultureInfo.InvariantCulture,
+            "{0}: widened the blue ground base {1:0.###} m, four metres beyond the main pier, "
+            + "so it reaches both side trusses.",
+            towerName, towerExtra + baseExtension));
+        return towerExtra + baseExtension;
     }
 
 
@@ -1200,7 +1224,8 @@ internal sealed class TowerFactory
             var meshes = new List<ObjectMeshInfo>();
             foreach (var info in parts)
             {
-                var widened = Widen((RenderPrefab)info.m_Mesh!, name, meshes.Count, extra);
+                var partExtra = ExtraForPart(info, extra, name);
+                var widened = Widen((RenderPrefab)info.m_Mesh!, name, meshes.Count, partExtra);
                 if (widened == null) continue;
 
                 // The part keeps where it sat, carried outward by the same shift as its vertices.
@@ -1208,7 +1233,7 @@ internal sealed class TowerFactory
                 var position = info.m_Position;
                 if (Math.Abs(position.x) > 0.001f)
                 {
-                    position.x += position.x > 0f ? extra * 0.5f : -extra * 0.5f;
+                    position.x += position.x > 0f ? partExtra * 0.5f : -partExtra * 0.5f;
                 }
 
                 meshes.Add(new ObjectMeshInfo
@@ -1896,12 +1921,13 @@ internal sealed class TowerFactory
                         _report.Note(string.Format(
                             CultureInfo.InvariantCulture,
                             "{0}: blue x=0 contract after widening the {1} open truss: {2} piece(s), "
-                            + "{3} non-centre piece(s) translated rigidly, {4} x=0 piece(s) "
-                            + "stretched using one shared full-detail reach, measured width change "
-                            + "{5:0.###} m; "
-                            + "degenerate triangles {6}->{7}, flipped {8}, finite {9}.",
+                            + "{3} side piece(s) translated rigidly, {4} logical-top piece(s) "
+                            + "stretched using one shared full-detail reach ({5} split island(s) "
+                            + "rejoined to that x=0 part), measured width change {6:0.###} m; "
+                            + "degenerate triangles {7}->{8}, flipped {9}, finite {10}.",
                             name, _styleId, trussFacts.Pieces, trussFacts.RigidPieces,
-                            trussFacts.SpanningPieces, trussFacts.MeasuredWidthChange,
+                            trussFacts.SpanningPieces, trussFacts.FloatingPieces,
+                            trussFacts.MeasuredWidthChange,
                             trussFacts.DegenerateBefore, trussFacts.DegenerateAfter,
                             trussFacts.FlippedTriangles, trussFacts.Finite));
                     }
