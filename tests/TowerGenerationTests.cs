@@ -3788,9 +3788,9 @@ internal static class TowerGenerationTests
             $"{BridgeTowers.RoadFor("TrussArch01", "TrussArchBridge01NetPillar")}");
         check("[split] the blue prototype object remains classified as a support",
             BridgeTowers.For("TrussArch01").Single().Support, null);
-        check("[split] a 40 m blue bridge adds its measured 12 m structure allowance",
+        check("[split] a 40 m blue bridge adds its measured 10 m structure allowance",
             Math.Abs(40f - BridgeTowers.RoadOf("TrussArch01")
-                + BridgeTowers.BonusFor("TrussArch01") - 32f) < 0.001f,
+                + BridgeTowers.BonusFor("TrussArch01") - 30f) < 0.001f,
             $"{40f - BridgeTowers.RoadOf("TrussArch01")
                 + BridgeTowers.BonusFor("TrussArch01"):0.###} m");
         check("[split] blue uses the open-truss topology rule",
@@ -4085,8 +4085,8 @@ internal static class TowerGenerationTests
         check("[bonus] the double-deck V structure takes twenty metres more",
             Math.Abs(BridgeTowers.BonusFor("Extradosed01") - 20f) < 0.001f, null);
 
-        check("[bonus] the blue arch-above frame takes twelve metres more",
-            Math.Abs(BridgeTowers.BonusFor("TrussArch01") - 12f) < 0.001f, null);
+        check("[bonus] the blue arch-above frame takes ten metres more",
+            Math.Abs(BridgeTowers.BonusFor("TrussArch01") - 10f) < 0.001f, null);
 
         check("[bonus] the green arch-above frame takes sixteen metres more",
             Math.Abs(BridgeTowers.BonusFor("TrussArch03") - 16f) < 0.001f, null);

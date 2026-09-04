@@ -433,11 +433,11 @@ internal static class BridgeTowers
     private static readonly Dictionary<string, float> TowerBonus =
         new(StringComparer.Ordinal)
         {
-            // TrussArchBridge01's overhead frame stands 12 m wider than the carriageway relationship
+            // TrussArchBridge01's overhead frame stands 10 m wider than the carriageway relationship
             // alone produces. This belongs to the blue prototype structure, not to the target road:
-            // adding it here widens the two sides by another 6 m each while leaving the road, the
+            // adding it here widens the two sides by another 5 m each while leaving the road, the
             // green TrussArchBridge03 prototype and every other bridge family unchanged.
-            ["TrussArch01"] = 12f,
+            ["TrussArch01"] = 10f,
 
             // TrussArchBridge03 needs another 16 m of structural width beyond the target-minus-
             // prototype-road calculation. The green side frame includes its inner railing, so its
