@@ -1557,7 +1557,17 @@ internal sealed class TowerFactory
             ? string.Format(CultureInfo.InvariantCulture, "{0}-{1}", source.name, bridgeName)
             : string.Format(CultureInfo.InvariantCulture, "{0} {1:0.#}", source.name, extra);
 
-        if (_sectionsThisRun.TryGetValue(wanted, out var already)) return already;
+        if (_sectionsThisRun.TryGetValue(wanted, out var already))
+        {
+            // The factory can reuse a section generated earlier in the same run, but BeginBridge has
+            // reset the width measurements. Restore both sides of the archetype relationship before
+            // the tower and its base are derived; otherwise ExtraForPart falls back to the generic
+            // tower delta and the base silently loses its prototype width rule.
+            _cablePrototypeOuter = OuterOf(source.m_Pieces ?? Array.Empty<NetPieceInfo>());
+            _cableOuter = OuterOf(already.m_Pieces ?? Array.Empty<NetPieceInfo>());
+            _cableName = already.name;
+            return already;
+        }
 
         // Rebuilt across runs, under a name of its own, for the same reason the towers are: handing
         // back what a previous run left behind means every change to how cables are widened stops
@@ -1861,6 +1871,11 @@ internal sealed class TowerFactory
                 outlines.Add(part.triangles);
             }
 
+            // CONTRACT rule 8: an LOD cannot vote on what the part is. Keep the full-detail
+            // archetype measurement before adding any coarse substitute. TrussArch01's portal uses
+            // this exact side-body boundary at every viewing distance.
+            var fullDetailScope = profile ?? TowerWidening.Profile.Of(shapes, outlines);
+
             // The levels of detail are named by a component and live in prefabs of their own, so they
             // have to be fetched to be included. They were not, and the comment above said they were:
             // the scope was the full detail mesh alone, a coarse mesh's outermost material fell outside
@@ -1893,7 +1908,10 @@ internal sealed class TowerFactory
                 }
             }
 
-            var scope = profile ?? TowerWidening.Profile.Of(shapes, outlines);
+            var scope = profile
+                ?? (IsBluePrototypeMainPier(original)
+                    ? fullDetailScope
+                    : TowerWidening.Profile.Of(shapes, outlines));
 
             foreach (var lod in lodMeshes)
             {
@@ -1922,7 +1940,7 @@ internal sealed class TowerFactory
                     // CONTRACT rule 8: the TrussArch01 deck base is authored as side material.
                     // Start from its prototype vertices and carry every non-zero x by the whole d.
                     // This is a translation, never a proportional widening of the base.
-                    ? TowerWidening.Widen(source, extra)
+                    ? TowerWidening.WidenRigidBase(source, extra)
                     : bluePortal
                         // The main pier is a portal: its two side bodies do not cross x=0 and move
                         // rigidly, while only its connecting beam spans and stretches. Its boundary is

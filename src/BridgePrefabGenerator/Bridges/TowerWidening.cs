@@ -125,17 +125,40 @@ internal static class TowerWidening
     }
 
     /// <summary>
-    /// Widens an authored portal from the clear opening measured on its full-detail prototype.
-    /// Material outside the opening is a side leg and receives an exact rigid translation; material
-    /// inside it is the beam crossing x=0 and is stretched continuously to the translated legs. This
-    /// is used for TrussArch01's main pier so its side slabs cannot be thickened by a height-band vote.
+    /// Applies and enforces the contract's exact side-part mapping. TrussArch01's authored base is
+    /// never allowed to enter a scale/profile path: every non-zero coordinate moves by the same signed
+    /// delta and x=0 remains x=0.
+    /// </summary>
+    internal static float3[] WidenRigidBase(float3[] vertices, float extra)
+    {
+        var moved = Widen(vertices, extra);
+        for (var index = 0; index < vertices.Length; index++)
+        {
+            var expected = Spread(vertices[index].x, extra);
+            if (Math.Abs(moved[index].x - expected) <= CentreEpsilon) continue;
+
+            throw new InvalidOperationException(string.Format(
+                System.Globalization.CultureInfo.InvariantCulture,
+                "Rigid base invariant rejected vertex {0}: source x={1:0.#####}, result "
+                + "x={2:0.#####}, expected x + sign(x) * delta = {3:0.#####}.",
+                index, vertices[index].x, moved[index].x, expected));
+        }
+        return moved;
+    }
+
+    /// <summary>
+    /// Widens an authored portal from the rigid side body's inner face measured on its full-detail
+    /// prototype. Material outside that face is a side leg and receives an exact rigid translation;
+    /// material inside it is the beam crossing x=0 and is stretched continuously to the translated
+    /// legs. This is used for TrussArch01's main pier so its side slabs cannot be thickened by a
+    /// height-band or maximum-clear-opening vote.
     /// </summary>
     internal static float3[] WidenPortal(float3[] vertices, float extra, Profile profile)
     {
-        var boundary = profile.OpenTrussBoundary;
+        var boundary = profile.PortalSideBoundary;
         if (Math.Abs(extra) >= CentreEpsilon && boundary <= CentreEpsilon)
             throw new InvalidOperationException(
-                "Centre-line widening invariant found no prototype clear opening for the portal.");
+                "Centre-line widening invariant found no prototype side-body boundary for the portal.");
 
         var moved = Widen(vertices, extra, boundary);
         var shift = extra * 0.5f;
@@ -1466,10 +1489,12 @@ internal static class TowerWidening
         var crossSection = Math.Max(CentreEpsilon, Math.Max(oneJoint, twoJoint));
         var lateralGap = Math.Max(
             crossSection, Math.Max(one.LateralSpan, two.LateralSpan));
+        var longitudinalGap = Math.Max(
+            crossSection, Math.Max(one.LongitudinalSpan, two.LongitudinalSpan));
 
         return AxisGap(one.Left, one.Right, two.Left, two.Right) <= lateralGap + CentreEpsilon
             && AxisGap(one.Low, one.High, two.Low, two.High) <= crossSection + CentreEpsilon
-            && AxisGap(one.Back, one.Front, two.Back, two.Front) <= crossSection + CentreEpsilon;
+            && AxisGap(one.Back, one.Front, two.Back, two.Front) <= longitudinalGap + CentreEpsilon;
     }
 
     /// <summary>Where a vertex sits, to a millimetre, as a key two vertices can share.</summary>
@@ -1561,6 +1586,13 @@ internal static class TowerWidening
         /// and is stretched up to it. This is prototype geometry, never a fixed road-width constant.
         /// </summary>
         internal float OpenTrussBoundary { get; private set; }
+
+        /// <summary>
+        /// Inner face of the full-detail portal's rigid side body. Derived from the prototype's outer
+        /// material thickness; unlike its widest clear opening, this cannot fall inside and stretch a
+        /// thick side slab.
+        /// </summary>
+        internal float PortalSideBoundary { get; private set; }
 
         /// <summary>The profile of one shape, measured from its vertices alone.</summary>
         internal static Profile Of(float3[] vertices) => Of(new[] { vertices });
@@ -1674,12 +1706,20 @@ internal static class TowerWidening
             if (triangles != null)
                 WalkEdges(shapes, triangles, low, height, bands, span, thickness, carried);
 
+            var widestRigidSide = 0f;
+            for (var band = 0; band < thickness.Length; band++)
+                widestRigidSide = Math.Max(widestRigidSide, thickness[band]);
+            var portalSideBoundary = widestRigidSide > CentreEpsilon
+                ? Math.Max(CentreEpsilon, outer - widestRigidSide)
+                : openTrussBoundary;
+
             return new Profile(low, height, span, thickness, carried)
             {
                 Outer = outer,
                 OpenTrussLeftReach = openTrussLeftReach,
                 OpenTrussRightReach = openTrussRightReach,
                 OpenTrussBoundary = openTrussBoundary,
+                PortalSideBoundary = portalSideBoundary,
                 OpenTrussLogicalParts = openTrussLogicalParts.ToArray()
             };
         }
