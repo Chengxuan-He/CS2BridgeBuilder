@@ -344,6 +344,51 @@ if (Test-Path -LiteralPath $importedRoot -PathType Container) {
         $_ -match $towerPattern
     })
 
+    # A top-level generated bridge ends in its style id. It can survive without an export-state
+    # entry when an older cleanup removed the state first. Match the complete suffix only; this
+    # deliberately does not treat an arbitrary road-name fragment as ownership evidence.
+    $bridgeStyleSuffixPattern = '_(' `
+        + (($towerStyles | ForEach-Object { [regex]::Escape($_) }) -join '|') `
+        + ')(?:_(?:Lower|Upper))?(?: \([0-9]+\))?$'
+    $importedDirectoryNames += @($currentImportedNames | Where-Object {
+        $_ -match $bridgeStyleSuffixPattern
+    })
+
+    # Dependency clones created by BridgePrefabGenerator always use this ownership prefix.
+    # RoadPrefabExporter's RBExportDep_* directories intentionally remain outside this match.
+    $importedDirectoryNames += @($currentImportedNames | Where-Object {
+        $_.StartsWith('RBBridgeDep_', [StringComparison]::Ordinal)
+    })
+
+    # Width-adjusted sections use an archetype name followed by the signed width delta. Name
+    # collisions add " (n)" before the Piece suffix, so a static list cannot clean every run.
+    # The source archetype list is exact and is intentionally kept narrower than "* Section *".
+    $generatedSectionPrefixes = @(
+        '2-Lane Suspension Bridge',
+        '3-Lane Suspension Bridge',
+        '4-Lane Suspension Bridge',
+        '5-Lane Suspension Bridge',
+        '8-Lane Cable Stayed Bridge 00',
+        'Cable Stayed Pedestrian Bridge',
+        'ExtradosedBridge01 Section',
+        'ExtradosedBridge02 Section',
+        'ExtradosedBridge03 Section',
+        'SuspensionBridge03 Section',
+        'PedestrianBridgeCoveredWood01 Section',
+        'Grand Bridge',
+        'LiftBridge01 Section',
+        'LiftBridge03 Section',
+        'TrussArchBridge01 Section',
+        'TrussArchBridge02 Section',
+        'TrussArchBridge03 Section'
+    )
+    $generatedSectionPattern = '^(' `
+        + (($generatedSectionPrefixes | ForEach-Object { [regex]::Escape($_) }) -join '|') `
+        + ') [-+]?[0-9]+(?:\.[0-9]+)?(?: \([0-9]+\))?(?: Piece(?: [0-9]+)?(?: LOD[0-9]+)?)?$'
+    $importedDirectoryNames += @($currentImportedNames | Where-Object {
+        $_ -match $generatedSectionPattern
+    })
+
     # Resolve every RenderPrefab which references Geometry currently owned by this mod. This covers
     # generated sections whose archetype-derived names intentionally do not carry the bridge name.
     if (Test-Path -LiteralPath $geometryRoot -PathType Container) {
