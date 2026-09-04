@@ -1894,12 +1894,18 @@ internal sealed class TowerFactory
                 var preserveOpenTrussSides =
                     BridgeStyleDefinitions.PreservesOpenTrussSideAssembly(_styleId);
                 var rigidBlueBase = IsBluePrototypeBase(original);
+                var bluePortal = IsBluePrototypeMainPier(original);
                 TowerWidening.TrussWideningFacts trussFacts = default;
                 var moved = rigidBlueBase
                     // CONTRACT rule 8: the TrussArch01 deck base is authored as side material.
                     // Start from its prototype vertices and carry every non-zero x by the whole d.
                     // This is a translation, never a proportional widening of the base.
                     ? TowerWidening.Widen(source, extra)
+                    : bluePortal
+                        // The main pier is a portal: its two side bodies do not cross x=0 and move
+                        // rigidly, while only its connecting beam spans and stretches. Its boundary is
+                        // measured from TrussArchBridge01NetPillar, not from the target road.
+                        ? TowerWidening.WidenPortal(source, extra, scope)
                     : openTruss
                         ? TowerWidening.WidenOpenTruss(
                             source, part.triangles, extra,
@@ -1931,8 +1937,8 @@ internal sealed class TowerFactory
                             CultureInfo.InvariantCulture,
                             "{0}: blue x=0 contract after widening the {1} open truss: {2} piece(s), "
                             + "{3} non-centre piece(s) translated rigidly, {4} top-truss piece(s) "
-                            + "stretched as one complete x=0 assembly ({5} imported side island(s) "
-                            + "joined into that assembly), measured width change {6:0.###} m; "
+                            + "stretched as one complete x=0 assembly ({5} off-centre transverse "
+                            + "member(s) joined to a centre seed), measured width change {6:0.###} m; "
                             + "degenerate triangles {7}->{8}, flipped {9}, finite {10}.",
                             name, _styleId, trussFacts.Pieces, trussFacts.RigidPieces,
                             trussFacts.SpanningPieces, trussFacts.FloatingPieces,
@@ -2129,6 +2135,19 @@ internal sealed class TowerFactory
                 original.name, "TrussArchBridge01NetPillarBase Mesh", StringComparison.Ordinal)
             || original.name.StartsWith(
                 "TrussArchBridge01NetPillarBase_LOD", StringComparison.Ordinal));
+
+    /// <summary>
+    /// Identifies the TrussArch01 portal body and its LODs. This must not include the separately
+    /// authored base: the base uses the contract's exact sign translation and its own four-metre
+    /// total-width addition.
+    /// </summary>
+    private bool IsBluePrototypeMainPier(RenderPrefab original) =>
+        _styleId == "TrussArch01"
+        && _towerKey == "TrussArchBridge01NetPillar"
+        && (string.Equals(
+                original.name, "TrussArchBridge01NetPillar Mesh", StringComparison.Ordinal)
+            || original.name.StartsWith(
+                "TrussArchBridge01NetPillar_LOD", StringComparison.Ordinal));
 
     private bool IsGoldenTopOrnament(string name, bool railings)
     {
