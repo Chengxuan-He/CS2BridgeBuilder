@@ -18,6 +18,7 @@
   </ItemGroup>
   <ItemGroup>
     <Reference Include="Game"><HintPath>$(GameManagedDir)\Game.dll</HintPath><Private>false</Private></Reference>
+    <Reference Include="Colossal.AssetPipeline"><HintPath>$(GameManagedDir)\Colossal.AssetPipeline.dll</HintPath><Private>false</Private></Reference>
     <Reference Include="Colossal.Core"><HintPath>$(GameManagedDir)\Colossal.Core.dll</HintPath><Private>false</Private></Reference>
     <Reference Include="Colossal.IO.AssetDatabase"><HintPath>$(GameManagedDir)\Colossal.IO.AssetDatabase.dll</HintPath><Private>false</Private></Reference>
     <Reference Include="Colossal.Localization"><HintPath>$(GameManagedDir)\Colossal.Localization.dll</HintPath><Private>false</Private></Reference>

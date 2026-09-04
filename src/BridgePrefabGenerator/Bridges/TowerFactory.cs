@@ -1942,10 +1942,10 @@ internal sealed class TowerFactory
                     // This is a translation, never a proportional widening of the base.
                     ? TowerWidening.WidenRigidBase(source, extra)
                     : bluePortal
-                        // The main pier is a portal: its two side bodies do not cross x=0 and move
-                        // rigidly, while only its connecting beam spans and stretches. Its boundary is
-                        // measured from TrussArchBridge01NetPillar, not from the target road.
-                        ? TowerWidening.WidenPortal(source, extra, scope)
+                        // Generated metadata names every prototype vertex: the columns and side
+                        // fittings translate rigidly, while only transverse beams crossing x=0
+                        // stretch. LOD2 inherits the high-detail decision even though it is welded.
+                        ? WidenBluePrototypePier(original, source, extra, name)
                     : openTruss
                         ? TowerWidening.WidenOpenTruss(
                             source, part.triangles, extra,
@@ -2173,8 +2173,10 @@ internal sealed class TowerFactory
         && _towerKey == "TrussArchBridge01NetPillar"
         && (string.Equals(
                 original.name, "TrussArchBridge01NetPillarBase Mesh", StringComparison.Ordinal)
-            || original.name.StartsWith(
-                "TrussArchBridge01NetPillarBase_LOD", StringComparison.Ordinal));
+            || string.Equals(
+                original.name, "TrussArchBridge01NetPillarBase_LOD1 Mesh", StringComparison.Ordinal)
+            || string.Equals(
+                original.name, "TrussArchBridge01NetPillarBase_LOD2 Mesh", StringComparison.Ordinal));
 
     /// <summary>
     /// Identifies the TrussArch01 portal body and its LODs. This must not include the separately
@@ -2186,8 +2188,23 @@ internal sealed class TowerFactory
         && _towerKey == "TrussArchBridge01NetPillar"
         && (string.Equals(
                 original.name, "TrussArchBridge01NetPillar Mesh", StringComparison.Ordinal)
-            || original.name.StartsWith(
-                "TrussArchBridge01NetPillar_LOD", StringComparison.Ordinal));
+            || string.Equals(
+                original.name, "TrussArchBridge01NetPillar_LOD1 Mesh", StringComparison.Ordinal)
+            || string.Equals(
+                original.name, "TrussArchBridge01NetPillar_LOD2 Mesh", StringComparison.Ordinal));
+
+    private float3[] WidenBluePrototypePier(
+        RenderPrefab original, float3[] source, float extra, string towerName)
+    {
+        if (TrussArch01Geometry.TryWidenPier(original.name, source, extra, out var moved)) return moved;
+
+        _report.Defect(string.Format(
+            CultureInfo.InvariantCulture,
+            "{0}: unsupported TrussArch01 pier mesh '{1}' with {2} vertices; no geometry fallback "
+            + "was used, so the prototype coordinates were kept unchanged.",
+            towerName, original.name, source.Length));
+        return moved;
+    }
 
     private bool IsGoldenTopOrnament(string name, bool railings)
     {
