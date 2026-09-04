@@ -216,8 +216,14 @@ internal sealed class TowerFactory
     }
 
 
-    /// <summary>How far the cables of the last widened section reach across, and which section that was.</summary>
+    /// <summary>How far the generated overhead section reaches across.</summary>
     private float _cableOuter;
+
+    /// <summary>
+    /// How far the source archetype's overhead section reached before widening. Kept separately so
+    /// TrussArch01 can preserve the prototype difference between its base width and arch width.
+    /// </summary>
+    private float _cablePrototypeOuter;
 
     private string? _cableName;
 
@@ -297,6 +303,7 @@ internal sealed class TowerFactory
         _thisRun.Clear();
         _bridgeName = bridgeName;
         _cableOuter = 0f;
+        _cablePrototypeOuter = 0f;
         _cableName = null;
         _towerKey = null;
 
@@ -340,8 +347,8 @@ internal sealed class TowerFactory
         // mesh, so adding the road delta cannot make it exactly as wide as the generated truss. The
         // generated section is already in hand and _cableOuter is its measured outer edge: solve the
         // required translation from those two archetype geometries instead of introducing another
-        // nominal-width correction. The separate TrussArch01 prototype base is solved against that
-        // same generated truss width in ExtraForPart.
+        // nominal-width correction. The separate TrussArch01 prototype base preserves its own
+        // measured width difference from that truss in ExtraForPart.
         if (_styleId == "TrussArch01"
             && _towerKey == "TrussArchBridge01NetPillar"
             && _cableOuter > 0f
@@ -421,11 +428,11 @@ internal sealed class TowerFactory
     }
 
     /// <summary>
-    /// Width change for one TrussArch01 prototype part. The main pier and the separately authored base
-    /// both finish at the measured width of the generated bridge truss. Their prototype meshes start
-    /// at different widths, so they require different deltas; reusing the pier delta or adding a fixed
-    /// correction makes the base wider than the bridge. Widen applies the solved number to the base's
-    /// prototype coordinates with x -> x + sign(x) * (extra / 2), never with a proportional scale.
+    /// Width change for one TrussArch01 prototype part. The separately authored base preserves the
+    /// prototype's measured base-minus-arch width difference:
+    /// generatedBase = generatedArch + (prototypeBase - prototypeArch).
+    /// Widen applies the solved number to the base's prototype coordinates with
+    /// x -> x + sign(x) * (extra / 2), never with a proportional scale.
     /// </summary>
     private float ExtraForPart(ObjectMeshInfo info, float towerExtra, string towerName)
     {
@@ -436,17 +443,22 @@ internal sealed class TowerFactory
                 mesh.name, "TrussArchBridge01NetPillarBase Mesh", StringComparison.Ordinal))
             return towerExtra;
 
-        if (_cableOuter <= 0f) return towerExtra;
+        if (_cableOuter <= 0f || _cablePrototypeOuter <= 0f) return towerExtra;
 
-        var prototypeWidth = mesh.bounds.max.x - mesh.bounds.min.x;
-        var bridgeWidth = _cableOuter * 2f;
-        var baseExtra = bridgeWidth - prototypeWidth;
+        var prototypeBaseWidth = mesh.bounds.max.x - mesh.bounds.min.x;
+        var prototypeArchWidth = _cablePrototypeOuter * 2f;
+        var prototypeDifference = prototypeBaseWidth - prototypeArchWidth;
+        var generatedArchWidth = _cableOuter * 2f;
+        var generatedBaseWidth = generatedArchWidth + prototypeDifference;
+        var baseExtra = generatedBaseWidth - prototypeBaseWidth;
         _report.Note(string.Format(
             CultureInfo.InvariantCulture,
             "{0}: TrussArch01 prototype base uses rigid x -> x + sign(x) * delta with "
-            + "delta {1:0.###} m; prototype width {2:0.###} m becomes the generated bridge "
-            + "width {3:0.###} m.",
-            towerName, baseExtra * 0.5f, prototypeWidth, bridgeWidth));
+            + "delta {1:0.###} m. Prototype base {2:0.###} m minus prototype arch {3:0.###} m "
+            + "is the preserved {4:0.###} m difference; generated arch {5:0.###} m therefore gives "
+            + "base {6:0.###} m.",
+            towerName, baseExtra * 0.5f, prototypeBaseWidth, prototypeArchWidth,
+            prototypeDifference, generatedArchWidth, generatedBaseWidth));
         return baseExtra;
     }
 
@@ -1568,6 +1580,10 @@ internal sealed class TowerFactory
                 return null;
             }
 
+            // Keep the archetype's actual outer width before any piece is widened. TrussArch01's
+            // separately authored base preserves its prototype width difference from this arch.
+            _cablePrototypeOuter = OuterOf(source.m_Pieces);
+
             // One profile for the whole section, measured before any piece is widened, and asked at
             // every height rather than once - see ProfileOfPieces for both halves of why.
             var profile = ProfileOfPieces(source.m_Pieces);
@@ -2144,8 +2160,8 @@ internal sealed class TowerFactory
 
     /// <summary>
     /// Identifies the TrussArch01 portal body and its LODs. This must not include the separately
-    /// authored base: the base uses the contract's exact sign translation and a delta solved from its
-    /// own prototype width to the generated bridge width.
+    /// authored base: the base uses the contract's exact sign translation and a delta which preserves
+    /// the TrussArchBridge01 prototype's base-minus-arch width difference.
     /// </summary>
     private bool IsBluePrototypeMainPier(RenderPrefab original) =>
         _styleId == "TrussArch01"
