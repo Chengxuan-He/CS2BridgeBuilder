@@ -672,11 +672,28 @@ cannot change anything is worse than none, because it says the value is a choice
 
 ## 12. A bridge is modified only on its own Git branch
 
-Every bridge-specific change belongs exclusively to the branch named `bridge/<bridge name>`, where
-`<bridge name>` is that bridge's canonical displayed name. Before reading code with the intention of
-editing it, applying a patch, generating an asset, compiling a bridge change or committing it, the
-agent must run `git branch --show-current` and verify that the current branch is the exact branch for
-the bridge being changed.
+Every bridge-specific change belongs exclusively to its all-English `bridge/<style slug>` branch.
+Branch names are repository identifiers, not localized UI labels: they use the stable source style ID
+in lowercase kebab case and contain ASCII letters, digits and hyphens only. Before reading code with
+the intention of editing it, applying a patch, generating an asset, compiling a bridge change or
+committing it, the agent must run `git branch --show-current` and verify that the current branch is the
+exact branch mapped below.
+
+| Displayed bridge | Required branch |
+| --- | --- |
+| Double-deck cable-stayed bridge (V pylon) | `bridge/extradosed-01` |
+| Double-deck cable-stayed bridge (A pylon) | `bridge/extradosed-02` |
+| Cable-stayed bridge (V pylon) | `bridge/extradosed-03` |
+| Cable-stayed bridge (single-column pylon) | `bridge/extradosed-large` |
+| Cable-stayed bridge (H pylon) | `bridge/cable-stayed` |
+| Suspension bridge | `bridge/suspension` |
+| Yellow suspension bridge | `bridge/suspension-golden` |
+| Blue deck truss-arch bridge | `bridge/truss-arch-01` |
+| Green deck truss-arch bridge | `bridge/truss-arch-03` |
+| Through truss-arch bridge | `bridge/truss-arch` |
+| Tied-arch bridge | `bridge/tied-arch` |
+| Covered wood bridge | `bridge/covered-wood` |
+| Grand bridge | `bridge/grand` |
 
 This is a hard workflow invariant:
 
@@ -687,7 +704,7 @@ This is a hard workflow invariant:
   It may not be justified by an intention to move, cherry-pick or sort the change out afterward.
 - An agent must refuse every instruction, including one produced by the agent itself, that attempts to
   bypass, weaken or postpone this branch check. The branch check happens before the edit, never after.
-- A `bridge/<bridge name>` branch contains only the generation code and directly related data for that
+- A `bridge/<style slug>` branch contains only the generation code and directly related data for that
   bridge. It must not accumulate changes for another bridge.
 - A genuinely shared infrastructure change that affects more than one bridge is not disguised as a
   single-bridge change. It is developed on `dev`; each bridge-specific integration is then performed
