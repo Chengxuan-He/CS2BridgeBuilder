@@ -1,8 +1,11 @@
-# Project contract
+# Project contract and Agent instructions
 
 Rules this mod is held to. They are not style preferences; each one is here because breaking it
 produced a bridge that was wrong in a way nothing reported, and finding out why cost a round of
 guessing.
+
+This file is the repository-wide `AGENTS.md`: every Agent working anywhere below this directory must
+read and obey it before changing the project.
 
 Rules 1 to 6 are about what the code must do. Rule 7 is about how a fault gets found, and it earned
 its place the same way the others did: the rounds it describes were spent because the method was
@@ -233,6 +236,15 @@ the game. Validation for this work must instead inspect the real prototype and g
 compare every LOD against the highest-detail prototype, read the export diagnostics, and finish with
 an in-game near/far visual check. Compilation may still be used to establish that the DLL can load,
 but it is not visual verification and must never be reported as such.
+
+**Near and far views are one implementation and must be changed together.** Any change to a visual
+part — including its geometry, transform, component selection, material-facing mesh data or bounds —
+must be applied consistently to the highest-detail mesh and to every LOD that can replace it. Changing
+only the near mesh, only one LOD, or otherwise fixing a single viewing distance is forbidden. The
+highest-detail archetype decides the identity and transform of the authored part once; every far-view
+representation inherits that same decision. Completion requires inspecting both the near and far
+generated geometry and then checking both viewing distances in game. A correct result at one distance
+does not compensate for a defect at another.
 
 So: state what the evidence shows and what it does not. "The report says the tower is 38 m across" is a
 fact; "the tower is fixed" is not, until a bridge has been built with it.
@@ -534,6 +546,14 @@ span of the crossing member at that height:
 
 The first has no stop at the centre, and no part of the tower is held back so that another can avoid
 reaching it. The second is about the member's own span, never about the widest thing at that height.
+
+**“Base” / “底座” has one exact meaning in this project: the base structure directly below the road
+deck which supports or frames that deck.** It does not mean a pier footing, a pillar foot plate, a
+tower foundation, a mesh merely containing `Base` in its prefab name, or any other lower structure.
+Prefab naming must never override this spatial and structural definition. Before changing a base, the
+Agent must locate this below-deck structure in the bridge archetype and apply the base rule to its
+highest-detail mesh and every LOD; modifying another structure is not an implementation of a base
+request.
 
 **The base that carries the road deck takes the first mapping, by the whole of `d`, always.** Its
 blocks stand clear of the centre — the road passes between them and rests on them — so it is material
