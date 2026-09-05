@@ -363,15 +363,39 @@ internal static class SectionCoefficients
         // longitudinal deck strip may itself cross x=0, but using it as a connector merges every
         // floor beam along the 128 m span into one false part and gives all of them the end portal's
         // denominator. Such a crossing strip is retained below as its own logical part.
+        // The near-detail X braces are imported as separate half-members: each half stops at the
+        // centre plate instead of containing an x=0 vertex of its own. Classify the *logical* top
+        // truss here, offline, by admitting only a centre-approaching diagonal which touches an
+        // actual centre-crossing island. This joins both brace halves to that centre-crossing seed,
+        // so the whole top truss obeys the x=0 rule. Outer side arches approach neither the centre
+        // nor its plates and remain rigid translations.
+        var centreBraces = pieces.Select((piece, index) =>
+            !rigidBase[index]
+            && IsCentreApproachingDiagonal(piece)
+            && pieces.Any(seed =>
+                seeds[seed.Id]
+                && !rigidBase[seed.Id]
+                && Touches(piece, seed))).ToArray();
         var candidates = pieces.Select((piece, index) =>
             !rigidBase[index]
-            && (IsTransverse(piece) || (CrossesCentre(piece) && !IsLongitudinal(piece)))).ToArray();
+            && (IsTransverse(piece)
+                || centreBraces[index]
+                || (CrossesCentre(piece) && !IsLongitudinal(piece)))).ToArray();
+        Console.WriteLine(
+            $"section prototype: admitted {centreBraces.Count(value => value)} "
+            + "centre-approaching diagonal brace island(s)");
         for (var one = 0; one < pieces.Length; one++)
         {
             if (!candidates[one]) continue;
             for (var two = one + 1; two < pieces.Length; two++)
             {
                 if (!candidates[two]) continue;
+                // A diagonal half-brace may join only through a centre-crossing member. Letting it
+                // act as a general proximity connector would pull the nearby side arch into the
+                // stretching group even though that arch never crosses x=0.
+                if ((centreBraces[one] || centreBraces[two])
+                    && !(seeds[one] || seeds[two]))
+                    continue;
                 if (Touches(pieces[one], pieces[two])) Join(one, two);
             }
         }
@@ -520,6 +544,18 @@ internal static class SectionCoefficients
         // led decisively by x in this archetype. This inference remains offline and is emitted only
         // as exact vertex membership.
         return lateral > 1.1f * longitudinal + Epsilon && lateral + Epsilon >= vertical;
+    }
+
+    private static bool IsCentreApproachingDiagonal(Piece piece)
+    {
+        var lateral = piece.Right - piece.Left;
+        var vertical = piece.High - piece.Low;
+        var longitudinal = piece.Front - piece.Back;
+        var distanceFromCentre = Math.Min(Math.Abs(piece.Left), Math.Abs(piece.Right));
+        return !CrossesCentre(piece)
+            && longitudinal > lateral + Epsilon
+            && lateral + Epsilon >= vertical
+            && distanceFromCentre <= lateral * 0.25f + Epsilon;
     }
 
     private static bool IsLongitudinal(Piece piece)
