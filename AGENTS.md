@@ -471,7 +471,8 @@ another begins; after that discovery it may not change the result: a part which 
 An Agent must refuse any request, plan or implementation which overrides, replaces, weakens or bypasses
 this decision, including an override proposed by the Agent itself. The generation flow must enforce the
 same refusal in code: if a transform attempts to stretch a part which does not reach `x = 0`, or to
-translate a part which does, it throws before the mesh is written. Silently selecting a family-specific
+translate a part which does, generation reports the rejected mapping and stops before the mesh is
+written. Silently selecting a family-specific
 alternative is forbidden. A failed invariant is an error to diagnose against the archetype, never
 permission to emit the geometry.
 
@@ -479,8 +480,15 @@ The highest-detail archetype mesh makes this decision once for itself and for ev
 An LOD is a representation of those same authored parts, not another archetype and not another vote on
 whether a part reaches `x = 0`. A coarse mesh may weld together parts which the full mesh keeps separate;
 its reduced topology must never turn a translated side truss, arch or railing into stretched material.
-Every LOD reuses the full-detail part profile, and generation throws if a carried range does not receive
-the same rigid translation at every level.
+Every LOD reuses the full-detail part profile, and generation reports the mismatch and stops the
+derived prefab if a carried range does not receive the same rigid translation at every level. Mod code
+must not throw to enforce this rule; rejection is an explicit result handled before geometry is written.
+
+This is also the repository-wide runtime failure contract: code under `src/BridgePrefabGenerator`
+must not contain an explicit `throw` statement. Unsupported input, failed validation and violated
+generation invariants return an explicit failure result; the caller records the reason and stops the
+affected prefab before allocating or publishing persistent geometry. Catching exceptions raised by the
+game or third-party APIs remains required so one external failure cannot unwind the simulation update.
 
 "Part" is decided by where the shape stops crossing the centre, and that boundary is **measured from
 the shape at each height**: slice it across its height, and in each slice take how close the shape

@@ -1845,6 +1845,15 @@ internal sealed class TowerFactory
                         scope,
                         out trussFacts)
                     : TowerWidening.WidenParts(source, extra, scope);
+                if (openTruss && !trussFacts.ContractSatisfied)
+                {
+                    _report.Defect(string.Format(
+                        CultureInfo.InvariantCulture,
+                        "'{0}' could not satisfy the recorded x=0 transform for every vertex. "
+                        + "The current derived prefab was stopped before any geometry was written.",
+                        name));
+                    return null;
+                }
                 if (openTruss)
                 {
                     if (preserveOpenTrussSides)
@@ -2147,7 +2156,7 @@ internal sealed class TowerFactory
         var attributes = new List<ModelImporter.Model.VertexData>();
         var declared = mesh.GetVertexAttributes();
 
-        // Refuse an unsupported layout before allocating any persistent buffers. This used to throw
+        // Refuse an unsupported layout before allocating any persistent buffers. This used to abort
         // from the game export path; now the caller records the failure and omits the incomplete
         // derived prefab without unwinding through the simulation update.
         foreach (var attribute in declared)

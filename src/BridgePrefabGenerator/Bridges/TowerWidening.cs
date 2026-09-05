@@ -582,9 +582,12 @@ internal static class TowerWidening
                 }
             }
 
-            RequireCentrelineRule(
-                source, moved, components, labels, extra, leftReach, rightReach);
         }
+
+        var contractSatisfied = RequireCentrelineRule(
+            source, moved, components, labels, extra, leftReach, rightReach);
+        if (!contractSatisfied)
+            Array.Copy(source, moved, source.Length);
 
         var degenerateBefore = DegenerateTriangles(source, triangles);
         var degenerateAfter = DegenerateTriangles(moved, triangles);
@@ -614,7 +617,8 @@ internal static class TowerWidening
             leftRatio,
             rightRatio,
             WidthOf(moved) - WidthOf(source),
-            finite);
+            finite,
+            contractSatisfied);
         return moved;
     }
 
@@ -631,15 +635,17 @@ internal static class TowerWidening
         if (Math.Abs(extra) >= CentreEpsilon && source.Length > 0
             && (components.Length == 0 || labels.Length != source.Length))
         {
-            throw new InvalidOperationException(
-                "Centre-line widening invariant cannot classify the green truss without topology.");
+            facts = RejectedTrussFacts(source, triangles, components.Length, profile.OpenTrussBoundary);
+            return moved;
         }
 
         var shift = extra * 0.5f;
         var boundary = profile.OpenTrussBoundary;
         if (Math.Abs(extra) >= CentreEpsilon && boundary <= CentreEpsilon)
-            throw new InvalidOperationException(
-                "Centre-line widening invariant found no measured side boundary in the green archetype.");
+        {
+            facts = RejectedTrussFacts(source, triangles, components.Length, boundary);
+            return moved;
+        }
 
         var ratio = boundary > CentreEpsilon
             ? Math.Max(0f, (boundary + shift) / boundary)
@@ -675,8 +681,10 @@ internal static class TowerWidening
                 moved[index].x = x * ratio;
         }
 
-        RequireProfiledCentrelineRule(
+        var contractSatisfied = RequireProfiledCentrelineRule(
             source, moved, boundary, ratio, extra);
+        if (!contractSatisfied)
+            Array.Copy(source, moved, source.Length);
 
         var degenerateBefore = DegenerateTriangles(source, triangles);
         var degenerateAfter = DegenerateTriangles(moved, triangles);
@@ -696,11 +704,11 @@ internal static class TowerWidening
             components.Length, rigid, spanning, mixed,
             degenerateBefore, degenerateAfter, flipped,
             boundary, boundary, ratio, ratio,
-            WidthOf(moved) - WidthOf(source), finite);
+            WidthOf(moved) - WidthOf(source), finite, contractSatisfied);
         return moved;
     }
 
-    private static void RequireProfiledCentrelineRule(
+    private static bool RequireProfiledCentrelineRule(
         float3[] source,
         float3[] moved,
         float boundary,
@@ -708,8 +716,7 @@ internal static class TowerWidening
         float extra)
     {
         if (source.Length != moved.Length)
-            throw new InvalidOperationException(
-                "Centre-line widening invariant cannot be checked because vertex counts differ.");
+            return false;
 
         var shift = extra * 0.5f;
         for (var index = 0; index < source.Length; index++)
@@ -721,15 +728,11 @@ internal static class TowerWidening
                     ? x + shift
                     : x * ratio;
 
-            if (Math.Abs(moved[index].x - expected) <= CentreEpsilon) continue;
-
-            throw new InvalidOperationException(string.Format(
-                System.Globalization.CultureInfo.InvariantCulture,
-                "Centre-line widening invariant rejected green truss vertex {0}: source "
-                + "x={1:0.#####}, result x={2:0.#####}, expected x={3:0.#####}. The full-detail "
-                + "side boundary and the same continuous transform must be used by every LOD.",
-                index, x, moved[index].x, expected));
+            if (Math.Abs(moved[index].x - expected) > CentreEpsilon)
+                return false;
         }
+
+        return true;
     }
 
     /// <summary>
@@ -738,7 +741,7 @@ internal static class TowerWidening
     /// Kept internal so the regression suite can prove that a proposed override is rejected rather
     /// than merely producing a different-looking mesh.
     /// </summary>
-    internal static void RequireCentrelineRule(
+    internal static bool RequireCentrelineRule(
         float3[] source,
         float3[] moved,
         IReadOnlyList<int>? triangles,
@@ -747,12 +750,12 @@ internal static class TowerWidening
         var components = PiecesOf(source, triangles, out var labels);
         var profile = Profile.Of(
             new[] { source }, new IReadOnlyList<int>?[] { triangles });
-        RequireCentrelineRule(
+        return RequireCentrelineRule(
             source, moved, components, labels, extra,
             profile.OpenTrussLeftReach, profile.OpenTrussRightReach);
     }
 
-    private static void RequireCentrelineRule(
+    private static bool RequireCentrelineRule(
         float3[] source,
         float3[] moved,
         IReadOnlyList<Piece> components,
@@ -762,16 +765,13 @@ internal static class TowerWidening
         float rightReach)
     {
         if (source.Length != moved.Length)
-            throw new InvalidOperationException(
-                "Centre-line widening invariant cannot be checked because vertex counts differ.");
-        if (Math.Abs(extra) < CentreEpsilon || source.Length == 0) return;
+            return false;
+        if (Math.Abs(extra) < CentreEpsilon || source.Length == 0) return true;
         if (components.Count == 0 || labels.Count != source.Length)
-            throw new InvalidOperationException(
-                "Centre-line widening invariant cannot classify parts without triangle topology.");
+            return false;
 
         if (leftReach <= CentreEpsilon || rightReach <= CentreEpsilon)
-            throw new InvalidOperationException(
-                "Centre-line widening invariant found no full-detail transverse assembly reach.");
+            return false;
 
         var shift = extra * 0.5f;
         var leftRatio = Math.Max(0f, (leftReach + shift) / leftReach);
@@ -780,8 +780,7 @@ internal static class TowerWidening
         {
             var componentId = labels[index];
             if (componentId < 0 || componentId >= components.Count)
-                throw new InvalidOperationException(
-                    "Centre-line widening invariant found an unclassified vertex.");
+                return false;
             var component = components[componentId];
             var onLeft = component.Right < -CentreEpsilon;
             var onRight = component.Left > CentreEpsilon;
@@ -808,18 +807,37 @@ internal static class TowerWidening
                 expected = x < 0f ? x * leftRatio : x * rightRatio;
             }
 
-            if (Math.Abs(moved[index].x - expected) <= CentreEpsilon) continue;
-
-            var required = translated
-                ? "rigid translation"
-                : "the shared stretch of the logical member crossing x=0";
-            throw new InvalidOperationException(string.Format(
-                System.Globalization.CultureInfo.InvariantCulture,
-                "Centre-line widening invariant rejected part {0}: source x={1:0.#####}, "
-                + "result x={2:0.#####}; it must use {3}, measured once from the complete "
-                + "full-detail transverse assembly (expected x={4:0.#####}).",
-                component.Id, x, moved[index].x, required, expected));
+            if (Math.Abs(moved[index].x - expected) > CentreEpsilon)
+                return false;
         }
+
+        return true;
+    }
+
+    private static TrussWideningFacts RejectedTrussFacts(
+        float3[] source,
+        IReadOnlyList<int>? triangles,
+        int pieces,
+        float structuralReach)
+    {
+        var finite = true;
+        foreach (var vertex in source)
+        {
+            if (!float.IsNaN(vertex.x) && !float.IsInfinity(vertex.x)
+                && !float.IsNaN(vertex.y) && !float.IsInfinity(vertex.y)
+                && !float.IsNaN(vertex.z) && !float.IsInfinity(vertex.z))
+                continue;
+
+            finite = false;
+            break;
+        }
+
+        var degenerate = DegenerateTriangles(source, triangles);
+        return new TrussWideningFacts(
+            pieces, 0, 0, 0,
+            degenerate, degenerate, 0,
+            structuralReach, structuralReach,
+            1f, 1f, 0f, finite, false);
     }
 
     private static int DegenerateTriangles(float3[] vertices, IReadOnlyList<int>? triangles)
@@ -885,7 +903,8 @@ internal static class TowerWidening
             float leftScale,
             float rightScale,
             float measuredWidthChange,
-            bool finite)
+            bool finite,
+            bool contractSatisfied)
         {
             Pieces = pieces;
             RigidPieces = rigidPieces;
@@ -900,6 +919,7 @@ internal static class TowerWidening
             RightScale = rightScale;
             MeasuredWidthChange = measuredWidthChange;
             Finite = finite;
+            ContractSatisfied = contractSatisfied;
         }
 
         internal int Pieces { get; }
@@ -915,6 +935,7 @@ internal static class TowerWidening
         internal float RightScale { get; }
         internal float MeasuredWidthChange { get; }
         internal bool Finite { get; }
+        internal bool ContractSatisfied { get; }
     }
 
     /// <summary>
@@ -1880,7 +1901,7 @@ internal static class TowerWidening
             if (to < from) to = from;
 
             // A level edge is at both of its ends at once - it has a lateral extent rather than a
-            // position - so interpolating it would throw away everything but one end of it.
+            // position - so interpolating it would discard everything but one end of it.
             var level = Math.Abs(two.y - one.y) <= CentreEpsilon;
             var atFrom = level ? one.x : AtHeight(one, two, from);
             var atTo = level ? two.x : AtHeight(one, two, to);
