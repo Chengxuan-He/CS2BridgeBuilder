@@ -7,9 +7,9 @@ guessing.
 This file is the repository-wide `AGENTS.md`: every Agent working anywhere below this directory must
 read and obey it before changing the project.
 
-Rules 1 to 6 are about what the code must do. Rule 7 is about how a fault gets found, and it earned
-its place the same way the others did: the rounds it describes were spent because the method was
-reached for last instead of first.
+The numbered rules cover archetype fidelity, generated geometry, diagnosis, runtime safety and the
+branch workflow. Later rules have the same force as the original ones: each records a failure mode
+which must not be reintroduced.
 
 ## 1. Every generated bridge follows its archetype
 
@@ -475,6 +475,34 @@ translate a part which does, generation reports the rejected mapping and stops b
 written. Silently selecting a family-specific
 alternative is forbidden. A failed invariant is an error to diagnose against the archetype, never
 permission to emit the geometry.
+
+### Runtime contains no coordinate heuristics
+
+No bridge-generation decision may contain a fixed, non-zero coordinate. Comparisons of `x`, `y` or `z`
+with zero are valid runtime spatial tests with any comparison operator (`<`, `<=`, `>`, `>=`, `==`
+or `!=`); for the stretch-or-translate decision specifically, the `x = 0` axis remains the sole and
+highest-priority boundary. A test such as “translate this part when `x > 10 m`”,
+“this is a railing between `y = -0.5 m` and `y = 3 m`”, or the same test hidden behind a named constant,
+ratio, road-width fraction, bounding-box extent or family-specific fallback is forbidden. A small
+numeric tolerance may implement equality with an axis origin; it is not another boundary and may never
+be used to create a non-zero selection band.
+
+If identifying an authored part needs a non-zero coordinate, that identification belongs exclusively
+to the **metaprogramming step**. The metaprogram may inspect the archetype mesh, walk topology, slice
+height bands, compare bounds or use temporary non-zero thresholds. Its reviewed output is committed as
+immutable source data: the exact archetype and mesh/LOD identity plus the exact component coordinates or
+vertex membership which the runtime must transform. The threshold and the inference which produced the
+data do not enter the game assembly's generation path.
+
+Runtime code therefore hardcodes the metaprogram's result; it does not rediscover it. Runtime may look
+up a recorded part by archetype and mesh identity and apply the recorded transform to its recorded
+coordinates. It may not inspect bounds, nearest vertices, connected components, height bands, relative
+span, aspect ratio, mesh size or naming resemblance to guess which part it has. Missing or mismatched
+metadata is unsupported input to report, never permission to fall back to a geometric heuristic.
+
+Metaprogramming does not get a vote on rule 8. It records which logical authored parts touch or cross
+`x = 0`; those recorded parts stretch and every recorded side part translates. Its purpose is to move
+the expensive geometric identification out of the game runtime, not to introduce another criterion.
 
 The highest-detail archetype mesh makes this decision once for itself and for every level of detail.
 An LOD is a representation of those same authored parts, not another archetype and not another vote on
