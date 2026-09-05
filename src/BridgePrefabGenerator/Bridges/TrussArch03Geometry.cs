@@ -8,8 +8,8 @@ namespace BridgePrefabGenerator.Bridges;
 /// Applies the immutable output of the TrussArchBridge03 section metaprogram.
 ///
 /// Full detail is classified once from the shipped archetype. Every island wholly on one side of
-/// x=0, including the small deck-height wing fittings, translates rigidly. Only the one logical
-/// transverse assembly that crosses x=0 stretches. LOD1 and LOD2 inherit the full-detail decision by
+/// x=0, including the small deck-height wing fittings, translates rigidly. Every logical transverse
+/// assembly that crosses x=0 stretches. LOD1 and LOD2 inherit the full-detail decision by
 /// recorded vertex maps, so moving the camera cannot change the transform rule.
 ///
 /// A stored coefficient describes x' = x + coefficient * (extra / 2). Unmarked vertices use
