@@ -1956,12 +1956,14 @@ internal sealed class TowerFactory
                 {
                     _report.Note(string.Format(
                         CultureInfo.InvariantCulture,
-                        "{0}: applied TrussArchBridge01 section map v4. The below-deck base uses "
+                        "{0}: applied TrussArchBridge01 section map v5. The below-deck base uses "
                         + "x -> x + sign(x) * delta; side arches, side decorations and other "
                         + "non-centre islands translate rigidly; each "
                         + "centre-crossing top-truss assembly, including the near-detail diagonal "
                         + "brace halves and their 24 riveted side joints, "
-                        + "stretches by its own prototype span. Width change {1:0.###} m.",
+                        + "stretches by its own prototype span. LOD2 welded islands inherit one "
+                        + "coherent full-detail classification, preventing triangular tears at "
+                        + "the translated side arches. Width change {1:0.###} m.",
                         name, extra));
                 }
                 else if (openTruss)

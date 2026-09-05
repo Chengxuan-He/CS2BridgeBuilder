@@ -23,8 +23,8 @@ if (args.Length == 5 && string.Equals(args[0], "--section", StringComparison.Ord
     // cannot acquire a joint's stretch merely because it happens to be spatially nearest.
     var lodPrototypeCoefficients = SectionCoefficients.FromPrototype(full, false);
     var fullCoefficients = SectionCoefficients.FromPrototype(full, true);
-    var lod1Coefficients = SectionCoefficients.FromNearestPrototype(lod1, full, lodPrototypeCoefficients);
-    var lod2Coefficients = SectionCoefficients.FromNearestPrototype(lod2, full, lodPrototypeCoefficients);
+    var lod1Coefficients = SectionCoefficients.FromNearestPrototype(lod1, full, lodPrototypeCoefficients, false);
+    var lod2Coefficients = SectionCoefficients.FromNearestPrototype(lod2, full, lodPrototypeCoefficients, true);
     PortalCoefficients.Report("section full", fullCoefficients);
     PortalCoefficients.Report("section LOD1", lod1Coefficients);
     PortalCoefficients.Report("section LOD2", lod2Coefficients);
@@ -492,7 +492,10 @@ internal static class SectionCoefficients
     }
 
     internal static float[] FromNearestPrototype(
-        MeshData mesh, MeshData prototype, IReadOnlyList<float> prototypeCoefficients)
+        MeshData mesh,
+        MeshData prototype,
+        IReadOnlyList<float> prototypeCoefficients,
+        bool reconcileWeldedPieces)
     {
         var tree = new PositionTree(prototype.Positions);
         var result = new float[mesh.Positions.Length];
@@ -520,7 +523,63 @@ internal static class SectionCoefficients
         Console.WriteLine(
             $"section LOD nearest full-detail vertex: average {total / mesh.Positions.Length:0.0000} m, "
             + $"maximum {maximum:0.0000} m");
+        if (reconcileWeldedPieces) ReconcileWeldedPieces(mesh, result);
         return result;
+    }
+
+    private static void ReconcileWeldedPieces(MeshData mesh, float[] coefficients)
+    {
+        var labels = Pieces.LabelsOf(mesh.Positions, mesh.Indices);
+        var pieces = Pieces.Of(mesh.Positions, mesh.Indices);
+        var verticesByPiece = Enumerable.Range(0, labels.Length)
+            .GroupBy(index => labels[index])
+            .ToDictionary(group => group.Key, group => group.ToArray());
+        var madeRigid = 0;
+        var madeSpanning = 0;
+        foreach (var piece in pieces)
+        {
+            var vertices = verticesByPiece[piece.Id];
+            var rigidVotes = vertices.Count(index =>
+                Math.Abs(Math.Abs(coefficients[index]) - 1f) <= Epsilon);
+            var spanningVotes = vertices.Length - rigidVotes;
+            if (rigidVotes == 0 || spanningVotes == 0) continue;
+
+            // LOD2 welds authored surfaces which are separate in the full-detail archetype. Nearest
+            // vertex inheritance can consequently give different transforms to vertices in one
+            // triangle. The full-detail map still makes the classification: its votes decide whether
+            // this coarse island represents rigid side material or a spanning member. LOD topology
+            // only supplies that representation's own endpoint, so a spanning island continues to
+            // meet the side material after both have moved by the same half-width delta.
+            if (rigidVotes > spanningVotes)
+            {
+                foreach (var index in vertices)
+                {
+                    var x = mesh.Positions[index].X;
+                    coefficients[index] = x > 0f ? 1f : x < 0f ? -1f : 0f;
+                }
+                madeRigid++;
+                continue;
+            }
+
+            if (piece.Left <= Epsilon && piece.Right >= -Epsilon)
+            {
+                var leftReach = Math.Max(0f, -piece.Left);
+                var rightReach = Math.Max(0f, piece.Right);
+                foreach (var index in vertices)
+                {
+                    var x = mesh.Positions[index].X;
+                    coefficients[index] = x < 0f && leftReach > Epsilon
+                        ? x / leftReach
+                        : x > 0f && rightReach > Epsilon
+                            ? x / rightReach
+                            : 0f;
+                }
+                madeSpanning++;
+            }
+        }
+        Console.WriteLine(
+            $"section LOD welded reconciliation: {madeRigid} inherited side island(s) made rigid, "
+            + $"{madeSpanning} inherited centre-crossing island(s) made spanning");
     }
 
     internal static void WriteSource(
