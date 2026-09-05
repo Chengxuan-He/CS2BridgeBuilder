@@ -192,6 +192,11 @@ internal sealed class BridgeComposer
             extra = BridgeTowers.StructureExtraFor(style.Id, extra);
         }
 
+        // Reuse this exact displacement for separately authored pieces of the same structure. This
+        // only passes through the value already selected above; TowerFactory must not derive a second
+        // width and accidentally apply a different delta to TrussArchBridge03's below-deck base.
+        _towers?.UseStructureExtra(extra);
+
         ReportSpread(targetWidth, targetWidth - extra);
 
         // What the road puts at each edge, which is where the archetype's inner railing stands and

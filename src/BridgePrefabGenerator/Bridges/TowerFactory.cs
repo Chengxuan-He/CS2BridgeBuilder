@@ -227,6 +227,20 @@ internal sealed class TowerFactory
     /// <summary>The style being built, for the corrections that are recorded per style.</summary>
     private string? _styleId;
 
+    /// <summary>
+    /// The effective structure displacement already selected by <see cref="BridgeComposer"/> for the
+    /// bridge in hand. This is not another width calculation: it is the exact value already applied
+    /// to the archetype's overhead structure and node-bound pieces.
+    ///
+    /// TrussArchBridge03's below-deck base is a separately authored tower mesh, but belongs to that
+    /// same structure. Recomputing its displacement from the tower selection lost half of the
+    /// existing delta when no recorded tower candidate was selected. The base therefore consumes
+    /// this value directly and applies only its recorded x + sign(x) * delta vertex mapping.
+    /// </summary>
+    private float? _bridgeStructureExtra;
+
+    internal void UseStructureExtra(float extra) => _bridgeStructureExtra = extra;
+
     /// <summary>The outermost edge any of a section's pieces reaches, counting where each piece sits.</summary>
     private static float OuterOf(IEnumerable<NetPieceInfo> pieces)
     {
@@ -299,6 +313,7 @@ internal sealed class TowerFactory
         _cableOuter = 0f;
         _cableName = null;
         _towerKey = null;
+        _bridgeStructureExtra = null;
 
         // Set here and not only where a tower is created. The sections are widened first - the cables
         // and the railings that live beside them - so anything that asks which style is being built
@@ -1176,11 +1191,17 @@ internal sealed class TowerFactory
                 var info = parts[partIndex];
                 var rigidBelowDeckBase = BridgeTowers.IsRigidBelowDeckBase(
                     _styleId, source.name, partIndex);
+                // The TrussArchBridge03 base uses the already selected bridge-structure displacement.
+                // Do not recalculate a width here: apply that existing value to the immutable
+                // archetype vertices as x -> x + sign(x) * (partExtra / 2).
+                var partExtra = rigidBelowDeckBase && _bridgeStructureExtra.HasValue
+                    ? _bridgeStructureExtra.Value
+                    : extra;
                 var widened = Widen(
                     (RenderPrefab)info.m_Mesh!,
                     name,
                     partIndex,
-                    extra,
+                    partExtra,
                     rigidBelowDeckBase);
                 if (widened == null) continue;
 
@@ -1189,7 +1210,7 @@ internal sealed class TowerFactory
                 var position = info.m_Position;
                 if (Math.Abs(position.x) > 0.001f)
                 {
-                    position.x += position.x > 0f ? extra * 0.5f : -extra * 0.5f;
+                    position.x += position.x > 0f ? partExtra * 0.5f : -partExtra * 0.5f;
                 }
 
                 meshes.Add(new ObjectMeshInfo
