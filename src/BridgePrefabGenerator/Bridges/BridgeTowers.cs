@@ -439,10 +439,10 @@ internal static class BridgeTowers
             // green TrussArchBridge03 prototype and every other bridge family unchanged.
             ["TrussArch01"] = 12f,
 
-            // TrussArchBridge03 needs another 16 m of structural width beyond the target-minus-
+            // TrussArchBridge03 needs another 12 m of structural width beyond the target-minus-
             // prototype-road calculation. The green side frame includes its inner railing, so its
-            // dedicated open-truss policy carries each side by 8 m without altering that clearance.
-            ["TrussArch03"] = 16f,
+            // dedicated open-truss policy carries each side by 6 m without altering that clearance.
+            ["TrussArch03"] = 12f,
 
             // The double-deck V prototype's structure needs 20 m more than its upper carriageway
             // alone accounts for. On a 16 m target the raw 16 - 40 = -24 m contraction carried the
@@ -493,4 +493,16 @@ internal static class BridgeTowers
     /// </summary>
     internal static float StructureExtraFor(string? styleId, float roadExtra) =>
         roadExtra + BonusFor(styleId);
+
+    /// <summary>
+    /// Full-width relationship measured from the installed TrussArchBridge03 prototype.
+    ///
+    /// The overhead arch reaches from -7.046941 m to +7.046941 m. The outer pier footing reaches
+    /// from -9.203892 m to +9.203892 m. Both generated structures receive the same full-width delta,
+    /// so their difference remains the prototype's 4.313902 m at every target width.
+    /// </summary>
+    internal const float TrussArch03PrototypeArchWidth = 14.093882f;
+    internal const float TrussArch03PrototypePierWidth = 18.407784f;
+    internal const float TrussArch03PierMinusArch =
+        TrussArch03PrototypePierWidth - TrussArch03PrototypeArchWidth;
 }

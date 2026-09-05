@@ -227,6 +227,26 @@ internal sealed class TowerFactory
     /// <summary>The style being built, for the corrections that are recorded per style.</summary>
     private string? _styleId;
 
+    /// <summary>
+    /// The exact full-width delta already applied to TrussArch03's overhead arch for this bridge.
+    /// Its pier must take this same delta: adding one number to both prototype widths preserves the
+    /// measured prototype invariant without identifying parts from their geometry at runtime.
+    /// </summary>
+    private float? _trussArch03StructureExtra;
+
+    /// <summary>
+    /// Records the composer's final structural delta. Only TrussArch03 consumes it, because its sole
+    /// object is deliberately classified as a support and therefore is not selected as a portal;
+    /// recomputing from the selected tower would use the target road as the prototype datum.
+    /// </summary>
+    internal void MeasureStructureExtra(float extra)
+    {
+        if (string.Equals(_styleId, "TrussArch03", StringComparison.Ordinal))
+        {
+            _trussArch03StructureExtra = extra;
+        }
+    }
+
     /// <summary>The outermost edge any of a section's pieces reaches, counting where each piece sits.</summary>
     private static float OuterOf(IEnumerable<NetPieceInfo> pieces)
     {
@@ -299,6 +319,7 @@ internal sealed class TowerFactory
         _cableOuter = 0f;
         _cableName = null;
         _towerKey = null;
+        _trussArch03StructureExtra = null;
         // Set here and not only where a tower is created. The sections are widened first - the cables
         // and the railings that live beside them - so anything that asks which style is being built
         // while that happens was asking a null. The inner railing rule did, and did nothing, silently.
@@ -330,6 +351,24 @@ internal sealed class TowerFactory
     /// </summary>
     private float ExtraFor(ObjectMeshInfo[] parts, float authored, float deckWidth, string name)
     {
+        // TrussArch03's object is a support rather than a portal, so it is intentionally absent from
+        // tower selection. The generic fallback consequently has no selected prototype-road datum.
+        // Use the exact delta already applied to its arch: prototype pier + delta minus prototype arch
+        // + delta is always the prototype's measured 4.313902 m difference.
+        if (string.Equals(_styleId, "TrussArch03", StringComparison.Ordinal)
+            && _trussArch03StructureExtra.HasValue)
+        {
+            var extra = _trussArch03StructureExtra.Value;
+            var archWidth = BridgeTowers.TrussArch03PrototypeArchWidth + extra;
+            var pierWidth = BridgeTowers.TrussArch03PrototypePierWidth + extra;
+            _report.Note(string.Format(
+                CultureInfo.InvariantCulture,
+                "{0}: TrussArch03 pier takes the arch's exact {1:0.###} m width delta: pier "
+                + "{2:0.######} m minus arch {3:0.######} m = prototype {4:0.######} m.",
+                name, extra, pierWidth, archWidth, BridgeTowers.TrussArch03PierMinusArch));
+            return extra;
+        }
+
         // The style's own tower correction, added to the tower and not to the cables - see
         // BridgeTowers.BonusFor.
         var byRoad = BridgeTowers.StructureExtraFor(_styleId, deckWidth - authored);

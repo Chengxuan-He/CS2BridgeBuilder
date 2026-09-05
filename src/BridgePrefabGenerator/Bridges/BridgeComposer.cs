@@ -201,6 +201,7 @@ internal sealed class BridgeComposer
         {
             var roadEdges = RoadEdgesOf(measuredRoad, targetWidth);
             _towers.MeasureFootways(roadEdges.Left, roadEdges.Right);
+            _towers.MeasureStructureExtra(extra);
         }
 
         CopyOverhead(target, variant, extra);
