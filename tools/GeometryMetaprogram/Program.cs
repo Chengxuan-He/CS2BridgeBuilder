@@ -556,10 +556,28 @@ internal static class SectionCoefficients
                 continue;
             }
 
-            // Every welded island in one logical transverse truss uses the same prototype span.
-            // Giving each riveted style its own denominator tears the connector assembly at every
-            // island boundary. The outermost riveted edge defines the truss end and therefore moves
-            // by the same complete half-width delta as the translated side arch it meets.
+            if (rivetedSideCandidates[piece.Id])
+            {
+                // A riveted side joint bridges two different mappings. Its inner edge belongs to
+                // the centre-crossing brace and must retain that brace's group coefficient; its
+                // outer edge meets a rigidly translated side member and must receive the complete
+                // +/-1 coefficient. Interpolate between those two measured prototype edges. Scaling
+                // the joint only by the group left its outer edge behind; scaling it about x=0 by
+                // its own reach pulled its inner edge away from the brace.
+                var inner = Math.Min(Math.Abs(piece.Left), Math.Abs(piece.Right));
+                var outer = Math.Max(Math.Abs(piece.Left), Math.Abs(piece.Right));
+                var reach = point.X < 0f ? leftReach[groupIndex] : rightReach[groupIndex];
+                var direction = point.X < 0f ? -1f : point.X > 0f ? 1f : 0f;
+                var innerCoefficient = reach > Epsilon ? inner / reach : 0f;
+                var progress = outer - inner > Epsilon
+                    ? Math.Clamp((Math.Abs(point.X) - inner) / (outer - inner), 0f, 1f)
+                    : 1f;
+                result[index] = direction * (innerCoefficient + (1f - innerCoefficient) * progress);
+                continue;
+            }
+
+            // Every other welded island in one logical transverse truss uses the same prototype
+            // span, so the brace and crossbeam remain one continuous assembly.
             result[index] = point.X < 0f && leftReach[groupIndex] > Epsilon
                 ? point.X / leftReach[groupIndex]
                 : point.X > 0f && rightReach[groupIndex] > Epsilon
@@ -580,10 +598,27 @@ internal static class SectionCoefficients
                     - Math.Max(Math.Abs(piece.Left), Math.Abs(piece.Right))) <= Epsilon)
                 .Select(index => Math.Abs(result[index])))
             .ToArray();
+        var jointInnerErrors = pieces
+            .Where(piece => rivetedSideCandidates[piece.Id] && groupForPiece[piece.Id] >= 0)
+            .SelectMany(piece => Enumerable.Range(0, mesh.Positions.Length)
+                .Where(index => labels[index] == piece.Id)
+                .Where(index => Math.Abs(
+                    Math.Abs(mesh.Positions[index].X)
+                    - Math.Min(Math.Abs(piece.Left), Math.Abs(piece.Right))) <= Epsilon)
+                .Select(index =>
+                {
+                    var point = mesh.Positions[index];
+                    var groupIndex = groupForPiece[piece.Id];
+                    var reach = point.X < 0f ? leftReach[groupIndex] : rightReach[groupIndex];
+                    var expected = reach > Epsilon ? point.X / reach : 0f;
+                    return Math.Abs(result[index] - expected);
+                }))
+            .ToArray();
         Console.WriteLine(
             $"section prototype: {rivetedSideCandidates.Count(value => value) - ungroupedRivetedJoints.Length} "
             + "stretching riveted side-joint island(s), outer-edge coefficient "
-            + $"{jointOuterCoefficients.Min():0.0000}..{jointOuterCoefficients.Max():0.0000}");
+            + $"{jointOuterCoefficients.Min():0.0000}..{jointOuterCoefficients.Max():0.0000}, "
+            + $"maximum inner-edge brace mismatch {jointInnerErrors.Max():0.000000}");
         return result;
     }
 
