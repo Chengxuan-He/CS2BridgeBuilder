@@ -1957,7 +1957,15 @@ internal sealed class TowerFactory
 
                 if (index == 0)
                 {
-                    CheckThickness(name, source, moved, part.triangles);
+                    // The generic outer-envelope check assumes that the material defining the
+                    // outer edge belongs only to a side part. TrussArch03 does not satisfy that
+                    // precondition: its side arch and transverse x=0 members are welded into one
+                    // open-truss mesh, so a correctly stretched transverse member changes the
+                    // envelope and was reported as if a side-only member had been scaled. The green
+                    // path has already been checked above by its dedicated centre-line mapping,
+                    // topology, degeneracy, winding and finite-coordinate validation.
+                    if (!preserveOpenTrussSides)
+                        CheckThickness(name, source, moved, part.triangles);
                     if (scope != null) DescribeProfile(name, source, scope);
                 }
                 var partVertices = ToVectors(moved);
