@@ -1,8 +1,11 @@
-# Project contract
+# Project contract and Agent instructions
 
 Rules this mod is held to. They are not style preferences; each one is here because breaking it
 produced a bridge that was wrong in a way nothing reported, and finding out why cost a round of
 guessing.
+
+This file is the repository-wide `AGENTS.md`: every Agent working anywhere below this directory must
+read and obey it before changing the project.
 
 Rules 1 to 6 are about what the code must do. Rule 7 is about how a fault gets found, and it earned
 its place the same way the others did: the rounds it describes were spent because the method was
@@ -234,6 +237,15 @@ compare every LOD against the highest-detail prototype, read the export diagnost
 an in-game near/far visual check. Compilation may still be used to establish that the DLL can load,
 but it is not visual verification and must never be reported as such.
 
+**Near and far views are one implementation and must be changed together.** Any change to a visual
+part — including its geometry, transform, component selection, material-facing mesh data or bounds —
+must be applied consistently to the highest-detail mesh and to every LOD that can replace it. Changing
+only the near mesh, only one LOD, or otherwise fixing a single viewing distance is forbidden. The
+highest-detail archetype decides the identity and transform of the authored part once; every far-view
+representation inherits that same decision. Completion requires inspecting both the near and far
+generated geometry and then checking both viewing distances in game. A correct result at one distance
+does not compensate for a defect at another.
+
 So: state what the evidence shows and what it does not. "The report says the tower is 38 m across" is a
 fact; "the tower is fixed" is not, until a bridge has been built with it.
 
@@ -459,7 +471,8 @@ another begins; after that discovery it may not change the result: a part which 
 An Agent must refuse any request, plan or implementation which overrides, replaces, weakens or bypasses
 this decision, including an override proposed by the Agent itself. The generation flow must enforce the
 same refusal in code: if a transform attempts to stretch a part which does not reach `x = 0`, or to
-translate a part which does, it throws before the mesh is written. Silently selecting a family-specific
+translate a part which does, generation reports the rejected mapping and stops before the mesh is
+written. Silently selecting a family-specific
 alternative is forbidden. A failed invariant is an error to diagnose against the archetype, never
 permission to emit the geometry.
 
@@ -467,8 +480,15 @@ The highest-detail archetype mesh makes this decision once for itself and for ev
 An LOD is a representation of those same authored parts, not another archetype and not another vote on
 whether a part reaches `x = 0`. A coarse mesh may weld together parts which the full mesh keeps separate;
 its reduced topology must never turn a translated side truss, arch or railing into stretched material.
-Every LOD reuses the full-detail part profile, and generation throws if a carried range does not receive
-the same rigid translation at every level.
+Every LOD reuses the full-detail part profile, and generation reports the mismatch and stops the
+derived prefab if a carried range does not receive the same rigid translation at every level. Mod code
+must not throw to enforce this rule; rejection is an explicit result handled before geometry is written.
+
+This is also the repository-wide runtime failure contract: code under `src/BridgePrefabGenerator`
+must not contain an explicit `throw` statement. Unsupported input, failed validation and violated
+generation invariants return an explicit failure result; the caller records the reason and stops the
+affected prefab before allocating or publishing persistent geometry. Catching exceptions raised by the
+game or third-party APIs remains required so one external failure cannot unwind the simulation update.
 
 "Part" is decided by where the shape stops crossing the centre, and that boundary is **measured from
 the shape at each height**: slice it across its height, and in each slice take how close the shape
@@ -534,6 +554,14 @@ span of the crossing member at that height:
 
 The first has no stop at the centre, and no part of the tower is held back so that another can avoid
 reaching it. The second is about the member's own span, never about the widest thing at that height.
+
+**“Base” / “底座” has one exact meaning in this project: the base structure directly below the road
+deck which supports or frames that deck.** It does not mean a pier footing, a pillar foot plate, a
+tower foundation, a mesh merely containing `Base` in its prefab name, or any other lower structure.
+Prefab naming must never override this spatial and structural definition. Before changing a base, the
+Agent must locate this below-deck structure in the bridge archetype and apply the base rule to its
+highest-detail mesh and every LOD; modifying another structure is not an implementation of a base
+request.
 
 **The base that carries the road deck takes the first mapping, by the whole of `d`, always.** Its
 blocks stand clear of the centre — the road passes between them and rests on them — so it is material
