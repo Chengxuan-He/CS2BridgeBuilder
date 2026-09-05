@@ -423,13 +423,13 @@ internal static class SectionCoefficients
                 // envelope as the denominator moved the top truss by only 84.16% of the arch delta.
                 // Its own denominator preserves D - arch width from the archetype at every output
                 // width. The exact coefficients emitted below are the only data used at runtime.
-                var leftReach = Math.Max(0f, -piece.Left);
-                var rightReach = Math.Max(0f, piece.Right);
-                result[index] = point.X < 0f && leftReach > Epsilon
-                    ? point.X / leftReach
-                    : point.X > 0f && rightReach > Epsilon
-                        ? point.X / rightReach
-                        : 0f;
+                // One authored crossing member has one span s. Some diagonal braces overlap the
+                // centre plate slightly, so their imported island is asymmetric (for example
+                // -0.2739..5.8595 m). Treating each side as a separate span moved that 0.2739 m
+                // overlap by the complete half-width delta and turned its triangles into a large
+                // sheet. Use the member's actual outer reach on both sides: x' = x * (s + d) / s.
+                var reach = Math.Max(Math.Max(0f, -piece.Left), Math.Max(0f, piece.Right));
+                result[index] = reach > Epsilon ? point.X / reach : 0f;
                 continue;
             }
 
@@ -521,16 +521,14 @@ internal static class SectionCoefficients
 
             if (piece.Left <= Epsilon && piece.Right >= -Epsilon)
             {
-                var leftReach = Math.Max(0f, -piece.Left);
-                var rightReach = Math.Max(0f, piece.Right);
+                // Keep the LOD representation on the same one-span mapping as the full-detail
+                // authored member. A diagonal which only overlaps the centre plate by a short
+                // distance must not move that overlap by the complete half-width delta.
+                var reach = Math.Max(Math.Max(0f, -piece.Left), Math.Max(0f, piece.Right));
                 foreach (var index in vertices)
                 {
                     var x = mesh.Positions[index].X;
-                    coefficients[index] = x < 0f && leftReach > Epsilon
-                        ? x / leftReach
-                        : x > 0f && rightReach > Epsilon
-                            ? x / rightReach
-                            : 0f;
+                    coefficients[index] = reach > Epsilon ? x / reach : 0f;
                 }
                 Console.WriteLine(
                     $"section LOD welded island {piece.Id}: x {piece.Left:0.0000}..{piece.Right:0.0000}, "
