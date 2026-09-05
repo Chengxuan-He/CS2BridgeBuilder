@@ -227,20 +227,6 @@ internal sealed class TowerFactory
     /// <summary>The style being built, for the corrections that are recorded per style.</summary>
     private string? _styleId;
 
-    /// <summary>
-    /// The effective structure displacement already selected by <see cref="BridgeComposer"/> for the
-    /// bridge in hand. This is not another width calculation: it is the exact value already applied
-    /// to the archetype's overhead structure and node-bound pieces.
-    ///
-    /// TrussArchBridge03's below-deck base is a separately authored tower mesh, but belongs to that
-    /// same structure. Recomputing its displacement from the tower selection lost half of the
-    /// existing delta when no recorded tower candidate was selected. The base therefore consumes
-    /// this value directly and applies only its recorded x + sign(x) * delta vertex mapping.
-    /// </summary>
-    private float? _bridgeStructureExtra;
-
-    internal void UseStructureExtra(float extra) => _bridgeStructureExtra = extra;
-
     /// <summary>The outermost edge any of a section's pieces reaches, counting where each piece sits.</summary>
     private static float OuterOf(IEnumerable<NetPieceInfo> pieces)
     {
@@ -313,8 +299,6 @@ internal sealed class TowerFactory
         _cableOuter = 0f;
         _cableName = null;
         _towerKey = null;
-        _bridgeStructureExtra = null;
-
         // Set here and not only where a tower is created. The sections are widened first - the cables
         // and the railings that live beside them - so anything that asks which style is being built
         // while that happens was asking a null. The inner railing rule did, and did nothing, silently.
@@ -573,7 +557,7 @@ internal sealed class TowerFactory
     /// </summary>
     private void DeriveLods(
         PrefabBase widened, string name, float extra, TowerWidening.Profile? profile, float partSpan,
-        bool railings = false, bool rigidBelowDeckBase = false)
+        bool railings = false)
     {
         var lods = widened.GetComponent<LodProperties>();
         var meshes = lods?.m_LodMeshes;
@@ -593,8 +577,7 @@ internal sealed class TowerFactory
                 string.Format(CultureInfo.InvariantCulture, "{0} LOD{1}", name, index + 1),
                 extra,
                 profile,
-                railings,
-                rigidBelowDeckBase);
+                railings);
 
             if (copy == null) continue;
 
@@ -1189,20 +1172,11 @@ internal sealed class TowerFactory
             for (var partIndex = 0; partIndex < parts.Length; partIndex++)
             {
                 var info = parts[partIndex];
-                var rigidBelowDeckBase = BridgeTowers.IsRigidBelowDeckBase(
-                    _styleId, source.name, partIndex);
-                // The TrussArchBridge03 base uses the already selected bridge-structure displacement.
-                // Do not recalculate a width here: apply that existing value to the immutable
-                // archetype vertices as x -> x + sign(x) * (partExtra / 2).
-                var partExtra = rigidBelowDeckBase && _bridgeStructureExtra.HasValue
-                    ? _bridgeStructureExtra.Value
-                    : extra;
                 var widened = Widen(
                     (RenderPrefab)info.m_Mesh!,
                     name,
                     partIndex,
-                    partExtra,
-                    rigidBelowDeckBase);
+                    extra);
                 if (widened == null) continue;
 
                 // The part keeps where it sat, carried outward by the same shift as its vertices.
@@ -1210,7 +1184,7 @@ internal sealed class TowerFactory
                 var position = info.m_Position;
                 if (Math.Abs(position.x) > 0.001f)
                 {
-                    position.x += position.x > 0f ? partExtra * 0.5f : -partExtra * 0.5f;
+                    position.x += position.x > 0f ? extra * 0.5f : -extra * 0.5f;
                 }
 
                 meshes.Add(new ObjectMeshInfo
@@ -1767,16 +1741,14 @@ internal sealed class TowerFactory
         RenderPrefab original,
         string towerName,
         int index,
-        float extra,
-        bool rigidBelowDeckBase = false)
+        float extra)
     {
         var name = index == 0 ? towerName + " Mesh" : towerName + " Mesh " + index;
         return Widen(
             original,
             ScriptableObject.CreateInstance<RenderPrefab>(),
             name,
-            extra,
-            rigidBelowDeckBase: rigidBelowDeckBase);
+            extra);
     }
 
     /// <summary>
@@ -1789,8 +1761,7 @@ internal sealed class TowerFactory
     /// </summary>
     private T? Widen<T>(
         RenderPrefab original, T widened, string name, float extra,
-        TowerWidening.Profile? profile = null, bool railings = false,
-        bool rigidBelowDeckBase = false)
+        TowerWidening.Profile? profile = null, bool railings = false)
         where T : RenderPrefab
     {
         Mesh[]? loaded = null;
@@ -1815,9 +1786,6 @@ internal sealed class TowerFactory
             // and letting each answer for itself is how a leg came to be carried at full detail and
             // scaled at distance, which read as the bridge changing width as the camera pulled back.
             //
-            // The recorded TrussArchBridge03 base is deliberately excluded. Its identity and mapping
-            // are metaprogram output, so runtime neither builds a profile nor asks its geometry which
-            // rule to use: every representation takes the exact x + sign(x) * delta mapping below.
             var shapes = new List<float3[]>();
             var outlines = new List<IReadOnlyList<int>?>();
             foreach (var part in loaded)
@@ -1825,7 +1793,7 @@ internal sealed class TowerFactory
                 if (part == null) continue;
 
                 shapes.Add(ToPoints(part.vertices));
-                if (!rigidBelowDeckBase) outlines.Add(part.triangles);
+                outlines.Add(part.triangles);
             }
 
             // The levels of detail are named by a component and live in prefabs of their own, so they
@@ -1834,7 +1802,7 @@ internal sealed class TowerFactory
             // the places that scope called carried, and it was scaled where the fine one was carried -
             // 7.899 m against 8, which is the bridge changing width as the camera pulls back.
             var lodMeshes = new List<RenderPrefab>();
-            if (profile == null && !rigidBelowDeckBase)
+            if (profile == null)
             {
                 foreach (var lod in original.GetComponent<LodProperties>()?.m_LodMeshes
                     ?? Array.Empty<RenderPrefab>())
@@ -1860,9 +1828,7 @@ internal sealed class TowerFactory
                 }
             }
 
-            var scope = rigidBelowDeckBase
-                ? null
-                : profile ?? TowerWidening.Profile.Of(shapes, outlines);
+            var scope = profile ?? TowerWidening.Profile.Of(shapes, outlines);
 
             foreach (var lod in lodMeshes)
             {
@@ -1885,15 +1851,13 @@ internal sealed class TowerFactory
                 var preserveOpenTrussSides =
                     BridgeStyleDefinitions.PreservesOpenTrussSideAssembly(_styleId);
                 TowerWidening.TrussWideningFacts trussFacts = default;
-                var moved = rigidBelowDeckBase
-                    ? TowerWidening.Widen(source, extra)
-                    : openTruss
-                        ? TowerWidening.WidenOpenTruss(
-                            source, part.triangles, extra,
-                            preserveOpenTrussSides,
-                            scope!,
-                            out trussFacts)
-                        : TowerWidening.WidenParts(source, extra, scope!);
+                var moved = openTruss
+                    ? TowerWidening.WidenOpenTruss(
+                        source, part.triangles, extra,
+                        preserveOpenTrussSides,
+                        scope!,
+                        out trussFacts)
+                    : TowerWidening.WidenParts(source, extra, scope!);
                 if (openTruss && !trussFacts.ContractSatisfied)
                 {
                     _report.Defect(string.Format(
@@ -1903,14 +1867,34 @@ internal sealed class TowerFactory
                         name));
                     return null;
                 }
-                if (rigidBelowDeckBase)
+                if (railings && TrussArch03BaseGeometry.IsRecorded(_styleId, original.name))
                 {
+                    if (!TrussArch03BaseGeometry.TryApply(
+                            original.name,
+                            source,
+                            moved,
+                            extra * 0.5f,
+                            out var baseMoved,
+                            out var baseVertices,
+                            out var baseError))
+                    {
+                        _report.Defect(string.Format(
+                            CultureInfo.InvariantCulture,
+                            "'{0}' did not apply its recorded TrussArchBridge03 deck-base transform: {1}. "
+                            + "The derived prefab was stopped before geometry was written.",
+                            name,
+                            baseError));
+                        return null;
+                    }
+
+                    moved = baseMoved;
                     _report.Note(string.Format(
                         CultureInfo.InvariantCulture,
-                        "{0}: recorded TrussArchBridge03 below-deck base mapping applied: "
-                        + "x -> x + sign(x) * {1:0.###} m; y and z unchanged. This mesh and every "
-                        + "LOD use the same hardcoded archetype-part identity.",
+                        "{0}: {1} metaprogram-recorded deck-base vertices use "
+                        + "x -> x + sign(x) * {2:0.###} m; y and z remain those of the archetype. "
+                        + "The pier and its columns are not part of this map.",
                         name,
+                        baseVertices,
                         extra * 0.5f));
                 }
                 if (openTruss)
@@ -2056,8 +2040,7 @@ internal sealed class TowerFactory
             DeriveLods(
                 widened, name, extra, scope,
                 shapes.Count > 0 ? TowerWidening.WidthOf(shapes[0]) : 0f,
-                railings,
-                rigidBelowDeckBase);
+                railings);
 
             widened.geometryAsset = asset;
 
