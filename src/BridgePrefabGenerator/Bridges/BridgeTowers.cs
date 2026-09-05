@@ -278,6 +278,24 @@ internal static class BridgeTowers
         return Table.TryGetValue(styleId, out var towers) ? towers : Array.Empty<Tower>();
     }
 
+    /// <summary>
+    /// Whether this is the bridge-deck base recorded from the named tower archetype.
+    ///
+    /// The TrussArchBridge03 audit records two readable mesh entries. Entry 1 (zero-based) is the
+    /// TrussArchBridge03NetPillarBase structure directly below the road deck; its own LodProperties
+    /// names the same authored part at lower detail. This identity is metaprogram output. Runtime
+    /// code must use it directly and must not rediscover the base from bounds, coordinates, material
+    /// names or mesh topology.
+    /// </summary>
+    internal static bool IsRigidBelowDeckBase(
+        string? styleId, string? archetypeTowerName, int archetypePartIndex) =>
+        string.Equals(styleId, "TrussArch03", StringComparison.Ordinal)
+        && string.Equals(
+            archetypeTowerName,
+            "TrussArchBridge03NetPillar",
+            StringComparison.Ordinal)
+        && archetypePartIndex == 1;
+
     /// <summary>A road within this of a tower's own width is that tower's width.</summary>
     internal const float CoverTolerance = 0.05f;
 
