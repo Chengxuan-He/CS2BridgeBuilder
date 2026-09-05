@@ -769,3 +769,20 @@ This is a hard workflow invariant:
 Working-tree state is part of the check. If uncommitted changes from another bridge would cross the
 branch boundary, the agent must stop rather than carrying those changes into the current bridge's
 branch. Switching branches after making the edit does not make the edit compliant.
+
+## 13. Every code update stops the game and removes generated bridges
+
+After every source-code update, the Agent must invoke a kill command for the exact `Cities2.exe`
+process. This command is mandatory even when the process is not observed running; a no-op result is
+acceptable, omitting the command is not. The Agent must then verify that no `Cities2.exe` process
+remains before touching installed mod files or generated game assets.
+
+With the game stopped, the Agent must remove **all bridges created by this mod**. This includes every
+mod-owned generated bridge prefab, derived tower, piece and LOD prefab, generated geometry asset and
+the export state which can recreate references to them. Use the repository cleanup procedure and
+verify its ownership-scoped targets are absent afterward. A bridge may not be retained because its
+input road, style or generated name appears unchanged.
+
+Killing the game and removing generated bridges are post-update requirements, not optional visual
+verification steps. Building or installing a DLL does not satisfy them, and neither requirement may
+be postponed until a later session.
