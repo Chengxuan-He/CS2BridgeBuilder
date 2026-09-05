@@ -1956,8 +1956,9 @@ internal sealed class TowerFactory
                 {
                     _report.Note(string.Format(
                         CultureInfo.InvariantCulture,
-                        "{0}: applied the exact TrussArchBridge01 section map. Side arches, side "
-                        + "decorations and other non-centre islands translate rigidly; each "
+                        "{0}: applied TrussArchBridge01 section map v2. The below-deck base uses "
+                        + "x -> x + sign(x) * delta; side arches, side decorations and other "
+                        + "non-centre islands translate rigidly; each "
                         + "centre-crossing top-truss assembly, including its diagonal braces, "
                         + "stretches by its own prototype span. Width change {1:0.###} m.",
                         name, extra));

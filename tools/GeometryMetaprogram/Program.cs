@@ -354,12 +354,18 @@ internal static class SectionCoefficients
         }
 
         var seeds = pieces.Select(CrossesCentre).ToArray();
+        // The deck-base assembly is the material below y=0 in the shipped TrussArchBridge01Net
+        // prototype. It has an explicit bridge contract: x' = x + sign(x) * delta. It is therefore
+        // not eligible to seed or join a transverse top-truss assembly. This is an offline prototype
+        // classification; only the resulting exact vertex coefficients enter the runtime assembly.
+        var rigidBase = pieces.Select(piece => CrossesCentre(piece) && piece.Low < 0f).ToArray();
         // Only a laterally led island can join other islands into one transverse member. A
         // longitudinal deck strip may itself cross x=0, but using it as a connector merges every
         // floor beam along the 128 m span into one false part and gives all of them the end portal's
         // denominator. Such a crossing strip is retained below as its own logical part.
-        var candidates = pieces.Select(piece =>
-            IsTransverse(piece) || (CrossesCentre(piece) && !IsLongitudinal(piece))).ToArray();
+        var candidates = pieces.Select((piece, index) =>
+            !rigidBase[index]
+            && (IsTransverse(piece) || (CrossesCentre(piece) && !IsLongitudinal(piece)))).ToArray();
         for (var one = 0; one < pieces.Length; one++)
         {
             if (!candidates[one]) continue;
@@ -377,7 +383,7 @@ internal static class SectionCoefficients
             .Select(group => group.ToArray())
             .ToArray();
         var longitudinalCrossings = Enumerable.Range(0, pieces.Length)
-            .Where(index => seeds[index] && !candidates[index])
+            .Where(index => seeds[index] && !candidates[index] && !rigidBase[index])
             .Select(index => new[] { index });
         var groups = transverseGroups.Concat(longitudinalCrossings).ToArray();
         var groupForPiece = Enumerable.Repeat(-1, pieces.Length).ToArray();
@@ -398,6 +404,13 @@ internal static class SectionCoefficients
                 + $"reach {-leftReach[groupIndex]:0.0000}..{rightReach[groupIndex]:0.0000}, "
                 + $"y {members.Min(piece => piece.Low):0.0000}..{members.Max(piece => piece.High):0.0000}, "
                 + $"z {members.Min(piece => piece.Back):0.0000}..{members.Max(piece => piece.Front):0.0000}");
+            foreach (var member in members.OrderBy(piece => piece.Left).ThenBy(piece => piece.Low))
+            {
+                Console.WriteLine(
+                    $"  island {member.Id}: x {member.Left:0.0000}..{member.Right:0.0000}, "
+                    + $"y {member.Low:0.0000}..{member.High:0.0000}, "
+                    + $"z {member.Back:0.0000}..{member.Front:0.0000}");
+            }
         }
 
         var result = new float[mesh.Positions.Length];
@@ -408,6 +421,12 @@ internal static class SectionCoefficients
             var groupIndex = groupForPiece[piece.Id];
             if (groupIndex < 0)
             {
+                if (rigidBase[piece.Id])
+                {
+                    result[index] = point.X > 0f ? 1f : point.X < 0f ? -1f : 0f;
+                    continue;
+                }
+
                 var centre = (piece.Left + piece.Right) * 0.5f;
                 result[index] = centre > 0f ? 1f : centre < 0f ? -1f : 0f;
                 continue;
@@ -496,7 +515,11 @@ internal static class SectionCoefficients
         var lateral = piece.Right - piece.Left;
         var vertical = piece.High - piece.Low;
         var longitudinal = piece.Front - piece.Back;
-        return lateral + Epsilon >= longitudinal && lateral + Epsilon >= vertical;
+        // A side-arch diagonal can have nearly equal x/z spans and sits at the outer edge; treating
+        // that as a transverse brace contaminates the end-frame reach. A true transverse member is
+        // led decisively by x in this archetype. This inference remains offline and is emitted only
+        // as exact vertex membership.
+        return lateral > 1.1f * longitudinal + Epsilon && lateral + Epsilon >= vertical;
     }
 
     private static bool IsLongitudinal(Piece piece)
@@ -528,10 +551,11 @@ internal static class SectionCoefficients
         var twoJoint = Math.Min(twoVertical, twoLongitudinal);
         var crossSection = Math.Max(Epsilon, Math.Max(oneJoint, twoJoint));
         var lateralGap = Math.Max(crossSection, Math.Max(oneLateral, twoLateral));
-        var longitudinalGap = Math.Max(crossSection, Math.Max(oneLongitudinal, twoLongitudinal));
         return Gap(one.Left, one.Right, two.Left, two.Right) <= lateralGap + Epsilon
             && Gap(one.Low, one.High, two.Low, two.High) <= crossSection + Epsilon
-            && Gap(one.Back, one.Front, two.Back, two.Front) <= longitudinalGap + Epsilon;
+            // A member's z length must not authorize joining a different station along the bridge.
+            // The member cross-section is the only valid importer-gap allowance on this axis.
+            && Gap(one.Back, one.Front, two.Back, two.Front) <= crossSection + Epsilon;
     }
 
     private sealed class PositionTree
