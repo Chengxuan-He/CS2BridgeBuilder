@@ -583,8 +583,9 @@ span of the crossing member at that height:
 The first has no stop at the centre, and no part of the tower is held back so that another can avoid
 reaching it. The second is about the member's own span, never about the widest thing at that height.
 
-**“Base” / “底座” has one exact meaning in this project: the base structure directly below the road
-deck which supports or frames that deck.** It does not mean a pier footing, a pillar foot plate, a
+**底座是紧贴桥梁下方的构件。** “Base” / “底座” has this one exact meaning in this project: the base
+structure directly below and immediately adjacent to the road deck which supports or frames that deck.
+It does not mean a pier footing, a pillar foot plate, a
 tower foundation, a mesh merely containing `Base` in its prefab name, or any other lower structure.
 Prefab naming must never override this spatial and structural definition. Before changing a base, the
 Agent must locate this below-deck structure in the bridge archetype and apply the base rule to its
