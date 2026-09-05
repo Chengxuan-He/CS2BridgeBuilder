@@ -18,9 +18,13 @@ if (args.Length == 5 && string.Equals(args[0], "--section", StringComparison.Ord
     var full = GeometryFile.Read(File.ReadAllBytes(args[1])).Meshes.Single();
     var lod1 = GeometryFile.Read(File.ReadAllBytes(args[2])).Meshes.Single();
     var lod2 = GeometryFile.Read(File.ReadAllBytes(args[3])).Meshes.Single();
-    var fullCoefficients = SectionCoefficients.FromPrototype(full);
-    var lod1Coefficients = SectionCoefficients.FromNearestPrototype(lod1, full, fullCoefficients);
-    var lod2Coefficients = SectionCoefficients.FromNearestPrototype(lod2, full, fullCoefficients);
+    // The riveted brace joints exist only in the full-detail archetype. Build the LOD inheritance
+    // map from the same prototype with that near-only family omitted, so a coarse side-arch vertex
+    // cannot acquire a joint's stretch merely because it happens to be spatially nearest.
+    var lodPrototypeCoefficients = SectionCoefficients.FromPrototype(full, false);
+    var fullCoefficients = SectionCoefficients.FromPrototype(full, true);
+    var lod1Coefficients = SectionCoefficients.FromNearestPrototype(lod1, full, lodPrototypeCoefficients);
+    var lod2Coefficients = SectionCoefficients.FromNearestPrototype(lod2, full, lodPrototypeCoefficients);
     PortalCoefficients.Report("section full", fullCoefficients);
     PortalCoefficients.Report("section LOD1", lod1Coefficients);
     PortalCoefficients.Report("section LOD2", lod2Coefficients);
@@ -332,7 +336,7 @@ internal static class SectionCoefficients
 {
     private const float Epsilon = 0.001f;
 
-    internal static float[] FromPrototype(MeshData mesh)
+    internal static float[] FromPrototype(MeshData mesh, bool includeNearDetailBraceJoints)
     {
         var pieces = Pieces.Of(mesh.Positions, mesh.Indices).ToArray();
         var labels = Pieces.LabelsOf(mesh.Positions, mesh.Indices);
@@ -376,26 +380,43 @@ internal static class SectionCoefficients
                 seeds[seed.Id]
                 && !rigidBase[seed.Id]
                 && Touches(piece, seed))).ToArray();
+        // In the immutable full-detail TrussArchBridge01Net prototype, the 24 small riveted joints
+        // highlighted beside the braces form one exact topology family: they are the only welded
+        // islands with 153 vertices. This is an offline archetype signature, not runtime geometry
+        // inference. Treat them as near-detail extensions of the centre-crossing top truss.
+        var nearDetailBraceJoints = pieces.Select(piece =>
+            includeNearDetailBraceJoints && piece.Vertices == 153).ToArray();
         var candidates = pieces.Select((piece, index) =>
             !rigidBase[index]
             && (IsTransverse(piece)
                 || centreBraces[index]
+                || nearDetailBraceJoints[index]
                 || (CrossesCentre(piece) && !IsLongitudinal(piece)))).ToArray();
         Console.WriteLine(
             $"section prototype: admitted {centreBraces.Count(value => value)} "
-            + "centre-approaching diagonal brace island(s)");
+            + "centre-approaching diagonal brace island(s) and "
+            + $"{nearDetailBraceJoints.Count(value => value)} near-detail riveted joint island(s)");
         for (var one = 0; one < pieces.Length; one++)
         {
             if (!candidates[one]) continue;
             for (var two = one + 1; two < pieces.Length; two++)
             {
                 if (!candidates[two]) continue;
-                // A diagonal half-brace may join only through a centre-crossing member. Letting it
-                // act as a general proximity connector would pull the nearby side arch into the
-                // stretching group even though that arch never crosses x=0.
-                if ((centreBraces[one] || centreBraces[two])
-                    && !(seeds[one] || seeds[two]))
-                    continue;
+                // A diagonal half-brace and its near-detail riveted joint may join only one another
+                // or a centre-crossing member. Letting either act as a general proximity connector
+                // would pull the nearby side arch into the stretching group even though that arch
+                // never crosses x=0.
+                var specialOne = centreBraces[one] || nearDetailBraceJoints[one];
+                var specialTwo = centreBraces[two] || nearDetailBraceJoints[two];
+                if (specialOne || specialTwo)
+                {
+                    var permitted =
+                        (centreBraces[one] && (seeds[two] || nearDetailBraceJoints[two]))
+                        || (centreBraces[two] && (seeds[one] || nearDetailBraceJoints[one]))
+                        || (nearDetailBraceJoints[one] && (seeds[two] || centreBraces[two]))
+                        || (nearDetailBraceJoints[two] && (seeds[one] || centreBraces[one]));
+                    if (!permitted) continue;
+                }
                 if (Touches(pieces[one], pieces[two])) Join(one, two);
             }
         }
