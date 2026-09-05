@@ -1,10 +1,43 @@
 using System.Buffers.Binary;
 using Colossal.AssetPipeline.Native;
 
+if (args.Length == 4 && string.Equals(args[0], "--compare", StringComparison.Ordinal))
+{
+    var source = GeometryFile.Read(File.ReadAllBytes(args[1])).Meshes.Single();
+    var derived = GeometryFile.Read(File.ReadAllBytes(args[2])).Meshes.Single();
+    if (!float.TryParse(
+            args[3], System.Globalization.NumberStyles.Float,
+            System.Globalization.CultureInfo.InvariantCulture, out var extra))
+        throw new ArgumentException($"Invalid widening '{args[3]}'.");
+    GeometryComparison.Report(source, derived, extra);
+    return 0;
+}
+
+if (args.Length == 5 && string.Equals(args[0], "--section", StringComparison.Ordinal))
+{
+    var full = GeometryFile.Read(File.ReadAllBytes(args[1])).Meshes.Single();
+    var lod1 = GeometryFile.Read(File.ReadAllBytes(args[2])).Meshes.Single();
+    var lod2 = GeometryFile.Read(File.ReadAllBytes(args[3])).Meshes.Single();
+    var fullCoefficients = SectionCoefficients.FromPrototype(full);
+    var lod1Coefficients = SectionCoefficients.FromNearestPrototype(lod1, full, fullCoefficients);
+    var lod2Coefficients = SectionCoefficients.FromNearestPrototype(lod2, full, fullCoefficients);
+    PortalCoefficients.Report("section full", fullCoefficients);
+    PortalCoefficients.Report("section LOD1", lod1Coefficients);
+    PortalCoefficients.Report("section LOD2", lod2Coefficients);
+    SectionCoefficients.WriteSource(
+        args[4],
+        ("TrussArchBridge01Net Mesh", fullCoefficients),
+        ("TrussArchBridge01Net_LOD1 Mesh", lod1Coefficients),
+        ("TrussArchBridge01Net_LOD2 Mesh", lod2Coefficients));
+    return 0;
+}
+
 if (args.Length is not (1 or 3 or 4))
 {
     Console.Error.WriteLine(
-        "Usage: GeometryMetaprogram <geometry> [<lod1 geometry> <lod2 geometry> [output.cs]]");
+        "Usage: GeometryMetaprogram <geometry> [<lod1 geometry> <lod2 geometry> [output.cs]]\n"
+        + "       GeometryMetaprogram --compare <source geometry> <derived geometry> <extra>\n"
+        + "       GeometryMetaprogram --section <full> <lod1> <lod2> <output.cs>");
     return 2;
 }
 
@@ -16,7 +49,9 @@ for (var meshIndex = 0; meshIndex < geometry.Meshes.Count; meshIndex++)
     var pieces = Pieces.Of(mesh.Positions, mesh.Indices);
     Console.WriteLine(
         $"mesh {meshIndex}: {mesh.Positions.Length} vertices, {mesh.Indices.Length} indices, "
-        + $"{pieces.Count} welded piece(s)");
+        + $"{pieces.Count} welded piece(s), x "
+        + $"{mesh.Positions.Min(point => point.X):0.000000}.."
+        + $"{mesh.Positions.Max(point => point.X):0.000000}");
     foreach (var piece in pieces.OrderBy(piece => piece.Left))
     {
         Console.WriteLine(
@@ -237,6 +272,334 @@ internal sealed class GeometryFile
 internal readonly record struct Piece(
     int Id, float Left, float Right, float Low, float High, float Back, float Front, int Vertices);
 
+internal static class GeometryComparison
+{
+    private const float Epsilon = 0.001f;
+
+    internal static void Report(MeshData source, MeshData derived, float extra)
+    {
+        if (source.Positions.Length != derived.Positions.Length)
+            throw new InvalidDataException(
+                $"Vertex counts differ: source {source.Positions.Length}, derived {derived.Positions.Length}.");
+
+        var shift = extra * 0.5f;
+        var labels = Pieces.LabelsOf(source.Positions, source.Indices);
+        var pieces = Pieces.Of(source.Positions, source.Indices);
+        var kinds = new Dictionary<int, string>();
+        var maxY = 0f;
+        var maxZ = 0f;
+        var maxXError = 0f;
+        for (var index = 0; index < source.Positions.Length; index++)
+        {
+            var before = source.Positions[index];
+            var after = derived.Positions[index];
+            maxY = Math.Max(maxY, Math.Abs(after.Y - before.Y));
+            maxZ = Math.Max(maxZ, Math.Abs(after.Z - before.Z));
+
+            var rigid = before.X > 0f ? before.X + shift : before.X < 0f ? before.X - shift : before.X;
+            var displacement = after.X - before.X;
+            var kind = Math.Abs(after.X - rigid) <= Epsilon
+                ? "rigid"
+                : Math.Abs(displacement) <= Epsilon
+                    ? "fixed"
+                    : "affine";
+            var id = labels[index];
+            if (kinds.TryGetValue(id, out var prior) && !string.Equals(prior, kind, StringComparison.Ordinal))
+                kinds[id] = "mixed";
+            else if (!kinds.ContainsKey(id))
+                kinds[id] = kind;
+
+            maxXError = Math.Max(maxXError, Math.Abs(displacement));
+        }
+
+        Console.WriteLine(
+            $"vertices {source.Positions.Length}; pieces {pieces.Count}; "
+            + $"max |dy| {maxY:0.000000}; max |dz| {maxZ:0.000000}; max |dx| {maxXError:0.000000}");
+        foreach (var group in kinds.GroupBy(pair => pair.Value).OrderBy(group => group.Key))
+            Console.WriteLine($"{group.Key}: {group.Count()} piece(s)");
+
+        foreach (var piece in pieces.Where(piece => kinds[piece.Id] != "rigid").OrderBy(piece => piece.Back).ThenBy(piece => piece.Low))
+        {
+            Console.WriteLine(
+                $"{kinds[piece.Id],6} {piece.Id,4}: x {piece.Left,9:0.0000}..{piece.Right,9:0.0000}, "
+                + $"y {piece.Low,9:0.0000}..{piece.High,9:0.0000}, "
+                + $"z {piece.Back,9:0.0000}..{piece.Front,9:0.0000}, vertices {piece.Vertices,5}");
+        }
+    }
+}
+
+internal static class SectionCoefficients
+{
+    private const float Epsilon = 0.001f;
+
+    internal static float[] FromPrototype(MeshData mesh)
+    {
+        var pieces = Pieces.Of(mesh.Positions, mesh.Indices).ToArray();
+        var labels = Pieces.LabelsOf(mesh.Positions, mesh.Indices);
+        var parent = Enumerable.Range(0, pieces.Length).ToArray();
+        int Root(int item)
+        {
+            while (parent[item] != item)
+            {
+                parent[item] = parent[parent[item]];
+                item = parent[item];
+            }
+            return item;
+        }
+        void Join(int one, int two)
+        {
+            var first = Root(one);
+            var second = Root(two);
+            if (first != second) parent[first] = second;
+        }
+
+        var seeds = pieces.Select(CrossesCentre).ToArray();
+        // Only a laterally led island can join other islands into one transverse member. A
+        // longitudinal deck strip may itself cross x=0, but using it as a connector merges every
+        // floor beam along the 128 m span into one false part and gives all of them the end portal's
+        // denominator. Such a crossing strip is retained below as its own logical part.
+        var candidates = pieces.Select(piece =>
+            IsTransverse(piece) || (CrossesCentre(piece) && !IsLongitudinal(piece))).ToArray();
+        for (var one = 0; one < pieces.Length; one++)
+        {
+            if (!candidates[one]) continue;
+            for (var two = one + 1; two < pieces.Length; two++)
+            {
+                if (!candidates[two]) continue;
+                if (Touches(pieces[one], pieces[two])) Join(one, two);
+            }
+        }
+
+        var transverseGroups = Enumerable.Range(0, pieces.Length)
+            .Where(index => candidates[index])
+            .GroupBy(Root)
+            .Where(group => group.Any(index => seeds[index]))
+            .Select(group => group.ToArray())
+            .ToArray();
+        var longitudinalCrossings = Enumerable.Range(0, pieces.Length)
+            .Where(index => seeds[index] && !candidates[index])
+            .Select(index => new[] { index });
+        var groups = transverseGroups.Concat(longitudinalCrossings).ToArray();
+        var groupForPiece = Enumerable.Repeat(-1, pieces.Length).ToArray();
+        var leftReach = new float[groups.Length];
+        var rightReach = new float[groups.Length];
+        for (var groupIndex = 0; groupIndex < groups.Length; groupIndex++)
+        {
+            foreach (var pieceIndex in groups[groupIndex])
+            {
+                groupForPiece[pieceIndex] = groupIndex;
+                leftReach[groupIndex] = Math.Max(leftReach[groupIndex], Math.Max(0f, -pieces[pieceIndex].Left));
+                rightReach[groupIndex] = Math.Max(rightReach[groupIndex], Math.Max(0f, pieces[pieceIndex].Right));
+            }
+
+            var members = groups[groupIndex].Select(index => pieces[index]).ToArray();
+            Console.WriteLine(
+                $"section group {groupIndex}: {members.Length} island(s), "
+                + $"reach {-leftReach[groupIndex]:0.0000}..{rightReach[groupIndex]:0.0000}, "
+                + $"y {members.Min(piece => piece.Low):0.0000}..{members.Max(piece => piece.High):0.0000}, "
+                + $"z {members.Min(piece => piece.Back):0.0000}..{members.Max(piece => piece.Front):0.0000}");
+        }
+
+        var result = new float[mesh.Positions.Length];
+        for (var index = 0; index < result.Length; index++)
+        {
+            var point = mesh.Positions[index];
+            var piece = pieces[labels[index]];
+            var groupIndex = groupForPiece[piece.Id];
+            if (groupIndex < 0)
+            {
+                var centre = (piece.Left + piece.Right) * 0.5f;
+                result[index] = centre > 0f ? 1f : centre < 0f ? -1f : 0f;
+                continue;
+            }
+
+            result[index] = point.X < 0f && leftReach[groupIndex] > Epsilon
+                ? point.X / leftReach[groupIndex]
+                : point.X > 0f && rightReach[groupIndex] > Epsilon
+                    ? point.X / rightReach[groupIndex]
+                    : 0f;
+        }
+
+        Console.WriteLine(
+            $"section prototype: {groups.Length} logical centre-crossing group(s), "
+            + $"{groups.Sum(group => group.Length)} stretching island(s), "
+            + $"{pieces.Length - groups.Sum(group => group.Length)} rigid side island(s)");
+        return result;
+    }
+
+    internal static float[] FromNearestPrototype(
+        MeshData mesh, MeshData prototype, IReadOnlyList<float> prototypeCoefficients)
+    {
+        var tree = new PositionTree(prototype.Positions);
+        var result = new float[mesh.Positions.Length];
+        var maximum = 0f;
+        var total = 0d;
+        for (var index = 0; index < result.Length; index++)
+        {
+            var nearest = tree.Nearest(mesh.Positions[index], out var squaredDistance);
+            var coefficient = prototypeCoefficients[nearest];
+            if (Math.Abs(Math.Abs(coefficient) - 1f) <= Epsilon)
+            {
+                result[index] = coefficient;
+            }
+            else
+            {
+                var source = prototype.Positions[nearest];
+                result[index] = Math.Abs(source.X) > Epsilon
+                    ? coefficient * (mesh.Positions[index].X / source.X)
+                    : 0f;
+            }
+            var distance = MathF.Sqrt(squaredDistance);
+            maximum = Math.Max(maximum, distance);
+            total += distance;
+        }
+        Console.WriteLine(
+            $"section LOD nearest full-detail vertex: average {total / mesh.Positions.Length:0.0000} m, "
+            + $"maximum {maximum:0.0000} m");
+        return result;
+    }
+
+    internal static void WriteSource(
+        string path, params (string MeshName, IReadOnlyList<float> Coefficients)[] maps)
+    {
+        var source = new System.Text.StringBuilder();
+        source.AppendLine("// <auto-generated />");
+        source.AppendLine("// Generated from the TrussArchBridge01Net full-detail archetype and its two LODs.");
+        source.AppendLine("using System;");
+        source.AppendLine("using System.Collections.Generic;");
+        source.AppendLine();
+        source.AppendLine("namespace BridgePrefabGenerator.Bridges;");
+        source.AppendLine();
+        source.AppendLine("internal static class TrussArch01SectionData");
+        source.AppendLine("{");
+        source.AppendLine("    internal static readonly IReadOnlyDictionary<string, TrussArch01Geometry.PortalMap> Maps =");
+        source.AppendLine("        new Dictionary<string, TrussArch01Geometry.PortalMap>(StringComparer.Ordinal)");
+        source.AppendLine("        {");
+        foreach (var map in maps)
+        {
+            var encoded = PortalCoefficients.EncodeForSource(map.Coefficients);
+            source.AppendLine($"            [\"{map.MeshName}\"] = new TrussArch01Geometry.PortalMap(");
+            source.AppendLine($"                {map.Coefficients.Count},");
+            source.AppendLine($"                \"{encoded.Membership}\",");
+            source.AppendLine($"                \"{encoded.Coefficients}\"),");
+        }
+        source.AppendLine("        };");
+        source.AppendLine("}");
+        File.WriteAllText(path, source.ToString(), new System.Text.UTF8Encoding(false));
+    }
+
+    private static bool CrossesCentre(Piece piece) =>
+        piece.Left <= Epsilon && piece.Right >= -Epsilon;
+
+    private static bool IsTransverse(Piece piece)
+    {
+        var lateral = piece.Right - piece.Left;
+        var vertical = piece.High - piece.Low;
+        var longitudinal = piece.Front - piece.Back;
+        return lateral + Epsilon >= longitudinal && lateral + Epsilon >= vertical;
+    }
+
+    private static bool IsLongitudinal(Piece piece)
+    {
+        var lateral = piece.Right - piece.Left;
+        var vertical = piece.High - piece.Low;
+        var longitudinal = piece.Front - piece.Back;
+        // A small centre plate may be a little longer in z than x and still belong to one transverse
+        // truss station. Only the 128 m deck strips are longitudinal connectors; keep those from
+        // joining every station into one part. This ratio is an offline archetype inspection rule and
+        // is deliberately not emitted into the runtime assembly.
+        return longitudinal > 4f * Math.Max(lateral, vertical) + Epsilon;
+    }
+
+    private static float Gap(float firstLow, float firstHigh, float secondLow, float secondHigh) =>
+        firstHigh < secondLow ? secondLow - firstHigh
+        : secondHigh < firstLow ? firstLow - secondHigh
+        : 0f;
+
+    private static bool Touches(Piece one, Piece two)
+    {
+        var oneLateral = one.Right - one.Left;
+        var oneVertical = one.High - one.Low;
+        var oneLongitudinal = one.Front - one.Back;
+        var twoLateral = two.Right - two.Left;
+        var twoVertical = two.High - two.Low;
+        var twoLongitudinal = two.Front - two.Back;
+        var oneJoint = Math.Min(oneVertical, oneLongitudinal);
+        var twoJoint = Math.Min(twoVertical, twoLongitudinal);
+        var crossSection = Math.Max(Epsilon, Math.Max(oneJoint, twoJoint));
+        var lateralGap = Math.Max(crossSection, Math.Max(oneLateral, twoLateral));
+        var longitudinalGap = Math.Max(crossSection, Math.Max(oneLongitudinal, twoLongitudinal));
+        return Gap(one.Left, one.Right, two.Left, two.Right) <= lateralGap + Epsilon
+            && Gap(one.Low, one.High, two.Low, two.High) <= crossSection + Epsilon
+            && Gap(one.Back, one.Front, two.Back, two.Front) <= longitudinalGap + Epsilon;
+    }
+
+    private sealed class PositionTree
+    {
+        private readonly Position[] _positions;
+        private readonly Node? _root;
+
+        internal PositionTree(Position[] positions)
+        {
+            _positions = positions;
+            var indices = Enumerable.Range(0, positions.Length).ToArray();
+            _root = Build(indices, 0, indices.Length, 0);
+        }
+
+        internal int Nearest(Position point, out float squaredDistance)
+        {
+            var best = -1;
+            squaredDistance = float.MaxValue;
+            Search(_root, point, ref best, ref squaredDistance);
+            return best;
+        }
+
+        private Node? Build(int[] indices, int start, int count, int depth)
+        {
+            if (count <= 0) return null;
+            var axis = depth % 3;
+            Array.Sort(indices, start, count, Comparer<int>.Create((one, two) =>
+                Coordinate(_positions[one], axis).CompareTo(Coordinate(_positions[two], axis))));
+            var middle = start + count / 2;
+            return new Node(
+                indices[middle], axis,
+                Build(indices, start, middle - start, depth + 1),
+                Build(indices, middle + 1, start + count - middle - 1, depth + 1));
+        }
+
+        private void Search(Node? node, Position point, ref int best, ref float bestDistance)
+        {
+            if (node == null) return;
+            var candidate = _positions[node.Index];
+            var distance = Squared(point, candidate);
+            if (distance < bestDistance)
+            {
+                bestDistance = distance;
+                best = node.Index;
+            }
+
+            var difference = Coordinate(point, node.Axis) - Coordinate(candidate, node.Axis);
+            var first = difference < 0f ? node.Left : node.Right;
+            var second = difference < 0f ? node.Right : node.Left;
+            Search(first, point, ref best, ref bestDistance);
+            if (difference * difference < bestDistance) Search(second, point, ref best, ref bestDistance);
+        }
+
+        private static float Coordinate(Position point, int axis) =>
+            axis == 0 ? point.X : axis == 1 ? point.Y : point.Z;
+
+        private static float Squared(Position one, Position two)
+        {
+            var x = one.X - two.X;
+            var y = one.Y - two.Y;
+            var z = one.Z - two.Z;
+            return x * x + y * y + z * z;
+        }
+
+        private sealed record Node(int Index, int Axis, Node? Left, Node? Right);
+    }
+}
+
 internal static class Pieces
 {
     internal static IReadOnlyList<Piece> Of(Position[] vertices, int[] indices)
@@ -293,6 +656,62 @@ internal static class Pieces
                 points.Length));
         }
         return result;
+    }
+
+    internal static int[] LabelsOf(Position[] vertices, int[] indices)
+    {
+        var parent = Enumerable.Range(0, vertices.Length).ToArray();
+        int Root(int vertex)
+        {
+            while (parent[vertex] != vertex)
+            {
+                parent[vertex] = parent[parent[vertex]];
+                vertex = parent[vertex];
+            }
+            return vertex;
+        }
+        void Join(int one, int two)
+        {
+            var first = Root(one);
+            var second = Root(two);
+            if (first != second) parent[first] = second;
+        }
+
+        var welded = new Dictionary<(int X, int Y, int Z), int>();
+        for (var index = 0; index < vertices.Length; index++)
+        {
+            var point = vertices[index];
+            var key = (
+                (int)MathF.Round(point.X * 1000f),
+                (int)MathF.Round(point.Y * 1000f),
+                (int)MathF.Round(point.Z * 1000f));
+            if (welded.TryGetValue(key, out var first)) Join(index, first);
+            else welded[key] = index;
+        }
+        for (var corner = 0; corner + 2 < indices.Length; corner += 3)
+        {
+            var a = indices[corner];
+            var b = indices[corner + 1];
+            var c = indices[corner + 2];
+            if ((uint)a >= vertices.Length || (uint)b >= vertices.Length || (uint)c >= vertices.Length)
+                continue;
+            Join(a, b);
+            Join(b, c);
+        }
+
+        var numbered = new Dictionary<int, int>();
+        var labels = new int[vertices.Length];
+        for (var index = 0; index < labels.Length; index++)
+        {
+            var root = Root(index);
+            if (!numbered.TryGetValue(root, out var label))
+            {
+                label = numbered.Count;
+                numbered[root] = label;
+            }
+            labels[index] = label;
+        }
+        return labels;
     }
 }
 
@@ -370,7 +789,7 @@ internal static class PortalCoefficients
 
     internal static void Emit(string name, IReadOnlyList<float> coefficients)
     {
-        var encoded = Encode(coefficients);
+        var encoded = EncodeForSource(coefficients);
         Console.WriteLine($"{name}VertexCount={coefficients.Count}");
         Console.WriteLine($"{name}Membership={encoded.Membership}");
         Console.WriteLine($"{name}Coefficients={encoded.Coefficients}");
@@ -394,7 +813,7 @@ internal static class PortalCoefficients
         source.AppendLine("        {");
         foreach (var map in maps)
         {
-            var encoded = Encode(map.Coefficients);
+            var encoded = EncodeForSource(map.Coefficients);
             source.AppendLine($"            [\"{map.MeshName}\"] = new TrussArch01Geometry.PortalMap(");
             source.AppendLine($"                {map.Coefficients.Count},");
             source.AppendLine($"                \"{encoded.Membership}\",");
@@ -405,7 +824,7 @@ internal static class PortalCoefficients
         File.WriteAllText(path, source.ToString(), new System.Text.UTF8Encoding(false));
     }
 
-    private static (string Membership, string Coefficients) Encode(
+    internal static (string Membership, string Coefficients) EncodeForSource(
         IReadOnlyList<float> coefficients)
     {
         var membership = new byte[(coefficients.Count + 7) / 8];

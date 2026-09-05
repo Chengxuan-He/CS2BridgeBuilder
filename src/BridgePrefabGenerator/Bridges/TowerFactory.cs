@@ -343,29 +343,23 @@ internal sealed class TowerFactory
         var byRoad = BridgeTowers.StructureExtraFor(_styleId, deckWidth - authored);
 
         // TrussArchBridge01's first pillar mesh is the pier visible directly beneath the side arch.
-        // Its authored span differs slightly from both the nominal road width and the separate base
-        // mesh, so adding the road delta cannot make it exactly as wide as the generated truss. The
-        // generated section is already in hand and _cableOuter is its measured outer edge: solve the
-        // required translation from those two archetype geometries instead of introducing another
-        // nominal-width correction. The separate TrussArch01 prototype base preserves its own
-        // measured width difference from that truss in ExtraForPart.
+        // The immutable difference below was measured from the shipped archetype by the offline
+        // metaprogram. Runtime must not infer this relationship from generated bounds: doing that made
+        // a failed section silently redefine the pier and base too. The separately authored base
+        // preserves its own archetype difference in ExtraForPart.
         if (_styleId == "TrussArch01"
             && _towerKey == "TrussArchBridge01NetPillar"
-            && _cableOuter > 0f
-            && parts.Length > 0
-            && parts[0]?.m_Mesh is RenderPrefab trussPier)
+            && parts.Length > 0)
         {
-            var pierBounds = trussPier.bounds;
-            var position = parts[0].m_Position.x;
-            var pierOuter = Math.Max(
-                Math.Abs(pierBounds.min.x + position),
-                Math.Abs(pierBounds.max.x + position));
-            var byTruss = 2f * (_cableOuter - pierOuter);
+            var byTruss = TrussArch01Geometry.PierExtraForSection(byRoad);
             _report.Note(string.Format(
                 CultureInfo.InvariantCulture,
-                "{0}: widened {1:0.###} m so the main pier reaches the generated blue truss "
-                + "edge at {2:0.###} m; the nominal road calculation would give {3:0.###} m.",
-                name, byTruss, _cableOuter, byRoad));
+                "{0}: widened the blue pier {1:0.###} m from immutable TrussArchBridge01 "
+                + "metadata: section delta {2:0.###} m plus the prototype section/pier edge "
+                + "difference {3:0.###} m per side.",
+                name, byTruss, byRoad,
+                TrussArch01Geometry.PrototypeSectionOuter
+                    - TrussArch01Geometry.PrototypePierOuter));
             return byTruss;
         }
 
@@ -443,14 +437,12 @@ internal sealed class TowerFactory
                 mesh.name, "TrussArchBridge01NetPillarBase Mesh", StringComparison.Ordinal))
             return towerExtra;
 
-        if (_cableOuter <= 0f || _cablePrototypeOuter <= 0f) return towerExtra;
-
-        var prototypeBaseWidth = mesh.bounds.max.x - mesh.bounds.min.x;
-        var prototypeArchWidth = _cablePrototypeOuter * 2f;
+        var prototypeBaseWidth = TrussArch01Geometry.PrototypeBaseWidth;
+        var prototypeArchWidth = TrussArch01Geometry.PrototypeSectionOuter * 2f;
         var prototypeDifference = prototypeBaseWidth - prototypeArchWidth;
-        var generatedArchWidth = _cableOuter * 2f;
+        var baseExtra = TrussArch01Geometry.SectionExtraForPier(towerExtra);
+        var generatedArchWidth = prototypeArchWidth + baseExtra;
         var generatedBaseWidth = generatedArchWidth + prototypeDifference;
-        var baseExtra = generatedBaseWidth - prototypeBaseWidth;
         _report.Note(string.Format(
             CultureInfo.InvariantCulture,
             "{0}: TrussArch01 prototype base uses rigid x -> x + sign(x) * delta with "
@@ -1935,6 +1927,7 @@ internal sealed class TowerFactory
                     BridgeStyleDefinitions.PreservesOpenTrussSideAssembly(_styleId);
                 var rigidBlueBase = IsBluePrototypeBase(original);
                 var bluePortal = IsBluePrototypeMainPier(original);
+                var blueSection = IsBluePrototypeSection(original);
                 TowerWidening.TrussWideningFacts trussFacts = default;
                 var moved = rigidBlueBase
                     // CONTRACT rule 8: the TrussArch01 deck base is authored as side material.
@@ -1946,6 +1939,12 @@ internal sealed class TowerFactory
                         // fittings translate rigidly, while only transverse beams crossing x=0
                         // stretch. LOD2 inherits the high-detail decision even though it is welded.
                         ? WidenBluePrototypePier(original, source, extra, name)
+                    : blueSection
+                        // Exact offline metadata keeps every side island rigid and stretches each
+                        // centre-crossing logical top-truss assembly against its own archetype span.
+                        // Using one global reach is what left shorter diagonal assemblies several
+                        // metres short of the translated side arches.
+                        ? WidenBluePrototypeSection(original, source, extra, name)
                     : openTruss
                         ? TowerWidening.WidenOpenTruss(
                             source, part.triangles, extra,
@@ -1953,7 +1952,17 @@ internal sealed class TowerFactory
                             scope,
                             out trussFacts)
                         : TowerWidening.WidenParts(source, extra, scope);
-                if (openTruss)
+                if (blueSection)
+                {
+                    _report.Note(string.Format(
+                        CultureInfo.InvariantCulture,
+                        "{0}: applied the exact TrussArchBridge01 section map. Side arches, side "
+                        + "decorations and other non-centre islands translate rigidly; each "
+                        + "centre-crossing top-truss assembly, including its diagonal braces, "
+                        + "stretches by its own prototype span. Width change {1:0.###} m.",
+                        name, extra));
+                }
+                else if (openTruss)
                 {
                     if (preserveOpenTrussSides)
                     {
@@ -2192,6 +2201,33 @@ internal sealed class TowerFactory
                 original.name, "TrussArchBridge01NetPillar_LOD1 Mesh", StringComparison.Ordinal)
             || string.Equals(
                 original.name, "TrussArchBridge01NetPillar_LOD2 Mesh", StringComparison.Ordinal));
+
+    /// <summary>
+    /// Identifies the three shipped TrussArchBridge01 section meshes. The names select immutable
+    /// metaprogram output only; no runtime coordinate threshold or topology guess is involved.
+    /// </summary>
+    private bool IsBluePrototypeSection(RenderPrefab original) =>
+        _styleId == "TrussArch01"
+        && (string.Equals(
+                original.name, "TrussArchBridge01Net Mesh", StringComparison.Ordinal)
+            || string.Equals(
+                original.name, "TrussArchBridge01Net_LOD1 Mesh", StringComparison.Ordinal)
+            || string.Equals(
+                original.name, "TrussArchBridge01Net_LOD2 Mesh", StringComparison.Ordinal));
+
+    private float3[] WidenBluePrototypeSection(
+        RenderPrefab original, float3[] source, float extra, string sectionName)
+    {
+        if (TrussArch01Geometry.TryWidenSection(original.name, source, extra, out var moved))
+            return moved;
+
+        _report.Defect(string.Format(
+            CultureInfo.InvariantCulture,
+            "{0}: unsupported TrussArch01 section mesh '{1}' with {2} vertices; no geometry "
+            + "fallback was used, so the prototype coordinates were kept unchanged.",
+            sectionName, original.name, source.Length));
+        return moved;
+    }
 
     private float3[] WidenBluePrototypePier(
         RenderPrefab original, float3[] source, float extra, string towerName)

@@ -286,9 +286,10 @@ internal sealed class BridgeComposer
         foreach (var name in named)
         {
             var primary = string.Equals(name, sourceName, StringComparison.Ordinal);
+            var recordedRoad = BridgeTowers.RoadFor(style.Id, name);
             var road = primary
-                ? chosen?.Road ?? deckWidth
-                : BridgeTowers.RoadFor(style.Id, name) ?? chosen?.Road ?? deckWidth;
+                ? chosen?.Road ?? recordedRoad ?? deckWidth
+                : recordedRoad ?? chosen?.Road ?? deckWidth;
 
             var built = _towers.Create(style.Id, name, road, deckWidth, primary);
             if (built != null)

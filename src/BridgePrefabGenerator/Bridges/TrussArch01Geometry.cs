@@ -17,15 +17,42 @@ namespace BridgePrefabGenerator.Bridges;
 /// </summary>
 internal static class TrussArch01Geometry
 {
+    // These are immutable measurements of the shipped TrussArchBridge01 archetype. They are produced
+    // by the geometry metaprogram, not rediscovered from a generated mesh while the game is running.
+    internal const float PrototypeSectionOuter = 7.699951f;
+    internal const float PrototypePierOuter = 7.600708f;
+    internal const float PrototypeBaseWidth = 18.419433f;
+
+    private static readonly IReadOnlyDictionary<string, PortalMap> SectionMaps =
+        TrussArch01SectionData.Maps;
+
     private static readonly IReadOnlyDictionary<string, PortalMap> PierMaps =
         TrussArch01PierData.Maps;
 
+    internal static float PierExtraForSection(float sectionExtra) =>
+        sectionExtra + 2f * (PrototypeSectionOuter - PrototypePierOuter);
+
+    internal static float SectionExtraForPier(float pierExtra) =>
+        pierExtra - 2f * (PrototypeSectionOuter - PrototypePierOuter);
+
+    internal static bool TryWidenSection(
+        string meshName, float3[] source, float extra, out float3[] moved) =>
+        TryApply(SectionMaps, meshName, source, extra, out moved);
+
     internal static bool TryWidenPier(
-        string meshName, float3[] source, float extra, out float3[] moved)
+        string meshName, float3[] source, float extra, out float3[] moved) =>
+        TryApply(PierMaps, meshName, source, extra, out moved);
+
+    private static bool TryApply(
+        IReadOnlyDictionary<string, PortalMap> maps,
+        string meshName,
+        float3[] source,
+        float extra,
+        out float3[] moved)
     {
         moved = new float3[source.Length];
         Array.Copy(source, moved, source.Length);
-        if (!PierMaps.TryGetValue(meshName, out var map) || !map.Matches(source.Length)) return false;
+        if (!maps.TryGetValue(meshName, out var map) || !map.Matches(source.Length)) return false;
         if (Math.Abs(extra) < TowerWidening.CentreEpsilon) return true;
 
         var shift = extra * 0.5f;
