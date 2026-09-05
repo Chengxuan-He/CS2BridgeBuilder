@@ -748,7 +748,7 @@ internal static class TowerWidening
     }
 
     /// <summary>
-    /// Enforces CONTRACT rule 8 against an already transformed open-truss mesh.
+    /// Enforces AGENTS.md rule 8 against an already transformed open-truss mesh.
     ///
     /// Kept internal so the regression suite can prove that a proposed override is rejected rather
     /// than merely producing a different-looking mesh.

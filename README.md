@@ -3,7 +3,7 @@
 A Cities: Skylines II mod that builds a **bridge prefab** from parts you choose: a road for the upper
 deck, a bridge style to wear, and optionally something hung underneath.
 
-The rules generation is held to are in [CONTRACT.md](CONTRACT.md).
+The rules generation is held to are in [AGENTS.md](AGENTS.md).
 
 It is the parallel of [Road Prefab Exporter](../CS2RoadPrefabExporter) and shares its code — see
 [Layout](#layout).
