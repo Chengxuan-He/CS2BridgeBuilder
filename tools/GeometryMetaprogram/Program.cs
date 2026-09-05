@@ -322,11 +322,59 @@ internal static class GeometryComparison
 
         foreach (var piece in pieces.Where(piece => kinds[piece.Id] != "rigid").OrderBy(piece => piece.Back).ThenBy(piece => piece.Low))
         {
+            var movedPoints = Enumerable.Range(0, labels.Length)
+                .Where(index => labels[index] == piece.Id)
+                .Select(index => derived.Positions[index])
+                .ToArray();
+            var coefficients = Enumerable.Range(0, labels.Length)
+                .Where(index => labels[index] == piece.Id)
+                .Select(index => shift == 0f
+                    ? 0f
+                    : (derived.Positions[index].X - source.Positions[index].X) / shift)
+                .ToArray();
             Console.WriteLine(
                 $"{kinds[piece.Id],6} {piece.Id,4}: x {piece.Left,9:0.0000}..{piece.Right,9:0.0000}, "
+                + $"derived {movedPoints.Min(point => point.X),9:0.0000}.."
+                + $"{movedPoints.Max(point => point.X),9:0.0000}, "
+                + $"coefficient {coefficients.Min(),7:0.0000}..{coefficients.Max(),7:0.0000}, "
                 + $"y {piece.Low,9:0.0000}..{piece.High,9:0.0000}, "
                 + $"z {piece.Back,9:0.0000}..{piece.Front,9:0.0000}, vertices {piece.Vertices,5}");
         }
+
+        foreach (var joint in pieces.Where(piece =>
+                     Math.Min(Math.Abs(piece.Left), Math.Abs(piece.Right)) >= 4.60f
+                     && Math.Max(Math.Abs(piece.Left), Math.Abs(piece.Right)) <= 7.31f
+                     && piece.Low >= 6.0f
+                     && piece.Right - piece.Left >= 0.60f
+                     && piece.Right - piece.Left <= 1.60f
+                     && piece.High - piece.Low <= 2.50f
+                     && piece.Front - piece.Back <= 2.50f))
+        {
+            var neighbours = pieces
+                .Where(piece => piece.Id != joint.Id)
+                .Select(piece => (Piece: piece, Distance: BoxDistance(joint, piece)))
+                .OrderBy(candidate => candidate.Distance)
+                .ThenBy(candidate => candidate.Piece.Id)
+                .Take(8)
+                .ToArray();
+            Console.WriteLine(
+                $"joint {joint.Id}: nearest "
+                + string.Join(", ", neighbours.Select(candidate =>
+                    $"{candidate.Piece.Id}/{kinds[candidate.Piece.Id]}/"
+                    + $"{candidate.Piece.Vertices}v/{candidate.Distance:0.0000}m")));
+        }
+    }
+
+    private static float BoxDistance(Piece one, Piece two)
+    {
+        static float Gap(float firstLow, float firstHigh, float secondLow, float secondHigh) =>
+            firstHigh < secondLow ? secondLow - firstHigh
+            : secondHigh < firstLow ? firstLow - secondHigh
+            : 0f;
+        var x = Gap(one.Left, one.Right, two.Left, two.Right);
+        var y = Gap(one.Low, one.High, two.Low, two.High);
+        var z = Gap(one.Back, one.Front, two.Back, two.Front);
+        return MathF.Sqrt(x * x + y * y + z * z);
     }
 }
 
@@ -378,22 +426,39 @@ internal static class SectionCoefficients
                 seeds[seed.Id]
                 && !rigidBase[seed.Id]
                 && Touches(piece, seed))).ToArray();
-        // In the immutable full-detail TrussArchBridge01Net prototype, the 24 small riveted side
-        // connectors highlighted beside the braces form one exact topology family: they are the only
-        // welded islands with 153 vertices. This is an offline archetype signature, not runtime
-        // geometry inference. Treat them as extensions of the centre-crossing top truss; every LOD
-        // below inherits this full-detail decision.
-        var braceSideJoints = pieces.Select(piece => piece.Vertices == 153).ToArray();
+        // The immutable full-detail TrussArchBridge01Net prototype uses several distinct meshes for
+        // the compact riveted side joints. Vertex count is not their identity: even mirrored or end
+        // variants of the same joint use different counts. Identify the complete family here,
+        // offline, from its measured prototype coordinate envelope and compact three-axis extent,
+        // then require topology to connect it to a centre-crossing truss below. Only the emitted
+        // vertex membership and coefficients enter the runtime assembly.
+        var rivetedSideCandidates = pieces.Select(IsRivetedSideJoint).ToArray();
+        var rivetedStyles = pieces
+            .Where(piece => rivetedSideCandidates[piece.Id])
+            .GroupBy(piece => piece.Vertices)
+            .OrderBy(group => group.Key)
+            .Select(group => $"{group.Key}v={group.Count()}")
+            .ToArray();
+        var coordinateEnvelopeStyles = pieces
+            .Where(IsRivetedCoordinateEnvelope)
+            .GroupBy(piece => piece.Vertices)
+            .OrderBy(group => group.Key)
+            .Select(group => $"{group.Key}v={group.Count()}")
+            .ToArray();
         var candidates = pieces.Select((piece, index) =>
             !rigidBase[index]
             && (IsTransverse(piece)
                 || centreBraces[index]
-                || braceSideJoints[index]
+                || rivetedSideCandidates[index]
                 || (CrossesCentre(piece) && !IsLongitudinal(piece)))).ToArray();
         Console.WriteLine(
             $"section prototype: admitted {centreBraces.Count(value => value)} "
             + "centre-approaching diagonal brace island(s) and "
-            + $"{braceSideJoints.Count(value => value)} riveted side-connector island(s)");
+            + $"{rivetedSideCandidates.Count(value => value)} riveted side-connector candidate(s) "
+            + $"({string.Join(", ", rivetedStyles)})");
+        Console.WriteLine(
+            "section prototype: compact side coordinate envelope contains "
+            + string.Join(", ", coordinateEnvelopeStyles));
         for (var one = 0; one < pieces.Length; one++)
         {
             if (!candidates[one]) continue;
@@ -404,15 +469,17 @@ internal static class SectionCoefficients
                 // or a centre-crossing member. Letting either act as a general proximity connector
                 // would pull the nearby side arch into the stretching group even though that arch
                 // never crosses x=0.
-                var specialOne = centreBraces[one] || braceSideJoints[one];
-                var specialTwo = centreBraces[two] || braceSideJoints[two];
+                var specialOne = centreBraces[one] || rivetedSideCandidates[one];
+                var specialTwo = centreBraces[two] || rivetedSideCandidates[two];
                 if (specialOne || specialTwo)
                 {
                     var permitted =
-                        (centreBraces[one] && (seeds[two] || braceSideJoints[two]))
-                        || (centreBraces[two] && (seeds[one] || braceSideJoints[one]))
-                        || (braceSideJoints[one] && (seeds[two] || centreBraces[two]))
-                        || (braceSideJoints[two] && (seeds[one] || centreBraces[one]));
+                        (centreBraces[one] && (seeds[two] || rivetedSideCandidates[two]))
+                        || (centreBraces[two] && (seeds[one] || rivetedSideCandidates[one]))
+                        || (rivetedSideCandidates[one]
+                            && (seeds[two] || centreBraces[two] || rivetedSideCandidates[two]))
+                        || (rivetedSideCandidates[two]
+                            && (seeds[one] || centreBraces[one] || rivetedSideCandidates[one]));
                     if (!permitted) continue;
                 }
                 if (Touches(pieces[one], pieces[two])) Join(one, two);
@@ -456,6 +523,20 @@ internal static class SectionCoefficients
             }
         }
 
+        var ungroupedRivetedJoints = pieces
+            .Where(piece => rivetedSideCandidates[piece.Id] && groupForPiece[piece.Id] < 0)
+            .ToArray();
+        Console.WriteLine(
+            $"section prototype: {rivetedSideCandidates.Count(value => value) - ungroupedRivetedJoints.Length}/"
+            + $"{rivetedSideCandidates.Count(value => value)} coordinate-identified riveted side joints "
+            + "belong to a centre-crossing truss group");
+        if (ungroupedRivetedJoints.Length != 0)
+        {
+            Console.Error.WriteLine(
+                "section prototype: ungrouped riveted side joints: "
+                + string.Join(", ", ungroupedRivetedJoints.Select(piece => piece.Id)));
+        }
+
         var result = new float[mesh.Positions.Length];
         for (var index = 0; index < result.Length; index++)
         {
@@ -475,21 +556,14 @@ internal static class SectionCoefficients
                 continue;
             }
 
-            // The riveted side connector is the outer end of a centre-crossing brace at this height.
-            // Its own archetype edge must follow the rigidly translated side arch by the complete
-            // half-width delta; using the maximum reach of the whole 128 m truss left the shorter
-            // connector families behind. This exact family is selected offline and emitted as vertex
-            // coefficients, so no runtime geometry inference is introduced.
-            var localLeftReach = braceSideJoints[piece.Id]
-                ? Math.Max(0f, -piece.Left)
-                : leftReach[groupIndex];
-            var localRightReach = braceSideJoints[piece.Id]
-                ? Math.Max(0f, piece.Right)
-                : rightReach[groupIndex];
-            result[index] = point.X < 0f && localLeftReach > Epsilon
-                ? point.X / localLeftReach
-                : point.X > 0f && localRightReach > Epsilon
-                    ? point.X / localRightReach
+            // Every welded island in one logical transverse truss uses the same prototype span.
+            // Giving each riveted style its own denominator tears the connector assembly at every
+            // island boundary. The outermost riveted edge defines the truss end and therefore moves
+            // by the same complete half-width delta as the translated side arch it meets.
+            result[index] = point.X < 0f && leftReach[groupIndex] > Epsilon
+                ? point.X / leftReach[groupIndex]
+                : point.X > 0f && rightReach[groupIndex] > Epsilon
+                    ? point.X / rightReach[groupIndex]
                     : 0f;
         }
 
@@ -498,7 +572,7 @@ internal static class SectionCoefficients
             + $"{groups.Sum(group => group.Length)} stretching island(s), "
             + $"{pieces.Length - groups.Sum(group => group.Length)} rigid side island(s)");
         var jointOuterCoefficients = pieces
-            .Where(piece => braceSideJoints[piece.Id])
+            .Where(piece => rivetedSideCandidates[piece.Id] && groupForPiece[piece.Id] >= 0)
             .SelectMany(piece => Enumerable.Range(0, mesh.Positions.Length)
                 .Where(index => labels[index] == piece.Id)
                 .Where(index => Math.Abs(
@@ -507,8 +581,8 @@ internal static class SectionCoefficients
                 .Select(index => Math.Abs(result[index])))
             .ToArray();
         Console.WriteLine(
-            $"section prototype: {braceSideJoints.Count(value => value)} side-joint "
-            + $"island(s), outer-edge coefficient "
+            $"section prototype: {rivetedSideCandidates.Count(value => value) - ungroupedRivetedJoints.Length} "
+            + "stretching riveted side-joint island(s), outer-edge coefficient "
             + $"{jointOuterCoefficients.Min():0.0000}..{jointOuterCoefficients.Max():0.0000}");
         return result;
     }
@@ -579,6 +653,11 @@ internal static class SectionCoefficients
                     var x = mesh.Positions[index].X;
                     coefficients[index] = x > 0f ? 1f : x < 0f ? -1f : 0f;
                 }
+                Console.WriteLine(
+                    $"section LOD welded island {piece.Id}: x {piece.Left:0.0000}..{piece.Right:0.0000}, "
+                    + $"y {piece.Low:0.0000}..{piece.High:0.0000}, "
+                    + $"z {piece.Back:0.0000}..{piece.Front:0.0000}, "
+                    + $"{rigidVotes} rigid/{spanningVotes} spanning votes -> rigid");
                 madeRigid++;
                 continue;
             }
@@ -596,6 +675,11 @@ internal static class SectionCoefficients
                             ? x / rightReach
                             : 0f;
                 }
+                Console.WriteLine(
+                    $"section LOD welded island {piece.Id}: x {piece.Left:0.0000}..{piece.Right:0.0000}, "
+                    + $"y {piece.Low:0.0000}..{piece.High:0.0000}, "
+                    + $"z {piece.Back:0.0000}..{piece.Front:0.0000}, "
+                    + $"{rigidVotes} rigid/{spanningVotes} spanning votes -> spanning");
                 madeSpanning++;
             }
         }
@@ -635,6 +719,31 @@ internal static class SectionCoefficients
 
     private static bool CrossesCentre(Piece piece) =>
         piece.Left <= Epsilon && piece.Right >= -Epsilon;
+
+    private static bool IsRivetedSideJoint(Piece piece)
+    {
+        if (!IsRivetedCoordinateEnvelope(piece)) return false;
+        var lateral = piece.Right - piece.Left;
+        var vertical = piece.High - piece.Low;
+        var longitudinal = piece.Front - piece.Back;
+        return lateral >= 0.60f
+            && vertical <= 2.50f
+            && longitudinal <= 2.50f;
+    }
+
+    private static bool IsRivetedCoordinateEnvelope(Piece piece)
+    {
+        if (CrossesCentre(piece)) return false;
+        var inner = Math.Min(Math.Abs(piece.Left), Math.Abs(piece.Right));
+        var outer = Math.Max(Math.Abs(piece.Left), Math.Abs(piece.Right));
+        var lateral = piece.Right - piece.Left;
+        var longitudinal = piece.Front - piece.Back;
+        return inner >= 4.60f
+            && outer <= 7.31f
+            && piece.Low >= 6.0f
+            && lateral <= 1.60f
+            && longitudinal <= 2.50f;
+    }
 
     private static bool IsTransverse(Piece piece)
     {
