@@ -356,10 +356,10 @@ internal sealed class TowerFactory
                 CultureInfo.InvariantCulture,
                 "{0}: widened the blue pier {1:0.###} m from immutable TrussArchBridge01 "
                 + "metadata: section delta {2:0.###} m plus the prototype section/pier edge "
-                + "difference {3:0.###} m per side.",
+                + "total-width difference {3:0.###} m.",
                 name, byTruss, byRoad,
-                TrussArch01Geometry.PrototypeSectionOuter
-                    - TrussArch01Geometry.PrototypePierOuter));
+                TrussArch01Geometry.PrototypeSectionWidth
+                    - TrussArch01Geometry.PrototypePierWidth));
             return byTruss;
         }
 
@@ -438,7 +438,7 @@ internal sealed class TowerFactory
             return towerExtra;
 
         var prototypeBaseWidth = TrussArch01Geometry.PrototypeBaseWidth;
-        var prototypeArchWidth = TrussArch01Geometry.PrototypeSectionOuter * 2f;
+        var prototypeArchWidth = TrussArch01Geometry.PrototypeSectionWidth;
         var prototypeDifference = prototypeBaseWidth - prototypeArchWidth;
         var baseExtra = TrussArch01Geometry.SectionExtraForPier(towerExtra);
         var generatedArchWidth = prototypeArchWidth + baseExtra;

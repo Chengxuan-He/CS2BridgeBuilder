@@ -19,8 +19,8 @@ internal static class TrussArch01Geometry
 {
     // These are immutable measurements of the shipped TrussArchBridge01 archetype. They are produced
     // by the geometry metaprogram, not rediscovered from a generated mesh while the game is running.
-    internal const float PrototypeSectionOuter = 7.699951f;
-    internal const float PrototypePierOuter = 7.600708f;
+    internal const float PrototypeSectionWidth = 15.399902f;
+    internal const float PrototypePierWidth = 15.198853f;
     internal const float PrototypeBaseWidth = 18.419433f;
 
     private static readonly IReadOnlyDictionary<string, PortalMap> SectionMaps =
@@ -30,10 +30,10 @@ internal static class TrussArch01Geometry
         TrussArch01PierData.Maps;
 
     internal static float PierExtraForSection(float sectionExtra) =>
-        sectionExtra + 2f * (PrototypeSectionOuter - PrototypePierOuter);
+        sectionExtra + PrototypeSectionWidth - PrototypePierWidth;
 
     internal static float SectionExtraForPier(float pierExtra) =>
-        pierExtra - 2f * (PrototypeSectionOuter - PrototypePierOuter);
+        pierExtra - PrototypeSectionWidth + PrototypePierWidth;
 
     internal static bool TryWidenSection(
         string meshName, float3[] source, float extra, out float3[] moved) =>
