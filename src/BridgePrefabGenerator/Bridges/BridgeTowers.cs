@@ -439,10 +439,11 @@ internal static class BridgeTowers
             // green TrussArchBridge03 prototype and every other bridge family unchanged.
             ["TrussArch01"] = 12f,
 
-            // TrussArchBridge03 needs another 12 m of structural width beyond the target-minus-
+            // TrussArchBridge03 needs another 13 m of structural width beyond the target-minus-
             // prototype-road calculation. The green side frame includes its inner railing, so its
-            // dedicated open-truss policy carries each side by 6 m without altering that clearance.
-            ["TrussArch03"] = 12f,
+            // dedicated open-truss policy carries each side by half the final width delta without
+            // altering that clearance.
+            ["TrussArch03"] = 13f,
 
             // The double-deck V prototype's structure needs 20 m more than its upper carriageway
             // alone accounts for. On a 16 m target the raw 16 - 40 = -24 m contraction carried the

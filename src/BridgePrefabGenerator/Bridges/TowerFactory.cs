@@ -1549,9 +1549,14 @@ internal sealed class TowerFactory
                 return null;
             }
 
-            // One profile for the whole section, measured before any piece is widened, and asked at
-            // every height rather than once - see ProfileOfPieces for both halves of why.
-            var profile = ProfileOfPieces(source.m_Pieces);
+            // TrussArch03's full-detail prototype has already made the x=0 decision offline and its
+            // LODs inherit that exact decision. Re-measuring it here would replace the committed
+            // metaprogram result with a runtime geometry guess. Other styles still use their shared
+            // section profile.
+            TowerWidening.Profile? profile =
+                string.Equals(_styleId, "TrussArch03", StringComparison.Ordinal)
+                    ? null
+                    : ProfileOfPieces(source.m_Pieces);
 
             var pieces = new List<NetPieceInfo>();
             foreach (var info in source.m_Pieces)
@@ -1749,7 +1754,7 @@ internal sealed class TowerFactory
 
     private NetPiecePrefab? WidenPiece(
         NetPiecePrefab original, string sectionName, int index, float extra,
-        TowerWidening.Profile profile)
+        TowerWidening.Profile? profile)
     {
         var name = index == 0 ? sectionName + " Piece" : $"{sectionName} Piece {index}";
 
@@ -1818,6 +1823,8 @@ internal sealed class TowerFactory
             float3[]? points = null;
             var totalVertices = 0;
             var totalIndices = 0;
+            var recordedTruss03 = railings
+                && TrussArch03Geometry.IsRecorded(_styleId, original.name);
 
             // One profile for everything widened here. A section hands one in, because its pieces
             // are one structure; a tower part measures its own, from its full detail mesh and the
@@ -1827,12 +1834,15 @@ internal sealed class TowerFactory
             //
             var shapes = new List<float3[]>();
             var outlines = new List<IReadOnlyList<int>?>();
-            foreach (var part in loaded)
+            if (!recordedTruss03)
             {
-                if (part == null) continue;
+                foreach (var part in loaded)
+                {
+                    if (part == null) continue;
 
-                shapes.Add(ToPoints(part.vertices));
-                outlines.Add(part.triangles);
+                    shapes.Add(ToPoints(part.vertices));
+                    outlines.Add(part.triangles);
+                }
             }
 
             // The levels of detail are named by a component and live in prefabs of their own, so they
@@ -1841,7 +1851,7 @@ internal sealed class TowerFactory
             // the places that scope called carried, and it was scaled where the fine one was carried -
             // 7.899 m against 8, which is the bridge changing width as the camera pulls back.
             var lodMeshes = new List<RenderPrefab>();
-            if (profile == null)
+            if (profile == null && !recordedTruss03)
             {
                 foreach (var lod in original.GetComponent<LodProperties>()?.m_LodMeshes
                     ?? Array.Empty<RenderPrefab>())
@@ -1867,7 +1877,9 @@ internal sealed class TowerFactory
                 }
             }
 
-            var scope = profile ?? TowerWidening.Profile.Of(shapes, outlines);
+            var scope = recordedTruss03
+                ? null
+                : profile ?? TowerWidening.Profile.Of(shapes, outlines);
 
             foreach (var lod in lodMeshes)
             {
@@ -1890,14 +1902,42 @@ internal sealed class TowerFactory
                 var preserveOpenTrussSides =
                     BridgeStyleDefinitions.PreservesOpenTrussSideAssembly(_styleId);
                 TowerWidening.TrussWideningFacts trussFacts = default;
-                var moved = openTruss
-                    ? TowerWidening.WidenOpenTruss(
-                        source, part.triangles, extra,
-                        preserveOpenTrussSides,
-                        scope!,
-                        out trussFacts)
-                    : TowerWidening.WidenParts(source, extra, scope!);
-                if (openTruss && !trussFacts.ContractSatisfied)
+                var usedRecordedTruss03 = false;
+                var rigidVertices = 0;
+                var stretchingVertices = 0;
+                float3[] moved;
+                if (openTruss && recordedTruss03)
+                {
+                    if (!TrussArch03Geometry.TryWidenSection(
+                            original.name,
+                            source,
+                            extra,
+                            out moved,
+                            out rigidVertices,
+                            out stretchingVertices))
+                    {
+                        _report.Defect(string.Format(
+                            CultureInfo.InvariantCulture,
+                            "'{0}' did not match its immutable TrussArchBridge03 vertex map. "
+                            + "The derived prefab was stopped before geometry was written.",
+                            name));
+                        return null;
+                    }
+
+                    usedRecordedTruss03 = true;
+                }
+                else
+                {
+                    moved = openTruss
+                        ? TowerWidening.WidenOpenTruss(
+                            source, part.triangles, extra,
+                            preserveOpenTrussSides,
+                            scope!,
+                            out trussFacts)
+                        : TowerWidening.WidenParts(source, extra, scope!);
+                }
+
+                if (openTruss && !usedRecordedTruss03 && !trussFacts.ContractSatisfied)
                 {
                     _report.Defect(string.Format(
                         CultureInfo.InvariantCulture,
@@ -1938,7 +1978,19 @@ internal sealed class TowerFactory
                 }
                 if (openTruss)
                 {
-                    if (preserveOpenTrussSides)
+                    if (usedRecordedTruss03)
+                    {
+                        _report.Note(string.Format(
+                            CultureInfo.InvariantCulture,
+                            "{0}: immutable TrussArchBridge03 x=0 map applied: {1} side vertices "
+                            + "translate rigidly and {2} centre-crossing vertices stretch. The map "
+                            + "was generated from full detail and inherited by every LOD; no runtime "
+                            + "geometry classification was performed.",
+                            name,
+                            rigidVertices,
+                            stretchingVertices));
+                    }
+                    else if (preserveOpenTrussSides)
                     {
                         _report.Note(string.Format(
                             CultureInfo.InvariantCulture,
