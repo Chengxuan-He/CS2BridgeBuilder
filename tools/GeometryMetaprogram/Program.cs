@@ -18,13 +18,11 @@ if (args.Length == 5 && string.Equals(args[0], "--section", StringComparison.Ord
     var full = GeometryFile.Read(File.ReadAllBytes(args[1])).Meshes.Single();
     var lod1 = GeometryFile.Read(File.ReadAllBytes(args[2])).Meshes.Single();
     var lod2 = GeometryFile.Read(File.ReadAllBytes(args[3])).Meshes.Single();
-    // The riveted brace joints exist only in the full-detail archetype. Build the LOD inheritance
-    // map from the same prototype with that near-only family omitted, so a coarse side-arch vertex
-    // cannot acquire a joint's stretch merely because it happens to be spatially nearest.
-    var lodPrototypeCoefficients = SectionCoefficients.FromPrototype(full, false);
-    var fullCoefficients = SectionCoefficients.FromPrototype(full, true);
-    var lod1Coefficients = SectionCoefficients.FromNearestPrototype(lod1, full, lodPrototypeCoefficients, false);
-    var lod2Coefficients = SectionCoefficients.FromNearestPrototype(lod2, full, lodPrototypeCoefficients, true);
+    var fullCoefficients = SectionCoefficients.FromPrototype(full);
+    // The full-detail archetype decides once. LOD connector bodies inherit the same stretch; LOD2's
+    // welded-piece reconciliation below prevents a nearby side arch from inheriting only part of it.
+    var lod1Coefficients = SectionCoefficients.FromNearestPrototype(lod1, full, fullCoefficients, false);
+    var lod2Coefficients = SectionCoefficients.FromNearestPrototype(lod2, full, fullCoefficients, true);
     PortalCoefficients.Report("section full", fullCoefficients);
     PortalCoefficients.Report("section LOD1", lod1Coefficients);
     PortalCoefficients.Report("section LOD2", lod2Coefficients);
@@ -336,7 +334,7 @@ internal static class SectionCoefficients
 {
     private const float Epsilon = 0.001f;
 
-    internal static float[] FromPrototype(MeshData mesh, bool includeNearDetailBraceJoints)
+    internal static float[] FromPrototype(MeshData mesh)
     {
         var pieces = Pieces.Of(mesh.Positions, mesh.Indices).ToArray();
         var labels = Pieces.LabelsOf(mesh.Positions, mesh.Indices);
@@ -380,22 +378,22 @@ internal static class SectionCoefficients
                 seeds[seed.Id]
                 && !rigidBase[seed.Id]
                 && Touches(piece, seed))).ToArray();
-        // In the immutable full-detail TrussArchBridge01Net prototype, the 24 small riveted joints
-        // highlighted beside the braces form one exact topology family: they are the only welded
-        // islands with 153 vertices. This is an offline archetype signature, not runtime geometry
-        // inference. Treat them as near-detail extensions of the centre-crossing top truss.
-        var nearDetailBraceJoints = pieces.Select(piece =>
-            includeNearDetailBraceJoints && piece.Vertices == 153).ToArray();
+        // In the immutable full-detail TrussArchBridge01Net prototype, the 24 small riveted side
+        // connectors highlighted beside the braces form one exact topology family: they are the only
+        // welded islands with 153 vertices. This is an offline archetype signature, not runtime
+        // geometry inference. Treat them as extensions of the centre-crossing top truss; every LOD
+        // below inherits this full-detail decision.
+        var braceSideJoints = pieces.Select(piece => piece.Vertices == 153).ToArray();
         var candidates = pieces.Select((piece, index) =>
             !rigidBase[index]
             && (IsTransverse(piece)
                 || centreBraces[index]
-                || nearDetailBraceJoints[index]
+                || braceSideJoints[index]
                 || (CrossesCentre(piece) && !IsLongitudinal(piece)))).ToArray();
         Console.WriteLine(
             $"section prototype: admitted {centreBraces.Count(value => value)} "
             + "centre-approaching diagonal brace island(s) and "
-            + $"{nearDetailBraceJoints.Count(value => value)} near-detail riveted joint island(s)");
+            + $"{braceSideJoints.Count(value => value)} riveted side-connector island(s)");
         for (var one = 0; one < pieces.Length; one++)
         {
             if (!candidates[one]) continue;
@@ -406,15 +404,15 @@ internal static class SectionCoefficients
                 // or a centre-crossing member. Letting either act as a general proximity connector
                 // would pull the nearby side arch into the stretching group even though that arch
                 // never crosses x=0.
-                var specialOne = centreBraces[one] || nearDetailBraceJoints[one];
-                var specialTwo = centreBraces[two] || nearDetailBraceJoints[two];
+                var specialOne = centreBraces[one] || braceSideJoints[one];
+                var specialTwo = centreBraces[two] || braceSideJoints[two];
                 if (specialOne || specialTwo)
                 {
                     var permitted =
-                        (centreBraces[one] && (seeds[two] || nearDetailBraceJoints[two]))
-                        || (centreBraces[two] && (seeds[one] || nearDetailBraceJoints[one]))
-                        || (nearDetailBraceJoints[one] && (seeds[two] || centreBraces[two]))
-                        || (nearDetailBraceJoints[two] && (seeds[one] || centreBraces[one]));
+                        (centreBraces[one] && (seeds[two] || braceSideJoints[two]))
+                        || (centreBraces[two] && (seeds[one] || braceSideJoints[one]))
+                        || (braceSideJoints[one] && (seeds[two] || centreBraces[two]))
+                        || (braceSideJoints[two] && (seeds[one] || centreBraces[one]));
                     if (!permitted) continue;
                 }
                 if (Touches(pieces[one], pieces[two])) Join(one, two);
@@ -477,10 +475,21 @@ internal static class SectionCoefficients
                 continue;
             }
 
-            result[index] = point.X < 0f && leftReach[groupIndex] > Epsilon
-                ? point.X / leftReach[groupIndex]
-                : point.X > 0f && rightReach[groupIndex] > Epsilon
-                    ? point.X / rightReach[groupIndex]
+            // The riveted side connector is the outer end of a centre-crossing brace at this height.
+            // Its own archetype edge must follow the rigidly translated side arch by the complete
+            // half-width delta; using the maximum reach of the whole 128 m truss left the shorter
+            // connector families behind. This exact family is selected offline and emitted as vertex
+            // coefficients, so no runtime geometry inference is introduced.
+            var localLeftReach = braceSideJoints[piece.Id]
+                ? Math.Max(0f, -piece.Left)
+                : leftReach[groupIndex];
+            var localRightReach = braceSideJoints[piece.Id]
+                ? Math.Max(0f, piece.Right)
+                : rightReach[groupIndex];
+            result[index] = point.X < 0f && localLeftReach > Epsilon
+                ? point.X / localLeftReach
+                : point.X > 0f && localRightReach > Epsilon
+                    ? point.X / localRightReach
                     : 0f;
         }
 
@@ -488,6 +497,19 @@ internal static class SectionCoefficients
             $"section prototype: {groups.Length} logical centre-crossing group(s), "
             + $"{groups.Sum(group => group.Length)} stretching island(s), "
             + $"{pieces.Length - groups.Sum(group => group.Length)} rigid side island(s)");
+        var jointOuterCoefficients = pieces
+            .Where(piece => braceSideJoints[piece.Id])
+            .SelectMany(piece => Enumerable.Range(0, mesh.Positions.Length)
+                .Where(index => labels[index] == piece.Id)
+                .Where(index => Math.Abs(
+                    Math.Abs(mesh.Positions[index].X)
+                    - Math.Max(Math.Abs(piece.Left), Math.Abs(piece.Right))) <= Epsilon)
+                .Select(index => Math.Abs(result[index])))
+            .ToArray();
+        Console.WriteLine(
+            $"section prototype: {braceSideJoints.Count(value => value)} side-joint "
+            + $"island(s), outer-edge coefficient "
+            + $"{jointOuterCoefficients.Min():0.0000}..{jointOuterCoefficients.Max():0.0000}");
         return result;
     }
 
