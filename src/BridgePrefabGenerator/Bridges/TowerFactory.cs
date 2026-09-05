@@ -582,21 +582,8 @@ internal sealed class TowerFactory
         var derived = new List<RenderPrefab>();
         for (var index = 0; index < meshes.Length; index++)
         {
-            // The shipped second LOD welds the two authored half-bases across x=0. Moving that mesh
-            // without changing its triangles must stretch material between the halves, contradicting
-            // the full-detail archetype's part decision. The first LOD preserves the two logical
-            // halves, so it is also the immutable archetype source for the second generated far view.
-            var source = rigidBelowDeckBase && index > 0 ? meshes[0] : meshes[index];
+            var source = meshes[index];
             if (source == null) continue;
-
-            if (rigidBelowDeckBase && index > 0)
-            {
-                _report.Note(string.Format(
-                    CultureInfo.InvariantCulture,
-                    "{0} LOD{1}: using TrussArchBridge03 archetype LOD1 because the shipped LOD{1} "
-                    + "welds the recorded left and right base parts across x=0.",
-                    name, index + 1));
-            }
 
             // The levels of detail belong to the piece, so they take its railing plan too. Left out,
             // a railing taken off the deck up close is still there at a distance.
@@ -607,10 +594,7 @@ internal sealed class TowerFactory
                 extra,
                 profile,
                 railings,
-                rigidBelowDeckBase,
-                rigidBelowDeckBase
-                    ? TrussArch03BaseGeometry.Level.Lod1
-                    : TrussArch03BaseGeometry.Level.Near);
+                rigidBelowDeckBase);
 
             if (copy == null) continue;
 
@@ -1792,8 +1776,7 @@ internal sealed class TowerFactory
             ScriptableObject.CreateInstance<RenderPrefab>(),
             name,
             extra,
-            rigidBelowDeckBase: rigidBelowDeckBase,
-            rigidBelowDeckBaseLevel: TrussArch03BaseGeometry.Level.Near);
+            rigidBelowDeckBase: rigidBelowDeckBase);
     }
 
     /// <summary>
@@ -1807,8 +1790,7 @@ internal sealed class TowerFactory
     private T? Widen<T>(
         RenderPrefab original, T widened, string name, float extra,
         TowerWidening.Profile? profile = null, bool railings = false,
-        bool rigidBelowDeckBase = false,
-        TrussArch03BaseGeometry.Level rigidBelowDeckBaseLevel = TrussArch03BaseGeometry.Level.Near)
+        bool rigidBelowDeckBase = false)
         where T : RenderPrefab
     {
         Mesh[]? loaded = null;
@@ -1903,32 +1885,15 @@ internal sealed class TowerFactory
                 var preserveOpenTrussSides =
                     BridgeStyleDefinitions.PreservesOpenTrussSideAssembly(_styleId);
                 TowerWidening.TrussWideningFacts trussFacts = default;
-                float3[] moved;
-                if (rigidBelowDeckBase)
-                {
-                    if (!TrussArch03BaseGeometry.TryTranslate(
-                        rigidBelowDeckBaseLevel, source, extra, out moved, out var reason))
-                    {
-                        _report.Defect(string.Format(
-                            CultureInfo.InvariantCulture,
-                            "'{0}' did not match the recorded TrussArchBridge03 below-deck base: {1}. "
-                            + "The derived prefab was stopped before geometry was written.",
-                            name, reason));
-                        return null;
-                    }
-                }
-                else if (openTruss)
-                {
-                    moved = TowerWidening.WidenOpenTruss(
-                        source, part.triangles, extra,
-                        preserveOpenTrussSides,
-                        scope!,
-                        out trussFacts);
-                }
-                else
-                {
-                    moved = TowerWidening.WidenParts(source, extra, scope!);
-                }
+                var moved = rigidBelowDeckBase
+                    ? TowerWidening.Widen(source, extra)
+                    : openTruss
+                        ? TowerWidening.WidenOpenTruss(
+                            source, part.triangles, extra,
+                            preserveOpenTrussSides,
+                            scope!,
+                            out trussFacts)
+                        : TowerWidening.WidenParts(source, extra, scope!);
                 if (openTruss && !trussFacts.ContractSatisfied)
                 {
                     _report.Defect(string.Format(
@@ -1943,9 +1908,8 @@ internal sealed class TowerFactory
                     _report.Note(string.Format(
                         CultureInfo.InvariantCulture,
                         "{0}: recorded TrussArchBridge03 below-deck base mapping applied: "
-                        + "both logical side halves, including their recorded x=0 boundary vertices, "
-                        + "use x -> x + sign(part) * {1:0.###} m; y and z are unchanged. This mesh "
-                        + "and every LOD use the same hardcoded archetype-part identity.",
+                        + "x -> x + sign(x) * {1:0.###} m; y and z unchanged. This mesh and every "
+                        + "LOD use the same hardcoded archetype-part identity.",
                         name,
                         extra * 0.5f));
                 }
