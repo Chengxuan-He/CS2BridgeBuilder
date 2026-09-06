@@ -19,13 +19,16 @@ internal static class BridgeNaming
 {
     private const string Separator = "_";
 
+    private static string Safe(string? value) =>
+        NameSanitizer.MakeFileSystemSafe(value).Replace('.', '_');
+
     /// <summary>The name before any uniqueness suffix.</summary>
     internal static string BaseName(Deck upper, Deck? lower, BridgeStyle? style)
     {
         var parts = new List<string> { Part(upper.AssetName) };
         if (lower != null) parts.Add(Part(lower.AssetName));
         parts.Add(Part(style?.Id ?? "Bridge"));
-        return NameSanitizer.MakeFileSystemSafe(string.Join(Separator, parts));
+        return Safe(string.Join(Separator, parts));
     }
 
     /// <summary>
@@ -41,7 +44,7 @@ internal static class BridgeNaming
         var trimmed = (chosen ?? string.Empty).Trim();
         return trimmed.Length == 0
             ? BaseName(upper, lower, style)
-            : NameSanitizer.MakeFileSystemSafe(trimmed);
+            : Safe(trimmed);
     }
 
     /// <summary>
