@@ -138,8 +138,8 @@ internal sealed class BridgeComposer
             "{0}: deck measures {1:0.#} m - {2}",
             target.name, targetWidth, string.Join(", ", breakdown)));
         // Most archetypes have one lateral envelope. White TrussArchBridge02 is the exception: its
-        // outside frame follows the complete road with its recorded fit adjustment while its inside
-        // frame follows the outermost boundary of the two outside footways.
+        // outside frame preserves the prototype's measured bridge-minus-visible-deck relationship,
+        // while its inside frame follows the outermost boundary of the two outside footways.
         var chosen = selection.Tower;
         var extra = selection.ExtraFor(structureWidth, style.Id);
 
@@ -147,9 +147,11 @@ internal sealed class BridgeComposer
         {
             _report.Note(string.Format(
                 CultureInfo.InvariantCulture,
-                "{0}: white truss-arch has two width targets: outer {1:0.###} m is the {2:0.###} m "
+                "{0}: white truss-arch has two width targets: outer {1:0.#####} m is the {2:0.###} m "
                 + "visible road width ({3:0.###} m road surface plus {4:0.###} m outward extensions) "
-                + "minus the recorded {5:0.###} m overall fit adjustment; inner {10:0.###} m reaches "
+                + "plus the prototype bridge-minus-deck constant {5:0.#####} m "
+                + "({11:0.#####} m prototype bridge minus {12:0.###} m prototype visible deck); "
+                + "inner {10:0.###} m reaches "
                 + "{8:0.###} m left and {9:0.###} m right from x=0. These are the outer boundaries "
                 + "of the outermost {6:0.###} m left and {7:0.###} m right footways; a side without "
                 + "a footway falls back to its road edge and its outer bridge railing is removed. "
@@ -157,9 +159,11 @@ internal sealed class BridgeComposer
                 + "named inner and outer layers are derived "
                 + "independently and every LOD uses the same layer assignment.",
                 target.name, outerStructureWidth, visibleRoadWidth, targetWidth, outwardExtension,
-                BridgeTowers.WhiteTrussArchWidths.OuterWidthReduction,
+                BridgeTowers.WhiteTrussArchWidths.PrototypeBridgeMinusDeck,
                 roadEdges.Left.SidewalkWidth, roadEdges.Right.SidewalkWidth,
-                structureEdges.Left, structureEdges.Right, structureWidth));
+                structureEdges.Left, structureEdges.Right, structureWidth,
+                TrussArch02Geometry.PrototypeSectionOuterWidth,
+                BridgeTowers.WhiteTrussArchWidths.PrototypeVisibleDeckWidth));
         }
 
         // No complaint about how far the tower is being widened.

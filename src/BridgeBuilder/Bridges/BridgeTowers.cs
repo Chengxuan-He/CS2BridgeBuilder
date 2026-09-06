@@ -541,10 +541,14 @@ internal static class BridgeTowers
     /// </summary>
     internal static class WhiteTrussArchWidths
     {
-        // NetPiecePrefab.m_Width is the prototype's authored declaration. The immutable geometry map
-        // separately uses its exact measured 20.79248 m vertex span.
+        // The prototype's visible deck is 21 m: on each side one 3.5 m sidewalk and two 3 m drive
+        // sections, plus the two 1 m outside edges. Its immutable full-detail mesh spans exactly
+        // 20.79248 m. Preserve that measured bridge-minus-deck relationship for every generated road
+        // instead of applying a visually estimated adjustment.
         internal const float OverheadOuter = 20.8f;
-        internal const float OuterWidthReduction = 0.5f;
+        internal const float PrototypeVisibleDeckWidth = 21f;
+        internal const float PrototypeBridgeMinusDeck =
+            TrussArch02Geometry.PrototypeSectionOuterWidth - PrototypeVisibleDeckWidth;
         private const string PillarMesh = "TrussArchBridge02NetPillar Mesh";
         private const string PillarFootingMesh = "TrussArchBridge02NetPillarBase Mesh";
 
@@ -553,7 +557,7 @@ internal static class BridgeTowers
 
         internal static float OuterTarget(string? styleId, float visibleRoadWidth) =>
             styleId == "TrussArch02"
-                ? Math.Max(0f, visibleRoadWidth - OuterWidthReduction)
+                ? Math.Max(0f, visibleRoadWidth + PrototypeBridgeMinusDeck)
                 : visibleRoadWidth;
 
         internal static float TowerPartExtra(
