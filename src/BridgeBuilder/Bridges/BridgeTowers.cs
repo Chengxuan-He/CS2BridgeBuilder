@@ -509,37 +509,29 @@ internal static class BridgeTowers
     ///
     /// These are exact source identities and authored full-detail spans captured from the prototype;
     /// they are intentionally not rediscovered from bounds, topology or non-zero coordinate tests in
-    /// the game. The overhead section's declared width is its outer envelope. The pillar's narrow main
-    /// mesh is the inner layer and its wide base mesh is the outer layer.
+    /// the game. The overhead section contains the outer deck-base/railing layer and the inner arch.
+    /// Both pillar meshes are bridge-pier structure and therefore follow the inner arch displacement.
+    /// In particular, a prefab name containing "PillarBase" identifies the pier footing, not the
+    /// contract's base immediately below the road deck.
     /// </summary>
     internal static class WhiteTrussArchWidths
     {
         // NetPiecePrefab.m_Width is the prototype's authored declaration. The immutable geometry map
         // separately uses its exact measured 20.79248 m vertex span.
         internal const float OverheadOuter = 20.8f;
-        internal const float PillarInner = TrussArch02Geometry.PrototypePillarInnerWidth;
-        internal const float PillarOuter = TrussArch02Geometry.PrototypePillarOuterWidth;
-
-        private const string PillarInnerMesh = "TrussArchBridge02NetPillar Mesh";
-        private const string PillarOuterMesh = "TrussArchBridge02NetPillarBase Mesh";
+        private const string PillarMesh = "TrussArchBridge02NetPillar Mesh";
+        private const string PillarFootingMesh = "TrussArchBridge02NetPillarBase Mesh";
 
         internal static float OverheadExtra(string? styleId, float outerWidth, float fallback) =>
             styleId == "TrussArch02" ? outerWidth - OverheadOuter : fallback;
 
         internal static float TowerPartExtra(
-            string? styleId, string? sourceMeshName, float outerWidth, float innerWidth,
-            float fallback)
+            string? styleId, string? sourceMeshName, float innerWidth, float fallback)
         {
             if (styleId != "TrussArch02") return fallback;
-            if (string.Equals(sourceMeshName, PillarInnerMesh, StringComparison.Ordinal))
-            {
-                return innerWidth - PillarInner;
-            }
-
-            if (string.Equals(sourceMeshName, PillarOuterMesh, StringComparison.Ordinal))
-            {
-                return outerWidth - PillarOuter;
-            }
+            if (string.Equals(sourceMeshName, PillarMesh, StringComparison.Ordinal)
+                || string.Equals(sourceMeshName, PillarFootingMesh, StringComparison.Ordinal))
+                return innerWidth - TrussArch02Geometry.PrototypeSectionInnerWidth;
 
             return fallback;
         }
