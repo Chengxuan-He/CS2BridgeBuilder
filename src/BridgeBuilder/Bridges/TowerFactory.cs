@@ -51,9 +51,25 @@ internal sealed class TowerFactory
 
     /// <summary>
     /// The target bridge's two semantic width envelopes. They are equal for ordinary styles; the
-    /// white TrussArchBridge02 records full road width outside and road-minus-footways inside.
+    /// white TrussArchBridge02 records its fitted visible-road envelope outside and the outermost
+    /// footway boundaries inside.
     /// </summary>
-    private (float Outer, float Inner)? _structureWidths;
+    private readonly struct StructureWidths
+    {
+        internal StructureWidths(float outer, float innerLeft, float innerRight)
+        {
+            Outer = Math.Max(0f, outer);
+            InnerLeft = Math.Max(0f, innerLeft);
+            InnerRight = Math.Max(0f, innerRight);
+        }
+
+        internal float Outer { get; }
+        internal float InnerLeft { get; }
+        internal float InnerRight { get; }
+        internal float Inner => InnerLeft + InnerRight;
+    }
+
+    private StructureWidths? _structureWidths;
 
     /// <summary>
     /// What is being done to the kerb railing of the piece in hand, while it is being derived.
@@ -88,8 +104,8 @@ internal sealed class TowerFactory
     internal void MeasureFootways(RoadEdge left, RoadEdge right) => _roadEdges = (left, right);
 
     /// <summary>Records the reviewed outer and inner targets for the bridge currently being built.</summary>
-    internal void MeasureStructureWidths(float outer, float inner) =>
-        _structureWidths = (Math.Max(0f, outer), Math.Max(0f, inner));
+    internal void MeasureStructureWidths(float outer, float innerLeft, float innerRight) =>
+        _structureWidths = new StructureWidths(outer, innerLeft, innerRight);
 
 
     /// <summary>The ground decal every tower's base part carries, looked up once per run.</summary>
@@ -1305,9 +1321,21 @@ internal sealed class TowerFactory
                 var position = info.m_Position;
                 if (Math.Abs(position.x) > 0.001f)
                 {
-                    position.x += position.x > 0f
-                        ? partExtra * 0.5f
-                        : -partExtra * 0.5f;
+                    if (TrussArch02Geometry.IsRecorded(_styleId, sourceMesh.name)
+                        && _structureWidths.HasValue)
+                    {
+                        position.x += position.x > 0f
+                            ? _structureWidths.Value.InnerRight
+                                - TrussArch02Geometry.PrototypeSectionInnerRight
+                            : -(_structureWidths.Value.InnerLeft
+                                - TrussArch02Geometry.PrototypeSectionInnerLeft);
+                    }
+                    else
+                    {
+                        position.x += position.x > 0f
+                            ? partExtra * 0.5f
+                            : -partExtra * 0.5f;
+                    }
                 }
 
                 meshes.Add(new ObjectMeshInfo
@@ -2041,6 +2069,7 @@ internal sealed class TowerFactory
                 var rigidVertices = 0;
                 var stretchingVertices = 0;
                 float3[] moved;
+                bool[]? dropped = null;
                 if (recordedTruss02)
                 {
                     var applied = false;
@@ -2050,16 +2079,29 @@ internal sealed class TowerFactory
                             original.name,
                             source,
                             _structureWidths.Value.Outer,
-                            _structureWidths.Value.Inner,
+                            _structureWidths.Value.InnerLeft,
+                            _structureWidths.Value.InnerRight,
+                            _roadEdges.HasValue && !_roadEdges.Value.Left.IsSidewalk,
+                            _roadEdges.HasValue && !_roadEdges.Value.Right.IsSidewalk,
                             out moved,
-                            out whiteFacts);
+                            out whiteFacts,
+                            out dropped);
                     }
                     else if (!railings)
                     {
+                        var leftDelta = _structureWidths.HasValue
+                            ? _structureWidths.Value.InnerLeft
+                                - TrussArch02Geometry.PrototypeSectionInnerLeft
+                            : extra * 0.5f;
+                        var rightDelta = _structureWidths.HasValue
+                            ? _structureWidths.Value.InnerRight
+                                - TrussArch02Geometry.PrototypeSectionInnerRight
+                            : extra * 0.5f;
                         applied = TrussArch02Geometry.TryWidenTowerPart(
                             original.name,
                             source,
-                            extra,
+                            leftDelta,
+                            rightDelta,
                             out moved,
                             out whiteFacts);
                     }
@@ -2174,18 +2216,23 @@ internal sealed class TowerFactory
                     _report.Note(string.Format(
                         CultureInfo.InvariantCulture,
                         "{0}: immutable TrussArchBridge02 two-layer map applied: {1} inner vertices "
-                        + "use width delta {2:0.###} m and {3} outer vertices use width delta "
-                        + "{4:0.###} m; {5} centre-crossing vertices stretch against their recorded "
-                        + "part span and {6} other vertices follow their recorded rigid translation "
-                        + "with x -> x + sign(x) * delta. Full detail and every LOD inherit the same "
+                        + "use left/right edge deltas {2:0.###}/{3:0.###} m and {4} outer vertices "
+                        + "use left/right edge deltas {5:0.###}/{6:0.###} m; {7} centre-crossing "
+                        + "vertices stretch against their recorded part span and {8} other vertices "
+                        + "follow their recorded rigid translation; {9} outer-railing vertices are "
+                        + "removed on sides without a sidewalk. Rigid vertices use "
+                        + "x -> x + sign(x) * delta. Full detail and every LOD inherit the same "
                         + "metaprogram classification; no runtime geometry inference was performed.",
                         name,
                         whiteFacts.InnerVertices,
-                        whiteFacts.InnerExtra,
+                        whiteFacts.InnerLeftDelta,
+                        whiteFacts.InnerRightDelta,
                         whiteFacts.OuterVertices,
-                        whiteFacts.OuterExtra,
+                        whiteFacts.OuterLeftDelta,
+                        whiteFacts.OuterRightDelta,
                         whiteFacts.StretchingVertices,
-                        whiteFacts.RigidVertices));
+                        whiteFacts.RigidVertices,
+                        whiteFacts.DroppedRailingVertices));
                 }
                 else if (blueSection)
                 {
@@ -2261,8 +2308,6 @@ internal sealed class TowerFactory
                 // and its levels of detail share one, and a field outlives the piece that set it: the
                 // towers are derived after the sections, so a plan left standing was applied to them
                 // too and drew whatever stood in its band - part of a leg - to a single point.
-                bool[]? dropped = null;
-
                 if (IsGoldenTopOrnament(name, railings))
                 {
                     var corrected = TowerWidening.RectangularizeCentralSpoke(

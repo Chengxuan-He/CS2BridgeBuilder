@@ -188,7 +188,10 @@ internal static class RawMeshFile
     }
 }
 
-internal readonly record struct WhiteTransformMap(bool[] InnerLayer, float[] StretchCoefficients);
+internal readonly record struct WhiteTransformMap(
+    bool[] InnerLayer,
+    float[] StretchCoefficients,
+    bool[] OuterRailing);
 
 internal static class WhiteTrussCoefficients
 {
@@ -208,16 +211,24 @@ internal static class WhiteTrussCoefficients
             .ToArray();
         var inner = new bool[mesh.Positions.Length];
         var coefficients = Enumerable.Repeat(float.NaN, mesh.Positions.Length).ToArray();
+        var outerRailing = new bool[mesh.Positions.Length];
         for (var index = 0; index < mesh.Positions.Length; index++)
         {
             var piece = pieces[labels[index]];
             inner[index] = innerPieces[piece.Id];
+            // The full-detail white archetype authors its outer railing as separate islands wholly
+            // above y=0. The deck base and its fittings reach or cross y=0. This coordinate-based
+            // classification is intentionally confined to this offline metaprogram; runtime receives
+            // only the exact per-vertex bitmap and never guesses from geometry.
+            outerRailing[index] = !inner[index] && piece.Low > 0f;
             if (!inner[index] || piece.Left > CentreEpsilon || piece.Right < -CentreEpsilon) continue;
 
-            var width = piece.Right - piece.Left;
-            if (width <= CentreEpsilon) continue;
-            var centre = (piece.Left + piece.Right) * 0.5f;
-            coefficients[index] = 2f * (mesh.Positions[index].X - centre) / width;
+            var x = mesh.Positions[index].X;
+            coefficients[index] = x < -CentreEpsilon && piece.Left < -CentreEpsilon
+                ? x / Math.Abs(piece.Left)
+                : x > CentreEpsilon && piece.Right > CentreEpsilon
+                    ? x / piece.Right
+                    : 0f;
         }
 
         var innerMembers = pieces.Where(piece => innerPieces[piece.Id]).ToArray();
@@ -233,7 +244,7 @@ internal static class WhiteTrussCoefficients
             + $"{outerMembers.Length} outer island(s); inner x {innerLeft:0.000000}..{innerRight:0.000000}, "
             + $"outer x {outerLeft:0.000000}..{outerRight:0.000000}; clean divider gap "
             + $"{innerNearestOuter:0.000000}..{outerNearestInner:0.000000} m");
-        return new WhiteTransformMap(inner, coefficients);
+        return new WhiteTransformMap(inner, coefficients, outerRailing);
     }
 
     internal static WhiteTransformMap FromPortalPrototype(MeshData mesh, bool inner)
@@ -247,13 +258,14 @@ internal static class WhiteTrussCoefficients
                 ? float.NaN
                 : portal[index];
         }
-        return new WhiteTransformMap(layers, coefficients);
+        return new WhiteTransformMap(layers, coefficients, new bool[mesh.Positions.Length]);
     }
 
     internal static WhiteTransformMap Rigid(MeshData mesh, bool inner) =>
         new(
             Enumerable.Repeat(inner, mesh.Positions.Length).ToArray(),
-            Enumerable.Repeat(float.NaN, mesh.Positions.Length).ToArray());
+            Enumerable.Repeat(float.NaN, mesh.Positions.Length).ToArray(),
+            new bool[mesh.Positions.Length]);
 
     internal static WhiteTransformMap FromNearestPrototype(
         MeshData mesh, MeshData prototype, WhiteTransformMap prototypeMap, string label)
@@ -261,12 +273,14 @@ internal static class WhiteTrussCoefficients
         var tree = new PositionTree(prototype.Positions);
         var inner = new bool[mesh.Positions.Length];
         var coefficients = Enumerable.Repeat(float.NaN, mesh.Positions.Length).ToArray();
+        var outerRailing = new bool[mesh.Positions.Length];
         var maximum = 0f;
         var total = 0d;
         for (var index = 0; index < mesh.Positions.Length; index++)
         {
             var nearest = tree.Nearest(mesh.Positions[index], out var squaredDistance);
             inner[index] = prototypeMap.InnerLayer[nearest];
+            outerRailing[index] = prototypeMap.OuterRailing[nearest];
             var inherited = prototypeMap.StretchCoefficients[nearest];
             if (!float.IsNaN(inherited))
             {
@@ -283,17 +297,19 @@ internal static class WhiteTrussCoefficients
         Console.WriteLine(
             $"white {label} inherits full detail: nearest vertex average "
             + $"{total / mesh.Positions.Length:0.0000} m, maximum {maximum:0.0000} m");
-        return new WhiteTransformMap(inner, coefficients);
+        return new WhiteTransformMap(inner, coefficients, outerRailing);
     }
 
     internal static void Report(string name, WhiteTransformMap map)
     {
         var inner = map.InnerLayer.Count(value => value);
         var stretched = map.StretchCoefficients.Count(value => !float.IsNaN(value));
+        var outerRailing = map.OuterRailing.Count(value => value);
         var values = map.StretchCoefficients.Where(value => !float.IsNaN(value)).ToArray();
         Console.WriteLine(
             $"{name}: {inner} inner/{map.InnerLayer.Length - inner} outer vertices; "
-            + $"{stretched} stretching/{map.InnerLayer.Length - stretched} rigid vertices"
+            + $"{stretched} stretching/{map.InnerLayer.Length - stretched} rigid vertices; "
+            + $"{outerRailing} removable outer-railing vertices"
             + (values.Length == 0
                 ? string.Empty
                 : $"; coefficient {values.Min():0.0000}..{values.Max():0.0000}"));
@@ -322,6 +338,7 @@ internal static class WhiteTrussCoefficients
             source.AppendLine($"                {entry.Map.InnerLayer.Length},");
             source.AppendLine($"                \"{encoded.Inner}\",");
             source.AppendLine($"                \"{encoded.Stretch}\",");
+            source.AppendLine($"                \"{encoded.OuterRailing}\",");
             source.AppendLine($"                \"{encoded.Coefficients}\"),");
         }
         source.AppendLine("        };");
@@ -329,15 +346,19 @@ internal static class WhiteTrussCoefficients
         File.WriteAllText(path, source.ToString(), new System.Text.UTF8Encoding(false));
     }
 
-    private static (string Inner, string Stretch, string Coefficients) Encode(WhiteTransformMap map)
+    private static (string Inner, string Stretch, string OuterRailing, string Coefficients) Encode(
+        WhiteTransformMap map)
     {
         var inner = new byte[(map.InnerLayer.Length + 7) / 8];
         var stretch = new byte[inner.Length];
+        var outerRailing = new byte[inner.Length];
         using var payload = new MemoryStream();
         using var writer = new BinaryWriter(payload);
         for (var index = 0; index < map.InnerLayer.Length; index++)
         {
             if (map.InnerLayer[index]) inner[index >> 3] |= (byte)(1 << (index & 7));
+            if (map.OuterRailing[index])
+                outerRailing[index >> 3] |= (byte)(1 << (index & 7));
             var coefficient = map.StretchCoefficients[index];
             if (float.IsNaN(coefficient)) continue;
             stretch[index >> 3] |= (byte)(1 << (index & 7));
@@ -347,6 +368,7 @@ internal static class WhiteTrussCoefficients
         return (
             Convert.ToBase64String(inner),
             Convert.ToBase64String(stretch),
+            Convert.ToBase64String(outerRailing),
             Convert.ToBase64String(payload.ToArray()));
     }
 

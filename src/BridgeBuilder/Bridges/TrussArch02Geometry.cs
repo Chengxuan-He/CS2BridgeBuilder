@@ -23,6 +23,8 @@ internal static class TrussArch02Geometry
 {
     // Exact lateral spans measured from the shipped full-detail archetype by GeometryMetaprogram.
     internal const float PrototypeSectionOuterWidth = 20.79248f;
+    internal const float PrototypeSectionInnerLeft = 8.918701f;
+    internal const float PrototypeSectionInnerRight = 8.818848f;
     internal const float PrototypeSectionInnerWidth = 17.737549f;
     internal const float PrototypePillarInnerWidth = 15.699708f;
     internal const float PrototypePillarOuterWidth = 30.15966f;
@@ -39,54 +41,107 @@ internal static class TrussArch02Geometry
         string meshName,
         float3[] source,
         float targetOuterWidth,
-        float targetInnerWidth,
+        float targetInnerLeft,
+        float targetInnerRight,
+        bool removeLeftOuterRailing,
+        bool removeRightOuterRailing,
         out float3[] moved,
-        out TransformFacts facts)
+        out TransformFacts facts,
+        out bool[]? dropped)
     {
-        var outerExtra = targetOuterWidth - PrototypeSectionOuterWidth;
-        var innerExtra = targetInnerWidth - PrototypeSectionInnerWidth;
-        return TryApply(meshName, source, outerExtra, innerExtra, out moved, out facts);
+        var outerDelta = (targetOuterWidth - PrototypeSectionOuterWidth) * 0.5f;
+        var innerLeftDelta = targetInnerLeft - PrototypeSectionInnerLeft;
+        var innerRightDelta = targetInnerRight - PrototypeSectionInnerRight;
+        return TryApply(
+            meshName,
+            source,
+            outerDelta,
+            outerDelta,
+            innerLeftDelta,
+            innerRightDelta,
+            removeLeftOuterRailing,
+            removeRightOuterRailing,
+            out moved,
+            out facts,
+            out dropped);
     }
 
     internal static bool TryWidenTowerPart(
         string meshName,
         float3[] source,
-        float extra,
+        float leftDelta,
+        float rightDelta,
         out float3[] moved,
         out TransformFacts facts) =>
-        TryApply(meshName, source, extra, extra, out moved, out facts);
+        TryApply(
+            meshName,
+            source,
+            leftDelta,
+            rightDelta,
+            leftDelta,
+            rightDelta,
+            removeLeftOuterRailing: false,
+            removeRightOuterRailing: false,
+            out moved,
+            out facts,
+            out _);
 
     private static bool TryApply(
         string meshName,
         float3[] source,
-        float outerExtra,
-        float innerExtra,
+        float outerLeftDelta,
+        float outerRightDelta,
+        float innerLeftDelta,
+        float innerRightDelta,
+        bool removeLeftOuterRailing,
+        bool removeRightOuterRailing,
         out float3[] moved,
-        out TransformFacts facts)
+        out TransformFacts facts,
+        out bool[]? dropped)
     {
         moved = new float3[source.Length];
         Array.Copy(source, moved, source.Length);
         facts = default;
+        dropped = null;
         if (!Maps.TryGetValue(meshName, out var map) || !map.Matches(source.Length)) return false;
 
         var coefficientOffset = 0;
         var innerVertices = 0;
         var stretchedVertices = 0;
+        var droppedRailingVertices = 0;
         for (var index = 0; index < moved.Length; index++)
         {
             var inner = map.IsInner(index);
-            var extra = inner ? innerExtra : outerExtra;
+            var leftDelta = inner ? innerLeftDelta : outerLeftDelta;
+            var rightDelta = inner ? innerRightDelta : outerRightDelta;
             if (inner) innerVertices++;
 
             if (map.Stretches(index))
             {
-                moved[index].x = source[index].x
-                    + map.Coefficient(coefficientOffset++) * (extra * 0.5f);
+                var coefficient = map.Coefficient(coefficientOffset++);
+                moved[index].x = source[index].x + (coefficient < 0f
+                    ? coefficient * leftDelta
+                    : coefficient > 0f
+                        ? coefficient * rightDelta
+                        : 0f);
                 stretchedVertices++;
             }
             else
             {
-                moved[index].x = TowerWidening.Spread(source[index].x, extra);
+                moved[index].x = source[index].x < 0f
+                    ? source[index].x - leftDelta
+                    : source[index].x > 0f
+                        ? source[index].x + rightDelta
+                        : source[index].x;
+            }
+
+            if (map.IsOuterRailing(index)
+                && ((source[index].x < 0f && removeLeftOuterRailing)
+                    || (source[index].x > 0f && removeRightOuterRailing)))
+            {
+                dropped ??= new bool[source.Length];
+                dropped[index] = true;
+                droppedRailingVertices++;
             }
         }
 
@@ -95,8 +150,11 @@ internal static class TrussArch02Geometry
             source.Length - innerVertices,
             stretchedVertices,
             source.Length - stretchedVertices,
-            innerExtra,
-            outerExtra);
+            innerLeftDelta,
+            innerRightDelta,
+            outerLeftDelta,
+            outerRightDelta,
+            droppedRailingVertices);
         return coefficientOffset == map.CoefficientCount;
     }
 
@@ -107,23 +165,32 @@ internal static class TrussArch02Geometry
             int outerVertices,
             int stretchingVertices,
             int rigidVertices,
-            float innerExtra,
-            float outerExtra)
+            float innerLeftDelta,
+            float innerRightDelta,
+            float outerLeftDelta,
+            float outerRightDelta,
+            int droppedRailingVertices)
         {
             InnerVertices = innerVertices;
             OuterVertices = outerVertices;
             StretchingVertices = stretchingVertices;
             RigidVertices = rigidVertices;
-            InnerExtra = innerExtra;
-            OuterExtra = outerExtra;
+            InnerLeftDelta = innerLeftDelta;
+            InnerRightDelta = innerRightDelta;
+            OuterLeftDelta = outerLeftDelta;
+            OuterRightDelta = outerRightDelta;
+            DroppedRailingVertices = droppedRailingVertices;
         }
 
         internal int InnerVertices { get; }
         internal int OuterVertices { get; }
         internal int StretchingVertices { get; }
         internal int RigidVertices { get; }
-        internal float InnerExtra { get; }
-        internal float OuterExtra { get; }
+        internal float InnerLeftDelta { get; }
+        internal float InnerRightDelta { get; }
+        internal float OuterLeftDelta { get; }
+        internal float OuterRightDelta { get; }
+        internal int DroppedRailingVertices { get; }
     }
 
     internal sealed class TransformMap
@@ -131,15 +198,21 @@ internal static class TrussArch02Geometry
         private readonly int _vertices;
         private readonly byte[] _innerLayer;
         private readonly byte[] _stretching;
+        private readonly byte[] _outerRailing;
         private readonly byte[] _coefficients;
         private readonly int _markedVertices;
 
         internal TransformMap(
-            int vertices, string innerLayer, string stretching, string coefficients)
+            int vertices,
+            string innerLayer,
+            string stretching,
+            string outerRailing,
+            string coefficients)
         {
             _vertices = vertices;
             _innerLayer = Convert.FromBase64String(innerLayer);
             _stretching = Convert.FromBase64String(stretching);
+            _outerRailing = Convert.FromBase64String(outerRailing);
             _coefficients = Convert.FromBase64String(coefficients);
             foreach (var bits in _stretching)
             {
@@ -158,6 +231,7 @@ internal static class TrussArch02Geometry
             vertices == _vertices
             && _innerLayer.Length == (vertices + 7) / 8
             && _stretching.Length == (vertices + 7) / 8
+            && _outerRailing.Length == (vertices + 7) / 8
             && _coefficients.Length == _markedVertices * sizeof(float);
 
         internal bool IsInner(int vertex) =>
@@ -165,6 +239,9 @@ internal static class TrussArch02Geometry
 
         internal bool Stretches(int vertex) =>
             (_stretching[vertex >> 3] & (1 << (vertex & 7))) != 0;
+
+        internal bool IsOuterRailing(int vertex) =>
+            (_outerRailing[vertex >> 3] & (1 << (vertex & 7))) != 0;
 
         internal float Coefficient(int index) =>
             BitConverter.ToSingle(_coefficients, index * sizeof(float));

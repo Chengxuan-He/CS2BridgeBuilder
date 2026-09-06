@@ -66,13 +66,17 @@ internal sealed class BridgeComposer
         var targetWidth = measuredRoad != null
             ? WidthOf(measuredRoad, roadWidth, breakdown)
             : roadWidth;
-        var roadEdges = RoadEdgesOf(measuredRoad, targetWidth);
-        var structureWidth = BridgeTowers.StructureWidthFor(
+        var whiteTruss = BridgeTowers.WidthFollowsSidewalks(style.Id);
+        var roadEdges = RoadEdgesOf(measuredRoad, targetWidth, whiteTruss);
+        var structureEdges = BridgeTowers.StructureEdgesFor(
             style.Id, targetWidth, roadEdges.Left, roadEdges.Right);
-        var outwardExtension = BridgeTowers.WidthFollowsSidewalks(style.Id)
+        var structureWidth = structureEdges.Width;
+        var outwardExtension = whiteTruss
             ? NetWidth.OutwardExtensionOf(measuredRoad)
             : 0f;
-        var outerStructureWidth = targetWidth + outwardExtension;
+        var visibleRoadWidth = targetWidth + outwardExtension;
+        var outerStructureWidth = BridgeTowers.WhiteTrussArchWidths.OuterTarget(
+            style.Id, visibleRoadWidth);
 
         // Refused rather than attempted. A bridge that is not generated is a bridge the player still
         // has; a bridge generated from an arrangement nobody has measured is one that looks built and
@@ -134,8 +138,8 @@ internal sealed class BridgeComposer
             "{0}: deck measures {1:0.#} m - {2}",
             target.name, targetWidth, string.Join(", ", breakdown)));
         // Most archetypes have one lateral envelope. White TrussArchBridge02 is the exception: its
-        // outside frame follows the complete road while its inside frame follows the carriageway left
-        // after the two outside footways are removed.
+        // outside frame follows the complete road with its recorded fit adjustment while its inside
+        // frame follows the outermost boundary of the two outside footways.
         var chosen = selection.Tower;
         var extra = selection.ExtraFor(structureWidth, style.Id);
 
@@ -143,13 +147,19 @@ internal sealed class BridgeComposer
         {
             _report.Note(string.Format(
                 CultureInfo.InvariantCulture,
-                "{0}: white truss-arch has two width targets: outer {1:0.###} m reaches the visible "
-                + "road edge ({2:0.###} m road surface plus {3:0.###} m outward extensions); inner "
-                + "{6:0.###} m reaches the inside footway edges after {4:0.###} m left and {5:0.###} "
-                + "m right footways. The prototype's named inner and outer layers are derived "
+                "{0}: white truss-arch has two width targets: outer {1:0.###} m is the {2:0.###} m "
+                + "visible road width ({3:0.###} m road surface plus {4:0.###} m outward extensions) "
+                + "minus the recorded {5:0.###} m overall fit adjustment; inner {10:0.###} m reaches "
+                + "{8:0.###} m left and {9:0.###} m right from x=0. These are the outer boundaries "
+                + "of the outermost {6:0.###} m left and {7:0.###} m right footways; a side without "
+                + "a footway falls back to its road edge and its outer bridge railing is removed. "
+                + "Empty lanes remain road sections and are not counted as footways. The prototype's "
+                + "named inner and outer layers are derived "
                 + "independently and every LOD uses the same layer assignment.",
-                target.name, outerStructureWidth, targetWidth, outwardExtension,
-                roadEdges.Left.SidewalkWidth, roadEdges.Right.SidewalkWidth, structureWidth));
+                target.name, outerStructureWidth, visibleRoadWidth, targetWidth, outwardExtension,
+                BridgeTowers.WhiteTrussArchWidths.OuterWidthReduction,
+                roadEdges.Left.SidewalkWidth, roadEdges.Right.SidewalkWidth,
+                structureEdges.Left, structureEdges.Right, structureWidth));
         }
 
         // No complaint about how far the tower is being widened.
@@ -225,7 +235,8 @@ internal sealed class BridgeComposer
         if (_towers != null)
         {
             _towers.MeasureFootways(roadEdges.Left, roadEdges.Right);
-            _towers.MeasureStructureWidths(outerStructureWidth, structureWidth);
+            _towers.MeasureStructureWidths(
+                outerStructureWidth, structureEdges.Left, structureEdges.Right);
             _towers.MeasureStructureExtra(extra);
         }
 
@@ -825,13 +836,13 @@ internal sealed class BridgeComposer
     /// </summary>
 
     /// <summary>
-    /// The actual outer section boundary at each edge of the target road, and its inner boundary when
-    /// that outermost section is a sidewalk.
+    /// The actual outer section boundary at each edge of the target road, and both boundaries of the
+    /// outermost sidewalk selected for that side.
     ///
-    /// Sections are laid out across the road in order, so the outermost on each side is the first and
-    /// the last that is not the outward extension. If that section is a footway, its width is the
-    /// space between the archetype's two railings on that side; if it is a shoulder or a lane, the
-    /// archetype has no railing at that kerb because there is no kerb.
+    /// Sections are laid out across the road in order. Ordinary styles keep their established rule
+    /// of inspecting the first and last section after outward extensions are removed. The white truss
+    /// scans inward only as far as x=0 for the first actual sidewalk on each side, so an empty lane is
+    /// not mistaken for one and a one-sided sidewalk is not mirrored onto the other side.
     ///
     /// Which of the two is the left was got wrong twice. The list order is a convention about how the
     /// road was written down, the mesh has its own axis, and nothing in either says which way round
@@ -842,7 +853,8 @@ internal sealed class BridgeComposer
     /// Asked of each side separately. A road with a footway on one side and a shoulder on the other is
     /// an ordinary thing, and its bridge has one inner railing.
     /// </summary>
-    private static (RoadEdge Left, RoadEdge Right) RoadEdgesOf(RoadPrefab? target, float fallbackWidth)
+    private static (RoadEdge Left, RoadEdge Right) RoadEdgesOf(
+        RoadPrefab? target, float fallbackWidth, bool findOutermostSidewalk)
     {
         var sections = target?.m_Sections;
         if (sections == null)
@@ -870,7 +882,7 @@ internal sealed class BridgeComposer
         }
 
         var outerBoundary = total > 0f ? total * 0.5f : Math.Max(0f, fallbackWidth * 0.5f);
-        if (counted.Count < 2)
+        if (counted.Count == 0)
         {
             return (
                 new RoadEdge(outerBoundary, outerBoundary, isSidewalk: false),
@@ -890,12 +902,55 @@ internal sealed class BridgeComposer
                 sidewalk);
         }
 
+        static RoadEdge OutermostSidewalkOf(
+            IReadOnlyList<(NetSectionPrefab Section, float Start, float Width)> entries,
+            float outer,
+            bool positive)
+        {
+            if (positive)
+            {
+                for (var index = 0; index < entries.Count; index++)
+                {
+                    var entry = entries[index];
+                    if (entry.Start >= outer) break;
+                    if (!SectionNames.IsSidewalk(entry.Section.name)) continue;
+
+                    var sidewalkOuter = Math.Max(0f, outer - entry.Start);
+                    var sidewalkInner = Math.Max(
+                        0f, outer - Math.Min(outer, entry.Start + entry.Width));
+                    return new RoadEdge(
+                        outer, sidewalkOuter, sidewalkInner, isSidewalk: true);
+                }
+            }
+            else
+            {
+                for (var index = entries.Count - 1; index >= 0; index--)
+                {
+                    var entry = entries[index];
+                    var end = entry.Start + entry.Width;
+                    if (end <= outer) break;
+                    if (!SectionNames.IsSidewalk(entry.Section.name)) continue;
+
+                    var sidewalkOuter = Math.Max(0f, end - outer);
+                    var sidewalkInner = Math.Max(0f, entry.Start - outer);
+                    return new RoadEdge(
+                        outer, sidewalkOuter, sidewalkInner, isSidewalk: true);
+                }
+            }
+
+            return new RoadEdge(outer, outer, isSidewalk: false);
+        }
+
         // Observed game convention: the first non-side-extension section is positive mesh x and the
         // last is negative mesh x. TowerFactory calls negative x "left" and positive x "right";
         // preserve that mapping here. The boundary values themselves are absolute distances.
-        return (
-            EdgeOf(counted[counted.Count - 1], outerBoundary),
-            EdgeOf(counted[0], outerBoundary));
+        return findOutermostSidewalk
+            ? (
+                OutermostSidewalkOf(counted, outerBoundary, positive: false),
+                OutermostSidewalkOf(counted, outerBoundary, positive: true))
+            : (
+                EdgeOf(counted[counted.Count - 1], outerBoundary),
+                EdgeOf(counted[0], outerBoundary));
     }
 
     private void RemoveDeckRailings(RoadPrefab target, string? styleId)

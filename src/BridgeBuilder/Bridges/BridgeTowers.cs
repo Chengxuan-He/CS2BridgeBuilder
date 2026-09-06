@@ -250,8 +250,8 @@ internal static class BridgeTowers
                 new Tower("TrussArchBridge01NetPillar", 18, 20, verified: true, support: true),
             },
             // The white arch-above design has two authored lateral envelopes, not one. Selection uses
-            // the inner envelope between the two outside footways; the exact outer/inner mesh targets
-            // are applied separately by WhiteTrussArchWidths below.
+            // the inner envelope at the outer boundaries of the two outside footways; the exact
+            // outer/inner mesh targets are applied separately by WhiteTrussArchWidths below.
             ["TrussArch02"] = new[]
             {
                 new Tower("TrussArchBridge02NetPillar", 30, 31, verified: true, support: true),
@@ -493,15 +493,40 @@ internal static class BridgeTowers
     internal static bool WidthFollowsSidewalks(string? styleId) => styleId == "TrussArch02";
 
     /// <summary>
-    /// The inner target width used for selection by the white truss arch. Its outer target remains the
-    /// complete road width and is deliberately kept separately by <see cref="WhiteTrussArchWidths"/>.
-    /// Every other style continues to use the full road width.
+    /// The inner target width used for selection by the white truss arch. Its inner arch stands at the
+    /// outermost boundary of each outside footway, not at the boundary between that footway and an
+    /// adjacent empty lane. Empty lanes are road sections, not footways. Its outer target is kept
+    /// separately by <see cref="WhiteTrussArchWidths"/>. Every other style continues to use the full
+    /// road width.
     /// </summary>
-    internal static float StructureWidthFor(
+    internal readonly struct StructureEdges
+    {
+        internal StructureEdges(float left, float right)
+        {
+            Left = Math.Max(0f, left);
+            Right = Math.Max(0f, right);
+        }
+
+        internal float Left { get; }
+        internal float Right { get; }
+        internal float Width => Left + Right;
+    }
+
+    internal static StructureEdges StructureEdgesFor(
         string? styleId, float roadWidth, RoadEdge left, RoadEdge right)
     {
-        if (!WidthFollowsSidewalks(styleId)) return roadWidth;
-        return Math.Max(0f, roadWidth - left.SidewalkWidth - right.SidewalkWidth);
+        if (!WidthFollowsSidewalks(styleId))
+        {
+            var half = Math.Max(0f, roadWidth * 0.5f);
+            return new StructureEdges(half, half);
+        }
+
+        // The inner white frame stands at the outside edge of the outermost real sidewalk. A side
+        // without a sidewalk falls back independently to the road edge; empty lanes never qualify.
+        // Keeping the two distances separate is required for asymmetrical roads.
+        return new StructureEdges(
+            left.IsSidewalk ? left.SidewalkOuterBoundary : left.OuterBoundary,
+            right.IsSidewalk ? right.SidewalkOuterBoundary : right.OuterBoundary);
     }
 
     /// <summary>
@@ -519,11 +544,17 @@ internal static class BridgeTowers
         // NetPiecePrefab.m_Width is the prototype's authored declaration. The immutable geometry map
         // separately uses its exact measured 20.79248 m vertex span.
         internal const float OverheadOuter = 20.8f;
+        internal const float OuterWidthReduction = 0.5f;
         private const string PillarMesh = "TrussArchBridge02NetPillar Mesh";
         private const string PillarFootingMesh = "TrussArchBridge02NetPillarBase Mesh";
 
         internal static float OverheadExtra(string? styleId, float outerWidth, float fallback) =>
             styleId == "TrussArch02" ? outerWidth - OverheadOuter : fallback;
+
+        internal static float OuterTarget(string? styleId, float visibleRoadWidth) =>
+            styleId == "TrussArch02"
+                ? Math.Max(0f, visibleRoadWidth - OuterWidthReduction)
+                : visibleRoadWidth;
 
         internal static float TowerPartExtra(
             string? styleId, string? sourceMeshName, float innerWidth, float fallback)
