@@ -209,6 +209,7 @@ internal static class WhiteTrussCoefficients
         var innerPieces = pieces
             .Select(piece => Math.Max(Math.Abs(piece.Left), Math.Abs(piece.Right)) < InnerOuterDivider)
             .ToArray();
+        var stretching = LogicalStretchGroups(pieces, innerPieces);
         var inner = new bool[mesh.Positions.Length];
         var coefficients = Enumerable.Repeat(float.NaN, mesh.Positions.Length).ToArray();
         var outerRailing = new bool[mesh.Positions.Length];
@@ -221,13 +222,14 @@ internal static class WhiteTrussCoefficients
             // classification is intentionally confined to this offline metaprogram; runtime receives
             // only the exact per-vertex bitmap and never guesses from geometry.
             outerRailing[index] = !inner[index] && piece.Low > 0f;
-            if (!inner[index] || piece.Left > CentreEpsilon || piece.Right < -CentreEpsilon) continue;
+            var group = stretching.GroupForPiece[piece.Id];
+            if (!inner[index] || group < 0) continue;
 
             var x = mesh.Positions[index].X;
-            coefficients[index] = x < -CentreEpsilon && piece.Left < -CentreEpsilon
-                ? x / Math.Abs(piece.Left)
-                : x > CentreEpsilon && piece.Right > CentreEpsilon
-                    ? x / piece.Right
+            coefficients[index] = x < -CentreEpsilon && stretching.LeftReach[group] > CentreEpsilon
+                ? x / stretching.LeftReach[group]
+                : x > CentreEpsilon && stretching.RightReach[group] > CentreEpsilon
+                    ? x / stretching.RightReach[group]
                     : 0f;
         }
 
@@ -246,6 +248,217 @@ internal static class WhiteTrussCoefficients
             + $"{innerNearestOuter:0.000000}..{outerNearestInner:0.000000} m");
         return new WhiteTransformMap(inner, coefficients, outerRailing);
     }
+
+    private static LogicalStretchMap LogicalStretchGroups(
+        IReadOnlyList<Piece> pieces, IReadOnlyList<bool> innerPieces)
+    {
+        var parent = Enumerable.Range(0, pieces.Count).ToArray();
+        int Root(int item)
+        {
+            while (parent[item] != item)
+            {
+                parent[item] = parent[parent[item]];
+                item = parent[item];
+            }
+            return item;
+        }
+        void Join(int one, int two)
+        {
+            var first = Root(one);
+            var second = Root(two);
+            if (first != second) parent[first] = second;
+        }
+
+        var seeds = pieces
+            .Select((piece, index) => innerPieces[index] && CrossesCentre(piece))
+            .ToArray();
+        // A white-bridge transverse truss is authored as several disconnected welded islands. Some
+        // of its diagonals, splice plates, and end fittings sit wholly on one side of x=0, even
+        // though the assembled truss crosses x=0. Requiring each island to cross the axis therefore
+        // tears the assembly. The actual x=0 islands are joined first and permanently establish the
+        // logical member's lateral endpoints. Nearby islands may join only when they stay inside
+        // that seed envelope, so they cannot expand the member into either side arch. Runtime
+        // receives only the exact group-derived vertex coefficients; it performs no inference.
+        var candidates = pieces
+            .Select((piece, index) =>
+                innerPieces[index]
+                && piece.Low > 0f
+                && !IsLongitudinal(piece))
+            .ToArray();
+        for (var one = 0; one < pieces.Count; one++)
+        {
+            if (!seeds[one] || !candidates[one]) continue;
+            for (var two = one + 1; two < pieces.Count; two++)
+            {
+                if (!seeds[two] || !candidates[two] || !Touches(pieces[one], pieces[two])) continue;
+                Join(one, two);
+            }
+        }
+
+        var rawSeedGroups = Enumerable.Range(0, pieces.Count)
+            .Where(index => seeds[index] && candidates[index])
+            .GroupBy(Root)
+            .Select(group => group.ToArray())
+            .ToArray();
+        var rawReach = rawSeedGroups
+            .Select(group => group.Max(index => Math.Max(
+                Math.Max(0f, -pieces[index].Left),
+                Math.Max(0f, pieces[index].Right))))
+            .ToArray();
+        var widestSeed = rawReach.Max();
+        var anchorIndices = Enumerable.Range(0, rawSeedGroups.Length)
+            .Where(index => 2f * rawReach[index] >= widestSeed)
+            .ToArray();
+        var assembledSeeds = anchorIndices
+            .Select(index => rawSeedGroups[index].ToList())
+            .ToArray();
+        foreach (var rawIndex in Enumerable.Range(0, rawSeedGroups.Length)
+                     .Where(index => 2f * rawReach[index] < widestSeed))
+        {
+            // Small centre plates also cross x=0, but their authored width is not the span of the
+            // transverse truss. Attach each to the spatially nearest full-width seed assembly before
+            // computing coefficients; otherwise that small plate alone receives the complete width
+            // delta and balloons across the road.
+            var owner = Enumerable.Range(0, anchorIndices.Length)
+                .OrderBy(anchor => rawSeedGroups[rawIndex]
+                    .Min(pieceIndex => rawSeedGroups[anchorIndices[anchor]]
+                        .Min(seed => BoxDistance(pieces[pieceIndex], pieces[seed]))))
+                .ThenBy(anchor => anchor)
+                .First();
+            assembledSeeds[owner].AddRange(rawSeedGroups[rawIndex]);
+        }
+        var seedGroups = assembledSeeds.Select(group => group.ToArray()).ToArray();
+        Console.WriteLine(
+            $"white section prototype: assembled {rawSeedGroups.Length} top x=0 seed cluster(s) "
+            + $"into {seedGroups.Length} complete transverse-truss seed group(s)");
+        var seedLeftReach = seedGroups
+            .Select(group => group.Max(index => Math.Max(0f, -pieces[index].Left)))
+            .ToArray();
+        var seedRightReach = seedGroups
+            .Select(group => group.Max(index => Math.Max(0f, pieces[index].Right)))
+            .ToArray();
+        var expandedGroups = new HashSet<int>[seedGroups.Length];
+        for (var groupIndex = 0; groupIndex < seedGroups.Length; groupIndex++)
+        {
+            var members = expandedGroups[groupIndex] = new HashSet<int>(seedGroups[groupIndex]);
+            var changed = true;
+            while (changed)
+            {
+                changed = false;
+                for (var candidate = 0; candidate < pieces.Count; candidate++)
+                {
+                    if (!candidates[candidate]
+                        || seeds[candidate]
+                        || members.Contains(candidate)
+                        || pieces[candidate].Left < -seedLeftReach[groupIndex] - CentreEpsilon
+                        || pieces[candidate].Right > seedRightReach[groupIndex] + CentreEpsilon
+                        || !members.Any(member => Touches(pieces[candidate], pieces[member])))
+                        continue;
+                    members.Add(candidate);
+                    changed = true;
+                }
+            }
+        }
+
+        // An island can touch two adjacent stations through a longitudinal diagonal. Both stations
+        // normally have the same span, but selecting the nearest seed makes ownership deterministic
+        // and prevents a shared island from joining those stations into one accidental mega-group.
+        var ownedGroups = Enumerable.Range(0, seedGroups.Length)
+            .Select(_ => new List<int>())
+            .ToArray();
+        for (var pieceIndex = 0; pieceIndex < pieces.Count; pieceIndex++)
+        {
+            var owners = Enumerable.Range(0, expandedGroups.Length)
+                .Where(groupIndex => expandedGroups[groupIndex].Contains(pieceIndex))
+                .ToArray();
+            if (owners.Length == 0) continue;
+            var owner = owners
+                .OrderBy(groupIndex => seedGroups[groupIndex]
+                    .Min(seed => BoxDistance(pieces[pieceIndex], pieces[seed])))
+                .ThenBy(groupIndex => groupIndex)
+                .First();
+            ownedGroups[owner].Add(pieceIndex);
+        }
+
+        // A longitudinal island or a centre-crossing member below the deck can still cross x=0. It
+        // remains its own logical spanning component instead of connecting the top stations through
+        // the deck assembly. The y=0 classification exists only in this archetype metaprogram.
+        var longitudinalCrossings = Enumerable.Range(0, pieces.Count)
+            .Where(index => seeds[index] && !candidates[index])
+            .Select(index => new[] { index });
+        var groups = ownedGroups
+            .Where(group => group.Count != 0)
+            .Select(group => group.ToArray())
+            .Concat(longitudinalCrossings)
+            .ToArray();
+        var groupForPiece = Enumerable.Repeat(-1, pieces.Count).ToArray();
+        var leftReach = new float[groups.Length];
+        var rightReach = new float[groups.Length];
+        for (var groupIndex = 0; groupIndex < groups.Length; groupIndex++)
+        {
+            foreach (var pieceIndex in groups[groupIndex])
+            {
+                groupForPiece[pieceIndex] = groupIndex;
+                leftReach[groupIndex] = Math.Max(leftReach[groupIndex], Math.Max(0f, -pieces[pieceIndex].Left));
+                rightReach[groupIndex] = Math.Max(rightReach[groupIndex], Math.Max(0f, pieces[pieceIndex].Right));
+            }
+
+            var members = groups[groupIndex].Select(index => pieces[index]).ToArray();
+            Console.WriteLine(
+                $"white section logical group {groupIndex}: {members.Length} island(s), "
+                + $"reach {-leftReach[groupIndex]:0.0000}..{rightReach[groupIndex]:0.0000}, "
+                + $"y {members.Min(piece => piece.Low):0.0000}..{members.Max(piece => piece.High):0.0000}, "
+                + $"z {members.Min(piece => piece.Back):0.0000}..{members.Max(piece => piece.Front):0.0000}");
+        }
+        Console.WriteLine(
+            $"white section prototype: {groups.Length} logical x=0 spanning group(s), "
+            + $"{groups.Sum(group => group.Length)} stretching island(s)");
+        return new LogicalStretchMap(groupForPiece, leftReach, rightReach);
+    }
+
+    private static bool CrossesCentre(Piece piece) =>
+        piece.Left <= CentreEpsilon && piece.Right >= -CentreEpsilon;
+
+    private static bool IsLongitudinal(Piece piece)
+    {
+        var lateral = piece.Right - piece.Left;
+        var vertical = piece.High - piece.Low;
+        var longitudinal = piece.Front - piece.Back;
+        return longitudinal > 4f * Math.Max(lateral, vertical) + CentreEpsilon;
+    }
+
+    private static float Gap(float firstLow, float firstHigh, float secondLow, float secondHigh) =>
+        firstHigh < secondLow ? secondLow - firstHigh
+        : secondHigh < firstLow ? firstLow - secondHigh
+        : 0f;
+
+    private static float BoxDistance(Piece one, Piece two)
+    {
+        var x = Gap(one.Left, one.Right, two.Left, two.Right);
+        var y = Gap(one.Low, one.High, two.Low, two.High);
+        var z = Gap(one.Back, one.Front, two.Back, two.Front);
+        return MathF.Sqrt(x * x + y * y + z * z);
+    }
+
+    private static bool Touches(Piece one, Piece two)
+    {
+        var oneLateral = one.Right - one.Left;
+        var oneVertical = one.High - one.Low;
+        var oneLongitudinal = one.Front - one.Back;
+        var twoLateral = two.Right - two.Left;
+        var twoVertical = two.High - two.Low;
+        var twoLongitudinal = two.Front - two.Back;
+        var oneJoint = Math.Min(oneVertical, oneLongitudinal);
+        var twoJoint = Math.Min(twoVertical, twoLongitudinal);
+        var crossSection = Math.Max(CentreEpsilon, Math.Max(oneJoint, twoJoint));
+        var lateralGap = Math.Max(crossSection, Math.Max(oneLateral, twoLateral));
+        return Gap(one.Left, one.Right, two.Left, two.Right) <= lateralGap + CentreEpsilon
+            && Gap(one.Low, one.High, two.Low, two.High) <= crossSection + CentreEpsilon
+            && Gap(one.Back, one.Front, two.Back, two.Front) <= crossSection + CentreEpsilon;
+    }
+
+    private readonly record struct LogicalStretchMap(
+        int[] GroupForPiece, float[] LeftReach, float[] RightReach);
 
     internal static WhiteTransformMap FromPortalPrototype(MeshData mesh, bool inner)
     {
@@ -285,9 +498,12 @@ internal static class WhiteTrussCoefficients
             if (!float.IsNaN(inherited))
             {
                 var sourceX = prototype.Positions[nearest].X;
-                coefficients[index] = Math.Abs(sourceX) > CentreEpsilon
-                    ? inherited * (mesh.Positions[index].X / sourceX)
-                    : 0f;
+                coefficients[index] = Math.Clamp(
+                    Math.Abs(sourceX) > CentreEpsilon
+                        ? inherited * (mesh.Positions[index].X / sourceX)
+                        : 0f,
+                    -1f,
+                    1f);
             }
 
             var distance = MathF.Sqrt(squaredDistance);
