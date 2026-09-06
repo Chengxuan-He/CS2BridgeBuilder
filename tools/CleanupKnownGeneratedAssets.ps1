@@ -340,8 +340,11 @@ if (Test-Path -LiteralPath $importedRoot -PathType Container) {
         'Extradosed01', 'Extradosed02', 'Extradosed03', 'ExtradosedLarge', 'CableStayed',
         'TrussArch01', 'TrussArch02', 'TrussArch03', 'TrussArch', 'TiedArch', 'Grand', 'Draw', 'Lift'
     )
+    # Current asset names replace decimal points with underscores (7.2 -> 7_2); retain the dot form
+    # so cleanup also owns assets written by older versions.
+    $generatedNumberPattern = '[-+]?[0-9]+(?:[._][0-9]+)?'
     $towerPattern = '^(' + (($towerStyles | ForEach-Object { [regex]::Escape($_) }) -join '|') `
-        + ')-[-+]?[0-9]+(?:\.[0-9]+)?-.+'
+        + ')-' + $generatedNumberPattern + '-.+'
     $importedDirectoryNames += @($currentImportedNames | Where-Object {
         $_ -match $towerPattern
     })
@@ -389,7 +392,8 @@ if (Test-Path -LiteralPath $importedRoot -PathType Container) {
     )
     $generatedSectionPattern = '^(' `
         + (($generatedSectionPrefixes | ForEach-Object { [regex]::Escape($_) }) -join '|') `
-        + ') [-+]?[0-9]+(?:\.[0-9]+)?(?: \([0-9]+\))?(?: Piece(?: [0-9]+)?(?: LOD[0-9]+)?)?$'
+        + ') ' + $generatedNumberPattern `
+        + '(?: \([0-9]+\))?(?: Piece(?: [0-9]+)?(?: LOD[0-9]+)?)?$'
     $importedDirectoryNames += @($currentImportedNames | Where-Object {
         $_ -match $generatedSectionPattern
     })
