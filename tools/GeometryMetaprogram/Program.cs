@@ -1,6 +1,78 @@
 using System.Buffers.Binary;
 using Colossal.AssetPipeline.Native;
 
+if (args.Length == 11 && string.Equals(args[0], "--white-truss", StringComparison.Ordinal))
+{
+    var sectionFull = RawMeshFile.Read(args[1]);
+    var sectionLod1 = RawMeshFile.Read(args[2]);
+    var sectionLod2 = RawMeshFile.Read(args[3]);
+    var pillarFull = RawMeshFile.Read(args[4]);
+    var pillarLod1 = RawMeshFile.Read(args[5]);
+    var pillarLod2 = RawMeshFile.Read(args[6]);
+    var footingFull = RawMeshFile.Read(args[7]);
+    var footingLod1 = RawMeshFile.Read(args[8]);
+    var footingLod2 = RawMeshFile.Read(args[9]);
+
+    var sectionMap = WhiteTrussCoefficients.FromSectionPrototype(sectionFull);
+    var sectionLod1Map = WhiteTrussCoefficients.FromNearestPrototype(
+        sectionLod1, sectionFull, sectionMap, "section LOD1");
+    var sectionLod2Map = WhiteTrussCoefficients.FromNearestPrototype(
+        sectionLod2, sectionFull, sectionMap, "section LOD2");
+
+    var pillarMap = WhiteTrussCoefficients.FromPortalPrototype(pillarFull, inner: true);
+    var pillarLod1Map = WhiteTrussCoefficients.FromNearestPrototype(
+        pillarLod1, pillarFull, pillarMap, "pillar LOD1");
+    var pillarLod2Map = WhiteTrussCoefficients.FromNearestPrototype(
+        pillarLod2, pillarFull, pillarMap, "pillar LOD2");
+
+    var footingMap = WhiteTrussCoefficients.Rigid(footingFull, inner: false);
+    var footingLod1Map = WhiteTrussCoefficients.Rigid(footingLod1, inner: false);
+    var footingLod2Map = WhiteTrussCoefficients.Rigid(footingLod2, inner: false);
+
+    WhiteTrussCoefficients.Report("section full", sectionMap);
+    WhiteTrussCoefficients.Report("section LOD1", sectionLod1Map);
+    WhiteTrussCoefficients.Report("section LOD2", sectionLod2Map);
+    WhiteTrussCoefficients.Report("pillar full", pillarMap);
+    WhiteTrussCoefficients.Report("pillar LOD1", pillarLod1Map);
+    WhiteTrussCoefficients.Report("pillar LOD2", pillarLod2Map);
+    WhiteTrussCoefficients.Report("outer pillar part full", footingMap);
+    WhiteTrussCoefficients.Report("outer pillar part LOD1", footingLod1Map);
+    WhiteTrussCoefficients.Report("outer pillar part LOD2", footingLod2Map);
+
+    WhiteTrussCoefficients.WriteSource(
+        args[10],
+        ("TrussArchBridge02Net Mesh", sectionMap),
+        ("TrussArchBridge02Net_LOD1 Mesh", sectionLod1Map),
+        ("TrussArchBridge02Net_LOD2 Mesh", sectionLod2Map),
+        ("TrussArchBridge02NetPillar Mesh", pillarMap),
+        ("TrussArchBridge02NetPillar_LOD1 Mesh", pillarLod1Map),
+        ("TrussArchBridge02NetPillar_LOD2 Mesh", pillarLod2Map),
+        ("TrussArchBridge02NetPillarBase Mesh", footingMap),
+        ("TrussArchBridge02NetPillarBase_LOD1 Mesh", footingLod1Map),
+        ("TrussArchBridge02NetPillarBase_LOD2 Mesh", footingLod2Map));
+    return 0;
+}
+
+if (args.Length == 2 && string.Equals(args[0], "--raw", StringComparison.Ordinal))
+{
+    var mesh = RawMeshFile.Read(args[1]);
+    var pieces = Pieces.Of(mesh.Positions, mesh.Indices);
+    Console.WriteLine(
+        $"{Path.GetFileName(args[1])}: {mesh.Positions.Length} vertices, {mesh.Indices.Length} indices, "
+        + $"{pieces.Count} welded piece(s), x "
+        + $"{mesh.Positions.Min(point => point.X):0.000000}.."
+        + $"{mesh.Positions.Max(point => point.X):0.000000}");
+    foreach (var piece in pieces.OrderBy(piece => piece.Left))
+    {
+        Console.WriteLine(
+            $"  {piece.Id,4}: x {piece.Left,9:0.0000}..{piece.Right,9:0.0000}, "
+            + $"y {piece.Low,9:0.0000}..{piece.High,9:0.0000}, "
+            + $"z {piece.Back,9:0.0000}..{piece.Front,9:0.0000}, "
+            + $"vertices {piece.Vertices,6}");
+    }
+    return 0;
+}
+
 if (args.Length == 4 && string.Equals(args[0], "--compare", StringComparison.Ordinal))
 {
     var source = GeometryFile.Read(File.ReadAllBytes(args[1])).Meshes.Single();
@@ -39,7 +111,10 @@ if (args.Length is not (1 or 3 or 4))
     Console.Error.WriteLine(
         "Usage: GeometryMetaprogram <geometry> [<lod1 geometry> <lod2 geometry> [output.cs]]\n"
         + "       GeometryMetaprogram --compare <source geometry> <derived geometry> <extra>\n"
-        + "       GeometryMetaprogram --section <full> <lod1> <lod2> <output.cs>");
+        + "       GeometryMetaprogram --section <full> <lod1> <lod2> <output.cs>\n"
+        + "       GeometryMetaprogram --raw <captured mesh>\n"
+        + "       GeometryMetaprogram --white-truss <section full/lod1/lod2> "
+        + "<pillar full/lod1/lod2> <outer pillar part full/lod1/lod2> <output.cs>");
     return 2;
 }
 
@@ -90,6 +165,252 @@ return 0;
 
 internal sealed record MeshData(Position[] Positions, int[] Indices);
 internal readonly record struct Position(float X, float Y, float Z);
+
+internal static class RawMeshFile
+{
+    internal static MeshData Read(string path)
+    {
+        using var stream = File.OpenRead(path);
+        using var reader = new BinaryReader(stream);
+        var vertexCount = reader.ReadInt32();
+        var positions = new Position[vertexCount];
+        for (var index = 0; index < positions.Length; index++)
+            positions[index] = new Position(reader.ReadSingle(), reader.ReadSingle(), reader.ReadSingle());
+        var indexCount = reader.ReadInt32();
+        var indices = new int[indexCount];
+        for (var index = 0; index < indices.Length; index++) indices[index] = reader.ReadInt32();
+        if (stream.Position != stream.Length)
+            throw new InvalidDataException($"Unexpected trailing bytes in '{path}'.");
+        return new MeshData(positions, indices);
+    }
+}
+
+internal readonly record struct WhiteTransformMap(bool[] InnerLayer, float[] StretchCoefficients);
+
+internal static class WhiteTrussCoefficients
+{
+    private const float CentreEpsilon = 0.001f;
+
+    // Full-detail inspection has one empty lateral band between the inner arch/truss envelope
+    // (|x| <= 8.9187 m) and the outside deck-base/railing envelope (|x| >= 9.5 m). This midpoint is
+    // used only by this offline metaprogram. Runtime receives exact per-vertex membership instead.
+    private const float InnerOuterDivider = 9.2f;
+
+    internal static WhiteTransformMap FromSectionPrototype(MeshData mesh)
+    {
+        var pieces = Pieces.Of(mesh.Positions, mesh.Indices);
+        var labels = Pieces.LabelsOf(mesh.Positions, mesh.Indices);
+        var innerPieces = pieces
+            .Select(piece => Math.Max(Math.Abs(piece.Left), Math.Abs(piece.Right)) < InnerOuterDivider)
+            .ToArray();
+        var inner = new bool[mesh.Positions.Length];
+        var coefficients = Enumerable.Repeat(float.NaN, mesh.Positions.Length).ToArray();
+        for (var index = 0; index < mesh.Positions.Length; index++)
+        {
+            var piece = pieces[labels[index]];
+            inner[index] = innerPieces[piece.Id];
+            if (!inner[index] || piece.Left > CentreEpsilon || piece.Right < -CentreEpsilon) continue;
+
+            var width = piece.Right - piece.Left;
+            if (width <= CentreEpsilon) continue;
+            var centre = (piece.Left + piece.Right) * 0.5f;
+            coefficients[index] = 2f * (mesh.Positions[index].X - centre) / width;
+        }
+
+        var innerMembers = pieces.Where(piece => innerPieces[piece.Id]).ToArray();
+        var outerMembers = pieces.Where(piece => !innerPieces[piece.Id]).ToArray();
+        var innerLeft = innerMembers.Min(piece => piece.Left);
+        var innerRight = innerMembers.Max(piece => piece.Right);
+        var outerLeft = outerMembers.Min(piece => piece.Left);
+        var outerRight = outerMembers.Max(piece => piece.Right);
+        var innerNearestOuter = innerMembers.Max(piece => Math.Max(Math.Abs(piece.Left), Math.Abs(piece.Right)));
+        var outerNearestInner = outerMembers.Min(piece => Math.Max(Math.Abs(piece.Left), Math.Abs(piece.Right)));
+        Console.WriteLine(
+            $"white section full-detail layer split: {innerMembers.Length} inner island(s), "
+            + $"{outerMembers.Length} outer island(s); inner x {innerLeft:0.000000}..{innerRight:0.000000}, "
+            + $"outer x {outerLeft:0.000000}..{outerRight:0.000000}; clean divider gap "
+            + $"{innerNearestOuter:0.000000}..{outerNearestInner:0.000000} m");
+        return new WhiteTransformMap(inner, coefficients);
+    }
+
+    internal static WhiteTransformMap FromPortalPrototype(MeshData mesh, bool inner)
+    {
+        var portal = PortalCoefficients.FromTopology(mesh);
+        var layers = Enumerable.Repeat(inner, mesh.Positions.Length).ToArray();
+        var coefficients = new float[portal.Length];
+        for (var index = 0; index < portal.Length; index++)
+        {
+            coefficients[index] = Math.Abs(Math.Abs(portal[index]) - 1f) <= CentreEpsilon
+                ? float.NaN
+                : portal[index];
+        }
+        return new WhiteTransformMap(layers, coefficients);
+    }
+
+    internal static WhiteTransformMap Rigid(MeshData mesh, bool inner) =>
+        new(
+            Enumerable.Repeat(inner, mesh.Positions.Length).ToArray(),
+            Enumerable.Repeat(float.NaN, mesh.Positions.Length).ToArray());
+
+    internal static WhiteTransformMap FromNearestPrototype(
+        MeshData mesh, MeshData prototype, WhiteTransformMap prototypeMap, string label)
+    {
+        var tree = new PositionTree(prototype.Positions);
+        var inner = new bool[mesh.Positions.Length];
+        var coefficients = Enumerable.Repeat(float.NaN, mesh.Positions.Length).ToArray();
+        var maximum = 0f;
+        var total = 0d;
+        for (var index = 0; index < mesh.Positions.Length; index++)
+        {
+            var nearest = tree.Nearest(mesh.Positions[index], out var squaredDistance);
+            inner[index] = prototypeMap.InnerLayer[nearest];
+            var inherited = prototypeMap.StretchCoefficients[nearest];
+            if (!float.IsNaN(inherited))
+            {
+                var sourceX = prototype.Positions[nearest].X;
+                coefficients[index] = Math.Abs(sourceX) > CentreEpsilon
+                    ? inherited * (mesh.Positions[index].X / sourceX)
+                    : 0f;
+            }
+
+            var distance = MathF.Sqrt(squaredDistance);
+            maximum = Math.Max(maximum, distance);
+            total += distance;
+        }
+        Console.WriteLine(
+            $"white {label} inherits full detail: nearest vertex average "
+            + $"{total / mesh.Positions.Length:0.0000} m, maximum {maximum:0.0000} m");
+        return new WhiteTransformMap(inner, coefficients);
+    }
+
+    internal static void Report(string name, WhiteTransformMap map)
+    {
+        var inner = map.InnerLayer.Count(value => value);
+        var stretched = map.StretchCoefficients.Count(value => !float.IsNaN(value));
+        var values = map.StretchCoefficients.Where(value => !float.IsNaN(value)).ToArray();
+        Console.WriteLine(
+            $"{name}: {inner} inner/{map.InnerLayer.Length - inner} outer vertices; "
+            + $"{stretched} stretching/{map.InnerLayer.Length - stretched} rigid vertices"
+            + (values.Length == 0
+                ? string.Empty
+                : $"; coefficient {values.Min():0.0000}..{values.Max():0.0000}"));
+    }
+
+    internal static void WriteSource(
+        string path, params (string MeshName, WhiteTransformMap Map)[] maps)
+    {
+        var source = new System.Text.StringBuilder();
+        source.AppendLine("// <auto-generated />");
+        source.AppendLine("// Generated from the shipped TrussArchBridge02 full-detail mesh and its LODs.");
+        source.AppendLine("using System;");
+        source.AppendLine("using System.Collections.Generic;");
+        source.AppendLine();
+        source.AppendLine("namespace BridgeBuilder.Bridges;");
+        source.AppendLine();
+        source.AppendLine("internal static class TrussArch02GeometryData");
+        source.AppendLine("{");
+        source.AppendLine("    internal static readonly IReadOnlyDictionary<string, TrussArch02Geometry.TransformMap> Maps =");
+        source.AppendLine("        new Dictionary<string, TrussArch02Geometry.TransformMap>(StringComparer.Ordinal)");
+        source.AppendLine("        {");
+        foreach (var entry in maps)
+        {
+            var encoded = Encode(entry.Map);
+            source.AppendLine($"            [\"{entry.MeshName}\"] = new TrussArch02Geometry.TransformMap(");
+            source.AppendLine($"                {entry.Map.InnerLayer.Length},");
+            source.AppendLine($"                \"{encoded.Inner}\",");
+            source.AppendLine($"                \"{encoded.Stretch}\",");
+            source.AppendLine($"                \"{encoded.Coefficients}\"),");
+        }
+        source.AppendLine("        };");
+        source.AppendLine("}");
+        File.WriteAllText(path, source.ToString(), new System.Text.UTF8Encoding(false));
+    }
+
+    private static (string Inner, string Stretch, string Coefficients) Encode(WhiteTransformMap map)
+    {
+        var inner = new byte[(map.InnerLayer.Length + 7) / 8];
+        var stretch = new byte[inner.Length];
+        using var payload = new MemoryStream();
+        using var writer = new BinaryWriter(payload);
+        for (var index = 0; index < map.InnerLayer.Length; index++)
+        {
+            if (map.InnerLayer[index]) inner[index >> 3] |= (byte)(1 << (index & 7));
+            var coefficient = map.StretchCoefficients[index];
+            if (float.IsNaN(coefficient)) continue;
+            stretch[index >> 3] |= (byte)(1 << (index & 7));
+            writer.Write(coefficient);
+        }
+        writer.Flush();
+        return (
+            Convert.ToBase64String(inner),
+            Convert.ToBase64String(stretch),
+            Convert.ToBase64String(payload.ToArray()));
+    }
+
+    private sealed class PositionTree
+    {
+        private readonly Position[] _positions;
+        private readonly Node? _root;
+
+        internal PositionTree(Position[] positions)
+        {
+            _positions = positions;
+            var indices = Enumerable.Range(0, positions.Length).ToArray();
+            _root = Build(indices, 0, indices.Length, 0);
+        }
+
+        internal int Nearest(Position point, out float squaredDistance)
+        {
+            var best = -1;
+            squaredDistance = float.MaxValue;
+            Search(_root, point, ref best, ref squaredDistance);
+            return best;
+        }
+
+        private Node? Build(int[] indices, int start, int count, int depth)
+        {
+            if (count <= 0) return null;
+            var axis = depth % 3;
+            Array.Sort(indices, start, count, Comparer<int>.Create((one, two) =>
+                Coordinate(_positions[one], axis).CompareTo(Coordinate(_positions[two], axis))));
+            var middle = start + count / 2;
+            return new Node(
+                indices[middle], axis,
+                Build(indices, start, middle - start, depth + 1),
+                Build(indices, middle + 1, start + count - middle - 1, depth + 1));
+        }
+
+        private void Search(Node? node, Position point, ref int best, ref float bestDistance)
+        {
+            if (node == null) return;
+            var candidate = _positions[node.Index];
+            var distance = Squared(point, candidate);
+            if (distance < bestDistance)
+            {
+                bestDistance = distance;
+                best = node.Index;
+            }
+            var difference = Coordinate(point, node.Axis) - Coordinate(candidate, node.Axis);
+            var first = difference < 0f ? node.Left : node.Right;
+            var second = difference < 0f ? node.Right : node.Left;
+            Search(first, point, ref best, ref bestDistance);
+            if (difference * difference < bestDistance) Search(second, point, ref best, ref bestDistance);
+        }
+
+        private static float Coordinate(Position point, int axis) =>
+            axis == 0 ? point.X : axis == 1 ? point.Y : point.Z;
+
+        private static float Squared(Position one, Position two)
+        {
+            var x = one.X - two.X;
+            var y = one.Y - two.Y;
+            var z = one.Z - two.Z;
+            return x * x + y * y + z * z;
+        }
+
+        private sealed record Node(int Index, int Axis, Node? Left, Node? Right);
+    }
+}
 
 internal sealed class GeometryFile
 {

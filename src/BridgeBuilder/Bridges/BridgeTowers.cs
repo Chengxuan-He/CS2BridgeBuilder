@@ -514,9 +514,11 @@ internal static class BridgeTowers
     /// </summary>
     internal static class WhiteTrussArchWidths
     {
+        // NetPiecePrefab.m_Width is the prototype's authored declaration. The immutable geometry map
+        // separately uses its exact measured 20.79248 m vertex span.
         internal const float OverheadOuter = 20.8f;
-        internal const float PillarInner = 15.699753f;
-        internal const float PillarOuter = 30.15982f;
+        internal const float PillarInner = TrussArch02Geometry.PrototypePillarInnerWidth;
+        internal const float PillarOuter = TrussArch02Geometry.PrototypePillarOuterWidth;
 
         private const string PillarInnerMesh = "TrussArchBridge02NetPillar Mesh";
         private const string PillarOuterMesh = "TrussArchBridge02NetPillarBase Mesh";

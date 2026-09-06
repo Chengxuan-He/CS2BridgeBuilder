@@ -1672,7 +1672,7 @@ internal sealed class TowerFactory
             // metaprogram result with a runtime geometry guess. Other styles still use their shared
             // section profile.
             TowerWidening.Profile? profile =
-                string.Equals(_styleId, "TrussArch03", StringComparison.Ordinal)
+                _styleId is "TrussArch02" or "TrussArch03"
                     ? null
                     : ProfileOfPieces(source.m_Pieces);
 
@@ -1941,8 +1941,10 @@ internal sealed class TowerFactory
             float3[]? points = null;
             var totalVertices = 0;
             var totalIndices = 0;
+            var recordedTruss02 = TrussArch02Geometry.IsRecorded(_styleId, original.name);
             var recordedTruss03 = railings
                 && TrussArch03Geometry.IsRecorded(_styleId, original.name);
+            var recordedGeometry = recordedTruss02 || recordedTruss03;
 
             // One profile for everything widened here. A section hands one in, because its pieces
             // are one structure; a tower part measures its own, from its full detail mesh and the
@@ -1952,7 +1954,7 @@ internal sealed class TowerFactory
             //
             var shapes = new List<float3[]>();
             var outlines = new List<IReadOnlyList<int>?>();
-            if (!recordedTruss03)
+            if (!recordedGeometry)
             {
                 foreach (var part in loaded)
                 {
@@ -1974,7 +1976,7 @@ internal sealed class TowerFactory
             // the places that scope called carried, and it was scaled where the fine one was carried -
             // 7.899 m against 8, which is the bridge changing width as the camera pulls back.
             var lodMeshes = new List<RenderPrefab>();
-            if (profile == null && !recordedTruss03)
+            if (profile == null && !recordedGeometry)
             {
                 foreach (var lod in original.GetComponent<LodProperties>()?.m_LodMeshes
                     ?? Array.Empty<RenderPrefab>())
@@ -2000,7 +2002,7 @@ internal sealed class TowerFactory
                 }
             }
 
-            var scope = recordedTruss03
+            var scope = recordedGeometry
                 ? null
                 : profile
                     ?? (IsBluePrototypeMainPier(original)
@@ -2031,11 +2033,52 @@ internal sealed class TowerFactory
                 var bluePortal = IsBluePrototypeMainPier(original);
                 var blueSection = IsBluePrototypeSection(original);
                 TowerWidening.TrussWideningFacts trussFacts = default;
+                TrussArch02Geometry.TransformFacts whiteFacts = default;
+                var usedRecordedTruss02 = false;
                 var usedRecordedTruss03 = false;
                 var rigidVertices = 0;
                 var stretchingVertices = 0;
                 float3[] moved;
-                if (openTruss && recordedTruss03)
+                if (recordedTruss02)
+                {
+                    var applied = false;
+                    if (railings && _structureWidths.HasValue)
+                    {
+                        applied = TrussArch02Geometry.TryWidenSection(
+                            original.name,
+                            source,
+                            _structureWidths.Value.Outer,
+                            _structureWidths.Value.Inner,
+                            out moved,
+                            out whiteFacts);
+                    }
+                    else if (!railings)
+                    {
+                        applied = TrussArch02Geometry.TryWidenTowerPart(
+                            original.name,
+                            source,
+                            extra,
+                            out moved,
+                            out whiteFacts);
+                    }
+                    else
+                    {
+                        moved = source;
+                    }
+
+                    if (!applied)
+                    {
+                        _report.Defect(string.Format(
+                            CultureInfo.InvariantCulture,
+                            "'{0}' did not match its immutable TrussArchBridge02 inner/outer "
+                            + "vertex map. The derived prefab was stopped before geometry was written.",
+                            name));
+                        return null;
+                    }
+
+                    usedRecordedTruss02 = true;
+                }
+                else if (openTruss && recordedTruss03)
                 {
                     if (!TrussArch03Geometry.TryWidenSection(
                             original.name,
@@ -2082,7 +2125,7 @@ internal sealed class TowerFactory
                         : TowerWidening.WidenParts(source, extra, scope!);
                 }
 
-                if (openTruss && !usedRecordedTruss03 && !blueSection
+                if (openTruss && !usedRecordedTruss02 && !usedRecordedTruss03 && !blueSection
                     && !trussFacts.ContractSatisfied)
                 {
                     _report.Defect(string.Format(
@@ -2124,7 +2167,25 @@ internal sealed class TowerFactory
                         extra * 0.5f));
                 }
 
-                if (blueSection)
+                if (usedRecordedTruss02)
+                {
+                    _report.Note(string.Format(
+                        CultureInfo.InvariantCulture,
+                        "{0}: immutable TrussArchBridge02 two-layer map applied: {1} inner vertices "
+                        + "use width delta {2:0.###} m and {3} outer vertices use width delta "
+                        + "{4:0.###} m; {5} centre-crossing vertices stretch against their recorded "
+                        + "part span and {6} other vertices follow their recorded rigid translation "
+                        + "with x -> x + sign(x) * delta. Full detail and every LOD inherit the same "
+                        + "metaprogram classification; no runtime geometry inference was performed.",
+                        name,
+                        whiteFacts.InnerVertices,
+                        whiteFacts.InnerExtra,
+                        whiteFacts.OuterVertices,
+                        whiteFacts.OuterExtra,
+                        whiteFacts.StretchingVertices,
+                        whiteFacts.RigidVertices));
+                }
+                else if (blueSection)
                 {
                     _report.Note(string.Format(
                         CultureInfo.InvariantCulture,
@@ -2229,7 +2290,7 @@ internal sealed class TowerFactory
                     // envelope and was reported as if a side-only member had been scaled. The green
                     // path has already been checked above by its dedicated centre-line mapping,
                     // topology, degeneracy, winding and finite-coordinate validation.
-                    if (!preserveOpenTrussSides)
+                    if (!preserveOpenTrussSides && !usedRecordedTruss02)
                         CheckThickness(name, source, moved, part.triangles);
                     if (scope != null) DescribeProfile(name, source, scope);
                 }
