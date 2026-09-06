@@ -36,7 +36,10 @@ internal static class BridgeTowerMaterials
             // The two arch-above colours are independent prototypes. Their generated structures must
             // follow their own source surfaces even when another truss-arch prefab is also installed.
             ["TrussArch01"] = new[] { "TrussArchBridge01NetPillar" },
+            ["TrussArch02"] = new[] { "TrussArchBridge02NetPillar" },
             ["TrussArch03"] = new[] { "TrussArchBridge03NetPillar" },
+            // The general arch-below family keeps the established pale material source. This is only
+            // a surface reference; the generated object prefabs remain owned by their individual bridge.
             ["TrussArch"] = new[] { "TrussArchBridge02NetPillar" },
             ["TiedArch"] = new[] { "TiedArchBridge01NetPillar" },
             ["CableStayed"] = new[] { "8LaneCableStayedBridgePillar Placeholder" },

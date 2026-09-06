@@ -249,6 +249,13 @@ internal static class BridgeTowers
                 // RoadOf still supplies the 20 m prototype datum to the overhead structure.
                 new Tower("TrussArchBridge01NetPillar", 18, 20, verified: true, support: true),
             },
+            // The white arch-above design has two authored lateral envelopes, not one. Selection uses
+            // the inner envelope between the two outside footways; the exact outer/inner mesh targets
+            // are applied separately by WhiteTrussArchWidths below.
+            ["TrussArch02"] = new[]
+            {
+                new Tower("TrussArchBridge02NetPillar", 30, 31, verified: true, support: true),
+            },
             // The green arch-above design is its own prototype. It uses the same target-minus-prototype
             // calculation and the same member-topology widening rule as blue, while retaining the 24 m
             // road measured from TrussArchBridge03 itself rather than borrowing blue's 20 m datum.
@@ -266,9 +273,7 @@ internal static class BridgeTowers
                 // select the arch-above frame - the measurement is not lost, it is under the family
                 // it belongs to.
                 //
-                // 03 is now recorded under its own green style. 02 remains the measured support in
-                // this general family until it too becomes a separately selectable prototype.
-                new Tower("TrussArchBridge02NetPillar", 30, 38, verified: true, support: true),
+                // 02 and 03 are recorded under their own white and green styles.
             },
         };
 
@@ -478,6 +483,64 @@ internal static class BridgeTowers
     /// </summary>
     internal static bool BringsItsOwnRailings(string? styleId) =>
         styleId is "SuspensionGolden";
+
+    /// <summary>
+    /// Whether the structure has separate outer-road and inner-carriageway envelopes. This is
+    /// prototype data, not a geometric guess: TrussArchBridge02 is the archetype observed with that
+    /// two-layer relationship.
+    /// </summary>
+    internal static bool WidthFollowsSidewalks(string? styleId) => styleId == "TrussArch02";
+
+    /// <summary>
+    /// The inner target width used for selection by the white truss arch. Its outer target remains the
+    /// complete road width and is deliberately kept separately by <see cref="WhiteTrussArchWidths"/>.
+    /// Every other style continues to use the full road width.
+    /// </summary>
+    internal static float StructureWidthFor(
+        string? styleId, float roadWidth, RoadEdge left, RoadEdge right)
+    {
+        if (!WidthFollowsSidewalks(styleId)) return roadWidth;
+        return Math.Max(0f, roadWidth - left.SidewalkWidth - right.SidewalkWidth);
+    }
+
+    /// <summary>
+    /// Reviewed metaprogram output for the two lateral envelopes of TrussArchBridge02.
+    ///
+    /// These are exact source identities and authored full-detail spans captured from the prototype;
+    /// they are intentionally not rediscovered from bounds, topology or non-zero coordinate tests in
+    /// the game. The overhead section's declared width is its outer envelope. The pillar's narrow main
+    /// mesh is the inner layer and its wide base mesh is the outer layer.
+    /// </summary>
+    internal static class WhiteTrussArchWidths
+    {
+        internal const float OverheadOuter = 20.8f;
+        internal const float PillarInner = 15.699753f;
+        internal const float PillarOuter = 30.15982f;
+
+        private const string PillarInnerMesh = "TrussArchBridge02NetPillar Mesh";
+        private const string PillarOuterMesh = "TrussArchBridge02NetPillarBase Mesh";
+
+        internal static float OverheadExtra(string? styleId, float outerWidth, float fallback) =>
+            styleId == "TrussArch02" ? outerWidth - OverheadOuter : fallback;
+
+        internal static float TowerPartExtra(
+            string? styleId, string? sourceMeshName, float outerWidth, float innerWidth,
+            float fallback)
+        {
+            if (styleId != "TrussArch02") return fallback;
+            if (string.Equals(sourceMeshName, PillarInnerMesh, StringComparison.Ordinal))
+            {
+                return innerWidth - PillarInner;
+            }
+
+            if (string.Equals(sourceMeshName, PillarOuterMesh, StringComparison.Ordinal))
+            {
+                return outerWidth - PillarOuter;
+            }
+
+            return fallback;
+        }
+    }
 
     /// <summary>Extra widening this style's towers take beyond what the road gives. Zero for most.</summary>
     internal static float BonusFor(string? styleId)

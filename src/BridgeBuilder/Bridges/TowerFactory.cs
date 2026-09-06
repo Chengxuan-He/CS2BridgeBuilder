@@ -50,6 +50,12 @@ internal sealed class TowerFactory
     private (RoadEdge Left, RoadEdge Right)? _roadEdges;
 
     /// <summary>
+    /// The target bridge's two semantic width envelopes. They are equal for ordinary styles; the
+    /// white TrussArchBridge02 records full road width outside and road-minus-footways inside.
+    /// </summary>
+    private (float Outer, float Inner)? _structureWidths;
+
+    /// <summary>
     /// What is being done to the kerb railing of the piece in hand, while it is being derived.
     ///
     /// Held across the piece and its levels of detail rather than worked out afresh for each. A coarse
@@ -80,6 +86,10 @@ internal sealed class TowerFactory
 
     /// <summary>Records both outer section boundaries read from the target road prefab.</summary>
     internal void MeasureFootways(RoadEdge left, RoadEdge right) => _roadEdges = (left, right);
+
+    /// <summary>Records the reviewed outer and inner targets for the bridge currently being built.</summary>
+    internal void MeasureStructureWidths(float outer, float inner) =>
+        _structureWidths = (Math.Max(0f, outer), Math.Max(0f, inner));
 
 
     /// <summary>The ground decal every tower's base part carries, looked up once per run.</summary>
@@ -299,6 +309,7 @@ internal sealed class TowerFactory
         _cableOuter = 0f;
         _cableName = null;
         _towerKey = null;
+        _structureWidths = null;
 
         // Set here and not only where a tower is created. The sections are widened first - the cables
         // and the railings that live beside them - so anything that asks which style is being built
@@ -1175,9 +1186,16 @@ internal sealed class TowerFactory
             }
 
             var meshes = new List<ObjectMeshInfo>();
+            var layerWidths = new List<string>();
             foreach (var info in parts)
             {
-                var widened = Widen((RenderPrefab)info.m_Mesh!, name, meshes.Count, extra);
+                var sourceMesh = (RenderPrefab)info.m_Mesh!;
+                var partExtra = _structureWidths.HasValue
+                    ? BridgeTowers.WhiteTrussArchWidths.TowerPartExtra(
+                        _styleId, sourceMesh.name,
+                        _structureWidths.Value.Outer, _structureWidths.Value.Inner, extra)
+                    : extra;
+                var widened = Widen(sourceMesh, name, meshes.Count, partExtra);
                 if (widened == null) continue;
 
                 // The part keeps where it sat, carried outward by the same shift as its vertices.
@@ -1185,7 +1203,7 @@ internal sealed class TowerFactory
                 var position = info.m_Position;
                 if (Math.Abs(position.x) > 0.001f)
                 {
-                    position.x += position.x > 0f ? extra * 0.5f : -extra * 0.5f;
+                    position.x += position.x > 0f ? partExtra * 0.5f : -partExtra * 0.5f;
                 }
 
                 meshes.Add(new ObjectMeshInfo
@@ -1195,6 +1213,13 @@ internal sealed class TowerFactory
                     m_Rotation = info.m_Rotation,
                     m_RequireState = info.m_RequireState,
                 });
+
+                if (Math.Abs(partExtra - extra) > TowerWidening.CentreEpsilon)
+                {
+                    layerWidths.Add(string.Format(
+                        CultureInfo.InvariantCulture,
+                        "'{0}' by {1:0.###} m", sourceMesh.name, partExtra));
+                }
             }
 
             if (meshes.Count == 0)
@@ -1228,12 +1253,25 @@ internal sealed class TowerFactory
             // And held to its distance from the cables it will stand beside.
             CheckSpacing(name, tower.m_Meshes);
 
-            _report.Note(string.Format(
-                CultureInfo.InvariantCulture,
-                "{0}: derived from '{1}' ({2:0.#} m authored, {3} part(s)) by moving everything "
-                + "{4:0.#} m apart{5}.",
-                name, source.name, authored, meshes.Count, extra,
-                Math.Abs(extra) < 0.001f ? " - geometry identical to the original" : string.Empty));
+            if (layerWidths.Count > 0 && _structureWidths.HasValue)
+            {
+                _report.Note(string.Format(
+                    CultureInfo.InvariantCulture,
+                    "{0}: white two-layer pillar derived from '{1}': outer target {2:0.###} m, "
+                    + "inner target {3:0.###} m; {4}. The source mesh identity fixes the layer and "
+                    + "the same assignment is reused by every LOD.",
+                    name, source.name, _structureWidths.Value.Outer, _structureWidths.Value.Inner,
+                    string.Join(", ", layerWidths)));
+            }
+            else
+            {
+                _report.Note(string.Format(
+                    CultureInfo.InvariantCulture,
+                    "{0}: derived from '{1}' ({2:0.#} m authored, {3} part(s)) by moving everything "
+                    + "{4:0.#} m apart{5}.",
+                    name, source.name, authored, meshes.Count, extra,
+                    Math.Abs(extra) < 0.001f ? " - geometry identical to the original" : string.Empty));
+            }
 
             return tower;
         }
@@ -1833,11 +1871,11 @@ internal sealed class TowerFactory
                 var part = loaded[index];
                 if (part == null) continue;
 
-                // Both arch-above colours are open trusses. Their top beams cross x=0 and must be
-                // stretched. Blue authors that one logical beam as several render islands, which all
-                // share the complete full-detail beam reach. Green welds side arches to transverse
-                // work, so it uses one continuous x-map measured from the full-detail side boundary.
-                // The same decision is carried into every LOD.
+                // All three arch-above colours are open trusses. Their top beams cross x=0 and must
+                // be stretched. Blue and white author one logical transverse assembly as several
+                // render islands, which all share the complete full-detail reach. Green welds side
+                // arches to transverse work, so it uses one continuous x-map measured from the
+                // full-detail side boundary. The same decision is carried into every LOD.
                 var source = ToPoints(part.vertices);
                 var openTruss = IsThroughArchSection(railings);
                 var preserveOpenTrussSides =
