@@ -1,11 +1,11 @@
-﻿using BridgePrefabGenerator.Bridges;
+using BridgeBuilder.Bridges;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using Unity.Mathematics;
 
-namespace BridgePrefabGenerator.Tests;
+namespace BridgeBuilder.Tests;
 
 /// <summary>
 /// Generating a tower, for every bridge type, at every width - run without a game.
