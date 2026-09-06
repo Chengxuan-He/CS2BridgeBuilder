@@ -8,17 +8,33 @@ namespace BridgeBuilder.Bridges;
 internal readonly struct RoadEdge
 {
     internal RoadEdge(float outerBoundary, float innerBoundary, bool isSidewalk)
+        : this(outerBoundary, outerBoundary, innerBoundary, isSidewalk)
+    {
+    }
+
+    internal RoadEdge(
+        float outerBoundary,
+        float sidewalkOuterBoundary,
+        float sidewalkInnerBoundary,
+        bool isSidewalk)
     {
         OuterBoundary = Math.Max(0f, outerBoundary);
-        InnerBoundary = Math.Max(0f, innerBoundary);
+        SidewalkOuterBoundary = Math.Max(0f, sidewalkOuterBoundary);
+        InnerBoundary = Math.Max(0f, sidewalkInnerBoundary);
         IsSidewalk = isSidewalk;
     }
 
+    /// <summary>The road surface edge, measured from x=0.</summary>
     internal float OuterBoundary { get; }
+
+    /// <summary>The edge of the outermost sidewalk that is farthest from x=0.</summary>
+    internal float SidewalkOuterBoundary { get; }
+
+    /// <summary>The edge of that same sidewalk that is nearest x=0.</summary>
     internal float InnerBoundary { get; }
     internal bool IsSidewalk { get; }
     internal float SidewalkWidth => IsSidewalk
-        ? Math.Max(0f, OuterBoundary - InnerBoundary)
+        ? Math.Max(0f, SidewalkOuterBoundary - InnerBoundary)
         : 0f;
 }
 
