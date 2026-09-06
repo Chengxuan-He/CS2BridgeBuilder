@@ -222,6 +222,7 @@ internal sealed class BridgeComposer
         {
             _towers.MeasureFootways(roadEdges.Left, roadEdges.Right);
             _towers.MeasureStructureWidths(targetWidth, structureWidth);
+            _towers.MeasureStructureExtra(extra);
         }
 
         CopyOverhead(target, variant, overheadExtra);
