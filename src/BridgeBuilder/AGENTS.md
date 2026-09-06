@@ -28,6 +28,11 @@ the repository root [`AGENTS.md`](../../AGENTS.md). Before editing this director
 - Preserve the archetype's complete prefab behavior. A generated bridge changes only requested
   geometry and the selected road structure; derived tower, cable, piece and LOD prefabs remain unique
   to that generated bridge.
+- Preserve the archetype-specific constant `bridge width - deck width`. The width definition and the
+  constant must come from a same-basis comparison of a real archetype and a real newly generated
+  bridge, not runtime geometry inference or source arithmetic alone. If enforcing it would require any
+  x-coordinate correction greater than 1 m in absolute value, do not change that bridge; report and
+  record the bridge for review.
 
 ## Completion
 

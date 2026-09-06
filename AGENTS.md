@@ -75,6 +75,12 @@ The numbered references below point to the corresponding sections in the complet
     verify the process is absent, then remove and verify removal of every bridge and generated artifact
     created by the mod. Building or installing does not satisfy these requirements. See contract
     section 13.
+14. Before editing any contract or `AGENTS.md`, record the current branch and exact `HEAD` commit as
+    the rollback baseline. Every generated bridge must preserve its archetype's measured constant in
+    `bridge width - deck width`. Establish that constant by comparing a real archetype with a real
+    newly generated bridge; never infer it from source arithmetic alone. If the required maximum
+    absolute x-coordinate correction exceeds 1 m, skip that bridge and record the evidence instead of
+    changing it. See contract section 14.
 
 ## Geometry invariants that must remain visible at repository scope
 
@@ -100,12 +106,13 @@ The numbered references below point to the corresponding sections in the complet
 1. Confirm the current branch and cleanly separate unrelated user changes.
 2. Read the instruction files required by the table above.
 3. Inspect the archetype and current generated output before changing transformation code.
-4. Make only the requested, branch-valid change. Keep runtime inference and metaprogramming separate.
-5. Apply the change consistently to the full-detail mesh and all LODs.
-6. After any source-code edit, perform the mandatory process stop and ownership-scoped generated-bridge
+4. For contract maintenance, record the branch and exact `HEAD` before the first instruction edit.
+5. Make only the requested, branch-valid change. Keep runtime inference and metaprogramming separate.
+6. Apply the change consistently to the full-detail mesh and all LODs.
+7. After any source-code edit, perform the mandatory process stop and ownership-scoped generated-bridge
    cleanup from contract section 13.
-7. Compile when appropriate, but report compilation only as a loadability check.
-8. Do not call a visual issue fixed until the in-game near/far result has been observed.
+8. Compile when appropriate, but report compilation only as a loadability check.
+9. Do not call a visual issue fixed until the in-game near/far result has been observed.
 
 ## Maintaining these instructions
 
