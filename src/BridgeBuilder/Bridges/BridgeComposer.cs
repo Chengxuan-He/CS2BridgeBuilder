@@ -129,8 +129,9 @@ internal sealed class BridgeComposer
             CultureInfo.InvariantCulture,
             "{0}: deck measures {1:0.#} m - {2}",
             target.name, targetWidth, string.Join(", ", breakdown)));
-        // One number moves everything: the tower's vertices, the cables, the deck props. It comes from
-        // the same selection the donor did, so the parts cannot be sized against different towers.
+        // Most archetypes have one lateral envelope. White TrussArchBridge02 is the exception: its
+        // outside frame follows the complete road while its inside frame follows the carriageway left
+        // after the two outside footways are removed.
         var chosen = selection.Tower;
         var extra = selection.ExtraFor(structureWidth, style.Id);
 
@@ -138,13 +139,12 @@ internal sealed class BridgeComposer
         {
             _report.Note(string.Format(
                 CultureInfo.InvariantCulture,
-                "{0}: white truss-arch structure follows the target road's outside sidewalks: "
-                + "{1:0.###} m road minus {2:0.###} m left and {3:0.###} m right = {4:0.###} m. "
-                + "The TrussArchBridge02 prototype datum is {5:0.###} m, so its overhead frame, "
-                + "support and every LOD change by {6:0.###} m together.",
+                "{0}: white truss-arch has two width targets: outer {1:0.###} m equals the complete "
+                + "road; inner {4:0.###} m equals that road minus {2:0.###} m left and {3:0.###} m "
+                + "right footways. The prototype's named inner and outer layers are derived "
+                + "independently and every LOD uses the same layer assignment.",
                 target.name, targetWidth, roadEdges.Left.SidewalkWidth,
-                roadEdges.Right.SidewalkWidth, structureWidth,
-                BridgeTowers.RoadOf(style.Id), extra));
+                roadEdges.Right.SidewalkWidth, structureWidth));
         }
 
         // No complaint about how far the tower is being widened.
@@ -208,7 +208,12 @@ internal sealed class BridgeComposer
             extra = BridgeTowers.StructureExtraFor(style.Id, extra);
         }
 
-        ReportSpread(structureWidth, structureWidth - extra);
+        var overheadExtra = BridgeTowers.WhiteTrussArchWidths.OverheadExtra(
+            style.Id, targetWidth, extra);
+        ReportSpread(
+            BridgeTowers.WidthFollowsSidewalks(style.Id) ? targetWidth : structureWidth,
+            (BridgeTowers.WidthFollowsSidewalks(style.Id) ? targetWidth : structureWidth)
+                - overheadExtra);
 
         // What the road puts at each edge, which is where the archetype's inner railing stands and
         // whether it stands at all. Measured before anything is derived, because the sections it reads
@@ -216,17 +221,19 @@ internal sealed class BridgeComposer
         if (_towers != null)
         {
             _towers.MeasureFootways(roadEdges.Left, roadEdges.Right);
+            _towers.MeasureStructureWidths(targetWidth, structureWidth);
         }
 
-        CopyOverhead(target, variant, extra);
-        CopySubObjects(target, variant, extra);
+        CopyOverhead(target, variant, overheadExtra);
+        CopySubObjects(target, variant, overheadExtra);
         if (target is RoadPrefab roadTarget) RemoveDeckRailings(roadTarget, style.Id);
 
         // When the style has no tower wide enough, build one. Everything above still applies - the
         // span behaviour, the cables, the deck props that do fit - and only the tower is replaced,
         // because the tower is the one part whose width nothing can adjust after the fact.
-        var fitted = FitTower(target, style, structureWidth, variant, chosen);
-        if (!fitted) ReportTooNarrow(target.name, structureWidth, variant.StructureWidth);
+        var towerWidth = BridgeTowers.WidthFollowsSidewalks(style.Id) ? targetWidth : structureWidth;
+        var fitted = FitTower(target, style, towerWidth, variant, chosen);
+        if (!fitted) ReportTooNarrow(target.name, towerWidth, variant.StructureWidth);
 
         _report.Note(string.Format(
             CultureInfo.InvariantCulture,
