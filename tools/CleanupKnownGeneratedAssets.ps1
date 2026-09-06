@@ -373,11 +373,13 @@ if (Test-Path -LiteralPath $importedRoot -PathType Container) {
         'ExtradosedBridge01 Section',
         'ExtradosedBridge02 Section',
         'ExtradosedBridge03 Section',
+        '6-Lane Extradosed Bridge',
         'SuspensionBridge03 Section',
         'PedestrianBridgeCoveredWood01 Section',
         'Grand Bridge',
         'LiftBridge01 Section',
         'LiftBridge03 Section',
+        '2-Lane Truss Arch Bridge',
         'TrussArchBridge01 Section',
         'TrussArchBridge02 Section',
         'TrussArchBridge03 Section'

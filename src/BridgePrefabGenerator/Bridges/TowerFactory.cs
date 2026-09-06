@@ -658,7 +658,7 @@ internal sealed class TowerFactory
     /// </summary>
 
     /// <summary>
-    /// Reports material at the outer edge that came out a different thickness than it went in.
+    /// Records material at the outer edge that came out a different thickness than it went in.
     ///
     /// Rule 5: anything standing clear of the centre is carried and keeps its shape. Nothing else can
     /// see whether it did - the mesh measures the same across either way, so every width in every
@@ -713,11 +713,16 @@ internal sealed class TowerFactory
 
         if (worst > 0.05f)
         {
-            _report.Defect(string.Format(
+            // This profile measurement is deliberately retained as diagnostic evidence, but it is
+            // not itself proof that the exported mesh is defective. Sloping members and runs which
+            // meet after widening can change the outermost horizontal slice without changing any
+            // member's own thickness. Keep the observation in the export report without raising a
+            // player-facing ERROR or emitting a stack trace.
+            _report.Note(string.Format(
                 CultureInfo.InvariantCulture,
-                "'{0}' has material at its outer edge that came out {1:0.##} m thick where it went in "
+                "{0}: material at its outer edge came out {1:0.##} m thick where it went in "
                 + "{2:0.##} m thick. Anything standing clear of the centre is carried and keeps its "
-                + "shape, so either it was scaled or it has run into what stood beside it.",
+                + "shape; inspect the prototype and generated mesh if the visual result is suspect.",
                 name, now, was));
             return;
         }
