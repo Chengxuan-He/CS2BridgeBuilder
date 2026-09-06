@@ -1626,9 +1626,9 @@ internal sealed class TowerFactory
         // the eye moves along the bridge.
         _kerbPlans = null;
 
-        var wanted = BridgeTowers.BringsItsOwnRailings(_styleId)
+        var wanted = TowerPrefabNaming.Safe(BridgeTowers.BringsItsOwnRailings(_styleId)
             ? string.Format(CultureInfo.InvariantCulture, "{0}-{1}", source.name, bridgeName)
-            : string.Format(CultureInfo.InvariantCulture, "{0} {1:0.#}", source.name, extra);
+            : string.Format(CultureInfo.InvariantCulture, "{0} {1:0.#}", source.name, extra));
 
         if (_sectionsThisRun.TryGetValue(wanted, out var already))
         {
@@ -1858,7 +1858,7 @@ internal sealed class TowerFactory
 
         var copy = ScriptableObject.CreateInstance<NetSectionPrefab>();
         _created.Add(copy);
-        copy.name = name;
+        copy.name = TowerPrefabNaming.Safe(name);
 
         foreach (var component in source.components)
         {
@@ -1926,6 +1926,7 @@ internal sealed class TowerFactory
         TowerWidening.Profile? profile = null, bool railings = false)
         where T : RenderPrefab
     {
+        name = TowerPrefabNaming.Safe(name);
         Mesh[]? loaded = null;
         try
         {
@@ -2323,8 +2324,12 @@ internal sealed class TowerFactory
 
             var vertices = all.ToArray();
             var geometry = new Geometry(models.ToArray());
+            // Defence at the write boundary as well as at each generated-prefab naming boundary:
+            // AssetDataPath reads the last period as an extension, and rejects any extension other
+            // than the one belonging to GeometryAsset.
+            var geometryAssetName = TowerPrefabNaming.Safe(name);
             var asset = AssetDatabase.user.AddAsset(
-                AssetDataPath.Create("BridgeBuilder", name, EscapeStrategy.None),
+                AssetDataPath.Create("BridgeBuilder", geometryAssetName, EscapeStrategy.None),
                 geometry);
 
             // Registering an asset is not writing it. Without this the geometry existed in the database
