@@ -72,14 +72,14 @@ internal static class BridgeStyleDefinitions
     /// <summary>
     /// Whether a style's overhead section is an open, member-built truss.
     ///
-    /// The blue and green bridges are different prototypes and keep their own measured road widths,
-    /// materials and donors. They nevertheless require the same mesh rule: side members translate as
-    /// rigid bodies and members crossing the centre use one affine transform for their whole connected
-    /// component. Keeping this classification here prevents one colour silently falling back to the
-    /// height-band portal rule.
+    /// The blue, white and green bridges are different prototypes and keep their own measured road
+    /// widths, materials and donors. They nevertheless require the same mesh rule: side members
+    /// translate as rigid bodies and members crossing the centre use one affine transform for their
+    /// whole connected component. Keeping this classification here prevents one colour silently
+    /// falling back to the height-band portal rule.
     /// </summary>
     internal static bool UsesOpenTrussTopology(string? styleId) =>
-        styleId is "TrussArch01" or "TrussArch03";
+        styleId is "TrussArch01" or "TrussArch02" or "TrussArch03";
 
     /// <summary>
     /// Whether an open-truss prototype authors its inner railing and outer arch as one side assembly.
@@ -151,11 +151,12 @@ internal static class BridgeStyleDefinitions
         // than their road, while TrussArchBridge01 carries a pillar narrower than its road - already
         // recorded as a support - and puts the arch itself overhead, one section down each side.
         //
-        // 01 and 03 are separately selectable arch-above prototypes. Keep both exact patterns before
+        // 01, 02 and 03 are separately selectable arch-above prototypes. Keep every exact pattern before
         // the general truss-arch pattern: each generated bridge must copy the complete section, tower
         // and material family of the prototype the player selected, rather than sharing a donor with
-        // another colour. 02 remains in the general family until it is exposed as its own design.
+        // another colour.
         new BridgeStyleDefinition("TrussArch01", "Truss Arch Bridge 01", 3, "trussarchbridge01"),
+        new BridgeStyleDefinition("TrussArch02", "Truss Arch Bridge 02", 3, "trussarchbridge02"),
         new BridgeStyleDefinition("TrussArch03", "Truss Arch Bridge 03", 3, "trussarchbridge03"),
         new BridgeStyleDefinition("TrussArch", "Truss Arch Bridge", 3,           // 2.5 over 18
             "trussarchbridge", "trussarch"),

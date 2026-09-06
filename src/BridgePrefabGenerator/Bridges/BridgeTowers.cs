@@ -249,6 +249,15 @@ internal static class BridgeTowers
                 // RoadOf still supplies the 20 m prototype datum to the overhead structure.
                 new Tower("TrussArchBridge01NetPillar", 18, 20, verified: true, support: true),
             },
+            // The white arch-above design sizes its structure to the road between the two outside
+            // footways. Its prototype measures 38 m by the same section walk used for generated
+            // roads, with a 3.5 m sidewalk at either edge: 38 - 3.5 - 3.5 = 31 m. The 30.2 m support
+            // mesh confirms that this is the span it was authored around. BridgeComposer repeats
+            // that same subtraction from each target road's own sidewalk widths.
+            ["TrussArch02"] = new[]
+            {
+                new Tower("TrussArchBridge02NetPillar", 30, 31, verified: true, support: true),
+            },
             // The green arch-above design is its own prototype. It uses the same target-minus-prototype
             // calculation and the same member-topology widening rule as blue, while retaining the 24 m
             // road measured from TrussArchBridge03 itself rather than borrowing blue's 20 m datum.
@@ -266,9 +275,7 @@ internal static class BridgeTowers
                 // select the arch-above frame - the measurement is not lost, it is under the family
                 // it belongs to.
                 //
-                // 03 is now recorded under its own green style. 02 remains the measured support in
-                // this general family until it too becomes a separately selectable prototype.
-                new Tower("TrussArchBridge02NetPillar", 30, 38, verified: true, support: true),
+                // 02 and 03 are recorded under their own white and green styles.
             },
         };
 
@@ -478,6 +485,25 @@ internal static class BridgeTowers
     /// </summary>
     internal static bool BringsItsOwnRailings(string? styleId) =>
         styleId is "SuspensionGolden";
+
+    /// <summary>
+    /// Whether the structure spans the road between its two outside sidewalks rather than the whole
+    /// measured deck. This is prototype data, not a geometric guess: TrussArchBridge02 is the one
+    /// archetype observed with that relationship.
+    /// </summary>
+    internal static bool WidthFollowsSidewalks(string? styleId) => styleId == "TrussArch02";
+
+    /// <summary>
+    /// The target width used by the bridge structure. The white truss arch reads the same semantic
+    /// outer sidewalk sections as the golden suspension bridge's railing layout, then removes their
+    /// widths from the full road measurement. Every other style continues to use the full road width.
+    /// </summary>
+    internal static float StructureWidthFor(
+        string? styleId, float roadWidth, RoadEdge left, RoadEdge right)
+    {
+        if (!WidthFollowsSidewalks(styleId)) return roadWidth;
+        return Math.Max(0f, roadWidth - left.SidewalkWidth - right.SidewalkWidth);
+    }
 
     /// <summary>Extra widening this style's towers take beyond what the road gives. Zero for most.</summary>
     internal static float BonusFor(string? styleId)

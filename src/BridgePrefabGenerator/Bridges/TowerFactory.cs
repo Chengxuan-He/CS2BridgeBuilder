@@ -1828,11 +1828,11 @@ internal sealed class TowerFactory
                 var part = loaded[index];
                 if (part == null) continue;
 
-                // Both arch-above colours are open trusses. Their top beams cross x=0 and must be
-                // stretched. Blue authors that one logical beam as several render islands, which all
-                // share the complete full-detail beam reach. Green welds side arches to transverse
-                // work, so it uses one continuous x-map measured from the full-detail side boundary.
-                // The same decision is carried into every LOD.
+                // All three arch-above colours are open trusses. Their top beams cross x=0 and must
+                // be stretched. Blue and white author one logical transverse assembly as several
+                // render islands, which all share the complete full-detail reach. Green welds side
+                // arches to transverse work, so it uses one continuous x-map measured from the
+                // full-detail side boundary. The same decision is carried into every LOD.
                 var source = ToPoints(part.vertices);
                 var openTruss = IsThroughArchSection(railings);
                 var preserveOpenTrussSides =

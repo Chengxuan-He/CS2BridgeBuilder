@@ -336,7 +336,7 @@ if (Test-Path -LiteralPath $importedRoot -PathType Container) {
     $towerStyles = @(
         'PedestrianDraw', 'CoveredWood', 'SuspensionGolden', 'Suspension',
         'Extradosed01', 'Extradosed02', 'Extradosed03', 'ExtradosedLarge', 'CableStayed',
-        'TrussArch01', 'TrussArch03', 'TrussArch', 'TiedArch', 'Grand', 'Draw', 'Lift'
+        'TrussArch01', 'TrussArch02', 'TrussArch03', 'TrussArch', 'TiedArch', 'Grand', 'Draw', 'Lift'
     )
     $towerPattern = '^(' + (($towerStyles | ForEach-Object { [regex]::Escape($_) }) -join '|') `
         + ')-[-+]?[0-9]+(?:\.[0-9]+)?-.+'
