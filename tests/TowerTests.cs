@@ -1,11 +1,11 @@
-using BridgePrefabGenerator.Bridges;
+using BridgeBuilder.Bridges;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using Unity.Mathematics;
 
-namespace BridgePrefabGenerator.Tests;
+namespace BridgeBuilder.Tests;
 
 /// <summary>
 /// The tower rules, checked without a running game.

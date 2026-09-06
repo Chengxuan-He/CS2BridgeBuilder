@@ -1,4 +1,6 @@
-| Road | every other road — the game's own, a pack's, or one exported earlier by the road exporter |# Bridge Prefab Generator
+# BridgeBuilder
+
+![BridgeBuilder icon](assets/BridgeBuilder.svg)
 
 A Cities: Skylines II mod that builds a **bridge prefab** from parts you choose: a road for the upper
 deck, a bridge style to wear, and optionally something hung underneath.
@@ -111,7 +113,7 @@ they are missing. It resolves the game's managed assemblies itself; pass `-GameD
 ```
 CS2ModShared/               shared - discovery, cloning, asset IO, speed-limit correction, status model
 CS2RoadPrefabExporter/      exports Road Builder roads as plain roads, in batches
-CS2BridgePrefabGenerator/   this repository
+CS2BridgeBuilder/            this repository
 ```
 
 The shared code is **compiled into** each mod rather than referenced as an assembly: its types are
@@ -122,7 +124,7 @@ Clone all three side by side.
 
 ## Reports
 
-Every run writes `ModsData\BridgePrefabGenerator\last-export-report.txt`, including the structural
+Every run writes `ModsData\BridgeBuilder\last-export-report.txt`, including the structural
 counts that separate "the deck came out wrong" from "the style did not attach": sections, overhead
 sections, sub-objects and auxiliary nets. Failures are also raised at error level so they surface in
 the game rather than only in a file.

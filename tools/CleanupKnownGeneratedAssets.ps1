@@ -11,9 +11,10 @@ $localLow = [Environment]::GetFolderPath('LocalApplicationData')
 $localLow = Join-Path (Split-Path -Parent $localLow) 'LocalLow'
 $gameRoot = Join-Path $localLow 'Colossal Order\Cities Skylines II'
 $importedRoot = Join-Path $gameRoot 'ImportedData'
-$geometryRoot = Join-Path $gameRoot 'BridgePrefabGenerator'
-$modDataRoot = Join-Path $gameRoot 'ModsData\BridgePrefabGenerator'
-$stateFile = Join-Path $modDataRoot 'export-state.tsv'
+$modIds = @('BridgeBuilder', 'BridgePrefabGenerator')
+$geometryRoots = @($modIds | ForEach-Object { Join-Path $gameRoot $_ })
+$modDataRoots = @($modIds | ForEach-Object { Join-Path $gameRoot (Join-Path 'ModsData' $_) })
+$stateFiles = @($modDataRoots | ForEach-Object { Join-Path $_ 'export-state.tsv' })
 # Windows PowerShell 5.1 reads a BOM-less script using the current ANSI code page. Keep the script
 # itself ASCII and decode the one non-ASCII road name explicitly so literal target names stay exact.
 $roadName = [Text.Encoding]::UTF8.GetString(
@@ -309,12 +310,13 @@ $geometryStems += @(
 # another partial list. Matching includes the complete export name (not a road-name fragment): the
 # bridge itself, an optional lower network, its independently named tower/section and their meshes.
 $stateExportNames = @()
-if (Test-Path -LiteralPath $stateFile -PathType Leaf) {
-    $stateExportNames = @(Import-Csv -LiteralPath $stateFile -Delimiter "`t" |
+foreach ($stateFile in $stateFiles) {
+    if (-not (Test-Path -LiteralPath $stateFile -PathType Leaf)) { continue }
+    $stateExportNames += @(Import-Csv -LiteralPath $stateFile -Delimiter "`t" |
         ForEach-Object { $_.exportName } |
-        Where-Object { -not [string]::IsNullOrWhiteSpace($_) } |
-        Select-Object -Unique)
+        Where-Object { -not [string]::IsNullOrWhiteSpace($_) })
 }
+$stateExportNames = @($stateExportNames | Select-Object -Unique)
 if (Test-Path -LiteralPath $importedRoot -PathType Container) {
     $currentImportedNames = @(Get-ChildItem -LiteralPath $importedRoot -Directory |
         Select-Object -ExpandProperty Name)
@@ -354,7 +356,8 @@ if (Test-Path -LiteralPath $importedRoot -PathType Container) {
         $_ -match $bridgeStyleSuffixPattern
     })
 
-    # Dependency clones created by BridgePrefabGenerator always use this ownership prefix.
+    # Dependency clones created by BridgeBuilder (and its former BridgePrefabGenerator identity)
+    # always use this ownership prefix.
     # RoadPrefabExporter's RBExportDep_* directories intentionally remain outside this match.
     $importedDirectoryNames += @($currentImportedNames | Where-Object {
         $_.StartsWith('RBBridgeDep_', [StringComparison]::Ordinal)
@@ -393,24 +396,25 @@ if (Test-Path -LiteralPath $importedRoot -PathType Container) {
 
     # Resolve every RenderPrefab which references Geometry currently owned by this mod. This covers
     # generated sections whose archetype-derived names intentionally do not carry the bridge name.
-    if (Test-Path -LiteralPath $geometryRoot -PathType Container) {
-        $ownedGeometryIds = [Collections.Generic.HashSet[string]]::new(
-            [StringComparer]::OrdinalIgnoreCase)
+    $ownedGeometryIds = [Collections.Generic.HashSet[string]]::new(
+        [StringComparer]::OrdinalIgnoreCase)
+    foreach ($geometryRoot in $geometryRoots) {
+        if (-not (Test-Path -LiteralPath $geometryRoot -PathType Container)) { continue }
         Get-ChildItem -LiteralPath $geometryRoot -Filter '*.Geometry.cid' -File | ForEach-Object {
             $id = [IO.File]::ReadAllText($_.FullName).Trim()
             if ($id -match '^[0-9a-fA-F]{32}$') { $ownedGeometryIds.Add($id) | Out-Null }
         }
+    }
 
-        if ($ownedGeometryIds.Count -gt 0) {
-            foreach ($directory in Get-ChildItem -LiteralPath $importedRoot -Directory) {
-                $prefabFile = Join-Path $directory.FullName ($directory.Name + '.Prefab')
-                if (-not (Test-Path -LiteralPath $prefabFile -PathType Leaf)) { continue }
-                $prefabText = [IO.File]::ReadAllText($prefabFile)
-                foreach ($id in $ownedGeometryIds) {
-                    if ($prefabText.Contains('CID:' + $id)) {
-                        $importedDirectoryNames += $directory.Name
-                        break
-                    }
+    if ($ownedGeometryIds.Count -gt 0) {
+        foreach ($directory in Get-ChildItem -LiteralPath $importedRoot -Directory) {
+            $prefabFile = Join-Path $directory.FullName ($directory.Name + '.Prefab')
+            if (-not (Test-Path -LiteralPath $prefabFile -PathType Leaf)) { continue }
+            $prefabText = [IO.File]::ReadAllText($prefabFile)
+            foreach ($id in $ownedGeometryIds) {
+                if ($prefabText.Contains('CID:' + $id)) {
+                    $importedDirectoryNames += $directory.Name
+                    break
                 }
             }
         }
@@ -441,26 +445,34 @@ foreach ($name in $importedDirectoryNames) {
 }
 
 $removedGeometry = 0
-foreach ($stem in $geometryStems) {
-    foreach ($extension in @('.Geometry', '.Geometry.cid')) {
-        $target = Assert-ExactChild $geometryRoot (Join-Path $geometryRoot ($stem + $extension))
-        if (Test-Path -LiteralPath $target -PathType Leaf) {
-            Remove-Item -LiteralPath $target -Force
-            $removedGeometry++
+foreach ($geometryRoot in $geometryRoots) {
+    foreach ($stem in $geometryStems) {
+        foreach ($extension in @('.Geometry', '.Geometry.cid')) {
+            $target = Assert-ExactChild $geometryRoot (Join-Path $geometryRoot ($stem + $extension))
+            if (Test-Path -LiteralPath $target -PathType Leaf) {
+                Remove-Item -LiteralPath $target -Force
+                $removedGeometry++
+            }
         }
     }
 }
 
-$stateFile = Assert-ExactChild $modDataRoot $stateFile
-$iconFiles = @(
+$stateFiles = @($stateFiles | ForEach-Object {
+    $modDataRoot = Split-Path -Parent $_
+    Assert-ExactChild $modDataRoot $_
+})
+$iconFiles = @($modDataRoots | ForEach-Object {
+    $modDataRoot = $_
     Assert-ExactChild $modDataRoot (Join-Path $modDataRoot 'Icons\c84a2ef1a0a5779f79b5c65d20da1421.svg')
     Assert-ExactChild $modDataRoot (Join-Path $modDataRoot 'Icons\e931e1d62e11a4bf1bb2ac71fd570cd2.svg')
-)
+})
 $removedState = 0
 $removedIcon = 0
-if (Test-Path -LiteralPath $stateFile -PathType Leaf) {
-    Remove-Item -LiteralPath $stateFile -Force
-    $removedState = 1
+foreach ($stateFile in $stateFiles) {
+    if (Test-Path -LiteralPath $stateFile -PathType Leaf) {
+        Remove-Item -LiteralPath $stateFile -Force
+        $removedState++
+    }
 }
 foreach ($iconFile in $iconFiles) {
     if (Test-Path -LiteralPath $iconFile -PathType Leaf) {
@@ -469,34 +481,39 @@ foreach ($iconFile in $iconFiles) {
     }
 }
 
-# Every file below this exact directory is geometry emitted by this mod. Removing the complete
-# directory is both more accurate and safer than guessing future mesh stems from bridge names.
-if (Test-Path -LiteralPath $geometryRoot -PathType Container) {
-    $resolvedGameRoot = [IO.Path]::GetFullPath($gameRoot).TrimEnd([IO.Path]::DirectorySeparatorChar)
-    $resolvedGeometryRoot = [IO.Path]::GetFullPath($geometryRoot).TrimEnd([IO.Path]::DirectorySeparatorChar)
-    if ((Split-Path -Parent $resolvedGeometryRoot) -ne $resolvedGameRoot `
-        -or (Split-Path -Leaf $resolvedGeometryRoot) -ne 'BridgePrefabGenerator') {
-        throw "Refusing unexpected mod geometry target: $resolvedGeometryRoot"
+# Every file below either exact current/legacy directory is geometry emitted by this mod. Removing
+# the complete directories is both more accurate and safer than guessing future mesh stems.
+$resolvedGameRoot = [IO.Path]::GetFullPath($gameRoot).TrimEnd([IO.Path]::DirectorySeparatorChar)
+foreach ($geometryRoot in $geometryRoots) {
+    if (Test-Path -LiteralPath $geometryRoot -PathType Container) {
+        $resolvedGeometryRoot = [IO.Path]::GetFullPath($geometryRoot).TrimEnd([IO.Path]::DirectorySeparatorChar)
+        if ((Split-Path -Parent $resolvedGeometryRoot) -ne $resolvedGameRoot `
+            -or $modIds -notcontains (Split-Path -Leaf $resolvedGeometryRoot)) {
+            throw "Refusing unexpected mod geometry target: $resolvedGeometryRoot"
+        }
+        $remainingOwnedGeometry = @(Get-ChildItem -LiteralPath $resolvedGeometryRoot -Recurse -File)
+        $removedGeometry += $remainingOwnedGeometry.Count
+        Remove-Item -LiteralPath $resolvedGeometryRoot -Recurse -Force
     }
-    $remainingOwnedGeometry = @(Get-ChildItem -LiteralPath $resolvedGeometryRoot -Recurse -File)
-    $removedGeometry += $remainingOwnedGeometry.Count
-    Remove-Item -LiteralPath $resolvedGeometryRoot -Recurse -Force
 }
 
 $remainingImported = @($importedDirectoryNames | Where-Object {
     Test-Path -LiteralPath (Join-Path $importedRoot $_)
 })
-$remainingGeometry = @($geometryStems | ForEach-Object {
-    $stem = $_
-    @('.Geometry', '.Geometry.cid') | ForEach-Object {
-        Join-Path $geometryRoot ($stem + $_)
+$remainingGeometry = @($geometryRoots | ForEach-Object {
+    $geometryRoot = $_
+    $geometryStems | ForEach-Object {
+        $stem = $_
+        @('.Geometry', '.Geometry.cid') | ForEach-Object {
+            Join-Path $geometryRoot ($stem + $_)
+        }
     }
 } | Where-Object { Test-Path -LiteralPath $_ })
 
 if (($remainingImported.Count -ne 0) `
     -or ($remainingGeometry.Count -ne 0) `
-    -or (Test-Path -LiteralPath $geometryRoot) `
-    -or (Test-Path -LiteralPath $stateFile) `
+    -or @($geometryRoots | Where-Object { Test-Path -LiteralPath $_ }).Count -ne 0 `
+    -or @($stateFiles | Where-Object { Test-Path -LiteralPath $_ }).Count -ne 0 `
     -or @($iconFiles | Where-Object { Test-Path -LiteralPath $_ }).Count -ne 0) {
     throw "Cleanup verification failed: imported=$($remainingImported.Count), geometry=$($remainingGeometry.Count)."
 }

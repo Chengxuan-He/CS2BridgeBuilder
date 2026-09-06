@@ -59,14 +59,14 @@ copies from a prefab works until the prefab is missing and then produces somethi
 
 Where this lives:
 
-- [`BridgeTowerSpec`](../../src/BridgePrefabGenerator/Bridges/BridgeTowerSpec.cs) — the tower archetype as
+- [`BridgeTowerSpec`](../../src/BridgeBuilder/Bridges/BridgeTowerSpec.cs) — the tower archetype as
   plain numbers, with no dependency on the game, so the offline tests can hold it to what was measured.
-- [`BridgeTowerTemplate`](../../src/BridgePrefabGenerator/Bridges/BridgeTowerTemplate.cs) and
-  [`BridgeCableTemplate`](../../src/BridgePrefabGenerator/Bridges/BridgeCableTemplate.cs) — apply the specs
+- [`BridgeTowerTemplate`](../../src/BridgeBuilder/Bridges/BridgeTowerTemplate.cs) and
+  [`BridgeCableTemplate`](../../src/BridgeBuilder/Bridges/BridgeCableTemplate.cs) — apply the specs
   to a prefab. The only files that need the game.
-- [`BridgeTowers`](../../src/BridgePrefabGenerator/Bridges/BridgeTowers.cs),
-  [`BridgeCables`](../../src/BridgePrefabGenerator/Bridges/BridgeCables.cs),
-  [`BridgeMeasurements`](../../src/BridgePrefabGenerator/Bridges/BridgeMeasurements.cs) — the measured widths,
+- [`BridgeTowers`](../../src/BridgeBuilder/Bridges/BridgeTowers.cs),
+  [`BridgeCables`](../../src/BridgeBuilder/Bridges/BridgeCables.cs),
+  [`BridgeMeasurements`](../../src/BridgeBuilder/Bridges/BridgeMeasurements.cs) — the measured widths,
   same rule.
 
 
@@ -95,7 +95,7 @@ carried, not recalled. Where both exist, the recorded value becomes the check on
 `CheckStacking`, which is the floating tower turned into an assertion.
 
 Measurements are taken by `TowerSelfTest` and `AssetAnatomy`, which write them to
-`ModsData/BridgePrefabGenerator/`. Re-measuring is how these tables get corrected; a number that cannot
+`ModsData/BridgeBuilder/`. Re-measuring is how these tables get corrected; a number that cannot
 be reconciled with a measurement is wrong even when the bridge looks right.
 
 **Measured data is never deleted.** An entry that turns out to describe something other than what it was
@@ -512,7 +512,7 @@ Every LOD reuses the full-detail part profile, and generation reports the mismat
 derived prefab if a carried range does not receive the same rigid translation at every level. Mod code
 must not throw to enforce this rule; rejection is an explicit result handled before geometry is written.
 
-This is also the repository-wide runtime failure contract: code under `src/BridgePrefabGenerator`
+This is also the repository-wide runtime failure contract: code under `src/BridgeBuilder`
 must not contain an explicit `throw` statement. Unsupported input, failed validation and violated
 generation invariants return an explicit failure result; the caller records the reason and stops the
 affected prefab before allocating or publishing persistent geometry. Catching exceptions raised by the

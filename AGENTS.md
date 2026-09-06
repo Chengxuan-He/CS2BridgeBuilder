@@ -20,7 +20,7 @@ session.
 | Work being performed | Required instructions |
 | --- | --- |
 | Any bridge, mesh, prefab, tower, cable, LOD, geometry, export or generation change | This file, the complete project contract, and the nearest directory-level `AGENTS.md` |
-| Runtime code under `src/BridgePrefabGenerator` | This file, the complete project contract, and [`src/BridgePrefabGenerator/AGENTS.md`](src/BridgePrefabGenerator/AGENTS.md) |
+| Runtime code under `src/BridgeBuilder` | This file, the complete project contract, and [`src/BridgeBuilder/AGENTS.md`](src/BridgeBuilder/AGENTS.md) |
 | Geometry identification or metadata generation under `tools/GeometryMetaprogram` | This file, contract sections 1–9 and 13, and [`tools/GeometryMetaprogram/AGENTS.md`](tools/GeometryMetaprogram/AGENTS.md) |
 | Diagnosis or visual validation | Contract sections 1 and 6–9, plus the nearest directory-level `AGENTS.md` |
 | Double-deck bridge work | The complete project contract, especially section 11 |
@@ -91,7 +91,7 @@ The numbered references below point to the corresponding sections in the complet
 - Bridge-pier columns translate; they do not stretch.
 - The highest-detail archetype identifies each authored part once. Every LOD must receive the same
   logical classification and compatible transformation.
-- Code under `src/BridgePrefabGenerator` must not contain an explicit `throw` statement. Return an
+- Code under `src/BridgeBuilder` must not contain an explicit `throw` statement. Return an
   explicit failure result, record the reason and stop the affected prefab before publishing geometry.
   Continue catching exceptions raised by the game and third-party APIs.
 
