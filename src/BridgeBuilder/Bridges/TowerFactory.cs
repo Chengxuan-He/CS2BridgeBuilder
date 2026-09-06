@@ -1295,7 +1295,7 @@ internal sealed class TowerFactory
                 {
                     partExtra = BridgeTowers.WhiteTrussArchWidths.TowerPartExtra(
                         _styleId, sourceMesh.name,
-                        _structureWidths.Value.Outer, _structureWidths.Value.Inner, partExtra);
+                        _structureWidths.Value.Inner, partExtra);
                 }
                 var widened = Widen(sourceMesh, name, meshes.Count, partExtra);
                 if (widened == null) continue;
@@ -1361,9 +1361,10 @@ internal sealed class TowerFactory
             {
                 _report.Note(string.Format(
                     CultureInfo.InvariantCulture,
-                    "{0}: white two-layer pillar derived from '{1}': outer target {2:0.###} m, "
-                    + "inner target {3:0.###} m; {4}. The source mesh identity fixes the layer and "
-                    + "the same assignment is reused by every LOD.",
+                    "{0}: white truss bridge-pier derived from '{1}': outer deck target {2:0.###} m, "
+                    + "inner arch/pier target {3:0.###} m; {4}. The pier column and its footing use "
+                    + "the same inner-layer displacement, preserving their prototype joint; the "
+                    + "same assignment is reused by every LOD.",
                     name, source.name, _structureWidths.Value.Outer, _structureWidths.Value.Inner,
                     string.Join(", ", layerWidths)));
             }

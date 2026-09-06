@@ -69,6 +69,10 @@ internal sealed class BridgeComposer
         var roadEdges = RoadEdgesOf(measuredRoad, targetWidth);
         var structureWidth = BridgeTowers.StructureWidthFor(
             style.Id, targetWidth, roadEdges.Left, roadEdges.Right);
+        var outwardExtension = BridgeTowers.WidthFollowsSidewalks(style.Id)
+            ? NetWidth.OutwardExtensionOf(measuredRoad)
+            : 0f;
+        var outerStructureWidth = targetWidth + outwardExtension;
 
         // Refused rather than attempted. A bridge that is not generated is a bridge the player still
         // has; a bridge generated from an arrangement nobody has measured is one that looks built and
@@ -139,12 +143,13 @@ internal sealed class BridgeComposer
         {
             _report.Note(string.Format(
                 CultureInfo.InvariantCulture,
-                "{0}: white truss-arch has two width targets: outer {1:0.###} m equals the complete "
-                + "road; inner {4:0.###} m equals that road minus {2:0.###} m left and {3:0.###} m "
-                + "right footways. The prototype's named inner and outer layers are derived "
+                "{0}: white truss-arch has two width targets: outer {1:0.###} m reaches the visible "
+                + "road edge ({2:0.###} m road surface plus {3:0.###} m outward extensions); inner "
+                + "{6:0.###} m reaches the inside footway edges after {4:0.###} m left and {5:0.###} "
+                + "m right footways. The prototype's named inner and outer layers are derived "
                 + "independently and every LOD uses the same layer assignment.",
-                target.name, targetWidth, roadEdges.Left.SidewalkWidth,
-                roadEdges.Right.SidewalkWidth, structureWidth));
+                target.name, outerStructureWidth, targetWidth, outwardExtension,
+                roadEdges.Left.SidewalkWidth, roadEdges.Right.SidewalkWidth, structureWidth));
         }
 
         // No complaint about how far the tower is being widened.
@@ -209,11 +214,10 @@ internal sealed class BridgeComposer
         }
 
         var overheadExtra = BridgeTowers.WhiteTrussArchWidths.OverheadExtra(
-            style.Id, targetWidth, extra);
+            style.Id, outerStructureWidth, extra);
         ReportSpread(
-            BridgeTowers.WidthFollowsSidewalks(style.Id) ? targetWidth : structureWidth,
-            (BridgeTowers.WidthFollowsSidewalks(style.Id) ? targetWidth : structureWidth)
-                - overheadExtra);
+            outerStructureWidth,
+            outerStructureWidth - overheadExtra);
 
         // What the road puts at each edge, which is where the archetype's inner railing stands and
         // whether it stands at all. Measured before anything is derived, because the sections it reads
@@ -221,7 +225,7 @@ internal sealed class BridgeComposer
         if (_towers != null)
         {
             _towers.MeasureFootways(roadEdges.Left, roadEdges.Right);
-            _towers.MeasureStructureWidths(targetWidth, structureWidth);
+            _towers.MeasureStructureWidths(outerStructureWidth, structureWidth);
             _towers.MeasureStructureExtra(extra);
         }
 
@@ -232,7 +236,9 @@ internal sealed class BridgeComposer
         // When the style has no tower wide enough, build one. Everything above still applies - the
         // span behaviour, the cables, the deck props that do fit - and only the tower is replaced,
         // because the tower is the one part whose width nothing can adjust after the fact.
-        var towerWidth = BridgeTowers.WidthFollowsSidewalks(style.Id) ? targetWidth : structureWidth;
+        var towerWidth = BridgeTowers.WidthFollowsSidewalks(style.Id)
+            ? outerStructureWidth
+            : structureWidth;
         var fitted = FitTower(target, style, towerWidth, variant, chosen);
         if (!fitted) ReportTooNarrow(target.name, towerWidth, variant.StructureWidth);
 

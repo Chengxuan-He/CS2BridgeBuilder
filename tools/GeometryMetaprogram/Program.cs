@@ -25,9 +25,12 @@ if (args.Length == 11 && string.Equals(args[0], "--white-truss", StringCompariso
     var pillarLod2Map = WhiteTrussCoefficients.FromNearestPrototype(
         pillarLod2, pillarFull, pillarMap, "pillar LOD2");
 
-    var footingMap = WhiteTrussCoefficients.Rigid(footingFull, inner: false);
-    var footingLod1Map = WhiteTrussCoefficients.Rigid(footingLod1, inner: false);
-    var footingLod2Map = WhiteTrussCoefficients.Rigid(footingLod2, inner: false);
+    // Despite its prefab name, this is the footing of the bridge pier, not the centre-crossing base
+    // immediately below the road deck. It therefore belongs to the same inner envelope as the pier
+    // column and translates by that layer's displacement.
+    var footingMap = WhiteTrussCoefficients.Rigid(footingFull, inner: true);
+    var footingLod1Map = WhiteTrussCoefficients.Rigid(footingLod1, inner: true);
+    var footingLod2Map = WhiteTrussCoefficients.Rigid(footingLod2, inner: true);
 
     WhiteTrussCoefficients.Report("section full", sectionMap);
     WhiteTrussCoefficients.Report("section LOD1", sectionLod1Map);
@@ -35,9 +38,9 @@ if (args.Length == 11 && string.Equals(args[0], "--white-truss", StringCompariso
     WhiteTrussCoefficients.Report("pillar full", pillarMap);
     WhiteTrussCoefficients.Report("pillar LOD1", pillarLod1Map);
     WhiteTrussCoefficients.Report("pillar LOD2", pillarLod2Map);
-    WhiteTrussCoefficients.Report("outer pillar part full", footingMap);
-    WhiteTrussCoefficients.Report("outer pillar part LOD1", footingLod1Map);
-    WhiteTrussCoefficients.Report("outer pillar part LOD2", footingLod2Map);
+    WhiteTrussCoefficients.Report("pier footing full", footingMap);
+    WhiteTrussCoefficients.Report("pier footing LOD1", footingLod1Map);
+    WhiteTrussCoefficients.Report("pier footing LOD2", footingLod2Map);
 
     WhiteTrussCoefficients.WriteSource(
         args[10],
@@ -114,7 +117,7 @@ if (args.Length is not (1 or 3 or 4))
         + "       GeometryMetaprogram --section <full> <lod1> <lod2> <output.cs>\n"
         + "       GeometryMetaprogram --raw <captured mesh>\n"
         + "       GeometryMetaprogram --white-truss <section full/lod1/lod2> "
-        + "<pillar full/lod1/lod2> <outer pillar part full/lod1/lod2> <output.cs>");
+        + "<pillar full/lod1/lod2> <pier footing full/lod1/lod2> <output.cs>");
     return 2;
 }
 

@@ -101,6 +101,27 @@ internal static class NetWidth
         return width;
     }
 
+    /// <summary>
+    /// Width drawn outside the measured road surface by its two edge-extension sections.
+    ///
+    /// This is road-composition data, not generated-mesh inference. TrussArchBridge02's outer deck
+    /// frame follows these visible edges, while its inner arch follows the inside edge of the
+    /// footways. Other bridge families continue to size themselves from <see cref="RoadSurfaceOf"/>.
+    /// </summary>
+    internal static float OutwardExtensionOf(NetGeometryPrefab? prefab)
+    {
+        if (prefab?.m_Sections == null) return 0f;
+
+        var width = 0f;
+        foreach (var section in prefab.m_Sections)
+        {
+            if (section?.m_Section == null || section.m_Median || !IsSide(section)) continue;
+            width += Of(section.m_Section);
+        }
+
+        return width;
+    }
+
     /// <summary>Whether a section is only drawn once the net is elevated or raised.</summary>
     private static bool IsElevatedOnly(NetSectionInfo section)
     {

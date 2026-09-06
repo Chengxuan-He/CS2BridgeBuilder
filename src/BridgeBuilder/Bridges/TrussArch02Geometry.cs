@@ -14,8 +14,10 @@ namespace BridgeBuilder.Bridges;
 ///
 /// Inner centre-crossing members stretch against their own recorded span. Inner side arches and pier
 /// columns translate rigidly. Outer section vertices use x' = x + sign(x) * delta, preserving the
-/// shape of the deck base and railings while moving them to the complete road width; the separately
-/// authored outer pillar part uses the same rigid mapping.
+/// shape of the deck base and railings while moving them to the complete visible road width. Both
+/// pillar meshes belong to the inner bridge-pier assembly and receive the same displacement as the
+/// inner arch. The mesh named <c>NetPillarBase</c> is a pier footing, not the deck base described by
+/// the project contract.
 /// </summary>
 internal static class TrussArch02Geometry
 {
