@@ -222,6 +222,7 @@ internal sealed class BridgeComposer
         {
             _towers.MeasureFootways(roadEdges.Left, roadEdges.Right);
             _towers.MeasureStructureWidths(targetWidth, structureWidth);
+            _towers.MeasureStructureExtra(extra);
         }
 
         CopyOverhead(target, variant, overheadExtra);
@@ -308,12 +309,13 @@ internal sealed class BridgeComposer
         foreach (var name in named)
         {
             var primary = string.Equals(name, sourceName, StringComparison.Ordinal);
+            var recordedRoad = BridgeTowers.RoadFor(style.Id, name);
             var road = primary
                 ? chosen?.Road
                     ?? (BridgeTowers.WidthFollowsSidewalks(style.Id)
-                        ? BridgeTowers.RoadFor(style.Id, name) ?? deckWidth
+                        ? recordedRoad ?? deckWidth
                         : deckWidth)
-                : BridgeTowers.RoadFor(style.Id, name) ?? chosen?.Road ?? deckWidth;
+                : recordedRoad ?? chosen?.Road ?? deckWidth;
 
             var built = _towers.Create(style.Id, name, road, deckWidth, primary);
             if (built != null)
