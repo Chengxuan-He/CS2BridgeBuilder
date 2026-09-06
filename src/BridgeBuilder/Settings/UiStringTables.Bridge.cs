@@ -30,7 +30,7 @@ internal static partial class UiStringTables
 
     private static UiStrings English(UiStrings text)
     {
-        text.Title = "BridgeBuilder";
+        text.Title = "Bridge Builder";
         text.TabBridge = "Bridge";
         text.GroupDeck = "Upper deck";
         text.GroupStyle = "Style";
@@ -90,7 +90,7 @@ internal static partial class UiStringTables
 
     private static UiStrings SimplifiedChinese(UiStrings text)
     {
-        text.Title = "BridgeBuilder";
+        text.Title = "桥梁建造器";
         text.TabBridge = "桥梁";
         text.GroupDeck = "上层";
         text.GroupStyle = "样式";
@@ -150,7 +150,7 @@ internal static partial class UiStringTables
 
     private static UiStrings TraditionalChinese(UiStrings text)
     {
-        text.Title = "BridgeBuilder";
+        text.Title = "橋樑建造器";
         text.TabBridge = "橋樑";
         text.GroupDeck = "上層";
         text.GroupStyle = "樣式";
@@ -210,7 +210,7 @@ internal static partial class UiStringTables
 
     private static UiStrings Japanese(UiStrings text)
     {
-        text.Title = "BridgeBuilder";
+        text.Title = "橋梁ビルダー";
         text.TabBridge = "橋";
         text.GroupDeck = "上層";
         text.GroupStyle = "スタイル";
@@ -270,7 +270,7 @@ internal static partial class UiStringTables
 
     private static UiStrings Korean(UiStrings text)
     {
-        text.Title = "BridgeBuilder";
+        text.Title = "교량 건설 도구";
         text.TabBridge = "교량";
         text.GroupDeck = "상층";
         text.GroupStyle = "스타일";
@@ -330,7 +330,7 @@ internal static partial class UiStringTables
 
     private static UiStrings German(UiStrings text)
     {
-        text.Title = "BridgeBuilder";
+        text.Title = "Brückenbaukasten";
         text.TabBridge = "Brücke";
         text.GroupDeck = "Obere Ebene";
         text.GroupStyle = "Stil";
@@ -390,7 +390,7 @@ internal static partial class UiStringTables
 
     private static UiStrings Spanish(UiStrings text)
     {
-        text.Title = "BridgeBuilder";
+        text.Title = "Constructor de puentes";
         text.TabBridge = "Puente";
         text.GroupDeck = "Nivel superior";
         text.GroupStyle = "Estilo";
@@ -450,7 +450,7 @@ internal static partial class UiStringTables
 
     private static UiStrings French(UiStrings text)
     {
-        text.Title = "BridgeBuilder";
+        text.Title = "Constructeur de ponts";
         text.TabBridge = "Pont";
         text.GroupDeck = "Niveau supérieur";
         text.GroupStyle = "Style";
@@ -510,7 +510,7 @@ internal static partial class UiStringTables
 
     private static UiStrings Italian(UiStrings text)
     {
-        text.Title = "BridgeBuilder";
+        text.Title = "Costruttore di ponti";
         text.TabBridge = "Ponte";
         text.GroupDeck = "Livello superiore";
         text.GroupStyle = "Stile";
@@ -570,7 +570,7 @@ internal static partial class UiStringTables
 
     private static UiStrings Polish(UiStrings text)
     {
-        text.Title = "BridgeBuilder";
+        text.Title = "Konstruktor mostów";
         text.TabBridge = "Most";
         text.GroupDeck = "Poziom górny";
         text.GroupStyle = "Styl";
@@ -630,7 +630,7 @@ internal static partial class UiStringTables
 
     private static UiStrings Portuguese(UiStrings text)
     {
-        text.Title = "BridgeBuilder";
+        text.Title = "Construtor de pontes";
         text.TabBridge = "Ponte";
         text.GroupDeck = "Nível superior";
         text.GroupStyle = "Estilo";
@@ -690,7 +690,7 @@ internal static partial class UiStringTables
 
     private static UiStrings Russian(UiStrings text)
     {
-        text.Title = "BridgeBuilder";
+        text.Title = "Конструктор мостов";
         text.TabBridge = "Мост";
         text.GroupDeck = "Верхний ярус";
         text.GroupStyle = "Стиль";
