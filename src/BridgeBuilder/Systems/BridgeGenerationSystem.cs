@@ -38,6 +38,8 @@ public partial class BridgeGenerationSystem : GameSystemBase
     private bool _settling;
     private int _pageRefreshCooldown;
     private int _framesSincePageView = int.MaxValue;
+    private int _apiPollCooldown;
+    private BridgeSampleBatch? _sampleBatch;
 
     protected override void OnCreate()
     {
@@ -56,6 +58,8 @@ public partial class BridgeGenerationSystem : GameSystemBase
         _lastCandidateCount = -1;
         _settling = false;
         _pageRefreshCooldown = 0;
+        _apiPollCooldown = 0;
+        _sampleBatch = null;
 
         UiStrings text = UiStringCatalog.Current;
         var isEditor = (mode & GameMode.Editor) != 0;
@@ -92,6 +96,22 @@ public partial class BridgeGenerationSystem : GameSystemBase
         {
             UpdateSettling();
             return;
+        }
+
+        if (_sampleBatch != null)
+        {
+            UpdateSampleBatch();
+            return;
+        }
+
+        if (_apiPollCooldown > 0)
+        {
+            _apiPollCooldown--;
+        }
+        else
+        {
+            _apiPollCooldown = PageRefreshCooldownFrames;
+            if (TryStartSampleBatch()) return;
         }
 
         if (_pageRefreshCooldown > 0) _pageRefreshCooldown--;
@@ -262,7 +282,126 @@ public partial class BridgeGenerationSystem : GameSystemBase
 
     private static string Metres(float value) => value.ToString("0.#", CultureInfo.InvariantCulture);
 
-    private void ExportOne()
+    /// <summary>
+    /// Consumes a request submitted through tools/Request-BridgeWidthSamples.ps1. Selection happens
+    /// only after the live catalogues exist, so "any road" means a real registered road and every
+    /// style id resolves to the actual archetype installed in this world.
+    /// </summary>
+    private bool TryStartSampleBatch()
+    {
+        if (!BridgeSampleRequest.TryTake(out var request) || request == null) return false;
+
+        var setting = Mod.Setting;
+        if (setting == null)
+        {
+            BridgeSampleRequest.WriteStatus(request.RequestId, "failed", "BridgeBuilder settings are unavailable.");
+            return true;
+        }
+
+        var roads = DeckCatalog.Decks
+            .Where(deck => deck.IsRoad && deck.Width > 0f)
+            .OrderBy(deck => request.RoadId.Length > 0
+                && string.Equals(deck.Id, request.RoadId, StringComparison.Ordinal) ? 0 : 1)
+            .ThenBy(deck => deck.Id, StringComparer.Ordinal)
+            .ToArray();
+        if (roads.Length == 0)
+        {
+            BridgeSampleRequest.WriteStatus(
+                request.RequestId,
+                "failed",
+                "No measurable registered road is available.");
+            return true;
+        }
+
+        _sampleBatch = BridgeSampleBatch.Start(request, roads, setting);
+        if (_sampleBatch != null)
+        {
+            ModHost.Log.Info(
+                $"BridgeBuilder API request '{request.RequestId}' can try {roads.Length} road(s) "
+                + $"for {request.StyleIds.Count} bridge sample(s)");
+        }
+
+        return true;
+    }
+
+    /// <summary>Creates one bridge per update so one request never monopolises a frame.</summary>
+    private void UpdateSampleBatch()
+    {
+        var batch = _sampleBatch;
+        var setting = Mod.Setting;
+        if (batch == null) return;
+        if (setting == null)
+        {
+            BridgeSampleRequest.WriteStatus(batch.Request.RequestId, "failed", "BridgeBuilder settings disappeared.");
+            _sampleBatch = null;
+            return;
+        }
+
+        if (batch.IsComplete)
+        {
+            batch.RestoreSetting(setting);
+            Refresh();
+            batch.Complete();
+            ModHost.Log.Info(
+                $"BridgeBuilder API request '{batch.Request.RequestId}' completed; "
+                + $"evidence is in '{batch.ResultsDirectory}'");
+            _sampleBatch = null;
+            return;
+        }
+
+        var styleId = batch.CurrentStyleId;
+        var style = BridgeStyleCatalog.Find(styleId);
+        if (style == null || !style.IsInstalled)
+        {
+            batch.Record("not created: no installed archetype resolved for this exact style id");
+            batch.AdvanceStyle();
+            return;
+        }
+
+        var deferred = BridgeStyleDefinitions.DeferredReason(styleId);
+        if (deferred != null)
+        {
+            batch.Record("not created: generation is deferred because " + deferred);
+            batch.AdvanceStyle();
+            return;
+        }
+
+        var road = batch.CurrentRoad;
+        var singleDeck = style.Variants.Any(variant => !variant.IsDoubleDeck);
+        var doubleDeck = style.Variants.Any(variant => variant.IsDoubleDeck);
+        setting.UpperDeckId = road.Id;
+        setting.BridgeStyleId = styleId;
+        setting.BuildStyleOverride = BridgeSetting.DonorBuildStyle;
+        setting.LowerDeckId = !singleDeck && doubleDeck ? road.Id : BridgeSetting.NoLowerDeck;
+        setting.LowerDeckOpposite = false;
+        setting.OverwriteExisting = true;
+        setting.BridgeName = "WidthAudit_" + styleId + "_" + road.AssetName;
+
+        try
+        {
+            var report = ExportOne();
+            batch.ArchiveCurrentReport();
+            if (report.ExportedRoads > 0)
+            {
+                batch.Record("created from road '" + road.Id
+                    + "'; the individual export report was archived");
+                batch.AdvanceStyle();
+                return;
+            }
+
+            batch.Record("road '" + road.Id + "' did not produce a bridge; trying another road");
+        }
+        catch (Exception exception)
+        {
+            ModHost.Log.Error(exception, $"BridgeBuilder API sample failed for '{styleId}'");
+            batch.Record("road '" + road.Id + "' failed outside the exporter report: "
+                + exception.GetType().Name + ": " + exception.Message + "; trying another road");
+        }
+
+        batch.AdvanceRoadOrStyle();
+    }
+
+    private ExportReport ExportOne()
     {
         var state = ExportStateStore.Load();
         var report = new ExportReport();
@@ -274,7 +413,7 @@ public partial class BridgeGenerationSystem : GameSystemBase
             report.Failed("(no deck)", new InvalidOperationException(
                 "No upper deck is selected. Pick the road the bridge should carry."));
             Finish(report, state, "Export bridge");
-            return;
+            return report;
         }
 
         var style = BridgeStyleCatalog.Resolve(setting?.BridgeStyleId);
@@ -286,7 +425,7 @@ public partial class BridgeGenerationSystem : GameSystemBase
                     : $"The bridge style '{style.Id}' has no prefab behind it in this installation, so "
                       + "there is nothing to copy a look from. Pick another style."));
             Finish(report, state, "Export bridge");
-            return;
+            return report;
         }
 
         var overwrite = setting?.OverwriteExisting ?? true;
@@ -301,7 +440,7 @@ public partial class BridgeGenerationSystem : GameSystemBase
         {
             report.Skipped(exportName, "the output asset already exists and overwrite is disabled");
             Finish(report, state, "Export bridge");
-            return;
+            return report;
         }
 
         var options = setting?.ToBridgeOptions() ?? new BridgeOptions();
@@ -317,7 +456,7 @@ public partial class BridgeGenerationSystem : GameSystemBase
                 report.Failed(exportName, new InvalidOperationException(
                     $"'{upper.DisplayName}' is a {upper.Kind} track and cannot carry a bridge."));
                 Finish(report, state, "Export bridge");
-                return;
+                return report;
             }
 
             // Which of the two decks the bridge is built on.
@@ -356,7 +495,7 @@ public partial class BridgeGenerationSystem : GameSystemBase
                 report.Failed(exportName, new InvalidOperationException(
                     $"The selected second deck '{options.LowerDeckId}' is not registered any more."));
                 Finish(report, state, "Export bridge");
-                return;
+                return report;
             }
 
             // Start with the user's upper/lower pointers, then exchange the references as one operation
@@ -375,7 +514,7 @@ public partial class BridgeGenerationSystem : GameSystemBase
             if (clone == null)
             {
                 Finish(report, state, "Export bridge");
-                return;
+                return report;
             }
             var variant = composer.Apply(
                 clone, style, upper.Width, options, measure: upperSource);
@@ -404,6 +543,7 @@ public partial class BridgeGenerationSystem : GameSystemBase
         }
 
         Finish(report, state, "Export bridge");
+        return report;
     }
 
     /// <summary>
@@ -773,7 +913,13 @@ public partial class BridgeGenerationSystem : GameSystemBase
             report.FailedRoads);
         RoadSelectionModel.PublishOperationResult(summary);
 
-        Mod.ShowMessage(text.Title, summary + "\n" + text.StateReportHint);
-        Refresh();
+        // API batches retain the same reporting path, but never drive the game's UI. Their caller
+        // receives a status file and an archive per bridge; the catalogue is refreshed once after the
+        // whole batch so the final geometry dump contains every generated sample.
+        if (_sampleBatch == null)
+        {
+            Mod.ShowMessage(text.Title, summary + "\n" + text.StateReportHint);
+            Refresh();
+        }
     }
 }

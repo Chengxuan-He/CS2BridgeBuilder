@@ -814,14 +814,16 @@ The constant is evidence, not an assumed parameter. Establish it by dumping and 
 
 Source arithmetic, recorded nominal widths, a compiled assembly, an offline fixture, a screenshot or
 an old archetype by itself does not complete this comparison. If no newly generated bridge exists for
-the bridge type being audited, the Agent must select any road and create a new bridge of that type.
-Failure of the selected road to support that bridge type means another road must be selected; it does
-not waive the sample requirement. A missing sample is never a skip condition and never completes the
-audit. Creating and judging the sample is an in-game operation. When the user has reserved game
-operation for human judgment, the Agent must request that exact human creation step, keep the task and
-audit explicitly incomplete, and resume the comparison after the sample is created. The Agent must not
-launch the game against that instruction or invent a result, but it also must not report the bridge as
-skipped, unchanged as a final disposition, compliant or complete.
+the bridge type being audited, the Agent must call the BridgeBuilder mod API and request a new bridge
+of that type from any road. The mod selects a measurable registered road when the request does not name
+one. Failure of the selected road to support that bridge type means the API must retry with another
+road; it does not waive the sample requirement. A missing sample is never a skip condition and never
+completes the audit. The Agent must not open or control the game to create a sample. If no loaded mod
+world is available, the Agent submits a persistent API request, records its id and keeps the task and
+audit explicitly incomplete until the mod consumes it. Visual judgment remains human, but sample
+creation is an API operation rather than an options-page or other manual game operation. The Agent must
+not invent a result, and a queued request must not be reported as a completed sample, skipped bridge,
+compliant bridge or final unchanged disposition.
 
 For an existing generated sample, calculate the coordinate correction from the measured geometry. The
 threshold applies to coordinates, not merely to the reported full-width difference:
@@ -841,6 +843,7 @@ runtime code consumes only that hardcoded result.
 
 The audit record for the pass which introduced this rule is
 [`BRIDGE_WIDTH_INVARIANT_AUDIT.md`](BRIDGE_WIDTH_INVARIANT_AUDIT.md). A bridge without the required
-real generated sample remains mandatory unfinished work. A road must be selected and a new bridge
-created before the bridge can receive the `1 m` decision. It must not be marked skipped, compliant or
-complete merely because the implementation's algebra appears to preserve the constant.
+real generated sample remains mandatory unfinished work. A new bridge must be requested through the
+BridgeBuilder mod API and actually created before the bridge can receive the `1 m` decision. It must
+not be marked skipped, compliant or complete merely because the implementation's algebra appears to
+preserve the constant or because the API request has only been queued.

@@ -33,8 +33,9 @@ the repository root [`AGENTS.md`](../../AGENTS.md). Before editing this director
   bridge, not runtime geometry inference or source arithmetic alone. If enforcing it would require any
   x-coordinate correction greater than 1 m in absolute value, do not change that bridge; report and
   record the bridge for review. Absence of a generated sample does not satisfy that skip condition:
-  select a road, create the missing bridge and keep the invariant pass incomplete until the sample has
-  been measured.
+  call the BridgeBuilder mod API so it selects a measurable registered road and creates the missing
+  bridge. The Agent must not open or control the game for sample creation, and the invariant pass stays
+  incomplete until the API has produced and archived the real sample.
 
 ## Completion
 

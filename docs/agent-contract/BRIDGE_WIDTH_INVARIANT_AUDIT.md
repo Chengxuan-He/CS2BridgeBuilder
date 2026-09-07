@@ -14,6 +14,12 @@ The correction which makes missing samples mandatory was itself based on the fol
 - Exact commit: `2e073c6b7cf8fc7c7f578934ec9db6c28d354edb`
 - Durable local rollback reference: `rollback-before-required-width-samples-20260907`
 
+The later correction requiring sample creation through the mod API was based on:
+
+- Branch: `dev`
+- Exact commit: `89298bfc98af88b46525b0a7a17632ef1b3c21c9`
+- Durable local rollback reference: `rollback-before-mod-api-sample-rule-20260907`
+
 ## Measurement rule
 
 For each bridge type, measure the real archetype and a real newly generated bridge on the same width
@@ -45,28 +51,30 @@ intentionally not substituted for the missing comparison.
 
 | Bridge type | Status | Required next evidence |
 | --- | --- | --- |
-| `Extradosed01` | Sample creation required; pass incomplete | Human creates one bridge from any road and retains the export report and geometry dump |
-| `Extradosed02` | Sample creation required; pass incomplete | Human creates one bridge from any road and retains the export report and geometry dump |
-| `Extradosed03` | Sample creation required; pass incomplete | Human creates one bridge from any road and retains the export report and geometry dump |
-| `CableStayed` | Sample creation required; pass incomplete | Human creates one bridge from any road and retains the export report and geometry dump |
-| `Suspension` | Sample creation required; pass incomplete | Human creates one bridge from any road and retains the export report and geometry dump |
-| `SuspensionGolden` | Sample creation required; pass incomplete | Human creates one bridge from any road and retains the export report and geometry dump |
-| `TrussArch01` | Sample creation required; pass incomplete | Human creates one bridge from any road and retains the export report and geometry dump |
-| `TrussArch03` | Sample creation required; pass incomplete | Human creates one bridge from any road and retains the export report and geometry dump |
-| `TrussArch` | Sample creation required; pass incomplete | Human creates one bridge from any road and retains the export report and geometry dump |
-| `TiedArch` | Sample creation required; pass incomplete | Human creates one bridge from any road and retains the export report and geometry dump |
-| `CoveredWood` | Sample creation required; pass incomplete | Human creates one bridge from any road and retains the export report and geometry dump |
-| `Grand` | Sample creation required; pass incomplete | Human creates one bridge from any road and retains the export report and geometry dump |
+| `Extradosed01` | API request queued; pass incomplete | Mod API creates one bridge from any measurable registered road and retains the export report and geometry dump |
+| `Extradosed02` | API request queued; pass incomplete | Mod API creates one bridge from any measurable registered road and retains the export report and geometry dump |
+| `Extradosed03` | API request queued; pass incomplete | Mod API creates one bridge from any measurable registered road and retains the export report and geometry dump |
+| `CableStayed` | API request queued; pass incomplete | Mod API creates one bridge from any measurable registered road and retains the export report and geometry dump |
+| `Suspension` | API request queued; pass incomplete | Mod API creates one bridge from any measurable registered road and retains the export report and geometry dump |
+| `SuspensionGolden` | API request queued; pass incomplete | Mod API creates one bridge from any measurable registered road and retains the export report and geometry dump |
+| `TrussArch01` | API request queued; pass incomplete | Mod API creates one bridge from any measurable registered road and retains the export report and geometry dump |
+| `TrussArch03` | API request queued; pass incomplete | Mod API creates one bridge from any measurable registered road and retains the export report and geometry dump |
+| `TrussArch` | API request queued; pass incomplete | Mod API creates one bridge from any measurable registered road and retains the export report and geometry dump |
+| `TiedArch` | API request queued; pass incomplete | Mod API creates one bridge from any measurable registered road and retains the export report and geometry dump |
+| `CoveredWood` | API request queued; pass incomplete | Mod API creates one bridge from any measurable registered road and retains the export report and geometry dump |
+| `Grand` | API request queued; pass incomplete | Mod API creates one bridge from any measurable registered road and retains the export report and geometry dump |
 
 `Draw`, `PedestrianDraw` and `Lift` remain deferred designs under contract section 10 and are not
 generated; there is no generated output to correct in this pass.
 
-## Human sample boundary
+## Mod API sample boundary
 
-The user has required game operation to remain a human visual-judgment step. Consequently this audit
-does not launch the game or silently add an automatic export path. This is not a skip or a terminal
-state: the pass remains incomplete until the required bridges are created. For each listed type, the
-next step is to create a bridge manually from any selected road, then preserve
-`ModsData/BridgeBuilder/last-export-report.txt` and the corresponding archetype/generated geometry
-dumps before generating the next sample. Only then may the same-basis constant and correction be
-calculated and the `1 m` gate applied.
+The user requires sample creation through the BridgeBuilder mod API and forbids the Agent from opening
+or controlling the game. Request `width-invariant-20260907-014453` was submitted through
+`tools/Request-BridgeWidthSamples.ps1` for all twelve bridge types above, with road selection delegated
+to the mod. The request is persistent at `ModsData/BridgeBuilder/export.request`; it is queued rather
+than completed because no loaded BridgeBuilder world is currently hosting the API. When the mod
+consumes it, each export report is archived under the request id and the final archetype/generated
+geometry dump is retained once for the batch. Human review remains responsible for judging the visual
+result. Until those real outputs exist, this is not a skip or terminal state and no same-basis constant,
+coordinate correction or `1 m` decision may be claimed.
