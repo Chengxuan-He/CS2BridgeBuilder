@@ -320,6 +320,14 @@ $stateExportNames = @($stateExportNames | Select-Object -Unique)
 if (Test-Path -LiteralPath $importedRoot -PathType Container) {
     $currentImportedNames = @(Get-ChildItem -LiteralPath $importedRoot -Directory |
         Select-Object -ExpandProperty Name)
+
+    # The retired bridge-sample API used this exact ownership prefix for temporary audit bridges.
+    # A crash could leave several numbered bridge and lower-network assets behind without usable
+    # export-state rows. They are BridgeBuilder-owned outputs and must never survive cleanup.
+    $importedDirectoryNames += @($currentImportedNames | Where-Object {
+        $_.StartsWith('WidthAudit_', [StringComparison]::Ordinal)
+    })
+
     foreach ($exportName in $stateExportNames) {
         $ownedMarker = '-' + $exportName
         $importedDirectoryNames += @($currentImportedNames | Where-Object {
