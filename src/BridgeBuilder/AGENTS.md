@@ -32,7 +32,9 @@ the repository root [`AGENTS.md`](../../AGENTS.md). Before editing this director
   constant must come from a same-basis comparison of a real archetype and a real newly generated
   bridge, not runtime geometry inference or source arithmetic alone. If enforcing it would require any
   x-coordinate correction greater than 1 m in absolute value, do not change that bridge; report and
-  record the bridge for review.
+  record the bridge for review. Absence of a generated sample does not satisfy that skip condition:
+  select a road, create the missing bridge and keep the invariant pass incomplete until the sample has
+  been measured.
 
 ## Completion
 

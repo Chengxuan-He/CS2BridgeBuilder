@@ -80,7 +80,8 @@ The numbered references below point to the corresponding sections in the complet
     `bridge width - deck width`. Establish that constant by comparing a real archetype with a real
     newly generated bridge; never infer it from source arithmetic alone. If the required maximum
     absolute x-coordinate correction exceeds 1 m, skip that bridge and record the evidence instead of
-    changing it. See contract section 14.
+    changing it. A missing generated sample is never a reason to skip: select a road and create the
+    required new bridge, leaving the pass incomplete until that sample exists. See contract section 14.
 
 ## Geometry invariants that must remain visible at repository scope
 
@@ -107,12 +108,14 @@ The numbered references below point to the corresponding sections in the complet
 2. Read the instruction files required by the table above.
 3. Inspect the archetype and current generated output before changing transformation code.
 4. For contract maintenance, record the branch and exact `HEAD` before the first instruction edit.
-5. Make only the requested, branch-valid change. Keep runtime inference and metaprogramming separate.
-6. Apply the change consistently to the full-detail mesh and all LODs.
-7. After any source-code edit, perform the mandatory process stop and ownership-scoped generated-bridge
+5. If a required generated sample is absent, select a road and create the sample; do not skip the
+   bridge or close the audit because the sample is missing.
+6. Make only the requested, branch-valid change. Keep runtime inference and metaprogramming separate.
+7. Apply the change consistently to the full-detail mesh and all LODs.
+8. After any source-code edit, perform the mandatory process stop and ownership-scoped generated-bridge
    cleanup from contract section 13.
-8. Compile when appropriate, but report compilation only as a loadability check.
-9. Do not call a visual issue fixed until the in-game near/far result has been observed.
+9. Compile when appropriate, but report compilation only as a loadability check.
+10. Do not call a visual issue fixed until the in-game near/far result has been observed.
 
 ## Maintaining these instructions
 
