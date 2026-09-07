@@ -20,6 +20,12 @@ The later correction requiring sample creation through the mod API was based on:
 - Exact commit: `89298bfc98af88b46525b0a7a17632ef1b3c21c9`
 - Durable local rollback reference: `rollback-before-mod-api-sample-rule-20260907`
 
+That API was removed after it caused the game to crash. The removal was based on:
+
+- Branch: `dev`
+- Exact commit: `7d51715c43ad65116a539f4cf214d6cdc21da9f0`
+- Durable local rollback reference: `rollback-before-removing-sample-api-20260907`
+
 ## Measurement rule
 
 For each bridge type, measure the real archetype and a real newly generated bridge on the same width
@@ -51,30 +57,29 @@ intentionally not substituted for the missing comparison.
 
 | Bridge type | Status | Required next evidence |
 | --- | --- | --- |
-| `Extradosed01` | API request queued; pass incomplete | Mod API creates one bridge from any measurable registered road and retains the export report and geometry dump |
-| `Extradosed02` | API request queued; pass incomplete | Mod API creates one bridge from any measurable registered road and retains the export report and geometry dump |
-| `Extradosed03` | API request queued; pass incomplete | Mod API creates one bridge from any measurable registered road and retains the export report and geometry dump |
-| `CableStayed` | API request queued; pass incomplete | Mod API creates one bridge from any measurable registered road and retains the export report and geometry dump |
-| `Suspension` | API request queued; pass incomplete | Mod API creates one bridge from any measurable registered road and retains the export report and geometry dump |
-| `SuspensionGolden` | API request queued; pass incomplete | Mod API creates one bridge from any measurable registered road and retains the export report and geometry dump |
-| `TrussArch01` | API request queued; pass incomplete | Mod API creates one bridge from any measurable registered road and retains the export report and geometry dump |
-| `TrussArch03` | API request queued; pass incomplete | Mod API creates one bridge from any measurable registered road and retains the export report and geometry dump |
-| `TrussArch` | API request queued; pass incomplete | Mod API creates one bridge from any measurable registered road and retains the export report and geometry dump |
-| `TiedArch` | API request queued; pass incomplete | Mod API creates one bridge from any measurable registered road and retains the export report and geometry dump |
-| `CoveredWood` | API request queued; pass incomplete | Mod API creates one bridge from any measurable registered road and retains the export report and geometry dump |
-| `Grand` | API request queued; pass incomplete | Mod API creates one bridge from any measurable registered road and retains the export report and geometry dump |
+| `Extradosed01` | Sample creation required; pass incomplete | Human creates one bridge from any selected road and retains the export report and geometry dump |
+| `Extradosed02` | Sample creation required; pass incomplete | Human creates one bridge from any selected road and retains the export report and geometry dump |
+| `Extradosed03` | Sample creation required; pass incomplete | Human creates one bridge from any selected road and retains the export report and geometry dump |
+| `CableStayed` | Sample creation required; pass incomplete | Human creates one bridge from any selected road and retains the export report and geometry dump |
+| `Suspension` | Sample creation required; pass incomplete | Human creates one bridge from any selected road and retains the export report and geometry dump |
+| `SuspensionGolden` | Sample creation required; pass incomplete | Human creates one bridge from any selected road and retains the export report and geometry dump |
+| `TrussArch01` | Sample creation required; pass incomplete | Human creates one bridge from any selected road and retains the export report and geometry dump |
+| `TrussArch03` | Sample creation required; pass incomplete | Human creates one bridge from any selected road and retains the export report and geometry dump |
+| `TrussArch` | Sample creation required; pass incomplete | Human creates one bridge from any selected road and retains the export report and geometry dump |
+| `TiedArch` | Sample creation required; pass incomplete | Human creates one bridge from any selected road and retains the export report and geometry dump |
+| `CoveredWood` | Sample creation required; pass incomplete | Human creates one bridge from any selected road and retains the export report and geometry dump |
+| `Grand` | Sample creation required; pass incomplete | Human creates one bridge from any selected road and retains the export report and geometry dump |
 
 `Draw`, `PedestrianDraw` and `Lift` remain deferred designs under contract section 10 and are not
 generated; there is no generated output to correct in this pass.
 
-## Mod API sample boundary
+## Human sample boundary
 
-The user requires sample creation through the BridgeBuilder mod API and forbids the Agent from opening
-or controlling the game. Request `width-invariant-20260907-014453` was submitted through
-`tools/Request-BridgeWidthSamples.ps1` for all twelve bridge types above, with road selection delegated
-to the mod. The request is persistent at `ModsData/BridgeBuilder/export.request`; it is queued rather
-than completed because no loaded BridgeBuilder world is currently hosting the API. When the mod
-consumes it, each export report is archived under the request id and the final archetype/generated
-geometry dump is retained once for the batch. Human review remains responsible for judging the visual
-result. Until those real outputs exist, this is not a skip or terminal state and no same-basis constant,
-coordinate correction or `1 m` decision may be claimed.
+The mod API and request `width-invariant-20260907-014453` were removed after the API caused the game
+to crash. The request produced no usable bridge sample, and its request, status and result files are
+not evidence. The user reserves bridge creation and visual judgment in the game for a human. The Agent
+must not launch or control the game, restore an automatic bridge-construction endpoint, or write a
+request that causes the mod to create bridges. For each row above, a human must select a road, create
+the bridge and preserve its report and geometry dump. Until those real outputs exist, this is not a
+skip or terminal state and no same-basis constant, coordinate correction or `1 m` decision may be
+claimed.
