@@ -37,49 +37,43 @@ basis. The generated result must satisfy:
 The skip threshold is the maximum absolute x-coordinate correction required by the measured output.
 When that correction exceeds 1 m, the bridge is recorded and left unchanged.
 
-## Preserved real generated samples
+## Completed single-deck sample pass
 
-| Bridge type | Generated bridge and road | Evidence | Result |
-| --- | --- | --- | --- |
-| `TrussArch02` | `两块板六车道_TrussArch02`; measured road surface 40 m and visible road width 42 m | Current `BridgeBuilder/last-export-report.txt`; real generated sample exists | Excluded from this pass as requested |
-| `ExtradosedLarge` | `两块板六车道_ExtradosedLarge`; measured deck 40 m | Legacy `BridgePrefabGenerator/last-export-report.txt`; the 61 m donor geometry was asked to lose 21 m, its side coordinate displacement was -10.5 m, and the output collapsed to 0 m | **Skipped**: required absolute coordinate correction is at least 10.5 m, greater than 1 m; separate bridge-specific diagnosis is required |
+The human created every supported single-deck style on the road `两块板六车道`. Its road-surface
+width measured 40 m. The resulting `export-state.tsv`, `tower-measurements.txt` and
+`asset-anatomy.txt` were read together on 2026-09-08 before the mandatory post-source-update cleanup
+removed the generated assets and state files. These were real game prefabs, not API requests or
+synthetic fixtures.
 
-The reports above are retained game export reports, not synthetic fixtures. The legacy
-`ExtradosedLarge` output is evidence of a failure and cannot be used as proof that the invariant is
-satisfied.
+Except for `TrussArch02`, “bridge width” below is the complete x span between the outermost vertices
+of the same named structural object or overhead section in the archetype and generated bridge. When a
+style derives several matched structures, the correction is the greatest correction among them.
+`TrussArch02` has its already documented two-envelope basis: its outer overhead layer is compared with
+the visible deck boundary, while its inner arch and pier follow the outer sidewalk boundary. This
+keeps every comparison on one geometric basis instead of comparing a tower with a deck edge.
 
-## Required new bridge samples
+| Bridge type | Real archetype: deck / bridge (m) | Real generated sample: deck / bridge (m) | Archetype constant (m) | Expected generated bridge (m) | Maximum x correction (m) | Result |
+| --- | ---: | ---: | ---: | ---: | ---: | --- |
+| `CableStayed` | `Cable-stayed Bridge - XL Road Divided - 8 Lanes`: 75 / 41.6 | `两块板六车道_CableStayed`: 40 / 48.6 | -33.4 | 6.6 | 21.00 | **Skipped**: exceeds 1 m |
+| `CoveredWood` | `PedestrianBridgeCoveredWood01`: 16 / 9.5 | `两块板六车道_CoveredWood`: 40 / 43.5 | -6.5 | 33.5 | 5.00 | **Skipped**: exceeds 1 m |
+| `Extradosed03` | `ExtradosedBridge03`: 38 / 56.1 | `两块板六车道_Extradosed03`: 40 / 76.1 | 18.1 | 58.1 | 9.00 | **Skipped**: exceeds 1 m |
+| `ExtradosedLarge` | `Extradosed Bridge - Large Road Divided - 6 Lanes`: 61 / 21.0 | `两块板六车道_ExtradosedLarge`: 40 / 8.7 | -40.0 | 0.0 | 4.35 | **Skipped**: exceeds 1 m; the overhead output is 0 m and the unchanged 8.7 m centre pylon becomes the outer envelope |
+| `Grand` | `Grand Bridge`: 19 / 44.2 | `两块板六车道_Grand`: 40 / 72.2 | 25.2 | 65.2 | 3.50 | **Skipped**: exceeds 1 m |
+| `Suspension` | `Suspension Bridge - Highway Oneway - 5 Lanes`: 24 / 34.3 | `两块板六车道_Suspension`: 40 / 50.3 | 10.3 | 50.3 | 0.00 | Compliant; no source correction |
+| `SuspensionGolden` | `SuspensionBridge03`: 50 / 50.4 | `两块板六车道_SuspensionGolden`: 40 / 63.9 | 0.4 | 40.4 | 11.75 | **Skipped**: exceeds 1 m |
+| `TiedArch` | `Tied Arch Bridge - 4 lanes`: 19 / 23.0 | `两块板六车道_TiedArch`: 40 / 42.0 | 4.0 | 44.0 | 1.00 | Corrected on `bridge/tied-arch`: prototype road datum changed from nominal 21 m to measured 19 m |
+| `TrussArch` | `Truss Arch Bridge - Highway Twoway - 2 Lanes`: 12 / 14.5 | `两块板六车道_TrussArch`: 40 / 42.5 | 2.5 | 42.5 | 0.00 | Compliant; no source correction |
+| `TrussArch01` | `TrussArchBridge01`: 20 / 15.4 overhead | `两块板六车道_TrussArch01`: 40 / 45.4 overhead | -4.6 | 35.4 | 5.00 | **Skipped**: exceeds 1 m; its matched pier requires the same maximum correction in the opposite direction |
+| `TrussArch02` | `TrussArchBridge02`: 21 visible / 20.79248 outer | `两块板六车道_TrussArch02`: 42 visible / 41.79248 outer | -0.20752 | 41.79248 | 0.00 | Compliant on its documented outer-envelope basis; no source correction |
+| `TrussArch03` | `TrussArchBridge03`: 24 / 14.093882 overhead | `两块板六车道_TrussArch03`: 40 / 43.093882 overhead | -9.906118 | 30.093882 | 6.50 | **Skipped**: exceeds 1 m; the matched pier has the same 6.5 m correction |
 
-No retained newly generated bridge measurement was found for the bridge types below. Each row is
-mandatory unfinished work: select any road, create a new bridge of that type and retain its report and
-geometry dump. These bridges are not skipped. Source formulas and archetype-only measurements are
-intentionally not substituted for the missing comparison.
-
-| Bridge type | Status | Required next evidence |
-| --- | --- | --- |
-| `Extradosed01` | Sample creation required; pass incomplete | Human creates one bridge from any selected road and retains the export report and geometry dump |
-| `Extradosed02` | Sample creation required; pass incomplete | Human creates one bridge from any selected road and retains the export report and geometry dump |
-| `Extradosed03` | Sample creation required; pass incomplete | Human creates one bridge from any selected road and retains the export report and geometry dump |
-| `CableStayed` | Sample creation required; pass incomplete | Human creates one bridge from any selected road and retains the export report and geometry dump |
-| `Suspension` | Sample creation required; pass incomplete | Human creates one bridge from any selected road and retains the export report and geometry dump |
-| `SuspensionGolden` | Sample creation required; pass incomplete | Human creates one bridge from any selected road and retains the export report and geometry dump |
-| `TrussArch01` | Sample creation required; pass incomplete | Human creates one bridge from any selected road and retains the export report and geometry dump |
-| `TrussArch03` | Sample creation required; pass incomplete | Human creates one bridge from any selected road and retains the export report and geometry dump |
-| `TrussArch` | Sample creation required; pass incomplete | Human creates one bridge from any selected road and retains the export report and geometry dump |
-| `TiedArch` | Sample creation required; pass incomplete | Human creates one bridge from any selected road and retains the export report and geometry dump |
-| `CoveredWood` | Sample creation required; pass incomplete | Human creates one bridge from any selected road and retains the export report and geometry dump |
-| `Grand` | Sample creation required; pass incomplete | Human creates one bridge from any selected road and retains the export report and geometry dump |
-
-`Draw`, `PedestrianDraw` and `Lift` remain deferred designs under contract section 10 and are not
-generated; there is no generated output to correct in this pass.
+`Extradosed01` and `Extradosed02` are double-deck designs and were not part of the user's completed
+single-deck sample set. `Draw`, `PedestrianDraw` and `Lift` remain deferred designs under contract
+section 10 and are not generated.
 
 ## Human sample boundary
 
-The mod API and request `width-invariant-20260907-014453` were removed after the API caused the game
-to crash. The request produced no usable bridge sample, and its request, status and result files are
-not evidence. The user reserves bridge creation and visual judgment in the game for a human. The Agent
-must not launch or control the game, restore an automatic bridge-construction endpoint, or write a
-request that causes the mod to create bridges. For each row above, a human must select a road, create
-the bridge and preserve its report and geometry dump. Until those real outputs exist, this is not a
-skip or terminal state and no same-basis constant, coordinate correction or `1 m` decision may be
-claimed.
+The removed mod API and request `width-invariant-20260907-014453` are not evidence. Bridge creation
+and visual judgment remain human game operations: the Agent must not launch or control the game,
+restore an automatic bridge-construction endpoint, or write a request that causes the mod to create
+bridges. This pass used only the human-created prefabs listed above.
