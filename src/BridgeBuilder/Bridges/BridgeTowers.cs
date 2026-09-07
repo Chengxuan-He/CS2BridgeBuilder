@@ -201,6 +201,15 @@ internal static class BridgeTowers
                 new Tower("4LaneSuspensionBridgePillar Placeholder", 30, 20, verified: true),
                 new Tower("5LaneSuspensionBridgePillar Placeholder", 34, 24, verified: true),
             },
+            ["GoldenGate"] = new[]
+            {
+                // Both structures are carried by the real 25 m Golden Gate Bridge prototype. The
+                // pylon stands at the course ends and the taller pillar at the intervening nodes;
+                // keeping both names makes FitTower derive and rebind both rather than leaving one at
+                // the prototype width beside the other.
+                new Tower("GoldenGateBridgePylon Placeholder", 33, 25, verified: true),
+                new Tower("GoldenGateBridgePillar Placeholder", 40, 25, verified: true),
+            },
             ["SuspensionGolden"] = new[]
             {
                 // SuspensionBridge03 and 04 carry both, and the pylon is the portal. The 34 recorded

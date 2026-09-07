@@ -33,6 +33,7 @@ internal static partial class UiStringTables
         return text
             .Style("Suspension", "Suspension Bridge")
             .Style("SuspensionGolden", "Golden Suspension Bridge")
+            .Style("GoldenGate", "Golden Gate Bridge")
             .Style("CableStayed", "Cable-Stayed Bridge (H pylon)")
             .Style("Extradosed01", "Extradosed Bridge (V pylon, double deck)")
             .Style("Extradosed02", "Extradosed Bridge (A pylon, double deck)")
@@ -57,6 +58,7 @@ internal static partial class UiStringTables
         return text
             .Style("Suspension", "悬索桥")
             .Style("SuspensionGolden", "悬索桥（黄色）")
+            .Style("GoldenGate", "金门大桥")
             .Style("CableStayed", "斜拉桥（H型桥塔）")
             .Style("Extradosed01", "双层斜拉桥（V型桥塔）")
             .Style("Extradosed02", "双层斜拉桥（A型桥塔）")
@@ -81,6 +83,7 @@ internal static partial class UiStringTables
         return text
             .Style("Suspension", "懸索橋")
             .Style("SuspensionGolden", "懸索橋（黃色）")
+            .Style("GoldenGate", "金門大橋")
             .Style("CableStayed", "斜拉橋（H型橋塔）")
             .Style("Extradosed01", "雙層斜拉橋（V型橋塔）")
             .Style("Extradosed02", "雙層斜拉橋（A型橋塔）")
@@ -105,6 +108,7 @@ internal static partial class UiStringTables
         return text
             .Style("Suspension", "吊り橋")
             .Style("SuspensionGolden", "吊り橋（金色）")
+            .Style("GoldenGate", "ゴールデンゲートブリッジ")
             .Style("CableStayed", "斜張橋（H型主塔）")
             .Style("Extradosed01", "二層斜張橋（V型主塔）")
             .Style("Extradosed02", "二層斜張橋（A型主塔）")
@@ -129,6 +133,7 @@ internal static partial class UiStringTables
         return text
             .Style("Suspension", "현수교")
             .Style("SuspensionGolden", "현수교 (금색)")
+            .Style("GoldenGate", "금문교")
             .Style("CableStayed", "사장교 (H형 주탑)")
             .Style("Extradosed01", "복층 사장교 (V형 주탑)")
             .Style("Extradosed02", "복층 사장교 (A형 주탑)")
@@ -153,6 +158,7 @@ internal static partial class UiStringTables
         return text
             .Style("Suspension", "Hängebrücke")
             .Style("SuspensionGolden", "Hängebrücke (golden)")
+            .Style("GoldenGate", "Golden Gate Bridge")
             .Style("CableStayed", "Schrägseilbrücke (H-Pylon)")
             .Style("Extradosed01", "Extradosed-Brücke (V-Pylon, zweistöckig)")
             .Style("Extradosed02", "Extradosed-Brücke (A-Pylon, zweistöckig)")
@@ -177,6 +183,7 @@ internal static partial class UiStringTables
         return text
             .Style("Suspension", "Puente colgante")
             .Style("SuspensionGolden", "Puente colgante (dorado)")
+            .Style("GoldenGate", "Puente Golden Gate")
             .Style("CableStayed", "Puente atirantado (pilono en H)")
             .Style("Extradosed01", "Puente extradosado (pilono en V, dos niveles)")
             .Style("Extradosed02", "Puente extradosado (pilono en A, dos niveles)")
@@ -201,6 +208,7 @@ internal static partial class UiStringTables
         return text
             .Style("Suspension", "Pont suspendu")
             .Style("SuspensionGolden", "Pont suspendu (doré)")
+            .Style("GoldenGate", "Pont du Golden Gate")
             .Style("CableStayed", "Pont haubané (pylône en H)")
             .Style("Extradosed01", "Pont extradossé (pylône en V, deux niveaux)")
             .Style("Extradosed02", "Pont extradossé (pylône en A, deux niveaux)")
@@ -225,6 +233,7 @@ internal static partial class UiStringTables
         return text
             .Style("Suspension", "Ponte sospeso")
             .Style("SuspensionGolden", "Ponte sospeso (dorato)")
+            .Style("GoldenGate", "Golden Gate Bridge")
             .Style("CableStayed", "Ponte strallato (pilone a H)")
             .Style("Extradosed01", "Ponte extradossato (pilone a V, due impalcati)")
             .Style("Extradosed02", "Ponte extradossato (pilone a A, due impalcati)")
@@ -249,6 +258,7 @@ internal static partial class UiStringTables
         return text
             .Style("Suspension", "Most wiszący")
             .Style("SuspensionGolden", "Most wiszący (złoty)")
+            .Style("GoldenGate", "Most Golden Gate")
             .Style("CableStayed", "Most podwieszany (pylon H)")
             .Style("Extradosed01", "Most extradosed (pylon V, dwupoziomowy)")
             .Style("Extradosed02", "Most extradosed (pylon A, dwupoziomowy)")
@@ -273,6 +283,7 @@ internal static partial class UiStringTables
         return text
             .Style("Suspension", "Ponte suspensa")
             .Style("SuspensionGolden", "Ponte suspensa (dourada)")
+            .Style("GoldenGate", "Ponte Golden Gate")
             .Style("CableStayed", "Ponte atirantada (pilone em H)")
             .Style("Extradosed01", "Ponte extradorsal (pilone em V, dois tabuleiros)")
             .Style("Extradosed02", "Ponte extradorsal (pilone em A, dois tabuleiros)")
@@ -297,6 +308,7 @@ internal static partial class UiStringTables
         return text
             .Style("Suspension", "Висячий мост")
             .Style("SuspensionGolden", "Висячий мост (золотой)")
+            .Style("GoldenGate", "Мост Золотые Ворота")
             .Style("CableStayed", "Вантовый мост (H-пилон)")
             .Style("Extradosed01", "Экстрадозный мост (V-пилон, двухъярусный)")
             .Style("Extradosed02", "Экстрадозный мост (A-пилон, двухъярусный)")

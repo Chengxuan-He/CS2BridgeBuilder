@@ -108,14 +108,16 @@ internal static class BridgeStyleDefinitions
     {
         new BridgeStyleDefinition("PedestrianDraw", "Pedestrian Bascule Bridge", 0, "pedestriandrawbridge"),
         new BridgeStyleDefinition("CoveredWood", "Covered Wooden Bridge", 0, "pedestrianbridgecoveredwood", "coveredwood"),
-        // The game ships two suspension designs and they are different colours: 01 and 02 are the pale
-        // steel ones, 03 and 04 the golden pair, and the packs recolour along the same numbering. The
-        // number is therefore not a size but an identity, and asking for a suspension bridge should not
-        // decide the colour by which happened to fit. Golden goes first: it is the narrower rule.
-        // Golden shares the plain style's margin - same author, same structure, one usable sample of
-        // its own, and that sample's road width is the one the scan got wrong.
+        // Golden Gate is a separate San Francisco prototype: a 25 m deck, its own red towers and a
+        // four-piece 28 m stiffening section. It must win before either generic suspension family and
+        // may not be selected merely as another colour or size of SuspensionBridge03/04.
+        new BridgeStyleDefinition("GoldenGate", "Golden Gate Bridge", 15, "goldengatebridge"),
+        // The game ships two other suspension designs and they are different colours: 01 and 02 are
+        // the pale steel ones, 03 and 04 the golden pair, and the packs recolour along the same
+        // numbering. The number is therefore not a size but an identity, and asking for a suspension
+        // bridge should not decide the colour by which happened to fit.
         new BridgeStyleDefinition("SuspensionGolden", "Golden Suspension Bridge", 17, // 16.6 over 3
-            "suspensionbridge03", "suspensionbridge04", "goldengate"),
+            "suspensionbridge03", "suspensionbridge04"),
         // Only the highway suspension bridges. The vanilla SuspensionBridge01..04 are separate designs
         // that happen to share the principle, and folding them in here is what let a two-lane bridge
         // stand in for a six-lane road and a golden tower answer a request for a pale one. They are
