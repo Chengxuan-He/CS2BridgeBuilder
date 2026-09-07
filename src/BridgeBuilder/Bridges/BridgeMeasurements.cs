@@ -108,7 +108,10 @@ internal static class BridgeMeasurements
             ["BXP TrussArchBridge03 - Highway"] = (24, 18),
             ["BXP Truss Arch Bridge - Subway"] = (14, 15),
             ["BXP Truss Arch Bridge - Highway Oneway - 2 Lanes"] = (14, 15),
-            ["Tied Arch Bridge - 4 lanes"] = (21, 23),
+            // The retained archetype dump and the generated 40 m sample use the same road-surface
+            // boundary. The prototype deck is 19 m, not the earlier nominal 21 m value; keeping 21
+            // made its 23 m transverse arch finish 1 m short on each side of the generated bridge.
+            ["Tied Arch Bridge - 4 lanes"] = (19, 23),
             ["BXP Tied Arch Bridge - Train - 4 Tracks"] = (24, 23),
             ["BXP Tied Arch Bridge - Highway Oneway - 4 Lanes"] = (22, 23),
             ["BXP Tied Arch Bridge - Train - 4 Tracks Alternating"] = (24, 23),
