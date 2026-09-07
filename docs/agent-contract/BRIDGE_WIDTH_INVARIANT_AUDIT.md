@@ -26,6 +26,12 @@ That API was removed after it caused the game to crash. The removal was based on
 - Exact commit: `7d51715c43ad65116a539f4cf214d6cdc21da9f0`
 - Durable local rollback reference: `rollback-before-removing-sample-api-20260907`
 
+The branch-map update for the separately selectable Golden Gate Bridge was based on:
+
+- Branch: `dev`
+- Exact commit: `8193b42c0c039b72345e1bce76ba3d2e1525bfc8`
+- Durable local rollback reference: `rollback-before-golden-gate-20260908`
+
 ## Measurement rule
 
 For each bridge type, measure the real archetype and a real newly generated bridge on the same width
