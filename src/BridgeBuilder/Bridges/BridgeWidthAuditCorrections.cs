@@ -23,6 +23,7 @@ internal static class BridgeWidthAuditCorrections
             ["TiedArch"] = 1f, // 0x3F800000
             ["TrussArch"] = 9.536743E-07f, // 0x35800000
             ["TrussArch01"] = 0.5154915f, // 0x3F03F740
+            ["TrussArch02"] = 0.0037593842f, // 0x3B766000
         };
 
     internal static float OneSidedFor(string? styleId)
