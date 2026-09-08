@@ -2,6 +2,9 @@
 
 ## Baseline and evidence
 
+- Contract clarification baseline: branch `dev`, exact commit
+  `9badf80dada6b935d0494c3e0c8b6975512ef558`; durable local reference
+  `backup/dev-before-bitwise-width-contract-20260908`.
 - Audited branch: `dev`
 - Audited commit: `a7a5e6b90dc6201481767e74bfc9409032b5a441`
 - Commit time: `2026-09-07 23:42:33 +0800`

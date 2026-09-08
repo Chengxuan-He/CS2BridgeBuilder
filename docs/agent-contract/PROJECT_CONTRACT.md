@@ -823,16 +823,27 @@ request file for that operation. The Agent must request the exact human sample-c
 the task and audit explicitly incomplete until the real sample exists. It must not invent a result or
 report an absent sample as a skipped bridge, compliant bridge or final unchanged disposition.
 
-For an existing generated sample, calculate the coordinate correction from the measured geometry. The
-threshold applies to coordinates, not merely to the reported full-width difference:
+For an existing generated sample, the audit executes exactly these two formulae, in this written
+order:
 
-    correction = max over affected geometry of abs(expected x - observed x)
+    widthIncrement =
+        (archetypeBridgeX - archetypeRoadX)
+        - (generatedBridgeX - generatedRoadX)
 
-If `correction > 1 m`, do not change source code, generated assets or geometry for that bridge as part
-of the invariant pass. Record the bridge type, archetype, selected road, both measured width pairs,
-the constant, the required correction and the reason it was skipped. A large discrepancy is evidence
-that the bridge or the measurement basis needs separate investigation; it is not permission for a
-large automatic correction.
+    newBridgeX = generatedBridgeX + widthIncrement
+
+`BridgeX` and `RoadX` are the documented one-sided x boundaries, so `widthIncrement` is the x
+coordinate correction at each side. All four measured inputs, both subtractions and the final
+addition must remain IEEE-754 binary32. Parse source tokens directly to binary32, emit round-trip text
+and the raw bit pattern, and prohibit decimal promotion, rounding, display-value reuse, epsilon,
+tolerance, normalization, forced zero and bridge-specific result overrides. A positive-zero result is
+unchanged only when its raw bit pattern is exactly `0x00000000`.
+
+If `abs(widthIncrement) > 1.0f`, do not change source code, generated assets or geometry for that
+bridge as part of the invariant pass. Record the bridge type, archetype, selected road, all four input
+bit patterns, the width-increment and new-width bit patterns, and the reason it was skipped. A large
+discrepancy is evidence that the bridge or the measurement basis needs separate investigation; it is
+not permission for a large automatic correction.
 
 Apply a verified correction to the full-detail mesh and every LOD together, subject to rule 8 and the
 bridge-specific branch rule in section 12. Never turn this invariant into runtime geometric guessing.
