@@ -17,6 +17,7 @@ internal static class BridgeWidthAuditCorrections
         new(StringComparer.Ordinal)
         {
             ["CoveredWood"] = -1f, // 0xBF800000
+            ["Extradosed03"] = 0.4999981f, // 0x3EFFFFC0
         };
 
     internal static float OneSidedFor(string? styleId)
