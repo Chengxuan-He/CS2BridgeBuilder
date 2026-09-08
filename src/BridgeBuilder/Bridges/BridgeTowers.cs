@@ -566,7 +566,11 @@ internal static class BridgeTowers
 
         internal static float OuterTarget(string? styleId, float visibleRoadWidth) =>
             styleId == "TrussArch02"
-                ? Math.Max(0f, visibleRoadWidth + PrototypeBridgeMinusDeck)
+                ? Math.Max(
+                    0f,
+                    visibleRoadWidth
+                        + PrototypeBridgeMinusDeck
+                        + BridgeWidthAuditCorrections.FullSpanFor(styleId))
                 : visibleRoadWidth;
 
         internal static float TowerPartExtra(
@@ -594,7 +598,11 @@ internal static class BridgeTowers
     /// cables from taking a prototype allowance while node-bound props still use the raw road delta.
     /// </summary>
     internal static float StructureExtraFor(string? styleId, float roadExtra) =>
-        roadExtra + BonusFor(styleId);
+        roadExtra
+            + BonusFor(styleId)
+            + (styleId == "TrussArch02"
+                ? 0f
+                : BridgeWidthAuditCorrections.FullSpanFor(styleId));
 
     /// <summary>
     /// Full-width relationship measured from the installed TrussArchBridge03 prototype.

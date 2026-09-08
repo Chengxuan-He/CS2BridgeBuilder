@@ -77,13 +77,15 @@ The numbered references below point to the corresponding sections in the complet
     section 13.
 14. Before editing any contract or `AGENTS.md`, record the current branch and exact `HEAD` commit as
     the rollback baseline. Every generated bridge must preserve its archetype's measured constant in
-    `bridge width - deck width`. Establish that constant by comparing a real archetype with a real
-    newly generated bridge; never infer it from source arithmetic alone. If the required maximum
-    absolute x-coordinate correction exceeds 1 m, skip that bridge and record the evidence instead of
-    changing it. A missing generated sample is never a reason to skip: the required new bridge must be
-    created and measured, and the pass remains incomplete until that real sample exists. Creating and
-    judging the sample is a human game operation; the Agent must not open or control the game or issue
-    an API/request-file bridge-construction request. See contract section 14.
+    `bridge width - deck width`. The audit uses only `widthIncrement = (archetypeBridgeX -
+    archetypeRoadX) - (generatedBridgeX - generatedRoadX)` and `newBridgeX = generatedBridgeX +
+    widthIncrement`, evaluated as bitwise-exact binary32 without rounding, tolerance or a forced
+    result. If `abs(widthIncrement) > 1 m`, skip that bridge and record the evidence. Establish every
+    input by comparing a real archetype with a real newly generated bridge; never infer it from source
+    arithmetic alone. A missing generated sample is never a reason to skip: the required new bridge
+    must be created and measured, and the pass remains incomplete until that real sample exists.
+    Creating and judging the sample is a human game operation; the Agent must not open or control the
+    game or issue an API/request-file bridge-construction request. See contract section 14.
 
 ## Geometry invariants that must remain visible at repository scope
 
