@@ -5,7 +5,8 @@ param(
             '..\LocalLow\Colossal Order\Cities Skylines II\ModsData\BridgeBuilder') `
         'asset-anatomy.txt'),
     [string] $OutputPath = (Join-Path $PSScriptRoot `
-        '..\docs\agent-contract\bridge-width-invariant-measurements.tsv')
+        '..\docs\agent-contract\bridge-width-invariant-measurements.tsv'),
+    [string[]] $Styles = @()
 )
 
 $ErrorActionPreference = 'Stop'
@@ -193,12 +194,23 @@ public static class BridgeWidthBitwiseAudit
             new[] { "TrussArch03-40-两块板六车道_TrussArch03" })
     };
 
-    public static string Run(string anatomyPath, string outputPath)
+    public static string Run(string anatomyPath, string outputPath, string[] requestedStyles)
     {
         Failure = "";
         string[] lines = File.ReadAllLines(anatomyPath, Encoding.UTF8);
         Dictionary<string, Block> blocks = GetBlocks(lines);
         Dictionary<string, float> pieceWidths = GetPieceWidths(lines);
+        Pair[] selectedPairs = Pairs;
+        if (requestedStyles != null && requestedStyles.Length != 0)
+        {
+            var requested = new HashSet<string>(requestedStyles, StringComparer.Ordinal);
+            selectedPairs = Pairs.Where(pair => requested.Contains(pair.Style)).ToArray();
+            string[] unknown = requested
+                .Where(style => !Pairs.Any(pair => String.Equals(pair.Style, style, StringComparison.Ordinal)))
+                .OrderBy(style => style, StringComparer.Ordinal)
+                .ToArray();
+            if (unknown.Length != 0) return "ERROR: Unknown bridge style(s): " + String.Join(", ", unknown);
+        }
         var output = new List<string>();
         output.Add(string.Join("\t", new[]
         {
@@ -214,7 +226,7 @@ public static class BridgeWidthBitwiseAudit
         var summary = new StringBuilder();
         int skipped = 0;
         int changed = 0;
-        foreach (Pair pair in Pairs)
+        foreach (Pair pair in selectedPairs)
         {
             Block archetypeBlock = RequiredBlock(blocks, pair.Archetype);
             Block generatedBlock = RequiredBlock(blocks, pair.Generated);
@@ -276,7 +288,7 @@ public static class BridgeWidthBitwiseAudit
         string directory = Path.GetDirectoryName(Path.GetFullPath(outputPath));
         if (!Directory.Exists(directory)) Directory.CreateDirectory(directory);
         File.WriteAllLines(outputPath, output, new UTF8Encoding(false));
-        summary.Append("Bridge width audit: ").Append(Pairs.Length)
+        summary.Append("Bridge width audit: ").Append(selectedPairs.Length)
             .Append(" measured, ").Append(skipped)
             .Append(" skipped, ").Append(changed).Append(" nonzero applicable.");
         return summary.ToString();
@@ -685,7 +697,8 @@ if (-not ('BridgeWidthBitwiseAudit' -as [type])) {
 
 $result = [BridgeWidthBitwiseAudit]::Run(
     (Resolve-Path -LiteralPath $AnatomyPath).Path,
-    [IO.Path]::GetFullPath($OutputPath))
+    [IO.Path]::GetFullPath($OutputPath),
+    $Styles)
 if ($result.StartsWith('ERROR: ', [StringComparison]::Ordinal)) {
     Write-Error $result
     exit 3
