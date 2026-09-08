@@ -16,6 +16,7 @@ internal static class BridgeWidthAuditCorrections
     private static readonly Dictionary<string, float> OneSided =
         new(StringComparer.Ordinal)
         {
+            ["CoveredWood"] = -1f, // 0xBF800000
         };
 
     internal static float OneSidedFor(string? styleId)
