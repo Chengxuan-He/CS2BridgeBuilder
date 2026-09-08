@@ -19,6 +19,7 @@ internal static class BridgeWidthAuditCorrections
             ["CoveredWood"] = -1f, // 0xBF800000
             ["Extradosed03"] = 0.4999981f, // 0x3EFFFFC0
             ["Suspension"] = 9.536743E-06f, // 0x37200000
+            ["SuspensionGolden"] = 0.75f, // 0x3F400000
         };
 
     internal static float OneSidedFor(string? styleId)
