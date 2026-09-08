@@ -745,6 +745,7 @@ exact branch mapped below.
 | Cable-stayed bridge (H pylon) | `bridge/cable-stayed` |
 | Suspension bridge | `bridge/suspension` |
 | Yellow suspension bridge | `bridge/suspension-golden` |
+| Golden Gate Bridge | `bridge/golden-gate` |
 | Blue deck truss-arch bridge | `bridge/truss-arch-01` |
 | Green deck truss-arch bridge | `bridge/truss-arch-03` |
 | Through truss-arch bridge | `bridge/truss-arch` |
