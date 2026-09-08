@@ -1374,6 +1374,23 @@ internal sealed class TowerFactory
             // archetype being there to copy from.
             role(tower);
 
+            // Golden Gate's authored pylons, deep pillars and end anchorages deliberately override
+            // terrain levelling. Dropping that object-level component makes the game excavate down
+            // to the bottom of each tall replacement, which is the pair of pits at the bridge ends
+            // and around every main-tower footing. This is not a placement correction: the generated
+            // objects already retain the archetype's exact sub-object positions. Carry the authored
+            // terraform contract unchanged, just as Widen carries every render-prefab component.
+            if (string.Equals(_styleId, "GoldenGate", StringComparison.Ordinal))
+            {
+                foreach (var component in source.components)
+                {
+                    if (component is BuildingTerraformOverride)
+                    {
+                        tower.AddComponentFrom(component);
+                    }
+                }
+            }
+
             // The stacking goes on the parts, and it is what lets the tower reach the ground: without
             // it the game builds no StackData, gives the placed tower no Stack, and draws it at the
             // height it was modelled at - hanging above the ground by however far it was raised.

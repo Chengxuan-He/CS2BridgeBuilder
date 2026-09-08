@@ -140,6 +140,16 @@ public static class BridgeWidthBitwiseAudit
                 "Grand-40-两块板六车道_Grand"
             }),
         new Pair(
+            "GoldenGate",
+            "Golden Gate Bridge",
+            "两块板六车道_GoldenGate",
+            BoundaryKind.Outer,
+            new[] { "GoldenGateBridgePylon Placeholder", "GoldenGateBridgePillar Placeholder" },
+            new[] {
+                "GoldenGate-40-两块板六车道_GoldenGate GoldenGateBridgePylon Placeholder",
+                "GoldenGate-40-两块板六车道_GoldenGate"
+            }),
+        new Pair(
             "Suspension",
             "Suspension Bridge - Highway Oneway - 5 Lanes",
             "两块板六车道_Suspension",

@@ -4,6 +4,7 @@ CoveredWood	PedestrianBridgeCoveredWood01	两块板六车道_CoveredWood	Overhea
 Extradosed03	ExtradosedBridge03	两块板六车道_Extradosed03	Outer	28.07413	0x41E097D1	9.5	0x41180000	38.07413	0x42184BE9	20	0x41A00000	0.4999981	0x3EFFFFC0	38.574127	0x421A4BE8	Apply
 ExtradosedLarge	Extradosed Bridge - Large Road Divided - 6 Lanes	两块板六车道_ExtradosedLarge	Overhead	10.5	0x41280000	16	0x41800000	0	0x00000000	20	0x41A00000	14.5	0x41680000	14.5	0x41680000	Skipped
 Grand	Grand Bridge	两块板六车道_Grand	Object	31.59456	0x41FCC1A9	9.5	0x41180000	45.59456	0x423660D4	20	0x41A00000	-3.499998	0xC05FFFF8	42.09456	0x422860D4	Skipped
+GoldenGate	Golden Gate Bridge	两块板六车道_GoldenGate	Outer	37.01401	0x42140E59	12.5	0x41480000	44.51401	0x42320E59	20	0x41A00000	0	0x00000000	44.51401	0x42320E59	Unchanged
 Suspension	Suspension Bridge - Highway Oneway - 5 Lanes	两块板六车道_Suspension	Object	18.75001	0x41960005	12	0x41400000	26.75	0x41D60000	20	0x41A00000	9.536743E-06	0x37200000	26.75001	0x41D60005	Apply
 SuspensionGolden	SuspensionBridge03	两块板六车道_SuspensionGolden	Object	25.2	0x41C9999A	12.5	0x41480000	31.95	0x41FF999A	20	0x41A00000	0.75	0x3F400000	32.7	0x4202CCCD	Apply
 TiedArch	Tied Arch Bridge - 4 lanes	两块板六车道_TiedArch	Overhead	11.5	0x41380000	9.5	0x41180000	21	0x41A80000	20	0x41A00000	1	0x3F800000	22	0x41B00000	Apply
