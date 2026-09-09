@@ -1382,6 +1382,18 @@ internal sealed class TowerFactory
             // terraform contract unchanged, just as Widen carries every render-prefab component.
             if (string.Equals(_styleId, "GoldenGate", StringComparison.Ordinal))
             {
+                // GoldenGateBridgeBase01 is a Base pillar while the tall pylon and pillar candidates
+                // are Standalone. Applying the generic replacement template to all three erased that
+                // authored distinction and changed the base into a standalone column; its mesh was
+                // exported but the game no longer selected it as the prototype's footing. Keep the
+                // template's placeholder/spawn relationship, then restore the source pillar contract
+                // exactly so each candidate retains its original role and placement fields.
+                if (source.TryGet<PillarObject>(out var authoredPillar) && authoredPillar != null)
+                {
+                    tower.components.RemoveAll(component => component is PillarObject);
+                    tower.AddComponentFrom(authoredPillar);
+                }
+
                 foreach (var component in source.components)
                 {
                     if (component is BuildingTerraformOverride)
