@@ -346,7 +346,8 @@ if (Test-Path -LiteralPath $importedRoot -PathType Container) {
     $towerStyles = @(
         'PedestrianDraw', 'CoveredWood', 'SuspensionGolden', 'Suspension',
         'Extradosed01', 'Extradosed02', 'Extradosed03', 'ExtradosedLarge', 'CableStayed',
-        'TrussArch01', 'TrussArch02', 'TrussArch03', 'TrussArch', 'TiedArch', 'Grand', 'Draw', 'Lift'
+        'TrussArch01', 'TrussArch02', 'TrussArch03', 'TrussArch', 'TiedArch', 'Grand',
+        'GoldenGate', 'Draw', 'Lift'
     )
     # Current asset names replace decimal points with underscores (7.2 -> 7_2); retain the dot form
     # so cleanup also owns assets written by older versions.
@@ -389,6 +390,7 @@ if (Test-Path -LiteralPath $importedRoot -PathType Container) {
         'ExtradosedBridge03 Section',
         '6-Lane Extradosed Bridge',
         'SuspensionBridge03 Section',
+        'Golden Gate Bridge',
         'PedestrianBridgeCoveredWood01 Section',
         'Grand Bridge',
         'LiftBridge01 Section',
