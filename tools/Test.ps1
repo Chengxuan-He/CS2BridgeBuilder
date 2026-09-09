@@ -41,19 +41,19 @@ $output = Join-Path $projectRoot 'tests\bin'
 $exe = Join-Path $output 'TowerTests.dll'
 
 $sources = @(
-    (Join-Path $projectRoot 'src\BridgePrefabGenerator\Bridges\TowerWidening.cs'),
-    (Join-Path $projectRoot 'src\BridgePrefabGenerator\Bridges\GoldenBridgeRailings.cs'),
-    (Join-Path $projectRoot 'src\BridgePrefabGenerator\Bridges\BridgeTowers.cs'),
-    (Join-Path $projectRoot 'src\BridgePrefabGenerator\Bridges\BridgeStyleDefinitions.cs'),
-    (Join-Path $projectRoot 'src\BridgePrefabGenerator\Bridges\DeckArrangement.cs'),
-    (Join-Path $projectRoot 'src\BridgePrefabGenerator\Bridges\SectionNames.cs'),
-    (Join-Path $projectRoot 'src\BridgePrefabGenerator\Bridges\BridgeMeasurements.cs'),
-    (Join-Path $projectRoot 'src\BridgePrefabGenerator\Bridges\BridgeCables.cs'),
-    (Join-Path $projectRoot 'src\BridgePrefabGenerator\Bridges\BridgeTowerMaterials.cs'),
-    (Join-Path $projectRoot 'src\BridgePrefabGenerator\Bridges\BridgeTowerSpec.cs'),
-    (Join-Path $projectRoot 'src\BridgePrefabGenerator\Bridges\BridgeSpec.cs'),
-    (Join-Path $projectRoot 'src\BridgePrefabGenerator\Bridges\TowerPrefabNaming.cs'),
-    (Join-Path $projectRoot 'src\BridgePrefabGenerator\Bridges\PrototypeBridgeSizing.cs'),
+    (Join-Path $projectRoot 'src\BridgeBuilder\Bridges\TowerWidening.cs'),
+    (Join-Path $projectRoot 'src\BridgeBuilder\Bridges\GoldenBridgeRailings.cs'),
+    (Join-Path $projectRoot 'src\BridgeBuilder\Bridges\BridgeTowers.cs'),
+    (Join-Path $projectRoot 'src\BridgeBuilder\Bridges\BridgeStyleDefinitions.cs'),
+    (Join-Path $projectRoot 'src\BridgeBuilder\Bridges\DeckArrangement.cs'),
+    (Join-Path $projectRoot 'src\BridgeBuilder\Bridges\SectionNames.cs'),
+    (Join-Path $projectRoot 'src\BridgeBuilder\Bridges\BridgeMeasurements.cs'),
+    (Join-Path $projectRoot 'src\BridgeBuilder\Bridges\BridgeCables.cs'),
+    (Join-Path $projectRoot 'src\BridgeBuilder\Bridges\BridgeTowerMaterials.cs'),
+    (Join-Path $projectRoot 'src\BridgeBuilder\Bridges\BridgeTowerSpec.cs'),
+    (Join-Path $projectRoot 'src\BridgeBuilder\Bridges\BridgeSpec.cs'),
+    (Join-Path $projectRoot 'src\BridgeBuilder\Bridges\TowerPrefabNaming.cs'),
+    (Join-Path $projectRoot 'src\BridgeBuilder\Bridges\PrototypeBridgeSizing.cs'),
     (Join-Path $projectRoot 'tests\TowerTests.cs'),
     (Join-Path $projectRoot 'tests\TowerGenerationTests.cs')
 )

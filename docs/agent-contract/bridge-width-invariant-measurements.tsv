@@ -1,0 +1,13 @@
+Style	Archetype	Generated	Boundary	ArchetypeBridgeX	ArchetypeBridgeXBits	ArchetypeRoadX	ArchetypeRoadXBits	GeneratedBridgeX	GeneratedBridgeXBits	GeneratedRoadX	GeneratedRoadXBits	WidthIncrement	WidthIncrementBits	NewBridgeX	NewBridgeXBits	Result
+CableStayed	Cable-stayed Bridge - XL Road Divided - 8 Lanes	两块板六车道_CableStayed	Outer	23.5	0x41BC0000	20	0x41A00000	27	0x41D80000	20	0x41A00000	-3.5	0xC0600000	23.5	0x41BC0000	Skipped
+CoveredWood	PedestrianBridgeCoveredWood01	两块板六车道_CoveredWood	Overhead	4.75	0x40980000	4	0x40800000	21.75	0x41AE0000	20	0x41A00000	-1	0xBF800000	20.75	0x41A60000	Apply
+Extradosed03	ExtradosedBridge03	两块板六车道_Extradosed03	Outer	28.07413	0x41E097D1	9.5	0x41180000	38.07413	0x42184BE9	20	0x41A00000	0.4999981	0x3EFFFFC0	38.574127	0x421A4BE8	Apply
+ExtradosedLarge	Extradosed Bridge - Large Road Divided - 6 Lanes	两块板六车道_ExtradosedLarge	Overhead	10.5	0x41280000	16	0x41800000	0	0x00000000	20	0x41A00000	14.5	0x41680000	14.5	0x41680000	Skipped
+Grand	Grand Bridge	两块板六车道_Grand	Object	31.59456	0x41FCC1A9	9.5	0x41180000	45.59456	0x423660D4	20	0x41A00000	-3.499998	0xC05FFFF8	42.09456	0x422860D4	Skipped
+Suspension	Suspension Bridge - Highway Oneway - 5 Lanes	两块板六车道_Suspension	Object	18.75001	0x41960005	12	0x41400000	26.75	0x41D60000	20	0x41A00000	9.536743E-06	0x37200000	26.75001	0x41D60005	Apply
+SuspensionGolden	SuspensionBridge03	两块板六车道_SuspensionGolden	Object	25.2	0x41C9999A	12.5	0x41480000	31.95	0x41FF999A	20	0x41A00000	0.75	0x3F400000	32.7	0x4202CCCD	Apply
+TiedArch	Tied Arch Bridge - 4 lanes	两块板六车道_TiedArch	Overhead	11.5	0x41380000	9.5	0x41180000	21	0x41A80000	20	0x41A00000	1	0x3F800000	22	0x41B00000	Apply
+TrussArch	Truss Arch Bridge - Highway Twoway - 2 Lanes	两块板六车道_TrussArch	Outer	7.750001	0x40F80002	6	0x40C00000	21.75	0x41AE0000	20	0x41A00000	9.536743E-07	0x35800000	21.75	0x41AE0000	Apply
+TrussArch01	TrussArchBridge01	两块板六车道_TrussArch01	Outer	9.215492	0x411372A8	6	0x40C00000	22.7	0x41B5999A	20	0x41A00000	0.5154915	0x3F03F740	23.215492	0x41B9B954	Apply
+TrussArch02	TrussArchBridge02	两块板六车道_TrussArch02	Overhead	10.4	0x41266666	9.5	0x41180000	20.89624	0x41A72B80	20	0x41A00000	0.0037593842	0x3B766000	20.9	0x41A73333	Apply
+TrussArch03	TrussArchBridge03	两块板六车道_TrussArch03	Outer	9.203892	0x41134324	6	0x40C00000	23.70389	0x41BDA191	20	0x41A00000	-0.4999981	0xBEFFFFC0	23.203892	0x41B9A192	Apply
