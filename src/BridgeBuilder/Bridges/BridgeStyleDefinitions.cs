@@ -190,9 +190,10 @@ internal static class BridgeStyleDefinitions
         new BridgeStyleDefinition(
             "TrussArch", "Truss Arch Bridge", 3, 3.8146973E-06f, // 0x36800000
             "trussarchbridge", "trussarch"),
-        new BridgeStyleDefinition(
-            "TiedArch", "Tied Arch Bridge", 1, 2f, // 0x40000000; retained skipped span
-            "tiedarch"),
+        // The retained same-basis archetype measurement is road 19 m and structure 23 m. With that
+        // datum recorded at its source, ordinary generation preserves the authored 4 m allowance;
+        // no compensating style allowance or runtime audit correction belongs here.
+        new BridgeStyleDefinition("TiedArch", "Tied Arch Bridge", 1, "tiedarch"),
         new BridgeStyleDefinition("Grand", "Grand Bridge", 23,                   // 23.2 over 2
             "grandbridge"),
         // Moveable bridges lift their deck instead of standing over it, so no sample of either had a

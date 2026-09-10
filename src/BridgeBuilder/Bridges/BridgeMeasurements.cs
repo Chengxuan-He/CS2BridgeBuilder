@@ -108,7 +108,11 @@ internal static class BridgeMeasurements
             ["BXP TrussArchBridge03 - Highway"] = (24, 18),
             ["BXP Truss Arch Bridge - Subway"] = (14, 15),
             ["BXP Truss Arch Bridge - Highway Oneway - 2 Lanes"] = (14, 15),
-            ["Tied Arch Bridge - 4 lanes"] = (21, 23),
+            // Same-basis full-span measurements from the retained archetype dump: the road surface
+            // spans 19 m and the transverse tied-arch structure spans 23 m. The former 21 m value
+            // included the two 1 m side sections and was not the road-surface boundary used by the
+            // generated sample audit.
+            ["Tied Arch Bridge - 4 lanes"] = (19, 23),
             ["BXP Tied Arch Bridge - Train - 4 Tracks"] = (24, 23),
             ["BXP Tied Arch Bridge - Highway Oneway - 4 Lanes"] = (22, 23),
             ["BXP Tied Arch Bridge - Train - 4 Tracks Alternating"] = (24, 23),

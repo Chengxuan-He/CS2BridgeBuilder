@@ -89,6 +89,11 @@ The numbered references below point to the corresponding sections in the complet
     must be created and measured, and the pass remains incomplete until that real sample exists.
     Creating and judging the sample is a human game operation; the Agent must not open or control the
     game or issue an API/request-file bridge-construction request. See contract section 14.
+    An over-threshold result remains `Skipped` in that invariant pass. A separate bridge-specific
+    repair is permitted only after the user explicitly authorizes the exact audited delta, and it
+    must retain the original audit result, use the bridge's required branch and fold the repair into
+    original immutable source data. The authorized TiedArch follow-up is the exact full-span delta
+    `-2f` (`0xC0000000`) to target `44f` (`0x42300000`) on `bridge/tied-arch`.
 15. Bridge-generation code must never calculate, look up or apply an audit correction at runtime.
     Width and geometry corrections are completed during metaprogramming and folded into the original,
     immutable archetype parameters or generated source data. Runtime consumes only those final values;

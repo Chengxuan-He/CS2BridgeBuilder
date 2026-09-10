@@ -38,6 +38,10 @@ the repository root [`AGENTS.md`](../../AGENTS.md). Before editing this director
   the invariant pass stays incomplete until a human creates the missing bridge from a selected road
   and its real report and geometry are retained. The Agent must not open or control the game or issue
   an API/request-file bridge-construction request for sample creation.
+- An over-threshold audit row remains `Skipped`. A later bridge-specific repair requires explicit
+  user authorization of the exact audited delta, the required bridge branch, retained same-basis
+  evidence and a separate work record; it may not rewrite the invariant-pass result. TiedArch has
+  that authorization for `-2f` (`0xC0000000`) to `44f` (`0x42300000`) on `bridge/tied-arch`.
 - Never apply an audit or geometry correction in runtime bridge-generation code. Metaprogramming must
   finish the correction and fold it into the original immutable archetype parameters or generated
   source metadata. Runtime may consume those final parameters as ordinary generation inputs, but it

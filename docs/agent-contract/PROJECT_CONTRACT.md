@@ -849,6 +849,15 @@ width-increment and new-width bit patterns, and the reason it was skipped. A lar
 discrepancy is evidence that the bridge or the measurement basis needs separate investigation; it is
 not permission for a large automatic correction.
 
+An over-threshold bridge remains `Skipped` in the invariant pass and its audit row must not be
+rewritten. A separate bridge-specific investigation may result in a repair only when the user
+explicitly authorizes the exact audited full-span delta, retained evidence establishes the same-basis
+left and right boundaries, and the work is performed on the bridge's required branch. The separate
+repair must be recorded as such and folded into the original immutable source data; it is never a
+runtime correction and never retroactively changes the invariant-pass decision. The user authorized
+the TiedArch follow-up on `bridge/tied-arch`: apply the exact full-span delta `-2f`
+(`0xC0000000`) to the retained `46f` span (`0x42380000`), yielding `44f` (`0x42300000`).
+
 Apply a verified correction to the full-detail mesh and every LOD together, subject to rule 8 and the
 bridge-specific branch rule in section 12. Never turn this invariant into runtime geometric guessing.
 The metaprogramming step may identify the affected authored parts and emit reviewed immutable data;
