@@ -30,12 +30,19 @@ the repository root [`AGENTS.md`](../../AGENTS.md). Before editing this director
   to that generated bridge.
 - Preserve the archetype-specific constant `bridge width - deck width`. The width definition and the
   constant must come from a same-basis comparison of a real archetype and a real newly generated
-  bridge, not runtime geometry inference or source arithmetic alone. If enforcing it would require any
-  x-coordinate correction greater than 1 m in absolute value, do not change that bridge; report and
-  record the bridge for review. Absence of a generated sample does not satisfy that skip condition:
+  bridge, not runtime geometry inference or source arithmetic alone. Width is the complete
+  left-to-right span `maxX - minX`, and the audited width increment is the increment of that complete
+  span; it is not a per-side x-coordinate correction. If the absolute full-span width increment is
+  greater than 1 m, do not change that bridge; report and record the bridge for review. Absence of a
+  generated sample does not satisfy that skip condition:
   the invariant pass stays incomplete until a human creates the missing bridge from a selected road
   and its real report and geometry are retained. The Agent must not open or control the game or issue
   an API/request-file bridge-construction request for sample creation.
+- Never apply an audit or geometry correction in runtime bridge-generation code. Metaprogramming must
+  finish the correction and fold it into the original immutable archetype parameters or generated
+  source metadata. Runtime may consume those final parameters as ordinary generation inputs, but it
+  must not contain an audit-correction table, add a post-measurement delta, double a per-side result,
+  or otherwise know that a correction step existed.
 
 ## Completion
 

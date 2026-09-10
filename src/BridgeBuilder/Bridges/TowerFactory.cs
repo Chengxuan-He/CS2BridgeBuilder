@@ -256,8 +256,14 @@ internal sealed class TowerFactory
     /// <summary>The tower the bridge being built names, which is the key the measured tables use.</summary>
     private string? _towerKey;
 
-    /// <summary>The style being built, for the corrections that are recorded per style.</summary>
+    /// <summary>The style being built, for its immutable authored geometry metadata.</summary>
     private string? _styleId;
+
+    /// <summary>
+    /// Final archetype structure allowance emitted by offline metaprogramming. It is supplied as part
+    /// of the original bridge-style definition, never calculated from generated geometry at runtime.
+    /// </summary>
+    private float _archetypeStructureAllowance;
 
     /// <summary>
     /// The exact full-width delta already applied to TrussArch03's overhead arch for this bridge.
@@ -340,7 +346,10 @@ internal sealed class TowerFactory
     /// and the cable measurement must not. A bridge with no overhead section sized against the
     /// previous bridge's cables would be wrong in a way nothing reported.
     /// </summary>
-    internal void BeginBridge(string? styleId = null, string bridgeName = "")
+    internal void BeginBridge(
+        string? styleId = null,
+        float archetypeStructureAllowance = 0f,
+        string bridgeName = "")
     {
         // This is an ownership boundary, not merely a measurement reset. A factory may be retained by
         // the future runtime creator and asked to build many bridges in one game session; no tower
@@ -358,6 +367,7 @@ internal sealed class TowerFactory
         // and the railings that live beside them - so anything that asks which style is being built
         // while that happens was asking a null. The inner railing rule did, and did nothing, silently.
         _styleId = styleId;
+        _archetypeStructureAllowance = archetypeStructureAllowance;
     }
 
     /// <summary>
@@ -403,9 +413,8 @@ internal sealed class TowerFactory
             return extra;
         }
 
-        // The style's own tower correction, added to the tower and not to the cables - see
-        // BridgeTowers.BonusFor.
-        var byRoad = BridgeTowers.StructureExtraFor(_styleId, deckWidth - authored);
+        // Apply the original bridge-style equation using only its final immutable source parameters.
+        var byRoad = deckWidth - authored + _archetypeStructureAllowance;
 
         // TrussArchBridge01's first pillar mesh is the pier visible directly beneath the side arch.
         // The immutable difference below was measured from the shipped archetype by the offline

@@ -141,7 +141,7 @@ internal sealed class BridgeComposer
         // outside frame preserves the prototype's measured bridge-minus-visible-deck relationship,
         // while its inside frame follows the outermost boundary of the two outside footways.
         var chosen = selection.Tower;
-        var extra = selection.ExtraFor(structureWidth, style.Id);
+        var extra = selection.ExtraFor(structureWidth, style);
 
         if (BridgeTowers.WidthFollowsSidewalks(style.Id))
         {
@@ -198,7 +198,7 @@ internal sealed class BridgeComposer
         // Each bridge is sized against its own cables, so the previous bridge's are forgotten
         // before this one's are built. The factory outlives a single bridge; the measurement
         // must not.
-        _towers?.BeginBridge(style.Id, target.name);
+        _towers?.BeginBridge(style.Id, style.ArchetypeStructureAllowance, target.name);
 
         // Follow the selected archetype's deck roles. When its auxiliary net is below, the donor's
         // main prefab is its upper road. This is the V-shaped double-deck cable-stayed bridge: its
@@ -212,7 +212,7 @@ internal sealed class BridgeComposer
         {
             var roadExtra = PrototypeBridgeSizing.UpperDeckExtra(
                 targetWidth, chosen.Value.Road, extra);
-            extra = BridgeTowers.StructureExtraFor(style.Id, roadExtra);
+            extra = roadExtra + style.ArchetypeStructureAllowance;
             _report.Note(string.Format(
                 CultureInfo.InvariantCulture,
                 "{0}: V-shaped double-deck width follows the upper road: {1:0.###} m target minus "
@@ -220,11 +220,7 @@ internal sealed class BridgeComposer
                 + "{5:0.###} m structure allowance = {6:0.###} m effective widening. Its lower "
                 + "network keeps the auxiliary pointer and is not a width input.",
                 target.name, targetWidth, chosen.Value.Road, variant.Name, roadExtra,
-                BridgeTowers.BonusFor(style.Id), extra));
-        }
-        else
-        {
-            extra = BridgeTowers.StructureExtraFor(style.Id, extra);
+                style.ArchetypeStructureAllowance, extra));
         }
 
         var overheadExtra = BridgeTowers.WhiteTrussArchWidths.OverheadExtra(

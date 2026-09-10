@@ -224,12 +224,18 @@ internal sealed class BridgeStyle
 {
     private readonly List<BridgeStyleVariant> _variants = new();
 
-    internal BridgeStyle(string id, string nameSuffix, Func<string> displayName, int? clearance = null)
+    internal BridgeStyle(
+        string id,
+        string nameSuffix,
+        Func<string> displayName,
+        int? clearance = null,
+        float archetypeStructureAllowance = 0f)
     {
         Id = id;
         NameSuffix = nameSuffix;
         _displayName = displayName;
         AuthoredClearance = clearance;
+        ArchetypeStructureAllowance = archetypeStructureAllowance;
     }
 
     /// <summary>
@@ -237,6 +243,9 @@ internal sealed class BridgeStyle
     /// that matches no named style - nothing has been measured for it, so it averages its own variants.
     /// </summary>
     internal int? AuthoredClearance { get; }
+
+    /// <summary>The final structural allowance carried by this style's source definition.</summary>
+    internal float ArchetypeStructureAllowance { get; }
 
     private readonly Func<string> _displayName;
 
@@ -374,9 +383,10 @@ internal sealed class BridgeStyle
         /// which is what makes a bridge over a 20 m road come out as the game's own four lane
         /// suspension bridge rather than as something merely derived from it.
         /// </summary>
-        internal float ExtraFor(float deckWidth, string? styleId = null)
+        internal float ExtraFor(float deckWidth, BridgeStyle style)
         {
-            if (Tower.HasValue) return deckWidth - Tower.Value.Road;
+            if (Tower.HasValue)
+                return deckWidth - Tower.Value.Road + style.ArchetypeStructureAllowance;
 
             // No portal was selected. For a style whose structure is overhead there is none to
             // select - a through arch is spanned by its arch and its only object is a support under
@@ -384,10 +394,13 @@ internal sealed class BridgeStyle
             // is what the widening is against. Falling straight through to the ranked variant's own
             // width measures against whichever bridge the ranking happened to turn up: the through
             // arch came out 2 m short that way, on a road it was never compared to.
-            var recorded = BridgeTowers.RoadOf(styleId);
-            if (recorded > 0f) return deckWidth - recorded;
+            var recorded = BridgeTowers.RoadOf(style.Id);
+            if (recorded > 0f)
+                return deckWidth - recorded + style.ArchetypeStructureAllowance;
 
-            return Variant != null && Variant.RoadWidth > 0f ? deckWidth - Variant.RoadWidth : 0f;
+            return Variant != null && Variant.RoadWidth > 0f
+                ? deckWidth - Variant.RoadWidth + style.ArchetypeStructureAllowance
+                : style.ArchetypeStructureAllowance;
         }
     }
 

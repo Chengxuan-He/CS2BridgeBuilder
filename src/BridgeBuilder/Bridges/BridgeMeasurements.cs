@@ -86,7 +86,7 @@ internal static class BridgeMeasurements
             ["BXP ExtradosedBridge02 - Train"] = (40, 46),
             ["ExtradosedBridge01 Train Track"] = (26, 0),
             ["ExtradosedBridge02 Above Road"] = (28, 0),
-            ["Cable-stayed Bridge - XL Road Divided - 8 Lanes"] = (77, 42),
+            ["Cable-stayed Bridge - XL Road Divided - 8 Lanes"] = (32, 42),
             ["Cable Stayed Pedestrian Bridge"] = (4, 6),
             ["Cable Stayed Bike Bridge"] = (4, 6),
             ["BXP Cable Stayed Pedestrian Bridge Revised"] = (4, 6),
