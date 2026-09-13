@@ -1625,7 +1625,11 @@ internal sealed class TowerFactory
         tower.m_Circular = source.m_Circular;
         foreach (var component in source.components)
         {
-            if (component != null) tower.AddComponentFrom(component);
+            // Build carries ObjectSubObjects after this role callback so every mounted light/prop can
+            // follow the exact width delta of its authored parent mesh. Copying it here as well would
+            // publish the same component twice on Grand's replacement object.
+            if (component != null && component is not ObjectSubObjects)
+                tower.AddComponentFrom(component);
         }
 
         if (tower.TryGet<SpawnableObject>(out var spawnable) && spawnable != null)
