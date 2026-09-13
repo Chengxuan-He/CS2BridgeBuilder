@@ -377,8 +377,11 @@ public partial class BridgeGenerationSystem : GameSystemBase
                 Finish(report, state, "Export bridge");
                 return;
             }
+            // Size from the archetype's root ownership role. For Suspension and ExtradosedBridge01
+            // that is the converted upper road; for ExtradosedBridge02 the auxiliary is above, so
+            // the chosen lower road/track is the root and supplies the width reference.
             var variant = composer.Apply(
-                clone, style, upper.Width, options, measure: upperSource);
+                clone, style, main.Width, options, measure: main.Prefab);
             if (variant != null)
             {
                 AttachSecondDeck(

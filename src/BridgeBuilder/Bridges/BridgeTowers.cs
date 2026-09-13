@@ -125,11 +125,13 @@ internal static class BridgeTowers
             // a test that passes.
             ["Extradosed01"] = new[]
             {
-                new Tower("ExtradosedBridge01NetPillar", 53, 40, verified: true),
+                // The double-deck archetype's root is its 20 m upper road.
+                new Tower("ExtradosedBridge01NetPillar", 53, 20, verified: true),
             },
             ["Extradosed02"] = new[]
             {
-                new Tower("ExtradosedBridge02NetPillar", 46, 38, verified: true),
+                // The A-pylon archetype's root is its 19 m lower road; its auxiliary is above.
+                new Tower("ExtradosedBridge02NetPillar", 46, 19, verified: true),
             },
             ["Extradosed03"] = new[]
             {

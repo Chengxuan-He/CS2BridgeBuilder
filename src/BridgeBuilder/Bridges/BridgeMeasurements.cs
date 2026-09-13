@@ -43,7 +43,10 @@ internal static class BridgeMeasurements
             ["SuspensionBridge02"] = (34, 49),
             ["SuspensionBridge03"] = (52, 50),
             ["SuspensionBridge04"] = (52, 50),
-            ["BXP Double Deck Suspension Bridge - Highway"] = (26, 38),
+            // Double-deck width audit: this prefab is the upper/root road. Its active road sections
+            // span 24 m; 26 m included the two outward side extensions that are not the road-width
+            // operand of the bridge-minus-road invariant.
+            ["BXP Double Deck Suspension Bridge - Highway"] = (24, 38),
             ["BXP Suspension Bridge - Highway Twoway - 4 Lanes"] = (30, 30),
             ["BXP SuspensionBridge03 - Six Lane Highway"] = (29, 50),
             ["BXP SuspensionBridge02 Above Road Four-Lane"] = (24, 0),
@@ -59,8 +62,11 @@ internal static class BridgeMeasurements
             ["BXP Double Deck Suspension Bridge - Subway"] = (38, 37),
             ["SuspensionBridge02 Above Road"] = (18, 0),
             ["Extradosed Bridge - Large Road Divided - 6 Lanes"] = (63, 21),
-            ["ExtradosedBridge01"] = (42, 53),
-            ["ExtradosedBridge02"] = (40, 46),
+            // Double-deck width audit: 01's root is the upper road and 02's root is the lower road.
+            // These are the active root-road spans from the retained real-prefab dump; mutually
+            // exclusive and outward-only sections are not road-width operands.
+            ["ExtradosedBridge01"] = (20, 53),
+            ["ExtradosedBridge02"] = (19, 46),
             ["ExtradosedBridge03"] = (40, 56),
             ["ExtradosedBridge04"] = (40, 56),
             ["BXP ExtradosedBridge01 - PedsBikes"] = (42, 53),

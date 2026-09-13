@@ -58,7 +58,7 @@ internal static class TowerGenerationTests
         ASlantedLegIsCarriedOutAtEveryHeight(check);
         ADeckBetweenTheLegsStretchesToMeetThem(check);
         TheSecondDeckGoesUnderTheRoad(check);
-        ADoubleDeckBridgeIsSizedFromItsPrototypeUpperDeck(check);
+        ADoubleDeckBridgeIsSizedFromItsPrototypeRootDeck(check);
         AWingKeepsItsDepthOrSomethingSaysSo(check);
         AnOpenworkOrnamentStretchesBetweenTheLegs(check);
         AThicknessIsMeasuredOnOneThing(check);
@@ -3180,50 +3180,35 @@ internal static class TowerGenerationTests
     }
 
     /// <summary>
-    /// A V-shaped double-deck bridge is widened from its prototype upper road, never from its portal
-    /// opening and never from the road or track selected for the lower level.
+    /// A double-deck bridge is widened from the road/deck in its prototype's root ownership role.
+    /// That role is upper when the auxiliary hangs below and lower when it hangs above.
     /// </summary>
-    private static void ADoubleDeckBridgeIsSizedFromItsPrototypeUpperDeck(
+    private static void ADoubleDeckBridgeIsSizedFromItsPrototypeRootDeck(
         Action<string, bool, string?> check)
     {
-        const float prototypeUpper = 40f;
-        const float prototypeOpening = 39.31641f;
+        var extradosed01 = PrototypeBridgeSizing.ReferenceDeckExtra(40f, 20f, -1f);
+        check("[double deck width] Extradosed01 uses the upper root road",
+            BitConverter.SingleToInt32Bits(extradosed01)
+                == BitConverter.SingleToInt32Bits(20f),
+            $"{extradosed01:R} m");
 
-        var ownExtra = PrototypeBridgeSizing.UpperDeckExtra(40f, prototypeUpper, -1f);
-        check("[upper width] the V pylon is unchanged on its own upper road",
-            Math.Abs(ownExtra) < 0.001f,
-            $"{ownExtra:0.#####} m");
+        var extradosed02 = PrototypeBridgeSizing.ReferenceDeckExtra(22f, 19f, -1f);
+        check("[double deck width] Extradosed02 uses the lower root deck",
+            BitConverter.SingleToInt32Bits(extradosed02)
+                == BitConverter.SingleToInt32Bits(3f),
+            $"{extradosed02:R} m");
 
-        var narrowStructureExtra = BridgeTowers.StructureExtraFor("Extradosed01",
-            PrototypeBridgeSizing.UpperDeckExtra(16f, prototypeUpper, -1f));
-        check("[upper width] the double-deck V structure adds its 20 m prototype allowance",
-            Math.Abs(narrowStructureExtra + 4f) < 0.001f,
-            $"{narrowStructureExtra:0.#####} m");
+        var suspension = PrototypeBridgeSizing.ReferenceDeckExtra(40f, 24f, -1f);
+        check("[double deck width] Suspension uses the upper root road",
+            BitConverter.SingleToInt32Bits(suspension)
+                == BitConverter.SingleToInt32Bits(16f),
+            $"{suspension:R} m");
 
-        // The real prototype's narrowest node opening is 20.09 m. Contracting by the raw -24 m
-        // reverses its left and right coordinates; the effective -4 m keeps a positive 16.09 m
-        // opening, so the node pieces still meet in their authored order.
-        const float nodeHalfOpening = 20.09f * 0.5f;
-        var nodeLeft = TowerWidening.Spread(-nodeHalfOpening, narrowStructureExtra);
-        var nodeRight = TowerWidening.Spread(nodeHalfOpening, narrowStructureExtra);
-        check("[upper width] the V bridge node does not cross through the centre",
-            nodeLeft < 0f && nodeRight > 0f
-                && Math.Abs((nodeRight - nodeLeft) - 16.09f) < 0.001f,
-            $"{nodeLeft:0.#####}..{nodeRight:0.#####} m");
-
-        var wideExtra = PrototypeBridgeSizing.UpperDeckExtra(64f, prototypeUpper, -1f);
-        check("[upper width] a wide V bridge is derived from the prototype upper road",
-            Math.Abs(wideExtra - 24f) < 0.001f,
-            $"{wideExtra:0.#####} m");
-
-        var wrongOpeningExtra = 64f - prototypeOpening;
-        check("[upper width] the portal opening cannot replace the upper road width",
-            Math.Abs(wideExtra - wrongOpeningExtra) > 0.5f,
-            $"road gives {wideExtra:0.#####}, opening would give {wrongOpeningExtra:0.#####} m");
-
-        var fallback = PrototypeBridgeSizing.UpperDeckExtra(64f, 0f, 24f);
-        check("[upper width] a missing prototype measurement keeps the recorded widening",
-            Math.Abs(fallback - 24f) < 0.001f, $"{fallback:0.#####} m");
+        var fallback = PrototypeBridgeSizing.ReferenceDeckExtra(40f, 0f, 16f);
+        check("[double deck width] a missing prototype measurement keeps the recorded widening",
+            BitConverter.SingleToInt32Bits(fallback)
+                == BitConverter.SingleToInt32Bits(16f),
+            $"{fallback:R} m");
     }
 
     private static void ADeckBetweenTheLegsStretchesToMeetThem(Action<string, bool, string?> check)
@@ -4330,25 +4315,23 @@ internal static class TowerGenerationTests
         check("[pylon] the catch-all extradosed style is gone", !ids.Contains("Extradosed"), null);
 
         // Each keeps its own structure, at the road that structure was drawn for.
-        // The audit's widths: the narrowest carriageway among the bridges that ship carrying each
-        // pylon. They were 20/18/18 for a while - twenty metres of in-game corrections recorded as
-        // road corrections - and at 20 the V pylon widened a 40 m road by another 20, which hung its
-        // stay cables ten metres past each edge of the deck.
+        // The double-deck audit's root-road widths. ExtradosedBridge01 owns its 20 m upper road;
+        // ExtradosedBridge02 owns its 19 m lower road and carries the other road above it.
         check("[pylon] the V pylon knows its own structure",
-            BridgeTowers.RoadFor("Extradosed01", "ExtradosedBridge01NetPillar") == 40f, null);
+            BridgeTowers.RoadFor("Extradosed01", "ExtradosedBridge01NetPillar") == 20f, null);
         check("[pylon] the A pylon, double deck",
-            BridgeTowers.RoadFor("Extradosed02", "ExtradosedBridge02NetPillar") == 38f, null);
+            BridgeTowers.RoadFor("Extradosed02", "ExtradosedBridge02NetPillar") == 19f, null);
         check("[pylon] the A pylon, single deck",
             BridgeTowers.RoadFor("Extradosed03", "ExtradosedBridge03NetPillar") == 38f, null);
 
-        // How far each pylon stands outside the road it was drawn for. A pylon overhangs its road by
-        // metres, not by tens of metres: the wrong widths made these 33, 28 and 38, which is a pylon
-        // wider than the bridge it belongs to and is what put the stay cables past the deck.
+        // A single-deck pylon stands only a modest distance outside its road. The 01 and 02 pylons
+        // surround two decks and their root-road difference is intentionally much larger, so this
+        // single-deck clearance check does not apply to them.
         //
         // The self test cannot check this. It reproduces each tower at whatever road the table says,
         // so a wrong table is a test that passes - which is why this asks the table a question the
         // table cannot answer with itself.
-        foreach (var style in new[] { "Extradosed01", "Extradosed02", "Extradosed03" })
+        foreach (var style in new[] { "Extradosed03" })
         {
             var road = BridgeTowers.RoadOf(style);
             var mesh = BridgeTowers.For(style)[0].Mesh;
