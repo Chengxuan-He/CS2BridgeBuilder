@@ -955,7 +955,8 @@ internal sealed class BridgeComposer
 
     private void RemoveDeckRailings(RoadPrefab target, string? styleId)
     {
-        if (!BridgeTowers.BringsItsOwnRailings(styleId)) return;
+        if (BridgeStyleDefinitions.RoadRailingsOf(styleId) != RoadRailingPolicy.EndsAndNodesOnly)
+            return;
 
         // Nothing to derive a copy with, so nothing to take off: the shared section is left alone
         // rather than edited, which would take the railing off every road in the game.
@@ -987,10 +988,10 @@ internal sealed class BridgeComposer
 
         _report.Note(string.Format(
             CultureInfo.InvariantCulture,
-            "{0}: the road's own railing now draws only where the road ends - {1}. This style carries "
-            + "railings of its own along the run, and the two stood beside each other; at a turnaround "
-            + "it carries none, so the road's is the only one there.",
-            target.name, string.Join(", ", removed.Distinct())));
+            "{0}: the road's own white railing now draws only at nodes and dead ends - {1}. The "
+            + "measured archetype for style '{2}' has no ordinary road railing along its span; joins "
+            + "and turnarounds retain the road railing so their open ends remain protected.",
+            target.name, string.Join(", ", removed.Distinct()), styleId ?? "<unknown>"));
     }
 
     /// <summary>

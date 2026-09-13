@@ -5,6 +5,20 @@ using System.Linq;
 namespace BridgeBuilder.Bridges;
 
 /// <summary>
+/// What the measured archetype does with the ordinary road's white elevated-edge railing on a
+/// continuous bridge span. This is immutable metaprogram output from the prefab anatomy dump; it is
+/// not inferred from the selected road or from geometry while the game is running.
+/// </summary>
+internal enum RoadRailingPolicy
+{
+    /// <summary>The archetype carries the ordinary road/path side railing along its span.</summary>
+    KeepOnRun,
+
+    /// <summary>The archetype carries no ordinary road railing on the run; retain it only at joins.</summary>
+    EndsAndNodesOnly,
+}
+
+/// <summary>
 /// One named bridge style the player can pick, and how to recognise the prefabs that provide it.
 /// </summary>
 internal sealed class BridgeStyleDefinition
@@ -86,6 +100,40 @@ internal static class BridgeStyleDefinitions
     /// that matches none of its entries.
     /// </summary>
     internal const string Default = "Suspension";
+
+    /// <summary>
+    /// The ordinary white road-railing policy measured on every generated bridge family.
+    ///
+    /// The absent group has one of two measured forms in the archetype: its parent side section is
+    /// node-only, or it is a track prototype with no ordinary road-side section. Both mean the same
+    /// thing when that design is applied to a road: the target road's white elevated-edge railing must
+    /// not be introduced along the span. The railing remains at nodes and dead ends so adjacent nets
+    /// and turnarounds still have an edge barrier.
+    ///
+    /// Draw and lift mechanisms are refused before composition and therefore never reach this policy.
+    /// An unrecognised third-party family keeps its road railing because no archetype measurement
+    /// exists that authorises removing it.
+    /// </summary>
+    internal static RoadRailingPolicy RoadRailingsOf(string? styleId) => styleId switch
+    {
+        // Road Side 0 is node-only in these road prototypes. TrussArchBridge01/03 are track
+        // prototypes, and TrussArchBridge02 has its own structural outer railing instead.
+        "SuspensionGolden" or
+        "GoldenGate" or
+        "Extradosed01" or
+        "Extradosed02" or
+        "Extradosed03" or
+        "ExtradosedBridge" or // the separately discovered ExtradosedBridge04 family
+        "TrussArch01" or
+        "TrussArch02" or
+        "TrussArch03" or
+        "Grand" => RoadRailingPolicy.EndsAndNodesOnly,
+
+        // Suspension, ExtradosedLarge, CableStayed, TrussArch, TiedArch and CoveredWood all expose
+        // an ordinary span-side section in their measured archetypes. Deferred mechanism styles and
+        // unknown third-party styles also take the non-destructive default.
+        _ => RoadRailingPolicy.KeepOnRun,
+    };
 
     /// <summary>
     /// Whether a style's overhead section is an open, member-built truss.

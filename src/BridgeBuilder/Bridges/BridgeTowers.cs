@@ -412,11 +412,12 @@ internal static class BridgeTowers
     /// Whether a style's archetype carries railings of its own along the deck.
     ///
     /// Recorded, because nothing in an archetype declares it. The golden family's are golden and live
-    /// in its support mesh; the V pylon's are its own too. A road always brings a railing when it is
-    /// elevated, so on these two the deck ends up with both, side by side and a hand's breadth apart.
+    /// in its support mesh. This flag controls transformation of that authored railing geometry only;
+    /// it is deliberately separate from <see cref="BridgeStyleDefinitions.RoadRailingsOf"/>, which
+    /// records whether the ordinary white road railing exists on an archetype's continuous span.
     ///
-    /// A style not named here keeps the road's, which is right: most bridge archetypes have none of
-    /// their own and the road's railing is the only one there is.
+    /// A style may suppress the road's railing without entering this list: a node-only road side or a
+    /// track archetype has no ordinary span railing, but that does not make its mesh a golden kerb rail.
     /// </summary>
     internal static bool BringsItsOwnRailings(string? styleId) =>
         styleId is "SuspensionGolden";
