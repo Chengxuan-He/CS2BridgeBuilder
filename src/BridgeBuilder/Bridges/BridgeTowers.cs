@@ -160,22 +160,18 @@ internal static class BridgeTowers
             {
                 // Grand Bridge carries both, and they are different things: the pylon is the portal the
                 // road passes through, the pillar is what stands under it. Only the first is a tower.
-                // Roads corrected by 10, from what the deck scan returned to what the structure
-                // straddles - the same correction the golden family and the through arch needed, and
-                // for the same reason: NetWidth sums the deck, and the deck is not the carriageway the
-                // structure was drawn around. At the scanned widths the generated pylons came out
-                // about ten metres narrow.
+                // The retained full-span audit measured Grand Bridge's road at 19 m and its generated
+                // sample at 40 m. The previous 12 m entry made ordinary generation add 28 m instead
+                // of 21 m, producing the exact -6.999996 m discrepancy recorded by the audit. Keep
+                // the measured prototype road here so generation uses the original target-minus-
+                // prototype calculation; there is no runtime audit correction.
                 //
-                // Unlike those two this one has no independent check behind it. The golden family was
-                // settled by a 33.8 m envelope that cannot enclose a 50 m road, and the through arch
-                // by a 12.35 m opening that cannot carry a 20 m road. The grand bridge's section is
-                // 21 m and wider than either reading of its road, so it discriminates between them not
-                // at all. This is an in-game observation written down as one.
-                // 12, from 9. The correction to 9 overshot by 3 - a narrower road makes a wider tower,
-                // so three metres of tower came off by putting three metres of road back on.
-                new Tower("GrandBridgePylon Placeholder", 34, 12, verified: true),
-                new Tower("GrandBridgePillar Placeholder", 44, 12, verified: true),
-                new Tower("BXP GrandBridgePillarB Placeholder", 44, 24, verified: true),
+                // The BXP variants are the same measurement basis: their live prototype roads are
+                // 31 m, not the stale 24 m entries. Both structures of each donor retain that donor's
+                // own road datum.
+                new Tower("GrandBridgePylon Placeholder", 34, 19, verified: true),
+                new Tower("GrandBridgePillar Placeholder", 44, 19, verified: true),
+                new Tower("BXP GrandBridgePillarB Placeholder", 44, 31, verified: true),
             },
             ["Lift"] = new[]
             {

@@ -193,7 +193,7 @@ internal static class BridgeStyleDefinitions
         new BridgeStyleDefinition(
             "TiedArch", "Tied Arch Bridge", 1, 2f, // 0x40000000; retained skipped span
             "tiedarch"),
-        new BridgeStyleDefinition("Grand", "Grand Bridge", 23,                   // 23.2 over 2
+        new BridgeStyleDefinition("Grand", "Grand Bridge", 25,                   // 44.2 over 19
             "grandbridge"),
         // Moveable bridges lift their deck instead of standing over it, so no sample of either had a
         // structure wider than its road. Demanding a margin would rule out every variant they have.
