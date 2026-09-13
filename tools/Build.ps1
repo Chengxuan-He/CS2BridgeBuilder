@@ -50,7 +50,7 @@ $refPack = Get-ChildItem -LiteralPath (Join-Path $dotnetRoot 'packs\NETStandard.
 if (-not $refPack) { throw 'NETStandard.Library.Ref is not installed with the .NET SDK.' }
 $frameworkRefs = Join-Path $refPack.FullName 'ref\netstandard2.1'
 
-$output = Join-Path $projectRoot "src\BridgePrefabGenerator\bin\$Configuration"
+$output = Join-Path $projectRoot "src\BridgeBuilder\bin\$Configuration"
 [IO.Directory]::CreateDirectory($output) | Out-Null
 
 $references = [Collections.Generic.List[string]]::new()
@@ -82,7 +82,7 @@ if (-not (Test-Path -LiteralPath $sharedRoot)) {
     throw "The shared sources are missing: $sharedRoot. Clone CS2ModShared next to this repository."
 }
 $sources = @(
-    (Join-Path $projectRoot 'src\BridgePrefabGenerator'),
+    (Join-Path $projectRoot 'src\BridgeBuilder'),
     $sharedRoot
 ) | ForEach-Object { Get-ChildItem -LiteralPath $_ -Recurse -Filter '*.cs' } |
     Select-Object -ExpandProperty FullName
@@ -96,9 +96,9 @@ $arguments = @(
     '/debug:portable',
     '/nullable:enable',
     '/langversion:latest',
-    ('/out:' + (Join-Path $output 'BridgePrefabGenerator.dll'))
+    ('/out:' + (Join-Path $output 'BridgeBuilder.dll'))
 ) + $references + $sources
 
 & $dotnet @arguments
 if ($LASTEXITCODE -ne 0) { throw "Compilation failed with exit code $LASTEXITCODE" }
-Write-Host "Built: $(Join-Path $output 'BridgePrefabGenerator.dll')"
+Write-Host "Built: $(Join-Path $output 'BridgeBuilder.dll')"
