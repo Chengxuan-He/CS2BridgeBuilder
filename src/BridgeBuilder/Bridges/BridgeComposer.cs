@@ -681,6 +681,25 @@ internal sealed class BridgeComposer
         {
             bridge.m_WaterFlow = source.m_WaterFlow;
             bridge.m_FixedSegments = CopyFixedSegments(source);
+
+            // Double-deck node seams are part of the prototype's two-network arrangement. The target
+            // road's state tables describe its ordinary nodes, not nodes inside this bridge. Carry the
+            // prototype tables exactly, including an intentionally empty table: adding or retaining a
+            // state changes which end/node pieces the game selects and leaves the two decks open at
+            // each join.
+            if (options.DoubleDeck)
+            {
+                target.m_EdgeStates = variant.Donor.m_EdgeStates?.ToArray();
+                target.m_NodeStates = variant.Donor.m_NodeStates?.ToArray();
+                _report.Note(string.Format(
+                    CultureInfo.InvariantCulture,
+                    "{0}: double-deck main-network seam states copied from '{1}' - {2} edge rule(s), "
+                    + "{3} node rule(s).",
+                    target.name,
+                    variant.Name,
+                    target.m_EdgeStates?.Length ?? 0,
+                    target.m_NodeStates?.Length ?? 0));
+            }
         }
 
         bridge.m_BuildStyle = options.BuildStyle ?? source?.m_BuildStyle ?? bridge.m_BuildStyle;

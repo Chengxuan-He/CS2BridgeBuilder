@@ -503,24 +503,40 @@ public partial class BridgeGenerationSystem : GameSystemBase
         //
         // The pack does the same: its double deck bridges name a separate auxiliary prefab carrying
         // no structure of its own, rather than pointing at the shared road or track.
-        if (deck.Prefab is not NetPrefab source)
+        if (deck.Prefab is not NetGeometryPrefab source)
         {
             report.Warning($"'{exportName}': the auxiliary deck could not be built from '{deck.DisplayName}'.");
             return;
         }
 
         var auxiliaryName = BridgeNaming.CarriedDeckName(exportName, above);
-        var auxiliaryClone = source is RoadPrefab road
+        NetGeometryPrefab auxiliaryClone = source is RoadPrefab road
             ? cloner.CloneRoad(road, auxiliaryName, string.Empty)
-            : cloner.CloneNet(source, auxiliaryName);
+            : (NetGeometryPrefab)cloner.CloneNet(source, auxiliaryName);
 
-        var pillars = DoubleDeckComposer.PrepareDeck(auxiliaryClone, main);
+        if (arrangement.m_Prefab is not NetGeometryPrefab prototypeAuxiliaryDeck)
+        {
+            report.Defect(
+                $"'{exportName}' was exported without its second deck: prototype '{variant.Name}' "
+                + "does not reference a usable auxiliary network whose node seam behavior can be "
+                + "copied.");
+            return;
+        }
+
+        var pillars = DoubleDeckComposer.PrepareDeck(
+            auxiliaryClone, main, prototypeAuxiliaryDeck);
         if (pillars > 0)
         {
             report.Note(
                 $"{auxiliaryName}: {pillars} pillar(s) removed. The main network owns the bridge "
                 + "structure, so an independent second set would conflict with it.");
         }
+
+        report.Note(
+            $"{auxiliaryName}: auxiliary seam behavior copied from '{prototypeAuxiliaryDeck.name}' - "
+            + $"{auxiliaryClone.m_EdgeStates?.Length ?? 0} edge rule(s), "
+            + $"{auxiliaryClone.m_NodeStates?.Length ?? 0} node rule(s), aggregate "
+            + $"'{auxiliaryClone.m_AggregateType?.name ?? "none"}'.");
 
         // Two post conditions, checked rather than assumed. Each is a fault nothing else reports: a
         // lower deck on pillars of its own runs them to the ground beside the structure already
