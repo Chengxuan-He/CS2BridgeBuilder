@@ -1312,6 +1312,7 @@ internal sealed class TowerFactory
             }
 
             var meshes = new List<ObjectMeshInfo>();
+            var partExtras = new Dictionary<ObjectMeshInfo, float>();
             var layerWidths = new List<string>();
             foreach (var info in parts)
             {
@@ -1323,6 +1324,7 @@ internal sealed class TowerFactory
                         _styleId, sourceMesh.name,
                         _structureWidths.Value.Inner, partExtra);
                 }
+                partExtras[info] = partExtra;
                 var widened = Widen(sourceMesh, name, meshes.Count, partExtra);
                 if (widened == null) continue;
 
@@ -1384,6 +1386,14 @@ internal sealed class TowerFactory
             // archetype being there to copy from.
             role(tower);
 
+            // Lights and other props mounted on the authored object are part of the tower, not part of
+            // the selected road. Earlier generation rebuilt only the placeholder/pillar role and
+            // silently discarded ObjectSubObjects, so lit archetypes produced unlit towers. Carry the
+            // component whole, then translate each side-mounted child by the same delta as the mesh it
+            // names through m_ParentMesh. The light prefab still owns its EffectSource, colour, range
+            // and culling data; retaining that exact reference preserves the authored light effect.
+            CarryAuthoredSubObjects(source, tower, partExtras, extra, name);
+
             // The stacking goes on the parts, and it is what lets the tower reach the ground: without
             // it the game builds no StackData, gives the placed tower no Stack, and draws it at the
             // height it was modelled at - hanging above the ground by however far it was raised.
@@ -1418,6 +1428,75 @@ internal sealed class TowerFactory
 
             return tower;
         }
+    }
+
+    /// <summary>
+    /// Carries tower-mounted props, including every authored light, without classifying them by name.
+    /// A child object is a rigid part: a non-zero x position follows its parent mesh's half-width
+    /// displacement, while a child on x = 0 remains on the centre line. All non-positional fields and
+    /// all referenced effect prefabs remain those of the archetype.
+    /// </summary>
+    private void CarryAuthoredSubObjects(
+        ObjectGeometryPrefab source,
+        ObjectGeometryPrefab target,
+        IReadOnlyDictionary<ObjectMeshInfo, float> partExtras,
+        float objectExtra,
+        string name)
+    {
+        if (!source.TryGet<ObjectSubObjects>(out var authored) || authored == null) return;
+
+        target.AddComponentFrom(authored);
+        if (!target.TryGet<ObjectSubObjects>(out var carried) || carried == null)
+        {
+            _report.Defect(string.Format(
+                CultureInfo.InvariantCulture,
+                "'{0}' did not retain the archetype's ObjectSubObjects component, so its mounted "
+                + "lights and props were not published.",
+                name));
+            return;
+        }
+
+        var entries = carried.m_SubObjects ?? Array.Empty<ObjectSubObjectInfo>();
+        var sourceParts = source.m_Meshes ?? Array.Empty<ObjectMeshInfo>();
+        var shifted = 0;
+
+        foreach (var entry in entries)
+        {
+            if (entry == null) continue;
+
+            var childExtra = objectExtra;
+            var parent = entry.m_ParentMesh;
+            if (parent >= 0
+                && parent < sourceParts.Length
+                && sourceParts[parent] != null
+                && partExtras.TryGetValue(sourceParts[parent], out var recordedExtra))
+            {
+                childExtra = recordedExtra;
+            }
+
+            var position = entry.m_Position;
+            var shift = childExtra * 0.5f;
+            var movedX = position.x == 0f
+                ? position.x
+                : position.x + (position.x > 0f ? shift : -shift);
+            if (BitConverter.SingleToInt32Bits(movedX)
+                != BitConverter.SingleToInt32Bits(position.x))
+            {
+                shifted++;
+            }
+
+            position.x = movedX;
+            entry.m_Position = position;
+        }
+
+        _report.Note(string.Format(
+            CultureInfo.InvariantCulture,
+            "{0}: carried {1} authored tower-mounted object(s), including their exact light/effect "
+            + "prefab references, rotations, parent meshes, groups and probabilities; {2} side "
+            + "object(s) followed their parent mesh's width displacement.",
+            name,
+            entries.Length,
+            shifted));
     }
 
     /// <summary>

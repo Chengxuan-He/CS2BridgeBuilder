@@ -868,3 +868,36 @@ The audit record for the pass which introduced this rule is
 real generated sample remains mandatory unfinished work. A human must select a road and actually
 create a new bridge before the bridge can receive the `1 m` decision. It must not be marked skipped,
 compliant or complete merely because the implementation's algebra appears to preserve the constant.
+
+## 15. Bridge lighting is copied from the archetype as behavior
+
+A bridge's lighting is part of the archetype, not an optional decoration to reconstruct from a shared
+template. A generated bridge preserves every bridge-specific light the archetype carries and every
+field which controls its visible effect. This includes light objects placed directly in the bridge's
+`NetSubObjects`, lights and other mounted objects inside a tower or pylon's `ObjectSubObjects`, the
+referenced prefab's `EffectSource`, `LightEffect`, colour, intensity, range and culling behavior, and
+each placement's position, rotation, parent mesh, group, probability and activation conditions.
+
+Do not identify lights from prefab names. Names such as `WallLight`, `Spotlight` and `WarningLight`
+are useful in a diagnostic report but are not a complete type system. Carry the authored component and
+its prefab references whole. A referenced light/effect prefab which is not itself derived remains the
+exact shared archetype reference. If a carried component points to a prefab which is being derived,
+repoint only that reference to the corresponding generated prefab, as required by rule 2.
+
+Tower-mounted objects must remain attached when the tower width changes. `m_ParentMesh` identifies the
+authored mesh part whose displacement applies. A child object standing at non-zero x is a rigid side
+part and its x position moves by the same signed half-width delta as that parent mesh; a child at
+`x = 0` remains on the centre line. Its y and z coordinates, rotation, parent-mesh index, group,
+probability and activation data do not change. This uses only comparison with `x = 0` and does not
+permit a non-zero runtime coordinate heuristic or any geometric guessing.
+
+The user-selected road remains the deliberate road-structure difference allowed by rule 3. Its
+ordinary street lights stay those of that road. They are not replaced with the archetype road's street
+lights. Bridge-specific lights mounted on the archetype's towers, pylons or bridge-only sub-object
+entries are carried in addition to that road behavior, with the archetype's duplication and placement
+rules preserved exactly.
+
+Lighting validation follows rules 6 and 7. Compare the real archetype and generated prefab dumps,
+including nested tower replacements, and verify that their bridge-specific light/effect references and
+non-width fields match. Compilation is not evidence of a lighting match. Final validation is a human
+in-game comparison at night in near and far views; the Agent must not open or control the game.

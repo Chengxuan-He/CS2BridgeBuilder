@@ -93,6 +93,11 @@ The numbered references below point to the corresponding sections in the complet
     Width and geometry corrections are completed during metaprogramming and folded into the original,
     immutable archetype parameters or generated source data. Runtime consumes only those final values;
     it must not know an audit delta exists. See contract section 14.
+16. Bridge-specific lighting is archetype behavior. Preserve every authored bridge light, its effect
+    prefab and fields, placement, parent mesh, rotation, group, probability and activation conditions.
+    Side-mounted tower lights follow the same rigid width displacement as their parent mesh; lights on
+    `x = 0` remain centred. Ordinary lighting belonging to the user-selected road remains part of that
+    road structure. See contract section 15.
 
 ## Geometry invariants that must remain visible at repository scope
 
