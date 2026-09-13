@@ -1489,7 +1489,7 @@ internal sealed class TowerFactory
                 string.Format(CultureInfo.InvariantCulture, "{0} {1}", name, concrete.name),
                 sourceRoadWidth,
                 deckWidth,
-                tower => BridgeTowerTemplate.ApplyToReplacement(tower, stand));
+                tower => ApplyToReplacement(tower, concrete, stand));
             if (replacement == null) continue;
 
             built.Add(string.Format(
@@ -1514,6 +1514,45 @@ internal sealed class TowerFactory
             name, built.Count, string.Join(", ", built)));
 
         return stand;
+    }
+
+    /// <summary>
+    /// Applies the non-geometric role of a concrete replacement.
+    ///
+    /// Grand Bridge is deliberately not described by the suspension-family replacement template.
+    /// Its two pillar replacements have different roles: <c>GrandBridgeBase01</c> is
+    /// <see cref="PillarType.Base"/> and carries <see cref="BuildingTerraformOverride"/>, while
+    /// <c>GrandBridgePillar01</c> is <see cref="PillarType.Vertical"/>. Replacing both roles with
+    /// <see cref="PillarType.Standalone"/> made the game choose the tall column where the archetype
+    /// chooses the short tower-and-footing object, which removed the oval ground footing visible on
+    /// the prototype. The pylon's authored sub-objects were lost by the same substitution.
+    ///
+    /// The source object is already in hand because its mesh is the geometry being derived. Carry its
+    /// complete component set and change only the placeholder reference so the replacement belongs to
+    /// this generated bridge. Other families retain their recorded template until their own component
+    /// sets are measured and committed on their bridge branches.
+    /// </summary>
+    private void ApplyToReplacement(
+        ObjectGeometryPrefab tower,
+        ObjectGeometryPrefab source,
+        ObjectPrefab standsFor)
+    {
+        if (!string.Equals(_styleId, "Grand", StringComparison.Ordinal))
+        {
+            BridgeTowerTemplate.ApplyToReplacement(tower, standsFor);
+            return;
+        }
+
+        tower.m_Circular = source.m_Circular;
+        foreach (var component in source.components)
+        {
+            if (component != null) tower.AddComponentFrom(component);
+        }
+
+        if (tower.TryGet<SpawnableObject>(out var spawnable) && spawnable != null)
+        {
+            spawnable.m_Placeholders = new[] { standsFor };
+        }
     }
 
     /// <summary>
