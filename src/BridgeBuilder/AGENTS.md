@@ -43,6 +43,12 @@ the repository root [`AGENTS.md`](../../AGENTS.md). Before editing this director
   source metadata. Runtime may consume those final parameters as ordinary generation inputs, but it
   must not contain an audit-correction table, add a post-measurement delta, double a per-side result,
   or otherwise know that a correction step existed.
+- Preserve bridge-specific lighting from the same archetype. Carry tower/pylon `ObjectSubObjects` and
+  their referenced light/effect prefabs without filtering by names or rebuilding effect fields. Keep
+  rotations, parent-mesh indices, groups, probabilities and activation data unchanged. A mounted
+  object's non-zero x position follows its parent mesh's rigid half-width displacement; an object on
+  `x = 0` remains centred. Do not replace the selected road's ordinary street lighting with the
+  archetype road's street lighting.
 
 ## Completion
 
