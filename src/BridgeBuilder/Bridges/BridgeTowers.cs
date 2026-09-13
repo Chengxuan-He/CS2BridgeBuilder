@@ -430,6 +430,14 @@ internal static class BridgeTowers
     internal static bool WidthFollowsSidewalks(string? styleId) => styleId == "TrussArch02";
 
     /// <summary>
+    /// Whether a style needs the exact boundaries of the outermost Sidewalk on each side. Grand uses
+    /// those boundaries for its inner cable/hanger plane while retaining the full road width for its
+    /// outer plane and tower selection. This is deliberately separate from
+    /// <see cref="WidthFollowsSidewalks"/>.
+    /// </summary>
+    internal static bool HasSidewalkAlignedInnerLayer(string? styleId) => styleId == "Grand";
+
+    /// <summary>
     /// The inner target width used for selection by the white truss arch. Its inner arch stands at the
     /// outermost boundary of each outside footway, not at the boundary between that footway and an
     /// adjacent empty lane. Empty lanes are road sections, not footways. Its outer target is kept
@@ -452,15 +460,23 @@ internal static class BridgeTowers
     internal static StructureEdges StructureEdgesFor(
         string? styleId, float roadWidth, RoadEdge left, RoadEdge right)
     {
-        if (!WidthFollowsSidewalks(styleId))
+        if (!WidthFollowsSidewalks(styleId) && !HasSidewalkAlignedInnerLayer(styleId))
         {
             var half = Math.Max(0f, roadWidth * 0.5f);
             return new StructureEdges(half, half);
         }
 
-        // The inner white frame stands at the outside edge of the outermost real sidewalk. A side
-        // without a sidewalk falls back independently to the road edge; empty lanes never qualify.
-        // Keeping the two distances separate is required for asymmetrical roads.
+        // The white bridge's inner frame stands at the outside edge of the actual sidewalk. Grand's
+        // inner suspension plane stands at the sidewalk edge nearest x=0. A side without a Sidewalk
+        // falls back independently to the road edge. Empty lanes, medians, shoulders and every other
+        // non-driving section never qualify. Keeping both distances is required for asymmetrical roads.
+        if (HasSidewalkAlignedInnerLayer(styleId))
+        {
+            return new StructureEdges(
+                left.IsSidewalk ? left.InnerBoundary : left.OuterBoundary,
+                right.IsSidewalk ? right.InnerBoundary : right.OuterBoundary);
+        }
+
         return new StructureEdges(
             left.IsSidewalk ? left.SidewalkOuterBoundary : left.OuterBoundary,
             right.IsSidewalk ? right.SidewalkOuterBoundary : right.OuterBoundary);

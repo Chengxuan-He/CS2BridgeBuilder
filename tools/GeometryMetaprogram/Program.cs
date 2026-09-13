@@ -1,6 +1,27 @@
 using System.Buffers.Binary;
 using Colossal.AssetPipeline.Native;
 
+if (args.Length == 6 && string.Equals(args[0], "--grand", StringComparison.Ordinal))
+{
+    var endCable = GeometryFile.Read(File.ReadAllBytes(args[1])).Meshes.Single();
+    var middleCable = GeometryFile.Read(File.ReadAllBytes(args[2])).Meshes.Single();
+    var endSupport = GeometryFile.Read(File.ReadAllBytes(args[3])).Meshes.Single();
+    var middleSupport = GeometryFile.Read(File.ReadAllBytes(args[4])).Meshes.Single();
+    GrandCableMaps.WriteSource(
+        args[5],
+        new[]
+        {
+            ("Grand Bridge End Cables", GrandCableMaps.InnerLayer(endCable, "end cables")),
+            ("Grand Bridge Middle Cables", GrandCableMaps.InnerLayer(middleCable, "middle cables")),
+        },
+        new[]
+        {
+            ("Grand Bridge End Support", GrandCableMaps.SupportCorrection(endSupport, "end support")),
+            ("Grand Bridge Middle Support", GrandCableMaps.SupportCorrection(middleSupport, "middle support")),
+        });
+    return 0;
+}
+
 if (args.Length == 11 && string.Equals(args[0], "--white-truss", StringComparison.Ordinal))
 {
     var sectionFull = RawMeshFile.Read(args[1]);
@@ -115,6 +136,8 @@ if (args.Length is not (1 or 3 or 4))
         "Usage: GeometryMetaprogram <geometry> [<lod1 geometry> <lod2 geometry> [output.cs]]\n"
         + "       GeometryMetaprogram --compare <source geometry> <derived geometry> <extra>\n"
         + "       GeometryMetaprogram --section <full> <lod1> <lod2> <output.cs>\n"
+        + "       GeometryMetaprogram --grand <end-cable> <middle-cable> "
+        + "<end-support> <middle-support> <output.cs>\n"
         + "       GeometryMetaprogram --raw <captured mesh>\n"
         + "       GeometryMetaprogram --white-truss <section full/lod1/lod2> "
         + "<pillar full/lod1/lod2> <pier footing full/lod1/lod2> <output.cs>");
@@ -1580,6 +1603,130 @@ internal static class Pieces
             labels[index] = label;
         }
         return labels;
+    }
+}
+
+internal static class GrandCableMaps
+{
+    private const float LayerBoundary = 18.5f;
+    private const float GeneratedSupportInner = 14.5f;
+    private const float GeneratedSupportOuter = 19.5f;
+
+    internal static bool[] InnerLayer(MeshData mesh, string name)
+    {
+        var pieces = Pieces.Of(mesh.Positions, mesh.Indices);
+        var labels = Pieces.LabelsOf(mesh.Positions, mesh.Indices);
+        var innerPieces = new bool[pieces.Count];
+        for (var index = 0; index < pieces.Count; index++)
+        {
+            var piece = pieces[index];
+            var centre = (piece.Left + piece.Right) * 0.5f;
+            if (piece.Left <= 0f && piece.Right >= 0f)
+                throw new InvalidDataException($"Grand {name} piece {piece.Id} crosses x=0.");
+            innerPieces[index] = MathF.Abs(centre) < LayerBoundary;
+        }
+
+        var result = new bool[mesh.Positions.Length];
+        for (var index = 0; index < result.Length; index++)
+            result[index] = innerPieces[labels[index]];
+
+        Console.WriteLine(
+            $"Grand {name}: {result.Count(value => value)} inner-layer vertices and "
+            + $"{result.Count(value => !value)} outer-layer vertices from {pieces.Count} welded pieces.");
+        return result;
+    }
+
+    internal static float[] SupportCorrection(MeshData mesh, string name)
+    {
+        var pieces = Pieces.Of(mesh.Positions, mesh.Indices);
+        var labels = Pieces.LabelsOf(mesh.Positions, mesh.Indices);
+        var kinds = new int[pieces.Count];
+        for (var index = 0; index < pieces.Count; index++)
+        {
+            var piece = pieces[index];
+            var centre = MathF.Abs((piece.Left + piece.Right) * 0.5f);
+            var width = piece.Right - piece.Left;
+            if (centre >= 14f && centre < 15f && width < 1f) kinds[index] = 1;
+            else if (width > 4f && piece.Left * piece.Right > 0f
+                && MathF.Min(MathF.Abs(piece.Left), MathF.Abs(piece.Right)) < 15f
+                && MathF.Max(MathF.Abs(piece.Left), MathF.Abs(piece.Right)) > 19f)
+                kinds[index] = 2;
+        }
+
+        var result = new float[mesh.Positions.Length];
+        for (var index = 0; index < result.Length; index++)
+        {
+            var kind = kinds[labels[index]];
+            result[index] = kind switch
+            {
+                1 => 1f,
+                2 => Math.Clamp(
+                    (GeneratedSupportOuter - MathF.Abs(mesh.Positions[index].X))
+                    / (GeneratedSupportOuter - GeneratedSupportInner),
+                    0f,
+                    1f),
+                _ => 0f,
+            };
+        }
+
+        Console.WriteLine(
+            $"Grand {name}: {result.Count(value => value == 1f)} inner-edge vertices, "
+            + $"{result.Count(value => value > 0f && value < 1f)} connecting vertices, and "
+            + $"{result.Count(value => value == 0f)} unchanged vertices from {pieces.Count} welded pieces.");
+        return result;
+    }
+
+    internal static void WriteSource(
+        string path,
+        IReadOnlyList<(string MeshName, bool[] Inner)> cableMaps,
+        IReadOnlyList<(string MeshName, float[] Correction)> supportMaps)
+    {
+        var source = new System.Text.StringBuilder();
+        source.AppendLine("// <auto-generated />");
+        source.AppendLine("// Generated from the full-detail Grand Bridge cable and support geometry.");
+        source.AppendLine("using System;");
+        source.AppendLine("using System.Collections.Generic;");
+        source.AppendLine();
+        source.AppendLine("namespace BridgeBuilder.Bridges;");
+        source.AppendLine();
+        source.AppendLine("internal static class GrandBridgeGeometryData");
+        source.AppendLine("{");
+        source.AppendLine("    internal static readonly IReadOnlyDictionary<string, GrandBridgeGeometry.LayerMap> CableMaps =");
+        source.AppendLine("        new Dictionary<string, GrandBridgeGeometry.LayerMap>(StringComparer.Ordinal)");
+        source.AppendLine("        {");
+        foreach (var map in cableMaps)
+        {
+            var encoded = Encode(map.Inner);
+            source.AppendLine($"            [\"{map.MeshName}\"] = new GrandBridgeGeometry.LayerMap(");
+            source.AppendLine($"                {map.Inner.Length},");
+            source.AppendLine($"                \"{encoded}\"),");
+        }
+        source.AppendLine("        };");
+        source.AppendLine();
+        source.AppendLine("    internal static readonly IReadOnlyDictionary<string, GrandBridgeGeometry.CorrectionMap> SupportMaps =");
+        source.AppendLine("        new Dictionary<string, GrandBridgeGeometry.CorrectionMap>(StringComparer.Ordinal)");
+        source.AppendLine("        {");
+        foreach (var map in supportMaps)
+        {
+            var encoded = PortalCoefficients.EncodeForSource(map.Correction);
+            source.AppendLine($"            [\"{map.MeshName}\"] = new GrandBridgeGeometry.CorrectionMap(");
+            source.AppendLine($"                {map.Correction.Length},");
+            source.AppendLine($"                \"{encoded.Membership}\",");
+            source.AppendLine($"                \"{encoded.Coefficients}\"),");
+        }
+        source.AppendLine("        };");
+        source.AppendLine("}");
+        File.WriteAllText(path, source.ToString(), new System.Text.UTF8Encoding(false));
+    }
+
+    private static string Encode(IReadOnlyList<bool> values)
+    {
+        var bytes = new byte[(values.Count + 7) / 8];
+        for (var index = 0; index < values.Count; index++)
+        {
+            if (values[index]) bytes[index >> 3] |= (byte)(1 << (index & 7));
+        }
+        return Convert.ToBase64String(bytes);
     }
 }
 

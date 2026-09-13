@@ -67,10 +67,14 @@ internal sealed class BridgeComposer
             ? WidthOf(measuredRoad, roadWidth, breakdown)
             : roadWidth;
         var whiteTruss = BridgeTowers.WidthFollowsSidewalks(style.Id);
-        var roadEdges = RoadEdgesOf(measuredRoad, targetWidth, whiteTruss);
+        var sidewalkAlignedInnerLayer = BridgeTowers.HasSidewalkAlignedInnerLayer(style.Id);
+        var roadEdges = RoadEdgesOf(
+            measuredRoad, targetWidth, whiteTruss || sidewalkAlignedInnerLayer);
         var structureEdges = BridgeTowers.StructureEdgesFor(
             style.Id, targetWidth, roadEdges.Left, roadEdges.Right);
-        var structureWidth = structureEdges.Width;
+        // Grand selects and widens its outer structure from the complete road width. Its separately
+        // recorded inner layer consumes structureEdges only when the immutable cable map is applied.
+        var structureWidth = sidewalkAlignedInnerLayer ? targetWidth : structureEdges.Width;
         var outwardExtension = whiteTruss
             ? NetWidth.OutwardExtensionOf(measuredRoad)
             : 0f;
@@ -164,6 +168,22 @@ internal sealed class BridgeComposer
                 structureEdges.Left, structureEdges.Right, structureWidth,
                 TrussArch02Geometry.PrototypeSectionOuterWidth,
                 BridgeTowers.WhiteTrussArchWidths.PrototypeVisibleDeckWidth));
+        }
+        else if (sidewalkAlignedInnerLayer)
+        {
+            _report.Note(string.Format(
+                CultureInfo.InvariantCulture,
+                "{0}: Grand Bridge has two recorded width targets: outer {1:0.###} m follows the "
+                + "complete road edge; inner {2:0.###} m reaches {3:0.###} m left and {4:0.###} m "
+                + "right from x=0 and follows only the near-centre boundary of the outermost exact "
+                + "Sidewalk section. The measured sidewalk widths are {5:0.###} m left and "
+                + "{6:0.###} m right. Empty lanes, medians, shoulders and other non-driving sections "
+                + "are not sidewalks; a side without a Sidewalk falls back to its road edge. The "
+                + "full-detail inner/outer vertex assignment is immutable and reused by the complete "
+                + "cable assembly.",
+                target.name, targetWidth, structureEdges.Width,
+                structureEdges.Left, structureEdges.Right,
+                roadEdges.Left.SidewalkWidth, roadEdges.Right.SidewalkWidth));
         }
 
         // No complaint about how far the tower is being widened.
@@ -842,7 +862,8 @@ internal sealed class BridgeComposer
     /// Sections are laid out across the road in order. Ordinary styles keep their established rule
     /// of inspecting the first and last section after outward extensions are removed. The white truss
     /// scans inward only as far as x=0 for the first actual sidewalk on each side, so an empty lane is
-    /// not mistaken for one and a one-sided sidewalk is not mirrored onto the other side.
+    /// not mistaken for one and a one-sided sidewalk is not mirrored onto the other side. Grand uses
+    /// the same exact Sidewalk-only scan for its independently positioned inner suspension plane.
     ///
     /// Which of the two is the left was got wrong twice. The list order is a convention about how the
     /// road was written down, the mesh has its own axis, and nothing in either says which way round

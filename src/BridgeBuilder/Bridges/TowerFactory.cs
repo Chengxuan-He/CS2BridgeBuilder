@@ -52,7 +52,8 @@ internal sealed class TowerFactory
     /// <summary>
     /// The target bridge's two semantic width envelopes. They are equal for ordinary styles; the
     /// white TrussArchBridge02 records its fitted visible-road envelope outside and the outermost
-    /// footway boundaries inside.
+    /// footway boundaries inside. Grand records the road edge outside and the near-centre boundary of
+    /// the exact outermost Sidewalk inside.
     /// </summary>
     private readonly struct StructureWidths
     {
@@ -1983,7 +1984,11 @@ internal sealed class TowerFactory
             var recordedTruss02 = TrussArch02Geometry.IsRecorded(_styleId, original.name);
             var recordedTruss03 = railings
                 && TrussArch03Geometry.IsRecorded(_styleId, original.name);
-            var recordedGeometry = recordedTruss02 || recordedTruss03;
+            var recordedGrandCable = railings
+                && GrandBridgeGeometry.IsRecordedCable(_styleId, original.name);
+            var recordedGrandSupport = railings
+                && GrandBridgeGeometry.IsRecordedSupport(_styleId, original.name);
+            var recordedGeometry = recordedTruss02 || recordedTruss03 || recordedGrandCable;
 
             // One profile for everything widened here. A section hands one in, because its pieces
             // are one structure; a tower part measures its own, from its full detail mesh and the
@@ -2073,8 +2078,11 @@ internal sealed class TowerFactory
                 var blueSection = IsBluePrototypeSection(original);
                 TowerWidening.TrussWideningFacts trussFacts = default;
                 TrussArch02Geometry.TransformFacts whiteFacts = default;
+                GrandBridgeGeometry.TransformFacts grandFacts = default;
                 var usedRecordedTruss02 = false;
                 var usedRecordedTruss03 = false;
+                var usedRecordedGrand = false;
+                var usedRecordedGrandSupport = false;
                 var rigidVertices = 0;
                 var stretchingVertices = 0;
                 float3[] moved;
@@ -2151,6 +2159,28 @@ internal sealed class TowerFactory
 
                     usedRecordedTruss03 = true;
                 }
+                else if (recordedGrandCable && _roadEdges.HasValue && _structureWidths.HasValue)
+                {
+                    if (!GrandBridgeGeometry.TryAlignCableLayers(
+                            original.name,
+                            source,
+                            _roadEdges.Value.Left.OuterBoundary,
+                            _roadEdges.Value.Right.OuterBoundary,
+                            _structureWidths.Value.InnerLeft,
+                            _structureWidths.Value.InnerRight,
+                            out moved,
+                            out grandFacts))
+                    {
+                        _report.Defect(string.Format(
+                            CultureInfo.InvariantCulture,
+                            "'{0}' did not match its immutable Grand Bridge inner/outer vertex map. "
+                            + "The derived prefab was stopped before geometry was written.",
+                            name));
+                        return null;
+                    }
+
+                    usedRecordedGrand = true;
+                }
                 else
                 {
                     moved = rigidBlueBase
@@ -2176,6 +2206,31 @@ internal sealed class TowerFactory
                             scope!,
                             out trussFacts)
                         : TowerWidening.WidenParts(source, extra, scope!);
+
+                    if (recordedGrandSupport && _roadEdges.HasValue && _structureWidths.HasValue)
+                    {
+                        if (!GrandBridgeGeometry.TryAlignSupportInnerEdge(
+                                original.name,
+                                source,
+                                moved,
+                                _roadEdges.Value.Left.OuterBoundary,
+                                _roadEdges.Value.Right.OuterBoundary,
+                                _structureWidths.Value.InnerLeft,
+                                _structureWidths.Value.InnerRight,
+                                out moved,
+                                out grandFacts))
+                        {
+                            _report.Defect(string.Format(
+                                CultureInfo.InvariantCulture,
+                                "'{0}' did not match its immutable Grand Bridge support-layer map. "
+                                + "The derived prefab was stopped before geometry was written.",
+                                name));
+                            return null;
+                        }
+
+                        usedRecordedGrand = true;
+                        usedRecordedGrandSupport = true;
+                    }
                 }
 
                 if (openTruss && !usedRecordedTruss02 && !usedRecordedTruss03 && !blueSection
@@ -2309,6 +2364,37 @@ internal sealed class TowerFactory
                             trussFacts.FlippedTriangles, trussFacts.Finite));
                     }
                 }
+                else if (usedRecordedGrand)
+                {
+                    _report.Note(usedRecordedGrandSupport
+                        ? string.Format(
+                            CultureInfo.InvariantCulture,
+                            "{0}: immutable Grand Bridge support map applied: {1} inner-edge and "
+                            + "connecting vertices receive the recorded left/right corrections "
+                            + "{2:0.###}/{3:0.###} m; {4} other vertices keep the ordinary outer "
+                            + "structure transform. The correction tapers to zero at the recorded "
+                            + "outer joint, so the support remains connected. No runtime geometry "
+                            + "classification was performed.",
+                            name,
+                            grandFacts.InnerVertices,
+                            grandFacts.InnerLeftDelta,
+                            grandFacts.InnerRightDelta,
+                            grandFacts.OuterVertices)
+                        : string.Format(
+                            CultureInfo.InvariantCulture,
+                            "{0}: immutable Grand Bridge cable map applied: {1} inner cable/hanger "
+                            + "vertices move {2:0.###} m left and {3:0.###} m right; {4} outer-edge "
+                            + "vertices move {5:0.###} m left and {6:0.###} m right. Inner targets "
+                            + "come only from exact Sidewalk sections; no runtime geometry "
+                            + "classification was performed.",
+                            name,
+                            grandFacts.InnerVertices,
+                            grandFacts.InnerLeftDelta,
+                            grandFacts.InnerRightDelta,
+                            grandFacts.OuterVertices,
+                            grandFacts.OuterLeftDelta,
+                            grandFacts.OuterRightDelta));
+                }
                 // Planned from the first mesh, which shows the most, and carried out on every one of
                 // them. A level of detail asked for itself finds one railing where there are two and
                 // keeps what the full detail mesh took away: a railing that is there from a distance
@@ -2346,7 +2432,7 @@ internal sealed class TowerFactory
                     // envelope and was reported as if a side-only member had been scaled. The green
                     // path has already been checked above by its dedicated centre-line mapping,
                     // topology, degeneracy, winding and finite-coordinate validation.
-                    if (!preserveOpenTrussSides && !usedRecordedTruss02)
+                    if (!preserveOpenTrussSides && !usedRecordedTruss02 && !usedRecordedGrand)
                         CheckThickness(name, source, moved, part.triangles);
                     if (scope != null) DescribeProfile(name, source, scope);
                 }
