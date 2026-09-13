@@ -682,20 +682,21 @@ internal sealed class BridgeComposer
             bridge.m_WaterFlow = source.m_WaterFlow;
             bridge.m_FixedSegments = CopyFixedSegments(source);
 
-            // Double-deck node seams are part of the prototype's two-network arrangement. The target
-            // road's state tables describe its ordinary nodes, not nodes inside this bridge. Carry the
-            // prototype tables exactly, including an intentionally empty table: adding or retaining a
-            // state changes which end/node pieces the game selects and leaves the two decks open at
-            // each join.
+            // Double-deck node seams are part of the prototype's two-network arrangement, but a
+            // prototype road state must never be installed on a track selected as the main/lower
+            // network: its Elevated node rule renders as a railway switch. Preserve the selected
+            // network's own state tables when the transport roles differ. This fixes the seam without
+            // changing bridge-variant selection or any measured width.
             if (options.DoubleDeck)
             {
-                target.m_EdgeStates = variant.Donor.m_EdgeStates?.ToArray();
-                target.m_NodeStates = variant.Donor.m_NodeStates?.ToArray();
+                var copied = DoubleDeckComposer.CopyCompatibleSeamBehavior(
+                    target, variant.Donor, copyAggregate: false);
                 _report.Note(string.Format(
                     CultureInfo.InvariantCulture,
-                    "{0}: double-deck main-network seam states copied from '{1}' - {2} edge rule(s), "
-                    + "{3} node rule(s).",
+                    "{0}: double-deck main-network seam states {1} for '{2}' - {3} edge rule(s), "
+                    + "{4} node rule(s).",
                     target.name,
+                    copied ? "copied from the transport-compatible prototype" : "preserved from the selected deck",
                     variant.Name,
                     target.m_EdgeStates?.Length ?? 0,
                     target.m_NodeStates?.Length ?? 0));

@@ -532,8 +532,13 @@ public partial class BridgeGenerationSystem : GameSystemBase
                 + "structure, so an independent second set would conflict with it.");
         }
 
+        var seamSource = DoubleDeckComposer.CopyCompatibleSeamBehavior(
+            auxiliaryClone, prototypeAuxiliaryDeck, copyAggregate: true)
+            ? $"copied from transport-compatible prototype '{prototypeAuxiliaryDeck.name}'"
+            : $"preserved from selected {deck.Kind} deck because prototype "
+                + $"'{prototypeAuxiliaryDeck.name}' carries another transport type";
         report.Note(
-            $"{auxiliaryName}: auxiliary seam behavior copied from '{prototypeAuxiliaryDeck.name}' - "
+            $"{auxiliaryName}: auxiliary seam behavior {seamSource} - "
             + $"{auxiliaryClone.m_EdgeStates?.Length ?? 0} edge rule(s), "
             + $"{auxiliaryClone.m_NodeStates?.Length ?? 0} node rule(s), aggregate "
             + $"'{auxiliaryClone.m_AggregateType?.name ?? "none"}'.");
