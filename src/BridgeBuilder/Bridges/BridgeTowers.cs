@@ -96,20 +96,11 @@ internal static class BridgeTowers
                 // correction to it would be the inference that has now been wrong twice.
                 new Tower("PedestrianBridgeCableStayedPillar Placeholder", 6, 3, verified: true),
 
-                // Road 33, an in-game observation, and it supersedes the inference that produced 32.
-                //
-                // The 32 was derived rather than measured: this bridge is "XL Road Divided" and every
-                // divided road came back implausibly wide - 75 m for eight lanes, 61 m for six - so its
-                // own road width says nothing. Its tower and cable section do: 42 m and 35 m. Against
-                // 32 those give ten metres of tower overhang and three of cable margin, which is
-                // exactly what the blue suspension family has at every size, and no other width made
-                // both come out right. It was a good inference and it was a metre out.
-                //
-                // At 33 the overhang is 9 and the margin 2, so this family is not the blue one after
-                // all - which is the same thing the golden family turned out to be, and there the
-                // inference from ten metres of overhang cost more than a metre. A constant measured on
-                // one family is that family's; rule 9. MEASURED ROAD 75 m, unusable.
-                new Tower("8LaneCableStayedBridgePillar Placeholder", 42, 33, verified: true),
+                // The full-span audit reads the matching archetype road at 32 m and its bridge at
+                // 47 m. The generated sample is a 40 m road under a 54 m bridge, so the exact audited
+                // target is 55 m. Recording the correct prototype road here makes the ordinary
+                // target-minus-prototype calculation produce that width without a runtime patch.
+                new Tower("8LaneCableStayedBridgePillar Placeholder", 42, 32, verified: true),
             },
             // One key per pylon, split out of a single "Extradosed" entry. The pylon is what a
             // cable-stayed design is: a road fitted to a V pylon cannot wear an A pylon's cables, and
@@ -422,65 +413,15 @@ internal static class BridgeTowers
     }
 
     /// <summary>
-    /// Metres added to a style's structure - its tower and its cables alike - beyond what the road
-    /// gives.
-    ///
-    /// The golden family needs three metres more than the road accounts for. Kept apart from the road
-    /// because moving the road would move the deck props and the spread report with it; this moves
-    /// only what the bridge is built of.
-    ///
-    /// It went to the tower alone at first, on a reading of the measurement that took the cables to be
-    /// right where they were. They were not, and they could not have been: the distance from the
-    /// cables to the tower's outer edge is the archetype's and holds at every road width, so three
-    /// metres of tower and none of cable moves that distance a metre and a half per side by
-    /// construction. Whatever is added is added to both, or the two come apart - rule 5.
-    /// </summary>
-    private static readonly Dictionary<string, float> TowerBonus =
-        new(StringComparer.Ordinal)
-        {
-            // TrussArchBridge01's overhead frame stands 10 m wider than the carriageway relationship
-            // alone produces. This belongs to the blue prototype structure, not to the target road:
-            // adding it here widens the two sides by another 5 m each while leaving the road, the
-            // green TrussArchBridge03 prototype and every other bridge family unchanged.
-            ["TrussArch01"] = 10f,
-
-            // TrussArchBridge03 needs another 13 m of structural width beyond the target-minus-
-            // prototype-road calculation. The green side frame includes its inner railing, so its
-            // dedicated open-truss policy carries each side by half the final width delta without
-            // altering that clearance.
-            ["TrussArch03"] = 13f,
-
-            // The double-deck V prototype's structure needs 20 m more than its upper carriageway
-            // alone accounts for. On a 16 m target the raw 16 - 40 = -24 m contraction carried the
-            // prototype's 20.09 m node opening through the centre, reversing its two sides. Applying
-            // this prototype allowance makes the effective contraction -4 m and keeps a 16.09 m
-            // opening. This is the earlier measured 16 m allowance plus the final 4 m correction.
-            ["Extradosed01"] = 20f,
-
-            // 3, then -4, -1, +1, -2, +1, -0.5, each read in the game on the same tower: -2.5.
-            ["SuspensionGolden"] = -2.5f,
-
-            // Seen in the game on the V pylon, after its legs were being carried rather than scaled
-            // and its top decoration was reaching the legs again.
-            //
-            // Kept, but it was read against a road width that has since moved twenty metres: the table
-            // said the pylon had been drawn for an 18 m road when the bridges carrying it are 38 m, so
-            // the bridge it was measured on was twenty metres wider than it should have been. Two
-            // metres more than that is not two metres more than this. Worth re-reading.
-            // 2, then +12, +6, -2, each read in the game after the reading before it was acted on: 18.
-            ["Extradosed03"] = 18f,
-        };
-
-
-    /// <summary>
     /// Whether a style's archetype carries railings of its own along the deck.
     ///
     /// Recorded, because nothing in an archetype declares it. The golden family's are golden and live
-    /// in its support mesh; the V pylon's are its own too. A road always brings a railing when it is
-    /// elevated, so on these two the deck ends up with both, side by side and a hand's breadth apart.
+    /// in its support mesh. This flag controls transformation of that authored railing geometry only;
+    /// it is deliberately separate from <see cref="BridgeStyleDefinitions.RoadRailingsOf"/>, which
+    /// records whether the ordinary white road railing exists on an archetype's continuous span.
     ///
-    /// A style not named here keeps the road's, which is right: most bridge archetypes have none of
-    /// their own and the road's railing is the only one there is.
+    /// A style may suppress the road's railing without entering this list: a node-only road side or a
+    /// track archetype has no ordinary span railing, but that does not make its mesh a golden kerb rail.
     /// </summary>
     internal static bool BringsItsOwnRailings(string? styleId) =>
         styleId is "SuspensionGolden";
@@ -548,7 +489,7 @@ internal static class BridgeTowers
         internal const float OverheadOuter = 20.8f;
         internal const float PrototypeVisibleDeckWidth = 21f;
         internal const float PrototypeBridgeMinusDeck =
-            TrussArch02Geometry.PrototypeSectionOuterWidth - PrototypeVisibleDeckWidth;
+            OverheadOuter - PrototypeVisibleDeckWidth;
         private const string PillarMesh = "TrussArchBridge02NetPillar Mesh";
         private const string PillarFootingMesh = "TrussArchBridge02NetPillarBase Mesh";
 
@@ -559,9 +500,7 @@ internal static class BridgeTowers
             styleId == "TrussArch02"
                 ? Math.Max(
                     0f,
-                    visibleRoadWidth
-                        + PrototypeBridgeMinusDeck
-                        + BridgeWidthAuditCorrections.FullSpanFor(styleId))
+                    visibleRoadWidth + PrototypeBridgeMinusDeck)
                 : visibleRoadWidth;
 
         internal static float TowerPartExtra(
@@ -575,25 +514,6 @@ internal static class BridgeTowers
             return fallback;
         }
     }
-
-    /// <summary>Extra widening this style's towers take beyond what the road gives. Zero for most.</summary>
-    internal static float BonusFor(string? styleId)
-    {
-        if (styleId == null) return 0f;
-        return TowerBonus.TryGetValue(styleId, out var bonus) ? bonus : 0f;
-    }
-
-    /// <summary>
-    /// Converts the target-minus-prototype-road difference into the one width change every piece of
-    /// the bridge structure receives. Keeping this operation in one place prevents the tower and
-    /// cables from taking a prototype allowance while node-bound props still use the raw road delta.
-    /// </summary>
-    internal static float StructureExtraFor(string? styleId, float roadExtra) =>
-        roadExtra
-            + BonusFor(styleId)
-            + (styleId == "TrussArch02"
-                ? 0f
-                : BridgeWidthAuditCorrections.FullSpanFor(styleId));
 
     /// <summary>
     /// Full-width relationship measured from the installed TrussArchBridge03 prototype.

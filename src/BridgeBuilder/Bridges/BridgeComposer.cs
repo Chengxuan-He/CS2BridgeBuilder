@@ -141,7 +141,7 @@ internal sealed class BridgeComposer
         // outside frame preserves the prototype's measured bridge-minus-visible-deck relationship,
         // while its inside frame follows the outermost boundary of the two outside footways.
         var chosen = selection.Tower;
-        var extra = selection.ExtraFor(structureWidth, style.Id);
+        var extra = selection.ExtraFor(structureWidth, style);
 
         if (BridgeTowers.WidthFollowsSidewalks(style.Id))
         {
@@ -198,7 +198,7 @@ internal sealed class BridgeComposer
         // Each bridge is sized against its own cables, so the previous bridge's are forgotten
         // before this one's are built. The factory outlives a single bridge; the measurement
         // must not.
-        _towers?.BeginBridge(style.Id, target.name);
+        _towers?.BeginBridge(style.Id, style.ArchetypeStructureAllowance, target.name);
 
         // Follow the selected archetype's deck roles. When its auxiliary net is below, the donor's
         // main prefab is its upper road. This is the V-shaped double-deck cable-stayed bridge: its
@@ -212,7 +212,7 @@ internal sealed class BridgeComposer
         {
             var roadExtra = PrototypeBridgeSizing.UpperDeckExtra(
                 targetWidth, chosen.Value.Road, extra);
-            extra = BridgeTowers.StructureExtraFor(style.Id, roadExtra);
+            extra = roadExtra + style.ArchetypeStructureAllowance;
             _report.Note(string.Format(
                 CultureInfo.InvariantCulture,
                 "{0}: V-shaped double-deck width follows the upper road: {1:0.###} m target minus "
@@ -220,11 +220,7 @@ internal sealed class BridgeComposer
                 + "{5:0.###} m structure allowance = {6:0.###} m effective widening. Its lower "
                 + "network keeps the auxiliary pointer and is not a width input.",
                 target.name, targetWidth, chosen.Value.Road, variant.Name, roadExtra,
-                BridgeTowers.BonusFor(style.Id), extra));
-        }
-        else
-        {
-            extra = BridgeTowers.StructureExtraFor(style.Id, extra);
+                style.ArchetypeStructureAllowance, extra));
         }
 
         var overheadExtra = BridgeTowers.WhiteTrussArchWidths.OverheadExtra(
@@ -685,6 +681,25 @@ internal sealed class BridgeComposer
         {
             bridge.m_WaterFlow = source.m_WaterFlow;
             bridge.m_FixedSegments = CopyFixedSegments(source);
+
+            // Double-deck node seams are part of the prototype's two-network arrangement. The target
+            // road's state tables describe its ordinary nodes, not nodes inside this bridge. Carry the
+            // prototype tables exactly, including an intentionally empty table: adding or retaining a
+            // state changes which end/node pieces the game selects and leaves the two decks open at
+            // each join.
+            if (options.DoubleDeck)
+            {
+                target.m_EdgeStates = variant.Donor.m_EdgeStates?.ToArray();
+                target.m_NodeStates = variant.Donor.m_NodeStates?.ToArray();
+                _report.Note(string.Format(
+                    CultureInfo.InvariantCulture,
+                    "{0}: double-deck main-network seam states copied from '{1}' - {2} edge rule(s), "
+                    + "{3} node rule(s).",
+                    target.name,
+                    variant.Name,
+                    target.m_EdgeStates?.Length ?? 0,
+                    target.m_NodeStates?.Length ?? 0));
+            }
         }
 
         bridge.m_BuildStyle = options.BuildStyle ?? source?.m_BuildStyle ?? bridge.m_BuildStyle;
@@ -959,7 +974,8 @@ internal sealed class BridgeComposer
 
     private void RemoveDeckRailings(RoadPrefab target, string? styleId)
     {
-        if (!BridgeTowers.BringsItsOwnRailings(styleId)) return;
+        if (BridgeStyleDefinitions.RoadRailingsOf(styleId) != RoadRailingPolicy.EndsAndNodesOnly)
+            return;
 
         // Nothing to derive a copy with, so nothing to take off: the shared section is left alone
         // rather than edited, which would take the railing off every road in the game.
@@ -991,10 +1007,10 @@ internal sealed class BridgeComposer
 
         _report.Note(string.Format(
             CultureInfo.InvariantCulture,
-            "{0}: the road's own railing now draws only where the road ends - {1}. This style carries "
-            + "railings of its own along the run, and the two stood beside each other; at a turnaround "
-            + "it carries none, so the road's is the only one there.",
-            target.name, string.Join(", ", removed.Distinct())));
+            "{0}: the road's own white railing now draws only at nodes and dead ends - {1}. The "
+            + "measured archetype for style '{2}' has no ordinary road railing along its span; joins "
+            + "and turnarounds retain the road railing so their open ends remain protected.",
+            target.name, string.Join(", ", removed.Distinct()), styleId ?? "<unknown>"));
     }
 
     /// <summary>

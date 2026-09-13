@@ -5,15 +5,40 @@ using System.Linq;
 namespace BridgeBuilder.Bridges;
 
 /// <summary>
+/// What the measured archetype does with the ordinary road's white elevated-edge railing on a
+/// continuous bridge span. This is immutable metaprogram output from the prefab anatomy dump; it is
+/// not inferred from the selected road or from geometry while the game is running.
+/// </summary>
+internal enum RoadRailingPolicy
+{
+    /// <summary>The archetype carries the ordinary road/path side railing along its span.</summary>
+    KeepOnRun,
+
+    /// <summary>The archetype carries no ordinary road railing on the run; retain it only at joins.</summary>
+    EndsAndNodesOnly,
+}
+
+/// <summary>
 /// One named bridge style the player can pick, and how to recognise the prefabs that provide it.
 /// </summary>
 internal sealed class BridgeStyleDefinition
 {
     internal BridgeStyleDefinition(string id, string nameSuffix, int clearance, params string[] patterns)
+        : this(id, nameSuffix, clearance, 0f, patterns)
+    {
+    }
+
+    internal BridgeStyleDefinition(
+        string id,
+        string nameSuffix,
+        int clearance,
+        float archetypeStructureAllowance,
+        params string[] patterns)
     {
         Id = id;
         NameSuffix = nameSuffix;
         Clearance = clearance;
+        ArchetypeStructureAllowance = archetypeStructureAllowance;
         Patterns = patterns;
     }
 
@@ -37,6 +62,13 @@ internal sealed class BridgeStyleDefinition
     /// rule out every variant they have.
     /// </summary>
     internal int Clearance { get; }
+
+    /// <summary>
+    /// The archetype's authored structural allowance beyond its target-minus-prototype-road delta.
+    /// This is final immutable source metadata emitted by offline metaprogramming, not a runtime
+    /// audit result or a post-generation correction.
+    /// </summary>
+    internal float ArchetypeStructureAllowance { get; }
 
     /// <summary>Normalised fragments; a prefab belongs to this style if its name contains any of them.</summary>
     internal IReadOnlyList<string> Patterns { get; }
@@ -68,6 +100,40 @@ internal static class BridgeStyleDefinitions
     /// that matches none of its entries.
     /// </summary>
     internal const string Default = "Suspension";
+
+    /// <summary>
+    /// The ordinary white road-railing policy measured on every generated bridge family.
+    ///
+    /// The absent group has one of two measured forms in the archetype: its parent side section is
+    /// node-only, or it is a track prototype with no ordinary road-side section. Both mean the same
+    /// thing when that design is applied to a road: the target road's white elevated-edge railing must
+    /// not be introduced along the span. The railing remains at nodes and dead ends so adjacent nets
+    /// and turnarounds still have an edge barrier.
+    ///
+    /// Draw and lift mechanisms are refused before composition and therefore never reach this policy.
+    /// An unrecognised third-party family keeps its road railing because no archetype measurement
+    /// exists that authorises removing it.
+    /// </summary>
+    internal static RoadRailingPolicy RoadRailingsOf(string? styleId) => styleId switch
+    {
+        // Road Side 0 is node-only in these road prototypes. TrussArchBridge01/03 are track
+        // prototypes, and TrussArchBridge02 has its own structural outer railing instead.
+        "SuspensionGolden" or
+        "GoldenGate" or
+        "Extradosed01" or
+        "Extradosed02" or
+        "Extradosed03" or
+        "ExtradosedBridge" or // the separately discovered ExtradosedBridge04 family
+        "TrussArch01" or
+        "TrussArch02" or
+        "TrussArch03" or
+        "Grand" => RoadRailingPolicy.EndsAndNodesOnly,
+
+        // Suspension, ExtradosedLarge, CableStayed, TrussArch, TiedArch and CoveredWood all expose
+        // an ordinary span-side section in their measured archetypes. Deferred mechanism styles and
+        // unknown third-party styles also take the non-destructive default.
+        _ => RoadRailingPolicy.KeepOnRun,
+    };
 
     /// <summary>
     /// Whether a style's overhead section is an open, member-built truss.
@@ -107,20 +173,24 @@ internal static class BridgeStyleDefinitions
     internal static readonly IReadOnlyList<BridgeStyleDefinition> All = new[]
     {
         new BridgeStyleDefinition("PedestrianDraw", "Pedestrian Bascule Bridge", 0, "pedestriandrawbridge"),
-        new BridgeStyleDefinition("CoveredWood", "Covered Wooden Bridge", 0, "pedestrianbridgecoveredwood", "coveredwood"),
+        new BridgeStyleDefinition(
+            "CoveredWood", "Covered Wooden Bridge", 0, -2f, // 0xC0000000
+            "pedestrianbridgecoveredwood", "coveredwood"),
         // The game ships two suspension designs and they are different colours: 01 and 02 are the pale
         // steel ones, 03 and 04 the golden pair, and the packs recolour along the same numbering. The
         // number is therefore not a size but an identity, and asking for a suspension bridge should not
         // decide the colour by which happened to fit. Golden goes first: it is the narrower rule.
         // Golden shares the plain style's margin - same author, same structure, one usable sample of
         // its own, and that sample's road width is the one the scan got wrong.
-        new BridgeStyleDefinition("SuspensionGolden", "Golden Suspension Bridge", 17, // 16.6 over 3
+        new BridgeStyleDefinition(
+            "SuspensionGolden", "Golden Suspension Bridge", 17, -1f, // 0xBF800000
             "suspensionbridge03", "suspensionbridge04", "goldengate"),
         // Only the highway suspension bridges. The vanilla SuspensionBridge01..04 are separate designs
         // that happen to share the principle, and folding them in here is what let a two-lane bridge
         // stand in for a six-lane road and a golden tower answer a request for a pale one. They are
         // still discovered - they simply arrive as their own family rather than as this style.
-        new BridgeStyleDefinition("Suspension", "Suspension Bridge", 7,          // 7.3 over 8
+        new BridgeStyleDefinition(
+            "Suspension", "Suspension Bridge", 7, -3.8146973E-06f, // 0xB6800000
             "suspensionbridgehighway", "suspensionhighway"),
         // The cable-stayed family, one style per pylon. They were one entry and are five bridges: the
         // pylon is what a cable-stayed design is, and a road fitted to one of them cannot wear
@@ -131,9 +201,12 @@ internal static class BridgeStyleDefinitions
         // does not. That is not recorded here: BridgeStyle.Select reads it off the variant, so asking
         // for a single deck bridge from a double deck archetype refuses on what the prefab is rather
         // than on what a table remembers about it.
-        new BridgeStyleDefinition("Extradosed01", "Extradosed Bridge", 23, "extradosedbridge01"),
+        new BridgeStyleDefinition(
+            "Extradosed01", "Extradosed Bridge", 23, 20f, "extradosedbridge01"),
         new BridgeStyleDefinition("Extradosed02", "Extradosed Bridge", 23, "extradosedbridge02"),
-        new BridgeStyleDefinition("Extradosed03", "Extradosed Bridge", 23, "extradosedbridge03"),
+        new BridgeStyleDefinition(
+            "Extradosed03", "Extradosed Bridge", 23, 18.999992f, // 0x4197FFFC
+            "extradosedbridge03"),
         new BridgeStyleDefinition(
             "ExtradosedLarge", "Extradosed Bridge", 23, "extradosedbridgelargeroaddivided"),
         // No catch-all "Extradosed" style. It offered a choice between designs rather than between
@@ -155,12 +228,18 @@ internal static class BridgeStyleDefinitions
         // the general truss-arch pattern: each generated bridge must copy the complete section, tower
         // and material family of the prototype the player selected, rather than sharing a donor with
         // another colour.
-        new BridgeStyleDefinition("TrussArch01", "Truss Arch Bridge 01", 3, "trussarchbridge01"),
+        new BridgeStyleDefinition(
+            "TrussArch01", "Truss Arch Bridge 01", 3, 11.019386f, // 0x41304F68
+            "trussarchbridge01"),
         new BridgeStyleDefinition("TrussArch02", "Truss Arch Bridge 02", 3, "trussarchbridge02"),
-        new BridgeStyleDefinition("TrussArch03", "Truss Arch Bridge 03", 3, "trussarchbridge03"),
-        new BridgeStyleDefinition("TrussArch", "Truss Arch Bridge", 3,           // 2.5 over 18
+        new BridgeStyleDefinition(
+            "TrussArch03", "Truss Arch Bridge 03", 3, 12.000008f, // 0x41400008
+            "trussarchbridge03"),
+        new BridgeStyleDefinition(
+            "TrussArch", "Truss Arch Bridge", 3, 3.8146973E-06f, // 0x36800000
             "trussarchbridge", "trussarch"),
-        new BridgeStyleDefinition("TiedArch", "Tied Arch Bridge", 1,             // 1.3 over 3
+        new BridgeStyleDefinition(
+            "TiedArch", "Tied Arch Bridge", 1, 2f, // 0x40000000; retained skipped span
             "tiedarch"),
         new BridgeStyleDefinition("Grand", "Grand Bridge", 23,                   // 23.2 over 2
             "grandbridge"),

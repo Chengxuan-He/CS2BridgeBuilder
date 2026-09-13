@@ -139,10 +139,21 @@ internal sealed class DoubleDeckComposer
     /// </summary>
 
 
-    internal static int PrepareDeck(NetPrefab deck, NetPrefab carrier)
+    internal static int PrepareDeck(
+        NetGeometryPrefab deck, NetGeometryPrefab carrier, NetGeometryPrefab archetype)
     {
         deck.components.RemoveAll(component => component is UIObject or AuxiliaryNets);
         if (deck is RoadPrefab road) road.m_ZoneBlock = null;
+
+        // A carried deck keeps the selected road/track sections, but its edge and node state machine
+        // belongs to the double-deck archetype. These states decide which pieces draw where two edges
+        // meet. Keeping the selected net's states left the node in its ordinary road/track state, so
+        // pieces requiring the archetype's Elevated state disappeared and every longitudinal support
+        // opened at the join. The aggregate has the same ownership role: the prototype's auxiliary is
+        // part of the Bridge aggregate rather than an independent Road or Train Track aggregate.
+        deck.m_EdgeStates = archetype.m_EdgeStates?.ToArray();
+        deck.m_NodeStates = archetype.m_NodeStates?.ToArray();
+        deck.m_AggregateType = archetype.m_AggregateType;
 
         // PlaceableNet and ServiceObject are intentionally retained. The reference auxiliary nets on
         // ExtradosedBridge01 and on the double-deck suspension bridge both carry them. UIObject is what

@@ -74,7 +74,8 @@ internal static class BridgeStyleCatalog
                 definition.Id,
                 definition.NameSuffix,
                 () => UiStringCatalog.Current.StyleName(definition.Id),
-                definition.Clearance))
+                definition.Clearance,
+                definition.ArchetypeStructureAllowance))
             .ToList();
     }
 
