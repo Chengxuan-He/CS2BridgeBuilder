@@ -39,8 +39,12 @@ internal static class BridgeMeasurements
             ["Suspension Bridge - Highway Oneway - 3 lanes"] = (18, 26),
             ["Suspension Bridge - Highway Oneway - 4 Lanes"] = (22, 30),
             ["Suspension Bridge - Highway Oneway - 5 Lanes"] = (26, 34),
-            ["SuspensionBridge01"] = (28, 38),
-            ["SuspensionBridge02"] = (34, 49),
+            // These two prefabs carry Smooth/non-Smooth alternatives for the same lateral section.
+            // Summing both alternatives reported exactly twice the real left-to-right road width
+            // (26/32). The retained prefab cross-sections are 3.5+3+3+3.5 = 13 m for 01 and
+            // 2+4+4+4+2 = 16 m for 02. They are prototype facts, not runtime measurements.
+            ["SuspensionBridge01"] = (13, 38),
+            ["SuspensionBridge02"] = (16, 49),
             ["SuspensionBridge03"] = (52, 50),
             ["SuspensionBridge04"] = (52, 50),
             // Double-deck width audit: this prefab is the upper/root road. Its active road sections

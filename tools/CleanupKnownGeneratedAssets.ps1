@@ -344,7 +344,8 @@ if (Test-Path -LiteralPath $importedRoot -PathType Container) {
     # directory was then removed and the orphan loaded with a null mesh on the next launch. Match the
     # complete generated tower prefix (including a numeric width), never a road-name fragment.
     $towerStyles = @(
-        'PedestrianDraw', 'CoveredWood', 'SuspensionGolden', 'Suspension',
+        'PedestrianDraw', 'WoodenCovered', 'CoveredWood',
+        'Suspension01', 'Suspension02', 'SuspensionGolden', 'SuspensionDouble', 'Suspension',
         'Extradosed01', 'Extradosed02', 'Extradosed03', 'ExtradosedLarge', 'CableStayed',
         'TrussArch01', 'TrussArch02', 'TrussArch03', 'TrussArch', 'TiedArch', 'Grand',
         'GoldenGate', 'Draw', 'Lift'
@@ -379,10 +380,14 @@ if (Test-Path -LiteralPath $importedRoot -PathType Container) {
     # collisions add " (n)" before the Piece suffix, so a static list cannot clean every run.
     # The source archetype list is exact and is intentionally kept narrower than "* Section *".
     $generatedSectionPrefixes = @(
+        '2-Lane Wooden Covered  Bridge',
+        '2-Lane Wooden Covered Bridge',
         '2-Lane Suspension Bridge',
         '3-Lane Suspension Bridge',
         '4-Lane Suspension Bridge',
         '5-Lane Suspension Bridge',
+        'SuspensionBridge01 Section',
+        'SuspensionBridge02 Section',
         '8-Lane Cable Stayed Bridge 00',
         'Cable Stayed Pedestrian Bridge',
         'ExtradosedBridge01 Section',

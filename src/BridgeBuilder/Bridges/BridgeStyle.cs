@@ -18,6 +18,7 @@ internal sealed class BridgeStyleVariant
         Donor = donor;
         Bridge = bridge;
         Width = width;
+        Source = BridgePrototypeSource.Inspect(donor);
 
         // Recorded numbers win over measured ones. Measuring at runtime depends on which geometry
         // assets happen to be loaded and on a section rule the game's own bridges do not follow, so a
@@ -37,6 +38,12 @@ internal sealed class BridgeStyleVariant
     internal NetGeometryPrefab Donor { get; }
 
     internal Bridge Bridge { get; }
+
+    /// <summary>The DLC, mod, asset pack or base game installation that owns this donor.</summary>
+    internal BridgePrototypeSource Source { get; }
+
+    /// <summary>False when the donor's declared DLC/mod prerequisite is not currently available.</summary>
+    internal bool IsAvailable => Source.IsAvailable;
 
     /// <summary>Metres. 0 when the donor's sections could not be measured.</summary>
     internal float Width { get; }
@@ -274,7 +281,7 @@ internal sealed class BridgeStyle
     /// False when the style is named here but nothing providing it is registered - either because no
     /// world has been scanned yet, or because the content that ships it is not installed.
     /// </summary>
-    internal bool IsInstalled => _variants.Count > 0;
+    internal bool IsInstalled => _variants.Any(variant => variant.IsAvailable);
 
     internal IReadOnlyList<BridgeStyleVariant> Variants => _variants;
 
@@ -337,6 +344,7 @@ internal sealed class BridgeStyle
         // must not be used to exclude a track from the main slot of an A-pylon bridge: main/auxiliary
         // are ownership roles in AuxiliaryNets, and a track is a valid main network.
         var eligible = _variants
+            .Where(candidate => candidate.IsAvailable)
             .Where(candidate => candidate.IsDoubleDeck == doubleDeck)
             .Where(candidate => allow == null || allow(candidate))
             .ToList();

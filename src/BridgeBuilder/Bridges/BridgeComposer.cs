@@ -64,11 +64,16 @@ internal sealed class BridgeComposer
         var breakdown = new List<string>();
         var measuredDeck = measure ?? target;
         var measuredRoad = measuredDeck as RoadPrefab;
+        var forRoad = measuredDeck is not TrackPrefab;
         var targetWidth = measuredDeck != null
             ? WidthOf(measuredDeck, roadWidth, breakdown)
             : roadWidth;
         var whiteTruss = BridgeTowers.WidthFollowsSidewalks(style.Id);
-        var roadEdges = RoadEdgesOf(measuredRoad, targetWidth, whiteTruss);
+        // The white truss uses the sidewalk edge for its inner structural envelope. Bridges with an
+        // authored inner railing need the same complete scan even when their structure has one width:
+        // an empty lane outside a sidewalk is not a sidewalk, and the two sides need not match.
+        var findOutermostSidewalk = whiteTruss || BridgeTowers.BringsItsOwnRailings(style.Id);
+        var roadEdges = RoadEdgesOf(measuredRoad, targetWidth, findOutermostSidewalk);
         var structureEdges = BridgeTowers.StructureEdgesFor(
             style.Id, targetWidth, roadEdges.Left, roadEdges.Right);
         var structureWidth = structureEdges.Width;
@@ -90,7 +95,7 @@ internal sealed class BridgeComposer
             return null;
         }
 
-        var selection = style.Select(targetWidth, forRoad: true, doubleDeck: options.DoubleDeck, allow);
+        var selection = style.Select(targetWidth, forRoad, doubleDeck: options.DoubleDeck, allow);
         var variant = selection.Variant;
         if (variant == null)
         {
@@ -1061,7 +1066,12 @@ internal sealed class BridgeComposer
     private NetSectionInfo Widened(NetSectionInfo source, string bridgeName, float extra)
     {
         var spread = Spread(source, extra);
-        if (_towers == null || Math.Abs(extra) < 0.001f) return spread;
+        // A zero width delta is still not a no-op for a bridge whose inner railing follows the selected
+        // road's sidewalks. A road can match the prototype width while having different, asymmetric or
+        // absent sidewalks, so derive its owned section and apply the per-side railing plan.
+        if (_towers == null
+            || (Math.Abs(extra) < 0.001f && !BridgeTowers.BringsItsOwnRailings(_towers.StyleId)))
+            return spread;
 
         var widened = _towers.WidenSection(source.m_Section, bridgeName, extra);
         if (widened != null) spread.m_Section = widened;

@@ -20,6 +20,9 @@ internal enum DeckKind
     /// <summary>Any other road: the game's own, a pack's, or one this mod exported earlier.</summary>
     Road,
 
+    /// <summary>A pedestrian-only pathway network.</summary>
+    Pedestrian,
+
     Train,
     Subway,
     Tram,
@@ -57,7 +60,7 @@ internal sealed class Deck
     /// </summary>
     internal RoadBuilderRoad? Road { get; }
 
-    internal bool IsRoad => Kind is DeckKind.RoadBuilder or DeckKind.Road;
+    internal bool IsRoad => Kind is DeckKind.RoadBuilder or DeckKind.Road or DeckKind.Pedestrian;
 
     /// <summary>
     /// The name this deck contributes to a generated asset name. Never the localized display name:
@@ -70,12 +73,9 @@ internal sealed class Deck
 
 /// <summary>
 /// Everything that can be picked as a deck: Road Builder roads, the roads already registered -
-/// including ones this mod exported earlier - and the train, subway and tram tracks.
-///
-/// Two things are deliberately not in here. Pedestrian and other non-vehicle nets are left out
-/// because a bridge deck that carries nothing is not what the picker is for. And nets with their own
-/// zoning behaviour are kept, but only as the upper deck; see the export system for why a lower deck
-/// has to be stripped of it.
+/// including ones this mod exported earlier - pedestrian pathways, and the train, subway and tram
+/// tracks. Nets with their own zoning behaviour are kept; an auxiliary clone is stripped of the
+/// components that cannot belong to a carried deck by <see cref="DoubleDeckComposer"/>.
 /// </summary>
 internal static class DeckCatalog
 {
@@ -155,6 +155,9 @@ internal static class DeckCatalog
             if (kind == null) return null;
             return new Deck(track, kind.Value, DisplayNameOf(track), NetWidth.Of(track), null);
         }
+
+        if (prefab is PathwayPrefab pathway)
+            return new Deck(pathway, DeckKind.Pedestrian, DisplayNameOf(pathway), NetWidth.Of(pathway), null);
 
         if (prefab is not RoadPrefab road) return null;
 

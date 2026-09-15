@@ -118,6 +118,7 @@ internal static class BridgeStyleDefinitions
     {
         // Road Side 0 is node-only in these road prototypes. TrussArchBridge01/03 are track
         // prototypes, and TrussArchBridge02 has its own structural outer railing instead.
+        "Suspension01" or
         "SuspensionGolden" or
         "GoldenGate" or
         "Extradosed01" or
@@ -129,7 +130,7 @@ internal static class BridgeStyleDefinitions
         "TrussArch03" or
         "Grand" => RoadRailingPolicy.EndsAndNodesOnly,
 
-        // Suspension, ExtradosedLarge, CableStayed, TrussArch, TiedArch and CoveredWood all expose
+        // Suspension, Suspension02, ExtradosedLarge, CableStayed, TrussArch, TiedArch and CoveredWood expose
         // an ordinary span-side section in their measured archetypes. Deferred mechanism styles and
         // unknown third-party styles also take the non-destructive default.
         _ => RoadRailingPolicy.KeepOnRun,
@@ -156,6 +157,14 @@ internal static class BridgeStyleDefinitions
     internal static bool PreservesOpenTrussSideAssembly(string? styleId) => styleId == "TrussArch03";
 
     /// <summary>
+    /// Whether the carried deck must use the bridge aggregate rather than the selected network's
+    /// ordinary road or track aggregate. ExtradosedBridge01's lower network is structurally part of
+    /// the same named bridge, so leaving its original aggregate in place gives it an unrelated street,
+    /// road or track name.
+    /// </summary>
+    internal static bool CarriedDeckUsesBridgeAggregate(string? styleId) => styleId == "Extradosed01";
+
+    /// <summary>
     /// Order matters: the first matching entry wins, so the narrower patterns come first. Without
     /// that, "PedestrianDrawBridge01" would be filed under the road-carrying bascule bridges.
     ///
@@ -174,23 +183,41 @@ internal static class BridgeStyleDefinitions
     {
         new BridgeStyleDefinition("PedestrianDraw", "Pedestrian Bascule Bridge", 0, "pedestriandrawbridge"),
         new BridgeStyleDefinition(
+            "WoodenCovered", "Wooden Covered Bridge", 0, "woodencoveredbridge"),
+        new BridgeStyleDefinition(
             "CoveredWood", "Covered Wooden Bridge", 0, -2f, // 0xC0000000
             "pedestrianbridgecoveredwood", "coveredwood"),
-        // The game ships two suspension designs and they are different colours: 01 and 02 are the pale
-        // steel ones, 03 and 04 the golden pair, and the packs recolour along the same numbering. The
-        // number is therefore not a size but an identity, and asking for a suspension bridge should not
-        // decide the colour by which happened to fit. Golden goes first: it is the narrower rule.
-        // Golden shares the plain style's margin - same author, same structure, one usable sample of
-        // its own, and that sample's road width is the one the scan got wrong.
+        // SuspensionBridge01 and 02 are the pale-grey designs. They are separate because 01 is a
+        // single-deck bridge while 02 owns an auxiliary upper road and is therefore a double-deck
+        // bridge. Exact numbered patterns must precede the pack-family patterns below.
+        new BridgeStyleDefinition(
+            "Suspension01", "Gray Suspension Bridge", 25, "suspensionbridge01"),
+        new BridgeStyleDefinition(
+            "Suspension02", "Gray Double-Deck Suspension Bridge", 33, "suspensionbridge02"),
+
+        // Golden Gate is its own design, tower family and exported name. It previously matched the
+        // generic golden entry, which hid it behind the same label and made its generation use the
+        // SuspensionBridge03 tower metadata.
+        new BridgeStyleDefinition(
+            "GoldenGate", "Golden Gate Suspension Bridge", 49, "goldengate"),
+
+        // 03 and 04 are the gold-painted pair. The number is an identity rather than a size, so asking
+        // for a suspension bridge must not decide the colour by whichever donor happens to fit.
         new BridgeStyleDefinition(
             "SuspensionGolden", "Golden Suspension Bridge", 17, -1f, // 0xBF800000
-            "suspensionbridge03", "suspensionbridge04", "goldengate"),
-        // Only the highway suspension bridges. The vanilla SuspensionBridge01..04 are separate designs
-        // that happen to share the principle, and folding them in here is what let a two-lane bridge
-        // stand in for a six-lane road and a golden tower answer a request for a pale one. They are
-        // still discovered - they simply arrive as their own family rather than as this style.
+            "suspensionbridge03", "suspensionbridge04"),
+
+        // The expansion-pack double-deck suspension family shares the blue structure but not the
+        // single-deck arrangement. Declare it first so the more general highway pattern below cannot
+        // absorb it and leave both deck counts under one indistinguishable name.
         new BridgeStyleDefinition(
-            "Suspension", "Suspension Bridge", 7, -3.8146973E-06f, // 0xB6800000
+            "SuspensionDouble", "Blue Double-Deck Suspension Bridge", 7, -3.8146973E-06f,
+            "doubledecksuspensionbridge"),
+
+        // Only the remaining blue highway suspension bridges. The numbered vanilla designs above are
+        // separate designs that happen to share the suspension principle.
+        new BridgeStyleDefinition(
+            "Suspension", "Blue Suspension Bridge", 7, -3.8146973E-06f, // 0xB6800000
             "suspensionbridgehighway", "suspensionhighway"),
         // The cable-stayed family, one style per pylon. They were one entry and are five bridges: the
         // pylon is what a cable-stayed design is, and a road fitted to one of them cannot wear
@@ -241,7 +268,7 @@ internal static class BridgeStyleDefinitions
         new BridgeStyleDefinition(
             "TiedArch", "Tied Arch Bridge", 1, 2f, // 0x40000000; retained skipped span
             "tiedarch"),
-        new BridgeStyleDefinition("Grand", "Grand Bridge", 23,                   // 23.2 over 2
+        new BridgeStyleDefinition("Grand", "Extra-Large Suspension Bridge", 23, // 23.2 over 2
             "grandbridge"),
         // Moveable bridges lift their deck instead of standing over it, so no sample of either had a
         // structure wider than its road. Demanding a margin would rule out every variant they have.

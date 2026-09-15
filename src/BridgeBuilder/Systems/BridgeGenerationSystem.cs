@@ -181,8 +181,6 @@ public partial class BridgeGenerationSystem : GameSystemBase
         {
             BridgeStyleCatalog.Rebuild(_prefabSystem, generated);
             DeckCatalog.Rebuild(_prefabSystem, roads);
-            TowerSelfTest.Run(_prefabSystem);
-            AssetAnatomy.Run(_prefabSystem);
         }
         catch (Exception exception)
         {
@@ -251,7 +249,7 @@ public partial class BridgeGenerationSystem : GameSystemBase
     /// </summary>
     private static string DescribeFit(UiStrings text, BridgeStyle style, Deck upper)
     {
-        var variant = style.Nearest(upper.Width);
+        var variant = style.Nearest(upper.Width, upper.IsRoad);
         if (variant == null) return string.Empty;
         return string.Format(
             text.StateStyleFit,
@@ -312,14 +310,6 @@ public partial class BridgeGenerationSystem : GameSystemBase
 
         try
         {
-            if (upper.Prefab is not RoadPrefab upperSource)
-            {
-                report.Failed(exportName, new InvalidOperationException(
-                    $"'{upper.DisplayName}' is a {upper.Kind} track and cannot carry a bridge."));
-                Finish(report, state, "Export bridge");
-                return;
-            }
-
             // Which of the two decks the bridge is built on.
             //
             // An archetype states where its second net runs, and the two arrangements both exist in
@@ -344,9 +334,9 @@ public partial class BridgeGenerationSystem : GameSystemBase
             // cloned under the export name. Variants of one style disagree about this: the plain A
             // pylon hangs its second net above and its subway, train and tram variants hang theirs
             // below, so the question is about the variant and never about the style.
-            var chosenWidth = BridgeComposer.WidthOf(upperSource, upper.Width);
+            var chosenWidth = BridgeComposer.WidthOf(upper.Prefab, upper.Width);
             var stated = options.DoubleDeck
-                ? style.Select(chosenWidth, forRoad: true, doubleDeck: true).Variant?.LowerDeck
+                ? style.Select(chosenWidth, upper.IsRoad, doubleDeck: true).Variant?.LowerDeck
                 : null;
             var arrangement = DeckArrangement.For(stated?.m_Position.y ?? 0f);
             var secondNetAbove = stated != null && arrangement.MainIsChosenDeck;
@@ -384,9 +374,10 @@ public partial class BridgeGenerationSystem : GameSystemBase
                 clone, style, main.Width, options, measure: main.Prefab);
             if (variant != null)
             {
+                ApplyPrototypeIcon(clone, variant, report);
                 AttachSecondDeck(
-                    clone, auxiliary, secondNetAbove, exportName, cloner, doubleDeck, options, variant,
-                    report);
+                    clone, auxiliary, secondNetAbove, exportName, cloner, doubleDeck, options,
+                    style.Id, variant, report);
                 DescribeResult(clone, exportName, report);
 
                 // Generated towers are nodes like any other dependency: written before the bridge
@@ -410,20 +401,16 @@ public partial class BridgeGenerationSystem : GameSystemBase
     }
 
     /// <summary>
-    /// Clones the chosen deck into a standalone prefab. A Road Builder road carries its configuration
-    /// with it - the authored speed limit, its thumbnail - and an already registered road does not, so
-    /// only the first needs those applied.
+    /// Clones the chosen deck into a standalone prefab. A Road Builder road still contributes its
+    /// authored speed limit, but never its road thumbnail: once composition chooses an archetype, the
+    /// generated asset receives that bridge prototype's icon.
     /// </summary>
     private NetGeometryPrefab? CloneDeck(
         PrefabGraphCloner cloner, Deck deck, string exportName, ExportReport report)
     {
         if (deck.Prefab is RoadPrefab roadSource)
         {
-            var icon = deck.Road != null
-                ? RoadBuilderIconExporter.Preserve(deck.Road, report, Mod.Setting?.EmbedIcons ?? false)
-                : string.Empty;
-
-            var road = cloner.CloneRoad(roadSource, exportName, icon);
+            var road = cloner.CloneRoad(roadSource, exportName, string.Empty);
             if (deck.Road != null) SpeedLimitFix.Apply(road, deck.Road, report);
             return road;
         }
@@ -435,6 +422,29 @@ public partial class BridgeGenerationSystem : GameSystemBase
             $"'{deck.DisplayName}' is not a network prefab and cannot own a double-deck bridge. "
             + "The current bridge export was stopped without publishing a partial prefab.");
         return null;
+    }
+
+    /// <summary>
+    /// The generated bridge is presented as the selected bridge design, not as another copy of its
+    /// carried road. The icon URI remains owned by the archetype's content; catalogue selection has
+    /// already rejected that donor when its DLC or mod prerequisite is unavailable.
+    /// </summary>
+    private static void ApplyPrototypeIcon(
+        NetGeometryPrefab target, BridgeStyleVariant variant, ExportReport report)
+    {
+        var targetUi = target.components.OfType<UIObject>().FirstOrDefault();
+        if (targetUi == null)
+        {
+            report.Warning(
+                $"'{target.name}' has no UIObject, so the icon from bridge prototype "
+                + $"'{variant.Name}' could not be assigned.");
+            return;
+        }
+
+        var prototypeUi = variant.Donor.components.OfType<UIObject>().FirstOrDefault();
+        targetUi.m_Icon = prototypeUi?.m_Icon ?? string.Empty;
+        if (string.IsNullOrWhiteSpace(targetUi.m_Icon))
+            report.Warning($"Bridge prototype '{variant.Name}' does not expose a UI icon.");
     }
 
     /// <summary>
@@ -453,6 +463,7 @@ public partial class BridgeGenerationSystem : GameSystemBase
         PrefabGraphCloner cloner,
         DoubleDeckComposer doubleDeck,
         BridgeOptions options,
+        string styleId,
         BridgeStyleVariant variant,
         ExportReport report)
     {
@@ -540,6 +551,19 @@ public partial class BridgeGenerationSystem : GameSystemBase
             ? $"copied from transport-compatible prototype '{prototypeAuxiliaryDeck.name}'"
             : $"preserved from selected {deck.Kind} deck because prototype "
                 + $"'{prototypeAuxiliaryDeck.name}' carries another transport type";
+
+        // ExtradosedBridge01's lower network belongs to the same named bridge as its root deck. Its
+        // prototype auxiliary is a train track, and blindly retaining that aggregate makes the lower
+        // road receive an ordinary street/road/track name. The style table records the exception; the
+        // generated deck takes the already-copied aggregate from the main bridge, without inferring
+        // anything from a generated name or from geometry.
+        if (BridgeStyleDefinitions.CarriedDeckUsesBridgeAggregate(styleId)
+            && main.m_AggregateType != null)
+        {
+            auxiliaryClone.m_AggregateType = main.m_AggregateType;
+            seamSource += $"; aggregate copied from main bridge '{main.m_AggregateType.name}'";
+        }
+
         report.Note(
             $"{auxiliaryName}: auxiliary seam behavior {seamSource} - "
             + $"{auxiliaryClone.m_EdgeStates?.Length ?? 0} edge rule(s), "
@@ -798,6 +822,5 @@ public partial class BridgeGenerationSystem : GameSystemBase
         RoadSelectionModel.PublishOperationResult(summary);
 
         Mod.ShowMessage(text.Title, summary + "\n" + text.StateReportHint);
-        Refresh();
     }
 }

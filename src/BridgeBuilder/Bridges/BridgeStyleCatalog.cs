@@ -149,10 +149,10 @@ internal static class BridgeStyleCatalog
             // and deriving from the pack's copy binds a generated bridge to an asset that can be
             // uninstalled while the vanilla one cannot.
             //
-            // Except where the base game covers nothing. Every double deck suspension bridge installed
-            // is the pack's; the game's own suspension bridges are all single deck. Skipping those too
-            // does not remove a duplicate, it removes the only archetype there is for two decks, and
-            // rule 11 then refuses to build one - correctly, and for a reason the exclusion created.
+            // Except where the base game covers no equivalent design. The blue double-deck suspension
+            // bridge is supplied by the pack; the base game's numbered SuspensionBridge02 is the
+            // separate grey double-deck design. Skipping the pack entry would therefore remove the
+            // only blue two-level archetype rather than a duplicate.
             //
             // A different width is not a capability the game lacks: generating any width from a
             // narrower archetype is what this mod is. A second deck is, because it is a different
@@ -192,16 +192,26 @@ internal static class BridgeStyleCatalog
                 }
             }
 
-            donors++;
-            style.Add(new BridgeStyleVariant(prefab, bridge, NetWidth.Of(prefab)));
+            var variant = new BridgeStyleVariant(prefab, bridge, NetWidth.Of(prefab));
+            style.Add(variant);
 
-            if (!sources.TryGetValue(style.Id, out var seen))
+            if (variant.IsAvailable)
             {
-                seen = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-                sources[style.Id] = seen;
-            }
+                donors++;
+                if (!sources.TryGetValue(style.Id, out var seen))
+                {
+                    seen = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+                    sources[style.Id] = seen;
+                }
 
-            seen.Add(SourceOf(prefab));
+                seen.Add(variant.Source.Label);
+            }
+            else
+            {
+                ModHost.Log.Info(
+                    $"  [{style.Id}] rejected donor '{prefab.name}' from {variant.Source.Label}: "
+                    + "the owning DLC/mod prerequisite is unavailable");
+            }
         }
 
         var ordered = named
@@ -277,31 +287,6 @@ internal static class BridgeStyleCatalog
     }
 
     /// <summary>
-    /// Which pack a donor came from, as far as the asset database will say. Only used to tell the
-    /// player what an exported bridge will depend on, so an unknown source is not an error.
-    /// </summary>
-    private static string SourceOf(PrefabBase prefab)
-    {
-        try
-        {
-            var path = prefab.asset?.path;
-            if (!string.IsNullOrEmpty(path))
-            {
-                var parts = path!.Replace('\\', '/').Split('/');
-                if (parts.Length >= 2) return parts[parts.Length - 2];
-            }
-
-            // Built-in prefabs have no asset path. There is no way to read back which pack a built-in
-            // bridge belongs to, so say only what is certain.
-            return prefab.isBuiltin ? "Base game" : "Unknown";
-        }
-        catch (Exception)
-        {
-            return "Unknown";
-        }
-    }
-
-    /// <summary>
     /// Writes what discovery saw into the log. This is the one place that can explain a style list the
     /// player did not expect, and it distinguishes the two ways it goes wrong: a style with no
     /// variants at all, versus variants that were found but grouped under the wrong style.
@@ -316,18 +301,27 @@ internal static class BridgeStyleCatalog
         {
             if (!style.IsInstalled)
             {
-                ModHost.Log.Info($"  [{style.Id}] not available - nothing registered provides it");
+                var unavailable = style.Variants
+                    .Where(variant => !variant.IsAvailable)
+                    .Select(variant => variant.Source.Label)
+                    .Distinct(StringComparer.OrdinalIgnoreCase)
+                    .OrderBy(source => source, StringComparer.OrdinalIgnoreCase)
+                    .ToList();
+                ModHost.Log.Info(unavailable.Count == 0
+                    ? $"  [{style.Id}] not available - nothing registered provides it"
+                    : $"  [{style.Id}] not available - prerequisite unavailable: "
+                        + string.Join(", ", unavailable));
                 continue;
             }
 
             ModHost.Log.Info(
                 $"  [{style.Id}] clearance {style.AuthoredClearance?.ToString() ?? "averaged"}m from {style.Source}: "
-                + string.Join(", ", style.Variants.Select(variant =>
+                + string.Join(", ", style.Variants.Where(variant => variant.IsAvailable).Select(variant =>
                     $"{variant.Name} road {variant.RoadWidth:0.#}m tower {variant.StructureWidth:0.#}m (+{variant.Clearance:0.#}m)")));
 
             // One line per donor naming its towers individually. The aggregate above says how wide the
             // widest is; this says what they are, which is what a list of towers has to be built from.
-            foreach (var variant in style.Variants)
+            foreach (var variant in style.Variants.Where(variant => variant.IsAvailable))
             {
                 ModHost.Log.Info($"    towers of {variant.Name}: {variant.DescribeTowers()}");
             }

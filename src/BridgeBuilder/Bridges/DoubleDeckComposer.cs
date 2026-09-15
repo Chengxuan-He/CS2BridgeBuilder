@@ -165,19 +165,21 @@ internal sealed class DoubleDeckComposer
         // Removing all three hid the clone, but also made it structurally unlike either working
         // reference and left the carried network's nodes detached.
 
-        // The bridge behaviour of the main network.
+        // The bridge behaviour of the prototype's carried network.
         //
-        // The two decks are one structure - m_LinkEndOffsets ties their ends together - so they have
-        // to agree on how long a span may be. A clone of an ordinary road carries no Bridge component
-        // at all, and without one its edges are held to an ordinary road's length: hung under a bridge
-        // spanning 256 m, every segment of it reported "distance too long". The pack's own lower deck
-        // carries a Bridge of its own, at 320 m.
+        // The two decks are one structure - m_LinkEndOffsets ties their ends together - but they do not
+        // necessarily use the same bridge state machine. SuspensionBridge02's root has four fixed
+        // segments and m_SegmentLength=0, while its authored carried road has m_SegmentLength=80 and no
+        // fixed segments. Copying the root component onto that carried road turns its ordinary seams
+        // into fixed-segment openings and visibly disconnects the deck at the pylons.
         //
-        // Taken from the carrier rather than recorded, for the reason rule 2 gives: the main network
-        // is in hand, it is what this one has to match, and it already holds whatever its own style
-        // said a bridge of this kind spans.
-        var above = carrier.GetComponent<Bridge>();
-        if (above != null) deck.AddComponentFrom(above);
+        // Use the exact component from the prototype auxiliary. Only an archetype that genuinely lacks
+        // one falls back to the carrier, which still prevents an ordinary road-length limit without
+        // inventing a different fixed-segment layout. Replace any component inherited from the selected
+        // deck so the generated auxiliary has exactly one authoritative Bridge component.
+        var authoredBridge = archetype.GetComponent<Bridge>() ?? carrier.GetComponent<Bridge>();
+        deck.components.RemoveAll(component => component is Bridge);
+        if (authoredBridge != null) deck.AddComponentFrom(authoredBridge);
 
 
         // And no pillars of its own.
