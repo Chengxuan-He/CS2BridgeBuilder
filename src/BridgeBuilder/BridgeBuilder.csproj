@@ -3,7 +3,7 @@
     <TargetFramework>netstandard2.1</TargetFramework>
     <AssemblyName>BridgeBuilder</AssemblyName>
     <RootNamespace>BridgeBuilder</RootNamespace>
-    <Version>0.2.0</Version>
+    <Version>0.3.0</Version>
     <GenerateAssemblyInfo>true</GenerateAssemblyInfo>
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
     <RestoreIgnoreFailedSources>true</RestoreIgnoreFailedSources>
@@ -18,6 +18,8 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="..\..\assets\BridgeBuilder.svg" Link="BridgeBuilder.svg" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="UI\BridgeBuilder.mjs" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="UI\BridgeBuilder.css" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="Game"><HintPath>$(GameManagedDir)\Game.dll</HintPath><Private>false</Private></Reference>

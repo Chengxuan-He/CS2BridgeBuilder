@@ -101,4 +101,7 @@ $arguments = @(
 
 & $dotnet @arguments
 if ($LASTEXITCODE -ne 0) { throw "Compilation failed with exit code $LASTEXITCODE" }
+Copy-Item -LiteralPath (Join-Path $projectRoot 'src\BridgeBuilder\UI\BridgeBuilder.mjs') -Destination $output -Force
+Copy-Item -LiteralPath (Join-Path $projectRoot 'src\BridgeBuilder\UI\BridgeBuilder.css') -Destination $output -Force
+Copy-Item -LiteralPath (Join-Path $projectRoot 'assets\BridgeBuilder.svg') -Destination $output -Force
 Write-Host "Built: $(Join-Path $output 'BridgeBuilder.dll')"

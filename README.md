@@ -7,6 +7,27 @@ deck, a bridge style to wear, and optionally something hung underneath.
 
 The rules generation is held to are in [AGENTS.md](AGENTS.md).
 
+## In-game builder and identity
+
+The floating BridgeBuilder button opens the runtime builder in a loaded game. Roads are shown as
+icon-and-name cards (three per row); double-deck mode provides independent upper and lower network
+lists. Bridge styles are likewise selected from prototype cards, and unavailable styles are omitted
+when their providing DLC or mod is not installed. Creating a bridge publishes it into the running
+prefab world and activates the ordinary network construction tool; it does not place anything by
+itself.
+
+Every bridge created there has two deliberately separate names:
+
+- `PrefabName`: immutable `b<UUID>` identity, for example
+  `b6f9619ff-8b86-d011-b42d-00c04fc964ff`. Saved references, activation and deletion use only this key.
+- registration name: the editable name shown in game. It can be duplicated or renamed without
+  changing the prefab identity or reconstructing the bridge.
+
+The management tab lists these bridges and supports activation, display-name changes and deletion.
+Construction inputs are read-only after creation; changing them means creating another UUID-backed
+bridge. Deleting a bridge asks for confirmation and removes its placed instances before removing its
+asset record.
+
 It is the parallel of [Road Prefab Exporter](../CS2RoadPrefabExporter) and shares its code — see
 [Layout](#layout).
 
