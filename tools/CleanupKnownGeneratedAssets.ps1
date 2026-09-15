@@ -15,6 +15,7 @@ $modIds = @('BridgeBuilder', 'BridgePrefabGenerator')
 $geometryRoots = @($modIds | ForEach-Object { Join-Path $gameRoot $_ })
 $modDataRoots = @($modIds | ForEach-Object { Join-Path $gameRoot (Join-Path 'ModsData' $_) })
 $stateFiles = @($modDataRoots | ForEach-Object { Join-Path $_ 'export-state.tsv' })
+$registryFiles = @($modDataRoots | ForEach-Object { Join-Path $_ 'bridge-registry.tsv' })
 # Windows PowerShell 5.1 reads a BOM-less script using the current ANSI code page. Keep the script
 # itself ASCII and decode the one non-ASCII road name explicitly so literal target names stay exact.
 $roadName = [Text.Encoding]::UTF8.GetString(
@@ -316,6 +317,12 @@ foreach ($stateFile in $stateFiles) {
         ForEach-Object { $_.exportName } |
         Where-Object { -not [string]::IsNullOrWhiteSpace($_) })
 }
+foreach ($registryFile in $registryFiles) {
+    if (-not (Test-Path -LiteralPath $registryFile -PathType Leaf)) { continue }
+    $stateExportNames += @(Import-Csv -LiteralPath $registryFile -Delimiter "`t" |
+        ForEach-Object { $_.prefabName } |
+        Where-Object { -not [string]::IsNullOrWhiteSpace($_) })
+}
 $stateExportNames = @($stateExportNames | Select-Object -Unique)
 if (Test-Path -LiteralPath $importedRoot -PathType Container) {
     $currentImportedNames = @(Get-ChildItem -LiteralPath $importedRoot -Directory |
@@ -476,6 +483,10 @@ $stateFiles = @($stateFiles | ForEach-Object {
     $modDataRoot = Split-Path -Parent $_
     Assert-ExactChild $modDataRoot $_
 })
+$registryFiles = @($registryFiles | ForEach-Object {
+    $modDataRoot = Split-Path -Parent $_
+    Assert-ExactChild $modDataRoot $_
+})
 $iconFiles = @($modDataRoots | ForEach-Object {
     $modDataRoot = $_
     Assert-ExactChild $modDataRoot (Join-Path $modDataRoot 'Icons\c84a2ef1a0a5779f79b5c65d20da1421.svg')
@@ -486,6 +497,12 @@ $removedIcon = 0
 foreach ($stateFile in $stateFiles) {
     if (Test-Path -LiteralPath $stateFile -PathType Leaf) {
         Remove-Item -LiteralPath $stateFile -Force
+        $removedState++
+    }
+}
+foreach ($registryFile in $registryFiles) {
+    if (Test-Path -LiteralPath $registryFile -PathType Leaf) {
+        Remove-Item -LiteralPath $registryFile -Force
         $removedState++
     }
 }
@@ -529,6 +546,7 @@ if (($remainingImported.Count -ne 0) `
     -or ($remainingGeometry.Count -ne 0) `
     -or @($geometryRoots | Where-Object { Test-Path -LiteralPath $_ }).Count -ne 0 `
     -or @($stateFiles | Where-Object { Test-Path -LiteralPath $_ }).Count -ne 0 `
+    -or @($registryFiles | Where-Object { Test-Path -LiteralPath $_ }).Count -ne 0 `
     -or @($iconFiles | Where-Object { Test-Path -LiteralPath $_ }).Count -ne 0) {
     throw "Cleanup verification failed: imported=$($remainingImported.Count), geometry=$($remainingGeometry.Count)."
 }

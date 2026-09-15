@@ -1,5 +1,7 @@
 using BridgeBuilder.Bridges;
+using BridgeBuilder.Runtime;
 using BridgeBuilder.Settings;
+using BridgeBuilder.UI;
 using Colossal.Serialization.Entities;
 using CS2Mods.Shared;
 using CS2Mods.Shared.Conversion;
@@ -7,11 +9,18 @@ using CS2Mods.Shared.Discovery;
 using CS2Mods.Shared.Export;
 using CS2Mods.Shared.Infrastructure;
 using Game;
+using Game.Common;
+using Game.Net;
+using Game.Objects;
 using Game.Prefabs;
+using Game.Tools;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.IO;
 using System.Linq;
+using Unity.Collections;
+using Unity.Entities;
 
 namespace BridgeBuilder.Systems;
 
@@ -67,13 +76,6 @@ public partial class BridgeGenerationSystem : GameSystemBase
             return;
         }
 
-        if (!isEditor && !(Mod.Setting?.AllowGameplayExport ?? false))
-        {
-            RoadSelectionModel.PublishMessage(this, text.StateGameplayBlocked);
-            Enabled = false;
-            return;
-        }
-
         RoadSelectionModel.PublishMessage(this, text.StateScanning);
         _settling = true;
         Enabled = true;
@@ -95,6 +97,12 @@ public partial class BridgeGenerationSystem : GameSystemBase
         }
 
         if (_pageRefreshCooldown > 0) _pageRefreshCooldown--;
+
+        if (BridgeRuntimeRequests.TryTake(out var runtimeRequest) && runtimeRequest != null)
+        {
+            HandleRuntimeRequest(runtimeRequest);
+            return;
+        }
 
         switch (RoadSelectionModel.TakeRequest())
         {
@@ -192,6 +200,7 @@ public partial class BridgeGenerationSystem : GameSystemBase
         }
 
         RoadSelectionModel.PublishMessage(this, Describe(UiStringCatalog.Current));
+        BridgeBuilderUISystem.RequestRefresh();
     }
 
     /// <summary>
@@ -268,6 +277,14 @@ public partial class BridgeGenerationSystem : GameSystemBase
         var report = new ExportReport();
         var setting = Mod.Setting;
 
+        if ((_gameMode & GameMode.Editor) == 0
+            && (_gameMode & GameMode.Game) != 0
+            && !(setting?.AllowGameplayExport ?? false))
+        {
+            RoadSelectionModel.PublishMessage(this, UiStringCatalog.Current.StateGameplayBlocked);
+            return;
+        }
+
         var upper = DeckCatalog.Find(setting?.UpperDeckId);
         if (upper == null)
         {
@@ -305,6 +322,27 @@ public partial class BridgeGenerationSystem : GameSystemBase
         }
 
         var options = setting?.ToBridgeOptions() ?? new BridgeOptions();
+        if (TryBuildBridge(upper, lower, style, exportName, options, overwrite, report))
+            state.Record(exportName, Fingerprint(upper));
+
+        Finish(report, state, "Export bridge");
+    }
+
+    /// <summary>
+    /// The one bridge construction path used by both the legacy options page and the runtime UI.
+    /// The runtime registration is written by its caller only after this returns true, which prevents
+    /// a UUID record from pointing at a partial or unpublished prefab.
+    /// </summary>
+    private bool TryBuildBridge(
+        Deck upper,
+        Deck? chosen,
+        BridgeStyle style,
+        string exportName,
+        BridgeOptions options,
+        bool overwrite,
+        ExportReport report)
+    {
+        var failuresBefore = report.FailedRoads;
         var cloner = new PrefabGraphCloner(_prefabSystem, _settings, report, overwrite);
         var towers = new TowerFactory(_prefabSystem, report);
         var composer = new BridgeComposer(report, towers);
@@ -316,34 +354,9 @@ public partial class BridgeGenerationSystem : GameSystemBase
             {
                 report.Failed(exportName, new InvalidOperationException(
                     $"'{upper.DisplayName}' is a {upper.Kind} track and cannot carry a bridge."));
-                Finish(report, state, "Export bridge");
-                return;
+                return false;
             }
 
-            // Which of the two decks the bridge is built on.
-            //
-            // An archetype states where its second net runs, and the two arrangements both exist in
-            // the game: the V pylon hangs a train track ten metres below its road, and the plain A
-            // pylon carries a second carriageway ten metres above it - "ExtradosedBridge02 Above
-            // Road", which is the archetype saying so in its own name. Where the second net is above,
-            // the archetype's own main net is the lower of the two decks, so the deck the player chose
-            // goes in the main slot and the road they are converting is hung above it. That is the
-            // archetype's arrangement rather than a correction to it, and the towers sit where they
-            // were drawn without anything being moved.
-            //
-            // "Main" is an AuxiliaryNets ownership role, not a synonym for road. A track can be that
-            // main network: it owns the bridge components and carries the road as its auxiliary. The
-            // earlier RoadPrefab-only guard rejected the A pylon before its references could be
-            // swapped, which is why a train lower deck could not be exported at all.
-            var chosen = options.DoubleDeck ? DeckCatalog.Find(options.LowerDeckId) : null;
-
-            // Selection is asked here as well as inside the composer. It is pure and both calls give
-            // it the same width, measured from the same sections - the source road carries the
-            // sections its clone will - and the same constraint, so both arrive at the same variant.
-            // It has to be asked before either deck is cloned, because the answer decides which one is
-            // cloned under the export name. Variants of one style disagree about this: the plain A
-            // pylon hangs its second net above and its subway, train and tram variants hang theirs
-            // below, so the question is about the variant and never about the style.
             var chosenWidth = BridgeComposer.WidthOf(upperSource, upper.Width);
             var stated = options.DoubleDeck
                 ? style.Select(chosenWidth, forRoad: true, doubleDeck: true).Variant?.LowerDeck
@@ -355,13 +368,9 @@ public partial class BridgeGenerationSystem : GameSystemBase
             {
                 report.Failed(exportName, new InvalidOperationException(
                     $"The selected second deck '{options.LowerDeckId}' is not registered any more."));
-                Finish(report, state, "Export bridge");
-                return;
+                return false;
             }
 
-            // Start with the user's upper/lower pointers, then exchange the references as one operation
-            // when the archetype places its auxiliary above. For the A pylon this makes the chosen
-            // lower network the root/main prefab and the converted upper road its auxiliary prefab.
             var main = upper;
             Deck? auxiliary = chosen;
             if (options.DoubleDeck && chosen != null)
@@ -372,41 +381,48 @@ public partial class BridgeGenerationSystem : GameSystemBase
             }
 
             var clone = CloneDeck(cloner, main, exportName, report);
-            if (clone == null)
-            {
-                Finish(report, state, "Export bridge");
-                return;
-            }
-            // Size from the archetype's root ownership role. For Suspension and ExtradosedBridge01
-            // that is the converted upper road; for ExtradosedBridge02 the auxiliary is above, so
-            // the chosen lower road/track is the root and supplies the width reference.
-            var variant = composer.Apply(
-                clone, style, main.Width, options, measure: main.Prefab);
-            if (variant != null)
-            {
-                AttachSecondDeck(
-                    clone, auxiliary, secondNetAbove, exportName, cloner, doubleDeck, options, variant,
-                    report);
-                DescribeResult(clone, exportName, report);
+            if (clone == null) return false;
 
-                // Generated towers are nodes like any other dependency: written before the bridge
-                // that references them, and registered with it. Leaving them out is what made the
-                // first generated tower a dangling reference in a saved asset.
-                var nodes = cloner.Nodes
-                    .Concat(towers.Created.Select(prefab => new PrefabCloneNode(prefab, prefab, false, true, null)))
-                    .ToList();
-                report.SavedDependencies = new PrefabAssetWriter().Save(nodes);
-                report.Exported(exportName);
-                state.Record(exportName, Fingerprint(upper));
-                WorldRegistration.Publish(World, _prefabSystem, nodes, report);
-            }
+            var variant = composer.Apply(clone, style, main.Width, options, measure: main.Prefab);
+            if (variant == null) return false;
+
+            ApplyPrototypeIcon(clone, variant.Donor);
+            AttachSecondDeck(
+                clone, auxiliary, secondNetAbove, exportName, cloner, doubleDeck, options, variant,
+                report);
+            DescribeResult(clone, exportName, report);
+
+            var nodes = cloner.Nodes
+                .Concat(towers.Created.Select(prefab =>
+                    new PrefabCloneNode(prefab, prefab, false, true, null)))
+                .ToList();
+            report.SavedDependencies = new PrefabAssetWriter().Save(nodes);
+            WorldRegistration.Publish(World, _prefabSystem, nodes, report);
+            if (report.FailedRoads != failuresBefore) return false;
+
+            report.Exported(exportName);
+            return true;
         }
         catch (Exception exception)
         {
             report.Failed(exportName, exception);
+            return false;
         }
+    }
 
-        Finish(report, state, "Export bridge");
+    private static void ApplyPrototypeIcon(NetGeometryPrefab clone, NetGeometryPrefab prototype)
+    {
+        try
+        {
+            var target = clone.GetComponent<UIObject>();
+            var source = prototype.GetComponent<UIObject>();
+            if (target != null && source != null && !string.IsNullOrWhiteSpace(source.m_Icon))
+                target.m_Icon = source.m_Icon;
+        }
+        catch (Exception exception)
+        {
+            Mod.Log.Warn(exception, $"Could not copy prototype icon to '{clone.name}'");
+        }
     }
 
     /// <summary>
@@ -616,6 +632,292 @@ public partial class BridgeGenerationSystem : GameSystemBase
         });
     }
 
+    private void HandleRuntimeRequest(BridgeRuntimeRequest request)
+    {
+        switch (request.Action)
+        {
+            case BridgeRuntimeAction.Refresh:
+                Refresh();
+                BridgeRuntimeRequests.Complete("道路、桥梁原型与已创建桥梁已刷新。");
+                return;
+            case BridgeRuntimeAction.Create:
+                CreateRuntimeBridge(request);
+                return;
+            case BridgeRuntimeAction.Activate:
+                ActivateRuntimeBridge(request.PrefabName);
+                return;
+            case BridgeRuntimeAction.Rename:
+                RenameRuntimeBridge(request.PrefabName, request.RegistrationName);
+                return;
+            case BridgeRuntimeAction.Delete:
+                DeleteRuntimeBridge(request.PrefabName);
+                return;
+        }
+    }
+
+    private void CreateRuntimeBridge(BridgeRuntimeRequest request)
+    {
+        var state = ExportStateStore.Load();
+        var report = new ExportReport();
+        var upper = DeckCatalog.Find(request.UpperDeckId);
+        var lower = string.IsNullOrEmpty(request.LowerDeckId)
+            ? null
+            : DeckCatalog.Find(request.LowerDeckId);
+        var style = BridgeStyleCatalog.Find(request.StyleId);
+
+        if (upper == null || !upper.IsRoad)
+        {
+            report.Failed("(runtime bridge)", new InvalidOperationException(
+                "The selected upper road is no longer registered."));
+            Finish(report, state, "Create runtime bridge", showMessage: false);
+            BridgeRuntimeRequests.Complete("创建失败：所选上层道路已不可用。");
+            return;
+        }
+
+        if (style == null || !style.IsInstalled)
+        {
+            report.Failed("(runtime bridge)", new InvalidOperationException(
+                "The selected bridge prototype is no longer installed."));
+            Finish(report, state, "Create runtime bridge", showMessage: false);
+            BridgeRuntimeRequests.Complete("创建失败：所选桥梁原型或前置内容已不可用。");
+            return;
+        }
+
+        var doubleDeck = !string.IsNullOrEmpty(request.LowerDeckId);
+        if (doubleDeck && lower == null)
+        {
+            report.Failed("(runtime bridge)", new InvalidOperationException(
+                "The selected lower network is no longer registered."));
+            Finish(report, state, "Create runtime bridge", showMessage: false);
+            BridgeRuntimeRequests.Complete("创建失败：所选下层道路或轨道已不可用。");
+            return;
+        }
+
+        if (!style.Variants.Any(variant => variant.IsDoubleDeck == doubleDeck))
+        {
+            report.Failed("(runtime bridge)", new InvalidOperationException(
+                doubleDeck
+                    ? "The selected bridge style has no double-deck prototype."
+                    : "The selected bridge style has no single-deck prototype."));
+            Finish(report, state, "Create runtime bridge", showMessage: false);
+            BridgeRuntimeRequests.Complete(doubleDeck
+                ? "创建失败：该桥型没有双层原型。"
+                : "创建失败：该桥型没有单层原型。");
+            return;
+        }
+
+        var loaded = LoadedExportNames();
+        var prefabName = string.Empty;
+        for (var attempt = 0; attempt < 16; attempt++)
+        {
+            var candidate = BridgeRegistration.NewPrefabName();
+            if (loaded.Contains(candidate) || state.Contains(candidate)
+                || BridgeRegistrationStore.Find(candidate) != null)
+                continue;
+            prefabName = candidate;
+            break;
+        }
+
+        if (prefabName.Length == 0)
+        {
+            report.Failed("(runtime bridge)", new InvalidOperationException(
+                "A unique bridge UUID could not be allocated."));
+            Finish(report, state, "Create runtime bridge", showMessage: false);
+            BridgeRuntimeRequests.Complete("创建失败：无法分配唯一 UUID。");
+            return;
+        }
+
+        var registrationName = string.IsNullOrWhiteSpace(request.RegistrationName)
+            ? BridgeNaming.BaseName(upper, lower, style)
+            : request.RegistrationName.Trim();
+        var options = new BridgeOptions
+        {
+            DoubleDeck = doubleDeck,
+            LowerDeckId = lower?.Id,
+            LowerDeckOpposite = true,
+        };
+
+        var built = TryBuildBridge(
+            upper, lower, style, prefabName, options, overwrite: false, report);
+        if (built)
+        {
+            state.Record(prefabName, RuntimeFingerprint(upper, lower, style));
+            var recorded = BridgeRegistrationStore.Record(new BridgeRegistration(
+                prefabName,
+                registrationName,
+                upper.Id,
+                lower?.Id,
+                style.Id,
+                DateTime.UtcNow.ToString("O", CultureInfo.InvariantCulture)));
+
+            if (recorded)
+            {
+                Mod.ReloadActiveLocale();
+                var activated = ActivatePrefab(prefabName);
+                BridgeRuntimeRequests.Complete(activated
+                    ? $"已创建“{registrationName}”，并进入建造模式。唯一标识符：{prefabName}"
+                    : $"已创建“{registrationName}”。唯一标识符：{prefabName}；请从管理页建造。");
+            }
+            else
+            {
+                report.Failed(prefabName, new IOException(
+                    "The prefab was created, but its runtime registration record could not be saved."));
+                BridgeRuntimeRequests.Complete(
+                    $"Prefab {prefabName} 已创建，但注册记录保存失败；未按显示名称登记。");
+            }
+        }
+        else
+        {
+            BridgeRuntimeRequests.Complete("桥梁创建失败；没有写入 UUID 注册记录。");
+        }
+
+        Finish(report, state, "Create runtime bridge", showMessage: false);
+    }
+
+    private static string RuntimeFingerprint(Deck upper, Deck? lower, BridgeStyle style)
+    {
+        return string.Join("|", new[]
+        {
+            "runtime-v1",
+            upper.Road?.Fingerprint ?? upper.Id,
+            style.Id,
+            lower?.Id ?? string.Empty,
+            lower == null ? "single" : "opp",
+        });
+    }
+
+    private void ActivateRuntimeBridge(string prefabName)
+    {
+        if (!BridgeRegistration.IsPrefabName(prefabName)
+            || BridgeRegistrationStore.Find(prefabName) == null)
+        {
+            BridgeRuntimeRequests.Complete("激活失败：无效或未注册的桥梁 UUID。");
+            return;
+        }
+
+        BridgeRuntimeRequests.Complete(ActivatePrefab(prefabName)
+            ? "已进入桥梁建造模式。"
+            : "激活失败：该桥梁 Prefab 当前没有加载。");
+    }
+
+    private bool ActivatePrefab(string prefabName)
+    {
+        try
+        {
+            var prefab = PrefabCatalog.GetAll(_prefabSystem)
+                .OfType<NetGeometryPrefab>()
+                .FirstOrDefault(candidate =>
+                    string.Equals(candidate.name, prefabName, StringComparison.Ordinal));
+            if (prefab == null) return false;
+            return World.GetOrCreateSystemManaged<ToolSystem>().ActivatePrefabTool(prefab);
+        }
+        catch (Exception exception)
+        {
+            Mod.Log.Warn(exception, $"Could not activate runtime bridge '{prefabName}'");
+            return false;
+        }
+    }
+
+    private static void RenameRuntimeBridge(string prefabName, string registrationName)
+    {
+        if (!BridgeRegistration.IsPrefabName(prefabName))
+        {
+            BridgeRuntimeRequests.Complete("改名失败：Prefab UUID 无效。");
+            return;
+        }
+        if (string.IsNullOrWhiteSpace(registrationName))
+        {
+            BridgeRuntimeRequests.Complete("改名失败：注册名称不能为空。");
+            return;
+        }
+
+        if (!BridgeRegistrationStore.Rename(prefabName, registrationName))
+        {
+            BridgeRuntimeRequests.Complete("改名失败：找不到该 UUID 的注册记录。");
+            return;
+        }
+
+        Mod.ReloadActiveLocale();
+        BridgeRuntimeRequests.Complete(
+            $"注册名称已改为“{registrationName.Trim()}”；Prefab 唯一标识符保持为 {prefabName}。");
+    }
+
+    private void DeleteRuntimeBridge(string prefabName)
+    {
+        var registration = BridgeRegistrationStore.Find(prefabName);
+        if (!BridgeRegistration.IsPrefabName(prefabName) || registration == null)
+        {
+            BridgeRuntimeRequests.Complete("删除失败：无效或未注册的桥梁 UUID。");
+            return;
+        }
+
+        var state = ExportStateStore.Load();
+        var report = new ExportReport();
+        var prefab = PrefabCatalog.GetAll(_prefabSystem)
+            .OfType<NetGeometryPrefab>()
+            .FirstOrDefault(candidate =>
+                string.Equals(candidate.name, prefabName, StringComparison.Ordinal));
+        var placed = 0;
+        if (prefab != null && !TryMarkPlacedInstancesDeleted(prefab, out placed))
+        {
+            report.Failed(prefabName, new InvalidOperationException(
+                "Placed bridge instances could not be removed safely, so the prefab asset was retained."));
+            Finish(report, state, "Delete runtime bridge", showMessage: false);
+            BridgeRuntimeRequests.Complete(
+                "删除失败：无法安全移除地图实例，因此保留了 Prefab 和 UUID 注册记录。");
+            return;
+        }
+        var removed = RemoveByName(prefabName, state, report);
+        if (removed.Count > 0 && BridgeRegistrationStore.Remove(prefabName))
+        {
+            Mod.ReloadActiveLocale();
+            BridgeRuntimeRequests.Complete(
+                $"已删除“{registration.RegistrationName}”、其 {placed} 个地图实例及 UUID 注册记录。");
+        }
+        else
+        {
+            BridgeRuntimeRequests.Complete(
+                "删除未完成：Prefab 资产或 UUID 注册记录仍然存在；请查看报告。");
+        }
+
+        Finish(report, state, "Delete runtime bridge", showMessage: false);
+    }
+
+    private bool TryMarkPlacedInstancesDeleted(NetGeometryPrefab prefab, out int deleted)
+    {
+        deleted = 0;
+        try
+        {
+            var prefabEntity = _prefabSystem.GetEntity(prefab);
+            using var query = EntityManager.CreateEntityQuery(ComponentType.ReadOnly<PrefabRef>());
+            using var entities = query.ToEntityArray(Allocator.Temp);
+            foreach (var entity in entities)
+            {
+                if (EntityManager.GetComponentData<PrefabRef>(entity).m_Prefab != prefabEntity) continue;
+
+                if (EntityManager.HasComponent<Game.Objects.SubObject>(entity))
+                {
+                    foreach (var child in EntityManager.GetBuffer<Game.Objects.SubObject>(entity))
+                    {
+                        if (EntityManager.Exists(child.m_SubObject)
+                            && !EntityManager.HasComponent<Deleted>(child.m_SubObject))
+                            EntityManager.AddComponent<Deleted>(child.m_SubObject);
+                    }
+                }
+
+                if (!EntityManager.HasComponent<Deleted>(entity))
+                    EntityManager.AddComponent<Deleted>(entity);
+                deleted++;
+            }
+        }
+        catch (Exception exception)
+        {
+            Mod.Log.Warn(exception, $"Could not remove every placed instance of '{prefab.name}'");
+            return false;
+        }
+        return true;
+    }
+
     private HashSet<string> LoadedExportNames()
     {
         return new HashSet<string>(
@@ -766,7 +1068,8 @@ public partial class BridgeGenerationSystem : GameSystemBase
         }
     }
 
-    private void Finish(ExportReport report, ExportStateStore state, string operation)
+    private void Finish(
+        ExportReport report, ExportStateStore state, string operation, bool showMessage = true)
     {
         try
         {
@@ -797,7 +1100,7 @@ public partial class BridgeGenerationSystem : GameSystemBase
             report.FailedRoads);
         RoadSelectionModel.PublishOperationResult(summary);
 
-        Mod.ShowMessage(text.Title, summary + "\n" + text.StateReportHint);
+        if (showMessage) Mod.ShowMessage(text.Title, summary + "\n" + text.StateReportHint);
         Refresh();
     }
 }

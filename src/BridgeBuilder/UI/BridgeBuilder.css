@@ -1,0 +1,45 @@
+.bb-toolbar img { width: 34rem; height: 34rem; }
+.bb-toolbar.bb-open { background: rgba(60, 116, 190, .92); }
+.bb-panel { position: absolute; inset: 22rem 36rem 30rem; z-index: 1000; display: flex; flex-direction: column; color: #18263a; background: rgba(246, 249, 253, .985); border: 2rem solid rgba(28, 58, 96, .85); border-radius: 9rem; box-shadow: 0 12rem 48rem rgba(0,0,0,.46); overflow: hidden; font-size: 16rem; }
+.bb-header { height: 64rem; flex: 0 0 64rem; display: flex; align-items: center; gap: 18rem; padding: 0 18rem; background: #d9e4f4; border-bottom: 1rem solid #7388a4; }
+.bb-title { display: flex; align-items: center; gap: 10rem; font-weight: 700; font-size: 21rem; margin-right: auto; }
+.bb-title img { width: 38rem; height: 38rem; }
+.bb-header nav { display: flex; gap: 6rem; }
+.bb-panel button { min-height: 36rem; padding: 6rem 13rem; border: 1rem solid #687e9d; border-radius: 5rem; color: #17263b; background: rgba(255,255,255,.82); }
+.bb-panel button:hover { background: #edf4ff; }
+.bb-panel button.bb-active, .bb-panel button.bb-primary { color: white; background: #326aa8; }
+.bb-panel button:disabled { opacity: .42; }
+.bb-close { width: 40rem; padding: 0 !important; font-size: 27rem; }
+.bb-workspace { min-height: 0; flex: 1; display: grid; grid-template-columns: minmax(420rem, 1fr) minmax(520rem, 1.12fr); gap: 28rem; padding: 24rem 30rem; }
+.bb-road-column, .bb-right, .bb-manage-detail { min-height: 0; display: flex; flex-direction: column; }
+.bb-road-column { padding: 15rem; background: #dce7f7; border: 1rem solid #274b77; border-radius: 5rem; }
+.bb-road-column h2 { margin: 0 0 10rem; font-size: 18rem; }
+.bb-road-column h2:not(:first-child) { margin-top: 16rem; }
+.bb-scroll { overflow-y: auto; min-height: 0; }
+.bb-road-column > .bb-scroll { flex: 1; }
+.bb-road-column > .bb-lower { flex: 1; }
+.bb-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10rem; padding: 2rem; }
+.bb-card { min-height: 118rem; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4rem; padding: 8rem !important; overflow: hidden; }
+.bb-card.bb-selected { outline: 3rem solid #3286d4; background: #c8e2ff; }
+.bb-card img { width: 76rem; height: 62rem; object-fit: contain; }
+.bb-card-name { width: 100%; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; font-weight: 600; }
+.bb-card small { width: 100%; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; color: #637083; }
+.bb-right { gap: 12rem; }
+.bb-preview { min-height: 210rem; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 7rem; background: #dce7f7; border: 1rem solid #274b77; border-radius: 5rem; }
+.bb-preview img { width: 88%; height: 170rem; object-fit: contain; }
+.bb-mode-tabs { display: grid; grid-template-columns: 1fr 1fr; }
+.bb-mode-tabs button { border-radius: 0; font-size: 19rem; }
+.bb-style-list { flex: 1; padding: 12rem; background: #dce7f7; border: 1rem solid #274b77; }
+.bb-create-bar { display: grid; grid-template-columns: 1fr auto; gap: 10rem; }
+.bb-panel input { min-height: 40rem; padding: 6rem 10rem; border: 1rem solid #667b97; border-radius: 4rem; background: white; color: #16263c; }
+.bb-status { min-height: 21rem; color: #3d526d; }
+.bb-empty { padding: 28rem; text-align: center; color: #64758b; }
+.bb-manage { min-height: 0; flex: 1; display: grid; grid-template-columns: minmax(490rem, 1.2fr) minmax(420rem, .8fr); gap: 24rem; padding: 24rem 30rem; }
+.bb-manage-list { padding: 12rem; background: #dce7f7; border: 1rem solid #274b77; }
+.bb-manage-detail { gap: 9rem; padding: 16rem; background: #e7eef8; border: 1rem solid #274b77; }
+.bb-manage-detail label { margin-top: 4rem; font-weight: 600; }
+.bb-manage-detail code { display: block; padding: 10rem; user-select: text; background: rgba(255,255,255,.8); border: 1rem solid #93a3b7; }
+.bb-note { color: #586b83; }
+.bb-actions { display: flex; gap: 9rem; margin-top: auto; }
+.bb-panel button.bb-danger { color: white; background: #a93b42; border-color: #7f2127; }
+@media (max-width: 1300px) { .bb-panel { inset: 14rem 18rem 22rem; } .bb-workspace, .bb-manage { grid-template-columns: 1fr 1fr; padding: 16rem; } .bb-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }

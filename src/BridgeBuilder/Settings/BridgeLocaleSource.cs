@@ -1,4 +1,5 @@
 using Colossal;
+using BridgeBuilder.Runtime;
 using System.Collections.Generic;
 
 namespace BridgeBuilder.Settings;
@@ -42,6 +43,13 @@ internal sealed class BridgeLocaleSource : IDictionarySource
         {
             entries[_setting.GetOptionLabelLocaleID(option.Key)] = option.Value.Label;
             entries[_setting.GetOptionDescLocaleID(option.Key)] = option.Value.Description;
+        }
+
+        foreach (var bridge in BridgeRegistrationStore.Load())
+        {
+            entries[$"Assets.NAME[{bridge.PrefabName}]"] = bridge.RegistrationName;
+            entries[$"Assets.DESCRIPTION[{bridge.PrefabName}]"] =
+                $"BridgeBuilder · {bridge.RegistrationName}";
         }
 
         return entries;
