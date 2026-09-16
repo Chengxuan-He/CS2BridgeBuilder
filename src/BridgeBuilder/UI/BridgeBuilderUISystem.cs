@@ -3,6 +3,7 @@ using BridgeBuilder.Runtime;
 using Colossal.UI.Binding;
 using CS2Mods.Shared;
 using CS2Mods.Shared.Infrastructure;
+using Game;
 using Game.Prefabs;
 using Game.SceneFlow;
 using Game.UI;
@@ -27,6 +28,11 @@ public partial class BridgeBuilderUISystem : UISystemBase
     private ValueBinding<string> _status = null!;
     private int _seenRevision = -1;
 
+    // The runtime builder owns loaded-save prefabs and resolves icons from a settled gameplay
+    // PrefabSystem. UISystemBase applies this mask during OnGamePreload, so the editor never runs
+    // RefreshBindings while its prefab database is still being constructed.
+    public override GameMode gameMode => GameMode.Game;
+
     [Preserve]
     protected override void OnCreate()
     {
@@ -49,6 +55,10 @@ public partial class BridgeBuilderUISystem : UISystemBase
         AddBinding(new TriggerBinding<string, string>(
             Group, "RenameBridge", QueueRename, new BridgeStringReader(), new BridgeStringReader()));
         AddBinding(new TriggerBinding<string>(Group, "DeleteBridge", ConfirmDelete, new BridgeStringReader()));
+
+        // OnGamePreload enables the system only when the GameMode.Game mask above matches. Keeping
+        // it disabled until that callback also closes the short startup window before a mode exists.
+        Enabled = false;
     }
 
     [Preserve]
