@@ -53,6 +53,20 @@ $frameworkRefs = Join-Path $refPack.FullName 'ref\netstandard2.1'
 $output = Join-Path $projectRoot "src\BridgeBuilder\bin\$Configuration"
 [IO.Directory]::CreateDirectory($output) | Out-Null
 
+$uiModule = Join-Path $projectRoot 'src\BridgeBuilder\UI\BridgeBuilder.mjs'
+$uiHeader = [IO.File]::ReadAllText($uiModule)
+foreach ($requiredHeaderLine in @(
+    'Cities:\s*Skylines II UI Module',
+    '(?m)^\s*\*\s*Id\s*:',
+    '(?m)^\s*\*\s*Author\s*:',
+    '(?m)^\s*\*\s*Version\s*:',
+    '(?m)^\s*\*\s*Dependencies\s*:'
+)) {
+    if ($uiHeader -notmatch $requiredHeaderLine) {
+        throw "BridgeBuilder.mjs is missing required UI module metadata: $requiredHeaderLine"
+    }
+}
+
 $references = [Collections.Generic.List[string]]::new()
 Get-ChildItem -LiteralPath $frameworkRefs -Filter '*.dll' | ForEach-Object {
     $references.Add('/reference:' + $_.FullName)
@@ -101,7 +115,7 @@ $arguments = @(
 
 & $dotnet @arguments
 if ($LASTEXITCODE -ne 0) { throw "Compilation failed with exit code $LASTEXITCODE" }
-Copy-Item -LiteralPath (Join-Path $projectRoot 'src\BridgeBuilder\UI\BridgeBuilder.mjs') -Destination $output -Force
+Copy-Item -LiteralPath $uiModule -Destination $output -Force
 Copy-Item -LiteralPath (Join-Path $projectRoot 'src\BridgeBuilder\UI\BridgeBuilder.css') -Destination $output -Force
 Copy-Item -LiteralPath (Join-Path $projectRoot 'assets\BridgeBuilder.svg') -Destination $output -Force
 Write-Host "Built: $(Join-Path $output 'BridgeBuilder.dll')"

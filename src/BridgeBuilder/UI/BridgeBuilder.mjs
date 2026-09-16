@@ -1,7 +1,9 @@
 /*!
  * Cities: Skylines II UI Module
  * Id: BridgeBuilder
+ * Author: BridgeBuilder
  * Version: 0.3.0
+ * Dependencies:
  */
 const React = window.React;
 const ui = window["cs2/ui"];
