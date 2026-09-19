@@ -849,15 +849,6 @@ width-increment and new-width bit patterns, and the reason it was skipped. A lar
 discrepancy is evidence that the bridge or the measurement basis needs separate investigation; it is
 not permission for a large automatic correction.
 
-An over-threshold bridge remains `Skipped` in the invariant pass and its audit row must not be
-rewritten. A separate bridge-specific investigation may result in a repair only when the user
-explicitly authorizes the exact audited full-span delta, retained evidence establishes the same-basis
-left and right boundaries, and the work is performed on the bridge's required branch. The separate
-repair must be recorded as such and folded into the original immutable source data; it is never a
-runtime correction and never retroactively changes the invariant-pass decision. The user authorized
-the TiedArch follow-up on `bridge/tied-arch`: apply the exact full-span delta `-2f`
-(`0xC0000000`) to the retained `46f` span (`0x42380000`), yielding `44f` (`0x42300000`).
-
 Apply a verified correction to the full-detail mesh and every LOD together, subject to rule 8 and the
 bridge-specific branch rule in section 12. Never turn this invariant into runtime geometric guessing.
 The metaprogramming step may identify the affected authored parts and emit reviewed immutable data;
@@ -877,3 +868,68 @@ The audit record for the pass which introduced this rule is
 real generated sample remains mandatory unfinished work. A human must select a road and actually
 create a new bridge before the bridge can receive the `1 m` decision. It must not be marked skipped,
 compliant or complete merely because the implementation's algebra appears to preserve the constant.
+
+## 15. Bridge lighting is copied from the archetype as behavior
+
+A bridge's lighting is part of the archetype, not an optional decoration to reconstruct from a shared
+template. A generated bridge preserves every bridge-specific light the archetype carries and every
+field which controls its visible effect. This includes light objects placed directly in the bridge's
+`NetSubObjects`, lights and other mounted objects inside a tower or pylon's `ObjectSubObjects`, the
+referenced prefab's `EffectSource`, `LightEffect`, colour, intensity, range and culling behavior, and
+each placement's position, rotation, parent mesh, group, probability and activation conditions.
+
+Do not identify lights from prefab names. Names such as `WallLight`, `Spotlight` and `WarningLight`
+are useful in a diagnostic report but are not a complete type system. Carry the authored component and
+its prefab references whole. A referenced light/effect prefab which is not itself derived remains the
+exact shared archetype reference. If a carried component points to a prefab which is being derived,
+repoint only that reference to the corresponding generated prefab, as required by rule 2.
+
+Tower-mounted objects must remain attached when the tower width changes. `m_ParentMesh` identifies the
+authored mesh part whose displacement applies. A child object standing at non-zero x is a rigid side
+part and its x position moves by the same signed half-width delta as that parent mesh; a child at
+`x = 0` remains on the centre line. Its y and z coordinates, rotation, parent-mesh index, group,
+probability and activation data do not change. This uses only comparison with `x = 0` and does not
+permit a non-zero runtime coordinate heuristic or any geometric guessing.
+
+The user-selected road remains the deliberate road-structure difference allowed by rule 3. Its
+ordinary street lights stay those of that road. They are not replaced with the archetype road's street
+lights. Bridge-specific lights mounted on the archetype's towers, pylons or bridge-only sub-object
+entries are carried in addition to that road behavior, with the archetype's duplication and placement
+rules preserved exactly.
+
+Lighting validation follows rules 6 and 7. Compare the real archetype and generated prefab dumps,
+including nested tower replacements, and verify that their bridge-specific light/effect references and
+non-width fields match. Compilation is not evidence of a lighting match. Final validation is a human
+in-game comparison at night in near and far views; the Agent must not open or control the game.
+
+## 16. Construction price is a bridge property, never a pricing prefab
+
+Rollback baseline recorded before this rule's first edit: branch `dev`, HEAD
+`8c90b34a617b272d08ed3b27b2d24c7230f79458`; local reference
+`rollback/economy-no-pricing-20260919`.
+
+Creating any pricing prefab is forbidden. This includes `_Pricing_*`, invisible charge pieces,
+charge sections, and section/piece graph clones created only to alter construction cost, regardless
+of their names. Do not replace a forbidden pricing prefab with the same dependency under a new name.
+Price is a scalar serialized property/component on the generated bridge prefab itself. No additional
+asset dependency may be introduced for pricing and source roads/shared pieces must not be changed.
+
+Keep the verified per-archetype signed offset. Read selected road base prices from the game's
+initialized native price data, not by reconstructing the road's serialized component graph. All
+operands use native currency per 8 m; multiply by 125 only when expressing a price per kilometre.
+
+    formulaBase = offset + 3 * (upperRoadBase + lowerRoadBase)
+    bridgeBase = max(formulaBase, upperElevatedBase + lowerElevatedBase)
+
+The absent lower deck contributes zero to both sums. Preserve negative offsets; a negative formula
+result is raised to the elevated-road floor, not rejected merely for being negative. Overflow and
+unavailable authoritative road costs remain explicit failures, never guessed costs.
+
+The native asset UI and actual road construction composition must receive the same base price after
+native initialization. The main network owns the complete base charge; its owned auxiliary networks
+must not charge that sum a second time. Height costs, upkeep and separate object costs remain native.
+An input road priced at 1500/km (12/8m) with a blue suspension offset of 36/8m gives 9000/km (72/8m),
+unless that road's elevated base price is higher. Do not divide the erroneous output by two as a fix.
+
+Remove obsolete mod-owned pricing prefabs together with dependent generated bridges using the
+ownership-scoped cleanup procedure; never delete shared/native or another mod's source assets.

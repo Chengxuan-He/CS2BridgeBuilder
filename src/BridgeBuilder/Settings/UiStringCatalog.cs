@@ -42,6 +42,7 @@ internal static class UiStringCatalog
         {
             if (Cache.TryGetValue(key, out var cached)) return cached;
             var built = UiStringTables.WithStyleNames(UiStringTables.WithBridgeText(Builders[key](), key), key);
+            built.LocaleId = key;
             Cache[key] = built;
             return built;
         }
@@ -63,10 +64,29 @@ internal static class UiStringCatalog
         }
     }
 
-    private static string Resolve(string? localeId)
+    internal static string Resolve(string? localeId)
     {
         if (string.IsNullOrEmpty(localeId)) return "en-US";
-        if (Builders.ContainsKey(localeId!)) return localeId!;
+        localeId = localeId!.Replace('_', '-');
+        // Return canonical casing: the translation builders use exact switch labels.
+        foreach (var candidate in Builders.Keys)
+            if (string.Equals(candidate, localeId, StringComparison.OrdinalIgnoreCase)) return candidate;
+
+        if (localeId.StartsWith("zh-", StringComparison.OrdinalIgnoreCase))
+        {
+            var parts = localeId.Split('-');
+            // Explicit script wins over the region (e.g. zh-Hans-TW).
+            foreach (var part in parts)
+            {
+                if (part.Equals("Hans", StringComparison.OrdinalIgnoreCase)) return "zh-HANS";
+                if (part.Equals("Hant", StringComparison.OrdinalIgnoreCase)) return "zh-HANT";
+            }
+            foreach (var part in parts)
+                if (part.Equals("TW", StringComparison.OrdinalIgnoreCase) ||
+                    part.Equals("HK", StringComparison.OrdinalIgnoreCase) ||
+                    part.Equals("MO", StringComparison.OrdinalIgnoreCase)) return "zh-HANT";
+            return "zh-HANS";
+        }
 
         var separator = localeId!.IndexOf('-');
         var language = separator > 0 ? localeId.Substring(0, separator) : localeId;

@@ -39,8 +39,9 @@ internal readonly struct RoadEdge
 }
 
 /// <summary>
-/// Finds the golden suspension bridge's two boundary-facing railing edges and places only its
-/// removable inner railing.
+/// Finds a suspension bridge's two boundary-facing railing edges and places only its removable inner
+/// railing. The golden family and SuspensionBridge01 share this topology but retain different authored
+/// road-surface gaps.
 /// </summary>
 internal static class GoldenBridgeRailings
 {
@@ -83,13 +84,15 @@ internal static class GoldenBridgeRailings
             float side,
             RoadEdge roadEdge,
             float innerEdgeBefore,
-            float outerEdgeAfter)
+            float outerEdgeAfter,
+            float roadSurfaceGap)
         {
             Layout = layout;
             Side = Math.Sign(side);
             RoadEdge = roadEdge;
             InnerEdgeBefore = innerEdgeBefore;
             OuterEdgeAfter = outerEdgeAfter;
+            RoadSurfaceGap = Math.Max(0f, roadSurfaceGap);
         }
 
         internal Layout Layout { get; }
@@ -101,6 +104,7 @@ internal static class GoldenBridgeRailings
 
         /// <summary>The outer railing edge nearest the road boundary, after deck widening.</summary>
         internal float OuterEdgeAfter { get; }
+        internal float RoadSurfaceGap { get; }
         internal bool Remove => !RoadEdge.IsSidewalk || SidewalkWidth <= 0f;
         internal float RailingGap => Math.Max(0f, SidewalkWidth - RoadSurfaceGap);
         internal float RoadOuterBoundary => RoadEdge.OuterBoundary;
@@ -165,6 +169,21 @@ internal static class GoldenBridgeRailings
         float side,
         out Plan plan)
     {
+        return TryPlan(
+            bands, source, moved, low, high, roadEdge, side, RoadSurfaceGap, out plan);
+    }
+
+    internal static bool TryPlan(
+        IReadOnlyList<Band> bands,
+        float3[] source,
+        float3[] moved,
+        float low,
+        float high,
+        RoadEdge roadEdge,
+        float side,
+        float roadSurfaceGap,
+        out Plan plan)
+    {
         plan = default;
         if (bands.Count < 2 || source.Length != moved.Length || Math.Abs(side) < 0.5f)
             return false;
@@ -199,7 +218,8 @@ internal static class GoldenBridgeRailings
             side,
             roadEdge,
             innerEdgeBefore,
-            outerEdgeAfter);
+            outerEdgeAfter,
+            roadSurfaceGap);
         return true;
     }
 

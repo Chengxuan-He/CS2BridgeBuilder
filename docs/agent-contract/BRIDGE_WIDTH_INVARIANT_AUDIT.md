@@ -94,25 +94,11 @@ that existing state and each applicable new full-span increment into the origina
 parameters in `BridgeStyleDefinitions.cs`, plus the corrected CableStayed prototype-road datum in
 `BridgeTowers.cs`. The standalone runtime correction table was removed.
 
-For a skipped bridge, the invariant pass applies no new increment: `ExtradosedLarge`, `Grand` and
-`TiedArch` remain `Skipped` in the table above. Bitwise-zero bridges likewise retain their measured
-generated span without a new correction step. Runtime performs only its ordinary
-target-versus-archetype generation calculation using final immutable parameters.
-
-## Authorized TiedArch follow-up
-
-This is separate from the invariant pass and does not change its `Skipped` result. Before editing the
-instruction files or TiedArch source, the recorded rollback baseline was branch `bridge/tied-arch` at
-commit `d9828f2958b4aeec2b52a68ab38ccc3e405be0c0`; durable local tag
-`backup/dev-before-tied-arch-targeted-correction-20260910` points to that commit.
-
-The user explicitly authorized the retained exact full-span correction `-2f` (`0xC0000000`): the
-audited generated span `46f` (`0x42380000`) therefore targets `44f` (`0x42300000`). The retained
-archetype dump establishes the same-basis source values directly: road surface `19f` (`0x41980000`)
-and transverse structure `23f` (`0x41B80000`). The bridge-specific repair records `19f` as the
-original TiedArch road datum and removes the compensating `2f` style allowance. Ordinary generation
-then computes `40f - 19f = 21f` and `23f + 21f = 44f`; no runtime audit table, post-generation delta
-or bridge-specific forced result is used.
+For a skipped bridge, the metaprogramming pass applies no new increment: `ExtradosedLarge` and `Grand`
+had no prior adjustment to fold, while `TiedArch` retains its already-generated span as the original
+final authored parameter. Bitwise-zero bridges likewise retain their measured generated span without
+a new correction step. Runtime now performs only its ordinary target-versus-archetype generation
+calculation using these final immutable parameters.
 
 ## Measurement selection
 

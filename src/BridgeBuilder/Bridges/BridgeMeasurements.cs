@@ -39,11 +39,18 @@ internal static class BridgeMeasurements
             ["Suspension Bridge - Highway Oneway - 3 lanes"] = (18, 26),
             ["Suspension Bridge - Highway Oneway - 4 Lanes"] = (22, 30),
             ["Suspension Bridge - Highway Oneway - 5 Lanes"] = (26, 34),
-            ["SuspensionBridge01"] = (28, 38),
-            ["SuspensionBridge02"] = (34, 49),
+            // These two prefabs carry Smooth/non-Smooth alternatives for the same lateral section.
+            // Summing both alternatives reported exactly twice the real left-to-right road width
+            // (26/32). The retained prefab cross-sections are 3.5+3+3+3.5 = 13 m for 01 and
+            // 2+4+4+4+2 = 16 m for 02. They are prototype facts, not runtime measurements.
+            ["SuspensionBridge01"] = (13, 38),
+            ["SuspensionBridge02"] = (16, 49),
             ["SuspensionBridge03"] = (52, 50),
             ["SuspensionBridge04"] = (52, 50),
-            ["BXP Double Deck Suspension Bridge - Highway"] = (26, 38),
+            // Double-deck width audit: this prefab is the upper/root road. Its active road sections
+            // span 24 m; 26 m included the two outward side extensions that are not the road-width
+            // operand of the bridge-minus-road invariant.
+            ["BXP Double Deck Suspension Bridge - Highway"] = (24, 38),
             ["BXP Suspension Bridge - Highway Twoway - 4 Lanes"] = (30, 30),
             ["BXP SuspensionBridge03 - Six Lane Highway"] = (29, 50),
             ["BXP SuspensionBridge02 Above Road Four-Lane"] = (24, 0),
@@ -59,8 +66,11 @@ internal static class BridgeMeasurements
             ["BXP Double Deck Suspension Bridge - Subway"] = (38, 37),
             ["SuspensionBridge02 Above Road"] = (18, 0),
             ["Extradosed Bridge - Large Road Divided - 6 Lanes"] = (63, 21),
-            ["ExtradosedBridge01"] = (42, 53),
-            ["ExtradosedBridge02"] = (40, 46),
+            // Double-deck width audit: 01's root is the upper road and 02's root is the lower road.
+            // These are the active root-road spans from the retained real-prefab dump; mutually
+            // exclusive and outward-only sections are not road-width operands.
+            ["ExtradosedBridge01"] = (20, 53),
+            ["ExtradosedBridge02"] = (19, 46),
             ["ExtradosedBridge03"] = (40, 56),
             ["ExtradosedBridge04"] = (40, 56),
             ["BXP ExtradosedBridge01 - PedsBikes"] = (42, 53),
@@ -108,11 +118,7 @@ internal static class BridgeMeasurements
             ["BXP TrussArchBridge03 - Highway"] = (24, 18),
             ["BXP Truss Arch Bridge - Subway"] = (14, 15),
             ["BXP Truss Arch Bridge - Highway Oneway - 2 Lanes"] = (14, 15),
-            // Same-basis full-span measurements from the retained archetype dump: the road surface
-            // spans 19 m and the transverse tied-arch structure spans 23 m. The former 21 m value
-            // included the two 1 m side sections and was not the road-surface boundary used by the
-            // generated sample audit.
-            ["Tied Arch Bridge - 4 lanes"] = (19, 23),
+            ["Tied Arch Bridge - 4 lanes"] = (21, 23),
             ["BXP Tied Arch Bridge - Train - 4 Tracks"] = (24, 23),
             ["BXP Tied Arch Bridge - Highway Oneway - 4 Lanes"] = (22, 23),
             ["BXP Tied Arch Bridge - Train - 4 Tracks Alternating"] = (24, 23),

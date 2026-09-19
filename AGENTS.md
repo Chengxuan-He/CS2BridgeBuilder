@@ -89,15 +89,19 @@ The numbered references below point to the corresponding sections in the complet
     must be created and measured, and the pass remains incomplete until that real sample exists.
     Creating and judging the sample is a human game operation; the Agent must not open or control the
     game or issue an API/request-file bridge-construction request. See contract section 14.
-    An over-threshold result remains `Skipped` in that invariant pass. A separate bridge-specific
-    repair is permitted only after the user explicitly authorizes the exact audited delta, and it
-    must retain the original audit result, use the bridge's required branch and fold the repair into
-    original immutable source data. The authorized TiedArch follow-up is the exact full-span delta
-    `-2f` (`0xC0000000`) to target `44f` (`0x42300000`) on `bridge/tied-arch`.
 15. Bridge-generation code must never calculate, look up or apply an audit correction at runtime.
     Width and geometry corrections are completed during metaprogramming and folded into the original,
     immutable archetype parameters or generated source data. Runtime consumes only those final values;
     it must not know an audit delta exists. See contract section 14.
+16. Bridge-specific lighting is archetype behavior. Preserve every authored bridge light, its effect
+    prefab and fields, placement, parent mesh, rotation, group, probability and activation conditions.
+    Side-mounted tower lights follow the same rigid width displacement as their parent mesh; lights on
+    `x = 0` remain centred. Ordinary lighting belonging to the user-selected road remains part of that
+    road structure. See contract section 15.
+17. Never create any pricing prefab, including cost-only sections/pieces or private graph copies
+    whose purpose is pricing. Store construction price as a scalar property on the generated bridge,
+    use the game's initialized road price, and floor the result at the same selected networks'
+    elevated construction price. UI and actual placement must use the same base value. See section 16.
 
 ## Geometry invariants that must remain visible at repository scope
 
