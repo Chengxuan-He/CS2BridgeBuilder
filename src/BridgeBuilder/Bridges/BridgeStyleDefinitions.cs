@@ -88,9 +88,8 @@ internal sealed class BridgeStyleDefinition
 /// And prefab names are identifiers, not labels. "TrussArchBridge02" is not what the style is called
 /// in any language; naming it here lets every entry be translated properly.
 ///
-/// Discovery still runs, and still decides which variant of a style fits a given road - and any
-/// bridge from an asset pack that matches none of these patterns is added to the list as it is found,
-/// so installing a pack still widens the choice.
+/// Discovery binds installed variants only to implemented, localized styles.
+/// A Bridge component on an unknown prefab is not a generation implementation.
 /// </summary>
 internal static class BridgeStyleDefinitions
 {
@@ -100,6 +99,63 @@ internal static class BridgeStyleDefinitions
     /// that matches none of its entries.
     /// </summary>
     internal const string Default = "Suspension";
+
+    // Explicit generator coverage, not a list inferred from installed Bridge
+    // components. These families have recorded TowerFactory/section generation
+    // paths. TiedArch is generated through its overhead sections; CoveredWood and
+    // ExtradosedLarge deliberately retain their recorded non-portal supports.
+    // Adding a definition, translation or donor alone must not enable generation.
+    private static readonly HashSet<string> ImplementedStyles = new(StringComparer.Ordinal)
+    {
+        "WoodenCovered", "CoveredWood",
+        "Suspension", "SuspensionDouble", "Suspension01", "Suspension02",
+        "SuspensionGolden", "GoldenGate", "GoldenGateDouble",
+        "Extradosed01", "Extradosed02", "Extradosed03", "ExtradosedLarge",
+        "CableStayed", "TrussArch", "TrussArch01", "TrussArch02", "TrussArch03",
+        "TiedArch", "Grand",
+    };
+
+    /// <summary>The common catalogue, preview and generation admission rule.</summary>
+    internal static string? GenerationUnsupportedReason(string? styleId, bool doubleDeck = false)
+    {
+        if (string.IsNullOrEmpty(styleId)) return "no bridge style was selected";
+        if (!SupportsDeckMode(styleId, doubleDeck)) return "the selected bridge style does not support this deck count";
+        var deferred = DeferredReason(styleId);
+        if (deferred != null) return deferred;
+        if (!ImplementedStyles.Contains(styleId!) || !All.Any(item => item.Id == styleId))
+            return "no bridge generator is implemented for this style";
+
+        // Check the Chinese translation independently of the active UI locale.
+        // Switching the game to English must not remove implemented bridges.
+        var chineseName = Settings.UiStringCatalog.ForLocale("zh-HANS").StyleName(styleId!);
+        if (!chineseName.Any(character => character >= '\u3400' && character <= '\u9fff'))
+            return "the bridge style has no Chinese display name";
+        return null;
+    }
+
+    internal static bool CanGenerate(string? styleId) => GenerationUnsupportedReason(styleId) == null
+        || GenerationUnsupportedReason(styleId, true) == null;
+
+    // The DLC landmark and BXP's genuine auxiliary-net archetypes are separate products.
+    internal static bool SupportsDeckMode(string? styleId, bool doubleDeck) => styleId switch
+    {
+        "GoldenGate" => !doubleDeck,
+        "GoldenGateDouble" => doubleDeck,
+        _ => true,
+    };
+
+    internal static bool AcceptsSource(string styleId, bool isBaseGame) =>
+        styleId != "Extradosed01" || isBaseGame;
+
+    /// <summary>
+    /// Recorded central cable sheet, not a frame straddling the road. Its source geometry
+    /// 28ab220c7162571f5effdf1fd5de7c6a spans x=-0.299219..+0.299219 although the
+    /// NetPiece's composition width is 21. The single-column pylon is unchanged too.
+    /// This exact archetype identity is resolved offline, never from runtime mesh bounds
+    /// or m_Median (other median sections contain full-width, paired cable assemblies).
+    /// </summary>
+    internal static bool PreservesOverheadGeometry(string? styleId, string sectionName) =>
+        styleId == "ExtradosedLarge" && sectionName == "6-Lane Extradosed Bridge";
 
     /// <summary>
     /// The ordinary white road-railing policy measured on every generated bridge family.
@@ -121,6 +177,7 @@ internal static class BridgeStyleDefinitions
         "Suspension01" or
         "SuspensionGolden" or
         "GoldenGate" or
+        "GoldenGateDouble" or
         "Extradosed01" or
         "Extradosed02" or
         "Extradosed03" or
@@ -199,6 +256,9 @@ internal static class BridgeStyleDefinitions
         // generic golden entry, which hid it behind the same label and made its generation use the
         // SuspensionBridge03 tower metadata.
         new BridgeStyleDefinition(
+            "GoldenGateDouble", "Golden Gate Double-Deck Suspension Bridge", 49,
+            "bxpgoldengatebridgesubway", "bxpgoldengatebridgetrain"),
+        new BridgeStyleDefinition(
             "GoldenGate", "Golden Gate Suspension Bridge", 49, "goldengate"),
 
         // 03 and 04 are the gold-painted pair. The number is an identity rather than a size, so asking
@@ -238,8 +298,8 @@ internal static class BridgeStyleDefinitions
             "ExtradosedLarge", "Extradosed Bridge", 23, "extradosedbridgelargeroaddivided"),
         // No catch-all "Extradosed" style. It offered a choice between designs rather than between
         // sizes of one - the pylon is what a cable-stayed bridge is - and every design that has been
-        // looked at now has a style of its own above. A prefab matching none of them is picked up by
-        // the catalogue as a family of its own rather than filed under a name that means five bridges.
+        // looked at now has a style of its own above. A prefab matching none of the implemented styles
+        // is excluded rather than offered without a corresponding generator.
         new BridgeStyleDefinition("CableStayed", "Cable-Stayed Bridge", 3,       // 3.1 over 4
             "cablestayed", "cablestay"),
         // Before the general truss arch pattern, so the specific name wins - the same ordering that

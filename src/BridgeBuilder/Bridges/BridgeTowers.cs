@@ -233,6 +233,12 @@ internal static class BridgeTowers
                 new Tower("GoldenGateBridgePylon Placeholder", 33, 25, verified: true),
                 new Tower("GoldenGateBridgePillar Placeholder", 40, 25, verified: true),
             },
+            ["GoldenGateDouble"] = new[]
+            {
+                // BXP Train/Subway anatomy and tower-measurements: the upper road is 25 m;
+                // both auxiliary-net archetypes carry this same 33 m portal, not the end pillar.
+                new Tower("GoldenGateBridgePylon Placeholder", 33, 25, verified: true),
+            },
             ["SuspensionGolden"] = new[]
             {
                 // SuspensionBridge03 and 04 carry both, and the pylon is the portal. The 34 recorded
@@ -466,7 +472,7 @@ internal static class BridgeTowers
     /// track archetype has no ordinary span railing, but that does not make its mesh a golden kerb rail.
     /// </summary>
     internal static bool BringsItsOwnRailings(string? styleId) =>
-        styleId is "Suspension01" or "SuspensionGolden" or "GoldenGate";
+        styleId is "Suspension01" or "SuspensionGolden" or "GoldenGate" or "GoldenGateDouble";
 
     /// <summary>
     /// Authored gap between the road surface and the outer sidewalk platform. The golden family keeps
@@ -474,7 +480,7 @@ internal static class BridgeTowers
     /// are exactly one sidewalk width apart.
     /// </summary>
     internal static float RailingRoadSurfaceGap(string? styleId) =>
-        styleId is "SuspensionGolden" or "GoldenGate"
+        styleId is "SuspensionGolden" or "GoldenGate" or "GoldenGateDouble"
             ? GoldenBridgeRailings.RoadSurfaceGap
             : 0f;
 

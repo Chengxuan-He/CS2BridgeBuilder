@@ -40,6 +40,7 @@ internal sealed class TowerFactory
     private readonly ExportReport _report;
     private readonly PrefabBase[] _prefabs;
     private readonly List<PrefabBase> _created = new();
+    private readonly PreviewGeometry? _previewGeometry;
 
     /// <summary>
     /// The road width and footway either side of the road being fitted, where there is one.
@@ -142,9 +143,11 @@ internal sealed class TowerFactory
         return _groundBase;
     }
 
-    internal TowerFactory(PrefabSystem prefabSystem, ExportReport report)
+    internal TowerFactory(PrefabSystem prefabSystem, ExportReport report,
+        PreviewGeometry? previewGeometry = null)
     {
         _report = report;
+        _previewGeometry = previewGeometry;
         _prefabs = PrefabCatalog.GetAll(prefabSystem)
             .Where(prefab => prefab != null)
             .ToArray();
@@ -160,6 +163,14 @@ internal sealed class TowerFactory
     {
         _towerKey = sourceTowerName;
         _styleId = styleId;
+
+        if (styleId == "TrussArch01" && sourceTowerName == "TrussArchBridge01NetPillar"
+            && !_trussArch01StructureExtra.HasValue)
+        {
+            _report.Failed(sourceTowerName, new InvalidOperationException(
+                "The blue truss-arch pier requires its bridge's structural width plan."));
+            return null;
+        }
 
         // Every generated bridge owns its tower prefab. Sharing by style and width (for example
         // Suspension-40) made a later bridge depend on mutable prefab state created for an earlier
@@ -238,9 +249,8 @@ internal sealed class TowerFactory
             if (built != null) _thisRun[wanted] = built;
             return built;
         }
-        catch (Exception exception)
+        catch (Exception)
         {
-            ModHost.Log.Warn(exception, $"Could not generate the tower '{name}'");
             _report.Warning($"'{name}' could not be generated, so the style's own tower was kept.");
             return null;
         }
@@ -277,13 +287,19 @@ internal sealed class TowerFactory
     /// </summary>
     private float? _trussArch03StructureExtra;
 
+    // The blue support is also excluded from portal selection. Keep the composer's width plan,
+    // not a second calculation whose fallback treats the target road as the source road.
+    private float? _trussArch01StructureExtra;
+
     /// <summary>
-    /// Records the composer's final structural delta. Only TrussArch03 consumes it, because its sole
-    /// object is deliberately classified as a support and therefore is not selected as a portal;
+    /// Records the composer's final structural delta. Blue and green truss arches consume it because
+    /// their objects are deliberately classified as supports and are not selected as portals;
     /// recomputing from the selected tower would use the target road as the prototype datum.
     /// </summary>
     internal void MeasureStructureExtra(float extra)
     {
+        if (string.Equals(_styleId, "TrussArch01", StringComparison.Ordinal))
+            _trussArch01StructureExtra = extra;
         if (string.Equals(_styleId, "TrussArch03", StringComparison.Ordinal))
         {
             _trussArch03StructureExtra = extra;
@@ -368,6 +384,7 @@ internal sealed class TowerFactory
         _towerKey = null;
         _structureWidths = null;
         _trussArch03StructureExtra = null;
+        _trussArch01StructureExtra = null;
         // Set here and not only where a tower is created. The sections are widened first - the cables
         // and the railings that live beside them - so anything that asks which style is being built
         // while that happens was asking a null. The inner railing rule did, and did nothing, silently.
@@ -430,13 +447,17 @@ internal sealed class TowerFactory
             && _towerKey == "TrussArchBridge01NetPillar"
             && parts.Length > 0)
         {
-            var byTruss = TrussArch01Geometry.PierExtraForSection(byRoad);
+            // Create refuses a missing plan before allocating any tower geometry. The support's
+            // generic byRoad can cancel target-target and must not size this pier. Use the same
+            // section delta as the arch, then the already-recorded section/pier relationship.
+            var sectionExtra = _trussArch01StructureExtra!.Value;
+            var byTruss = TrussArch01Geometry.PierExtraForSection(sectionExtra);
             _report.Note(string.Format(
                 CultureInfo.InvariantCulture,
                 "{0}: widened the blue pier {1:0.###} m from immutable TrussArchBridge01 "
                 + "metadata: section delta {2:0.###} m plus the prototype section/pier edge "
                 + "total-width difference {3:0.###} m.",
-                name, byTruss, byRoad,
+                name, byTruss, sectionExtra,
                 TrussArch01Geometry.PrototypeSectionWidth
                     - TrussArch01Geometry.PrototypePierWidth));
             return byTruss;
@@ -519,7 +540,9 @@ internal sealed class TowerFactory
         var prototypeBaseWidth = TrussArch01Geometry.PrototypeBaseWidth;
         var prototypeArchWidth = TrussArch01Geometry.PrototypeSectionWidth;
         var prototypeDifference = prototypeBaseWidth - prototypeArchWidth;
-        var baseExtra = TrussArch01Geometry.SectionExtraForPier(towerExtra);
+        // Carry the original plan directly, rather than undoing the pier calculation with another
+        // pair of floating-point operations. LOD derivation receives this same partExtra unchanged.
+        var baseExtra = _trussArch01StructureExtra!.Value;
         var generatedArchWidth = prototypeArchWidth + baseExtra;
         var generatedBaseWidth = generatedArchWidth + prototypeDifference;
         _report.Note(string.Format(
@@ -598,9 +621,9 @@ internal sealed class TowerFactory
                     outlines.Add(mesh.triangles);
                 }
             }
-            catch (Exception exception)
+            catch (Exception)
             {
-                ModHost.Log.Warn(exception, $"Could not measure the profile of '{info.m_Piece.name}'");
+                // Generation diagnostics are silent; retain the external API exception boundary.
             }
             finally
             {
@@ -614,24 +637,6 @@ internal sealed class TowerFactory
 
         return TowerWidening.Profile.Of(shapes, outlines);
     }
-
-    /// <summary>
-    /// The portal a tower opens: the widest gap any of its parts leaves across the centre line.
-    ///
-    /// One number for the whole tower, because its parts have to be widened against the same
-    /// boundary or they shear against each other. A pillar whose parts open 43, 25, 13 and 8 metres
-    /// is one structure with one portal - the 43 - and the rest is material spanning between its legs.
-    /// </summary>
-    /// <summary>
-    /// How much opening a tower keeps when it is brought in as far as it will go.
-    ///
-    /// Not zero. A part carried exactly to the centre has its two sides touching, which reads as one
-    /// column rather than as a portal, and the road passes through nothing. A metre is enough to see
-    /// that the design ran out rather than that the tower is a post.
-    /// </summary>
-    private const float MinimumOpening = 1f;
-
-    private float OpeningOf(ObjectMeshInfo[] parts) => OpeningOf(parts, out _);
 
     /// <summary>
     /// The portal a tower opens, and the narrowest opening any one of its parts leaves.
@@ -664,9 +669,9 @@ internal sealed class TowerFactory
                         narrowest = narrowest <= 0f ? opening : Math.Min(narrowest, opening);
                 }
             }
-            catch (Exception exception)
+            catch (Exception)
             {
-                ModHost.Log.Warn(exception, $"Could not measure the opening of '{render.name}'");
+                // Generation diagnostics are silent; retain the external API exception boundary.
             }
             finally
             {
@@ -699,7 +704,7 @@ internal sealed class TowerFactory
     /// </summary>
     private void DeriveLods(
         PrefabBase widened, string name, float extra, TowerWidening.Profile? profile,
-        bool railings = false)
+        bool railings = false, bool preserveGeometry = false)
     {
         var lods = widened.GetComponent<LodProperties>();
         var meshes = lods?.m_LodMeshes;
@@ -719,7 +724,8 @@ internal sealed class TowerFactory
                 string.Format(CultureInfo.InvariantCulture, "{0} LOD{1}", name, index + 1),
                 extra,
                 profile,
-                railings);
+                railings,
+                preserveGeometry);
 
             if (copy == null) continue;
 
@@ -1480,8 +1486,10 @@ internal sealed class TowerFactory
     /// the cables modelled into it. The game does not place cables; it swaps in a wider piece. So this
     /// does the same, which it can because a net piece is a render prefab like any other.
     /// </summary>
-    internal NetSectionPrefab? WidenSection(NetSectionPrefab source, string bridgeName, float extra)
+    internal NetSectionPrefab? WidenSection(
+        NetSectionPrefab source, string bridgeName, float extra, bool preserveGeometry = false)
     {
+        if (preserveGeometry) extra = 0f;
         // Named for the bridge, not for the widening, where the style fits railings to the road.
         //
         // A section keyed by how much it was widened is shared by every bridge widened by that much -
@@ -1496,9 +1504,11 @@ internal sealed class TowerFactory
         // the eye moves along the bridge.
         _kerbPlans = null;
 
-        var wanted = TowerPrefabNaming.Safe(BridgeTowers.BringsItsOwnRailings(_styleId)
-            ? string.Format(CultureInfo.InvariantCulture, "{0}-{1}", source.name, bridgeName)
-            : string.Format(CultureInfo.InvariantCulture, "{0} {1:0.#}", source.name, extra));
+        var wanted = TowerPrefabNaming.Safe(preserveGeometry
+            ? string.Format(CultureInfo.InvariantCulture, "{0}-{1}", bridgeName, source.name)
+            : BridgeTowers.BringsItsOwnRailings(_styleId)
+                ? string.Format(CultureInfo.InvariantCulture, "{0}-{1}", source.name, bridgeName)
+                : string.Format(CultureInfo.InvariantCulture, "{0} {1:0.#}", source.name, extra));
 
         if (_sectionsThisRun.TryGetValue(wanted, out var already))
         {
@@ -1527,9 +1537,8 @@ internal sealed class TowerFactory
             {
                 _report.Warning(string.Format(
                     CultureInfo.InvariantCulture,
-                    "'{0}' has no pieces of its own, so the cables keep the donor's {1:0.#} m spacing "
-                    + "on a deck that is {2:0.#} m wider.",
-                    source.name, NetWidth.Of(source), extra));
+                    "'{0}' has no pieces of its own. Cable generation was stopped; "
+                    + "the donor is not used as a fallback.", source.name));
                 return null;
             }
 
@@ -1542,7 +1551,7 @@ internal sealed class TowerFactory
             // metaprogram result with a runtime geometry guess. Other styles still use their shared
             // section profile.
             TowerWidening.Profile? profile =
-                _styleId is "TrussArch02" or "TrussArch03"
+                preserveGeometry || _styleId is "TrussArch02" or "TrussArch03"
                     ? null
                     : ProfileOfPieces(source.m_Pieces);
 
@@ -1551,8 +1560,8 @@ internal sealed class TowerFactory
             {
                 if (info?.m_Piece == null) continue;
 
-                var piece = WidenPiece(info.m_Piece, name, pieces.Count, extra, profile);
-                if (piece == null) continue;
+                var piece = WidenPiece(info.m_Piece, name, pieces.Count, extra, profile, preserveGeometry);
+                if (piece == null) return null;
 
                 pieces.Add(new NetPieceInfo
                 {
@@ -1592,7 +1601,7 @@ internal sealed class TowerFactory
             }
 
             // The levels of detail the component just named are the archetype's. Derive them.
-            DeriveLods(widened, name, extra, null);
+            DeriveLods(widened, name, extra, null, preserveGeometry: preserveGeometry);
 
             widened.m_Pieces = pieces.ToArray();
             widened.m_SubSections = source.m_SubSections?.ToArray();
@@ -1612,9 +1621,8 @@ internal sealed class TowerFactory
 
             return widened;
         }
-        catch (Exception exception)
+        catch (Exception)
         {
-            ModHost.Log.Warn(exception, $"Could not widen the overhead section '{source.name}'");
             _report.Warning($"'{name}' could not be generated, so the donor's own cables were kept.");
             return null;
         }
@@ -1742,7 +1750,7 @@ internal sealed class TowerFactory
 
     private NetPiecePrefab? WidenPiece(
         NetPiecePrefab original, string sectionName, int index, float extra,
-        TowerWidening.Profile? profile)
+        TowerWidening.Profile? profile, bool preserveGeometry)
     {
         var name = index == 0 ? sectionName + " Piece" : $"{sectionName} Piece {index}";
 
@@ -1762,7 +1770,8 @@ internal sealed class TowerFactory
         // whether a part crosses the centre line. The cable sheet does, so it is scaled about the
         // centre and its outer edge lands half the extra width further out - the same distance the
         // tower's legs travel, which is what keeps the two at the archetype's spacing.
-        return Widen(original, widened, name, extra, profile, railings: true);
+        return Widen(original, widened, name, extra, profile,
+            railings: true, preserveGeometry: preserveGeometry);
     }
 
     /// <summary>
@@ -1793,20 +1802,40 @@ internal sealed class TowerFactory
     /// </summary>
     private T? Widen<T>(
         RenderPrefab original, T widened, string name, float extra,
-        TowerWidening.Profile? profile = null, bool railings = false)
+        TowerWidening.Profile? profile = null, bool railings = false, bool preserveGeometry = false)
         where T : RenderPrefab
     {
         name = TowerPrefabNaming.Safe(name);
         Mesh[]? loaded = null;
+        var models = new List<ModelImporter.Model>();
+        // A rejected preview still owns the ScriptableObject allocated by the caller.
+        // Track it before loading/transforming can fail.
+        if (_previewGeometry != null) _created.Add(widened);
         try
         {
+            var box = original.bounds;
+            var shift = extra * 0.5f;
+            var resultBounds = preserveGeometry ? box : new Bounds3(
+                new float3(box.min.x - shift, box.min.y, box.min.z),
+                new float3(box.max.x + shift, box.max.y, box.max.z));
+            var span = resultBounds.max.x - resultBounds.min.x;
+            // A source plane may legitimately have zero thickness. Reject inverted
+            // bounds, or a positive source span collapsed by narrowing, not authored planes.
+            if (!float.IsFinite(span) || span < 0f || (span == 0f && extra < 0f))
+            {
+                _report.Defect(string.Format(
+                    CultureInfo.InvariantCulture,
+                    "'{0}' would have invalid width {1:R} m after a {2:R} m change. "
+                    + "The bridge was stopped before geometry was written.", name, span, extra));
+                if (_previewGeometry == null) UnityEngine.Object.Destroy(widened);
+                return null;
+            }
             loaded = original.ObtainMeshes();
             if (loaded == null || loaded.Length == 0) return null;
 
             // Every mesh the source holds, not the first of them. A render prefab can hold several -
             // the levels of detail - and it carries one surface for each; declaring one mesh while
             // handing over the whole set leaves the renderer pairing them off wrongly.
-            var models = new List<ModelImporter.Model>();
             var totalVertices = 0;
             var totalIndices = 0;
             var recordedTruss02 = TrussArch02Geometry.IsRecorded(_styleId, original.name);
@@ -1828,7 +1857,7 @@ internal sealed class TowerFactory
             //
             var shapes = new List<float3[]>();
             var outlines = new List<IReadOnlyList<int>?>();
-            if (!recordedGeometry)
+            if (!recordedGeometry && !preserveGeometry)
             {
                 foreach (var part in loaded)
                 {
@@ -1842,7 +1871,8 @@ internal sealed class TowerFactory
             // CONTRACT rule 8: an LOD cannot vote on what the part is. Keep the full-detail
             // archetype measurement before adding any coarse substitute. TrussArch01's portal uses
             // this exact side-body boundary at every viewing distance.
-            var fullDetailScope = profile ?? TowerWidening.Profile.Of(shapes, outlines);
+            var fullDetailScope = preserveGeometry ? null
+                : profile ?? TowerWidening.Profile.Of(shapes, outlines);
 
             // The levels of detail are named by a component and live in prefabs of their own, so they
             // have to be fetched to be included. They were not, and the comment above said they were:
@@ -1850,7 +1880,7 @@ internal sealed class TowerFactory
             // the places that scope called carried, and it was scaled where the fine one was carried -
             // 7.899 m against 8, which is the bridge changing width as the camera pulls back.
             var lodMeshes = new List<RenderPrefab>();
-            if (profile == null && !recordedGeometry)
+            if (profile == null && !recordedGeometry && !preserveGeometry)
             {
                 foreach (var lod in original.GetComponent<LodProperties>()?.m_LodMeshes
                     ?? Array.Empty<RenderPrefab>())
@@ -1869,14 +1899,14 @@ internal sealed class TowerFactory
 
                         lodMeshes.Add(lod);
                     }
-                    catch (Exception exception)
+                    catch (Exception)
                     {
-                        ModHost.Log.Warn(exception, $"Could not measure '{lod.name}' for '{name}'");
+                        // Generation diagnostics are silent; retain the external API exception boundary.
                     }
                 }
             }
 
-            var scope = recordedGeometry
+            var scope = recordedGeometry || preserveGeometry
                 ? null
                 : profile
                     ?? (IsBluePrototypeMainPier(original)
@@ -1911,7 +1941,13 @@ internal sealed class TowerFactory
                 var usedRecordedTruss03 = false;
                 float3[] moved;
                 bool[]? dropped = null;
-                if (recordedTruss02)
+                if (preserveGeometry)
+                {
+                    // Independent copy of the recorded central sheet, including every LOD.
+                    // No spatial inference or road-width deformation belongs to this assembly.
+                    moved = source;
+                }
+                else if (recordedTruss02)
                 {
                     var applied = false;
                     if (railings && _structureWidths.HasValue)
@@ -2066,7 +2102,7 @@ internal sealed class TowerFactory
                         source, moved, part.triangles, out _, out _);
                 }
 
-                if (railings)
+                if (railings && !preserveGeometry)
                 {
                     _kerbPlans ??= PlanKerbRailings(name, source, moved, part.triangles, extra);
                     if (_kerbPlans != null) dropped = ApplyKerbPlans(_kerbPlans, source, moved);
@@ -2096,12 +2132,22 @@ internal sealed class TowerFactory
 
             if (models.Count == 0) return null;
 
+            GeometryAsset? asset = null;
+            if (_previewGeometry != null)
+            {
+                // Exactly the same generated vertex channels and submeshes as a
+                // permanent bridge, but no asset database entry and no disk writes.
+                if (!_previewGeometry.Capture(widened, models)) return null;
+                widened.hideFlags = HideFlags.HideAndDontSave;
+            }
+            else
+            {
             var geometry = new Geometry(models.ToArray());
             // Defence at the write boundary as well as at each generated-prefab naming boundary:
             // AssetDataPath reads the last period as an extension, and rejects any extension other
             // than the one belonging to GeometryAsset.
             var geometryAssetName = TowerPrefabNaming.Safe(name);
-            var asset = AssetDatabase.user.AddAsset(
+            asset = AssetDatabase.user.AddAsset(
                 AssetDataPath.Create("BridgeBuilder", geometryAssetName, EscapeStrategy.None),
                 geometry);
 
@@ -2115,8 +2161,9 @@ internal sealed class TowerFactory
             // Save put the meshes on disk a line ago, so the load that follows reads them back the
             // ordinary way.
             asset.Unload();
+            }
 
-            _created.Add(widened);
+            if (_previewGeometry == null) _created.Add(widened);
             widened.name = name;
 
             // The archetype's own components, carried across.
@@ -2137,7 +2184,7 @@ internal sealed class TowerFactory
 
             // The levels of detail the component just named are the archetype's. Derive them.
             DeriveLods(
-                widened, name, extra, scope, railings);
+                widened, name, extra, scope, railings, preserveGeometry);
 
             widened.geometryAsset = asset;
 
@@ -2149,24 +2196,7 @@ internal sealed class TowerFactory
             // outermost vertex by the same half of the same number: a part that crosses the centre is
             // scaled by exactly what puts its outer edge there, and a part that does not is carried
             // there. There is no longer a stretched case and a translated case to tell apart.
-            var box = original.bounds;
-            var shift = extra * 0.5f;
-            widened.bounds = new Bounds3(
-                new float3(box.min.x - shift, box.min.y, box.min.z),
-                new float3(box.max.x + shift, box.max.y, box.max.z));
-
-            // A part that lost more width than it had. The floor in BridgeComposer should have refused
-            // the bridge before this, so reaching here means a structure nothing recorded a width for -
-            // and a mesh written "0 m across" looks like a mesh until something draws it.
-            var span = widened.bounds.max.x - widened.bounds.min.x;
-            if (span <= 0.001f)
-            {
-                _report.Defect(string.Format(
-                    CultureInfo.InvariantCulture,
-                    "'{0}' came out {1:0.###} m across: it was asked to lose {2:0.#} m and had less "
-                    + "than that to lose. It was written as a line, not a structure.",
-                    name, span, -extra));
-            }
+            widened.bounds = resultBounds;
 
 
             widened.vertexCount = totalVertices;
@@ -2193,6 +2223,10 @@ internal sealed class TowerFactory
         }
         finally
         {
+            // Permanent Geometry owns these buffers; in-memory previews own only
+            // the converted Unity meshes and must release the importer buffers now.
+            if (_previewGeometry != null)
+                foreach (var model in models) model.Dispose();
             if (loaded != null)
             {
                 try

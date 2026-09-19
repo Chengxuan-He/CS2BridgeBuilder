@@ -35,6 +35,8 @@ Copy-Item -LiteralPath (Join-Path $source 'BridgeBuilder.dll') -Destination $tar
 $pdb = Join-Path $source 'BridgeBuilder.pdb'
 if (Test-Path -LiteralPath $pdb) { Copy-Item -LiteralPath $pdb -Destination $target -Force }
 Copy-Item -LiteralPath (Join-Path $projectRoot 'assets\BridgeBuilder.svg') -Destination $target -Force
+Copy-Item -LiteralPath (Join-Path $projectRoot 'assets\BridgeBuilderToolbar.svg') -Destination $target -Force
+Copy-Item -LiteralPath (Join-Path $projectRoot 'assets\BridgeBuilderPack.svg') -Destination $target -Force
 Copy-Item -LiteralPath (Join-Path $source 'BridgeBuilder.mjs') -Destination $target -Force
 Copy-Item -LiteralPath (Join-Path $source 'BridgeBuilder.css') -Destination $target -Force
 Write-Host "Installed local code mod: $target"

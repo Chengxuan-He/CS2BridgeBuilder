@@ -1,5 +1,6 @@
 using BridgeBuilder.Bridges;
 using BridgeBuilder.Runtime;
+using BridgeBuilder.Settings;
 using Colossal.UI.Binding;
 using CS2Mods.Shared;
 using CS2Mods.Shared.Infrastructure;
@@ -26,7 +27,14 @@ public partial class BridgeBuilderUISystem : UISystemBase
     private ValueBinding<BridgeStyleUiItem[]> _styles = null!;
     private ValueBinding<BridgeRegistrationUiItem[]> _bridges = null!;
     private ValueBinding<string> _status = null!;
+    private ValueBinding<IReadOnlyDictionary<string, string>> _texts = null!;
+    private string? _seenLocaleId;
     private int _seenRevision = -1;
+    private int _seenPreviewRevision = -1;
+    private ValueBinding<string> _previewImage = null!;
+    private ValueBinding<string> _previewStatus = null!;
+    private ValueBinding<string> _previewKey = null!;
+    private ValueBinding<bool> _previewLoading = null!;
 
     // The runtime builder owns loaded-save prefabs and resolves icons from a settled gameplay
     // PrefabSystem. UISystemBase applies this mask during OnGamePreload, so the editor never runs
@@ -45,12 +53,22 @@ public partial class BridgeBuilderUISystem : UISystemBase
         _styles = AddValue("Styles", Array.Empty<BridgeStyleUiItem>(), new BridgeWritableArrayWriter<BridgeStyleUiItem>());
         _bridges = AddValue("Bridges", Array.Empty<BridgeRegistrationUiItem>(), new BridgeWritableArrayWriter<BridgeRegistrationUiItem>());
         _status = AddValue("Status", string.Empty, new BridgeStringWriter());
+        _texts = AddValue("Texts", RuntimeUiText.ForLocale(UiStringCatalog.Current.LocaleId), new BridgeTextWriter());
+        _previewImage = AddValue("PreviewImage", string.Empty, new BridgeStringWriter());
+        _previewStatus = AddValue("PreviewStatus", string.Empty, new BridgeStringWriter());
+        _previewKey = AddValue("PreviewKey", string.Empty, new BridgeStringWriter());
+        _previewLoading = AddValue("PreviewLoading", false, new BridgeBoolWriter());
+        AddBinding(new TriggerBinding<BridgeRuntimeRequest>(Group, "PreviewBridge", PreviewBridge,
+            new BridgeRecipeReader()));
+        AddBinding(new TriggerBinding<string>(Group, "PreviewExistingBridge", PreviewExistingBridge,
+            new BridgeStringReader()));
+        AddBinding(new TriggerBinding(Group, "ClearPreview", BridgePreviewState.Clear));
 
         AddBinding(new TriggerBinding(Group, "TogglePanel", TogglePanel));
-        AddBinding(new TriggerBinding(Group, "Refresh", Refresh));
-        AddBinding(new TriggerBinding<string, string, string, string>(
-            Group, "CreateBridge", QueueCreate,
-            new BridgeStringReader(), new BridgeStringReader(), new BridgeStringReader(), new BridgeStringReader()));
+        AddBinding(new TriggerBinding<BridgeRuntimeRequest>(Group, "CreateBridge",
+            request => QueueCreate(request, false), new BridgeRecipeReader()));
+        AddBinding(new TriggerBinding<BridgeRuntimeRequest>(Group, "CreateAndBuildBridge",
+            request => QueueCreate(request, true), new BridgeRecipeReader()));
         AddBinding(new TriggerBinding<string>(Group, "ActivateBridge", QueueActivate, new BridgeStringReader()));
         AddBinding(new TriggerBinding<string, string>(
             Group, "RenameBridge", QueueRename, new BridgeStringReader(), new BridgeStringReader()));
@@ -64,8 +82,24 @@ public partial class BridgeBuilderUISystem : UISystemBase
     [Preserve]
     protected override void OnUpdate()
     {
+        var localeId = GameManager.instance?.localizationManager?.activeLocaleId ?? "en-US";
+        var localeChanged = !string.Equals(_seenLocaleId, localeId, StringComparison.Ordinal);
+        if (localeChanged)
+        {
+            _seenLocaleId = localeId;
+            _texts.Update(RuntimeUiText.ForLocale(localeId));
+        }
+        // Translate existing results without recreating their temporary geometry.
+        if (localeChanged || _seenPreviewRevision != BridgePreviewState.ResultRevision)
+        {
+            _seenPreviewRevision = BridgePreviewState.ResultRevision;
+            _previewImage.Update(BridgePreviewState.Image);
+            _previewStatus.Update(BridgePreviewState.Status);
+            _previewKey.Update(BridgePreviewState.Key);
+            _previewLoading.Update(BridgePreviewState.Loading);
+        }
         var revision = BridgeRuntimeRequests.Revision;
-        if (_seenRevision != revision)
+        if (localeChanged || _seenRevision != revision)
         {
             _seenRevision = revision;
             RefreshBindings();
@@ -74,6 +108,14 @@ public partial class BridgeBuilderUISystem : UISystemBase
     }
 
     internal static void RequestRefresh() => BridgeRuntimeRequests.Touch();
+
+    internal void CloseForBuild()
+    {
+        // Called only after the native tool accepted the formal prefab. Never toggle:
+        // an asynchronous publication may finish after the player already closed the panel.
+        _panelOpen.Update(false);
+        BridgePreviewState.Clear();
+    }
 
     private ValueBinding<T> AddValue<T>(string key, T initial, IWriter<T> writer)
     {
@@ -90,27 +132,29 @@ public partial class BridgeBuilderUISystem : UISystemBase
         {
             BridgeRuntimeRequests.Enqueue(
                 new BridgeRuntimeRequest { Action = BridgeRuntimeAction.Refresh },
-                "正在读取道路与桥梁原型…");
+                "Scanning");
         }
+        else BridgePreviewState.Clear();
     }
 
-    private static void Refresh()
+    private void PreviewBridge(BridgeRuntimeRequest request)
     {
-        BridgeRuntimeRequests.Enqueue(
-            new BridgeRuntimeRequest { Action = BridgeRuntimeAction.Refresh },
-            "正在刷新道路与桥梁原型…");
+        if (!_panelOpen.value) return;
+        BridgePreviewState.Select(request.UpperDeckId, request.LowerDeckId, request.StyleId,
+            request.LowerDeckOpposite);
     }
 
-    private static void QueueCreate(string upperDeckId, string lowerDeckId, string styleId, string registrationName)
+    private void PreviewExistingBridge(string prefabName)
     {
-        BridgeRuntimeRequests.Enqueue(new BridgeRuntimeRequest
-        {
-            Action = BridgeRuntimeAction.Create,
-            UpperDeckId = upperDeckId ?? string.Empty,
-            LowerDeckId = lowerDeckId ?? string.Empty,
-            StyleId = styleId ?? string.Empty,
-            RegistrationName = registrationName ?? string.Empty,
-        }, "正在创建桥梁 Prefab…");
+        if (!_panelOpen.value) return;
+        BridgePreviewState.SelectExisting(prefabName ?? string.Empty);
+    }
+
+    private static void QueueCreate(BridgeRuntimeRequest request, bool buildAfterCreate)
+    {
+        request.Action = BridgeRuntimeAction.Create;
+        request.BuildAfterCreate = buildAfterCreate;
+        BridgeRuntimeRequests.Enqueue(request, "Creating");
     }
 
     private static void QueueActivate(string prefabName)
@@ -119,7 +163,7 @@ public partial class BridgeBuilderUISystem : UISystemBase
         {
             Action = BridgeRuntimeAction.Activate,
             PrefabName = prefabName ?? string.Empty,
-        }, "正在激活桥梁建造工具…");
+        }, "Activating");
     }
 
     private static void QueueRename(string prefabName, string registrationName)
@@ -129,7 +173,7 @@ public partial class BridgeBuilderUISystem : UISystemBase
             Action = BridgeRuntimeAction.Rename,
             PrefabName = prefabName ?? string.Empty,
             RegistrationName = registrationName ?? string.Empty,
-        }, "正在更新显示名称…");
+        }, "Renaming");
     }
 
     private static void ConfirmDelete(string prefabName)
@@ -137,17 +181,17 @@ public partial class BridgeBuilderUISystem : UISystemBase
         var registration = BridgeRegistrationStore.Find(prefabName);
         if (registration == null)
         {
-            BridgeRuntimeRequests.Complete("删除失败：找不到该 UUID 对应的桥梁。");
+            BridgeRuntimeRequests.Complete("DeleteMissing");
             return;
         }
 
         try
         {
             var dialog = new ConfirmationDialog(
-                LocalizedString.Value("BridgeBuilder"),
-                LocalizedString.Value($"删除“{registration.RegistrationName}”及地图中使用它建造的桥梁？桥梁构造无法恢复。"),
-                LocalizedString.Value("删除"),
-                LocalizedString.Value("取消"),
+                LocalizedString.Value(UiStringCatalog.Current.Title),
+                LocalizedString.Value(RuntimeUiText.Get("ConfirmDelete", registration.RegistrationName)),
+                LocalizedString.Value(RuntimeUiText.Get("Delete")),
+                LocalizedString.Value(RuntimeUiText.Get("Cancel")),
                 Array.Empty<LocalizedString>());
             GameManager.instance.userInterface.appBindings.ShowConfirmationDialog(dialog, result =>
             {
@@ -156,13 +200,13 @@ public partial class BridgeBuilderUISystem : UISystemBase
                 {
                     Action = BridgeRuntimeAction.Delete,
                     PrefabName = registration.PrefabName,
-                }, "正在删除桥梁…");
+                }, "Deleting");
             });
         }
         catch (Exception exception)
         {
             Mod.Log.Warn(exception, "Could not display the bridge deletion confirmation");
-            BridgeRuntimeRequests.Complete("无法打开删除确认框，未删除任何桥梁。");
+            BridgeRuntimeRequests.Complete("DeleteDialogFailed");
         }
     }
 
@@ -173,26 +217,32 @@ public partial class BridgeBuilderUISystem : UISystemBase
             var decks = DeckCatalog.Decks.Select(deck => new BridgeDeckUiItem
             {
                 Id = deck.Id,
-                Name = deck.DisplayName,
+                // Built-in asset names follow the current dictionary, not the
+                // language cached at catalogue scan time. Custom names stay intact.
+                Name = deck.Road?.Name ?? DeckCatalog.DisplayNameOf(deck.Prefab),
                 Icon = ImageSystem.GetIcon(deck.Prefab) ?? string.Empty,
-                Kind = deck.Kind.ToString(),
+                Kind = UiStringCatalog.Current.DeckKindName(deck.Kind.ToString()),
+                NetworkType = deck.Prefab is RoadPrefab road
+                    ? (road.m_HighwayRules ? "Highway" : road.m_RoadType == RoadType.PublicTransport ? "PublicTransport" : "Road")
+                    : deck.Kind.ToString(),
                 Width = deck.Width,
-                CanBeUpper = deck.IsRoad,
             }).ToArray();
 
             var styles = BridgeStyleCatalog.Styles
-                .Where(style => style.IsInstalled)
+                .Where(style => style.IsInstalled &&
+                    BridgeStyleDefinitions.CanGenerate(style.Id) &&
+                    style.Variants.Any(variant => variant.IsAvailable))
                 .Select(style =>
                 {
-                    var preview = style.Variants.FirstOrDefault();
+                    var preview = style.Variants.FirstOrDefault(variant => variant.IsAvailable);
                     return new BridgeStyleUiItem
                     {
                         Id = style.Id,
                         Name = style.DisplayName,
                         Icon = preview == null ? string.Empty : ImageSystem.GetIcon(preview.Donor) ?? string.Empty,
-                        Source = style.Source,
-                        SupportsSingle = style.Variants.Any(variant => !variant.IsDoubleDeck),
-                        SupportsDouble = style.Variants.Any(variant => variant.IsDoubleDeck),
+                        Source = preview?.Source.LocalizedLabel ?? string.Empty,
+                        SupportsSingle = style.Variants.Any(variant => variant.IsAvailable && !variant.IsDoubleDeck),
+                        SupportsDouble = style.Variants.Any(variant => variant.IsAvailable && variant.IsDoubleDeck),
                     };
                 }).ToArray();
 
@@ -225,7 +275,7 @@ public partial class BridgeBuilderUISystem : UISystemBase
         catch (Exception exception)
         {
             Mod.Log.Warn(exception, "Could not update the BridgeBuilder runtime UI");
-            _status.Update("界面数据刷新失败；请查看 BridgeBuilder 日志。");
+            _status.Update(RuntimeUiText.Get("UiRefreshFailed"));
         }
     }
 }
@@ -236,8 +286,8 @@ internal sealed class BridgeDeckUiItem : IJsonWritable
     internal string Name { get; set; } = string.Empty;
     internal string Icon { get; set; } = string.Empty;
     internal string Kind { get; set; } = string.Empty;
+    internal string NetworkType { get; set; } = string.Empty;
     internal float Width { get; set; }
-    internal bool CanBeUpper { get; set; }
 
     public void Write(IJsonWriter writer)
     {
@@ -246,8 +296,8 @@ internal sealed class BridgeDeckUiItem : IJsonWritable
         Property(writer, "name", Name);
         Property(writer, "icon", Icon);
         Property(writer, "kind", Kind);
+        Property(writer, "networkType", NetworkType);
         writer.PropertyName("width"); writer.Write(Width);
-        writer.PropertyName("canBeUpper"); writer.Write(CanBeUpper);
         writer.TypeEnd();
     }
 
@@ -331,6 +381,20 @@ internal sealed class BridgeStringWriter : IWriter<string>
     public void Write(IJsonWriter writer, string value) => writer.Write(value ?? string.Empty);
 }
 
+internal sealed class BridgeTextWriter : IWriter<IReadOnlyDictionary<string, string>>
+{
+    public void Write(IJsonWriter writer, IReadOnlyDictionary<string, string> value)
+    {
+        writer.TypeBegin("BridgeUiTexts");
+        foreach (var entry in value)
+        {
+            writer.PropertyName(entry.Key);
+            writer.Write(entry.Value);
+        }
+        writer.TypeEnd();
+    }
+}
+
 internal sealed class BridgeBoolWriter : IWriter<bool>
 {
     public void Write(IJsonWriter writer, bool value) => writer.Write(value);
@@ -343,5 +407,32 @@ internal sealed class BridgeStringReader : IReader<string>
         value = string.Empty;
         reader.Read(out value);
         value ??= string.Empty;
+    }
+}
+
+// One recipe snapshot is used for both preview and creation. Direction is not
+// mutable global UI state that could change while a queued creation is pending.
+internal sealed class BridgeRecipeReader : IReader<BridgeRuntimeRequest>
+{
+    public void Read(IJsonReader reader, out BridgeRuntimeRequest value)
+    {
+        reader.ReadMapBegin();
+        reader.ReadProperty("upperDeckId");
+        reader.Read(out string upper);
+        reader.ReadProperty("lowerDeckId");
+        reader.Read(out string lower);
+        reader.ReadProperty("styleId");
+        reader.Read(out string style);
+        reader.ReadProperty("registrationName");
+        reader.Read(out string name);
+        reader.ReadProperty("lowerDeckOpposite");
+        reader.Read(out bool opposite);
+        reader.ReadMapEnd();
+        value = new BridgeRuntimeRequest
+        {
+            UpperDeckId = upper ?? string.Empty, LowerDeckId = lower ?? string.Empty,
+            StyleId = style ?? string.Empty, RegistrationName = name ?? string.Empty,
+            LowerDeckOpposite = opposite
+        };
     }
 }

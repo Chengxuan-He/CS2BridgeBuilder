@@ -48,6 +48,9 @@ internal sealed class BridgeRegistration
     {
         return !string.IsNullOrEmpty(value)
             && value!.Length > 1
+            // Permanent bridge identities use b{uuid} exclusively. Older assets
+            // and their save references must be migrated offline, not aliased here.
+            // tmp previews and Road Builder road IDs are not bridge identities.
             && value[0] == 'b'
             && Guid.TryParseExact(value.Substring(1), "D", out _);
     }

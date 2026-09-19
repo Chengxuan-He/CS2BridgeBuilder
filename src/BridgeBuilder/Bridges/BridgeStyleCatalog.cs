@@ -5,7 +5,6 @@ using Game.Prefabs;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 
 namespace BridgeBuilder.Bridges;
 
@@ -15,11 +14,11 @@ namespace BridgeBuilder.Bridges;
 /// The list itself is fixed - see <see cref="BridgeStyleDefinitions"/> - so the dropdown always reads
 /// as a set of named styles whether or not a world has been scanned yet. What discovery contributes
 /// is the variants: which registered prefabs provide each style and how wide each one was authored,
-/// which is what the width fitting needs. A style with no variants yet is still listed, and simply
-/// says it is not available.
+/// which is what the width fitting needs. A style with no available variants remains in the internal
+/// catalogue for lookup, but is not offered in the scanned UI lists.
 ///
-/// Bridges from asset packs that match none of the named styles are appended as they are found, so
-/// installing a pack still widens the list rather than being ignored.
+/// Unknown pack prefabs never create new styles implicitly: an installed prefab
+/// is not evidence that this mod implements generation for its design.
 /// </summary>
 internal static class BridgeStyleCatalog
 {
@@ -57,8 +56,9 @@ internal static class BridgeStyleCatalog
     /// </summary>
     internal static BridgeStyle? Resolve(string? id)
     {
-        var chosen = Find(id);
-        if (chosen != null) return chosen;
+        // A stored unsupported/removed ID must fail, never silently build a
+        // different bridge through the default style.
+        if (!string.IsNullOrEmpty(id)) return Find(id);
 
         lock (Gate)
         {
@@ -70,6 +70,7 @@ internal static class BridgeStyleCatalog
     private static List<BridgeStyle> CreateNamedStyles()
     {
         return BridgeStyleDefinitions.All
+            .Where(definition => BridgeStyleDefinitions.CanGenerate(definition.Id))
             .Select(definition => new BridgeStyle(
                 definition.Id,
                 definition.NameSuffix,
@@ -92,8 +93,6 @@ internal static class BridgeStyleCatalog
     {
         var named = CreateNamedStyles();
         var byId = named.ToDictionary(style => style.Id, StringComparer.Ordinal);
-        var extras = new Dictionary<string, BridgeStyle>(StringComparer.Ordinal);
-        var sources = new Dictionary<string, HashSet<string>>(StringComparer.Ordinal);
 
         // Every net that some other prefab hangs underneath itself. Collected before anything is
         // offered, because a lower deck is not a bridge to build from - it is half of one.
@@ -166,45 +165,16 @@ internal static class BridgeStyleCatalog
             bridgeCapable++;
 
             var definition = BridgeStyleDefinitions.Match(prefab.name);
-            BridgeStyle? style;
-            if (definition != null)
-            {
-                style = byId[definition.Id];
-            }
-            else
-            {
-                // Not one of the named styles. Only worth offering if it brings structure of its own -
-                // every ordinary road carries a Bridge component too, since that is how any road can
-                // be elevated, and listing all of those would bury the real styles.
-                if (!HasStructure(prefab, bridge)) continue;
+            if (definition == null || !byId.TryGetValue(definition.Id, out var style)) continue;
 
-                // Quays, piers and dams are bridge-capable nets that are not bridges: they are built
-                // against a shore rather than spanning anything, and offering them as styles fills the
-                // list with entries no one would pick.
-                if (bridge.m_BuildStyle == BridgeBuildStyle.Quay) continue;
-
-                var family = FamilyOf(prefab.name);
-                if (!extras.TryGetValue(family, out style))
-                {
-                    var label = SpaceOut(family);
-                    style = new BridgeStyle(family, family, () => label);
-                    extras[family] = style;
-                }
-            }
-
-            var variant = new BridgeStyleVariant(prefab, bridge, NetWidth.Of(prefab));
+            var variant = new BridgeStyleVariant(prefab, bridge, NetWidth.Of(prefab), style.Id == "GoldenGateDouble");
+            if (!BridgeStyleDefinitions.SupportsDeckMode(style.Id, variant.IsDoubleDeck)) continue;
+            if (!BridgeStyleDefinitions.AcceptsSource(style.Id, variant.Source.IsBaseGame)) continue;
             style.Add(variant);
 
             if (variant.IsAvailable)
             {
                 donors++;
-                if (!sources.TryGetValue(style.Id, out var seen))
-                {
-                    seen = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-                    sources[style.Id] = seen;
-                }
-
-                seen.Add(variant.Source.Label);
             }
             else
             {
@@ -214,15 +184,12 @@ internal static class BridgeStyleCatalog
             }
         }
 
-        var ordered = named
-            .Concat(extras.Values.OrderBy(style => style.Id, StringComparer.OrdinalIgnoreCase))
-            .ToList();
+        var ordered = named;
         foreach (var style in ordered)
         {
-            style.Source = sources.TryGetValue(style.Id, out var seen)
-                ? string.Join(", ", seen.OrderBy(name => name, StringComparer.OrdinalIgnoreCase))
-                : string.Empty;
+            style.BindSingleSource();
         }
+        donors = ordered.Sum(style => style.Variants.Count(variant => variant.IsAvailable));
 
         lock (Gate)
         {
@@ -231,59 +198,6 @@ internal static class BridgeStyleCatalog
         }
 
         Report(ordered, bridgeCapable, donors);
-    }
-
-    /// <summary>
-    /// Whether an unnamed bridge-capable prefab brings a look of its own. Any one of these is enough
-    /// on purpose: the game and the packs do not agree on where the towers live - above the deck, as
-    /// anchored sub objects, or driven by fixed-length spans - and requiring a particular one would
-    /// quietly drop whole families of real bridges.
-    /// </summary>
-    private static bool HasStructure(NetGeometryPrefab prefab, Bridge bridge)
-    {
-        if (bridge.m_FixedSegments is { Length: > 0 }) return true;
-        if (prefab.GetComponent<OverheadNetSections>() != null) return true;
-        if (prefab.GetComponent<NetSubObjects>() != null) return true;
-        if (prefab.GetComponent<MoveableBridge>() != null) return true;
-        return false;
-    }
-
-    /// <summary>
-    /// Groups an unnamed pack's per width prefabs into one family, handling both conventions: the
-    /// game numbers its variants ("…01", "…02") and packs spell theirs out after a separator.
-    /// </summary>
-    internal static string FamilyOf(string name)
-    {
-        var separator = name.IndexOf(" - ", StringComparison.Ordinal);
-        var family = separator > 0 ? name.Substring(0, separator) : name;
-        return TrimVariantNumber(family).Trim();
-    }
-
-    /// <summary>Drops a trailing variant number: "SuspensionBridge01" and "Lift Bridge 5" alike.</summary>
-    private static string TrimVariantNumber(string name)
-    {
-        var end = name.Length;
-        while (end > 0 && char.IsDigit(name[end - 1])) end--;
-        // Only a suffix of one or two digits is a variant number. Anything longer is part of the name
-        // - a year, a road number - and cutting it would merge styles that are not the same style.
-        if (end == name.Length || name.Length - end > 2 || end == 0) return name;
-        return name.Substring(0, end).TrimEnd(' ', '_', '-');
-    }
-
-    /// <summary>"TrussArchBridge" becomes "Truss Arch Bridge"; text that is already spaced is left alone.</summary>
-    private static string SpaceOut(string name)
-    {
-        if (name.Contains(' ')) return name;
-
-        var builder = new StringBuilder(name.Length + 4);
-        for (var index = 0; index < name.Length; index++)
-        {
-            var character = name[index];
-            if (index > 0 && char.IsUpper(character) && !char.IsUpper(name[index - 1])) builder.Append(' ');
-            builder.Append(character);
-        }
-
-        return builder.ToString();
     }
 
     /// <summary>

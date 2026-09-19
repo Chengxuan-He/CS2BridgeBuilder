@@ -87,11 +87,11 @@ internal sealed class BridgeComposer
         // Refused rather than attempted. A bridge that is not generated is a bridge the player still
         // has; a bridge generated from an arrangement nobody has measured is one that looks built and
         // behaves as something else.
-        var deferred = BridgeStyleDefinitions.DeferredReason(style.Id);
-        if (deferred != null)
+        var unsupported = BridgeStyleDefinitions.GenerationUnsupportedReason(style.Id, options.DoubleDeck);
+        if (unsupported != null)
         {
             _report.Failed(target.name, new NotSupportedException(
-                $"'{style.DisplayName}' is not generated yet: {deferred}."));
+                $"'{style.DisplayName}' cannot be generated: {unsupported}."));
             return null;
         }
 
@@ -252,7 +252,7 @@ internal sealed class BridgeComposer
             _towers.MeasureStructureExtra(extra);
         }
 
-        CopyOverhead(target, variant, overheadExtra);
+        if (!CopyOverhead(target, variant, style.Id, overheadExtra)) return null;
         CopySubObjects(target, variant, overheadExtra);
         if (target is RoadPrefab roadTarget) RemoveDeckRailings(roadTarget, style.Id);
 
@@ -1037,7 +1037,8 @@ internal sealed class BridgeComposer
     /// </summary>
     private const float DeckSurface = 0.25f;
 
-    private void CopyOverhead(NetGeometryPrefab target, BridgeStyleVariant variant, float extra)
+    private bool CopyOverhead(
+        NetGeometryPrefab target, BridgeStyleVariant variant, string styleId, float extra)
     {
         // The caller has already folded the prototype's structural allowance into this number. The
         // same effective extra also goes to node-bound props, while TowerFactory independently derives
@@ -1045,36 +1046,49 @@ internal sealed class BridgeComposer
         // put cables one half-bonus outside the nodes and tower they are meant to meet.
 
         var source = variant.Overhead;
-        if (source?.m_Sections == null || source.m_Sections.Length == 0) return;
+        if (source?.m_Sections == null || source.m_Sections.Length == 0) return true;
+
+        var sections = new List<NetSectionInfo>();
+        foreach (var section in source.m_Sections)
+        {
+            if (section?.m_Section == null) continue;
+            var preserveGeometry = BridgeStyleDefinitions.PreservesOverheadGeometry(
+                styleId, section.m_Section.name);
+            var derived = Widened(section, target.name, extra, preserveGeometry);
+            // Do not replace a failed derivation with the donor or publish a partial cable frame.
+            if (derived == null) return false;
+            sections.Add(derived);
+        }
 
         var overhead = target.AddOrGetComponent<OverheadNetSections>();
-        overhead.m_Sections = source.m_Sections
-            .Where(section => section?.m_Section != null)
-            .Select(section => Widened(section, target.name, extra))
-            .ToArray();
+        overhead.m_Sections = sections.ToArray();
         overhead.active = true;
+        return true;
     }
 
     /// <summary>
     /// One overhead section fitted to this deck: the cables.
     ///
-    /// Shifting the entry's offset is not enough and never was. Every cable section sits at offset zero
-    /// and carries its width in a single full-width piece, so what has to change is the piece, not where
-    /// the section is put. When the piece cannot be widened the entry is still copied - a bridge with
-    /// cables at the wrong spacing beats a bridge with no cables - and the factory says so.
+    /// Paired cable assemblies change their mesh width, not merely their section offset.
+    /// The recorded single-column archetype instead owns one central cable sheet: its
+    /// geometry and composition width stay unchanged, in a separately owned copy.
     /// </summary>
-    private NetSectionInfo Widened(NetSectionInfo source, string bridgeName, float extra)
+    private NetSectionInfo? Widened(
+        NetSectionInfo source, string bridgeName, float extra, bool preserveGeometry)
     {
+        if (preserveGeometry) extra = 0f;
         var spread = Spread(source, extra);
         // A zero width delta is still not a no-op for a bridge whose inner railing follows the selected
         // road's sidewalks. A road can match the prototype width while having different, asymmetric or
         // absent sidewalks, so derive its owned section and apply the per-side railing plan.
         if (_towers == null
-            || (Math.Abs(extra) < 0.001f && !BridgeTowers.BringsItsOwnRailings(_towers.StyleId)))
+            || (!preserveGeometry && Math.Abs(extra) < 0.001f
+                && !BridgeTowers.BringsItsOwnRailings(_towers.StyleId)))
             return spread;
 
-        var widened = _towers.WidenSection(source.m_Section, bridgeName, extra);
-        if (widened != null) spread.m_Section = widened;
+        var widened = _towers.WidenSection(source.m_Section, bridgeName, extra, preserveGeometry);
+        if (widened == null) return null;
+        spread.m_Section = widened;
         return spread;
     }
 

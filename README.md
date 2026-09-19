@@ -40,6 +40,22 @@ next door remains the batch tool.
 
 ## What you can pick
 
+Each bridge style binds to a single content source for both display and generation. Base-game
+variants take precedence over DLC variants, then mod variants; ties use stable source identifiers,
+not translated labels. A selected unavailable prerequisite does not trigger a fallback to another
+owner. The V-pylon double-deck cable-stayed bridge (`Extradosed01`) accepts base-game variants only,
+never the duplicate Bridge Expansion Pack version. Existing bridge assets are unchanged.
+
+Golden Gate Bridge supports **single-deck generation only**. Double-deck donor variants are not
+offered, and preview/export/create requests cannot bypass this restriction. Existing saved bridges
+are not deleted or reconstructed by this catalogue rule.
+
+Road Builder is **optional compatibility, not a required dependency**. Without it installed and
+successfully loaded in the current playset, its roads are omitted from both deck selectors. Base-game
+roads, pedestrian paths and tracks remain available. Cached Road Builder prefabs do not enable the
+integration; standalone plain-road exports remain ordinary roads. The mod does not load or ship
+RoadBuilder.dll, and Road Builder must not be declared a mandatory dependency when publishing it.
+
 The upper and lower deck are chosen from everything registered in the loaded world:
 
 | Kind | What it covers |

@@ -27,6 +27,8 @@ internal sealed class BridgeLocaleSource : IDictionarySource
     {
         var entries = new Dictionary<string, string>
         {
+            { $"Assets.NAME[{BridgeAssetPack.PrefabName}]", "BridgeBuilder" },
+            { $"Assets.DESCRIPTION[{BridgeAssetPack.PrefabName}]", "BridgeBuilder" },
             { _setting.GetSettingsLocaleID(), _text.Title },
             { _setting.GetOptionTabLocaleID(BridgeSetting.BridgeTab), _text.TabBridge },
             { _setting.GetOptionTabLocaleID(BridgeSetting.OptionsTab), _text.TabOptions },

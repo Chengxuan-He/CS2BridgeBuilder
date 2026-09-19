@@ -109,13 +109,16 @@ internal static class DeckCatalog
     internal static void Rebuild(PrefabSystem prefabSystem, IReadOnlyList<RoadBuilderRoad> roads)
     {
         var byPrefab = new Dictionary<PrefabBase, RoadBuilderRoad>(ReferenceEqualityComparer<PrefabBase>.Instance);
-        foreach (var road in roads) byPrefab[road.Prefab] = road;
+        var roadBuilderAvailable = RoadBuilderCompatibility.IsAvailable;
+        if (roadBuilderAvailable)
+            foreach (var road in roads) byPrefab[road.Prefab] = road;
 
         var decks = new List<Deck>();
         foreach (var prefab in PrefabCatalog.GetAll(prefabSystem).OfType<NetGeometryPrefab>())
         {
             try
             {
+                if (!roadBuilderAvailable && RoadBuilderCompatibility.OwnsPrefab(prefab)) continue;
                 var deck = Describe(prefab, byPrefab);
                 if (deck != null) decks.Add(deck);
             }
@@ -173,20 +176,9 @@ internal static class DeckCatalog
 
         // A Road Builder road that discovery rejected - no usable name, broken configuration - must
         // not come back through this door as an anonymous road prefab.
-        if (IsRoadBuilderPrefab(road)) return null;
+        if (RoadBuilderCompatibility.OwnsPrefab(road)) return null;
 
         return new Deck(road, DeckKind.Road, DisplayNameOf(road), NetWidth.Of(road), null);
-    }
-
-    /// <summary>
-    /// Road Builder's prefabs are its own subclass of RoadPrefab. Recognised by assembly rather than
-    /// by name so that a road called "RoadBuilder something" is not caught by accident.
-    /// </summary>
-    private static bool IsRoadBuilderPrefab(PrefabBase prefab)
-    {
-        var type = prefab.GetType();
-        return string.Equals(type.Assembly.GetName().Name, "RoadBuilder", StringComparison.OrdinalIgnoreCase)
-            || (type.Namespace?.StartsWith("RoadBuilder.", StringComparison.Ordinal) ?? false);
     }
 
     /// <summary>

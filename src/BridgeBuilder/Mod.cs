@@ -68,7 +68,11 @@ public sealed class Mod : IMod
             Log.Error(exception, "Unable to register the settings page. Road selection will not be available.");
         }
 
-        updateSystem.UpdateAt<BridgeGenerationSystem>(SystemUpdatePhase.PrefabUpdate);
+        // Register new prefabs before the native pipeline, and publish the result only after it.
+        // Re-entering PrefabSystem/PrefabInitializeSystem from inside PrefabUpdate duplicates
+        // UIGroupElement entries (UIObject.LateInitialize appends without a uniqueness check).
+        updateSystem.UpdateBefore<BridgeGenerationSystem>(SystemUpdatePhase.PrefabUpdate);
+        updateSystem.UpdateAfter<BridgePublicationSystem>(SystemUpdatePhase.PrefabUpdate);
         updateSystem.UpdateAt<BridgeBuilderUISystem>(SystemUpdatePhase.UIUpdate);
     }
 

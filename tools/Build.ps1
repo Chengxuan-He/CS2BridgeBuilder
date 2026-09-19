@@ -83,6 +83,10 @@ foreach ($assembly in @(
     'Colossal.UI.dll',
     'Colossal.UI.Binding.dll',
     'UnityEngine.CoreModule.dll',
+    'UnityEngine.ImageConversionModule.dll',
+    'UnityEngine.PhysicsModule.dll',
+    'Unity.RenderPipelines.Core.Runtime.dll',
+    'Unity.RenderPipelines.HighDefinition.Runtime.dll',
     'Unity.Entities.dll',
     'Unity.Mathematics.dll'
 )) {
@@ -118,4 +122,8 @@ if ($LASTEXITCODE -ne 0) { throw "Compilation failed with exit code $LASTEXITCOD
 Copy-Item -LiteralPath $uiModule -Destination $output -Force
 Copy-Item -LiteralPath (Join-Path $projectRoot 'src\BridgeBuilder\UI\BridgeBuilder.css') -Destination $output -Force
 Copy-Item -LiteralPath (Join-Path $projectRoot 'assets\BridgeBuilder.svg') -Destination $output -Force
+Copy-Item -LiteralPath (Join-Path $projectRoot 'assets\BridgeBuilderToolbar.svg') -Destination $output -Force
+foreach ($fieldIcon in @('BridgeBuilderPack.svg', 'BridgeBuilderSearch.svg', 'BridgeBuilderFilter.svg', 'BridgeBuilderArrowDown.svg')) {
+    Copy-Item -LiteralPath (Join-Path $projectRoot "assets\$fieldIcon") -Destination $output -Force
+}
 Write-Host "Built: $(Join-Path $output 'BridgeBuilder.dll')"

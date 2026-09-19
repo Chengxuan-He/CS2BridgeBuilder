@@ -18,6 +18,11 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="..\..\assets\BridgeBuilder.svg" Link="BridgeBuilder.svg" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="..\..\assets\BridgeBuilderToolbar.svg" Link="BridgeBuilderToolbar.svg" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="..\..\assets\BridgeBuilderPack.svg" Link="BridgeBuilderPack.svg" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="..\..\assets\BridgeBuilderSearch.svg" Link="BridgeBuilderSearch.svg" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="..\..\assets\BridgeBuilderFilter.svg" Link="BridgeBuilderFilter.svg" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="..\..\assets\BridgeBuilderArrowDown.svg" Link="BridgeBuilderArrowDown.svg" CopyToOutputDirectory="PreserveNewest" />
     <None Include="UI\BridgeBuilder.mjs" CopyToOutputDirectory="PreserveNewest" />
     <None Include="UI\BridgeBuilder.css" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
@@ -32,6 +37,10 @@
     <Reference Include="Colossal.UI"><HintPath>$(GameManagedDir)\Colossal.UI.dll</HintPath><Private>false</Private></Reference>
     <Reference Include="Colossal.UI.Binding"><HintPath>$(GameManagedDir)\Colossal.UI.Binding.dll</HintPath><Private>false</Private></Reference>
     <Reference Include="UnityEngine.CoreModule"><HintPath>$(GameManagedDir)\UnityEngine.CoreModule.dll</HintPath><Private>false</Private></Reference>
+    <Reference Include="UnityEngine.ImageConversionModule"><HintPath>$(GameManagedDir)\UnityEngine.ImageConversionModule.dll</HintPath><Private>false</Private></Reference>
+    <Reference Include="UnityEngine.PhysicsModule"><HintPath>$(GameManagedDir)\UnityEngine.PhysicsModule.dll</HintPath><Private>false</Private></Reference>
+    <Reference Include="Unity.RenderPipelines.Core.Runtime"><HintPath>$(GameManagedDir)\Unity.RenderPipelines.Core.Runtime.dll</HintPath><Private>false</Private></Reference>
+    <Reference Include="Unity.RenderPipelines.HighDefinition.Runtime"><HintPath>$(GameManagedDir)\Unity.RenderPipelines.HighDefinition.Runtime.dll</HintPath><Private>false</Private></Reference>
     <Reference Include="Unity.Entities"><HintPath>$(GameManagedDir)\Unity.Entities.dll</HintPath><Private>false</Private></Reference>
     <Reference Include="Unity.Mathematics"><HintPath>$(GameManagedDir)\Unity.Mathematics.dll</HintPath><Private>false</Private></Reference>
   </ItemGroup>

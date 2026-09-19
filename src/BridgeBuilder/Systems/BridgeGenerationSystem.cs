@@ -47,6 +47,15 @@ public partial class BridgeGenerationSystem : GameSystemBase
     private bool _settling;
     private int _pageRefreshCooldown;
     private int _framesSincePageView = int.MaxValue;
+    private int _previewRevision = -1;
+    private int _previewFailedRevision = -1;
+    private BridgePreviewSession? _previewSession;
+    private BridgePreviewDrawList? _previewDraws;
+    private BridgePreviewRenderer? _previewRenderer;
+    private bool _previewReleasePending;
+    private BridgeInstanceRemoval? _pendingRemoval;
+    private BridgeRegistration? _removingRegistration;
+    private bool _activationLocked;
 
     protected override void OnCreate()
     {
@@ -76,7 +85,7 @@ public partial class BridgeGenerationSystem : GameSystemBase
             return;
         }
 
-        RoadSelectionModel.PublishMessage(this, text.StateScanning);
+        RoadSelectionModel.PublishMessage(this, RuntimeUiText.Get("Scanning"));
         _settling = true;
         Enabled = true;
         ModHost.Log.Info($"Waiting for prefabs to settle ({mode})");
@@ -84,12 +93,60 @@ public partial class BridgeGenerationSystem : GameSystemBase
 
     protected override void OnDestroy()
     {
+        ClearPreview();
+        BridgePreviewState.Clear();
         RoadSelectionModel.ReleaseIfOwner(this, UiStringCatalog.Current.StateNoWorld);
         base.OnDestroy();
     }
 
+    protected override void OnStopRunning()
+    {
+        _pendingRemoval = null;
+        _removingRegistration = null;
+        ClearPreview();
+        BridgePreviewState.Clear();
+        base.OnStopRunning();
+    }
+
     protected override void OnUpdate()
     {
+        // A queued update may need the next outer PrefabSystem pass. Do not process another
+        // create/delete request until its scheduled publication callback has finished.
+        if (World.GetOrCreateSystemManaged<BridgePublicationSystem>().IsPending) return;
+        if (_pendingRemoval != null)
+        {
+            try
+            {
+                if (_pendingRemoval.IsComplete(EntityManager)) CompleteRuntimeDeletion();
+            }
+            catch (Exception exception)
+            {
+                _pendingRemoval = null;
+                _removingRegistration = null;
+                Mod.Log.Warn(exception, "Could not finish bridge deletion safely");
+                BridgeRuntimeRequests.Complete("DeleteIncomplete");
+            }
+            return;
+        }
+        if (_previewReleasePending) ClearPreview();
+        if (_previewRevision != BridgePreviewState.Revision)
+        {
+            ClearPreview();
+            if (!_settling)
+            {
+                _previewRevision = BridgePreviewState.Revision;
+                if (BridgePreviewState.Selection != null) BuildPreview(BridgePreviewState.Selection, _previewRevision);
+            }
+        }
+        try
+        {
+            _previewRenderer?.Tick();
+        }
+        catch (Exception)
+        {
+            if (BridgePreviewState.Selection != null)
+                FailPreview(_previewRevision, "RenderFailed");
+        }
         if (_settling)
         {
             UpdateSettling();
@@ -138,15 +195,12 @@ public partial class BridgeGenerationSystem : GameSystemBase
         int count;
         try
         {
-            count = RoadBuilderDiscovery.CountRoads(_prefabSystem);
+            count = RoadBuilderCompatibility.IsAvailable ? RoadBuilderDiscovery.CountRoads(_prefabSystem) : 0;
         }
         catch (Exception exception)
         {
-            _settling = false;
-            Enabled = false;
-            ModHost.Log.Error(exception, "Road discovery failed");
-            RoadSelectionModel.PublishMessage(this, "Road discovery failed: " + exception.Message);
-            return;
+            count = 0;
+            ModHost.Log.Warn(exception, "Optional Road Builder discovery failed; other networks remain available.");
         }
 
         if (count != _lastCandidateCount)
@@ -177,7 +231,8 @@ public partial class BridgeGenerationSystem : GameSystemBase
         try
         {
             generated = new HashSet<string>(ExportStateStore.Load().ExportNames(), StringComparer.Ordinal);
-            roads = RoadBuilderDiscovery.Find(_prefabSystem, generated).Roads;
+            if (RoadBuilderCompatibility.IsAvailable)
+                roads = RoadBuilderDiscovery.Find(_prefabSystem, generated).Roads;
         }
         catch (Exception exception)
         {
@@ -187,6 +242,8 @@ public partial class BridgeGenerationSystem : GameSystemBase
 
         try
         {
+            BridgeAssetPack.RefreshExisting(_prefabSystem, EntityManager,
+                generated.Concat(BridgeRegistrationStore.Load().Select(entry => entry.PrefabName)));
             BridgeStyleCatalog.Rebuild(_prefabSystem, generated);
             DeckCatalog.Rebuild(_prefabSystem, roads);
         }
@@ -272,7 +329,7 @@ public partial class BridgeGenerationSystem : GameSystemBase
     private void ExportOne()
     {
         var state = ExportStateStore.Load();
-        var report = new ExportReport();
+        var report = new ExportReport(logIssues: false);
         var setting = Mod.Setting;
 
         if ((_gameMode & GameMode.Editor) == 0
@@ -320,16 +377,19 @@ public partial class BridgeGenerationSystem : GameSystemBase
         }
 
         var options = setting?.ToBridgeOptions() ?? new BridgeOptions();
-        if (TryBuildBridge(upper, lower, style, exportName, options, overwrite, report))
-            state.Record(exportName, Fingerprint(upper));
-
-        Finish(report, state, "Export bridge");
+        if (!TryBuildBridge(upper, lower, style, exportName, options, overwrite, report,
+            onPublished: ready =>
+            {
+                if (ready) state.Record(exportName, Fingerprint(upper));
+                Finish(report, state, "Export bridge");
+            }))
+            Finish(report, state, "Export bridge");
     }
 
     /// <summary>
     /// The one bridge construction path used by both the legacy options page and the runtime UI.
-    /// The runtime registration is written by its caller only after this returns true, which prevents
-    /// a UUID record from pointing at a partial or unpublished prefab.
+    /// A true result means that publication has been queued (or a private preview was built).
+    /// Permanent registration and activation happen in onPublished, after native initialization.
     /// </summary>
     private bool TryBuildBridge(
         Deck upper,
@@ -338,13 +398,23 @@ public partial class BridgeGenerationSystem : GameSystemBase
         string exportName,
         BridgeOptions options,
         bool overwrite,
-        ExportReport report)
+        ExportReport report,
+        BridgePreviewSession? preview = null,
+        Action<bool>? onPublished = null)
     {
+        var unsupported = BridgeStyleDefinitions.GenerationUnsupportedReason(style.Id, options.DoubleDeck);
+        if (unsupported != null)
+        {
+            report.Failed(exportName, new NotSupportedException(
+                $"'{style.Id}' cannot be generated: {unsupported}."));
+            return false;
+        }
         var failuresBefore = report.FailedRoads;
         var cloner = new PrefabGraphCloner(_prefabSystem, _settings, report, overwrite);
-        var towers = new TowerFactory(_prefabSystem, report);
+        var towers = new TowerFactory(_prefabSystem, report, preview?.Geometry);
         var composer = new BridgeComposer(report, towers);
         var doubleDeck = new DoubleDeckComposer(report);
+        var economy = new BridgeEconomy();
 
         try
         {
@@ -407,23 +477,63 @@ public partial class BridgeGenerationSystem : GameSystemBase
             AttachSecondDeck(
                 clone, auxiliary, secondNetAbove, exportName, cloner, doubleDeck, options,
                 style.Id, variant, report);
+            // Extra auxiliary networks inherited from a road may still be shared native assets.
+            // Never edit their prices or unlock components as if the bridge owned them.
+            var ownedNets = new HashSet<PrefabBase>(cloner.Nodes.Where(node => node.NeedsSave)
+                .Select(node => node.Target));
+            if ((clone.GetComponent<AuxiliaryNets>()?.m_AuxiliaryNets ?? Array.Empty<AuxiliaryNetInfo>())
+                .Any(entry => entry?.m_Prefab == null || !ownedNets.Contains(entry.m_Prefab)))
+            {
+                report.Failed(exportName, new InvalidOperationException(
+                    "The selected network contains an auxiliary prefab not owned by this bridge."));
+                return false;
+            }
+            if (!BridgeUnlockPolicy.Apply(clone, variant, report)) return false;
+            // Pricing creates private native section/piece assets only for permanent exports.
+            // It never changes rendered geometry, so previews need no pricing graph copies.
+            if (preview == null && !economy.Apply(clone, variant, upper.Prefab,
+                options.DoubleDeck ? chosen?.Prefab : null, report)) return false;
             DescribeResult(clone, exportName, report);
 
             var nodes = cloner.Nodes
+                .Concat(economy.Nodes)
                 .Concat(towers.Created.Select(prefab =>
                     new PrefabCloneNode(prefab, prefab, false, true, null)))
                 .ToList();
-            report.SavedDependencies = new PrefabAssetWriter().Save(nodes);
-            WorldRegistration.Publish(World, _prefabSystem, nodes, report);
+            if (preview != null)
+            {
+                // Preview and permanent generation share composition, not identity
+                // or publication. A later Create request always runs this method anew.
+                if (report.FailedRoads != failuresBefore) return false;
+                preview.SetResult(clone, variant);
+                return true;
+            }
             if (report.FailedRoads != failuresBefore) return false;
-
-            report.Exported(exportName);
-            return true;
+            var pack = BridgeAssetPack.Ensure(_prefabSystem);
+            if (pack == null)
+            {
+                report.Failed(exportName, new InvalidOperationException("BridgeBuilder asset pack is unavailable."));
+                return false;
+            }
+            foreach (var node in nodes.Where(node => node.NeedsSave))
+                if (node.Target is NetGeometryPrefab network) BridgeAssetPack.Assign(network, pack);
+            report.SavedDependencies = new PrefabAssetWriter().Save(nodes);
+            return World.GetOrCreateSystemManaged<BridgePublicationSystem>().Publish(nodes, report, ready =>
+            {
+                if (ready) report.Exported(exportName);
+                onPublished?.Invoke(ready);
+            });
         }
         catch (Exception exception)
         {
             report.Failed(exportName, exception);
             return false;
+        }
+        finally
+        {
+            // Capture even a partial graph so failed previews can be completely
+            // discarded without touching any shared archetype or source road.
+            preview?.Adopt(cloner.Nodes, towers.Created);
         }
     }
 
@@ -438,17 +548,29 @@ public partial class BridgeGenerationSystem : GameSystemBase
         if (deck.Prefab is RoadPrefab roadSource)
         {
             var road = cloner.CloneRoad(roadSource, exportName, string.Empty);
+            if (!IsPrivateDeck(roadSource, road, report)) return null;
             if (deck.Road != null) SpeedLimitFix.Apply(road, deck.Road, report);
             return road;
         }
 
         if (deck.Prefab is NetPrefab netSource)
-            return (NetGeometryPrefab)cloner.CloneNet(netSource, exportName);
+        {
+            var clone = (NetGeometryPrefab)cloner.CloneNet(netSource, exportName);
+            return IsPrivateDeck(netSource, clone, report) ? clone : null;
+        }
 
         report.Defect(
             $"'{deck.DisplayName}' is not a network prefab and cannot own a double-deck bridge. "
             + "The current bridge export was stopped without publishing a partial prefab.");
         return null;
+    }
+
+    private static bool IsPrivateDeck(NetPrefab source, NetPrefab clone, ExportReport report)
+    {
+        if (!ReferenceEquals(source, clone)) return true;
+        report.Defect($"Network '{source.name}' could not be cloned into an owned native prefab. " +
+            "Generation stopped before modifying the shared source network.");
+        return false;
     }
 
     /// <summary>
@@ -551,9 +673,8 @@ public partial class BridgeGenerationSystem : GameSystemBase
         }
 
         var auxiliaryName = BridgeNaming.CarriedDeckName(exportName, above);
-        NetGeometryPrefab auxiliaryClone = source is RoadPrefab road
-            ? cloner.CloneRoad(road, auxiliaryName, string.Empty)
-            : (NetGeometryPrefab)cloner.CloneNet(source, auxiliaryName);
+        var auxiliaryClone = CloneDeck(cloner, deck, auxiliaryName, report);
+        if (auxiliaryClone == null) return;
 
         if (arrangement.m_Prefab is not NetGeometryPrefab prototypeAuxiliaryDeck)
         {
@@ -643,9 +764,9 @@ public partial class BridgeGenerationSystem : GameSystemBase
                 + $"{auxiliary} auxiliary net(s), speed "
                 + (clone is RoadPrefab road ? road.m_SpeedLimit.ToString(CultureInfo.InvariantCulture) : "n/a"));
         }
-        catch (Exception exception)
+        catch (Exception)
         {
-            ModHost.Log.Warn(exception, $"Could not summarise the exported bridge '{name}'");
+            // Generation diagnostics are silent; retain the external API exception boundary.
         }
     }
 
@@ -673,7 +794,7 @@ public partial class BridgeGenerationSystem : GameSystemBase
         {
             case BridgeRuntimeAction.Refresh:
                 Refresh();
-                BridgeRuntimeRequests.Complete("道路、桥梁原型与已创建桥梁已刷新。");
+                BridgeRuntimeRequests.Complete(string.Empty);
                 return;
             case BridgeRuntimeAction.Create:
                 CreateRuntimeBridge(request);
@@ -690,22 +811,118 @@ public partial class BridgeGenerationSystem : GameSystemBase
         }
     }
 
+    private void ClearPreview()
+    {
+        _previewReleasePending = false;
+        _previewRenderer?.Dispose();
+        _previewRenderer = null;
+        _previewDraws?.Dispose();
+        _previewDraws = null;
+        _previewSession?.Dispose();
+        _previewSession = null;
+    }
+
+    private void BuildPreview(BridgeRuntimeRequest request, int revision)
+    {
+        try
+        {
+            if (!string.IsNullOrEmpty(request.PrefabName))
+            {
+                var registration = BridgeRegistrationStore.Find(request.PrefabName);
+                var existing = registration == null ? null : PrefabCatalog.GetAll(_prefabSystem)
+                    .OfType<NetGeometryPrefab>()
+                    .FirstOrDefault(prefab => string.Equals(prefab.name, request.PrefabName, StringComparison.Ordinal));
+                if (existing == null)
+                {
+                    FailPreview(revision, "PreviewInvalid");
+                    return;
+                }
+                // Borrow the existing prefab graph; do not rebuild its original recipe.
+                _previewSession = new BridgePreviewSession(existing);
+            }
+            else
+            {
+                var upper = DeckCatalog.Find(request.UpperDeckId);
+                var lower = string.IsNullOrEmpty(request.LowerDeckId) ? null : DeckCatalog.Find(request.LowerDeckId);
+                var style = BridgeStyleCatalog.Find(request.StyleId);
+                var doubleDeck = !string.IsNullOrEmpty(request.LowerDeckId);
+                // DeckCatalog validates network types; both tracks and roads can be
+                // primary decks. IsRoad only guides archetype selection in the composer.
+                if (upper == null || style == null || !style.IsInstalled ||
+                    (doubleDeck && lower == null) || !style.Variants.Any(v => v.IsDoubleDeck == doubleDeck))
+                {
+                    FailPreview(revision, "PreviewInvalid");
+                    return;
+                }
+                _previewSession = new BridgePreviewSession();
+                var options = new BridgeOptions
+                {
+                    DoubleDeck = doubleDeck, LowerDeckId = lower?.Id, LowerDeckOpposite = request.LowerDeckOpposite
+                };
+                if (!TryBuildBridge(upper, lower, style, _previewSession.Name, options, false,
+                        new ExportReport(logIssues: false), _previewSession))
+                {
+                    FailPreview(revision, "PreviewBuildFailed");
+                    ClearPreview();
+                    return;
+                }
+            }
+            _previewDraws = new BridgePreviewDrawList(_previewSession);
+            if (!BridgePreviewScene.Build(_previewSession, _previewDraws))
+            {
+                FailPreview(revision, "PreviewAssemblyFailed");
+                ClearPreview();
+                return;
+            }
+            // Own the renderer before native allocation starts, so ClearPreview
+            // also releases a partially initialized scene/camera after an error.
+            _previewRenderer = new BridgePreviewRenderer();
+            _previewRenderer.Initialize(_previewSession.Name, _previewDraws);
+            _previewRenderer.Start((image, error) =>
+            {
+                if (revision != BridgePreviewState.Revision || BridgePreviewState.Selection == null) return;
+                if (error.Length != 0 || string.IsNullOrEmpty(image))
+                    FailPreview(revision, error.Length != 0 ? error : "RenderEmpty");
+                else
+                    BridgePreviewState.Publish(revision, image, "PreviewReady");
+            });
+        }
+        catch (Exception)
+        {
+            FailPreview(revision, "PreviewFailed");
+            ClearPreview();
+        }
+    }
+
+    private void FailPreview(int revision, string stage)
+    {
+        // A cancelled/superseded selection is not a model generation failure.
+        // Complete each failed request once without emitting a game error.
+        if (revision != BridgePreviewState.Revision || BridgePreviewState.Selection == null ||
+            _previewFailedRevision == revision) return;
+        _previewFailedRevision = revision;
+        // Never destroy a camera inside its rendering callback. Release the
+        // isolated preview on the next update; no city/saved assets are touched.
+        _previewReleasePending = true;
+        BridgePreviewState.Publish(revision, string.Empty, stage);
+    }
+
     private void CreateRuntimeBridge(BridgeRuntimeRequest request)
     {
         var state = ExportStateStore.Load();
-        var report = new ExportReport();
+        var report = new ExportReport(logIssues: false);
         var upper = DeckCatalog.Find(request.UpperDeckId);
         var lower = string.IsNullOrEmpty(request.LowerDeckId)
             ? null
             : DeckCatalog.Find(request.LowerDeckId);
         var style = BridgeStyleCatalog.Find(request.StyleId);
 
-        if (upper == null || !upper.IsRoad)
+        if (upper == null)
         {
             report.Failed("(runtime bridge)", new InvalidOperationException(
-                "The selected upper road is no longer registered."));
+                "The selected upper network is no longer registered."));
             Finish(report, state, "Create runtime bridge", showMessage: false);
-            BridgeRuntimeRequests.Complete("创建失败：所选上层道路已不可用。");
+            BridgeRuntimeRequests.Complete("UpperUnavailable");
             return;
         }
 
@@ -714,7 +931,7 @@ public partial class BridgeGenerationSystem : GameSystemBase
             report.Failed("(runtime bridge)", new InvalidOperationException(
                 "The selected bridge prototype is no longer installed."));
             Finish(report, state, "Create runtime bridge", showMessage: false);
-            BridgeRuntimeRequests.Complete("创建失败：所选桥梁原型或前置内容已不可用。");
+            BridgeRuntimeRequests.Complete("StyleUnavailable");
             return;
         }
 
@@ -724,7 +941,7 @@ public partial class BridgeGenerationSystem : GameSystemBase
             report.Failed("(runtime bridge)", new InvalidOperationException(
                 "The selected lower network is no longer registered."));
             Finish(report, state, "Create runtime bridge", showMessage: false);
-            BridgeRuntimeRequests.Complete("创建失败：所选下层道路或轨道已不可用。");
+            BridgeRuntimeRequests.Complete("LowerUnavailable");
             return;
         }
 
@@ -736,8 +953,8 @@ public partial class BridgeGenerationSystem : GameSystemBase
                     : "The selected bridge style has no single-deck prototype."));
             Finish(report, state, "Create runtime bridge", showMessage: false);
             BridgeRuntimeRequests.Complete(doubleDeck
-                ? "创建失败：该桥型没有双层原型。"
-                : "创建失败：该桥型没有单层原型。");
+                ? "NoDoublePrototype"
+                : "NoSinglePrototype");
             return;
         }
 
@@ -758,7 +975,7 @@ public partial class BridgeGenerationSystem : GameSystemBase
             report.Failed("(runtime bridge)", new InvalidOperationException(
                 "A unique bridge UUID could not be allocated."));
             Finish(report, state, "Create runtime bridge", showMessage: false);
-            BridgeRuntimeRequests.Complete("创建失败：无法分配唯一 UUID。");
+            BridgeRuntimeRequests.Complete("UuidFailed");
             return;
         }
 
@@ -769,44 +986,57 @@ public partial class BridgeGenerationSystem : GameSystemBase
         {
             DoubleDeck = doubleDeck,
             LowerDeckId = lower?.Id,
-            LowerDeckOpposite = true,
+            LowerDeckOpposite = request.LowerDeckOpposite,
         };
 
-        var built = TryBuildBridge(
-            upper, lower, style, prefabName, options, overwrite: false, report);
-        if (built)
+        if (!TryBuildBridge(
+            upper, lower, style, prefabName, options, overwrite: false, report,
+            onPublished: ready =>
+            {
+                if (ready)
+                    CompleteRuntimeBridge(upper, lower, style, prefabName, registrationName, state, report,
+                        request.BuildAfterCreate);
+                else
+                    BridgeRuntimeRequests.Complete("CreateFailed");
+                Finish(report, state, "Create runtime bridge", showMessage: false);
+                // Refresh only after publication and export-state persistence, so the
+                // new bridge cannot re-enter the selectable source-road catalogue.
+                if (ready) Refresh();
+            }))
         {
-            state.Record(prefabName, RuntimeFingerprint(upper, lower, style));
-            var recorded = BridgeRegistrationStore.Record(new BridgeRegistration(
-                prefabName,
-                registrationName,
-                upper.Id,
-                lower?.Id,
-                style.Id,
-                DateTime.UtcNow.ToString("O", CultureInfo.InvariantCulture)));
+            BridgeRuntimeRequests.Complete("CreateFailed");
+            Finish(report, state, "Create runtime bridge", showMessage: false);
+        }
+    }
 
-            if (recorded)
-            {
-                Mod.ReloadActiveLocale();
-                var activated = ActivatePrefab(prefabName);
-                BridgeRuntimeRequests.Complete(activated
-                    ? $"已创建“{registrationName}”，并进入建造模式。唯一标识符：{prefabName}"
-                    : $"已创建“{registrationName}”。唯一标识符：{prefabName}；请从管理页建造。");
-            }
-            else
-            {
-                report.Failed(prefabName, new IOException(
-                    "The prefab was created, but its runtime registration record could not be saved."));
-                BridgeRuntimeRequests.Complete(
-                    $"Prefab {prefabName} 已创建，但注册记录保存失败；未按显示名称登记。");
-            }
+    private void CompleteRuntimeBridge(
+        Deck upper, Deck? lower, BridgeStyle style, string prefabName, string registrationName,
+        ExportStateStore state, ExportReport report, bool buildAfterCreate)
+    {
+        state.Record(prefabName, RuntimeFingerprint(upper, lower, style));
+        var recorded = BridgeRegistrationStore.Record(new BridgeRegistration(
+            prefabName,
+            registrationName,
+            upper.Id,
+            lower?.Id,
+            style.Id,
+            DateTime.UtcNow.ToString("O", CultureInfo.InvariantCulture)));
+
+        if (recorded)
+        {
+            Mod.ReloadActiveLocale();
+            var activated = buildAfterCreate && ActivatePrefab(prefabName);
+            BridgeRuntimeRequests.Complete(activated
+                ? "CreatedActive"
+                : buildAfterCreate && _activationLocked ? "CreatedLocked" : "CreatedManage",
+                registrationName, prefabName);
         }
         else
         {
-            BridgeRuntimeRequests.Complete("桥梁创建失败；没有写入 UUID 注册记录。");
+            report.Failed(prefabName, new IOException(
+                "The prefab was created, but its runtime registration record could not be saved."));
+            BridgeRuntimeRequests.Complete("RegistrationFailed", registrationName);
         }
-
-        Finish(report, state, "Create runtime bridge", showMessage: false);
     }
 
     private static string RuntimeFingerprint(Deck upper, Deck? lower, BridgeStyle style)
@@ -826,17 +1056,18 @@ public partial class BridgeGenerationSystem : GameSystemBase
         if (!BridgeRegistration.IsPrefabName(prefabName)
             || BridgeRegistrationStore.Find(prefabName) == null)
         {
-            BridgeRuntimeRequests.Complete("激活失败：无效或未注册的桥梁 UUID。");
+            BridgeRuntimeRequests.Complete("ActivateInvalid");
             return;
         }
 
         BridgeRuntimeRequests.Complete(ActivatePrefab(prefabName)
-            ? "已进入桥梁建造模式。"
-            : "激活失败：该桥梁 Prefab 当前没有加载。");
+            ? "Activated"
+            : _activationLocked ? "ActivateLocked" : "ActivateUnloaded");
     }
 
     private bool ActivatePrefab(string prefabName)
     {
+        _activationLocked = false;
         try
         {
             var prefab = PrefabCatalog.GetAll(_prefabSystem)
@@ -844,7 +1075,15 @@ public partial class BridgeGenerationSystem : GameSystemBase
                 .FirstOrDefault(candidate =>
                     string.Equals(candidate.name, prefabName, StringComparison.Ordinal));
             if (prefab == null) return false;
-            return World.GetOrCreateSystemManaged<ToolSystem>().ActivatePrefabTool(prefab);
+            if ((_gameMode & GameMode.Game) != 0
+                && World.GetOrCreateSystemManaged<UnlockSystem>().IsLocked(prefab))
+            {
+                _activationLocked = true;
+                return false;
+            }
+            if (!World.GetOrCreateSystemManaged<ToolSystem>().ActivatePrefabTool(prefab)) return false;
+            World.GetExistingSystemManaged<BridgeBuilderUISystem>()?.CloseForBuild();
+            return true;
         }
         catch (Exception exception)
         {
@@ -853,28 +1092,34 @@ public partial class BridgeGenerationSystem : GameSystemBase
         }
     }
 
-    private static void RenameRuntimeBridge(string prefabName, string registrationName)
+    private void RenameRuntimeBridge(string prefabName, string registrationName)
     {
         if (!BridgeRegistration.IsPrefabName(prefabName))
         {
-            BridgeRuntimeRequests.Complete("改名失败：Prefab UUID 无效。");
+            BridgeRuntimeRequests.Complete("RenameInvalid");
             return;
         }
         if (string.IsNullOrWhiteSpace(registrationName))
         {
-            BridgeRuntimeRequests.Complete("改名失败：注册名称不能为空。");
+            BridgeRuntimeRequests.Complete("NameRequired");
             return;
         }
 
+        if (BridgeRegistrationStore.Find(prefabName)?.RegistrationName == registrationName.Trim())
+        {
+            BridgeRuntimeRequests.Complete("Renamed", registrationName.Trim());
+            return;
+        }
         if (!BridgeRegistrationStore.Rename(prefabName, registrationName))
         {
-            BridgeRuntimeRequests.Complete("改名失败：找不到该 UUID 的注册记录。");
+            BridgeRuntimeRequests.Complete("RenameFailed");
             return;
         }
 
         Mod.ReloadActiveLocale();
+        Refresh();
         BridgeRuntimeRequests.Complete(
-            $"注册名称已改为“{registrationName.Trim()}”；Prefab 唯一标识符保持为 {prefabName}。");
+            "Renamed", registrationName.Trim(), prefabName);
     }
 
     private void DeleteRuntimeBridge(string prefabName)
@@ -882,75 +1127,66 @@ public partial class BridgeGenerationSystem : GameSystemBase
         var registration = BridgeRegistrationStore.Find(prefabName);
         if (!BridgeRegistration.IsPrefabName(prefabName) || registration == null)
         {
-            BridgeRuntimeRequests.Complete("删除失败：无效或未注册的桥梁 UUID。");
+            BridgeRuntimeRequests.Complete("DeleteMissing");
             return;
         }
 
+        try
+        {
+            var roots = RemovalRoots(prefabName, PrefabCatalog.GetAll(_prefabSystem)).ToArray();
+            if (roots.Length == 0) { BridgeRuntimeRequests.Complete("DeleteMissing"); return; }
+            var ids = new HashSet<Entity>();
+            foreach (var root in roots)
+                if (_prefabSystem.TryGetEntity(root, out var id)) ids.Add(id);
+            var plan = BridgeInstanceRemoval.Collect(EntityManager, ids);
+            // Stop placement before marking any entity. A temporary tool preview is not a
+            // placed bridge, and must be released by its owning tool, not by our PrefabRef query.
+            var tools = World.GetOrCreateSystemManaged<ToolSystem>();
+            if (roots.Contains(tools.activePrefab)) tools.ActivatePrefabTool(null);
+            if (plan.DeletedEntities.Contains(tools.selected)) tools.selected = Entity.Null;
+            ClearPreview();
+            BridgePreviewState.Clear();
+            plan.Apply(EntityManager);
+            _pendingRemoval = plan;
+            _removingRegistration = registration;
+            Mod.Log.Info($"Removing '{prefabName}': {plan.DeletedEntities.Count} network entities; "
+                + "waiting for native cleanup before deleting assets. Composition caches are retained.");
+            if (plan.IsComplete(EntityManager)) CompleteRuntimeDeletion();
+        }
+        catch (Exception exception)
+        {
+            Mod.Log.Warn(exception, $"Could not safely begin deletion of '{prefabName}'");
+            BridgeRuntimeRequests.Complete("DeleteUnsafe");
+        }
+    }
+
+    private void CompleteRuntimeDeletion()
+    {
+        var registration = _removingRegistration;
+        var placed = _pendingRemoval?.DeletedEntities.Count ?? 0;
+        _pendingRemoval = null;
+        _removingRegistration = null;
+        if (registration == null) return;
+        var prefabName = registration.PrefabName;
         var state = ExportStateStore.Load();
         var report = new ExportReport();
-        var prefab = PrefabCatalog.GetAll(_prefabSystem)
-            .OfType<NetGeometryPrefab>()
-            .FirstOrDefault(candidate =>
-                string.Equals(candidate.name, prefabName, StringComparison.Ordinal));
-        var placed = 0;
-        if (prefab != null && !TryMarkPlacedInstancesDeleted(prefab, out placed))
-        {
-            report.Failed(prefabName, new InvalidOperationException(
-                "Placed bridge instances could not be removed safely, so the prefab asset was retained."));
-            Finish(report, state, "Delete runtime bridge", showMessage: false);
-            BridgeRuntimeRequests.Complete(
-                "删除失败：无法安全移除地图实例，因此保留了 Prefab 和 UUID 注册记录。");
-            return;
-        }
         var removed = RemoveByName(prefabName, state, report);
         if (removed.Count > 0 && BridgeRegistrationStore.Remove(prefabName))
         {
             Mod.ReloadActiveLocale();
             BridgeRuntimeRequests.Complete(
-                $"已删除“{registration.RegistrationName}”、其 {placed} 个地图实例及 UUID 注册记录。");
+                "Deleted", registration.RegistrationName, placed);
         }
         else
         {
             BridgeRuntimeRequests.Complete(
-                "删除未完成：Prefab 资产或 UUID 注册记录仍然存在；请查看报告。");
+                "DeleteIncomplete");
         }
 
         Finish(report, state, "Delete runtime bridge", showMessage: false);
-    }
-
-    private bool TryMarkPlacedInstancesDeleted(NetGeometryPrefab prefab, out int deleted)
-    {
-        deleted = 0;
-        try
-        {
-            var prefabEntity = _prefabSystem.GetEntity(prefab);
-            using var query = EntityManager.CreateEntityQuery(ComponentType.ReadOnly<PrefabRef>());
-            using var entities = query.ToEntityArray(Allocator.Temp);
-            foreach (var entity in entities)
-            {
-                if (EntityManager.GetComponentData<PrefabRef>(entity).m_Prefab != prefabEntity) continue;
-
-                if (EntityManager.HasComponent<Game.Objects.SubObject>(entity))
-                {
-                    foreach (var child in EntityManager.GetBuffer<Game.Objects.SubObject>(entity))
-                    {
-                        if (EntityManager.Exists(child.m_SubObject)
-                            && !EntityManager.HasComponent<Deleted>(child.m_SubObject))
-                            EntityManager.AddComponent<Deleted>(child.m_SubObject);
-                    }
-                }
-
-                if (!EntityManager.HasComponent<Deleted>(entity))
-                    EntityManager.AddComponent<Deleted>(entity);
-                deleted++;
-            }
-        }
-        catch (Exception exception)
-        {
-            Mod.Log.Warn(exception, $"Could not remove every placed instance of '{prefab.name}'");
-            return false;
-        }
-        return true;
+        // Native removal has completed and state is saved. Also reflect partial
+        // deletion accurately instead of keeping a stale list until reopening.
+        Refresh();
     }
 
     private HashSet<string> LoadedExportNames()
@@ -985,10 +1221,6 @@ public partial class BridgeGenerationSystem : GameSystemBase
             report);
         if (removed.Count > 0)
         {
-            if (Mod.Setting?.RemoveUnusedDependencies ?? true)
-                new PrefabAssetRemover(_prefabSystem, _settings, report)
-                    .Remove(Array.Empty<RoadBuilderRoad>(), state, true);
-
             report.Warning("The removed prefabs stay registered in the running session. Restart the game to get rid of them.");
         }
 
@@ -998,8 +1230,49 @@ public partial class BridgeGenerationSystem : GameSystemBase
     private IReadOnlyList<string> RemoveByName(string exportName, ExportStateStore state, ExportReport report)
     {
         var removed = new List<string>();
-        var removedRoots = new HashSet<PrefabBase>(ReferenceEqualityComparer<PrefabBase>.Instance);
-        var dependencyCandidates = new HashSet<PrefabBase>(ReferenceEqualityComparer<PrefabBase>.Instance);
+        var loaded = PrefabCatalog.GetAll(_prefabSystem).ToArray();
+        var roots = RemovalRoots(exportName, loaded).ToArray();
+        if (roots.Length == 0)
+        {
+            report.Skipped(exportName, "no exported asset with that name is loaded");
+            return removed;
+        }
+        var rootEntities = new HashSet<Entity>();
+        foreach (var root in roots)
+            if (_prefabSystem.TryGetEntity(root, out var entity)) rootEntities.Add(entity);
+        // Also protects the settings-page remover and a shared junction that has not yet been
+        // reassigned by the native network update. Never delete its backing asset prematurely.
+        if (BridgeInstanceRemoval.HasPlacedReferences(EntityManager, rootEntities))
+        {
+            report.Warning($"Kept '{exportName}': a placed network entity still references it.");
+            return removed;
+        }
+        var tools = World.GetOrCreateSystemManaged<ToolSystem>();
+        if (roots.Contains(tools.activePrefab)) tools.ActivatePrefabTool(null);
+        // Registered prefab/composition entities remain valid until world teardown. Do not call
+        // RemovePrefab (which invalidates PrefabData indices) or unload their meshes here.
+        var uuidOwner = BridgeRegistration.IsPrefabName(exportName);
+        var sharedPrefix = _settings.NamePrefix + "Dep_";
+        var deleted = BridgePrefabRemoval.Remove(roots, loaded,
+            candidate => (candidate.name ?? string.Empty).StartsWith(sharedPrefix, StringComparison.Ordinal)
+                || (uuidOwner && (candidate.name ?? string.Empty).Contains(exportName)),
+            Mod.Setting?.RemoveUnusedDependencies ?? true, report);
+        foreach (var root in roots)
+        {
+            if (!deleted.Contains(root)) continue;
+            HideRemovedBridge(root);
+            state.Remove(root.name);
+            RoadBuilderIconExporter.Discard(root.name);
+            report.Removed(root.name);
+            removed.Add(root.name);
+        }
+        if (removed.Count > 0)
+            World.GetOrCreateSystemManaged<BridgePublicationSystem>().RefreshMenus(report);
+        return removed;
+    }
+
+    private static IEnumerable<PrefabBase> RemovalRoots(string exportName, IEnumerable<PrefabBase> loaded)
+    {
         // The lower deck, when there is one, is a second asset next to the bridge and has to go too.
         foreach (var name in new[]
                  {
@@ -1008,99 +1281,39 @@ public partial class BridgeGenerationSystem : GameSystemBase
                      BridgeNaming.CarriedDeckName(exportName, above: true),
                  })
         {
-            var prefab = PrefabCatalog.GetAll(_prefabSystem)
+            var prefab = loaded
                 .OfType<NetGeometryPrefab>()
                 .FirstOrDefault(candidate => candidate.asset != null
                     && !candidate.isReadOnly
                     && string.Equals(candidate.name, name, StringComparison.Ordinal));
             if (prefab == null)
             {
-                if (name == exportName) report.Skipped(name, "no exported asset with that name is loaded");
                 continue;
             }
 
-            try
-            {
-                // Capture the dependency graph while the root still exists. Deleting only the road
-                // left its generated tower, RenderPrefabs and LODs in ImportedData. A later offline
-                // cleanup removed their Geometry files, so those orphan prefabs loaded next launch
-                // with a valid material batch but a null mesh.
-                PrefabReferenceWalker.CollectInto(prefab, dependencyCandidates);
-                prefab.asset!.Delete();
-            }
-            catch (Exception exception)
-            {
-                report.Failed(name, exception);
-                continue;
-            }
-
-            state.Remove(name);
-            RoadBuilderIconExporter.Discard(name);
-            report.Removed(name);
-            removed.Add(name);
-            removedRoots.Add(prefab);
+            yield return prefab;
         }
 
-        if (removed.Count > 0 && (Mod.Setting?.RemoveUnusedDependencies ?? true))
-            RemoveBridgeDependencies(dependencyCandidates, removedRoots, state, report);
-
-        return removed;
     }
 
-    /// <summary>
-    /// Deletes generated prefab dependencies which belonged only to the removed bridge.
-    /// Geometry assets are deliberately retained until restart/offline cleanup: the corresponding
-    /// RenderPrefabs remain registered in the running world, and deleting their Geometry immediately
-    /// would recreate the null-mesh renderer failure during the current session.
-    /// </summary>
-    private void RemoveBridgeDependencies(
-        IReadOnlyCollection<PrefabBase> candidates,
-        HashSet<PrefabBase> removedRoots,
-        ExportStateStore state,
-        ExportReport report)
+    private void HideRemovedBridge(PrefabBase root)
     {
-        if (candidates.Count == 0) return;
-
-        var referenced = new HashSet<PrefabBase>(ReferenceEqualityComparer<PrefabBase>.Instance);
-        foreach (var survivorName in state.ExportNames())
+        if (root.TryGet<UIObject>(out var ui))
         {
-            var survivor = PrefabCatalog.GetAll(_prefabSystem)
-                .OfType<NetGeometryPrefab>()
-                .FirstOrDefault(candidate => candidate.asset != null
-                    && !candidate.isReadOnly
-                    && string.Equals(candidate.name, survivorName, StringComparison.Ordinal));
-            if (survivor == null)
-            {
-                report.Warning(
-                    $"Kept generated bridge dependencies: surviving export '{survivorName}' is "
-                    + "not loaded, so shared dependencies cannot be identified safely.");
-                return;
-            }
-
-            PrefabReferenceWalker.CollectInto(survivor, referenced);
+            ui.m_IsDebugObject = true;
+            ui.m_Group = null;
         }
-
-        foreach (var candidate in candidates)
+        if (!_prefabSystem.TryGetEntity(root, out var entity)
+            || !EntityManager.HasComponent<UIObjectData>(entity)) return;
+        var data = EntityManager.GetComponentData<UIObjectData>(entity);
+        if (EntityManager.Exists(data.m_Group) && EntityManager.HasBuffer<UIGroupElement>(data.m_Group))
         {
-            if (removedRoots.Contains(candidate)
-                || referenced.Contains(candidate)
-                || candidate.asset == null
-                || candidate.isReadOnly
-                || candidate.isBuiltin)
-                continue;
-
-            try
-            {
-                candidate.asset.Delete();
-                report.RemovedDependency(candidate.name);
-            }
-            catch (Exception exception)
-            {
-                report.Warning(
-                    $"Could not delete unused bridge dependency '{candidate.name}': "
-                    + exception.Message);
-            }
+            var group = EntityManager.GetBuffer<UIGroupElement>(data.m_Group);
+            for (var i = group.Length - 1; i >= 0; i--)
+                if (group[i].m_Prefab == entity) group.RemoveAt(i);
         }
+        data.m_Group = Entity.Null;
+        EntityManager.SetComponentData(entity, data);
     }
 
     private void Finish(
@@ -1111,20 +1324,14 @@ public partial class BridgeGenerationSystem : GameSystemBase
             state.Save();
             report.Save(_gameMode.ToString(), operation);
         }
-        catch (Exception exception)
+        catch (Exception)
         {
-            ModHost.Log.Error(exception, "Unable to write exporter state/report");
+            // Generation diagnostics are silent; retain the external API exception boundary.
         }
 
         ModHost.Log.Info(
             $"{operation}: {report.ExportedRoads} exported, {report.RemovedRoads} removed, "
             + $"{report.SkippedRoads} skipped, {report.FailedRoads} failed");
-
-        // Raised at error level on purpose: this logger shows errors in the game, so a failed export
-        // is not something the player has to go looking for in a file.
-        if (report.FailedRoads > 0)
-            ModHost.Log.Error(
-                $"{operation} failed. Details in ModsData\\BridgeBuilder\\last-export-report.txt");
 
         UiStrings text = UiStringCatalog.Current;
         var summary = string.Format(
@@ -1135,7 +1342,8 @@ public partial class BridgeGenerationSystem : GameSystemBase
             report.FailedRoads);
         RoadSelectionModel.PublishOperationResult(summary);
 
-        if (showMessage) Mod.ShowMessage(text.Title, summary + "\n" + text.StateReportHint);
+        if (showMessage && report.FailedRoads == 0)
+            Mod.ShowMessage(text.Title, summary + "\n" + text.StateReportHint);
         BridgeBuilderUISystem.RequestRefresh();
     }
 }

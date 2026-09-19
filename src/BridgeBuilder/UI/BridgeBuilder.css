@@ -1,45 +1,116 @@
+/* Native game theme/rem scaling and Cohtml-compatible flex layout. */
 .bb-toolbar img { width: 34rem; height: 34rem; }
-.bb-toolbar.bb-open { background: rgba(60, 116, 190, .92); }
-.bb-panel { position: absolute; inset: 22rem 36rem 30rem; z-index: 1000; display: flex; flex-direction: column; color: #18263a; background: rgba(246, 249, 253, .985); border: 2rem solid rgba(28, 58, 96, .85); border-radius: 9rem; box-shadow: 0 12rem 48rem rgba(0,0,0,.46); overflow: hidden; font-size: 16rem; }
-.bb-header { height: 64rem; flex: 0 0 64rem; display: flex; align-items: center; gap: 18rem; padding: 0 18rem; background: #d9e4f4; border-bottom: 1rem solid #7388a4; }
-.bb-title { display: flex; align-items: center; gap: 10rem; font-weight: 700; font-size: 21rem; margin-right: auto; }
-.bb-title img { width: 38rem; height: 38rem; }
-.bb-header nav { display: flex; gap: 6rem; }
-.bb-panel button { min-height: 36rem; padding: 6rem 13rem; border: 1rem solid #687e9d; border-radius: 5rem; color: #17263b; background: rgba(255,255,255,.82); }
-.bb-panel button:hover { background: #edf4ff; }
-.bb-panel button.bb-active, .bb-panel button.bb-primary { color: white; background: #326aa8; }
-.bb-panel button:disabled { opacity: .42; }
-.bb-close { width: 40rem; padding: 0 !important; font-size: 27rem; }
-.bb-workspace { min-height: 0; flex: 1; display: grid; grid-template-columns: minmax(420rem, 1fr) minmax(520rem, 1.12fr); gap: 28rem; padding: 24rem 30rem; }
-.bb-road-column, .bb-right, .bb-manage-detail { min-height: 0; display: flex; flex-direction: column; }
-.bb-road-column { padding: 15rem; background: #dce7f7; border: 1rem solid #274b77; border-radius: 5rem; }
-.bb-road-column h2 { margin: 0 0 10rem; font-size: 18rem; }
-.bb-road-column h2:not(:first-child) { margin-top: 16rem; }
-.bb-scroll { overflow-y: auto; min-height: 0; }
-.bb-road-column > .bb-scroll { flex: 1; }
-.bb-road-column > .bb-lower { flex: 1; }
-.bb-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10rem; padding: 2rem; }
-.bb-card { min-height: 118rem; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4rem; padding: 8rem !important; overflow: hidden; }
-.bb-card.bb-selected { outline: 3rem solid #3286d4; background: #c8e2ff; }
-.bb-card img { width: 76rem; height: 62rem; object-fit: contain; }
-.bb-card-name { width: 100%; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; font-weight: 600; }
-.bb-card small { width: 100%; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; color: #637083; }
-.bb-right { gap: 12rem; }
-.bb-preview { min-height: 210rem; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 7rem; background: #dce7f7; border: 1rem solid #274b77; border-radius: 5rem; }
-.bb-preview img { width: 88%; height: 170rem; object-fit: contain; }
-.bb-mode-tabs { display: grid; grid-template-columns: 1fr 1fr; }
-.bb-mode-tabs button { border-radius: 0; font-size: 19rem; }
-.bb-style-list { flex: 1; padding: 12rem; background: #dce7f7; border: 1rem solid #274b77; }
-.bb-create-bar { display: grid; grid-template-columns: 1fr auto; gap: 10rem; }
-.bb-panel input { min-height: 40rem; padding: 6rem 10rem; border: 1rem solid #667b97; border-radius: 4rem; background: white; color: #16263c; }
-.bb-status { min-height: 21rem; color: #3d526d; }
-.bb-empty { padding: 28rem; text-align: center; color: #64758b; }
-.bb-manage { min-height: 0; flex: 1; display: grid; grid-template-columns: minmax(490rem, 1.2fr) minmax(420rem, .8fr); gap: 24rem; padding: 24rem 30rem; }
-.bb-manage-list { padding: 12rem; background: #dce7f7; border: 1rem solid #274b77; }
-.bb-manage-detail { gap: 9rem; padding: 16rem; background: #e7eef8; border: 1rem solid #274b77; }
-.bb-manage-detail label { margin-top: 4rem; font-weight: 600; }
-.bb-manage-detail code { display: block; padding: 10rem; user-select: text; background: rgba(255,255,255,.8); border: 1rem solid #93a3b7; }
-.bb-note { color: #586b83; }
-.bb-actions { display: flex; gap: 9rem; margin-top: auto; }
-.bb-panel button.bb-danger { color: white; background: #a93b42; border-color: #7f2127; }
-@media (max-width: 1300px) { .bb-panel { inset: 14rem 18rem 22rem; } .bb-workspace, .bb-manage { grid-template-columns: 1fr 1fr; padding: 16rem; } .bb-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+.bb-toolbar.bb-open { background-color: var(--selectedColor); }
+/* Reserve the native top toolbar, the 130rem bottom toolbar/status area, and
+   the right-side 46rem service buttons. Use game-scaled rem at every resolution. */
+.bb-panel { position: absolute; top: 80rem; bottom: 160rem; left: 40rem; right: 100rem; z-index: 1; display: flex; flex-direction: column; color: var(--textColor); background-color: transparent; border-radius: var(--panelRadius); box-shadow: none; overflow: visible; pointer-events: none; font-family: var(--fontFamily); font-size: var(--fontSizeM); }
+.bb-header { flex: 0 0 56rem; display: flex; align-items: center; padding: 0 16rem; background-color: var(--sectionHeaderColor); border-bottom: 1rem solid var(--dividerColor); }
+.bb-title { min-width: 0; display: flex; align-items: center; font-size: var(--fontSizeXL); margin-right: auto; }
+.bb-title img { width: 32rem; height: 32rem; margin-right: 10rem; }
+.bb-header nav { display: flex; margin: 0 12rem; }
+.bb-header nav button + button { margin-left: 4rem; }
+.bb-panel button { min-height: 36rem; padding: 6rem 12rem; border: 1rem solid var(--dividerColor); border-radius: var(--panelRadiusInner); color: var(--textColor); background-color: var(--sectionBackgroundColor); }
+.bb-panel button:hover { background-color: var(--hoverColorBright); }
+.bb-panel button:active { background-color: var(--activeColor); }
+.bb-panel button.bb-active, .bb-panel button.bb-primary { background-color: var(--selectedColor); }
+.bb-panel button.bb-active:hover, .bb-panel button.bb-primary:hover { background-color: var(--selectedColor-hover); }
+.bb-panel button:focus-visible { border-color: var(--focusedColor); }
+.bb-panel button:disabled { color: var(--textColorDisabled); background-color: var(--disabledColor); opacity: .5; }
+.bb-close { width: 36rem; padding: 0 !important; font-size: 26rem; }
+.bb-workspace, .bb-manage { min-height: 0; flex: 1; display: flex; padding: 16rem; overflow: hidden; }
+.bb-road-column, .bb-right { flex: 1 1 0; min-width: 0; min-height: 0; display: flex; flex-direction: column; }
+.bb-road-column { margin-right: 16rem; padding: 12rem; background-color: var(--sectionBackgroundColor); border-radius: var(--panelRadiusInner); }
+.bb-road-column h2 { flex-shrink: 0; margin: 0 0 10rem; font-size: var(--fontSizeL); font-weight: normal; }
+.bb-road-column h2:not(:first-child) { margin-top: 12rem; padding-top: 12rem; border-top: 1rem solid var(--dividerColor); }
+/* Bounded slots prevent long lists expanding the panel. Native Scrollable owns
+   wheel/drag handling, overflow and the visible track/thumb. */
+.bb-scroll-slot { position: relative; flex: 1 1 0; min-height: 0; min-width: 0; overflow: hidden; }
+.bb-scroll { position: absolute; top: 0; right: 0; bottom: 0; left: 0; height: 100%; --scrollbarThumbSize: 6rem; --scrollbarSize: 18rem; }
+.bb-grid { display: flex; flex-direction: column; padding: 2rem; }
+.bb-card-row { display: flex; flex-direction: row; flex-wrap: nowrap; width: 100%; margin-bottom: 10rem; }
+.bb-card-cell { display: flex; flex-grow: 1; flex-shrink: 1; flex-basis: 0; min-width: 0; overflow: hidden; }
+.bb-card-cell + .bb-card-cell { margin-left: 8rem; }
+.bb-panel .bb-card { box-sizing: border-box; width: 100%; min-width: 0; margin: 0; min-height: 120rem; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 8rem; overflow: hidden; background-color: var(--panelColorNormal); }
+.bb-panel .bb-card:hover { background-color: var(--selectableColor-hover); }
+.bb-panel .bb-card.bb-selected { border-color: var(--accentColorNormal); background-color: var(--selectedColor); }
+.bb-card img { width: 76rem; height: 62rem; object-fit: contain; margin-bottom: 6rem; }
+.bb-panel .bb-card { text-align: center; }
+.bb-panel .bb-card .bb-card-name { display: block; align-self: stretch; width: 100%; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; text-align: center; }
+.bb-card small { width: 100%; margin-top: 4rem; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; color: var(--textColorDisabled); font-size: var(--fontSizeXS); text-align: center; }
+.bb-right > .bb-preview { flex: 0 0 auto; }
+.bb-preview { min-height: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; background-color: var(--sectionBackgroundColor); border-radius: var(--panelRadiusInner); }
+.bb-preview img { width: 80%; height: 120rem; object-fit: contain; }
+/* ModelPreview measures the available width and sets explicit pixel dimensions
+   for the 1024 x 512 image. Cohtml's content-box percentage sizing cannot use a
+   zero-height padding wrapper as the containing block for a 100%-height image. */
+.bb-preview-image { position: relative; width: 100%; height: 200rem; padding: 0; flex: 0 0 auto; overflow: hidden; }
+.bb-model-preview .bb-preview-image img { position: relative; flex: 0 0 auto; margin: 0; padding: 0; border-width: 0; }
+.bb-preview-loading { position: absolute; top: 0; right: 0; bottom: 0; left: 0; display: flex; align-items: center; justify-content: center; pointer-events: none; }
+.bb-spinner { width: 36rem; height: 36rem; border: 4rem solid rgba(255,255,255,.2); border-top-color: #fff; border-radius: 50%; animation: bb-spin .8s linear infinite; }
+@keyframes bb-spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+.bb-network-picker { display: flex; flex-direction: column; flex: 1 1 0; min-width: 0; min-height: 0; }
+.bb-network-picker + .bb-network-picker { margin-top: 12rem; padding-top: 12rem; border-top: 1rem solid var(--dividerColor); }
+.bb-filters { display: flex; flex: 0 0 auto; min-width: 0; margin-bottom: 8rem; }
+.bb-filters > * + * { margin-left: 8rem; }
+.bb-panel .bb-search { display: flex; align-items: center; flex: 1 1 0; min-width: 0; }
+.bb-search .bb-text-input { flex: 1 1 0; min-width: 0; width: 0; }
+.bb-field-icon { display: block; width: 22rem; height: 22rem; flex: 0 0 auto; background-color: var(--menuText1Normal); mask-size: contain; mask-position: center; mask-repeat: no-repeat; pointer-events: none; }
+.bb-search-icon { mask-image: url("coui://bridgebuilderui/BridgeBuilderSearch.svg"); margin-right: 8rem; }
+.bb-filter-icon { mask-image: url("coui://bridgebuilderui/BridgeBuilderFilter.svg"); }
+.bb-filter-arrow { mask-image: url("coui://bridgebuilderui/BridgeBuilderArrowDown.svg"); width: 12rem; height: 12rem; margin: 0 8rem 0 5rem; }
+.bb-filter-label { flex: 1 1 0; min-width: 0; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; text-align: center; }
+.bb-filter { position: relative; flex: 1 1 0; min-width: 0; }
+.bb-filter > button { display: flex; align-items: center; box-sizing: border-box; width: 100%; min-height: 38rem; overflow: hidden; }
+/* Trigger and popup share the same containing block and outer width, including
+   padding/borders. A fixed rem width diverges with panel size and UI scaling. */
+.bb-filter-menu { position: absolute; top: 100%; left: 0; box-sizing: border-box; min-width: 0; width: 100%; height: 250rem; z-index: 20; display: flex; padding: 4rem; background-color: var(--panelColorNormal); border: 1rem solid var(--dividerColor); }
+.bb-filter-menu button { display: block; box-sizing: border-box; width: 100%; min-width: 0; text-align: center; overflow: hidden; }
+.bb-mode-tabs { display: flex; flex-shrink: 0; margin: 12rem 0 8rem; }
+.bb-mode-tabs button { flex: 1; border-radius: 0; }
+.bb-style-list { background-color: var(--sectionBackgroundColor); }
+.bb-direction-option { display: flex; align-items: center; flex: 0 0 auto; min-height: 36rem; margin-bottom: 8rem; }
+.bb-direction-checkbox { flex-shrink: 0; margin-right: 8rem; }
+.bb-panel .bb-direction-label { min-width: 0; padding: 4rem 0; border: none; background-color: transparent; text-align: left; }
+.bb-panel .bb-direction-label:hover { background-color: transparent; color: var(--accentColorNormal); }
+.bb-create-bar { display: flex; flex-direction: column; flex-shrink: 0; margin-top: 12rem; }
+.bb-create-bar .bb-text-input { width: 100%; min-width: 0; }
+.bb-create-actions { display: flex; margin-top: 8rem; }
+.bb-create-actions button { flex: 1 1 0; min-width: 0; }
+.bb-create-actions button + button { margin-left: 8rem; }
+/* Native TextInput + editor-item input theme own the background, border, focus and placeholder.
+   Size the control explicitly: Cohtml does not stretch raw inputs like browser flex layouts do. */
+.bb-panel .bb-text-input { display: block; box-sizing: border-box; width: 100%; min-width: 0; min-height: 38rem; padding: 6rem 8rem 4rem; line-height: 24rem; font-size: var(--fontSizeM); border-radius: 5rem; }
+.bb-panel .bb-search .bb-text-input { width: 0; }
+.bb-status { flex-shrink: 0; min-height: 20rem; margin-top: 8rem; color: var(--textColorDisabled); }
+.bb-empty { padding: 24rem; text-align: center; color: var(--textColorDisabled); }
+.bb-manage-list { display: flex; flex-direction: column; min-width: 0; min-height: 0; flex: 1.2 1 0; margin-right: 16rem; background-color: var(--sectionBackgroundColor); }
+.bb-detail-scroll { flex: 1 1 0; background-color: var(--sectionBackgroundColor); }
+.bb-manage-right { display: flex; flex-direction: column; min-width: 0; min-height: 0; }
+.bb-manage-detail { display: flex; flex-direction: column; padding: 12rem; }
+.bb-manage-detail .bb-preview { flex: 0 0 auto; }
+.bb-manage-detail label { margin: 12rem 0 6rem; }
+.bb-manage-detail code { display: block; padding: 10rem; user-select: text; background-color: var(--toolbarFieldColor); font-size: var(--fontSizeS); overflow-wrap: break-word; }
+.bb-note { margin: 12rem 0; color: var(--textColorDisabled); }
+.bb-actions { display: flex; flex-shrink: 0; margin-top: 12rem; }
+.bb-actions button { flex: 1 1 0; min-width: 0; }
+.bb-actions button + button { margin-left: 8rem; }
+.bb-panel button.bb-danger { color: var(--negativeColor); }
+.bb-panel button.bb-danger:hover { color: var(--textColor); background-color: var(--negativeColor); }
+@media (max-width: 1300px) { .bb-workspace, .bb-manage { padding: 10rem; } .bb-road-column { margin-right: 10rem; } }
+/* Game's app-container disables hit testing by default. Only the two panels
+   opt back in; the gap between them must still let the player reach the map. */
+.bb-panel .bb-header { width: 46%; box-sizing: border-box; background-color: var(--panelColorDark); pointer-events: auto; }
+.bb-panel .bb-workspace, .bb-panel .bb-manage { padding: 0; overflow: visible; pointer-events: none; }
+.bb-panel .bb-road-column, .bb-panel .bb-manage-list { flex: 1 1 0; margin-right: 8%; padding: 12rem; box-sizing: border-box; background-color: var(--panelColorDark); pointer-events: auto; }
+.bb-panel .bb-right, .bb-panel .bb-manage-right { flex: 1 1 0; margin-top: -56rem; padding: 12rem; box-sizing: border-box; background-color: var(--panelColorDark); border-radius: var(--panelRadius); pointer-events: auto; }
+.bb-panel .bb-header, .bb-panel .bb-road-column, .bb-panel .bb-right, .bb-panel .bb-manage-list, .bb-panel .bb-manage-right { coh-simple-opacity: on; }
+.bb-white-icon { display: block; flex-shrink: 0; width: 32rem; height: 32rem; background-color: #fff; mask-image: url("coui://bridgebuilderui/BridgeBuilderToolbar.svg"); mask-size: contain; mask-position: center; mask-repeat: no-repeat; filter: none; box-shadow: none; pointer-events: none; }
+.bb-title .bb-white-icon { margin-right: 10rem; }
+.bb-toolbar { filter: none; box-shadow: none; }
+/* Longer translations must not push the close control outside the left panel. */
+.bb-header .bb-title { flex: 0 1 34%; overflow: hidden; }
+.bb-title > span:last-child { min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.bb-header nav { flex: 1 1 0; min-width: 0; }
+.bb-header nav button { flex: 1 1 auto; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.bb-close { flex-shrink: 0; }
+.bb-status { overflow-wrap: break-word; }

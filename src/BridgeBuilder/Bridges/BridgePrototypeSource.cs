@@ -1,4 +1,5 @@
 using Game.Prefabs;
+using BridgeBuilder.Settings;
 using System;
 using System.Linq;
 
@@ -11,20 +12,63 @@ namespace BridgeBuilder.Bridges;
 /// </summary>
 internal sealed class BridgePrototypeSource
 {
+    private const string BxpDisplayName = "Bridge Extension Pack";
     private readonly ContentPrefab? _prerequisite;
     private readonly AssetPackPrefab[] _packs;
     private readonly bool _metadataReadable;
+    private readonly bool _bxpOwner;
 
     private BridgePrototypeSource(
-        string label, ContentPrefab? prerequisite, AssetPackPrefab[] packs, bool metadataReadable = true)
+        string label, ContentPrefab? prerequisite, AssetPackPrefab[] packs, bool metadataReadable = true, bool bxpOwner = false)
     {
         Label = label;
         _prerequisite = prerequisite;
         _packs = packs;
         _metadataReadable = metadataReadable;
+        _bxpOwner = bxpOwner;
     }
 
     internal string Label { get; }
+
+    internal bool IsBaseGame => _metadataReadable && _prerequisite == null && _packs.Length == 0
+        && Label == "Base game";
+
+    // Stable ownership identity; localized display names must not decide which donor is selected.
+    internal string Key => _bxpOwner ? "pack:Bridge Asset Pack Filter" : _prerequisite != null ? "content:" + _prerequisite.name
+        : _packs.Length > 0 ? "pack:" + string.Join("|", _packs.Select(pack => pack.name).Distinct().OrderBy(name => name, StringComparer.Ordinal))
+        : IsBaseGame ? "base" : Label;
+
+    internal bool HasSingleSource => _metadataReadable
+        && (_prerequisite != null || _packs.Select(pack => pack.name).Distinct().Count() <= 1);
+
+    internal int Priority => _bxpOwner ? 2 : IsBaseGame ? 0
+        : _prerequisite?.GetComponent<DlcRequirement>() != null || (_packs.Length > 0 && _packs.All(pack => pack.isBuiltin)) ? 1 : 2;
+
+    // Ownership/availability stays metadata-driven. This property only translates
+    // the UI presentation, and re-reads content names after a language change.
+    internal string LocalizedLabel
+    {
+        get
+        {
+            if (!_metadataReadable) return RuntimeUiText.Get("SourceUnreadable");
+            if (_bxpOwner) return RuntimeUiText.Get("SourceMod", BxpDisplayName);
+            if (_prerequisite != null)
+            {
+                if (_prerequisite.GetComponent<DlcRequirement>() != null)
+                    return RuntimeUiText.Get("SourceDlc", DeckCatalog.DisplayNameOf(_prerequisite));
+                var mod = _prerequisite.GetComponent<ModRequirement>();
+                if (mod != null && !string.IsNullOrWhiteSpace(mod.m_ModId))
+                    return RuntimeUiText.Get("SourceMod", mod.m_ModId);
+                return RuntimeUiText.Get("SourceContent", DeckCatalog.DisplayNameOf(_prerequisite));
+            }
+            if (_packs.Length > 0)
+                return string.Join(", ", _packs.Select(pack => RuntimeUiText.Get(
+                    pack.isBuiltin ? "SourcePack" : "SourceMod", PackDisplayName(pack))).Distinct());
+            // Label is constructed internally by Inspect, never supplied by the player.
+            return Label == "Base game" ? RuntimeUiText.Get("BaseGame") :
+                RuntimeUiText.Get("SourceMod", Label.StartsWith("Mod: ", StringComparison.Ordinal) ? Label.Substring(5) : Label);
+        }
+    }
 
     /// <summary>
     /// Uses the same prerequisite object as the game UI. A registered prefab is not sufficient:
@@ -37,7 +81,7 @@ internal sealed class BridgePrototypeSource
             try
             {
                 if (!_metadataReadable) return false;
-                if (_prerequisite != null) return _prerequisite.IsAvailable();
+                if (_prerequisite != null && !_prerequisite.IsAvailable()) return false;
                 if (_packs.Length == 0) return true;
                 return _packs.Any(pack => pack != null
                     && pack.active
@@ -51,11 +95,21 @@ internal sealed class BridgePrototypeSource
         }
     }
 
-    internal static BridgePrototypeSource Inspect(PrefabBase prefab)
+    internal static BridgePrototypeSource Inspect(PrefabBase prefab, bool bxpGoldenGate = false)
     {
         try
         {
             var prerequisite = prefab.GetComponent<ContentPrerequisite>()?.m_ContentPrerequisite;
+            if (bxpGoldenGate)
+            {
+                // Recorded owner of BXP's two double-deck Golden Gate archetypes. Ownership is
+                // distinct from the San Francisco DLC dependency; both remain availability gates.
+                var owner = prefab.GetComponent<AssetPackItem>()?.m_Packs?
+                    .Where(pack => pack != null && pack.name == "Bridge Asset Pack Filter" && !pack.isBuiltin)
+                    .ToArray() ?? Array.Empty<AssetPackPrefab>();
+                return new BridgePrototypeSource("Mod: " + BxpDisplayName, prerequisite, owner,
+                    metadataReadable: owner.Length > 0, bxpOwner: true);
+            }
             if (prerequisite != null)
                 return new BridgePrototypeSource(RequirementLabel(prerequisite), prerequisite, Array.Empty<AssetPackPrefab>());
 
@@ -98,9 +152,14 @@ internal sealed class BridgePrototypeSource
 
     private static string PackLabel(AssetPackPrefab pack)
     {
-        var name = DeckCatalog.DisplayNameOf(pack);
+        var name = PackDisplayName(pack);
         return pack.isBuiltin ? "DLC/asset pack: " + name : "Mod: " + name;
     }
+
+    // Presentation only: retain the exact pack identity and subscription checks.
+    private static string PackDisplayName(AssetPackPrefab pack) =>
+        !pack.isBuiltin && pack.name == "Bridge Asset Pack Filter"
+            ? BxpDisplayName : DeckCatalog.DisplayNameOf(pack);
 
     private static string AssetSource(PrefabBase prefab)
     {

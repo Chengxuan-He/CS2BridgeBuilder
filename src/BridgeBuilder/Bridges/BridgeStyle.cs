@@ -13,12 +13,12 @@ namespace BridgeBuilder.Bridges;
 /// </summary>
 internal sealed class BridgeStyleVariant
 {
-    internal BridgeStyleVariant(NetGeometryPrefab donor, Bridge bridge, float width)
+    internal BridgeStyleVariant(NetGeometryPrefab donor, Bridge bridge, float width, bool bxpGoldenGate = false)
     {
         Donor = donor;
         Bridge = bridge;
         Width = width;
-        Source = BridgePrototypeSource.Inspect(donor);
+        Source = BridgePrototypeSource.Inspect(donor, bxpGoldenGate);
 
         // Recorded numbers win over measured ones. Measuring at runtime depends on which geometry
         // assets happen to be loaded and on a section rule the game's own bridges do not follow, so a
@@ -287,6 +287,21 @@ internal sealed class BridgeStyle
 
     internal void Add(BridgeStyleVariant variant) => _variants.Add(variant);
 
+    /// <summary>Bind all width variants to one owner before exposing this catalogue to consumers.</summary>
+    internal void BindSingleSource()
+    {
+        var source = _variants.Select(variant => variant.Source)
+            .Where(candidate => candidate.HasSingleSource)
+            .OrderBy(candidate => candidate.Priority)
+            .ThenBy(candidate => candidate.Key, StringComparer.Ordinal)
+            .FirstOrDefault();
+        // Prefer the canonical base/DLC owner even if unavailable: an absent prerequisite must not
+        // silently switch the design to a third-party copy. This changes candidates, not assets.
+        _variants.RemoveAll(variant => source == null || !variant.Source.HasSingleSource
+            || !string.Equals(variant.Source.Key, source.Key, StringComparison.Ordinal));
+        Source = source?.Label ?? string.Empty;
+    }
+
     /// <summary>
     /// The variant to build from, for a road of the given width.
     ///
@@ -325,6 +340,7 @@ internal sealed class BridgeStyle
     internal Selection Select(float width, bool forRoad = true, bool doubleDeck = false,
         Func<BridgeStyleVariant, bool>? allow = null)
     {
+        if (!BridgeStyleDefinitions.SupportsDeckMode(Id, doubleDeck)) return new Selection(null, null);
         // A double deck bridge is built from a double deck archetype, not from a single deck one with
         // a second net hung underneath it. Those are different bridges: a double deck archetype's
         // towers, portals and cables are drawn around two decks at one particular separation, and its
