@@ -1,5 +1,5 @@
 [CmdletBinding()]
-param()
+param([switch]$ListOnly, [string]$BackupDirectory)
 
 $ErrorActionPreference = 'Stop'
 
@@ -340,6 +340,7 @@ if (Test-Path -LiteralPath $importedRoot -PathType Container) {
         $importedDirectoryNames += @($currentImportedNames | Where-Object {
             $_ -eq $exportName `
                 -or $_ -eq ($exportName + '_Lower') `
+                -or $_.StartsWith($exportName + '_', [StringComparison]::Ordinal) `
                 -or $_.StartsWith($exportName + ' (', [StringComparison]::Ordinal) `
                 -or $_.Contains($ownedMarker)
         })
@@ -382,6 +383,14 @@ if (Test-Path -LiteralPath $importedRoot -PathType Container) {
     $importedDirectoryNames += @($currentImportedNames | Where-Object {
         $_.StartsWith('RBBridgeDep_', [StringComparison]::Ordinal)
     })
+
+    # Retired cost-only dependencies can survive removal of their registry entry. Own only
+    # complete BridgeBuilder UUID names or legacy bridge-style names, not arbitrary *Pricing*.
+    $uuidPattern = '[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}'
+    $pricingOwner = '^(?:b' + $uuidPattern + '|.+_(?:' `
+        + (($towerStyles | ForEach-Object { [regex]::Escape($_) }) -join '|') `
+        + '))_Pricing_(?:[0-9]+|Charge|ChargeSection)$'
+    $importedDirectoryNames += @($currentImportedNames | Where-Object { $_ -match $pricingOwner })
 
     # Width-adjusted sections use an archetype name followed by the signed width delta. Name
     # collisions add " (n)" before the Piece suffix, so a static list cannot clean every run.
@@ -457,6 +466,25 @@ function Assert-ExactChild([string]$Root, [string]$Path) {
         throw "Refusing target outside '$resolvedRoot': $resolvedPath"
     }
     return $resolvedPath
+}
+
+$cleanupTargets = @($importedDirectoryNames | ForEach-Object {
+    Assert-ExactChild $importedRoot (Join-Path $importedRoot $_)
+}) + @($geometryRoots) + @($stateFiles) + @($registryFiles)
+$cleanupTargets = @($cleanupTargets | Where-Object { Test-Path -LiteralPath $_ } | Select-Object -Unique)
+if ($ListOnly) { $cleanupTargets; return }
+if ($BackupDirectory) {
+    $backupPath = [IO.Path]::GetFullPath($BackupDirectory)
+    if (Test-Path -LiteralPath $backupPath) { throw "Backup must be a new directory: $backupPath" }
+    New-Item -ItemType Directory -Path $backupPath | Out-Null
+    foreach ($target in $cleanupTargets) {
+        $resolved = Assert-ExactChild $gameRoot $target
+        $relative = $resolved.Substring([IO.Path]::GetFullPath($gameRoot).TrimEnd('\').Length + 1)
+        $destination = Join-Path $backupPath $relative
+        New-Item -ItemType Directory -Path (Split-Path -Parent $destination) -Force | Out-Null
+        Copy-Item -LiteralPath $resolved -Destination $destination -Recurse -Force
+        if (-not (Test-Path -LiteralPath $destination)) { throw "Backup missing: $destination" }
+    }
 }
 
 $removedImported = 0

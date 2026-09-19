@@ -901,3 +901,35 @@ Lighting validation follows rules 6 and 7. Compare the real archetype and genera
 including nested tower replacements, and verify that their bridge-specific light/effect references and
 non-width fields match. Compilation is not evidence of a lighting match. Final validation is a human
 in-game comparison at night in near and far views; the Agent must not open or control the game.
+
+## 16. Construction price is a bridge property, never a pricing prefab
+
+Rollback baseline recorded before this rule's first edit: branch `dev`, HEAD
+`8c90b34a617b272d08ed3b27b2d24c7230f79458`; local reference
+`rollback/economy-no-pricing-20260919`.
+
+Creating any pricing prefab is forbidden. This includes `_Pricing_*`, invisible charge pieces,
+charge sections, and section/piece graph clones created only to alter construction cost, regardless
+of their names. Do not replace a forbidden pricing prefab with the same dependency under a new name.
+Price is a scalar serialized property/component on the generated bridge prefab itself. No additional
+asset dependency may be introduced for pricing and source roads/shared pieces must not be changed.
+
+Keep the verified per-archetype signed offset. Read selected road base prices from the game's
+initialized native price data, not by reconstructing the road's serialized component graph. All
+operands use native currency per 8 m; multiply by 125 only when expressing a price per kilometre.
+
+    formulaBase = offset + 3 * (upperRoadBase + lowerRoadBase)
+    bridgeBase = max(formulaBase, upperElevatedBase + lowerElevatedBase)
+
+The absent lower deck contributes zero to both sums. Preserve negative offsets; a negative formula
+result is raised to the elevated-road floor, not rejected merely for being negative. Overflow and
+unavailable authoritative road costs remain explicit failures, never guessed costs.
+
+The native asset UI and actual road construction composition must receive the same base price after
+native initialization. The main network owns the complete base charge; its owned auxiliary networks
+must not charge that sum a second time. Height costs, upkeep and separate object costs remain native.
+An input road priced at 1500/km (12/8m) with a blue suspension offset of 36/8m gives 9000/km (72/8m),
+unless that road's elevated base price is higher. Do not divide the erroneous output by two as a fix.
+
+Remove obsolete mod-owned pricing prefabs together with dependent generated bridges using the
+ownership-scoped cleanup procedure; never delete shared/native or another mod's source assets.

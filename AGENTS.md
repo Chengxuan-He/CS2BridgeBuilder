@@ -98,6 +98,10 @@ The numbered references below point to the corresponding sections in the complet
     Side-mounted tower lights follow the same rigid width displacement as their parent mesh; lights on
     `x = 0` remain centred. Ordinary lighting belonging to the user-selected road remains part of that
     road structure. See contract section 15.
+17. Never create any pricing prefab, including cost-only sections/pieces or private graph copies
+    whose purpose is pricing. Store construction price as a scalar property on the generated bridge,
+    use the game's initialized road price, and floor the result at the same selected networks'
+    elevated construction price. UI and actual placement must use the same base value. See section 16.
 
 ## Geometry invariants that must remain visible at repository scope
 

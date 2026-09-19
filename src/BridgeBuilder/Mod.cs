@@ -73,6 +73,8 @@ public sealed class Mod : IMod
         // UIGroupElement entries (UIObject.LateInitialize appends without a uniqueness check).
         updateSystem.UpdateBefore<BridgeGenerationSystem>(SystemUpdatePhase.PrefabUpdate);
         updateSystem.UpdateAfter<BridgePublicationSystem>(SystemUpdatePhase.PrefabUpdate);
+        updateSystem.UpdateAfter<BridgePriceSystem, Game.Prefabs.NetInitializeSystem>(SystemUpdatePhase.PrefabUpdate);
+        updateSystem.UpdateAfter<BridgePriceSystem, Game.Prefabs.NetCompositionSystem>(SystemUpdatePhase.Modification4);
         updateSystem.UpdateAt<BridgeBuilderUISystem>(SystemUpdatePhase.UIUpdate);
     }
 

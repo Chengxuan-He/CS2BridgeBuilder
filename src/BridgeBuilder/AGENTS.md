@@ -52,6 +52,11 @@ the repository root [`AGENTS.md`](../../AGENTS.md). Before editing this director
 
 ## Completion
 
+Construction pricing must not allocate, clone, save or publish any pricing prefab. Price is a scalar
+property attached to the existing bridge prefab, projected onto native UI and composition cost data.
+Read selected road prices from initialized native data; preserve each archetype's signed offset and
+floor the total at the selected networks' elevated base price. See project contract section 16.
+
 After any source-code edit, follow contract section 13: invoke the exact `Cities2.exe` kill command,
 verify the game is stopped, remove all mod-created bridges and generated artifacts, and verify the
 ownership-scoped cleanup. Compilation is not visual verification. For visual work, do not run unit

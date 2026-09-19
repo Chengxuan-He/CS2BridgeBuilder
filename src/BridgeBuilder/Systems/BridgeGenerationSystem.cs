@@ -489,14 +489,13 @@ public partial class BridgeGenerationSystem : GameSystemBase
                 return false;
             }
             if (!BridgeUnlockPolicy.Apply(clone, variant, report)) return false;
-            // Pricing creates private native section/piece assets only for permanent exports.
-            // It never changes rendered geometry, so previews need no pricing graph copies.
+            // Price is serialized on the bridge itself. No pricing dependency may be created.
             if (preview == null && !economy.Apply(clone, variant, upper.Prefab,
-                options.DoubleDeck ? chosen?.Prefab : null, report)) return false;
+                options.DoubleDeck ? chosen?.Prefab : null, report,
+                World.GetOrCreateSystemManaged<BridgePriceSystem>())) return false;
             DescribeResult(clone, exportName, report);
 
             var nodes = cloner.Nodes
-                .Concat(economy.Nodes)
                 .Concat(towers.Created.Select(prefab =>
                     new PrefabCloneNode(prefab, prefab, false, true, null)))
                 .ToList();
@@ -1076,14 +1075,19 @@ public partial class BridgeGenerationSystem : GameSystemBase
                 .FirstOrDefault(candidate =>
                     string.Equals(candidate.name, prefabName, StringComparison.Ordinal));
             if (prefab == null) return false;
-            if ((_gameMode & GameMode.Game) != 0
-                && World.GetOrCreateSystemManaged<UnlockSystem>().IsLocked(prefab))
+            if ((_gameMode & GameMode.Game) != 0)
             {
-                _activationLocked = true;
-                // Both Create-and-build and management Build enter here. Keep the panel
-                // open, leave the active tool untouched, and report the lock once per click.
-                Mod.ShowMessage(UiStringCatalog.Current.Title, RuntimeUiText.Get("ActivateLocked"));
-                return false;
+                if (!BridgeRegistration.IsPrefabName(prefabName)
+                    || !BridgeUnlockPolicy.TryPrepareBuild(prefab, _prefabSystem, EntityManager,
+                        out var locked)) return false;
+                if (locked)
+                {
+                    _activationLocked = true;
+                    // Both Create-and-build and management Build enter here. Only the original
+                    // prototype's actual lock state may produce the not-unlocked dialog.
+                    Mod.ShowMessage(UiStringCatalog.Current.Title, RuntimeUiText.Get("ActivateLocked"));
+                    return false;
+                }
             }
             if (!World.GetOrCreateSystemManaged<ToolSystem>().ActivatePrefabTool(prefab)) return false;
             World.GetExistingSystemManaged<BridgeBuilderUISystem>()?.CloseForBuild();
