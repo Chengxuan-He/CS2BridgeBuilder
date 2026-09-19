@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <svg xmlns="http://www.w3.org/2000/svg" width="512" height="800" viewBox="0 0 512 800" role="img" aria-labelledby="brand-title brand-desc">
   <title id="brand-title">Bridge Builder</title>
-  <desc id="brand-desc">Bridge Builder 两行无衬线标题，两处小写 r 均以塔吊剪影替代；下方保留钢蓝色正等轴测桥梁和同色系铅笔。透明背景。</desc>
+  <desc id="brand-desc">Bridge Builder 两行 Century Gothic 标题，两处小写 r 以塔吊剪影替代，小写 l 以竖直铅笔剪影替代；下方保留钢蓝色正等轴测桥梁和同色系铅笔。透明背景。</desc>
   <defs>
     <!-- A lowercase-r glyph, not a separate badge: mast matches the bold stems,
          jib follows the x-height, baseline is shared, no foot or hanging hook.
@@ -9,12 +9,19 @@
     <g id="crane-r" fill="#425F73">
       <path d="M5 0V-65H19V0ZM0-65H38V-53H0ZM10-65 17-77 24-65ZM19-74 38-65H31L19-70Z"/>
     </g>
+    <!-- Pencil occupies the lowercase-l advance, with an ascender-height cap
+         and its sharpened tip on the shared baseline. The cap gap is transparent. -->
+    <g id="pencil-l" fill="#425F73">
+      <path d="M7-81V-87Q7-90 10-90H20Q23-90 23-87V-81Z M7-77H23V-17L15 0 7-17Z"/>
+    </g>
   </defs>
   <g id="wordmark" fill="#425F73" font-family="Century Gothic, sans-serif" font-size="120" font-weight="700" aria-label="Bridge Builder">
     <text x="69" y="116">B</text>
     <use href="#crane-r" x="139" y="116"/>
     <text x="179" y="116">idge</text>
-    <text x="59" y="246">Builde</text>
+    <text x="59" y="246">Bui</text>
+    <use href="#pencil-l" x="229.3906" y="246"/>
+    <text x="258.1601" y="246">de</text>
     <use href="#crane-r" x="414" y="246"/>
   </g>
   <g id="original-icon" transform="translate(0 288)">
