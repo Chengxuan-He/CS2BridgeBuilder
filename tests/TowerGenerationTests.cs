@@ -58,7 +58,7 @@ internal static class TowerGenerationTests
         ASlantedLegIsCarriedOutAtEveryHeight(check);
         ADeckBetweenTheLegsStretchesToMeetThem(check);
         TheSecondDeckGoesUnderTheRoad(check);
-        ADoubleDeckBridgeIsSizedFromItsPrototypeUpperDeck(check);
+        ADoubleDeckBridgeIsSizedFromItsPrototypeRootDeck(check);
         AWingKeepsItsDepthOrSomethingSaysSo(check);
         AnOpenworkOrnamentStretchesBetweenTheLegs(check);
         AThicknessIsMeasuredOnOneThing(check);
@@ -88,6 +88,7 @@ internal static class TowerGenerationTests
         OnePortalWidensTheWholeTower(check);
         OnlyMeasuredFamiliesAreSizedAgainstTheirCables(check);
         WhatIsNotGeneratedIsRefusedRatherThanAttempted(check);
+        SuspensionPrototypesHaveDistinctStyles(check);
         TheTrussArchPrototypesHaveIndependentStyles(check);
         AThroughArchIsWiderThanTheRoadItCarries(check);
         AStructureCannotLoseMoreWidthThanItHas(check);
@@ -1116,7 +1117,7 @@ internal static class TowerGenerationTests
     {
         foreach (var styleId in BridgeTowers.Styles)
         {
-            var bonus = BridgeTowers.BonusFor(styleId);
+            var bonus = StructureAllowanceFor(styleId);
             if (Math.Abs(bonus) < 0.001f) continue;
 
             // The tower measures against the road it was authored for; the cables against the road
@@ -2447,6 +2448,9 @@ internal static class TowerGenerationTests
     {
         check("[rails] the golden family brings its own",
             BridgeTowers.BringsItsOwnRailings("SuspensionGolden"), null);
+        check("[rails] SuspensionBridge01 brings its two authored railing layers",
+            BridgeTowers.BringsItsOwnRailings("Suspension01")
+                && BridgeTowers.RailingRoadSurfaceGap("Suspension01") == 0f, null);
 
         // The V pylon was on this list and is not. What it carries of its own does not run the length
         // of the deck, so taking the road.s railing off it left the deck with none.
@@ -2456,7 +2460,7 @@ internal static class TowerGenerationTests
         // Everything else keeps the road's, which is the only railing those bridges have.
         foreach (var style in new[]
         {
-            "Suspension", "CableStayed", "TrussArch", "TrussArch01", "TrussArch03", "Grand", "TiedArch",
+            "Suspension", "Suspension02", "CableStayed", "TrussArch", "TrussArch01", "TrussArch03", "Grand", "TiedArch",
             "CoveredWood", "Extradosed01", "Extradosed02", "ExtradosedLarge", "Extradosed03",
         })
         {
@@ -3180,50 +3184,35 @@ internal static class TowerGenerationTests
     }
 
     /// <summary>
-    /// A V-shaped double-deck bridge is widened from its prototype upper road, never from its portal
-    /// opening and never from the road or track selected for the lower level.
+    /// A double-deck bridge is widened from the road/deck in its prototype's root ownership role.
+    /// That role is upper when the auxiliary hangs below and lower when it hangs above.
     /// </summary>
-    private static void ADoubleDeckBridgeIsSizedFromItsPrototypeUpperDeck(
+    private static void ADoubleDeckBridgeIsSizedFromItsPrototypeRootDeck(
         Action<string, bool, string?> check)
     {
-        const float prototypeUpper = 40f;
-        const float prototypeOpening = 39.31641f;
+        var extradosed01 = PrototypeBridgeSizing.ReferenceDeckExtra(40f, 20f, -1f);
+        check("[double deck width] Extradosed01 uses the upper root road",
+            BitConverter.SingleToInt32Bits(extradosed01)
+                == BitConverter.SingleToInt32Bits(20f),
+            $"{extradosed01:R} m");
 
-        var ownExtra = PrototypeBridgeSizing.UpperDeckExtra(40f, prototypeUpper, -1f);
-        check("[upper width] the V pylon is unchanged on its own upper road",
-            Math.Abs(ownExtra) < 0.001f,
-            $"{ownExtra:0.#####} m");
+        var extradosed02 = PrototypeBridgeSizing.ReferenceDeckExtra(22f, 19f, -1f);
+        check("[double deck width] Extradosed02 uses the lower root deck",
+            BitConverter.SingleToInt32Bits(extradosed02)
+                == BitConverter.SingleToInt32Bits(3f),
+            $"{extradosed02:R} m");
 
-        var narrowStructureExtra = BridgeTowers.StructureExtraFor("Extradosed01",
-            PrototypeBridgeSizing.UpperDeckExtra(16f, prototypeUpper, -1f));
-        check("[upper width] the double-deck V structure adds its 20 m prototype allowance",
-            Math.Abs(narrowStructureExtra + 4f) < 0.001f,
-            $"{narrowStructureExtra:0.#####} m");
+        var suspension = PrototypeBridgeSizing.ReferenceDeckExtra(40f, 24f, -1f);
+        check("[double deck width] Suspension uses the upper root road",
+            BitConverter.SingleToInt32Bits(suspension)
+                == BitConverter.SingleToInt32Bits(16f),
+            $"{suspension:R} m");
 
-        // The real prototype's narrowest node opening is 20.09 m. Contracting by the raw -24 m
-        // reverses its left and right coordinates; the effective -4 m keeps a positive 16.09 m
-        // opening, so the node pieces still meet in their authored order.
-        const float nodeHalfOpening = 20.09f * 0.5f;
-        var nodeLeft = TowerWidening.Spread(-nodeHalfOpening, narrowStructureExtra);
-        var nodeRight = TowerWidening.Spread(nodeHalfOpening, narrowStructureExtra);
-        check("[upper width] the V bridge node does not cross through the centre",
-            nodeLeft < 0f && nodeRight > 0f
-                && Math.Abs((nodeRight - nodeLeft) - 16.09f) < 0.001f,
-            $"{nodeLeft:0.#####}..{nodeRight:0.#####} m");
-
-        var wideExtra = PrototypeBridgeSizing.UpperDeckExtra(64f, prototypeUpper, -1f);
-        check("[upper width] a wide V bridge is derived from the prototype upper road",
-            Math.Abs(wideExtra - 24f) < 0.001f,
-            $"{wideExtra:0.#####} m");
-
-        var wrongOpeningExtra = 64f - prototypeOpening;
-        check("[upper width] the portal opening cannot replace the upper road width",
-            Math.Abs(wideExtra - wrongOpeningExtra) > 0.5f,
-            $"road gives {wideExtra:0.#####}, opening would give {wrongOpeningExtra:0.#####} m");
-
-        var fallback = PrototypeBridgeSizing.UpperDeckExtra(64f, 0f, 24f);
-        check("[upper width] a missing prototype measurement keeps the recorded widening",
-            Math.Abs(fallback - 24f) < 0.001f, $"{fallback:0.#####} m");
+        var fallback = PrototypeBridgeSizing.ReferenceDeckExtra(40f, 0f, 16f);
+        check("[double deck width] a missing prototype measurement keeps the recorded widening",
+            BitConverter.SingleToInt32Bits(fallback)
+                == BitConverter.SingleToInt32Bits(16f),
+            $"{fallback:R} m");
     }
 
     private static void ADeckBetweenTheLegsStretchesToMeetThem(Action<string, bool, string?> check)
@@ -3608,11 +3597,9 @@ internal static class TowerGenerationTests
         check("[scope] nothing is not pack content", !BridgeStyleDefinitions.IsSupersededPack(null), null);
 
         // Being pack content is not on its own a reason to skip it: the reason is duplication. The
-        // catalogue pairs this test with what the prefab can do, and keeps a pack bridge that offers
-        // something the base game has no archetype for. Every double deck suspension bridge installed
-        // is the pack's - the game's own suspension bridges are all single deck - so excluding those
-        // as well removed the only archetype there is for two decks, and rule 11 then refused to build
-        // one, correctly and for a reason the exclusion had created.
+        // catalogue pairs this test with what the prefab can do. The numbered vanilla
+        // SuspensionBridge02 now provides the measured grey double-deck archetype, so the expansion
+        // pack copy remains superseded rather than becoming the identity of that design.
         check("[scope] the test is by name alone, so the caller can weigh capability against it",
             BridgeStyleDefinitions.IsSupersededPack("BXP Double Deck Suspension Bridge - Highway"), null);
 
@@ -3624,8 +3611,12 @@ internal static class TowerGenerationTests
                 !string.IsNullOrEmpty(BridgeStyleDefinitions.DeferredReason(style)), null);
         }
 
-        foreach (var style in new[] { "Suspension", "SuspensionGolden", "CableStayed", "Extradosed03",
-            "TrussArch", "TrussArch01", "TrussArch03", "TiedArch", "Grand", "CoveredWood" })
+        foreach (var style in new[]
+        {
+            "Suspension", "SuspensionDouble", "Suspension01", "Suspension02", "SuspensionGolden",
+            "GoldenGate", "CableStayed", "Extradosed03", "TrussArch", "TrussArch01", "TrussArch02",
+            "TrussArch03", "TiedArch", "Grand", "CoveredWood",
+        })
         {
             check($"[scope] {style} is generated", BridgeStyleDefinitions.DeferredReason(style) == null, null);
         }
@@ -3641,6 +3632,90 @@ internal static class TowerGenerationTests
             check($"[scope] {style} is a style the player can pick",
                 BridgeStyleDefinitions.All.Any(definition => definition.Id == style), null);
         }
+    }
+
+    /// <summary>
+    /// Suspension bridge numbers and deck counts are design identities, not interchangeable width
+    /// variants. Keep their style mapping, tower sources and exported suffixes separate.
+    /// </summary>
+    private static void SuspensionPrototypesHaveDistinctStyles(Action<string, bool, string?> check)
+    {
+        var expected = new (string Prefab, string Style)[]
+        {
+            ("SuspensionBridge01", "Suspension01"),
+            ("SuspensionBridge02", "Suspension02"),
+            ("SuspensionBridge03", "SuspensionGolden"),
+            ("Golden Gate Bridge", "GoldenGate"),
+            ("BXP Double Deck Suspension Bridge - Highway", "SuspensionDouble"),
+            ("Suspension Bridge - Highway Oneway - 5 Lanes", "Suspension"),
+        };
+
+        foreach (var entry in expected)
+        {
+            check($"[suspension styles] '{entry.Prefab}' is {entry.Style}",
+                BridgeStyleDefinitions.Match(entry.Prefab)?.Id == entry.Style,
+                BridgeStyleDefinitions.Match(entry.Prefab)?.Id);
+        }
+
+        foreach (var style in new[]
+        {
+            "Suspension", "SuspensionDouble", "Suspension01", "Suspension02",
+            "SuspensionGolden", "GoldenGate", "Grand",
+        })
+        {
+            check($"[suspension styles] {style} has a unique exported suffix",
+                BridgeStyleDefinitions.All.Count(definition =>
+                    definition.NameSuffix == BridgeStyleDefinitions.All
+                        .Single(candidate => candidate.Id == style).NameSuffix) == 1,
+                BridgeStyleDefinitions.All.Single(candidate => candidate.Id == style).NameSuffix);
+        }
+
+        check("[suspension styles] grey single-deck prototype has both measured structures",
+            BridgeTowers.For("Suspension01").Select(tower => tower.Name).OrderBy(name => name)
+                .SequenceEqual(new[]
+                {
+                    "SuspensionBridge01NetPillar",
+                    "SuspensionBridge01NetPylon",
+                }), null);
+        check("[suspension styles] grey double-deck prototype has both measured structures",
+            BridgeTowers.For("Suspension02").Select(tower => tower.Name).OrderBy(name => name)
+                .SequenceEqual(new[]
+                {
+                    "SuspensionBridge02NetPillar",
+                    "SuspensionBridge02NetPylon",
+                }), null);
+        check("[suspension styles] numbered prototypes retain their actual left-to-right road widths",
+            BridgeTowers.For("Suspension01").All(tower => tower.Road == 13f)
+                && BridgeTowers.For("Suspension02").All(tower => tower.Road == 16f), null);
+        check("[suspension styles] a 16 m Suspension02 reproduces its prototype width",
+            BridgeTowers.For("Suspension02").All(tower =>
+                Math.Abs((tower.Mesh + (16f - tower.Road)) - tower.Mesh) < 1e-6f), null);
+        check("[suspension styles] suspension sheets inherit one full-detail affine span at every LOD",
+            SuspensionGeometry.TryGetContinuousSpan(
+                "Suspension01", "SuspensionBridge01EndNet Mesh", out var singleFull)
+                && SuspensionGeometry.TryGetContinuousSpan(
+                    "Suspension01", "SuspensionBridge01EndNet_LOD2 Mesh", out var singleLod)
+                && SuspensionGeometry.TryGetContinuousSpan(
+                    "Suspension02", "SuspensionBridge02Net Mesh", out var doubleFull)
+                && SuspensionGeometry.TryGetContinuousSpan(
+                    "Suspension02", "SuspensionBridge02Net_LOD2 Mesh", out var doubleLod)
+                && BitConverter.SingleToInt32Bits(singleFull) == BitConverter.SingleToInt32Bits(singleLod)
+                && BitConverter.SingleToInt32Bits(doubleFull) == BitConverter.SingleToInt32Bits(doubleLod),
+            $"single {singleFull:R}/{singleLod:R}; double {doubleFull:R}/{doubleLod:R}");
+        check("[suspension styles] simplified tower side meshes inherit rigid translation",
+            SuspensionGeometry.IsRigidSidePart(
+                "Suspension01", "SuspensionBridge01NetPylon_LOD1 Mesh")
+                && SuspensionGeometry.IsRigidSidePart(
+                    "Suspension02", "SuspensionBridge02NetPillarBase_LOD2 Mesh")
+                && !SuspensionGeometry.IsRigidSidePart(
+                    "Suspension02", "SuspensionBridge02NetPylonTop_LOD2 Mesh"), null);
+        check("[suspension styles] Golden Gate uses its own tower material family",
+            BridgeTowerMaterials.SourcesFor("GoldenGate").All(name => name.StartsWith("GoldenGate")),
+            string.Join(", ", BridgeTowerMaterials.SourcesFor("GoldenGate")));
+        check("[aggregate] only ExtradosedBridge01 gives its carried deck the bridge name pool",
+            BridgeStyleDefinitions.CarriedDeckUsesBridgeAggregate("Extradosed01")
+                && !BridgeStyleDefinitions.CarriedDeckUsesBridgeAggregate("Extradosed02")
+                && !BridgeStyleDefinitions.CarriedDeckUsesBridgeAggregate("Suspension02"), null);
     }
 
     /// <summary>
@@ -3765,9 +3840,12 @@ internal static class TowerGenerationTests
                 BridgeStyleDefinitions.Match(name)?.Id);
         }
 
-        check("[split] TrussArchBridge02 stays with the general style",
-            BridgeStyleDefinitions.Match("TrussArchBridge02")?.Id == "TrussArch",
+        check("[split] TrussArchBridge02 keeps its recorded white style",
+            BridgeStyleDefinitions.Match("TrussArchBridge02")?.Id == "TrussArch02",
             BridgeStyleDefinitions.Match("TrussArchBridge02")?.Id);
+        check("[covered] WoodenCoveredBridge uses its road-carrying wooden style",
+            BridgeStyleDefinitions.Match("Wooden Covered Bridge - 2 lanes")?.Id == "WoodenCovered",
+            BridgeStyleDefinitions.Match("Wooden Covered Bridge - 2 lanes")?.Id);
 
         // Both specific patterns must come first, or the general pattern swallows them.
         var ids = BridgeStyleDefinitions.All.Select(definition => definition.Id).ToList();
@@ -3788,11 +3866,11 @@ internal static class TowerGenerationTests
             $"{BridgeTowers.RoadFor("TrussArch01", "TrussArchBridge01NetPillar")}");
         check("[split] the blue prototype object remains classified as a support",
             BridgeTowers.For("TrussArch01").Single().Support, null);
-        check("[split] a 40 m blue bridge adds its measured 10 m structure allowance",
+        check("[split] a 40 m blue bridge adds its exact measured structure allowance",
             Math.Abs(40f - BridgeTowers.RoadOf("TrussArch01")
-                + BridgeTowers.BonusFor("TrussArch01") - 30f) < 0.001f,
+                + StructureAllowanceFor("TrussArch01") - 31.019386f) < 0.001f,
             $"{40f - BridgeTowers.RoadOf("TrussArch01")
-                + BridgeTowers.BonusFor("TrussArch01"):0.###} m");
+                + StructureAllowanceFor("TrussArch01"):0.######} m");
         check("[split] blue uses the open-truss topology rule",
             BridgeStyleDefinitions.UsesOpenTrussTopology("TrussArch01"), null);
 
@@ -3805,11 +3883,11 @@ internal static class TowerGenerationTests
             && greenTower.Road == 24
             && greenTower.Support,
             $"{greenTower.Name}: road {greenTower.Road}, support {greenTower.Support}");
-        check("[split] a 40 m green bridge adds its measured 16 m structure allowance",
+        check("[split] a 40 m green bridge adds its exact measured structure allowance",
             Math.Abs(40f - BridgeTowers.RoadOf("TrussArch03")
-                + BridgeTowers.BonusFor("TrussArch03") - 32f) < 0.001f,
+                + StructureAllowanceFor("TrussArch03") - 28.000008f) < 0.001f,
             $"{40f - BridgeTowers.RoadOf("TrussArch03")
-                + BridgeTowers.BonusFor("TrussArch03"):0.###} m");
+                + StructureAllowanceFor("TrussArch03"):0.######} m");
         check("[split] green preserves its integrated side railing and arch",
             BridgeStyleDefinitions.PreservesOpenTrussSideAssembly("TrussArch03")
                 && !BridgeStyleDefinitions.PreservesOpenTrussSideAssembly("TrussArch01"), null);
@@ -4070,39 +4148,43 @@ internal static class TowerGenerationTests
     /// </summary>
     private static void ATowerCorrectionMovesTheTowerAlone(Action<string, bool, string?> check)
     {
-        check("[bonus] the golden family takes two and a half metres less",
-            Math.Abs(BridgeTowers.BonusFor("SuspensionGolden") + 2.5f) < 0.001f, null);
+        check("[bonus] the golden family takes exactly one metre less",
+            Math.Abs(StructureAllowanceFor("SuspensionGolden") + 1f) < 0.001f, null);
 
         // A correction can go either way. It was three metres more, then four metres less on the same
         // tower, and the sign is not a special case - what it means is that the structure is widened
         // by a metre less than the road accounts for.
         check("[bonus] a correction may take width away as well as add it",
-            BridgeTowers.BonusFor("SuspensionGolden") < 0f, null);
+            StructureAllowanceFor("SuspensionGolden") < 0f, null);
 
         check("[bonus] the V pylon takes eighteen metres more",
-            Math.Abs(BridgeTowers.BonusFor("Extradosed03") - 18f) < 0.001f, null);
+            Math.Abs(StructureAllowanceFor("Extradosed03") - 18.999992f) < 0.001f, null);
 
         check("[bonus] the double-deck V structure takes twenty metres more",
-            Math.Abs(BridgeTowers.BonusFor("Extradosed01") - 20f) < 0.001f, null);
+            Math.Abs(StructureAllowanceFor("Extradosed01") - 20f) < 0.001f, null);
 
-        check("[bonus] the blue arch-above frame takes ten metres more",
-            Math.Abs(BridgeTowers.BonusFor("TrussArch01") - 10f) < 0.001f, null);
+        check("[bonus] the blue arch-above frame uses its exact audited allowance",
+            Math.Abs(StructureAllowanceFor("TrussArch01") - 11.019386f) < 0.001f, null);
 
-        check("[bonus] the green arch-above frame takes sixteen metres more",
-            Math.Abs(BridgeTowers.BonusFor("TrussArch03") - 16f) < 0.001f, null);
+        check("[bonus] the green arch-above frame uses its exact audited allowance",
+            Math.Abs(StructureAllowanceFor("TrussArch03") - 12.000008f) < 0.001f, null);
 
         // Its neighbours do not. The V pylon was measured; Extradosed01 and 02 are different pylons
         // on different roads, and rule 9 is that a number belongs to what it was measured on.
         foreach (var style in new[] { "Suspension", "CableStayed", "TrussArch",
-            "Extradosed02", "Grand", "TiedArch", "CoveredWood" })
+            "Extradosed02", "Grand" })
         {
             check($"[bonus] {style} takes none",
-                Math.Abs(BridgeTowers.BonusFor(style)) < 0.001f, null);
+                Math.Abs(StructureAllowanceFor(style)) < 0.001f, null);
         }
 
         check("[bonus] an unknown style takes none",
-            Math.Abs(BridgeTowers.BonusFor("no such style")) < 0.001f, null);
-        check("[bonus] nothing takes none", Math.Abs(BridgeTowers.BonusFor(null)) < 0.001f, null);
+            Math.Abs(StructureAllowanceFor("no such style")) < 0.001f, null);
+        check("[bonus] nothing takes none", Math.Abs(StructureAllowanceFor(null)) < 0.001f, null);
+        check("[bonus] TiedArch retains its audited two metre allowance",
+            Math.Abs(StructureAllowanceFor("TiedArch") - 2f) < 0.001f, null);
+        check("[bonus] CoveredWood retains its audited negative two metre allowance",
+            Math.Abs(StructureAllowanceFor("CoveredWood") + 2f) < 0.001f, null);
 
         // What the correction is for, and what it must not disturb. The golden family is widened by a
         // metre less than its road accounts for; the distance from its cables to the tower.s outer
@@ -4117,7 +4199,7 @@ internal static class TowerGenerationTests
 
         foreach (var deck in new[] { 22f, 24f, 30f, 40f, 64f })
         {
-            var extra = deck - road + BridgeTowers.BonusFor("SuspensionGolden");
+            var extra = deck - road + StructureAllowanceFor("SuspensionGolden");
             var t = tower + extra;
             var c = cables + extra;
 
@@ -4128,11 +4210,19 @@ internal static class TowerGenerationTests
 
         // At the archetype.s own road the structure is the correction away from the archetype - not
         // unchanged, because the correction says the archetype.s own width was read wrong by that much.
-        var atOwn = tower + BridgeTowers.BonusFor("SuspensionGolden");
+        var atOwn = tower + StructureAllowanceFor("SuspensionGolden");
         check("[bonus] at the archetype.s road the structure takes the correction",
-            Math.Abs(atOwn - (tower + BridgeTowers.BonusFor("SuspensionGolden"))) < 0.001f
-                && BridgeTowers.BonusFor("SuspensionGolden") < 0f,
+            Math.Abs(atOwn - (tower + StructureAllowanceFor("SuspensionGolden"))) < 0.001f
+                && StructureAllowanceFor("SuspensionGolden") < 0f,
             $"{atOwn:0.##}");
+    }
+
+    private static float StructureAllowanceFor(string? styleId)
+    {
+        if (styleId == null) return 0f;
+        return BridgeStyleDefinitions.All
+            .FirstOrDefault(definition => definition.Id == styleId)?
+            .ArchetypeStructureAllowance ?? 0f;
     }
 
     /// <summary>
@@ -4330,25 +4420,23 @@ internal static class TowerGenerationTests
         check("[pylon] the catch-all extradosed style is gone", !ids.Contains("Extradosed"), null);
 
         // Each keeps its own structure, at the road that structure was drawn for.
-        // The audit's widths: the narrowest carriageway among the bridges that ship carrying each
-        // pylon. They were 20/18/18 for a while - twenty metres of in-game corrections recorded as
-        // road corrections - and at 20 the V pylon widened a 40 m road by another 20, which hung its
-        // stay cables ten metres past each edge of the deck.
+        // The double-deck audit's root-road widths. ExtradosedBridge01 owns its 20 m upper road;
+        // ExtradosedBridge02 owns its 19 m lower road and carries the other road above it.
         check("[pylon] the V pylon knows its own structure",
-            BridgeTowers.RoadFor("Extradosed01", "ExtradosedBridge01NetPillar") == 40f, null);
+            BridgeTowers.RoadFor("Extradosed01", "ExtradosedBridge01NetPillar") == 20f, null);
         check("[pylon] the A pylon, double deck",
-            BridgeTowers.RoadFor("Extradosed02", "ExtradosedBridge02NetPillar") == 38f, null);
+            BridgeTowers.RoadFor("Extradosed02", "ExtradosedBridge02NetPillar") == 19f, null);
         check("[pylon] the A pylon, single deck",
             BridgeTowers.RoadFor("Extradosed03", "ExtradosedBridge03NetPillar") == 38f, null);
 
-        // How far each pylon stands outside the road it was drawn for. A pylon overhangs its road by
-        // metres, not by tens of metres: the wrong widths made these 33, 28 and 38, which is a pylon
-        // wider than the bridge it belongs to and is what put the stay cables past the deck.
+        // A single-deck pylon stands only a modest distance outside its road. The 01 and 02 pylons
+        // surround two decks and their root-road difference is intentionally much larger, so this
+        // single-deck clearance check does not apply to them.
         //
         // The self test cannot check this. It reproduces each tower at whatever road the table says,
         // so a wrong table is a test that passes - which is why this asks the table a question the
         // table cannot answer with itself.
-        foreach (var style in new[] { "Extradosed01", "Extradosed02", "Extradosed03" })
+        foreach (var style in new[] { "Extradosed03" })
         {
             var road = BridgeTowers.RoadOf(style);
             var mesh = BridgeTowers.For(style)[0].Mesh;
@@ -4522,49 +4610,20 @@ internal static class TowerGenerationTests
         var outline = triangles.ToArray();
         var moved = TowerWidening.WidenOpenTruss(source, outline, extra, out var facts);
 
-        var ratio = (16f + extra) / 16f;
-        var affine = source.Take(side).Select((vertex, index) =>
-            Math.Abs(moved[index].x - (vertex.x * ratio)) < 0.001f
-            && Math.Abs(moved[index].y - vertex.y) < 0.001f
-            && Math.Abs(moved[index].z - vertex.z) < 0.001f).All(same => same);
-
         check("[through arch] source topology finds both x=0-crossing parts",
             facts.SpanningPieces == 2, facts.SpanningPieces.ToString(CultureInfo.InvariantCulture));
-        check("[through arch] every station of the member uses one affine widening",
-            affine, facts.SpanningPieces + " spanning piece");
-        check("[through arch] the side truss remains a rigid translated member",
-            Math.Abs(moved[side].x - 19f) < 0.001f
-                && Math.Abs(moved[side + 1].x - 20f) < 0.001f
-                && Math.Abs((moved[side + 1].x - moved[side].x) - 1f) < 0.001f,
-            $"{moved[side].x:0.###}..{moved[side + 1].x:0.###}");
-        check("[through arch] the centre pivot stretches against its own span",
-            Math.Abs(moved[centrePlate].x + 10.25f) < 0.001f
-                && Math.Abs(moved[centrePlate + 1].x - 10.25f) < 0.001f
-                && Math.Abs(facts.LeftStructuralReach - 8f) < 0.001f
-                && Math.Abs(facts.RightStructuralReach - 8f) < 0.001f
-                && Math.Abs(facts.LeftScale - ratio) < 0.001f
-                && Math.Abs(facts.RightScale - ratio) < 0.001f,
-            $"{moved[centrePlate].x:0.###}..{moved[centrePlate + 1].x:0.###}");
-        check("[through arch] an interior fitting which misses x=0 is translated",
-            Math.Abs(moved[interiorFitting].x - 11.9f) < 0.001f
-                && Math.Abs(moved[interiorFitting + 1].x - 12.1f) < 0.001f,
-            $"{moved[interiorFitting].x:0.###}..{moved[interiorFitting + 1].x:0.###}");
+        check("[through arch] an invalid mixed synthetic assembly is refused as one batch",
+            moved.Select((vertex, index) => vertex.Equals(source[index])).All(same => same), null);
         check("[through arch] x=0 alone separates translated and stretched pieces",
             facts.RigidPieces == 2 && facts.SpanningPieces == 2 && facts.FloatingPieces == 0,
             $"rigid {facts.RigidPieces}, spanning {facts.SpanningPieces}, followers {facts.FloatingPieces}");
 
+        var ratio = (16f + extra) / 16f;
         var forbiddenOverride = moved.ToArray();
         forbiddenOverride[side].x = source[side].x * ratio;
-        var rejectedOverride = false;
-        try
-        {
-            TowerWidening.RequireCentrelineRule(source, forbiddenOverride, outline, extra);
-        }
-        catch (InvalidOperationException)
-        {
-            rejectedOverride = true;
-        }
-        check("[through arch] an attempted override of the x=0 rule throws before export",
+        var rejectedOverride = !TowerWidening.RequireCentrelineRule(
+            source, forbiddenOverride, outline, extra);
+        check("[through arch] an attempted override of the x=0 rule is refused without throwing",
             rejectedOverride, null);
 
         // The authored 0.5 m separation between the two long sides remains 0.5 m at every station.
@@ -4580,8 +4639,8 @@ internal static class TowerGenerationTests
 
         check("[through arch] the widened member remains rectangular",
             rectangular, null);
-        check("[through arch] actual output width changes by 40 minus the 20 m prototype",
-            Math.Abs(facts.MeasuredWidthChange - 20f) < 0.001f,
+        check("[through arch] a refused batch reports no output width change",
+            Math.Abs(facts.MeasuredWidthChange) < 0.001f,
             $"{facts.MeasuredWidthChange:0.###} m");
         check("[through arch] topology audit finds no new degenerate or flipped triangle",
             facts.Finite

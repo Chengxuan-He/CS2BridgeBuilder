@@ -41,7 +41,7 @@ internal static partial class UiStringTables
         text.OptionDonorBuildStyle = "Keep the style's own";
         text.OptionLowerDeckNone = "None - single deck";
         text.OptionNoDeckChosen = "Nothing chosen";
-        text.StateNoUpperDeck = "Pick the road the bridge should carry.";
+        text.StateNoUpperDeck = "Pick the road, pedestrian path or track the bridge should carry.";
         text.StateUpperDeck = "Upper deck: {0} ({1} m wide).";
         text.StateStyleFit = "Fitted from {0} ({1} m) to {2} m.";
         text.StateLowerDeck = "Lower deck: {0}, {1} m below, {2}.";
@@ -52,14 +52,15 @@ internal static partial class UiStringTables
         return text
             .DeckKind("RoadBuilder", "Road Builder")
             .DeckKind("Road", "Road")
+            .DeckKind("Pedestrian", "Pedestrian path")
             .DeckKind("Train", "Train")
             .DeckKind("Subway", "Subway")
             .DeckKind("Tram", "Tram")
             .Option(nameof(BridgeSetting.StatusText), "What will be generated")
             .Option(nameof(BridgeSetting.BridgeName), "Bridge name",
                 "The name the generated bridge is saved under. Regenerated whenever the road, style or second deck changes, so a name left alone always describes what will be built. Type over it to keep your own.")
-            .Option(nameof(BridgeSetting.UpperDeckId), "Road to convert",
-                "The road the bridge carries. Any registered road can be used, including ones exported earlier.")
+            .Option(nameof(BridgeSetting.UpperDeckId), "Network to convert",
+                "The road, pedestrian path or track the bridge carries. Any registered supported network can be used.")
             .Option(nameof(BridgeSetting.RescanRoads), "Rescan",
                 "Read the available roads, tracks and bridge styles again.")
             .Option(nameof(BridgeSetting.ExportSelected), "Generate bridge",
@@ -101,7 +102,7 @@ internal static partial class UiStringTables
         text.OptionDonorBuildStyle = "沿用该样式自带的";
         text.OptionLowerDeckNone = "无 — 单层桥";
         text.OptionNoDeckChosen = "尚未选择";
-        text.StateNoUpperDeck = "请选择桥梁承载的道路。";
+        text.StateNoUpperDeck = "请选择桥梁承载的道路、人行道路或轨道。";
         text.StateUpperDeck = "上层：{0}（宽 {1} 米）。";
         text.StateStyleFit = "以 {0}（{1} 米）适配到 {2} 米。";
         text.StateLowerDeck = "下层：{0}，位于下方 {1} 米，{2}。";
@@ -112,14 +113,15 @@ internal static partial class UiStringTables
         return text
             .DeckKind("RoadBuilder", "Road Builder")
             .DeckKind("Road", "道路")
+            .DeckKind("Pedestrian", "人行道路")
             .DeckKind("Train", "铁路")
             .DeckKind("Subway", "地铁")
             .DeckKind("Tram", "电车")
             .Option(nameof(BridgeSetting.StatusText), "将要生成的内容")
             .Option(nameof(BridgeSetting.BridgeName), "桥梁名称",
                 "生成的桥梁保存时使用的名称。每次更改道路、样式或下层甲板时都会重新生成，因此未改动的名称始终描述将要生成的桥梁。可直接输入以使用自定义名称。")
-            .Option(nameof(BridgeSetting.UpperDeckId), "要转换的道路",
-                "桥梁承载的道路。任何已注册的道路都可以使用，包括此前导出的道路。")
+            .Option(nameof(BridgeSetting.UpperDeckId), "要转换的路网",
+                "桥梁承载的道路、人行道路或轨道。任何已注册且受支持的路网都可以使用。")
             .Option(nameof(BridgeSetting.RescanRoads), "重新扫描",
                 "重新读取可用的道路、轨道和桥梁样式。")
             .Option(nameof(BridgeSetting.ExportSelected), "生成桥梁",
@@ -161,7 +163,7 @@ internal static partial class UiStringTables
         text.OptionDonorBuildStyle = "沿用該樣式自帶的";
         text.OptionLowerDeckNone = "無 — 單層橋";
         text.OptionNoDeckChosen = "尚未選擇";
-        text.StateNoUpperDeck = "請選擇橋樑承載的道路。";
+        text.StateNoUpperDeck = "請選擇橋樑承載的道路、人行道路或軌道。";
         text.StateUpperDeck = "上層：{0}（寬 {1} 公尺）。";
         text.StateStyleFit = "以 {0}（{1} 公尺）配合到 {2} 公尺。";
         text.StateLowerDeck = "下層：{0}，位於下方 {1} 公尺，{2}。";
@@ -172,14 +174,15 @@ internal static partial class UiStringTables
         return text
             .DeckKind("RoadBuilder", "Road Builder")
             .DeckKind("Road", "道路")
+            .DeckKind("Pedestrian", "人行道路")
             .DeckKind("Train", "鐵路")
             .DeckKind("Subway", "地鐵")
             .DeckKind("Tram", "電車")
             .Option(nameof(BridgeSetting.StatusText), "將要產生的內容")
             .Option(nameof(BridgeSetting.BridgeName), "橋樑名稱",
                 "產生的橋樑儲存時使用的名稱。每次變更道路、樣式或下層甲板時都會重新產生，因此未改動的名稱始終描述將要產生的橋樑。可直接輸入以使用自訂名稱。")
-            .Option(nameof(BridgeSetting.UpperDeckId), "要轉換的道路",
-                "橋樑承載的道路。任何已註冊的道路都可以使用，包括先前匯出的道路。")
+            .Option(nameof(BridgeSetting.UpperDeckId), "要轉換的路網",
+                "橋樑承載的道路、人行道路或軌道。任何已註冊且受支援的路網都可以使用。")
             .Option(nameof(BridgeSetting.RescanRoads), "重新掃描",
                 "重新讀取可用的道路、軌道與橋樑樣式。")
             .Option(nameof(BridgeSetting.ExportSelected), "產生橋樑",
@@ -232,6 +235,7 @@ internal static partial class UiStringTables
         return text
             .DeckKind("RoadBuilder", "Road Builder")
             .DeckKind("Road", "道路")
+            .DeckKind("Pedestrian", "歩行者道")
             .DeckKind("Train", "鉄道")
             .DeckKind("Subway", "地下鉄")
             .DeckKind("Tram", "トラム")
@@ -292,6 +296,7 @@ internal static partial class UiStringTables
         return text
             .DeckKind("RoadBuilder", "Road Builder")
             .DeckKind("Road", "도로")
+            .DeckKind("Pedestrian", "보행자 도로")
             .DeckKind("Train", "철도")
             .DeckKind("Subway", "지하철")
             .DeckKind("Tram", "트램")
@@ -352,6 +357,7 @@ internal static partial class UiStringTables
         return text
             .DeckKind("RoadBuilder", "Road Builder")
             .DeckKind("Road", "Straße")
+            .DeckKind("Pedestrian", "Fußweg")
             .DeckKind("Train", "Zug")
             .DeckKind("Subway", "U-Bahn")
             .DeckKind("Tram", "Tram")
@@ -412,6 +418,7 @@ internal static partial class UiStringTables
         return text
             .DeckKind("RoadBuilder", "Road Builder")
             .DeckKind("Road", "Carretera")
+            .DeckKind("Pedestrian", "Vía peatonal")
             .DeckKind("Train", "Tren")
             .DeckKind("Subway", "Metro")
             .DeckKind("Tram", "Tranvía")
@@ -472,6 +479,7 @@ internal static partial class UiStringTables
         return text
             .DeckKind("RoadBuilder", "Road Builder")
             .DeckKind("Road", "Route")
+            .DeckKind("Pedestrian", "Voie piétonne")
             .DeckKind("Train", "Train")
             .DeckKind("Subway", "Métro")
             .DeckKind("Tram", "Tramway")
@@ -532,6 +540,7 @@ internal static partial class UiStringTables
         return text
             .DeckKind("RoadBuilder", "Road Builder")
             .DeckKind("Road", "Strada")
+            .DeckKind("Pedestrian", "Percorso pedonale")
             .DeckKind("Train", "Treno")
             .DeckKind("Subway", "Metro")
             .DeckKind("Tram", "Tram")
@@ -592,6 +601,7 @@ internal static partial class UiStringTables
         return text
             .DeckKind("RoadBuilder", "Road Builder")
             .DeckKind("Road", "Droga")
+            .DeckKind("Pedestrian", "Droga piesza")
             .DeckKind("Train", "Kolej")
             .DeckKind("Subway", "Metro")
             .DeckKind("Tram", "Tramwaj")
@@ -652,6 +662,7 @@ internal static partial class UiStringTables
         return text
             .DeckKind("RoadBuilder", "Road Builder")
             .DeckKind("Road", "Via")
+            .DeckKind("Pedestrian", "Via pedonal")
             .DeckKind("Train", "Trem")
             .DeckKind("Subway", "Metrô")
             .DeckKind("Tram", "Bonde")
@@ -712,6 +723,7 @@ internal static partial class UiStringTables
         return text
             .DeckKind("RoadBuilder", "Road Builder")
             .DeckKind("Road", "Дорога")
+            .DeckKind("Pedestrian", "Пешеходная дорожка")
             .DeckKind("Train", "Железная дорога")
             .DeckKind("Subway", "Метро")
             .DeckKind("Tram", "Трамвай")

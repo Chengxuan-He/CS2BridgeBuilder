@@ -320,20 +320,18 @@ public sealed class BridgeSetting : ModSetting
     ///
     /// The list does not depend on anything having been scanned. This page is built when the mod
     /// loads, long before a world exists, so a list assembled from discovered prefabs would be empty
-    /// exactly when the player first opens it. A style that genuinely has nothing behind it is still
-    /// listed and marked, rather than missing.
+    /// exactly when the player first opens it. After scanning, omit styles without an available
+    /// donor, matching the runtime builder's list. Unimplemented styles are never in the catalogue.
     /// </summary>
     public static DropdownItem<string>[] GetBridgeStyles()
     {
-        UiStrings text = UiStringCatalog.Current;
         var scanned = BridgeStyleCatalog.Scanned;
-        return BridgeStyleCatalog.Styles.Select(style => new DropdownItem<string>
+        return BridgeStyleCatalog.Styles
+            .Where(style => !scanned || style.IsInstalled)
+            .Select(style => new DropdownItem<string>
         {
             value = style.Id,
-            displayName = LocalizedString.Value(
-                !scanned || style.IsInstalled
-                    ? style.DisplayName
-                    : string.Format(text.StyleNotAvailable, style.DisplayName)),
+            displayName = LocalizedString.Value(style.DisplayName),
         }).ToArray();
     }
 
