@@ -28,6 +28,12 @@ internal static class BridgeTowerMaterials
             // The pale steel pair. 01 is the two-lane design and the one whose pylon is a plain tower
             // rather than a portal, which makes it the cleaner source of a flat colour.
             ["Suspension"] = new[] { "SuspensionBridge01NetPylon", "SuspensionBridge01NetPillar" },
+            ["SuspensionDouble"] = new[] { "SuspensionBridge01NetPylon", "SuspensionBridge01NetPillar" },
+            ["Suspension01"] = new[] { "SuspensionBridge01NetPylon", "SuspensionBridge01NetPillar" },
+            ["Suspension02"] = new[] { "SuspensionBridge02NetPylon", "SuspensionBridge02NetPillar" },
+
+            ["GoldenGate"] = new[] { "GoldenGateBridgePylon Placeholder", "GoldenGateBridgePillar Placeholder" },
+            ["GoldenGateDouble"] = new[] { "GoldenGateBridgePylon Placeholder" },
 
             // The golden pair. 03 and 04 share one set of surfaces, named after 03.
             ["SuspensionGolden"] = new[] { "SuspensionBridge03Pillar", "SuspensionBridge03PylonTop" },

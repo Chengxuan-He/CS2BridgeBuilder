@@ -1,0 +1,15 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <OutputType>Exe</OutputType>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <NoWarn>SYSLIB0050</NoWarn>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="../../src/BridgeBuilder/Runtime/BridgePrefabRemoval.cs" Link="BridgePrefabRemoval.cs" />
+    <Compile Include="../../../CS2ModShared/src/Export/PrefabReferenceWalker.cs" Link="PrefabReferenceWalker.cs" />
+    <Compile Include="../../../CS2ModShared/src/Infrastructure/SerializedFields.cs" Link="SerializedFields.cs" />
+    <Compile Include="../../../CS2ModShared/src/Infrastructure/ReferenceEqualityComparer.cs" Link="ReferenceEqualityComparer.cs" />
+  </ItemGroup>
+</Project>

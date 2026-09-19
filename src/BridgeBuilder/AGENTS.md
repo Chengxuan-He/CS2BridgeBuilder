@@ -30,14 +30,32 @@ the repository root [`AGENTS.md`](../../AGENTS.md). Before editing this director
   to that generated bridge.
 - Preserve the archetype-specific constant `bridge width - deck width`. The width definition and the
   constant must come from a same-basis comparison of a real archetype and a real newly generated
-  bridge, not runtime geometry inference or source arithmetic alone. If enforcing it would require any
-  x-coordinate correction greater than 1 m in absolute value, do not change that bridge; report and
-  record the bridge for review. Absence of a generated sample does not satisfy that skip condition:
+  bridge, not runtime geometry inference or source arithmetic alone. Width is the complete
+  left-to-right span `maxX - minX`, and the audited width increment is the increment of that complete
+  span; it is not a per-side x-coordinate correction. If the absolute full-span width increment is
+  greater than 1 m, do not change that bridge; report and record the bridge for review. Absence of a
+  generated sample does not satisfy that skip condition:
   the invariant pass stays incomplete until a human creates the missing bridge from a selected road
   and its real report and geometry are retained. The Agent must not open or control the game or issue
   an API/request-file bridge-construction request for sample creation.
+- Never apply an audit or geometry correction in runtime bridge-generation code. Metaprogramming must
+  finish the correction and fold it into the original immutable archetype parameters or generated
+  source metadata. Runtime may consume those final parameters as ordinary generation inputs, but it
+  must not contain an audit-correction table, add a post-measurement delta, double a per-side result,
+  or otherwise know that a correction step existed.
+- Preserve bridge-specific lighting from the same archetype. Carry tower/pylon `ObjectSubObjects` and
+  their referenced light/effect prefabs without filtering by names or rebuilding effect fields. Keep
+  rotations, parent-mesh indices, groups, probabilities and activation data unchanged. A mounted
+  object's non-zero x position follows its parent mesh's rigid half-width displacement; an object on
+  `x = 0` remains centred. Do not replace the selected road's ordinary street lighting with the
+  archetype road's street lighting.
 
 ## Completion
+
+Construction pricing must not allocate, clone, save or publish any pricing prefab. Price is a scalar
+property attached to the existing bridge prefab, projected onto native UI and composition cost data.
+Read selected road prices from initialized native data; preserve each archetype's signed offset and
+floor the total at the selected networks' elevated base price. See project contract section 16.
 
 After any source-code edit, follow contract section 13: invoke the exact `Cities2.exe` kill command,
 verify the game is stopped, remove all mod-created bridges and generated artifacts, and verify the
