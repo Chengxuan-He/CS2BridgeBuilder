@@ -1,9 +1,37 @@
-| Road | every other road — the game's own, a pack's, or one exported earlier by the road exporter |# Bridge Prefab Generator
+# BridgeBuilder
+
+![BridgeBuilder icon](assets/BridgeBuilder.svg)
 
 A Cities: Skylines II mod that builds a **bridge prefab** from parts you choose: a road for the upper
 deck, a bridge style to wear, and optionally something hung underneath.
 
-The rules generation is held to are in [CONTRACT.md](CONTRACT.md).
+The rules generation is held to are in [AGENTS.md](AGENTS.md).
+
+## License
+
+This project's original code is available under the [MIT License](LICENSE).
+Game assets and third-party dependencies retain their respective licenses.
+
+## In-game builder and identity
+
+The floating BridgeBuilder button opens the runtime builder in a loaded game. Roads are shown as
+icon-and-name cards (three per row); double-deck mode provides independent upper and lower network
+lists. Bridge styles are likewise selected from prototype cards, and unavailable styles are omitted
+when their providing DLC or mod is not installed. Creating a bridge publishes it into the running
+prefab world and activates the ordinary network construction tool; it does not place anything by
+itself.
+
+Every bridge created there has two deliberately separate names:
+
+- `PrefabName`: immutable `b<UUID>` identity, for example
+  `b6f9619ff-8b86-d011-b42d-00c04fc964ff`. Saved references, activation and deletion use only this key.
+- registration name: the editable name shown in game. It can be duplicated or renamed without
+  changing the prefab identity or reconstructing the bridge.
+
+The management tab lists these bridges and supports activation, display-name changes and deletion.
+Construction inputs are read-only after creation; changing them means creating another UUID-backed
+bridge. Deleting a bridge asks for confirmation and removes its placed instances before removing its
+asset record.
 
 It is the parallel of [Road Prefab Exporter](../CS2RoadPrefabExporter) and shares its code — see
 [Layout](#layout).
@@ -16,6 +44,22 @@ roads. So the page asks for the two decks explicitly and builds exactly one brid
 next door remains the batch tool.
 
 ## What you can pick
+
+Each bridge style binds to a single content source for both display and generation. Base-game
+variants take precedence over DLC variants, then mod variants; ties use stable source identifiers,
+not translated labels. A selected unavailable prerequisite does not trigger a fallback to another
+owner. The V-pylon double-deck cable-stayed bridge (`Extradosed01`) accepts base-game variants only,
+never the duplicate Bridge Expansion Pack version. Existing bridge assets are unchanged.
+
+Golden Gate Bridge supports **single-deck generation only**. Double-deck donor variants are not
+offered, and preview/export/create requests cannot bypass this restriction. Existing saved bridges
+are not deleted or reconstructed by this catalogue rule.
+
+Road Builder is **optional compatibility, not a required dependency**. Without it installed and
+successfully loaded in the current playset, its roads are omitted from both deck selectors. Base-game
+roads, pedestrian paths and tracks remain available. Cached Road Builder prefabs do not enable the
+integration; standalone plain-road exports remain ordinary roads. The mod does not load or ship
+RoadBuilder.dll, and Road Builder must not be declared a mandatory dependency when publishing it.
 
 The upper and lower deck are chosen from everything registered in the loaded world:
 
@@ -111,7 +155,7 @@ they are missing. It resolves the game's managed assemblies itself; pass `-GameD
 ```
 CS2ModShared/               shared - discovery, cloning, asset IO, speed-limit correction, status model
 CS2RoadPrefabExporter/      exports Road Builder roads as plain roads, in batches
-CS2BridgePrefabGenerator/   this repository
+CS2BridgeBuilder/            this repository
 ```
 
 The shared code is **compiled into** each mod rather than referenced as an assembly: its types are
@@ -122,7 +166,7 @@ Clone all three side by side.
 
 ## Reports
 
-Every run writes `ModsData\BridgePrefabGenerator\last-export-report.txt`, including the structural
+Every run writes `ModsData\BridgeBuilder\last-export-report.txt`, including the structural
 counts that separate "the deck came out wrong" from "the style did not attach": sections, overhead
 sections, sub-objects and auxiliary nets. Failures are also raised at error level so they surface in
 the game rather than only in a file.
