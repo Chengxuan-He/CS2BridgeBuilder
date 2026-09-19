@@ -50,7 +50,7 @@ internal sealed class BridgeComposer
     /// </summary>
     internal BridgeStyleVariant? Apply(
         NetGeometryPrefab target, BridgeStyle style, float roadWidth, BridgeOptions options,
-        RoadPrefab? measure = null, Func<BridgeStyleVariant, bool>? allow = null)
+        NetGeometryPrefab? measure = null, Func<BridgeStyleVariant, bool>? allow = null)
     {
         // Measure first, then choose. The clone is what the towers actually have to straddle, and a
         // Road Builder road's declared width does not always match the sections it ended up with -
@@ -62,19 +62,21 @@ internal sealed class BridgeComposer
         // number computed here.
         // Measured the same way a donor is: carriageway only, so the two numbers mean the same thing.
         var breakdown = new List<string>();
-        var measuredRoad = measure ?? target as RoadPrefab;
-        var targetWidth = measuredRoad != null
-            ? WidthOf(measuredRoad, roadWidth, breakdown)
+        var measuredDeck = measure ?? target;
+        var measuredRoad = measuredDeck as RoadPrefab;
+        var forRoad = measuredDeck is not TrackPrefab;
+        var targetWidth = measuredDeck != null
+            ? WidthOf(measuredDeck, roadWidth, breakdown)
             : roadWidth;
         var whiteTruss = BridgeTowers.WidthFollowsSidewalks(style.Id);
-        var sidewalkAlignedInnerLayer = BridgeTowers.HasSidewalkAlignedInnerLayer(style.Id);
-        var roadEdges = RoadEdgesOf(
-            measuredRoad, targetWidth, whiteTruss || sidewalkAlignedInnerLayer);
+        // The white truss uses the sidewalk edge for its inner structural envelope. Bridges with an
+        // authored inner railing need the same complete scan even when their structure has one width:
+        // an empty lane outside a sidewalk is not a sidewalk, and the two sides need not match.
+        var findOutermostSidewalk = whiteTruss || BridgeTowers.BringsItsOwnRailings(style.Id);
+        var roadEdges = RoadEdgesOf(measuredRoad, targetWidth, findOutermostSidewalk);
         var structureEdges = BridgeTowers.StructureEdgesFor(
             style.Id, targetWidth, roadEdges.Left, roadEdges.Right);
-        // Grand selects and widens its outer structure from the complete road width. Its separately
-        // recorded inner layer consumes structureEdges only when the immutable cable map is applied.
-        var structureWidth = sidewalkAlignedInnerLayer ? targetWidth : structureEdges.Width;
+        var structureWidth = structureEdges.Width;
         var outwardExtension = whiteTruss
             ? NetWidth.OutwardExtensionOf(measuredRoad)
             : 0f;
@@ -85,15 +87,15 @@ internal sealed class BridgeComposer
         // Refused rather than attempted. A bridge that is not generated is a bridge the player still
         // has; a bridge generated from an arrangement nobody has measured is one that looks built and
         // behaves as something else.
-        var deferred = BridgeStyleDefinitions.DeferredReason(style.Id);
-        if (deferred != null)
+        var unsupported = BridgeStyleDefinitions.GenerationUnsupportedReason(style.Id, options.DoubleDeck);
+        if (unsupported != null)
         {
             _report.Failed(target.name, new NotSupportedException(
-                $"'{style.DisplayName}' is not generated yet: {deferred}."));
+                $"'{style.DisplayName}' cannot be generated: {unsupported}."));
             return null;
         }
 
-        var selection = style.Select(targetWidth, forRoad: true, doubleDeck: options.DoubleDeck, allow);
+        var selection = style.Select(targetWidth, forRoad, doubleDeck: options.DoubleDeck, allow);
         var variant = selection.Variant;
         if (variant == null)
         {
@@ -169,22 +171,6 @@ internal sealed class BridgeComposer
                 TrussArch02Geometry.PrototypeSectionOuterWidth,
                 BridgeTowers.WhiteTrussArchWidths.PrototypeVisibleDeckWidth));
         }
-        else if (sidewalkAlignedInnerLayer)
-        {
-            _report.Note(string.Format(
-                CultureInfo.InvariantCulture,
-                "{0}: Grand Bridge has two recorded width targets: outer {1:0.###} m follows the "
-                + "complete road edge; inner {2:0.###} m reaches {3:0.###} m left and {4:0.###} m "
-                + "right from x=0 and follows only the near-centre boundary of the outermost exact "
-                + "Sidewalk section. The measured sidewalk widths are {5:0.###} m left and "
-                + "{6:0.###} m right. Empty lanes, medians, shoulders and other non-driving sections "
-                + "are not sidewalks; a side without a Sidewalk falls back to its road edge. The "
-                + "full-detail inner/outer vertex assignment is immutable and reused by the complete "
-                + "cable assembly.",
-                target.name, targetWidth, structureEdges.Width,
-                structureEdges.Left, structureEdges.Right,
-                roadEdges.Left.SidewalkWidth, roadEdges.Right.SidewalkWidth));
-        }
 
         // No complaint about how far the tower is being widened.
         //
@@ -215,32 +201,38 @@ internal sealed class BridgeComposer
         CopyBridge(target, style, variant, options);
         CopyPlacement(target, style);
         CopyMoveable(target, variant);
+        // Each double-deck archetype records the width of its root road/deck. The root is the upper
+        // road when the auxiliary is below, and the lower road when the auxiliary is above. Using
+        // that same ownership role in the generated bridge makes the normal target-minus-prototype
+        // calculation preserve bridgeWidth-roadWidth without a runtime audit correction.
+        var prototypeDecks = variant.LowerDeck;
+        var doubleDeckReference = options.DoubleDeck && prototypeDecks != null
+            ? variant.RoadWidth
+            : 0f;
+        var structureAllowance = doubleDeckReference > 0f
+            ? 0f
+            : style.ArchetypeStructureAllowance;
+
         // Each bridge is sized against its own cables, so the previous bridge's are forgotten
         // before this one's are built. The factory outlives a single bridge; the measurement
         // must not.
-        _towers?.BeginBridge(style.Id, style.ArchetypeStructureAllowance, target.name);
+        _towers?.BeginBridge(style.Id, structureAllowance, target.name);
 
-        // Follow the selected archetype's deck roles. When its auxiliary net is below, the donor's
-        // main prefab is its upper road. This is the V-shaped double-deck cable-stayed bridge: its
-        // widening is target upper-road width minus prototype upper-road width. The portal opening is
-        // clearance around that road, not its width, and the lower road or track is never consulted.
-        var prototypeDecks = variant.LowerDeck;
-        if (chosen.HasValue
-            && options.DoubleDeck
-            && prototypeDecks != null
-            && prototypeDecks.m_Position.y < -TowerWidening.CentreEpsilon)
+        float? primarySourceRoadWidth = null;
+        if (chosen.HasValue && doubleDeckReference > 0f)
         {
-            var roadExtra = PrototypeBridgeSizing.UpperDeckExtra(
-                targetWidth, chosen.Value.Road, extra);
-            extra = roadExtra + style.ArchetypeStructureAllowance;
+            extra = PrototypeBridgeSizing.ReferenceDeckExtra(
+                targetWidth, doubleDeckReference, extra);
+            primarySourceRoadWidth = doubleDeckReference;
+            var referenceLevel = prototypeDecks!.m_Position.y > TowerWidening.CentreEpsilon
+                ? "lower"
+                : "upper";
             _report.Note(string.Format(
                 CultureInfo.InvariantCulture,
-                "{0}: V-shaped double-deck width follows the upper road: {1:0.###} m target minus "
-                + "{2:0.###} m on prototype '{3}' = {4:0.###} m road difference, plus the prototype's "
-                + "{5:0.###} m structure allowance = {6:0.###} m effective widening. Its lower "
-                + "network keeps the auxiliary pointer and is not a width input.",
-                target.name, targetWidth, chosen.Value.Road, variant.Name, roadExtra,
-                style.ArchetypeStructureAllowance, extra));
+                "{0}: double-deck width follows the {1} root deck: {2:0.###} m target minus "
+                + "{3:0.###} m on prototype '{4}' = {5:0.########} m widening. The other deck and "
+                + "the road geometry are excluded from the bridge-structure width.",
+                target.name, referenceLevel, targetWidth, doubleDeckReference, variant.Name, extra));
         }
 
         var overheadExtra = BridgeTowers.WhiteTrussArchWidths.OverheadExtra(
@@ -260,7 +252,7 @@ internal sealed class BridgeComposer
             _towers.MeasureStructureExtra(extra);
         }
 
-        CopyOverhead(target, variant, overheadExtra);
+        if (!CopyOverhead(target, variant, style.Id, overheadExtra)) return null;
         CopySubObjects(target, variant, overheadExtra);
         if (target is RoadPrefab roadTarget) RemoveDeckRailings(roadTarget, style.Id);
 
@@ -270,7 +262,8 @@ internal sealed class BridgeComposer
         var towerWidth = BridgeTowers.WidthFollowsSidewalks(style.Id)
             ? outerStructureWidth
             : structureWidth;
-        var fitted = FitTower(target, style, towerWidth, variant, chosen);
+        var fitted = FitTower(
+            target, style, towerWidth, variant, chosen, primarySourceRoadWidth);
         if (!fitted) ReportTooNarrow(target.name, towerWidth, variant.StructureWidth);
 
         _report.Note(string.Format(
@@ -302,7 +295,8 @@ internal sealed class BridgeComposer
         BridgeStyle style,
         float deckWidth,
         BridgeStyleVariant variant,
-        BridgeTowers.Tower? chosen)
+        BridgeTowers.Tower? chosen,
+        float? primarySourceRoadWidth)
     {
         if (_towers == null) return false;
 
@@ -348,7 +342,8 @@ internal sealed class BridgeComposer
             var primary = string.Equals(name, sourceName, StringComparison.Ordinal);
             var recordedRoad = BridgeTowers.RoadFor(style.Id, name);
             var road = primary
-                ? chosen?.Road
+                ? primarySourceRoadWidth
+                    ?? chosen?.Road
                     ?? (BridgeTowers.WidthFollowsSidewalks(style.Id)
                         ? recordedRoad ?? deckWidth
                         : deckWidth)
@@ -701,6 +696,26 @@ internal sealed class BridgeComposer
         {
             bridge.m_WaterFlow = source.m_WaterFlow;
             bridge.m_FixedSegments = CopyFixedSegments(source);
+
+            // Double-deck node seams are part of the prototype's two-network arrangement, but a
+            // prototype road state must never be installed on a track selected as the main/lower
+            // network: its Elevated node rule renders as a railway switch. Preserve the selected
+            // network's own state tables when the transport roles differ. This fixes the seam without
+            // changing bridge-variant selection or any measured width.
+            if (options.DoubleDeck)
+            {
+                var copied = DoubleDeckComposer.CopyCompatibleSeamBehavior(
+                    target, variant.Donor, copyAggregate: false);
+                _report.Note(string.Format(
+                    CultureInfo.InvariantCulture,
+                    "{0}: double-deck main-network seam states {1} for '{2}' - {3} edge rule(s), "
+                    + "{4} node rule(s).",
+                    target.name,
+                    copied ? "copied from the transport-compatible prototype" : "preserved from the selected deck",
+                    variant.Name,
+                    target.m_EdgeStates?.Length ?? 0,
+                    target.m_NodeStates?.Length ?? 0));
+            }
         }
 
         bridge.m_BuildStyle = options.BuildStyle ?? source?.m_BuildStyle ?? bridge.m_BuildStyle;
@@ -819,13 +834,12 @@ internal sealed class BridgeComposer
     /// <summary>
     /// The carriageway a bridge is sized against, and how it was arrived at.
     ///
-    /// Normally the prefab being built. It is a separate argument because a double deck bridge whose
-    /// second net hangs above is built on the deck the player chose, while the road they are
-    /// converting is the one hung above it - and the structure still has to be sized against their
-    /// road, because that is the one whose width varies. Measuring the prefab in hand would size the
-    /// towers against whatever deck was picked to go underneath.
+    /// Normally the prefab being built. It is a separate argument because the selected root deck is
+    /// established before its clone is composed. For a double deck whose auxiliary hangs above, that
+    /// root is the chosen lower road/track; for an auxiliary below it is the converted upper road.
     /// </summary>
-    internal static float WidthOf(RoadPrefab prefab, float fallback, List<string>? breakdown = null)
+    internal static float WidthOf(
+        NetGeometryPrefab prefab, float fallback, List<string>? breakdown = null)
     {
         var width = NetWidth.RoadSurfaceOf(prefab, breakdown);
         if (width <= 0f) width = NetWidth.Of(prefab);
@@ -862,8 +876,7 @@ internal sealed class BridgeComposer
     /// Sections are laid out across the road in order. Ordinary styles keep their established rule
     /// of inspecting the first and last section after outward extensions are removed. The white truss
     /// scans inward only as far as x=0 for the first actual sidewalk on each side, so an empty lane is
-    /// not mistaken for one and a one-sided sidewalk is not mirrored onto the other side. Grand uses
-    /// the same exact Sidewalk-only scan for its independently positioned inner suspension plane.
+    /// not mistaken for one and a one-sided sidewalk is not mirrored onto the other side.
     ///
     /// Which of the two is the left was got wrong twice. The list order is a convention about how the
     /// road was written down, the mesh has its own axis, and nothing in either says which way round
@@ -1024,7 +1037,8 @@ internal sealed class BridgeComposer
     /// </summary>
     private const float DeckSurface = 0.25f;
 
-    private void CopyOverhead(NetGeometryPrefab target, BridgeStyleVariant variant, float extra)
+    private bool CopyOverhead(
+        NetGeometryPrefab target, BridgeStyleVariant variant, string styleId, float extra)
     {
         // The caller has already folded the prototype's structural allowance into this number. The
         // same effective extra also goes to node-bound props, while TowerFactory independently derives
@@ -1032,31 +1046,49 @@ internal sealed class BridgeComposer
         // put cables one half-bonus outside the nodes and tower they are meant to meet.
 
         var source = variant.Overhead;
-        if (source?.m_Sections == null || source.m_Sections.Length == 0) return;
+        if (source?.m_Sections == null || source.m_Sections.Length == 0) return true;
+
+        var sections = new List<NetSectionInfo>();
+        foreach (var section in source.m_Sections)
+        {
+            if (section?.m_Section == null) continue;
+            var preserveGeometry = BridgeStyleDefinitions.PreservesOverheadGeometry(
+                styleId, section.m_Section.name);
+            var derived = Widened(section, target.name, extra, preserveGeometry);
+            // Do not replace a failed derivation with the donor or publish a partial cable frame.
+            if (derived == null) return false;
+            sections.Add(derived);
+        }
 
         var overhead = target.AddOrGetComponent<OverheadNetSections>();
-        overhead.m_Sections = source.m_Sections
-            .Where(section => section?.m_Section != null)
-            .Select(section => Widened(section, target.name, extra))
-            .ToArray();
+        overhead.m_Sections = sections.ToArray();
         overhead.active = true;
+        return true;
     }
 
     /// <summary>
     /// One overhead section fitted to this deck: the cables.
     ///
-    /// Shifting the entry's offset is not enough and never was. Every cable section sits at offset zero
-    /// and carries its width in a single full-width piece, so what has to change is the piece, not where
-    /// the section is put. When the piece cannot be widened the entry is still copied - a bridge with
-    /// cables at the wrong spacing beats a bridge with no cables - and the factory says so.
+    /// Paired cable assemblies change their mesh width, not merely their section offset.
+    /// The recorded single-column archetype instead owns one central cable sheet: its
+    /// geometry and composition width stay unchanged, in a separately owned copy.
     /// </summary>
-    private NetSectionInfo Widened(NetSectionInfo source, string bridgeName, float extra)
+    private NetSectionInfo? Widened(
+        NetSectionInfo source, string bridgeName, float extra, bool preserveGeometry)
     {
+        if (preserveGeometry) extra = 0f;
         var spread = Spread(source, extra);
-        if (_towers == null || Math.Abs(extra) < 0.001f) return spread;
+        // A zero width delta is still not a no-op for a bridge whose inner railing follows the selected
+        // road's sidewalks. A road can match the prototype width while having different, asymmetric or
+        // absent sidewalks, so derive its owned section and apply the per-side railing plan.
+        if (_towers == null
+            || (!preserveGeometry && Math.Abs(extra) < 0.001f
+                && !BridgeTowers.BringsItsOwnRailings(_towers.StyleId)))
+            return spread;
 
-        var widened = _towers.WidenSection(source.m_Section, bridgeName, extra);
-        if (widened != null) spread.m_Section = widened;
+        var widened = _towers.WidenSection(source.m_Section, bridgeName, extra, preserveGeometry);
+        if (widened == null) return null;
+        spread.m_Section = widened;
         return spread;
     }
 

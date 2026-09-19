@@ -1,9 +1,11 @@
 using BridgeBuilder.Bridges;
 using BridgeBuilder.Settings;
 using BridgeBuilder.Systems;
+using BridgeBuilder.UI;
 using Colossal.IO.AssetDatabase;
 using Colossal.Localization;
 using Colossal.Logging;
+using Colossal.UI;
 using CS2Mods.Shared;
 using CS2Mods.Shared.Export;
 using CS2Mods.Shared.Infrastructure;
@@ -15,6 +17,7 @@ using Game.UI.Localization;
 using Game.UI.Menu;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using Unity.Entities;
 
 namespace BridgeBuilder;
@@ -54,6 +57,8 @@ public sealed class Mod : IMod
             Log.Error(exception, "Unable to register the exported bridge icon directory");
         }
 
+        RegisterUiHost(this);
+
         try
         {
             RegisterSettings(this);
@@ -63,7 +68,14 @@ public sealed class Mod : IMod
             Log.Error(exception, "Unable to register the settings page. Road selection will not be available.");
         }
 
-        updateSystem.UpdateAt<BridgeGenerationSystem>(SystemUpdatePhase.PrefabUpdate);
+        // Register new prefabs before the native pipeline, and publish the result only after it.
+        // Re-entering PrefabSystem/PrefabInitializeSystem from inside PrefabUpdate duplicates
+        // UIGroupElement entries (UIObject.LateInitialize appends without a uniqueness check).
+        updateSystem.UpdateBefore<BridgeGenerationSystem>(SystemUpdatePhase.PrefabUpdate);
+        updateSystem.UpdateAfter<BridgePublicationSystem>(SystemUpdatePhase.PrefabUpdate);
+        updateSystem.UpdateAfter<BridgePriceSystem, Game.Prefabs.NetInitializeSystem>(SystemUpdatePhase.PrefabUpdate);
+        updateSystem.UpdateAfter<BridgePriceSystem, Game.Prefabs.NetCompositionSystem>(SystemUpdatePhase.Modification4);
+        updateSystem.UpdateAt<BridgeBuilderUISystem>(SystemUpdatePhase.UIUpdate);
     }
 
     public void OnDispose()
@@ -77,6 +89,14 @@ public sealed class Mod : IMod
             Log.Warn(exception, "Unable to unregister the exported bridge icon directory");
         }
 
+        try
+        {
+            UIManager.defaultUISystem.RemoveHostLocation("bridgebuilderui");
+        }
+        catch (Exception exception)
+        {
+            Log.Warn(exception, "Unable to unregister the BridgeBuilder UI asset directory");
+        }
         try
         {
             UnregisterSettings();
@@ -153,6 +173,43 @@ public sealed class Mod : IMod
         catch (Exception exception)
         {
             Log.Warn(exception, "Could not show the result dialog");
+        }
+    }
+
+    internal static void ReloadActiveLocale()
+    {
+        try
+        {
+            GameManager.instance?.localizationManager?.ReloadActiveLocale();
+        }
+        catch (Exception exception)
+        {
+            Log.Warn(exception, "Could not refresh generated bridge display names");
+        }
+    }
+
+    private static void RegisterUiHost(Mod mod)
+    {
+        try
+        {
+            ExecutableAsset executable = null!;
+            if (!GameManager.instance.modManager.TryGetExecutableAsset(mod, out executable))
+            {
+                Log.Error("Unable to locate BridgeBuilder UI assets");
+                return;
+            }
+
+            var directory = Path.GetDirectoryName(executable.path);
+            if (string.IsNullOrWhiteSpace(directory))
+            {
+                Log.Error("BridgeBuilder executable directory is empty");
+                return;
+            }
+            UIManager.defaultUISystem.AddHostLocation("bridgebuilderui", directory, false, 0);
+        }
+        catch (Exception exception)
+        {
+            Log.Error(exception, "Unable to register the BridgeBuilder UI asset directory");
         }
     }
 

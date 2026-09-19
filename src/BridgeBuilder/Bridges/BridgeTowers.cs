@@ -34,7 +34,7 @@ namespace BridgeBuilder.Bridges;
 /// out on this scale already. The number was arrived at twice from different directions - once from
 /// the game, once from the section list - which is the only reason it is trusted.
 ///
-/// Every other family was measured the same way, by TowerSelfTest, against the bridges that carry each
+/// Every other family was measured offline against the bridges that carry each
 /// tower. Before that they held raw scanned numbers, and most were wrong: the golden entry said 34,
 /// which is the blue five-lane tower's width and belongs to nothing in that family.
 ///
@@ -44,7 +44,7 @@ namespace BridgeBuilder.Bridges;
 /// gets taken again. Two of them had been deleted once already for exactly that reason.
 ///
 /// A listed tower whose prefab is not installed is skipped. Correcting a number here is a one-line
-/// edit, and TowerSelfTest re-checks the identity property against whatever it says.
+/// edit, and the immutable metaprogram output records the identity property against whatever it says.
 /// </summary>
 internal static class BridgeTowers
 {
@@ -125,11 +125,13 @@ internal static class BridgeTowers
             // a test that passes.
             ["Extradosed01"] = new[]
             {
-                new Tower("ExtradosedBridge01NetPillar", 53, 40, verified: true),
+                // The double-deck archetype's root is its 20 m upper road.
+                new Tower("ExtradosedBridge01NetPillar", 53, 20, verified: true),
             },
             ["Extradosed02"] = new[]
             {
-                new Tower("ExtradosedBridge02NetPillar", 46, 38, verified: true),
+                // The A-pylon archetype's root is its 19 m lower road; its auxiliary is above.
+                new Tower("ExtradosedBridge02NetPillar", 46, 19, verified: true),
             },
             ["Extradosed03"] = new[]
             {
@@ -156,22 +158,33 @@ internal static class BridgeTowers
                 // covered bridge does.
                 new Tower("PedestrianBridgeCoveredWood01NetPillar", 3, 6, verified: true, support: true),
             },
+            ["WoodenCovered"] = new[]
+            {
+                // The road-carrying wooden bridge is a different prototype from the covered
+                // pedestrian path. Its housing section and full-width pillar were both authored for
+                // the same 10 m envelope, so they take the same target-minus-prototype width delta.
+                new Tower("2LaneWoodenCoveredBridgePillar Placeholder", 10, 10, verified: true),
+            },
             ["Grand"] = new[]
             {
                 // Grand Bridge carries both, and they are different things: the pylon is the portal the
                 // road passes through, the pillar is what stands under it. Only the first is a tower.
-                // The retained full-span audit measured Grand Bridge's road at 19 m and its generated
-                // sample at 40 m. The previous 12 m entry made ordinary generation add 28 m instead
-                // of 21 m, producing the exact -6.999996 m discrepancy recorded by the audit. Keep
-                // the measured prototype road here so generation uses the original target-minus-
-                // prototype calculation; there is no runtime audit correction.
+                // Roads corrected by 10, from what the deck scan returned to what the structure
+                // straddles - the same correction the golden family and the through arch needed, and
+                // for the same reason: NetWidth sums the deck, and the deck is not the carriageway the
+                // structure was drawn around. At the scanned widths the generated pylons came out
+                // about ten metres narrow.
                 //
-                // The BXP variants are the same measurement basis: their live prototype roads are
-                // 31 m, not the stale 24 m entries. Both structures of each donor retain that donor's
-                // own road datum.
-                new Tower("GrandBridgePylon Placeholder", 34, 19, verified: true),
-                new Tower("GrandBridgePillar Placeholder", 44, 19, verified: true),
-                new Tower("BXP GrandBridgePillarB Placeholder", 44, 31, verified: true),
+                // Unlike those two this one has no independent check behind it. The golden family was
+                // settled by a 33.8 m envelope that cannot enclose a 50 m road, and the through arch
+                // by a 12.35 m opening that cannot carry a 20 m road. The grand bridge's section is
+                // 21 m and wider than either reading of its road, so it discriminates between them not
+                // at all. This is an in-game observation written down as one.
+                // 12, from 9. The correction to 9 overshot by 3 - a narrower road makes a wider tower,
+                // so three metres of tower came off by putting three metres of road back on.
+                new Tower("GrandBridgePylon Placeholder", 34, 12, verified: true),
+                new Tower("GrandBridgePillar Placeholder", 44, 12, verified: true),
+                new Tower("BXP GrandBridgePillarB Placeholder", 44, 24, verified: true),
             },
             ["Lift"] = new[]
             {
@@ -187,6 +200,44 @@ internal static class BridgeTowers
                 new Tower("3LaneSuspensionBridgePillar Placeholder", 26, 16, verified: true),
                 new Tower("4LaneSuspensionBridgePillar Placeholder", 30, 20, verified: true),
                 new Tower("5LaneSuspensionBridgePillar Placeholder", 34, 24, verified: true),
+            },
+            ["SuspensionDouble"] = new[]
+            {
+                new Tower("2LaneSuspensionBridgePillar Placeholder", 22, 12, verified: true),
+                new Tower("3LaneSuspensionBridgePillar Placeholder", 26, 16, verified: true),
+                new Tower("4LaneSuspensionBridgePillar Placeholder", 30, 20, verified: true),
+                new Tower("5LaneSuspensionBridgePillar Placeholder", 34, 24, verified: true),
+            },
+            ["Suspension01"] = new[]
+            {
+                // SuspensionBridge01 is a 13 m single-deck road. The old 28 m entry counted the
+                // Smooth/non-Smooth alternatives of the same sections twice. Its two structures were
+                // measured directly from the prototype meshes: the pier is 38.17404 m across and the
+                // end pylon 37.24096 m, recorded on the same whole-metre scale as this table.
+                new Tower("SuspensionBridge01NetPillar", 38, 13, verified: true),
+                new Tower("SuspensionBridge01NetPylon", 37, 13, verified: true),
+            },
+            ["Suspension02"] = new[]
+            {
+                // SuspensionBridge02 is the grey double-deck design. Both fixed-span structures share
+                // the 49 m outer base envelope authored around its 16 m root road. The old 34 m entry
+                // likewise counted mutually exclusive lateral sections more than once.
+                new Tower("SuspensionBridge02NetPillar", 49, 16, verified: true),
+                new Tower("SuspensionBridge02NetPylon", 49, 16, verified: true),
+            },
+            ["GoldenGate"] = new[]
+            {
+                // The red landmark's portal is authored around a 25 m road. The 74.02802 m base is a
+                // replacement under the pillar and follows the same signed-x delta when it is derived;
+                // it is not the portal width used to choose the source tower.
+                new Tower("GoldenGateBridgePylon Placeholder", 33, 25, verified: true),
+                new Tower("GoldenGateBridgePillar Placeholder", 40, 25, verified: true),
+            },
+            ["GoldenGateDouble"] = new[]
+            {
+                // BXP Train/Subway anatomy and tower-measurements: the upper road is 25 m;
+                // both auxiliary-net archetypes carry this same 33 m portal, not the end pillar.
+                new Tower("GoldenGateBridgePylon Placeholder", 33, 25, verified: true),
             },
             ["SuspensionGolden"] = new[]
             {
@@ -411,8 +462,9 @@ internal static class BridgeTowers
     /// <summary>
     /// Whether a style's archetype carries railings of its own along the deck.
     ///
-    /// Recorded, because nothing in an archetype declares it. The golden family's are golden and live
-    /// in its support mesh. This flag controls transformation of that authored railing geometry only;
+    /// Recorded, because nothing in an archetype declares it. SuspensionBridge01 and the golden
+    /// family's railings live in their support meshes. This flag controls transformation of that
+    /// authored railing geometry only;
     /// it is deliberately separate from <see cref="BridgeStyleDefinitions.RoadRailingsOf"/>, which
     /// records whether the ordinary white road railing exists on an archetype's continuous span.
     ///
@@ -420,7 +472,17 @@ internal static class BridgeTowers
     /// track archetype has no ordinary span railing, but that does not make its mesh a golden kerb rail.
     /// </summary>
     internal static bool BringsItsOwnRailings(string? styleId) =>
-        styleId is "SuspensionGolden";
+        styleId is "Suspension01" or "SuspensionGolden" or "GoldenGate" or "GoldenGateDouble";
+
+    /// <summary>
+    /// Authored gap between the road surface and the outer sidewalk platform. The golden family keeps
+    /// its measured one-metre strip. SuspensionBridge01 has no strip: its inner and outer railing edges
+    /// are exactly one sidewalk width apart.
+    /// </summary>
+    internal static float RailingRoadSurfaceGap(string? styleId) =>
+        styleId is "SuspensionGolden" or "GoldenGate" or "GoldenGateDouble"
+            ? GoldenBridgeRailings.RoadSurfaceGap
+            : 0f;
 
     /// <summary>
     /// Whether the structure has separate outer-road and inner-carriageway envelopes. This is
@@ -428,14 +490,6 @@ internal static class BridgeTowers
     /// two-layer relationship.
     /// </summary>
     internal static bool WidthFollowsSidewalks(string? styleId) => styleId == "TrussArch02";
-
-    /// <summary>
-    /// Whether a style needs the exact boundaries of the outermost Sidewalk on each side. Grand uses
-    /// those boundaries for its inner cable/hanger plane while retaining the full road width for its
-    /// outer plane and tower selection. This is deliberately separate from
-    /// <see cref="WidthFollowsSidewalks"/>.
-    /// </summary>
-    internal static bool HasSidewalkAlignedInnerLayer(string? styleId) => styleId == "Grand";
 
     /// <summary>
     /// The inner target width used for selection by the white truss arch. Its inner arch stands at the
@@ -460,23 +514,15 @@ internal static class BridgeTowers
     internal static StructureEdges StructureEdgesFor(
         string? styleId, float roadWidth, RoadEdge left, RoadEdge right)
     {
-        if (!WidthFollowsSidewalks(styleId) && !HasSidewalkAlignedInnerLayer(styleId))
+        if (!WidthFollowsSidewalks(styleId))
         {
             var half = Math.Max(0f, roadWidth * 0.5f);
             return new StructureEdges(half, half);
         }
 
-        // The white bridge's inner frame stands at the outside edge of the actual sidewalk. Grand's
-        // inner suspension plane stands at the sidewalk edge nearest x=0. A side without a Sidewalk
-        // falls back independently to the road edge. Empty lanes, medians, shoulders and every other
-        // non-driving section never qualify. Keeping both distances is required for asymmetrical roads.
-        if (HasSidewalkAlignedInnerLayer(styleId))
-        {
-            return new StructureEdges(
-                left.IsSidewalk ? left.InnerBoundary : left.OuterBoundary,
-                right.IsSidewalk ? right.InnerBoundary : right.OuterBoundary);
-        }
-
+        // The inner white frame stands at the outside edge of the outermost real sidewalk. A side
+        // without a sidewalk falls back independently to the road edge; empty lanes never qualify.
+        // Keeping the two distances separate is required for asymmetrical roads.
         return new StructureEdges(
             left.IsSidewalk ? left.SidewalkOuterBoundary : left.OuterBoundary,
             right.IsSidewalk ? right.SidewalkOuterBoundary : right.OuterBoundary);

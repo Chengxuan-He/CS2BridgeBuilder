@@ -1,5 +1,5 @@
 [CmdletBinding()]
-param()
+param([switch]$ListOnly, [string]$BackupDirectory)
 
 $ErrorActionPreference = 'Stop'
 
@@ -15,6 +15,7 @@ $modIds = @('BridgeBuilder', 'BridgePrefabGenerator')
 $geometryRoots = @($modIds | ForEach-Object { Join-Path $gameRoot $_ })
 $modDataRoots = @($modIds | ForEach-Object { Join-Path $gameRoot (Join-Path 'ModsData' $_) })
 $stateFiles = @($modDataRoots | ForEach-Object { Join-Path $_ 'export-state.tsv' })
+$registryFiles = @($modDataRoots | ForEach-Object { Join-Path $_ 'bridge-registry.tsv' })
 # Windows PowerShell 5.1 reads a BOM-less script using the current ANSI code page. Keep the script
 # itself ASCII and decode the one non-ASCII road name explicitly so literal target names stay exact.
 $roadName = [Text.Encoding]::UTF8.GetString(
@@ -316,6 +317,12 @@ foreach ($stateFile in $stateFiles) {
         ForEach-Object { $_.exportName } |
         Where-Object { -not [string]::IsNullOrWhiteSpace($_) })
 }
+foreach ($registryFile in $registryFiles) {
+    if (-not (Test-Path -LiteralPath $registryFile -PathType Leaf)) { continue }
+    $stateExportNames += @(Import-Csv -LiteralPath $registryFile -Delimiter "`t" |
+        ForEach-Object { $_.prefabName } |
+        Where-Object { -not [string]::IsNullOrWhiteSpace($_) })
+}
 $stateExportNames = @($stateExportNames | Select-Object -Unique)
 if (Test-Path -LiteralPath $importedRoot -PathType Container) {
     $currentImportedNames = @(Get-ChildItem -LiteralPath $importedRoot -Directory |
@@ -333,6 +340,7 @@ if (Test-Path -LiteralPath $importedRoot -PathType Container) {
         $importedDirectoryNames += @($currentImportedNames | Where-Object {
             $_ -eq $exportName `
                 -or $_ -eq ($exportName + '_Lower') `
+                -or $_.StartsWith($exportName + '_', [StringComparison]::Ordinal) `
                 -or $_.StartsWith($exportName + ' (', [StringComparison]::Ordinal) `
                 -or $_.Contains($ownedMarker)
         })
@@ -344,7 +352,8 @@ if (Test-Path -LiteralPath $importedRoot -PathType Container) {
     # directory was then removed and the orphan loaded with a null mesh on the next launch. Match the
     # complete generated tower prefix (including a numeric width), never a road-name fragment.
     $towerStyles = @(
-        'PedestrianDraw', 'CoveredWood', 'SuspensionGolden', 'Suspension',
+        'PedestrianDraw', 'WoodenCovered', 'CoveredWood',
+        'Suspension01', 'Suspension02', 'SuspensionGolden', 'SuspensionDouble', 'Suspension',
         'Extradosed01', 'Extradosed02', 'Extradosed03', 'ExtradosedLarge', 'CableStayed',
         'TrussArch01', 'TrussArch02', 'TrussArch03', 'TrussArch', 'TiedArch', 'Grand',
         'GoldenGate', 'Draw', 'Lift'
@@ -375,14 +384,26 @@ if (Test-Path -LiteralPath $importedRoot -PathType Container) {
         $_.StartsWith('RBBridgeDep_', [StringComparison]::Ordinal)
     })
 
+    # Retired cost-only dependencies can survive removal of their registry entry. Own only
+    # complete BridgeBuilder UUID names or legacy bridge-style names, not arbitrary *Pricing*.
+    $uuidPattern = '[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}'
+    $pricingOwner = '^(?:b' + $uuidPattern + '|.+_(?:' `
+        + (($towerStyles | ForEach-Object { [regex]::Escape($_) }) -join '|') `
+        + '))_Pricing_(?:[0-9]+|Charge|ChargeSection)$'
+    $importedDirectoryNames += @($currentImportedNames | Where-Object { $_ -match $pricingOwner })
+
     # Width-adjusted sections use an archetype name followed by the signed width delta. Name
     # collisions add " (n)" before the Piece suffix, so a static list cannot clean every run.
     # The source archetype list is exact and is intentionally kept narrower than "* Section *".
     $generatedSectionPrefixes = @(
+        '2-Lane Wooden Covered  Bridge',
+        '2-Lane Wooden Covered Bridge',
         '2-Lane Suspension Bridge',
         '3-Lane Suspension Bridge',
         '4-Lane Suspension Bridge',
         '5-Lane Suspension Bridge',
+        'SuspensionBridge01 Section',
+        'SuspensionBridge02 Section',
         '8-Lane Cable Stayed Bridge 00',
         'Cable Stayed Pedestrian Bridge',
         'ExtradosedBridge01 Section',
@@ -447,6 +468,25 @@ function Assert-ExactChild([string]$Root, [string]$Path) {
     return $resolvedPath
 }
 
+$cleanupTargets = @($importedDirectoryNames | ForEach-Object {
+    Assert-ExactChild $importedRoot (Join-Path $importedRoot $_)
+}) + @($geometryRoots) + @($stateFiles) + @($registryFiles)
+$cleanupTargets = @($cleanupTargets | Where-Object { Test-Path -LiteralPath $_ } | Select-Object -Unique)
+if ($ListOnly) { $cleanupTargets; return }
+if ($BackupDirectory) {
+    $backupPath = [IO.Path]::GetFullPath($BackupDirectory)
+    if (Test-Path -LiteralPath $backupPath) { throw "Backup must be a new directory: $backupPath" }
+    New-Item -ItemType Directory -Path $backupPath | Out-Null
+    foreach ($target in $cleanupTargets) {
+        $resolved = Assert-ExactChild $gameRoot $target
+        $relative = $resolved.Substring([IO.Path]::GetFullPath($gameRoot).TrimEnd('\').Length + 1)
+        $destination = Join-Path $backupPath $relative
+        New-Item -ItemType Directory -Path (Split-Path -Parent $destination) -Force | Out-Null
+        Copy-Item -LiteralPath $resolved -Destination $destination -Recurse -Force
+        if (-not (Test-Path -LiteralPath $destination)) { throw "Backup missing: $destination" }
+    }
+}
+
 $removedImported = 0
 foreach ($name in $importedDirectoryNames) {
     if ($name.StartsWith('RBExportDep_', [StringComparison]::OrdinalIgnoreCase)) {
@@ -476,6 +516,10 @@ $stateFiles = @($stateFiles | ForEach-Object {
     $modDataRoot = Split-Path -Parent $_
     Assert-ExactChild $modDataRoot $_
 })
+$registryFiles = @($registryFiles | ForEach-Object {
+    $modDataRoot = Split-Path -Parent $_
+    Assert-ExactChild $modDataRoot $_
+})
 $iconFiles = @($modDataRoots | ForEach-Object {
     $modDataRoot = $_
     Assert-ExactChild $modDataRoot (Join-Path $modDataRoot 'Icons\c84a2ef1a0a5779f79b5c65d20da1421.svg')
@@ -486,6 +530,12 @@ $removedIcon = 0
 foreach ($stateFile in $stateFiles) {
     if (Test-Path -LiteralPath $stateFile -PathType Leaf) {
         Remove-Item -LiteralPath $stateFile -Force
+        $removedState++
+    }
+}
+foreach ($registryFile in $registryFiles) {
+    if (Test-Path -LiteralPath $registryFile -PathType Leaf) {
+        Remove-Item -LiteralPath $registryFile -Force
         $removedState++
     }
 }
@@ -529,6 +579,7 @@ if (($remainingImported.Count -ne 0) `
     -or ($remainingGeometry.Count -ne 0) `
     -or @($geometryRoots | Where-Object { Test-Path -LiteralPath $_ }).Count -ne 0 `
     -or @($stateFiles | Where-Object { Test-Path -LiteralPath $_ }).Count -ne 0 `
+    -or @($registryFiles | Where-Object { Test-Path -LiteralPath $_ }).Count -ne 0 `
     -or @($iconFiles | Where-Object { Test-Path -LiteralPath $_ }).Count -ne 0) {
     throw "Cleanup verification failed: imported=$($remainingImported.Count), geometry=$($remainingGeometry.Count)."
 }
