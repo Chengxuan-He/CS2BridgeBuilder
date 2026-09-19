@@ -7,6 +7,11 @@ deck, a bridge style to wear, and optionally something hung underneath.
 
 The rules generation is held to are in [AGENTS.md](AGENTS.md).
 
+## License
+
+This project's original code is available under the [MIT License](LICENSE).
+Game assets and third-party dependencies retain their respective licenses.
+
 ## In-game builder and identity
 
 The floating BridgeBuilder button opens the runtime builder in a loaded game. Roads are shown as
