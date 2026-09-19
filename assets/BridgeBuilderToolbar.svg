@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="6 5 52 52">
+  <!-- Symmetric twin-pylon, twin-plane bridge. Isometric basis:
+       X=(sqrt(3)/2,-1/2), Y=(sqrt(3)/2,1/2), Z=(0,-1).
+       Deck: 44 x 10; towers at X=11 and 33, equal height 18.
+       White only, transparent background, no ground plane or shadow. -->
+  <g transform="translate(2.618 2)" fill="none" stroke="#fff" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M6 43 44.105118 21 52.765372 26 14.660254 48Z" fill="#fff" stroke-width="1.2"/>
+    <g stroke-width="1">
+      <path d="M6 43 15.526279 19.5 25.052559 32 34.578838 8.5 44.105118 21M10.76314 40.25 15.526279 19.5 20.289419 34.75M29.815699 29.25 34.578838 8.5 39.341978 23.75"/>
+      <path d="M6 43 15.526279 19.5 25.052559 32 34.578838 8.5 44.105118 21M10.76314 40.25 15.526279 19.5 20.289419 34.75M29.815699 29.25 34.578838 8.5 39.341978 23.75" transform="translate(8.660254 5)"/>
+    </g>
+    <g stroke-width="2.4">
+      <path d="M15.526279 19.5V45.5M34.578838 8.5V34.5"/>
+      <path d="M15.526279 19.5V45.5M34.578838 8.5V34.5" transform="translate(8.660254 5)"/>
+    </g>
+  </g>
+</svg>

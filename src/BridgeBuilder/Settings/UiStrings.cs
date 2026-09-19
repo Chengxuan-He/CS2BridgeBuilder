@@ -24,6 +24,7 @@ internal readonly struct OptionText
 /// </summary>
 internal sealed class UiStrings
 {
+    internal string LocaleId = "en-US";
     internal string Title = string.Empty;
     internal string TabRoads = string.Empty;
     internal string TabBridge = string.Empty;

@@ -145,15 +145,18 @@ internal sealed class DoubleDeckComposer
         deck.components.RemoveAll(component => component is UIObject or AuxiliaryNets);
         if (deck is RoadPrefab road) road.m_ZoneBlock = null;
 
-        // A carried deck keeps the selected road/track sections, but its edge and node state machine
-        // belongs to the double-deck archetype. These states decide which pieces draw where two edges
-        // meet. Keeping the selected net's states left the node in its ordinary road/track state, so
-        // pieces requiring the archetype's Elevated state disappeared and every longitudinal support
-        // opened at the join. The aggregate has the same ownership role: the prototype's auxiliary is
-        // part of the Bridge aggregate rather than an independent Road or Train Track aggregate.
-        deck.m_EdgeStates = archetype.m_EdgeStates?.ToArray();
-        deck.m_NodeStates = archetype.m_NodeStates?.ToArray();
-        deck.m_AggregateType = archetype.m_AggregateType;
+        // A carried deck keeps the selected road/track sections. It may also take the prototype's
+        // seam state machine, but only when both prefabs carry the same kind of transport. Some
+        // double-deck styles expose several visual variants whose auxiliary is a road even when the
+        // player selected a train track. Copying that road's Elevated node state onto the track makes
+        // every retained rail node render as a switch. Selecting another bridge variant to obtain a
+        // matching state table is not a solution: it changes the structure and its measured width,
+        // and can leave a style with no selectable double-deck prototype at all.
+        //
+        // The selected deck already owns the correct state table for its transport. Preserve it when
+        // the prototype auxiliary is incompatible; copy the prototype table and aggregate only when
+        // the roles really match.
+        CopyCompatibleSeamBehavior(deck, archetype, copyAggregate: true);
 
         // PlaceableNet and ServiceObject are intentionally retained. The reference auxiliary nets on
         // ExtradosedBridge01 and on the double-deck suspension bridge both carry them. UIObject is what
@@ -162,19 +165,21 @@ internal sealed class DoubleDeckComposer
         // Removing all three hid the clone, but also made it structurally unlike either working
         // reference and left the carried network's nodes detached.
 
-        // The bridge behaviour of the main network.
+        // The bridge behaviour of the prototype's carried network.
         //
-        // The two decks are one structure - m_LinkEndOffsets ties their ends together - so they have
-        // to agree on how long a span may be. A clone of an ordinary road carries no Bridge component
-        // at all, and without one its edges are held to an ordinary road's length: hung under a bridge
-        // spanning 256 m, every segment of it reported "distance too long". The pack's own lower deck
-        // carries a Bridge of its own, at 320 m.
+        // The two decks are one structure - m_LinkEndOffsets ties their ends together - but they do not
+        // necessarily use the same bridge state machine. SuspensionBridge02's root has four fixed
+        // segments and m_SegmentLength=0, while its authored carried road has m_SegmentLength=80 and no
+        // fixed segments. Copying the root component onto that carried road turns its ordinary seams
+        // into fixed-segment openings and visibly disconnects the deck at the pylons.
         //
-        // Taken from the carrier rather than recorded, for the reason rule 2 gives: the main network
-        // is in hand, it is what this one has to match, and it already holds whatever its own style
-        // said a bridge of this kind spans.
-        var above = carrier.GetComponent<Bridge>();
-        if (above != null) deck.AddComponentFrom(above);
+        // Use the exact component from the prototype auxiliary. Only an archetype that genuinely lacks
+        // one falls back to the carrier, which still prevents an ordinary road-length limit without
+        // inventing a different fixed-segment layout. Replace any component inherited from the selected
+        // deck so the generated auxiliary has exactly one authoritative Bridge component.
+        var authoredBridge = archetype.GetComponent<Bridge>() ?? carrier.GetComponent<Bridge>();
+        deck.components.RemoveAll(component => component is Bridge);
+        if (authoredBridge != null) deck.AddComponentFrom(authoredBridge);
 
 
         // And no pillars of its own.
@@ -192,6 +197,31 @@ internal sealed class DoubleDeckComposer
         var kept = entries.Where(info => !IsPillar(info)).ToArray();
         subObjects!.m_SubObjects = kept;
         return entries.Length - kept.Length;
+    }
+
+    /// <summary>
+    /// Copies the archetype's complete seam table only between matching transport roles.
+    /// A road and a rail network can share bridge geometry, but their node states are not
+    /// interchangeable: a road's elevated-node rule is a rail switch when installed on a track.
+    /// </summary>
+    internal static bool CopyCompatibleSeamBehavior(
+        NetGeometryPrefab target, NetGeometryPrefab archetype, bool copyAggregate)
+    {
+        if (!SameTransportRole(target, archetype)) return false;
+
+        target.m_EdgeStates = archetype.m_EdgeStates?.ToArray();
+        target.m_NodeStates = archetype.m_NodeStates?.ToArray();
+        if (copyAggregate) target.m_AggregateType = archetype.m_AggregateType;
+        return true;
+    }
+
+    private static bool SameTransportRole(NetGeometryPrefab target, NetGeometryPrefab archetype)
+    {
+        if (target is RoadPrefab && archetype is RoadPrefab) return true;
+
+        return target is TrackPrefab targetTrack
+            && archetype is TrackPrefab archetypeTrack
+            && targetTrack.m_TrackType == archetypeTrack.m_TrackType;
     }
 
     /// <summary>

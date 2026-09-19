@@ -26,7 +26,7 @@ namespace BridgeBuilder.Bridges;
 /// Only the suspension family has been measured. A style with no entry here keeps the donor's own
 /// values, which is a deviation from the rule and is reported as one - not silently, because a bridge
 /// built from unmeasured numbers is exactly as wrong as one built from invented ones, and the only
-/// difference is whether anybody knows. <c>AssetAnatomy</c> is what fills the gaps in.
+/// difference is whether anybody knows. Offline metaprogramming supplies the recorded measurements.
 /// </summary>
 internal static class BridgeSpec
 {
