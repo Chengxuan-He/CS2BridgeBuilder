@@ -50,8 +50,22 @@ $refPack = Get-ChildItem -LiteralPath (Join-Path $dotnetRoot 'packs\NETStandard.
 if (-not $refPack) { throw 'NETStandard.Library.Ref is not installed with the .NET SDK.' }
 $frameworkRefs = Join-Path $refPack.FullName 'ref\netstandard2.1'
 
-$output = Join-Path $projectRoot "src\BridgePrefabGenerator\bin\$Configuration"
+$output = Join-Path $projectRoot "src\BridgeBuilder\bin\$Configuration"
 [IO.Directory]::CreateDirectory($output) | Out-Null
+
+$uiModule = Join-Path $projectRoot 'src\BridgeBuilder\UI\BridgeBuilder.mjs'
+$uiHeader = [IO.File]::ReadAllText($uiModule)
+foreach ($requiredHeaderLine in @(
+    'Cities:\s*Skylines II UI Module',
+    '(?m)^\s*\*\s*Id\s*:',
+    '(?m)^\s*\*\s*Author\s*:',
+    '(?m)^\s*\*\s*Version\s*:',
+    '(?m)^\s*\*\s*Dependencies\s*:'
+)) {
+    if ($uiHeader -notmatch $requiredHeaderLine) {
+        throw "BridgeBuilder.mjs is missing required UI module metadata: $requiredHeaderLine"
+    }
+}
 
 $references = [Collections.Generic.List[string]]::new()
 Get-ChildItem -LiteralPath $frameworkRefs -Filter '*.dll' | ForEach-Object {
@@ -69,6 +83,10 @@ foreach ($assembly in @(
     'Colossal.UI.dll',
     'Colossal.UI.Binding.dll',
     'UnityEngine.CoreModule.dll',
+    'UnityEngine.ImageConversionModule.dll',
+    'UnityEngine.PhysicsModule.dll',
+    'Unity.RenderPipelines.Core.Runtime.dll',
+    'Unity.RenderPipelines.HighDefinition.Runtime.dll',
     'Unity.Entities.dll',
     'Unity.Mathematics.dll'
 )) {
@@ -82,7 +100,7 @@ if (-not (Test-Path -LiteralPath $sharedRoot)) {
     throw "The shared sources are missing: $sharedRoot. Clone CS2ModShared next to this repository."
 }
 $sources = @(
-    (Join-Path $projectRoot 'src\BridgePrefabGenerator'),
+    (Join-Path $projectRoot 'src\BridgeBuilder'),
     $sharedRoot
 ) | ForEach-Object { Get-ChildItem -LiteralPath $_ -Recurse -Filter '*.cs' } |
     Select-Object -ExpandProperty FullName
@@ -96,9 +114,16 @@ $arguments = @(
     '/debug:portable',
     '/nullable:enable',
     '/langversion:latest',
-    ('/out:' + (Join-Path $output 'BridgePrefabGenerator.dll'))
+    ('/out:' + (Join-Path $output 'BridgeBuilder.dll'))
 ) + $references + $sources
 
 & $dotnet @arguments
 if ($LASTEXITCODE -ne 0) { throw "Compilation failed with exit code $LASTEXITCODE" }
-Write-Host "Built: $(Join-Path $output 'BridgePrefabGenerator.dll')"
+Copy-Item -LiteralPath $uiModule -Destination $output -Force
+Copy-Item -LiteralPath (Join-Path $projectRoot 'src\BridgeBuilder\UI\BridgeBuilder.css') -Destination $output -Force
+Copy-Item -LiteralPath (Join-Path $projectRoot 'assets\BridgeBuilder.svg') -Destination $output -Force
+Copy-Item -LiteralPath (Join-Path $projectRoot 'assets\BridgeBuilderToolbar.svg') -Destination $output -Force
+foreach ($fieldIcon in @('BridgeBuilderPack.svg', 'BridgeBuilderSearch.svg', 'BridgeBuilderFilter.svg', 'BridgeBuilderArrowDown.svg')) {
+    Copy-Item -LiteralPath (Join-Path $projectRoot "assets\$fieldIcon") -Destination $output -Force
+}
+Write-Host "Built: $(Join-Path $output 'BridgeBuilder.dll')"

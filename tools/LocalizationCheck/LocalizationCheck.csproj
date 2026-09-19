@@ -1,0 +1,19 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <OutputType>Exe</OutputType>
+    <Nullable>enable</Nullable>
+    <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="Program.cs" />
+    <Compile Include="../../src/BridgeBuilder/Settings/UiStrings.cs" />
+    <Compile Include="../../src/BridgeBuilder/Settings/UiStringCatalog.cs" />
+    <Compile Include="../../src/BridgeBuilder/Settings/UiStringTables*.cs" />
+    <Compile Include="../../src/BridgeBuilder/Settings/RuntimeUiText.cs" />
+    <Compile Include="../../src/BridgeBuilder/Runtime/BridgeRuntimeRequests.cs" />
+    <Compile Include="../../src/BridgeBuilder/Runtime/BridgeRegistration.cs" />
+    <Compile Include="../../src/BridgeBuilder/Runtime/BridgePreviewState.cs" />
+    <Compile Include="../../src/BridgeBuilder/Bridges/BridgeStyleDefinitions.cs" />
+  </ItemGroup>
+</Project>
