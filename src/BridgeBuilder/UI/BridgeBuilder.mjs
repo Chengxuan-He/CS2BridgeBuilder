@@ -326,7 +326,7 @@ function CreateView({ decks, styles, status }) {
                 h("div", { className: "bb-create-actions" },
                     h("button", { disabled: !upperId || !styleId || (doubleDeck && !lowerId), onClick: () => create(false) }, t("Create")),
                     h("button", { className: "bb-primary", disabled: !upperId || !styleId || (doubleDeck && !lowerId), onClick: () => create(true) }, t("CreateBuild")))),
-            h("div", { className: "bb-status" }, previewFailure || status)));
+            previewFailure || status ? h("div", { className: "bb-status", role: "alert" }, previewFailure || status) : null));
 }
 
 function ManageView({ bridges, styles = [], status }) {
@@ -389,7 +389,7 @@ function ManageView({ bridges, styles = [], status }) {
                     onClick: () => trigger("ActivateBridge", selected.prefabName) }, t("Build")),
                 h("button", { className: "bb-danger",
                     onClick: () => trigger("DeleteBridge", selected.prefabName) }, t("Delete"))) : null,
-            h("div", { className: "bb-status" }, previewFailure || status)));
+            previewFailure || status ? h("div", { className: "bb-status", role: "alert" }, previewFailure || status) : null));
 }
 
 function Panel() {

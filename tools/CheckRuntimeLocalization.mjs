@@ -224,6 +224,27 @@ assert(render('ManageView({ bridges, status: "" })')
 context.bridges[0].available = true;
 console.log("PASS separate create/create-and-build actions, existing-prefab placement and unavailable selections");
 
+for (const view of ['CreateView({ decks, styles, status })', 'ManageView({ bridges, status })']) {
+    state = [];
+    context.status = "";
+    assert(!render(view).some(n => n.props.className === "bb-status"), "No empty footer after routine actions");
+    context.status = "Action failed";
+    assert(render(view).some(n => n.props.className === "bb-status" && n.props.role === "alert"
+        && n.children.includes("Action failed")), "Actual failures must remain visible");
+}
+const generation = read("src/BridgeBuilder/Systems/BridgeGenerationSystem.cs");
+const activation = generation.split("private bool ActivatePrefab(string prefabName)")[1]
+    .split("private void RenameRuntimeBridge")[0];
+const lockCheck = activation.indexOf(".IsLocked(prefab)");
+const popup = activation.indexOf('Mod.ShowMessage(UiStringCatalog.Current.Title, RuntimeUiText.Get("ActivateLocked"))');
+const tool = activation.indexOf(".ActivatePrefabTool(prefab)");
+const close = activation.indexOf("?.CloseForBuild()");
+assert(lockCheck >= 0 && popup > lockCheck && tool > popup && close > tool,
+    "Locked activation must show the localized dialog before any tool change; close only after activation");
+assert(activation.slice(popup, tool).includes("return false;"));
+assert(activation.slice(tool, close).includes("return false;"));
+console.log("PASS conditional error footer and shared lock-dialog/tool-activation guard ordering (source check)");
+
 // Pure UI filtering/state checks: no geometry, renderer or game is loaded.
 activeTexts = Object.fromEntries([...entries].map(([key, row]) => [key, row[0]]));
 for (const kind of ["Road", "Highway", "PublicTransport", "Pedestrian", "Train", "Subway", "Tram"]) {

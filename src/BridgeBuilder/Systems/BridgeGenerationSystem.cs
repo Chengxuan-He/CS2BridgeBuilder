@@ -1028,7 +1028,8 @@ public partial class BridgeGenerationSystem : GameSystemBase
             var activated = buildAfterCreate && ActivatePrefab(prefabName);
             BridgeRuntimeRequests.Complete(activated
                 ? "CreatedActive"
-                : buildAfterCreate && _activationLocked ? "CreatedLocked" : "CreatedManage",
+                : !buildAfterCreate ? "CreatedManage"
+                : _activationLocked ? "CreatedLocked" : "ActivateUnloaded",
                 registrationName, prefabName);
         }
         else
@@ -1079,6 +1080,9 @@ public partial class BridgeGenerationSystem : GameSystemBase
                 && World.GetOrCreateSystemManaged<UnlockSystem>().IsLocked(prefab))
             {
                 _activationLocked = true;
+                // Both Create-and-build and management Build enter here. Keep the panel
+                // open, leave the active tool untouched, and report the lock once per click.
+                Mod.ShowMessage(UiStringCatalog.Current.Title, RuntimeUiText.Get("ActivateLocked"));
                 return false;
             }
             if (!World.GetOrCreateSystemManaged<ToolSystem>().ActivatePrefabTool(prefab)) return false;

@@ -54,7 +54,8 @@ internal static class BridgeRuntimeRequests
                 last.RegistrationName = request.RegistrationName;
             else
                 Requests.Enqueue(request);
-            _status = new RuntimeUiMessage(statusKey);
+            // Routine progress/success is not a persistent footer notification.
+            _status = new RuntimeUiMessage(string.Empty);
             _revision++;
         }
     }
@@ -72,7 +73,9 @@ internal static class BridgeRuntimeRequests
     {
         lock (Gate)
         {
-            _status = new RuntimeUiMessage(statusKey, arguments);
+            _status = new RuntimeUiMessage(statusKey is "CreatedActive" or "CreatedManage"
+                or "CreatedLocked" or "Activated" or "ActivateLocked" or "Renamed" or "Deleted"
+                ? string.Empty : statusKey, arguments);
             _revision++;
         }
     }
