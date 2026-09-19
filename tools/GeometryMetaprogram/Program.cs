@@ -1,6 +1,12 @@
 using System.Buffers.Binary;
 using Colossal.AssetPipeline.Native;
 
+if (args.Length == 3 && args[0] == "--covered-wood-columns")
+{
+    CoveredWoodColumns.Emit(args[1], args[2]);
+    return 0;
+}
+
 if (args.Length == 11 && string.Equals(args[0], "--white-truss", StringComparison.Ordinal))
 {
     var sectionFull = RawMeshFile.Read(args[1]);
@@ -116,6 +122,7 @@ if (args.Length is not (1 or 3 or 4))
         + "       GeometryMetaprogram --compare <source geometry> <derived geometry> <extra>\n"
         + "       GeometryMetaprogram --section <full> <lod1> <lod2> <output.cs>\n"
         + "       GeometryMetaprogram --raw <captured mesh>\n"
+        + "       GeometryMetaprogram --covered-wood-columns <archetype archive> <pre-fix full geometry>\n"
         + "       GeometryMetaprogram --white-truss <section full/lod1/lod2> "
         + "<pillar full/lod1/lod2> <pier footing full/lod1/lod2> <output.cs>");
     return 2;

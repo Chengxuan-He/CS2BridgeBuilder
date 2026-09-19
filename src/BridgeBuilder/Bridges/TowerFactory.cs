@@ -287,13 +287,13 @@ internal sealed class TowerFactory
     /// </summary>
     private float? _trussArch03StructureExtra;
 
-    // The blue support is also excluded from portal selection. Keep the composer's width plan,
-    // not a second calculation whose fallback treats the target road as the source road.
+    // The blue pier is a support, not a selectable portal. Carry the arch's plan so the generic
+    // source-road fallback cannot cancel target width against itself when sizing this support.
     private float? _trussArch01StructureExtra;
 
     /// <summary>
     /// Records the composer's final structural delta. Blue and green truss arches consume it because
-    /// their objects are deliberately classified as supports and are not selected as portals;
+    /// their objects are classified as supports and therefore are not selected as portals;
     /// recomputing from the selected tower would use the target road as the prototype datum.
     /// </summary>
     internal void MeasureStructureExtra(float extra)
@@ -447,9 +447,9 @@ internal sealed class TowerFactory
             && _towerKey == "TrussArchBridge01NetPillar"
             && parts.Length > 0)
         {
-            // Create refuses a missing plan before allocating any tower geometry. The support's
-            // generic byRoad can cancel target-target and must not size this pier. Use the same
-            // section delta as the arch, then the already-recorded section/pier relationship.
+            // Create rejects a missing plan before allocating geometry. This is the arch's ordinary
+            // width input, not an adjustment inferred from the generated mesh. The existing immutable
+            // vertex maps still translate columns and stretch centre-crossing beams at every LOD.
             var sectionExtra = _trussArch01StructureExtra!.Value;
             var byTruss = TrussArch01Geometry.PierExtraForSection(sectionExtra);
             _report.Note(string.Format(
@@ -540,8 +540,8 @@ internal sealed class TowerFactory
         var prototypeBaseWidth = TrussArch01Geometry.PrototypeBaseWidth;
         var prototypeArchWidth = TrussArch01Geometry.PrototypeSectionWidth;
         var prototypeDifference = prototypeBaseWidth - prototypeArchWidth;
-        // Carry the original plan directly, rather than undoing the pier calculation with another
-        // pair of floating-point operations. LOD derivation receives this same partExtra unchanged.
+        // Use the same plan directly for this independently authored part and all its LODs.
+        // Do not reconstruct it by subtracting rounded pier dimensions.
         var baseExtra = _trussArch01StructureExtra!.Value;
         var generatedArchWidth = prototypeArchWidth + baseExtra;
         var generatedBaseWidth = generatedArchWidth + prototypeDifference;
@@ -2063,6 +2063,13 @@ internal sealed class TowerFactory
                         "'{0}' could not satisfy the recorded x=0 transform for every vertex. "
                         + "The current derived prefab was stopped before any geometry was written.",
                         name));
+                    return null;
+                }
+
+                if (railings && _styleId == "CoveredWood"
+                    && !CoveredWoodGeometry.TryApply(original.name, source, moved))
+                {
+                    _report.Defect($"'{name}' does not match the recorded CoveredWood upright map; geometry was not written.");
                     return null;
                 }
 
