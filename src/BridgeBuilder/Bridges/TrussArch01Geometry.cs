@@ -32,9 +32,6 @@ internal static class TrussArch01Geometry
     internal static float PierExtraForSection(float sectionExtra) =>
         sectionExtra + PrototypeSectionWidth - PrototypePierWidth;
 
-    internal static float SectionExtraForPier(float pierExtra) =>
-        pierExtra - PrototypeSectionWidth + PrototypePierWidth;
-
     internal static bool TryWidenSection(
         string meshName, float3[] source, float extra, out float3[] moved) =>
         TryApply(SectionMaps, meshName, source, extra, out moved);
