@@ -3,19 +3,18 @@
   <title id="brand-title">Bridge Builder</title>
   <desc id="brand-desc">Bridge Builder 两行无衬线标题，两处小写 r 均以塔吊剪影替代；下方保留钢蓝色正等轴测桥梁和同色系铅笔。透明背景。</desc>
   <defs>
-    <!-- Lowercase-r crane: vertical mast, asymmetric jib and a hanging hook. -->
+    <!-- Lowercase-r crane: vertical mast and asymmetric jib, without a hook. -->
     <g id="crane-r" fill="#425F73">
       <path d="M7 0V-45H14V0ZM0-49H40V-43H0ZM7-49 12-60 17-49ZM14-56 39-49H32L14-53Z"/>
-      <path d="M33-43V-24C33-17 23-17 23-24H27C27-21 30-21 30-24V-43Z"/>
       <path d="M3 0H18V-4H3Z"/>
     </g>
   </defs>
-  <g id="wordmark" fill="#425F73" font-family="Arial, Helvetica, sans-serif" font-size="80" font-weight="700" aria-label="Bridge Builder">
-    <text x="128" y="85">B</text>
-    <use href="#crane-r" x="187" y="85"/>
-    <text x="231" y="85">idge</text>
+  <g id="wordmark" fill="#425F73" font-family="Century Gothic, sans-serif" font-size="80" font-weight="700" aria-label="Bridge Builder">
+    <text x="122" y="85">B</text>
+    <use href="#crane-r" x="168" y="85"/>
+    <text x="212" y="85">idge</text>
     <text x="111" y="177">Builde</text>
-    <use href="#crane-r" x="356" y="177"/>
+    <use href="#crane-r" x="349" y="177"/>
   </g>
   <g id="original-icon" transform="translate(0 202)">
 <title id="bridge-title">Bridge Builder — 可编辑桥梁</title>
