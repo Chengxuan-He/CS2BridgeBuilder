@@ -13,11 +13,12 @@ namespace BridgeBuilder.Bridges;
 /// </summary>
 internal sealed class BridgeStyleVariant
 {
-    internal BridgeStyleVariant(NetGeometryPrefab donor, Bridge bridge, float width)
+    internal BridgeStyleVariant(NetGeometryPrefab donor, Bridge bridge, float width, bool bxpGoldenGate = false)
     {
         Donor = donor;
         Bridge = bridge;
         Width = width;
+        Source = BridgePrototypeSource.Inspect(donor, bxpGoldenGate);
 
         // Recorded numbers win over measured ones. Measuring at runtime depends on which geometry
         // assets happen to be loaded and on a section rule the game's own bridges do not follow, so a
@@ -37,6 +38,12 @@ internal sealed class BridgeStyleVariant
     internal NetGeometryPrefab Donor { get; }
 
     internal Bridge Bridge { get; }
+
+    /// <summary>The DLC, mod, asset pack or base game installation that owns this donor.</summary>
+    internal BridgePrototypeSource Source { get; }
+
+    /// <summary>False when the donor's declared DLC/mod prerequisite is not currently available.</summary>
+    internal bool IsAvailable => Source.IsAvailable;
 
     /// <summary>Metres. 0 when the donor's sections could not be measured.</summary>
     internal float Width { get; }
@@ -224,12 +231,18 @@ internal sealed class BridgeStyle
 {
     private readonly List<BridgeStyleVariant> _variants = new();
 
-    internal BridgeStyle(string id, string nameSuffix, Func<string> displayName, int? clearance = null)
+    internal BridgeStyle(
+        string id,
+        string nameSuffix,
+        Func<string> displayName,
+        int? clearance = null,
+        float archetypeStructureAllowance = 0f)
     {
         Id = id;
         NameSuffix = nameSuffix;
         _displayName = displayName;
         AuthoredClearance = clearance;
+        ArchetypeStructureAllowance = archetypeStructureAllowance;
     }
 
     /// <summary>
@@ -237,6 +250,9 @@ internal sealed class BridgeStyle
     /// that matches no named style - nothing has been measured for it, so it averages its own variants.
     /// </summary>
     internal int? AuthoredClearance { get; }
+
+    /// <summary>The final structural allowance carried by this style's source definition.</summary>
+    internal float ArchetypeStructureAllowance { get; }
 
     private readonly Func<string> _displayName;
 
@@ -265,11 +281,26 @@ internal sealed class BridgeStyle
     /// False when the style is named here but nothing providing it is registered - either because no
     /// world has been scanned yet, or because the content that ships it is not installed.
     /// </summary>
-    internal bool IsInstalled => _variants.Count > 0;
+    internal bool IsInstalled => _variants.Any(variant => variant.IsAvailable);
 
     internal IReadOnlyList<BridgeStyleVariant> Variants => _variants;
 
     internal void Add(BridgeStyleVariant variant) => _variants.Add(variant);
+
+    /// <summary>Bind all width variants to one owner before exposing this catalogue to consumers.</summary>
+    internal void BindSingleSource()
+    {
+        var source = _variants.Select(variant => variant.Source)
+            .Where(candidate => candidate.HasSingleSource)
+            .OrderBy(candidate => candidate.Priority)
+            .ThenBy(candidate => candidate.Key, StringComparer.Ordinal)
+            .FirstOrDefault();
+        // Prefer the canonical base/DLC owner even if unavailable: an absent prerequisite must not
+        // silently switch the design to a third-party copy. This changes candidates, not assets.
+        _variants.RemoveAll(variant => source == null || !variant.Source.HasSingleSource
+            || !string.Equals(variant.Source.Key, source.Key, StringComparison.Ordinal));
+        Source = source?.Label ?? string.Empty;
+    }
 
     /// <summary>
     /// The variant to build from, for a road of the given width.
@@ -309,6 +340,7 @@ internal sealed class BridgeStyle
     internal Selection Select(float width, bool forRoad = true, bool doubleDeck = false,
         Func<BridgeStyleVariant, bool>? allow = null)
     {
+        if (!BridgeStyleDefinitions.SupportsDeckMode(Id, doubleDeck)) return new Selection(null, null);
         // A double deck bridge is built from a double deck archetype, not from a single deck one with
         // a second net hung underneath it. Those are different bridges: a double deck archetype's
         // towers, portals and cables are drawn around two decks at one particular separation, and its
@@ -328,6 +360,7 @@ internal sealed class BridgeStyle
         // must not be used to exclude a track from the main slot of an A-pylon bridge: main/auxiliary
         // are ownership roles in AuxiliaryNets, and a track is a valid main network.
         var eligible = _variants
+            .Where(candidate => candidate.IsAvailable)
             .Where(candidate => candidate.IsDoubleDeck == doubleDeck)
             .Where(candidate => allow == null || allow(candidate))
             .ToList();
@@ -374,9 +407,10 @@ internal sealed class BridgeStyle
         /// which is what makes a bridge over a 20 m road come out as the game's own four lane
         /// suspension bridge rather than as something merely derived from it.
         /// </summary>
-        internal float ExtraFor(float deckWidth, string? styleId = null)
+        internal float ExtraFor(float deckWidth, BridgeStyle style)
         {
-            if (Tower.HasValue) return deckWidth - Tower.Value.Road;
+            if (Tower.HasValue)
+                return deckWidth - Tower.Value.Road + style.ArchetypeStructureAllowance;
 
             // No portal was selected. For a style whose structure is overhead there is none to
             // select - a through arch is spanned by its arch and its only object is a support under
@@ -384,10 +418,13 @@ internal sealed class BridgeStyle
             // is what the widening is against. Falling straight through to the ranked variant's own
             // width measures against whichever bridge the ranking happened to turn up: the through
             // arch came out 2 m short that way, on a road it was never compared to.
-            var recorded = BridgeTowers.RoadOf(styleId);
-            if (recorded > 0f) return deckWidth - recorded;
+            var recorded = BridgeTowers.RoadOf(style.Id);
+            if (recorded > 0f)
+                return deckWidth - recorded + style.ArchetypeStructureAllowance;
 
-            return Variant != null && Variant.RoadWidth > 0f ? deckWidth - Variant.RoadWidth : 0f;
+            return Variant != null && Variant.RoadWidth > 0f
+                ? deckWidth - Variant.RoadWidth + style.ArchetypeStructureAllowance
+                : style.ArchetypeStructureAllowance;
         }
     }
 

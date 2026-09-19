@@ -4,9 +4,9 @@ param(
         Join-Path ([Environment]::GetFolderPath('LocalApplicationData')) `
             '..\LocalLow\Colossal Order\Cities Skylines II\ModsData\BridgeBuilder') `
         'asset-anatomy.txt'),
-    [string] $OutputPath = (Join-Path $PSScriptRoot `
-        '..\docs\agent-contract\bridge-width-invariant-measurements.tsv'),
-    [string[]] $Styles = @()
+    [string] $OutputPath = '',
+    [string[]] $Styles = @(),
+    [switch] $DoubleDeck
 )
 
 $ErrorActionPreference = 'Stop'
@@ -15,6 +15,15 @@ Set-StrictMode -Version Latest
 if (-not (Test-Path -LiteralPath $AnatomyPath -PathType Leaf)) {
     Write-Error "The retained real-prefab anatomy dump was not found: $AnatomyPath"
     exit 2
+}
+
+if ([string]::IsNullOrWhiteSpace($OutputPath)) {
+    $fileName = if ($DoubleDeck) {
+        'double-deck-bridge-width-invariant-measurements.tsv'
+    } else {
+        'bridge-width-invariant-measurements.tsv'
+    }
+    $OutputPath = Join-Path $PSScriptRoot "..\docs\agent-contract\$fileName"
 }
 
 # PowerShell promotes arithmetic to Double. Keep the complete measurement and audit pipeline in C#
@@ -43,6 +52,9 @@ public static class BridgeWidthBitwiseAudit
         public readonly BoundaryKind Boundary;
         public readonly HashSet<string> ArchetypeObjects;
         public readonly HashSet<string> GeneratedObjects;
+        public readonly float MeasuredArchetypeRoadWidth;
+        public readonly bool DoubleDeck;
+        public readonly string RoadBasis;
 
         public Pair(
             string style,
@@ -50,7 +62,10 @@ public static class BridgeWidthBitwiseAudit
             string generated,
             BoundaryKind boundary,
             string[] archetypeObjects,
-            string[] generatedObjects)
+            string[] generatedObjects,
+            float measuredArchetypeRoadWidth = Single.NaN,
+            bool doubleDeck = false,
+            string roadBasis = "Root deck")
         {
             Style = style;
             Archetype = archetype;
@@ -58,6 +73,9 @@ public static class BridgeWidthBitwiseAudit
             Boundary = boundary;
             ArchetypeObjects = new HashSet<string>(archetypeObjects, StringComparer.Ordinal);
             GeneratedObjects = new HashSet<string>(generatedObjects, StringComparer.Ordinal);
+            MeasuredArchetypeRoadWidth = measuredArchetypeRoadWidth;
+            DoubleDeck = doubleDeck;
+            RoadBasis = roadBasis;
         }
     }
 
@@ -76,11 +94,19 @@ public static class BridgeWidthBitwiseAudit
         public bool HasRequireAny;
     }
 
+    private sealed class SpanX
+    {
+        public bool Found;
+        public float MinX;
+        public float MaxX;
+        public float Width { get { return MaxX - MinX; } }
+    }
+
     private sealed class BridgeBoundary
     {
-        public float ObjectX;
-        public float OverheadX;
-        public float SelectedX;
+        public SpanX Object = new SpanX();
+        public SpanX Overhead = new SpanX();
+        public SpanX Selected = new SpanX();
     }
 
     private static readonly Regex Header = new Regex(
@@ -108,7 +134,12 @@ public static class BridgeWidthBitwiseAudit
             "两块板六车道_CableStayed",
             BoundaryKind.Outer,
             new[] { "8LaneCableStayedBridgePillar Placeholder" },
-            new[] { "CableStayed-40-两块板六车道_CableStayed" }),
+            new[] { "CableStayed-40-两块板六车道_CableStayed" },
+            // The prefab's top-level section list contains mutually exclusive street-layout
+            // variants. The retained model review identified the active bridge road span as 32 m;
+            // summing every default-looking variant produced the invalid 40 m input from the
+            // superseded audit.
+            32.0f),
         new Pair(
             "CoveredWood",
             "PedestrianBridgeCoveredWood01",
@@ -201,22 +232,57 @@ public static class BridgeWidthBitwiseAudit
             "两块板六车道_TrussArch03",
             BoundaryKind.Outer,
             new[] { "TrussArchBridge03NetPillar" },
-            new[] { "TrussArch03-40-两块板六车道_TrussArch03" })
+            new[] { "TrussArch03-40-两块板六车道_TrussArch03" }),
+        // Double-deck bridge width is the union of the named structural object and structural
+        // overhead sections. Root road/track sections are deliberately excluded from the bridge
+        // bounds and are measured separately as the road-width operand in the two audit formulae.
+        new Pair(
+            "Extradosed01DoubleDeck",
+            "ExtradosedBridge01",
+            "两块板六车道_BXP Quad Train Track - Alternating_Extradosed01",
+            BoundaryKind.Outer,
+            new[] { "ExtradosedBridge01NetPillar" },
+            new[] { "Extradosed01-40-两块板六车道_BXP Quad Train Track - Alternating_Extradosed01" },
+            Single.NaN,
+            true,
+            "Upper root road"),
+        new Pair(
+            "Extradosed02DoubleDeck",
+            "ExtradosedBridge02",
+            "两块板六车道_BXP Quad Train Track - Alternating_Extradosed02",
+            BoundaryKind.Outer,
+            new[] { "ExtradosedBridge02NetPillar" },
+            new[] { "Extradosed02-40-两块板六车道_BXP Quad Train Track - Alternating_Extradosed02" },
+            Single.NaN,
+            true,
+            "Lower root deck"),
+        new Pair(
+            "SuspensionDoubleDeck",
+            "BXP Double Deck Suspension Bridge - Highway",
+            "两块板六车道_BXP Quad Train Track - Alternating_Suspension",
+            BoundaryKind.Outer,
+            new[] { "5LaneSuspensionBridgePillar Placeholder" },
+            new[] { "Suspension-40-两块板六车道_BXP Quad Train Track - Alternating_Suspension" },
+            Single.NaN,
+            true,
+            "Upper root road")
     };
 
-    public static string Run(string anatomyPath, string outputPath, string[] requestedStyles)
+    public static string Run(
+        string anatomyPath, string outputPath, string[] requestedStyles, bool doubleDeck)
     {
         Failure = "";
         string[] lines = File.ReadAllLines(anatomyPath, Encoding.UTF8);
         Dictionary<string, Block> blocks = GetBlocks(lines);
         Dictionary<string, float> pieceWidths = GetPieceWidths(lines);
-        Pair[] selectedPairs = Pairs;
+        Pair[] selectedPairs = Pairs.Where(pair => pair.DoubleDeck == doubleDeck).ToArray();
         if (requestedStyles != null && requestedStyles.Length != 0)
         {
             var requested = new HashSet<string>(requestedStyles, StringComparer.Ordinal);
             selectedPairs = Pairs.Where(pair => requested.Contains(pair.Style)).ToArray();
             string[] unknown = requested
-                .Where(style => !Pairs.Any(pair => String.Equals(pair.Style, style, StringComparison.Ordinal)))
+                .Where(style => !selectedPairs.Any(
+                    pair => String.Equals(pair.Style, style, StringComparison.Ordinal)))
                 .OrderBy(style => style, StringComparer.Ordinal)
                 .ToArray();
             if (unknown.Length != 0) return "ERROR: Unknown bridge style(s): " + String.Join(", ", unknown);
@@ -224,13 +290,18 @@ public static class BridgeWidthBitwiseAudit
         var output = new List<string>();
         output.Add(string.Join("\t", new[]
         {
-            "Style", "Archetype", "Generated", "Boundary",
-            "ArchetypeBridgeX", "ArchetypeBridgeXBits",
-            "ArchetypeRoadX", "ArchetypeRoadXBits",
-            "GeneratedBridgeX", "GeneratedBridgeXBits",
-            "GeneratedRoadX", "GeneratedRoadXBits",
+            "Style", "Archetype", "Generated", "BridgeBoundary", "RoadBasis",
+            "ArchetypeStructureObjects", "GeneratedStructureObjects",
+            "ArchetypeBridgeMinX", "ArchetypeBridgeMinXBits",
+            "ArchetypeBridgeMaxX", "ArchetypeBridgeMaxXBits",
+            "ArchetypeBridgeWidth", "ArchetypeBridgeWidthBits",
+            "ArchetypeRoadWidth", "ArchetypeRoadWidthBits",
+            "GeneratedBridgeMinX", "GeneratedBridgeMinXBits",
+            "GeneratedBridgeMaxX", "GeneratedBridgeMaxXBits",
+            "GeneratedBridgeWidth", "GeneratedBridgeWidthBits",
+            "GeneratedRoadWidth", "GeneratedRoadWidthBits",
             "WidthIncrement", "WidthIncrementBits",
-            "NewBridgeX", "NewBridgeXBits", "Result"
+            "NewBridgeWidth", "NewBridgeWidthBits", "Result"
         }));
 
         var summary = new StringBuilder();
@@ -242,8 +313,10 @@ public static class BridgeWidthBitwiseAudit
             Block generatedBlock = RequiredBlock(blocks, pair.Generated);
             if (Failure.Length != 0) return "ERROR: " + Failure;
 
-            float archetypeRoadX = Half(GetRoadFullWidth(lines, archetypeBlock, pieceWidths));
-            float generatedRoadX = Half(GetRoadFullWidth(lines, generatedBlock, pieceWidths));
+            float archetypeRoadWidth = Single.IsNaN(pair.MeasuredArchetypeRoadWidth)
+                ? GetRoadFullWidth(lines, archetypeBlock, pieceWidths)
+                : pair.MeasuredArchetypeRoadWidth;
+            float generatedRoadWidth = GetRoadFullWidth(lines, generatedBlock, pieceWidths);
             BridgeBoundary archetype = GetBridgeBoundary(
                 lines, archetypeBlock, pieceWidths, pair.ArchetypeObjects, pair.Boundary, pair.Archetype);
             BridgeBoundary generated = GetBridgeBoundary(
@@ -254,9 +327,9 @@ public static class BridgeWidthBitwiseAudit
             // These are the only two audit formulae. All operands and both intermediate results are
             // binary32. Do not add a tolerance, decimal conversion, normalization or forced zero.
             float widthIncrement =
-                (archetype.SelectedX - archetypeRoadX)
-                - (generated.SelectedX - generatedRoadX);
-            float newBridgeX = generated.SelectedX + widthIncrement;
+                (archetype.Selected.Width - archetypeRoadWidth)
+                - (generated.Selected.Width - generatedRoadWidth);
+            float newBridgeWidth = generated.Selected.Width + widthIncrement;
 
             bool isSkipped = Math.Abs(widthIncrement) > 1.0f;
             bool isBitwisePositiveZero = Bits(widthIncrement) == 0;
@@ -278,27 +351,34 @@ public static class BridgeWidthBitwiseAudit
 
             output.Add(string.Join("\t", new[]
             {
-                pair.Style, pair.Archetype, pair.Generated, pair.Boundary.ToString(),
-                R(archetype.SelectedX), Hex(archetype.SelectedX),
-                R(archetypeRoadX), Hex(archetypeRoadX),
-                R(generated.SelectedX), Hex(generated.SelectedX),
-                R(generatedRoadX), Hex(generatedRoadX),
+                pair.Style, pair.Archetype, pair.Generated, pair.Boundary.ToString(), pair.RoadBasis,
+                String.Join("|", pair.ArchetypeObjects.OrderBy(name => name, StringComparer.Ordinal)),
+                String.Join("|", pair.GeneratedObjects.OrderBy(name => name, StringComparer.Ordinal)),
+                R(archetype.Selected.MinX), Hex(archetype.Selected.MinX),
+                R(archetype.Selected.MaxX), Hex(archetype.Selected.MaxX),
+                R(archetype.Selected.Width), Hex(archetype.Selected.Width),
+                R(archetypeRoadWidth), Hex(archetypeRoadWidth),
+                R(generated.Selected.MinX), Hex(generated.Selected.MinX),
+                R(generated.Selected.MaxX), Hex(generated.Selected.MaxX),
+                R(generated.Selected.Width), Hex(generated.Selected.Width),
+                R(generatedRoadWidth), Hex(generatedRoadWidth),
                 R(widthIncrement), Hex(widthIncrement),
-                R(newBridgeX), Hex(newBridgeX), result
+                R(newBridgeWidth), Hex(newBridgeWidth), result
             }));
 
             summary.Append(pair.Style.PadRight(20));
             summary.Append(" increment=").Append(R(widthIncrement));
             summary.Append(" [").Append(Hex(widthIncrement)).Append("]");
-            summary.Append(" newBridgeX=").Append(R(newBridgeX));
-            summary.Append(" [").Append(Hex(newBridgeX)).Append("] ");
+            summary.Append(" newBridgeWidth=").Append(R(newBridgeWidth));
+            summary.Append(" [").Append(Hex(newBridgeWidth)).Append("] ");
             summary.AppendLine(result);
         }
 
         string directory = Path.GetDirectoryName(Path.GetFullPath(outputPath));
         if (!Directory.Exists(directory)) Directory.CreateDirectory(directory);
         File.WriteAllLines(outputPath, output, new UTF8Encoding(false));
-        summary.Append("Bridge width audit: ").Append(selectedPairs.Length)
+        summary.Append(doubleDeck ? "Double-deck bridge width audit: " : "Bridge width audit: ")
+            .Append(selectedPairs.Length)
             .Append(" measured, ").Append(skipped)
             .Append(" skipped, ").Append(changed).Append(" nonzero applicable.");
         return summary.ToString();
@@ -360,7 +440,10 @@ public static class BridgeWidthBitwiseAudit
             }
 
             if (pending != null && indent == pendingIndent + 2 && line.TrimStart().StartsWith("m_Width = ", StringComparison.Ordinal))
-                result[pending] = ParseFinalFloat(line);
+            {
+                float width;
+                if (TryParseFinalFloat(line, out width)) result[pending] = width;
+            }
         }
         return result;
     }
@@ -395,7 +478,11 @@ public static class BridgeWidthBitwiseAudit
             }
             if (line.StartsWith("              m_Width = ", StringComparison.Ordinal))
             {
-                current.Widths.Add(ParseFinalFloat(line));
+                float width;
+                // The anatomy writer marks a recursively repeated prefab as a depth-limited
+                // reference. That marker is evidence that no new numeric operand is present, not a
+                // malformed width and not permission to substitute a nominal value.
+                if (TryParseFinalFloat(line, out width)) current.Widths.Add(width);
                 continue;
             }
             Match directPiece = DirectPieceName.Match(line);
@@ -482,61 +569,58 @@ public static class BridgeWidthBitwiseAudit
         BoundaryKind kind,
         string rootName)
     {
-        bool foundObject;
-        bool foundOverhead;
-        float objectX = GetObjectBoundary(lines, block, selectedObjects, out foundObject);
-        float overheadX = GetOverheadBoundary(lines, block, pieceWidths, out foundOverhead);
-        float selected;
-        bool found;
+        SpanX objectSpan = GetObjectBoundary(lines, block, selectedObjects);
+        SpanX overheadSpan = GetOverheadBoundary(lines, block, pieceWidths);
+        SpanX selected;
         switch (kind)
         {
-            case BoundaryKind.Object: selected = objectX; found = foundObject; break;
-            case BoundaryKind.Overhead: selected = overheadX; found = foundOverhead; break;
+            case BoundaryKind.Object: selected = objectSpan; break;
+            case BoundaryKind.Overhead: selected = overheadSpan; break;
             case BoundaryKind.Outer:
-                selected = Max(objectX, overheadX);
-                found = foundObject || foundOverhead;
+                selected = Union(objectSpan, overheadSpan);
                 break;
             default:
-                selected = 0.0f;
-                found = false;
+                selected = new SpanX();
                 Failure = "Unknown boundary kind for " + rootName;
                 break;
         }
-        if (!found)
+        if (!selected.Found)
         {
             Failure = "No " + kind + " bridge boundary found for " + rootName;
             return null;
         }
-        return new BridgeBoundary { ObjectX = objectX, OverheadX = overheadX, SelectedX = selected };
+        return new BridgeBoundary { Object = objectSpan, Overhead = overheadSpan, Selected = selected };
     }
 
-    private static float GetObjectBoundary(
+    private static SpanX GetObjectBoundary(
         string[] lines,
         Block block,
-        HashSet<string> selectedObjects,
-        out bool found)
+        HashSet<string> selectedObjects)
     {
-        found = false;
-        if (selectedObjects.Count == 0) return 0.0f;
+        var result = new SpanX();
+        if (selectedObjects.Count == 0) return result;
         bool inObjects = false;
         bool selected = false;
         bool selectedHasBounds = false;
         float selectedOffset = 0.0f;
-        float selectedMeshX = 0.0f;
-        float result = 0.0f;
-        bool measured = false;
+        float selectedMeshMinX = 0.0f;
+        float selectedMeshMaxX = 0.0f;
+        bool selectedHasMinX = false;
+        bool selectedHasMaxX = false;
 
         Action finish = () =>
         {
             if (selected && selectedHasBounds)
             {
-                result = Max(result, Math.Abs(selectedOffset) + selectedMeshX);
-                measured = true;
+                Include(result, selectedOffset + selectedMeshMinX, selectedOffset + selectedMeshMaxX);
             }
             selected = false;
             selectedHasBounds = false;
             selectedOffset = 0.0f;
-            selectedMeshX = 0.0f;
+            selectedMeshMinX = 0.0f;
+            selectedMeshMaxX = 0.0f;
+            selectedHasMinX = false;
+            selectedHasMaxX = false;
         };
 
         for (int i = block.Start + 1; i <= block.End; i++)
@@ -573,45 +657,69 @@ public static class BridgeWidthBitwiseAudit
             // token is parsed directly to Single and kept as its original binary32 value.
             if (line.TrimStart() == "m_Bounds: Bounds3 (Bounds3)")
             {
+                bool readingMin = false;
+                bool readingMax = false;
                 for (int j = i + 1; j < block.End && j <= i + 14; j++)
                 {
-                    if (lines[j].TrimStart().StartsWith("x = ", StringComparison.Ordinal))
+                    string boundsLine = lines[j].TrimStart();
+                    if (boundsLine == "min: float3 (float3)")
+                    {
+                        readingMin = true;
+                        readingMax = false;
+                        continue;
+                    }
+                    if (boundsLine == "max: float3 (float3)")
+                    {
+                        readingMin = false;
+                        readingMax = true;
+                        continue;
+                    }
+                    if (boundsLine.StartsWith("x = ", StringComparison.Ordinal))
                     {
                         float coordinate;
                         if (TryParseFinalFloat(lines[j], out coordinate))
                         {
-                            selectedMeshX = Max(selectedMeshX, Math.Abs(coordinate));
-                            selectedHasBounds = true;
+                            if (readingMin)
+                            {
+                                selectedMeshMinX = selectedHasMinX
+                                    ? Min(selectedMeshMinX, coordinate)
+                                    : coordinate;
+                                selectedHasMinX = true;
+                            }
+                            else if (readingMax)
+                            {
+                                selectedMeshMaxX = selectedHasMaxX
+                                    ? Max(selectedMeshMaxX, coordinate)
+                                    : coordinate;
+                                selectedHasMaxX = true;
+                            }
+                            selectedHasBounds = selectedHasMinX && selectedHasMaxX;
                         }
                     }
                 }
             }
         }
-        found = measured;
         return result;
     }
 
-    private static float GetOverheadBoundary(
+    private static SpanX GetOverheadBoundary(
         string[] lines,
         Block block,
-        Dictionary<string, float> pieceWidths,
-        out bool found)
+        Dictionary<string, float> pieceWidths)
     {
-        found = false;
+        var result = new SpanX();
         bool inOverhead = false;
         bool inEntry = false;
         bool hasWidth = false;
         float offset = 0.0f;
         float fullWidth = 0.0f;
-        float result = 0.0f;
-        bool measured = false;
 
         Action finish = () =>
         {
             if (inEntry && hasWidth)
             {
-                result = Max(result, Math.Abs(offset) + Half(fullWidth));
-                measured = true;
+                float halfWidth = Half(fullWidth);
+                Include(result, offset - halfWidth, offset + halfWidth);
             }
             inEntry = false;
             hasWidth = false;
@@ -644,8 +752,12 @@ public static class BridgeWidthBitwiseAudit
             }
             if (line.StartsWith("                m_Width = ", StringComparison.Ordinal))
             {
-                fullWidth = Max(fullWidth, ParseFinalFloat(line));
-                hasWidth = true;
+                float width;
+                if (TryParseFinalFloat(line, out width))
+                {
+                    fullWidth = Max(fullWidth, width);
+                    hasWidth = true;
+                }
                 continue;
             }
             Match directPiece = OverheadPieceName.Match(line);
@@ -660,7 +772,27 @@ public static class BridgeWidthBitwiseAudit
             }
         }
         finish();
-        found = measured;
+        return result;
+    }
+
+    private static void Include(SpanX target, float minX, float maxX)
+    {
+        if (!target.Found)
+        {
+            target.MinX = minX;
+            target.MaxX = maxX;
+            target.Found = true;
+            return;
+        }
+        target.MinX = Min(target.MinX, minX);
+        target.MaxX = Max(target.MaxX, maxX);
+    }
+
+    private static SpanX Union(SpanX left, SpanX right)
+    {
+        var result = new SpanX();
+        if (left.Found) Include(result, left.MinX, left.MaxX);
+        if (right.Found) Include(result, right.MinX, right.MaxX);
         return result;
     }
 
@@ -694,6 +826,7 @@ public static class BridgeWidthBitwiseAudit
     }
 
     private static float Half(float value) { return value * 0.5f; }
+    private static float Min(float left, float right) { return left < right ? left : right; }
     private static float Max(float left, float right) { return left > right ? left : right; }
     private static int Bits(float value) { return BitConverter.ToInt32(BitConverter.GetBytes(value), 0); }
     private static string Hex(float value) { return "0x" + unchecked((uint)Bits(value)).ToString("X8", CultureInfo.InvariantCulture); }
@@ -708,7 +841,8 @@ if (-not ('BridgeWidthBitwiseAudit' -as [type])) {
 $result = [BridgeWidthBitwiseAudit]::Run(
     (Resolve-Path -LiteralPath $AnatomyPath).Path,
     [IO.Path]::GetFullPath($OutputPath),
-    $Styles)
+    $Styles,
+    [bool] $DoubleDeck)
 if ($result.StartsWith('ERROR: ', [StringComparison]::Ordinal)) {
     Write-Error $result
     exit 3

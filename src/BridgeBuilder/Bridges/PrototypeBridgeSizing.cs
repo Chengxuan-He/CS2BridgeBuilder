@@ -4,15 +4,16 @@ namespace BridgeBuilder.Bridges;
 internal static class PrototypeBridgeSizing
 {
     /// <summary>
-    /// The V-shaped double-deck bridge is built on its upper road. Its lower net is an auxiliary and
-    /// contributes no width: the only valid change is target upper road minus prototype upper road.
-    /// A tower opening is geometry around that road, not a second measurement of the road itself.
+    /// A double-deck bridge is sized from the road/deck in the archetype's root ownership role. That
+    /// is the upper road when the auxiliary hangs below (Suspension and ExtradosedBridge01), and the
+    /// lower road when the auxiliary hangs above (ExtradosedBridge02). The other deck and the tower
+    /// opening are never substituted for this reference width.
     /// </summary>
-    internal static float UpperDeckExtra(
-        float targetUpperWidth, float prototypeUpperWidth, float fallback)
+    internal static float ReferenceDeckExtra(
+        float targetReferenceWidth, float prototypeReferenceWidth, float fallback)
     {
-        return targetUpperWidth > 0f && prototypeUpperWidth > 0f
-            ? targetUpperWidth - prototypeUpperWidth
+        return targetReferenceWidth > 0f && prototypeReferenceWidth > 0f
+            ? targetReferenceWidth - prototypeReferenceWidth
             : fallback;
     }
 }

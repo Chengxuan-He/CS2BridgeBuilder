@@ -77,15 +77,31 @@ The numbered references below point to the corresponding sections in the complet
     section 13.
 14. Before editing any contract or `AGENTS.md`, record the current branch and exact `HEAD` commit as
     the rollback baseline. Every generated bridge must preserve its archetype's measured constant in
-    `bridge width - deck width`. The audit uses only `widthIncrement = (archetypeBridgeX -
-    archetypeRoadX) - (generatedBridgeX - generatedRoadX)` and `newBridgeX = generatedBridgeX +
-    widthIncrement`, evaluated as bitwise-exact binary32 without rounding, tolerance or a forced
-    result. If `abs(widthIncrement) > 1 m`, skip that bridge and record the evidence. Establish every
-    input by comparing a real archetype with a real newly generated bridge; never infer it from source
+    `bridge width - deck width`. Width is always the complete left-to-right span `maxX - minX`; a
+    one-sided x coordinate, `abs(x)`, or twice a one-sided boundary is not width. The audit uses only
+    `widthIncrement = (archetypeBridgeWidth - archetypeRoadWidth) - (generatedBridgeWidth -
+    generatedRoadWidth)` and `newBridgeWidth = generatedBridgeWidth + widthIncrement`, evaluated as
+    bitwise-exact binary32 without rounding, tolerance or a forced result. `widthIncrement` is the
+    increment of that complete span. If `abs(widthIncrement) > 1 m`, skip that bridge and record the
+    evidence. Establish every input by comparing a real archetype with a real newly generated bridge;
+    never infer it from source
     arithmetic alone. A missing generated sample is never a reason to skip: the required new bridge
     must be created and measured, and the pass remains incomplete until that real sample exists.
     Creating and judging the sample is a human game operation; the Agent must not open or control the
     game or issue an API/request-file bridge-construction request. See contract section 14.
+15. Bridge-generation code must never calculate, look up or apply an audit correction at runtime.
+    Width and geometry corrections are completed during metaprogramming and folded into the original,
+    immutable archetype parameters or generated source data. Runtime consumes only those final values;
+    it must not know an audit delta exists. See contract section 14.
+16. Bridge-specific lighting is archetype behavior. Preserve every authored bridge light, its effect
+    prefab and fields, placement, parent mesh, rotation, group, probability and activation conditions.
+    Side-mounted tower lights follow the same rigid width displacement as their parent mesh; lights on
+    `x = 0` remain centred. Ordinary lighting belonging to the user-selected road remains part of that
+    road structure. See contract section 15.
+17. Never create any pricing prefab, including cost-only sections/pieces or private graph copies
+    whose purpose is pricing. Store construction price as a scalar property on the generated bridge,
+    use the game's initialized road price, and floor the result at the same selected networks'
+    elevated construction price. UI and actual placement must use the same base value. See section 16.
 
 ## Geometry invariants that must remain visible at repository scope
 

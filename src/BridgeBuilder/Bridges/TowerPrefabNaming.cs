@@ -7,6 +7,11 @@ namespace BridgeBuilder.Bridges;
 /// <summary>Names the tower prefab owned by one generated bridge.</summary>
 internal static class TowerPrefabNaming
 {
+    // NameSanitizer uses this limit for exported asset path components. Keep the generated structure
+    // helper at the same limit, but retain a hash of the complete name when truncation is required so
+    // sibling mesh parts do not collapse onto one asset path.
+    private const int MaximumAssetNameLength = 96;
+
     /// <summary>
     /// Makes every mod-owned prefab and geometry name safe for the asset database. A period is legal
     /// in a Windows file name but not in an extension-free <c>AssetDataPath</c>: the database reads
@@ -15,7 +20,22 @@ internal static class TowerPrefabNaming
     internal static string Safe(string? value)
     {
         var safe = NameSanitizer.MakeFileSystemSafe(value).Replace('.', '_');
-        return safe.Length == 0 ? "UnnamedAsset" : safe;
+        if (safe.Length == 0) return "UnnamedAsset";
+
+        var complete = value?.Trim() ?? string.Empty;
+        if (complete.Length <= MaximumAssetNameLength
+            || safe.Length < MaximumAssetNameLength)
+            return safe;
+
+        // The mesh-part discriminator is appended after the bridge-owned tower name. On long road
+        // names, plain right truncation removed "Mesh", "Mesh 1" and "Mesh 2" and gave all three
+        // render prefabs the same asset path. The last save then won, so the base and shaft both
+        // loaded the top mesh. A hash of the complete, pre-truncation name preserves exact sibling
+        // identity while keeping the human-readable prefix and the filesystem-safe character rules.
+        var suffix = "_" + NameSanitizer.ShortHash(complete);
+        var prefixLength = MaximumAssetNameLength - suffix.Length;
+        var prefix = safe.Substring(0, prefixLength).TrimEnd('.', ' ', '_');
+        return prefix + suffix;
     }
 
     /// <summary>The design-and-width part shared by the structures belonging to one bridge.</summary>

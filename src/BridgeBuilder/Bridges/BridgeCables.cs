@@ -71,11 +71,6 @@ internal static class BridgeCables
         new Cables("3LaneSuspensionBridgePillar Placeholder", "3-Lane Suspension Bridge", 19f, outer: true),
         new Cables("4LaneSuspensionBridgePillar Placeholder", "4-Lane Suspension Bridge", 23f, outer: true),
         new Cables("5LaneSuspensionBridgePillar Placeholder", "5-Lane Suspension Bridge", 27f, outer: true),
-        // Golden Gate's four-piece overhead section is its 28 m stiffening structure. Its main
-        // suspension cables live on the pylon objects, so the section is deliberately not marked as
-        // an outer cable envelope; it still records the exact section paired with both tower roles.
-        new Cables("GoldenGateBridgePylon Placeholder", "Golden Gate Bridge", 28f),
-        new Cables("GoldenGateBridgePillar Placeholder", "Golden Gate Bridge", 28f),
         new Cables("8LaneCableStayedBridgePillar Placeholder", "8-Lane Cable Stayed Bridge 00", 35f, outer: true),
         new Cables("PedestrianBridgeCableStayedPillar Placeholder", "Cable Stayed Pedestrian Bridge", 4f, outer: true),
         new Cables("ExtradosedBridge01NetPillar", "ExtradosedBridge01 Section", 31.6f),

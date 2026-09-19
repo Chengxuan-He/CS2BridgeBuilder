@@ -20,6 +20,9 @@ internal enum DeckKind
     /// <summary>Any other road: the game's own, a pack's, or one this mod exported earlier.</summary>
     Road,
 
+    /// <summary>A pedestrian-only pathway network.</summary>
+    Pedestrian,
+
     Train,
     Subway,
     Tram,
@@ -57,7 +60,7 @@ internal sealed class Deck
     /// </summary>
     internal RoadBuilderRoad? Road { get; }
 
-    internal bool IsRoad => Kind is DeckKind.RoadBuilder or DeckKind.Road;
+    internal bool IsRoad => Kind is DeckKind.RoadBuilder or DeckKind.Road or DeckKind.Pedestrian;
 
     /// <summary>
     /// The name this deck contributes to a generated asset name. Never the localized display name:
@@ -70,12 +73,9 @@ internal sealed class Deck
 
 /// <summary>
 /// Everything that can be picked as a deck: Road Builder roads, the roads already registered -
-/// including ones this mod exported earlier - and the train, subway and tram tracks.
-///
-/// Two things are deliberately not in here. Pedestrian and other non-vehicle nets are left out
-/// because a bridge deck that carries nothing is not what the picker is for. And nets with their own
-/// zoning behaviour are kept, but only as the upper deck; see the export system for why a lower deck
-/// has to be stripped of it.
+/// including ones this mod exported earlier - pedestrian pathways, and the train, subway and tram
+/// tracks. Nets with their own zoning behaviour are kept; an auxiliary clone is stripped of the
+/// components that cannot belong to a carried deck by <see cref="DoubleDeckComposer"/>.
 /// </summary>
 internal static class DeckCatalog
 {
@@ -109,13 +109,16 @@ internal static class DeckCatalog
     internal static void Rebuild(PrefabSystem prefabSystem, IReadOnlyList<RoadBuilderRoad> roads)
     {
         var byPrefab = new Dictionary<PrefabBase, RoadBuilderRoad>(ReferenceEqualityComparer<PrefabBase>.Instance);
-        foreach (var road in roads) byPrefab[road.Prefab] = road;
+        var roadBuilderAvailable = RoadBuilderCompatibility.IsAvailable;
+        if (roadBuilderAvailable)
+            foreach (var road in roads) byPrefab[road.Prefab] = road;
 
         var decks = new List<Deck>();
         foreach (var prefab in PrefabCatalog.GetAll(prefabSystem).OfType<NetGeometryPrefab>())
         {
             try
             {
+                if (!roadBuilderAvailable && RoadBuilderCompatibility.OwnsPrefab(prefab)) continue;
                 var deck = Describe(prefab, byPrefab);
                 if (deck != null) decks.Add(deck);
             }
@@ -156,6 +159,9 @@ internal static class DeckCatalog
             return new Deck(track, kind.Value, DisplayNameOf(track), NetWidth.Of(track), null);
         }
 
+        if (prefab is PathwayPrefab pathway)
+            return new Deck(pathway, DeckKind.Pedestrian, DisplayNameOf(pathway), NetWidth.Of(pathway), null);
+
         if (prefab is not RoadPrefab road) return null;
 
         if (roads.TryGetValue(road, out var builderRoad))
@@ -170,20 +176,9 @@ internal static class DeckCatalog
 
         // A Road Builder road that discovery rejected - no usable name, broken configuration - must
         // not come back through this door as an anonymous road prefab.
-        if (IsRoadBuilderPrefab(road)) return null;
+        if (RoadBuilderCompatibility.OwnsPrefab(road)) return null;
 
         return new Deck(road, DeckKind.Road, DisplayNameOf(road), NetWidth.Of(road), null);
-    }
-
-    /// <summary>
-    /// Road Builder's prefabs are its own subclass of RoadPrefab. Recognised by assembly rather than
-    /// by name so that a road called "RoadBuilder something" is not caught by accident.
-    /// </summary>
-    private static bool IsRoadBuilderPrefab(PrefabBase prefab)
-    {
-        var type = prefab.GetType();
-        return string.Equals(type.Assembly.GetName().Name, "RoadBuilder", StringComparison.OrdinalIgnoreCase)
-            || (type.Namespace?.StartsWith("RoadBuilder.", StringComparison.Ordinal) ?? false);
     }
 
     /// <summary>
