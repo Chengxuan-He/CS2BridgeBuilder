@@ -235,9 +235,10 @@ internal static class BridgeTowers
             },
             ["GoldenGateDouble"] = new[]
             {
-                // BXP Train/Subway anatomy and tower-measurements: the upper road is 25 m;
-                // both auxiliary-net archetypes carry this same 33 m portal, not the end pillar.
+                // BXP Train/Subway anatomy: the 25 m upper road carries both the end
+                // anchorage and its own lit main-tower placeholder with Base replacements.
                 new Tower("GoldenGateBridgePylon Placeholder", 33, 25, verified: true),
+                new Tower("BXP GoldenGateBridgePillar Placeholder - Custom Lighting", 40, 25, verified: true),
             },
             ["SuspensionGolden"] = new[]
             {
