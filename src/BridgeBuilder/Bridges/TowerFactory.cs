@@ -1144,6 +1144,26 @@ internal sealed class TowerFactory
             // archetype being there to copy from.
             role(tower);
 
+            if (_styleId is "GoldenGate" or "GoldenGateDouble")
+            {
+                // The Golden Gate foundation is a Base candidate, not another standalone
+                // shaft. Keep its native role after binding the generated placeholder.
+                if (source.TryGet<PillarObject>(out var authoredPillar))
+                {
+                    var pillar = tower.AddOrGetComponent<PillarObject>();
+                    pillar.m_Type = authoredPillar.m_Type;
+                    pillar.m_AnchorOffset = authoredPillar.m_AnchorOffset;
+                    pillar.m_VerticalPillarOffsetRange = authoredPillar.m_VerticalPillarOffsetRange;
+                    pillar.active = authoredPillar.active;
+                }
+
+                // Native anchorages explicitly forbid terrain raising AND lowering. Without
+                // this component their below-origin geometry excavates a hole at each end.
+                if (source.TryGet<BuildingTerraformOverride>(out var terraform))
+                    tower.AddComponentFrom(terraform);
+                tower.m_Circular = source.m_Circular;
+            }
+
             // Lights and other props mounted on the authored object are part of the tower, not part of
             // the selected road. Earlier generation rebuilt only the placeholder/pillar role and
             // silently discarded ObjectSubObjects, so lit archetypes produced unlit towers. Carry the
@@ -1848,6 +1868,8 @@ internal sealed class TowerFactory
                     _styleId, original.name, out suspensionSheetSpan);
             var rigidSuspensionSidePart = !railings
                 && SuspensionGeometry.IsRigidSidePart(_styleId, original.name);
+            var rigidGoldenGateCable = railings
+                && GoldenGateGeometry.IsCable(_styleId, original.name);
 
             // One profile for everything widened here. A section hands one in, because its pieces
             // are one structure; a tower part measures its own, from its full detail mesh and the
@@ -2021,7 +2043,9 @@ internal sealed class TowerFactory
                 }
                 else
                 {
-                    moved = continuousSuspensionSheet
+                    moved = rigidGoldenGateCable
+                        ? TowerWidening.Widen(source, extra)
+                        : continuousSuspensionSheet
                         // The source-prefab metaprogram marks this entire net as one continuous
                         // transverse sheet. Full detail and every named LOD use the same recorded
                         // full-detail span, so distance cannot change its width decision.
@@ -2109,7 +2133,7 @@ internal sealed class TowerFactory
                         source, moved, part.triangles, out _, out _);
                 }
 
-                if (railings && !preserveGeometry)
+                if (railings && !preserveGeometry && !rigidGoldenGateCable)
                 {
                     _kerbPlans ??= PlanKerbRailings(name, source, moved, part.triangles, extra);
                     if (_kerbPlans != null) dropped = ApplyKerbPlans(_kerbPlans, source, moved);
