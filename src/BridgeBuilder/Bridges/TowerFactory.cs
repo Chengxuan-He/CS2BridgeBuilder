@@ -163,6 +163,9 @@ internal sealed class TowerFactory
     {
         _towerKey = sourceTowerName;
         _styleId = styleId;
+        Mod.Log.Info(string.Format(CultureInfo.InvariantCulture,
+            "BridgeWidth factory owner='{0}', style='{1}', tower='{2}', sourceRoad={3:R}, targetDeck={4:R}.",
+            _bridgeName, styleId, sourceTowerName, sourceRoadWidth, deckWidth));
 
         if (styleId == "TrussArch01" && sourceTowerName == "TrussArchBridge01NetPillar"
             && !_trussArch01StructureExtra.HasValue)
@@ -861,7 +864,6 @@ internal sealed class TowerFactory
         }
 
         var plans = new List<KerbPlan>();
-        var roadSurfaceGap = BridgeTowers.RailingRoadSurfaceGap(_styleId);
         foreach (var side in new[] { -1f, 1f })
         {
             var edge = side < 0f ? _roadEdges.Value.Left : _roadEdges.Value.Right;
@@ -874,7 +876,6 @@ internal sealed class TowerFactory
                     RailingHead,
                     edge,
                     side,
-                    roadSurfaceGap,
                     out var railing))
             {
                 _report.Note(string.Format(
@@ -916,24 +917,22 @@ internal sealed class TowerFactory
             }
 
             // Match the two boundary-facing railing edges: the outer railing's outer edge and the
-            // inner railing's road-facing edge. SuspensionBridge01 uses the complete sidewalk width;
-            // the golden family retains its measured one-metre road-surface strip.
+            // inner railing's road-facing edge. Every caller uses the complete sidewalk width.
             var shift = railing.Shift;
             plans.Add(new KerbPlan(side, kerb.From, kerb.To, shift, remove: false, float3.zero));
 
             _report.Note(string.Format(
                 CultureInfo.InvariantCulture,
                 "{0}: the {1} boundary-facing railing edges are {2:0.###} m apart: the road prefab's "
-                + "{3:0.###} m outermost sidewalk less the prototype's {4:0.###} m road-surface "
-                + "gap. Road edge {5:0.###} m, outer railing edge {6:0.###} m; sidewalk inner edge "
-                + "{7:0.###} m, inner railing edge {8:0.###} -> {9:0.###} m. What stands at "
-                + "{10:0.##}..{11:0.##} m is carried {12:0.###} m, where the deck moved "
-                + "{13:0.###} m.",
+                + "{3:0.###} m outermost sidewalk, with no fixed deduction. "
+                + "Road edge {4:0.###} m, outer railing edge {5:0.###} m; sidewalk inner edge "
+                + "{6:0.###} m, inner railing edge {7:0.###} -> {8:0.###} m. What stands at "
+                + "{9:0.##}..{10:0.##} m is carried {11:0.###} m, where the deck moved "
+                + "{12:0.###} m.",
                 name,
                 side < 0f ? "left" : "right",
                 railing.RailingGap,
                 railing.SidewalkWidth,
-                railing.RoadSurfaceGap,
                 railing.RoadOuterBoundary,
                 railing.OuterEdgeAfter,
                 railing.SidewalkInnerBoundary,
@@ -955,13 +954,16 @@ internal sealed class TowerFactory
     /// apart is still treated the same as the mesh it stands in for.
     /// </summary>
     private static bool[]? ApplyKerbPlans(
-        IReadOnlyList<KerbPlan> plans, float3[] source, float3[] moved)
+        IReadOnlyList<KerbPlan> plans, float3[] source, float3[] moved, bool[]? protectedSupport = null)
     {
         if (source.Length != moved.Length) return null;
 
         bool[]? dropped = null;
         for (var index = 0; index < source.Length; index++)
         {
+            // Offline archetype membership: railing x bands also overlap the truss below.
+            // Never overwrite or remove those already-transformed structural vertices.
+            if (protectedSupport != null && protectedSupport[index]) continue;
             foreach (var plan in plans)
             {
                 if (!plan.Covers(source[index])) continue;
@@ -1024,6 +1026,9 @@ internal sealed class TowerFactory
             // whenever the tower and the cables came from the same bridge, and only the cables
             // are right when they did not.
             var extra = ExtraFor(parts, authored, deckWidth, name);
+            Mod.Log.Info(string.Format(CultureInfo.InvariantCulture,
+                "BridgeWidth transform owner='{0}', object='{1}', authoredRoad={2:R}, targetDeck={3:R}, extra={4:R}.",
+                _bridgeName, name, authored, deckWidth, extra));
 
             // Each part against its own opening, which is where its own legs begin.
             //
@@ -1144,6 +1149,26 @@ internal sealed class TowerFactory
             // archetype being there to copy from.
             role(tower);
 
+            if (_styleId is "GoldenGate" or "GoldenGateDouble")
+            {
+                // The Golden Gate foundation is a Base candidate, not another standalone
+                // shaft. Keep its native role after binding the generated placeholder.
+                if (source.TryGet<PillarObject>(out var authoredPillar))
+                {
+                    var pillar = tower.AddOrGetComponent<PillarObject>();
+                    pillar.m_Type = authoredPillar.m_Type;
+                    pillar.m_AnchorOffset = authoredPillar.m_AnchorOffset;
+                    pillar.m_VerticalPillarOffsetRange = authoredPillar.m_VerticalPillarOffsetRange;
+                    pillar.active = authoredPillar.active;
+                }
+
+                // Native anchorages explicitly forbid terrain raising AND lowering. Without
+                // this component their below-origin geometry excavates a hole at each end.
+                if (source.TryGet<BuildingTerraformOverride>(out var terraform))
+                    tower.AddComponentFrom(terraform);
+                tower.m_Circular = source.m_Circular;
+            }
+
             // Lights and other props mounted on the authored object are part of the tower, not part of
             // the selected road. Earlier generation rebuilt only the placeholder/pillar role and
             // silently discarded ObjectSubObjects, so lit archetypes produced unlit towers. Carry the
@@ -1218,8 +1243,9 @@ internal sealed class TowerFactory
         var sourceParts = source.m_Meshes ?? Array.Empty<ObjectMeshInfo>();
         var shifted = 0;
 
-        foreach (var entry in entries)
+        for (var entryIndex = 0; entryIndex < entries.Length; entryIndex++)
         {
+            var entry = entries[entryIndex];
             if (entry == null) continue;
 
             var childExtra = objectExtra;
@@ -1233,6 +1259,16 @@ internal sealed class TowerFactory
             }
 
             var position = entry.m_Position;
+            // Native ornament-mounted lamps 16..33: move their mounting points with
+            // the complete fan, without scaling/rotating the light prefab itself.
+            if (_styleId == "SuspensionGolden" && source.name == "SuspensionBridge03NetPillar"
+                && entries.Length == 40 && parent == 0 && entryIndex >= 16 && entryIndex <= 33)
+            {
+                if (entryIndex == 16 || entryIndex == 25) position.x = 0f;
+                entry.m_Position = GoldenOrnamentGeometry.Position(position, childExtra);
+                shifted++;
+                continue;
+            }
             var shift = childExtra * 0.5f;
             var movedX = position.x == 0f
                 ? position.x
@@ -1841,13 +1877,17 @@ internal sealed class TowerFactory
             var recordedTruss02 = TrussArch02Geometry.IsRecorded(_styleId, original.name);
             var recordedTruss03 = railings
                 && TrussArch03Geometry.IsRecorded(_styleId, original.name);
-            var recordedGeometry = recordedTruss02 || recordedTruss03;
+            var recordedGoldenSupport = railings
+                && GoldenSupportGeometry.IsRecorded(_styleId, original.name);
+            var recordedGeometry = recordedTruss02 || recordedTruss03 || recordedGoldenSupport;
             var suspensionSheetSpan = 0f;
             var continuousSuspensionSheet = railings
                 && SuspensionGeometry.TryGetContinuousSpan(
                     _styleId, original.name, out suspensionSheetSpan);
             var rigidSuspensionSidePart = !railings
                 && SuspensionGeometry.IsRigidSidePart(_styleId, original.name);
+            var rigidGoldenGateCable = railings
+                && GoldenGateGeometry.IsCable(_styleId, original.name);
 
             // One profile for everything widened here. A section hands one in, because its pieces
             // are one structure; a tower part measures its own, from its full detail mesh and the
@@ -1941,11 +1981,21 @@ internal sealed class TowerFactory
                 var usedRecordedTruss03 = false;
                 float3[] moved;
                 bool[]? dropped = null;
+                bool[]? protectedGoldenSupport = null;
                 if (preserveGeometry)
                 {
                     // Independent copy of the recorded central sheet, including every LOD.
                     // No spatial inference or road-width deformation belongs to this assembly.
                     moved = source;
+                }
+                else if (recordedGoldenSupport)
+                {
+                    if (!GoldenSupportGeometry.TryWiden(original.name, source, extra, out moved,
+                            out protectedGoldenSupport))
+                    {
+                        _report.Defect($"'{name}' does not match its recorded golden support vertex map; geometry was not written.");
+                        return null;
+                    }
                 }
                 else if (recordedTruss02)
                 {
@@ -2021,7 +2071,9 @@ internal sealed class TowerFactory
                 }
                 else
                 {
-                    moved = continuousSuspensionSheet
+                    moved = rigidGoldenGateCable
+                        ? TowerWidening.Widen(source, extra)
+                        : continuousSuspensionSheet
                         // The source-prefab metaprogram marks this entire net as one continuous
                         // transverse sheet. Full detail and every named LOD use the same recorded
                         // full-detail span, so distance cannot change its width decision.
@@ -2103,16 +2155,30 @@ internal sealed class TowerFactory
                 // and its levels of detail share one, and a field outlives the piece that set it: the
                 // towers are derived after the sections, so a plan left standing was applied to them
                 // too and drew whatever stood in its band - part of a leg - to a single point.
-                if (IsGoldenTopOrnament(name, railings))
+                if (!railings && _styleId == "SuspensionGolden"
+                    && GoldenOrnamentGeometry.IsRecorded(original.name)
+                    && !GoldenOrnamentGeometry.TryApply(original.name, source, moved, extra))
                 {
-                    TowerWidening.RectangularizeCentralSpoke(
-                        source, moved, part.triangles, out _, out _);
+                    _report.Defect($"'{name}' does not match the recorded golden ornament; geometry was not written.");
+                    return null;
                 }
 
-                if (railings && !preserveGeometry)
+                if (!railings && _styleId == "SuspensionGolden"
+                    && GoldenOrnamentGeometry.IsRecorded(original.name))
+                {
+                    // Retain authored stacking bounds; only expand them if the explicitly
+                    // requested XY ornament transform places geometry outside that volume.
+                    foreach (var point in moved)
+                    {
+                        resultBounds.min = math.min(resultBounds.min, point);
+                        resultBounds.max = math.max(resultBounds.max, point);
+                    }
+                }
+
+                if (railings && !preserveGeometry && !rigidGoldenGateCable)
                 {
                     _kerbPlans ??= PlanKerbRailings(name, source, moved, part.triangles, extra);
-                    if (_kerbPlans != null) dropped = ApplyKerbPlans(_kerbPlans, source, moved);
+                    if (_kerbPlans != null) dropped = ApplyKerbPlans(_kerbPlans, source, moved, protectedGoldenSupport);
                 }
 
                 var partVertices = ToVectors(moved);
@@ -2319,20 +2385,6 @@ internal sealed class TowerFactory
             + "was used, so the prototype coordinates were kept unchanged.",
             towerName, original.name, source.Length));
         return moved;
-    }
-
-    private bool IsGoldenTopOrnament(string name, bool railings)
-    {
-        if (railings || !string.Equals(_styleId, "SuspensionGolden", StringComparison.Ordinal))
-            return false;
-
-        // A tower consists of top, shaft and base meshes. Only the first ("Mesh") contains the fan;
-        // "Mesh 1" and "Mesh 2" must remain untouched. Its LOD names append " LODn" to that same
-        // first-mesh name, so they deliberately take the correction too.
-        var marker = name.LastIndexOf(" Mesh", StringComparison.Ordinal);
-        if (marker < 0) return false;
-        var tail = name.Substring(marker + " Mesh".Length);
-        return tail.Length == 0 || tail.StartsWith(" LOD", StringComparison.Ordinal);
     }
 
     /// <summary>
