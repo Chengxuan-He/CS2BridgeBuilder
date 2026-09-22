@@ -1,5 +1,25 @@
 # Repository Agent Instructions
 
+## First rule: fix reported bugs immediately
+
+Fix every reported bug immediately. A user bug report is a request to implement a fix. After diagnosis,
+immediately proceed with implementation and verification; do not stop at acknowledgment, analysis,
+a repair plan or a proposed next step, and do not ask the user to authorize the same fix again.
+
+Fixes must still satisfy archetype-evidence, branching, safety and acceptance requirements. If evidence,
+permission or an in-game action that only the user can perform is genuinely missing, first complete all
+unblocked repair work, then identify the specific blocker and required action. Do not guess at the
+implementation, bypass the contract or claim that an unverified change is a completed fix.
+
+## Deploy immediately after every code change
+
+After completing any code change, immediately build and deploy the updated mod to the game.
+Do not stop at editing or compilation, defer deployment to another turn, or wait for a separate
+deployment request. Follow the mandatory shutdown, backup and ownership-scoped cleanup procedure in
+contract section 13, preserve other accepted functionality, and verify the installed files against
+the build output. If deployment fails, report the exact blocker; never claim deployment succeeded.
+Deployment does not replace human in-game visual acceptance.
+
 ## Scope
 
 This file applies to the entire repository. It contains the repository-level rules that Codex must
@@ -135,7 +155,8 @@ The numbered references below point to the corresponding sections in the complet
 7. Apply the change consistently to the full-detail mesh and all LODs.
 8. After any source-code edit, perform the mandatory process stop and ownership-scoped generated-bridge
    cleanup from contract section 13.
-9. Compile when appropriate, but report compilation only as a loadability check.
+9. After completing any code change, immediately build and deploy to the game, then verify the
+   installed files against the build output. Compilation is only a loadability check.
 10. Do not call a visual issue fixed until the in-game near/far result has been observed.
 
 ## Maintaining these instructions

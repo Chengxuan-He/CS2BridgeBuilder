@@ -2,7 +2,7 @@
  * Cities: Skylines II UI Module
  * Id: BridgeBuilder
  * Author: BridgeBuilder
- * Version: 0.3.6
+ * Version: 26.9.23
  * Dependencies:
  */
 const React = window.React;
@@ -21,6 +21,7 @@ const panelOpenBinding = api.bindValue(MOD, "PanelOpen", false);
 const decksBinding = api.bindValue(MOD, "Decks", []);
 const stylesBinding = api.bindValue(MOD, "Styles", []);
 const bridgesBinding = api.bindValue(MOD, "Bridges", []);
+const catalogLoadingBinding = api.bindValue(MOD, "CatalogLoading", true);
 const statusBinding = api.bindValue(MOD, "Status", "");
 const previewImageBinding = api.bindValue(MOD, "PreviewImage", "");
 const previewStatusBinding = api.bindValue(MOD, "PreviewStatus", "");
@@ -29,6 +30,7 @@ const previewLoadingBinding = api.bindValue(MOD, "PreviewLoading", false);
 
 // English fallback is kept in sync with RuntimeUiText by the localization check.
 const defaultText = {
+    "Scanning": "Loading roads and bridges…",
     "SameDirection": "Same direction",
     "OppositeDirection": "Opposite directions",
     "LowerDeckOpposite": "Opposite directions on upper and lower decks",
@@ -113,6 +115,10 @@ function Card({ item, selected, onSelect, subtitle }) {
 }
 
 function CardGrid({ items, selectedId, onSelect, emptyText }) {
+    const loading = api.useValue(catalogLoadingBinding);
+    const t = useText();
+    if (loading) return h("div", { className: "bb-list-loading", role: "status", "aria-label": t("Scanning"), "aria-busy": true },
+        h("div", { className: "bb-spinner", "aria-hidden": true }));
     if (!items.length) return h("div", { className: "bb-empty" }, emptyText);
     // Explicit rows avoid relying on CSS grid or percentage-based flex wrapping
     // in Cohtml. Empty cells keep the final row the same width as every other row.
