@@ -55,6 +55,7 @@ public partial class BridgeGenerationSystem : GameSystemBase
     private bool _previewReleasePending;
     private BridgeInstanceRemoval? _pendingRemoval;
     private BridgeRegistration? _removingRegistration;
+    private DateTime _removalStartedUtc;
     private bool _activationLocked;
 
     protected override void OnCreate()
@@ -87,6 +88,7 @@ public partial class BridgeGenerationSystem : GameSystemBase
 
         RoadSelectionModel.PublishMessage(this, RuntimeUiText.Get("Scanning"));
         _settling = true;
+        BridgeRuntimeRequests.BeginCatalogLoad();
         Enabled = true;
         ModHost.Log.Info($"Waiting for prefabs to settle ({mode})");
     }
@@ -101,6 +103,7 @@ public partial class BridgeGenerationSystem : GameSystemBase
 
     protected override void OnStopRunning()
     {
+        BridgeRuntimeRequests.BeginCatalogLoad();
         _pendingRemoval = null;
         _removingRegistration = null;
         ClearPreview();
@@ -118,13 +121,14 @@ public partial class BridgeGenerationSystem : GameSystemBase
             try
             {
                 if (_pendingRemoval.IsComplete(EntityManager)) CompleteRuntimeDeletion();
+                else if (DateTime.UtcNow - _removalStartedUtc > TimeSpan.FromSeconds(90))
+                    FailDeletion(_removingRegistration?.PrefabName ?? "", "DeleteIncomplete",
+                        "Native network cleanup did not complete within 90 seconds; assets retained.");
             }
             catch (Exception exception)
             {
-                _pendingRemoval = null;
-                _removingRegistration = null;
-                Mod.Log.Warn(exception, "Could not finish bridge deletion safely");
-                BridgeRuntimeRequests.Complete("DeleteIncomplete");
+                FailDeletion(_removingRegistration?.PrefabName ?? "", "DeleteIncomplete",
+                    "Could not finish native network cleanup safely.", exception);
             }
             return;
         }
@@ -225,6 +229,19 @@ public partial class BridgeGenerationSystem : GameSystemBase
 
     /// <summary>Re-reads the decks and styles, then republishes the status text.</summary>
     private void Refresh()
+    {
+        BridgeRuntimeRequests.BeginCatalogLoad();
+        try
+        {
+            RefreshCatalogs();
+        }
+        finally
+        {
+            BridgeRuntimeRequests.EndCatalogLoad();
+        }
+    }
+
+    private void RefreshCatalogs()
     {
         IReadOnlyList<RoadBuilderRoad> roads = Array.Empty<RoadBuilderRoad>();
         var generated = new HashSet<string>(StringComparer.Ordinal);
@@ -441,6 +458,12 @@ public partial class BridgeGenerationSystem : GameSystemBase
             // pylon hangs its second net above and its subway, train and tram variants hang theirs
             // below, so the question is about the variant and never about the style.
             var chosenWidth = BridgeComposer.WidthOf(upper.Prefab, upper.Width);
+            if (!(chosenWidth > 0f) || float.IsInfinity(chosenWidth))
+            {
+                report.Failed(exportName, new InvalidOperationException(
+                    "The selected road's initialized width is unavailable. Generation was stopped before cloning."));
+                return false;
+            }
             var stated = options.DoubleDeck
                 ? style.Select(chosenWidth, upper.IsRoad, doubleDeck: true).Variant?.LowerDeck
                 : null;
@@ -1030,6 +1053,11 @@ public partial class BridgeGenerationSystem : GameSystemBase
                 : !buildAfterCreate ? "CreatedManage"
                 : _activationLocked ? "CreatedLocked" : "ActivateUnloaded",
                 registrationName, prefabName);
+            // Create-only confirms successful publication/registration without entering the tool.
+            // Create-and-build keeps its existing activation and locked-bridge dialog behavior.
+            if (!buildAfterCreate)
+                Mod.ShowMessage(UiStringCatalog.Current.Title,
+                    RuntimeUiText.Get("CreatedManage", registrationName));
         }
         else
         {
@@ -1135,14 +1163,18 @@ public partial class BridgeGenerationSystem : GameSystemBase
         var registration = BridgeRegistrationStore.Find(prefabName);
         if (!BridgeRegistration.IsPrefabName(prefabName) || registration == null)
         {
-            BridgeRuntimeRequests.Complete("DeleteMissing");
+            FailDeletion(prefabName, "DeleteMissing", "Bridge UUID registration is missing or invalid.");
             return;
         }
 
         try
         {
             var roots = RemovalRoots(prefabName, PrefabCatalog.GetAll(_prefabSystem)).ToArray();
-            if (roots.Length == 0) { BridgeRuntimeRequests.Complete("DeleteMissing"); return; }
+            if (roots.Length == 0)
+            {
+                FailDeletion(prefabName, "DeleteMissing", "No writable bridge prefab was found; registration retained.");
+                return;
+            }
             var ids = new HashSet<Entity>();
             foreach (var root in roots)
                 if (_prefabSystem.TryGetEntity(root, out var id)) ids.Add(id);
@@ -1157,14 +1189,14 @@ public partial class BridgeGenerationSystem : GameSystemBase
             plan.Apply(EntityManager);
             _pendingRemoval = plan;
             _removingRegistration = registration;
+            _removalStartedUtc = DateTime.UtcNow;
             Mod.Log.Info($"Removing '{prefabName}': {plan.DeletedEntities.Count} network entities; "
                 + "waiting for native cleanup before deleting assets. Composition caches are retained.");
             if (plan.IsComplete(EntityManager)) CompleteRuntimeDeletion();
         }
         catch (Exception exception)
         {
-            Mod.Log.Warn(exception, $"Could not safely begin deletion of '{prefabName}'");
-            BridgeRuntimeRequests.Complete("DeleteUnsafe");
+            FailDeletion(prefabName, "DeleteUnsafe", "Could not safely begin deletion.", exception);
         }
     }
 
@@ -1179,7 +1211,9 @@ public partial class BridgeGenerationSystem : GameSystemBase
         var state = ExportStateStore.Load();
         var report = new ExportReport();
         var removed = RemoveByName(prefabName, state, report);
-        if (removed.Count > 0 && BridgeRegistrationStore.Remove(prefabName))
+        if (removed.Count > 0
+            && !RemovalRoots(prefabName, PrefabCatalog.GetAll(_prefabSystem)).Any()
+            && BridgeRegistrationStore.Remove(prefabName))
         {
             Mod.ReloadActiveLocale();
             BridgeRuntimeRequests.Complete(
@@ -1187,14 +1221,25 @@ public partial class BridgeGenerationSystem : GameSystemBase
         }
         else
         {
-            BridgeRuntimeRequests.Complete(
-                "DeleteIncomplete");
+            FailDeletion(prefabName, "DeleteIncomplete",
+                $"Deleted {removed.Count} root prefab(s), but prefab assets or UUID registration remain. "
+                + "See ModsData/BridgeBuilder/last-export-report.txt for the blocking reference or asset failure.");
         }
 
         Finish(report, state, "Delete runtime bridge", showMessage: false);
         // Native removal has completed and state is saved. Also reflect partial
         // deletion accurately instead of keeping a stale list until reopening.
         Refresh();
+    }
+
+    private void FailDeletion(string prefabName, string stage, string reason, Exception? exception = null)
+    {
+        var message = $"Bridge deletion failed: stage='{stage}', prefab='{prefabName}'. {reason}";
+        if (exception == null) Mod.Log.Critical(message);
+        else Mod.Log.Critical(exception, message);
+        _pendingRemoval = null;
+        _removingRegistration = null;
+        BridgeRuntimeRequests.Complete(stage);
     }
 
     private HashSet<string> LoadedExportNames()

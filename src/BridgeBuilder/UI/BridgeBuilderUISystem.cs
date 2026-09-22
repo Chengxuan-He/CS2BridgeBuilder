@@ -5,6 +5,7 @@ using Colossal.UI.Binding;
 using CS2Mods.Shared;
 using CS2Mods.Shared.Infrastructure;
 using Game;
+using Game.Input;
 using Game.Prefabs;
 using Game.SceneFlow;
 using Game.UI;
@@ -20,6 +21,7 @@ namespace BridgeBuilder.UI;
 public partial class BridgeBuilderUISystem : UISystemBase
 {
     private const string Group = "BridgeBuilder";
+    private ProxyAction? _toggleAction;
     private PrefabSystem _prefabSystem = null!;
     private ValueBinding<string> _title = null!;
     private ValueBinding<bool> _panelOpen = null!;
@@ -35,6 +37,7 @@ public partial class BridgeBuilderUISystem : UISystemBase
     private ValueBinding<string> _previewStatus = null!;
     private ValueBinding<string> _previewKey = null!;
     private ValueBinding<bool> _previewLoading = null!;
+    private ValueBinding<bool> _catalogLoading = null!;
 
     // The runtime builder owns loaded-save prefabs and resolves icons from a settled gameplay
     // PrefabSystem. UISystemBase applies this mask during OnGamePreload, so the editor never runs
@@ -46,6 +49,7 @@ public partial class BridgeBuilderUISystem : UISystemBase
     {
         base.OnCreate();
         _prefabSystem = World.GetOrCreateSystemManaged<PrefabSystem>();
+        _toggleAction = Mod.Setting?.GetAction(nameof(BridgeSetting.TogglePanel));
 
         _title = AddValue("Title", BridgeBuilder.Settings.UiStringCatalog.Current.Title, new BridgeStringWriter());
         _panelOpen = AddValue("PanelOpen", false, new BridgeBoolWriter());
@@ -58,6 +62,7 @@ public partial class BridgeBuilderUISystem : UISystemBase
         _previewStatus = AddValue("PreviewStatus", string.Empty, new BridgeStringWriter());
         _previewKey = AddValue("PreviewKey", string.Empty, new BridgeStringWriter());
         _previewLoading = AddValue("PreviewLoading", false, new BridgeBoolWriter());
+        _catalogLoading = AddValue("CatalogLoading", true, new BridgeBoolWriter());
         AddBinding(new TriggerBinding<BridgeRuntimeRequest>(Group, "PreviewBridge", PreviewBridge,
             new BridgeRecipeReader()));
         AddBinding(new TriggerBinding<string>(Group, "PreviewExistingBridge", PreviewExistingBridge,
@@ -82,6 +87,11 @@ public partial class BridgeBuilderUISystem : UISystemBase
     [Preserve]
     protected override void OnUpdate()
     {
+        if (_toggleAction != null)
+        {
+            _toggleAction.shouldBeEnabled = true;
+            if (_toggleAction.WasPerformedThisFrame()) TogglePanel();
+        }
         var localeId = GameManager.instance?.localizationManager?.activeLocaleId ?? "en-US";
         var localeChanged = !string.Equals(_seenLocaleId, localeId, StringComparison.Ordinal);
         if (localeChanged)
@@ -109,6 +119,12 @@ public partial class BridgeBuilderUISystem : UISystemBase
 
     internal static void RequestRefresh() => BridgeRuntimeRequests.Touch();
 
+    protected override void OnStopRunning()
+    {
+        if (_toggleAction != null) _toggleAction.shouldBeEnabled = false;
+        base.OnStopRunning();
+    }
+
     internal void CloseForBuild()
     {
         // Called only after the native tool accepted the formal prefab. Never toggle:
@@ -127,6 +143,7 @@ public partial class BridgeBuilderUISystem : UISystemBase
     private void TogglePanel()
     {
         var opening = !_panelOpen.value;
+        if (opening) _catalogLoading.Update(true);
         _panelOpen.Update(opening);
         if (opening)
         {
@@ -212,6 +229,11 @@ public partial class BridgeBuilderUISystem : UISystemBase
 
     private void RefreshBindings()
     {
+        if (BridgeRuntimeRequests.CatalogLoading)
+        {
+            _catalogLoading.Update(true);
+            return;
+        }
         try
         {
             var decks = DeckCatalog.Decks.Select(deck => new BridgeDeckUiItem
@@ -276,6 +298,11 @@ public partial class BridgeBuilderUISystem : UISystemBase
         {
             Mod.Log.Warn(exception, "Could not update the BridgeBuilder runtime UI");
             _status.Update(RuntimeUiText.Get("UiRefreshFailed"));
+        }
+        finally
+        {
+            // Publish completion only after all three list bindings have been written.
+            _catalogLoading.Update(false);
         }
     }
 }

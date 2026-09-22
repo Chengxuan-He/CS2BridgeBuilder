@@ -1,6 +1,18 @@
 using System.Buffers.Binary;
 using Colossal.AssetPipeline.Native;
 
+if (args.Length == 3 && args[0] == "--golden-ornament")
+{
+    GoldenOrnament.Emit(args[1], args[2]);
+    return 0;
+}
+
+if (args.Length == 3 && args[0] == "--golden-support")
+{
+    GoldenSupport.Emit(args[1], args[2]);
+    return 0;
+}
+
 if (args.Length == 3 && args[0] == "--covered-wood-columns")
 {
     CoveredWoodColumns.Emit(args[1], args[2]);
