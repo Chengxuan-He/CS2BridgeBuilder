@@ -1803,16 +1803,16 @@ internal static class TowerGenerationTests
             planned ? $"{railing.Layout.Outer.From:0.##}..{railing.Layout.Outer.To:0.##}" : "none");
         check("[pick] suspension material beyond the deck is not mistaken for a railing",
             planned && railing.Layout.Outer.To < 16.25f, null);
-        check("[pick] railing gap is the outermost sidewalk width less the road-surface strip",
+        check("[pick] railing gap is the complete outermost sidewalk width",
             planned
                 && Close(railing.SidewalkWidth, 5f)
-                && Close(railing.RailingGap, 4f)
-                && Close(railing.OuterEdgeAfter - railing.InnerTarget, 4f),
+                && Close(railing.RailingGap, 5f)
+                && Close(railing.OuterEdgeAfter - railing.InnerTarget, 5f),
             planned ? $"{railing.OuterEdgeAfter:0.###} - {railing.InnerTarget:0.###} m" : "none");
-        check("[pick] the inner railing moves one metre outward from the uncompensated target",
-            planned && Close(railing.InnerTarget, 9.875f), null);
+        check("[pick] the inner railing has no fixed one-metre deduction",
+            planned && Close(railing.InnerTarget, 8.875f), null);
         check("[pick] the inner railing is fitted by its road-facing edge, not its centre or outer edge",
-            planned && Close(railing.InnerEdgeBefore, 9.125f) && Close(railing.InnerTarget, 9.875f),
+            planned && Close(railing.InnerEdgeBefore, 9.125f) && Close(railing.InnerTarget, 8.875f),
             planned ? $"{railing.InnerEdgeBefore:0.###} -> {railing.InnerTarget:0.###} m" : "none");
 
         var plannedLeft = GoldenBridgeRailings.TryPlan(
@@ -1828,8 +1828,8 @@ internal static class TowerGenerationTests
         check("[pick] a different road uses its own outermost sidewalk section width",
             narrowerSidewalk
                 && Close(threeMetreRailing.SidewalkWidth, 3f)
-                && Close(threeMetreRailing.RailingGap, 2f)
-                && Close(threeMetreRailing.OuterEdgeAfter - threeMetreRailing.InnerTarget, 2f),
+                && Close(threeMetreRailing.RailingGap, 3f)
+                && Close(threeMetreRailing.OuterEdgeAfter - threeMetreRailing.InnerTarget, 3f),
             narrowerSidewalk ? $"{threeMetreRailing.SidewalkWidth:0.###} m" : "none");
 
         var removable = GoldenBridgeRailings.TryPlan(
@@ -1996,12 +1996,11 @@ internal static class TowerGenerationTests
             !SectionNames.IsSidewalk(sections[^2].Name) && Math.Abs(left - sections[^1].Width) < 0.001f,
             $"{sections[^2].Name}; sidewalk {left:0.#} m");
 
-        // The corresponding boundary-facing edges stand the sidewalk width less the golden bridge's
-        // one-metre road-surface strip apart.
+        // The corresponding boundary-facing edges stand the full sidewalk width apart.
         const float outerAfter = 13.95f;
-        check("[side] the 5 m sidewalk produces a 4 m railing gap",
-            Math.Abs((outerAfter - (left - 1f)) - 9.95f) < 0.001f,
-            $"{outerAfter - (left - 1f):0.##} m");
+        check("[side] the 5 m sidewalk produces a 5 m railing gap",
+            Math.Abs((outerAfter - left) - 8.95f) < 0.001f,
+            $"{outerAfter - left:0.##} m");
     }
 
     private static void EveryLevelOfDetailTreatsTheKerbRailingAlike(Action<string, bool, string?> check)
@@ -2367,12 +2366,12 @@ internal static class TowerGenerationTests
             !SectionNames.IsSidewalk("Sidewalkish 3") && !SectionNames.IsSidewalk("NoSidewalk"), null);
 
         // Where the railing lands. The outer railing ends up at 20 m from the centre, the footway is
-        // 3.5 m, and the bridge has a one-metre strip between road and sidewalk, so the kerb railing
-        // stands at 17.5. It is carried there, keeping its own shape, whatever the deck did.
+        // 3.5 m, so the kerb railing stands at 16.5 m with no fixed deduction.
+        // It is carried there, keeping its own shape, whatever the deck did.
         const float outerAfter = 20f;
         const float footway = 3.5f;
-        check("[kerb] the kerb railing gap excludes the one-metre road-surface strip",
-            Math.Abs((outerAfter - (footway - 1f)) - 17.5f) < 0.001f, null);
+        check("[kerb] the kerb railing gap uses the full footway width",
+            Math.Abs((outerAfter - footway) - 16.5f) < 0.001f, null);
 
         // The two sides do not have to agree. A 3.5 m footway on the left and none on the right gives
         // one inner railing on the left and none on the right at all.
@@ -2449,8 +2448,7 @@ internal static class TowerGenerationTests
         check("[rails] the golden family brings its own",
             BridgeTowers.BringsItsOwnRailings("SuspensionGolden"), null);
         check("[rails] SuspensionBridge01 brings its two authored railing layers",
-            BridgeTowers.BringsItsOwnRailings("Suspension01")
-                && BridgeTowers.RailingRoadSurfaceGap("Suspension01") == 0f, null);
+            BridgeTowers.BringsItsOwnRailings("Suspension01"), null);
 
         // The V pylon was on this list and is not. What it carries of its own does not run the length
         // of the deck, so taking the road.s railing off it left the deck with none.

@@ -43,6 +43,7 @@ internal static class UiStringCatalog
             if (Cache.TryGetValue(key, out var cached)) return cached;
             var built = UiStringTables.WithStyleNames(UiStringTables.WithBridgeText(Builders[key](), key), key);
             built.LocaleId = key;
+            UiStringTables.WithSettingsText(built, key);
             Cache[key] = built;
             return built;
         }

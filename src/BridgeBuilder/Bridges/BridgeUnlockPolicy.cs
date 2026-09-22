@@ -22,9 +22,11 @@ internal static class BridgeUnlockPolicy
         if (prototype == null || !prefabs.TryGetEntity(prototype, out var prototypeEntity)
             || !manager.Exists(prototypeEntity)) return false;
         manager.CompleteAllTrackedJobs();
-        locked = manager.HasComponent<Locked>(prototypeEntity)
+        // A user-selected runtime override, not a change to the saved prototype requirements.
+        // Re-evaluate in both directions so disabling it restores the original restriction.
+        locked = Mod.Setting?.RemoveDevelopmentRestrictions != true
+            && manager.HasComponent<Locked>(prototypeEntity)
             && manager.IsComponentEnabled<Locked>(prototypeEntity);
-        if (locked) return true;
 
         // Resolve the entire owned network before changing anything. Other/shared dependencies
         // are never unlocked; Apply() has installed this exact rule on both generated decks.
@@ -45,8 +47,14 @@ internal static class BridgeUnlockPolicy
         }
         foreach (var entity in decks)
         {
-            if (!manager.HasComponent<Locked>(entity) || !manager.IsComponentEnabled<Locked>(entity)) continue;
-            manager.SetComponentEnabled<Locked>(entity, false);
+            if (!manager.HasComponent<Locked>(entity))
+            {
+                if (!locked) continue;
+                manager.AddComponent<Locked>(entity);
+            }
+            if (manager.IsComponentEnabled<Locked>(entity) == locked) continue;
+            manager.SetComponentEnabled<Locked>(entity, locked);
+            if (locked) continue;
             // Mirror native UnlockPrefab's notification so menus/dependents also see the change.
             var notification = manager.CreateEntity(ComponentType.ReadWrite<Game.Common.Event>(),
                 ComponentType.ReadWrite<Unlock>());

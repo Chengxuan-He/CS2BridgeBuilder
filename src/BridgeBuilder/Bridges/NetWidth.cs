@@ -2,6 +2,8 @@ using Game.Prefabs;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using BridgeBuilder.Systems;
+using Unity.Entities;
 
 namespace BridgeBuilder.Bridges;
 
@@ -18,6 +20,7 @@ internal static class NetWidth
     /// </summary>
     internal static float Of(NetGeometryPrefab? prefab)
     {
+        if (IsSourceRoad(prefab)) return SourceRoadWidth(prefab!, null);
         if (prefab?.m_Sections == null) return 0f;
 
         var width = 0f;
@@ -61,6 +64,7 @@ internal static class NetWidth
     /// </summary>
     internal static float RoadSurfaceOf(NetGeometryPrefab? prefab, ICollection<string>? breakdown)
     {
+        if (IsSourceRoad(prefab)) return SourceRoadWidth(prefab!, breakdown);
         if (prefab?.m_Sections == null) return 0f;
 
         var width = 0f;
@@ -101,6 +105,46 @@ internal static class NetWidth
         return width;
     }
 
+    // Only selected roads use this path. Bridge archetype measurements and section/mesh
+    // measurements retain their existing semantics; no bridge geometry is changed here.
+    private static bool IsSourceRoad(NetGeometryPrefab? prefab) =>
+        prefab is RoadPrefab or TrackPrefab or PathwayPrefab
+        && prefab.GetComponent<Bridge>() == null;
+
+    private static float SourceRoadWidth(NetGeometryPrefab road, ICollection<string>? breakdown)
+    {
+        try
+        {
+            // Select the game's default road variants and read initialized NetPieceData.
+            // Placed-edge upgrade states are not the default asset cross-section.
+            var world = World.DefaultGameObjectInjectionWorld;
+            if (world == null || !world.IsCreated) return 0f;
+            var width = world.GetOrCreateSystemManaged<BridgeRoadWidthSystem>().Read(road, breakdown);
+            if (ValidWidth(width)) return width;
+        }
+        catch (Exception exception)
+        {
+            Mod.Log.Warn(exception, $"RoadWidth failed for source prefab '{road.name}'.");
+            breakdown?.Add("Road width unavailable: " + exception.Message);
+            return 0f;
+        }
+
+        breakdown?.Add("Road width unavailable: no valid default composition.");
+        return 0f;
+    }
+
+    private static bool ValidWidth(float width) =>
+        width > 0f && !float.IsNaN(width) && !float.IsInfinity(width);
+
+    internal static List<(string Name, float Width)> SourceSections(NetGeometryPrefab road)
+    {
+        var result = new List<(string Name, float Width)>();
+        var world = World.DefaultGameObjectInjectionWorld;
+        if (world != null && world.IsCreated)
+            world.GetOrCreateSystemManaged<BridgeRoadWidthSystem>().Read(road, null, result);
+        return result;
+    }
+
     /// <summary>
     /// Width drawn outside the measured road surface by its two edge-extension sections.
     ///
@@ -111,6 +155,13 @@ internal static class NetWidth
     /// </summary>
     internal static float OutwardExtensionOf(NetGeometryPrefab? prefab)
     {
+        if (IsSourceRoad(prefab))
+        {
+            var world = World.DefaultGameObjectInjectionWorld;
+            return world != null && world.IsCreated
+                ? world.GetOrCreateSystemManaged<BridgeRoadWidthSystem>().Read(prefab!, null, extensions: true)
+                : 0f;
+        }
         if (prefab?.m_Sections == null) return 0f;
 
         var width = 0f;
