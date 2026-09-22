@@ -40,14 +40,11 @@ internal readonly struct RoadEdge
 
 /// <summary>
 /// Finds a suspension bridge's two boundary-facing railing edges and places only its removable inner
-/// railing. The golden family and SuspensionBridge01 share this topology but retain different authored
-/// road-surface gaps.
+/// railing. Spacing uses the complete selected elevated sidewalk width without a fixed deduction.
 /// </summary>
 internal static class GoldenBridgeRailings
 {
     private const float Bucket = 0.25f;
-    /// <summary>The golden bridge's gap between the road surface and the sidewalk platform.</summary>
-    internal const float RoadSurfaceGap = 1f;
     internal readonly struct Band
     {
         internal Band(float from, float to)
@@ -84,15 +81,13 @@ internal static class GoldenBridgeRailings
             float side,
             RoadEdge roadEdge,
             float innerEdgeBefore,
-            float outerEdgeAfter,
-            float roadSurfaceGap)
+            float outerEdgeAfter)
         {
             Layout = layout;
             Side = Math.Sign(side);
             RoadEdge = roadEdge;
             InnerEdgeBefore = innerEdgeBefore;
             OuterEdgeAfter = outerEdgeAfter;
-            RoadSurfaceGap = Math.Max(0f, roadSurfaceGap);
         }
 
         internal Layout Layout { get; }
@@ -104,13 +99,15 @@ internal static class GoldenBridgeRailings
 
         /// <summary>The outer railing edge nearest the road boundary, after deck widening.</summary>
         internal float OuterEdgeAfter { get; }
-        internal float RoadSurfaceGap { get; }
         internal bool Remove => !RoadEdge.IsSidewalk || SidewalkWidth <= 0f;
-        internal float RailingGap => Math.Max(0f, SidewalkWidth - RoadSurfaceGap);
+        internal float RailingGap => SidewalkWidth;
         internal float RoadOuterBoundary => RoadEdge.OuterBoundary;
         internal float SidewalkInnerBoundary => RoadEdge.InnerBoundary;
         internal float OuterInset => RoadOuterBoundary - OuterEdgeAfter;
-        internal float InnerTarget => OuterEdgeAfter - RailingGap;
+        // Anchor to the selected outermost sidewalk, not to the whole road's outer edge.
+        // A shoulder/empty strip outside that sidewalk must not shift its inner railing outward.
+        // Retain the measured outer-railing inset, but never deduct a fixed surface strip.
+        internal float InnerTarget => RoadEdge.SidewalkOuterBoundary - RailingGap - OuterInset;
         internal float Shift => Remove ? 0f : Side * (InnerTarget - InnerEdgeBefore);
     }
 
@@ -156,7 +153,7 @@ internal static class GoldenBridgeRailings
     /// target road prefab's measured outer boundary, ignoring suspension structure beyond it, and
     /// computes the inner railing from the two corresponding boundary-facing mesh edges. The
     /// outermost edge of the outer railing and the innermost edge of the inner railing span the target
-    /// road's sidewalk width less the golden bridge's one-metre road-surface gap; using either band's
+    /// road's complete sidewalk width; using either band's
     /// centre or the inner band's outward edge changes that span.
     /// </summary>
     internal static bool TryPlan(
@@ -167,21 +164,6 @@ internal static class GoldenBridgeRailings
         float high,
         RoadEdge roadEdge,
         float side,
-        out Plan plan)
-    {
-        return TryPlan(
-            bands, source, moved, low, high, roadEdge, side, RoadSurfaceGap, out plan);
-    }
-
-    internal static bool TryPlan(
-        IReadOnlyList<Band> bands,
-        float3[] source,
-        float3[] moved,
-        float low,
-        float high,
-        RoadEdge roadEdge,
-        float side,
-        float roadSurfaceGap,
         out Plan plan)
     {
         plan = default;
@@ -218,8 +200,7 @@ internal static class GoldenBridgeRailings
             side,
             roadEdge,
             innerEdgeBefore,
-            outerEdgeAfter,
-            roadSurfaceGap);
+            outerEdgeAfter);
         return true;
     }
 

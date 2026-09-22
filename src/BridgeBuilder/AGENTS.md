@@ -59,5 +59,7 @@ floor the total at the selected networks' elevated base price. See project contr
 
 After any source-code edit, follow contract section 13: invoke the exact `Cities2.exe` kill command,
 verify the game is stopped, remove all mod-created bridges and generated artifacts, and verify the
-ownership-scoped cleanup. Compilation is not visual verification. For visual work, do not run unit
+ownership-scoped cleanup. After completing any code change, immediately build and deploy to the game
+without waiting for another request; back up the existing installation and verify installed files
+against the build output as required by section 13. Compilation is not visual verification. For visual work, do not run unit
 tests; inspect generated geometry and confirm both near and far views in game.

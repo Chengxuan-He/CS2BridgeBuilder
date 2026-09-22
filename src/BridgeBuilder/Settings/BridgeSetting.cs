@@ -3,6 +3,7 @@ using Colossal.IO.AssetDatabase;
 using CS2Mods.Shared;
 using CS2Mods.Shared.Infrastructure;
 using Game.Modding;
+using Game.Input;
 using Game.Prefabs;
 using Game.Settings;
 using Game.UI.Localization;
@@ -23,9 +24,7 @@ namespace BridgeBuilder.Settings;
 /// roads. The road exporter next door is the batch tool; this one is a bench.
 /// </summary>
 [FileLocation("ModsSettings/BridgeBuilder/BridgeBuilder")]
-[SettingsUITabOrder(BridgeTab, OptionsTab)]
-[SettingsUIGroupOrder(StatusGroup, DeckGroup, StyleGroup, LowerDeckGroup, ActionsGroup, ExportGroup, MaintenanceGroup)]
-[SettingsUIShowGroupName(DeckGroup, StyleGroup, LowerDeckGroup, ActionsGroup, ExportGroup, MaintenanceGroup)]
+[SettingsUITabOrder(OptionsTab)]
 public sealed class BridgeSetting : ModSetting
 {
     internal const string BridgeTab = "Bridge";
@@ -49,7 +48,14 @@ public sealed class BridgeSetting : ModSetting
     {
     }
 
-    [SettingsUISection(BridgeTab, StatusGroup)]
+    [SettingsUISection(OptionsTab)]
+    [SettingsUIKeyboardBinding(BindingKeyboard.B, ctrl: true)]
+    public ProxyBinding TogglePanel { get; set; }
+
+    [SettingsUISection(OptionsTab)]
+    public bool RemoveDevelopmentRestrictions { get; set; }
+
+    [SettingsUIHidden]
     [SettingsUIMultilineText("")]
     public string StatusText
     {
@@ -72,7 +78,7 @@ public sealed class BridgeSetting : ModSetting
     /// rule, and it is the honest one: the field says what the export will be called, and the export
     /// is what the configuration says it is.
     /// </summary>
-    [SettingsUISection(BridgeTab, DeckGroup)]
+    [SettingsUIHidden]
     [SettingsUITextInput]
     public string BridgeName { get; set; } = string.Empty;
 
@@ -92,7 +98,7 @@ public sealed class BridgeSetting : ModSetting
             upper, DeckCatalog.Find(LowerDeckId), BridgeStyleCatalog.Find(BridgeStyleId));
     }
 
-    [SettingsUISection(BridgeTab, DeckGroup)]
+    [SettingsUIHidden]
     [SettingsUIDropdown(typeof(BridgeSetting), nameof(GetDecks))]
     public string UpperDeckId
     {
@@ -107,7 +113,7 @@ public sealed class BridgeSetting : ModSetting
 
     private string _upperDeckId = string.Empty;
 
-    [SettingsUISection(BridgeTab, StyleGroup)]
+    [SettingsUIHidden]
     [SettingsUIDropdown(typeof(BridgeSetting), nameof(GetBridgeStyles))]
     public string BridgeStyleId
     {
@@ -122,11 +128,11 @@ public sealed class BridgeSetting : ModSetting
 
     private string _bridgeStyleId = BridgeStyleDefinitions.Default;
 
-    [SettingsUISection(BridgeTab, StyleGroup)]
+    [SettingsUIHidden]
     [SettingsUIDropdown(typeof(BridgeSetting), nameof(GetBuildStyles))]
     public string BuildStyleOverride { get; set; } = DonorBuildStyle;
 
-    [SettingsUISection(BridgeTab, LowerDeckGroup)]
+    [SettingsUIHidden]
     [SettingsUIDropdown(typeof(BridgeSetting), nameof(GetLowerDecks))]
     public string LowerDeckId
     {
@@ -148,7 +154,7 @@ public sealed class BridgeSetting : ModSetting
     /// other distance puts one through the other - while direction is traffic. Nothing about the
     /// bridge is drawn differently for a lower deck running the other way, so this is the player's.
     /// </summary>
-    [SettingsUISection(BridgeTab, LowerDeckGroup)]
+    [SettingsUIHidden]
     [SettingsUIDisableByCondition(typeof(BridgeSetting), nameof(NoLowerDeckChosen))]
     public bool LowerDeckOpposite { get; set; } = true;
 
@@ -164,14 +170,14 @@ public sealed class BridgeSetting : ModSetting
     [SettingsUIHidden]
     public float DeckSpacing { get; set; } = 8f;
 
-    [SettingsUISection(BridgeTab, ActionsGroup)]
+    [SettingsUIHidden]
     [SettingsUIButton]
     public bool RescanRoads
     {
         set => RoadSelectionModel.Request(ExporterRequest.Refresh);
     }
 
-    [SettingsUISection(BridgeTab, ActionsGroup)]
+    [SettingsUIHidden]
     [SettingsUIButton]
     [SettingsUIDisableByCondition(typeof(BridgeSetting), nameof(CannotExport))]
     public bool ExportSelected
@@ -179,10 +185,10 @@ public sealed class BridgeSetting : ModSetting
         set => RoadSelectionModel.Request(ExporterRequest.ExportSelected);
     }
 
-    [SettingsUISection(BridgeTab, ActionsGroup)]
+    [SettingsUIHidden]
     public bool ArmRemoval { get; set; }
 
-    [SettingsUISection(BridgeTab, ActionsGroup)]
+    [SettingsUIHidden]
     [SettingsUIButton]
     [SettingsUIDisableByCondition(typeof(BridgeSetting), nameof(CannotRemove))]
     public bool RemoveSelected
@@ -195,20 +201,22 @@ public sealed class BridgeSetting : ModSetting
         }
     }
 
-    [SettingsUISection(OptionsTab, ExportGroup)]
+    [SettingsUIHidden]
     public bool OverwriteExisting { get; set; } = true;
 
-    [SettingsUISection(OptionsTab, ExportGroup)]
+    [SettingsUIHidden]
     public bool EmbedIcons { get; set; }
 
-    [SettingsUISection(OptionsTab, ExportGroup)]
+    [SettingsUIHidden]
     public bool AllowGameplayExport { get; set; }
 
-    [SettingsUISection(OptionsTab, MaintenanceGroup)]
+    [SettingsUIHidden]
     public bool RemoveUnusedDependencies { get; set; } = true;
 
     public override void SetDefaults()
     {
+        ResetKeyBindings();
+        RemoveDevelopmentRestrictions = false;
         UpperDeckId = string.Empty;
         BridgeStyleId = BridgeStyleDefinitions.Default;
         BuildStyleOverride = DonorBuildStyle;
