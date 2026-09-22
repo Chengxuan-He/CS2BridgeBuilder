@@ -96,6 +96,7 @@ internal static class BridgePrefabRemoval
             {
                 if (!protectedAssets.Contains(root)) continue;
                 report.Warning($"Kept bridge '{root.name}': another saved prefab still references it.");
+                Mod.Log.Critical($"Bridge deletion blocked for '{root.name}': another saved prefab still references it.");
                 return deleted;
             }
             candidates.ExceptWith(protectedAssets);
@@ -127,6 +128,7 @@ internal static class BridgePrefabRemoval
                     candidate.asset = asset;
                     report.Warning($"Could not delete '{candidate.name}'; its dependencies were retained: "
                         + exception.Message);
+                    Mod.Log.Critical(exception, $"Bridge asset deletion failed: '{candidate.name}'. Dependencies retained.");
                     // A road which could not be removed still needs its reverse-linked replacements.
                     if (rootSet.Contains(candidate)) break;
                     continue;
@@ -138,12 +140,17 @@ internal static class BridgePrefabRemoval
                         ready.Enqueue(dependency);
             }
             if (deleted.Count < candidates.Count)
+            {
                 report.Warning($"Kept {candidates.Count - deleted.Count} bridge prefab(s) because "
                     + "a deletion failed or their references form a cycle; no dependency was cut away.");
+                Mod.Log.Critical("Bridge asset deletion incomplete; remaining assets: "
+                    + string.Join(", ", candidates.Except(deleted, comparer).Select(p => p.name)));
+            }
         }
         catch (Exception exception)
         {
             report.Warning("Bridge deletion stopped while inspecting asset references: " + exception.Message);
+            Mod.Log.Critical(exception, "Bridge deletion stopped while inspecting asset references.");
         }
         // Geometry stays allocated while the old render prefabs are registered in the live world.
         // No geometry, mod cache, source asset or unrelated bridge is swept by this operation.

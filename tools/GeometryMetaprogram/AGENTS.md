@@ -38,4 +38,6 @@ and 13 of [`PROJECT_CONTRACT.md`](../../docs/agent-contract/PROJECT_CONTRACT.md)
 
 Changes in this directory are source-code updates. After each update, perform the mandatory
 `Cities2.exe` stop, process verification and removal of every mod-created bridge and generated
-artifact described in project-contract section 13.
+artifact described in project-contract section 13. After completing any code change, immediately
+build and deploy the updated mod to the game without waiting for another request. Back up the existing
+installation and verify installed files against the build output as required by that section.

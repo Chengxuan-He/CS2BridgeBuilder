@@ -16,6 +16,36 @@ internal static class RuntimeUiText
 
     private static readonly Dictionary<string, string[]> Entries = new(StringComparer.Ordinal)
     {
+        ["MissingBridgesRemoved"] = new[]
+        {
+            "Removed placed networks for {0} missing Bridge Builder bridge assets from this city. Other assets were not removed. The original save file is unchanged; save as a new file to keep this repair.",
+            "已从当前城市移除 {0} 种缺失的 Bridge Builder 桥梁资产对应的已建路网，未移除其他资产。原存档文件未被覆盖；请另存为新存档以保留修复。",
+            "已從目前城市移除 {0} 種缺失的 Bridge Builder 橋梁資產對應的已建路網，未移除其他資產。原存檔未被覆寫；請另存新檔以保留修復。",
+            "Netze für {0} fehlende Bridge-Builder-Brücken entfernt. Andere Assets bleiben erhalten. Der ursprüngliche Spielstand bleibt unverändert; bitte unter neuem Namen speichern.",
+            "Se eliminaron las redes de {0} puentes de Bridge Builder ausentes. Los demás recursos y el archivo original no se modificaron. Guarda en un archivo nuevo para conservar la reparación.",
+            "Les réseaux de {0} ponts Bridge Builder manquants ont été supprimés. Les autres ressources et la sauvegarde originale sont conservées. Enregistrez dans un nouveau fichier pour conserver la réparation.",
+            "Rimosse le reti di {0} ponti Bridge Builder mancanti. Le altre risorse e il salvataggio originale sono invariati. Salva in un nuovo file per conservare la riparazione.",
+            "見つからない Bridge Builder 橋梁アセット {0} 種類の設置済みネットワークを削除しました。他のアセットと元のセーブファイルは変更していません。修復を保存するには別名で保存してください。",
+            "누락된 Bridge Builder 교량 에셋 {0}종의 배치된 네트워크를 제거했습니다. 다른 에셋과 원본 저장 파일은 변경하지 않았습니다. 복구 결과를 새 파일로 저장하세요.",
+            "Usunięto sieci {0} brakujących mostów Bridge Builder. Inne zasoby i oryginalny zapis pozostają bez zmian. Zapisz w nowym pliku, aby zachować naprawę.",
+            "Removidas as redes de {0} pontes Bridge Builder ausentes. Outros recursos e o arquivo original permanecem intactos. Salve em um novo arquivo para manter o reparo.",
+            "Удалены сети {0} отсутствующих мостов Bridge Builder. Другие ресурсы и исходное сохранение не изменены. Сохраните город в новом файле, чтобы оставить исправление."
+        },
+        ["MissingBridgesRepairFailed"] = new[]
+        {
+            "Missing bridge cleanup could not be completed. Check the mod log. Do not overwrite the original save.",
+            "缺失桥梁清理未能完成，请查看模组日志。请勿覆盖原存档。",
+            "缺失橋梁清理未能完成，請查看模組日誌。請勿覆寫原存檔。",
+            "Bereinigung fehlgeschlagen. Mod-Protokoll prüfen. Originalspielstand nicht überschreiben.",
+            "No se pudo completar la limpieza. Revisa el registro del mod. No sobrescribas la partida original.",
+            "Nettoyage incomplet. Consultez le journal du mod. N’écrasez pas la sauvegarde originale.",
+            "Pulizia incompleta. Controlla il registro della mod. Non sovrascrivere il salvataggio originale.",
+            "削除処理が完了しませんでした。Mod のログを確認し、元のセーブを上書きしないでください。",
+            "정리를 완료하지 못했습니다. 모드 로그를 확인하고 원본 저장 파일을 덮어쓰지 마세요.",
+            "Nie ukończono czyszczenia. Sprawdź dziennik moda. Nie nadpisuj oryginalnego zapisu.",
+            "Limpeza incompleta. Consulte o log do mod. Não sobrescreva o salvamento original.",
+            "Очистка не завершена. Проверьте журнал мода. Не перезаписывайте исходное сохранение."
+        },
         ["ActivateLocked"] = new[]
         {
             "Unlock the original bridge before building this bridge.",
