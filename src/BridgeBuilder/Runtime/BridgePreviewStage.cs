@@ -17,23 +17,23 @@ internal sealed class BridgePreviewStage : IDisposable
 {
     internal const int Layer = 31;
     private const uint LightingLayer = 128;
+    private const float AmbientFillLux = 120f;
     private Scene _scene;
     private GameObject _root = null!;
     private readonly List<Renderer> _renderers = new();
     private readonly List<Light> _lights = new();
-    private Camera _camera = null!;
     private bool _disposed;
     internal Vector3 Origin => _root.transform.position;
     internal float ShadowDistance { get; private set; }
 
     internal void Initialize(string prefix, Camera camera, BridgePreviewDrawList draws)
     {
-        _camera = camera;
         _scene = SceneManager.CreateScene(prefix + "_preview_scene");
         _root = new GameObject(prefix + "_bridge_segment")
         { hideFlags = HideFlags.HideAndDontSave, layer = Layer };
-        // Also keep the stage far outside the city. The camera callback below
-        // hides its renderers/lights from every non-preview camera before culling.
+        // Isolate through the preview scene, rendering layer and distant finite
+        // light volumes. Never toggle lights per camera: HDRP collects multiple
+        // cameras before executing their render requests and shadow preparation.
         _root.transform.position = new Vector3(0f, -100000f, 0f);
         SceneManager.MoveGameObjectToScene(_root, _scene);
         SceneManager.MoveGameObjectToScene(camera.gameObject, _scene);
@@ -41,7 +41,7 @@ internal sealed class BridgePreviewStage : IDisposable
         camera.cullingMask = 1 << Layer;
         // This bounds-derived distance is only for the isolated light/camera rig,
         // never a bridge-generation measurement or geometry correction.
-        ShadowDistance = Mathf.Max(10f, draws.Bounds.size.magnitude * 4f);
+        ShadowDistance = Mathf.Max(20f, draws.Bounds.size.magnitude * 8f);
 
         var groups = new Dictionary<(Mesh, Matrix4x4), Material[]>();
         var properties = new Dictionary<(Mesh, Matrix4x4), MaterialPropertyBlock>();
@@ -84,13 +84,23 @@ internal sealed class BridgePreviewStage : IDisposable
         // Neutral daylight presentation, independent of the city's time/weather.
         // Keep specular response on the key; the fill approximates diffuse sky
         // illumination instead of producing a second hard white sun reflection.
-        // Box spots give parallel illumination and orthographic shadows using the
-        // punctual atlas. A Directional light would compete with the game's sun
+        // The point key casts into the punctual atlas; box spots supply diffuse fill.
+        // A Directional light would compete with the game's sun
         // for its single cascade atlas, even with separate scenes/light layers.
         // Neither light is a reference to (or mutation of) the city's sun.
         AddLight(prefix + "_key", new Vector3(50f, -35f, 0f), 4000f, true, draws.Bounds);
         AddLight(prefix + "_fill", new Vector3(35f, 145f, 0f), 1000f, false, draws.Bounds);
-        RenderPipelineManager.beginCameraRendering += BeforeCamera;
+        // A weak neutral diffuse environment approximation, including the underside.
+        // Opposing box spots avoid a completely unlit normal without changing material
+        // colours, exposure, city RenderSettings or the transparent background. Each
+        // non-key light has no specular or shadow contribution; only the key owns shadows.
+        AddLight(prefix + "_ambient_front", Vector3.zero, AmbientFillLux, false, draws.Bounds);
+        AddLight(prefix + "_ambient_back", new Vector3(0f, 180f, 0f), AmbientFillLux, false, draws.Bounds);
+        AddLight(prefix + "_ambient_left", new Vector3(0f, 90f, 0f), AmbientFillLux, false, draws.Bounds);
+        AddLight(prefix + "_ambient_right", new Vector3(0f, -90f, 0f), AmbientFillLux, false, draws.Bounds);
+        AddLight(prefix + "_ambient_top", new Vector3(90f, 0f, 0f), AmbientFillLux, false, draws.Bounds);
+        AddLight(prefix + "_ambient_bottom", new Vector3(-90f, 0f, 0f), AmbientFillLux, false, draws.Bounds);
+        SetVisible(true);
     }
 
     internal void MoveToScene(GameObject obj) => SceneManager.MoveGameObjectToScene(obj, _scene);
@@ -120,12 +130,21 @@ internal sealed class BridgePreviewStage : IDisposable
         light.useColorTemperature = false;
         light.cullingMask = 1 << Layer;
         var hd = obj.AddComponent<HDAdditionalLightData>();
-        hd.SetLightTypeAndShape(HDLightTypeAndShape.BoxSpot);
-        hd.SetRange((extent.z + margin) * 2f);
-        hd.SetBoxSpotSize(new Vector2((extent.x + margin) * 2f, (extent.y + margin) * 2f));
+        // The game's DOTS light merge sorts ProjectorBox after city Point lights,
+        // but updates shadow requests only in its Unity-light-count prefix. A
+        // shadow-casting box can reserve a slot and then never populate it.
+        // Unity Point lights sort before DOTS points (their source indices are
+        // lower), so the single preview shadow owner stays in that prefix.
+        hd.SetLightTypeAndShape(key ? HDLightTypeAndShape.Point : HDLightTypeAndShape.BoxSpot);
+        var keyDistance = Mathf.Max(10f, bounds.size.magnitude * 4f);
+        if (key)
+            obj.transform.localPosition = bounds.center - rotation * Vector3.forward * keyDistance;
+        hd.SetRange(key ? keyDistance + bounds.extents.magnitude + margin : (extent.z + margin) * 2f);
+        if (!key)
+            hd.SetBoxSpotSize(new Vector2((extent.x + margin) * 2f, (extent.y + margin) * 2f));
         hd.applyRangeAttenuation = false;
         hd.SetLightLayer((LightLayerEnum)LightingLayer, (LightLayerEnum)LightingLayer);
-        hd.fadeDistance = ShadowDistance;
+        hd.fadeDistance = key ? keyDistance * 2f : ShadowDistance;
         hd.EnableShadows(key);
         if (key)
         {
@@ -133,23 +152,20 @@ internal sealed class BridgePreviewStage : IDisposable
             hd.SetShadowResolutionOverride(true);
             hd.SetShadowResolution(2048);
             hd.SetShadowNearPlane(.1f);
-            hd.SetShadowFadeDistance(ShadowDistance);
+            hd.SetShadowFadeDistance(keyDistance * 2f);
         }
         hd.affectSpecular = key;
         hd.affectsVolumetric = false;
-        hd.SetIntensity(lux, LightUnit.Lux);
+        // Preserve centre illuminance for the point key: candela = lux * distance².
+        hd.SetIntensity(key ? lux * keyDistance * keyDistance : lux,
+            key ? LightUnit.Candela : LightUnit.Lux);
         _lights.Add(light);
-    }
-
-    private void BeforeCamera(ScriptableRenderContext context, Camera camera)
-    {
-        // The shipped HDRP invokes beginCameraRendering in TryCull BEFORE Cull.
-        // No camera masks, city renderers or city lights are modified.
-        SetVisible(camera == _camera);
     }
 
     internal void SetVisible(bool visible)
     {
+        // Called only during stage setup or completion on a later engine frame,
+        // never from camera callbacks while HDRP holds queued culling results.
         foreach (var renderer in _renderers) renderer.enabled = visible;
         foreach (var light in _lights) light.enabled = visible;
     }
@@ -158,7 +174,6 @@ internal sealed class BridgePreviewStage : IDisposable
     {
         if (_disposed) return;
         _disposed = true;
-        RenderPipelineManager.beginCameraRendering -= BeforeCamera;
         UnityEngine.Object.DestroyImmediate(_root);
         // The caller disposes camera/pass first, so only an empty scene remains.
         if (_scene.IsValid() && _scene.isLoaded) SceneManager.UnloadSceneAsync(_scene);

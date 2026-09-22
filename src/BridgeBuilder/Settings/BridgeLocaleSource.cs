@@ -47,6 +47,13 @@ internal sealed class BridgeLocaleSource : IDictionarySource
             entries[_setting.GetOptionDescLocaleID(option.Key)] = option.Value.Description;
         }
 
+        if (_text.TryGetOption(nameof(BridgeSetting.TogglePanel), out var hotkey))
+        {
+            entries[_setting.GetBindingKeyLocaleID(nameof(BridgeSetting.TogglePanel))] = hotkey.Label;
+            entries[_setting.GetBindingKeyHintLocaleID(nameof(BridgeSetting.TogglePanel))] = hotkey.Description;
+            entries[_setting.GetBindingMapLocaleID()] = _text.Title;
+        }
+
         foreach (var bridge in BridgeRegistrationStore.Load())
         {
             entries[$"Assets.NAME[{bridge.PrefabName}]"] = bridge.RegistrationName;

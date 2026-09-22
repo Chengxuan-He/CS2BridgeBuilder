@@ -1,5 +1,19 @@
 # Project contract and Agent instructions
 
+## First rule: fix reported bugs immediately
+
+Fix every reported bug immediately. A user bug report authorizes the corresponding repair. After
+diagnosis, immediately proceed with implementation and verification; acknowledgment, analysis, a plan
+or a proposed next step must not replace the fix. Do not require the user to request the same fix again.
+
+This rule does not waive archetype-evidence, branching, safety, cleanup or actual in-game acceptance
+requirements. When a specific blocker exists, first complete all unblocked work, then identify the
+missing evidence, permission or necessary manual action. Do not guess at the implementation or falsely
+report a successful fix.
+
+Instruction-edit rollback baseline: branch `dev`, HEAD
+`7cfb9afcffc9c87c69801cc1a0c5621c7d1d322d` (recorded before this edit).
+
 Rules this mod is held to. They are not style preferences; each one is here because breaking it
 produced a bridge that was wrong in a way nothing reported, and finding out why cost a round of
 guessing.
@@ -772,7 +786,19 @@ Working-tree state is part of the check. If uncommitted changes from another bri
 branch boundary, the agent must stop rather than carrying those changes into the current bridge's
 branch. Switching branches after making the edit does not make the edit compliant.
 
-## 13. Every code update stops the game and removes generated bridges
+## 13. Every code update stops the game, removes generated bridges and deploys immediately
+
+Deployment-rule rollback baseline (2026-09-22): branch `dev`, HEAD
+`7cfb9afcffc9c87c69801cc1a0c5621c7d1d322d`, recorded before editing these instructions.
+
+After completing any code change, immediately build and deploy the updated mod to the game in the
+same task. Do not stop at editing or compilation, postpone deployment to another turn, or wait for
+a separate deployment request. Perform the shutdown and ownership-scoped cleanup below first,
+back up the installed mod and cleanup targets before replacing or removing them, preserve other
+accepted functionality, and verify the installed payload against the successful build output.
+If building or deployment fails, resolve what can be resolved and report the exact remaining blocker;
+never install a failed build or claim an unsuccessful deployment succeeded. Deployment is not visual
+acceptance: the human near/far checks required by section 6 remain mandatory.
 
 After every source-code update, the Agent must invoke a kill command for the exact `Cities2.exe`
 process. This command is mandatory even when the process is not observed running; a no-op result is

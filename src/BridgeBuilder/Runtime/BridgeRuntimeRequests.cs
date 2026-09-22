@@ -31,6 +31,32 @@ internal static class BridgeRuntimeRequests
     private static readonly Queue<BridgeRuntimeRequest> Requests = new();
     private static RuntimeUiMessage _status = new(string.Empty);
     private static int _revision;
+    private static bool _catalogLoading = true;
+
+    internal static bool CatalogLoading
+    {
+        get { lock (Gate) return _catalogLoading; }
+    }
+
+    internal static void BeginCatalogLoad()
+    {
+        lock (Gate)
+        {
+            _catalogLoading = true;
+            _revision++;
+        }
+    }
+
+    internal static void EndCatalogLoad()
+    {
+        lock (Gate)
+        {
+            _catalogLoading = false;
+            foreach (var request in Requests)
+                if (request.Action == BridgeRuntimeAction.Refresh) _catalogLoading = true;
+            _revision++;
+        }
+    }
 
     internal static int Revision
     {
@@ -47,6 +73,7 @@ internal static class BridgeRuntimeRequests
         lock (Gate)
         {
             // Coalesce adjacent typing events only; other actions are ordering barriers.
+            if (request.Action == BridgeRuntimeAction.Refresh) _catalogLoading = true;
             BridgeRuntimeRequest? last = null;
             foreach (var queued in Requests) last = queued;
             if (request.Action == BridgeRuntimeAction.Rename && last?.Action == BridgeRuntimeAction.Rename

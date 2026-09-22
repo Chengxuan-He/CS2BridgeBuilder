@@ -83,6 +83,7 @@
 .bb-panel .bb-search .bb-text-input { width: 0; }
 .bb-status { flex-shrink: 0; min-height: 20rem; margin-top: 8rem; color: var(--textColorDisabled); }
 .bb-empty { padding: 24rem; text-align: center; color: var(--textColorDisabled); }
+.bb-list-loading { min-height: 120rem; display: flex; align-items: center; justify-content: center; padding: 24rem; }
 .bb-manage-list { display: flex; flex-direction: column; min-width: 0; min-height: 0; flex: 1.2 1 0; margin-right: 16rem; background-color: var(--sectionBackgroundColor); }
 .bb-detail-scroll { flex: 1 1 0; background-color: var(--sectionBackgroundColor); }
 .bb-manage-right { display: flex; flex-direction: column; min-width: 0; min-height: 0; }

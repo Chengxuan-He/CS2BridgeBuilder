@@ -33,7 +33,7 @@ internal static class BridgeTowerMaterials
             ["Suspension02"] = new[] { "SuspensionBridge02NetPylon", "SuspensionBridge02NetPillar" },
 
             ["GoldenGate"] = new[] { "GoldenGateBridgePylon Placeholder", "GoldenGateBridgePillar Placeholder" },
-            ["GoldenGateDouble"] = new[] { "GoldenGateBridgePylon Placeholder" },
+            ["GoldenGateDouble"] = new[] { "GoldenGateBridgePylon Placeholder", "BXP GoldenGateBridgePillar Placeholder - Custom Lighting" },
 
             // The golden pair. 03 and 04 share one set of surfaces, named after 03.
             ["SuspensionGolden"] = new[] { "SuspensionBridge03Pillar", "SuspensionBridge03PylonTop" },
