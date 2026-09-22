@@ -76,6 +76,8 @@ public sealed class Mod : IMod
         updateSystem.UpdateAfter<BridgePriceSystem, Game.Prefabs.NetInitializeSystem>(SystemUpdatePhase.PrefabUpdate);
         updateSystem.UpdateAfter<BridgePriceSystem, Game.Prefabs.NetCompositionSystem>(SystemUpdatePhase.Modification4);
         updateSystem.UpdateAt<BridgeBuilderUISystem>(SystemUpdatePhase.UIUpdate);
+        updateSystem.UpdateAt<BridgeUnlockSystem>(SystemUpdatePhase.UIUpdate);
+        updateSystem.UpdateAt<BridgeMissingAssetSystem>(SystemUpdatePhase.UIUpdate);
     }
 
     public void OnDispose()
@@ -152,7 +154,7 @@ public sealed class Mod : IMod
         {
             World.DefaultGameObjectInjectionWorld?
                 .GetExistingSystemManaged<OptionsUISystem>()?
-                .OpenPage(setting.id, BridgeSetting.BridgeTab, false);
+                .OpenPage(setting.id, BridgeSetting.OptionsTab, false);
         }
         catch (Exception exception)
         {
@@ -219,6 +221,7 @@ public sealed class Mod : IMod
         setting.RegisterInOptionsUI();
 
         AssetDatabase.global.LoadSettings(Id, setting, new BridgeSetting(mod));
+        setting.RegisterKeyBindings();
         Setting = setting;
 
         AddLocaleSources(setting);

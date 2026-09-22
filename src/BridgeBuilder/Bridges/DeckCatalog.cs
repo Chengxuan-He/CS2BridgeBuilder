@@ -170,7 +170,7 @@ internal static class DeckCatalog
                 road,
                 DeckKind.RoadBuilder,
                 builderRoad.Name,
-                builderRoad.Width > 0f ? builderRoad.Width : NetWidth.Of(road),
+                NetWidth.Of(road),
                 builderRoad);
         }
 

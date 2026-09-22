@@ -3,7 +3,8 @@
     <TargetFramework>netstandard2.1</TargetFramework>
     <AssemblyName>BridgeBuilder</AssemblyName>
     <RootNamespace>BridgeBuilder</RootNamespace>
-    <Version>0.3.0</Version>
+    <!-- Release version follows the last source modification date: yy.M.d. -->
+    <Version>26.9.23</Version>
     <GenerateAssemblyInfo>true</GenerateAssemblyInfo>
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
     <RestoreIgnoreFailedSources>true</RestoreIgnoreFailedSources>

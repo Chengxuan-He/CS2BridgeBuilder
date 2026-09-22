@@ -182,8 +182,10 @@ internal static class BridgeTowers
                 // at all. This is an in-game observation written down as one.
                 // 12, from 9. The correction to 9 overshot by 3 - a narrower road makes a wider tower,
                 // so three metres of tower came off by putting three metres of road back on.
-                new Tower("GrandBridgePylon Placeholder", 34, 12, verified: true),
-                new Tower("GrandBridgePillar Placeholder", 44, 12, verified: true),
+                // Measured native road: four 3 m carriageways plus two 3.5 m sidewalks.
+                // User authorized this 7 m reference correction on 2026-09-21.
+                new Tower("GrandBridgePylon Placeholder", 34, 19, verified: true),
+                new Tower("GrandBridgePillar Placeholder", 44, 19, verified: true),
                 new Tower("BXP GrandBridgePillarB Placeholder", 44, 24, verified: true),
             },
             ["Lift"] = new[]
@@ -474,16 +476,6 @@ internal static class BridgeTowers
     /// </summary>
     internal static bool BringsItsOwnRailings(string? styleId) =>
         styleId is "Suspension01" or "SuspensionGolden" or "GoldenGate" or "GoldenGateDouble";
-
-    /// <summary>
-    /// Authored gap between the road surface and the outer sidewalk platform. The golden family keeps
-    /// its measured one-metre strip. SuspensionBridge01 has no strip: its inner and outer railing edges
-    /// are exactly one sidewalk width apart.
-    /// </summary>
-    internal static float RailingRoadSurfaceGap(string? styleId) =>
-        styleId is "SuspensionGolden" or "GoldenGate" or "GoldenGateDouble"
-            ? GoldenBridgeRailings.RoadSurfaceGap
-            : 0f;
 
     /// <summary>
     /// Whether the structure has separate outer-road and inner-carriageway envelopes. This is
