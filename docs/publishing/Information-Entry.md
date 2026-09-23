@@ -2,11 +2,11 @@
 
 更新：2026-09-23。发布候选版本为 **26.9.23**，程序集版本为 **26.9.23.0**。
 
-用户已确认所有桥梁验收通过；本次新增列表加载动画，仍待游戏内 UI 检查。
+本次包含列表加载动画及后续两项双层桥修复。此前验收不覆盖这些后续改动；最新近景/远景和 UI 验收尚待明确记录。
 
 ## 待发布文件
 
-候选目录：`C:/Users/admin/Downloads/BridgeBuilder-release-26.9.23-20260923`。
+候选目录：`C:/Users/admin/Downloads/BridgeBuilder-release-26.9.23-20260923-r2`，替代此前同日候选。
 
 后续上传应使用 `publish-content`，不是 `content`、`postprocessed` 或 `bin/Release`。
 官方后处理结果以包内 `PostProcess.log` 和 `ProcessedContent.json` 为准。
