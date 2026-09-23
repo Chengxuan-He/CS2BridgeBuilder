@@ -224,6 +224,20 @@ internal sealed class BridgeComposer
         var doubleDeckReference = options.DoubleDeck && prototypeDecks != null
             ? variant.RoadWidth
             : 0f;
+        var followsUpperAuxiliary = options.DoubleDeck && style.Id == "Suspension02";
+        if (followsUpperAuxiliary)
+        {
+            // Use the recorded upper archetype road, not the lower network owning the towers.
+            // The selected upper road and this reference must describe the same deck role.
+            var upperPrototype = prototypeDecks?.m_Prefab;
+            if (upperPrototype == null || !BridgeMeasurements.TryGet(
+                    upperPrototype.name, out doubleDeckReference, out _) || doubleDeckReference <= 0f)
+            {
+                _report.Failed(target.name, new InvalidOperationException(
+                    "The grey double suspension upper-deck archetype width is not recorded."));
+                return null;
+            }
+        }
         var structureAllowance = doubleDeckReference > 0f
             ? 0f
             : style.ArchetypeStructureAllowance;
@@ -239,15 +253,16 @@ internal sealed class BridgeComposer
             extra = PrototypeBridgeSizing.ReferenceDeckExtra(
                 targetWidth, doubleDeckReference, extra);
             primarySourceRoadWidth = doubleDeckReference;
-            var referenceLevel = prototypeDecks!.m_Position.y > TowerWidening.CentreEpsilon
+            var referenceLevel = followsUpperAuxiliary ? "upper auxiliary" : prototypeDecks!.m_Position.y > TowerWidening.CentreEpsilon
                 ? "lower"
                 : "upper";
             _report.Note(string.Format(
                 CultureInfo.InvariantCulture,
-                "{0}: double-deck width follows the {1} root deck: {2:0.###} m target minus "
+                "{0}: double-deck structure width follows the {1} deck: {2:0.###} m target minus "
                 + "{3:0.###} m on prototype '{4}' = {5:0.########} m widening. The other deck and "
                 + "the road geometry are excluded from the bridge-structure width.",
-                target.name, referenceLevel, targetWidth, doubleDeckReference, variant.Name, extra));
+                target.name, referenceLevel, targetWidth, doubleDeckReference,
+                followsUpperAuxiliary ? prototypeDecks!.m_Prefab.name : variant.Name, extra));
         }
 
         var overheadExtra = BridgeTowers.WhiteTrussArchWidths.OverheadExtra(
@@ -361,7 +376,9 @@ internal sealed class BridgeComposer
         {
             var primary = string.Equals(name, sourceName, StringComparison.Ordinal);
             var recordedRoad = BridgeTowers.RoadFor(style.Id, name);
-            var road = primary
+            var road = style.Id == "Suspension02" && primarySourceRoadWidth.HasValue
+                ? primarySourceRoadWidth.Value
+                : primary
                 ? primarySourceRoadWidth
                     ?? chosen?.Road
                     ?? (BridgeTowers.WidthFollowsSidewalks(style.Id)
