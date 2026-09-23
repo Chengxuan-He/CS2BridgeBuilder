@@ -2107,6 +2107,13 @@ internal sealed class TowerFactory
                         : TowerWidening.WidenParts(source, extra, scope!);
                 }
 
+                if (railings && APylonCableGeometry.IsRecorded(_styleId, original.name)
+                    && !APylonCableGeometry.TryApply(original.name, source, extra, moved))
+                {
+                    _report.Defect($"'{name}' does not match the recorded A-pylon cable vertices; generation stopped.");
+                    return null;
+                }
+
                 if (openTruss && !usedRecordedTruss02 && !usedRecordedTruss03 && !blueSection
                     && !trussFacts.ContractSatisfied)
                 {

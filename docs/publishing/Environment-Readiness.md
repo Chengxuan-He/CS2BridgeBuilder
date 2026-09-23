@@ -12,8 +12,9 @@
 
 ## 本次候选
 
-版本 **26.9.23**。用户已确认桥梁验收通过；本次只新增列表加载状态和转圈动画。
-候选目录：`C:/Users/admin/Downloads/BridgeBuilder-release-26.9.23-20260923`。
+版本 **26.9.23**。本次包含列表加载动画、灰色双层桥上层宽度传参修复及 A 型双层桥缆绳中心锚点修复。
+最新两项修复已部署，最终游戏内近景/远景验收尚未明确记录。
+候选目录：`C:/Users/admin/Downloads/BridgeBuilder-release-26.9.23-20260923-r2`，替代此前同日候选。
 
 每次打包都重新运行官方后处理，不复用 0.3.6 的旧 DLL。具体退出码及文件哈希保存在候选的
 `PostProcess.log`、`ProcessedContent.json` 和 `Readiness.json`。只有后处理成功才使用
