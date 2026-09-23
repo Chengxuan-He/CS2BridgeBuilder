@@ -1,6 +1,12 @@
 using System.Buffers.Binary;
 using Colossal.AssetPipeline.Native;
 
+if (args.Length == 4 && args[0] == "--a-pylon-cables")
+{
+    APylonCables.Emit(args[1], args[2], args[3]);
+    return 0;
+}
+
 if (args.Length == 3 && args[0] == "--golden-ornament")
 {
     GoldenOrnament.Emit(args[1], args[2]);
