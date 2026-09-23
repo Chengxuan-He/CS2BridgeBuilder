@@ -1,5 +1,14 @@
 # Bridge Builder 26.9.23 release candidate
 
+Repacked after the September 23 double-deck repairs:
+
+- Gray double suspension sizes its towers and cables from the upper road rather than the lower root network.
+- A-pylon double-deck cable assemblies retain their native x=0 attachment axis at full detail and both LODs.
+
+This candidate supersedes the earlier same-date package. These two repairs were compiled and deployed;
+their final in-game near/far acceptance has not been explicitly recorded. Earlier acceptance below
+does not cover these later changes. Packaging does not publish to Paradox Mods.
+
 The user accepted all bridge styles on 2026-09-23, following deployment of 26.9.22.
 This release preserves that geometry and adds an explicit catalogue-loading state to the road,
 bridge-style and created-bridge lists. A spinner is displayed until catalogue publication finishes;
