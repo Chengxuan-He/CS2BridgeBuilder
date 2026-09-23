@@ -492,8 +492,11 @@ public partial class BridgeGenerationSystem : GameSystemBase
             // Size from the archetype's root ownership role. For Suspension and ExtradosedBridge01
             // that is the converted upper road; for ExtradosedBridge02 the auxiliary is above, so
             // the chosen lower road/track is the root and supplies the width reference.
+            // Grey double suspension owns the lower network, but its structure follows the upper
+            // road. Network ownership must not choose the structural width measurement.
+            var structuralDeck = options.DoubleDeck && style.Id == "Suspension02" ? upper : main;
             var variant = composer.Apply(
-                clone, style, main.Width, options, measure: main.Prefab);
+                clone, style, structuralDeck.Width, options, measure: structuralDeck.Prefab);
             if (variant == null) return false;
 
             ApplyPrototypeIcon(clone, variant, report);
