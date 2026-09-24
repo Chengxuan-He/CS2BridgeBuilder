@@ -16,6 +16,42 @@ internal static class RuntimeUiText
 
     private static readonly Dictionary<string, string[]> Entries = new(StringComparer.Ordinal)
     {
+        ["CustomRoad"] = new[]
+        {
+            "+ Custom road", "+ 自定义道路", "+ 自訂道路", "+ Eigene Straße",
+            "+ Vía personalizada", "+ Route personnalisée", "+ Strada personalizzata",
+            "+ カスタム道路", "+ 사용자 지정 도로", "+ Własna droga", "+ Via personalizada", "+ Своя дорога"
+        },
+        ["RoadBuilderRequired"] = new[]
+        {
+            "Creating custom roads requires the optional Road Builder mod to be installed and enabled. Existing roads and tracks can be used without it.",
+            "创建自定义道路需要安装并启用可选模组 Road Builder。使用已有道路和轨道不需要此模组。",
+            "建立自訂道路需要安裝並啟用選用模組 Road Builder。使用現有道路與軌道不需要此模組。",
+            "Eigene Straßen benötigen das optionale Mod Road Builder (installiert und aktiviert). Vorhandene Straßen und Gleise funktionieren ohne dieses Mod.",
+            "Para crear vías personalizadas, instala y activa el mod opcional Road Builder. No es necesario para usar vías existentes.",
+            "La création de routes personnalisées nécessite le mod facultatif Road Builder, installé et activé. Les routes et voies existantes restent utilisables sans lui.",
+            "Per creare strade personalizzate, installa e attiva la mod opzionale Road Builder. Non serve per usare strade e binari esistenti.",
+            "カスタム道路の作成には任意の MOD Road Builder のインストールと有効化が必要です。既存の道路や線路には不要です。",
+            "사용자 지정 도로를 만들려면 선택 모드인 Road Builder를 설치하고 활성화하세요. 기존 도로와 선로에는 필요하지 않습니다.",
+            "Tworzenie własnych dróg wymaga zainstalowanego i włączonego opcjonalnego moda Road Builder. Istniejące drogi i tory działają bez niego.",
+            "Para criar vias personalizadas, instale e ative o mod opcional Road Builder. Vias e trilhos existentes podem ser usados sem ele.",
+            "Для создания своих дорог установите и включите необязательный мод Road Builder. Существующие дороги и пути доступны без него."
+        },
+        ["RoadBuilderOpenFailed"] = new[]
+        {
+            "Road Builder is loaded, but its interface could not be opened. Try its own toolbar button. Your bridge selection has been kept.",
+            "Road Builder 已加载，但无法打开其界面。请尝试使用该模组自己的工具栏按钮。当前桥梁选择已保留。",
+            "Road Builder 已載入，但無法開啟其介面。請嘗試使用該模組自己的工具列按鈕。目前橋梁選擇已保留。",
+            "Road Builder ist geladen, aber die Oberfläche konnte nicht geöffnet werden. Nutze dessen Symbolleiste. Die Brückenauswahl bleibt erhalten.",
+            "Road Builder está cargado, pero no se pudo abrir. Prueba su botón de herramientas. La selección del puente se conserva.",
+            "Road Builder est chargé, mais son interface ne s’ouvre pas. Essayez son bouton dans la barre d’outils. Votre sélection est conservée.",
+            "Road Builder è caricato, ma non si apre. Prova il suo pulsante nella barra strumenti. La selezione del ponte è conservata.",
+            "Road Builder は読み込み済みですが、画面を開けませんでした。専用のツールバーボタンをお試しください。橋の選択は保持されています。",
+            "Road Builder가 로드되었지만 화면을 열 수 없습니다. 해당 모드의 도구 모음 버튼을 사용하세요. 교량 선택은 유지됩니다.",
+            "Road Builder jest załadowany, ale nie można go otworzyć. Użyj jego przycisku na pasku narzędzi. Wybór mostu został zachowany.",
+            "Road Builder está carregado, mas a interface não abriu. Tente o botão na barra de ferramentas do mod. A seleção da ponte foi mantida.",
+            "Road Builder загружен, но интерфейс не открылся. Попробуйте его кнопку на панели инструментов. Выбор моста сохранён."
+        },
         ["MissingBridgesRemoved"] = new[]
         {
             "Removed placed networks for {0} missing Bridge Builder bridge assets from this city. Other assets were not removed. The original save file is unchanged; save as a new file to keep this repair.",

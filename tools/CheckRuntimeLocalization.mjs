@@ -235,7 +235,7 @@ for (const view of ['CreateView({ decks, styles, status })', 'ManageView({ bridg
 const generation = read("src/BridgeBuilder/Systems/BridgeGenerationSystem.cs");
 const activation = generation.split("private bool ActivatePrefab(string prefabName)")[1]
     .split("private void RenameRuntimeBridge")[0];
-const lockCheck = activation.indexOf(".IsLocked(prefab)");
+const lockCheck = activation.indexOf("BridgeUnlockPolicy.TryPrepareBuild(prefab");
 const popup = activation.indexOf('Mod.ShowMessage(UiStringCatalog.Current.Title, RuntimeUiText.Get("ActivateLocked"))');
 const tool = activation.indexOf(".ActivatePrefabTool(prefab)");
 const close = activation.indexOf("?.CloseForBuild()");
@@ -309,3 +309,27 @@ for (const double of [false, true]) {
 }
 assert(uiSource.includes('[upperId, lowerId, styleId, prefabName, lowerDeckOpposite, ready]'));
 console.log("PASS direction toggle, preview selection invalidation and immutable creation recipes");
+
+// Optional Road Builder handoff must preserve both decks and the player's name.
+context.savedDraft = null;
+state = [true, "Road", "Train", "style", custom, true, "filter", "", false];
+triggers = [];
+const handoff = render('CreateView({ decks, styles, status: "", onSaveDraft: value => { savedDraft = value; } })');
+const pickers = handoff.filter(n => n.type?.name === "NetworkPicker");
+assert.equal(pickers.length, 2);
+pickers[1].props.onOpenRoadBuilder();
+assert.deepEqual(triggers[0], ["BridgeBuilder", "OpenRoadBuilder"]);
+assert.equal(context.savedDraft.name, custom);
+assert.equal(context.savedDraft.lowerId, "Train");
+state = [];
+const restored = render('CreateView({ decks, styles, status: "", draft: savedDraft })');
+assert.equal(restored.find(n => n.type?.name === "ModelPreview").props.upperId, "Road");
+assert.equal(restored.find(n => n.type?.name === "ModelPreview").props.lowerId, "Train");
+assert.equal(restored.find(n => n.type === "native-checkbox").props.checked, false);
+assert.equal(restored.find(n => n.type === "input").props.value, custom);
+state = [];
+triggers = [];
+const emptyPicker = render('NetworkPicker({ decks: [], title: "Networks", onOpenRoadBuilder: () => trigger("OpenRoadBuilder") })');
+emptyPicker.find(n => n.props.className === "bb-custom-road").props.onClick();
+assert.deepEqual(triggers[0], ["BridgeBuilder", "OpenRoadBuilder"]);
+console.log("PASS Road Builder entry with empty catalogue and single/double-deck draft handoff");

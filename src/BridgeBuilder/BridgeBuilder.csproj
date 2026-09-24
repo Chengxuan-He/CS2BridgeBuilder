@@ -4,7 +4,7 @@
     <AssemblyName>BridgeBuilder</AssemblyName>
     <RootNamespace>BridgeBuilder</RootNamespace>
     <!-- Release version follows the last source modification date: yy.M.d. -->
-    <Version>26.9.23</Version>
+    <Version>26.9.25</Version>
     <GenerateAssemblyInfo>true</GenerateAssemblyInfo>
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
     <RestoreIgnoreFailedSources>true</RestoreIgnoreFailedSources>

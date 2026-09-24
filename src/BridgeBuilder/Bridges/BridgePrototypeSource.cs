@@ -2,6 +2,9 @@ using Game.Prefabs;
 using BridgeBuilder.Settings;
 using System;
 using System.Linq;
+using Colossal.IO.AssetDatabase;
+using Game.Modding;
+using Game.SceneFlow;
 
 namespace BridgeBuilder.Bridges;
 
@@ -12,20 +15,23 @@ namespace BridgeBuilder.Bridges;
 /// </summary>
 internal sealed class BridgePrototypeSource
 {
-    private const string BxpDisplayName = "Bridge Extension Pack";
+    private const string BxpDisplayName = "Bridge Expansion Pack";
+    private readonly PrefabBase? _prefab;
     private readonly ContentPrefab? _prerequisite;
     private readonly AssetPackPrefab[] _packs;
     private readonly bool _metadataReadable;
     private readonly bool _bxpOwner;
 
     private BridgePrototypeSource(
-        string label, ContentPrefab? prerequisite, AssetPackPrefab[] packs, bool metadataReadable = true, bool bxpOwner = false)
+        string label, ContentPrefab? prerequisite, AssetPackPrefab[] packs, bool metadataReadable = true, bool bxpOwner = false,
+        PrefabBase? prefab = null)
     {
         Label = label;
         _prerequisite = prerequisite;
         _packs = packs;
         _metadataReadable = metadataReadable;
         _bxpOwner = bxpOwner;
+        _prefab = prefab;
     }
 
     internal string Label { get; }
@@ -80,12 +86,13 @@ internal sealed class BridgePrototypeSource
         {
             try
             {
-                if (!_metadataReadable) return false;
+                if (!_metadataReadable || _prefab == null || !_prefab.active) return false;
                 if (_prerequisite != null && !_prerequisite.IsAvailable()) return false;
-                if (_packs.Length == 0) return true;
-                return _packs.Any(pack => pack != null
-                    && pack.active
-                    && (pack.isBuiltin || pack.isSubscribedMod));
+                // DLC ownership and mod ownership are independent gates, not alternatives.
+                if (_packs.Length > 0 && !_packs.All(PackAvailable)) return false;
+                if (_prefab.isBuiltin) return true;
+                if (_prefab.isSubscribedMod) return OwnerAvailable(_prefab);
+                return _packs.Length > 0 || OwnerAvailable(_prefab);
             }
             catch (Exception)
             {
@@ -93,6 +100,26 @@ internal sealed class BridgePrototypeSource
                 return false;
             }
         }
+    }
+
+    private static bool PackAvailable(AssetPackPrefab pack) => pack != null && pack.active
+        && (pack.GetComponent<ContentPrerequisite>()?.m_ContentPrerequisite?.IsAvailable() ?? true)
+        && (pack.isBuiltin || OwnerAvailable(pack));
+
+    private static bool OwnerAvailable(PrefabBase prefab)
+    {
+        if (prefab.isSubscribedMod)
+        {
+            var id = prefab.asset?.GetMeta().platformID;
+            return !string.IsNullOrWhiteSpace(id)
+                && AssetDatabase<ParadoxMods>.instance.dataSource is ParadoxModsDataSource source
+                && source.ContainsActiveMod(id!);
+        }
+        // Runtime prefabs can be supplied by a loaded code mod without a PDX asset.
+        var assembly = prefab.GetType().Assembly;
+        return assembly != typeof(PrefabBase).Assembly && GameManager.instance?.modManager != null
+            && GameManager.instance.modManager.Any(mod => mod.state == ModManager.ModInfo.State.Loaded
+                && mod.asset?.assembly == assembly);
     }
 
     internal static BridgePrototypeSource Inspect(PrefabBase prefab, bool bxpGoldenGate = false)
@@ -108,27 +135,27 @@ internal sealed class BridgePrototypeSource
                     .Where(pack => pack != null && pack.name == "Bridge Asset Pack Filter" && !pack.isBuiltin)
                     .ToArray() ?? Array.Empty<AssetPackPrefab>();
                 return new BridgePrototypeSource("Mod: " + BxpDisplayName, prerequisite, owner,
-                    metadataReadable: owner.Length > 0, bxpOwner: true);
+                    metadataReadable: owner.Length > 0, bxpOwner: true, prefab: prefab);
             }
-            if (prerequisite != null)
-                return new BridgePrototypeSource(RequirementLabel(prerequisite), prerequisite, Array.Empty<AssetPackPrefab>());
 
             var packs = prefab.GetComponent<AssetPackItem>()?.m_Packs?
                 .Where(pack => pack != null)
                 .ToArray() ?? Array.Empty<AssetPackPrefab>();
+            if (prerequisite != null)
+                return new BridgePrototypeSource(RequirementLabel(prerequisite), prerequisite, packs, prefab: prefab);
             if (packs.Length > 0)
             {
                 var labels = packs
                     .Select(PackLabel)
                     .Distinct(StringComparer.OrdinalIgnoreCase)
                     .OrderBy(label => label, StringComparer.OrdinalIgnoreCase);
-                return new BridgePrototypeSource(string.Join(", ", labels), null, packs);
+                return new BridgePrototypeSource(string.Join(", ", labels), null, packs, prefab: prefab);
             }
 
             if (prefab.isBuiltin)
-                return new BridgePrototypeSource("Base game", null, Array.Empty<AssetPackPrefab>());
+                return new BridgePrototypeSource("Base game", null, Array.Empty<AssetPackPrefab>(), prefab: prefab);
 
-            return new BridgePrototypeSource("Mod: " + AssetSource(prefab), null, Array.Empty<AssetPackPrefab>());
+            return new BridgePrototypeSource("Mod: " + AssetSource(prefab), null, Array.Empty<AssetPackPrefab>(), prefab: prefab);
         }
         catch (Exception)
         {

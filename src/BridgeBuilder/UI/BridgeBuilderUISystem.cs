@@ -70,6 +70,7 @@ public partial class BridgeBuilderUISystem : UISystemBase
         AddBinding(new TriggerBinding(Group, "ClearPreview", BridgePreviewState.Clear));
 
         AddBinding(new TriggerBinding(Group, "TogglePanel", TogglePanel));
+        AddBinding(new TriggerBinding(Group, "OpenRoadBuilder", OpenRoadBuilder));
         AddBinding(new TriggerBinding<BridgeRuntimeRequest>(Group, "CreateBridge",
             request => QueueCreate(request, false), new BridgeRecipeReader()));
         AddBinding(new TriggerBinding<BridgeRuntimeRequest>(Group, "CreateAndBuildBridge",
@@ -138,6 +139,18 @@ public partial class BridgeBuilderUISystem : UISystemBase
         var binding = new ValueBinding<T>(Group, key, initial, writer, null);
         AddBinding(binding);
         return binding;
+    }
+
+    private void OpenRoadBuilder()
+    {
+        if (!_panelOpen.value) return;
+        if (!RoadBuilderCompatibility.IsAvailable)
+        {
+            Mod.ShowMessage(_title.value, RuntimeUiText.Get("RoadBuilderRequired"));
+            return;
+        }
+        if (RoadBuilderCompatibility.TryOpen(World)) CloseForBuild();
+        else Mod.ShowMessage(_title.value, RuntimeUiText.Get("RoadBuilderOpenFailed"));
     }
 
     private void TogglePanel()

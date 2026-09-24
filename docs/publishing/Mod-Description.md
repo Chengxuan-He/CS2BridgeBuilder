@@ -23,7 +23,7 @@ Bridge Builder（桥梁建造器）让你在《Cities: Skylines II》中，将�
 ### 兼容性与注意事项
 
 - **Road Builder 不是前置模组。** 安装并加载 Road Builder 后可使用其道路；未安装时不显示对应道路。
-- 部分桥型需要对应 DLC 或内容模组。双层金门大桥来自 **Bridge Extension Pack**，不是基础版单层金门大桥的双层模式。
+- 部分桥型需要对应 DLC 或内容模组。双层金门大桥来自 **Bridge Expansion Pack**，不是基础版单层金门大桥的双层模式。
 - 设置页提供快捷键（默认 Ctrl+B）和“移除发展点数限制”选项。默认继承桥梁原型的解锁条件；启用该选项后不再因发展解锁条件阻止建造。
 - 当前不支持生成开合桥、人行开合桥和升降桥。并非所有路网与桥型组合都受支持。
 - **删除已创建桥梁会同时移除地图中使用该桥梁的实例。操作前请备份存档。** 不要把删除当作仅移除列表条目。
@@ -52,7 +52,7 @@ Bridge Builder（橋梁建造器）讓你在《Cities: Skylines II》中，將�
 ### 相容性與注意事項
 
 - **Road Builder 並非必要的前置模組。** 安裝並載入後可使用其道路；未安裝時不顯示相關道路。
-- 部分橋型需要對應 DLC 或內容模組。雙層金門大橋來自 **Bridge Extension Pack**，不是基礎版單層金門大橋的雙層模式。
+- 部分橋型需要對應 DLC 或內容模組。雙層金門大橋來自 **Bridge Expansion Pack**，不是基礎版單層金門大橋的雙層模式。
 - 設定頁提供快捷鍵（預設 Ctrl+B）及「移除發展點數限制」選項。預設繼承橋梁原型的解鎖條件；啟用此選項後不再因發展解鎖條件阻止建造。
 - 目前不支援生成開合橋、人行開合橋與升降橋。並非所有路網與橋型組合都受支援。
 - **刪除已建立橋梁會同時移除地圖中使用該橋梁的實例。操作前請備份存檔。** 這不只是刪除清單項目。
@@ -81,7 +81,7 @@ Load a city and open Bridge Builder from its toolbar icon. Select a road or trac
 ### Compatibility and important notes
 
 - **Road Builder is optional, not a required dependency.** Its roads are available when the mod is installed and loaded; otherwise they are omitted.
-- Some bridge styles require their corresponding DLC or content mod. The double-deck Golden Gate style comes from **Bridge Extension Pack**; it is not a double-deck mode of the base single-deck Golden Gate prototype.
+- Some bridge styles require their corresponding DLC or content mod. The double-deck Golden Gate style comes from **Bridge Expansion Pack**; it is not a double-deck mode of the base single-deck Golden Gate prototype.
 - Settings provide a configurable shortcut (Ctrl+B by default) and an option to remove development-point restrictions. Bridges normally inherit their prototypes' unlock requirements; enabling the option bypasses development unlock restrictions when building.
 - Bascule bridges, pedestrian bascule bridges and lift bridges are not currently supported. Not every network/style combination is supported.
 - **Deleting a generated bridge also removes its placed instances from the map. Back up your save first.** This is not simply removing a catalogue entry.

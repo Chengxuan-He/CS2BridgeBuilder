@@ -49,6 +49,9 @@
 .bb-spinner { width: 36rem; height: 36rem; border: 4rem solid rgba(255,255,255,.2); border-top-color: #fff; border-radius: 50%; animation: bb-spin .8s linear infinite; }
 @keyframes bb-spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
 .bb-network-picker { display: flex; flex-direction: column; flex: 1 1 0; min-width: 0; min-height: 0; }
+.bb-network-heading { display: flex; flex: 0 0 auto; align-items: center; margin-bottom: 10rem; }
+.bb-network-heading h2 { flex: 1 1 auto; margin: 0; }
+.bb-custom-road { flex: 0 0 auto; margin-left: 8rem; padding: 6rem 10rem; }
 .bb-network-picker + .bb-network-picker { margin-top: 12rem; padding-top: 12rem; border-top: 1rem solid var(--dividerColor); }
 .bb-filters { display: flex; flex: 0 0 auto; min-width: 0; margin-bottom: 8rem; }
 .bb-filters > * + * { margin-left: 8rem; }
@@ -85,10 +88,10 @@
 .bb-empty { padding: 24rem; text-align: center; color: var(--textColorDisabled); }
 .bb-list-loading { min-height: 120rem; display: flex; align-items: center; justify-content: center; padding: 24rem; }
 .bb-manage-list { display: flex; flex-direction: column; min-width: 0; min-height: 0; flex: 1.2 1 0; margin-right: 16rem; background-color: var(--sectionBackgroundColor); }
-.bb-detail-scroll { flex: 1 1 0; background-color: var(--sectionBackgroundColor); }
 .bb-manage-right { display: flex; flex-direction: column; min-width: 0; min-height: 0; }
-.bb-manage-detail { display: flex; flex-direction: column; padding: 12rem; }
-.bb-manage-detail .bb-preview { flex: 0 0 auto; }
+.bb-manage-detail { display: flex; flex-direction: column; flex: 1 1 0; min-width: 0; min-height: 0; padding: 12rem; overflow: hidden; background-color: var(--sectionBackgroundColor); }
+.bb-manage-detail .bb-preview { flex: 0 1 auto; overflow: hidden; }
+.bb-manage-detail label, .bb-manage-detail .bb-text-input { flex-shrink: 0; }
 .bb-manage-detail label { margin: 12rem 0 6rem; }
 .bb-manage-detail code { display: block; padding: 10rem; user-select: text; background-color: var(--toolbarFieldColor); font-size: var(--fontSizeS); overflow-wrap: break-word; }
 .bb-note { margin: 12rem 0; color: var(--textColorDisabled); }

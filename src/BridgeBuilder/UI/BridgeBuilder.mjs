@@ -2,7 +2,7 @@
  * Cities: Skylines II UI Module
  * Id: BridgeBuilder
  * Author: BridgeBuilder
- * Version: 26.9.23
+ * Version: 26.9.25
  * Dependencies:
  */
 const React = window.React;
@@ -30,7 +30,8 @@ const previewLoadingBinding = api.bindValue(MOD, "PreviewLoading", false);
 
 // English fallback is kept in sync with RuntimeUiText by the localization check.
 const defaultText = {
-    "Scanning": "Loading roads and bridges…",
+    "CustomRoad": "+ Custom road",
+    "Scanning": "Reading networks and bridge prototypes…",
     "SameDirection": "Same direction",
     "OppositeDirection": "Opposite directions",
     "LowerDeckOpposite": "Opposite directions on upper and lower decks",
@@ -172,7 +173,7 @@ function FilterBox({ value, onChange, options, label }) {
             }, option.name))))) : null);
 }
 
-function NetworkPicker({ decks, selectedId, onSelect, title }) {
+function NetworkPicker({ decks, selectedId, onSelect, title, onOpenRoadBuilder }) {
     const t = useText();
     const [query, setQuery] = React.useState("");
     const [type, setType] = React.useState("");
@@ -182,7 +183,9 @@ function NetworkPicker({ decks, selectedId, onSelect, title }) {
     const filtered = decks.filter(deck => (!type || deck.networkType === type) &&
         matchesSearch(query, deck.name, deck.id));
     return h("section", { className: "bb-network-picker" },
-        h("h2", null, title),
+        h("div", { className: "bb-network-heading" }, h("h2", null, title),
+            h("button", { type: "button", className: "bb-custom-road", onClick: onOpenRoadBuilder,
+                title: "Road Builder", "aria-label": t("CustomRoad") }, t("CustomRoad"))),
         h("div", { className: "bb-filters" },
             h(SearchBox, { value: query, onChange: setQuery, label: t("SearchNetworks") }),
             h(FilterBox, { value: type, onChange: setType, options, label: t("AllTypes") })),
@@ -263,17 +266,22 @@ function ModelPreview({ upperId = "", lowerId = "", styleId = "", prefabName = "
                 h("div", { className: "bb-spinner", "aria-hidden": true })) : null));
 }
 
-function CreateView({ decks, styles, status }) {
+function CreateView({ decks, styles, status, draft, onSaveDraft = () => {} }) {
     const t = useText();
-    const [doubleDeck, setDoubleDeck] = React.useState(false);
-    const [upperId, setUpperId] = React.useState("");
-    const [lowerId, setLowerId] = React.useState("");
-    const [styleId, setStyleId] = React.useState("");
-    const [name, setName] = React.useState("");
-    const [customName, setCustomName] = React.useState(false);
-    const [styleQuery, setStyleQuery] = React.useState("");
+    const [doubleDeck, setDoubleDeck] = React.useState(draft?.doubleDeck ?? false);
+    const [upperId, setUpperId] = React.useState(draft?.upperId ?? "");
+    const [lowerId, setLowerId] = React.useState(draft?.lowerId ?? "");
+    const [styleId, setStyleId] = React.useState(draft?.styleId ?? "");
+    const [name, setName] = React.useState(draft?.name ?? "");
+    const [customName, setCustomName] = React.useState(draft?.customName ?? false);
+    const [styleQuery, setStyleQuery] = React.useState(draft?.styleQuery ?? "");
     const [previewFailure, setPreviewFailure] = React.useState("");
-    const [lowerDeckOpposite, setLowerDeckOpposite] = React.useState(true);
+    const [lowerDeckOpposite, setLowerDeckOpposite] = React.useState(draft?.lowerDeckOpposite ?? true);
+
+    const openRoadBuilder = () => {
+        onSaveDraft({ doubleDeck, upperId, lowerId, styleId, name, customName, styleQuery, lowerDeckOpposite });
+        trigger("OpenRoadBuilder");
+    };
 
     // The catalogue already contains usable deck networks. Tracks can occupy
     // either deck, including a single-deck bridge; IsRoad is not eligibility.
@@ -304,9 +312,9 @@ function CreateView({ decks, styles, status }) {
 
     return h("div", { className: "bb-workspace" },
         h("section", { className: "bb-road-column" },
-            h(NetworkPicker, { key: "upper", decks, selectedId: upperId,
+            h(NetworkPicker, { key: "upper", decks, selectedId: upperId, onOpenRoadBuilder: openRoadBuilder,
                 onSelect: item => setUpperId(item.id), title: doubleDeck ? t("UpperPicker") : t("NetworkPicker") }),
-            doubleDeck ? h(NetworkPicker, { key: "lower", decks, selectedId: lowerId,
+            doubleDeck ? h(NetworkPicker, { key: "lower", decks, selectedId: lowerId, onOpenRoadBuilder: openRoadBuilder,
                 onSelect: item => setLowerId(item.id), title: t("LowerPicker") }) : null),
         h("section", { className: "bb-right" },
             h(ModelPreview, { upperId, lowerId: doubleDeck ? lowerId : "", styleId, lowerDeckOpposite,
@@ -383,13 +391,12 @@ function ManageView({ bridges, styles = [], status }) {
                 h(CardGrid, { items: filtered, selectedId: selected?.prefabName,
                     onSelect: item => setSelectedId(item.prefabName), emptyText: t(bridges.length ? "NoMatches" : "NoBridges") }))),
         h("section", { className: "bb-manage-right" },
-        h(ScrollArea, { className: "bb-detail-scroll" },
         h("section", { className: "bb-manage-detail" }, selected ? h(React.Fragment, null,
             h(ModelPreview, { prefabName: selected.prefabName, ready: !!selected.prefabName, onFailure: setPreviewFailure }),
             h("label", null, t("DisplayName")),
             h(NativeTextInput, { ...textInputProps, value: name, maxLength: 250,
                 placeholder: t("DisplayName"), onChange: rename })) :
-            h("div", { className: "bb-empty" }, t("SelectBridge")))),
+            h("div", { className: "bb-empty" }, t("SelectBridge"))),
             selected ? h("div", { className: "bb-actions" },
                 h("button", { className: "bb-primary", disabled: !selected.available,
                     onClick: () => trigger("ActivateBridge", selected.prefabName) }, t("Build")),
@@ -407,6 +414,8 @@ function Panel() {
     const bridges = api.useValue(bridgesBinding) || [];
     const status = api.useValue(statusBinding) || "";
     const [view, setView] = React.useState("create");
+    // Panel stays mounted when closed; retain the handoff draft while Road Builder is open.
+    const [draft, setDraft] = React.useState(null);
     if (!open) return null;
 
     return h("div", { className: "bb-panel" },
@@ -416,7 +425,7 @@ function Panel() {
                 h("button", { title: t("CreateTab"), className: view === "create" ? "bb-active" : "", onClick: () => setView("create") }, t("CreateTab")),
                 h("button", { title: t("ManageTab"), className: view === "manage" ? "bb-active" : "", onClick: () => setView("manage") }, t("ManageTab"))),
             h("button", { className: "bb-close", title: t("Close"), "aria-label": t("Close"), onClick: () => trigger("TogglePanel") }, "×")),
-        view === "create" ? h(CreateView, { decks, styles, status }) : h(ManageView, { bridges, styles, status }));
+        view === "create" ? h(CreateView, { decks, styles, status, draft, onSaveDraft: setDraft }) : h(ManageView, { bridges, styles, status }));
 }
 
 function ToolbarButton() {
