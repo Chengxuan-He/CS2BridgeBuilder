@@ -128,6 +128,8 @@ public partial class BridgePublicationSystem : GameSystemBase
     {
         foreach (var target in _targets)
         {
+            if (BridgeBuilder.Runtime.BridgeLoadFailures.Prefabs().Contains(target))
+                return NotReady(target, "native prefab initialization failed; scheduled for removal", report);
             if (!_prefabs.TryGetEntity(target, out var entity)
                 || !EntityManager.Exists(entity) || EntityManager.HasComponent<Deleted>(entity))
                 return NotReady(target, "its live prefab entity is missing", report);

@@ -23,8 +23,7 @@ internal static class TowerPrefabNaming
         if (safe.Length == 0) return "UnnamedAsset";
 
         var complete = value?.Trim() ?? string.Empty;
-        if (complete.Length <= MaximumAssetNameLength
-            || safe.Length < MaximumAssetNameLength)
+        if (complete.Length <= MaximumAssetNameLength)
             return safe;
 
         // The mesh-part discriminator is appended after the bridge-owned tower name. On long road
@@ -33,7 +32,10 @@ internal static class TowerPrefabNaming
         // loaded the top mesh. A hash of the complete, pre-truncation name preserves exact sibling
         // identity while keeping the human-readable prefix and the filesystem-safe character rules.
         var suffix = "_" + NameSanitizer.ShortHash(complete);
-        var prefixLength = MaximumAssetNameLength - suffix.Length;
+        // Sanitizing truncates first, then trims trailing spaces/underscores. A truncated
+        // name can therefore be SHORTER than the limit: that does not mean it was intact.
+        // Always hash the complete long name, including its mesh/LOD discriminator.
+        var prefixLength = Math.Min(safe.Length, MaximumAssetNameLength - suffix.Length);
         var prefix = safe.Substring(0, prefixLength).TrimEnd('.', ' ', '_');
         return prefix + suffix;
     }

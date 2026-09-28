@@ -525,13 +525,14 @@ public partial class BridgeGenerationSystem : GameSystemBase
                 .Concat(towers.Created.Select(prefab =>
                     new PrefabCloneNode(prefab, prefab, false, true, null)))
                 .ToList();
-            // A derived prefab is not a rename of its donor. Like the game's
-            // PrefabSystem.DuplicatePrefab, discard inherited legacy identities.
-            // Its own prefab name already identifies the UUID-scoped bridge/deck
-            // or derived part; registering it again as an obsolete alias would
-            // itself produce a duplicate ID. Only touch assets owned by this export.
+            // A copy is not a replacement for its donor. Native PrefabID already uses
+            // Target.name (including the bridge UUID) and the copy's asset GUID.
+            // Do not publish inherited donor aliases for any private node in this graph.
             foreach (var node in nodes.Where(node => node.NeedsSave))
+            {
                 node.Target.Remove<ObsoleteIdentifiers>();
+                node.Target.version = 1;
+            }
             if (preview != null)
             {
                 // Preview and permanent generation share composition, not identity
@@ -1293,25 +1294,27 @@ public partial class BridgeGenerationSystem : GameSystemBase
     internal bool RemoveInvalidBridgeAfterLoad(string prefabName)
     {
         if (!BridgeRegistration.IsPrefabName(prefabName)) return false;
-        // Called only after native deletion. RemoveByName independently rechecks
-        // surviving placed references and protects other assets' dependencies.
+        _settings ??= ExportSettings.Load();
         var state = ExportStateStore.Load();
         var report = new ExportReport();
-        var removed = RemoveByName(prefabName, state, report);
-        var complete = removed.Count > 0
-            && !RemovalRoots(prefabName, PrefabCatalog.GetAll(_prefabSystem)).Any();
-        if (complete && BridgeRegistrationStore.Find(prefabName) != null)
-            complete = BridgeRegistrationStore.Remove(prefabName);
-        state.Save();
-        report.Save(_gameMode.ToString(), "Remove invalid bridge after loading");
-        BridgeBuilderUISystem.RequestRefresh();
-        return complete;
+        RemoveByName(prefabName, state, report);
+        var remaining = RemovalRoots(prefabName, PrefabCatalog.GetAll(_prefabSystem)
+            .Concat(BridgeLoadFailures.Prefabs())).Any();
+        if (!remaining)
+        {
+            state.Remove(prefabName);
+            state.Remove(BridgeNaming.LowerDeckName(prefabName));
+            state.Remove(BridgeNaming.CarriedDeckName(prefabName, above: true));
+            BridgeRegistrationStore.Remove(prefabName);
+        }
+        Finish(report, state, "Remove invalid bridge after load", showMessage: false);
+        return !remaining;
     }
 
     private IReadOnlyList<string> RemoveByName(string exportName, ExportStateStore state, ExportReport report)
     {
         var removed = new List<string>();
-        var loaded = PrefabCatalog.GetAll(_prefabSystem).ToArray();
+        var loaded = PrefabCatalog.GetAll(_prefabSystem).Concat(BridgeLoadFailures.Prefabs()).Distinct().ToArray();
         var roots = RemovalRoots(exportName, loaded).ToArray();
         if (roots.Length == 0)
         {

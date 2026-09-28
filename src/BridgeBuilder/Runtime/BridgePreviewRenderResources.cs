@@ -21,6 +21,8 @@ namespace BridgeBuilder.Runtime;
 /// </summary>
 internal sealed class BridgePreviewRenderResources : IDisposable
 {
+    private delegate Mesh[] MeshCreator(string name, ref GeometryAsset.Data data);
+    private static readonly MeshCreator? CreateMeshes = ResolveMeshCreator();
     private readonly BridgePreviewSession _session;
     private readonly Dictionary<RenderPrefab, Mesh[]> _sourceMeshes = new();
     private readonly Dictionary<(RenderPrefab, bool, bool), Material[]> _materials = new();
@@ -28,7 +30,6 @@ internal sealed class BridgePreviewRenderResources : IDisposable
     private readonly Dictionary<(SurfaceAsset Surface, bool Network, bool Packed, RenderPrefab? Lane), Material> _surfaceMaterials = new();
     private readonly Dictionary<SurfaceAsset, Material> _sourceMaterials = new();
     private readonly List<Material> _ownedMaterials = new();
-    private readonly Dictionary<TextureAsset, Texture> _ownedTextureLeases = new();
     private readonly TextureStreamingSystem? _streaming = World.DefaultGameObjectInjectionWorld?
         .GetExistingSystemManaged<TextureStreamingSystem>();
     private VTTextureRequester? _textureRequests;
@@ -56,10 +57,55 @@ internal sealed class BridgePreviewRenderResources : IDisposable
         if (_session.Geometry.TryGetMeshes(prefab, out var generated)) return generated;
         if (!_sourceMeshes.TryGetValue(prefab, out var meshes))
         {
-            meshes = PrivateGeometryReader.Read(prefab);
+            meshes = LoadPrivateMeshes(prefab);
             _sourceMeshes.Add(prefab, meshes);
         }
         return meshes;
+    }
+
+    private static MeshCreator? ResolveMeshCreator()
+    {
+        // Use the game's own converter to preserve packed vertex formats,
+        // submeshes, normals, tangents and bounds exactly as authored.
+        var method = typeof(GeometryAsset).GetMethod("CreateMeshes",
+            BindingFlags.Static | BindingFlags.NonPublic, null,
+            new[] { typeof(string), typeof(GeometryAsset.Data).MakeByRefType() }, null);
+        return method == null ? null
+            : Delegate.CreateDelegate(typeof(MeshCreator), method, false) as MeshCreator;
+    }
+
+    private Mesh[] LoadPrivateMeshes(RenderPrefab prefab)
+    {
+        var asset = prefab.geometryAsset;
+        if (asset == null || CreateMeshes == null)
+        {
+            return Array.Empty<Mesh>();
+        }
+
+        var data = default(GeometryAsset.Data);
+        var loading = default(GeometryAsset.Loading);
+        try
+        {
+            // ObtainMeshes uses the asset's shared streaming buffers. A live
+            // city may already have partially loaded/released those buffers.
+            // Read the same asset into independent buffers instead; neither
+            // reset the shared asset nor release the city's mesh references.
+            var descriptor = asset.database.GetAsyncReadDescriptor(asset.id);
+            GeometryAsset.LoadSync(descriptor, GeometryAsset.Attribute.All, ref data, ref loading);
+            var meshes = CreateMeshes(_session.Name + "_" + prefab.name, ref data);
+            foreach (var mesh in meshes)
+                if (mesh != null) mesh.hideFlags = HideFlags.HideAndDontSave;
+            return meshes;
+        }
+        catch (Exception)
+        {
+            return Array.Empty<Mesh>();
+        }
+        finally
+        {
+            try { loading.Dispose(); }
+            finally { data.Dispose(); }
+        }
     }
 
     internal Material[] Materials(RenderPrefab prefab, bool network = false, bool lane = false)
@@ -67,8 +113,8 @@ internal sealed class BridgePreviewRenderResources : IDisposable
         if (_disposed) return Array.Empty<Material>();
         if (!_materials.TryGetValue((prefab, network, lane), out var materials))
         {
-            // Read balanced surface-property leases and create private materials;
-            // never acquire or validate the city's shared Material instance.
+            // ReleaseMaterials is a no-op. Acquire balanced surface leases here,
+            // then copy the native material, including its virtual-texture bindings.
             var surfaces = prefab.surfaceAssets?.ToArray();
             var meshes = Meshes(prefab);
             var packed = network || (meshes.Length != 0 &&
@@ -91,18 +137,23 @@ internal sealed class BridgePreviewRenderResources : IDisposable
         var key = (surface, network, packed, lane);
         if (_surfaceMaterials.TryGetValue(key, out var cached)) return cached;
         var propertiesAcquired = false;
+        var loadStarted = false;
         var retained = false;
         try
         {
-            // SurfaceAsset.Load validates its SHARED material on every call, even
-            // when already loaded. Never run that path for a preview: native city
-            // batches may have configured that material's shader state already.
-            // Read the authored properties and create an entirely private source.
+            // SurfaceAsset.Load acquires properties only on the first object
+            // reference, whereas Unload releases properties on every call. A
+            // cached native material therefore needs one extra property lease
+            // to keep preview cleanup from unloading the city's surface data.
             if (!_sourceMaterials.TryGetValue(surface, out var source))
             {
-                propertiesAcquired = true;
-                surface.LoadProperties(useVT: true);
-                source = CreatePrivateSource(surface);
+                if (surface.isObjectLoaded)
+                {
+                    propertiesAcquired = true;
+                    surface.LoadProperties(useVT: true);
+                }
+                loadStarted = true;
+                source = surface.Load(useVT: true);
                 if (source == null) return null;
                 _sourceMaterials.Add(surface, source);
             }
@@ -133,52 +184,16 @@ internal sealed class BridgePreviewRenderResources : IDisposable
         {
             if (!retained)
             {
-                if (propertiesAcquired) surface.UnloadProperties();
+                if (loadStarted) surface.Unload();
+                else if (propertiesAcquired) surface.UnloadProperties();
             }
         }
-    }
-
-    private Material? CreatePrivateSource(SurfaceAsset surface)
-    {
-        // Mirrors SurfaceAsset.SyncToUnityMaterial, but writes only to our own
-        // material and retains/releases only texture references acquired here.
-        var template = surface.GetTemplateMaterial();
-        if (template == null) return null;
-        var material = new Material(template)
-        {
-            name = _session.Name + "_Source_" + surface.name,
-            hideFlags = HideFlags.HideAndDontSave
-        };
-        _ownedMaterials.Add(material);
-        foreach (var pair in surface.floats)
-            if (material.HasProperty(pair.Key)) material.SetFloat(pair.Key, pair.Value);
-        foreach (var pair in surface.ints)
-            if (material.HasProperty(pair.Key)) material.SetInt(pair.Key, pair.Value);
-        foreach (var pair in surface.vectors)
-            if (material.HasProperty(pair.Key)) material.SetVector(pair.Key, pair.Value);
-        foreach (var pair in surface.colors)
-            if (material.HasProperty(pair.Key)) material.SetColor(pair.Key, pair.Value);
-        foreach (var pair in surface.textures)
-        {
-            if (!material.HasProperty(pair.Key) || surface.IsHandledByVirtualTexturing(pair)) continue;
-            Texture? texture = null;
-            if (pair.Value != null && !_ownedTextureLeases.TryGetValue(pair.Value, out texture))
-            {
-                texture = pair.Value.Load();
-                _ownedTextureLeases.Add(pair.Value, texture);
-            }
-            material.SetTexture(pair.Key, texture);
-        }
-        foreach (var keyword in surface.keywords) SetKeyword(material, keyword, true);
-        SetKeyword(material, "ENABLE_VT", surface.isCurrentlyUsingVT);
-        HDMaterial.ValidateMaterial(material);
-        return material;
     }
 
     internal void RefreshMaterialBindings()
     {
-        // Restore our private authored baseline, then rebind the latest streaming
-        // atlas parameters. No city material is read, validated or modified.
+        // Streaming may update atlas parameters between scene assembly and the
+        // render callback. Copy the latest native state onto our private material.
         foreach (var pair in _surfaceMaterials)
         {
             pair.Value.CopyPropertiesFromMaterial(_sourceMaterials[pair.Key.Surface]);
@@ -278,12 +293,8 @@ internal sealed class BridgePreviewRenderResources : IDisposable
         foreach (var material in _ownedMaterials)
             if (material != null) UnityEngine.Object.DestroyImmediate(material);
         foreach (var surface in _sourceMaterials.Keys)
-            try { surface.UnloadProperties(); }
+            try { surface.Unload(); }
             catch (Exception) {  }
-        foreach (var texture in _ownedTextureLeases.Keys)
-            try { texture.Unload(); }
-            catch (Exception) {  }
-        _ownedTextureLeases.Clear();
         foreach (var meshes in _sourceMeshes.Values)
             foreach (var mesh in meshes)
                 if (mesh != null) UnityEngine.Object.DestroyImmediate(mesh);
