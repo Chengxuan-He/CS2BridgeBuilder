@@ -1,4 +1,5 @@
 using Colossal.AssetPipeline;
+using BridgeBuilder.Runtime;
 using Colossal.AssetPipeline.Importers;
 using Colossal.IO.AssetDatabase;
 using Colossal.Mathematics;
@@ -615,7 +616,7 @@ internal sealed class TowerFactory
             Mesh[]? loaded = null;
             try
             {
-                loaded = info.m_Piece.ObtainMeshes();
+                loaded = PrivateGeometryReader.Read(info.m_Piece);
                 foreach (var mesh in loaded ?? Array.Empty<Mesh>())
                 {
                     if (mesh == null) continue;
@@ -632,7 +633,7 @@ internal sealed class TowerFactory
             {
                 if (loaded != null)
                 {
-                    try { info.m_Piece.ReleaseMeshes(); }
+                    try { PrivateGeometryReader.Release(loaded); }
                     catch (Exception) { /* a courtesy to the cache */ }
                 }
             }
@@ -661,7 +662,7 @@ internal sealed class TowerFactory
             Mesh[]? loaded = null;
             try
             {
-                loaded = render.ObtainMeshes();
+                loaded = PrivateGeometryReader.Read(render);
                 foreach (var mesh in loaded ?? Array.Empty<Mesh>())
                 {
                     if (mesh == null) continue;
@@ -680,7 +681,7 @@ internal sealed class TowerFactory
             {
                 if (loaded != null)
                 {
-                    try { render.ReleaseMeshes(); }
+                    try { PrivateGeometryReader.Release(loaded); }
                     catch (Exception) { /* a courtesy to the cache, not a correctness requirement */ }
                 }
             }
@@ -1866,7 +1867,7 @@ internal sealed class TowerFactory
                 if (_previewGeometry == null) UnityEngine.Object.Destroy(widened);
                 return null;
             }
-            loaded = original.ObtainMeshes();
+            loaded = PrivateGeometryReader.Read(original);
             if (loaded == null || loaded.Length == 0) return null;
 
             // Every mesh the source holds, not the first of them. A render prefab can hold several -
@@ -1919,7 +1920,6 @@ internal sealed class TowerFactory
             // the scope was the full detail mesh alone, a coarse mesh's outermost material fell outside
             // the places that scope called carried, and it was scaled where the fine one was carried -
             // 7.899 m against 8, which is the bridge changing width as the camera pulls back.
-            var lodMeshes = new List<RenderPrefab>();
             if (profile == null && !recordedGeometry && !preserveGeometry)
             {
                 foreach (var lod in original.GetComponent<LodProperties>()?.m_LodMeshes
@@ -1927,9 +1927,11 @@ internal sealed class TowerFactory
                 {
                     if (lod == null) continue;
 
+                    Mesh[]? lodRead = null;
                     try
                     {
-                        foreach (var mesh in lod.ObtainMeshes() ?? Array.Empty<Mesh>())
+                        lodRead = PrivateGeometryReader.Read(lod);
+                        foreach (var mesh in lodRead)
                         {
                             if (mesh == null) continue;
 
@@ -1937,12 +1939,12 @@ internal sealed class TowerFactory
                             outlines.Add(mesh.triangles);
                         }
 
-                        lodMeshes.Add(lod);
                     }
                     catch (Exception)
                     {
                         // Generation diagnostics are silent; retain the external API exception boundary.
                     }
+                    finally { PrivateGeometryReader.Release(lodRead); }
                 }
             }
 
@@ -1952,12 +1954,6 @@ internal sealed class TowerFactory
                     ?? (IsBluePrototypeMainPier(original)
                         ? fullDetailScope
                         : TowerWidening.Profile.Of(shapes, outlines));
-
-            foreach (var lod in lodMeshes)
-            {
-                try { lod.ReleaseMeshes(); }
-                catch (Exception) { /* a courtesy to the cache */ }
-            }
 
             for (var index = 0; index < loaded.Length; index++)
             {
@@ -2311,7 +2307,7 @@ internal sealed class TowerFactory
             {
                 try
                 {
-                    original.ReleaseMeshes();
+                    PrivateGeometryReader.Release(loaded);
                 }
                 catch (Exception)
                 {

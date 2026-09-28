@@ -1,5 +1,6 @@
 using BridgeBuilder.Runtime;
 using BridgeBuilder.Settings;
+using CS2Mods.Shared.Infrastructure;
 using Colossal.Serialization.Entities;
 using Game;
 using Game.Common;
@@ -16,7 +17,7 @@ using Unity.Entities;
 
 namespace BridgeBuilder.Systems;
 
-/// <summary>Repair only obsolete Bridge Builder networks, once per loaded city.</summary>
+/// <summary>Remove missing or structurally invalid UUID-owned bridges, once per loaded city.</summary>
 public partial class BridgeMissingAssetSystem : GameSystemBase
 {
     private PrefabSystem _prefabs = null!;
@@ -26,6 +27,8 @@ public partial class BridgeMissingAssetSystem : GameSystemBase
     private int _missingCount;
     private DateTime _started;
     private bool _timeoutReported;
+    private readonly HashSet<string> _invalidBridges = new(StringComparer.Ordinal);
+    private readonly HashSet<Entity> _affectedPrefabs = new();
 
     protected override void OnCreate()
     {
@@ -49,6 +52,8 @@ public partial class BridgeMissingAssetSystem : GameSystemBase
         _scan = false;
         _missingCount = 0;
         _timeoutReported = false;
+        _invalidBridges.Clear();
+        _affectedPrefabs.Clear();
     }
 
     protected override void OnGameLoadingComplete(Purpose purpose, GameMode mode)
@@ -87,6 +92,26 @@ public partial class BridgeMissingAssetSystem : GameSystemBase
                 }
                 return;
             }
+            if (_invalidBridges.Count != 0)
+            {
+                if (BridgeInstanceRemoval.HasPlacedReferences(EntityManager, _affectedPrefabs))
+                {
+                    Enabled = false;
+                    Mod.Log.Critical("Broken bridge assets retained: surviving network references remain after cleanup.");
+                    Mod.ShowMessage("Bridge Builder", RuntimeUiText.Get("MissingBridgesRepairFailed"));
+                    return;
+                }
+                var generator = World.GetOrCreateSystemManaged<BridgeGenerationSystem>();
+                foreach (var bridge in _invalidBridges)
+                    if (!generator.RemoveInvalidBridgeAfterLoad(bridge))
+                    {
+                        Enabled = false;
+                        Mod.Log.Critical($"Broken bridge asset deletion incomplete for '{bridge}'; no save file was overwritten.");
+                        Mod.ShowMessage("Bridge Builder", RuntimeUiText.Get("MissingBridgesRepairFailed"));
+                        return;
+                    }
+                _invalidBridges.Clear();
+            }
             var bindings = GameManager.instance?.userInterface?.appBindings;
             if (bindings == null) return;
             Mod.Log.Info($"Missing bridge cleanup completed: {_missingCount} bridge(s), "
@@ -113,6 +138,21 @@ public partial class BridgeMissingAssetSystem : GameSystemBase
         var missing = new HashSet<Entity>();
         var checkedPrefabs = new HashSet<Entity>();
         var names = new HashSet<string>(StringComparer.Ordinal);
+        // Validate after content loading, not while dependencies may still be arriving.
+        // A single broken deck invalidates the entire UUID-owned bridge, including
+        // an otherwise healthy upper/lower partner. Never inspect/delete source roads.
+        var loaded = new List<NetGeometryPrefab>();
+        foreach (var candidate in PrefabCatalog.GetAll(_prefabs))
+        {
+            if (candidate is not NetGeometryPrefab network
+                || !TryBridgeName(network.name, out var bridge)) continue;
+            loaded.Add(network);
+            var reason = InvalidNetworkReason(network);
+            if (reason == null) continue;
+            _invalidBridges.Add(bridge);
+            names.Add(bridge);
+            Mod.Log.Critical($"Broken Bridge Builder prefab '{network.name}': {reason}. Scheduling safe removal of both decks.");
+        }
         using (var entities = _networks.ToEntityArray(Allocator.Temp))
         {
             foreach (var entity in entities)
@@ -120,7 +160,7 @@ public partial class BridgeMissingAssetSystem : GameSystemBase
                 var prefab = EntityManager.GetComponentData<PrefabRef>(entity).m_Prefab;
                 if (!checkedPrefabs.Add(prefab) || !EntityManager.HasComponent<PrefabData>(prefab)) continue;
                 var data = EntityManager.GetComponentData<PrefabData>(prefab);
-                if (data.m_Index >= 0) continue; // Live bridges are never removed, even without a registry row.
+                if (data.m_Index >= 0) continue; // Live networks are handled by explicit validation above.
                 var id = _prefabs.GetObsoleteID(data);
                 var name = id.GetName();
                 if (!TryBridgeName(name, out var bridge)) continue;
@@ -133,8 +173,20 @@ public partial class BridgeMissingAssetSystem : GameSystemBase
                 Mod.Log.Info($"Removing missing saved Bridge Builder network: {id}");
             }
         }
-        if (missing.Count == 0) return;
+        // Missing one deck also removes the live partner, instead of leaving half a bridge.
+        foreach (var network in loaded)
+            if (TryBridgeName(network.name, out var bridge) && names.Contains(bridge))
+            {
+                if (_prefabs.TryGetEntity(network, out var prefab)) missing.Add(prefab);
+                _invalidBridges.Add(bridge);
+            }
+        if (missing.Count == 0 && _invalidBridges.Count == 0) return;
+        _affectedPrefabs.UnionWith(missing);
         var plan = BridgeInstanceRemoval.Collect(EntityManager, missing);
+        var tools = World.GetOrCreateSystemManaged<ToolSystem>();
+        if (tools.activePrefab != null && TryBridgeName(tools.activePrefab.name, out var active)
+            && names.Contains(active)) tools.ActivatePrefabTool(null);
+        if (plan.DeletedEntities.Contains(tools.selected)) tools.selected = Entity.Null;
         // Saved towers may have lost their Owner/SubObject links. Only obsolete static
         // objects with an exact missing bridge ID are eligible, never shared source assets.
         using (var objects = EntityManager.CreateEntityQuery(new EntityQueryDesc
@@ -190,6 +242,25 @@ public partial class BridgeMissingAssetSystem : GameSystemBase
         Mod.Log.Info($"Missing bridge cleanup scheduled: {names.Count} bridge(s), "
             + $"{plan.DeletedEntities.Count} network and owned entities, {plan.UpdatedEntities.Count} surviving updates.");
         plan.Apply(EntityManager);
+    }
+
+    private static string? InvalidNetworkReason(NetGeometryPrefab network)
+    {
+        if (network.m_Sections == null || network.m_Sections.Length == 0)
+            return "No network sections";
+        foreach (var section in network.m_Sections)
+            if (section == null || section.m_Section == null) return "Unresolved network section";
+        if (network.TryGet<Unlockable>(out var unlock))
+        {
+            foreach (var dependency in unlock.m_RequireAll ?? Array.Empty<PrefabBase>())
+                if (dependency == null) return "Unresolved required unlock prefab";
+            foreach (var dependency in unlock.m_RequireAny ?? Array.Empty<PrefabBase>())
+                if (dependency == null) return "Unresolved alternative unlock prefab";
+        }
+        if (network.TryGet<AuxiliaryNets>(out var auxiliary))
+            foreach (var entry in auxiliary.m_AuxiliaryNets ?? Array.Empty<AuxiliaryNetInfo>())
+                if (entry == null || entry.m_Prefab == null) return "Unresolved auxiliary network";
+        return null;
     }
 
     internal static bool TryBridgeName(string? name, out string bridge)

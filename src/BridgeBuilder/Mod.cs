@@ -78,6 +78,7 @@ public sealed class Mod : IMod
         updateSystem.UpdateAt<BridgeBuilderUISystem>(SystemUpdatePhase.UIUpdate);
         updateSystem.UpdateAt<BridgeUnlockSystem>(SystemUpdatePhase.UIUpdate);
         updateSystem.UpdateAt<BridgeMissingAssetSystem>(SystemUpdatePhase.UIUpdate);
+        updateSystem.UpdateAt<BridgeRailSeamDiagnosticsSystem>(SystemUpdatePhase.UIUpdate);
     }
 
     public void OnDispose()
