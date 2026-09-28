@@ -219,7 +219,8 @@ internal static class BridgeStyleDefinitions
     /// the same named bridge, so leaving its original aggregate in place gives it an unrelated street,
     /// road or track name.
     /// </summary>
-    internal static bool CarriedDeckUsesBridgeAggregate(string? styleId) => styleId == "Extradosed01";
+    internal static bool CarriedDeckUsesBridgeAggregate(string? styleId, bool carriedIsRoad) =>
+        styleId == "Extradosed01" || (styleId == "GoldenGateDouble" && carriedIsRoad);
 
     /// <summary>
     /// Order matters: the first matching entry wins, so the narrower patterns come first. Without

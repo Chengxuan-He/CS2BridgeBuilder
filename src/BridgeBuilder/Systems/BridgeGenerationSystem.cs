@@ -738,7 +738,11 @@ public partial class BridgeGenerationSystem : GameSystemBase
         // road receive an ordinary street/road/track name. The style table records the exception; the
         // generated deck takes the already-copied aggregate from the main bridge, without inferring
         // anything from a generated name or from geometry.
-        if (BridgeStyleDefinitions.CarriedDeckUsesBridgeAggregate(styleId)
+        // Golden Gate's lower road also belongs to the named bridge. In particular, a road
+        // below a rail carrier retains its own seam rules, but not its Highway/Street naming
+        // aggregate. Reuse the main bridge's native aggregate and its localized bridge name.
+        // This changes neither the private prefab identity nor the rail auxiliary behavior.
+        if (BridgeStyleDefinitions.CarriedDeckUsesBridgeAggregate(styleId, auxiliaryClone is RoadPrefab)
             && main.m_AggregateType != null)
         {
             auxiliaryClone.m_AggregateType = main.m_AggregateType;
