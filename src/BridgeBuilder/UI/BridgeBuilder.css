@@ -103,10 +103,16 @@
 @media (max-width: 1300px) { .bb-workspace, .bb-manage { padding: 10rem; } .bb-road-column { margin-right: 10rem; } }
 /* Game's app-container disables hit testing by default. Only the two panels
    opt back in; the gap between them must still let the player reach the map. */
-.bb-panel .bb-header { width: 46%; box-sizing: border-box; background-color: var(--panelColorDark); pointer-events: auto; }
-.bb-panel .bb-workspace, .bb-panel .bb-manage { padding: 0; overflow: visible; pointer-events: none; }
-.bb-panel .bb-road-column, .bb-panel .bb-manage-list { flex: 1 1 0; margin-right: 8%; padding: 12rem; box-sizing: border-box; background-color: var(--panelColorDark); pointer-events: auto; }
-.bb-panel .bb-right, .bb-panel .bb-manage-right { flex: 1 1 0; margin-top: -56rem; padding: 12rem; box-sizing: border-box; background-color: var(--panelColorDark); border-radius: var(--panelRadius); pointer-events: auto; }
+/* Both windows use the full left window height, including its header.
+   Height is 100vh - 80rem - 160rem; width is 3/4 of that (3:4 width:height).
+   Expanded arithmetic avoids CSS aspect-ratio/division unsupported by Cohtml. */
+.bb-panel .bb-header { width: calc(75vh - 180rem); box-sizing: border-box; background-color: var(--panelColorDark); pointer-events: auto; }
+.bb-panel .bb-workspace, .bb-panel .bb-manage { align-items: stretch; padding: 0; overflow: visible; pointer-events: none; }
+.bb-panel .bb-road-column, .bb-panel .bb-manage-list { flex: 0 0 auto; width: calc(75vh - 180rem); margin-right: auto; padding: 12rem; box-sizing: border-box; background-color: var(--panelColorDark); pointer-events: auto; }
+/* Use viewport coordinates and an explicit outer height: Cohtml resolves the
+   nested absolute panel against the workspace, which excludes the left header.
+   Both windows include the same 80rem top and 160rem bottom screen margins. */
+.bb-panel .bb-right, .bb-panel .bb-manage-right { position: fixed; top: 80rem; right: 100rem; bottom: auto; left: auto; flex: 0 0 auto; width: calc(75vh - 180rem); height: calc(100vh - 240rem); margin: 0; padding: 12rem; box-sizing: border-box; background-color: var(--panelColorDark); border-radius: var(--panelRadius); pointer-events: auto; }
 .bb-panel .bb-header, .bb-panel .bb-road-column, .bb-panel .bb-right, .bb-panel .bb-manage-list, .bb-panel .bb-manage-right { coh-simple-opacity: on; }
 .bb-white-icon { display: block; flex-shrink: 0; width: 32rem; height: 32rem; background-color: #fff; mask-image: url("coui://bridgebuilderui/BridgeBuilderToolbar.svg"); mask-size: contain; mask-position: center; mask-repeat: no-repeat; filter: none; box-shadow: none; pointer-events: none; }
 .bb-title .bb-white-icon { margin-right: 10rem; }
