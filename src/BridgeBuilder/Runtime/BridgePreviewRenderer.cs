@@ -19,6 +19,7 @@ internal sealed class BridgePreviewRenderer : IDisposable
     private PreviewPass _pass = null!;
     private Action<string, string>? _completion;
     private bool _disposed;
+    private string _diagnosticId = string.Empty;
     private int _startedFrame;
     private int _renderedFrame = -1;
     private int _sampleIndex;
@@ -39,6 +40,7 @@ internal sealed class BridgePreviewRenderer : IDisposable
     internal void Initialize(string prefix, BridgePreviewDrawList draws)
     {
         _camera = new BridgePreviewCamera(prefix, ImageWidth * SampleScale, ImageHeight * SampleScale);
+        _diagnosticId = prefix + "/camera=" + _camera.Camera.GetInstanceID();
         _stage = new BridgePreviewStage();
         _stage.Initialize(prefix, _camera.Camera, draws);
         var additional = _camera.Camera.gameObject.AddComponent<HDAdditionalCameraData>();
@@ -47,6 +49,7 @@ internal sealed class BridgePreviewRenderer : IDisposable
         additional.clearDepth = true;
         additional.xrRendering = false;
         additional.volumeLayerMask = 1 << PreviewVolumeLayer;
+        additional.volumeAnchorOverride = _camera.Camera.transform;
         additional.probeLayerMask = 0;
         additional.customRenderingSettings = true;
         ConfigureFrame(additional, FrameSettingsField.CustomPass, true);
@@ -60,9 +63,18 @@ internal sealed class BridgePreviewRenderer : IDisposable
         ConfigureFrame(additional, FrameSettingsField.Bloom, false);
         ConfigureFrame(additional, FrameSettingsField.AtmosphericScattering, false);
         ConfigureFrame(additional, FrameSettingsField.VolumetricClouds, false);
+        ConfigureFrame(additional, FrameSettingsField.Volumetrics, false);
+        // Never sample the city's time-dependent sky, GI or reflection probes.
+        // Diffuse environment fill comes from the stage's fixed directional rig.
+        ConfigureFrame(additional, FrameSettingsField.SkyReflection, false);
+        ConfigureFrame(additional, FrameSettingsField.ReflectionProbe, false);
+        ConfigureFrame(additional, FrameSettingsField.PlanarProbe, false);
+        ConfigureFrame(additional, FrameSettingsField.ProbeVolume, false);
+        ConfigureFrame(additional, FrameSettingsField.SSGI, false);
+        ConfigureFrame(additional, FrameSettingsField.RayTracing, false);
         ConfigureFrame(additional, FrameSettingsField.LightLayers, true);
-        // The private box-spot key uses punctual shadows, never sun cascades.
-        ConfigureFrame(additional, FrameSettingsField.ShadowMaps, true);
+        // Studio directional lights do not allocate or sample city sun shadows.
+        ConfigureFrame(additional, FrameSettingsField.ShadowMaps, false);
         // Lane markings are native curved decal meshes. HDRP must build this
         // camera's DBuffer before the forward thumbnail pass shades its road.
         ConfigureFrame(additional, FrameSettingsField.Decals, true);
@@ -77,14 +89,22 @@ internal sealed class BridgePreviewRenderer : IDisposable
         _volumeObject = new GameObject(prefix + "_renderpass")
         { hideFlags = HideFlags.HideAndDontSave, layer = PreviewVolumeLayer };
         _stage.MoveToScene(_volumeObject);
-        // Long fixed-span bridges can exceed the default shadow fade distance.
         // Use a LOCAL volume around the far-away preview camera. Layer isolation
         // alone is insufficient: another camera may have an Everything mask.
         _volumeObject.transform.position = _camera.Camera.transform.position;
         _lightingProfile = ScriptableObject.CreateInstance<VolumeProfile>();
         _lightingProfile.hideFlags = HideFlags.HideAndDontSave;
-        var shadowSettings = _lightingProfile.Add<HDShadowSettings>(false);
-        shadowSettings.maxShadowDistance.Override(_stage.ShadowDistance);
+        // A transparent background alone does not disable HDRP sky lighting.
+        // Override only this distant LOCAL volume, never global RenderSettings
+        // or the city's volume profiles. Dynamic + no sky avoids the baked sky.
+        var environment = _lightingProfile.Add<VisualEnvironment>(false);
+        environment.skyType.Override(0);
+        environment.cloudType.Override(0);
+        environment.skyAmbientMode.Override(SkyAmbientMode.Dynamic);
+        var indirect = _lightingProfile.Add<IndirectLightingController>(false);
+        indirect.indirectDiffuseLightingMultiplier.Override(0f);
+        indirect.reflectionLightingMultiplier.Override(0f);
+        indirect.reflectionProbeIntensityMultiplier.Override(0f);
         var lightingBounds = _volumeObject.AddComponent<BoxCollider>();
         lightingBounds.isTrigger = true;
         lightingBounds.size = Vector3.one * 2f;
@@ -128,6 +148,9 @@ internal sealed class BridgePreviewRenderer : IDisposable
         _startedFrame = Time.frameCount;
         _sampleIndex = 0;
         _accumulated = new Color[ImageWidth * ImageHeight];
+        Mod.Log.Info($"Preview render start: {_diagnosticId}; frame={_startedFrame}; "
+            + $"lights=8 shadowless Directional (front/top key); cityEnvironment=off; samples={SubpixelSamples}; "
+            + $"HDRP={typeof(HDAdditionalLightData).Module.ModuleVersionId}");
         BeginSample();
     }
 
@@ -216,8 +239,10 @@ internal sealed class BridgePreviewRenderer : IDisposable
             }
             finally { UnityEngine.Object.DestroyImmediate(png); }
         }
-        catch (Exception)
+        catch (Exception exception)
         {
+            Mod.Log.Warn($"Preview readback failed: {_diagnosticId}; "
+                + $"{exception.GetType().Name}: {exception.Message}");
             Finish(string.Empty, "RenderReadFailed");
         }
         finally
@@ -304,6 +329,11 @@ internal sealed class BridgePreviewRenderer : IDisposable
         var completion = _completion;
         _completion = null;
         _accumulated = null;
+        var message = $"Preview render finish: {_diagnosticId}; frame={Time.frameCount}; "
+            + $"elapsedFrames={Time.frameCount - _startedFrame}; samples={_sampleIndex}/{SubpixelSamples}; "
+            + $"result={(error.Length == 0 ? "OK" : error)}";
+        if (error.Length == 0) Mod.Log.Info(message);
+        else Mod.Log.Warn(message);
         completion?.Invoke(image, error);
     }
 
@@ -311,6 +341,9 @@ internal sealed class BridgePreviewRenderer : IDisposable
     {
         if (_disposed) return;
         _disposed = true;
+        if (_completion != null)
+            Mod.Log.Info($"Preview render cancelled: {_diagnosticId}; frame={Time.frameCount}; "
+                + $"samples={_sampleIndex}/{SubpixelSamples}");
         _completion = null;
         _accumulated = null;
         RenderPipelineManager.endCameraRendering -= OnRendered;

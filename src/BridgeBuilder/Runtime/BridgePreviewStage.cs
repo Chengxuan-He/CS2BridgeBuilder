@@ -24,24 +24,20 @@ internal sealed class BridgePreviewStage : IDisposable
     private readonly List<Light> _lights = new();
     private bool _disposed;
     internal Vector3 Origin => _root.transform.position;
-    internal float ShadowDistance { get; private set; }
 
     internal void Initialize(string prefix, Camera camera, BridgePreviewDrawList draws)
     {
         _scene = SceneManager.CreateScene(prefix + "_preview_scene");
         _root = new GameObject(prefix + "_bridge_segment")
         { hideFlags = HideFlags.HideAndDontSave, layer = Layer };
-        // Isolate through the preview scene, rendering layer and distant finite
-        // light volumes. Never toggle lights per camera: HDRP collects multiple
+        // Isolate through the preview scene and rendering layer.
+        // Never toggle lights per camera: HDRP collects multiple
         // cameras before executing their render requests and shadow preparation.
         _root.transform.position = new Vector3(0f, -100000f, 0f);
         SceneManager.MoveGameObjectToScene(_root, _scene);
         SceneManager.MoveGameObjectToScene(camera.gameObject, _scene);
         camera.scene = _scene;
         camera.cullingMask = 1 << Layer;
-        // This bounds-derived distance is only for the isolated light/camera rig,
-        // never a bridge-generation measurement or geometry correction.
-        ShadowDistance = Mathf.Max(20f, draws.Bounds.size.magnitude * 8f);
 
         var groups = new Dictionary<(Mesh, Matrix4x4), Material[]>();
         var properties = new Dictionary<(Mesh, Matrix4x4), MaterialPropertyBlock>();
@@ -84,16 +80,17 @@ internal sealed class BridgePreviewStage : IDisposable
         // Neutral daylight presentation, independent of the city's time/weather.
         // Keep specular response on the key; the fill approximates diffuse sky
         // illumination instead of producing a second hard white sun reflection.
-        // The point key casts into the punctual atlas; box spots supply diffuse fill.
-        // A Directional light would compete with the game's sun
-        // for its single cascade atlas, even with separate scenes/light layers.
-        // Neither light is a reference to (or mutation of) the city's sun.
-        AddLight(prefix + "_key", new Vector3(50f, -35f, 0f), 4000f, true, draws.Bounds);
+        // Front/top key close to the fixed camera's (35.264, 45) direction:
+        // visible tower faces and deck are lit rather than silhouetted.
+        // No cast shadows: a private directional key must not claim the city's
+        // single sun cascade atlas. Surface normals retain relief and contrast.
+        // None of these lights references or mutates the city's sun.
+        AddLight(prefix + "_key", new Vector3(45f, 35f, 0f), 4000f, true, draws.Bounds);
         AddLight(prefix + "_fill", new Vector3(35f, 145f, 0f), 1000f, false, draws.Bounds);
         // A weak neutral diffuse environment approximation, including the underside.
-        // Opposing box spots avoid a completely unlit normal without changing material
+        // Opposing parallel lights avoid a completely unlit normal without changing material
         // colours, exposure, city RenderSettings or the transparent background. Each
-        // non-key light has no specular or shadow contribution; only the key owns shadows.
+        // non-key light has no specular contribution; all lights are shadowless.
         AddLight(prefix + "_ambient_front", Vector3.zero, AmbientFillLux, false, draws.Bounds);
         AddLight(prefix + "_ambient_back", new Vector3(0f, 180f, 0f), AmbientFillLux, false, draws.Bounds);
         AddLight(prefix + "_ambient_left", new Vector3(0f, 90f, 0f), AmbientFillLux, false, draws.Bounds);
@@ -110,55 +107,28 @@ internal sealed class BridgePreviewStage : IDisposable
         var obj = new GameObject(name) { hideFlags = HideFlags.HideAndDontSave, layer = Layer };
         obj.transform.SetParent(_root.transform, false);
         var rotation = Quaternion.Euler(angles);
-        var inverse = Quaternion.Inverse(rotation);
-        var extent = Vector3.zero;
-        for (var x = -1; x <= 1; x += 2)
-        for (var y = -1; y <= 1; y += 2)
-        for (var z = -1; z <= 1; z += 2)
-        {
-            var corner = inverse * Vector3.Scale(bounds.extents, new Vector3(x, y, z));
-            extent = Vector3.Max(extent,
-                new Vector3(Mathf.Abs(corner.x), Mathf.Abs(corner.y), Mathf.Abs(corner.z)));
-        }
-        var margin = Mathf.Max(1f, bounds.size.magnitude * .01f);
         obj.transform.localRotation = rotation;
-        obj.transform.localPosition = bounds.center - rotation * Vector3.forward * (extent.z + margin);
+        obj.transform.localPosition = bounds.center;
         var light = obj.AddComponent<Light>();
         light.enabled = false;
-        light.type = LightType.Spot;
+        light.type = LightType.Directional;
         light.color = Color.white;
         light.useColorTemperature = false;
         light.cullingMask = 1 << Layer;
         var hd = obj.AddComponent<HDAdditionalLightData>();
-        // The game's DOTS light merge sorts ProjectorBox after city Point lights,
-        // but updates shadow requests only in its Unity-light-count prefix. A
-        // shadow-casting box can reserve a slot and then never populate it.
-        // Unity Point lights sort before DOTS points (their source indices are
-        // lower), so the single preview shadow owner stays in that prefix.
-        hd.SetLightTypeAndShape(key ? HDLightTypeAndShape.Point : HDLightTypeAndShape.BoxSpot);
-        var keyDistance = Mathf.Max(10f, bounds.size.magnitude * 4f);
-        if (key)
-            obj.transform.localPosition = bounds.center - rotation * Vector3.forward * keyDistance;
-        hd.SetRange(key ? keyDistance + bounds.extents.magnitude + margin : (extent.z + margin) * 2f);
-        if (!key)
-            hd.SetBoxSpotSize(new Vector2((extent.x + margin) * 2f, (extent.y + margin) * 2f));
-        hd.applyRangeAttenuation = false;
+        // HDRP sorts the merged Unity/ECS lights by GPU type, then source index.
+        // PreprocessVisibleLights treats the first s_NumUnityLights sorted entries
+        // as Unity database entries. ProjectorBox fills sort AFTER city ECS points,
+        // allowing an ECS dataIndex into that Unity-only lookup even without shadows.
+        // Directional lights sort BEFORE points. Do not reintroduce ProjectorBox here.
+        hd.SetLightTypeAndShape(HDLightTypeAndShape.Directional);
         hd.SetLightLayer((LightLayerEnum)LightingLayer, (LightLayerEnum)LightingLayer);
-        hd.fadeDistance = key ? keyDistance * 2f : ShadowDistance;
-        hd.EnableShadows(key);
-        if (key)
-        {
-            hd.SetShadowUpdateMode(ShadowUpdateMode.EveryFrame);
-            hd.SetShadowResolutionOverride(true);
-            hd.SetShadowResolution(2048);
-            hd.SetShadowNearPlane(.1f);
-            hd.SetShadowFadeDistance(keyDistance * 2f);
-        }
+        hd.EnableShadows(false);
         hd.affectSpecular = key;
         hd.affectsVolumetric = false;
-        // Preserve centre illuminance for the point key: candela = lux * distance².
-        hd.SetIntensity(key ? lux * keyDistance * keyDistance : lux,
-            key ? LightUnit.Candela : LightUnit.Lux);
+        // Directional illuminance is uniform across the bridge, independent of
+        // distance/size. Preserve the key's previous centre illuminance.
+        hd.SetIntensity(lux, LightUnit.Lux);
         _lights.Add(light);
     }
 

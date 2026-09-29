@@ -36,6 +36,7 @@ namespace BridgeBuilder.Systems;
 public partial class BridgeGenerationSystem : GameSystemBase
 {
     private const int PageRefreshCooldownFrames = 60;
+    private readonly BridgePrototypeMaterialAudit _prototypeMaterialAudit = new();
     private const int PageOnScreenGraceFrames = 30;
 
     private PrefabSystem _prefabSystem = null!;
@@ -263,6 +264,7 @@ public partial class BridgeGenerationSystem : GameSystemBase
             BridgeAssetPack.RefreshExisting(_prefabSystem, EntityManager,
                 generated.Concat(BridgeRegistrationStore.Load().Select(entry => entry.PrefabName)));
             BridgeStyleCatalog.Rebuild(_prefabSystem, generated);
+            _prototypeMaterialAudit.Inspect(_prefabSystem);
             DeckCatalog.Rebuild(_prefabSystem, roads);
         }
         catch (Exception exception)
