@@ -64,6 +64,17 @@ internal sealed class BridgePreviewCamera : IDisposable
         Camera.farClipPlane = distance + viewExtent.z + 1f;
     }
 
+    internal void SetSampleOffset(float x, float y)
+    {
+        // Offsets are in render-target pixels, not world units. Reset before each
+        // sample so offsets never accumulate or change the bridge framing.
+        Camera.ResetProjectionMatrix();
+        var projection = Camera.projectionMatrix;
+        projection.m03 += 2f * x / Target.width;
+        projection.m13 += 2f * y / Target.height;
+        Camera.projectionMatrix = projection;
+    }
+
     public void Dispose()
     {
         if (_disposed) return;

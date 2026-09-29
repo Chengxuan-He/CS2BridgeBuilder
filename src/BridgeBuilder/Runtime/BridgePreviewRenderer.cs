@@ -21,15 +21,20 @@ internal sealed class BridgePreviewRenderer : IDisposable
     private bool _disposed;
     private int _startedFrame;
     private int _renderedFrame = -1;
+    private int _sampleIndex;
+    private Color[]? _accumulated;
     private const int TextureWarmupFrames = 8;
     private const int PreviewVolumeLayer = BridgePreviewStage.Layer;
     private const float StudioEV100 = 11f;
     // A static transparent capture has no useful TAA history and our custom
     // target bypasses HDRP's post-process AA. Rasterize at 2x in each dimension,
-    // then resolve coverage ourselves instead of publishing aliased one-pixel wires.
+    // then combine four quarter-pixel projection offsets. This gives a 4x4 grid
+    // (16 samples per output pixel) without allocating a 6144x3072 HDR target.
+    // Both native colour and the transparent coverage pass use the same projection.
     private const int ImageWidth = 1536;
     private const int ImageHeight = 768;
     private const int SampleScale = 2;
+    private const int SubpixelSamples = 4;
 
     internal void Initialize(string prefix, BridgePreviewDrawList draws)
     {
@@ -121,6 +126,16 @@ internal sealed class BridgePreviewRenderer : IDisposable
         if (_disposed || _completion != null) return;
         _completion = completion;
         _startedFrame = Time.frameCount;
+        _sampleIndex = 0;
+        _accumulated = new Color[ImageWidth * ImageHeight];
+        BeginSample();
+    }
+
+    private void BeginSample()
+    {
+        _renderedFrame = -1;
+        _camera.SetSampleOffset((_sampleIndex & 1) == 0 ? -0.25f : 0.25f,
+            (_sampleIndex & 2) == 0 ? -0.25f : 0.25f);
         RenderPipelineManager.endCameraRendering += OnRendered;
         _camera.Camera.enabled = true;
     }
@@ -182,7 +197,16 @@ internal sealed class BridgePreviewRenderer : IDisposable
                 Finish(string.Empty, "RenderEmpty");
                 return;
             }
-            var output = ResolveCoverage(linear, target.width);
+            AccumulateCoverage(linear, target.width);
+            if (++_sampleIndex < SubpixelSamples)
+            {
+                // The next sample is another submitted camera frame, not a second
+                // read of this target. Keep the stage/material leases alive until
+                // all samples have completed; do not use the city's TAA history.
+                BeginSample();
+                return;
+            }
+            var output = ResolveCoverage();
             var png = new Texture2D(ImageWidth, ImageHeight, TextureFormat.RGBA32, false);
             try
             {
@@ -204,10 +228,8 @@ internal sealed class BridgePreviewRenderer : IDisposable
         }
     }
 
-    private static Color32[] ResolveCoverage(Color[] linear, int sourceWidth)
+    private void AccumulateCoverage(Color[] linear, int sourceWidth)
     {
-        var exposure = 1f / (1.2f * Mathf.Pow(2f, StudioEV100));
-        var output = new Color32[ImageWidth * ImageHeight];
         for (var y = 0; y < ImageHeight; y++)
         for (var x = 0; x < ImageWidth; x++)
         {
@@ -225,11 +247,22 @@ internal sealed class BridgePreviewRenderer : IDisposable
                 sum.b += FiniteRadiance(p.b) * alpha;
                 sum.a += alpha;
             }
+            _accumulated![y * ImageWidth + x] += sum;
+        }
+    }
+
+    private Color32[] ResolveCoverage()
+    {
+        var exposure = 1f / (1.2f * Mathf.Pow(2f, StudioEV100));
+        var output = new Color32[ImageWidth * ImageHeight];
+        for (var i = 0; i < output.Length; i++)
+        {
+            var sum = _accumulated![i];
             if (sum.a <= 0f) continue;
             var unpremultiply = exposure / sum.a;
-            output[y * ImageWidth + x] = Display(new Color(
+            output[i] = Display(new Color(
                 sum.r * unpremultiply, sum.g * unpremultiply,
-                sum.b * unpremultiply, sum.a / (SampleScale * SampleScale)));
+                sum.b * unpremultiply, sum.a / (SampleScale * SampleScale * SubpixelSamples)));
         }
         return output;
     }
@@ -270,6 +303,7 @@ internal sealed class BridgePreviewRenderer : IDisposable
         RenderPipelineManager.endCameraRendering -= OnRendered;
         var completion = _completion;
         _completion = null;
+        _accumulated = null;
         completion?.Invoke(image, error);
     }
 
@@ -278,6 +312,7 @@ internal sealed class BridgePreviewRenderer : IDisposable
         if (_disposed) return;
         _disposed = true;
         _completion = null;
+        _accumulated = null;
         RenderPipelineManager.endCameraRendering -= OnRendered;
         if (_camera != null) _camera.Camera.enabled = false;
         // Destroy the pass before its camera and before the caller releases meshes.

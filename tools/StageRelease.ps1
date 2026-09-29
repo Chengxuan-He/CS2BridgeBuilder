@@ -21,7 +21,7 @@ $docs = Join-Path $projectRoot 'docs/publishing'
 if ($assemblyVersion -ne "$version.0" -or $uiVersion -ne $version -or $draft.Publish.ModVersion.Value -ne $version) {
     throw "Release versions differ: project=$version, assembly=$assemblyVersion, UI=$uiVersion, draft=$($draft.Publish.ModVersion.Value)"
 }
-$files = @('BridgeBuilder.dll', 'BridgeBuilder.mjs', 'BridgeBuilder.css', 'BridgeBuilder.svg',
+$files = @('BridgeBuilder.dll', '0Harmony.dll', 'Harmony-LICENSE.txt', 'BridgeBuilder.mjs', 'BridgeBuilder.css', 'BridgeBuilder.svg',
     'BridgeBuilderToolbar.svg', 'BridgeBuilderPack.svg', 'BridgeBuilderSearch.svg',
     'BridgeBuilderFilter.svg', 'BridgeBuilderArrowDown.svg')
 foreach ($file in $files) {

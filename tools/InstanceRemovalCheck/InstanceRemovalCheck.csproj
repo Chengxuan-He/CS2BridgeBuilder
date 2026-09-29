@@ -7,5 +7,6 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="../../src/BridgeBuilder/Runtime/BridgeInstanceRemoval.cs" Link="BridgeInstanceRemoval.cs" />
+    <Compile Include="../../src/BridgeBuilder/Runtime/BridgeCleanupConfirmation.cs" Link="BridgeCleanupConfirmation.cs" />
   </ItemGroup>
 </Project>

@@ -88,6 +88,14 @@ foreach ($requiredHeaderLine in @(
 }
 
 $references = [Collections.Generic.List[string]]::new()
+# Restore the pinned, self-contained Mono Harmony dependency used by the early load guard.
+& $dotnet restore (Join-Path $projectRoot 'src\BridgeBuilder\BridgeBuilder.csproj') --verbosity quiet
+if ($LASTEXITCODE -ne 0) { throw 'Harmony dependency restore failed.' }
+$packageRoot = if ($env:NUGET_PACKAGES) { $env:NUGET_PACKAGES } else { Join-Path $env:USERPROFILE '.nuget\packages' }
+$harmonyPackage = Join-Path $packageRoot 'lib.harmony\2.2.2'
+$harmonyDll = Join-Path $harmonyPackage 'lib\net472\0Harmony.dll'
+if (-not (Test-Path -LiteralPath $harmonyDll)) { throw "Harmony assembly missing: $harmonyDll" }
+$references.Add('/reference:' + $harmonyDll)
 Get-ChildItem -LiteralPath $frameworkRefs -Filter '*.dll' | ForEach-Object {
     $references.Add('/reference:' + $_.FullName)
 }
@@ -141,6 +149,8 @@ $arguments = @(
 
 & $dotnet @arguments
 if ($LASTEXITCODE -ne 0) { throw "Compilation failed with exit code $LASTEXITCODE" }
+Copy-Item -LiteralPath $harmonyDll -Destination $output -Force
+Copy-Item -LiteralPath (Join-Path $harmonyPackage 'LICENSE') -Destination (Join-Path $output 'Harmony-LICENSE.txt') -Force
 Copy-Item -LiteralPath $uiModule -Destination $output -Force
 Copy-Item -LiteralPath (Join-Path $projectRoot 'src\BridgeBuilder\UI\BridgeBuilder.css') -Destination $output -Force
 Copy-Item -LiteralPath (Join-Path $projectRoot 'assets\BridgeBuilder.svg') -Destination $output -Force

@@ -113,6 +113,7 @@ public partial class BridgeGenerationSystem : GameSystemBase
 
     protected override void OnUpdate()
     {
+        if (World.GetOrCreateSystemManaged<BridgeMissingAssetSystem>().IsCleaning) return;
         // A queued update may need the next outer PrefabSystem pass. Do not process another
         // create/delete request until its scheduled publication callback has finished.
         if (World.GetOrCreateSystemManaged<BridgePublicationSystem>().IsPending) return;
@@ -1313,6 +1314,85 @@ public partial class BridgeGenerationSystem : GameSystemBase
         }
         Finish(report, state, "Remove invalid bridge after load", showMessage: false);
         return !remaining;
+    }
+
+    internal bool CanRetireBridgeFiles(BridgeDiskAudit audit, ISet<string> names,
+        out HashSet<PrefabBase> candidates)
+    {
+        var comparer = ReferenceEqualityComparer<PrefabBase>.Instance;
+        var loaded = PrefabCatalog.GetAll(_prefabSystem).Concat(BridgeLoadFailures.Prefabs())
+            .Where(p => p != null).Distinct(comparer).ToArray();
+        candidates = new HashSet<PrefabBase>(loaded.Where(p => !p.isBuiltin && !p.isReadOnly
+            && (audit.OwnsName(p.name, names)
+                || p.asset != null && audit.OwnsPath(p.asset.path, names))), comparer);
+        var candidateSet = candidates;
+        foreach (var survivor in loaded.Where(p => p.asset != null && !p.isBuiltin
+                     && !p.isReadOnly && !candidateSet.Contains(p)))
+        {
+            var references = new HashSet<PrefabBase>(comparer);
+            PrefabReferenceWalker.CollectInto(survivor, references);
+            if (!references.Overlaps(candidates)) continue;
+            Mod.Log.Warn($"Kept invalid bridge files: surviving asset '{survivor.name}' still references their graph.");
+            return false;
+        }
+        return true;
+    }
+
+    internal bool RemoveInvalidBridgeFilesAfterLoad(BridgeDiskAudit audit, ISet<string> names)
+    {
+        // A duplicated CID cannot safely be removed through AssetData.Delete(): the
+        // database handle may identify the OTHER file. Retire exact validated files
+        // together instead, including collision losers which never registered.
+        EntityManager.CompleteAllTrackedJobs();
+        if (!CanRetireBridgeFiles(audit, names, out var candidates)) return false;
+        var entities = new HashSet<Entity>();
+        foreach (var candidate in candidates)
+            if (_prefabSystem.TryGetEntity(candidate, out var entity)) entities.Add(entity);
+        if (BridgeInstanceRemoval.HasPlacedReferences(EntityManager, entities)) return false;
+        var backup = Path.Combine(ExportPaths.DataDirectory, "RemovedBridgeFiles",
+            DateTime.UtcNow.ToString("yyyyMMdd-HHmmss-fffffff", CultureInfo.InvariantCulture));
+        if (!audit.RetireFiles(names, backup, out var error))
+        {
+            Mod.Log.Warn("Bridge file retirement failed: " + error);
+            return false;
+        }
+        // Keep all live objects, native indices, geometry and materials allocated.
+        // Only hide deleted catalogue entries and detach stale disk handles.
+        foreach (var candidate in candidates)
+        {
+            if (candidate is NetGeometryPrefab) HideRemovedBridge(candidate);
+            candidate.asset = null;
+        }
+        var state = ExportStateStore.Load();
+        var report = new ExportReport();
+        foreach (var name in names)
+        {
+            foreach (var deck in new[] { name, BridgeNaming.LowerDeckName(name),
+                         BridgeNaming.CarriedDeckName(name, above: true) })
+            {
+                state.Remove(deck);
+                RoadBuilderIconExporter.Discard(deck);
+            }
+            if (BridgeRegistrationStore.Find(name) != null && !BridgeRegistrationStore.Remove(name))
+            {
+                Mod.Log.Warn($"Could not remove bridge registry entry '{name}'; recovery files: {backup}");
+                return false;
+            }
+            report.Removed(name);
+        }
+        World.GetOrCreateSystemManaged<BridgePublicationSystem>().RefreshMenus(report);
+        Finish(report, state, "Retire invalid bridge files", showMessage: false);
+        Mod.Log.Info($"Retired {names.Count} invalid bridge file group(s); recovery copies: {backup}");
+        return true;
+    }
+
+    internal bool IsRemoving => _pendingRemoval != null;
+
+    internal void SuspendForCleanup()
+    {
+        ClearPreview();
+        BridgePreviewState.Clear();
+        World.GetOrCreateSystemManaged<ToolSystem>().ActivatePrefabTool(null);
     }
 
     private IReadOnlyList<string> RemoveByName(string exportName, ExportStateStore state, ExportReport report)

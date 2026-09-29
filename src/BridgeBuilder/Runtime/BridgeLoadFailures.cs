@@ -13,6 +13,8 @@ internal static class BridgeLoadFailures
     private static readonly object Sync = new();
     private static readonly HashSet<PrefabBase> Failed = new(
         CS2Mods.Shared.Infrastructure.ReferenceEqualityComparer<PrefabBase>.Instance);
+    private static readonly HashSet<PrefabBase> Quarantined = new(
+        CS2Mods.Shared.Infrastructure.ReferenceEqualityComparer<PrefabBase>.Instance);
     private static readonly Regex Identity = new(
         @"(?:^|[ _-])(b[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})(?=$|[ _-])");
     private static int _revision;
@@ -27,6 +29,22 @@ internal static class BridgeLoadFailures
     internal static void Stop()
     {
         UnityLogger.OnErrorOrHigher -= OnError;
+        lock (Sync) Quarantined.Clear();
+        Clear();
+    }
+
+    internal static void Quarantine(PrefabBase prefab, string reason)
+    {
+        lock (Sync)
+        {
+            if (!Quarantined.Add(prefab)) return;
+            _revision++;
+        }
+        Mod.Log.Warn($"Quarantined bridge before native prefab initialization: '{prefab.name}': {reason}");
+    }
+
+    internal static void Clear()
+    {
         lock (Sync) { Failed.Clear(); _revision++; }
     }
 
@@ -47,7 +65,9 @@ internal static class BridgeLoadFailures
         // Resolve Unity names and ownership only on the game thread. Never use the
         // message text or an arbitrary UUID in another mod's error as deletion authority.
         PrefabBase[] snapshot;
-        lock (Sync) snapshot = Failed.ToArray();
+        // Registration happens before map preload too. Keep quarantined object identities
+        // across Clear() so unregistered assets remain reachable for post-load revalidation.
+        lock (Sync) snapshot = Failed.Concat(Quarantined).Distinct().ToArray();
         return snapshot.Where(p => p != null && !p.isBuiltin && !p.isReadOnly
             && TryOwner(p.name, out _)).ToArray();
     }

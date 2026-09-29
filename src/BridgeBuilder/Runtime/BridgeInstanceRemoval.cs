@@ -65,13 +65,15 @@ internal sealed class BridgeInstanceRemoval
                 {
                     var edge = connection.m_Edge;
                     if (!manager.Exists(edge) || manager.HasComponent<Deleted>(edge)
-                        || plan.DeletedEntities.Contains(edge)) continue;
+                        || plan.DeletedEntities.Contains(edge) || !Connects(manager, edge, node)) continue;
                     hasSurvivingEdge = true;
                     plan.UpdatedEntities.Add(edge);
                     if (survivorPrefab == Entity.Null && manager.HasComponent<PrefabRef>(edge))
                     {
                         var candidate = manager.GetComponentData<PrefabRef>(edge).m_Prefab;
-                        if (manager.Exists(candidate) && !prefabs.Contains(candidate))
+                        if (manager.HasComponent<PrefabData>(candidate)
+                            && manager.GetComponentData<PrefabData>(candidate).m_Index >= 0
+                            && !prefabs.Contains(candidate))
                             survivorPrefab = candidate;
                     }
                 }
@@ -140,46 +142,88 @@ internal sealed class BridgeInstanceRemoval
         {
             var entity = pending.Dequeue();
             if (!visited.Add(entity)) continue;
-            if (children.TryGetValue(entity, out var owned))
-                foreach (var child in owned) Add(child);
-            if (!manager.Exists(entity)) continue;
-            if (manager.HasBuffer<Game.Objects.SubObject>(entity))
-                foreach (var child in manager.GetBuffer<Game.Objects.SubObject>(entity, true)) Add(child.m_SubObject);
-            if (manager.HasBuffer<Game.Net.SubLane>(entity))
-                foreach (var child in manager.GetBuffer<Game.Net.SubLane>(entity, true)) Add(child.m_SubLane);
-            if (manager.HasBuffer<Game.Net.SubNet>(entity))
-                foreach (var child in manager.GetBuffer<Game.Net.SubNet>(entity, true)) Add(child.m_SubNet);
+            foreach (var child in Children(entity)) Add(child);
         }
 
         // Native SubElementDeleteSystem preserves subnetwork junctions with external edges.
-        // Decide only after collecting all owned edges, irrespective of buffer iteration order.
-        foreach (var entity in new List<Entity>(DeletedEntities))
+        // Protect their entire owned subtree BEFORE marking anything Deleted. Protecting only
+        // the node after expansion leaves its lanes/objects in the deletion set. Repeat to a
+        // fixed point: a rescued owned edge may keep another junction alive too.
+        var protectedEntities = new HashSet<Entity>();
+        foreach (var entity in UpdatedEntities) Protect(entity);
+        bool rescued;
+        do
         {
-            if (!manager.Exists(entity) || !manager.HasComponent<Node>(entity)
-                || !manager.HasBuffer<ConnectedEdge>(entity)) continue;
-            foreach (var connection in manager.GetBuffer<ConnectedEdge>(entity, true))
+            rescued = false;
+            foreach (var entity in new List<Entity>(DeletedEntities))
             {
-                var edge = connection.m_Edge;
-                if (!manager.Exists(edge) || DeletedEntities.Contains(edge)
-                    || manager.HasComponent<Deleted>(edge)) continue;
-                DeletedEntities.Remove(entity);
-                UpdatedEntities.Add(entity);
-                UpdatedEntities.Add(edge);
-                if (manager.HasComponent<PrefabRef>(edge))
+                if (!manager.Exists(entity) || !manager.HasComponent<Node>(entity)
+                    || !manager.HasBuffer<ConnectedEdge>(entity)) continue;
+                foreach (var connection in manager.GetBuffer<ConnectedEdge>(entity, true))
                 {
-                    var replacement = manager.GetComponentData<PrefabRef>(edge);
-                    if (manager.HasComponent<PrefabData>(replacement.m_Prefab)
-                        && manager.GetComponentData<PrefabData>(replacement.m_Prefab).m_Index >= 0)
-                        _survivingNodePrefabs[entity] = replacement;
+                    var edge = connection.m_Edge;
+                    if (!manager.Exists(edge) || DeletedEntities.Contains(edge)
+                        || manager.HasComponent<Deleted>(edge) || !Connects(manager, edge, entity)) continue;
+                    Protect(entity);
+                    Protect(edge);
+                    UpdatedEntities.Add(entity);
+                    UpdatedEntities.Add(edge);
+                    rescued = true;
+                    if (manager.HasComponent<PrefabRef>(edge))
+                    {
+                        var replacement = manager.GetComponentData<PrefabRef>(edge);
+                        if (manager.HasComponent<PrefabData>(replacement.m_Prefab)
+                            && manager.GetComponentData<PrefabData>(replacement.m_Prefab).m_Index >= 0)
+                            _survivingNodePrefabs[entity] = replacement;
+                    }
                 }
-                break;
             }
-        }
+        } while (rescued);
         foreach (var node in UpdatedEntities)
             if (manager.Exists(node) && manager.HasComponent<Node>(node)
                 && manager.HasComponent<Owner>(node)
                 && DeletedEntities.Contains(manager.GetComponentData<Owner>(node).m_Owner))
                 manager.RemoveComponent<Owner>(node);
+
+        IEnumerable<Entity> Children(Entity parent)
+        {
+            if (children.TryGetValue(parent, out var owned))
+                foreach (var child in owned) if (Eligible(child, parent)) yield return child;
+            if (!manager.Exists(parent)) yield break;
+            if (manager.HasBuffer<Game.Objects.SubObject>(parent))
+                foreach (var child in manager.GetBuffer<Game.Objects.SubObject>(parent, true))
+                    if (Eligible(child.m_SubObject, parent)) yield return child.m_SubObject;
+            if (manager.HasBuffer<Game.Net.SubLane>(parent))
+                foreach (var child in manager.GetBuffer<Game.Net.SubLane>(parent, true))
+                    if (Eligible(child.m_SubLane, parent)) yield return child.m_SubLane;
+            if (manager.HasBuffer<Game.Net.SubNet>(parent))
+                foreach (var child in manager.GetBuffer<Game.Net.SubNet>(parent, true))
+                    if (Eligible(child.m_SubNet, parent)) yield return child.m_SubNet;
+        }
+
+        bool Eligible(Entity child, Entity parent) => manager.Exists(child)
+            && !manager.HasComponent<PrefabData>(child) && !manager.HasComponent<NetCompositionData>(child)
+            && !manager.HasComponent<Temp>(child)
+            // Native LaneSystem and SubObjectSystem deliberately skip secondary elements.
+            // Their reference-counting systems decide when the shared instance can die.
+            && !manager.HasComponent<Game.Net.SecondaryLane>(child)
+            && !manager.HasComponent<Game.Objects.Secondary>(child)
+            // A stale sub-element buffer must not override a child's current owner.
+            && (!manager.HasComponent<Owner>(child)
+                || manager.GetComponentData<Owner>(child).m_Owner == parent);
+
+        void Protect(Entity root)
+        {
+            var keep = new Queue<Entity>();
+            keep.Enqueue(root);
+            while (keep.Count != 0)
+            {
+                var entity = keep.Dequeue();
+                if (!protectedEntities.Add(entity)) continue;
+                DeletedEntities.Remove(entity);
+                foreach (var child in Children(entity)) keep.Enqueue(child);
+            }
+        }
 
         void Add(Entity child)
         {
@@ -188,6 +232,13 @@ internal sealed class BridgeInstanceRemoval
                 || UpdatedEntities.Contains(child)) return;
             if (DeletedEntities.Add(child)) pending.Enqueue(child);
         }
+    }
+
+    private static bool Connects(EntityManager manager, Entity edge, Entity node)
+    {
+        if (!manager.HasComponent<Edge>(edge)) return false;
+        var connection = manager.GetComponentData<Edge>(edge);
+        return connection.m_Start == node || connection.m_End == node;
     }
 
     internal bool IsComplete(EntityManager manager)

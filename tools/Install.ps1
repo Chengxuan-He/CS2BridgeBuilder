@@ -32,11 +32,16 @@ if (Test-Path -LiteralPath $resolvedLegacyTarget -PathType Container) {
 [IO.Directory]::CreateDirectory($target) | Out-Null
 
 Copy-Item -LiteralPath (Join-Path $source 'BridgeBuilder.dll') -Destination $target -Force
+Copy-Item -LiteralPath (Join-Path $source '0Harmony.dll') -Destination $target -Force
+Copy-Item -LiteralPath (Join-Path $source 'Harmony-LICENSE.txt') -Destination $target -Force
 $pdb = Join-Path $source 'BridgeBuilder.pdb'
 if (Test-Path -LiteralPath $pdb) { Copy-Item -LiteralPath $pdb -Destination $target -Force }
 Copy-Item -LiteralPath (Join-Path $projectRoot 'assets\BridgeBuilder.svg') -Destination $target -Force
 Copy-Item -LiteralPath (Join-Path $projectRoot 'assets\BridgeBuilderToolbar.svg') -Destination $target -Force
 Copy-Item -LiteralPath (Join-Path $projectRoot 'assets\BridgeBuilderPack.svg') -Destination $target -Force
+foreach ($fieldIcon in @('BridgeBuilderSearch.svg', 'BridgeBuilderFilter.svg', 'BridgeBuilderArrowDown.svg')) {
+    Copy-Item -LiteralPath (Join-Path $source $fieldIcon) -Destination $target -Force
+}
 Copy-Item -LiteralPath (Join-Path $source 'BridgeBuilder.mjs') -Destination $target -Force
 Copy-Item -LiteralPath (Join-Path $source 'BridgeBuilder.css') -Destination $target -Force
 Write-Host "Installed local code mod: $target"

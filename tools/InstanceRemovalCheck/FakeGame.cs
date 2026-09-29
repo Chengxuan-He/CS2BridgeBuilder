@@ -37,21 +37,33 @@ namespace Unity.Entities
         }
         public void Set<T>(Entity entity, T value) where T : notnull => Items[entity][typeof(T)] = value;
         public bool Exists(Entity entity) => Items.ContainsKey(entity);
-        public bool HasComponent<T>(Entity entity) => Items[entity].ContainsKey(typeof(T));
+        public bool HasComponent<T>(Entity entity) => Items.TryGetValue(entity, out var item) && item.ContainsKey(typeof(T));
         public T GetComponentData<T>(Entity entity) => (T)Items[entity][typeof(T)];
         public void AddComponent<T>(Entity entity) where T : notnull, new() => Set(entity, new T());
+        public void SetComponentData<T>(Entity entity, T value) where T : notnull => Set(entity, value);
+        public void RemoveComponent<T>(Entity entity) => Items[entity].Remove(typeof(T));
+        public void CompleteAllTrackedJobs() { }
         public bool HasBuffer<T>(Entity entity) => Items[entity].ContainsKey(typeof(List<T>));
         public List<T> GetBuffer<T>(Entity entity, bool readOnly = false) => (List<T>)Items[entity][typeof(List<T>)];
         public EntityQuery CreateEntityQuery(EntityQueryDesc query) => new(this, query);
         public void Destroy(Entity entity) => Items.Remove(entity);
     }
 }
-namespace Game.Common { public struct Deleted { } public struct Updated { } }
+namespace Game.Common
+{
+    public struct Deleted { } public struct Updated { } public struct Applied { } public struct Created { }
+    public struct Owner { public Unity.Entities.Entity m_Owner; }
+}
+namespace Game.Objects
+{
+    public struct SubObject { public Unity.Entities.Entity m_SubObject; }
+    public struct Secondary { }
+}
 namespace Game.Tools { public struct Temp { } }
 namespace Game.Prefabs
 {
     public struct PrefabRef { public Unity.Entities.Entity m_Prefab; }
-    public struct PrefabData { }
+    public struct PrefabData { public int m_Index; }
     public struct NetCompositionData { }
 }
 namespace Game.Net
@@ -59,4 +71,7 @@ namespace Game.Net
     public struct Node { }
     public struct Edge { public Unity.Entities.Entity m_Start, m_End; }
     public struct ConnectedEdge { public Unity.Entities.Entity m_Edge; }
+    public struct SubLane { public Unity.Entities.Entity m_SubLane; }
+    public struct SubNet { public Unity.Entities.Entity m_SubNet; }
+    public struct SecondaryLane { }
 }

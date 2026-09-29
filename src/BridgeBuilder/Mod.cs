@@ -47,6 +47,7 @@ public sealed class Mod : IMod
         // exporter, and its generated dependencies must not collide either.
         ModHost.DefaultNamePrefix = "RBBridge";
         BridgeBuilder.Runtime.BridgeLoadFailures.Start();
+        BridgeBuilder.Runtime.BridgePrefabLoadGuard.Start();
 
         Log.Info($"{Id} loaded (build {BuildStamp()})");
         try
@@ -78,11 +79,17 @@ public sealed class Mod : IMod
         updateSystem.UpdateAfter<BridgePriceSystem, Game.Prefabs.NetCompositionSystem>(SystemUpdatePhase.Modification4);
         updateSystem.UpdateAt<BridgeBuilderUISystem>(SystemUpdatePhase.UIUpdate);
         updateSystem.UpdateAt<BridgeUnlockSystem>(SystemUpdatePhase.UIUpdate);
-        updateSystem.UpdateAt<BridgeMissingAssetSystem>(SystemUpdatePhase.UIUpdate);
+        // Deleted must be visible BEFORE native sub-element, topology, lane and rendering
+        // maintenance. UIUpdate is after ModificationSystem and PreRenderSystem, yet before
+        // PrepareCleanUpSystem: deleting there destroys entities without retiring their
+        // native references/batches first. Never run destructive cleanup in a UI phase.
+        updateSystem.UpdateBefore<BridgeMissingAssetSystem, Game.Objects.SubElementDeleteSystem>(
+            SystemUpdatePhase.PostTool);
     }
 
     public void OnDispose()
     {
+        BridgeBuilder.Runtime.BridgePrefabLoadGuard.Stop();
         BridgeBuilder.Runtime.BridgeLoadFailures.Stop();
         try
         {

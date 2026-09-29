@@ -28,6 +28,9 @@
     <None Include="UI\BridgeBuilder.css" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
   <ItemGroup>
+    <!-- Use the self-contained Mono build; do not depend on another installed mod supplying Harmony. -->
+    <PackageDownload Include="Lib.Harmony" Version="[2.2.2]" />
+    <Reference Include="0Harmony"><HintPath>$(NuGetPackageRoot)lib.harmony/2.2.2/lib/net472/0Harmony.dll</HintPath><Private>true</Private></Reference>
     <Reference Include="Game"><HintPath>$(GameManagedDir)\Game.dll</HintPath><Private>false</Private></Reference>
     <Reference Include="Colossal.AssetPipeline"><HintPath>$(GameManagedDir)\Colossal.AssetPipeline.dll</HintPath><Private>false</Private></Reference>
     <Reference Include="Colossal.Core"><HintPath>$(GameManagedDir)\Colossal.Core.dll</HintPath><Private>false</Private></Reference>

@@ -33,6 +33,10 @@ public partial class BridgeMissingAssetSystem : GameSystemBase
     private int _failureRevision;
     private bool _inspectLoaded;
     private readonly HashSet<string> _handledFailures = new(StringComparer.Ordinal);
+    private readonly BridgeCleanupConfirmation _confirmation = new();
+    private int _completedFrame = -1;
+    private BridgeDiskAudit? _diskAudit;
+    internal bool IsCleaning => _removal != null;
 
     protected override void OnCreate()
     {
@@ -59,6 +63,12 @@ public partial class BridgeMissingAssetSystem : GameSystemBase
         _failedBridges.Clear();
         _failedNetworks.Clear();
         _handledFailures.Clear();
+        _inspectLoaded = false;
+        _completedFrame = -1;
+        _diskAudit = null;
+        _confirmation.Clear();
+        BridgeLoadFailures.Clear();
+        _failureRevision = BridgeLoadFailures.Revision;
     }
 
     protected override void OnGameLoadingComplete(Purpose purpose, GameMode mode)
@@ -70,15 +80,26 @@ public partial class BridgeMissingAssetSystem : GameSystemBase
         _scan = (mode & GameMode.Game) != 0;
         _inspectLoaded = _scan;
         Enabled = _scan;
-        // Do not leave obsolete geometry alive until the first UI frame.
-        if (_scan) OnUpdate();
+        // Do not mutate topology inside loading callbacks. Catalogue settlement and the
+        // scheduled native prefab pipeline must get their normal update first.
     }
 
     protected override void OnUpdate()
     {
         try
         {
-            if (_removal == null && _failureRevision != BridgeLoadFailures.Revision) _scan = true;
+            if (_removal == null && (BridgeRuntimeRequests.CatalogLoading
+                || World.GetOrCreateSystemManaged<BridgePublicationSystem>().IsPending
+                || World.GetOrCreateSystemManaged<BridgeGenerationSystem>().IsRemoving))
+            {
+                _confirmation.Clear();
+                return;
+            }
+            if (_removal == null && _failureRevision != BridgeLoadFailures.Revision)
+            {
+                _scan = true;
+                _inspectLoaded = true;
+            }
             if (_scan)
             {
                 _scan = false;
@@ -90,8 +111,10 @@ public partial class BridgeMissingAssetSystem : GameSystemBase
             _removal.IncludeOwnedEntities(EntityManager);
             _removal.Apply(EntityManager);
             // Do not claim success until native deletion has processed topology and children.
-            if (!_removal.IsComplete(EntityManager))
+            if (!_removal.IsComplete(EntityManager)
+                || BridgeInstanceRemoval.HasPlacedReferences(EntityManager, _failedNetworks))
             {
+                _completedFrame = -1;
                 if (!_timeoutReported && (DateTime.UtcNow - _started).TotalSeconds >= 30)
                 {
                     _timeoutReported = true;
@@ -100,29 +123,43 @@ public partial class BridgeMissingAssetSystem : GameSystemBase
                 }
                 return;
             }
-            if (BridgeInstanceRemoval.HasPlacedReferences(EntityManager, _failedNetworks)) return;
+            // Observe completion on a later engine frame as well. Never delete backing
+            // assets in the same update which marked the last network/child for deletion.
+            if (_completedFrame < 0) { _completedFrame = UnityEngine.Time.frameCount; return; }
+            if (_completedFrame == UnityEngine.Time.frameCount) return;
             // Keep backing assets and prefab indices alive until native network deletion
             // has completed. In particular, never call PrefabSystem.RemovePrefab here.
             var generator = World.GetOrCreateSystemManaged<BridgeGenerationSystem>();
-            foreach (var bridge in _failedBridges)
+            var diskFailures = new HashSet<string>(_failedBridges.Where(b =>
+                _diskAudit != null && _diskAudit.Failures.ContainsKey(b)), StringComparer.Ordinal);
+            if (diskFailures.Count > 0 && !generator.RemoveInvalidBridgeFilesAfterLoad(_diskAudit!, diskFailures))
+            {
+                Mod.Log.Warn("Invalid bridge file cleanup stopped; recovery files and live prefab indices retained.");
+                Enabled = false;
+                return;
+            }
+            foreach (var bridge in _failedBridges.Except(diskFailures))
                 if (!generator.RemoveInvalidBridgeAfterLoad(bridge))
                 {
                     Mod.Log.Warn($"Invalid bridge '{bridge}' still has protected asset references; cleanup stopped.");
                     Enabled = false;
                     return;
                 }
-            var bindings = GameManager.instance?.userInterface?.appBindings;
-            if (bindings == null) return;
             Mod.Log.Info($"Missing bridge cleanup completed: {_missingCount} bridge(s), "
                 + $"{_removal.DeletedEntities.Count} network and owned entities removed.");
-            bindings.ShowMessageDialog(new MessageDialog(
-                LocalizedString.Value("Bridge Builder"),
-                LocalizedString.Value(RuntimeUiText.Get("MissingBridgesRemoved", _missingCount)),
-                LocalizedString.Value("OK")), _ => { });
+            var bindings = GameManager.instance?.userInterface?.appBindings;
+            // Finalize independently of UI availability; never repeat destructive work
+            // just because the dialog host is not ready.
             _removal = null;
             _handledFailures.UnionWith(_failedBridges);
             _failedBridges.Clear();
             _failedNetworks.Clear();
+            _diskAudit = null;
+            _completedFrame = -1;
+            bindings?.ShowMessageDialog(new MessageDialog(
+                LocalizedString.Value("Bridge Builder"),
+                LocalizedString.Value(RuntimeUiText.Get("MissingBridgesRemoved", _missingCount)),
+                LocalizedString.Value("OK")), _ => { });
         }
         catch (Exception exception)
         {
@@ -139,18 +176,55 @@ public partial class BridgeMissingAssetSystem : GameSystemBase
         var missing = new HashSet<Entity>();
         var checkedPrefabs = new HashSet<Entity>();
         var names = new HashSet<string>(StringComparer.Ordinal);
-        var loaded = PrefabCatalog.GetAll(_prefabs).OfType<NetGeometryPrefab>().ToArray();
-        foreach (var failed in BridgeLoadFailures.Prefabs())
-            if (BridgeLoadFailures.TryOwner(failed.name, out var owner)
-                && !_handledFailures.Contains(owner)) names.Add(owner);
-        // Only a completed city load is a readiness boundary for a whole-catalogue
-        // validation. At runtime other mods may still be registering new prefabs.
-        foreach (var net in _inspectLoaded ? loaded : Array.Empty<NetGeometryPrefab>())
+        var evidence = new Dictionary<string, string>(StringComparer.Ordinal);
+        var loaded = PrefabCatalog.GetAll(_prefabs).Concat(BridgeLoadFailures.Prefabs())
+            .OfType<NetGeometryPrefab>().Distinct().ToArray();
+        // Native registries can hide the losing asset in a duplicate-name/CID pair.
+        // Validate the owned on-disk graphs as well as the objects which registered.
+        var disk = BridgeDiskAudit.Read(UnityEngine.Application.persistentDataPath,
+            BridgeRegistrationStore.Load().Select(r => r.PrefabName), cid =>
+                Colossal.IO.AssetDatabase.AssetDatabase.global.TryGetAsset<Colossal.IO.AssetDatabase.GeometryAsset>(cid, out var geometry)
+                && (geometry.database != Colossal.IO.AssetDatabase.AssetDatabase.user
+                    || System.IO.File.Exists(geometry.path)));
+        if (!disk.Complete)
+        {
+            // An incomplete disk scan is not authority to delete anything, including an
+            // apparently obsolete network whose file may merely be temporarily inaccessible.
+            Mod.Log.Warn("Bridge file validation incomplete; retaining bridges: " + disk.Error);
+            _confirmation.Clear();
+            return;
+        }
+        foreach (var failure in disk.Failures.Where(p => !_handledFailures.Contains(p.Key)))
+        {
+            names.Add(failure.Key);
+            AddEvidence(failure.Key, failure.Value);
+        }
+        // A log entry is a request to recheck, not deletion authority. In particular,
+        // a recovered tower/section failure must not delete a healthy network UUID group.
+        // The caller waits for catalogue/publication settlement. At runtime a new error
+        // requests this same current-state validation instead of trusting its old log.
+        foreach (var net in _inspectLoaded ? loaded.OrderBy(p => p.name, StringComparer.Ordinal)
+                     : Enumerable.Empty<NetGeometryPrefab>())
         {
             if (!TryBridgeName(net.name, out var bridge) || net.isBuiltin || net.isReadOnly) continue;
+            if (_handledFailures.Contains(bridge)) continue;
+            if (disk.Failures.ContainsKey(bridge)) continue;
+            if (!BridgeNetworkValidation.IsInvalid(net, out _) && !_prefabs.TryGetEntity(net, out _))
+            {
+                // A previously rejected object may have recovered. Give native registration
+                // another chance instead of deleting it solely because our gate rejected it.
+                if (_prefabs.AddPrefab(net))
+                {
+                    _scan = true;
+                    _inspectLoaded = true;
+                    _confirmation.Clear();
+                    return;
+                }
+                continue;
+            }
             if (!IsInvalid(net, out var reason)) continue;
             names.Add(bridge);
-            Mod.Log.Warn($"Invalid Bridge Builder prefab '{net.name}': {reason}; removing its bridge UUID group.");
+            AddEvidence(bridge, net.name + ": " + reason);
         }
         _inspectLoaded = false;
         using (var entities = _networks.ToEntityArray(Allocator.Temp))
@@ -170,14 +244,41 @@ public partial class BridgeMissingAssetSystem : GameSystemBase
                     && type != nameof(PathwayPrefab) && type != nameof(NetGeometryPrefab)) continue;
                 missing.Add(prefab);
                 names.Add(bridge);
-                Mod.Log.Info($"Removing missing saved Bridge Builder network: {id}");
+                AddEvidence(bridge, "obsolete saved network: " + id);
             }
         }
+        // ECS query order need not be stable across frames.
+        foreach (var bridge in evidence.Keys.ToArray())
+            evidence[bridge] = string.Join("; ", evidence[bridge].Split(new[] { "; " },
+                StringSplitOptions.None).OrderBy(reason => reason, StringComparer.Ordinal));
+        var confirmed = _confirmation.Observe(evidence, UnityEngine.Time.frameCount);
+        if (names.Count != 0 && !names.SetEquals(confirmed))
+        {
+            // Rebuild the entire plan next frame, including recovered/missing references.
+            // Do not partially remove one deck while its sibling is still being checked.
+            _scan = true;
+            _inspectLoaded = true;
+            return;
+        }
         if (names.Count == 0) return;
+        _diskAudit = disk;
+        var diskFailures = new HashSet<string>(names.Where(disk.Failures.ContainsKey), StringComparer.Ordinal);
+        if (diskFailures.Count > 0 && !World.GetOrCreateSystemManaged<BridgeGenerationSystem>()
+                .CanRetireBridgeFiles(disk, diskFailures, out _))
+        {
+            // Do not delete the placed networks first if a surviving asset prevents
+            // the corresponding file group from being safely retired.
+            Enabled = false;
+            return;
+        }
+        foreach (var failure in evidence)
+            Mod.Log.Warn($"Confirmed invalid bridge '{failure.Key}': {failure.Value}; removing UUID group.");
+        World.GetOrCreateSystemManaged<BridgeGenerationSystem>().SuspendForCleanup();
         // A failed carried deck invalidates the whole bridge: collect the root and
         // both named decks, never the source road, shared sections or composition caches.
         foreach (var net in loaded)
-            if (TryBridgeName(net.name, out var bridge) && names.Contains(bridge)
+            if ((TryBridgeName(net.name, out var bridge) && names.Contains(bridge)
+                    || net.asset != null && disk.OwnsPath(net.asset.path, names))
                 && !net.isBuiltin && !net.isReadOnly && _prefabs.TryGetEntity(net, out var entity))
                 missing.Add(entity);
         // Include obsolete sibling decks as well, even if only one failed this load.
@@ -223,33 +324,22 @@ public partial class BridgeMissingAssetSystem : GameSystemBase
                     break;
                 }
             }
-        // Shared junctions survive. Stop them retaining the obsolete bridge prefab when a
-        // surviving, valid road can provide their native node prefab instead.
-        foreach (var node in plan.UpdatedEntities)
-        {
-            if (!EntityManager.HasComponent<Node>(node) || !EntityManager.HasComponent<PrefabRef>(node)
-                || !missing.Contains(EntityManager.GetComponentData<PrefabRef>(node).m_Prefab)
-                || !EntityManager.HasBuffer<ConnectedEdge>(node)) continue;
-            foreach (var connection in EntityManager.GetBuffer<ConnectedEdge>(node, true))
-            {
-                var edge = connection.m_Edge;
-                if (!EntityManager.Exists(edge) || plan.DeletedEntities.Contains(edge)
-                    || EntityManager.HasComponent<Deleted>(edge) || !EntityManager.HasComponent<PrefabRef>(edge)) continue;
-                var replacement = EntityManager.GetComponentData<PrefabRef>(edge);
-                if (!EntityManager.HasComponent<PrefabData>(replacement.m_Prefab)
-                    || EntityManager.GetComponentData<PrefabData>(replacement.m_Prefab).m_Index < 0) continue;
-                EntityManager.SetComponentData(node, replacement);
-                break;
-            }
-        }
         _missingCount = names.Count;
         _timeoutReported = false;
         _removal = plan;
         _started = DateTime.UtcNow;
+        _completedFrame = -1;
         plan.IncludeOwnedEntities(EntityManager);
+        var tools = World.GetOrCreateSystemManaged<ToolSystem>();
+        if (plan.DeletedEntities.Contains(tools.selected)) tools.selected = Entity.Null;
         Mod.Log.Info($"Missing bridge cleanup scheduled: {names.Count} bridge(s), "
             + $"{plan.DeletedEntities.Count} network and owned entities, {plan.UpdatedEntities.Count} surviving updates.");
         plan.Apply(EntityManager);
+
+        void AddEvidence(string bridge, string reason)
+        {
+            evidence[bridge] = evidence.TryGetValue(bridge, out var prior) ? prior + "; " + reason : reason;
+        }
     }
 
     private bool IsInvalid(NetGeometryPrefab net, out string reason)
@@ -257,13 +347,7 @@ public partial class BridgeMissingAssetSystem : GameSystemBase
         reason = string.Empty;
         try
         {
-            if (net.m_Sections == null || net.m_Sections.Length == 0
-                || net.m_Sections.Any(section => section == null || section.m_Section == null))
-                reason = "missing section reference";
-            else if (net.TryGet<AuxiliaryNets>(out var auxiliary)
-                && (auxiliary.m_AuxiliaryNets == null
-                    || auxiliary.m_AuxiliaryNets.Any(item => item == null || item.m_Prefab == null)))
-                reason = "missing auxiliary network reference";
+            if (BridgeNetworkValidation.IsInvalid(net, out reason)) return true;
             else if (!_prefabs.TryGetEntity(net, out var entity)
                 || !EntityManager.HasComponent<NetData>(entity))
                 reason = "missing initialized network data";
@@ -274,7 +358,12 @@ public partial class BridgeMissingAssetSystem : GameSystemBase
                     reason = "invalid network archetype";
             }
         }
-        catch (Exception exception) { reason = exception.Message; }
+        catch (Exception exception)
+        {
+            // Failure to inspect is not proof that a player's bridge can be destroyed.
+            Mod.Log.Warn($"Could not validate bridge '{net.name}'; retaining it: {exception.Message}");
+            reason = string.Empty;
+        }
         return reason.Length != 0;
     }
 

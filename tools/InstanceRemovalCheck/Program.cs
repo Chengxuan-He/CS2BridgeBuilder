@@ -52,9 +52,77 @@ Check(manager.HasComponent<Updated>(joint) && manager.HasComponent<Updated>(othe
 Check(!plan.IsComplete(manager), "Deleted is not destruction: wait for native cleanup");
 foreach (var entity in plan.DeletedEntities) manager.Destroy(entity);
 Check(plan.IsComplete(manager), "finish only after scheduled native entity cleanup");
-Check(BridgeInstanceRemoval.HasPlacedReferences(manager, roots), "keep backing assets of a surviving shared node");
-// Native network update reassigns the retained node to its remaining road; the gate then opens.
-manager.Set(joint, Reference(foreign));
+Check(manager.GetComponentData<PrefabRef>(joint).m_Prefab == foreign,
+    "shared junction adopts an actual initialized surviving road prefab");
 Check(!BridgeInstanceRemoval.HasPlacedReferences(manager, roots), "composition and temporary references do not count as placed roads");
 var empty = BridgeInstanceRemoval.Collect(manager, roots);
 Check(empty.DeletedEntities.Count == 0 && empty.IsComplete(manager), "repeat deletion is harmless");
+
+// The subnetwork junction is discovered only during owned-element expansion, not Collect.
+var parent = manager.Create(new Applied(), new Created(), new Updated());
+var nestedJoint = NodeFor(foreign);
+manager.Set(nestedJoint, new Owner { m_Owner = parent });
+var nestedEnd = NodeFor(foreign);
+var ownedEdge = EdgeFor(foreign, nestedEnd, nestedJoint);
+manager.Set(ownedEdge, new Owner { m_Owner = parent });
+manager.Set(nestedEnd, new Owner { m_Owner = parent });
+var external = EdgeFor(foreign, nestedJoint, otherEnd);
+var lane = manager.Create(new Owner { m_Owner = nestedJoint });
+var lamp = manager.Create(new Owner { m_Owner = nestedJoint });
+var effect = manager.Create(new Owner { m_Owner = lamp });
+manager.Set(nestedJoint, new List<SubLane> { new() { m_SubLane = lane } });
+manager.Set(nestedJoint, new List<Game.Objects.SubObject> { new() { m_SubObject = lamp } });
+var foreignChild = manager.Create(new Owner { m_Owner = otherEnd });
+var secondaryLane = manager.Create(new Owner { m_Owner = parent }, new SecondaryLane());
+var secondaryObject = manager.Create(new Owner { m_Owner = parent }, new Game.Objects.Secondary());
+manager.Set(parent, new List<SubLane> { new() { m_SubLane = secondaryLane } });
+manager.Set(parent, new List<Game.Objects.SubObject> { new() { m_SubObject = foreignChild } });
+manager.GetBuffer<Game.Objects.SubObject>(parent).Add(new() { m_SubObject = secondaryObject });
+// The rescued node also owns an edge to a second candidate node. Its protection must propagate.
+var secondJoint = NodeFor(foreign);
+manager.Set(secondJoint, new Owner { m_Owner = parent });
+var rescuedEdge = EdgeFor(foreign, nestedJoint, secondJoint);
+manager.Set(rescuedEdge, new Owner { m_Owner = nestedJoint });
+var secondLamp = manager.Create(new Owner { m_Owner = secondJoint });
+var nested = new BridgeInstanceRemoval();
+nested.DeletedEntities.Add(secondJoint);
+nested.DeletedEntities.Add(parent);
+nested.IncludeOwnedEntities(manager);
+Check(nested.DeletedEntities.SetEquals([parent, ownedEdge, nestedEnd]),
+    "shared subnetwork junction protects lanes, lamps, effects and dependent junctions");
+Check(!manager.HasComponent<Owner>(nestedJoint) && !manager.HasComponent<Owner>(secondJoint),
+    "detach surviving junctions from deleted owner");
+nested.IncludeOwnedEntities(manager);
+Check(nested.DeletedEntities.SetEquals([parent, ownedEdge, nestedEnd]), "repeated closure keeps rescued subtrees safe");
+nested.Apply(manager);
+Check(new[] { nestedJoint, lane, lamp, effect, external, foreignChild, secondJoint, rescuedEdge, secondLamp }
+    .All(e => !manager.HasComponent<Deleted>(e)), "no surviving or foreign subtree is marked Deleted");
+Check(!manager.HasComponent<Applied>(parent) && !manager.HasComponent<Created>(parent)
+    && !manager.HasComponent<Updated>(parent), "native deletion flags exclude concurrent geometry updates");
+Check(!nested.DeletedEntities.Contains(secondaryLane) && !nested.DeletedEntities.Contains(secondaryObject)
+    && !manager.HasComponent<Deleted>(secondaryLane) && !manager.HasComponent<Deleted>(secondaryObject),
+    "secondary lane/object retirement belongs to native reference systems, not recursive deletion");
+
+var staleNode = NodeFor(upper);
+manager.Set(staleNode, new List<ConnectedEdge> { new() { m_Edge = otherEdge } });
+var stale = BridgeInstanceRemoval.Collect(manager, roots);
+Check(stale.DeletedEntities.Contains(staleNode), "stale ConnectedEdge entry cannot retain an unrelated junction");
+
+var confirmation = new BridgeCleanupConfirmation();
+var failures = new Dictionary<string, string> { ["bridge"] = "missing section" };
+Check(confirmation.Observe(failures, 1).Count == 0, "first failure does not authorize deletion");
+Check(confirmation.Observe(failures, 1).Count == 0, "same-frame reentry does not authorize deletion");
+Check(confirmation.Observe(failures, 2).Contains("bridge"), "persistent current evidence confirms on later frame");
+confirmation.Observe(new Dictionary<string, string>(), 3);
+Check(confirmation.Observe(failures, 4).Count == 0, "recovered failure does not survive in historical evidence");
+failures["bridge"] = "different failure";
+Check(confirmation.Observe(failures, 5).Count == 0, "changed evidence must be reconfirmed");
+confirmation.Clear();
+Check(confirmation.Observe(failures, 6).Count == 0, "map transition clears cleanup evidence");
+
+var modSource = File.ReadAllText(Path.GetFullPath(Path.Combine(AppContext.BaseDirectory,
+    "../../../../../src/BridgeBuilder/Mod.cs")));
+Check(modSource.Contains("UpdateBefore<BridgeMissingAssetSystem, Game.Objects.SubElementDeleteSystem>(")
+    && modSource.Contains("SystemUpdatePhase.PostTool);")
+    && !modSource.Contains("UpdateAt<BridgeMissingAssetSystem>(SystemUpdatePhase.UIUpdate)"),
+    "automatic cleanup is scheduled before native sub-element deletion, never after render preparation");
