@@ -48,6 +48,7 @@ public sealed class Mod : IMod
         ModHost.DefaultNamePrefix = "RBBridge";
         BridgeBuilder.Runtime.BridgeLoadFailures.Start();
         BridgeBuilder.Runtime.BridgePrefabLoadGuard.Start();
+        BridgeBuilder.Runtime.BridgeRailSeamPatch.Start();
 
         Log.Info($"{Id} loaded (build {BuildStamp()})");
         try
@@ -79,6 +80,7 @@ public sealed class Mod : IMod
         updateSystem.UpdateAfter<BridgePriceSystem, Game.Prefabs.NetCompositionSystem>(SystemUpdatePhase.Modification4);
         updateSystem.UpdateAt<BridgeBuilderUISystem>(SystemUpdatePhase.UIUpdate);
         updateSystem.UpdateAt<BridgeUnlockSystem>(SystemUpdatePhase.UIUpdate);
+        updateSystem.UpdateAt<BridgeRailSeamAuditSystem>(SystemUpdatePhase.UIUpdate);
         // Deleted must be visible BEFORE native sub-element, topology, lane and rendering
         // maintenance. UIUpdate is after ModificationSystem and PreRenderSystem, yet before
         // PrepareCleanUpSystem: deleting there destroys entities without retiring their
@@ -89,6 +91,7 @@ public sealed class Mod : IMod
 
     public void OnDispose()
     {
+        BridgeBuilder.Runtime.BridgeRailSeamPatch.Stop();
         BridgeBuilder.Runtime.BridgePrefabLoadGuard.Stop();
         BridgeBuilder.Runtime.BridgeLoadFailures.Stop();
         try
