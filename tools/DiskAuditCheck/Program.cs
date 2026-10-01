@@ -62,3 +62,17 @@ if (args.Length > 0)
         "real fixtures: 12/14/15/16/17 rejected, 13 retained; 04 handled by network validator");
 }
 Console.WriteLine($"{checks} checks passed. Temporary test artifacts: {root}");
+var longRoot = Path.Combine(root, new string('a', 110), new string('b', 110));
+var longDirectory = Path.Combine(longRoot, "ImportedData", healthy);
+Directory.CreateDirectory(longDirectory);
+var longFile = Path.Combine(longDirectory, healthy + ".Prefab");
+File.WriteAllText(longFile, "{\n    \"name\": \"" + healthy + "\"\n}");
+audit = BridgeDiskAudit.Read(longRoot, new[] { healthy });
+Check(longFile.Length > 300 && audit.Complete && audit.Failures.Count == 0 && audit.FileOwners.ContainsKey(longFile), "long path audited, not skipped");
+using (var locked = new FileStream(longFile, FileMode.Open, FileAccess.ReadWrite, FileShare.None))
+{
+    audit = BridgeDiskAudit.Read(longRoot, new[] { healthy });
+    Check(!audit.Complete && audit.Failures.Count == 0, "IO access failure incomplete, not corrupt");
+    Check(!audit.RetireFiles(new HashSet<string> { healthy }, recovery, out _), "IO failure cannot retire files");
+}
+Console.WriteLine($"{checks} total disk checks passed.");

@@ -15,22 +15,23 @@ namespace BridgeBuilder.Bridges;
 /// </summary>
 internal sealed class BridgePrototypeSource
 {
-    private const string BxpDisplayName = "Bridge Expansion Pack";
+    private const string BxpBaseId = "92245";
+    private const string BxpPortsId = "124160";
     private readonly PrefabBase? _prefab;
     private readonly ContentPrefab? _prerequisite;
     private readonly AssetPackPrefab[] _packs;
     private readonly bool _metadataReadable;
-    private readonly bool _bxpOwner;
+    private readonly string? _modId;
 
     private BridgePrototypeSource(
-        string label, ContentPrefab? prerequisite, AssetPackPrefab[] packs, bool metadataReadable = true, bool bxpOwner = false,
+        string label, ContentPrefab? prerequisite, AssetPackPrefab[] packs, bool metadataReadable = true, string? modId = null,
         PrefabBase? prefab = null)
     {
         Label = label;
         _prerequisite = prerequisite;
         _packs = packs;
         _metadataReadable = metadataReadable;
-        _bxpOwner = bxpOwner;
+        _modId = modId;
         _prefab = prefab;
     }
 
@@ -40,14 +41,14 @@ internal sealed class BridgePrototypeSource
         && Label == "Base game";
 
     // Stable ownership identity; localized display names must not decide which donor is selected.
-    internal string Key => _bxpOwner ? "pack:Bridge Asset Pack Filter" : _prerequisite != null ? "content:" + _prerequisite.name
+    internal string Key => _modId != null ? "mod:" + _modId : _prerequisite != null ? "content:" + _prerequisite.name
         : _packs.Length > 0 ? "pack:" + string.Join("|", _packs.Select(pack => pack.name).Distinct().OrderBy(name => name, StringComparer.Ordinal))
         : IsBaseGame ? "base" : Label;
 
     internal bool HasSingleSource => _metadataReadable
-        && (_prerequisite != null || _packs.Select(pack => pack.name).Distinct().Count() <= 1);
+        && (_modId != null || _prerequisite != null || _packs.Select(pack => pack.name).Distinct().Count() <= 1);
 
-    internal int Priority => _bxpOwner ? 2 : IsBaseGame ? 0
+    internal int Priority => _modId != null ? 2 : IsBaseGame ? 0
         : _prerequisite?.GetComponent<DlcRequirement>() != null || (_packs.Length > 0 && _packs.All(pack => pack.isBuiltin)) ? 1 : 2;
 
     // Ownership/availability stays metadata-driven. This property only translates
@@ -57,7 +58,13 @@ internal sealed class BridgePrototypeSource
         get
         {
             if (!_metadataReadable) return RuntimeUiText.Get("SourceUnreadable");
-            if (_bxpOwner) return RuntimeUiText.Get("SourceMod", BxpDisplayName);
+            if (_modId != null)
+            {
+                var label = RuntimeUiText.Get("SourceMod", ModDisplayName(_modId));
+                return _prerequisite?.GetComponent<DlcRequirement>() != null
+                    ? label + " + " + RuntimeUiText.Get("SourceDlc", DeckCatalog.DisplayNameOf(_prerequisite))
+                    : label;
+            }
             if (_prerequisite != null)
             {
                 if (_prerequisite.GetComponent<DlcRequirement>() != null)
@@ -89,9 +96,10 @@ internal sealed class BridgePrototypeSource
                 if (!_metadataReadable || _prefab == null || !_prefab.active) return false;
                 if (_prerequisite != null && !_prerequisite.IsAvailable()) return false;
                 // DLC ownership and mod ownership are independent gates, not alternatives.
-                if (_packs.Length > 0 && !_packs.All(PackAvailable)) return false;
-                if (_prefab.isBuiltin) return true;
+                if (_packs.Length > 0 && !_packs.All(pack => PackAvailable(pack,
+                    IsBxp(_modId) && pack.name == "Bridge Asset Pack Filter"))) return false;
                 if (_prefab.isSubscribedMod) return OwnerAvailable(_prefab);
+                if (_prefab.isBuiltin) return true;
                 return _packs.Length > 0 || OwnerAvailable(_prefab);
             }
             catch (Exception)
@@ -102,9 +110,16 @@ internal sealed class BridgePrototypeSource
         }
     }
 
-    private static bool PackAvailable(AssetPackPrefab pack) => pack != null && pack.active
-        && (pack.GetComponent<ContentPrerequisite>()?.m_ContentPrerequisite?.IsAvailable() ?? true)
-        && (pack.isBuiltin || OwnerAvailable(pack));
+    private static bool PackAvailable(AssetPackPrefab pack, bool sharedBxpCategory)
+    {
+        if (pack == null || !pack.active) return false;
+        var requirement = pack.GetComponent<ContentPrerequisite>();
+        if (requirement != null && (requirement.m_ContentPrerequisite == null
+            || !requirement.m_ContentPrerequisite.IsAvailable())) return false;
+        // Both BXP downloads ship this same category asset. The registered copy can belong to
+        // either package; it is not an extra mod dependency. The donor's own platform ID is gated.
+        return sharedBxpCategory || pack.isBuiltin || OwnerAvailable(pack);
+    }
 
     private static bool OwnerAvailable(PrefabBase prefab)
     {
@@ -126,21 +141,27 @@ internal sealed class BridgePrototypeSource
     {
         try
         {
-            var prerequisite = prefab.GetComponent<ContentPrerequisite>()?.m_ContentPrerequisite;
-            if (bxpGoldenGate)
+            var requirement = prefab.GetComponent<ContentPrerequisite>();
+            var prerequisite = requirement?.m_ContentPrerequisite;
+            var modId = prefab.isSubscribedMod ? prefab.asset?.GetMeta().platformID : null;
+            var packs = prefab.GetComponent<AssetPackItem>()?.m_Packs;
+            if ((requirement != null && prerequisite == null)
+                || (packs != null && packs.Any(pack => pack == null))
+                || (prefab.isSubscribedMod && string.IsNullOrWhiteSpace(modId))
+                || (bxpGoldenGate && !IsBxp(modId)))
             {
-                // Recorded owner of BXP's two double-deck Golden Gate archetypes. Ownership is
-                // distinct from the San Francisco DLC dependency; both remain availability gates.
-                var owner = prefab.GetComponent<AssetPackItem>()?.m_Packs?
-                    .Where(pack => pack != null && pack.name == "Bridge Asset Pack Filter" && !pack.isBuiltin)
-                    .ToArray() ?? Array.Empty<AssetPackPrefab>();
-                return new BridgePrototypeSource("Mod: " + BxpDisplayName, prerequisite, owner,
-                    metadataReadable: owner.Length > 0, bxpOwner: true, prefab: prefab);
+                return new BridgePrototypeSource("Unreadable content prerequisite", prerequisite,
+                    Array.Empty<AssetPackPrefab>(), metadataReadable: false, prefab: prefab);
             }
-
-            var packs = prefab.GetComponent<AssetPackItem>()?.m_Packs?
-                .Where(pack => pack != null)
-                .ToArray() ?? Array.Empty<AssetPackPrefab>();
+            packs ??= Array.Empty<AssetPackPrefab>();
+            // Ownership comes from the actual donor, never from the shared category name or DLC.
+            // In particular, a B&P bridge must not be admitted just because base BXP is enabled.
+            if (!string.IsNullOrWhiteSpace(modId))
+            {
+                var label = "Mod: " + ModDisplayName(modId!);
+                if (prerequisite != null) label += " + " + RequirementLabel(prerequisite);
+                return new BridgePrototypeSource(label, prerequisite, packs, modId: modId, prefab: prefab);
+            }
             if (prerequisite != null)
                 return new BridgePrototypeSource(RequirementLabel(prerequisite), prerequisite, packs, prefab: prefab);
             if (packs.Length > 0)
@@ -183,10 +204,18 @@ internal sealed class BridgePrototypeSource
         return pack.isBuiltin ? "DLC/asset pack: " + name : "Mod: " + name;
     }
 
-    // Presentation only: retain the exact pack identity and subscription checks.
+    private static bool IsBxp(string? id) => id == BxpBaseId || id == BxpPortsId;
+
+    private static string ModDisplayName(string id) => id switch
+    {
+        BxpBaseId => "Bridge Expansion Pack",
+        BxpPortsId => "Bridge Expansion Pack: B&P",
+        _ => id,
+    };
+
     private static string PackDisplayName(AssetPackPrefab pack) =>
-        !pack.isBuiltin && pack.name == "Bridge Asset Pack Filter"
-            ? BxpDisplayName : DeckCatalog.DisplayNameOf(pack);
+        pack.isSubscribedMod && IsBxp(pack.asset?.GetMeta().platformID)
+            ? ModDisplayName(pack.asset!.GetMeta().platformID) : DeckCatalog.DisplayNameOf(pack);
 
     private static string AssetSource(PrefabBase prefab)
     {

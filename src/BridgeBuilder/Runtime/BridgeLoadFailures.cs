@@ -18,6 +18,11 @@ internal static class BridgeLoadFailures
     private static readonly Regex Identity = new(
         @"(?:^|[ _-])(b[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})(?=$|[ _-])");
     private static int _revision;
+    private static bool _networkInitializationFailed;
+    private static bool _restartRequired;
+    internal static bool RestartRequired { get { lock (Sync) return _restartRequired; } }
+    internal static bool NetworkInitializationFailed { get { lock (Sync) return _networkInitializationFailed || _restartRequired; } }
+    internal static void RequireRestart() { lock (Sync) _restartRequired = true; }
     internal static int Revision { get { lock (Sync) return _revision; } }
 
     internal static void Start()
@@ -29,7 +34,7 @@ internal static class BridgeLoadFailures
     internal static void Stop()
     {
         UnityLogger.OnErrorOrHigher -= OnError;
-        lock (Sync) Quarantined.Clear();
+        lock (Sync) { Quarantined.Clear(); _networkInitializationFailed = false; _restartRequired = false; }
         Clear();
     }
 
@@ -51,6 +56,13 @@ internal static class BridgeLoadFailures
     private static void OnError(ILog log, Level level, string message, Exception exception,
         UnityEngine.Object context)
     {
+        // A batch failure is not proof that every still-uninitialized bridge is corrupt.
+        // Keep the latch across map preload; Clear() cannot prove the batch recovered.
+        if (exception?.StackTrace?.IndexOf("Game.Prefabs.NetInitializeSystem.OnUpdate",
+            StringComparison.Ordinal) >= 0)
+        {
+            lock (Sync) _networkInitializationFailed = true;
+        }
         // PrefabSystem / PrefabInitializeSystem catch these exceptions internally.
         // A finalizer on their public update method would never see them.
         if (exception == null || context is not PrefabBase prefab

@@ -16,6 +16,56 @@ internal static class RuntimeUiText
 
     private static readonly Dictionary<string, string[]> Entries = new(StringComparer.Ordinal)
     {
+        ["OK"] = new[]
+        {
+            "OK", "确定", "確定", "OK", "Aceptar", "OK",
+            "OK", "確認", "확인", "OK", "OK", "ОК"
+        },
+        ["MissingBridgesBlocked"] = new[]
+        {
+            "Bridge cleanup was blocked by an invalid connecting road or track. Restore the missing dependencies and reload; keep a copy of the original save.",
+            "桥梁清理因相连道路或轨道无有效原型而受阻。请恢复缺失依赖后重新加载，并保留原存档副本。",
+            "橋梁清理因相連道路或軌道無有效原型而受阻。請恢復缺失依賴後重新載入，並保留原存檔副本。",
+            "Brückenbereinigung durch eine ungültige angeschlossene Straße oder ein Gleis blockiert. Fehlende Abhängigkeiten wiederherstellen und neu laden; den Originalspielstand als Kopie behalten.",
+            "La limpieza se bloqueó por una carretera o vía conectada no válida. Restaura las dependencias y vuelve a cargar; conserva una copia de la partida original.",
+            "Le nettoyage est bloqué par une route ou voie raccordée non valide. Restaurez les dépendances et rechargez ; conservez une copie de la sauvegarde originale.",
+            "Pulizia bloccata da una strada o un binario collegato non valido. Ripristina le dipendenze e ricarica; conserva una copia del salvataggio originale.",
+            "接続道路または線路の原型が無効なため、橋の削除を中止しました。不足する依存アセットを復元して再ロードしてください。元のセーブのコピーを保管してください。",
+            "연결된 도로나 선로의 원형이 유효하지 않아 교량 정리를 중단했습니다. 누락된 종속 에셋을 복구한 후 다시 불러오고 원본 저장의 사본을 보관하세요.",
+            "Czyszczenie zablokowane przez niepoprawną połączoną drogę lub tor. Przywróć zależności i wczytaj ponownie; zachowaj kopię oryginalnego zapisu.",
+            "A limpeza foi bloqueada por uma via ou trilho conectado inválido. Restaure as dependências e recarregue; mantenha uma cópia do salvamento original.",
+            "Очистка заблокирована некорректной подключённой дорогой или путём. Восстановите зависимости и загрузите город заново; сохраните копию исходного файла."
+        },
+        ["MissingBridgesTimeout"] = new[]
+        {
+            "Bridge cleanup is taking longer than expected. {0} entities and {1} network references remain. Cleanup is not complete; do not overwrite the original save. See the mod log.",
+            "桥梁清理耗时超过预期，仍有 {0} 个实体和 {1} 处路网引用待处理。清理尚未完成，请勿覆盖原存档。详情请查看模组日志。",
+            "橋梁清理耗時超過預期，仍有 {0} 個實體與 {1} 處路網引用待處理。清理尚未完成，請勿覆寫原存檔。詳情請查看模組日誌。",
+            "Die Brückenbereinigung dauert länger als erwartet. {0} Entitäten und {1} Netzverweise verbleiben. Noch nicht abgeschlossen; Originalspielstand nicht überschreiben. Siehe Mod-Protokoll.",
+            "La limpieza tarda más de lo previsto. Quedan {0} entidades y {1} referencias de red. No ha finalizado; no sobrescribas la partida original. Consulta el registro del mod.",
+            "Le nettoyage prend plus de temps que prévu. Il reste {0} entités et {1} références réseau. Il n’est pas terminé ; n’écrasez pas la sauvegarde originale. Consultez le journal du mod.",
+            "La pulizia richiede più tempo del previsto. Restano {0} entità e {1} riferimenti di rete. Non è completa: non sovrascrivere il salvataggio originale. Consulta il registro della mod.",
+            "橋の削除処理に時間がかかっています。残りはエンティティ {0} 個、ネットワーク参照 {1} 件です。処理は未完了です。元のセーブを上書きせず、MOD のログを確認してください。",
+            "교량 정리가 예상보다 오래 걸립니다. 엔티티 {0}개와 네트워크 참조 {1}개가 남아 있습니다. 정리가 완료되지 않았으니 원본 저장 파일을 덮어쓰지 마세요. 모드 로그를 확인하세요.",
+            "Czyszczenie trwa dłużej niż oczekiwano. Pozostało {0} encji i {1} odwołań do sieci. Czyszczenie nie jest zakończone; nie nadpisuj oryginalnego zapisu. Sprawdź dziennik moda.",
+            "A limpeza está demorando mais que o esperado. Restam {0} entidades e {1} referências de rede. A limpeza não terminou; não sobrescreva o salvamento original. Consulte o log do mod.",
+            "Очистка мостов занимает больше времени, чем ожидалось. Осталось сущностей: {0}, сетевых ссылок: {1}. Очистка не завершена; не перезаписывайте исходное сохранение. См. журнал мода."
+        },
+        ["MissingBridgesSuspended"] = new[]
+        {
+            "Automatic bridge cleanup is suspended because network initialization or startup recovery did not finish safely. Bridge files are retained. Check the mod log and restart the game after resolving the issue. Do not overwrite the original save.",
+            "路网初始化或启动修复未安全完成，已暂停自动清理桥梁并保留桥梁文件。请查看模组日志，解决问题后重启游戏。请勿覆盖原存档。",
+            "路網初始化或啟動修復未安全完成，已暫停自動清理橋梁並保留橋梁檔案。請查看模組日誌，解決問題後重新啟動遊戲。請勿覆寫原存檔。",
+            "Automatische Brückenbereinigung angehalten: Netzinitialisierung oder Startreparatur nicht sicher abgeschlossen. Brückendateien bleiben erhalten. Mod-Protokoll prüfen, Problem beheben und Spiel neu starten. Originalspielstand nicht überschreiben.",
+            "La limpieza automática se ha suspendido: la inicialización de redes o la recuperación inicial no terminó de forma segura. Se conservan los archivos. Revisa el registro, resuelve el problema y reinicia el juego. No sobrescribas la partida original.",
+            "Nettoyage automatique suspendu : l’initialisation des réseaux ou la réparation au démarrage n’a pas abouti en toute sécurité. Les fichiers sont conservés. Consultez le journal, résolvez le problème et redémarrez le jeu. N’écrasez pas la sauvegarde originale.",
+            "Pulizia automatica sospesa: l’inizializzazione delle reti o il ripristino iniziale non è terminato in sicurezza. I file sono conservati. Controlla il registro, risolvi il problema e riavvia il gioco. Non sovrascrivere il salvataggio originale.",
+            "ネットワークの初期化または起動時の修復が安全に完了しなかったため、自動削除を停止しました。橋のファイルは保持されています。ログを確認して問題を解決し、ゲームを再起動してください。元のセーブを上書きしないでください。",
+            "네트워크 초기화 또는 시작 시 복구가 안전하게 완료되지 않아 자동 정리를 중단했습니다. 교량 파일은 보존됩니다. 로그를 확인하고 문제를 해결한 후 게임을 다시 시작하세요. 원본 저장 파일을 덮어쓰지 마세요.",
+            "Automatyczne czyszczenie wstrzymane: inicjalizacja sieci lub naprawa startowa nie zakończyła się bezpiecznie. Pliki mostów zachowano. Sprawdź dziennik, usuń problem i uruchom grę ponownie. Nie nadpisuj oryginalnego zapisu.",
+            "Limpeza automática suspensa: a inicialização das redes ou a recuperação inicial não terminou com segurança. Os arquivos foram mantidos. Consulte o log, resolva o problema e reinicie o jogo. Não sobrescreva o salvamento original.",
+            "Автоматическая очистка приостановлена: инициализация сетей или восстановление при запуске не завершились безопасно. Файлы мостов сохранены. Проверьте журнал, устраните проблему и перезапустите игру. Не перезаписывайте исходное сохранение."
+        },
         ["CustomRoad"] = new[]
         {
             "+ Custom road", "+ 自定义道路", "+ 自訂道路", "+ Eigene Straße",

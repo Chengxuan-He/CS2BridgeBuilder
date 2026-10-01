@@ -2,5 +2,7 @@
   <PropertyGroup><TargetFramework>net8.0</TargetFramework><OutputType>Exe</OutputType><ImplicitUsings>enable</ImplicitUsings></PropertyGroup>
   <ItemGroup>
     <Compile Include="../../src/BridgeBuilder/Runtime/BridgeNetworkValidation.cs" Link="BridgeNetworkValidation.cs" />
+    <Compile Include="../../src/BridgeBuilder/Runtime/BridgeLoadFailures.cs" Link="BridgeLoadFailures.cs" />
+    <Compile Include="../../src/BridgeBuilder/Runtime/BridgeRegistration.cs" Link="BridgeRegistration.cs" />
   </ItemGroup>
 </Project>

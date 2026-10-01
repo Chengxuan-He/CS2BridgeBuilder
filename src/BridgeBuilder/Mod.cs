@@ -40,14 +40,13 @@ public sealed class Mod : IMod
 
     public void OnLoad(UpdateSystem updateSystem)
     {
+        BridgeBuilder.Runtime.BridgeStartupRecovery.Start(finalAttempt: true);
         ModHost.Initialize(Id, "BridgeBuilder", Log);
         ModHost.PageRebuilder = RebuildOptionsPage;
         RoadSelectionModel.Text = new BridgeSelectionText();
         // A bridge made from a road must not collide with that same road exported by the road
         // exporter, and its generated dependencies must not collide either.
         ModHost.DefaultNamePrefix = "RBBridge";
-        BridgeBuilder.Runtime.BridgeLoadFailures.Start();
-        BridgeBuilder.Runtime.BridgePrefabLoadGuard.Start();
         BridgeBuilder.Runtime.BridgeRailSeamPatch.Start();
 
         Log.Info($"{Id} loaded (build {BuildStamp()})");
@@ -80,6 +79,8 @@ public sealed class Mod : IMod
         updateSystem.UpdateAfter<BridgePriceSystem, Game.Prefabs.NetCompositionSystem>(SystemUpdatePhase.Modification4);
         updateSystem.UpdateAt<BridgeBuilderUISystem>(SystemUpdatePhase.UIUpdate);
         updateSystem.UpdateAt<BridgeUnlockSystem>(SystemUpdatePhase.UIUpdate);
+        // File recovery runs only after the title screen has loaded, never inside a city.
+        updateSystem.UpdateAt<BridgeStartupAssetSystem>(SystemUpdatePhase.UIUpdate);
         updateSystem.UpdateAt<BridgeRailSeamAuditSystem>(SystemUpdatePhase.UIUpdate);
         // Deleted must be visible BEFORE native sub-element, topology, lane and rendering
         // maintenance. UIUpdate is after ModificationSystem and PreRenderSystem, yet before
@@ -91,6 +92,7 @@ public sealed class Mod : IMod
 
     public void OnDispose()
     {
+        BridgeBuilder.Runtime.BridgeStartupRecovery.Stop();
         BridgeBuilder.Runtime.BridgeRailSeamPatch.Stop();
         BridgeBuilder.Runtime.BridgePrefabLoadGuard.Stop();
         BridgeBuilder.Runtime.BridgeLoadFailures.Stop();
@@ -179,9 +181,9 @@ public sealed class Mod : IMod
         try
         {
             var dialog = new MessageDialog(
-                LocalizedString.Value(title),
+                LocalizedString.Value(title == "Bridge Builder" ? UiStringCatalog.Current.Title : title),
                 LocalizedString.Value(message),
-                LocalizedString.Value("OK"));
+                LocalizedString.Value(RuntimeUiText.Get("OK")));
             GameManager.instance?.userInterface?.appBindings?.ShowMessageDialog(dialog, _ => { });
         }
         catch (Exception exception)

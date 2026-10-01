@@ -1197,6 +1197,11 @@ public partial class BridgeGenerationSystem : GameSystemBase
             foreach (var root in roots)
                 if (_prefabSystem.TryGetEntity(root, out var id)) ids.Add(id);
             var plan = BridgeInstanceRemoval.Collect(EntityManager, ids);
+            if (!plan.CanApply(EntityManager, out var blocked))
+            {
+                FailDeletion(prefabName, "DeleteUnsafe", blocked);
+                return;
+            }
             // Stop placement before marking any entity. A temporary tool preview is not a
             // placed bridge, and must be released by its owning tool, not by our PrefabRef query.
             var tools = World.GetOrCreateSystemManaged<ToolSystem>();
@@ -1340,8 +1345,10 @@ public partial class BridgeGenerationSystem : GameSystemBase
         return true;
     }
 
-    internal bool RemoveInvalidBridgeFilesAfterLoad(BridgeDiskAudit audit, ISet<string> names)
+    internal bool RetireInvalidBridgeFilesAtTitle(BridgeDiskAudit audit, ISet<string> names)
     {
+        if (Game.SceneFlow.GameManager.instance == null
+            || (Game.SceneFlow.GameManager.instance.gameMode & GameMode.MainMenu) == 0) return false;
         // A duplicated CID cannot safely be removed through AssetData.Delete(): the
         // database handle may identify the OTHER file. Retire exact validated files
         // together instead, including collision losers which never registered.
@@ -1358,6 +1365,7 @@ public partial class BridgeGenerationSystem : GameSystemBase
             Mod.Log.Warn("Bridge file retirement failed: " + error);
             return false;
         }
+        BridgeStartupRecovery.Retired.UnionWith(names);
         // Keep all live objects, native indices, geometry and materials allocated.
         // Only hide deleted catalogue entries and detach stale disk handles.
         foreach (var candidate in candidates)

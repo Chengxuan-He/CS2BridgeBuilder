@@ -14,14 +14,20 @@ internal sealed class BridgeInstanceRemoval
     internal readonly HashSet<Entity> DeletedEntities = new();
     internal readonly HashSet<Entity> UpdatedEntities = new();
     private readonly Dictionary<Entity, PrefabRef> _survivingNodePrefabs = new();
+    private readonly HashSet<Entity> _targetPrefabs = new();
+    private readonly HashSet<Entity> _appliedUpdates = new();
 
     internal static bool HasPlacedReferences(EntityManager manager, HashSet<Entity> prefabs)
+        => CountPlacedReferences(manager, prefabs) != 0;
+
+    internal static int CountPlacedReferences(EntityManager manager, HashSet<Entity> prefabs)
     {
+        var count = 0;
         using var query = manager.CreateEntityQuery(NetworkQuery());
         using var entities = query.ToEntityArray(Allocator.Temp);
         foreach (var entity in entities)
-            if (prefabs.Contains(manager.GetComponentData<PrefabRef>(entity).m_Prefab)) return true;
-        return false;
+            if (prefabs.Contains(manager.GetComponentData<PrefabRef>(entity).m_Prefab)) count++;
+        return count;
     }
 
     private static EntityQueryDesc NetworkQuery() => new()
@@ -35,6 +41,7 @@ internal sealed class BridgeInstanceRemoval
     internal static BridgeInstanceRemoval Collect(EntityManager manager, HashSet<Entity> prefabs)
     {
         var plan = new BridgeInstanceRemoval();
+        plan._targetPrefabs.UnionWith(prefabs);
         var nodes = new HashSet<Entity>();
         // CompositionSelectSystem.CreateComposition also writes PrefabRef(roadPrefab).
         // A query for PrefabRef alone includes those shared render/composition entities!
@@ -95,16 +102,46 @@ internal sealed class BridgeInstanceRemoval
         return plan;
     }
 
+    internal bool CanApply(EntityManager manager, out string reason)
+    {
+        foreach (var node in UpdatedEntities)
+        {
+            if (!manager.Exists(node) || manager.HasComponent<Deleted>(node)
+                || !manager.HasComponent<Node>(node) || !manager.HasComponent<PrefabRef>(node)
+                || !_targetPrefabs.Contains(manager.GetComponentData<PrefabRef>(node).m_Prefab)) continue;
+            // A missing neighbouring road cannot take over this shared junction. Do not
+            // delete half a bridge and then wait forever for this protected reference.
+            if (_survivingNodePrefabs.TryGetValue(node, out var replacement)
+                && !_targetPrefabs.Contains(replacement.m_Prefab)
+                && manager.HasComponent<PrefabData>(replacement.m_Prefab)
+                && manager.GetComponentData<PrefabData>(replacement.m_Prefab).m_Index >= 0) continue;
+            reason = $"Shared junction {node} still references a retiring bridge, but no initialized "
+                + "connected surviving road/track prefab can take it over. Restore missing network dependencies first.";
+            return false;
+        }
+        reason = string.Empty;
+        return true;
+    }
+
     internal void Apply(EntityManager manager)
     {
+        if (!CanApply(manager, out _)) return;
         // Collect first, mutate second: AddComponent invalidates DynamicBuffer enumerators.
         // Native sub-element/object/lane systems own cascading cleanup of these real edges/nodes.
         foreach (var item in _survivingNodePrefabs)
             if (manager.Exists(item.Key) && !manager.HasComponent<Deleted>(item.Key))
                 manager.SetComponentData(item.Key, item.Value);
         foreach (var entity in UpdatedEntities)
-            if (manager.Exists(entity) && !manager.HasComponent<Deleted>(entity)
-                && !manager.HasComponent<Updated>(entity)) manager.AddComponent<Updated>(entity);
+            if (manager.Exists(entity) && !manager.HasComponent<Deleted>(entity))
+            {
+                if (manager.HasComponent<Node>(entity) && manager.HasComponent<Owner>(entity)
+                    && DeletedEntities.Contains(manager.GetComponentData<Owner>(entity).m_Owner))
+                    manager.RemoveComponent<Owner>(entity);
+                // Native cleanup consumes Updated. Re-adding it every frame continually
+                // rebuilds surviving roads and their children while we wait for retirement.
+                if (_appliedUpdates.Add(entity) && !manager.HasComponent<Updated>(entity))
+                    manager.AddComponent<Updated>(entity);
+            }
         foreach (var entity in DeletedEntities)
             if (manager.Exists(entity))
             {
@@ -179,11 +216,8 @@ internal sealed class BridgeInstanceRemoval
                 }
             }
         } while (rescued);
-        foreach (var node in UpdatedEntities)
-            if (manager.Exists(node) && manager.HasComponent<Node>(node)
-                && manager.HasComponent<Owner>(node)
-                && DeletedEntities.Contains(manager.GetComponentData<Owner>(node).m_Owner))
-                manager.RemoveComponent<Owner>(node);
+        // Planning is read-only. Detach rescued nodes only in Apply after all shared
+        // junctions have passed CanApply; a deferred plan must leave the city untouched.
 
         IEnumerable<Entity> Children(Entity parent)
         {
@@ -242,9 +276,13 @@ internal sealed class BridgeInstanceRemoval
     }
 
     internal bool IsComplete(EntityManager manager)
+        => RemainingEntityCount(manager) == 0;
+
+    internal int RemainingEntityCount(EntityManager manager)
     {
+        var count = 0;
         foreach (var entity in DeletedEntities)
-            if (manager.Exists(entity)) return false;
-        return true;
+            if (manager.Exists(entity)) count++;
+        return count;
     }
 }

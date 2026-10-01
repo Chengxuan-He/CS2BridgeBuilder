@@ -29,14 +29,22 @@ const uiSource = read("src/BridgeBuilder/UI/BridgeBuilder.mjs");
 for (const match of uiSource.matchAll(/\bt\("(\w+)"\)/g)) known(match[1]);
 const consumers = [
     "UI/BridgeBuilderUISystem.cs", "Systems/BridgeGenerationSystem.cs",
-    "Runtime/BridgePreviewRenderer.cs", "Runtime/BridgePreviewState.cs", "Bridges/BridgePrototypeSource.cs"
+    "Runtime/BridgePreviewRenderer.cs", "Runtime/BridgePreviewState.cs", "Bridges/BridgePrototypeSource.cs",
+    "Systems/BridgeMissingAssetSystem.cs", "Systems/BridgeStartupAssetSystem.cs", "Mod.cs"
 ].map(path => read(`src/BridgeBuilder/${path}`));
 for (const source of [uiSource, ...consumers.slice(0, 4)])
     assert(!/\p{Script=Han}/u.test(source), "Hardcoded Chinese remains in runtime UI");
 for (const source of consumers) {
     for (const match of source.matchAll(/(?:RuntimeUiText\.Get|BridgeRuntimeRequests\.Complete)\("(\w+)"/g)) known(match[1]);
     for (const match of source.matchAll(/BridgePreviewState\.Publish\([^\n]*, "(\w+)"\)/g)) known(match[1]);
+    for (const match of source.matchAll(/Notice\("(\w+)"/g)) known(match[1]);
 }
+for (const key of ["OK", "MissingBridgesRemoved", "MissingBridgesRepairFailed",
+    "MissingBridgesBlocked", "MissingBridgesTimeout", "MissingBridgesSuspended"]) known(key);
+const cleanupSource = read("src/BridgeBuilder/Systems/BridgeMissingAssetSystem.cs");
+assert(!cleanupSource.includes('LocalizedString.Value("OK")'));
+assert(!cleanupSource.includes('+ "Restore the save'));
+assert(read("src/BridgeBuilder/Mod.cs").includes('LocalizedString.Value(RuntimeUiText.Get("OK"))'));
 
 // Run the actual UI functions with an in-memory binding adapter. This checks
 // strings/handlers only, not Cohtml layout, game loading, or rendered geometry.

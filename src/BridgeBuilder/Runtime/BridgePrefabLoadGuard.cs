@@ -10,8 +10,10 @@ internal static class BridgePrefabLoadGuard
 {
     private static Harmony? _harmony;
 
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
     internal static void Start()
     {
+        if (_harmony != null) return;
         try
         {
             _harmony = new Harmony("BridgeBuilder.PrefabLoadGuard");
@@ -23,7 +25,10 @@ internal static class BridgePrefabLoadGuard
         }
         catch (Exception exception)
         {
-            Mod.Log.Critical(exception, "Bridge prefab load guard could not be installed; damaged assets are not protected.");
+            BridgeLoadFailures.RequireRestart();
+            // The title/save recovery system presents the localized recovery warning.
+            // Retain the technical exception in the log without a second English popup.
+            Mod.Log.Warn(exception, "Bridge prefab load guard could not be installed; damaged assets are not protected.");
         }
     }
 
@@ -44,14 +49,31 @@ internal static class BridgePrefabLoadGuard
 
     internal static bool Allow(PrefabBase prefab)
     {
-        // Exact bridge/deck identity only. No interception of vanilla, Road Builder,
-        // arbitrary UUID-suffixed pieces, or another mod's network registration.
-        if (prefab is not NetGeometryPrefab net || net.isBuiltin || net.isReadOnly
-            || !BridgeMissingAssetSystem.TryBridgeName(net.name, out _)) return true;
+        // A rejected root is not enough: native loading also registers its section/piece
+        // assets independently. Scope those checks to Bridge Builder's exact UUID marker.
+        if (prefab == null || !(prefab is NetGeometryPrefab
+            || prefab is NetSectionPrefab || prefab is NetPiecePrefab)) return true;
+        var verifiedOwned = false;
         try
         {
-            if (!BridgeNetworkValidation.IsInvalid(net, out var reason)) return true;
-            BridgeLoadFailures.Quarantine(net, reason);
+            var owned = prefab is NetGeometryPrefab
+                ? BridgeMissingAssetSystem.TryBridgeName(prefab.name, out _)
+                : BridgeLoadFailures.TryOwner(prefab.name, out _);
+            // Reading asset metadata may itself fail. Never let that inspection error
+            // escape this global registration hook, especially for unrelated prefabs.
+            if (!owned || prefab.isBuiltin || prefab.isReadOnly) return true;
+            verifiedOwned = true;
+            if (BridgeLoadFailures.TryOwner(prefab.name, out var owner)
+                && BridgeStartupRecovery.Retired.Contains(owner)) return false;
+            if (prefab is NetGeometryPrefab bridge && !BridgeUnlockSnapshot.PrepareLegacy(bridge))
+            {
+                // Unresolved legacy unlock references are a startup/migration problem, not deletion
+                // authority. Keep all files and don't register this partially deserialized network.
+                BridgeLoadFailures.Quarantine(prefab, "Automatic unlock repair deferred; assets retained");
+                return false;
+            }
+            if (!BridgeNetworkValidation.IsInvalid(prefab, out var reason)) return true;
+            BridgeLoadFailures.Quarantine(prefab, reason);
             // No placeholder, array surgery, asset deletion, ECS destruction or index remapping.
             // Saved references resolve as obsolete and are retired by the normal PostTool cleanup.
             return false;
@@ -59,8 +81,12 @@ internal static class BridgePrefabLoadGuard
         catch (Exception exception)
         {
             // Unknown inspection failures are not evidence authorizing deletion.
-            Mod.Log.Warn($"Could not preflight '{net.name}': {exception.Message}");
-            return true;
+            Mod.Log.Warn($"Could not preflight '{prefab.name}': {exception.Message}");
+            if (!verifiedOwned) return true;
+            BridgeLoadFailures.RequireRestart();
+            // An uninspectable owned network cannot safely enter native initialization. Retain its
+            // files, disable automatic retirement and require recovery; never allow nulls downstream.
+            return false;
         }
     }
 }

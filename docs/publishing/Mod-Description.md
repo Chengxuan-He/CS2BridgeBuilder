@@ -24,6 +24,7 @@ Load a city and open Bridge Builder from its toolbar icon. Select a road or trac
 
 - Compatible with [Road Builder](https://mods.paradoxplaza.com/mods/87190/Windows) and [Bridge Expansion Pack](https://mods.paradoxplaza.com/mods/92245/Windows). **Both mods are optional, not required dependencies of Bridge Builder.** Install them only to use their roads or supported bridge styles.
 - Some bridge styles require their corresponding DLC or content mod. The double-deck Golden Gate style comes from **Bridge Expansion Pack**; it is not a double-deck mode of the base single-deck Golden Gate prototype.
+- Compatible with [Node Controller](https://mods.paradoxplaza.com/mods/138523/Windows). **Node Controller is optional, not a required dependency.** The double-deck lower-railway seam fix also supports its geometry pipeline without overriding its node settings.
 ### Important notes
 
 - **After updating to a version that fixes a bridge-generation problem, delete and recreate affected bridges created with older versions.** Updating the mod does not regenerate existing bridge assets. Back up your save first; deleting a bridge also removes its placed instances.
@@ -58,6 +59,7 @@ Bridge Builder（桥梁建造器）让你在《Cities: Skylines II》中，将�
 
 - 兼容 [Road Builder](https://mods.paradoxplaza.com/mods/87190/Windows) 与 [Bridge Expansion Pack](https://mods.paradoxplaza.com/mods/92245/Windows)。**两者均为可选模组，不是 Bridge Builder 的必需前置。** 仅在使用它们提供的道路或受支持桥型时才需要安装。
 - 部分桥型需要对应 DLC 或内容模组。双层金门大桥来自 **Bridge Expansion Pack**，不是基础版单层金门大桥的双层模式。
+- 兼容 [Node Controller](https://mods.paradoxplaza.com/mods/138523/Windows)。**Node Controller 为可选模组，不是必需前置。** 双层桥梁下层铁路接缝修复同时适配其几何计算流程，不覆盖其节点设置。
 ### 注意事项
 
 - **若更新修复了旧版本生成桥梁时的问题，请删除受影响的旧桥梁并重新创建。** 更新模组不会自动重新生成已有桥梁资产。操作前请备份存档；删除桥梁也会移除地图中已铺设的对应实例。
@@ -92,6 +94,7 @@ Bridge Builder（橋梁建造器）讓你在《Cities: Skylines II》中，將�
 
 - 相容 [Road Builder](https://mods.paradoxplaza.com/mods/87190/Windows) 與 [Bridge Expansion Pack](https://mods.paradoxplaza.com/mods/92245/Windows)。**兩者皆為可選模組，並非 Bridge Builder 的必要前置。** 僅在使用它們提供的道路或受支援橋型時才需要安裝。
 - 部分橋型需要對應 DLC 或內容模組。雙層金門大橋來自 **Bridge Expansion Pack**，不是基礎版單層金門大橋的雙層模式。
+- 相容 [Node Controller](https://mods.paradoxplaza.com/mods/138523/Windows)。**Node Controller 為可選模組，並非必要前置。** 雙層橋梁下層鐵路接縫修復同時支援其幾何計算流程，不覆寫其節點設定。
 ### 注意事項
 
 - **若更新修復了舊版本生成橋梁時的問題，請刪除受影響的舊橋梁並重新建立。** 更新模組不會自動重新生成現有橋梁資產。操作前請備份存檔；刪除橋梁也會移除地圖中已鋪設的對應實例。

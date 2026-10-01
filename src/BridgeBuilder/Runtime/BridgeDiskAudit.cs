@@ -33,32 +33,32 @@ internal sealed class BridgeDiskAudit
             var cids = new Dictionary<string, List<(string Owner, string File)>>(StringComparer.OrdinalIgnoreCase);
             var geometryIds = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
             var geometryRoot = Path.Combine(gameRoot, "BridgeBuilder");
-            if (Directory.Exists(geometryRoot))
-                foreach (var sidecar in Directory.GetFiles(geometryRoot, "*.Geometry.cid"))
-                    if (File.Exists(sidecar.Substring(0, sidecar.Length - 4)))
-                        geometryIds.Add(File.ReadAllText(sidecar).Trim());
-            if (Directory.Exists(audit._imported))
-                foreach (var directory in Directory.GetDirectories(audit._imported))
+            if (BridgeFileAccess.Exists(geometryRoot))
+                foreach (var sidecar in Directory.GetFiles(BridgeFileAccess.Native(geometryRoot), "*.Geometry.cid").Select(BridgeFileAccess.Logical))
+                    if (BridgeFileAccess.Exists(sidecar.Substring(0, sidecar.Length - 4)))
+                        geometryIds.Add(BridgeFileAccess.ReadText(sidecar).Trim());
+            if (BridgeFileAccess.Exists(audit._imported))
+                foreach (var directory in Directory.GetDirectories(BridgeFileAccess.Native(audit._imported)).Select(BridgeFileAccess.Logical))
                 {
                     // Do not follow symlinks/junctions or infer ownership from arbitrary metadata.
-                    if ((File.GetAttributes(directory) & FileAttributes.ReparsePoint) != 0) continue;
+                    if ((BridgeFileAccess.Attributes(directory) & FileAttributes.ReparsePoint) != 0) continue;
                     var stem = Path.GetFileName(directory);
                     var match = Owner.Match(stem);
                     if (!match.Success || !owners.Contains(match.Groups[1].Value)) continue;
                     var owner = match.Groups[1].Value;
                     var path = Path.Combine(directory, stem + ".Prefab");
-                    if (!File.Exists(path)) continue;
-                    if ((File.GetAttributes(path) & FileAttributes.ReparsePoint) != 0)
+                    if (!BridgeFileAccess.Exists(path)) continue;
+                    if ((BridgeFileAccess.Attributes(path) & FileAttributes.ReparsePoint) != 0)
                     { audit.Error = "Reparse-point prefab: " + path; return audit; }
-                    var text = File.ReadAllText(path);
+                    var text = BridgeFileAccess.ReadText(path);
                     audit.Remember(path, owner);
                     var cidPath = path + ".cid";
-                    if (File.Exists(cidPath))
+                    if (BridgeFileAccess.Exists(cidPath))
                     {
-                        if ((File.GetAttributes(cidPath) & FileAttributes.ReparsePoint) != 0)
+                        if ((BridgeFileAccess.Attributes(cidPath) & FileAttributes.ReparsePoint) != 0)
                         { audit.Error = "Reparse-point sidecar: " + cidPath; return audit; }
                         audit.Remember(cidPath, owner);
-                        var cid = File.ReadAllText(cidPath).Trim();
+                        var cid = BridgeFileAccess.ReadText(cidPath).Trim();
                         if (Regex.IsMatch(cid, "^[a-fA-F0-9]{32}$"))
                         {
                             if (!cids.TryGetValue(cid, out var entries)) cids[cid] = entries = new();
@@ -97,7 +97,7 @@ internal sealed class BridgeDiskAudit
 
     private void Remember(string path, string owner)
     {
-        if ((File.GetAttributes(path) & FileAttributes.ReparsePoint) != 0) return;
+        if ((BridgeFileAccess.Attributes(path) & FileAttributes.ReparsePoint) != 0) return;
         FileOwners[path] = owner;
         _hashes[path] = Hash(path);
     }
@@ -130,17 +130,17 @@ internal sealed class BridgeDiskAudit
             var files = FileOwners.Where(p => owners.Contains(p.Value)).Select(p => p.Key).ToArray();
             foreach (var path in files)
                 if (!path.StartsWith(_imported + Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase)
-                    || !File.Exists(path) || (File.GetAttributes(path) & FileAttributes.ReparsePoint) != 0
+                    || !BridgeFileAccess.Exists(path) || (BridgeFileAccess.Attributes(path) & FileAttributes.ReparsePoint) != 0
                     || Hash(path) != _hashes[path]
-                    || (File.GetAttributes(Path.GetDirectoryName(path)!) & FileAttributes.ReparsePoint) != 0)
+                    || (BridgeFileAccess.Attributes(Path.GetDirectoryName(path)!) & FileAttributes.ReparsePoint) != 0)
                 { error = "Files changed after validation: " + path; return false; }
             foreach (var path in files)
             {
                 // No live .Prefab/.cid extensions in the recovery directory: these copies
                 // must never be re-imported by the game's asset discovery.
                 var destination = Path.Combine(backup, path.Substring(_imported.Length + 1) + ".bbremoved");
-                Directory.CreateDirectory(Path.GetDirectoryName(destination)!);
-                File.Move(path, destination);
+                Directory.CreateDirectory(BridgeFileAccess.Native(Path.GetDirectoryName(destination)!));
+                File.Move(BridgeFileAccess.Native(path), BridgeFileAccess.Native(destination));
                 moved.Add((path, destination));
             }
             return true;
@@ -149,7 +149,7 @@ internal sealed class BridgeDiskAudit
         {
             error = exception.Message;
             foreach (var item in moved.AsEnumerable().Reverse())
-                try { if (!File.Exists(item.Source)) File.Move(item.Backup, item.Source); }
+                try { if (!BridgeFileAccess.Exists(item.Source)) File.Move(BridgeFileAccess.Native(item.Backup), BridgeFileAccess.Native(item.Source)); }
                 catch (Exception rollback) { error += "; rollback: " + rollback.Message; }
             return false;
         }
@@ -157,7 +157,7 @@ internal sealed class BridgeDiskAudit
 
     private static string Hash(string path)
     {
-        using var stream = File.OpenRead(path);
+        using var stream = BridgeFileAccess.OpenRead(path);
         using var sha = SHA256.Create();
         return Convert.ToBase64String(sha.ComputeHash(stream));
     }

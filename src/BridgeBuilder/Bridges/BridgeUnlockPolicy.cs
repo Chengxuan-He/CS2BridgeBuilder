@@ -1,4 +1,6 @@
 using System;
+using System.Collections.Generic;
+using BridgeBuilder.Runtime;
 using CS2Mods.Shared.Infrastructure;
 using Game.Prefabs;
 using Unity.Entities;
@@ -7,87 +9,84 @@ namespace BridgeBuilder.Bridges;
 
 internal static class BridgeUnlockPolicy
 {
-    // New prefabs are published during PrefabUpdate, but native UnlockSystem runs in MainLoop.
-    // A just-created bridge can therefore retain its initial Locked marker after its prototype
-    // has already unlocked (especially while paused). Resolve our exact one-prototype policy
-    // before activating, without updating a game system recursively or bypassing a locked donor.
+    internal static bool Apply(NetGeometryPrefab root, BridgeStyleVariant variant, ExportReport report)
+    {
+        var world = World.DefaultGameObjectInjectionWorld;
+        var prefabs = world?.GetExistingSystemManaged<PrefabSystem>();
+        if (prefabs == null || variant.Donor == null || ReferenceEquals(root, variant.Donor)
+            || !BridgeUnlockSnapshot.Capture(variant.Donor, prefabs, world!.EntityManager, out var rule))
+        {
+            report.Failed(root.name, new InvalidOperationException("Original bridge unlock rules are not ready for an independent snapshot."));
+            return false;
+        }
+        var encoded = rule.Encode();
+        Configure(root, encoded);
+        foreach (var entry in root.GetComponent<AuxiliaryNets>()?.m_AuxiliaryNets ?? Array.Empty<AuxiliaryNetInfo>())
+            if (entry?.m_Prefab is NetGeometryPrefab deck) Configure(deck, encoded);
+        return true;
+    }
+
+    private static void Configure(NetGeometryPrefab prefab, string encoded)
+    {
+        prefab.components.RemoveAll(component => component is UnlockableBase);
+        // Native self-gate: no default dependency traversal and no external PrefabBase references.
+        prefab.AddComponent<ManualUnlockable>().name = encoded;
+    }
+
     internal static bool TryPrepareBuild(NetGeometryPrefab bridge, PrefabSystem prefabs,
         EntityManager manager, out bool locked)
     {
         locked = true;
-        var rule = bridge.GetComponent<Unlockable>();
-        if (rule == null || !rule.m_IgnoreDependencies || rule.m_RequireAll?.Length != 1
-            || (rule.m_RequireAny?.Length ?? 0) != 0) return false;
-        var prototype = rule.m_RequireAll[0];
-        if (prototype == null || !prefabs.TryGetEntity(prototype, out var prototypeEntity)
-            || !manager.Exists(prototypeEntity)) return false;
-        manager.CompleteAllTrackedJobs();
-        // A user-selected runtime override, not a change to the saved prototype requirements.
-        // Re-evaluate in both directions so disabling it restores the original restriction.
-        locked = Mod.Setting?.RemoveDevelopmentRestrictions != true
-            && manager.HasComponent<Locked>(prototypeEntity)
-            && manager.IsComponentEnabled<Locked>(prototypeEntity);
-
-        // Resolve the entire owned network before changing anything. Other/shared dependencies
-        // are never unlocked; Apply() has installed this exact rule on both generated decks.
-        var decks = new System.Collections.Generic.List<Entity>();
-        if (!prefabs.TryGetEntity(bridge, out var root) || !manager.Exists(root)) return false;
-        decks.Add(root);
-        foreach (var entry in bridge.GetComponent<AuxiliaryNets>()?.m_AuxiliaryNets
-            ?? Array.Empty<AuxiliaryNetInfo>())
+        if (BridgeLoadFailures.RestartRequired) return false;
+        try
         {
-            if (entry?.m_Prefab is not NetGeometryPrefab deck) return false;
-            var deckRule = deck.GetComponent<Unlockable>();
-            if (deckRule == null || !deckRule.m_IgnoreDependencies
-                || deckRule.m_RequireAll?.Length != 1
-                || !ReferenceEquals(deckRule.m_RequireAll[0], prototype)
-                || (deckRule.m_RequireAny?.Length ?? 0) != 0
-                || !prefabs.TryGetEntity(deck, out var entity) || !manager.Exists(entity)) return false;
-            decks.Add(entity);
-        }
-        foreach (var entity in decks)
-        {
-            if (!manager.HasComponent<Locked>(entity))
+            manager.CompleteAllTrackedJobs();
+            if (!BridgeUnlockSnapshot.Read(bridge, prefabs, manager, out var rule))
+            { KeepLocked(bridge, prefabs, manager); return false; }
+            var ready = rule.Evaluate(id => BridgeUnlockSnapshot.IsUnlocked(id, prefabs, manager));
+            // Missing progression data keeps the gate locked; it is NOT a corrupt bridge.
+            locked = Mod.Setting?.RemoveDevelopmentRestrictions != true && ready != true;
+            var decks = new List<Entity>();
+            if (!prefabs.TryGetEntity(bridge, out var root) || !manager.Exists(root)) return false;
+            decks.Add(root);
+            foreach (var entry in bridge.GetComponent<AuxiliaryNets>()?.m_AuxiliaryNets ?? Array.Empty<AuxiliaryNetInfo>())
             {
-                if (!locked) continue;
-                manager.AddComponent<Locked>(entity);
+                if (entry?.m_Prefab is not NetGeometryPrefab deck
+                    || !BridgeUnlockSnapshot.Read(deck, prefabs, manager, out var lowerRule)
+                    || lowerRule.Encode() != rule.Encode()
+                    || !prefabs.TryGetEntity(deck, out var entity) || !manager.Exists(entity))
+                { KeepLocked(bridge, prefabs, manager); return false; }
+                decks.Add(entity);
             }
-            if (manager.IsComponentEnabled<Locked>(entity) == locked) continue;
-            manager.SetComponentEnabled<Locked>(entity, locked);
-            if (locked) continue;
-            // Mirror native UnlockPrefab's notification so menus/dependents also see the change.
-            var notification = manager.CreateEntity(ComponentType.ReadWrite<Game.Common.Event>(),
-                ComponentType.ReadWrite<Unlock>());
-            manager.SetComponentData(notification, new Unlock(entity));
+            foreach (var entity in decks)
+            {
+                if (!manager.HasComponent<Locked>(entity)) manager.AddComponent<Locked>(entity);
+                if (manager.IsComponentEnabled<Locked>(entity) == locked) continue;
+                manager.SetComponentEnabled<Locked>(entity, locked);
+                if (locked) continue;
+                var notification = manager.CreateEntity(ComponentType.ReadWrite<Game.Common.Event>(), ComponentType.ReadWrite<Unlock>());
+                manager.SetComponentData(notification, new Unlock(entity));
+            }
+            return ready.HasValue || Mod.Setting?.RemoveDevelopmentRestrictions == true;
         }
-        return true;
-    }
-
-    internal static bool Apply(NetGeometryPrefab root, BridgeStyleVariant variant, ExportReport report)
-    {
-        if (variant.Donor == null || ReferenceEquals(root, variant.Donor))
+        catch (Exception exception)
         {
-            report.Failed(root.name, new InvalidOperationException("Bridge unlock prototype is unavailable."));
+            Mod.Log.Warn($"Bridge unlock evaluation deferred for '{bridge.name}': {exception.Message}");
             return false;
         }
-        Configure(root, variant.Donor);
-        foreach (var entry in root.GetComponent<AuxiliaryNets>()?.m_AuxiliaryNets
-            ?? Array.Empty<AuxiliaryNetInfo>())
-            if (entry.m_Prefab is NetGeometryPrefab deck) Configure(deck, variant.Donor);
-        return true;
     }
 
-    private static void Configure(NetGeometryPrefab prefab, PrefabBase prototype)
+    private static void KeepLocked(NetGeometryPrefab bridge, PrefabSystem prefabs, EntityManager manager)
     {
-        // Removing Unlockable alone invokes DefaultLateInitialize, which would re-import the
-        // selected road/track and dependency locks. Depend on the original bridge itself:
-        // the native unlock graph then preserves its AND/OR, manual, milestone, development
-        // and indirect requirements without flattening them or copying current unlocked state.
-        // This includes GrandBridgeNode through Grand Bridge, with no style-name exception.
-        prefab.components.RemoveAll(component => component is UnlockableBase);
-        var unlock = prefab.AddComponent<Unlockable>();
-        unlock.m_IgnoreDependencies = true;
-        unlock.m_RequireAll = new[] { prototype };
-        unlock.m_RequireAny = Array.Empty<PrefabBase>();
+        // A saved unlock flag must not bypass a rule whose progression assets are not ready yet.
+        if (prefabs.TryGetEntity(bridge, out var entity) && manager.Exists(entity)
+            && manager.HasComponent<Locked>(entity)) manager.SetComponentEnabled<Locked>(entity, true);
+        foreach (var entry in bridge.GetComponent<AuxiliaryNets>()?.m_AuxiliaryNets ?? Array.Empty<AuxiliaryNetInfo>())
+        {
+            if (entry?.m_Prefab is not NetGeometryPrefab deck
+                || !(deck.name == bridge.name + "_Lower" || deck.name == bridge.name + "_Upper")) continue;
+            if (prefabs.TryGetEntity(deck, out entity) && manager.Exists(entity)
+                && manager.HasComponent<Locked>(entity)) manager.SetComponentEnabled<Locked>(entity, true);
+        }
     }
 }
