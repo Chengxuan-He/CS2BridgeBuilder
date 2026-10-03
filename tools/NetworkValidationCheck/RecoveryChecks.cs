@@ -74,6 +74,12 @@ internal static class RecoveryChecks
         File.WriteAllText(networkPath, "{\"name\":\"" + networkName + "\",\"m_Sections\":{\"$rcontent\":[{\"m_Section\":null}]}}");
         var network = new NetGeometryPrefab { name = networkName, asset = new() { path = networkPath }, m_Sections = [new()] };
         check("essential section is not silently pruned into partial bridge", BridgeReferenceRecovery.Repair(network, prefabs, out _) == BridgeReferenceRecovery.Result.Broken && network.m_Sections.Length == 1);
+        prefabs.Registered.Add(network);
+        check("registered required null remains proven damage without mutation", BridgeReferenceRecovery.Repair(network, prefabs, out _) == BridgeReferenceRecovery.Result.Broken && network.m_Sections[0].m_Section == null);
+        prefabs.Registered.Clear();
+        File.WriteAllText(networkPath, "{\"name\":\"" + networkName + "\",\"m_Sections\":{\"$rcontent\":[{\"m_Section\":null},{\"m_Section\":$fstrref:\"CID:cccccccccccccccccccccccccccccccc\"}]}}");
+        network.m_Sections = [new(), new()];
+        check("unavailable sibling cannot mask proven required null", BridgeReferenceRecovery.Repair(network, prefabs, out _) == BridgeReferenceRecovery.Result.Broken);
         Console.WriteLine("Read-only recovery fixtures retained: " + root);
     }
 }

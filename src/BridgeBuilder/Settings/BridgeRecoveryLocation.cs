@@ -8,15 +8,19 @@ namespace BridgeBuilder.Settings;
 
 internal static class BridgeRecoveryLocation
 {
-    // Keep the existing root so recovery copies from earlier versions remain accessible.
+    internal static string LegacyPath => System.IO.Path.Combine(ExportPaths.DataDirectory, "RemovedBridgeFiles");
+
+    // User asset discovery recursively scans persistentDataPath, including ModsData.
+    // Original-format backups must live OUTSIDE that tree.
     internal static string DefaultPath
     {
         get
         {
-            var root = ExportPaths.DataDirectory;
+            var root = System.IO.Path.Combine(System.IO.Path.GetDirectoryName(
+                UnityEngine.Application.persistentDataPath.TrimEnd('/', '\\'))!, "BridgeBuilder Backups");
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-                return root.Replace('/', '\\').TrimEnd('\\') + "\\RemovedBridgeFiles";
-            return root.Replace('\\', '/').TrimEnd('/') + "/RemovedBridgeFiles";
+                return root.Replace('/', '\\');
+            return root.Replace('\\', '/');
         }
     }
     internal static string Path => Mod.Setting?.RecoveryCopyLocation ?? DefaultPath;
@@ -31,6 +35,10 @@ internal static class BridgeRecoveryLocation
             if (!System.IO.Path.IsPathFullyQualified(value))
                 return false;
             path = System.IO.Path.GetFullPath(value);
+            if (string.Equals(path.TrimEnd('/', '\\'), System.IO.Path.GetFullPath(LegacyPath).TrimEnd('/', '\\'),
+                RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal))
+            { path = DefaultPath; return true; } // persisted default from older releases
+            if (Within(path, UnityEngine.Application.persistentDataPath)) return false;
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
                 path = path.Replace('/', '\\');
             return !File.Exists(path);
@@ -39,6 +47,37 @@ internal static class BridgeRecoveryLocation
         {
             Mod.Log.Warn("Invalid bridge recovery directory: " + exception.Message);
             return false;
+        }
+    }
+
+    internal static bool IsBackup(string? path) => !string.IsNullOrEmpty(path)
+        && (Within(path!, LegacyPath) || Within(path!, Path));
+
+    private static bool Within(string path, string root)
+    {
+        var full = System.IO.Path.GetFullPath(Runtime.BridgeFileAccess.Logical(path));
+        root = System.IO.Path.GetFullPath(root).TrimEnd('/', '\\');
+        var comparison = RuntimeInformation.IsOSPlatform(OSPlatform.Windows)
+            ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal;
+        return full.Equals(root, comparison)
+            || full.StartsWith(root + System.IO.Path.DirectorySeparatorChar, comparison);
+    }
+
+    internal static void MigrateLegacy()
+    {
+        try
+        {
+            if (!Directory.Exists(LegacyPath)) return;
+            if ((File.GetAttributes(LegacyPath) & FileAttributes.ReparsePoint) != 0) return;
+            // Same-volume rename of the entire backup tree; never overwrite existing copies.
+            Directory.CreateDirectory(DefaultPath);
+            var target = System.IO.Path.Combine(DefaultPath, "Legacy-" + Guid.NewGuid().ToString("N"));
+            Directory.Move(LegacyPath, target);
+            Mod.Log.Info("Moved legacy recovery copies outside game asset discovery: " + target);
+        }
+        catch (Exception exception)
+        {
+            Mod.Log.Warn(exception, "Could not relocate legacy recovery copies; registration guard excludes them.");
         }
     }
 

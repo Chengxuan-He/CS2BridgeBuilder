@@ -52,6 +52,9 @@ internal sealed class BridgeDiskAudit
                     { audit.Error = "Reparse-point prefab: " + path; return audit; }
                     var text = BridgeFileAccess.ReadText(path);
                     audit.Remember(path, owner);
+                    if (BridgeSerializedReferences.TryRead(text, out var serialized)
+                        && serialized.Name == stem && serialized.HasRequiredNull(out var damage))
+                        audit.Add(owner, damage);
                     var cidPath = path + ".cid";
                     if (BridgeFileAccess.Exists(cidPath))
                     {
@@ -128,7 +131,7 @@ internal sealed class BridgeDiskAudit
             backup = Path.GetFullPath(backup);
             // Original extensions must stay outside the game's imported/mod asset roots.
             var gameRoot = Path.GetDirectoryName(_imported)!;
-            foreach (var assetRoot in new[] { _imported, Path.Combine(gameRoot, "Mods"), Path.Combine(gameRoot, ".cache") })
+            foreach (var assetRoot in new[] { gameRoot })
                 if (string.Equals(backup, assetRoot, StringComparison.OrdinalIgnoreCase)
                     || backup.StartsWith(assetRoot + Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase))
                 { error = "Recovery directory must be outside game asset discovery roots"; return false; }
@@ -151,17 +154,22 @@ internal sealed class BridgeDiskAudit
                 Directory.CreateDirectory(BridgeFileAccess.Native(Path.GetDirectoryName(destination)!));
                 File.Move(BridgeFileAccess.Native(path), BridgeFileAccess.Native(destination));
                 moved.Add((path, destination));
+                if (BridgeFileAccess.Exists(path) || Hash(destination) != _hashes[path])
+                {
+                    error = "Retirement verification failed: " + path;
+                    break;
+                }
             }
-            return true;
+            if (error.Length == 0) return true;
         }
         catch (Exception exception)
         {
             error = exception.Message;
-            foreach (var item in moved.AsEnumerable().Reverse())
-                try { if (!BridgeFileAccess.Exists(item.Source)) File.Move(BridgeFileAccess.Native(item.Backup), BridgeFileAccess.Native(item.Source)); }
-                catch (Exception rollback) { error += "; rollback: " + rollback.Message; }
-            return false;
         }
+        foreach (var item in moved.AsEnumerable().Reverse())
+            try { if (!BridgeFileAccess.Exists(item.Source)) File.Move(BridgeFileAccess.Native(item.Backup), BridgeFileAccess.Native(item.Source)); }
+            catch (Exception rollback) { error += "; rollback: " + rollback.Message; }
+        return false;
     }
 
     private static string Hash(string path)

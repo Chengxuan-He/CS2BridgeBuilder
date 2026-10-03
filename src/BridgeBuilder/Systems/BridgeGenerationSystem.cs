@@ -1345,10 +1345,11 @@ public partial class BridgeGenerationSystem : GameSystemBase
         return true;
     }
 
-    internal bool RetireInvalidBridgeFilesAtTitle(BridgeDiskAudit audit, ISet<string> names)
+    internal bool RetireInvalidBridgeFilesAtStartup(BridgeDiskAudit audit, ISet<string> names)
     {
         if (Game.SceneFlow.GameManager.instance == null
-            || (Game.SceneFlow.GameManager.instance.gameMode & GameMode.MainMenu) == 0) return false;
+            || !BridgeStartupAssetSystem.IsStartupInspection
+            || (Game.SceneFlow.GameManager.instance.gameMode & (GameMode.Game | GameMode.Editor)) != 0) return false;
         // A duplicated CID cannot safely be removed through AssetData.Delete(): the
         // database handle may identify the OTHER file. Retire exact validated files
         // together instead, including collision losers which never registered.
@@ -1386,7 +1387,7 @@ public partial class BridgeGenerationSystem : GameSystemBase
             if (BridgeRegistrationStore.Find(name) != null && !BridgeRegistrationStore.Remove(name))
             {
                 Mod.Log.Warn($"Could not remove bridge registry entry '{name}'; recovery files: {backup}");
-                return false;
+                // Disk retirement already succeeded. Do not suppress its recovery notification.
             }
             report.Removed(name);
         }

@@ -52,10 +52,16 @@ internal static class BridgePrefabLoadGuard
     {
         // A rejected root is not enough: native loading also registers its section/piece
         // assets independently. Scope those checks to Bridge Builder's exact UUID marker.
-        if (prefab == null || !BridgeReferenceRecovery.Supports(prefab)) return true;
+        if (prefab == null) return true;
         var verifiedOwned = false;
         try
         {
+            // asset.path calls AssetData.GetMeta(): never do that for the global catalogue.
+            // UUID ownership also covers our derived meshes, so backup rejection stays intact.
+            if (prefab.isBuiltin || prefab.isReadOnly
+                || !BridgeLoadFailures.TryOwner(prefab.name, out var owner)) return true;
+            if (BridgeBuilder.Settings.BridgeRecoveryLocation.IsBackup(prefab.asset?.path)) return false;
+            if (!BridgeReferenceRecovery.Supports(prefab)) return true;
             var owned = prefab is NetGeometryPrefab
                 ? BridgeMissingAssetSystem.TryBridgeName(prefab.name, out _)
                 : BridgeLoadFailures.TryOwner(prefab.name, out _);
@@ -63,8 +69,7 @@ internal static class BridgePrefabLoadGuard
             // escape this global registration hook, especially for unrelated prefabs.
             if (!owned || prefab.isBuiltin || prefab.isReadOnly) return true;
             verifiedOwned = true;
-            if (BridgeLoadFailures.TryOwner(prefab.name, out var owner)
-                && BridgeStartupRecovery.Retired.Contains(owner)) return false;
+            if (BridgeStartupRecovery.Retired.Contains(owner)) return false;
             if (prefab is NetGeometryPrefab bridge && !BridgeUnlockSnapshot.PrepareLegacy(bridge))
             {
                 // Unresolved legacy unlock references are a startup/migration problem, not deletion

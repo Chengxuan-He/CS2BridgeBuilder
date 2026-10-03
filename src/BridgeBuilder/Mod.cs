@@ -60,6 +60,7 @@ public sealed class Mod : IMod
         }
 
         RegisterUiHost(this);
+        BridgeRecoveryLocation.MigrateLegacy();
 
         try
         {
@@ -79,7 +80,7 @@ public sealed class Mod : IMod
         updateSystem.UpdateAfter<BridgePriceSystem, Game.Prefabs.NetCompositionSystem>(SystemUpdatePhase.Modification4);
         updateSystem.UpdateAt<BridgeBuilderUISystem>(SystemUpdatePhase.UIUpdate);
         updateSystem.UpdateAt<BridgeUnlockSystem>(SystemUpdatePhase.UIUpdate);
-        // File recovery runs only after the title screen has loaded, never inside a city.
+        // OnWorldReady performs boot recovery; UIUpdate only delivers the queued result.
         updateSystem.UpdateAt<BridgeStartupAssetSystem>(SystemUpdatePhase.UIUpdate);
         updateSystem.UpdateAt<BridgeRailSeamAuditSystem>(SystemUpdatePhase.UIUpdate);
         // Deleted must be visible BEFORE native sub-element, topology, lane and rendering

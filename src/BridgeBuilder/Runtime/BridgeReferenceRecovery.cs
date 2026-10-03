@@ -104,22 +104,21 @@ internal static class BridgeReferenceRecovery
         }
         // Do not shift array indices while another unresolved entry still needs its original
         // serialized position. Apply this prefab's changes as a unit, not piecemeal across retries.
-        if (result != Result.Deferred) foreach (var edit in edits) edit();
+        if (result == Result.Healthy) foreach (var edit in edits) edit();
         reason = reasonBuffer;
         return result;
 
         void Merge(Result status, string detail)
         {
-            // Unknown/unloaded takes priority over destructive evidence for this graph.
-            if (status == Result.Deferred || (status == Result.Broken && result == Result.Healthy))
-                result = status;
-            if (status != Result.Healthy) reasonBuffer = detail;
+            // An independently proven required null cannot be repaired by loading another asset.
+            if (status == Result.Broken || status == Result.Deferred && result == Result.Healthy)
+            { result = status; reasonBuffer = detail; }
         }
 
         Result Resolve(object? item, Slot slot, int index, Type? expected, out PrefabBase? restored)
         {
             restored = null;
-            if (!mutable) return Result.Deferred; // never modify shared or registered native graphs
+            if (!owned) return Result.Deferred; // never inspect another mod's graph as owned damage
             if (!read)
             {
                 read = true;
@@ -132,6 +131,7 @@ internal static class BridgeReferenceRecovery
             var component = ReferenceEquals(slot.Owner, prefab) ? null : slot.Owner.GetType().FullName;
             if (!source.Reference(component, slot.Field, index, slot.Member, out var identity)) return Result.Deferred;
             if (identity.Length == 0) return Result.Broken;
+            if (!mutable) return Result.Deferred; // evidence may be read, registered graphs never mutated
             var status = Lookup(identity, out var candidate);
             if (status != Result.Healthy) return status;
             if (candidate == null || expected == null || !expected.IsInstanceOfType(candidate)) return Result.Deferred;

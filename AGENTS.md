@@ -11,6 +11,14 @@ permission or an in-game action that only the user can perform is genuinely miss
 unblocked repair work, then identify the specific blocker and required action. Do not guess at the
 implementation, bypass the contract or claim that an unverified change is a completed fix.
 
+## Computer-use tools are prohibited
+
+Do not use computer-use tools for this project, including `mcp__cua_repl`, native
+desktop control, or browser UI automation through computer-use. Use file tools,
+command-line tools, or purpose-built APIs instead. If an operation requires UI
+interaction and no permitted alternative is available, ask the user to perform it
+manually; do not bypass this prohibition through another UI automation tool.
+
 ## Deploy immediately after every code change
 
 Before modifying code, run `taskkill /IM Cities2.exe /F` and verify the process is absent,

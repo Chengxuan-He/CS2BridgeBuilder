@@ -11,17 +11,18 @@ using System.Linq;
 
 namespace BridgeBuilder.Systems;
 
-/// <summary>Title-screen file recovery. Never deletes placed city entities.</summary>
+/// <summary>Boot-time recovery after prefab loading, before the main menu. UI updates only show results.</summary>
 public partial class BridgeStartupAssetSystem : GameSystemBase
 {
     // Process-session latch: neither scene transitions nor a recreated ECS system rearm it.
-    // Set when the first title-screen pass starts, including passes that fail or are interrupted.
+    // Claimed during boot, including passes that fail or are interrupted.
     private static bool _startupCheckClaimed;
     private PrefabSystem _prefabs = null!;
-    private readonly BridgeCleanupConfirmation _confirmation = new();
-    private int _lastCount = -1;
     private bool _titleReady;
     private int _pendingRemovedNotice;
+    private string? _pendingNotice;
+    private int _pendingCount;
+    internal static bool IsStartupInspection { get; private set; }
 
     protected override void OnCreate()
     {
@@ -35,17 +36,24 @@ public partial class BridgeStartupAssetSystem : GameSystemBase
         base.OnGamePreload(purpose, mode);
         _titleReady = false;
         Enabled = false;
-        _confirmation.Clear();
-        _lastCount = -1;
-        _pendingRemovedNotice = 0;
+        // Preserve the boot result through the initial transition into MainMenu.
+    }
+
+    protected override void OnWorldReady()
+    {
+        base.OnWorldReady();
+        if (_startupCheckClaimed) return;
+        _startupCheckClaimed = true;
+        IsStartupInspection = true;
+        try { InspectStartup(); }
+        finally { IsStartupInspection = false; Enabled = false; }
     }
 
     protected override void OnGameLoadingComplete(Purpose purpose, GameMode mode)
     {
         base.OnGameLoadingComplete(purpose, mode);
-        _titleReady = (mode & GameMode.MainMenu) != 0 && !_startupCheckClaimed;
-        if (_titleReady) _startupCheckClaimed = true;
-        Enabled = _titleReady;
+        _titleReady = (mode & GameMode.MainMenu) != 0;
+        Enabled = _titleReady && _pendingNotice != null;
     }
 
     protected override void OnUpdate()
@@ -53,28 +61,32 @@ public partial class BridgeStartupAssetSystem : GameSystemBase
         if (!_titleReady || GameManager.instance == null
             || (GameManager.instance.gameMode & GameMode.MainMenu) == 0)
         { Enabled = false; return; }
+        if (_pendingNotice == null) { Enabled = false; return; }
+        if (GameManager.instance.userInterface?.appBindings == null) return;
+        var key = _pendingNotice;
+        _pendingNotice = null;
+        Enabled = false;
+        Mod.ShowRecoveryMessage(RuntimeUiText.Get(key, _pendingCount));
+    }
+
+    private void InspectStartup()
+    {
         // A native batch failure or unreadable migration is not corruption evidence.
         if (BridgeLoadFailures.NetworkInitializationFailed)
         {
             Mod.Log.Warn("Title bridge recovery deferred: startup recovery requires a restart; files retained.");
-            Mod.ShowMessage(UiStringCatalog.Current.Title, RuntimeUiText.Get("MissingBridgesSuspended"));
+            _pendingNotice = "MissingBridgesSuspended";
             Enabled = false;
             return;
         }
         try
         {
-            if (_pendingRemovedNotice != 0 && GameManager.instance.userInterface?.appBindings != null)
-            {
-                Mod.ShowRecoveryMessage(RuntimeUiText.Get("DamagedBridgeAssetsRemoved", _pendingRemovedNotice));
-                _pendingRemovedNotice = 0;
-                Enabled = false;
-                return;
-            }
             EntityManager.CompleteAllTrackedJobs();
+            var inspection = System.Diagnostics.Stopwatch.StartNew();
             var loaded = PrefabCatalog.GetAll(_prefabs).Concat(BridgeLoadFailures.Prefabs())
-                .Where(p => p != null).Distinct().ToArray();
-            if (_lastCount != loaded.Length)
-            { _lastCount = loaded.Length; _confirmation.Clear(); return; }
+                .Where(p => p != null && !p.isBuiltin && !p.isReadOnly
+                    && BridgeLoadFailures.TryOwner(p.name, out _)
+                    && !BridgeRecoveryLocation.IsBackup(p.asset?.path)).Distinct().ToArray();
             var owners = new HashSet<string>(BridgeRegistrationStore.Load().Select(r => r.PrefabName),
                 StringComparer.Ordinal);
             foreach (var prefab in loaded)
@@ -99,6 +111,14 @@ public partial class BridgeStartupAssetSystem : GameSystemBase
                 var status = BridgeReferenceRecovery.Repair(prefab, _prefabs, out var detail);
                 if (status == BridgeReferenceRecovery.Result.Deferred)
                 {
+                    // After the awaited boot prefab load, unresolved required references make
+                    // the owned file unusable. Quarantine it reversibly, not indefinitely in-place.
+                    if (prefab.asset != null && audit.OwnsPath(prefab.asset.path, owners)
+                        && BridgeNetworkValidation.IsInvalid(prefab, out var invalid))
+                    {
+                        audit.Failures[owner] = "Required dependency unresolved after boot prefab load: " + invalid;
+                        continue;
+                    }
                     deferred.Add(owner);
                     Mod.Log.Warn($"Bridge '{owner}' retained pending dependency recovery: {detail}");
                 }
@@ -106,15 +126,16 @@ public partial class BridgeStartupAssetSystem : GameSystemBase
                     && audit.OwnsPath(prefab.asset.path, owners))
                     audit.Failures[owner] = prefab.name + ": " + detail;
             }
-            foreach (var failure in audit.Failures)
-                if (failure.Value.Contains("missing private geometry")) deferred.Add(failure.Key);
+            // Proven disk damage is not cancelled by an unrelated unavailable dependency.
+            deferred.ExceptWith(audit.Failures.Keys);
             BridgeReferenceRecovery.DeferredOwners.Clear();
             BridgeReferenceRecovery.DeferredOwners.UnionWith(deferred);
             foreach (var net in loaded.OfType<NetGeometryPrefab>())
             {
                 if (net.isBuiltin || net.isReadOnly
                     || !BridgeMissingAssetSystem.TryBridgeName(net.name, out var owner)
-                    || BridgeStartupRecovery.Retired.Contains(owner) || deferred.Contains(owner)) continue;
+                    || BridgeStartupRecovery.Retired.Contains(owner) || deferred.Contains(owner)
+                    || audit.Failures.ContainsKey(owner)) continue;
                 // Migration/registration guard normally repaired these before native initialization.
                 // Do not change a registered dependency buffer at the title screen.
                 if (net.GetComponent<Unlockable>() is { active: true })
@@ -136,7 +157,7 @@ public partial class BridgeStartupAssetSystem : GameSystemBase
                 else if (!_prefabs.TryGetEntity(net, out _) && !audit.Failures.ContainsKey(owner))
                 {
                     // A quarantined object that recovered gets normal registration, not deletion.
-                    if (_prefabs.AddPrefab(net)) { _confirmation.Clear(); return; }
+                    _prefabs.AddPrefab(net);
                 }
             }
             // Re-register repaired dependency assets through the ordinary native pipeline.
@@ -146,17 +167,19 @@ public partial class BridgeStartupAssetSystem : GameSystemBase
                     && !deferred.Contains(owner) && !audit.Failures.ContainsKey(owner)
                     && !BridgeStartupRecovery.Retired.Contains(owner)
                     && !BridgeNetworkValidation.IsInvalid(prefab, out _) && !_prefabs.TryGetEntity(prefab, out _))
-                    if (_prefabs.AddPrefab(prefab)) { _confirmation.Clear(); return; }
-            foreach (var owner in deferred) audit.Failures.Remove(owner);
+                    _prefabs.AddPrefab(prefab);
+            deferred.ExceptWith(audit.Failures.Keys);
+            BridgeReferenceRecovery.DeferredOwners.ExceptWith(audit.Failures.Keys);
             foreach (var retired in BridgeStartupRecovery.Retired) audit.Failures.Remove(retired);
-            var confirmed = _confirmation.Observe(audit.Failures, UnityEngine.Time.frameCount);
-            if (audit.Failures.Count != 0 && !confirmed.SetEquals(audit.Failures.Keys)) return;
+            // OnWorldReady is raised only after the game's awaited LoadPrefabs completes.
+            // RetireFiles rechecks file hashes; no repeated per-frame disk audit is necessary.
+            var confirmed = new HashSet<string>(audit.Failures.Keys, StringComparer.Ordinal);
             if (confirmed.Count > 0)
             {
                 foreach (var failure in audit.Failures)
                     Mod.Log.Warn($"Title recovery: retiring unrepaired bridge '{failure.Key}': {failure.Value}");
                 if (!World.GetOrCreateSystemManaged<BridgeGenerationSystem>()
-                    .RetireInvalidBridgeFilesAtTitle(audit, confirmed))
+                    .RetireInvalidBridgeFilesAtStartup(audit, confirmed))
                 {
                     Mod.Log.Warn("Title bridge retirement stopped; protected references/recovery files retained.");
                     Enabled = false;
@@ -164,16 +187,16 @@ public partial class BridgeStartupAssetSystem : GameSystemBase
                 }
                 _pendingRemovedNotice += confirmed.Count;
             }
-            Mod.Log.Info($"Title bridge recovery complete: {BridgeStartupRecovery.Retired.Count} retired identity group(s); "
+            Mod.Log.Info($"Boot bridge recovery complete: {BridgeStartupRecovery.Retired.Count} retired identity group(s); "
                 + "placed networks will only be checked for missing-bridge notifications when a save is loaded.");
+            Mod.Log.Info($"Boot inspection: {loaded.Length} owned prefab(s), {audit.FileOwners.Count} file(s), {inspection.ElapsedMilliseconds} ms.");
             if (_pendingRemovedNotice != 0)
             {
-                if (GameManager.instance.userInterface?.appBindings == null) return;
-                Mod.ShowRecoveryMessage(RuntimeUiText.Get("DamagedBridgeAssetsRemoved", _pendingRemovedNotice));
-                _pendingRemovedNotice = 0;
+                _pendingNotice = "DamagedBridgeAssetsRemoved";
+                _pendingCount = _pendingRemovedNotice;
             }
-            else if (deferred.Count != 0 && GameManager.instance.userInterface?.appBindings != null)
-                Mod.ShowRecoveryMessage(RuntimeUiText.Get("BridgeReferencesDeferred", deferred.Count));
+            else if (deferred.Count != 0)
+            { _pendingNotice = "BridgeReferencesDeferred"; _pendingCount = deferred.Count; }
             Enabled = false;
         }
         catch (Exception exception)

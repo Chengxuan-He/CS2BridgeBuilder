@@ -33,6 +33,55 @@ internal sealed class BridgeSerializedReferences
     }
     internal string Name => Field(_root, "name")?.Text ?? string.Empty;
 
+    // Disk evidence is independent of whether the native importer registered the object.
+    // Only explicit required nulls/empty deck sections qualify; missing fields do not.
+    internal bool HasRequiredNull(out string reason)
+    {
+        reason = string.Empty;
+        var checks = new List<(Value Owner, string Field, string Member, bool Required)>();
+        checks.Add((_root, "m_Sections", "m_Section", true));
+        checks.Add((_root, "m_SubSections", "m_Section", false));
+        checks.Add((_root, "m_Pieces", "m_Piece", false));
+        var components = Field(Field(_root, "components"), "$rcontent");
+        if (components != null) foreach (var entry in components.Items)
+        {
+            var component = Resolve(entry);
+            if (component == null) continue;
+            var type = Field(component, "$type")?.Text ?? "";
+            if (_types.TryGetValue(type, out var expanded)) type = expanded;
+            switch (type)
+            {
+                case "Game.Prefabs.AuxiliaryNets, Game":
+                    if (Field(component, "active")?.Text != "false")
+                        checks.Add((component, "m_AuxiliaryNets", "m_Prefab", true));
+                    break;
+                case "Game.Prefabs.OverheadNetSections, Game":
+                case "Game.Prefabs.UndergroundNetSections, Game":
+                    if (Field(component, "active")?.Text != "false")
+                        checks.Add((component, "m_Sections", "m_Section", true));
+                    break;
+                case "Game.Prefabs.NetPieceLanes, Game":
+                    if (Field(component, "active")?.Text != "false")
+                        checks.Add((component, "m_Lanes", "m_Lane", false));
+                    break;
+            }
+        }
+        foreach (var check in checks)
+        {
+            var array = Field(check.Owner, check.Field);
+            var items = Field(array, "$rcontent");
+            bool Null(Value? value) => value is { Token: "", Text: "null" };
+            if (check.Required && Null(array)
+                || check.Field == "m_Sections" && items != null && items.Items.Count == 0)
+            { reason = check.Field + " is explicitly null or empty"; return true; }
+            if (items == null) continue;
+            for (var i = 0; i < items.Items.Count; i++)
+                if (Null(Resolve(items.Items[i])) || Null(Field(items.Items[i], check.Member)))
+                { reason = check.Field + "[" + i + "] has an explicit null reference"; return true; }
+        }
+        return false;
+    }
+
     internal bool Reference(string? component, string field, int index, string member, out string identity)
     {
         identity = string.Empty;

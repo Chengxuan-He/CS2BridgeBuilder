@@ -25,6 +25,17 @@ The numbered rules cover archetype fidelity, generated geometry, diagnosis, runt
 branch workflow. Later rules have the same force as the original ones: each records a failure mode
 which must not be reintroduced.
 
+## Computer-use prohibition
+
+Instruction-edit rollback baseline: branch `dev`, HEAD
+`b5e8ad4be13e8ff3cb7305a01b72c76d241b24e6` (recorded before this edit).
+
+Computer-use tools are prohibited for this project. This includes `mcp__cua_repl`,
+native desktop control, and browser UI automation through computer-use. Use file
+tools, command-line tools, or purpose-built APIs instead. When no permitted
+alternative exists, request manual UI interaction from the user. Do not circumvent
+this prohibition with another UI automation tool.
+
 ## 1. Every generated bridge follows its archetype
 
 A generated bridge is built from a real bridge of the same type — its archetype. Every parameter of
