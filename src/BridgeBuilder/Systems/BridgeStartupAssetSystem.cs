@@ -14,6 +14,9 @@ namespace BridgeBuilder.Systems;
 /// <summary>Title-screen file recovery. Never deletes placed city entities.</summary>
 public partial class BridgeStartupAssetSystem : GameSystemBase
 {
+    // Process-session latch: neither scene transitions nor a recreated ECS system rearm it.
+    // Set when the first title-screen pass starts, including passes that fail or are interrupted.
+    private static bool _startupCheckClaimed;
     private PrefabSystem _prefabs = null!;
     private readonly BridgeCleanupConfirmation _confirmation = new();
     private int _lastCount = -1;
@@ -34,12 +37,14 @@ public partial class BridgeStartupAssetSystem : GameSystemBase
         Enabled = false;
         _confirmation.Clear();
         _lastCount = -1;
+        _pendingRemovedNotice = 0;
     }
 
     protected override void OnGameLoadingComplete(Purpose purpose, GameMode mode)
     {
         base.OnGameLoadingComplete(purpose, mode);
-        _titleReady = (mode & GameMode.MainMenu) != 0;
+        _titleReady = (mode & GameMode.MainMenu) != 0 && !_startupCheckClaimed;
+        if (_titleReady) _startupCheckClaimed = true;
         Enabled = _titleReady;
     }
 
@@ -60,7 +65,7 @@ public partial class BridgeStartupAssetSystem : GameSystemBase
         {
             if (_pendingRemovedNotice != 0 && GameManager.instance.userInterface?.appBindings != null)
             {
-                Mod.ShowMessage(UiStringCatalog.Current.Title, RuntimeUiText.Get("DamagedBridgeAssetsRemoved", _pendingRemovedNotice));
+                Mod.ShowRecoveryMessage(RuntimeUiText.Get("DamagedBridgeAssetsRemoved", _pendingRemovedNotice));
                 _pendingRemovedNotice = 0;
                 Enabled = false;
                 return;
@@ -160,15 +165,15 @@ public partial class BridgeStartupAssetSystem : GameSystemBase
                 _pendingRemovedNotice += confirmed.Count;
             }
             Mod.Log.Info($"Title bridge recovery complete: {BridgeStartupRecovery.Retired.Count} retired identity group(s); "
-                + "placed-network cleanup is deferred until a save is loaded.");
+                + "placed networks will only be checked for missing-bridge notifications when a save is loaded.");
             if (_pendingRemovedNotice != 0)
             {
                 if (GameManager.instance.userInterface?.appBindings == null) return;
-                Mod.ShowMessage(UiStringCatalog.Current.Title, RuntimeUiText.Get("DamagedBridgeAssetsRemoved", _pendingRemovedNotice));
+                Mod.ShowRecoveryMessage(RuntimeUiText.Get("DamagedBridgeAssetsRemoved", _pendingRemovedNotice));
                 _pendingRemovedNotice = 0;
             }
             else if (deferred.Count != 0 && GameManager.instance.userInterface?.appBindings != null)
-                Mod.ShowMessage(UiStringCatalog.Current.Title, RuntimeUiText.Get("BridgeReferencesDeferred", deferred.Count));
+                Mod.ShowRecoveryMessage(RuntimeUiText.Get("BridgeReferencesDeferred", deferred.Count));
             Enabled = false;
         }
         catch (Exception exception)

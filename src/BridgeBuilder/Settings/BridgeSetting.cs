@@ -55,6 +55,29 @@ public sealed class BridgeSetting : ModSetting
     [SettingsUISection(OptionsTab)]
     public bool RemoveDevelopmentRestrictions { get; set; }
 
+    private string? _recoveryCopyLocation;
+
+    [SettingsUISection(OptionsTab)]
+    [SettingsUIDirectoryPicker]
+    public string RecoveryCopyLocation
+    {
+        get => _recoveryCopyLocation ?? BridgeRecoveryLocation.DefaultPath;
+        set
+        {
+            if (BridgeRecoveryLocation.TryNormalize(value, out var path))
+                _recoveryCopyLocation = path;
+            else
+                Mod.ShowMessage(UiStringCatalog.Current.Title, RuntimeUiText.Get("RecoveryInvalidLocation"));
+        }
+    }
+
+    [SettingsUISection(OptionsTab)]
+    [SettingsUIButton]
+    public bool OpenRecoveryCopies
+    {
+        set => BridgeRecoveryLocation.Open();
+    }
+
     [SettingsUIHidden]
     [SettingsUIMultilineText("")]
     public string StatusText
@@ -217,6 +240,7 @@ public sealed class BridgeSetting : ModSetting
     {
         ResetKeyBindings();
         RemoveDevelopmentRestrictions = false;
+        _recoveryCopyLocation = null;
         UpperDeckId = string.Empty;
         BridgeStyleId = BridgeStyleDefinitions.Default;
         BuildStyleOverride = DonorBuildStyle;

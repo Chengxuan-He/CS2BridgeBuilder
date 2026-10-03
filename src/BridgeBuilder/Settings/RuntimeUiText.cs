@@ -16,35 +16,125 @@ internal static class RuntimeUiText
 
     private static readonly Dictionary<string, string[]> Entries = new(StringComparer.Ordinal)
     {
+        ["RecoveryLocationLabel"] = new[]
+        {
+            "Recovery copy location",
+            "恢复副本位置",
+            "復原副本位置",
+            "Speicherort der Wiederherstellungskopien",
+            "Ubicación de las copias de recuperación",
+            "Emplacement des copies de récupération",
+            "Percorso delle copie di recupero",
+            "復元用コピーの保存先",
+            "복구 사본 위치",
+            "Lokalizacja kopii odzyskiwania",
+            "Local das cópias de recuperação",
+            "Расположение копий для восстановления"
+        },
+        ["RecoveryOpenLabel"] = new[]
+        {
+            "Open backup directory",
+            "打开备份目录",
+            "開啟備份目錄",
+            "Sicherungsordner öffnen",
+            "Abrir carpeta de copias de seguridad",
+            "Ouvrir le dossier de sauvegarde",
+            "Aprire la cartella di backup",
+            "バックアップフォルダーを開く",
+            "백업 폴더 열기",
+            "Otwórz folder kopii zapasowych",
+            "Abrir pasta de backup",
+            "Открыть папку резервных копий"
+        },
+        ["RecoveryLocationDescription"] = new[]
+        {
+            "Select the folder for new recovery copies. Existing copies remain in their original location. An empty value restores the default folder.",
+            "选择新恢复副本的保存目录。已有副本保留在原位置。留空将恢复默认目录。",
+            "選擇新復原副本的儲存目錄。既有副本保留於原位置。留空將恢復預設目錄。",
+            "Wählen Sie den Ordner für neue Wiederherstellungskopien. Vorhandene Kopien bleiben am bisherigen Ort. Ein leeres Feld stellt den Standardordner wieder her.",
+            "Seleccione la carpeta para las nuevas copias de recuperación. Las copias existentes permanecen en su ubicación original. Dejar el campo vacío restaura la carpeta predeterminada.",
+            "Sélectionnez le dossier des nouvelles copies de récupération. Les copies existantes restent à leur emplacement initial. Une valeur vide rétablit le dossier par défaut.",
+            "Selezionare la cartella per le nuove copie di recupero. Le copie esistenti rimangono nel percorso originale. Un valore vuoto ripristina la cartella predefinita.",
+            "新しい復元用コピーの保存先を選択します。既存のコピーは元の場所に残ります。空欄にすると既定のフォルダーに戻ります。",
+            "새 복구 사본을 저장할 폴더를 선택합니다. 기존 사본은 원래 위치에 유지됩니다. 비워 두면 기본 폴더로 복원됩니다.",
+            "Wybierz folder dla nowych kopii odzyskiwania. Istniejące kopie pozostaną w dotychczasowej lokalizacji. Puste pole przywraca folder domyślny.",
+            "Selecione a pasta para novas cópias de recuperação. As cópias existentes permanecem no local original. Um valor vazio restaura a pasta padrão.",
+            "Выберите папку для новых копий восстановления. Существующие копии останутся на прежнем месте. Пустое поле восстанавливает папку по умолчанию."
+        },
+        ["RecoveryInvalidLocation"] = new[]
+        {
+            "Select a valid absolute folder path. The previous recovery location has been retained.",
+            "请选择有效的文件夹绝对路径。已保留原恢复副本位置。",
+            "請選擇有效的資料夾絕對路徑。已保留原復原副本位置。",
+            "Wählen Sie einen gültigen absoluten Ordnerpfad. Der bisherige Speicherort wurde beibehalten.",
+            "Seleccione una ruta absoluta de carpeta válida. Se ha conservado la ubicación anterior.",
+            "Sélectionnez un chemin absolu de dossier valide. L’emplacement précédent a été conservé.",
+            "Selezionare un percorso assoluto di cartella valido. Il percorso precedente è stato mantenuto.",
+            "有効なフォルダーの絶対パスを選択してください。以前の保存先は保持されています。",
+            "유효한 폴더의 절대 경로를 선택하십시오. 이전 복구 위치가 유지되었습니다.",
+            "Wybierz prawidłową bezwzględną ścieżkę folderu. Zachowano poprzednią lokalizację.",
+            "Selecione um caminho absoluto de pasta válido. O local anterior foi mantido.",
+            "Выберите допустимый абсолютный путь к папке. Прежнее расположение сохранено."
+        },
+        ["RecoveryOpenFailed"] = new[]
+        {
+            "The recovery folder could not be opened. Check the path and access permissions shown in the mod settings.",
+            "无法打开恢复副本文件夹。请检查模组设置中显示的路径及其访问权限。",
+            "無法開啟復原副本資料夾。請檢查模組設定顯示的路徑及其存取權限。",
+            "Der Wiederherstellungsordner konnte nicht geöffnet werden. Prüfen Sie den Pfad und die Zugriffsrechte in den Mod-Einstellungen.",
+            "No se pudo abrir la carpeta de recuperación. Compruebe la ruta y los permisos de acceso en los ajustes del mod.",
+            "Impossible d’ouvrir le dossier de récupération. Vérifiez le chemin et les droits d’accès dans les paramètres du mod.",
+            "Impossibile aprire la cartella di recupero. Verificare il percorso e i permessi di accesso nelle impostazioni della mod.",
+            "復元用フォルダーを開けませんでした。MOD 設定に表示されているパスとアクセス権を確認してください。",
+            "복구 폴더를 열 수 없습니다. 모드 설정에 표시된 경로와 접근 권한을 확인하십시오.",
+            "Nie można otworzyć folderu odzyskiwania. Sprawdź ścieżkę i uprawnienia dostępu w ustawieniach moda.",
+            "Não foi possível abrir a pasta de recuperação. Verifique o caminho e as permissões de acesso nas configurações do mod.",
+            "Не удалось открыть папку восстановления. Проверьте путь и права доступа в настройках мода."
+        },
+        ["MissingBridgesDetected"] = new[]
+        {
+            "This save references {0} missing Bridge Builder bridge asset(s). Restore the assets and required dependencies before reloading the save, or create new bridges to replace the missing bridges.",
+            "此存档引用的 {0} 种 Bridge Builder 桥梁资产缺失。请恢复相关资产及必要依赖后重新加载存档，或创建新桥梁以替换缺失桥梁。",
+            "此存檔引用的 {0} 種 Bridge Builder 橋梁資產缺失。請恢復相關資產及必要相依內容後重新載入存檔，或建立新橋梁以替換缺失橋梁。",
+            "Dieser Spielstand verweist auf {0} fehlende Bridge-Builder-Brückenassets. Stellen Sie die Assets und erforderlichen Abhängigkeiten wieder her und laden Sie den Spielstand erneut, oder erstellen Sie neue Brücken als Ersatz für die fehlenden.",
+            "Esta partida hace referencia a {0} recursos de puentes de Bridge Builder que faltan. Restaure los recursos y las dependencias necesarias antes de volver a cargar la partida, o cree nuevos puentes para sustituir los que faltan.",
+            "Cette sauvegarde fait référence à {0} ressources de ponts Bridge Builder manquantes. Restaurez les ressources et les dépendances requises avant de recharger la sauvegarde, ou créez de nouveaux ponts pour remplacer les ponts manquants.",
+            "Questo salvataggio fa riferimento a {0} risorse di ponti Bridge Builder mancanti. Ripristinare le risorse e le dipendenze necessarie prima di ricaricare il salvataggio, oppure creare nuovi ponti per sostituire quelli mancanti.",
+            "このセーブデータが参照する Bridge Builder の橋梁アセット {0} 種類が不足しています。該当アセットと必要な依存コンテンツを復元してからセーブデータを再読み込みするか、新規橋梁を作成して不足している橋梁を置き換えてください。",
+            "이 저장 파일이 참조하는 Bridge Builder 교량 에셋 {0}종이 누락되었습니다. 관련 에셋과 필수 의존 콘텐츠를 복원한 후 저장 파일을 다시 불러오거나, 새 교량을 생성하여 누락된 교량을 교체하십시오.",
+            "Ten zapis odwołuje się do {0} brakujących zasobów mostów Bridge Builder. Należy przywrócić zasoby i wymagane zależności przed ponownym wczytaniem zapisu lub utworzyć nowe mosty w celu zastąpienia brakujących.",
+            "Este salvamento faz referência a {0} recursos de pontes do Bridge Builder ausentes. Restaure os recursos e as dependências necessárias antes de recarregar o salvamento ou crie novas pontes para substituir as ausentes.",
+            "В сохранении обнаружены ссылки на отсутствующие ресурсы мостов Bridge Builder: {0}. Восстановите ресурсы и необходимые зависимости перед повторной загрузкой сохранения либо создайте новые мосты для замены отсутствующих."
+        },
         ["DamagedBridgeAssetsRemoved"] = new[]
         {
-            "Removed {0} unrecoverable Bridge Builder bridge asset groups during startup. Recovery copies were kept. Placed networks will be checked when a city is loaded; no save file has been overwritten.",
-            "启动时已移除 {0} 组无法修复的 Bridge Builder 桥梁资产，并保留恢复副本。已建路网将在读档时检查；未覆盖任何存档。",
-            "啟動時已移除 {0} 組無法修復的 Bridge Builder 橋梁資產，並保留復原副本。已建路網將於讀檔時檢查；未覆寫任何存檔。",
-            "Beim Start wurden {0} irreparable Bridge-Builder-Assetgruppen entfernt. Wiederherstellungskopien bleiben erhalten. Gebaute Netze werden beim Laden geprüft; kein Spielstand wurde überschrieben.",
-            "Se eliminaron {0} grupos de recursos de puentes irreparables al iniciar. Se conservaron copias de recuperación. Las redes se comprobarán al cargar la ciudad; no se sobrescribió ninguna partida.",
-            "Au démarrage, {0} groupes de ressources de ponts irréparables ont été retirés. Des copies de récupération sont conservées. Les réseaux seront vérifiés au chargement ; aucune sauvegarde n’a été écrasée.",
-            "Rimossi all’avvio {0} gruppi di risorse di ponti non riparabili. Conservate copie di recupero. Le reti saranno controllate al caricamento; nessun salvataggio è stato sovrascritto.",
-            "起動時に修復できない橋梁アセット {0} 組を削除し、復元用コピーを保管しました。設置済みネットワークは都市読み込み時に確認します。セーブは上書きしていません。",
-            "시작 시 복구할 수 없는 교량 에셋 {0}개 그룹을 제거하고 복구 사본을 보관했습니다. 배치된 네트워크는 도시 로드 시 확인합니다. 저장 파일은 덮어쓰지 않았습니다.",
-            "Podczas uruchamiania usunięto {0} grup uszkodzonych zasobów mostów. Zachowano kopie odzyskiwania. Sieci zostaną sprawdzone przy wczytywaniu miasta; nie nadpisano zapisów.",
-            "Removidos {0} grupos de recursos de pontes irrecuperáveis na inicialização. Cópias de recuperação foram mantidas. As redes serão verificadas ao carregar a cidade; nenhum salvamento foi sobrescrito.",
-            "При запуске удалено групп невосстановимых ресурсов мостов: {0}. Сохранены копии для восстановления. Сети будут проверены при загрузке города; сохранения не перезаписаны."
+            "Startup validation identified {0} damaged Bridge Builder asset groups. The affected bridge files have been moved to the backup directory, which is accessible from the mod settings.",
+            "启动检查发现 {0} 组损坏的 Bridge Builder 桥梁资产，相关文件已移入备份目录。备份目录可通过模组设置访问。",
+            "啟動檢查發現 {0} 組損壞的 Bridge Builder 橋梁資產，相關檔案已移至備份目錄。備份目錄可透過模組設定存取。",
+            "Die Startprüfung hat {0} beschädigte Bridge-Builder-Assetgruppen erkannt. Die betroffenen Dateien wurden in den Sicherungsordner verschoben, der über die Mod-Einstellungen zugänglich ist.",
+            "La comprobación inicial detectó {0} grupos de recursos de puentes de Bridge Builder dañados. Los archivos afectados se trasladaron a la carpeta de copias de seguridad, accesible desde los ajustes del mod.",
+            "La vérification au démarrage a détecté {0} groupes de ressources de ponts Bridge Builder endommagés. Les fichiers concernés ont été déplacés vers le dossier de sauvegarde, accessible dans les paramètres du mod.",
+            "Il controllo all’avvio ha rilevato {0} gruppi di risorse di ponti Bridge Builder danneggiati. I file interessati sono stati spostati nella cartella di backup, accessibile dalle impostazioni della mod.",
+            "起動時の検証で、破損した Bridge Builder の橋梁アセットが {0} 組検出されました。該当ファイルはバックアップフォルダーに移動済みです。保存先は MOD 設定から確認できます。",
+            "시작 시 검사에서 손상된 Bridge Builder 교량 에셋 {0}개 그룹이 발견되었습니다. 해당 파일은 백업 폴더로 이동되었습니다. 백업 위치는 모드 설정에서 확인할 수 있습니다.",
+            "Podczas kontroli przy uruchamianiu wykryto {0} grup uszkodzonych zasobów mostów Bridge Builder. Pliki przeniesiono do folderu kopii zapasowych, dostępnego w ustawieniach moda.",
+            "A verificação inicial identificou {0} grupos de recursos de pontes do Bridge Builder danificados. Os arquivos afetados foram movidos para a pasta de backup, acessível nas configurações do mod.",
+            "При проверке во время запуска обнаружено повреждённых групп ресурсов мостов Bridge Builder: {0}. Соответствующие файлы перемещены в папку резервных копий, доступную в настройках мода."
         },
         ["BridgeReferencesDeferred"] = new[]
         {
-            "Dependencies for {0} Bridge Builder bridge groups could not be resolved. Their assets and placed networks were retained. Restore the required content and restart. Keep the original save unchanged.",
-            "有 {0} 组 Bridge Builder 桥梁的依赖暂时无法解析，已保留资产及对应路网。请恢复所需内容后重启游戏，并保留原存档。",
-            "有 {0} 組 Bridge Builder 橋梁的依賴暫時無法解析，已保留資產及對應路網。請恢復所需內容後重新啟動遊戲，並保留原存檔。",
-            "Abhängigkeiten von {0} Brückengruppen fehlen. Assets und Netze bleiben erhalten. Erforderliche Inhalte wiederherstellen und neu starten. Originalspielstand behalten.",
-            "No se pudieron resolver las dependencias de {0} grupos de puentes. Se conservaron recursos y redes. Restaura el contenido y reinicia. Conserva la partida original.",
-            "Les dépendances de {0} groupes de ponts restent introuvables. Ressources et réseaux conservés. Rétablissez le contenu puis redémarrez. Gardez la sauvegarde originale.",
-            "Dipendenze di {0} gruppi di ponti non disponibili. Risorse e reti conservate. Ripristina i contenuti e riavvia. Conserva il salvataggio originale.",
-            "橋梁 {0} 組の依存アセットを解決できません。アセットとネットワークは保持されています。必要なコンテンツを復元して再起動し、元のセーブを保管してください。",
-            "교량 {0}개 그룹의 종속성을 찾을 수 없습니다. 에셋과 네트워크는 유지했습니다. 필요한 콘텐츠를 복원하고 재시작하세요. 원본 저장 파일을 보관하세요.",
-            "Nie znaleziono zależności {0} grup mostów. Zasoby i sieci zachowano. Przywróć zawartość i uruchom grę ponownie. Zachowaj oryginalny zapis.",
-            "Dependências de {0} grupos de pontes indisponíveis. Recursos e redes foram mantidos. Restaure o conteúdo e reinicie. Preserve o salvamento original.",
-            "Не найдены зависимости групп мостов: {0}. Ресурсы и сети сохранены. Восстановите необходимый контент и перезапустите игру. Сохраните исходный файл города."
+            "Startup validation could not resolve dependencies for {0} Bridge Builder asset groups. The original files remain in place and have not been moved to the backup directory. Restore the required assets and restart the game.",
+            "启动检查发现 {0} 组 Bridge Builder 桥梁资产的依赖无法解析。原文件已保留，未移入备份目录。请恢复所需资产后重新启动游戏。",
+            "啟動檢查發現 {0} 組 Bridge Builder 橋梁資產的相依內容無法解析。原始檔案已保留，未移至備份目錄。請恢復所需資產後重新啟動遊戲。",
+            "Bei der Startprüfung konnten Abhängigkeiten von {0} Bridge-Builder-Assetgruppen nicht aufgelöst werden. Die Originaldateien bleiben unverändert am bisherigen Ort und wurden nicht in den Sicherungsordner verschoben. Stellen Sie die benötigten Assets wieder her und starten Sie das Spiel neu.",
+            "La comprobación inicial no pudo resolver las dependencias de {0} grupos de recursos de Bridge Builder. Los archivos originales permanecen en su ubicación y no se trasladaron a la carpeta de copias de seguridad. Restaure los recursos necesarios y reinicie el juego.",
+            "La vérification au démarrage n’a pas pu résoudre les dépendances de {0} groupes de ressources Bridge Builder. Les fichiers originaux sont conservés à leur emplacement et n’ont pas été déplacés vers le dossier de sauvegarde. Restaurez les ressources requises et redémarrez le jeu.",
+            "Il controllo all’avvio non ha risolto le dipendenze di {0} gruppi di risorse Bridge Builder. I file originali sono conservati nel percorso originale e non sono stati spostati nella cartella di backup. Ripristinare le risorse necessarie e riavviare il gioco.",
+            "起動時の検証で、Bridge Builder のアセット {0} 組の依存関係を解決できませんでした。元のファイルはそのまま保持され、バックアップフォルダーには移動されていません。必要なアセットを復元してゲームを再起動してください。",
+            "시작 시 검사에서 Bridge Builder 에셋 {0}개 그룹의 의존성을 확인할 수 없었습니다. 원본 파일은 기존 위치에 보존되었으며 백업 폴더로 이동되지 않았습니다. 필요한 에셋을 복원한 후 게임을 다시 시작하십시오.",
+            "Podczas kontroli przy uruchamianiu nie udało się rozwiązać zależności {0} grup zasobów Bridge Builder. Oryginalne pliki pozostają na swoim miejscu i nie zostały przeniesione do folderu kopii zapasowych. Przywróć wymagane zasoby i uruchom grę ponownie.",
+            "A verificação inicial não conseguiu resolver as dependências de {0} grupos de recursos do Bridge Builder. Os arquivos originais permanecem no local e não foram movidos para a pasta de backup. Restaure os recursos necessários e reinicie o jogo.",
+            "При проверке во время запуска не удалось разрешить зависимости групп ресурсов Bridge Builder: {0}. Исходные файлы сохранены на прежнем месте и не перемещены в папку резервных копий. Восстановите необходимые ресурсы и перезапустите игру."
         },
         ["OK"] = new[]
         {

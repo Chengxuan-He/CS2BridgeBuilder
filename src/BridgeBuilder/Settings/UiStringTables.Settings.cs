@@ -21,5 +21,9 @@ internal static partial class UiStringTables
         };
         text.Option(nameof(BridgeSetting.TogglePanel), labels.Item1, labels.Item2);
         text.Option(nameof(BridgeSetting.RemoveDevelopmentRestrictions), labels.Item3, labels.Item4);
+        text.Option(nameof(BridgeSetting.RecoveryCopyLocation),
+            RuntimeUiText.Format(locale, "RecoveryLocationLabel"), RuntimeUiText.Format(locale, "RecoveryLocationDescription"));
+        text.Option(nameof(BridgeSetting.OpenRecoveryCopies),
+            RuntimeUiText.Format(locale, "RecoveryOpenLabel"), RuntimeUiText.Format(locale, "RecoveryLocationDescription"));
     }
 }

@@ -176,6 +176,26 @@ public sealed class Mod : IMod
         }
     }
 
+    internal static void ShowRecoveryMessage(string message)
+    {
+        try
+        {
+            var dialog = new ConfirmationDialog(
+                LocalizedString.Value(UiStringCatalog.Current.Title),
+                LocalizedString.Value(message),
+                LocalizedString.Value(RuntimeUiText.Get("RecoveryOpenLabel")),
+                LocalizedString.Value(RuntimeUiText.Get("OK")));
+            GameManager.instance?.userInterface?.appBindings?.ShowConfirmationDialog(dialog, result =>
+            {
+                if (result == 0) BridgeRecoveryLocation.Open();
+            });
+        }
+        catch (Exception exception)
+        {
+            Log.Warn(exception, "Could not show bridge recovery dialog");
+        }
+    }
+
     internal static void ShowMessage(string title, string message)
     {
         try

@@ -125,6 +125,16 @@ internal sealed class BridgeDiskAudit
         var moved = new List<(string Source, string Backup)>();
         try
         {
+            backup = Path.GetFullPath(backup);
+            // Original extensions must stay outside the game's imported/mod asset roots.
+            var gameRoot = Path.GetDirectoryName(_imported)!;
+            foreach (var assetRoot in new[] { _imported, Path.Combine(gameRoot, "Mods"), Path.Combine(gameRoot, ".cache") })
+                if (string.Equals(backup, assetRoot, StringComparison.OrdinalIgnoreCase)
+                    || backup.StartsWith(assetRoot + Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase))
+                { error = "Recovery directory must be outside game asset discovery roots"; return false; }
+            for (var directory = new DirectoryInfo(backup); directory != null; directory = directory.Parent)
+                if (directory.Exists && (directory.Attributes & FileAttributes.ReparsePoint) != 0)
+                { error = "Recovery directory must not traverse a symbolic link or junction"; return false; }
             if (!Complete || owners.Any(o => !Failures.ContainsKey(o)))
             { error = "No complete disk evidence for requested bridge group"; return false; }
             var files = FileOwners.Where(p => owners.Contains(p.Value)).Select(p => p.Key).ToArray();
@@ -136,9 +146,8 @@ internal sealed class BridgeDiskAudit
                 { error = "Files changed after validation: " + path; return false; }
             foreach (var path in files)
             {
-                // No live .Prefab/.cid extensions in the recovery directory: these copies
-                // must never be re-imported by the game's asset discovery.
-                var destination = Path.Combine(backup, path.Substring(_imported.Length + 1) + ".bbremoved");
+                // Preserve original names, extensions and bytes for manual restoration.
+                var destination = Path.Combine(backup, path.Substring(_imported.Length + 1));
                 Directory.CreateDirectory(BridgeFileAccess.Native(Path.GetDirectoryName(destination)!));
                 File.Move(BridgeFileAccess.Native(path), BridgeFileAccess.Native(destination));
                 moved.Add((path, destination));

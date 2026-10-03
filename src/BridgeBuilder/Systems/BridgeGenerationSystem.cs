@@ -114,7 +114,6 @@ public partial class BridgeGenerationSystem : GameSystemBase
 
     protected override void OnUpdate()
     {
-        if (World.GetOrCreateSystemManaged<BridgeMissingAssetSystem>().IsCleaning) return;
         // A queued update may need the next outer PrefabSystem pass. Do not process another
         // create/delete request until its scheduled publication callback has finished.
         if (World.GetOrCreateSystemManaged<BridgePublicationSystem>().IsPending) return;
@@ -1359,7 +1358,7 @@ public partial class BridgeGenerationSystem : GameSystemBase
         foreach (var candidate in candidates)
             if (_prefabSystem.TryGetEntity(candidate, out var entity)) entities.Add(entity);
         if (BridgeInstanceRemoval.HasPlacedReferences(EntityManager, entities)) return false;
-        var backup = Path.Combine(ExportPaths.DataDirectory, "RemovedBridgeFiles",
+        var backup = Path.Combine(BridgeRecoveryLocation.Path,
             DateTime.UtcNow.ToString("yyyyMMdd-HHmmss-fffffff", CultureInfo.InvariantCulture));
         if (!audit.RetireFiles(names, backup, out var error))
         {

@@ -42,10 +42,16 @@ Check(!audit.RetireFiles(new HashSet<string> { healthy }, recovery, out _), "hea
 File.AppendAllText(Prefab(a), "\nchanged");
 Check(!audit.RetireFiles(new HashSet<string> { a }, recovery, out _), "changed files cannot be retired");
 audit = BridgeDiskAudit.Read(root, owners);
+Check(!audit.RetireFiles(new HashSet<string> { a }, Path.Combine(root, "ImportedData", "Recovery"), out _),
+    "recovery inside imported asset root rejected");
+Check(File.Exists(Prefab(a)), "unsafe recovery location leaves source intact");
+var original = File.ReadAllBytes(Prefab(a));
+var originalCid = File.ReadAllBytes(Prefab(a) + ".cid");
 Check(audit.RetireFiles(new HashSet<string> { a }, recovery, out var error), "confirmed files retired: " + error);
 Check(!File.Exists(Prefab(a)) && File.Exists(Prefab(b)) && File.Exists(Prefab(healthy)), "retirement leaves healthy files untouched");
-Check(Directory.GetFiles(recovery, "*.bbremoved", SearchOption.AllDirectories).Length == 2,
-    "recovery copies have non-importable extensions");
+Check(File.ReadAllBytes(Path.Combine(recovery, a, a + ".Prefab")).SequenceEqual(original)
+    && File.ReadAllBytes(Path.Combine(recovery, a, a + ".Prefab.cid")).SequenceEqual(originalCid),
+    "recovery preserves original prefab and CID names and bytes");
 
 // Optional read-only regression against the player's preserved fixture bundle.
 if (args.Length > 0)
