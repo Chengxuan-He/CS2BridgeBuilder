@@ -52,6 +52,11 @@ the repository root [`AGENTS.md`](../../AGENTS.md). Before editing this director
 
 ## Completion
 
+Before modifying runtime code, run `taskkill /IM Cities2.exe /F` even if a city/save is running,
+without asking whether to save or waiting for a manual exit. The user explicitly authorizes losing
+unsaved progress for this workflow. Verify the process is absent; still perform the post-edit
+shutdown and deployment procedure required below.
+
 Construction pricing must not allocate, clone, save or publish any pricing prefab. Price is a scalar
 property attached to the existing bridge prefab, projected onto native UI and composition cost data.
 Read selected road prices from initialized native data; preserve each archetype's signed offset and

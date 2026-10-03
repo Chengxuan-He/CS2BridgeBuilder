@@ -12,7 +12,7 @@ for (const file of readdirSync(resolve(root, runtime)).filter(x => /^BridgePrevi
     assert(!/Log\.(?:Error|Critical|Warn)\(/.test(source), `Preview logging remains: ${file}`);
     assert(!/FailureException|_failureException/.test(source), `Unused exception propagation remains: ${file}`);
 }
-for (const path of ["Bridges/TowerFactory.cs", "Systems/BridgePublicationSystem.cs", "Runtime/BridgeAssetPack.cs"])
+for (const path of [...readdirSync(resolve(root, "src/BridgeBuilder/Bridges/Common/Geometry")).filter(x => /^TowerFactory.*\.cs$/.test(x)).map(x => `Bridges/Common/Geometry/${x}`), "Systems/BridgePublicationSystem.cs", "Runtime/BridgeAssetPack.cs"])
     assert(!/Log\.(?:Error|Critical|Warn)\(/.test(read(`src/BridgeBuilder/${path}`)), path);
 const generation = read("src/BridgeBuilder/Systems/BridgeGenerationSystem.cs");
 assert.equal((generation.match(/new ExportReport\(logIssues: false\)/g) || []).length, 3,

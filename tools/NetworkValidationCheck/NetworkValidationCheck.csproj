@@ -4,5 +4,8 @@
     <Compile Include="../../src/BridgeBuilder/Runtime/BridgeNetworkValidation.cs" Link="BridgeNetworkValidation.cs" />
     <Compile Include="../../src/BridgeBuilder/Runtime/BridgeLoadFailures.cs" Link="BridgeLoadFailures.cs" />
     <Compile Include="../../src/BridgeBuilder/Runtime/BridgeRegistration.cs" Link="BridgeRegistration.cs" />
+    <Compile Include="../../src/BridgeBuilder/Runtime/BridgeSerializedReferences.cs" Link="BridgeSerializedReferences.cs" />
+    <Compile Include="../../src/BridgeBuilder/Runtime/BridgeReferenceRecovery.cs" Link="BridgeReferenceRecovery.cs" />
+    <Compile Include="../../src/BridgeBuilder/Runtime/BridgeFileAccess.cs" Link="BridgeFileAccess.cs" />
   </ItemGroup>
 </Project>

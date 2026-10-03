@@ -432,7 +432,8 @@ public partial class BridgeGenerationSystem : GameSystemBase
         var failuresBefore = report.FailedRoads;
         var cloner = new PrefabGraphCloner(_prefabSystem, _settings, report, overwrite);
         var towers = new TowerFactory(_prefabSystem, report, preview?.Geometry);
-        var composer = new BridgeComposer(report, towers);
+        var composer = BridgeGeneratorRouter.Create(style.Id, report, towers);
+        if (composer == null) return false;
         var doubleDeck = new DoubleDeckComposer(report);
         var economy = new BridgeEconomy();
 
@@ -460,7 +461,7 @@ public partial class BridgeGenerationSystem : GameSystemBase
             // cloned under the export name. Variants of one style disagree about this: the plain A
             // pylon hangs its second net above and its subway, train and tram variants hang theirs
             // below, so the question is about the variant and never about the style.
-            var chosenWidth = BridgeComposer.WidthOf(upper.Prefab, upper.Width);
+            var chosenWidth = BridgeGeneratorBase.WidthOf(upper.Prefab, upper.Width);
             if (!(chosenWidth > 0f) || float.IsInfinity(chosenWidth))
             {
                 report.Failed(exportName, new InvalidOperationException(
@@ -497,7 +498,7 @@ public partial class BridgeGenerationSystem : GameSystemBase
             // the chosen lower road/track is the root and supplies the width reference.
             // Grey double suspension owns the lower network, but its structure follows the upper
             // road. Network ownership must not choose the structural width measurement.
-            var structuralDeck = options.DoubleDeck && style.Id == "Suspension02" ? upper : main;
+            var structuralDeck = options.DoubleDeck && composer.StructureFollowsUpperAuxiliary ? upper : main;
             var variant = composer.Apply(
                 clone, style, structuralDeck.Width, options, measure: structuralDeck.Prefab);
             if (variant == null) return false;

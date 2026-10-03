@@ -42,7 +42,6 @@ $exe = Join-Path $output 'TowerTests.dll'
 
 $sources = @(
     (Join-Path (Split-Path -Parent $projectRoot) 'CS2ModShared\src\Infrastructure\NameSanitizer.cs'),
-    (Join-Path $projectRoot 'src\BridgeBuilder\Bridges\TowerWidening.cs'),
     (Join-Path $projectRoot 'src\BridgeBuilder\Bridges\GoldenBridgeRailings.cs'),
     (Join-Path $projectRoot 'src\BridgeBuilder\Bridges\BridgeTowers.cs'),
     (Join-Path $projectRoot 'src\BridgeBuilder\Bridges\BridgeStyleDefinitions.cs'),
@@ -53,13 +52,14 @@ $sources = @(
     (Join-Path $projectRoot 'src\BridgeBuilder\Bridges\BridgeTowerMaterials.cs'),
     (Join-Path $projectRoot 'src\BridgeBuilder\Bridges\BridgeTowerSpec.cs'),
     (Join-Path $projectRoot 'src\BridgeBuilder\Bridges\BridgeSpec.cs'),
-    (Join-Path $projectRoot 'src\BridgeBuilder\Bridges\TrussArch02Geometry.cs'),
-    (Join-Path $projectRoot 'src\BridgeBuilder\Bridges\TrussArch02GeometryData.g.cs'),
+    (Join-Path $projectRoot 'src\BridgeBuilder\Bridges\Types\TrussArch02\TrussArch02Geometry.cs'),
+    (Join-Path $projectRoot 'src\BridgeBuilder\Bridges\Types\TrussArch02\TrussArch02GeometryData.g.cs'),
     (Join-Path $projectRoot 'src\BridgeBuilder\Bridges\TowerPrefabNaming.cs'),
     (Join-Path $projectRoot 'src\BridgeBuilder\Bridges\PrototypeBridgeSizing.cs'),
     (Join-Path $projectRoot 'tests\TowerTests.cs'),
     (Join-Path $projectRoot 'tests\TowerGenerationTests.cs')
 )
+$sources += @(Get-ChildItem -LiteralPath (Join-Path $projectRoot 'src\BridgeBuilder\Bridges\Common\Geometry') -Filter 'TowerWidening*.cs' -File | Select-Object -ExpandProperty FullName)
 foreach ($source in $sources) {
     if (-not (Test-Path -LiteralPath $source)) { throw "Missing source: $source" }
 }

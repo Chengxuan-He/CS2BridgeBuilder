@@ -348,7 +348,7 @@ internal sealed class BridgeStyle
         // bridge of its own produced two structures that had never been designed to stand together.
         //
         // So the candidates are filtered rather than merely preferred. With none, the style has no
-        // double deck version and generation fails - see BridgeComposer - because there is nothing to
+        // double deck version and generation fails - see BridgeGeneratorBase - because there is nothing to
         // follow and inventing an arrangement is what this was.
         // Filtered both ways, not only one. Asked for two decks, only double deck archetypes will do;
         // asked for one, only single deck ones will. The second half was a preference before - a

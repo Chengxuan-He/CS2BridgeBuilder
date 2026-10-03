@@ -108,6 +108,36 @@ BridgeLoadFailures.Clear();
 Assert("legacy migration blocks cleanup across map preload", BridgeLoadFailures.NetworkInitializationFailed);
 BridgeLoadFailures.Stop();
 Assert("restart clears migration latch", !BridgeLoadFailures.NetworkInitializationFailed);
+var lane = new NetLanePrefab();
+lane.Add(new SecondaryLane());
+Check("nullable native secondary arrays accepted", lane, false);
+lane.Add(new SecondaryLane { m_LeftLanes = [new()] });
+Check("secondary left lane null", lane, true, "m_LeftLanes");
+lane.Add(new SecondaryLane { m_RightLanes = [new()] });
+Check("secondary right lane null", lane, true, "m_RightLanes");
+lane.Add(new SecondaryLane { m_CrossingLanes = [new()] });
+Check("secondary crossing lane null", lane, true, "m_CrossingLanes");
+lane.Add(new SecondaryLane { active = false });
+lane.Add(new AuxiliaryLanes());
+Check("auxiliary lane null array", lane, true, "AuxiliaryLanes");
+lane.Add(new AuxiliaryLanes { m_AuxiliaryLanes = [new()] });
+Check("auxiliary lane null entry", lane, true, "AuxiliaryLanes");
+lane.Add(new AuxiliaryLanes { m_AuxiliaryLanes = [] });
+Check("empty auxiliary lanes allowed", lane, false);
+var laneGeometry = new NetLaneGeometryPrefab { m_Meshes = [new()] };
+Check("lane mesh null", laneGeometry, true, "m_Meshes");
+laneGeometry.m_Meshes = null;
+Check("null meshes rejected before GetDependencies", laneGeometry, true, "m_Meshes");
+laneGeometry.m_Meshes = [];
+Check("empty meshes accepted", laneGeometry, false);
+piece = new(); piece.Add(new NetPieceLanes { m_Lanes = [new() { m_Lane = lane }] });
+lane.Add(new SecondaryLane { m_LeftLanes = [new()] });
+Check("nested lane null reaches parent", piece, true, "m_LeftLanes");
+RecoveryChecks.Run(Assert);
+foreach (var file in args)
+    Assert("actual Odin document parsed: " + Path.GetFileName(file), BridgeSerializedReferences.TryRead(File.ReadAllText(file), out var actual)
+        && actual.Name.Length != 0 && actual.Reference("Game.Prefabs.NetSubObjects", "m_SubObjects", 0, "m_Object", out var originalId)
+        && originalId.StartsWith("UnityGUID:"));
 Console.WriteLine($"{passed} checks passed. Reference validation and safety latch only; not a native game/runtime test.");
 
 namespace Game.Prefabs
@@ -116,6 +146,7 @@ namespace Game.Prefabs
     {
         public string name = "";
         public bool isBuiltin, isReadOnly;
+        public Colossal.IO.AssetDatabase.PrefabAsset asset;
         private readonly Dictionary<Type, object> components = new();
         public void Add<T>(T item) => components[typeof(T)] = item;
         public bool TryGet<T>(out T value)
@@ -128,6 +159,16 @@ namespace Game.Prefabs
     public class NetGeometryPrefab : NetPrefab { public NetSectionInfo[] m_Sections; }
     public class NetSectionPrefab : PrefabBase { public NetSectionInfo[] m_SubSections; public NetPieceInfo[] m_Pieces; }
     public class NetPiecePrefab : PrefabBase { }
+    public class NetLanePrefab : PrefabBase { }
+    public class NetLaneGeometryPrefab : NetLanePrefab { public NetLaneMeshInfo[] m_Meshes; }
+    public class NetLaneMeshInfo { public PrefabBase m_Mesh; }
+    public class SecondaryLane : ComponentBase { public NetLaneInfo[] m_LeftLanes, m_RightLanes, m_CrossingLanes; }
+    public class AuxiliaryLanes : ComponentBase { public NetLaneInfo[] m_AuxiliaryLanes; }
+    public class PrefabSystem
+    {
+        public HashSet<PrefabBase> Registered = new();
+        public bool TryGetEntity(PrefabBase prefab, out int entity) { entity = 0; return Registered.Contains(prefab); }
+    }
     public class NetPieceInfo { public PrefabBase m_Piece; }
     public class ComponentBase { public bool active = true; }
     public class NetSubObjects : ComponentBase { public NetSubObjectInfo[] m_SubObjects; }
@@ -147,7 +188,11 @@ namespace Game.Prefabs
     public class AuxiliaryNets : ComponentBase { public AuxiliaryNet[] m_AuxiliaryNets; }
     public class AuxiliaryNet { public PrefabBase m_Prefab; }
 }
-namespace UnityEngine { public class Object { } }
+namespace UnityEngine
+{
+    public class Object { }
+    public static class Application { public static string persistentDataPath = ""; }
+}
 namespace Colossal.Logging
 {
     public interface ILog { }
@@ -162,7 +207,31 @@ namespace Colossal.Logging
 namespace BridgeBuilder
 {
     public static class Mod { public static TestLog Log = new(); }
-    public class TestLog { public void Warn(string message) { } }
+    public class TestLog { public void Warn(string message) { } public void Info(string message) { } }
+}
+namespace Colossal { public class Hash128 { public static string Parse(string value) => value; } }
+namespace Colossal.IO.AssetDatabase
+{
+    public class PrefabAsset
+    {
+        public string path = "";
+        public object database;
+        public Game.Prefabs.PrefabBase Instance;
+        public T GetInstance<T>() where T : class => Instance as T;
+    }
+    public class AssetDatabase
+    {
+        public static AssetDatabase global = new(); public static object user = new();
+        public Dictionary<string, PrefabAsset> Assets = new();
+        public Resources resources = new();
+        public bool TryGetAsset(string id, out PrefabAsset asset) => Assets.TryGetValue(id, out asset);
+    }
+    public class Resources { public Map prefabsMap = new(); }
+    public class Map
+    {
+        public Dictionary<string, object> Objects = new();
+        public bool TryGetObject(string id, out object value) => Objects.TryGetValue(id, out value);
+    }
 }
 namespace CS2Mods.Shared.Infrastructure
 {

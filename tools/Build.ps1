@@ -147,7 +147,12 @@ $arguments = @(
     ('/out:' + (Join-Path $output 'BridgeBuilder.dll'))
 ) + $references + $sources
 
-& $dotnet @arguments
+# Source paths grow as bridge implementations are split into individual directories.
+# Use a compiler response file instead of exceeding Windows' process command-line limit.
+$responseFile = Join-Path $intermediate 'BridgeBuilder.rsp'
+$responseArguments = $arguments | Select-Object -Skip 1 | ForEach-Object { '"' + $_ + '"' }
+[IO.File]::WriteAllLines($responseFile, [string[]]$responseArguments, [Text.UTF8Encoding]::new($false))
+& $dotnet $compiler "@$responseFile"
 if ($LASTEXITCODE -ne 0) { throw "Compilation failed with exit code $LASTEXITCODE" }
 Copy-Item -LiteralPath $harmonyDll -Destination $output -Force
 Copy-Item -LiteralPath (Join-Path $harmonyPackage 'LICENSE') -Destination (Join-Path $output 'Harmony-LICENSE.txt') -Force

@@ -13,6 +13,11 @@ implementation, bypass the contract or claim that an unverified change is a comp
 
 ## Deploy immediately after every code change
 
+Before modifying code, run `taskkill /IM Cities2.exe /F` and verify the process is absent,
+even when a city/save is currently running. The user explicitly authorizes this forced shutdown;
+do not ask whether to save, request another confirmation, or wait for a manual exit. Unsaved progress
+may be lost. This pre-edit requirement supplements the mandatory post-edit shutdown below.
+
 After completing any code change, immediately build and deploy the updated mod to the game.
 Do not stop at editing or compilation, defer deployment to another turn, or wait for a separate
 deployment request. Follow the mandatory shutdown, backup and ownership-scoped cleanup procedure in

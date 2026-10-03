@@ -36,6 +36,7 @@ internal static class BridgePrefabLoadGuard
     {
         _harmony?.UnpatchAll("BridgeBuilder.PrefabLoadGuard");
         _harmony = null;
+        BridgeReferenceRecovery.DeferredOwners.Clear();
     }
 
     private static bool BeforeAdd(PrefabBase prefab, ref bool __result)
@@ -51,8 +52,7 @@ internal static class BridgePrefabLoadGuard
     {
         // A rejected root is not enough: native loading also registers its section/piece
         // assets independently. Scope those checks to Bridge Builder's exact UUID marker.
-        if (prefab == null || !(prefab is NetGeometryPrefab
-            || prefab is NetSectionPrefab || prefab is NetPiecePrefab)) return true;
+        if (prefab == null || !BridgeReferenceRecovery.Supports(prefab)) return true;
         var verifiedOwned = false;
         try
         {
@@ -73,9 +73,11 @@ internal static class BridgePrefabLoadGuard
                 return false;
             }
             if (!BridgeNetworkValidation.IsInvalid(prefab, out var reason)) return true;
+            BridgeReferenceRecovery.DeferredOwners.Add(owner);
             BridgeLoadFailures.Quarantine(prefab, reason);
             // No placeholder, array surgery, asset deletion, ECS destruction or index remapping.
-            // Saved references resolve as obsolete and are retired by the normal PostTool cleanup.
+            // A null during import is not deletion authority. Title recovery must resolve
+            // the exact serialized identity before deciding whether this bridge is broken.
             return false;
         }
         catch (Exception exception)

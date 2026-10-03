@@ -788,6 +788,17 @@ branch. Switching branches after making the edit does not make the edit complian
 
 ## 13. Every code update stops the game, removes generated bridges and deploys immediately
 
+Forced-shutdown clarification baseline (2026-10-03): branch `dev`, HEAD
+`806ac3163d46e7c24d146edd154530df82d2bc65`, recorded before editing; local rollback reference
+`refs/rollback/force-stop-policy-20261003`.
+
+Before modifying code, the Agent must run `taskkill /IM Cities2.exe /F` and verify that the process
+is absent, even when a city/save is currently running. The user explicitly authorizes this forced
+termination and its possible loss of unsaved progress. Do not ask whether to save, request repeated
+confirmation, wait for the user to exit manually, or exempt an active save. If termination fails,
+stop edits/deployment and report the blocker. A no-op when the process is already absent is valid.
+This pre-edit requirement supplements rather than replaces the post-edit shutdown below.
+
 Deployment-rule rollback baseline (2026-09-22): branch `dev`, HEAD
 `7cfb9afcffc9c87c69801cc1a0c5621c7d1d322d`, recorded before editing these instructions.
 

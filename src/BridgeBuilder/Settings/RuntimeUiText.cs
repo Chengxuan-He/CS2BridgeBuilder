@@ -16,6 +16,36 @@ internal static class RuntimeUiText
 
     private static readonly Dictionary<string, string[]> Entries = new(StringComparer.Ordinal)
     {
+        ["DamagedBridgeAssetsRemoved"] = new[]
+        {
+            "Removed {0} unrecoverable Bridge Builder bridge asset groups during startup. Recovery copies were kept. Placed networks will be checked when a city is loaded; no save file has been overwritten.",
+            "启动时已移除 {0} 组无法修复的 Bridge Builder 桥梁资产，并保留恢复副本。已建路网将在读档时检查；未覆盖任何存档。",
+            "啟動時已移除 {0} 組無法修復的 Bridge Builder 橋梁資產，並保留復原副本。已建路網將於讀檔時檢查；未覆寫任何存檔。",
+            "Beim Start wurden {0} irreparable Bridge-Builder-Assetgruppen entfernt. Wiederherstellungskopien bleiben erhalten. Gebaute Netze werden beim Laden geprüft; kein Spielstand wurde überschrieben.",
+            "Se eliminaron {0} grupos de recursos de puentes irreparables al iniciar. Se conservaron copias de recuperación. Las redes se comprobarán al cargar la ciudad; no se sobrescribió ninguna partida.",
+            "Au démarrage, {0} groupes de ressources de ponts irréparables ont été retirés. Des copies de récupération sont conservées. Les réseaux seront vérifiés au chargement ; aucune sauvegarde n’a été écrasée.",
+            "Rimossi all’avvio {0} gruppi di risorse di ponti non riparabili. Conservate copie di recupero. Le reti saranno controllate al caricamento; nessun salvataggio è stato sovrascritto.",
+            "起動時に修復できない橋梁アセット {0} 組を削除し、復元用コピーを保管しました。設置済みネットワークは都市読み込み時に確認します。セーブは上書きしていません。",
+            "시작 시 복구할 수 없는 교량 에셋 {0}개 그룹을 제거하고 복구 사본을 보관했습니다. 배치된 네트워크는 도시 로드 시 확인합니다. 저장 파일은 덮어쓰지 않았습니다.",
+            "Podczas uruchamiania usunięto {0} grup uszkodzonych zasobów mostów. Zachowano kopie odzyskiwania. Sieci zostaną sprawdzone przy wczytywaniu miasta; nie nadpisano zapisów.",
+            "Removidos {0} grupos de recursos de pontes irrecuperáveis na inicialização. Cópias de recuperação foram mantidas. As redes serão verificadas ao carregar a cidade; nenhum salvamento foi sobrescrito.",
+            "При запуске удалено групп невосстановимых ресурсов мостов: {0}. Сохранены копии для восстановления. Сети будут проверены при загрузке города; сохранения не перезаписаны."
+        },
+        ["BridgeReferencesDeferred"] = new[]
+        {
+            "Dependencies for {0} Bridge Builder bridge groups could not be resolved. Their assets and placed networks were retained. Restore the required content and restart. Keep the original save unchanged.",
+            "有 {0} 组 Bridge Builder 桥梁的依赖暂时无法解析，已保留资产及对应路网。请恢复所需内容后重启游戏，并保留原存档。",
+            "有 {0} 組 Bridge Builder 橋梁的依賴暫時無法解析，已保留資產及對應路網。請恢復所需內容後重新啟動遊戲，並保留原存檔。",
+            "Abhängigkeiten von {0} Brückengruppen fehlen. Assets und Netze bleiben erhalten. Erforderliche Inhalte wiederherstellen und neu starten. Originalspielstand behalten.",
+            "No se pudieron resolver las dependencias de {0} grupos de puentes. Se conservaron recursos y redes. Restaura el contenido y reinicia. Conserva la partida original.",
+            "Les dépendances de {0} groupes de ponts restent introuvables. Ressources et réseaux conservés. Rétablissez le contenu puis redémarrez. Gardez la sauvegarde originale.",
+            "Dipendenze di {0} gruppi di ponti non disponibili. Risorse e reti conservate. Ripristina i contenuti e riavvia. Conserva il salvataggio originale.",
+            "橋梁 {0} 組の依存アセットを解決できません。アセットとネットワークは保持されています。必要なコンテンツを復元して再起動し、元のセーブを保管してください。",
+            "교량 {0}개 그룹의 종속성을 찾을 수 없습니다. 에셋과 네트워크는 유지했습니다. 필요한 콘텐츠를 복원하고 재시작하세요. 원본 저장 파일을 보관하세요.",
+            "Nie znaleziono zależności {0} grup mostów. Zasoby i sieci zachowano. Przywróć zawartość i uruchom grę ponownie. Zachowaj oryginalny zapis.",
+            "Dependências de {0} grupos de pontes indisponíveis. Recursos e redes foram mantidos. Restaure o conteúdo e reinicie. Preserve o salvamento original.",
+            "Не найдены зависимости групп мостов: {0}. Ресурсы и сети сохранены. Восстановите необходимый контент и перезапустите игру. Сохраните исходный файл города."
+        },
         ["OK"] = new[]
         {
             "OK", "确定", "確定", "OK", "Aceptar", "OK",

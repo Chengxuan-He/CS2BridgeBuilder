@@ -199,6 +199,7 @@ public partial class BridgeMissingAssetSystem : GameSystemBase
         var missing = new HashSet<Entity>();
         var checkedPrefabs = new HashSet<Entity>();
         var names = new HashSet<string>(StringComparer.Ordinal);
+        var deferredNames = new HashSet<string>(StringComparer.Ordinal);
         var evidence = new Dictionary<string, string>(StringComparer.Ordinal);
         var loaded = PrefabCatalog.GetAll(_prefabs).Concat(BridgeLoadFailures.Prefabs())
             .OfType<NetGeometryPrefab>().Distinct().ToArray();
@@ -229,6 +230,10 @@ public partial class BridgeMissingAssetSystem : GameSystemBase
                 var id = _prefabs.GetObsoleteID(data);
                 var name = id.GetName();
                 if (!TryBridgeName(name, out var bridge)) continue;
+                // An asset deliberately withheld while its dependencies are unavailable is
+                // not a confirmed deleted bridge, even if deserialization made an obsolete ID.
+                if (BridgeReferenceRecovery.DeferredOwners.Contains(bridge))
+                { deferredNames.Add(bridge); continue; }
                 // Restrict to network prefab types, not a same-named object or composition.
                 var type = id.ToUrlSegment().Split('/')[0];
                 if (type != nameof(RoadPrefab) && type != nameof(TrackPrefab)
@@ -244,7 +249,11 @@ public partial class BridgeMissingAssetSystem : GameSystemBase
                 StringSplitOptions.None).Distinct().OrderBy(reason => reason, StringComparer.Ordinal));
         // Missing saved IDs are authoritative after Deserialize. Retired UUIDs were
         // already confirmed at the title screen; a second frame adds no new evidence.
-        if (names.Count == 0) return;
+        if (names.Count == 0)
+        {
+            if (deferredNames.Count != 0) Notice("BridgeReferencesDeferred", deferredNames.Count);
+            return;
+        }
         foreach (var failure in evidence)
             if (_reportedEvidence.Add(failure.Key + ":" + failure.Value))
                 Mod.Log.Warn($"Missing bridge in loaded save '{failure.Key}': {failure.Value}; evaluating native topology cleanup.");

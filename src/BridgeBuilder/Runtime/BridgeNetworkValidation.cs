@@ -60,6 +60,22 @@ internal static class BridgeNetworkValidation
                 return true;
             }
         }
+        if (prefab is NetLanePrefab lane)
+        {
+            if (lane.TryGet<SecondaryLane>(out var secondary) && secondary.active
+                && (BadReferences(secondary.m_LeftLanes, true, true, s => s.m_Lane,
+                        "SecondaryLane.m_LeftLanes", visited, out reason)
+                    || BadReferences(secondary.m_RightLanes, true, true, s => s.m_Lane,
+                        "SecondaryLane.m_RightLanes", visited, out reason)
+                    || BadReferences(secondary.m_CrossingLanes, true, true, s => s.m_Lane,
+                        "SecondaryLane.m_CrossingLanes", visited, out reason))) return true;
+            if (lane.TryGet<AuxiliaryLanes>(out var auxiliary) && auxiliary.active
+                && BadReferences(auxiliary.m_AuxiliaryLanes, false, true, s => s.m_Lane,
+                    "AuxiliaryLanes.m_AuxiliaryLanes", visited, out reason)) return true;
+        }
+        if (prefab is NetLaneGeometryPrefab geometry
+            && BadReferences(geometry.m_Meshes, false, true, s => s.m_Mesh,
+                "NetLaneGeometryPrefab.m_Meshes", visited, out reason)) return true;
         return false;
     }
 
