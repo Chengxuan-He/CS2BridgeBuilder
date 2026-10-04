@@ -33,6 +33,7 @@ public partial class BridgeBuilderUISystem : UISystemBase
     private string? _seenLocaleId;
     private int _seenRevision = -1;
     private int _seenPreviewRevision = -1;
+    private float _nextSourceCheck;
     private ValueBinding<string> _previewImage = null!;
     private ValueBinding<string> _previewStatus = null!;
     private ValueBinding<string> _previewKey = null!;
@@ -88,6 +89,16 @@ public partial class BridgeBuilderUISystem : UISystemBase
     [Preserve]
     protected override void OnUpdate()
     {
+        if (_panelOpen.value && UnityEngine.Time.realtimeSinceStartup >= _nextSourceCheck)
+        {
+            _nextSourceCheck = UnityEngine.Time.realtimeSinceStartup + 1f;
+            // Only prune the small source list; do not rerun prefab/material/startup audits.
+            if (DeckCatalog.PruneDeletedSources())
+            {
+                BridgePreviewState.Clear();
+                RequestRefresh();
+            }
+        }
         if (_toggleAction != null)
         {
             _toggleAction.shouldBeEnabled = true;

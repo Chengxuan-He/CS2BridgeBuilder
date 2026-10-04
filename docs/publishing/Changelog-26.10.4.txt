@@ -1,0 +1,1 @@
+Fixed deleted Road Builder roads remaining in the road selection list. Deleted sources are now filtered out and cannot be used to create new bridges. Existing bridges retain their independent network copies.

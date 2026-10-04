@@ -98,7 +98,19 @@ internal static class DeckCatalog
         if (string.IsNullOrEmpty(id)) return null;
         lock (Gate)
         {
-            return _decks.FirstOrDefault(deck => string.Equals(deck.Id, id, StringComparison.Ordinal));
+            return _decks.FirstOrDefault(deck => string.Equals(deck.Id, id, StringComparison.Ordinal)
+                && !RoadBuilderCompatibility.IsDeleted(deck.Prefab));
+        }
+    }
+
+    internal static bool PruneDeletedSources()
+    {
+        lock (Gate)
+        {
+            var retained = _decks.Where(deck => !RoadBuilderCompatibility.IsDeleted(deck.Prefab)).ToList();
+            if (retained.Count == _decks.Count) return false;
+            _decks = retained;
+            return true;
         }
     }
 
@@ -118,6 +130,7 @@ internal static class DeckCatalog
         {
             try
             {
+                if (RoadBuilderCompatibility.IsDeleted(prefab)) continue;
                 if (!roadBuilderAvailable && RoadBuilderCompatibility.OwnsPrefab(prefab)) continue;
                 var deck = Describe(prefab, byPrefab);
                 if (deck != null) decks.Add(deck);

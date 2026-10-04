@@ -63,4 +63,22 @@ internal static class RoadBuilderCompatibility
                 return true;
         return false;
     }
+
+    internal static bool IsDeleted(PrefabBase prefab)
+    {
+        if (prefab == null) return true;
+        if (!OwnsPrefab(prefab)) return false;
+        try
+        {
+            // Road Builder retains discarded prefabs in PrefabSystem. Its own configuration
+            // list excludes INetworkBuilderPrefab.Deleted, not merely missing Config values.
+            var contract = prefab.GetType().GetInterface("RoadBuilder.Domain.Prefabs.INetworkBuilderPrefab");
+            return contract?.GetProperty("Deleted")?.GetValue(prefab) is true;
+        }
+        catch (Exception)
+        {
+            // An unreadable optional integration is not a usable source for new bridges.
+            return true;
+        }
+    }
 }
