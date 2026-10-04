@@ -1,3 +1,4 @@
+import { readGenerationSource } from './ReadGenerationSource.mjs';
 // Source-architecture checks only. Does not create, render or simulate bridge geometry.
 import assert from 'node:assert/strict';
 import { readFileSync, readdirSync, existsSync } from 'node:fs';
@@ -21,7 +22,7 @@ for (const [, id, type] of routes) {
   assert(implementation.includes(`class ${type} : BridgeGeneratorBase`));
   assert(implementation.includes(`StyleId => "${id}"`));
 }
-const generation = read('src/BridgeBuilder/Systems/BridgeGenerationSystem.cs');
+const generation = readGenerationSource();
 assert(generation.includes('BridgeGeneratorRouter.Create(style.Id, report, towers)'));
 assert(generation.includes('if (composer == null) return false;'));
 assert(generation.includes('composer.StructureFollowsUpperAuxiliary ? upper : main'));

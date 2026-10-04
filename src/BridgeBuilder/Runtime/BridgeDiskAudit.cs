@@ -17,22 +17,32 @@ internal sealed class BridgeDiskAudit
     internal readonly Dictionary<string, string> FileOwners = new(StringComparer.OrdinalIgnoreCase);
     private readonly Dictionary<string, string> _hashes = new(StringComparer.OrdinalIgnoreCase);
     private readonly string _imported;
+    private readonly string _geometry;
     internal bool Complete { get; private set; }
     internal string Error { get; private set; } = string.Empty;
 
-    private BridgeDiskAudit(string imported) => _imported = Path.GetFullPath(imported);
+    private BridgeDiskAudit(string imported)
+    {
+        _imported = Path.GetFullPath(imported);
+        _geometry = Path.Combine(Path.GetDirectoryName(_imported)!, "BridgeBuilder");
+    }
 
     internal static BridgeDiskAudit Read(string gameRoot, IEnumerable<string> registered,
-        Func<string, bool>? externalGeometryExists = null)
+        Func<string, bool>? externalGeometryExists = null, ISet<string>? pending = null)
     {
         var audit = new BridgeDiskAudit(Path.Combine(gameRoot, "ImportedData"));
         try
         {
             var owners = new HashSet<string>(registered.Where(BridgeRegistration.IsPrefabName), StringComparer.Ordinal);
+            var interrupted = new HashSet<string>((pending ?? new HashSet<string>()).Where(owners.Contains), StringComparer.Ordinal);
+            foreach (var owner in interrupted) audit.Add(owner, "Creation did not commit before shutdown");
             var names = new Dictionary<string, HashSet<string>>(StringComparer.Ordinal);
             var cids = new Dictionary<string, List<(string Owner, string File)>>(StringComparer.OrdinalIgnoreCase);
             var geometryIds = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
             var geometryRoot = Path.Combine(gameRoot, "BridgeBuilder");
+            foreach (var root in new[] { audit._imported, audit._geometry })
+                if (BridgeFileAccess.Exists(root) && (BridgeFileAccess.Attributes(root) & FileAttributes.ReparsePoint) != 0)
+                { audit.Error = "Reparse-point asset root: " + root; return audit; }
             if (BridgeFileAccess.Exists(geometryRoot))
                 foreach (var sidecar in Directory.GetFiles(BridgeFileAccess.Native(geometryRoot), "*.Geometry.cid").Select(BridgeFileAccess.Logical))
                     if (BridgeFileAccess.Exists(sidecar.Substring(0, sidecar.Length - 4)))
@@ -41,12 +51,23 @@ internal sealed class BridgeDiskAudit
                 foreach (var directory in Directory.GetDirectories(BridgeFileAccess.Native(audit._imported)).Select(BridgeFileAccess.Logical))
                 {
                     // Do not follow symlinks/junctions or infer ownership from arbitrary metadata.
-                    if ((BridgeFileAccess.Attributes(directory) & FileAttributes.ReparsePoint) != 0) continue;
                     var stem = Path.GetFileName(directory);
                     var match = Owner.Match(stem);
                     if (!match.Success || !owners.Contains(match.Groups[1].Value)) continue;
                     var owner = match.Groups[1].Value;
+                    if ((BridgeFileAccess.Attributes(directory) & FileAttributes.ReparsePoint) != 0)
+                    {
+                        if (interrupted.Contains(owner)) { audit.Error = "Reparse-point pending directory"; return audit; }
+                        continue;
+                    }
                     var path = Path.Combine(directory, stem + ".Prefab");
+                    // A save can fail after writing only the CID sidecar.
+                    if (interrupted.Contains(owner) && BridgeFileAccess.Exists(path + ".cid"))
+                    {
+                        if ((BridgeFileAccess.Attributes(path + ".cid") & FileAttributes.ReparsePoint) != 0)
+                        { audit.Error = "Reparse-point pending sidecar"; return audit; }
+                        audit.Remember(path + ".cid", owner);
+                    }
                     if (!BridgeFileAccess.Exists(path)) continue;
                     if ((BridgeFileAccess.Attributes(path) & FileAttributes.ReparsePoint) != 0)
                     { audit.Error = "Reparse-point prefab: " + path; return audit; }
@@ -88,6 +109,24 @@ internal sealed class BridgeDiskAudit
                             && !(externalGeometryExists?.Invoke(reference.Groups[1].Value) ?? false))
                             audit.Add(owner, $"missing private geometry {reference.Groups[1].Value} in {stem}");
                 }
+            // Geometry can have been saved before any prefab. Only pending UUID-owned files
+            // in our exact geometry directory belong to this compensating transaction.
+            if (interrupted.Count > 0 && BridgeFileAccess.Exists(audit._geometry))
+            {
+                if ((BridgeFileAccess.Attributes(audit._geometry) & FileAttributes.ReparsePoint) != 0)
+                { audit.Error = "Reparse-point geometry directory"; return audit; }
+                foreach (var path in Directory.GetFiles(BridgeFileAccess.Native(audit._geometry)).Select(BridgeFileAccess.Logical))
+                {
+                    var name = Path.GetFileName(path);
+                    if (!name.EndsWith(".Geometry", StringComparison.OrdinalIgnoreCase)
+                        && !name.EndsWith(".Geometry.cid", StringComparison.OrdinalIgnoreCase)) continue;
+                    var match = Owner.Match(name.Substring(0, name.IndexOf(".Geometry", StringComparison.OrdinalIgnoreCase)));
+                    if (!match.Success || !interrupted.Contains(match.Groups[1].Value)) continue;
+                    if ((BridgeFileAccess.Attributes(path) & FileAttributes.ReparsePoint) != 0)
+                    { audit.Error = "Reparse-point geometry file"; return audit; }
+                    audit.Remember(path, match.Groups[1].Value);
+                }
+            }
             foreach (var group in names.Where(p => p.Value.Count > 1))
                 foreach (var owner in group.Value) audit.Add(owner, "duplicate prefab name: " + group.Key);
             foreach (var group in cids.Where(p => p.Value.Count > 1))
@@ -142,7 +181,8 @@ internal sealed class BridgeDiskAudit
             { error = "No complete disk evidence for requested bridge group"; return false; }
             var files = FileOwners.Where(p => owners.Contains(p.Value)).Select(p => p.Key).ToArray();
             foreach (var path in files)
-                if (!path.StartsWith(_imported + Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase)
+                if (!(path.StartsWith(_imported + Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase)
+                        || path.StartsWith(_geometry + Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase))
                     || !BridgeFileAccess.Exists(path) || (BridgeFileAccess.Attributes(path) & FileAttributes.ReparsePoint) != 0
                     || Hash(path) != _hashes[path]
                     || (BridgeFileAccess.Attributes(Path.GetDirectoryName(path)!) & FileAttributes.ReparsePoint) != 0)
@@ -150,7 +190,9 @@ internal sealed class BridgeDiskAudit
             foreach (var path in files)
             {
                 // Preserve original names, extensions and bytes for manual restoration.
-                var destination = Path.Combine(backup, path.Substring(_imported.Length + 1));
+                var destination = path.StartsWith(_geometry + Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase)
+                    ? Path.Combine(backup, "BridgeBuilder", Path.GetFileName(path))
+                    : Path.Combine(backup, path.Substring(_imported.Length + 1));
                 Directory.CreateDirectory(BridgeFileAccess.Native(Path.GetDirectoryName(destination)!));
                 File.Move(BridgeFileAccess.Native(path), BridgeFileAccess.Native(destination));
                 moved.Add((path, destination));

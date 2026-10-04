@@ -1,0 +1,2 @@
+# The snapshot manifest hashes exact bytes; retain them across Windows/Linux checkouts.
+vendor/CS2ModShared/src/** -text

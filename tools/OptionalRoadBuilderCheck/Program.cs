@@ -40,6 +40,11 @@ mod.state = ModManager.ModInfo.State.Loaded;
 Check(RoadBuilderCompatibility.IsAvailable, "loaded optional mod not recognized");
 DeckCatalog.Rebuild(registry, described);
 Check(DeckCatalog.Find(builder.name)?.Kind == DeckKind.RoadBuilder, "configured builder road missing");
+builder.Deleted = true;
+DeckCatalog.Rebuild(registry, described);
+Check(DeckCatalog.Find(builder.name) == null, "deleted Road Builder source leaked into catalogue");
+builder.Deleted = false;
+Check(!RoadBuilderCompatibility.TryOpen(new Unity.Entities.World()), "missing optional UI must fail safely");
 DeckCatalog.Rebuild(registry, Array.Empty<RoadBuilderRoad>());
 Check(DeckCatalog.Find(builder.name) == null, "broken builder road admitted as ordinary road");
 mod.state = ModManager.ModInfo.State.Disposed;
@@ -86,8 +91,22 @@ namespace Game.Prefabs
 }
 namespace RoadBuilder.Prefabs
 {
-    public class BuilderRoad : RoadPrefab { }
+    public class BuilderRoad : RoadPrefab, RoadBuilder.Domain.Prefabs.INetworkBuilderPrefab
+    { public bool Deleted { get; set; } }
     public class BuilderPath : PathwayPrefab { }
+}
+namespace RoadBuilder.Domain.Prefabs
+{
+    public interface INetworkBuilderPrefab { bool Deleted { get; } }
+}
+namespace Unity.Entities
+{
+    public class World { public object? GetExistingSystemManaged(Type type) => null; }
+}
+namespace BridgeBuilder
+{
+    internal static class Mod { internal static Logger Log = new(); }
+    internal sealed class Logger { internal void Warn(Exception exception, string message) { } }
 }
 namespace CS2Mods.Shared.Discovery
 {

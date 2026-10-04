@@ -18,7 +18,8 @@ internal sealed class BridgeRegistration
         string upperDeckId,
         string? lowerDeckId,
         string styleId,
-        string createdUtc)
+        string createdUtc,
+        bool pending = false)
     {
         PrefabName = prefabName;
         RegistrationName = registrationName;
@@ -26,6 +27,7 @@ internal sealed class BridgeRegistration
         LowerDeckId = lowerDeckId;
         StyleId = styleId;
         CreatedUtc = createdUtc;
+        Pending = pending;
     }
 
     internal string PrefabName { get; }
@@ -39,6 +41,9 @@ internal sealed class BridgeRegistration
     internal string StyleId { get; }
 
     internal string CreatedUtc { get; }
+
+    // Written before the first persistent asset; cleared only after native publication succeeds.
+    internal bool Pending { get; }
 
     internal bool IsDoubleDeck => !string.IsNullOrEmpty(LowerDeckId);
 

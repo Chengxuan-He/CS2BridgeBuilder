@@ -62,6 +62,35 @@ Check(File.ReadAllBytes(Path.Combine(recovery, a, a + ".Prefab")).SequenceEqual(
     && File.ReadAllBytes(Path.Combine(recovery, a, a + ".Prefab.cid")).SequenceEqual(originalCid),
     "recovery preserves original prefab and CID names and bytes");
 
+// Crash between geometry save, prefab save and final registry commit.
+var pendingOwner = "b" + Guid.NewGuid();
+var orphanName = "Suspension-40-" + pendingOwner + " Mesh";
+var geometryDir = Path.Combine(root, "BridgeBuilder");
+Directory.CreateDirectory(geometryDir);
+var orphanGeometry = Path.Combine(geometryDir, orphanName + ".Geometry");
+File.WriteAllText(orphanGeometry, "private geometry bytes");
+File.WriteAllText(orphanGeometry + ".cid", new string('a', 32));
+var sharedGeometry = Path.Combine(geometryDir, "shared.Geometry");
+File.WriteAllText(sharedGeometry, "preserve");
+var partialDir = Path.Combine(root, "ImportedData", pendingOwner);
+Directory.CreateDirectory(partialDir);
+var partialCid = Path.Combine(partialDir, pendingOwner + ".Prefab.cid");
+File.WriteAllText(partialCid, new string('b', 32));
+var pendingSet = new HashSet<string> { pendingOwner };
+audit = BridgeDiskAudit.Read(root, owners.Append(pendingOwner), pending: pendingSet);
+Check(audit.Complete && audit.Failures.ContainsKey(pendingOwner), "pending journal is explicit interruption evidence");
+Check(audit.FileOwners.ContainsKey(orphanGeometry) && audit.FileOwners.ContainsKey(partialCid),
+    "recovery includes geometry without prefab and partial CID files");
+var interruptedRecovery = root + "-InterruptedRecovery";
+Check(audit.RetireFiles(pendingSet, interruptedRecovery, out error), "interrupted graph retired: " + error);
+Check(!File.Exists(orphanGeometry) && !File.Exists(partialCid) && File.Exists(sharedGeometry)
+    && File.Exists(Prefab(healthy)), "only interrupted owner removed");
+Check(File.ReadAllText(Path.Combine(interruptedRecovery, "BridgeBuilder", orphanName + ".Geometry"))
+    == "private geometry bytes", "interrupted geometry backed up byte-for-byte");
+audit = BridgeDiskAudit.Read(root, owners.Append(pendingOwner), pending: pendingSet);
+Check(audit.Complete && audit.RetireFiles(pendingSet, root + "-Retry", out error),
+    "restart after files retired but before registry removal is idempotent");
+
 // Optional read-only regression against the player's preserved fixture bundle.
 if (args.Length > 0)
 {

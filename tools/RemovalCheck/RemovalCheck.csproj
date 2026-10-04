@@ -8,8 +8,8 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="../../src/BridgeBuilder/Runtime/BridgePrefabRemoval.cs" Link="BridgePrefabRemoval.cs" />
-    <Compile Include="../../../CS2ModShared/src/Export/PrefabReferenceWalker.cs" Link="PrefabReferenceWalker.cs" />
-    <Compile Include="../../../CS2ModShared/src/Infrastructure/SerializedFields.cs" Link="SerializedFields.cs" />
-    <Compile Include="../../../CS2ModShared/src/Infrastructure/ReferenceEqualityComparer.cs" Link="ReferenceEqualityComparer.cs" />
+    <Compile Include="../../vendor/CS2ModShared/src/Export/PrefabReferenceWalker.cs" Link="PrefabReferenceWalker.cs" />
+    <Compile Include="../../vendor/CS2ModShared/src/Infrastructure/SerializedFields.cs" Link="SerializedFields.cs" />
+    <Compile Include="../../vendor/CS2ModShared/src/Infrastructure/ReferenceEqualityComparer.cs" Link="ReferenceEqualityComparer.cs" />
   </ItemGroup>
 </Project>

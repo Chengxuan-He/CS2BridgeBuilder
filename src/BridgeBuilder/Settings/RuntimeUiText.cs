@@ -1376,33 +1376,33 @@ internal static class RuntimeUiText
         },
         ["RegistrationFailed"] = new[]
         {
-            "Prefab {0} was created, but its display-name registration could not be saved.",
-            "Prefab {0} 已创建，但注册记录保存失败；未按显示名称登记。",
-            "Prefab {0} 已建立，但註冊記錄儲存失敗；未按顯示名稱登記。",
-            "Prefab {0} erstellt, aber Anzeigename konnte nicht registriert werden.",
-            "Prefab {0} creado, pero no se pudo guardar su registro de nombre.",
-            "Prefab {0} créé, mais son nom n’a pas pu être enregistré.",
-            "Prefab {0} creato, ma registrazione del nome non salvata.",
-            "Prefab {0} は作成されましたが、表示名の登録を保存できませんでした。",
-            "프리팹 {0} 생성됨. 표시 이름 등록은 저장하지 못했습니다.",
-            "Utworzono prefab {0}, ale nie zapisano rejestracji nazwy.",
-            "Prefab {0} criado, mas não foi possível registrar o nome.",
-            "Prefab {0} создан, но регистрация названия не сохранена."
+            "Could not save registration for bridge {0}. Creation did not complete.",
+            "无法保存桥梁 {0} 的注册记录，创建未完成。",
+            "無法儲存橋梁 {0} 的註冊記錄，建立未完成。",
+            "Registrierung für Brücke {0} nicht gespeichert. Erstellung nicht abgeschlossen.",
+            "No se pudo guardar el registro del puente {0}. La creación no se completó.",
+            "Impossible d’enregistrer le pont {0}. La création n’est pas terminée.",
+            "Impossibile registrare il ponte {0}. Creazione non completata.",
+            "橋 {0} の登録を保存できませんでした。作成は完了していません。",
+            "교량 {0}의 등록을 저장하지 못했습니다. 생성이 완료되지 않았습니다.",
+            "Nie zapisano rejestracji mostu {0}. Tworzenie nie zostało ukończone.",
+            "Não foi possível registrar a ponte {0}. A criação não foi concluída.",
+            "Не удалось сохранить регистрацию моста {0}. Создание не завершено."
         },
         ["CreateFailed"] = new[]
         {
-            "Bridge creation failed; no UUID registration was written.",
-            "桥梁创建失败；没有写入 UUID 注册记录。",
-            "橋梁建立失敗；沒有寫入 UUID 註冊記錄。",
-            "Brücke nicht erstellt; keine UUID registriert.",
-            "Error al crear el puente; no se registró el UUID.",
-            "Échec de création du pont ; aucun UUID enregistré.",
-            "Creazione ponte fallita; nessun UUID registrato.",
-            "橋の作成に失敗しました。UUID の登録は行われていません。",
-            "교량 생성 실패. UUID 등록 기록은 작성되지 않았습니다.",
-            "Tworzenie mostu nie powiodło się; nie zapisano UUID.",
-            "Falha ao criar a ponte; nenhum UUID registrado.",
-            "Ошибка создания моста; UUID не зарегистрирован."
+            "Bridge creation failed. Restart the game to recover unfinished assets.",
+            "桥梁创建失败。请重启游戏以恢复处理未完成的资产。",
+            "橋梁建立失敗。請重新啟動遊戲以復原處理未完成的資產。",
+            "Brückenerstellung fehlgeschlagen. Spiel zur Wiederherstellung unvollständiger Assets neu starten.",
+            "Error al crear el puente. Reinicia el juego para recuperar los recursos incompletos.",
+            "Échec de création du pont. Redémarrez le jeu pour récupérer les ressources incomplètes.",
+            "Creazione ponte fallita. Riavvia il gioco per recuperare le risorse incomplete.",
+            "橋の作成に失敗しました。ゲームを再起動して未完了のアセットを復旧してください。",
+            "교량 생성 실패. 게임을 다시 시작하여 미완성 에셋을 복구하세요.",
+            "Tworzenie mostu nie powiodło się. Uruchom grę ponownie, aby odzyskać niekompletne zasoby.",
+            "Falha ao criar a ponte. Reinicie o jogo para recuperar os recursos incompletos.",
+            "Ошибка создания моста. Перезапустите игру для восстановления незавершённых ресурсов."
         },
         ["ActivateInvalid"] = new[]
         {

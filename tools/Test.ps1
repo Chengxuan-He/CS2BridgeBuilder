@@ -41,7 +41,7 @@ $output = Join-Path $projectRoot 'tests\bin'
 $exe = Join-Path $output 'TowerTests.dll'
 
 $sources = @(
-    (Join-Path (Split-Path -Parent $projectRoot) 'CS2ModShared\src\Infrastructure\NameSanitizer.cs'),
+    (Join-Path $projectRoot 'vendor\CS2ModShared\src\Infrastructure\NameSanitizer.cs'),
     (Join-Path $projectRoot 'src\BridgeBuilder\Bridges\GoldenBridgeRailings.cs'),
     (Join-Path $projectRoot 'src\BridgeBuilder\Bridges\BridgeTowers.cs'),
     (Join-Path $projectRoot 'src\BridgeBuilder\Bridges\BridgeStyleDefinitions.cs'),

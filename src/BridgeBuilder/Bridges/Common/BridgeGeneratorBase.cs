@@ -26,9 +26,9 @@ namespace BridgeBuilder.Bridges;
 /// a decoration but a second, conflicting layout. Everything still copied is additive - drawn above
 /// or anchored alongside - and cannot disturb the deck itself.
 ///
-/// The donor is referenced, not copied, so the geometry keeps belonging to the content that shipped
-/// it and the generated asset needs that content installed. Copying the meshes instead would produce
-/// an asset this mod has no right to redistribute.
+/// Towers, cables and their LODs are private derived geometry owned by the generated bridge.
+/// Authored components are preserved and references to derived objects are remapped together.
+/// Shared materials/effects retain their original references and content prerequisites.
 /// </summary>
 internal abstract partial class BridgeGeneratorBase
 {

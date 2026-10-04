@@ -123,10 +123,11 @@ foreach ($assembly in @(
     $references.Add('/reference:' + $path)
 }
 
-$sharedRoot = Join-Path (Split-Path -Parent $projectRoot) 'CS2ModShared\src'
+$sharedRoot = Join-Path $projectRoot 'vendor\CS2ModShared\src'
 if (-not (Test-Path -LiteralPath $sharedRoot)) {
-    throw "The shared sources are missing: $sharedRoot. Clone CS2ModShared next to this repository."
+    throw "The pinned shared sources are missing: $sharedRoot. Restore vendor/CS2ModShared from this checkout."
 }
+& (Join-Path $PSScriptRoot 'CheckSharedSources.ps1')
 $sources = @(
     (Join-Path $projectRoot 'src\BridgeBuilder'),
     $sharedRoot

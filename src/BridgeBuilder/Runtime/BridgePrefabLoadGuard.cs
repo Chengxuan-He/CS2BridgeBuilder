@@ -61,6 +61,11 @@ internal static class BridgePrefabLoadGuard
             if (prefab.isBuiltin || prefab.isReadOnly
                 || !BridgeLoadFailures.TryOwner(prefab.name, out var owner)) return true;
             if (BridgeBuilder.Settings.BridgeRecoveryLocation.IsBackup(prefab.asset?.path)) return false;
+            if (!BridgeRegistrationStore.CanRegister(owner))
+            {
+                BridgeLoadFailures.Quarantine(prefab, "Uncommitted creation or unreadable registry; retained for boot recovery");
+                return false;
+            }
             if (!BridgeReferenceRecovery.Supports(prefab)) return true;
             var owned = prefab is NetGeometryPrefab
                 ? BridgeMissingAssetSystem.TryBridgeName(prefab.name, out _)

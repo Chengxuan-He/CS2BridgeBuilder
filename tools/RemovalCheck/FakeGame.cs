@@ -1,4 +1,14 @@
 // Only persistence/reference boundaries; no geometry or rendering is simulated by these tests.
+namespace BridgeBuilder
+{
+    internal static class Mod { internal static Logger Log = new(); }
+    internal sealed class Logger
+    {
+        internal readonly List<string> Failures = new();
+        internal void Critical(string message) => Failures.Add(message);
+        internal void Critical(Exception exception, string message) => Failures.Add(message);
+    }
+}
 namespace UnityEngine
 {
     public class Object { }

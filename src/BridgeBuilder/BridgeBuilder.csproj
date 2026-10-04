@@ -15,7 +15,7 @@
   <!-- Shared with the bridge exporter. Compiled in rather than referenced as an assembly: the shared
        types are internal, and a CS2 mod ships as a single DLL. -->
   <ItemGroup>
-    <Compile Include="..\..\..\CS2ModShared\src\**\*.cs" LinkBase="Shared" />
+    <Compile Include="..\..\vendor\CS2ModShared\src\**\*.cs" LinkBase="Shared" />
   </ItemGroup>
   <ItemGroup>
     <None Include="..\..\assets\BridgeBuilder.svg" Link="BridgeBuilder.svg" CopyToOutputDirectory="PreserveNewest" />

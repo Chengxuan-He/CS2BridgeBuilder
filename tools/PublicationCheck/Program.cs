@@ -80,6 +80,15 @@ publisher.Update();
 Check(!duplicateReady && duplicateReport.Failures.Any(text => text.Contains("2 entries")), "reject duplicate category membership");
 
 var rejected = Road("rejected registration");
+var quarantined = Road("quarantined after native pass");
+var quarantineReport = new ExportReport();
+var quarantineReady = true;
+publisher.Publish(new[] { Node(quarantined) }, quarantineReport, ready => quarantineReady = ready);
+prefabs.NativePass();
+BridgeBuilder.Runtime.BridgeLoadFailures.Quarantined.Add(quarantined);
+publisher.Update();
+Check(!quarantineReady && quarantineReport.Failures.Count == 1, "quarantined native initialization never completes successfully");
+
 prefabs.Reject = rejected;
 var rejectedCallback = false;
 Check(!publisher.Publish(new[] { Node(rejected) }, new ExportReport(), _ => rejectedCallback = true), "registration failure returned");
@@ -88,7 +97,8 @@ Check(!rejectedCallback && !publisher.IsPending, "rejected publication has no su
 
 var root = Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "../../../../.."));
 var modSource = File.ReadAllText(Path.Combine(root, "src/BridgeBuilder/Mod.cs"));
-var generationSource = File.ReadAllText(Path.Combine(root, "src/BridgeBuilder/Systems/BridgeGenerationSystem.cs"));
+var generationSource = string.Join("\n", Directory.GetFiles(Path.Combine(root, "src/BridgeBuilder/Systems"),
+    "BridgeGenerationSystem*.cs").OrderBy(p => p).Select(File.ReadAllText));
 Check(modSource.Contains("UpdateBefore<BridgeGenerationSystem>(SystemUpdatePhase.PrefabUpdate)")
     && modSource.Contains("UpdateAfter<BridgePublicationSystem>(SystemUpdatePhase.PrefabUpdate)"), "native scheduler owns initialization");
 Check(!generationSource.Contains("WorldRegistration.Publish("), "do not re-enter synchronous shared publisher");

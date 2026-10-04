@@ -184,3 +184,12 @@ namespace BridgeBuilder
         internal void Warn(Exception exception, string message) => throw new Exception(message, exception);
     }
 }
+
+namespace BridgeBuilder.Runtime
+{
+    internal static class BridgeLoadFailures
+    {
+        internal static readonly HashSet<Game.Prefabs.PrefabBase> Quarantined = new();
+        internal static IEnumerable<Game.Prefabs.PrefabBase> Prefabs() => Quarantined;
+    }
+}

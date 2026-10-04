@@ -1,0 +1,86 @@
+[
+  {
+    "path": "src/Conversion/PrefabCloneNode.cs",
+    "sha256": "720ea6aa25dcf984c3ba33197483eb0612943e6782f71965fc409e2bdfd160c1"
+  },
+  {
+    "path": "src/Conversion/PrefabGraphCloner.cs",
+    "sha256": "6137a45b2f318eb60a5c3203687702f73580b86c2b43524d7ca042eb4bb67ee8"
+  },
+  {
+    "path": "src/Conversion/SpeedLimitFix.cs",
+    "sha256": "3480aebb08668e02c0c741c4a537ed45d02e7c91abfeb10d7d7ffbf0c6f79265"
+  },
+  {
+    "path": "src/Discovery/RoadBuilderDiscovery.cs",
+    "sha256": "8073c44927af8f8b86a84d4ec7f6167a3514d68c7b8873b84cae6f3b144004d6"
+  },
+  {
+    "path": "src/Discovery/RoadBuilderRoad.cs",
+    "sha256": "ba3e9dee2dd41e0db98431ebd507c600cd907abeeffc9fe3b99e28a92ed91310"
+  },
+  {
+    "path": "src/Export/PrefabAssetRemover.cs",
+    "sha256": "4796fa7a264541c2d192d07988fdb4734315c317cbfb6e65542f314a02d1760b"
+  },
+  {
+    "path": "src/Export/PrefabAssetWriter.cs",
+    "sha256": "ff07f6897c3d7a5a3928b47cdb2a76af7c9e5ede1136a838688d3e5e36e4f341"
+  },
+  {
+    "path": "src/Export/PrefabReferenceWalker.cs",
+    "sha256": "aa27d4f00d5571469642e61af179ad7482c4016a9ca9db0724714b4f9a18842c"
+  },
+  {
+    "path": "src/Export/RoadBuilderIconExporter.cs",
+    "sha256": "d070c0dbc703b5a356d6abf9adc9e22fe32d4fc7eb5f2936b6af706154fe29f8"
+  },
+  {
+    "path": "src/Export/WorldRegistration.cs",
+    "sha256": "7eddbc5a9f22e71e15a726ba8299261e9b9043ec2ecd5b2e6e59a8f61573942c"
+  },
+  {
+    "path": "src/Infrastructure/ExportPaths.cs",
+    "sha256": "262086448f7d2f931612938a22e4416385104548d5199c1f5b8093a24e07c576"
+  },
+  {
+    "path": "src/Infrastructure/ExportReport.cs",
+    "sha256": "30ccf1babf7229d019c36fc75fc1e99caba3695575dfb85a809f526785a72fa7"
+  },
+  {
+    "path": "src/Infrastructure/ExportSettings.cs",
+    "sha256": "d7de8f082db9ff80696dbea1fe4421a8d801f69a11ef0a0387476803f9028f0e"
+  },
+  {
+    "path": "src/Infrastructure/ExportStateStore.cs",
+    "sha256": "76eecaf22ed53f859a1015b67a9fda7853fcbd5ab00c06b6afe6c38f81e9e7f7"
+  },
+  {
+    "path": "src/Infrastructure/NameSanitizer.cs",
+    "sha256": "1eb73a6c942ad1e6c68119af1fbeb00959e27aa08bc97834b609f1676ad73bfa"
+  },
+  {
+    "path": "src/Infrastructure/PrefabCatalog.cs",
+    "sha256": "b34c529149d845391b53da86a1ea3b562a9145cdc24353802149fd569e1d7f91"
+  },
+  {
+    "path": "src/Infrastructure/ReferenceEqualityComparer.cs",
+    "sha256": "1bea1f40b6bd531718ee758b82048c88bc79417bfb3cb334c54c380bad8534b8"
+  },
+  {
+    "path": "src/Infrastructure/RoadSelectionModel.cs",
+    "sha256": "b7a0bb043e8235ca1272c8800a3cf3e2fa1d84526c0a5469a3af37643de6e4c6"
+  },
+  {
+    "path": "src/Infrastructure/SelectionText.cs",
+    "sha256": "02f669ebbad23c6900c4792f4854c15d7e4db26311884f99a7f9480d8eaf287b"
+  },
+  {
+    "path": "src/Infrastructure/SerializedFields.cs",
+    "sha256": "1f8f741fe087f06b74d06ed19a7ddc895c9b3f5ef286c18dac70e36f6c76ae97"
+  },
+  {
+    "path": "src/ModHost.cs",
+    "sha256": "675f12ee7f4dc15930e807c19d76a4be3693cdfca6a20c7e096dfd22b248788d"
+  }
+]

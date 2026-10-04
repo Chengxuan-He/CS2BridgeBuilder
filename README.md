@@ -51,9 +51,9 @@ not translated labels. A selected unavailable prerequisite does not trigger a fa
 owner. The V-pylon double-deck cable-stayed bridge (`Extradosed01`) accepts base-game variants only,
 never the duplicate Bridge Expansion Pack version. Existing bridge assets are unchanged.
 
-Golden Gate Bridge supports **single-deck generation only**. Double-deck donor variants are not
-offered, and preview/export/create requests cannot bypass this restriction. Existing saved bridges
-are not deleted or reconstructed by this catalogue rule.
+The DLC landmark `GoldenGate` supports **single-deck generation only**. The separate Bridge Expansion
+Pack style `GoldenGateDouble` uses its own double-deck archetype. Preview/export/create requests must
+respect each style's supported arrangement. Existing saved bridges are not reconstructed by this rule.
 
 Road Builder is **optional compatibility, not a required dependency**. Without it installed and
 successfully loaded in the current playset, its roads are omitted from both deck selectors. Base-game
@@ -72,9 +72,9 @@ The upper and lower deck are chosen from everything registered in the loaded wor
 Each entry is labelled with its kind, its in-game name and its measured width, because the width is
 what decides which variant of the chosen style will fit.
 
-The **upper deck** must be a road: a track cannot carry the bridge. The **lower deck** may be
-anything in the list, or nothing at all for a single-deck bridge. Choosing the same road for both
-gives a two-level road bridge.
+Both deck selectors accept the supported network kinds above. Generation still requires a matching
+bridge archetype and valid network data. Leaving the lower deck empty selects a single-deck bridge;
+choosing the same road for both creates two independent deck networks.
 
 **Bridges are never offered as decks.** A bridge already carries its own span behaviour, towers and
 pillars; draping a second bridge over that gives two structures fighting for the same space. It also
@@ -108,22 +108,18 @@ The closest-width variant is picked and its structure moved sideways to the deck
 not stretched — beyond about 2× the look stops matching the style, so the fit is clamped and both the
 status panel and the report say so.
 
-## Lower deck (experimental)
+## Double decks
 
-Implemented with the game's own `AuxiliaryNets`, which is how the base game's own double-decked
-bridges work. **Lower deck runs the opposite way** inverts it; **deck spacing** sets the gap, 4 m to
-24 m.
+Double decks use the matching archetype's `AuxiliaryNets` arrangement. The main network may be the
+upper or lower deck; ownership does not determine its physical height. Deck separation and placement
+come from the archetype and are not adjustable. The lower-deck direction toggle changes the selected
+network's direction while preserving that arrangement. A style without a matching double-deck
+archetype is refused.
 
-Picking the same road for both decks generates a second asset, `<name> Lower`, stripped of its
-toolbar entry, its zoning and its own auxiliary nets — a prefab that named itself as its own lower
-deck is not a shape the game has any reason to handle. The two assets share their generated
-dependencies, so the second deck costs no duplicates.
+Each generated deck has its own bridge-owned network copy. The auxiliary is placed with its carrier;
+its independent editing and connections remain subject to the game's auxiliary-network behavior.
 
-Marked experimental for a concrete reason, not as a disclaimer: an auxiliary net is created and
-destroyed with its carrier and cannot be selected or edited on its own, so a lower deck is placed
-with the bridge but cannot be connected to a separately built line.
-
-## Naming
+## Legacy options-page naming
 
 ```
 <upper deck>_<lower deck>_<style>        two decks
@@ -147,8 +143,10 @@ tools\Build.ps1
 tools\Install.ps1
 ```
 
-`Build.ps1` expects the shared sources at `..\CS2ModShared\src` and fails with a clear message if
-they are missing. It resolves the game's managed assemblies itself; pass `-GameDir` to override.
+`Build.ps1` compiles the checked-in source snapshot at `vendor/CS2ModShared/src` and verifies its
+SHA-256 manifest with `tools/CheckSharedSources.ps1`. A sibling repository is not needed. The script
+resolves the installed game assemblies; pass `-GameDir` to override. Game assemblies and the .NET SDK
+are still external build prerequisites; the shared snapshot alone does not pin those versions.
 
 ## Layout
 
@@ -162,14 +160,15 @@ The shared code is **compiled into** each mod rather than referenced as an assem
 `internal`, and a CS2 mod ships as a single DLL. The one thing it needs from its host — an id, a log,
 a page-rebuild callback and the export naming policy — comes through `ModHost`.
 
-Clone all three side by side.
+The sibling projects describe the source family. This checkout builds from its own reviewed snapshot; see `vendor/CS2ModShared/README.md` for update instructions.
 
 ## Reports
 
 Every run writes `ModsData\BridgeBuilder\last-export-report.txt`, including the structural
 counts that separate "the deck came out wrong" from "the style did not attach": sections, overhead
-sections, sub-objects and auxiliary nets. Failures are also raised at error level so they surface in
-the game rather than only in a file.
+sections, sub-objects and auxiliary nets. Generation failures are recorded in the report and shown
+through localized UI status. Preview failures retain technical warnings; explicit deletion failures
+retain critical diagnostics.
 
 The log line `Bridge styles: N of M available, from D donor prefab(s) out of K bridge-capable
 prefab(s)`, followed by one line per style, is the authoritative record of what discovery bound.
@@ -195,57 +194,39 @@ Donor selection ranks by kind before width: a road deck prefers a road donor ove
 single-deck bridge prefers a single-deck donor. Width alone once picked a double-deck *train* bridge
 to drape over a road, because it happened to be the closest match in metres.
 
-### Adaptive tower selection
+### Geometry fitting
 
-Variants are ranked by the **tower**, not by the donor's own deck. Since the donor's deck is never
-copied, how wide it was says nothing about the result; what the player sees is whether the towers
-straddle their road.
+Every style routes to its own generator. Towers, cable pieces and LODs are private derived assets
+owned by the generated bridge. The selected road supplies its network structure; bridge behavior,
+components, materials and placement follow the matching archetype.
 
-A variant's tower width is the wider of two measurements: the overhead sections added up (they tile
-across like ordinary sections) and twice the outermost deck prop's lateral offset.
+Recorded authored parts that reach the centre line stretch across their own span. Side parts move
+rigidly by half the width change. Full-detail geometry and every LOD use the same part classification.
+Missing supported metadata is a generation failure, not permission to guess a different bridge.
+Game assets and derived content remain subject to their original licenses.
 
-Ranking, most decisive first:
+### Creation durability and recovery
 
-1. **Kind** — a donor built for a different sort of net, or around a second deck, is the wrong shape
-   whatever its measurements say.
-2. **Straddle** — a tower narrower than the deck leaves the road hanging out past it, which reads as
-   broken. A tower wider than the deck merely looks generous, so a shortfall is penalised and an
-   excess is not.
-3. **Closeness** — among those that straddle, the narrowest wins: the one that hugs the deck.
+Runtime creation first atomically writes a `pending` UUID registration, before saving any geometry or
+prefab. It commits that record only after native initialization succeeds. Pending entries are excluded
+from management and placement; after a process restart the registration guard rejects their graph.
+Boot inspection backs up and retires the UUID-owned prefab, CID and geometry files, then removes the
+pending record. This is a compensating transaction: live native indices/meshes are retained until
+world teardown, rather than destroyed during a failed creation. Interrupted retirement can be retried.
 
-The status panel and the report both name the chosen variant with its tower width, and the discovery
-log lists every variant as `tower Xm/deck Ym`, so a surprising pick can be traced rather than guessed
-at.
+The registry uses a flushed temporary file and atomic replacement, keeping the previous version in
+`bridge-registry.tsv.bak`. Malformed or unreadable input blocks writes and automatic retirement.
+Restore a verified registry backup manually with the game stopped; the mod never silently replaces
+unreadable data with an empty registry. Export-state is an ancillary cache, not the runtime commit point.
 
+### Source layout and checks
 
-### Pillars, aggregation and rounding
+`BridgeGenerationSystem` is split into lifecycle/catalogue, composition, preview, management, recovery
+and removal partial files. Source-policy checks read all these files together.
 
-Three things the composer settles that are easy to get subtly wrong.
+Non-visual checks include `tools/RegistryCheck` (real filesystem failure cases), `tools/DiskAuditCheck`
+(interrupted creation and scoped recovery), `tools/PublicationCheck`, and `tools/Check*.mjs` (UI,
+localization and source policy). Renderer failures keep technical warning logs; preview/generation do
+not raise error popups. Explicit deletion failures retain their critical diagnostics.
 
-**Pillars are replaced, not joined.** The road's own elevated props are the plain columns any road
-grows when it is raised. Appending the style's pylons on top left the bridge standing on both at
-once. Props not gated on being elevated belong to the road at ground level and are left alone. A
-style that brings no props of its own leaves the defaults in place — the wrong pillars, but better
-than a bridge with no supports.
-
-**The aggregate comes from the donor.** The aggregate joins consecutive segments into one named road
-and carries the pool the name is drawn from. A deck cloned from a street keeps the street's
-aggregate, so the finished bridge was christened `…街` — correct for what it was cloned from, wrong
-for what it became. The donor is a real bridge, so its aggregate names bridges. A donor without one
-leaves the deck's alone, since a null aggregate would stop the segments joining at all.
-
-**Tower width rounds up, never to the nearest.** Among towers that straddle the deck the narrowest
-wins. When none straddle, the widest wins rather than the closest: for a 42 m deck with towers of
-26.5 m and 35 m, "nearest" has no convincing answer, but the wider one at least comes closest to
-covering the road.
-
-### What width fitting can and cannot do
-
-Props anchored along the deck — pylons and pillars — have a position, so they move out to the new
-deck edges and genuinely adapt. Sections drawn **above** the deck are net sections: their width comes
-from their own pieces, and nothing here can stretch a mesh, so a portal beam or a cable plane keeps
-the width it was authored at.
-
-That is why donor selection matters more than the scale factor. A difference over 3 m is reported
-with both numbers, so the answer is to pick a style with a variant nearer the deck's width rather
-than to expect the towers to follow it.
+These checks and a successful build do not establish in-game visual correctness or save compatibility.

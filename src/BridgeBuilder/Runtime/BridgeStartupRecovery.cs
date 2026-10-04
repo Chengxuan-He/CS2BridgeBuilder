@@ -44,5 +44,9 @@ internal static class BridgeStartupRecovery
         finally { _running = false; }
     }
 
-    internal static void Stop() { _started = false; _complete = false; _running = false; Retired.Clear(); }
+    internal static void Stop()
+    {
+        _started = false; _complete = false; _running = false; Retired.Clear();
+        BridgeRegistrationStore.ResetSession();
+    }
 }

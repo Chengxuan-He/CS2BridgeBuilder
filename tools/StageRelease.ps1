@@ -36,7 +36,7 @@ foreach ($file in @('Mod-Description.md', 'PublishConfiguration.draft.xml', 'Thu
 }
 Copy-Item -LiteralPath (Join-Path $projectRoot 'assets/licenses/Rajdhani-OFL.txt') -Destination $destinationRoot
 $sourceRoots = @((Join-Path $projectRoot 'src/BridgeBuilder'),
-    (Join-Path (Split-Path -Parent $projectRoot) 'CS2ModShared/src'))
+    (Join-Path $projectRoot 'vendor/CS2ModShared/src'))
 $sourceHashes = @($sourceRoots | ForEach-Object { Get-ChildItem -LiteralPath $_ -Recurse -File } |
     Where-Object { $_.FullName -notmatch '[\\/](bin|obj)[\\/]' } |
     Sort-Object FullName | ForEach-Object {

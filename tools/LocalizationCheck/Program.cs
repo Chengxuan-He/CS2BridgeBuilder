@@ -66,6 +66,8 @@ internal static class Program
         var name = "My bridge 我的桥 {0}";
         var uuid = "b11111111-2222-3333-4444-555555555555";
         BridgeRuntimeRequests.Complete("Renamed", name, uuid);
+        Check(BridgeRuntimeRequests.Status == "", "Successful rename must not leave a persistent footer");
+        BridgeRuntimeRequests.Complete("RegistrationFailed", name, uuid);
         BridgePreviewState.Select("Train", "", "style");
         BridgePreviewState.Publish(BridgePreviewState.Revision, "image-bytes", "PreviewReady");
         var requestRevision = BridgeRuntimeRequests.Revision;
@@ -87,9 +89,9 @@ internal static class Program
                 Check(!string.IsNullOrEmpty(text.DeckKindName(kind)), "Missing network type");
             Check(text.StyleName("GoldenGate") != "GoldenGate", "Untranslated style");
             Check(text.StyleName("GoldenGateDouble") != "GoldenGateDouble", "Untranslated BXP double style");
-            Check(BridgeRuntimeRequests.Status == RuntimeUiText.Get("Renamed", name, uuid), "Status did not change language");
+            Check(BridgeRuntimeRequests.Status == RuntimeUiText.Get("RegistrationFailed", name, uuid), "Error status did not change language");
             Check(BridgeRuntimeRequests.Status.Contains(name) && !BridgeRuntimeRequests.Status.Contains(uuid),
-                "UI rename status must show the name without exposing UUID");
+                "UI error status must show the name without exposing UUID");
             Check(BridgePreviewState.Status == RuntimeUiText.Get("PreviewReady"), "Preview status did not change language");
             Check(BridgePreviewState.Image == "image-bytes", "Language switch discarded image");
             Check(requestRevision == BridgeRuntimeRequests.Revision && previewRevision == BridgePreviewState.Revision &&
@@ -165,6 +167,10 @@ namespace BridgeBuilder.Settings
 {
     internal sealed class BridgeSetting
     {
+        public void TogglePanel() { }
+        public bool RemoveDevelopmentRestrictions { get; set; }
+        public string RecoveryCopyLocation { get; set; } = "";
+        public void OpenRecoveryCopies() { }
         public string AllowGameplayExport = "", ArmRemoval = "", BridgeName = "", BridgeStyleId = "",
             BuildStyleOverride = "", DeckSpacing = "", EmbedIcons = "", ExportSelected = "", LowerDeckId = "",
             LowerDeckOpposite = "", OverwriteExisting = "", RemoveSelected = "", RemoveUnusedDependencies = "",

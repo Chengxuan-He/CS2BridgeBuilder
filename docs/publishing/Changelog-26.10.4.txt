@@ -1,1 +1,3 @@
-Fixed deleted Road Builder roads remaining in the road selection list. Deleted sources are now filtered out and cannot be used to create new bridges. Existing bridges retain their independent network copies.
+- Fixed deleted Road Builder roads remaining in the selection list.
+- Added atomic bridge registration saves and backups to prevent record loss.
+- Improved recovery from interrupted bridge creation, diagnostics and maintainability.

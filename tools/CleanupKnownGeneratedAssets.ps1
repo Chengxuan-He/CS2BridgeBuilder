@@ -16,6 +16,7 @@ $geometryRoots = @($modIds | ForEach-Object { Join-Path $gameRoot $_ })
 $modDataRoots = @($modIds | ForEach-Object { Join-Path $gameRoot (Join-Path 'ModsData' $_) })
 $stateFiles = @($modDataRoots | ForEach-Object { Join-Path $_ 'export-state.tsv' })
 $registryFiles = @($modDataRoots | ForEach-Object { Join-Path $_ 'bridge-registry.tsv' })
+$registryBackups = @($registryFiles | ForEach-Object { $_ + '.bak' })
 # Windows PowerShell 5.1 reads a BOM-less script using the current ANSI code page. Keep the script
 # itself ASCII and decode the one non-ASCII road name explicitly so literal target names stay exact.
 $roadName = [Text.Encoding]::UTF8.GetString(
@@ -317,7 +318,7 @@ foreach ($stateFile in $stateFiles) {
         ForEach-Object { $_.exportName } |
         Where-Object { -not [string]::IsNullOrWhiteSpace($_) })
 }
-foreach ($registryFile in $registryFiles) {
+foreach ($registryFile in @($registryFiles) + @($registryBackups)) {
     if (-not (Test-Path -LiteralPath $registryFile -PathType Leaf)) { continue }
     $stateExportNames += @(Import-Csv -LiteralPath $registryFile -Delimiter "`t" |
         ForEach-Object { $_.prefabName } |
@@ -468,6 +469,12 @@ function Assert-ExactChild([string]$Root, [string]$Path) {
     return $resolvedPath
 }
 
+$registryFiles += $registryBackups
+$registryFiles += @($modDataRoots | ForEach-Object {
+    if (Test-Path -LiteralPath $_) {
+        Get-ChildItem -LiteralPath $_ -File -Filter 'bridge-registry.*.tmp' | Select-Object -ExpandProperty FullName
+    }
+})
 $cleanupTargets = @($importedDirectoryNames | ForEach-Object {
     Assert-ExactChild $importedRoot (Join-Path $importedRoot $_)
 }) + @($geometryRoots) + @($stateFiles) + @($registryFiles)

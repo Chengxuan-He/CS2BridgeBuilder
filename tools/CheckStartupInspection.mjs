@@ -1,3 +1,4 @@
+import { readGenerationSource } from './ReadGenerationSource.mjs';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 
@@ -14,7 +15,7 @@ for (const forbidden of ['BridgeDiskAudit', 'PrefabCatalog', 'InspectStartup();'
 assert.ok(ui.indexOf('_pendingNotice = null;') < ui.indexOf('Mod.ShowRecoveryMessage'));
 const preload = source.slice(source.indexOf('protected override void OnGamePreload'), source.indexOf('protected override void OnWorldReady'));
 assert.ok(!preload.includes('_pendingNotice = null'));
-const retirement = readFileSync(new URL('../src/BridgeBuilder/Systems/BridgeGenerationSystem.cs', import.meta.url), 'utf8');
+const retirement = readGenerationSource();
 assert.match(retirement, /!BridgeStartupAssetSystem.IsStartupInspection/);
 assert.match(retirement, /GameMode.Game \| GameMode.Editor/);
 console.log('PASS boot-only inspection, session latch, preserved deferred notice, notification-only UI, no city retirement');

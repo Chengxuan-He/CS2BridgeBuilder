@@ -1,3 +1,4 @@
+import { readGenerationSource } from './ReadGenerationSource.mjs';
 // Non-visual localization/selection regression checks. Does not load the game or generate geometry.
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
@@ -31,7 +32,7 @@ const consumers = [
     "UI/BridgeBuilderUISystem.cs", "Systems/BridgeGenerationSystem.cs",
     "Runtime/BridgePreviewRenderer.cs", "Runtime/BridgePreviewState.cs", "Bridges/BridgePrototypeSource.cs",
     "Systems/BridgeMissingAssetSystem.cs", "Systems/BridgeStartupAssetSystem.cs", "Mod.cs"
-].map(path => read(`src/BridgeBuilder/${path}`));
+].map(path => path === "Systems/BridgeGenerationSystem.cs" ? readGenerationSource() : read(`src/BridgeBuilder/${path}`));
 for (const source of [uiSource, ...consumers.slice(0, 4)])
     assert(!/\p{Script=Han}/u.test(source), "Hardcoded Chinese remains in runtime UI");
 for (const source of consumers) {
@@ -240,7 +241,7 @@ for (const view of ['CreateView({ decks, styles, status })', 'ManageView({ bridg
     assert(render(view).some(n => n.props.className === "bb-status" && n.props.role === "alert"
         && n.children.includes("Action failed")), "Actual failures must remain visible");
 }
-const generation = read("src/BridgeBuilder/Systems/BridgeGenerationSystem.cs");
+const generation = readGenerationSource();
 const activation = generation.split("private bool ActivatePrefab(string prefabName)")[1]
     .split("private void RenameRuntimeBridge")[0];
 const lockCheck = activation.indexOf("BridgeUnlockPolicy.TryPrepareBuild(prefab");

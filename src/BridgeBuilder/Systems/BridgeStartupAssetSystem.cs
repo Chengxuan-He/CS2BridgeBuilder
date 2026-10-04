@@ -87,7 +87,14 @@ public partial class BridgeStartupAssetSystem : GameSystemBase
                 .Where(p => p != null && !p.isBuiltin && !p.isReadOnly
                     && BridgeLoadFailures.TryOwner(p.name, out _)
                     && !BridgeRecoveryLocation.IsBackup(p.asset?.path)).Distinct().ToArray();
-            var owners = new HashSet<string>(BridgeRegistrationStore.Load().Select(r => r.PrefabName),
+            if (!BridgeRegistrationStore.TryLoad(out var registrations))
+            {
+                _pendingNotice = "MissingBridgesSuspended";
+                return; // An unreadable registry never authorizes retirement.
+            }
+            var pending = new HashSet<string>(registrations.Where(r => r.Pending).Select(r => r.PrefabName),
+                StringComparer.Ordinal);
+            var owners = new HashSet<string>(registrations.Select(r => r.PrefabName),
                 StringComparer.Ordinal);
             foreach (var prefab in loaded)
                 if (!prefab.isBuiltin && !prefab.isReadOnly && prefab.asset != null
@@ -95,7 +102,7 @@ public partial class BridgeStartupAssetSystem : GameSystemBase
             var audit = BridgeDiskAudit.Read(UnityEngine.Application.persistentDataPath, owners, cid =>
                 Colossal.IO.AssetDatabase.AssetDatabase.global.TryGetAsset<Colossal.IO.AssetDatabase.GeometryAsset>(cid, out var geometry)
                 && (geometry.database != Colossal.IO.AssetDatabase.AssetDatabase.user
-                    || BridgeFileAccess.Exists(geometry.path)));
+                    || BridgeFileAccess.Exists(geometry.path)), pending);
             if (!audit.Complete)
             {
                 Mod.Log.Warn("Title bridge audit incomplete; files retained: " + audit.Error);
