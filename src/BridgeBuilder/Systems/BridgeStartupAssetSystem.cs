@@ -1,4 +1,4 @@
-﻿using BridgeBuilder.Runtime;
+using BridgeBuilder.Runtime;
 using Game.Prefabs;
 using BridgeBuilder.Settings;
 using Colossal.Serialization.Entities;
@@ -156,7 +156,7 @@ public partial class BridgeStartupAssetSystem : GameSystemBase
             foreach (var owner in owners.Where(o => !failures.ContainsKey(o) && !_copiedOwners.Contains(o)))
             {
                 if (!BridgeAssetMigration.Run(owner, assets.Where(a => a.Owner == owner).Select(a => a.Cid),
-                    backup, out var changed, out var migrationError))
+                    out var changed, out var migrationError))
                 {
                     failures[owner] = "Dependency/migration failure: " + migrationError;
                     Mod.Log.Warn($"Bridge migration failed UUID={owner}; scheduling removal: {migrationError}");

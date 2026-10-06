@@ -27,7 +27,7 @@ internal static class BridgeAssetMetadata
         return true;
     }
 
-    internal static bool Rewrite(string text, BridgeAssetInfo entry, out string updated, int? persistenceVersion = null)
+    internal static bool Rewrite(string text, BridgeAssetInfo entry, out string updated)
     {
         updated = text;
         if (!BridgeSerializedReferences.TryRead(text, out var document) || document.Name != entry.PrefabName) return false;
@@ -42,7 +42,6 @@ internal static class BridgeAssetMetadata
             ["m_BridgeCreatedUtc"] = Quote(entry.CreatedUtc),
             ["m_BridgeCreationPending"] = entry.Pending ? "true" : "false"
         };
-        if (persistenceVersion.HasValue) fields["m_BridgePersistenceVersion"] = persistenceVersion.Value.ToString(System.Globalization.CultureInfo.InvariantCulture);
         var edits = new List<(int Start, int Length, string Text)>();
         var missing = new StringBuilder();
         foreach (var pair in fields)
@@ -56,14 +55,15 @@ internal static class BridgeAssetMetadata
             && check.DisplayName == entry.DisplayName && check.Pending == entry.Pending;
     }
 
-    internal static bool Write(string path, BridgeAssetInfo entry, int? persistenceVersion = null)
+    internal static bool Write(string path, BridgeAssetInfo entry)
     {
         string? temporary = null;
         try
         {
+            if (!BridgeAssetInfo.MatchesOwner(path, entry.PrefabName)) return false;
             if ((BridgeFileAccess.Attributes(path) & FileAttributes.ReparsePoint) != 0) return false;
             var original = BridgeFileAccess.ReadText(path);
-            if (!Rewrite(original, entry, out var updated, persistenceVersion)) return false;
+            if (!Rewrite(original, entry, out var updated)) return false;
             if (updated == original) return true;
             temporary = path + "." + Guid.NewGuid().ToString("N") + ".tmp";
             File.WriteAllText(BridgeFileAccess.Native(temporary), updated, Utf8);

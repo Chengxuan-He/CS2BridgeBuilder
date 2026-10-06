@@ -1102,3 +1102,33 @@ or unsuccessful dependency copy/migration must enter retirement, not an inconclu
 Check dependencies even for already migrated bridges. Keep ownership and concurrent-change safeguards;
 actual filesystem failures must be reported as removal failures, never falsely reported as success.
 A failure affecting one bridge must not block removal of other bridges.
+
+## 18. Bridge asset file ownership is determined only by b{uuid} text
+
+Rollback baseline: branch `dev`, HEAD `0f889f67b7498afa7126ca5fa78e441cb240efe8`;
+local ref `refs/rollback/string-ownership-contract-20261006`. Existing uncommitted fixes are preserved.
+
+A bridge asset file belongs to Bridge Builder if its relative asset path contains
+`b{uuid}`. For one bridge, use literal substring matching with the fixed bridge UUID.
+For all bridge assets, use the unanchored regex
+`b[0-9a-fA-F]{8}(?:-[0-9a-fA-F]{4}){3}-[0-9a-fA-F]{12}`.
+Do not require token boundaries, exact filenames, metadata, components, registration,
+CID contents, hashes, dependency graphs or successful deserialization to establish ownership.
+A matching ancestor directory owns its entire subtree, including empty directories and
+CID-named dependency copies. Apply this rule before every bridge asset read, write, move
+or delete, including startup recovery, management, generation and maintenance scripts.
+
+Keep operation scope restricted to intended asset roots; paths outside those roots and
+unsafe destinations are not authorized by an incidental match. Path containment and IO
+errors are operational safeguards, not additional asset ownership criteria. Native SDK
+asset location information may locate bytes but must not classify ownership. Reading
+external source assets for dependency copying does not make those sources bridge-owned.
+The shared UI asset pack and non-asset settings/logs are not individual bridge assets.
+
+Metadata may be read or written as payload (for example, the user's display name), but
+its presence, absence or values never establish or revoke file ownership. Migration only
+copies dependencies; it neither requires nor writes metadata. Cleanup moves matching
+files/directories as whole units, using collision-free backup names, without content
+inspection, hash checks or tree snapshots. Real move failures are reported.
+This rule supersedes earlier ownership requirements based on metadata, exact root names,
+content evidence or concurrent-change snapshots.

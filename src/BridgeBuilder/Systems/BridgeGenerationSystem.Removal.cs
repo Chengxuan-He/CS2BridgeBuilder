@@ -1,4 +1,4 @@
-﻿using BridgeBuilder.Bridges;
+using BridgeBuilder.Bridges;
 using BridgeBuilder.Runtime;
 using BridgeBuilder.Settings;
 
@@ -32,11 +32,6 @@ public partial class BridgeGenerationSystem
         var removed = new List<string>();
         var loaded = PrefabCatalog.GetAll(_prefabSystem).Distinct().ToArray();
         var roots = RemovalRoots(exportName, loaded).ToArray();
-        if (roots.Length == 0)
-        {
-            report.Skipped(exportName, "no exported asset with that name is loaded");
-            return removed;
-        }
         var rootEntities = new HashSet<Entity>();
         foreach (var root in roots)
             if (_prefabSystem.TryGetEntity(root, out var entity)) rootEntities.Add(entity);
@@ -49,27 +44,55 @@ public partial class BridgeGenerationSystem
         }
         var tools = World.GetOrCreateSystemManaged<ToolSystem>();
         if (roots.Contains(tools.activePrefab)) tools.ActivatePrefabTool(null);
-        // Registered prefab/composition entities remain valid until world teardown. Do not call
-        // RemovePrefab (which invalidates PrefabData indices) or unload their meshes here.
-        var uuidOwner = BridgeAssetInfo.IsPrefabName(exportName);
-        var sharedPrefix = _settings.NamePrefix + "Dep_";
-        var deleted = BridgePrefabRemoval.Remove(roots, loaded,
-            candidate => (candidate.name ?? string.Empty).StartsWith(sharedPrefix, StringComparison.Ordinal)
-                || (uuidOwner && (candidate.name ?? string.Empty).Contains(exportName)),
-            Mod.Setting?.RemoveUnusedDependencies ?? true, report);
+        // Deactivating NetToolSystem does not clear its selected prefab. OnGamePreload
+        // reads that selection even while inactive; replace it before removing registration.
+        var netTool = World.GetExistingSystemManaged<NetToolSystem>();
+        if (netTool != null && (BridgeAssetInfo.MatchesOwner(netTool.prefab?.name, exportName)
+            || BridgeAssetInfo.MatchesOwner(netTool.lane?.name, exportName)))
+        {
+            var replacement = loaded.OfType<RoadPrefab>().FirstOrDefault(p => p.isBuiltin
+                && !BridgeAssetInfo.MatchesOwner(p.name, exportName) && _prefabSystem.TryGetEntity(p, out _));
+            if (replacement == null)
+            {
+                report.Warning("Cannot clear bridge tool selection: no registered built-in road is available.");
+                return removed;
+            }
+            // The native setter cannot accept null: it directly looks up its dictionary key.
+            netTool.prefab = replacement;
+            Mod.Log.Info("Bridge deletion replaced retained NetTool selection with: " + replacement.name);
+        }
+        // Placed instances have finished native cleanup before unregistering their prefabs.
+        var audit = BridgeDiskAudit.ForMemoryFailures(UnityEngine.Application.persistentDataPath,
+            new Dictionary<string, string> { [exportName] = "User requested removal" });
+        if (!audit.Complete) { report.Warning(audit.Error); return removed; }
+        if (!audit.RetireFiles(new HashSet<string> { exportName }, BridgeRecoveryLocation.Path, out var moveError))
+        { report.Warning(moveError); return removed; }
+        BridgeStartupRecovery.Retired.Add(exportName);
+        foreach (var root in roots) HideRemovedBridge(root);
+        var unregisterFailed = false;
+        foreach (var prefab in loaded.Where(p => BridgeAssetInfo.MatchesOwner(p.name, exportName)))
+        {
+            // Native removal updates swapped PrefabData indices and removes current/legacy IDs.
+            // Keep Unity objects and meshes alive for pending native cleanup; do not Destroy them.
+            if (!_prefabSystem.TryGetEntity(prefab, out _)) continue;
+            if (!_prefabSystem.RemovePrefab(prefab))
+            {
+                unregisterFailed = true;
+                report.Warning("Could not unregister removed bridge prefab: " + prefab.name);
+                continue;
+            }
+            prefab.asset = null;
+            Mod.Log.Info("Bridge prefab unregistered after file removal: " + prefab.name);
+        }
+        if (unregisterFailed) return removed;
         foreach (var root in roots)
         {
-            if (!deleted.Contains(root)) continue;
-            HideRemovedBridge(root);
             state.Remove(root.name);
             RoadBuilderIconExporter.Discard(root.name);
             report.Removed(root.name);
             removed.Add(root.name);
         }
-        if (removed.Contains(exportName) && uuidOwner
-            && !BridgeDependencyCopies.Archive(UnityEngine.Application.persistentDataPath, exportName,
-                BridgeRecoveryLocation.Path, out var copyError))
-            report.Warning("Could not archive bridge dependency copies: " + copyError);
+        if (!removed.Contains(exportName)) removed.Add(exportName);
         if (removed.Count > 0)
             World.GetOrCreateSystemManaged<BridgePublicationSystem>().RefreshMenus(report);
         return removed;

@@ -2,6 +2,16 @@
 
 ## First rule: fix reported bugs immediately
 
+Prefer the simplest implementation that satisfies the request. Overengineering is prohibited:
+unnecessary complexity becomes a primary source of bugs that are only discovered through player
+reports. For example, when Prefabs can be selected by string matching, using metadata to select them
+is forbidden. Do not introduce extra abstractions, state, prerequisites or validation layers when
+the direct implementation is sufficient.
+
+Instruction-edit rollback baseline for this rule: branch `dev`, HEAD
+`0f889f67b7498afa7126ca5fa78e441cb240efe8`; local reference
+`refs/rollback/simplest-implementation-rule-20261006`. Existing uncommitted changes are preserved.
+
 Fix every reported bug immediately. A user bug report is a request to implement a fix. After diagnosis,
 immediately proceed with implementation and verification; do not stop at acknowledgment, analysis,
 a repair plan or a proposed next step, and do not ask the user to authorize the same fix again.
@@ -32,6 +42,23 @@ deployment request. Follow the mandatory shutdown, backup and ownership-scoped c
 contract section 13, preserve other accepted functionality, and verify the installed files against
 the build output. If deployment fails, report the exact blocker; never claim deployment succeeded.
 Deployment does not replace human in-game visual acceptance.
+
+## Release workflow
+
+The release version is specified by the user. Never invent or automatically increment it.
+When the user requests a release, complete these four steps in order:
+
+1. Remove redundant and dead code, then build and run the applicable checks using the user's version.
+2. Commit and upload the release code to every existing GitHub branch; verify the remote results.
+3. Upload that version to Paradox Mods with a short changelog. Verify that the corresponding version
+   is available; an accepted upload that is still processing is not a completed release.
+4. Download the corresponding published version from Paradox Mods and replace the local Bridge Builder
+   installation with it. Back up the previous installation and verify the installed files against the
+   downloaded package. A local build is not a substitute for the Paradox Mods package in this step.
+
+Instruction-edit rollback baseline: branch `dev`, HEAD
+`0f889f67b7498afa7126ca5fa78e441cb240efe8`; local reference
+`refs/rollback/release-workflow-20261007`. Existing uncommitted changes are preserved.
 
 ## Scope
 
@@ -241,3 +268,5 @@ or unsuccessful dependency copy/migration must enter retirement, not an inconclu
 Check dependencies even for already migrated bridges. Keep ownership and concurrent-change safeguards;
 actual filesystem failures must be reported as removal failures, never falsely reported as success.
 A failure affecting one bridge must not block removal of other bridges.
+
+Bridge asset file operations must follow contract section 18: literal b{uuid} substring matching for one bridge, unanchored regex matching for all bridges; metadata never determines ownership.

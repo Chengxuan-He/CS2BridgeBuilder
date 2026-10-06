@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.IO;
 
@@ -14,7 +14,6 @@ internal static class BridgeUnlockMigration
 {
     private static readonly Regex GateType = new("\"\\$type\":\\s*\"(\\d+)\\|Game\\.Prefabs\\.Unlockable, Game\"");
     private static readonly Regex Reference = new("\\$fstrref:\"((?:CID:|UnityGUID:)[^\"]+)\"");
-    private static readonly Regex Name = new("(?m)^    \"name\": \"([^\"]+)\"");
 
     internal static bool Rewrite(string text, out string rewritten, out string error)
     {
@@ -111,18 +110,12 @@ internal static class BridgeUnlockMigration
             {
                 if ((BridgeFileAccess.Attributes(directory) & FileAttributes.ReparsePoint) != 0) continue;
                 var stem = Path.GetFileName(directory);
-                var root = stem.EndsWith("_Lower", StringComparison.Ordinal) || stem.EndsWith("_Upper", StringComparison.Ordinal)
-                    ? stem.Substring(0, stem.Length - 6) : stem;
-                if (!BridgeAssetInfo.IsPrefabName(root)) continue;
+                if (!BridgeAssetInfo.TryFileOwner(stem, out _)) continue;
                 var path = Path.Combine(directory, stem + ".Prefab");
                 if (!BridgeFileAccess.Exists(path)) continue;
                 if ((BridgeFileAccess.Attributes(path) & FileAttributes.ReparsePoint) != 0)
                 { error = "Reparse point retained: " + path; return false; }
                 var before = BridgeFileAccess.ReadText(path);
-                // UUID alone is not sufficient authority to rewrite someone else's asset.
-                if (!before.Contains("BridgeBuilder.Bridges.BridgeConstructionCost, BridgeBuilder")) continue;
-                if (Name.Match(before).Groups[1].Value != stem)
-                { error = "Prefab/file identity mismatch; retained: " + path; return false; }
                 if (!Rewrite(before, out var after, out error)) { error = path + ": " + error; return false; }
                 if (after != before) planned.Add((path, before, after));
             }
@@ -142,6 +135,7 @@ internal static class BridgeUnlockMigration
         error = string.Empty;
         try
         {
+            if (!BridgeAssetInfo.TryFileOwner(path, out _)) return false;
             if (!BridgeUnlockExpression.TryDecode(previous, out _) || !BridgeUnlockExpression.TryDecode(next, out _)) return false;
             var before = BridgeFileAccess.ReadText(path);
             var marker = "\"" + previous + "\"";

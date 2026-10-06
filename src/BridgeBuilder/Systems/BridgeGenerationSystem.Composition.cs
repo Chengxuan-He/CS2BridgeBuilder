@@ -1,4 +1,4 @@
-﻿using BridgeBuilder.Bridges;
+using BridgeBuilder.Bridges;
 using BridgeBuilder.Runtime;
 using BridgeBuilder.Settings;
 
@@ -238,6 +238,8 @@ public partial class BridgeGenerationSystem
                 BridgeAssetCatalog.Attach(clone, new BridgeAssetInfo(clone.name,
                     BridgeNaming.BaseName(upper, chosen, style), upper.Id, options.DoubleDeck ? chosen?.Id : null,
                     style.Id, DateTime.UtcNow.ToString("O", CultureInfo.InvariantCulture)));
+            if (nodes.Any(node => node.NeedsSave && !BridgeAssetInfo.MatchesOwner(node.Target.name, clone.name)))
+            { report.Warning("Bridge persistence refused an asset without the bridge UUID in its name."); return false; }
             report.SavedDependencies = new PrefabAssetWriter().Save(nodes);
             if (!BridgeDependencyPersistence.Save(clone.name,
                 nodes.Where(node => node.NeedsSave && node.Target.asset != null)

@@ -25,7 +25,7 @@ internal static class BridgeDependencyPersistence
         if (asset.isBuiltin) return new BridgeDependencyCopies.Source { Builtin = true };
         var meta = asset.GetMeta();
         var owned = !meta.packaged && !meta.path.Contains(owner + "_Dependencies")
-            && (meta.path.Contains(owner) || meta.subPath?.Contains(owner) == true);
+            && (BridgeAssetInfo.MatchesOwner(meta.path, owner) || BridgeAssetInfo.MatchesOwner(meta.subPath, owner));
         using var stream = asset.GetReadStream(); // Still open: missing/inaccessible owned files remain failures.
         if (owned && !meta.extension.Equals(".Prefab", StringComparison.OrdinalIgnoreCase)
             && !meta.extension.Equals(".Material", StringComparison.OrdinalIgnoreCase))

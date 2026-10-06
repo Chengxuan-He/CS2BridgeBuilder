@@ -1,0 +1,5 @@
+- Fixed legacy bridge migration failing when bridge metadata is missing.
+- Simplified bridge asset detection and cleanup using UUID string matching; matching directories are moved intact to collision-safe backups.
+- Fixed false deletion-failure messages after files were successfully removed.
+- Added runtime prefab unregistration for manually deleted bridges and fixed stale road-tool selections causing errors when loading another save.
+- Removed obsolete cleanup and migration code. Self-check removals still require a full game restart.

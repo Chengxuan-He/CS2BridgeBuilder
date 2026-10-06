@@ -1,4 +1,4 @@
-﻿using BridgeBuilder.Runtime;
+using BridgeBuilder.Runtime;
 using System.Text;
 
 var root = Path.Combine(Path.GetTempPath(), "BridgeBuilder-Metadata-" + Guid.NewGuid());
@@ -33,7 +33,7 @@ Check(BridgeAssetMetadata.Write(Path.Combine(root,"ImportedData",b,b+".Prefab"),
 BridgeAssetCatalog.ResetSession();
 Check(BridgeAssetCatalog.ReadAll().Any(e => e.PrefabName == b && e.Pending), "interrupted creation detected from asset alone");
 var c = BridgeAssetInfo.NewPrefabName(); Install(c, "broken Odin");
-Check(BridgeAssetCatalog.Find(a) != null && BridgeAssetCatalog.Find(c) == null, "malformed asset does not block healthy bridge");
+Check(BridgeAssetCatalog.Find(a) != null && BridgeAssetCatalog.Find(c) != null, "ownership does not depend on parsable metadata");
 var original = File.ReadAllBytes(path);
 using (var held = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.None))
     Check(!BridgeAssetCatalog.Rename(a, "lost"), "locked asset fails safely");
@@ -48,25 +48,19 @@ foreach (var file in args)
 Console.WriteLine($"PASS {count} asset metadata checks. Scratch: {root}");
 
 var legacy = BridgeAssetInfo.NewPrefabName();
-var legacyPath = Install(legacy, Fixture(legacy));
+var legacyPath = Install(legacy, "{\"name\":\"" + legacy + "\",\"components\":{\"$rcontent\":[]}}");
 var legacyOriginal = File.ReadAllBytes(legacyPath);
-var migrationBackup = root + "-migration";
-Check(BridgeAssetMigration.Run(legacy, new[] { "seed" }, migrationBackup, out var migrated, out var error) && migrated, "healthy migration commits version");
-Check(File.ReadAllBytes(Path.Combine(migrationBackup,"Migration",legacy,legacy+".Prefab")).SequenceEqual(legacyOriginal), "migration preserves original root backup");
-Check(File.ReadAllText(legacyPath+".cid") == "unchanged" && File.ReadAllText(legacyPath).Contains("$fstrref:\"CID:12345678901234567890123456789012\""), "migration leaves CID and graph references unchanged");
-var afterMigration = File.ReadAllBytes(legacyPath); var copyCalls = BridgeDependencyPersistence.Calls;
-Check(BridgeAssetMigration.Run(legacy, new[] { "seed" }, migrationBackup, out migrated, out error) && !migrated
-    && BridgeDependencyPersistence.Calls == copyCalls + 1 && File.ReadAllBytes(legacyPath).SequenceEqual(afterMigration), "migration repeat is byte-idempotent but rechecks dependencies");
+var copyCalls = BridgeDependencyPersistence.Calls;
 BridgeDependencyPersistence.WrittenFiles = 2;
-Check(BridgeAssetMigration.Run(legacy, new[] { "seed" }, migrationBackup, out migrated, out error) && migrated
-    && File.ReadAllBytes(legacyPath).SequenceEqual(afterMigration) && File.ReadAllText(legacyPath+".cid") == "unchanged",
-    "dependency-only repair reports change without rewriting bridge or CID");
+Check(BridgeAssetMigration.Run(legacy, new[] { "seed" }, out var migrated, out var error) && migrated
+    && BridgeDependencyPersistence.Calls == copyCalls + 1, "bridge without metadata reaches dependency migration");
+Check(File.ReadAllBytes(legacyPath).SequenceEqual(legacyOriginal) && File.ReadAllText(legacyPath + ".cid") == "unchanged",
+    "migration never rewrites root or CID and never invents metadata");
 BridgeDependencyPersistence.WrittenFiles = 0;
-var failedId = BridgeAssetInfo.NewPrefabName(); var failedPath = Install(failedId, Fixture(failedId)); var failedOriginal = File.ReadAllBytes(failedPath);
+Check(BridgeAssetMigration.Run(legacy, new[] { "seed" }, out migrated, out error) && !migrated,
+    "repeat migration depends on missing copies, not version metadata");
 BridgeDependencyPersistence.Fail = true;
-Check(!BridgeAssetMigration.Run(failedId, new[] { "seed" }, migrationBackup, out migrated, out error)
-    && !migrated && File.ReadAllBytes(failedPath).SequenceEqual(failedOriginal), "copy failure preserves original without version commit");
+Check(!BridgeAssetMigration.Run(legacy, new[] { "missing dependency" }, out migrated, out error)
+    && error == "copy failed" && File.ReadAllBytes(legacyPath).SequenceEqual(legacyOriginal),
+    "real dependency failures still propagate without changing bridge bytes");
 Console.WriteLine($"PASS {count} metadata and migration checks");
-
-Check(!BridgeAssetMigration.Run(legacy, new[] { "missing geometry CID" }, migrationBackup, out migrated, out error),
-    "already migrated bridge still reports subsequently missing dependencies");

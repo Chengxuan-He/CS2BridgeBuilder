@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <!-- DRAFT ONLY. Confirm release build, game version, dependencies and account before publishing.
      Relative paths are intended to be used with this directory as the working directory.
      Do not store credentials in this file. Schema follows the installed official template. -->
@@ -21,7 +21,7 @@ Source: https://github.com/Chengxuan-He/CS2BridgeBuilder
   </LongDescription>
   <Thumbnail Value="Thumbnail.png" />
   <!-- Proposed project version; confirm against the final release assembly. -->
-  <ModVersion Value="26.10.6" />
+  <ModVersion Value="26.10.7" />
   <!-- Deliberate blocker: replace with the tested game version before use. -->
   <GameVersion Value="CONFIRM_BEFORE_PUBLISH" />
   <!-- Do not add Road Builder as a required dependency. Audit other requirements before release. -->

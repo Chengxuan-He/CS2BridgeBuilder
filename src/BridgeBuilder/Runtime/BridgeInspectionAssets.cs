@@ -1,4 +1,4 @@
-﻿using Colossal.IO.AssetDatabase;
+using Colossal.IO.AssetDatabase;
 using Game.Prefabs;
 using System;
 using System.Collections.Generic;
@@ -21,13 +21,9 @@ internal static class BridgeInspectionAssets
         foreach (var asset in AssetDatabase.user.GetAssets<PrefabAsset>())
         {
             var path = Path.GetFullPath(BridgeFileAccess.Logical(asset.path));
-            var directory = Path.GetDirectoryName(path)!;
-            // Exact ImportedData child ownership, not a name match in another package or backup.
-            if (!string.Equals(Path.GetDirectoryName(directory), root, StringComparison.OrdinalIgnoreCase)) continue;
-            var stem = Path.GetFileName(directory);
-            if (!BridgeSessionState.TryOwner(stem, out var owner)
-                || stem == owner + "_Dependencies"
-                || !string.Equals(Path.GetFileName(path), stem + ".Prefab", StringComparison.OrdinalIgnoreCase)
+            if (!path.StartsWith(root + Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase)) continue;
+            var relative = path.Substring(root.Length + 1);
+            if (!BridgeAssetInfo.TryFileOwner(relative, out var owner)
                 || BridgeStartupRecovery.Retired.Contains(owner)) continue;
             yield return new Entry { Owner = owner, Path = path, Cid = asset.id.guid.ToString(),
                 Prefab = asset.GetInstance<PrefabBase>() };

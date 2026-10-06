@@ -1,4 +1,4 @@
-﻿using BridgeBuilder.Bridges;
+using BridgeBuilder.Bridges;
 
 using CS2Mods.Shared.Conversion;
 using CS2Mods.Shared.Export;
@@ -79,7 +79,8 @@ internal static class BridgeAssetPack
         {
             try
             {
-                if (bridge.isReadOnly || bridge.asset == null) continue;
+                if (bridge.isReadOnly || bridge.asset == null
+                    || !owned.Any(id => BridgeAssetInfo.MatchesOwner(bridge.asset.path, id))) continue;
                 var item = bridge.AddOrGetComponent<AssetPackItem>();
                 var previous = item.m_Packs;
                 if (previous == null || previous.Length != 1 || previous[0] != pack)

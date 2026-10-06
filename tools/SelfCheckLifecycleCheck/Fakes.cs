@@ -1,4 +1,4 @@
-﻿// Narrow game/disk adapters. The lifecycle under test is the actual production system.
+// Narrow game/disk adapters. The lifecycle under test is the actual production system.
 namespace Colossal.Serialization.Entities { public enum Purpose { Cleanup } }
 namespace Game
 {
@@ -113,7 +113,7 @@ namespace BridgeBuilder.Runtime
         { Calls++; if (Raise) throw new InvalidOperationException("fixture"); r = "null required reference"; return Invalid; }
     }
     public static class BridgeFileAccess { public static string Logical(string p) => p; }
-    public static class BridgeAssetInfo { public static bool IsPrefabName(string? n) => n?.StartsWith("b") == true; }
+    public static class BridgeAssetInfo { public static bool TryFileOwner(string n, out string owner) { owner = "bridge"; return n.Contains("bridge"); } public static bool IsPrefabName(string? n) => n?.StartsWith("b") == true; }
     public class BridgeDiskAudit
     {
         public static int Calls; public static bool Incomplete, Raise;
@@ -129,7 +129,7 @@ namespace BridgeBuilder.Runtime
 {
     public static class BridgeAssetMigration {
         public static int Calls; public static bool Fail, Changed;
-        public static bool Run(string owner, IEnumerable<string> seeds, string backup, out bool changed, out string error) {
+        public static bool Run(string owner, IEnumerable<string> seeds, out bool changed, out string error) {
             Calls++; changed = Changed; error = "fixture"; return !Fail;
         }
     }

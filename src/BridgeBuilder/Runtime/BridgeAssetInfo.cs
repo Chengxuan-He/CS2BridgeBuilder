@@ -1,4 +1,5 @@
 using System;
+using System.Text.RegularExpressions;
 
 namespace BridgeBuilder.Runtime;
 
@@ -12,6 +13,16 @@ namespace BridgeBuilder.Runtime;
 /// </summary>
 internal sealed class BridgeAssetInfo
 {
+    private static readonly Regex AssetOwner = new(@"b[0-9a-fA-F]{8}(?:-[0-9a-fA-F]{4}){3}-[0-9a-fA-F]{12}");
+    internal static bool TryFileOwner(string? path, out string owner)
+    {
+        var match = AssetOwner.Match(path ?? "");
+        owner = match.Value;
+        return match.Success;
+    }
+    internal static bool MatchesOwner(string? path, string owner) => IsPrefabName(owner)
+        && path != null && path.IndexOf(owner, StringComparison.OrdinalIgnoreCase) >= 0;
+
     internal BridgeAssetInfo(
         string prefabName,
         string displayName,

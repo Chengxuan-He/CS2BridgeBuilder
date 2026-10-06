@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.IO;
 
@@ -20,30 +20,6 @@ internal static class BridgeDependencyCopies
 
     internal static string Folder(string gameRoot, string owner) =>
         Path.Combine(gameRoot, "ImportedData", owner + "_Dependencies");
-
-    internal static bool Archive(string gameRoot, string owner, string backupRoot, out string error)
-    {
-        error = "";
-        if (!BridgeAssetInfo.IsPrefabName(owner)) { error = "Invalid bridge owner"; return false; }
-        try
-        {
-            var folder = Folder(gameRoot, owner);
-            if (!BridgeFileAccess.Exists(folder)) return true;
-            var backup = Path.GetFullPath(backupRoot);
-            if (backup.StartsWith(Path.GetFullPath(gameRoot).TrimEnd(Path.DirectorySeparatorChar)
-                + Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase))
-            { error = "Backup must be outside game data"; return false; }
-            if ((BridgeFileAccess.Attributes(folder) & FileAttributes.ReparsePoint) != 0)
-            { error = "Reparse-point dependency directory"; return false; }
-            Directory.CreateDirectory(BridgeFileAccess.Native(backup));
-            if ((BridgeFileAccess.Attributes(backup) & FileAttributes.ReparsePoint) != 0)
-            { error = "Reparse-point backup directory"; return false; }
-            var target = Path.Combine(backup, owner + "_Dependencies_" + Guid.NewGuid().ToString("N"));
-            Directory.Move(BridgeFileAccess.Native(folder), BridgeFileAccess.Native(target));
-            return true;
-        }
-        catch (Exception exception) { error = exception.Message; return false; }
-    }
 
     // Inspect serialized identifiers only. Never load, validate or repair a prefab instance.
     internal static IEnumerable<string> References(byte[] bytes)

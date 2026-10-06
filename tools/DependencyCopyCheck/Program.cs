@@ -1,4 +1,4 @@
-﻿using BridgeBuilder.Runtime;
+using BridgeBuilder.Runtime;
 using System.Text;
 var root=Path.Combine(Path.GetTempPath(), "BBDeps-"+Guid.NewGuid().ToString("N"));
 var owner="b11111111-1111-1111-1111-111111111111"; var second="b22222222-2222-2222-2222-222222222222";
@@ -25,6 +25,4 @@ sources[b].Bytes=Encoding.UTF8.GetBytes("changed");
 Check(!BridgeDependencyCopies.Save(root,owner,new[]{a},Resolve,out count,out err,out _)&&err.Contains("Different contents"),"same CID with changed content rejected without overwriting");
 Check(!BridgeDependencyCopies.Save(root,"../foreign",new[]{a},Resolve,out count,out err,out _),"invalid owner rejected");
 Check(!BridgeDependencyCopies.Save(root,second,new[]{new string('e',32)},Resolve,out count,out err,out _),"unavailable dependency fails before publishing");
-Check(BridgeDependencyCopies.Archive(root,owner,root+"-backup",out err)&&!Directory.Exists(folder),"removed owner's copies archived");
-Check(Directory.Exists(BridgeDependencyCopies.Folder(root,second)),"other bridge's same-CID copies retained");
 namespace BridgeBuilder.Runtime { internal static class BridgeAssetInfo { internal static bool IsPrefabName(string n)=>System.Text.RegularExpressions.Regex.IsMatch(n,@"\Ab[0-9a-f]{8}(?:-[0-9a-f]{4}){3}-[0-9a-f]{12}\z"); } }

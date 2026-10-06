@@ -1,4 +1,4 @@
-﻿using BridgeBuilder.Bridges;
+using BridgeBuilder.Bridges;
 using BridgeBuilder.Runtime;
 using BridgeBuilder.Settings;
 using BridgeBuilder.UI;
@@ -296,8 +296,8 @@ public partial class BridgeGenerationSystem
 
     private void DeleteRuntimeBridge(string prefabName)
     {
-        var assetInfo = BridgeAssetCatalog.Find(prefabName);
-        if (!BridgeAssetInfo.IsPrefabName(prefabName) || assetInfo == null)
+        var assetInfo = BridgeAssetCatalog.Find(prefabName) ?? new BridgeAssetInfo(prefabName, prefabName, "", null, "", "");
+        if (!BridgeAssetInfo.IsPrefabName(prefabName))
         {
             FailDeletion(prefabName, "DeleteMissing", "Bridge UUID assetInfo is missing or invalid.");
             return;
@@ -306,11 +306,6 @@ public partial class BridgeGenerationSystem
         try
         {
             var roots = RemovalRoots(prefabName, PrefabCatalog.GetAll(_prefabSystem)).ToArray();
-            if (roots.Length == 0)
-            {
-                FailDeletion(prefabName, "DeleteMissing", "No writable bridge prefab was found; assetInfo retained.");
-                return;
-            }
             var ids = new HashSet<Entity>();
             foreach (var root in roots)
                 if (_prefabSystem.TryGetEntity(root, out var id)) ids.Add(id);
@@ -352,8 +347,8 @@ public partial class BridgeGenerationSystem
         var state = ExportStateStore.Load();
         var report = new ExportReport();
         var removed = RemoveByName(prefabName, state, report);
-        if (removed.Count > 0
-            && !RemovalRoots(prefabName, PrefabCatalog.GetAll(_prefabSystem)).Any())
+        // RemoveByName reports success only after file moves and native unregistration.
+        if (removed.Contains(prefabName))
         {
             Mod.ReloadActiveLocale();
             BridgeRuntimeRequests.Complete(
@@ -362,8 +357,8 @@ public partial class BridgeGenerationSystem
         else
         {
             FailDeletion(prefabName, "DeleteIncomplete",
-                $"Deleted {removed.Count} root prefab(s), but prefab assets remain. "
-                + "See ModsData/BridgeBuilder/last-export-report.txt for the blocking reference or asset failure.");
+                "Bridge file removal or runtime prefab unregistration did not complete. "
+                + "See ModsData/BridgeBuilder/last-export-report.txt for the operation failure.");
         }
 
         Finish(report, state, "Delete runtime bridge", showMessage: false);

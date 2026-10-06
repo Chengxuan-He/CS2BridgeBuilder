@@ -124,3 +124,5 @@ or unsuccessful dependency copy/migration must enter retirement, not an inconclu
 Check dependencies even for already migrated bridges. Keep ownership and concurrent-change safeguards;
 actual filesystem failures must be reported as removal failures, never falsely reported as success.
 A failure affecting one bridge must not block removal of other bridges.
+
+Contract section 18 supersedes earlier file ownership checks: b{uuid} path text is the sole ownership criterion for bridge asset reads, writes, moves and deletes.

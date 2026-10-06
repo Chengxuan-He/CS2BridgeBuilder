@@ -1,8 +1,8 @@
-﻿/*!
+/*!
  * Cities: Skylines II UI Module
  * Id: BridgeBuilder
  * Author: BridgeBuilder
- * Version: 26.10.6
+ * Version: 26.10.7
  * Dependencies:
  */
 const React = window.React;

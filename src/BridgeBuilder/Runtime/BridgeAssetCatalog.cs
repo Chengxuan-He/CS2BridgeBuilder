@@ -1,4 +1,4 @@
-﻿using BridgeBuilder.Bridges;
+using BridgeBuilder.Bridges;
 using Game.Prefabs;
 using System;
 using System.Collections.Generic;
@@ -13,7 +13,14 @@ internal static class BridgeAssetCatalog
     private static readonly Dictionary<string, BridgeAssetInfo> Creating = new(StringComparer.Ordinal);
     private static readonly Dictionary<string, PrefabBase> CreatingPrefabs = new(StringComparer.Ordinal);
     internal static string Root => Path.Combine(UnityEngine.Application.persistentDataPath, "ImportedData");
-    private static string PathFor(string owner) => Path.Combine(Root, owner, owner + ".Prefab");
+    private static string PathFor(string owner)
+    {
+        var canonical = Path.Combine(Root, owner, owner + ".Prefab");
+        if (BridgeFileAccess.Exists(canonical) || !Directory.Exists(BridgeFileAccess.Native(Root))) return canonical;
+        return Directory.EnumerateFiles(BridgeFileAccess.Native(Root), "*.Prefab", SearchOption.AllDirectories)
+            .Select(BridgeFileAccess.Logical)
+            .FirstOrDefault(p => BridgeAssetInfo.MatchesOwner(p.Substring(Root.Length), owner)) ?? canonical;
+    }
 
     internal static IReadOnlyList<BridgeAssetInfo> Load() => ReadAll().Where(e => !e.Pending)
         .OrderBy(e => e.DisplayName, StringComparer.OrdinalIgnoreCase).ToArray();
@@ -46,7 +53,7 @@ internal static class BridgeAssetCatalog
             if (!BridgeFileAccess.Exists(path) || (BridgeFileAccess.Attributes(Path.GetDirectoryName(path)!) & FileAttributes.ReparsePoint) != 0
                 || (BridgeFileAccess.Attributes(path) & FileAttributes.ReparsePoint) != 0) return null;
             return BridgeAssetMetadata.TryRead(BridgeFileAccess.ReadText(path), out var entry)
-                && entry.PrefabName == owner ? entry : null;
+                && entry.PrefabName == owner ? entry : new BridgeAssetInfo(owner, owner, "", null, "", "");
         }
         catch (Exception exception) { Mod.Log.Warn(exception, "Could not read bridge metadata: " + owner); return null; }
     }
