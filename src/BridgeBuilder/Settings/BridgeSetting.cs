@@ -78,6 +78,17 @@ public sealed class BridgeSetting : ModSetting
         set => BridgeRecoveryLocation.Open();
     }
 
+    [SettingsUISection(OptionsTab)]
+    [SettingsUIButton]
+    [SettingsUIDisableByCondition(typeof(BridgeSetting), nameof(SelfCheckUnavailable))]
+    public bool BridgeSelfCheck
+    {
+        set => Unity.Entities.World.DefaultGameObjectInjectionWorld?
+            .GetOrCreateSystemManaged<BridgeBuilder.Systems.BridgeStartupAssetSystem>().RequestManualCheck();
+    }
+
+    public bool SelfCheckUnavailable() => !BridgeBuilder.Systems.BridgeStartupAssetSystem.CanCheck;
+
     [SettingsUIHidden]
     [SettingsUIMultilineText("")]
     public string StatusText

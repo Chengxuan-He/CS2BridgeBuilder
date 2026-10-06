@@ -1,23 +1,23 @@
-using BridgeBuilder.Bridges;
+﻿using BridgeBuilder.Bridges;
 using BridgeBuilder.Runtime;
 using BridgeBuilder.Settings;
-using BridgeBuilder.UI;
-using Colossal.Serialization.Entities;
-using CS2Mods.Shared;
-using CS2Mods.Shared.Conversion;
-using CS2Mods.Shared.Discovery;
+
+
+
+
+
 using CS2Mods.Shared.Export;
 using CS2Mods.Shared.Infrastructure;
-using Game;
-using Game.Common;
-using Game.Net;
-using Game.Objects;
+
+
+
+
 using Game.Prefabs;
 using Game.Tools;
 using System;
 using System.Collections.Generic;
-using System.Globalization;
-using System.IO;
+
+
 using System.Linq;
 using Unity.Collections;
 using Unity.Entities;
@@ -26,19 +26,11 @@ namespace BridgeBuilder.Systems;
 
 public partial class BridgeGenerationSystem
 {
-    internal bool IsRemoving => _pendingRemoval != null;
-
-    internal void SuspendForCleanup()
-    {
-        ClearPreview();
-        BridgePreviewState.Clear();
-        World.GetOrCreateSystemManaged<ToolSystem>().ActivatePrefabTool(null);
-    }
 
     private IReadOnlyList<string> RemoveByName(string exportName, ExportStateStore state, ExportReport report)
     {
         var removed = new List<string>();
-        var loaded = PrefabCatalog.GetAll(_prefabSystem).Concat(BridgeLoadFailures.Prefabs()).Distinct().ToArray();
+        var loaded = PrefabCatalog.GetAll(_prefabSystem).Distinct().ToArray();
         var roots = RemovalRoots(exportName, loaded).ToArray();
         if (roots.Length == 0)
         {
@@ -59,7 +51,7 @@ public partial class BridgeGenerationSystem
         if (roots.Contains(tools.activePrefab)) tools.ActivatePrefabTool(null);
         // Registered prefab/composition entities remain valid until world teardown. Do not call
         // RemovePrefab (which invalidates PrefabData indices) or unload their meshes here.
-        var uuidOwner = BridgeRegistration.IsPrefabName(exportName);
+        var uuidOwner = BridgeAssetInfo.IsPrefabName(exportName);
         var sharedPrefix = _settings.NamePrefix + "Dep_";
         var deleted = BridgePrefabRemoval.Remove(roots, loaded,
             candidate => (candidate.name ?? string.Empty).StartsWith(sharedPrefix, StringComparison.Ordinal)
@@ -74,6 +66,10 @@ public partial class BridgeGenerationSystem
             report.Removed(root.name);
             removed.Add(root.name);
         }
+        if (removed.Contains(exportName) && uuidOwner
+            && !BridgeDependencyCopies.Archive(UnityEngine.Application.persistentDataPath, exportName,
+                BridgeRecoveryLocation.Path, out var copyError))
+            report.Warning("Could not archive bridge dependency copies: " + copyError);
         if (removed.Count > 0)
             World.GetOrCreateSystemManaged<BridgePublicationSystem>().RefreshMenus(report);
         return removed;

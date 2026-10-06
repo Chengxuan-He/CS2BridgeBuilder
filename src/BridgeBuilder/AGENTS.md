@@ -52,6 +52,15 @@ the repository root [`AGENTS.md`](../../AGENTS.md). Before editing this director
 
 ## Completion
 
+Persistence must implement contract section 17. Traverse serialized external dependencies to the
+built-in boundary and save byte-identical files plus original CID sidecars under
+`ImportedData/<bridgeUUID>_Dependencies/`. One bridge stores one copy per CID; two bridges store
+separate copies of a shared CID. Do not deserialize or modify prefab instances to make these copies.
+Do not rename copied prefabs, allocate replacement CIDs or rewrite their references. Keep generated
+bridge/geometry identities distinct from these unchanged dependency snapshots. Missing dependencies
+or differing contents at an existing same-CID destination fail persistence explicitly. File self-check
+and cleanup must recognize UUID-directory ownership and intentional identical-CID duplicates.
+
 Before modifying runtime code, run `taskkill /IM Cities2.exe /F` even if a city/save is running,
 without asking whether to save or waiting for a manual exit. The user explicitly authorizes losing
 unsaved progress for this workflow. Verify the process is absent; still perform the post-edit
@@ -68,3 +77,50 @@ ownership-scoped cleanup. After completing any code change, immediately build an
 without waiting for another request; back up the existing installation and verify installed files
 against the build output as required by section 13. Compilation is not visual verification. For visual work, do not run unit
 tests; inspect generated geometry and confirm both near and far views in game.
+
+
+## Post-load self-check revision (2026-10-06)
+
+Rollback baseline before this instruction update: branch `dev`, HEAD
+`3be5fed03b275a07850f413dc2396b0182e532ea`.
+The user's subsequent request restores read-only in-memory validation for self-check only,
+after both Bridge Builder and the main menu have completed loading (including late mod loading).
+Healthy bridges skip file integrity scanning and remain unchanged. Invalid required references
+cause UUID-scoped backup/removal, never reference repair, registration rejection or quarantine.
+File ownership, path and change verification remain required before moving or clearing files;
+they are not a second integrity verdict. Dependency persistence remains byte-for-byte file copying.
+
+
+The subsequent migration revision (same `dev`/`3be5fed03b275a07850f413dc2396b0182e532ea`
+rollback baseline) must include cached user PrefabAssets that failed native registration, not only
+PrefabSystem's registered list. Do not call Load or republish to obtain a cached instance.
+Validate required references read-only; retire proven null references or loaded, available assets
+that failed registration. Missing cached instances or intentionally unavailable content alone are
+inconclusive and must not trigger deletion. A targeted serialized check is allowed when no cached
+instance exists. Healthy legacy bridges keep UUID, CID, name and geometry; copy external dependencies
+before committing asset-local persistence version/metadata, backing up the original root. Do not
+invent missing historical recipe values or use a separate registration store. Migration I/O failures
+retain the bridge and report incomplete; successful migration is idempotent.
+
+
+Latest self-check revision (rollback baseline `dev`, HEAD
+`3be5fed03b275a07850f413dc2396b0182e532ea`): wait for native loading, mod initialization,
+PDX database caching and active asset batch completion. Observe current state as well as completion
+events so late mod loading cannot miss the check. For a required null reference, read the exact
+original serialized CID and verify that its PrefabAsset already has a cached instance. If available,
+recursively copy unchanged dependencies under the owning bridge UUID as in section 17, retain the
+original bridge and request restart; do not modify live references or force-load the dependency.
+If the CID is unavailable/not loaded or the source contains an explicit null with no CID, retire
+the owning bridge directories. Unknown serialization or copying I/O failure remains incomplete,
+not proof of corruption. This supersedes the earlier unconditional null-reference retirement rule.
+
+
+Repair-or-remove policy update (baseline `dev`, HEAD
+`3be5fed03b275a07850f413dc2396b0182e532ea`): game operability takes priority. After loading
+completes, faulty owned bridges have only two outcomes: successful recursive same-CID dependency
+copy for a null slot whose original CID is already loaded, or directory-scoped retirement.
+Unresolved source/serialization, unavailable content, failed registration, missing prefab/geometry,
+or unsuccessful dependency copy/migration must enter retirement, not an inconclusive-retention path.
+Check dependencies even for already migrated bridges. Keep ownership and concurrent-change safeguards;
+actual filesystem failures must be reported as removal failures, never falsely reported as success.
+A failure affecting one bridge must not block removal of other bridges.

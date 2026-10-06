@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 
 namespace BridgeBuilder.Settings;
@@ -59,7 +59,6 @@ internal sealed class UiStrings
     internal string StateRestartHint = string.Empty;
     internal string StateReportHint = string.Empty;
     internal string OperationSummary = string.Empty;
-    internal string GroupBridge = string.Empty;
     internal string StateNoStyles = string.Empty;
     internal string StateStyleSource = string.Empty;
     internal string StateDoubleDeckExperimental = string.Empty;

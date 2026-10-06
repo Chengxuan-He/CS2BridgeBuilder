@@ -1,8 +1,0 @@
-<Project Sdk="Microsoft.NET.Sdk">
-  <PropertyGroup><TargetFramework>net8.0</TargetFramework><OutputType>Exe</OutputType><ImplicitUsings>enable</ImplicitUsings><Nullable>enable</Nullable></PropertyGroup>
-  <ItemGroup>
-    <Compile Include="../../src/BridgeBuilder/Runtime/BridgeRegistration.cs" Link="BridgeRegistration.cs" />
-    <Compile Include="../../src/BridgeBuilder/Runtime/BridgeRegistrationStore.cs" Link="BridgeRegistrationStore.cs" />
-    <Compile Include="../../src/BridgeBuilder/Runtime/BridgeFileAccess.cs" Link="BridgeFileAccess.cs" />
-  </ItemGroup>
-</Project>

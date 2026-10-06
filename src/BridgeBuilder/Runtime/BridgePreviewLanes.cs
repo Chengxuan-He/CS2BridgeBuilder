@@ -1,7 +1,7 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Reflection;
-using Colossal.Mathematics;
+
 using Game.City;
 using Game.Common;
 using Game.Net;

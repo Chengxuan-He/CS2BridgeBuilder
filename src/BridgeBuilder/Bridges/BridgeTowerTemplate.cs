@@ -1,7 +1,7 @@
-using System;
+﻿
 using Colossal.Mathematics;
 using Game.Prefabs;
-using UnityEngine;
+
 
 namespace BridgeBuilder.Bridges;
 
@@ -96,7 +96,7 @@ internal static class BridgeTowerTemplate
 
         // No UIObject here. The archetype carries one on each of the tower's parts and none on
         // the tower, which a dump that did not distinguish a mesh from its owner read the other
-        // way round. ApplyToParts puts them where they belong.
+        // way round. Their components are carried across with the derived meshes.
         ApplyPillar(tower);
     }
 
@@ -108,64 +108,6 @@ internal static class BridgeTowerTemplate
     {
         tower.m_Circular = BridgeTowerSpec.Circular;
         ApplyPillar(tower);
-    }
-
-    /// <summary>
-    /// The stacking, applied to the tower's parts - which is what makes a tower reach the ground.
-    ///
-    /// A tower is modelled as a base, a repeatable shaft and a top, and the game only knows that
-    /// because each part says so. <c>ObjectInitializeSystem.UpdateStackBounds</c> reads these and
-    /// collapses each part's contribution to the object's own size down to the end it belongs to -
-    /// the first part counts only below the origin, the last only above it, the middle not at all -
-    /// and moves the rest into <c>StackData</c>. <c>SubObjectSystem</c> then gives the placed tower a
-    /// <c>Game.Objects.Stack</c> whose range runs from <c>m_FirstBounds.min</c> minus the object's
-    /// elevation up to <c>m_LastBounds.max</c>: the stack grows downward by exactly however far the
-    /// tower has been raised, and the shaft is repeated to fill it.
-    ///
-    /// Leave these off and there is no <c>StackData</c>, so no <c>Stack</c>, so nothing grows: the
-    /// tower is drawn at the height it was modelled at and hangs above the ground by the elevation.
-    /// That is the whole of the floating tower - the geometry, the pillar type, the placement and the
-    /// bounds were all correct, and the parts simply never said they were a stack. It was invisible
-    /// on a bridge low enough that the shaft happened to reach.
-    ///
-    /// One part is not a stack. It would have to be the first and the last at once, which the enum
-    /// cannot say, and the archetype's placeholder - which has exactly one part - carries no stacking
-    /// either. So this does nothing to a single-part tower, and the placeholder needs no special case.
-    /// </summary>
-    internal static void ApplyToParts(ObjectGeometryPrefab tower, RenderPrefab? groundBase)
-    {
-        var parts = tower.m_Meshes ?? Array.Empty<ObjectMeshInfo>();
-        if (!BridgeTowerSpec.Stacks(parts.Length)) return;
-
-        for (var index = 0; index < parts.Length; index++)
-        {
-            if (parts[index]?.m_Mesh is not RenderPrefab mesh) continue;
-
-            var stack = mesh.AddComponent<StackProperties>();
-            stack.m_Direction = (StackDirection)BridgeTowerSpec.StackDirectionUp;
-            stack.m_Order = (StackOrder)BridgeTowerSpec.StackOrderOf(index, parts.Length);
-            stack.m_StartOverlap = BridgeTowerSpec.StackStartOverlap;
-            stack.m_EndOverlap = BridgeTowerSpec.StackEndOverlap;
-            stack.m_ForbidScaling = BridgeTowerSpec.StackForbidScaling;
-            stack.active = true;
-
-            // The ground decal, on the part that meets the ground. Named rather than taken from the
-            // archetype: it is base game content and so is there whenever the game is, which is what
-            // the archetype's own meshes are not.
-            if (index == 0 && groundBase != null)
-            {
-                var ground = mesh.AddComponent<BaseProperties>();
-                ground.m_BaseType = groundBase;
-                ground.m_UseMinBounds = BridgeTowerSpec.BaseUseMinBounds;
-                ground.active = true;
-            }
-
-            var ui = mesh.AddComponent<UIObject>();
-            ui.m_Group = null;
-            ui.m_Priority = BridgeTowerSpec.MeshUiPriority;
-            ui.m_IsDebugObject = false;
-            ui.active = true;
-        }
     }
 
     private static void ApplyPillar(ObjectGeometryPrefab tower)

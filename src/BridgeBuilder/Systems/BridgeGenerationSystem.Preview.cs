@@ -1,26 +1,26 @@
-using BridgeBuilder.Bridges;
+﻿using BridgeBuilder.Bridges;
 using BridgeBuilder.Runtime;
-using BridgeBuilder.Settings;
-using BridgeBuilder.UI;
-using Colossal.Serialization.Entities;
-using CS2Mods.Shared;
-using CS2Mods.Shared.Conversion;
-using CS2Mods.Shared.Discovery;
-using CS2Mods.Shared.Export;
+
+
+
+
+
+
+
 using CS2Mods.Shared.Infrastructure;
-using Game;
-using Game.Common;
-using Game.Net;
-using Game.Objects;
+
+
+
+
 using Game.Prefabs;
-using Game.Tools;
+
 using System;
-using System.Collections.Generic;
-using System.Globalization;
-using System.IO;
+
+
+
 using System.Linq;
-using Unity.Collections;
-using Unity.Entities;
+
+
 
 namespace BridgeBuilder.Systems;
 
@@ -43,8 +43,8 @@ public partial class BridgeGenerationSystem
         {
             if (!string.IsNullOrEmpty(request.PrefabName))
             {
-                var registration = BridgeRegistrationStore.Find(request.PrefabName);
-                var existing = registration == null ? null : PrefabCatalog.GetAll(_prefabSystem)
+                var assetInfo = BridgeAssetCatalog.Find(request.PrefabName);
+                var existing = assetInfo == null ? null : PrefabCatalog.GetAll(_prefabSystem)
                     .OfType<NetGeometryPrefab>()
                     .FirstOrDefault(prefab => string.Equals(prefab.name, request.PrefabName, StringComparison.Ordinal));
                 if (existing == null)

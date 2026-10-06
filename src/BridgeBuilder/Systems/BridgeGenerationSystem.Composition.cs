@@ -1,25 +1,25 @@
-using BridgeBuilder.Bridges;
+﻿using BridgeBuilder.Bridges;
 using BridgeBuilder.Runtime;
 using BridgeBuilder.Settings;
-using BridgeBuilder.UI;
-using Colossal.Serialization.Entities;
-using CS2Mods.Shared;
+
+
+
 using CS2Mods.Shared.Conversion;
-using CS2Mods.Shared.Discovery;
+
 using CS2Mods.Shared.Export;
 using CS2Mods.Shared.Infrastructure;
 using Game;
-using Game.Common;
-using Game.Net;
-using Game.Objects;
+
+
+
 using Game.Prefabs;
-using Game.Tools;
+
 using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
-using Unity.Collections;
+
 using Unity.Entities;
 
 namespace BridgeBuilder.Systems;
@@ -89,7 +89,7 @@ public partial class BridgeGenerationSystem
     /// <summary>
     /// The one bridge construction path used by both the legacy options page and the runtime UI.
     /// A true result means that publication has been queued (or a private preview was built).
-    /// Permanent registration and activation happen in onPublished, after native initialization.
+    /// Permanent assetInfo and activation happen in onPublished, after native initialization.
     /// </summary>
     private bool TryBuildBridge(
         Deck upper,
@@ -234,7 +234,20 @@ public partial class BridgeGenerationSystem
             }
             foreach (var node in nodes.Where(node => node.NeedsSave))
                 if (node.Target is NetGeometryPrefab network) BridgeAssetPack.Assign(network, pack);
+            if (BridgeAssetInfo.IsPrefabName(clone.name))
+                BridgeAssetCatalog.Attach(clone, new BridgeAssetInfo(clone.name,
+                    BridgeNaming.BaseName(upper, chosen, style), upper.Id, options.DoubleDeck ? chosen?.Id : null,
+                    style.Id, DateTime.UtcNow.ToString("O", CultureInfo.InvariantCulture)));
             report.SavedDependencies = new PrefabAssetWriter().Save(nodes);
+            if (!BridgeDependencyPersistence.Save(clone.name,
+                nodes.Where(node => node.NeedsSave && node.Target.asset != null)
+                    .Select(node => node.Target.asset.id.guid.ToString()), out var copied, out var copyError))
+            {
+                report.Failed(exportName, new IOException("External dependency persistence failed: " + copyError));
+                return false;
+            }
+            report.SavedDependencies += copied;
+            Mod.Log.Info($"Bridge '{clone.name}' persisted {copied} external dependency copies with original CIDs.");
             return World.GetOrCreateSystemManaged<BridgePublicationSystem>().Publish(nodes, report, ready =>
             {
                 if (ready) report.Exported(exportName);

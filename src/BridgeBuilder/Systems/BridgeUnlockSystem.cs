@@ -27,7 +27,7 @@ public partial class BridgeUnlockSystem : GameSystemBase
         foreach (var entity in entities)
         {
             if (!_prefabs.TryGetPrefab<NetGeometryPrefab>(entity, out var bridge) || bridge == null
-                || !BridgeRegistration.IsPrefabName(bridge.name)) continue;
+                || !BridgeAssetInfo.IsPrefabName(bridge.name)) continue;
             BridgeUnlockPolicy.TryPrepareBuild(bridge, _prefabs, EntityManager, out _);
         }
     }

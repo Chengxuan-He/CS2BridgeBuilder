@@ -1,4 +1,4 @@
-using BridgeBuilder.Runtime;
+﻿using BridgeBuilder.Runtime;
 using Game.Prefabs;
 
 var passed = 0;
@@ -93,21 +93,6 @@ void Assert(string name, bool condition)
     if (!condition) throw new Exception(name);
     Console.WriteLine("PASS " + name); passed++;
 }
-BridgeLoadFailures.Start();
-Colossal.Logging.UnityLogger.Emit(new InvalidOperationException("unrelated"));
-Assert("unrelated errors do not block cleanup", !BridgeLoadFailures.NetworkInitializationFailed);
-try { new NetInitializeSystem().OnUpdate(); }
-catch (Exception exception) { Colossal.Logging.UnityLogger.Emit(exception); }
-Assert("native batch failure blocks cleanup without prefab context", BridgeLoadFailures.NetworkInitializationFailed);
-BridgeLoadFailures.Clear();
-Assert("map preload cannot erase batch failure", BridgeLoadFailures.NetworkInitializationFailed);
-BridgeLoadFailures.Stop();
-Assert("new mod session resets batch failure", !BridgeLoadFailures.NetworkInitializationFailed);
-BridgeLoadFailures.RequireRestart();
-BridgeLoadFailures.Clear();
-Assert("legacy migration blocks cleanup across map preload", BridgeLoadFailures.NetworkInitializationFailed);
-BridgeLoadFailures.Stop();
-Assert("restart clears migration latch", !BridgeLoadFailures.NetworkInitializationFailed);
 var lane = new NetLanePrefab();
 lane.Add(new SecondaryLane());
 Check("nullable native secondary arrays accepted", lane, false);
@@ -133,12 +118,28 @@ Check("empty meshes accepted", laneGeometry, false);
 piece = new(); piece.Add(new NetPieceLanes { m_Lanes = [new() { m_Lane = lane }] });
 lane.Add(new SecondaryLane { m_LeftLanes = [new()] });
 Check("nested lane null reaches parent", piece, true, "m_LeftLanes");
-RecoveryChecks.Run(Assert);
-foreach (var file in args)
-    Assert("actual Odin document parsed: " + Path.GetFileName(file), BridgeSerializedReferences.TryRead(File.ReadAllText(file), out var actual)
-        && actual.Name.Length != 0 && actual.Reference("Game.Prefabs.NetSubObjects", "m_SubObjects", 0, "m_Object", out var originalId)
-        && originalId.StartsWith("UnityGUID:"));
-Console.WriteLine($"{passed} checks passed. Reference validation and safety latch only; not a native game/runtime test.");
+var cid = "11111111111111111111111111111111";
+net = Good(); net.m_Sections[0].m_Section = null;
+net.asset = new() { Text = "{\"name\":\"test\",\"m_Sections\":{\"$rcontent\":[{\"m_Section\":$fstrref:\"CID:" + cid + "\"}]}}" };
+var loaded = new NetSectionPrefab();
+Colossal.IO.AssetDatabase.AssetDatabase.global.Assets[cid] = new() { id = new() { guid = cid }, Instance = loaded };
+Assert("serialized CID with loaded asset recoverable", BridgeLoadedCidRecovery.Inspect(net,out var cids,out var detail) == BridgeLoadedCidRecovery.Result.Recoverable && cids.Contains(cid));
+Assert("recovery inspection does not mutate live slot", net.m_Sections[0].m_Section == null);
+var database = Colossal.IO.AssetDatabase.AssetDatabase.global;
+database.Enumerations = 0;
+var sharedLookup = new BridgeLoadedCidRecovery.LoadedIndex();
+BridgeLoadedCidRecovery.Inspect(net,out cids,out detail, sharedLookup);
+BridgeLoadedCidRecovery.Inspect(net,out cids,out detail, sharedLookup);
+Assert("shared inspection lookup enumerates assets only once", database.Enumerations == 1);
+Colossal.IO.AssetDatabase.AssetDatabase.global.Assets[cid].Instance = null;
+Assert("registered CID without loaded instance is broken", BridgeLoadedCidRecovery.Inspect(net,out cids,out detail) == BridgeLoadedCidRecovery.Result.Broken);
+Colossal.IO.AssetDatabase.AssetDatabase.global.Assets["duplicate"] = new() { id = new() { guid = cid }, Instance = loaded };
+Assert("loaded identical CID copy recognized despite unloaded first entry", BridgeLoadedCidRecovery.Inspect(net,out cids,out detail) == BridgeLoadedCidRecovery.Result.Recoverable);
+net.asset.Text = "{\"name\":\"test\",\"m_Sections\":{\"$rcontent\":[{\"m_Section\":null}]}}";
+Assert("explicit null without CID cannot be recovered", BridgeLoadedCidRecovery.Inspect(net,out cids,out detail) == BridgeLoadedCidRecovery.Result.Broken);
+net.m_Sections = null;
+Assert("null array cannot be reconstructed by copying", BridgeLoadedCidRecovery.Inspect(net,out cids,out detail) == BridgeLoadedCidRecovery.Result.Broken);
+Console.WriteLine($"{passed} read-only validation checks passed.");
 
 namespace Game.Prefabs
 {
@@ -212,9 +213,11 @@ namespace BridgeBuilder
 namespace Colossal { public class Hash128 { public static string Parse(string value) => value; } }
 namespace Colossal.IO.AssetDatabase
 {
+    public class AssetId { public string guid = ""; }
     public class PrefabAsset
     {
-        public string path = "";
+        public string path = ""; public string Text = ""; public AssetId id = new();
+        public System.IO.Stream GetReadStream() => new System.IO.MemoryStream(System.Text.Encoding.UTF8.GetBytes(Text));
         public object database;
         public Game.Prefabs.PrefabBase Instance;
         public T GetInstance<T>() where T : class => Instance as T;
@@ -223,6 +226,8 @@ namespace Colossal.IO.AssetDatabase
     {
         public static AssetDatabase global = new(); public static object user = new();
         public Dictionary<string, PrefabAsset> Assets = new();
+        public int Enumerations;
+        public IEnumerable<T> GetAssets<T>() { Enumerations++; return Assets.Values.Cast<T>(); }
         public Resources resources = new();
         public bool TryGetAsset(string id, out PrefabAsset asset) => Assets.TryGetValue(id, out asset);
     }

@@ -9,10 +9,11 @@ using System.Linq;
 using System.Reflection;
 using Unity.Collections;
 using Unity.Entities;
+using SubNet = Game.Net.SubNet;
 
 namespace BridgeBuilder.Runtime;
 
-/// <summary>Read-only topology proof for the scoped native geometry replay.</summary>
+/// <summary>Read-only topology proof, independent of the geometry job's write batch.</summary>
 internal sealed class BridgeRailSeamScope
 {
     internal readonly HashSet<(Entity Edge, Entity Node)> Seams = new();
@@ -27,6 +28,7 @@ internal sealed class BridgeRailSeamScope
     private readonly ComponentLookup<NetCompositionData> _data;
     private readonly BufferLookup<NetCompositionLane> _lanes;
     private readonly BufferLookup<ConnectedEdge> _connected;
+    private readonly BufferLookup<SubNet> _subNets;
     private readonly ComponentLookup<Temp> _temp;
     private readonly ComponentLookup<Hidden> _hidden;
     private readonly Dictionary<Entity, Entity> _allowed = new();
@@ -40,7 +42,7 @@ internal sealed class BridgeRailSeamScope
         if (Reported.Count >= 80 || !_refs.TryGetComponent(edge, out var reference)
             || _prefabs == null || !_prefabs.TryGetPrefab<NetPrefab>(reference, out var prefab)
             || prefab == null || !prefab.name.EndsWith("_Lower", StringComparison.Ordinal)
-            || !BridgeRegistration.IsPrefabName(prefab.name.Substring(0, prefab.name.Length - 6))) return;
+            || !BridgeAssetInfo.IsPrefabName(prefab.name.Substring(0, prefab.name.Length - 6))) return;
         var temporary = _temp.HasComponent(edge);
         var key = prefab.name + "/" + temporary + "/" + reason;
         if (!Reported.Add(key)) return;
@@ -59,6 +61,7 @@ internal sealed class BridgeRailSeamScope
         ("m_PrefabCompositionData", typeof(ComponentLookup<NetCompositionData>)),
         ("m_PrefabCompositionLanes", typeof(BufferLookup<NetCompositionLane>)),
         ("m_Edges", typeof(BufferLookup<ConnectedEdge>)),
+        ("m_SubNets", typeof(BufferLookup<SubNet>)),
         ("m_TempData", typeof(ComponentLookup<Temp>)),
         ("m_HiddenData", typeof(ComponentLookup<Hidden>)),
     };
@@ -83,28 +86,47 @@ internal sealed class BridgeRailSeamScope
         _data = Read<ComponentLookup<NetCompositionData>>(job, "m_PrefabCompositionData");
         _lanes = Read<BufferLookup<NetCompositionLane>>(job, "m_PrefabCompositionLanes");
         _connected = Read<BufferLookup<ConnectedEdge>>(job, "m_Edges");
+        _subNets = Read<BufferLookup<SubNet>>(job, "m_SubNets");
         _temp = Read<ComponentLookup<Temp>>(job, "m_TempData");
         _hidden = Read<ComponentLookup<Hidden>>(job, "m_HiddenData");
         if (_prefabs == null) return;
         for (var i = 0; i < updated.Length; i++) _indices[updated[i]] = i;
-        var replay = new HashSet<int>();
+        var selected = new HashSet<int>();
+        var inspected = new HashSet<Entity>();
         foreach (var entity in updated)
         {
-            if (!TryLower(entity, out var parent, out var prefab))
-            {
-                Rejected(entity, Entity.Null, "lower-ownership-or-prefab",
-                    $"owner={(_owners.TryGetComponent(entity, out var owner) ? owner.m_Owner : Entity.Null)}");
-                continue;
-            }
-            var edge = _edges[entity];
-            Inspect(entity, edge.m_Start, parent, prefab, replay);
-            Inspect(entity, edge.m_End, parent, prefab, replay);
+            InspectLower(entity, inspected, selected);
+            // LinkAuxOffsets reads the parent's and siblings' offsets even when only
+            // the upper deck is being written. Discover that read set without adding
+            // any of its members to the downstream native write batch.
+            var root = _owners.TryGetComponent(entity, out var owner) && _edges.HasComponent(owner.m_Owner)
+                ? owner.m_Owner : entity;
+            if (_subNets.TryGetBuffer(root, out var children))
+                foreach (var child in children) InspectLower(child.m_SubNet, inspected, selected);
         }
-        Indices.AddRange(replay.OrderBy(i => i));
+        Indices.AddRange(selected.OrderBy(i => i));
+    }
+
+    private void InspectLower(Entity entity, HashSet<Entity> inspected, HashSet<int> selected)
+    {
+        if (!inspected.Add(entity)) return;
+        if (!TryLower(entity, out var parent, out var prefab))
+        {
+            Rejected(entity, Entity.Null, "lower-ownership-or-prefab",
+                $"owner={(_owners.TryGetComponent(entity, out var owner) ? owner.m_Owner : Entity.Null)}, "
+                + $"hidden={_hidden.HasComponent(entity)}, deleted={_em.HasComponent<Deleted>(entity)}");
+            return;
+        }
+        var edge = _edges[entity];
+        Inspect(entity, edge.m_Start, parent, prefab, selected);
+        Inspect(entity, edge.m_End, parent, prefab, selected);
     }
 
     private bool Live(Entity entity) => entity != Entity.Null && _em.Exists(entity)
-        && !_em.HasComponent<Deleted>(entity) && !_hidden.HasComponent(entity)
+        // Native geometry also updates hidden originals. Skipping them leaves native
+        // crossover geometry behind when ToolClear removes Hidden without adding Updated.
+        // EdgeIterator, rather than this predicate, chooses the preview/original view.
+        && !_em.HasComponent<Deleted>(entity)
         && (!_temp.TryGetComponent(entity, out var temp) || (temp.m_Flags & TempFlags.Delete) == 0);
 
     private bool TryLower(Entity edge, out Entity parent, out Entity prefab)
@@ -122,7 +144,7 @@ internal sealed class BridgeRailSeamScope
             if (_prefabs.TryGetPrefab<TrackPrefab>(prefab, out var lower) && lower != null
                 && !lower.isBuiltin && !lower.isReadOnly
                 && _prefabs.TryGetPrefab<NetGeometryPrefab>(parentRef.m_Prefab, out var upper) && upper != null
-                && !upper.isBuiltin && !upper.isReadOnly && BridgeRegistration.IsPrefabName(upper.name)
+                && !upper.isBuiltin && !upper.isReadOnly && BridgeAssetInfo.IsPrefabName(upper.name)
                 && lower.name == upper.name + "_Lower" && upper.TryGet<AuxiliaryNets>(out var auxiliary)
                 && auxiliary.m_AuxiliaryNets != null
                 && auxiliary.m_AuxiliaryNets.Any(a => a != null && a.m_Prefab == lower && a.m_Position.y < 0f))
@@ -143,7 +165,7 @@ internal sealed class BridgeRailSeamScope
         {
             if (next.m_Middle || !Live(next.m_Edge) || connections.Count == 2)
             {
-                Rejected(first, node, "extra-hidden-or-middle-connection", $"other={next.m_Edge}, middle={next.m_Middle}");
+                Rejected(first, node, "extra-deleted-or-middle-connection", $"other={next.m_Edge}, middle={next.m_Middle}");
                 return;
             }
             connections.Add(next);
@@ -177,20 +199,18 @@ internal sealed class BridgeRailSeamScope
             Rejected(first, node, "track-layout-mismatch", $"compositions={compA.m_Edge}/{compB.m_Edge}, reverse={a.m_End == b.m_End}");
             return;
         }
-        // Correct both sides and the owning decks in the SAME native geometry batch. Never touch
-        // a stale edge excluded from the downstream native pipeline, or leave half a seam fixed.
+        // Topology is a read dependency, not a demand that all four edges are Updated.
+        // Prove both sides, but calculate ONLY members requested by the native pipeline.
         var members = new[] { first, b.m_Edge, parentA, parentB };
-        if (members.Any(e => !_indices.ContainsKey(e) || !_em.HasComponent<EdgeGeometry>(e)
-            || !_em.HasComponent<StartNodeGeometry>(e) || !_em.HasComponent<EndNodeGeometry>(e)))
-        {
-            Rejected(first, node, "incomplete-geometry-batch", string.Join(", ", members.Select(e =>
-                $"{e}: inBatch={_indices.ContainsKey(e)}, geometry={_em.HasComponent<EdgeGeometry>(e)}/"
-                + $"{_em.HasComponent<StartNodeGeometry>(e)}/{_em.HasComponent<EndNodeGeometry>(e)}")));
-            return;
-        }
         Seams.Add((first, node));
-        Seams.Add((b.m_Edge, node));
-        foreach (var member in members) replay.Add(_indices[member]);
+        // Share the proof only within the same node view. A temporary node can
+        // borrow an edge from its original, whose own view may be a real junction.
+        // If that original is also read by this batch, InspectLower proves it separately.
+        var otherEdge = _edges[b.m_Edge];
+        var otherNode = b.m_End ? otherEdge.m_End : otherEdge.m_Start;
+        if (otherNode == node) Seams.Add((b.m_Edge, otherNode));
+        foreach (var member in members)
+            if (_indices.TryGetValue(member, out var index)) replay.Add(index);
         if (Evidence.Length == 0)
             Evidence = $"node={node}, lower={first}/{b.m_Edge}, parents={parentA}/{parentB}, prefab={lowerPrefab}";
     }
@@ -200,12 +220,23 @@ internal sealed class BridgeRailSeamScope
         var ea = _edges[a];
         var eb = _edges[b];
         var shared = new HashSet<Entity>();
-        if (ea.m_Start == eb.m_Start || ea.m_Start == eb.m_End) shared.Add(ea.m_Start);
-        if (ea.m_End == eb.m_Start || ea.m_End == eb.m_End) shared.Add(ea.m_End);
+        var aStart = OriginalNode(ea.m_Start);
+        var aEnd = OriginalNode(ea.m_End);
+        var bStart = OriginalNode(eb.m_Start);
+        var bEnd = OriginalNode(eb.m_End);
+        if (aStart == Entity.Null || aEnd == Entity.Null || bStart == Entity.Null || bEnd == Entity.Null) return false;
+        if (aStart == bStart || aStart == bEnd) shared.Add(aStart);
+        if (aEnd == bStart || aEnd == bEnd) shared.Add(aEnd);
         if (shared.Count != 1 || _refs[a].m_Prefab != _refs[b].m_Prefab) return false;
-        var node = shared.First();
+        var common = shared.First();
+        var nodeA = aStart == common ? ea.m_Start : ea.m_End;
+        var nodeB = bStart == common ? eb.m_Start : eb.m_End;
+        // Read the temporary view when one exists: its iterator includes the original
+        // node and filters replaced edges, while a permanent node sees only originals.
+        var useB = !_temp.HasComponent(nodeA) && _temp.HasComponent(nodeB);
+        var node = useB ? nodeB : nodeA;
         if (!Live(node) || !_connected.HasBuffer(node)) return false;
-        var iterator = new EdgeIterator(a, node, _connected, _edges, _temp, _hidden, true);
+        var iterator = new EdgeIterator(useB ? b : a, node, _connected, _edges, _temp, _hidden, true);
         var seen = new HashSet<Entity>();
         while (iterator.GetNext(out var next))
         {
@@ -213,6 +244,17 @@ internal sealed class BridgeRailSeamScope
                 || !seen.Add(next.m_Edge)) return false;
         }
         return seen.Count == 2;
+    }
+
+    private Entity OriginalNode(Entity node)
+    {
+        var seen = new HashSet<Entity>();
+        while (_temp.TryGetComponent(node, out var temp) && temp.m_Original != Entity.Null)
+        {
+            if (!seen.Add(node)) return Entity.Null;
+            node = temp.m_Original;
+        }
+        return Live(node) ? node : Entity.Null;
     }
 
     private bool RailComposition(EdgeIteratorValue edge, out Composition composition)

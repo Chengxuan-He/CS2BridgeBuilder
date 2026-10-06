@@ -1,17 +1,22 @@
 import assert from 'node:assert/strict';
-import { readFileSync } from 'node:fs';
-
-const source = readFileSync(new URL('../src/BridgeBuilder/Systems/BridgeMissingAssetSystem.cs', import.meta.url), 'utf8');
-for (const forbidden of ['BridgeInstanceRemoval', 'DestroyEntity', 'AddComponent', 'RemoveComponent', 'SetComponentData', 'EntityCommandBuffer', 'SuspendForCleanup', 'MissingBridgesRemoved', 'MissingBridgesTimeout']) {
-  assert.ok(!source.includes(forbidden), `Read-only load detector must not contain ${forbidden}`);
+import { existsSync, readFileSync, readdirSync } from 'node:fs';
+const root = new URL('../src/BridgeBuilder/', import.meta.url);
+const removed = ['Runtime/BridgePrefabLoadGuard.cs',
+ 'Runtime/BridgeReferenceRecovery.cs', 'Runtime/BridgeLoadFailures.cs',
+ 'Systems/BridgeMissingAssetSystem.cs', 'Systems/BridgeGenerationSystem.Recovery.cs'];
+for (const path of removed) assert(!existsSync(new URL(path, root)), `Memory inspection source remains: ${path}`);
+function scan(url) {
+ for (const item of readdirSync(url, { withFileTypes: true })) {
+  if (['bin', 'obj'].includes(item.name)) continue;
+  const path = new URL(item.name + (item.isDirectory() ? '/' : ''), url);
+  if (item.isDirectory()) scan(path);
+  else if (item.name.endsWith('.cs')) {
+   const source = readFileSync(path, 'utf8');
+   for (const token of ['BridgePrefabLoadGuard', 'BridgeReferenceRecovery',
+      'BridgeLoadFailures', 'BridgeMissingAssetSystem', 'Quarantine(', 'PrepareLegacy(', 'OnErrorOrHigher'])
+    assert(!source.includes(token), `${path}: forbidden memory inspection ${token}`);
+  }
+ }
 }
-assert.match(source, /if \(_loadPlanned\) return;/);
-assert.match(source, /_loadPlanned = false;/);
-assert.match(source, /new HashSet<string>\(StringComparer.Ordinal\)/);
-assert.match(source, /if \(names.Count > 0\) Notice\("MissingBridgesDetected", names.Count\)/);
-assert.match(source, /if \(!_loadComplete \|\| _pendingNotice == null/);
-assert.ok(source.indexOf('_pendingNotice = null;', source.indexOf('private void ShowPendingNotice')) < source.indexOf('Mod.ShowMessage', source.indexOf('private void ShowPendingNotice')));
-assert.match(source, /bridge.EndsWith\("_Lower"/);
-assert.match(source, /bridge.EndsWith\("_Upper"/);
-assert.match(source, /BridgeRegistration.IsPrefabName\(bridge\)/);
-console.log('PASS source regression guards: read-only detector, once per load, UUID-scoped counts, deferred one-shot notification');
+scan(root);
+console.log('PASS: startup interception, quarantine, log interception and load rejection removed from runtime');

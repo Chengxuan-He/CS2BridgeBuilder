@@ -25,5 +25,7 @@ internal static partial class UiStringTables
             RuntimeUiText.Format(locale, "RecoveryLocationLabel"), RuntimeUiText.Format(locale, "RecoveryLocationDescription"));
         text.Option(nameof(BridgeSetting.OpenRecoveryCopies),
             RuntimeUiText.Format(locale, "RecoveryOpenLabel"), RuntimeUiText.Format(locale, "RecoveryLocationDescription"));
+        text.Option(nameof(BridgeSetting.BridgeSelfCheck),
+            RuntimeUiText.Format(locale, "BridgeSelfCheckLabel"), RuntimeUiText.Format(locale, "BridgeSelfCheckDescription"));
     }
 }

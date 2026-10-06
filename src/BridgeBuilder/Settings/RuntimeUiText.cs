@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Globalization;
 
@@ -16,6 +16,61 @@ internal static class RuntimeUiText
 
     private static readonly Dictionary<string, string[]> Entries = new(StringComparer.Ordinal)
     {
+        ["BridgeSelfCheckLabel"] = new[]
+        {
+            "Bridge self-check", "桥梁自检", "橋梁自檢", "Brückenprüfung", "Comprobación de puentes", "Vérification des ponts",
+            "Controllo dei ponti", "橋の自己診断", "교량 자가 진단", "Kontrola mostów", "Verificação de pontes", "Проверка мостов"
+        },
+        ["BridgeSelfCheckDescription"] = new[]
+        {
+            "Check this mod's bridge assets and recover damaged assets. Available in the main menu; return there after closing your city.",
+            "检查本模组的桥梁资产并处理受损资产。仅在主菜单可用；请退出城市后返回主菜单。",
+            "檢查本模組的橋梁資產並處理受損資產。僅在主選單可用；請退出城市後返回主選單。",
+            "Brücken-Assets dieses Mods prüfen und beschädigte Assets wiederherstellen. Nur im Hauptmenü verfügbar; verlasse zuerst deine Stadt.",
+            "Comprueba y recupera los recursos dañados de puentes de este mod. Disponible en el menú principal; sal primero de tu ciudad.",
+            "Vérifie les ressources de ponts de ce mod et récupère celles endommagées. Disponible dans le menu principal ; quittez d’abord votre ville.",
+            "Controlla le risorse dei ponti di questa mod e recupera quelle danneggiate. Disponibile nel menu principale; esci prima dalla città.",
+            "この MOD の橋アセットを確認し、破損したアセットを処理します。メインメニューでのみ利用できます。都市を終了して戻ってください。",
+            "이 모드의 교량 에셋을 검사하고 손상된 에셋을 복구합니다. 메인 메뉴에서만 사용할 수 있습니다. 먼저 도시에서 나가세요.",
+            "Sprawdza zasoby mostów tego moda i odzyskuje uszkodzone zasoby. Dostępne w menu głównym; najpierw wyjdź z miasta.",
+            "Verifica os recursos de pontes deste mod e recupera os danificados. Disponível no menu principal; saia da cidade primeiro.",
+            "Проверяет мосты этого мода и восстанавливает повреждённые ресурсы. Доступно в главном меню; сначала выйдите из города."
+        },
+        ["BridgeSelfCheckSuccess"] = new[]
+        {
+            "Self-check passed.", "自检成功", "自檢成功", "Prüfung erfolgreich.", "Comprobación correcta.", "Vérification réussie.",
+            "Controllo riuscito.", "自己診断に成功しました。", "자가 진단 성공", "Kontrola zakończona pomyślnie.", "Verificação concluída com sucesso.", "Проверка пройдена."
+        },
+        ["BridgeSelfCheckRepaired"] = new[]
+        {
+            "Damaged bridge assets have been repaired or removed. Restart the game to apply the changes.",
+            "已修复或移除受损桥梁资产。请重启游戏使更改生效。",
+            "已修復或移除受損橋梁資產。請重新啟動遊戲使變更生效。",
+            "Beschädigte Brücken-Assets wurden repariert oder entfernt. Starte das Spiel neu, um die Änderungen anzuwenden.",
+            "Se han reparado o eliminado los recursos de puentes dañados. Reinicia el juego para aplicar los cambios.",
+            "Les ressources de ponts endommagées ont été réparées ou supprimées. Redémarrez le jeu pour appliquer les changements.",
+            "Le risorse dei ponti danneggiate sono state riparate o rimosse. Riavvia il gioco per applicare le modifiche.",
+            "破損した橋アセットを修復または削除しました。変更を適用するにはゲームを再起動してください。",
+            "손상된 교량 에셋을 복구하거나 제거했습니다. 변경 사항을 적용하려면 게임을 다시 시작하세요.",
+            "Uszkodzone zasoby mostów zostały naprawione lub usunięte. Uruchom grę ponownie, aby zastosować zmiany.",
+            "Os recursos de pontes danificados foram reparados ou removidos. Reinicie o jogo para aplicar as alterações.",
+            "Повреждённые ресурсы мостов исправлены или удалены. Перезапустите игру, чтобы применить изменения."
+        },
+        ["BridgeSelfCheckIncomplete"] = new[]
+        {
+            "Self-check could not finish removing faulty bridge assets because a file operation failed. See the Bridge Builder log for details.",
+            "自检移除故障桥梁资产时，文件操作失败，未能完成清理。详情请查看 Bridge Builder 日志。",
+            "自檢移除故障橋梁資產時，檔案操作失敗，未能完成清理。詳情請查看 Bridge Builder 日誌。",
+            "Fehlerhafte Brücken konnten wegen eines Dateifehlers nicht vollständig entfernt werden. Details stehen im Bridge-Builder-Protokoll.",
+            "Un error de archivo impidió completar la eliminación de los puentes defectuosos. Consulta el registro de Bridge Builder.",
+            "Une erreur de fichier a empêché la suppression complète des ponts défectueux. Consultez le journal de Bridge Builder.",
+            "Un errore nei file ha impedito di completare la rimozione dei ponti difettosi. Consulta il registro di Bridge Builder.",
+            "ファイル操作に失敗したため、問題のある橋アセットの削除を完了できませんでした。Bridge Builder のログを確認してください。",
+            "파일 작업 실패로 문제가 있는 교량 에셋을 모두 제거하지 못했습니다. Bridge Builder 로그를 확인하세요.",
+            "Błąd operacji na plikach uniemożliwił usunięcie wszystkich wadliwych mostów. Szczegóły w dzienniku Bridge Builder.",
+            "Uma falha na operação de arquivos impediu a remoção completa das pontes com problemas. Consulte o log do Bridge Builder.",
+            "Ошибка операции с файлами помешала завершить удаление неисправных мостов. Подробности в журнале Bridge Builder."
+        },
         ["RecoveryLocationLabel"] = new[]
         {
             "Recovery copy location",
@@ -91,100 +146,10 @@ internal static class RuntimeUiText
             "Não foi possível abrir a pasta de recuperação. Verifique o caminho e as permissões de acesso nas configurações do mod.",
             "Не удалось открыть папку восстановления. Проверьте путь и права доступа в настройках мода."
         },
-        ["MissingBridgesDetected"] = new[]
-        {
-            "This save references {0} missing Bridge Builder bridge asset(s). Restore the assets and required dependencies before reloading the save, or create new bridges to replace the missing bridges.",
-            "此存档引用的 {0} 种 Bridge Builder 桥梁资产缺失。请恢复相关资产及必要依赖后重新加载存档，或创建新桥梁以替换缺失桥梁。",
-            "此存檔引用的 {0} 種 Bridge Builder 橋梁資產缺失。請恢復相關資產及必要相依內容後重新載入存檔，或建立新橋梁以替換缺失橋梁。",
-            "Dieser Spielstand verweist auf {0} fehlende Bridge-Builder-Brückenassets. Stellen Sie die Assets und erforderlichen Abhängigkeiten wieder her und laden Sie den Spielstand erneut, oder erstellen Sie neue Brücken als Ersatz für die fehlenden.",
-            "Esta partida hace referencia a {0} recursos de puentes de Bridge Builder que faltan. Restaure los recursos y las dependencias necesarias antes de volver a cargar la partida, o cree nuevos puentes para sustituir los que faltan.",
-            "Cette sauvegarde fait référence à {0} ressources de ponts Bridge Builder manquantes. Restaurez les ressources et les dépendances requises avant de recharger la sauvegarde, ou créez de nouveaux ponts pour remplacer les ponts manquants.",
-            "Questo salvataggio fa riferimento a {0} risorse di ponti Bridge Builder mancanti. Ripristinare le risorse e le dipendenze necessarie prima di ricaricare il salvataggio, oppure creare nuovi ponti per sostituire quelli mancanti.",
-            "このセーブデータが参照する Bridge Builder の橋梁アセット {0} 種類が不足しています。該当アセットと必要な依存コンテンツを復元してからセーブデータを再読み込みするか、新規橋梁を作成して不足している橋梁を置き換えてください。",
-            "이 저장 파일이 참조하는 Bridge Builder 교량 에셋 {0}종이 누락되었습니다. 관련 에셋과 필수 의존 콘텐츠를 복원한 후 저장 파일을 다시 불러오거나, 새 교량을 생성하여 누락된 교량을 교체하십시오.",
-            "Ten zapis odwołuje się do {0} brakujących zasobów mostów Bridge Builder. Należy przywrócić zasoby i wymagane zależności przed ponownym wczytaniem zapisu lub utworzyć nowe mosty w celu zastąpienia brakujących.",
-            "Este salvamento faz referência a {0} recursos de pontes do Bridge Builder ausentes. Restaure os recursos e as dependências necessárias antes de recarregar o salvamento ou crie novas pontes para substituir as ausentes.",
-            "В сохранении обнаружены ссылки на отсутствующие ресурсы мостов Bridge Builder: {0}. Восстановите ресурсы и необходимые зависимости перед повторной загрузкой сохранения либо создайте новые мосты для замены отсутствующих."
-        },
-        ["DamagedBridgeAssetsRemoved"] = new[]
-        {
-            "Startup validation identified {0} damaged Bridge Builder asset groups. The affected bridge files have been moved to the backup directory, which is accessible from the mod settings.",
-            "启动检查发现 {0} 组损坏的 Bridge Builder 桥梁资产，相关文件已移入备份目录。备份目录可通过模组设置访问。",
-            "啟動檢查發現 {0} 組損壞的 Bridge Builder 橋梁資產，相關檔案已移至備份目錄。備份目錄可透過模組設定存取。",
-            "Die Startprüfung hat {0} beschädigte Bridge-Builder-Assetgruppen erkannt. Die betroffenen Dateien wurden in den Sicherungsordner verschoben, der über die Mod-Einstellungen zugänglich ist.",
-            "La comprobación inicial detectó {0} grupos de recursos de puentes de Bridge Builder dañados. Los archivos afectados se trasladaron a la carpeta de copias de seguridad, accesible desde los ajustes del mod.",
-            "La vérification au démarrage a détecté {0} groupes de ressources de ponts Bridge Builder endommagés. Les fichiers concernés ont été déplacés vers le dossier de sauvegarde, accessible dans les paramètres du mod.",
-            "Il controllo all’avvio ha rilevato {0} gruppi di risorse di ponti Bridge Builder danneggiati. I file interessati sono stati spostati nella cartella di backup, accessibile dalle impostazioni della mod.",
-            "起動時の検証で、破損した Bridge Builder の橋梁アセットが {0} 組検出されました。該当ファイルはバックアップフォルダーに移動済みです。保存先は MOD 設定から確認できます。",
-            "시작 시 검사에서 손상된 Bridge Builder 교량 에셋 {0}개 그룹이 발견되었습니다. 해당 파일은 백업 폴더로 이동되었습니다. 백업 위치는 모드 설정에서 확인할 수 있습니다.",
-            "Podczas kontroli przy uruchamianiu wykryto {0} grup uszkodzonych zasobów mostów Bridge Builder. Pliki przeniesiono do folderu kopii zapasowych, dostępnego w ustawieniach moda.",
-            "A verificação inicial identificou {0} grupos de recursos de pontes do Bridge Builder danificados. Os arquivos afetados foram movidos para a pasta de backup, acessível nas configurações do mod.",
-            "При проверке во время запуска обнаружено повреждённых групп ресурсов мостов Bridge Builder: {0}. Соответствующие файлы перемещены в папку резервных копий, доступную в настройках мода."
-        },
-        ["BridgeReferencesDeferred"] = new[]
-        {
-            "Startup validation could not resolve dependencies for {0} Bridge Builder asset groups. The original files remain in place and have not been moved to the backup directory. Restore the required assets and restart the game.",
-            "启动检查发现 {0} 组 Bridge Builder 桥梁资产的依赖无法解析。原文件已保留，未移入备份目录。请恢复所需资产后重新启动游戏。",
-            "啟動檢查發現 {0} 組 Bridge Builder 橋梁資產的相依內容無法解析。原始檔案已保留，未移至備份目錄。請恢復所需資產後重新啟動遊戲。",
-            "Bei der Startprüfung konnten Abhängigkeiten von {0} Bridge-Builder-Assetgruppen nicht aufgelöst werden. Die Originaldateien bleiben unverändert am bisherigen Ort und wurden nicht in den Sicherungsordner verschoben. Stellen Sie die benötigten Assets wieder her und starten Sie das Spiel neu.",
-            "La comprobación inicial no pudo resolver las dependencias de {0} grupos de recursos de Bridge Builder. Los archivos originales permanecen en su ubicación y no se trasladaron a la carpeta de copias de seguridad. Restaure los recursos necesarios y reinicie el juego.",
-            "La vérification au démarrage n’a pas pu résoudre les dépendances de {0} groupes de ressources Bridge Builder. Les fichiers originaux sont conservés à leur emplacement et n’ont pas été déplacés vers le dossier de sauvegarde. Restaurez les ressources requises et redémarrez le jeu.",
-            "Il controllo all’avvio non ha risolto le dipendenze di {0} gruppi di risorse Bridge Builder. I file originali sono conservati nel percorso originale e non sono stati spostati nella cartella di backup. Ripristinare le risorse necessarie e riavviare il gioco.",
-            "起動時の検証で、Bridge Builder のアセット {0} 組の依存関係を解決できませんでした。元のファイルはそのまま保持され、バックアップフォルダーには移動されていません。必要なアセットを復元してゲームを再起動してください。",
-            "시작 시 검사에서 Bridge Builder 에셋 {0}개 그룹의 의존성을 확인할 수 없었습니다. 원본 파일은 기존 위치에 보존되었으며 백업 폴더로 이동되지 않았습니다. 필요한 에셋을 복원한 후 게임을 다시 시작하십시오.",
-            "Podczas kontroli przy uruchamianiu nie udało się rozwiązać zależności {0} grup zasobów Bridge Builder. Oryginalne pliki pozostają na swoim miejscu i nie zostały przeniesione do folderu kopii zapasowych. Przywróć wymagane zasoby i uruchom grę ponownie.",
-            "A verificação inicial não conseguiu resolver as dependências de {0} grupos de recursos do Bridge Builder. Os arquivos originais permanecem no local e não foram movidos para a pasta de backup. Restaure os recursos necessários e reinicie o jogo.",
-            "При проверке во время запуска не удалось разрешить зависимости групп ресурсов Bridge Builder: {0}. Исходные файлы сохранены на прежнем месте и не перемещены в папку резервных копий. Восстановите необходимые ресурсы и перезапустите игру."
-        },
         ["OK"] = new[]
         {
             "OK", "确定", "確定", "OK", "Aceptar", "OK",
             "OK", "確認", "확인", "OK", "OK", "ОК"
-        },
-        ["MissingBridgesBlocked"] = new[]
-        {
-            "Bridge cleanup was blocked by an invalid connecting road or track. Restore the missing dependencies and reload; keep a copy of the original save.",
-            "桥梁清理因相连道路或轨道无有效原型而受阻。请恢复缺失依赖后重新加载，并保留原存档副本。",
-            "橋梁清理因相連道路或軌道無有效原型而受阻。請恢復缺失依賴後重新載入，並保留原存檔副本。",
-            "Brückenbereinigung durch eine ungültige angeschlossene Straße oder ein Gleis blockiert. Fehlende Abhängigkeiten wiederherstellen und neu laden; den Originalspielstand als Kopie behalten.",
-            "La limpieza se bloqueó por una carretera o vía conectada no válida. Restaura las dependencias y vuelve a cargar; conserva una copia de la partida original.",
-            "Le nettoyage est bloqué par une route ou voie raccordée non valide. Restaurez les dépendances et rechargez ; conservez une copie de la sauvegarde originale.",
-            "Pulizia bloccata da una strada o un binario collegato non valido. Ripristina le dipendenze e ricarica; conserva una copia del salvataggio originale.",
-            "接続道路または線路の原型が無効なため、橋の削除を中止しました。不足する依存アセットを復元して再ロードしてください。元のセーブのコピーを保管してください。",
-            "연결된 도로나 선로의 원형이 유효하지 않아 교량 정리를 중단했습니다. 누락된 종속 에셋을 복구한 후 다시 불러오고 원본 저장의 사본을 보관하세요.",
-            "Czyszczenie zablokowane przez niepoprawną połączoną drogę lub tor. Przywróć zależności i wczytaj ponownie; zachowaj kopię oryginalnego zapisu.",
-            "A limpeza foi bloqueada por uma via ou trilho conectado inválido. Restaure as dependências e recarregue; mantenha uma cópia do salvamento original.",
-            "Очистка заблокирована некорректной подключённой дорогой или путём. Восстановите зависимости и загрузите город заново; сохраните копию исходного файла."
-        },
-        ["MissingBridgesTimeout"] = new[]
-        {
-            "Bridge cleanup is taking longer than expected. {0} entities and {1} network references remain. Cleanup is not complete; do not overwrite the original save. See the mod log.",
-            "桥梁清理耗时超过预期，仍有 {0} 个实体和 {1} 处路网引用待处理。清理尚未完成，请勿覆盖原存档。详情请查看模组日志。",
-            "橋梁清理耗時超過預期，仍有 {0} 個實體與 {1} 處路網引用待處理。清理尚未完成，請勿覆寫原存檔。詳情請查看模組日誌。",
-            "Die Brückenbereinigung dauert länger als erwartet. {0} Entitäten und {1} Netzverweise verbleiben. Noch nicht abgeschlossen; Originalspielstand nicht überschreiben. Siehe Mod-Protokoll.",
-            "La limpieza tarda más de lo previsto. Quedan {0} entidades y {1} referencias de red. No ha finalizado; no sobrescribas la partida original. Consulta el registro del mod.",
-            "Le nettoyage prend plus de temps que prévu. Il reste {0} entités et {1} références réseau. Il n’est pas terminé ; n’écrasez pas la sauvegarde originale. Consultez le journal du mod.",
-            "La pulizia richiede più tempo del previsto. Restano {0} entità e {1} riferimenti di rete. Non è completa: non sovrascrivere il salvataggio originale. Consulta il registro della mod.",
-            "橋の削除処理に時間がかかっています。残りはエンティティ {0} 個、ネットワーク参照 {1} 件です。処理は未完了です。元のセーブを上書きせず、MOD のログを確認してください。",
-            "교량 정리가 예상보다 오래 걸립니다. 엔티티 {0}개와 네트워크 참조 {1}개가 남아 있습니다. 정리가 완료되지 않았으니 원본 저장 파일을 덮어쓰지 마세요. 모드 로그를 확인하세요.",
-            "Czyszczenie trwa dłużej niż oczekiwano. Pozostało {0} encji i {1} odwołań do sieci. Czyszczenie nie jest zakończone; nie nadpisuj oryginalnego zapisu. Sprawdź dziennik moda.",
-            "A limpeza está demorando mais que o esperado. Restam {0} entidades e {1} referências de rede. A limpeza não terminou; não sobrescreva o salvamento original. Consulte o log do mod.",
-            "Очистка мостов занимает больше времени, чем ожидалось. Осталось сущностей: {0}, сетевых ссылок: {1}. Очистка не завершена; не перезаписывайте исходное сохранение. См. журнал мода."
-        },
-        ["MissingBridgesSuspended"] = new[]
-        {
-            "Automatic bridge cleanup is suspended because network initialization or startup recovery did not finish safely. Bridge files are retained. Check the mod log and restart the game after resolving the issue. Do not overwrite the original save.",
-            "路网初始化或启动修复未安全完成，已暂停自动清理桥梁并保留桥梁文件。请查看模组日志，解决问题后重启游戏。请勿覆盖原存档。",
-            "路網初始化或啟動修復未安全完成，已暫停自動清理橋梁並保留橋梁檔案。請查看模組日誌，解決問題後重新啟動遊戲。請勿覆寫原存檔。",
-            "Automatische Brückenbereinigung angehalten: Netzinitialisierung oder Startreparatur nicht sicher abgeschlossen. Brückendateien bleiben erhalten. Mod-Protokoll prüfen, Problem beheben und Spiel neu starten. Originalspielstand nicht überschreiben.",
-            "La limpieza automática se ha suspendido: la inicialización de redes o la recuperación inicial no terminó de forma segura. Se conservan los archivos. Revisa el registro, resuelve el problema y reinicia el juego. No sobrescribas la partida original.",
-            "Nettoyage automatique suspendu : l’initialisation des réseaux ou la réparation au démarrage n’a pas abouti en toute sécurité. Les fichiers sont conservés. Consultez le journal, résolvez le problème et redémarrez le jeu. N’écrasez pas la sauvegarde originale.",
-            "Pulizia automatica sospesa: l’inizializzazione delle reti o il ripristino iniziale non è terminato in sicurezza. I file sono conservati. Controlla il registro, risolvi il problema e riavvia il gioco. Non sovrascrivere il salvataggio originale.",
-            "ネットワークの初期化または起動時の修復が安全に完了しなかったため、自動削除を停止しました。橋のファイルは保持されています。ログを確認して問題を解決し、ゲームを再起動してください。元のセーブを上書きしないでください。",
-            "네트워크 초기화 또는 시작 시 복구가 안전하게 완료되지 않아 자동 정리를 중단했습니다. 교량 파일은 보존됩니다. 로그를 확인하고 문제를 해결한 후 게임을 다시 시작하세요. 원본 저장 파일을 덮어쓰지 마세요.",
-            "Automatyczne czyszczenie wstrzymane: inicjalizacja sieci lub naprawa startowa nie zakończyła się bezpiecznie. Pliki mostów zachowano. Sprawdź dziennik, usuń problem i uruchom grę ponownie. Nie nadpisuj oryginalnego zapisu.",
-            "Limpeza automática suspensa: a inicialização das redes ou a recuperação inicial não terminou com segurança. Os arquivos foram mantidos. Consulte o log, resolva o problema e reinicie o jogo. Não sobrescreva o salvamento original.",
-            "Автоматическая очистка приостановлена: инициализация сетей или восстановление при запуске не завершились безопасно. Файлы мостов сохранены. Проверьте журнал, устраните проблему и перезапустите игру. Не перезаписывайте исходное сохранение."
         },
         ["CustomRoad"] = new[]
         {
@@ -221,36 +186,6 @@ internal static class RuntimeUiText
             "Road Builder jest załadowany, ale nie można go otworzyć. Użyj jego przycisku na pasku narzędzi. Wybór mostu został zachowany.",
             "Road Builder está carregado, mas a interface não abriu. Tente o botão na barra de ferramentas do mod. A seleção da ponte foi mantida.",
             "Road Builder загружен, но интерфейс не открылся. Попробуйте его кнопку на панели инструментов. Выбор моста сохранён."
-        },
-        ["MissingBridgesRemoved"] = new[]
-        {
-            "Removed placed networks for {0} missing Bridge Builder bridge assets from this city. Other assets were not removed. The original save file is unchanged; save as a new file to keep this repair.",
-            "已从当前城市移除 {0} 种缺失的 Bridge Builder 桥梁资产对应的已建路网，未移除其他资产。原存档文件未被覆盖；请另存为新存档以保留修复。",
-            "已從目前城市移除 {0} 種缺失的 Bridge Builder 橋梁資產對應的已建路網，未移除其他資產。原存檔未被覆寫；請另存新檔以保留修復。",
-            "Netze für {0} fehlende Bridge-Builder-Brücken entfernt. Andere Assets bleiben erhalten. Der ursprüngliche Spielstand bleibt unverändert; bitte unter neuem Namen speichern.",
-            "Se eliminaron las redes de {0} puentes de Bridge Builder ausentes. Los demás recursos y el archivo original no se modificaron. Guarda en un archivo nuevo para conservar la reparación.",
-            "Les réseaux de {0} ponts Bridge Builder manquants ont été supprimés. Les autres ressources et la sauvegarde originale sont conservées. Enregistrez dans un nouveau fichier pour conserver la réparation.",
-            "Rimosse le reti di {0} ponti Bridge Builder mancanti. Le altre risorse e il salvataggio originale sono invariati. Salva in un nuovo file per conservare la riparazione.",
-            "見つからない Bridge Builder 橋梁アセット {0} 種類の設置済みネットワークを削除しました。他のアセットと元のセーブファイルは変更していません。修復を保存するには別名で保存してください。",
-            "누락된 Bridge Builder 교량 에셋 {0}종의 배치된 네트워크를 제거했습니다. 다른 에셋과 원본 저장 파일은 변경하지 않았습니다. 복구 결과를 새 파일로 저장하세요.",
-            "Usunięto sieci {0} brakujących mostów Bridge Builder. Inne zasoby i oryginalny zapis pozostają bez zmian. Zapisz w nowym pliku, aby zachować naprawę.",
-            "Removidas as redes de {0} pontes Bridge Builder ausentes. Outros recursos e o arquivo original permanecem intactos. Salve em um novo arquivo para manter o reparo.",
-            "Удалены сети {0} отсутствующих мостов Bridge Builder. Другие ресурсы и исходное сохранение не изменены. Сохраните город в новом файле, чтобы оставить исправление."
-        },
-        ["MissingBridgesRepairFailed"] = new[]
-        {
-            "Missing bridge cleanup could not be completed. Check the mod log. Do not overwrite the original save.",
-            "缺失桥梁清理未能完成，请查看模组日志。请勿覆盖原存档。",
-            "缺失橋梁清理未能完成，請查看模組日誌。請勿覆寫原存檔。",
-            "Bereinigung fehlgeschlagen. Mod-Protokoll prüfen. Originalspielstand nicht überschreiben.",
-            "No se pudo completar la limpieza. Revisa el registro del mod. No sobrescribas la partida original.",
-            "Nettoyage incomplet. Consultez le journal du mod. N’écrasez pas la sauvegarde originale.",
-            "Pulizia incompleta. Controlla il registro della mod. Non sovrascrivere il salvataggio originale.",
-            "削除処理が完了しませんでした。Mod のログを確認し、元のセーブを上書きしないでください。",
-            "정리를 완료하지 못했습니다. 모드 로그를 확인하고 원본 저장 파일을 덮어쓰지 마세요.",
-            "Nie ukończono czyszczenia. Sprawdź dziennik moda. Nie nadpisuj oryginalnego zapisu.",
-            "Limpeza incompleta. Consulte o log do mod. Não sobrescreva o salvamento original.",
-            "Очистка не завершена. Проверьте журнал мода. Не перезаписывайте исходное сохранение."
         },
         ["ActivateLocked"] = new[]
         {
@@ -999,21 +934,6 @@ internal static class RuntimeUiText
             "Lendo redes e protótipos de pontes…",
             "Чтение сетей и прототипов мостов…"
         },
-        ["Refreshing"] = new[]
-        {
-            "Refreshing networks and bridge prototypes…",
-            "正在刷新路网与桥梁原型…",
-            "正在重新整理路網與橋梁原型…",
-            "Netze und Brückenvorlagen werden aktualisiert…",
-            "Actualizando redes y prototipos de puentes…",
-            "Actualisation des réseaux et modèles de pont…",
-            "Aggiornamento delle reti e dei prototipi di ponte…",
-            "ネットワークと橋の原型を更新中…",
-            "네트워크 및 교량 원형 새로 고치는 중…",
-            "Odświeżanie sieci i pierwowzorów mostów…",
-            "Atualizando redes e protótipos de pontes…",
-            "Обновление сетей и прототипов мостов…"
-        },
         ["Creating"] = new[]
         {
             "Creating bridge prefab…",
@@ -1374,20 +1294,20 @@ internal static class RuntimeUiText
             "“{0}” criada. Construa pelo gerenciamento.",
             "«{0}» создан. Стройте через управление мостами."
         },
-        ["RegistrationFailed"] = new[]
+        ["AssetMetadataFailed"] = new[]
         {
-            "Could not save registration for bridge {0}. Creation did not complete.",
-            "无法保存桥梁 {0} 的注册记录，创建未完成。",
-            "無法儲存橋梁 {0} 的註冊記錄，建立未完成。",
-            "Registrierung für Brücke {0} nicht gespeichert. Erstellung nicht abgeschlossen.",
-            "No se pudo guardar el registro del puente {0}. La creación no se completó.",
-            "Impossible d’enregistrer le pont {0}. La création n’est pas terminée.",
-            "Impossibile registrare il ponte {0}. Creazione non completata.",
-            "橋 {0} の登録を保存できませんでした。作成は完了していません。",
-            "교량 {0}의 등록을 저장하지 못했습니다. 생성이 완료되지 않았습니다.",
-            "Nie zapisano rejestracji mostu {0}. Tworzenie nie zostało ukończone.",
-            "Não foi possível registrar a ponte {0}. A criação não foi concluída.",
-            "Не удалось сохранить регистрацию моста {0}. Создание не завершено."
+            "Could not save metadata for bridge {0}. Creation did not complete.",
+            "无法保存桥梁 {0} 的资产元数据，创建未完成。",
+            "無法儲存橋梁 {0} 的資產中繼資料，建立未完成。",
+            "Die Metadaten der Brücke {0} konnten nicht gespeichert werden. Die Erstellung wurde nicht abgeschlossen.",
+            "No se pudieron guardar los metadatos del puente {0}. La creación no se completó.",
+            "Impossible d’enregistrer les métadonnées du pont {0}. La création n’est pas terminée.",
+            "Impossibile salvare i metadati del ponte {0}. Creazione non completata.",
+            "橋 {0} のメタデータを保存できませんでした。作成は完了していません。",
+            "교량 {0}의 메타데이터를 저장하지 못했습니다. 생성이 완료되지 않았습니다.",
+            "Nie zapisano metadanych mostu {0}. Tworzenie nie zostało ukończone.",
+            "Não foi possível salvar os metadados da ponte {0}. A criação não foi concluída.",
+            "Не удалось сохранить метаданные моста {0}. Создание не завершено."
         },
         ["CreateFailed"] = new[]
         {
@@ -1481,7 +1401,7 @@ internal static class RuntimeUiText
         },
         ["RenameFailed"] = new[]
         {
-            "Renaming failed: registration was not found or could not be saved.",
+            "Renaming failed: assetInfo was not found or could not be saved.",
             "改名失败：找不到注册记录或无法保存。",
             "更名失敗：找不到註冊記錄或無法儲存。",
             "Umbenennen fehlgeschlagen: Registrierung fehlt oder konnte nicht gespeichert werden.",
@@ -1511,7 +1431,7 @@ internal static class RuntimeUiText
         },
         ["DeleteUnsafe"] = new[]
         {
-            "Deletion failed: could not safely remove placed instances. Prefab and registration retained.",
+            "Deletion failed: could not safely remove placed instances. Prefab and assetInfo retained.",
             "删除失败：无法安全移除地图实例，因此保留了 Prefab 和 UUID 注册记录。",
             "刪除失敗：無法安全移除地圖實例，因此保留了 Prefab 和 UUID 註冊記錄。",
             "Löschen fehlgeschlagen: Gebaute Exemplare nicht sicher entfernbar. Prefab und Registrierung beibehalten.",
@@ -1526,7 +1446,7 @@ internal static class RuntimeUiText
         },
         ["Deleted"] = new[]
         {
-            "Deleted “{0}”, its {1} placed instances and UUID registration.",
+            "Deleted “{0}”, its {1} placed instances and UUID assetInfo.",
             "已删除“{0}”、其 {1} 个地图实例及 UUID 注册记录。",
             "已刪除「{0}」、其 {1} 個地圖實例及 UUID 註冊記錄。",
             "„{0}“, {1} gebaute Exemplare und UUID-Registrierung gelöscht.",
@@ -1541,7 +1461,7 @@ internal static class RuntimeUiText
         },
         ["DeleteIncomplete"] = new[]
         {
-            "Deletion incomplete: prefab assets or UUID registration remain. See the report.",
+            "Deletion incomplete: prefab assets or UUID assetInfo remain. See the report.",
             "删除未完成：Prefab 资产或 UUID 注册记录仍然存在；请查看报告。",
             "刪除未完成：Prefab 資產或 UUID 註冊記錄仍然存在；請查看報告。",
             "Löschen unvollständig: Prefab-Assets oder UUID-Registrierung verbleiben. Siehe Bericht.",

@@ -31,7 +31,7 @@ internal static class BridgeRailSeamPatch
         internal readonly Type SystemType, JobType;
         internal readonly FieldInfo Entities;
         internal readonly Harmony Harmony;
-        internal bool CornerPatched, SchedulePatched, Disabled, ScheduleObserved;
+        internal bool CornerPatched, SchedulePatched, ScheduleObserved;
         internal int Reports;
         internal Backend(Type system, Type job, FieldInfo entities)
         {
@@ -107,7 +107,7 @@ internal static class BridgeRailSeamPatch
                 Mod.Log.Warn($"Rail seam repair unavailable for {system.FullName}: IL pattern changed; pipeline retained.");
                 return;
             }
-            Mod.Log.Info($"Rail seam repair installed for {system.FullName}: scoped geometry replay before flattening/lane generation; no ownership or lane deletion.");
+            Mod.Log.Info($"Rail seam repair installed for {system.FullName}: direct straight-track calculation, including partial geometry batches; no ownership or lane deletion.");
         }
         catch (Exception exception)
         {
@@ -180,58 +180,78 @@ internal static class BridgeRailSeamPatch
     private static JobHandle Schedule<T>(T job, NativeList<Entity> list, int batch, JobHandle dependency,
         GameSystemBase system) where T : struct, IJobParallelForDefer
     {
-        // Schedule the REAL native struct, never an ABI/layout replica. Its Burst pass remains
-        // intact. Complete it before reading lookups or replaying a write, and return the same
-        // dependency to native Flatten/Finish/NodeGeometry jobs. No ECS structural changes here.
-        var handle = job.Schedule(list, batch, dependency);
-        if (!Backends.TryGetValue(typeof(T), out var backend) || backend.Disabled) return handle;
-        handle.Complete();
+        if (!Backends.TryGetValue(typeof(T), out var backend)) return job.Schedule(list, batch, dependency);
+        // Harmony's managed predicate is not executed by Burst. Complete the input producers,
+        // partition the real job's write list, and run affected bridge edges directly through
+        // that job's managed Execute. They never run through the unpatched Burst calculation.
+        // Unrelated edges keep Burst; the downstream pipeline retains its ORIGINAL full list.
+        dependency.Complete();
         if (!backend.ScheduleObserved)
         {
             backend.ScheduleObserved = true;
             Mod.Log.Info($"Rail seam schedule entered: backend={backend.SystemType.FullName}, batchEdges={list.Length}; installation alone is not a repair hit.");
         }
-        var snapshots = new List<BridgeRailSeamScope.GeometrySnapshot>();
+        BridgeRailSeamScope scope;
         try
         {
-            object boxed = job;
-            var scope = new BridgeRailSeamScope(system, boxed, list);
-            if (scope.Seams.Count == 0) return handle;
-            // AsDeferredJobArray is patched only inside the scheduler's copy. A managed replay
-            // MUST use a resolved array, not that deferred sentinel or a hand-built native pointer.
-            backend.Entities.SetValue(boxed, list.AsArray());
-            var replay = (IJobParallelForDefer)boxed;
-            foreach (var index in scope.Indices)
-                snapshots.Add(new BridgeRailSeamScope.GeometrySnapshot(system.EntityManager, list[index]));
-            _seams = scope.Seams;
-            _visited = new HashSet<(Entity Edge, Entity Node)>();
-            _hits = 0;
-            foreach (var index in scope.Indices) replay.Execute(index);
-            if (!scope.Seams.IsSubsetOf(_visited))
-            {
-                foreach (var snapshot in snapshots) snapshot.Restore(system.EntityManager);
-                backend.Disabled = true;
-                Mod.Log.Warn("Rail seam replay did not reach both sides of every seam; native geometry restored, repair disabled.");
-            }
-            else
-            {
-                var audit = system.World.GetExistingSystemManaged<BridgeBuilder.Systems.BridgeRailSeamAuditSystem>();
-                foreach (var seam in scope.Seams) audit?.Observe(seam.Node);
-                if (backend.Reports++ < 20)
-                    Mod.Log.Info($"Rail seam repair: backend={backend.SystemType.FullName}, {scope.Seams.Count / 2} internal seam(s), "
-                        + $"{scope.Indices.Count} native edge replay(s), {_hits} predicate hit(s); {scope.Evidence}");
-            }
+            scope = new BridgeRailSeamScope(system, job, list);
         }
         catch (Exception exception)
         {
-            // A replay is a geometry-only transaction. Restore the native results for the whole
-            // batch if anything fails; never leave only one deck corrected, retry every frame,
-            // swallow a native producer failure, or destroy a network/lane to hide the error.
-            backend.Disabled = true;
+            Mod.Log.Warn(exception, $"Rail seam topology inspection failed for {backend.SystemType.FullName}; native batch retained. The next batch will retry.");
+            return job.Schedule(list, batch, dependency);
+        }
+        if (scope.Indices.Count == 0) return job.Schedule(list, batch, dependency);
+
+        using var ordinary = new NativeList<Entity>(list.Length, Allocator.TempJob);
+        using var bridges = new NativeList<Entity>(scope.Indices.Count, Allocator.TempJob);
+        var selected = new HashSet<int>(scope.Indices);
+        for (var i = 0; i < list.Length; i++)
+            if (selected.Contains(i)) bridges.Add(list[i]); else ordinary.Add(list[i]);
+
+        // Only job-local array bindings change. No entities, Owner components, lane buffers,
+        // update flags, prefabs, or the caller's deferred list are modified by this adapter.
+        if (ordinary.Length != 0) RunNative(job, backend, ordinary, batch, dependency);
+        var snapshots = new List<BridgeRailSeamScope.GeometrySnapshot>();
+        try
+        {
+            foreach (var entity in bridges)
+                snapshots.Add(new BridgeRailSeamScope.GeometrySnapshot(system.EntityManager, entity));
+            object boxed = job;
+            backend.Entities.SetValue(boxed, bridges.AsArray());
+            var calculation = (IJobParallelForDefer)boxed;
+            _seams = scope.Seams;
+            _visited = new HashSet<(Entity Edge, Entity Node)>();
+            _hits = 0;
+            for (var i = 0; i < bridges.Length; i++) calculation.Execute(i);
+            // An unchanged neighbour is a read dependency, not an expected Execute call.
+            // Do not reject partial updates merely because only one side was calculated.
+            var audit = system.World.GetExistingSystemManaged<BridgeBuilder.Systems.BridgeRailSeamAuditSystem>();
+            foreach (var seam in _visited) audit?.Observe(seam.Node);
+            if (backend.Reports++ < 20)
+                Mod.Log.Info($"Rail seam direct calculation: backend={backend.SystemType.FullName}, "
+                    + $"batchEdges={list.Length}, straightEdges={bridges.Length}, nativeEdges={ordinary.Length}, "
+                    + $"visitedEndpoints={_visited.Count}, predicateHits={_hits}; {scope.Evidence}");
+        }
+        catch (Exception exception)
+        {
+            // Preserve native failure behaviour for this batch, with explicit diagnostics.
+            // A transient failure must not disable protection for all later recalculations.
+            _seams = null;
             foreach (var snapshot in snapshots) snapshot.Restore(system.EntityManager);
-            Mod.Log.Warn(exception, "Rail seam replay failed; native geometry restored, repair disabled for this session.");
+            Mod.Log.Warn(exception, $"Rail seam direct calculation failed for {backend.SystemType.FullName}; native batch retained. The next batch will retry.");
+            RunNative(job, backend, bridges, batch, dependency);
         }
         finally { _seams = null; _visited = null; }
-        return handle;
+        // Both partitions are complete before Flatten/Finish/NodeGeometry are scheduled.
+        return dependency;
+    }
+
+    private static void RunNative<T>(T job, Backend backend, NativeList<Entity> entities, int batch,
+        JobHandle dependency) where T : struct, IJobParallelForDefer
+    {
+        object boxed = job;
+        backend.Entities.SetValue(boxed, entities.AsDeferredJobArray());
+        ((T)boxed).Schedule(entities, batch, dependency).Complete();
     }
 }

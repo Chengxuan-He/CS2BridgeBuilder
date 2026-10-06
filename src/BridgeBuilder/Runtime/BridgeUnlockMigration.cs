@@ -1,7 +1,7 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
+
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.RegularExpressions;
@@ -113,7 +113,7 @@ internal static class BridgeUnlockMigration
                 var stem = Path.GetFileName(directory);
                 var root = stem.EndsWith("_Lower", StringComparison.Ordinal) || stem.EndsWith("_Upper", StringComparison.Ordinal)
                     ? stem.Substring(0, stem.Length - 6) : stem;
-                if (!BridgeRegistration.IsPrefabName(root)) continue;
+                if (!BridgeAssetInfo.IsPrefabName(root)) continue;
                 var path = Path.Combine(directory, stem + ".Prefab");
                 if (!BridgeFileAccess.Exists(path)) continue;
                 if ((BridgeFileAccess.Attributes(path) & FileAttributes.ReparsePoint) != 0)
@@ -151,51 +151,6 @@ internal static class BridgeUnlockMigration
             return Commit(path, before, before.Replace(marker, "\"" + next + "\""), out error);
         }
         catch (Exception exception) { error = exception.Message; return false; }
-    }
-
-    // Recover the serialized identity even when native deserialization resolved its reference to
-    // null. Never reload the entire PrefabAsset or replace its UUID/geometry/other components.
-    internal static bool RecoverGate(string gameRoot, string prefabName, out string gate, out string error)
-    {
-        gate = error = string.Empty;
-        var root = prefabName.EndsWith("_Lower", StringComparison.Ordinal)
-            || prefabName.EndsWith("_Upper", StringComparison.Ordinal)
-            ? prefabName.Substring(0, prefabName.Length - 6) : prefabName;
-        if (!BridgeRegistration.IsPrefabName(root)) { error = "Not an owned bridge name"; return false; }
-        try
-        {
-            var imported = Path.Combine(Path.GetFullPath(gameRoot), "ImportedData");
-            var directory = Path.Combine(imported, prefabName);
-            var path = Path.Combine(directory, prefabName + ".Prefab");
-            foreach (var item in new[] { imported, directory, path })
-                if ((BridgeFileAccess.Attributes(item) & FileAttributes.ReparsePoint) != 0)
-                { error = "Reparse point retained"; return false; }
-            var before = BridgeFileAccess.ReadText(path);
-            if (Name.Match(before).Groups[1].Value != prefabName
-                || !before.Contains("BridgeBuilder.Bridges.BridgeConstructionCost, BridgeBuilder"))
-            { error = "Unverified bridge file ownership"; return false; }
-            if (!Rewrite(before, out var after, out error) || !ReadGate(after, out gate))
-            { if (error.Length == 0) error = "Independent unlock rule unavailable"; return false; }
-            if (before != after && !Commit(path, before, after, out error)) { gate = string.Empty; return false; }
-            return true;
-        }
-        catch (Exception exception) { error = "Unlock recovery deferred: " + exception.Message; return false; }
-    }
-
-    internal static bool ReadGate(string text, out string gate)
-    {
-        gate = string.Empty;
-        var types = Regex.Matches(text, "\"\\$type\":\\s*\"\\d+\\|Game\\.Prefabs\\.ManualUnlockable, Game\"");
-        if (types.Count != 1) return false;
-        var start = text.LastIndexOf('{', types[0].Index);
-        var end = ObjectEnd(text, start);
-        if (start < 0 || end < 0) return false;
-        var block = text.Substring(start, end - start);
-        var name = Regex.Match(block, "\"name\":\\s*\"([^\"]+)\"");
-        if (!Regex.IsMatch(block, "\"active\":\\s*true")
-            || !BridgeUnlockExpression.TryDecode(name.Groups[1].Value, out _)) return false;
-        gate = name.Groups[1].Value;
-        return true;
     }
 
     private static bool Commit(string path, string before, string after, out string error)

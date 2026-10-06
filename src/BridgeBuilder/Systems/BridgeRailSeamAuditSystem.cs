@@ -44,6 +44,16 @@ public partial class BridgeRailSeamAuditSystem : GameSystemBase
         _pending[node] = UnityEngine.Time.frameCount;
     }
 
+    internal void Restart(string reason)
+    {
+        _pending.Clear();
+        _reported.Clear();
+        _reports = 0;
+        _nextScanFrame = 0;
+        BridgeRailSeamScope.ResetDiagnostics();
+        Mod.Log.Info("Rail seam audit restarted: " + reason);
+    }
+
     protected override void OnGamePreload(Purpose purpose, GameMode mode)
     {
         base.OnGamePreload(purpose, mode);
@@ -75,7 +85,7 @@ public partial class BridgeRailSeamAuditSystem : GameSystemBase
                     var reference = EntityManager.GetComponentData<PrefabRef>(entity);
                     if (_prefabs == null || !_prefabs.TryGetPrefab<TrackPrefab>(reference, out var prefab)
                         || prefab == null || !prefab.name.EndsWith("_Lower", StringComparison.Ordinal)
-                        || !BridgeRegistration.IsPrefabName(prefab.name.Substring(0, prefab.name.Length - 6))) continue;
+                        || !BridgeAssetInfo.IsPrefabName(prefab.name.Substring(0, prefab.name.Length - 6))) continue;
                     var edge = EntityManager.GetComponentData<Edge>(entity);
                     Observe(edge.m_Start);
                     Observe(edge.m_End);

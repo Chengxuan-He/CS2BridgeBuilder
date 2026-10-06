@@ -37,7 +37,7 @@ internal static class BridgeUnlockPolicy
         EntityManager manager, out bool locked)
     {
         locked = true;
-        if (BridgeLoadFailures.RestartRequired) return false;
+        if (BridgeSessionState.RestartRequired) return false;
         try
         {
             manager.CompleteAllTrackedJobs();

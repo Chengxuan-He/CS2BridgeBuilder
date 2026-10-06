@@ -1,25 +1,25 @@
-using BridgeBuilder.Bridges;
+﻿using BridgeBuilder.Bridges;
 using BridgeBuilder.Runtime;
 using BridgeBuilder.Settings;
 using BridgeBuilder.UI;
 using Colossal.Serialization.Entities;
 using CS2Mods.Shared;
-using CS2Mods.Shared.Conversion;
+
 using CS2Mods.Shared.Discovery;
-using CS2Mods.Shared.Export;
+
 using CS2Mods.Shared.Infrastructure;
 using Game;
-using Game.Common;
-using Game.Net;
-using Game.Objects;
+
+
+
 using Game.Prefabs;
-using Game.Tools;
+
 using System;
 using System.Collections.Generic;
 using System.Globalization;
-using System.IO;
+
 using System.Linq;
-using Unity.Collections;
+
 using Unity.Entities;
 
 namespace BridgeBuilder.Systems;
@@ -55,7 +55,7 @@ public partial class BridgeGenerationSystem : GameSystemBase
     private BridgePreviewRenderer? _previewRenderer;
     private bool _previewReleasePending;
     private BridgeInstanceRemoval? _pendingRemoval;
-    private BridgeRegistration? _removingRegistration;
+    private BridgeAssetInfo? _removingAsset;
     private DateTime _removalStartedUtc;
     private bool _activationLocked;
 
@@ -106,7 +106,7 @@ public partial class BridgeGenerationSystem : GameSystemBase
     {
         BridgeRuntimeRequests.BeginCatalogLoad();
         _pendingRemoval = null;
-        _removingRegistration = null;
+        _removingAsset = null;
         ClearPreview();
         BridgePreviewState.Clear();
         base.OnStopRunning();
@@ -123,12 +123,12 @@ public partial class BridgeGenerationSystem : GameSystemBase
             {
                 if (_pendingRemoval.IsComplete(EntityManager)) CompleteRuntimeDeletion();
                 else if (DateTime.UtcNow - _removalStartedUtc > TimeSpan.FromSeconds(90))
-                    FailDeletion(_removingRegistration?.PrefabName ?? "", "DeleteIncomplete",
+                    FailDeletion(_removingAsset?.PrefabName ?? "", "DeleteIncomplete",
                         "Native network cleanup did not complete within 90 seconds; assets retained.");
             }
             catch (Exception exception)
             {
-                FailDeletion(_removingRegistration?.PrefabName ?? "", "DeleteIncomplete",
+                FailDeletion(_removingAsset?.PrefabName ?? "", "DeleteIncomplete",
                     "Could not finish native network cleanup safely.", exception);
             }
             return;
@@ -261,7 +261,7 @@ public partial class BridgeGenerationSystem : GameSystemBase
         try
         {
             BridgeAssetPack.RefreshExisting(_prefabSystem, EntityManager,
-                generated.Concat(BridgeRegistrationStore.Load().Select(entry => entry.PrefabName)));
+                generated.Concat(BridgeAssetCatalog.Load().Select(entry => entry.PrefabName)));
             BridgeStyleCatalog.Rebuild(_prefabSystem, generated);
             _prototypeMaterialAudit.Inspect(_prefabSystem);
             DeckCatalog.Rebuild(_prefabSystem, roads);
@@ -360,7 +360,7 @@ public partial class BridgeGenerationSystem : GameSystemBase
                 ActivateRuntimeBridge(request.PrefabName);
                 return;
             case BridgeRuntimeAction.Rename:
-                RenameRuntimeBridge(request.PrefabName, request.RegistrationName);
+                RenameRuntimeBridge(request.PrefabName, request.DisplayName);
                 return;
             case BridgeRuntimeAction.Delete:
                 DeleteRuntimeBridge(request.PrefabName);

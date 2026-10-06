@@ -1,19 +1,19 @@
-using Colossal.AssetPipeline;
-using BridgeBuilder.Runtime;
-using Colossal.AssetPipeline.Importers;
-using Colossal.IO.AssetDatabase;
-using Colossal.Mathematics;
-using CS2Mods.Shared;
+﻿
+
+
+
+
+
 using CS2Mods.Shared.Infrastructure;
 using Game.Prefabs;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
-using Unity.Collections;
-using Unity.Mathematics;
-using UnityEngine;
-using UnityEngine.Rendering;
+
+
+
+
 
 namespace BridgeBuilder.Bridges;
 
@@ -111,38 +111,6 @@ internal sealed partial class TowerFactory
     /// <summary>Records the reviewed outer and inner targets for the bridge currently being built.</summary>
     internal void MeasureStructureWidths(float outer, float innerLeft, float innerRight) =>
         _structureWidths = new StructureWidths(outer, innerLeft, innerRight);
-
-
-    /// <summary>The ground decal every tower's base part carries, looked up once per run.</summary>
-    private RenderPrefab? _groundBase;
-
-    private bool _groundBaseSearched;
-
-    /// <summary>
-    /// The game's own <c>Default_Base Mesh</c>, found by name.
-    ///
-    /// By name and not from the archetype: the archetype may not be installed, and this is base game
-    /// content that is there whenever the game is. If it somehow is not, the base is left off - a
-    /// tower without a ground decal is a cosmetic fault, a tower that failed to generate is not.
-    /// </summary>
-    private RenderPrefab? GroundBase()
-    {
-        if (_groundBaseSearched) return _groundBase;
-        _groundBaseSearched = true;
-
-        _groundBase = _prefabs
-            .OfType<RenderPrefab>()
-            .FirstOrDefault(prefab => string.Equals(
-                prefab.name, BridgeTowerSpec.BaseMeshName, StringComparison.Ordinal));
-
-        if (_groundBase == null)
-        {
-            _report.Warning(
-                $"'{BridgeTowerSpec.BaseMeshName}' was not found, so generated towers carry no ground base.");
-        }
-
-        return _groundBase;
-    }
 
     internal TowerFactory(PrefabSystem prefabSystem, ExportReport report,
         PreviewGeometry? previewGeometry = null)

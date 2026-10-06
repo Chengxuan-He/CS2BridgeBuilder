@@ -27,7 +27,7 @@ internal sealed class BridgePreviewObjectLayout
     {
         layout = new BridgePreviewObjectLayout();
         // Already registered objects use the initialized game data verbatim.
-        // Generated tmp objects have no ECS registration; aggregate their
+        // Generated tmp objects have no ECS assetInfo; aggregate their
         // authored RenderPrefab bounds by the same initialization rules below.
         var world = World.DefaultGameObjectInjectionWorld;
         var prefabs = world?.GetExistingSystemManaged<PrefabSystem>();

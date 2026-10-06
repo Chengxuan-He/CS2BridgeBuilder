@@ -23,7 +23,7 @@ var completions = 0;
 var success = false;
 Check(publisher.Publish(new[] { Node(first), Node(dependency, false), Node(dependency, false) }, report,
     ready => { completions++; success = ready; }), "queue first bridge");
-Check(publisher.IsPending && completions == 0 && Entries() == 1, "registration must not initialize or activate");
+Check(publisher.IsPending && completions == 0 && Entries() == 1, "assetInfo must not initialize or activate");
 Check(prefabs.AddCalls.TakeLast(2).SequenceEqual(new[] { dependency, first }), "distinct dependencies before root");
 Check(!publisher.Publish(new[] { Node(Road("overlap")) }, new ExportReport(), _ => { }), "reject overlapping publication");
 prefabs.NativePass();
@@ -79,19 +79,10 @@ buffer.Add(new UIGroupElement { m_Prefab = prefabs.EntityOf(duplicate) });
 publisher.Update();
 Check(!duplicateReady && duplicateReport.Failures.Any(text => text.Contains("2 entries")), "reject duplicate category membership");
 
-var rejected = Road("rejected registration");
-var quarantined = Road("quarantined after native pass");
-var quarantineReport = new ExportReport();
-var quarantineReady = true;
-publisher.Publish(new[] { Node(quarantined) }, quarantineReport, ready => quarantineReady = ready);
-prefabs.NativePass();
-BridgeBuilder.Runtime.BridgeLoadFailures.Quarantined.Add(quarantined);
-publisher.Update();
-Check(!quarantineReady && quarantineReport.Failures.Count == 1, "quarantined native initialization never completes successfully");
-
+var rejected = Road("rejected assetInfo");
 prefabs.Reject = rejected;
 var rejectedCallback = false;
-Check(!publisher.Publish(new[] { Node(rejected) }, new ExportReport(), _ => rejectedCallback = true), "registration failure returned");
+Check(!publisher.Publish(new[] { Node(rejected) }, new ExportReport(), _ => rejectedCallback = true), "assetInfo failure returned");
 publisher.Update();
 Check(!rejectedCallback && !publisher.IsPending, "rejected publication has no success callback");
 

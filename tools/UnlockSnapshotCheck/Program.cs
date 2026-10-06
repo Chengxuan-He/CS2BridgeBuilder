@@ -1,4 +1,4 @@
-using BridgeBuilder.Runtime;
+﻿using BridgeBuilder.Runtime;
 using Game.Prefabs;
 using Unity.Entities;
 
@@ -56,33 +56,14 @@ var migrated = "{\n    \"name\": \"" + uuid + "\",\n\"components\": ["
     + "{\"$type\":\"1|Game.Prefabs.ManualUnlockable, Game\",\"name\":\"" + gateText + "\",\"active\":true},"
     + "{\"$type\":\"2|BridgeBuilder.Bridges.BridgeConstructionCost, BridgeBuilder\"}]}";
 File.WriteAllText(path, migrated);
-var broken = new NetGeometryPrefab { name = uuid, asset = new() { path = path } };
-var legacy = broken.AddComponent<Unlockable>(); legacy.m_IgnoreDependencies = true;
-legacy.m_RequireAll = new PrefabBase[] { null! }; legacy.m_RequireAny = Array.Empty<PrefabBase>();
-Check(BridgeUnlockSnapshot.PrepareLegacy(broken), "repair already-deserialized null unlock from migrated disk rule");
-Check(broken.GetComponent<Unlockable>() == null && broken.GetComponent<ManualUnlockable>()?.name == gateText,
-    "replace only legacy gate, retain its recorded rule");
-Check(!BridgeLoadFailures.Restart, "successful in-memory migration does not require restart");
-Check(BridgeUnlockSnapshot.PrepareLegacy(broken), "in-memory repair idempotent");
-Check(File.ReadAllText(path) == migrated, "already migrated file unchanged");
-var missing = new NetGeometryPrefab { name = uuid + "_Lower", asset = new() };
-missing.AddComponent<Unlockable>().m_RequireAll = new PrefabBase[] { null! };
-Check(!BridgeUnlockSnapshot.PrepareLegacy(missing) && BridgeLoadFailures.Restart,
-    "missing recorded identity defers instead of deleting or unlocking");
-Check(missing.GetComponent<Unlockable>() != null, "failed repair leaves original component intact");
-Check(!BridgeUnlockMigration.RecoverGate(UnityEngine.Application.persistentDataPath, "../../foreign", out _, out _),
-    "reject foreign name/path before reading");
-Check(!BridgeUnlockMigration.ReadGate(migrated.Replace("\"active\":true", "\"active\":false"), out _),
-    "inactive serialized gate is not activated implicitly");
-BridgeLoadFailures.Restart = false;
+BridgeSessionState.Restart = false;
 using (var locked = new FileStream(path, FileMode.Open, FileAccess.ReadWrite, FileShare.None))
 {
     BridgeStartupRecovery.Start();
-    Check(BridgePrefabLoadGuard.Installed, "registration protection installed before disk migration");
-    Check(!BridgeLoadFailures.Restart, "early file lock allows OnLoad retry without latching failure");
+    Check(!BridgeSessionState.Restart, "early file lock allows OnLoad retry without latching failure");
 }
 BridgeStartupRecovery.Start(finalAttempt: true);
-Check(!BridgeLoadFailures.Restart, "OnLoad retry completes without mandatory restart");
+Check(!BridgeSessionState.Restart, "OnLoad retry completes without mandatory restart");
 BridgeStartupRecovery.Retired.Add(uuid);
 BridgeStartupRecovery.Start(finalAttempt: true);
 Check(BridgeStartupRecovery.Retired.Contains(uuid), "retired identity survives repeated startup calls in one session");
@@ -91,6 +72,6 @@ Check(BridgeStartupRecovery.Retired.Count == 0, "mod disposal clears only sessio
 using (var locked = new FileStream(path, FileMode.Open, FileAccess.ReadWrite, FileShare.None))
 {
     BridgeStartupRecovery.Start(finalAttempt: true);
-    Check(BridgeLoadFailures.Restart && File.Exists(path), "unresolved access failure retains assets and suspends deletion");
+    Check(BridgeSessionState.Restart && File.Exists(path), "unresolved access failure retains assets and suspends deletion");
 }
 Console.WriteLine($"{count} snapshot/recovery checks passed using fake native buffers; game startup acceptance still required.");

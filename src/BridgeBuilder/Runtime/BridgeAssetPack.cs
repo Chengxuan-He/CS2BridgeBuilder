@@ -1,5 +1,5 @@
-using BridgeBuilder.Bridges;
-using CS2Mods.Shared;
+﻿using BridgeBuilder.Bridges;
+
 using CS2Mods.Shared.Conversion;
 using CS2Mods.Shared.Export;
 using CS2Mods.Shared.Infrastructure;

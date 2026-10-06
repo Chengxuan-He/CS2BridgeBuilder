@@ -3,7 +3,7 @@
   <ItemGroup>
     <Compile Include="../../src/BridgeBuilder/Runtime/BridgeDiskAudit.cs" Link="BridgeDiskAudit.cs" />
     <Compile Include="../../src/BridgeBuilder/Runtime/BridgeFileAccess.cs" Link="BridgeFileAccess.cs" />
-    <Compile Include="../../src/BridgeBuilder/Runtime/BridgeRegistration.cs" Link="BridgeRegistration.cs" />
+    <Compile Include="../../src/BridgeBuilder/Runtime/BridgeAssetInfo.cs" Link="BridgeAssetInfo.cs" />
     <Compile Include="../../src/BridgeBuilder/Runtime/BridgeSerializedReferences.cs" Link="BridgeSerializedReferences.cs" />
   </ItemGroup>
 </Project>

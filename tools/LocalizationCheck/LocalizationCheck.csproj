@@ -12,7 +12,7 @@
     <Compile Include="../../src/BridgeBuilder/Settings/UiStringTables*.cs" />
     <Compile Include="../../src/BridgeBuilder/Settings/RuntimeUiText.cs" />
     <Compile Include="../../src/BridgeBuilder/Runtime/BridgeRuntimeRequests.cs" />
-    <Compile Include="../../src/BridgeBuilder/Runtime/BridgeRegistration.cs" />
+    <Compile Include="../../src/BridgeBuilder/Runtime/BridgeAssetInfo.cs" />
     <Compile Include="../../src/BridgeBuilder/Runtime/BridgePreviewState.cs" />
     <Compile Include="../../src/BridgeBuilder/Bridges/BridgeStyleDefinitions.cs" />
   </ItemGroup>

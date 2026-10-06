@@ -1,7 +1,7 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using Colossal.Mathematics;
-using Game.Net;
+
 using Game.Prefabs;
 using Game.Rendering;
 using Unity.Entities;

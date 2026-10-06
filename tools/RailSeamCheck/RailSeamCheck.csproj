@@ -1,0 +1,8 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup><TargetFramework>net8.0</TargetFramework><OutputType>Exe</OutputType><ImplicitUsings>enable</ImplicitUsings><Nullable>enable</Nullable></PropertyGroup>
+  <ItemGroup>
+    <Reference Include="0Harmony"><HintPath>$(UserProfile)/.nuget/packages/lib.harmony/2.2.2/lib/net6.0/0Harmony.dll</HintPath></Reference>
+    <Compile Include="../../src/BridgeBuilder/Runtime/BridgeRailSeamScope.cs" Link="BridgeRailSeamScope.cs" />
+    <Compile Include="../../src/BridgeBuilder/Runtime/BridgeRailSeamPatch.cs" Link="BridgeRailSeamPatch.cs" />
+  </ItemGroup>
+</Project>

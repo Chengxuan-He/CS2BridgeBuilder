@@ -1,19 +1,19 @@
-using Colossal.AssetPipeline;
+﻿
 using BridgeBuilder.Runtime;
-using Colossal.AssetPipeline.Importers;
-using Colossal.IO.AssetDatabase;
-using Colossal.Mathematics;
-using CS2Mods.Shared;
-using CS2Mods.Shared.Infrastructure;
+
+
+
+
+
 using Game.Prefabs;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
-using System.Linq;
-using Unity.Collections;
+
+
 using Unity.Mathematics;
 using UnityEngine;
-using UnityEngine.Rendering;
+
 
 namespace BridgeBuilder.Bridges;
 
@@ -89,7 +89,7 @@ internal sealed partial class TowerFactory
     /// The requirement is that the distance is the archetype's, at every width, and it is met by both
     /// edges moving outward by half the same number. That is a property of two independent code paths
     /// agreeing rather than of either one enforcing it, so it is measured on the result and reported
-    /// when it drifts. See <see cref="BridgeCables.TowerOutsideCables"/> for how it can drift without
+    /// when it drifts. See <see cref="BridgeCables.TowerBaseOutsideCables"/> for how it can drift without
     /// anyone making an arithmetic mistake.
     /// </summary>
     private void CheckSpacing(string name, IReadOnlyList<ObjectMeshInfo> parts)

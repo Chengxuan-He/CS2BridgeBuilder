@@ -13,17 +13,17 @@ internal static class Program
 
     private static void Main()
     {
-        var freshPrefabName = BridgeRegistration.NewPrefabName();
+        var freshPrefabName = BridgeAssetInfo.NewPrefabName();
         Check(freshPrefabName.StartsWith("b", StringComparison.Ordinal)
             && Guid.TryParseExact(freshPrefabName.Substring(1), "D", out _), "New prefab must be b{uuid}");
-        Check(BridgeRegistration.IsPrefabName(freshPrefabName), "New bridge identity rejected");
-        Check(!BridgeRegistration.IsPrefabName("r11111111-2222-3333-4444-555555555555"),
+        Check(BridgeAssetInfo.IsPrefabName(freshPrefabName), "New bridge identity rejected");
+        Check(!BridgeAssetInfo.IsPrefabName("r11111111-2222-3333-4444-555555555555"),
             "Legacy r-prefixed bridge compatibility must not return");
-        Check(!BridgeRegistration.IsPrefabName("r11111111-2222-3333-4444-555555555555-76561199197854251"),
+        Check(!BridgeAssetInfo.IsPrefabName("r11111111-2222-3333-4444-555555555555-76561199197854251"),
             "Road Builder road identity is not a BridgeBuilder bridge");
-        Check(!BridgeRegistration.IsPrefabName("bnot-a-uuid"), "Malformed bridge identity accepted");
-        Check(!BridgeRegistration.IsPrefabName("tmp11111111-2222-3333-4444-555555555555"),
-            "Temporary previews must not enter the permanent registry");
+        Check(!BridgeAssetInfo.IsPrefabName("bnot-a-uuid"), "Malformed bridge identity accepted");
+        Check(!BridgeAssetInfo.IsPrefabName("tmp11111111-2222-3333-4444-555555555555"),
+            "Temporary previews must not enter the permanent asset catalogue");
         Check(BridgeBuilder.Bridges.BridgeStyleDefinitions.AcceptsSource("Extradosed01", true),
             "V-pylon double deck must accept its base-game source");
         Check(!BridgeBuilder.Bridges.BridgeStyleDefinitions.AcceptsSource("Extradosed01", false),
@@ -67,7 +67,7 @@ internal static class Program
         var uuid = "b11111111-2222-3333-4444-555555555555";
         BridgeRuntimeRequests.Complete("Renamed", name, uuid);
         Check(BridgeRuntimeRequests.Status == "", "Successful rename must not leave a persistent footer");
-        BridgeRuntimeRequests.Complete("RegistrationFailed", name, uuid);
+        BridgeRuntimeRequests.Complete("AssetMetadataFailed", name, uuid);
         BridgePreviewState.Select("Train", "", "style");
         BridgePreviewState.Publish(BridgePreviewState.Revision, "image-bytes", "PreviewReady");
         var requestRevision = BridgeRuntimeRequests.Revision;
@@ -89,7 +89,7 @@ internal static class Program
                 Check(!string.IsNullOrEmpty(text.DeckKindName(kind)), "Missing network type");
             Check(text.StyleName("GoldenGate") != "GoldenGate", "Untranslated style");
             Check(text.StyleName("GoldenGateDouble") != "GoldenGateDouble", "Untranslated BXP double style");
-            Check(BridgeRuntimeRequests.Status == RuntimeUiText.Get("RegistrationFailed", name, uuid), "Error status did not change language");
+            Check(BridgeRuntimeRequests.Status == RuntimeUiText.Get("AssetMetadataFailed", name, uuid), "Error status did not change language");
             Check(BridgeRuntimeRequests.Status.Contains(name) && !BridgeRuntimeRequests.Status.Contains(uuid),
                 "UI error status must show the name without exposing UUID");
             Check(BridgePreviewState.Status == RuntimeUiText.Get("PreviewReady"), "Preview status did not change language");
@@ -118,34 +118,34 @@ internal static class Program
             {
                 Action = BridgeRuntimeAction.Create,
                 BuildAfterCreate = buildAfterCreate,
-                RegistrationName = name,
+                DisplayName = name,
                 UpperDeckId = "Train",
             }, "Creating");
             Check(BridgeRuntimeRequests.TryTake(out var request) && request != null &&
                 request.Action == BridgeRuntimeAction.Create && request.BuildAfterCreate == buildAfterCreate &&
-                request.RegistrationName == name && request.UpperDeckId == "Train", "Creation intent changed in queue");
+                request.DisplayName == name && request.UpperDeckId == "Train", "Creation intent changed in queue");
         }
         Check(!BridgeRuntimeRequests.TryTake(out _), "Creation queue retained a duplicate");
         foreach (var draft in new[] { "B", "Br", "Bridge" })
             BridgeRuntimeRequests.Enqueue(new BridgeRuntimeRequest
             {
-                Action = BridgeRuntimeAction.Rename, PrefabName = uuid, RegistrationName = draft
+                Action = BridgeRuntimeAction.Rename, PrefabName = uuid, DisplayName = draft
             }, "Updating");
-        Check(BridgeRuntimeRequests.TryTake(out var renamed) && renamed?.RegistrationName == "Bridge",
+        Check(BridgeRuntimeRequests.TryTake(out var renamed) && renamed?.DisplayName == "Bridge",
             "Typing must persist the newest name");
         Check(!BridgeRuntimeRequests.TryTake(out _), "Typing queued redundant writes");
         BridgeRuntimeRequests.Enqueue(new BridgeRuntimeRequest
         {
-            Action = BridgeRuntimeAction.Rename, PrefabName = uuid, RegistrationName = "Before"
+            Action = BridgeRuntimeAction.Rename, PrefabName = uuid, DisplayName = "Before"
         }, "Updating");
         BridgeRuntimeRequests.Enqueue(new BridgeRuntimeRequest { Action = BridgeRuntimeAction.Activate, PrefabName = uuid }, "Updating");
         BridgeRuntimeRequests.Enqueue(new BridgeRuntimeRequest
         {
-            Action = BridgeRuntimeAction.Rename, PrefabName = uuid, RegistrationName = "After"
+            Action = BridgeRuntimeAction.Rename, PrefabName = uuid, DisplayName = "After"
         }, "Updating");
-        Check(BridgeRuntimeRequests.TryTake(out var before) && before?.RegistrationName == "Before", "Rename crossed action barrier");
+        Check(BridgeRuntimeRequests.TryTake(out var before) && before?.DisplayName == "Before", "Rename crossed action barrier");
         Check(BridgeRuntimeRequests.TryTake(out var activate) && activate?.Action == BridgeRuntimeAction.Activate, "Build order changed");
-        Check(BridgeRuntimeRequests.TryTake(out var after) && after?.RegistrationName == "After", "Latest rename lost");
+        Check(BridgeRuntimeRequests.TryTake(out var after) && after?.DisplayName == "After", "Latest rename lost");
         Console.WriteLine("PASS aliases, English fallback, stale-preview rejection and cleanup; no game was started.");
     }
 }
@@ -171,6 +171,7 @@ namespace BridgeBuilder.Settings
         public bool RemoveDevelopmentRestrictions { get; set; }
         public string RecoveryCopyLocation { get; set; } = "";
         public void OpenRecoveryCopies() { }
+        public void BridgeSelfCheck() { }
         public string AllowGameplayExport = "", ArmRemoval = "", BridgeName = "", BridgeStyleId = "",
             BuildStyleOverride = "", DeckSpacing = "", EmbedIcons = "", ExportSelected = "", LowerDeckId = "",
             LowerDeckOpposite = "", OverwriteExisting = "", RemoveSelected = "", RemoveUnusedDependencies = "",

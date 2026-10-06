@@ -3,18 +3,18 @@ using System;
 namespace BridgeBuilder.Runtime;
 
 /// <summary>
-/// Persistent identity and immutable construction recipe for one bridge created by the in-game UI.
+/// Asset-local identity and construction metadata for one bridge created by the in-game UI.
 /// <para>
 /// <see cref="PrefabName"/> is the stable identity used by prefab references and every destructive
-/// operation. <see cref="RegistrationName"/> is only the player-facing label and may be changed
+/// operation. <see cref="DisplayName"/> is only the player-facing label and may be changed
 /// without renaming the prefab or invalidating a saved game.
 /// </para>
 /// </summary>
-internal sealed class BridgeRegistration
+internal sealed class BridgeAssetInfo
 {
-    internal BridgeRegistration(
+    internal BridgeAssetInfo(
         string prefabName,
-        string registrationName,
+        string displayName,
         string upperDeckId,
         string? lowerDeckId,
         string styleId,
@@ -22,7 +22,7 @@ internal sealed class BridgeRegistration
         bool pending = false)
     {
         PrefabName = prefabName;
-        RegistrationName = registrationName;
+        DisplayName = displayName;
         UpperDeckId = upperDeckId;
         LowerDeckId = lowerDeckId;
         StyleId = styleId;
@@ -32,7 +32,7 @@ internal sealed class BridgeRegistration
 
     internal string PrefabName { get; }
 
-    internal string RegistrationName { get; set; }
+    internal string DisplayName { get; set; }
 
     internal string UpperDeckId { get; }
 
@@ -42,7 +42,7 @@ internal sealed class BridgeRegistration
 
     internal string CreatedUtc { get; }
 
-    // Written before the first persistent asset; cleared only after native publication succeeds.
+    // Persisted on the root prefab; cleared only after native publication succeeds.
     internal bool Pending { get; }
 
     internal bool IsDoubleDeck => !string.IsNullOrEmpty(LowerDeckId);

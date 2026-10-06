@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Text;
@@ -14,6 +14,8 @@ internal sealed class BridgeSerializedReferences
         internal readonly List<Value> Items = new();
         internal string Text = string.Empty;
         internal string Token = string.Empty;
+        internal int Start;
+        internal int End;
     }
     private readonly Dictionary<string, Value> _objects = new(StringComparer.Ordinal);
     private readonly Dictionary<string, string> _types = new(StringComparer.Ordinal);
@@ -33,53 +35,21 @@ internal sealed class BridgeSerializedReferences
     }
     internal string Name => Field(_root, "name")?.Text ?? string.Empty;
 
-    // Disk evidence is independent of whether the native importer registered the object.
-    // Only explicit required nulls/empty deck sections qualify; missing fields do not.
-    internal bool HasRequiredNull(out string reason)
+    internal Value? Component(string typeName)
     {
-        reason = string.Empty;
-        var checks = new List<(Value Owner, string Field, string Member, bool Required)>();
-        checks.Add((_root, "m_Sections", "m_Section", true));
-        checks.Add((_root, "m_SubSections", "m_Section", false));
-        checks.Add((_root, "m_Pieces", "m_Piece", false));
+        Value? found = null;
         var components = Field(Field(_root, "components"), "$rcontent");
-        if (components != null) foreach (var entry in components.Items)
+        if (components == null) return null;
+        foreach (var entry in components.Items)
         {
             var component = Resolve(entry);
-            if (component == null) continue;
             var type = Field(component, "$type")?.Text ?? "";
             if (_types.TryGetValue(type, out var expanded)) type = expanded;
-            switch (type)
-            {
-                case "Game.Prefabs.AuxiliaryNets, Game":
-                    if (Field(component, "active")?.Text != "false")
-                        checks.Add((component, "m_AuxiliaryNets", "m_Prefab", true));
-                    break;
-                case "Game.Prefabs.OverheadNetSections, Game":
-                case "Game.Prefabs.UndergroundNetSections, Game":
-                    if (Field(component, "active")?.Text != "false")
-                        checks.Add((component, "m_Sections", "m_Section", true));
-                    break;
-                case "Game.Prefabs.NetPieceLanes, Game":
-                    if (Field(component, "active")?.Text != "false")
-                        checks.Add((component, "m_Lanes", "m_Lane", false));
-                    break;
-            }
+            if (type != typeName) continue;
+            if (found != null) return null;
+            found = component;
         }
-        foreach (var check in checks)
-        {
-            var array = Field(check.Owner, check.Field);
-            var items = Field(array, "$rcontent");
-            bool Null(Value? value) => value is { Token: "", Text: "null" };
-            if (check.Required && Null(array)
-                || check.Field == "m_Sections" && items != null && items.Items.Count == 0)
-            { reason = check.Field + " is explicitly null or empty"; return true; }
-            if (items == null) continue;
-            for (var i = 0; i < items.Items.Count; i++)
-                if (Null(Resolve(items.Items[i])) || Null(Field(items.Items[i], check.Member)))
-                { reason = check.Field + "[" + i + "] has an explicit null reference"; return true; }
-        }
-        return false;
+        return found;
     }
 
     internal bool Reference(string? component, string field, int index, string member, out string identity)
@@ -139,6 +109,7 @@ internal sealed class BridgeSerializedReferences
     {
         var value = new Value();
         Space();
+        value.Start = _offset;
         if (depth > 128 || _offset >= _text.Length) { _valid = false; return value; }
         if (Take('{'))
         {
@@ -192,6 +163,7 @@ internal sealed class BridgeSerializedReferences
                 value.Text = payload.Text;
             }
         }
+        value.End = _offset;
         return value;
     }
     private string String()

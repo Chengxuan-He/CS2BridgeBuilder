@@ -1,8 +1,8 @@
-/*!
+﻿/*!
  * Cities: Skylines II UI Module
  * Id: BridgeBuilder
  * Author: BridgeBuilder
- * Version: 26.10.4
+ * Version: 26.10.6
  * Dependencies:
  */
 const React = window.React;
@@ -241,7 +241,7 @@ function ModelPreview({ upperId = "", lowerId = "", styleId = "", prefabName = "
         const timer = ready ? setTimeout(() => prefabName
             ? trigger("PreviewExistingBridge", prefabName)
             : trigger("PreviewBridge", { upperDeckId: upperId, lowerDeckId: lowerId, styleId,
-                registrationName: "", lowerDeckOpposite }), 250) : null;
+                displayName: "", lowerDeckOpposite }), 250) : null;
         return () => {
             if (timer !== null) clearTimeout(timer);
             trigger("ClearPreview");
@@ -306,7 +306,7 @@ function CreateView({ decks, styles, status, draft, onSaveDraft = () => {} }) {
         if (!upperId || !styleId || (doubleDeck && !lowerId)) return;
         trigger(buildAfterCreate ? "CreateAndBuildBridge" : "CreateBridge", {
             upperDeckId: upperId, lowerDeckId: doubleDeck ? lowerId : "", styleId, lowerDeckOpposite,
-            registrationName: displayName.trim() || defaultName
+            displayName: displayName.trim() || defaultName
         });
     };
 
@@ -347,7 +347,7 @@ function ManageView({ bridges, styles = [], status }) {
     const t = useText();
     const [selectedId, setSelectedId] = React.useState("");
     const selected = bridges.find(bridge => bridge.prefabName === selectedId) || bridges[0];
-    const [name, setName] = React.useState(selected?.registrationName || "");
+    const [name, setName] = React.useState(selected?.displayName || "");
     const [query, setQuery] = React.useState("");
     const [mode, setMode] = React.useState("");
     const [availability, setAvailability] = React.useState("");
@@ -356,7 +356,7 @@ function ManageView({ bridges, styles = [], status }) {
 
     React.useEffect(() => {
         if (selected && selected.prefabName !== selectedId) setSelectedId(selected.prefabName);
-        setName(selected?.registrationName || "");
+        setName(selected?.displayName || "");
         if (!selected) setPreviewFailure("");
     // Only switching bridges resets the draft: stale save acknowledgements must
     // not overwrite newer typing.
@@ -370,7 +370,7 @@ function ManageView({ bridges, styles = [], status }) {
     };
 
     const cards = bridges.map(bridge => ({ ...bridge, id: bridge.prefabName,
-        name: bridge.registrationName, source: bridge.isDoubleDeck ? t("DoubleBridge") : t("SingleBridge") }));
+        name: bridge.displayName, source: bridge.isDoubleDeck ? t("DoubleBridge") : t("SingleBridge") }));
     const styleName = id => styles.find(item => item.id === id)?.name || id;
     const filtered = cards.filter(bridge => (!mode || bridge.isDoubleDeck === (mode === "double")) &&
         (!availability || bridge.available === (availability === "available")) && (!style || bridge.styleId === style) &&
@@ -436,9 +436,9 @@ function ToolbarButton() {
             onSelect: () => trigger("TogglePanel") }, h("span", { className: "bb-white-icon", "aria-hidden": true })));
 }
 
-const register = registry => {
-    registry.append("GameTopLeft", ToolbarButton);
-    registry.append("Game", Panel);
+const register = uiSlots => {
+    uiSlots.append("GameTopLeft", ToolbarButton);
+    uiSlots.append("Game", Panel);
 };
 
 const hasCSS = true;

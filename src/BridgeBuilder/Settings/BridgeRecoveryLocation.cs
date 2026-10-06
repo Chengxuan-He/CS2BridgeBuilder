@@ -1,4 +1,4 @@
-using CS2Mods.Shared.Infrastructure;
+﻿using CS2Mods.Shared.Infrastructure;
 using System;
 using System.Diagnostics;
 using System.IO;
@@ -50,9 +50,6 @@ internal static class BridgeRecoveryLocation
         }
     }
 
-    internal static bool IsBackup(string? path) => !string.IsNullOrEmpty(path)
-        && (Within(path!, LegacyPath) || Within(path!, Path));
-
     private static bool Within(string path, string root)
     {
         var full = System.IO.Path.GetFullPath(Runtime.BridgeFileAccess.Logical(path));
@@ -77,7 +74,7 @@ internal static class BridgeRecoveryLocation
         }
         catch (Exception exception)
         {
-            Mod.Log.Warn(exception, "Could not relocate legacy recovery copies; registration guard excludes them.");
+            Mod.Log.Warn(exception, "Could not relocate legacy recovery copies; assetInfo guard excludes them.");
         }
     }
 

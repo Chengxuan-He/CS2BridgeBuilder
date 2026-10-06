@@ -1,4 +1,4 @@
-using BridgeBuilder.Bridges;
+﻿
 using BridgeBuilder.Settings;
 using BridgeBuilder.Systems;
 using BridgeBuilder.UI;
@@ -80,23 +80,18 @@ public sealed class Mod : IMod
         updateSystem.UpdateAfter<BridgePriceSystem, Game.Prefabs.NetCompositionSystem>(SystemUpdatePhase.Modification4);
         updateSystem.UpdateAt<BridgeBuilderUISystem>(SystemUpdatePhase.UIUpdate);
         updateSystem.UpdateAt<BridgeUnlockSystem>(SystemUpdatePhase.UIUpdate);
-        // OnWorldReady performs boot recovery; UIUpdate only delivers the queued result.
+        // Self-check waits for native/PDX asset batches and mod initialization at a ready main menu.
         updateSystem.UpdateAt<BridgeStartupAssetSystem>(SystemUpdatePhase.UIUpdate);
         updateSystem.UpdateAt<BridgeRailSeamAuditSystem>(SystemUpdatePhase.UIUpdate);
-        // Deleted must be visible BEFORE native sub-element, topology, lane and rendering
-        // maintenance. UIUpdate is after ModificationSystem and PreRenderSystem, yet before
-        // PrepareCleanUpSystem: deleting there destroys entities without retiring their
-        // native references/batches first. Never run destructive cleanup in a UI phase.
-        updateSystem.UpdateBefore<BridgeMissingAssetSystem, Game.Objects.SubElementDeleteSystem>(
-            SystemUpdatePhase.PostTool);
+        World.DefaultGameObjectInjectionWorld.GetOrCreateSystemManaged<BridgeStartupAssetSystem>().ScheduleInspectionAfterLoad();
     }
 
     public void OnDispose()
     {
+        BridgeStartupAssetSystem.StopInspection();
         BridgeBuilder.Runtime.BridgeStartupRecovery.Stop();
         BridgeBuilder.Runtime.BridgeRailSeamPatch.Stop();
-        BridgeBuilder.Runtime.BridgePrefabLoadGuard.Stop();
-        BridgeBuilder.Runtime.BridgeLoadFailures.Stop();
+        BridgeBuilder.Runtime.BridgeSessionState.Stop();
         try
         {
             RoadBuilderIconExporter.UnregisterHost();
@@ -139,7 +134,7 @@ public sealed class Mod : IMod
     }
 
     /// <summary>
-    /// Makes the options UI ask for the page again. A setting's page is built once, at registration,
+    /// Makes the options UI ask for the page again. A setting's page is built once, at assetInfo,
     /// long before a world exists, so neither the road checkboxes nor the discovered bridge styles
     /// would ever appear without this.
     /// </summary>

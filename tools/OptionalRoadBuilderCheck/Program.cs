@@ -13,13 +13,13 @@ var path = new PathwayPrefab { name = "path" };
 var train = new TrackPrefab { name = "train", m_TrackType = Game.Net.TrackTypes.Train };
 var builder = new RoadBuilder.Prefabs.BuilderRoad { name = "builder" };
 var builderPath = new RoadBuilder.Prefabs.BuilderPath { name = "builder-path" };
-var registry = new PrefabSystem { Items = new PrefabBase[] { road, path, train, builder, builderPath } };
+var prefabs = new PrefabSystem { Items = new PrefabBase[] { road, path, train, builder, builderPath } };
 var described = new[] { new RoadBuilderRoad { Prefab = builder, Name = "Configured road" } };
 
 void VerifyAbsent(string scenario)
 {
     Check(!RoadBuilderCompatibility.IsAvailable, scenario + ": integration enabled");
-    DeckCatalog.Rebuild(registry, described); // Deliberately pass stale discovery results.
+    DeckCatalog.Rebuild(prefabs, described); // Deliberately pass stale discovery results.
     Check(DeckCatalog.Decks.Select(deck => deck.Id).Order().SequenceEqual(new[] { road.name, path.name, train.name }.Order()),
         scenario + ": leaked builder prefab or lost ordinary network");
     Check(DeckCatalog.Find(builder.name) == null, scenario + ": stale selection resolves");
@@ -38,14 +38,14 @@ foreach (var state in new[] { ModManager.ModInfo.State.Unknown, ModManager.ModIn
 }
 mod.state = ModManager.ModInfo.State.Loaded;
 Check(RoadBuilderCompatibility.IsAvailable, "loaded optional mod not recognized");
-DeckCatalog.Rebuild(registry, described);
+DeckCatalog.Rebuild(prefabs, described);
 Check(DeckCatalog.Find(builder.name)?.Kind == DeckKind.RoadBuilder, "configured builder road missing");
 builder.Deleted = true;
-DeckCatalog.Rebuild(registry, described);
+DeckCatalog.Rebuild(prefabs, described);
 Check(DeckCatalog.Find(builder.name) == null, "deleted Road Builder source leaked into catalogue");
 builder.Deleted = false;
 Check(!RoadBuilderCompatibility.TryOpen(new Unity.Entities.World()), "missing optional UI must fail safely");
-DeckCatalog.Rebuild(registry, Array.Empty<RoadBuilderRoad>());
+DeckCatalog.Rebuild(prefabs, Array.Empty<RoadBuilderRoad>());
 Check(DeckCatalog.Find(builder.name) == null, "broken builder road admitted as ordinary road");
 mod.state = ModManager.ModInfo.State.Disposed;
 VerifyAbsent("unloaded after successful scan");

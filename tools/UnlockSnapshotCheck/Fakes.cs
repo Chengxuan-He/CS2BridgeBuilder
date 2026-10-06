@@ -67,8 +67,7 @@ namespace Game.Prefabs
 }
 namespace BridgeBuilder.Runtime
 {
-    internal static class BridgeLoadFailures { internal static bool Restart; internal static void RequireRestart() { Restart = true; } internal static void Start() { } }
-    internal static class BridgePrefabLoadGuard { internal static bool Installed; internal static void Start() { Installed = true; } }
+    internal static class BridgeSessionState { internal static bool Restart; internal static void RequireRestart() { Restart = true; } internal static void Start() { } }
 }
 namespace BridgeBuilder
 {
@@ -79,3 +78,4 @@ namespace UnityEngine
 {
     public static class Application { public static string persistentDataPath = Path.Combine(Path.GetTempPath(), "BBStartupCheck-" + Guid.NewGuid().ToString("N")); }
 }
+namespace BridgeBuilder.Runtime { internal static class BridgeAssetCatalog { internal static void ResetSession() { } } }

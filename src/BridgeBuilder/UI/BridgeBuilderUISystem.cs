@@ -1,8 +1,8 @@
-using BridgeBuilder.Bridges;
+﻿using BridgeBuilder.Bridges;
 using BridgeBuilder.Runtime;
 using BridgeBuilder.Settings;
 using Colossal.UI.Binding;
-using CS2Mods.Shared;
+
 using CS2Mods.Shared.Infrastructure;
 using Game;
 using Game.Input;
@@ -27,7 +27,7 @@ public partial class BridgeBuilderUISystem : UISystemBase
     private ValueBinding<bool> _panelOpen = null!;
     private ValueBinding<BridgeDeckUiItem[]> _decks = null!;
     private ValueBinding<BridgeStyleUiItem[]> _styles = null!;
-    private ValueBinding<BridgeRegistrationUiItem[]> _bridges = null!;
+    private ValueBinding<BridgeAssetInfoUiItem[]> _bridges = null!;
     private ValueBinding<string> _status = null!;
     private ValueBinding<IReadOnlyDictionary<string, string>> _texts = null!;
     private string? _seenLocaleId;
@@ -56,7 +56,7 @@ public partial class BridgeBuilderUISystem : UISystemBase
         _panelOpen = AddValue("PanelOpen", false, new BridgeBoolWriter());
         _decks = AddValue("Decks", Array.Empty<BridgeDeckUiItem>(), new BridgeWritableArrayWriter<BridgeDeckUiItem>());
         _styles = AddValue("Styles", Array.Empty<BridgeStyleUiItem>(), new BridgeWritableArrayWriter<BridgeStyleUiItem>());
-        _bridges = AddValue("Bridges", Array.Empty<BridgeRegistrationUiItem>(), new BridgeWritableArrayWriter<BridgeRegistrationUiItem>());
+        _bridges = AddValue("Bridges", Array.Empty<BridgeAssetInfoUiItem>(), new BridgeWritableArrayWriter<BridgeAssetInfoUiItem>());
         _status = AddValue("Status", string.Empty, new BridgeStringWriter());
         _texts = AddValue("Texts", RuntimeUiText.ForLocale(UiStringCatalog.Current.LocaleId), new BridgeTextWriter());
         _previewImage = AddValue("PreviewImage", string.Empty, new BridgeStringWriter());
@@ -207,20 +207,20 @@ public partial class BridgeBuilderUISystem : UISystemBase
         }, "Activating");
     }
 
-    private static void QueueRename(string prefabName, string registrationName)
+    private static void QueueRename(string prefabName, string displayName)
     {
         BridgeRuntimeRequests.Enqueue(new BridgeRuntimeRequest
         {
             Action = BridgeRuntimeAction.Rename,
             PrefabName = prefabName ?? string.Empty,
-            RegistrationName = registrationName ?? string.Empty,
+            DisplayName = displayName ?? string.Empty,
         }, "Renaming");
     }
 
     private static void ConfirmDelete(string prefabName)
     {
-        var registration = BridgeRegistrationStore.Find(prefabName);
-        if (registration == null)
+        var assetInfo = BridgeAssetCatalog.Find(prefabName);
+        if (assetInfo == null)
         {
             BridgeRuntimeRequests.Complete("DeleteMissing");
             return;
@@ -230,7 +230,7 @@ public partial class BridgeBuilderUISystem : UISystemBase
         {
             var dialog = new ConfirmationDialog(
                 LocalizedString.Value(UiStringCatalog.Current.Title),
-                LocalizedString.Value(RuntimeUiText.Get("ConfirmDelete", registration.RegistrationName)),
+                LocalizedString.Value(RuntimeUiText.Get("ConfirmDelete", assetInfo.DisplayName)),
                 LocalizedString.Value(RuntimeUiText.Get("Delete")),
                 LocalizedString.Value(RuntimeUiText.Get("Cancel")),
                 Array.Empty<LocalizedString>());
@@ -240,7 +240,7 @@ public partial class BridgeBuilderUISystem : UISystemBase
                 BridgeRuntimeRequests.Enqueue(new BridgeRuntimeRequest
                 {
                     Action = BridgeRuntimeAction.Delete,
-                    PrefabName = registration.PrefabName,
+                    PrefabName = assetInfo.PrefabName,
                 }, "Deleting");
             });
         }
@@ -296,17 +296,17 @@ public partial class BridgeBuilderUISystem : UISystemBase
                 .OfType<NetGeometryPrefab>()
                 .GroupBy(prefab => prefab.name, StringComparer.Ordinal)
                 .ToDictionary(group => group.Key, group => group.First(), StringComparer.Ordinal);
-            var bridges = BridgeRegistrationStore.Load().Select(registration =>
+            var bridges = BridgeAssetCatalog.Load().Select(assetInfo =>
             {
-                loaded.TryGetValue(registration.PrefabName, out var prefab);
-                return new BridgeRegistrationUiItem
+                loaded.TryGetValue(assetInfo.PrefabName, out var prefab);
+                return new BridgeAssetInfoUiItem
                 {
-                    PrefabName = registration.PrefabName,
-                    RegistrationName = registration.RegistrationName,
-                    UpperDeckId = registration.UpperDeckId,
-                    LowerDeckId = registration.LowerDeckId ?? string.Empty,
-                    StyleId = registration.StyleId,
-                    IsDoubleDeck = registration.IsDoubleDeck,
+                    PrefabName = assetInfo.PrefabName,
+                    DisplayName = assetInfo.DisplayName,
+                    UpperDeckId = assetInfo.UpperDeckId,
+                    LowerDeckId = assetInfo.LowerDeckId ?? string.Empty,
+                    StyleId = assetInfo.StyleId,
+                    IsDoubleDeck = assetInfo.IsDoubleDeck,
                     Available = prefab != null,
                     Icon = prefab == null ? string.Empty : ImageSystem.GetIcon(prefab) ?? string.Empty,
                 };
@@ -385,10 +385,10 @@ internal sealed class BridgeStyleUiItem : IJsonWritable
     }
 }
 
-internal sealed class BridgeRegistrationUiItem : IJsonWritable
+internal sealed class BridgeAssetInfoUiItem : IJsonWritable
 {
     internal string PrefabName { get; set; } = string.Empty;
-    internal string RegistrationName { get; set; } = string.Empty;
+    internal string DisplayName { get; set; } = string.Empty;
     internal string UpperDeckId { get; set; } = string.Empty;
     internal string LowerDeckId { get; set; } = string.Empty;
     internal string StyleId { get; set; } = string.Empty;
@@ -398,9 +398,9 @@ internal sealed class BridgeRegistrationUiItem : IJsonWritable
 
     public void Write(IJsonWriter writer)
     {
-        writer.TypeBegin(nameof(BridgeRegistrationUiItem));
+        writer.TypeBegin(nameof(BridgeAssetInfoUiItem));
         Property(writer, "prefabName", PrefabName);
-        Property(writer, "registrationName", RegistrationName);
+        Property(writer, "displayName", DisplayName);
         Property(writer, "upperDeckId", UpperDeckId);
         Property(writer, "lowerDeckId", LowerDeckId);
         Property(writer, "styleId", StyleId);
@@ -474,7 +474,7 @@ internal sealed class BridgeRecipeReader : IReader<BridgeRuntimeRequest>
         reader.Read(out string lower);
         reader.ReadProperty("styleId");
         reader.Read(out string style);
-        reader.ReadProperty("registrationName");
+        reader.ReadProperty("displayName");
         reader.Read(out string name);
         reader.ReadProperty("lowerDeckOpposite");
         reader.Read(out bool opposite);
@@ -482,7 +482,7 @@ internal sealed class BridgeRecipeReader : IReader<BridgeRuntimeRequest>
         value = new BridgeRuntimeRequest
         {
             UpperDeckId = upper ?? string.Empty, LowerDeckId = lower ?? string.Empty,
-            StyleId = style ?? string.Empty, RegistrationName = name ?? string.Empty,
+            StyleId = style ?? string.Empty, DisplayName = name ?? string.Empty,
             LowerDeckOpposite = opposite
         };
     }

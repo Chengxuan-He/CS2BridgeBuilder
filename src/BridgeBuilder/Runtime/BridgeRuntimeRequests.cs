@@ -18,7 +18,7 @@ internal sealed class BridgeRuntimeRequest
     internal bool BuildAfterCreate { get; set; }
     internal bool LowerDeckOpposite { get; set; } = true;
     internal string PrefabName { get; set; } = string.Empty;
-    internal string RegistrationName { get; set; } = string.Empty;
+    internal string DisplayName { get; set; } = string.Empty;
     internal string UpperDeckId { get; set; } = string.Empty;
     internal string LowerDeckId { get; set; } = string.Empty;
     internal string StyleId { get; set; } = string.Empty;
@@ -78,7 +78,7 @@ internal static class BridgeRuntimeRequests
             foreach (var queued in Requests) last = queued;
             if (request.Action == BridgeRuntimeAction.Rename && last?.Action == BridgeRuntimeAction.Rename
                 && last.PrefabName == request.PrefabName)
-                last.RegistrationName = request.RegistrationName;
+                last.DisplayName = request.DisplayName;
             else
                 Requests.Enqueue(request);
             // Routine progress/success is not a persistent footer notification.

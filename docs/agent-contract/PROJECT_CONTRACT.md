@@ -981,3 +981,124 @@ unless that road's elevated base price is higher. Do not divide the erroneous ou
 
 Remove obsolete mod-owned pricing prefabs together with dependent generated bridges using the
 ownership-scoped cleanup procedure; never delete shared/native or another mod's source assets.
+
+## 17. Persist external dependencies as identical-CID copies owned by each bridge
+
+Rollback baseline recorded before this rule's first edit (2026-10-06): branch `dev`, HEAD
+`3be5fed03b275a07850f413dc2396b0182e532ea`; local reference
+`refs/rollback/recursive-dependency-contract-20261006`. This reference records the committed baseline;
+it does not include the existing uncommitted implementation changes.
+
+The existing bridge persistence workflow must also preserve its external asset dependencies locally.
+A bridge saved in `ImportedData` can be deserialized before a subscribed asset pack becomes available.
+A nonempty CID in a valid bridge file does not make that dependency available at that earlier phase.
+Persist the required external files alongside the bridge instead of relying solely on the later
+registration of the subscribed source.
+
+### Copy the serialized dependency graph without changing asset identity
+
+- Start with all persisted prefabs belonging to the bridge, including both decks and derived assets.
+  Recursively follow serialized external CID references through non-built-in dependencies until each
+  branch reaches a built-in asset or an asset with no further serialized dependencies. Include the
+  necessary non-prefab dependencies, such as external geometry and materials; copying only the first
+  external prefab is insufficient.
+- Identify built-in assets from the game's asset provenance, not from names or apparent similarity.
+  Built-in resource-map `UnityGUID` references are terminal. Do not copy or modify original game/DLC
+  assets. Already-persisted assets owned by this bridge are traversed without making a redundant copy.
+- Read original asset bytes, including entries inside source packages. Copy those bytes unchanged and
+  retain the original CID in the `.cid` sidecar. Do not reserialize the prefab, change its name, replace
+  its CID, or rewrite its references. Do not mutate, move or delete the source asset.
+- This rule concerns unchanged dependency snapshots. Newly generated or geometrically modified
+  bridge assets retain their own identities under the existing generation rules. It does not permit
+  a modified asset to impersonate its donor by reusing the donor's CID. The shared references required
+  by section 15 remain unchanged; this rule supplies local copies of their non-built-in targets.
+
+### Deduplicate within a bridge, never across bridges
+
+Store copies under:
+
+```text
+ImportedData/<bridgeUUID>_Dependencies/<CID>.<original extension>
+ImportedData/<bridgeUUID>_Dependencies/<CID>.<original extension>.cid
+```
+
+Use a visited-CID set for each bridge traversal. Multiple references to the same CID within one bridge
+produce one copy, including when a dependency is reachable through several paths. Traversal must
+terminate even if a future dependency graph contains a cycle; do not assume every source graph is a
+DAG. Separate bridges must each retain their own physical copy of a shared external CID, in their own
+UUID directory. A global deduplication cache must not eliminate those per-bridge copies.
+
+The unchanged source and the per-bridge copies deliberately share a CID. Equality of CID alone is not
+proof of equality of content: if an existing destination has different bytes for that CID, report the
+conflict and fail persistence rather than silently overwriting it. Preserve all required references;
+an unavailable dependency is an explicit persistence failure, not permission to omit a section,
+sub-object, light, material or other dependency. Do not report successful bridge creation until the
+required copies have been saved and verified.
+
+### Ownership, self-check and acceptance
+
+Ownership of these copies comes from the exact bridge UUID directory, not the copied prefab's original
+name or CID. File self-check must recognize intentional identical-CID copies across bridges and must
+not retire healthy bridges merely because these snapshots duplicate an asset identity. Existing
+checks for unintended collisions among independently generated assets remain separate.
+
+Back up and retire dependency copies with their owning bridge. Deleting one bridge must not remove
+another bridge's copy or the source asset in its original package. Ownership-scoped maintenance and
+cleanup tools must include the dependency directories, including partial files from interrupted saves.
+
+This is a file persistence operation. Do not reintroduce in-memory prefab integrity inspection,
+reference repair, quarantine or registration rejection to implement it. Resolving an asset identifier
+to its original data stream for copying is distinct from inspecting a live prefab for damage.
+
+Verification must cover recursive text/binary references, stopping at built-in assets, byte and CID
+preservation, per-bridge deduplication, independent copies across bridges, cycle termination, explicit
+failure on missing/conflicting sources, and owner-scoped cleanup. Cold-start and old-save acceptance
+remain required to establish that the game discovers and resolves the copies before network
+initialization. File equality, a DAG check or a successful build alone does not establish that timing.
+
+
+## Post-load self-check revision (2026-10-06)
+
+Rollback baseline before this instruction update: branch `dev`, HEAD
+`3be5fed03b275a07850f413dc2396b0182e532ea`.
+The user's subsequent request restores read-only in-memory validation for self-check only,
+after both Bridge Builder and the main menu have completed loading (including late mod loading).
+Healthy bridges skip file integrity scanning and remain unchanged. Invalid required references
+cause UUID-scoped backup/removal, never reference repair, registration rejection or quarantine.
+File ownership, path and change verification remain required before moving or clearing files;
+they are not a second integrity verdict. Dependency persistence remains byte-for-byte file copying.
+
+
+The subsequent migration revision (same `dev`/`3be5fed03b275a07850f413dc2396b0182e532ea`
+rollback baseline) must include cached user PrefabAssets that failed native registration, not only
+PrefabSystem's registered list. Do not call Load or republish to obtain a cached instance.
+Validate required references read-only; retire proven null references or loaded, available assets
+that failed registration. Missing cached instances or intentionally unavailable content alone are
+inconclusive and must not trigger deletion. A targeted serialized check is allowed when no cached
+instance exists. Healthy legacy bridges keep UUID, CID, name and geometry; copy external dependencies
+before committing asset-local persistence version/metadata, backing up the original root. Do not
+invent missing historical recipe values or use a separate registration store. Migration I/O failures
+retain the bridge and report incomplete; successful migration is idempotent.
+
+
+Latest self-check revision (rollback baseline `dev`, HEAD
+`3be5fed03b275a07850f413dc2396b0182e532ea`): wait for native loading, mod initialization,
+PDX database caching and active asset batch completion. Observe current state as well as completion
+events so late mod loading cannot miss the check. For a required null reference, read the exact
+original serialized CID and verify that its PrefabAsset already has a cached instance. If available,
+recursively copy unchanged dependencies under the owning bridge UUID as in section 17, retain the
+original bridge and request restart; do not modify live references or force-load the dependency.
+If the CID is unavailable/not loaded or the source contains an explicit null with no CID, retire
+the owning bridge directories. Unknown serialization or copying I/O failure remains incomplete,
+not proof of corruption. This supersedes the earlier unconditional null-reference retirement rule.
+
+
+Repair-or-remove policy update (baseline `dev`, HEAD
+`3be5fed03b275a07850f413dc2396b0182e532ea`): game operability takes priority. After loading
+completes, faulty owned bridges have only two outcomes: successful recursive same-CID dependency
+copy for a null slot whose original CID is already loaded, or directory-scoped retirement.
+Unresolved source/serialization, unavailable content, failed registration, missing prefab/geometry,
+or unsuccessful dependency copy/migration must enter retirement, not an inconclusive-retention path.
+Check dependencies even for already migrated bridges. Keep ownership and concurrent-change safeguards;
+actual filesystem failures must be reported as removal failures, never falsely reported as success.
+A failure affecting one bridge must not block removal of other bridges.

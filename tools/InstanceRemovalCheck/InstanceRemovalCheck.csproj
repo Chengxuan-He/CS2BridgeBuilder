@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFramework>net8.0</TargetFramework>
     <OutputType>Exe</OutputType>
@@ -7,6 +7,5 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="../../src/BridgeBuilder/Runtime/BridgeInstanceRemoval.cs" Link="BridgeInstanceRemoval.cs" />
-    <Compile Include="../../src/BridgeBuilder/Runtime/BridgeCleanupConfirmation.cs" Link="BridgeCleanupConfirmation.cs" />
   </ItemGroup>
 </Project>

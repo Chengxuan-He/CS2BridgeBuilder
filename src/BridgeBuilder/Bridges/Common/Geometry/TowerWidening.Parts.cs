@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using Unity.Mathematics;
 
@@ -87,65 +87,5 @@ internal static partial class TowerWidening
     /// <summary>A shape widened against its own profile.</summary>
     internal static float3[] WidenParts(float3[] vertices, float extra) =>
         WidenParts(vertices, extra, Profile.Of(vertices));
-
-    /// <summary>
-    /// Makes every connected member crossing the centre use one affine widening along its whole
-    /// length.
-    ///
-    /// A through-arch truss has diagonal and transverse members whose height changes as they cross the
-    /// deck. The general profile deliberately answers height by height because a pylon's opening really
-    /// does change with height. Applied to one of these members, however, that gives consecutive
-    /// vertices different scale factors: an end is carried, a point nearer the centre is stretched,
-    /// and the rectangular member becomes a fan of long triangles.
-    ///
-    /// The source triangle topology says which vertices are one member. A member reaching both sides
-    /// of the centre is lengthened from its own authored left and right boundaries, so both ends move
-    /// outward by half <paramref name="extra"/> and every point between them follows the same affine
-    /// map. A side truss never crosses the centre and is left exactly as the profile moved it.
-    /// </summary>
-    internal static int StretchCrossingPieces(
-        float3[] source,
-        float3[] moved,
-        IReadOnlyList<int>? triangles,
-        float extra,
-        out int pieces)
-    {
-        pieces = 0;
-        if (source.Length == 0 || source.Length != moved.Length || triangles == null) return 0;
-        if (Math.Abs(extra) < CentreEpsilon) return 0;
-
-        var components = PiecesOf(source, triangles, out var labels);
-        if (components.Length == 0 || labels.Length != source.Length) return 0;
-
-        var centres = new float[components.Length];
-        var ratios = new float[components.Length];
-        var crossing = new bool[components.Length];
-        foreach (var component in components)
-        {
-            if (component.Left >= -CentreEpsilon || component.Right <= CentreEpsilon) continue;
-
-            var width = component.Right - component.Left;
-            if (width <= CentreEpsilon) continue;
-
-            centres[component.Id] = (component.Left + component.Right) * 0.5f;
-            ratios[component.Id] = Math.Max(0f, (width + extra) / width);
-            crossing[component.Id] = true;
-            pieces++;
-        }
-
-        var corrected = 0;
-        for (var index = 0; index < source.Length; index++)
-        {
-            var id = labels[index];
-            if (id < 0 || id >= crossing.Length || !crossing[id]) continue;
-
-            var centre = centres[id];
-            var x = centre + ((source[index].x - centre) * ratios[id]);
-            if (Math.Abs(moved[index].x - x) > CentreEpsilon) corrected++;
-            moved[index].x = x;
-        }
-
-        return corrected;
-    }
 
 }

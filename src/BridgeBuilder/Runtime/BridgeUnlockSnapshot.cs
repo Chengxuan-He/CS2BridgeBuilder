@@ -8,30 +8,6 @@ namespace BridgeBuilder.Runtime;
 
 internal static class BridgeUnlockSnapshot
 {
-    internal static bool PrepareLegacy(NetGeometryPrefab bridge)
-    {
-        var old = bridge.GetComponent<Unlockable>();
-        if (old == null || !old.active) return true;
-        if (!BridgeUnlockMigration.RecoverGate(UnityEngine.Application.persistentDataPath,
-            bridge.name, out var encoded, out var error))
-        {
-            // A generated (not yet persisted) bridge can preserve its source identity in memory.
-            // A persisted asset must use its recorded rule, not silently overwrite missing data.
-            if (bridge.asset != null || !old.m_IgnoreDependencies || old.m_RequireAll?.Length != 1
-                || (old.m_RequireAny?.Length ?? 0) != 0 || old.m_RequireAll[0] == null)
-            {
-                BridgeLoadFailures.RequireRestart();
-                Mod.Log.Warn($"Bridge unlock repair deferred for '{bridge.name}': {error}; retained, not deleted.");
-                return false;
-            }
-            encoded = new BridgeUnlockExpression { Kind = 2,
-                Identity = "ID:" + old.m_RequireAll[0].GetPrefabID().ToUrlSegment() }.Encode();
-        }
-        bridge.components.RemoveAll(component => component is UnlockableBase);
-        bridge.AddComponent<ManualUnlockable>().name = encoded;
-        Mod.Log.Info($"Repaired legacy unlock component before registration: '{bridge.name}'.");
-        return true;
-    }
     internal static bool Capture(PrefabBase source, PrefabSystem prefabs, EntityManager manager,
         out BridgeUnlockExpression rule)
     {

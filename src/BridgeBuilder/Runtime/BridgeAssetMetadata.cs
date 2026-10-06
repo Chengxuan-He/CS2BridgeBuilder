@@ -1,0 +1,97 @@
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Text;
+
+namespace BridgeBuilder.Runtime;
+
+/// <summary>Reads and edits scalar metadata in the existing prefab, preserving its Odin graph verbatim.</summary>
+internal static class BridgeAssetMetadata
+{
+    private const string TypeName = "BridgeBuilder.Bridges.BridgeConstructionCost, BridgeBuilder";
+    private static readonly UTF8Encoding Utf8 = new(false, true);
+
+    internal static bool TryRead(string text, out BridgeAssetInfo entry)
+    {
+        entry = null!;
+        if (!BridgeSerializedReferences.TryRead(text, out var document)
+            || !BridgeAssetInfo.IsPrefabName(document.Name)) return false;
+        var component = document.Component(TypeName);
+        if (component == null) return false;
+        string Get(string key) => component.Fields.TryGetValue(key, out var value) && value.Text != "null" ? value.Text : "";
+        var label = Get("m_BridgeDisplayName");
+        entry = new BridgeAssetInfo(document.Name, string.IsNullOrWhiteSpace(label) ? document.Name : label,
+            Get("m_BridgeUpperDeckId"), Get("m_BridgeLowerDeckId"), Get("m_BridgeStyleId"),
+            Get("m_BridgeCreatedUtc"), Get("m_BridgeCreationPending") == "true");
+        return true;
+    }
+
+    internal static bool Rewrite(string text, BridgeAssetInfo entry, out string updated, int? persistenceVersion = null)
+    {
+        updated = text;
+        if (!BridgeSerializedReferences.TryRead(text, out var document) || document.Name != entry.PrefabName) return false;
+        var component = document.Component(TypeName);
+        if (component == null || component.End <= component.Start) return false;
+        var fields = new Dictionary<string, string>
+        {
+            ["m_BridgeDisplayName"] = Quote(entry.DisplayName),
+            ["m_BridgeUpperDeckId"] = Quote(entry.UpperDeckId),
+            ["m_BridgeLowerDeckId"] = Quote(entry.LowerDeckId ?? ""),
+            ["m_BridgeStyleId"] = Quote(entry.StyleId),
+            ["m_BridgeCreatedUtc"] = Quote(entry.CreatedUtc),
+            ["m_BridgeCreationPending"] = entry.Pending ? "true" : "false"
+        };
+        if (persistenceVersion.HasValue) fields["m_BridgePersistenceVersion"] = persistenceVersion.Value.ToString(System.Globalization.CultureInfo.InvariantCulture);
+        var edits = new List<(int Start, int Length, string Text)>();
+        var missing = new StringBuilder();
+        foreach (var pair in fields)
+            if (component.Fields.TryGetValue(pair.Key, out var value))
+                edits.Add((value.Start, value.End - value.Start, pair.Value));
+            else missing.Append(",\n                ").Append(Quote(pair.Key)).Append(": ").Append(pair.Value);
+        if (missing.Length != 0) edits.Add((component.End - 1, 0, missing.ToString() + "\n            "));
+        foreach (var edit in edits.OrderByDescending(e => e.Start))
+            updated = updated.Remove(edit.Start, edit.Length).Insert(edit.Start, edit.Text);
+        return TryRead(updated, out var check) && check.PrefabName == entry.PrefabName
+            && check.DisplayName == entry.DisplayName && check.Pending == entry.Pending;
+    }
+
+    internal static bool Write(string path, BridgeAssetInfo entry, int? persistenceVersion = null)
+    {
+        string? temporary = null;
+        try
+        {
+            if ((BridgeFileAccess.Attributes(path) & FileAttributes.ReparsePoint) != 0) return false;
+            var original = BridgeFileAccess.ReadText(path);
+            if (!Rewrite(original, entry, out var updated, persistenceVersion)) return false;
+            if (updated == original) return true;
+            temporary = path + "." + Guid.NewGuid().ToString("N") + ".tmp";
+            File.WriteAllText(BridgeFileAccess.Native(temporary), updated, Utf8);
+            if (BridgeFileAccess.ReadText(path) != original) return false;
+            // Replace only this prefab. The CID sidecar, dependencies and native identity never change.
+            File.Replace(BridgeFileAccess.Native(temporary), BridgeFileAccess.Native(path), null);
+            return true;
+        }
+        catch (Exception exception)
+        {
+            Mod.Log.Warn(exception, "Could not save bridge asset metadata: " + path);
+            return false;
+        }
+        finally
+        {
+            if (temporary != null)
+                try { File.Delete(BridgeFileAccess.Native(temporary)); }
+                catch (Exception exception) { Mod.Log.Warn(exception, "Could not remove metadata temporary file"); }
+        }
+    }
+
+    private static string Quote(string value)
+    {
+        var result = new StringBuilder("\"");
+        foreach (var c in value)
+            if (c == '"' || c == '\\') result.Append('\\').Append(c);
+            else if (c < ' ') result.Append("\\u").Append(((int)c).ToString("x4"));
+            else result.Append(c);
+        return result.Append('"').ToString();
+    }
+}

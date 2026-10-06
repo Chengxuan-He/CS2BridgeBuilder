@@ -1,4 +1,4 @@
-import { readGenerationSource } from './ReadGenerationSource.mjs';
+﻿import { readGenerationSource } from './ReadGenerationSource.mjs';
 // Non-visual localization/selection regression checks. Does not load the game or generate geometry.
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
@@ -31,7 +31,7 @@ for (const match of uiSource.matchAll(/\bt\("(\w+)"\)/g)) known(match[1]);
 const consumers = [
     "UI/BridgeBuilderUISystem.cs", "Systems/BridgeGenerationSystem.cs",
     "Runtime/BridgePreviewRenderer.cs", "Runtime/BridgePreviewState.cs", "Bridges/BridgePrototypeSource.cs",
-    "Systems/BridgeMissingAssetSystem.cs", "Systems/BridgeStartupAssetSystem.cs", "Mod.cs"
+    "Systems/BridgeStartupAssetSystem.cs", "Mod.cs"
 ].map(path => path === "Systems/BridgeGenerationSystem.cs" ? readGenerationSource() : read(`src/BridgeBuilder/${path}`));
 for (const source of [uiSource, ...consumers.slice(0, 4)])
     assert(!/\p{Script=Han}/u.test(source), "Hardcoded Chinese remains in runtime UI");
@@ -40,11 +40,7 @@ for (const source of consumers) {
     for (const match of source.matchAll(/BridgePreviewState\.Publish\([^\n]*, "(\w+)"\)/g)) known(match[1]);
     for (const match of source.matchAll(/Notice\("(\w+)"/g)) known(match[1]);
 }
-for (const key of ["OK", "MissingBridgesRemoved", "MissingBridgesRepairFailed",
-    "MissingBridgesBlocked", "MissingBridgesTimeout", "MissingBridgesSuspended"]) known(key);
-const cleanupSource = read("src/BridgeBuilder/Systems/BridgeMissingAssetSystem.cs");
-assert(!cleanupSource.includes('LocalizedString.Value("OK")'));
-assert(!cleanupSource.includes('+ "Restore the save'));
+known("OK");
 assert(read("src/BridgeBuilder/Mod.cs").includes('LocalizedString.Value(RuntimeUiText.Get("OK"))'));
 
 // Run the actual UI functions with an in-memory binding adapter. This checks
@@ -93,7 +89,7 @@ context.decks = ["Road", "Highway", "PublicTransport", "Pedestrian", "Train", "S
 context.styles = [{ id: "style", name: "translated style", supportsSingle: true, supportsDouble: true }];
 const custom = "My bridge 我的桥 {0}";
 const prefabId = "r11111111-2222-3333-4444-555555555555";
-context.bridges = [{ prefabName: prefabId, registrationName: custom, upperDeckId: "Train", lowerDeckId: "", styleId: "style", available: true }];
+context.bridges = [{ prefabName: prefabId, displayName: custom, upperDeckId: "Train", lowerDeckId: "", styleId: "style", available: true }];
 
 for (let column = 0; column < locales.length; column++) {
     activeTexts = Object.fromEntries([...entries].map(([key, row]) => [key, row[column]]));
@@ -127,7 +123,7 @@ for (let column = 0; column < locales.length; column++) {
             triggers = []; button.props.onClick();
             assert.deepEqual(JSON.parse(JSON.stringify(triggers)), [["BridgeBuilder", action, {
                 upperDeckId: kind, lowerDeckId: double ? "Road" : "", styleId: "style",
-                lowerDeckOpposite: true, registrationName: custom
+                lowerDeckOpposite: true, displayName: custom
             }]],
                 "Only enqueue the chosen action; closing/activation must wait for backend success");
         }
@@ -145,13 +141,13 @@ for (let column = 0; column < locales.length; column++) {
         for (const key of ["Create", "CreateBuild"]) {
             triggers = [];
             create.find(n => n.type === "button" && n.children.includes(activeTexts[key])).props.onClick();
-            assert.equal(triggers[0][2].registrationName, expected);
+            assert.equal(triggers[0][2].displayName, expected);
         }
         state[4] = "   "; state[5] = true;
         triggers = [];
         render('CreateView({ decks, styles, status: "" })')
             .find(n => n.type === "button" && n.children.includes(activeTexts.Create)).props.onClick();
-        assert.equal(triggers[0][2].registrationName, expected, "Blank custom name uses the full default");
+        assert.equal(triggers[0][2].displayName, expected, "Blank custom name uses the full default");
         state[5] = false;
         checkbox.props.onChange(false);
         const sameDirection = render('CreateView({ decks, styles, status: "" })');
@@ -159,7 +155,7 @@ for (let column = 0; column < locales.length; column++) {
             `${baseName}·${activeTexts.SameDirection}`, "Default direction suffix must follow the checkbox and locale");
         triggers = [];
         sameDirection.find(n => n.type === "button" && n.children.includes(activeTexts.Create)).props.onClick();
-        assert.equal(triggers[0][2].registrationName, `${baseName}·${activeTexts.SameDirection}`);
+        assert.equal(triggers[0][2].displayName, `${baseName}·${activeTexts.SameDirection}`);
         assert.equal(triggers[0][2].lowerDeckOpposite, false);
         state[4] = custom; state[5] = true;
         checkbox.props.onChange(true);
@@ -270,7 +266,7 @@ assert.equal(render('NetworkPicker({ decks, selectedId: "Road", onSelect: () => 
     .find(n => n.type?.name === "CardGrid").props.items.length, 0);
 state = [false, "Road", "", "style", custom, true, "TRANSLATED", ""];
 assert.equal(render('CreateView({ decks, styles, status: "" })').find(n => n.type?.name === "CardGrid").props.items.length, 1);
-context.bridges.push({ prefabName: "r222", registrationName: "Unavailable double", isDoubleDeck: true, available: false, styleId: "other" });
+context.bridges.push({ prefabName: "r222", displayName: "Unavailable double", isDoubleDeck: true, available: false, styleId: "other" });
 state = [prefabId, custom, "R222", "double", "unavailable", "other", ""];
 const filteredManage = render('ManageView({ bridges, styles, status: "" })');
 assert.equal(filteredManage.find(n => n.type?.name === "CardGrid").props.items[0].prefabName, "r222");

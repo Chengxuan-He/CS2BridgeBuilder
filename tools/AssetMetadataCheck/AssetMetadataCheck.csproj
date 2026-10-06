@@ -1,0 +1,10 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup><TargetFramework>net8.0</TargetFramework><OutputType>Exe</OutputType><ImplicitUsings>enable</ImplicitUsings><Nullable>enable</Nullable></PropertyGroup>
+  <ItemGroup>
+    <Compile Include="../../src/BridgeBuilder/Runtime/BridgeAssetInfo.cs" Link="BridgeAssetInfo.cs" />
+    <Compile Include="../../src/BridgeBuilder/Runtime/BridgeAssetMetadata.cs" Link="BridgeAssetMetadata.cs" />
+    <Compile Include="../../src/BridgeBuilder/Runtime/BridgeFileAccess.cs" Link="BridgeFileAccess.cs" />
+    <Compile Include="../../src/BridgeBuilder/Runtime/BridgeSerializedReferences.cs" Link="BridgeSerializedReferences.cs" />
+    <Compile Include="../../src/BridgeBuilder/Runtime/BridgeAssetCatalog.cs" Link="BridgeAssetCatalog.cs" />
+  <Compile Include="../../src/BridgeBuilder/Runtime/BridgeAssetMigration.cs" Link="BridgeAssetMigration.cs" /></ItemGroup>
+</Project>

@@ -11,11 +11,21 @@ public sealed class BridgeConstructionCost : ComponentBase
 {
     public uint m_BaseConstructionCost;
 
+    // Asset-local metadata. Missing fields in old prefabs retain these defaults.
+    // Strings are values, never dependencies on source roads or bridge prototypes.
+    public string m_BridgeDisplayName = "";
+    public string m_BridgeUpperDeckId = "";
+    public string m_BridgeLowerDeckId = "";
+    public string m_BridgeStyleId = "";
+    public string m_BridgeCreatedUtc = "";
+    public bool m_BridgeCreationPending;
+    public int m_BridgePersistenceVersion;
+
     protected override void OnEnable()
     {
         base.OnEnable();
         // Imported components are instantiated by the native Odin formatter before IMod.OnLoad.
-        // Install registration validation here as well; OnLoad alone is too late for startup assets.
+        // Install assetInfo validation here as well; OnLoad alone is too late for startup assets.
         // No asset deletion, ECS mutation or forced asset loading from this callback.
         try
         {
@@ -25,7 +35,7 @@ public sealed class BridgeConstructionCost : ComponentBase
         {
             // Dependency loading/JIT can fail before the patch method's own try block is entered.
             // Never let that escape a native asset-deserialization callback.
-            BridgeBuilder.Runtime.BridgeLoadFailures.RequireRestart();
+            BridgeBuilder.Runtime.BridgeSessionState.RequireRestart();
             Mod.Log.Warn("Early bridge recovery unavailable; assets retained, restart required: " + exception.Message);
         }
     }

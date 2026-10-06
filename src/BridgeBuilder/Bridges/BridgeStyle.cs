@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using Game.Prefabs;
@@ -71,23 +71,6 @@ internal sealed class BridgeStyleVariant
     /// </summary>
     internal AuxiliaryNetInfo? LowerDeck =>
         Donor.GetComponent<AuxiliaryNets>()?.m_AuxiliaryNets?.FirstOrDefault(info => info != null);
-
-    /// <summary>
-    /// Where the archetype puts its second deck, in metres along y. Negative is below, positive above.
-    /// Zero when it has none.
-    ///
-    /// Not adjustable. It was a setting, clamped between four and twenty-four metres, and a bridge
-    /// built at any value but the archetype's is a bridge whose structure was drawn for a separation
-    /// it no longer has.
-    /// </summary>
-    internal float DeckSpacing
-    {
-        get
-        {
-            var lower = LowerDeck;
-            return lower == null ? 0f : lower.m_Position.y;
-        }
-    }
 
     /// <summary>
     /// How wide the structure above the deck actually is, in metres. 0 when nothing can be measured.
@@ -314,16 +297,6 @@ internal sealed class BridgeStyle
     internal BridgeStyleVariant? Nearest(float width, bool forRoad = true)
     {
         return Select(width, forRoad).Variant;
-    }
-
-    /// <summary>
-    /// The tower this style would use for a road of the given width, or null when it has no list.
-    /// The generator derives from this one, so that a road matching its recorded width reproduces it
-    /// exactly.
-    /// </summary>
-    internal BridgeTowers.Tower? TowerFor(float width)
-    {
-        return Select(width).Tower;
     }
 
     /// <summary>

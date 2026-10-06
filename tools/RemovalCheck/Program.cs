@@ -42,7 +42,7 @@ static IReadOnlyList<PrefabBase> Remove(ObjectPrefab root, PrefabBase[] all, boo
     var deleted = Remove(road, [road, placeholder, mesh, footing]);
     Require(deleted.Count == 1 && deleted.Contains(road), "failure cut off a surviving reference");
 }
-// Protect another bridge even if it is NOT in the exporter registry/state.
+// Protect another bridge even if it is NOT in the export cache.
 {
     var mesh = Asset("owned-shared-mesh");
     var placeholder = Asset("owned-placeholder", mesh);

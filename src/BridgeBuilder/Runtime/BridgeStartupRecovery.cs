@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace BridgeBuilder.Runtime;
 
-/// <summary>Runs once at the earliest mod callback, before owned prefab registration.</summary>
+/// <summary>Runs once at the earliest mod callback, before owned prefab assetInfo.</summary>
 internal static class BridgeStartupRecovery
 {
     private static bool _started;
@@ -14,8 +14,6 @@ internal static class BridgeStartupRecovery
     internal static readonly HashSet<string> Retired = new(StringComparer.Ordinal);
     internal static void Start(bool finalAttempt = false)
     {
-        BridgeLoadFailures.Start();
-        BridgePrefabLoadGuard.Start();
         if (_complete || _running || (_started && !finalAttempt)) return;
         _started = true; // deserialization can re-enter the component callback
         _running = true;
@@ -24,21 +22,20 @@ internal static class BridgeStartupRecovery
             if (!BridgeUnlockMigration.Run(UnityEngine.Application.persistentDataPath, true,
                 out var changed, out var error))
             {
-                // Access errors/unknown policies are not damage evidence. The registration gate
-                // still performs a per-file repair, but no destructive retirement is permitted.
+                // Access errors/unknown policies are not damage evidence.
                 // The first callback may run while Odin still holds a read handle. Retry at
                 // OnLoad, after import has closed that stream; do not poison a successful retry.
-                if (finalAttempt) BridgeLoadFailures.RequireRestart();
+                if (finalAttempt) BridgeSessionState.RequireRestart();
                 Mod.Log.Warn("Startup bridge migration deferred; files retained: " + error);
                 return;
             }
             _complete = true;
             Mod.Log.Info($"Startup bridge recovery: migrated {changed} legacy unlock file(s) with backups. "
-                + "Already-deserialized owned prefabs are repaired before registration.");
+                + "Loaded prefab objects are never inspected or repaired.");
         }
         catch (Exception exception)
         {
-            if (finalAttempt) BridgeLoadFailures.RequireRestart();
+            if (finalAttempt) BridgeSessionState.RequireRestart();
             Mod.Log.Warn("Startup bridge recovery unavailable; files retained: " + exception.Message);
         }
         finally { _running = false; }
@@ -47,6 +44,6 @@ internal static class BridgeStartupRecovery
     internal static void Stop()
     {
         _started = false; _complete = false; _running = false; Retired.Clear();
-        BridgeRegistrationStore.ResetSession();
+        BridgeAssetCatalog.ResetSession();
     }
 }

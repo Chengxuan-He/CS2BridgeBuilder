@@ -137,11 +137,12 @@ def main():
     root, backup = long_path(root), long_path(backup)
     old, new = args.old.encode('ascii'), ('b' + args.old[1:]).encode('ascii')
     game_stopped()
-    registry = root / 'ModsData/BridgeBuilder/bridge-registry.tsv'
-    lines = registry.read_bytes().splitlines()
-    rows = [line.split(b'\t') for line in lines[1:]]
-    if sum(row[0] == old for row in rows) != 1 or any(row[0] == new for row in rows):
-        raise ValueError('Bridge is missing, duplicated, or destination already registered')
+    source_prefab = root / 'ImportedData' / args.old / (args.old + '.Prefab')
+    target_prefab = root / 'ImportedData' / new.decode() / (new.decode() + '.Prefab')
+    if not source_prefab.is_file() or target_prefab.exists():
+        raise ValueError('Source asset missing or destination already exists')
+    if b'BridgeBuilder.Bridges.BridgeConstructionCost, BridgeBuilder' not in source_prefab.read_bytes():
+        raise ValueError('Source asset lacks BridgeBuilder ownership component')
     changes, save_reports = [], []
 
     def add(path, updated, target=None):
@@ -169,16 +170,15 @@ def main():
                 raise ValueError(f'Reference outside bridge ownership: {path}')
     if not any(path.name == args.old + '.Prefab' for path, *_ in changes):
         raise ValueError('Root bridge asset missing')
-    for name in ('bridge-registry.tsv', 'export-state.tsv'):
+    for name in ('export-state.tsv',):
         path = root / 'ModsData/BridgeBuilder' / name
         original = path.read_bytes()
         if original.count(old) != 1:
             raise ValueError(f'Unexpected identity count in {name}')
         add(path, original.replace(old, new))
 
-    created = next(row[5].decode() for row in rows if row[0] == old)
-    import datetime
-    created_timestamp = datetime.datetime.fromisoformat(created.rstrip('Z') + '+00:00').timestamp()
+    # No external creation journal: conservatively reject any unreadable save.
+    created_timestamp = 0
     import io
     for path in sorted((root / 'Saves').rglob('*.cok')):
         original = path.read_bytes()

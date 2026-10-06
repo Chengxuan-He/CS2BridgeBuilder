@@ -54,11 +54,11 @@ internal sealed class BridgeLocaleSource : IDictionarySource
             entries[_setting.GetBindingMapLocaleID()] = _text.Title;
         }
 
-        foreach (var bridge in BridgeRegistrationStore.Load())
+        foreach (var bridge in BridgeAssetCatalog.Load())
         {
-            entries[$"Assets.NAME[{bridge.PrefabName}]"] = bridge.RegistrationName;
+            entries[$"Assets.NAME[{bridge.PrefabName}]"] = bridge.DisplayName;
             entries[$"Assets.DESCRIPTION[{bridge.PrefabName}]"] =
-                $"BridgeBuilder · {bridge.RegistrationName}";
+                $"BridgeBuilder · {bridge.DisplayName}";
         }
 
         return entries;

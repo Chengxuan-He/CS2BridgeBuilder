@@ -1,17 +1,17 @@
-using BridgeBuilder.Bridges;
+﻿using BridgeBuilder.Bridges;
 using BridgeBuilder.Runtime;
 using BridgeBuilder.Settings;
 using BridgeBuilder.UI;
-using Colossal.Serialization.Entities;
-using CS2Mods.Shared;
-using CS2Mods.Shared.Conversion;
-using CS2Mods.Shared.Discovery;
-using CS2Mods.Shared.Export;
+
+
+
+
+
 using CS2Mods.Shared.Infrastructure;
 using Game;
-using Game.Common;
-using Game.Net;
-using Game.Objects;
+
+
+
 using Game.Prefabs;
 using Game.Tools;
 using System;
@@ -81,9 +81,9 @@ public partial class BridgeGenerationSystem
         var prefabName = string.Empty;
         for (var attempt = 0; attempt < 16; attempt++)
         {
-            var candidate = BridgeRegistration.NewPrefabName();
+            var candidate = BridgeAssetInfo.NewPrefabName();
             if (loaded.Contains(candidate) || state.Contains(candidate)
-                || BridgeRegistrationStore.Find(candidate) != null)
+                || BridgeAssetCatalog.Find(candidate) != null)
                 continue;
             prefabName = candidate;
             break;
@@ -98,9 +98,9 @@ public partial class BridgeGenerationSystem
             return;
         }
 
-        var registrationName = string.IsNullOrWhiteSpace(request.RegistrationName)
+        var displayName = string.IsNullOrWhiteSpace(request.DisplayName)
             ? BridgeNaming.BaseName(upper, lower, style)
-            : request.RegistrationName.Trim();
+            : request.DisplayName.Trim();
         var options = new BridgeOptions
         {
             DoubleDeck = doubleDeck,
@@ -108,11 +108,11 @@ public partial class BridgeGenerationSystem
             LowerDeckOpposite = request.LowerDeckOpposite,
         };
 
-        // Reserve ownership before writing geometry. A crash leaves a pending row for recovery.
-        if (!BridgeRegistrationStore.Begin(new BridgeRegistration(prefabName, registrationName,
+        // Reserve the UUID in memory; persist incomplete-creation state on the root prefab itself.
+        if (!BridgeAssetCatalog.Begin(new BridgeAssetInfo(prefabName, displayName,
             upper.Id, lower?.Id, style.Id, DateTime.UtcNow.ToString("O", CultureInfo.InvariantCulture), pending: true)))
         {
-            BridgeRuntimeRequests.Complete("RegistrationFailed", registrationName);
+            BridgeRuntimeRequests.Complete("AssetMetadataFailed", displayName);
             return;
         }
 
@@ -124,7 +124,7 @@ public partial class BridgeGenerationSystem
                 try
                 {
                     if (ready)
-                        committed = CompleteRuntimeBridge(upper, lower, style, prefabName, registrationName, state, report,
+                        committed = CompleteRuntimeBridge(upper, lower, style, prefabName, displayName, state, report,
                             request.BuildAfterCreate);
                 }
                 catch (Exception exception) { report.Failed(prefabName, exception); }
@@ -141,10 +141,10 @@ public partial class BridgeGenerationSystem
     }
 
     private bool CompleteRuntimeBridge(
-        Deck upper, Deck? lower, BridgeStyle style, string prefabName, string registrationName,
+        Deck upper, Deck? lower, BridgeStyle style, string prefabName, string displayName,
         ExportStateStore state, ExportReport report, bool buildAfterCreate)
     {
-        var recorded = BridgeRegistrationStore.Commit(prefabName);
+        var recorded = BridgeAssetCatalog.Commit(prefabName);
 
         if (recorded)
         {
@@ -157,36 +157,36 @@ public partial class BridgeGenerationSystem
                     ? "CreatedActive"
                     : !buildAfterCreate ? "CreatedManage"
                     : _activationLocked ? "CreatedLocked" : "ActivateUnloaded",
-                    registrationName, prefabName);
-                // Create-only confirms successful publication/registration without entering the tool.
+                    displayName, prefabName);
+                // Create-only confirms successful publication/assetInfo without entering the tool.
                 // Create-and-build keeps its existing activation and locked-bridge dialog behavior.
                 if (!buildAfterCreate)
                     Mod.ShowMessage(UiStringCatalog.Current.Title,
-                        RuntimeUiText.Get("CreatedManage", registrationName));
+                        RuntimeUiText.Get("CreatedManage", displayName));
             }
             catch (Exception exception)
             {
-                // The registry is the commit point. UI/cache failures cannot undo that commit.
+                // The asset metadata is the commit point. UI/cache failures cannot undo it.
                 report.Warning("Bridge committed, but its UI/cache refresh failed: " + exception.Message);
-                BridgeRuntimeRequests.Complete("CreatedManage", registrationName, prefabName);
+                BridgeRuntimeRequests.Complete("CreatedManage", displayName, prefabName);
             }
             return true;
         }
         else
         {
             report.Failed(prefabName, new IOException(
-                "The prefab was created, but its runtime registration record could not be saved."));
-            BridgeRuntimeRequests.Complete("RegistrationFailed", registrationName);
+                "The prefab was created, but its completion metadata could not be saved."));
+            BridgeRuntimeRequests.Complete("AssetMetadataFailed", displayName);
             return false;
         }
     }
 
     private void DeferFailedCreation(string prefabName, ExportReport report)
     {
-        BridgeRegistrationStore.EndCreation(prefabName);
+        BridgeAssetCatalog.EndCreation(prefabName);
         // Keep live native indices and geometry allocated; retire audited disk files at boot.
         foreach (var prefab in PrefabCatalog.GetAll(_prefabSystem).OfType<NetGeometryPrefab>())
-            if (BridgeLoadFailures.TryOwner(prefab.name, out var owner) && owner == prefabName)
+            if (BridgeSessionState.TryOwner(prefab.name, out var owner) && owner == prefabName)
                 HideRemovedBridge(prefab);
         report.Warning($"Creation '{prefabName}' did not commit; owned files will be backed up and retired on restart.");
         BridgeRuntimeRequests.Complete("CreateFailed");
@@ -206,8 +206,8 @@ public partial class BridgeGenerationSystem
 
     private void ActivateRuntimeBridge(string prefabName)
     {
-        if (!BridgeRegistration.IsPrefabName(prefabName)
-            || BridgeRegistrationStore.Find(prefabName) == null)
+        if (!BridgeAssetInfo.IsPrefabName(prefabName)
+            || BridgeAssetCatalog.Find(prefabName) == null)
         {
             BridgeRuntimeRequests.Complete("ActivateInvalid");
             return;
@@ -230,7 +230,7 @@ public partial class BridgeGenerationSystem
             if (prefab == null) return false;
             if ((_gameMode & GameMode.Game) != 0)
             {
-                if (!BridgeRegistration.IsPrefabName(prefabName)
+                if (!BridgeAssetInfo.IsPrefabName(prefabName)
                     || !BridgeUnlockPolicy.TryPrepareBuild(prefab, _prefabSystem, EntityManager,
                         out var locked)) return false;
                 if (locked)
@@ -253,42 +253,53 @@ public partial class BridgeGenerationSystem
         }
     }
 
-    private void RenameRuntimeBridge(string prefabName, string registrationName)
+    private void RenameRuntimeBridge(string prefabName, string displayName)
     {
-        if (!BridgeRegistration.IsPrefabName(prefabName))
+        if (!BridgeAssetInfo.IsPrefabName(prefabName))
         {
             BridgeRuntimeRequests.Complete("RenameInvalid");
             return;
         }
-        if (string.IsNullOrWhiteSpace(registrationName))
+        if (string.IsNullOrWhiteSpace(displayName))
         {
             BridgeRuntimeRequests.Complete("NameRequired");
             return;
         }
 
-        if (BridgeRegistrationStore.Find(prefabName)?.RegistrationName == registrationName.Trim())
+        if (BridgeAssetCatalog.Find(prefabName)?.DisplayName == displayName.Trim())
         {
-            BridgeRuntimeRequests.Complete("Renamed", registrationName.Trim());
+            BridgeRuntimeRequests.Complete("Renamed", displayName.Trim());
             return;
         }
-        if (!BridgeRegistrationStore.Rename(prefabName, registrationName))
+        if (!BridgeAssetCatalog.Rename(prefabName, displayName))
         {
             BridgeRuntimeRequests.Complete("RenameFailed");
             return;
         }
 
+        // Keep the live object consistent so a later native save cannot restore the old label.
+        foreach (var prefab in PrefabCatalog.GetAll(_prefabSystem).Where(p => p.name == prefabName))
+        {
+            var metadata = prefab.GetComponent<BridgeConstructionCost>();
+            if (metadata != null) metadata.m_BridgeDisplayName = displayName.Trim();
+        }
+
+        // A label edit must not run asset-pack maintenance or rebuild the deck/preview
+        // catalogues. Keep the persistent UUID and the live network graph untouched.
         Mod.ReloadActiveLocale();
-        Refresh();
+        BridgeBuilderUISystem.RequestRefresh();
+        World.GetExistingSystemManaged<BridgeRailSeamAuditSystem>()?.Restart("bridge renamed: " + prefabName);
+        Mod.Log.Info($"Bridge renamed: prefab={prefabName}; display name persisted; network identity unchanged.");
         BridgeRuntimeRequests.Complete(
-            "Renamed", registrationName.Trim(), prefabName);
+            "Renamed", displayName.Trim(), prefabName);
     }
 
     private void DeleteRuntimeBridge(string prefabName)
     {
-        var registration = BridgeRegistrationStore.Find(prefabName);
-        if (!BridgeRegistration.IsPrefabName(prefabName) || registration == null)
+        var assetInfo = BridgeAssetCatalog.Find(prefabName);
+        if (!BridgeAssetInfo.IsPrefabName(prefabName) || assetInfo == null)
         {
-            FailDeletion(prefabName, "DeleteMissing", "Bridge UUID registration is missing or invalid.");
+            FailDeletion(prefabName, "DeleteMissing", "Bridge UUID assetInfo is missing or invalid.");
             return;
         }
 
@@ -297,7 +308,7 @@ public partial class BridgeGenerationSystem
             var roots = RemovalRoots(prefabName, PrefabCatalog.GetAll(_prefabSystem)).ToArray();
             if (roots.Length == 0)
             {
-                FailDeletion(prefabName, "DeleteMissing", "No writable bridge prefab was found; registration retained.");
+                FailDeletion(prefabName, "DeleteMissing", "No writable bridge prefab was found; assetInfo retained.");
                 return;
             }
             var ids = new HashSet<Entity>();
@@ -318,7 +329,7 @@ public partial class BridgeGenerationSystem
             BridgePreviewState.Clear();
             plan.Apply(EntityManager);
             _pendingRemoval = plan;
-            _removingRegistration = registration;
+            _removingAsset = assetInfo;
             _removalStartedUtc = DateTime.UtcNow;
             Mod.Log.Info($"Removing '{prefabName}': {plan.DeletedEntities.Count} network entities; "
                 + "waiting for native cleanup before deleting assets. Composition caches are retained.");
@@ -332,27 +343,26 @@ public partial class BridgeGenerationSystem
 
     private void CompleteRuntimeDeletion()
     {
-        var registration = _removingRegistration;
+        var assetInfo = _removingAsset;
         var placed = _pendingRemoval?.DeletedEntities.Count ?? 0;
         _pendingRemoval = null;
-        _removingRegistration = null;
-        if (registration == null) return;
-        var prefabName = registration.PrefabName;
+        _removingAsset = null;
+        if (assetInfo == null) return;
+        var prefabName = assetInfo.PrefabName;
         var state = ExportStateStore.Load();
         var report = new ExportReport();
         var removed = RemoveByName(prefabName, state, report);
         if (removed.Count > 0
-            && !RemovalRoots(prefabName, PrefabCatalog.GetAll(_prefabSystem)).Any()
-            && BridgeRegistrationStore.Remove(prefabName))
+            && !RemovalRoots(prefabName, PrefabCatalog.GetAll(_prefabSystem)).Any())
         {
             Mod.ReloadActiveLocale();
             BridgeRuntimeRequests.Complete(
-                "Deleted", registration.RegistrationName, placed);
+                "Deleted", assetInfo.DisplayName, placed);
         }
         else
         {
             FailDeletion(prefabName, "DeleteIncomplete",
-                $"Deleted {removed.Count} root prefab(s), but prefab assets or UUID registration remain. "
+                $"Deleted {removed.Count} root prefab(s), but prefab assets remain. "
                 + "See ModsData/BridgeBuilder/last-export-report.txt for the blocking reference or asset failure.");
         }
 
@@ -368,7 +378,7 @@ public partial class BridgeGenerationSystem
         if (exception == null) Mod.Log.Critical(message);
         else Mod.Log.Critical(exception, message);
         _pendingRemoval = null;
-        _removingRegistration = null;
+        _removingAsset = null;
         BridgeRuntimeRequests.Complete(stage);
     }
 

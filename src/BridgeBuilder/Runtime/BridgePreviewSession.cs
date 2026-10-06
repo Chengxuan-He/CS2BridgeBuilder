@@ -1,4 +1,4 @@
-using BridgeBuilder.Bridges;
+﻿using BridgeBuilder.Bridges;
 using CS2Mods.Shared.Conversion;
 using CS2Mods.Shared.Infrastructure;
 using Game.Prefabs;
@@ -13,7 +13,7 @@ namespace BridgeBuilder.Runtime;
 /// <summary>
 /// One disposable preview recipe/result, or a read-only view of an existing
 /// bridge. Never enters WorldRegistration, the asset writer or the permanent
-/// UUID registry. The renderer must be disposed before this owner so that no
+/// persistent asset catalogue. The renderer must be disposed before this owner so that no
 /// draw can reference a released private mesh.
 /// </summary>
 internal sealed class BridgePreviewSession : IDisposable
@@ -39,7 +39,6 @@ internal sealed class BridgePreviewSession : IDisposable
     internal PreviewGeometry Geometry { get; } = new();
     internal NetGeometryPrefab? Root { get; private set; }
     internal BridgeStyleVariant? Variant { get; private set; }
-    internal IEnumerable<PrefabBase> OwnedPrefabs => _owned;
     internal IEnumerable<ObjectGeometryPrefab> ObjectCandidates => _objectCandidates ??= _owned
         .Concat(PrefabCatalog.GetAll(World.DefaultGameObjectInjectionWorld.GetExistingSystemManaged<PrefabSystem>()))
         .OfType<ObjectGeometryPrefab>().Distinct().ToArray();
