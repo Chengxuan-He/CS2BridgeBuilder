@@ -28,6 +28,13 @@ public partial class BridgeGenerationSystem
 {
     private void CreateRuntimeBridge(BridgeRuntimeRequest request, BridgeOptions? exportOptions = null)
     {
+        // Disk migration leaves live asset caches stale until a cold restart.
+        // Reject before UUID reservation or any asset creation, not after publication.
+        if (BridgeSessionState.RestartRequired)
+        {
+            BridgeRuntimeRequests.Complete("BridgeRestartRequired", request.UpperDeckId, request.StyleId);
+            return;
+        }
         var state = ExportStateStore.Load();
         var report = new ExportReport(logIssues: false);
         var upper = DeckCatalog.Find(request.UpperDeckId);
@@ -158,7 +165,7 @@ public partial class BridgeGenerationSystem
                 BridgeRuntimeRequests.Complete(activated
                     ? "CreatedActive"
                     : !buildAfterCreate ? "CreatedManage"
-                    : _activationLocked ? "CreatedLocked" : "ActivateUnloaded",
+                    : _activationLocked ? "CreatedLocked" : _activationFailure,
                     displayName, prefabName);
                 // Create-only confirms successful publication/assetInfo without entering the tool.
                 // Create-and-build keeps its existing activation and locked-bridge dialog behavior.
@@ -219,24 +226,30 @@ public partial class BridgeGenerationSystem
 
         BridgeRuntimeRequests.Complete(ActivatePrefab(prefabName)
             ? "Activated"
-            : _activationLocked ? "ActivateLocked" : "ActivateUnloaded");
+            : _activationLocked ? "ActivateLocked" : _activationFailure, prefabName);
     }
 
     private bool ActivatePrefab(string prefabName)
     {
         _activationLocked = false;
+        _activationFailure = "ActivateFailed";
+        if (BridgeSessionState.RestartRequired)
+        {
+            _activationFailure = "BridgeRestartRequired";
+            return false;
+        }
         try
         {
             var prefab = PrefabCatalog.GetAll(_prefabSystem)
                 .OfType<NetGeometryPrefab>()
                 .FirstOrDefault(candidate =>
                     string.Equals(candidate.name, prefabName, StringComparison.Ordinal));
-            if (prefab == null) return false;
+            if (prefab == null) { _activationFailure = "ActivateUnloaded"; return false; }
             if ((_gameMode & GameMode.Game) != 0)
             {
                 if (!BridgeAssetInfo.IsPrefabName(prefabName)
                     || !BridgeUnlockPolicy.TryPrepareBuild(prefab, _prefabSystem, EntityManager,
-                        out var locked)) return false;
+                        out var locked)) { _activationFailure = "ActivateNotReady"; return false; }
                 if (locked)
                 {
                     _activationLocked = true;
@@ -246,13 +259,14 @@ public partial class BridgeGenerationSystem
                     return false;
                 }
             }
-            if (!World.GetOrCreateSystemManaged<ToolSystem>().ActivatePrefabTool(prefab)) return false;
+            if (!World.GetOrCreateSystemManaged<ToolSystem>().ActivatePrefabTool(prefab))
+            { _activationFailure = "ActivateToolFailed"; return false; }
             World.GetExistingSystemManaged<BridgeBuilderUISystem>()?.CloseForBuild();
             return true;
         }
         catch (Exception exception)
         {
-            Mod.Log.Warn(exception, $"Could not activate runtime bridge '{prefabName}'");
+            Mod.Log.Critical(exception, $"Could not activate runtime bridge '{prefabName}'");
             return false;
         }
     }
@@ -284,8 +298,8 @@ public partial class BridgeGenerationSystem
         // Keep the live object consistent so a later native save cannot restore the old label.
         foreach (var prefab in PrefabCatalog.GetAll(_prefabSystem).Where(p => p.name == prefabName))
         {
-            var metadata = prefab.GetComponent<BridgeConstructionCost>();
-            if (metadata != null) metadata.m_BridgeDisplayName = displayName.Trim();
+            var metadata = prefab.GetComponent<UIObject>();
+            if (metadata != null && BridgeAssetCatalog.Find(prefabName) is { } entry) metadata.name = BridgeAssetMetadata.Encode(entry);
         }
 
         // A label edit must not run asset-pack maintenance or rebuild the deck/preview

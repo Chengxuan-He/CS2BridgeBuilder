@@ -1,4 +1,4 @@
-﻿using BridgeBuilder.Bridges;
+using BridgeBuilder.Bridges;
 using BridgeBuilder.Runtime;
 using BridgeBuilder.Settings;
 using Colossal.UI.Binding;
@@ -69,6 +69,8 @@ public partial class BridgeBuilderUISystem : UISystemBase
         AddBinding(new TriggerBinding<string>(Group, "PreviewExistingBridge", PreviewExistingBridge,
             new BridgeStringReader()));
         AddBinding(new TriggerBinding(Group, "ClearPreview", BridgePreviewState.Clear));
+        AddBinding(new TriggerBinding<string, string>(Group, "PreviewImageFailed", BridgePreviewState.ImageFailed,
+            new BridgeStringReader(), new BridgeStringReader()));
 
         AddBinding(new TriggerBinding(Group, "TogglePanel", TogglePanel));
         AddBinding(new TriggerBinding(Group, "OpenRoadBuilder", OpenRoadBuilder));
@@ -320,7 +322,7 @@ public partial class BridgeBuilderUISystem : UISystemBase
         }
         catch (Exception exception)
         {
-            Mod.Log.Warn(exception, "Could not update the BridgeBuilder runtime UI");
+            Mod.Log.Critical(exception, "Bridge panel error: stage='UiRefreshFailed'. Could not update the BridgeBuilder runtime UI.");
             _status.Update(RuntimeUiText.Get("UiRefreshFailed"));
         }
         finally

@@ -89,6 +89,16 @@ public sealed class BridgeSetting : ModSetting
 
     public bool SelfCheckUnavailable() => !BridgeBuilder.Systems.BridgeStartupAssetSystem.CanCheck;
 
+    [SettingsUISection(OptionsTab)]
+    [SettingsUIButton]
+    [SettingsUIDisableByCondition(typeof(BridgeSetting), nameof(RemoveAllBridgesUnavailable))]
+    public bool RemoveAllBridges
+    {
+        set => BridgeBuilder.Runtime.BridgeBulkRemoval.RequestConfirmation();
+    }
+
+    public bool RemoveAllBridgesUnavailable() => !BridgeBuilder.Runtime.BridgeBulkRemoval.CanRequest;
+
     [SettingsUIHidden]
     [SettingsUIMultilineText("")]
     public string StatusText

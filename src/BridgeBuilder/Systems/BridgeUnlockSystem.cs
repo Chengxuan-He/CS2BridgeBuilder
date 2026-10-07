@@ -23,6 +23,7 @@ public partial class BridgeUnlockSystem : GameSystemBase
 
     protected override void OnUpdate()
     {
+        if (Mod.Setting?.RemoveDevelopmentRestrictions != true) return;
         using var entities = _networks.ToEntityArray(Allocator.Temp);
         foreach (var entity in entities)
         {

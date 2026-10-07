@@ -2,6 +2,7 @@
   <PropertyGroup><TargetFramework>net8.0</TargetFramework><OutputType>Exe</OutputType><ImplicitUsings>enable</ImplicitUsings><Nullable>enable</Nullable></PropertyGroup>
   <ItemGroup>
     <Compile Include="../../src/BridgeBuilder/Runtime/BridgeUnlockExpression.cs" Link="BridgeUnlockExpression.cs" />
+    <Compile Include="../../src/BridgeBuilder/Runtime/BridgeNativeUnlock.cs" Link="BridgeNativeUnlock.cs" />
     <Compile Include="../../src/BridgeBuilder/Runtime/BridgeUnlockSnapshot.cs" Link="BridgeUnlockSnapshot.cs" />
     <Compile Include="../../src/BridgeBuilder/Runtime/BridgeUnlockMigration.cs" Link="BridgeUnlockMigration.cs" />
     <Compile Include="../../src/BridgeBuilder/Runtime/BridgeFileAccess.cs" Link="BridgeFileAccess.cs" />

@@ -5,10 +5,11 @@ using Unity.Entities;
 
 namespace BridgeBuilder.Bridges;
 
-/// <summary>Serialized on the existing bridge asset; deliberately has no prefab dependencies.</summary>
+/// <summary>Read legacy assets during additive migration; never persist this type in new assets.</summary>
 [Serializable]
 public sealed class BridgeConstructionCost : ComponentBase
 {
+    // Kept only to deserialize old assets; never used to calculate or override native prices.
     public uint m_BaseConstructionCost;
 
     // Asset-local metadata. Missing fields in old prefabs retain these defaults.
@@ -21,41 +22,7 @@ public sealed class BridgeConstructionCost : ComponentBase
     public bool m_BridgeCreationPending;
     public int m_BridgePersistenceVersion;
 
-    protected override void OnEnable()
-    {
-        base.OnEnable();
-        // Imported components are instantiated by the native Odin formatter before IMod.OnLoad.
-        // Install assetInfo validation here as well; OnLoad alone is too late for startup assets.
-        // No asset deletion, ECS mutation or forced asset loading from this callback.
-        try
-        {
-            BridgeBuilder.Runtime.BridgeStartupRecovery.Start();
-        }
-        catch (Exception exception)
-        {
-            // Dependency loading/JIT can fail before the patch method's own try block is entered.
-            // Never let that escape a native asset-deserialization callback.
-            BridgeBuilder.Runtime.BridgeSessionState.RequireRestart();
-            Mod.Log.Warn("Early bridge recovery unavailable; assets retained, restart required: " + exception.Message);
-        }
-    }
-
-    public override void GetPrefabComponents(HashSet<ComponentType> components) =>
-        components.Add(ComponentType.ReadWrite<BridgeConstructionCostData>());
-
-    public override void GetArchetypeComponents(HashSet<ComponentType> components)
-    {
-        if (components.Contains(ComponentType.ReadWrite<NetCompositionData>()))
-            components.Add(ComponentType.ReadWrite<BridgeCostComposition>());
-    }
-
-    public override void Initialize(EntityManager manager, Entity entity) =>
-        manager.SetComponentData(entity, new BridgeConstructionCostData { Value = m_BaseConstructionCost });
+    // Legacy deserialization only. New assets never contain this component.
+    public override void GetPrefabComponents(HashSet<ComponentType> components) { }
+    public override void GetArchetypeComponents(HashSet<ComponentType> components) { }
 }
-
-public struct BridgeConstructionCostData : IComponentData
-{
-    public uint Value;
-}
-
-public struct BridgeCostComposition : IComponentData { }

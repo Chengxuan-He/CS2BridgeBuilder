@@ -72,20 +72,12 @@ internal static class BridgeAssetCatalog
     internal static void Attach(PrefabBase prefab, BridgeAssetInfo fallback)
     {
         var entry = Creating.TryGetValue(prefab.name, out var pending) ? pending : fallback;
-        var data = prefab.GetComponent<BridgeConstructionCost>() ?? prefab.AddComponent<BridgeConstructionCost>();
+        var data = prefab.AddOrGetComponent<UIObject>();
         Apply(data, entry);
         if (Creating.ContainsKey(prefab.name)) CreatingPrefabs[prefab.name] = prefab;
     }
 
-    private static void Apply(BridgeConstructionCost data, BridgeAssetInfo entry)
-    {
-        data.m_BridgeDisplayName = entry.DisplayName;
-        data.m_BridgeUpperDeckId = entry.UpperDeckId;
-        data.m_BridgeLowerDeckId = entry.LowerDeckId ?? "";
-        data.m_BridgeStyleId = entry.StyleId;
-        data.m_BridgeCreatedUtc = entry.CreatedUtc;
-        data.m_BridgeCreationPending = entry.Pending;
-    }
+    private static void Apply(UIObject data, BridgeAssetInfo entry) => data.name = BridgeAssetMetadata.Encode(entry);
 
     internal static bool Commit(string owner)
     {
@@ -94,7 +86,8 @@ internal static class BridgeAssetCatalog
             pending.LowerDeckId, pending.StyleId, pending.CreatedUtc);
         if (!BridgeAssetMetadata.Write(PathFor(owner), entry)) return false;
         if (CreatingPrefabs.TryGetValue(owner, out var prefab)
-            && prefab.GetComponent<BridgeConstructionCost>() is { } data) Apply(data, entry);
+            && prefab.GetComponent<UIObject>() is { } data) Apply(data, entry);
+        if (!BridgeNativePresentation.Save(entry, out _)) return false;
         EndCreation(owner);
         return true;
     }
@@ -104,7 +97,7 @@ internal static class BridgeAssetCatalog
         var entry = Find(owner);
         if (entry == null || string.IsNullOrWhiteSpace(label)) return false;
         entry.DisplayName = label.Trim();
-        return BridgeAssetMetadata.Write(PathFor(owner), entry);
+        return BridgeAssetMetadata.Write(PathFor(owner), entry) && BridgeNativePresentation.Save(entry, out _);
     }
     internal static void EndCreation(string owner) { Creating.Remove(owner); CreatingPrefabs.Remove(owner); }
     internal static void ResetSession() { Creating.Clear(); CreatingPrefabs.Clear(); }

@@ -63,6 +63,40 @@ internal static class Program
             Check(RuntimeUiText.ForLocale(input)["CreateTab"] == RuntimeUiText.ForLocale(expected)["CreateTab"], "Runtime fallback");
         }
 
+        // Every published panel error is critical; successful/status-only updates are quiet.
+        BridgeBuilder.Mod.Log.Messages.Clear();
+        foreach (var key in new[] { "CreatedActive", "CreatedManage", "CreatedLocked", "Activated", "ActivateLocked", "Renamed", "Deleted", "" })
+            BridgeRuntimeRequests.Complete(key);
+        Check(BridgeBuilder.Mod.Log.Messages.Count == 0, "Routine completions emitted critical errors");
+        foreach (var key in new[] { "BridgeRestartRequired", "ActivateUnloaded", "ActivateNotReady", "ActivateToolFailed", "ActivateFailed", "NameRequired", "DeleteIncomplete", "UpperUnavailable" })
+        {
+            var count = BridgeBuilder.Mod.Log.Messages.Count;
+            BridgeRuntimeRequests.Complete(key, "bridge-context");
+            Check(BridgeBuilder.Mod.Log.Messages.Count == count + 1, "Missing critical footer error: " + key);
+            Check(BridgeBuilder.Mod.Log.Messages.Last().Contains(key) && BridgeBuilder.Mod.Log.Messages.Last().Contains("bridge-context"), "Missing diagnostic context");
+            _ = BridgeRuntimeRequests.Status;
+            _ = BridgeRuntimeRequests.Status;
+            Check(BridgeBuilder.Mod.Log.Messages.Count == count + 1, "Footer reads duplicated critical logs");
+        }
+        BridgePreviewState.Select("Road", "", "Suspension");
+        var errorRevision = BridgePreviewState.Revision;
+        var errorsBefore = BridgeBuilder.Mod.Log.Messages.Count;
+        BridgePreviewState.Publish(errorRevision - 1, "", "PreviewFailed");
+        Check(BridgeBuilder.Mod.Log.Messages.Count == errorsBefore, "Stale preview emitted critical");
+        BridgePreviewState.Publish(errorRevision, "", "PreviewFailed");
+        BridgePreviewState.Publish(errorRevision, "", "PreviewFailed");
+        Check(BridgeBuilder.Mod.Log.Messages.Count == errorsBefore + 1, "Preview failure missing or duplicated");
+        BridgePreviewState.Publish(errorRevision, "image", "PreviewReady");
+        Check(BridgeBuilder.Mod.Log.Messages.Count == errorsBefore + 1, "Successful preview emitted critical");
+        BridgePreviewState.ImageFailed("stale-key", "image");
+        BridgePreviewState.ImageFailed(BridgePreviewState.Key, "stale-image");
+        Check(BridgeBuilder.Mod.Log.Messages.Count == errorsBefore + 1, "Stale image error emitted critical");
+        BridgePreviewState.ImageFailed(BridgePreviewState.Key, "image");
+        BridgePreviewState.ImageFailed(BridgePreviewState.Key, "image");
+        Check(BridgeBuilder.Mod.Log.Messages.Count == errorsBefore + 2 && BridgePreviewState.Image == "",
+            "Browser image failure was not logged once and cleared");
+        BridgePreviewState.Clear();
+
         var name = "My bridge 我的桥 {0}";
         var uuid = "b11111111-2222-3333-4444-555555555555";
         BridgeRuntimeRequests.Complete("Renamed", name, uuid);
@@ -172,9 +206,23 @@ namespace BridgeBuilder.Settings
         public string RecoveryCopyLocation { get; set; } = "";
         public void OpenRecoveryCopies() { }
         public void BridgeSelfCheck() { }
+        public void RemoveAllBridges() { }
         public string AllowGameplayExport = "", ArmRemoval = "", BridgeName = "", BridgeStyleId = "",
             BuildStyleOverride = "", DeckSpacing = "", EmbedIcons = "", ExportSelected = "", LowerDeckId = "",
             LowerDeckOpposite = "", OverwriteExisting = "", RemoveSelected = "", RemoveUnusedDependencies = "",
             RescanRoads = "", StatusText = "", UpperDeckId = "";
+    }
+}
+
+namespace BridgeBuilder
+{
+    internal static class Mod
+    {
+        internal static readonly TestLog Log = new();
+    }
+    internal sealed class TestLog
+    {
+        internal readonly System.Collections.Generic.List<string> Messages = new();
+        internal void Critical(string message) => Messages.Add(message);
     }
 }

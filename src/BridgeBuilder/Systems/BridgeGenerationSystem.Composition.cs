@@ -75,7 +75,6 @@ public partial class BridgeGenerationSystem
         var composer = BridgeGeneratorRouter.Create(style.Id, report, towers);
         if (composer == null) return false;
         var doubleDeck = new DoubleDeckComposer(report);
-        var economy = new BridgeEconomy();
 
         try
         {
@@ -148,7 +147,7 @@ public partial class BridgeGenerationSystem
                 clone, auxiliary, secondNetAbove, exportName, cloner, doubleDeck, options,
                 style.Id, variant, report);
             // Extra auxiliary networks inherited from a road may still be shared native assets.
-            // Never edit their prices or unlock components as if the bridge owned them.
+            // Never edit their unlock components as if the bridge owned them.
             var ownedNets = new HashSet<PrefabBase>(cloner.Nodes.Where(node => node.NeedsSave)
                 .Select(node => node.Target));
             if ((clone.GetComponent<AuxiliaryNets>()?.m_AuxiliaryNets ?? Array.Empty<AuxiliaryNetInfo>())
@@ -158,14 +157,16 @@ public partial class BridgeGenerationSystem
                     "The selected network contains an auxiliary prefab not owned by this bridge."));
                 return false;
             }
-            if (!BridgeUnlockPolicy.Apply(clone, variant, report)) return false;
-            // Price is serialized on the bridge itself. No pricing dependency may be created.
-            if (preview == null && !economy.Apply(clone, variant, upper.Prefab,
-                options.DoubleDeck ? chosen?.Prefab : null, report,
-                World.GetOrCreateSystemManaged<BridgePriceSystem>())) return false;
+            var nativeAssets = new List<PrefabBase>();
+            if (preview == null && !BridgeUnlockPolicy.Apply(clone, variant, report, nativeAssets)) return false;
+            // Preserve native piece/object fees from the selected networks and bridge prototype.
+            // Native initialization and construction calculate the resulting cost, including auxiliary decks.
+            if (preview == null)
+                report.Note($"{exportName}: native pricing; original piece/object construction, elevation and upkeep fees retained; no manager price adjustment.");
             DescribeResult(clone, exportName, report);
 
             var nodes = cloner.Nodes
+                .Concat(nativeAssets.Select(p => new PrefabCloneNode(p, p, false, true, null)))
                 .Concat(towers.Created.Select(prefab =>
                     new PrefabCloneNode(prefab, prefab, false, true, null)))
                 .ToList();
@@ -206,6 +207,11 @@ public partial class BridgeGenerationSystem
                     $"Bridge persistence refused assets missing owner '{clone.name}': {string.Join(", ", unowned)}"));
                 return false;
             }
+            foreach (var node in nodes.Where(n => n.NeedsSave))
+            {
+                node.Target.Remove<BridgeConstructionCost>();
+                BridgeNativePresentation.Prepare(node.Target);
+            }
             report.SavedDependencies = new PrefabAssetWriter().Save(nodes);
             if (!BridgeDependencyPersistence.Save(clone.name,
                 nodes.Where(node => node.NeedsSave && node.Target.asset != null)
@@ -215,6 +221,11 @@ public partial class BridgeGenerationSystem
                 return false;
             }
             report.SavedDependencies += copied;
+            if (!BridgeNativePresentation.Validate(clone.name, nodes.Where(n => n.NeedsSave).Select(n => n.Target), out var independenceError))
+            {
+                report.Failed(exportName, new InvalidOperationException(independenceError));
+                return false;
+            }
             Mod.Log.Info($"Bridge '{clone.name}' persisted {copied} external dependency copies with original CIDs.");
             return World.GetOrCreateSystemManaged<BridgePublicationSystem>().Publish(nodes, report, ready =>
             {

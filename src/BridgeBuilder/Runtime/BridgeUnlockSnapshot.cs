@@ -92,14 +92,6 @@ internal static class BridgeUnlockSnapshot
                 parts.Length == 3 ? Colossal.Hash128.Parse(parts[2]) : default), out prototype);
         }
         if (prototype == null || !Capture(prototype, prefabs, manager, out var snapshot)) return false;
-        // Persist only this gate string, not a recursive PrefabAsset.Save of the dependency graph.
-        if (bridge.asset != null && !BridgeUnlockMigration.ReplaceGate(bridge.asset.path, gate.name,
-            snapshot.Encode(), out var error))
-        {
-            Mod.Log.Warn($"Could not persist independent unlock rules for '{bridge.name}': {error}");
-            return false;
-        }
-        gate.name = snapshot.Encode();
         rule = snapshot;
         return true;
     }

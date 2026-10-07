@@ -15,8 +15,9 @@ namespace BridgeBuilder.Runtime;
 /// <summary>Native pack membership, separate from the bridge prototype's DLC/mod dependencies.</summary>
 internal static class BridgeAssetPack
 {
-    internal const string PrefabName = "BridgeBuilder Asset Pack";
-    private const string Icon = "coui://bridgebuilderui/BridgeBuilderPack.svg";
+    // New identity avoids changing same-CID snapshots of the historical custom-host pack.
+    internal const string PrefabName = "BridgeBuilder Native Asset Pack";
+    private const string Icon = "Media/Placeholder.svg";
 
     internal static AssetPackPrefab? Ensure(PrefabSystem prefabs)
     {
@@ -61,6 +62,8 @@ internal static class BridgeAssetPack
 
     internal static void RefreshExisting(PrefabSystem prefabs, EntityManager entities, IEnumerable<string> roots)
     {
+        // A cached legacy root must never overwrite its newly migrated file before restart.
+        if (BridgeSessionState.RestartRequired) return;
         var owned = new HashSet<string>(roots, StringComparer.Ordinal);
         if (owned.Count == 0) return;
         // Only exact persisted ownership records and the generator's exact carried-deck names.

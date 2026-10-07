@@ -19,7 +19,7 @@ internal static class BridgeLegacyNames
     }
 
     internal static bool Run(string gameRoot, IEnumerable<string> owners, string backup,
-        out HashSet<string> changed, out string error)
+        out HashSet<string> changed, out string error, Func<string, string> prefabPath)
     {
         changed = new(StringComparer.Ordinal);
         error = "";
@@ -27,6 +27,8 @@ internal static class BridgeLegacyNames
         var created = new List<string>();
         try
         {
+            var selected = owners.Distinct().ToArray();
+            if (selected.Length == 0) return true;
             var imported = Path.Combine(gameRoot, "ImportedData");
             var geometry = Path.Combine(gameRoot, "BridgeBuilder");
             var files = Files(imported).Concat(Files(geometry))
@@ -53,7 +55,7 @@ internal static class BridgeLegacyNames
             var writes = new Dictionary<string, byte[]>(StringComparer.OrdinalIgnoreCase);
             var destinations = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
             var retire = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-            foreach (var owner in owners.Distinct())
+            foreach (var owner in selected)
             {
                 if (!BridgeAssetInfo.IsPrefabName(owner)) continue;
                 var owned = assets.Where(a => BridgeAssetInfo.MatchesOwner(a.Path, owner)).ToArray();
@@ -103,7 +105,7 @@ internal static class BridgeLegacyNames
                     var name = string.Join(" ", nameParts);
                     var extension = Path.GetExtension(asset.Path);
                     var path = extension.Equals(".Prefab", StringComparison.OrdinalIgnoreCase)
-                        ? Path.Combine(imported, name, name + extension)
+                        ? Path.Combine(gameRoot, prefabPath(name))
                         : Path.Combine(geometry, name + extension);
                     var bytes = asset.Text.Length == 0 ? File.ReadAllBytes(BridgeFileAccess.Native(asset.Path)) : asset.Bytes;
                     if (asset.Text.Length != 0)

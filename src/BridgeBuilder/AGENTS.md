@@ -8,6 +8,33 @@ the repository root [`AGENTS.md`](../../AGENTS.md). Before editing this director
 
 ## Runtime invariants
 
+Native-pricing revision (user request 2026-10-07): use the game's native pricing exclusively.
+Preserve source roads' and bridge prototypes' PlaceableNetPiece/PlaceableObject construction,
+elevation and upkeep fees. Let the game select composition pieces and charge network length,
+height, auxiliary networks and placed objects. Do not bake a fixed total, apply a bridge-specific
+multiplier/offset/floor, zero fees, override runtime cost data, or create pricing-only copies.
+This supersedes all earlier requirements to retain the established Bridge Builder price and all
+permissions to clone private components for pricing. Legacy conversion removes the custom cost
+component while retaining its original native dependency graph and bridge/deck UUID/CID/geometry.
+Previously baked assets remain valid native data; do not guess original fees or remove referenced
+copies. Restoring their old fees requires authoritative original data and a separate verified migration.
+
+- Self-check migration/repair and new generation share the same file layout and naming rules
+  (contract section 19); preserve bridge/deck CID and UUID. Native conversion alone cannot skip
+  layout migration. Localized notices distinguish migration from damage repair and report both
+  when both occurred. Relocation is backed up, collision-safe and idempotent.
+
+- Generated bridges must not depend on Bridge Builder; it is only the bridge asset manager.
+  Persisted assets must remain loadable and usable after a cold start with the mod disabled or
+  uninstalled, without its assembly, callbacks, patches or cached objects. Follow contract section 19;
+  the deferred rail-seam limitation is unfinished compatibility work, not proof of independence.
+
+- Apply the root independent-persistence revision: legacy conversion is additive; root and deck
+  CID, UUID, version and geometry stay unchanged. Persist native unlocking, private-piece prices,
+  native locales and thumbnail data. No BridgeBuilder component or UI host may be required by
+  converted/new saved prefabs. Private structural cost copies are authorized; the scalar-only
+  pricing rule below is superseded. Preserve bridge assets during deployment for acceptance.
+
 - Apply the root contract's legacy naming migration exception during self-check: create per-bridge
   copies with "-b{uuid}" appended to the first space-delimited name token and new CIDs, update file references, and back up unreferenced old components.
   Keep live prefabs unchanged and request restart.

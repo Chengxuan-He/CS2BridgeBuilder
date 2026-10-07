@@ -49,6 +49,9 @@ namespace Game.Prefabs
     }
     public class NetPrefab : PrefabBase { }
     public class NetGeometryPrefab : NetPrefab { }
+    public class AssetPackPrefab : PrefabBase { }
+    public class AuxiliaryNets : ComponentBase { public AuxiliaryNetInfo[] m_AuxiliaryNets = Array.Empty<AuxiliaryNetInfo>(); }
+    public class AuxiliaryNetInfo { public NetPrefab m_Prefab = null!; }
     public record struct PrefabID(string Type, string Name, Colossal.Hash128 Hash = default)
     { public string ToUrlSegment() => Uri.EscapeDataString(Type) + "/" + Uri.EscapeDataString(Name); }
     public class PrefabSystem
@@ -76,6 +79,7 @@ namespace BridgeBuilder
 }
 namespace UnityEngine
 {
+    public static class ScriptableObject { public static T CreateInstance<T>() where T : new() => new T(); }
     public static class Application { public static string persistentDataPath = Path.Combine(Path.GetTempPath(), "BBStartupCheck-" + Guid.NewGuid().ToString("N")); }
 }
 namespace BridgeBuilder.Runtime { internal static class BridgeAssetCatalog { internal static void ResetSession() { } } }

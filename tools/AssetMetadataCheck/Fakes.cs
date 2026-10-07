@@ -24,7 +24,9 @@ namespace Game.Prefabs
         private object? data;
         public T? GetComponent<T>() where T : class => data as T;
         public T AddComponent<T>() where T : new() { var value = new T(); data = value; return value; }
+        public T AddOrGetComponent<T>() where T : class, new() => GetComponent<T>() ?? AddComponent<T>();
     }
+    public class UIObject { public string name = ""; }
 }
 namespace BridgeBuilder.Bridges
 {
@@ -36,6 +38,9 @@ namespace BridgeBuilder.Bridges
 }
 
 namespace BridgeBuilder.Runtime {
+ internal static class BridgeNativePresentation {
+   internal static bool Save(BridgeAssetInfo entry, out string error) { error = ""; return true; }
+ }
  internal static class BridgeDependencyPersistence {
    internal static bool Fail; internal static int Calls, WrittenFiles;
    internal static bool Save(string owner, IEnumerable<string> seeds, out int count, out string error) {

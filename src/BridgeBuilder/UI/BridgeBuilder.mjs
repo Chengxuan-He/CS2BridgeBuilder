@@ -261,7 +261,7 @@ function ModelPreview({ upperId = "", lowerId = "", styleId = "", prefabName = "
                 src: image, width: 1024, height: 512, alt: "",
                 style: { width: `${imageSize.width}px`, height: `${imageSize.height}px` },
                 onLoad: () => setLoadedImage(image),
-                onError: () => setImageError(true) }) : null,
+                onError: () => { setImageError(true); trigger("PreviewImageFailed", resultKey, image); } }) : null,
             spinning ? h("div", { className: "bb-preview-loading", role: "status", "aria-label": t("PreviewDisplaying") },
                 h("div", { className: "bb-spinner", "aria-hidden": true })) : null));
 }

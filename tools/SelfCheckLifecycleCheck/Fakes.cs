@@ -101,7 +101,7 @@ namespace BridgeBuilder.Settings
 }
 namespace BridgeBuilder.Runtime
 {
-    public static class BridgeSessionState { public static bool TryOwner(string n, out string owner) { owner = n; return n == "bridge"; } }
+    public static class BridgeSessionState { public static void RequireRestart() { } public static bool TryOwner(string n, out string owner) { owner = n; return n == "bridge"; } }
     public static class BridgeStartupRecovery { public static HashSet<string> Retired = new(); }
     public static class BridgeAssetCatalog
     { public static string Root => System.IO.Path.GetFullPath("unused/ImportedData");  }
@@ -127,9 +127,15 @@ namespace BridgeBuilder.Runtime
 }
 namespace BridgeBuilder.Runtime
 {
+    public static class BridgePortableMigration {
+        public static bool Fail, Changed;
+        public static bool Run(string owner, Game.Prefabs.PrefabSystem system, string backup, out bool changed, out string error) {
+            changed = Changed; error = "fixture"; return !Fail;
+        }
+    }
     public static class BridgeLegacyNames {
         public static bool Fail, Changed;
-        public static bool Run(string root, IEnumerable<string> owners, string backup, out HashSet<string> changed, out string error) {
+        public static bool Run(string root, IEnumerable<string> owners, string backup, out HashSet<string> changed, out string error, Func<string,string>? prefabPath = null) {
             changed = Changed ? new(owners) : new(); error = "fixture"; return !Fail;
         }
     }
@@ -139,6 +145,17 @@ namespace BridgeBuilder.Runtime
             Calls++; changed = Changed; error = "fixture"; return !Fail;
         }
     }
+    public static class BridgeAssetLayout {
+        public static bool Fail, Changed; public static int Owners;
+        public static bool Run(string root, IEnumerable<string> owners, string backup, Func<string,string> path,
+            out HashSet<string> changed, out string error) {
+            Owners += owners.Count(); changed = Changed ? new(owners) : new(); error = "fixture"; return !Fail;
+        }
+    }
+}
+
+namespace CS2Mods.Shared.Export {
+    public static class PrefabAssetWriter { public static string RelativePathFor(string name) => name; }
 }
 
 namespace Colossal { public class Hash128 { } }

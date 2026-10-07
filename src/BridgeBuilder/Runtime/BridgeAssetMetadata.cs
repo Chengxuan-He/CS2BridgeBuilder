@@ -9,6 +9,24 @@ namespace BridgeBuilder.Runtime;
 /// <summary>Reads and edits scalar metadata in the existing prefab, preserving its Odin graph verbatim.</summary>
 internal static class BridgeAssetMetadata
 {
+    internal const string NativeType = "Game.Prefabs.UIObject, Game";
+    internal const string Prefix = "BridgeBuilder.Data.v2:";
+    internal static string Encode(BridgeAssetInfo e) => Prefix + Convert.ToBase64String(Encoding.UTF8.GetBytes(
+        string.Join("\n", new[] { e.PrefabName, e.DisplayName, e.UpperDeckId, e.LowerDeckId ?? "", e.StyleId, e.CreatedUtc,
+            e.Pending ? "1" : "0" }.Select(v => Convert.ToBase64String(Encoding.UTF8.GetBytes(v))))));
+    internal static bool Decode(string value, out BridgeAssetInfo entry)
+    {
+        entry = null!;
+        if (!value.StartsWith(Prefix, StringComparison.Ordinal)) return false;
+        try
+        {
+            var v = Encoding.UTF8.GetString(Convert.FromBase64String(value.Substring(Prefix.Length))).Split('\n')
+                .Select(x => Encoding.UTF8.GetString(Convert.FromBase64String(x))).ToArray();
+            if (v.Length != 7 || !BridgeAssetInfo.IsPrefabName(v[0])) return false;
+            entry = new BridgeAssetInfo(v[0], v[1], v[2], v[3], v[4], v[5], v[6] == "1"); return true;
+        }
+        catch (Exception) { return false; }
+    }
     private const string TypeName = "BridgeBuilder.Bridges.BridgeConstructionCost, BridgeBuilder";
     private static readonly UTF8Encoding Utf8 = new(false, true);
 
@@ -17,6 +35,9 @@ internal static class BridgeAssetMetadata
         entry = null!;
         if (!BridgeSerializedReferences.TryRead(text, out var document)
             || !BridgeAssetInfo.IsPrefabName(document.Name)) return false;
+        var native = document.Component(NativeType);
+        if (native != null && native.Fields.TryGetValue("name", out var encoded)
+            && Decode(encoded.Text, out entry) && entry.PrefabName == document.Name) return true;
         var component = document.Component(TypeName);
         if (component == null) return false;
         string Get(string key) => component.Fields.TryGetValue(key, out var value) && value.Text != "null" ? value.Text : "";
@@ -31,6 +52,12 @@ internal static class BridgeAssetMetadata
     {
         updated = text;
         if (!BridgeSerializedReferences.TryRead(text, out var document) || document.Name != entry.PrefabName) return false;
+        var native = document.Component(NativeType);
+        if (native != null && native.Fields.TryGetValue("name", out var encoded) && encoded.Text.StartsWith(Prefix, StringComparison.Ordinal))
+        {
+            updated = text.Remove(encoded.Start, encoded.End - encoded.Start).Insert(encoded.Start, Quote(Encode(entry)));
+            return true;
+        }
         var component = document.Component(TypeName);
         if (component == null || component.End <= component.Start) return false;
         var fields = new Dictionary<string, string>

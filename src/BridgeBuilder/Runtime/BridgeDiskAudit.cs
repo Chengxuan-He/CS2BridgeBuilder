@@ -23,9 +23,14 @@ internal sealed class BridgeDiskAudit
     }
 
     internal static BridgeDiskAudit ForMemoryFailures(string gameRoot, IDictionary<string, string> failures)
+        => SelectPaths(gameRoot, failures);
+
+    internal static BridgeDiskAudit ForAllBridges(string gameRoot) => SelectPaths(gameRoot, null);
+
+    private static BridgeDiskAudit SelectPaths(string gameRoot, IDictionary<string, string>? failures)
     {
         var audit = new BridgeDiskAudit(Path.Combine(gameRoot, "ImportedData"));
-        foreach (var failure in failures)
+        foreach (var failure in failures ?? new Dictionary<string, string>())
         {
             if (!BridgeAssetInfo.IsPrefabName(failure.Key))
             { audit.Error = "Invalid bridge owner: " + failure.Key; return audit; }
@@ -43,7 +48,9 @@ internal sealed class BridgeDiskAudit
             {
                 var path = BridgeFileAccess.Logical(native);
                 var name = Path.GetFileName(path);
-                var owner = failures.Keys.FirstOrDefault(id => BridgeAssetInfo.MatchesOwner(name, id));
+                var owner = failures != null
+                    ? failures.Keys.FirstOrDefault(id => BridgeAssetInfo.MatchesOwner(name, id))
+                    : BridgeAssetInfo.TryFileOwner(name, out var matched) ? matched : null;
                 if (owner == null)
                 {
                     if (Directory.Exists(native) && (File.GetAttributes(native) & FileAttributes.ReparsePoint) == 0)
@@ -51,10 +58,11 @@ internal sealed class BridgeDiskAudit
                     continue;
                 }
                 audit.FileOwners[path] = owner;
+                if (failures == null) audit.Failures[owner] = "User requested removal of all bridges";
                 if (Directory.Exists(native)) audit._directories.Add(path);
             }
         }
-        foreach (var owner in failures.Keys)
+        foreach (var owner in audit.Failures.Keys)
             if (!audit.FileOwners.ContainsValue(owner))
             { audit.Error = "No matching local paths for bridge: " + owner; return audit; }
         audit.Complete = true;

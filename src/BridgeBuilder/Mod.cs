@@ -1,4 +1,4 @@
-﻿
+
 using BridgeBuilder.Settings;
 using BridgeBuilder.Systems;
 using BridgeBuilder.UI;
@@ -40,7 +40,6 @@ public sealed class Mod : IMod
 
     public void OnLoad(UpdateSystem updateSystem)
     {
-        BridgeBuilder.Runtime.BridgeStartupRecovery.Start(finalAttempt: true);
         ModHost.Initialize(Id, "BridgeBuilder", Log);
         ModHost.PageRebuilder = RebuildOptionsPage;
         RoadSelectionModel.Text = new BridgeSelectionText();
@@ -76,9 +75,8 @@ public sealed class Mod : IMod
         // UIGroupElement entries (UIObject.LateInitialize appends without a uniqueness check).
         updateSystem.UpdateBefore<BridgeGenerationSystem>(SystemUpdatePhase.PrefabUpdate);
         updateSystem.UpdateAfter<BridgePublicationSystem>(SystemUpdatePhase.PrefabUpdate);
-        updateSystem.UpdateAfter<BridgePriceSystem, Game.Prefabs.NetInitializeSystem>(SystemUpdatePhase.PrefabUpdate);
-        updateSystem.UpdateAfter<BridgePriceSystem, Game.Prefabs.NetCompositionSystem>(SystemUpdatePhase.Modification4);
         updateSystem.UpdateAt<BridgeBuilderUISystem>(SystemUpdatePhase.UIUpdate);
+        // Optional manager setting; persisted native conditions work without this system.
         updateSystem.UpdateAt<BridgeUnlockSystem>(SystemUpdatePhase.UIUpdate);
         // Self-check waits for native/PDX asset batches and mod initialization at a ready main menu.
         updateSystem.UpdateAt<BridgeStartupAssetSystem>(SystemUpdatePhase.UIUpdate);
@@ -88,6 +86,7 @@ public sealed class Mod : IMod
 
     public void OnDispose()
     {
+        Runtime.BridgeBulkRemoval.Stop();
         BridgeStartupAssetSystem.StopInspection();
         BridgeBuilder.Runtime.BridgeStartupRecovery.Stop();
         BridgeBuilder.Runtime.BridgeRailSeamPatch.Stop();
@@ -180,10 +179,14 @@ public sealed class Mod : IMod
                 LocalizedString.Value(UiStringCatalog.Current.Title),
                 LocalizedString.Value(message),
                 LocalizedString.Value(RuntimeUiText.Get("RecoveryOpenLabel")),
-                LocalizedString.Value(RuntimeUiText.Get("OK")));
+                null,
+                LocalizedString.Value(RuntimeUiText.Get("RecoveryRestartLabel")));
             GameManager.instance?.userInterface?.appBindings?.ShowConfirmationDialog(dialog, result =>
             {
                 if (result == 0) BridgeRecoveryLocation.Open();
+                // Native close/Esc returns 1 as well as the cancel button. Restart must be
+                // an otherAction (2), never cancelAction, so dismissing cannot quit the game.
+                else if (result == 2) Runtime.BridgeGameRestart.Run();
             });
         }
         catch (Exception exception)

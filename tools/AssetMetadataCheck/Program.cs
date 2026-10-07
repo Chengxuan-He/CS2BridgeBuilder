@@ -13,6 +13,16 @@ string Install(string id, string text)
     var path = Path.Combine(dir, id + ".Prefab"); File.WriteAllText(path, text); File.WriteAllText(path + ".cid", "unchanged"); return path;
 }
 var a = BridgeAssetInfo.NewPrefabName();
+var native = new BridgeAssetInfo(a, "原名 🌉", "Road", "Track", "Style", "", false);
+var encoded = BridgeAssetMetadata.Encode(native);
+var nativeText = "{\"name\":\"" + a + "\",\"components\":{\"$rcontent\":[{\"$type\":\"1|Game.Prefabs.UIObject, Game\",\"name\":\"" + encoded + "\",\"m_Icon\":\"\"}]},\"dependency\":$fstrref:\"CID:12345678901234567890123456789012\"}";
+Check(BridgeAssetMetadata.TryRead(nativeText, out var nativeRead) && nativeRead.DisplayName == native.DisplayName,
+    "native UI component carries legacy metadata without a mod type");
+native.DisplayName = "新名";
+Check(BridgeAssetMetadata.Rewrite(nativeText, native, out var rewrittenNative)
+    && BridgeAssetMetadata.TryRead(rewrittenNative, out nativeRead) && nativeRead.DisplayName == "新名"
+    && nativeRead.PrefabName == a && rewrittenNative.Contains("CID:12345678901234567890123456789012"),
+    "native rename preserves UUID and referenced CID");
 var b = BridgeAssetInfo.NewPrefabName();
 var path = Install(a, Fixture(a));
 Check(BridgeAssetCatalog.Find(a)?.DisplayName == a, "legacy prefab without metadata remains discoverable");

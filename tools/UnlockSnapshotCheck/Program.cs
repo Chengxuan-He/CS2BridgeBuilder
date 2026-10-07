@@ -29,8 +29,43 @@ Check(Eval() == true, "second OR alternative unlock");
 prefabs.All.Remove(intermediate); prefabs.All.Remove(root);
 Check(Eval() == true, "snapshot independent after deleting donor and intermediate network");
 Check(!System.Text.Encoding.UTF8.GetString(Convert.FromBase64String(rule.Encode().Substring(BridgeUnlockExpression.Prefix.Length))).Contains("External"), "no external network identity retained");
+var portable = new NetGeometryPrefab { name = "b12345678-1234-1234-1234-123456789abc" };
+portable.AddComponent<ManualUnlockable>();
+var lower = new NetGeometryPrefab { name = portable.name + "_Lower" };
+lower.AddComponent<ManualUnlockable>();
+portable.AddComponent<AuxiliaryNets>().m_AuxiliaryNets = new[] { new AuxiliaryNetInfo { m_Prefab = lower } };
+var nativeGroups = new List<PrefabBase>();
+Check(BridgeNativeUnlock.Apply(portable, rule, prefabs, nativeGroups, out var nativeError), nativeError);
+bool Native(PrefabBase p)
+{
+    if (p.GetComponent<Unlockable>() is not { } gate)
+        return prefabs.TryGetEntity(p, out var e) && !manager.All[e].Locked;
+    return gate.m_RequireAll!.All(Native) && (gate.m_RequireAny!.Length == 0 || gate.m_RequireAny.Any(Native));
+}
+for (var bits = 0; bits < 8; bits++)
+{
+    manager.All[milestone].Locked = (bits & 1) != 0;
+    manager.All[devA].Locked = (bits & 2) != 0;
+    manager.All[devB].Locked = (bits & 4) != 0;
+    Check(Native(portable) == Eval() && Native(lower) == Eval(), "native-only AND/OR truth table " + bits);
+    Check(BridgeNativeUnlock.Evaluate(portable, prefabs, manager) == Eval()
+        && BridgeNativeUnlock.Evaluate(lower, prefabs, manager) == Eval(),
+        "immediate build evaluates persisted conditions before new group state settles " + bits);
+}
+Check(portable.GetComponent<ManualUnlockable>() == null && lower.GetComponent<ManualUnlockable>() == null
+    && nativeGroups.All(g => g.GetType() == typeof(AssetPackPrefab) && g.name.Contains(portable.name)),
+    "native gates remove manual manager dependency; private groups retain bridge UUID");
 prefabs.All.Remove(milestone);
 Check(Eval() == null, "missing progression leaf defers, not unlocks");
+Check(BridgeNativeUnlock.Evaluate(portable, prefabs, manager) == null, "missing native leaf is not reported as locked");
+var nativeCycle = new NetGeometryPrefab();
+var cycleGate = nativeCycle.AddComponent<Unlockable>();
+cycleGate.m_IgnoreDependencies = true;
+cycleGate.m_RequireAll = new[] { nativeCycle };
+Check(BridgeNativeUnlock.Evaluate(nativeCycle, prefabs, manager) == null, "cyclic native gates defer safely");
+var emptyGate = new NetGeometryPrefab();
+emptyGate.AddComponent<Unlockable>().m_IgnoreDependencies = true;
+Check(BridgeNativeUnlock.Evaluate(emptyGate, prefabs, manager) == true, "empty native gate needs no unlock tick");
 var cyclic = new NetGeometryPrefab { name = "Cycle" };
 Add(6, cyclic, true, Edge(new(7))); Add(7, new PrefabBase { name = "Cycle2" }, true, Edge(new(6)));
 Check(!BridgeUnlockSnapshot.Capture(cyclic, prefabs, manager, out _), "cycles fail closed");

@@ -1,4 +1,4 @@
-﻿using BridgeBuilder.Bridges;
+using BridgeBuilder.Bridges;
 using BridgeBuilder.Runtime;
 
 
@@ -102,8 +102,9 @@ public partial class BridgeGenerationSystem
                     BridgePreviewState.Publish(revision, image, "PreviewReady");
             });
         }
-        catch (Exception)
+        catch (Exception exception)
         {
+            Mod.Log.Critical(exception, "Bridge preview failed.");
             FailPreview(revision, "PreviewFailed");
             ClearPreview();
         }
@@ -112,7 +113,7 @@ public partial class BridgeGenerationSystem
     private void FailPreview(int revision, string stage)
     {
         // A cancelled/superseded selection is not a model generation failure.
-        // Complete each failed request once without emitting a game error.
+        // Publish each failed request once; the panel publisher records CRITICAL.
         if (revision != BridgePreviewState.Revision || BridgePreviewState.Selection == null ||
             _previewFailedRevision == revision) return;
         _previewFailedRevision = revision;

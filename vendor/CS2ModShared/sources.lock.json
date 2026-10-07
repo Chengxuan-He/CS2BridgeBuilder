@@ -5,7 +5,7 @@
   },
   {
     "path": "src/Conversion/PrefabGraphCloner.cs",
-    "sha256": "6422f630fd79778c8e907e802cdec88647a5321103e4ac72c8d22cbce4df1f49"
+    "sha256": "2b30720906479fa237eb234eb0f7ab43970d9aac2d7d4900f610b2267c42e7c1"
   },
   {
     "path": "src/Conversion/SpeedLimitFix.cs",
@@ -25,7 +25,7 @@
   },
   {
     "path": "src/Export/PrefabAssetWriter.cs",
-    "sha256": "ff07f6897c3d7a5a3928b47cdb2a76af7c9e5ede1136a838688d3e5e36e4f341"
+    "sha256": "acb2a6bf5bc4d6ee6d1dbb63e30ea77aa46b876d7f5ca61bf2eb543f029d0db3"
   },
   {
     "path": "src/Export/PrefabReferenceWalker.cs",

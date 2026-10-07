@@ -10,6 +10,7 @@ namespace BridgeBuilder.Runtime;
 /// <summary>Byte-identical, per-bridge snapshots of serialized external asset dependencies.</summary>
 internal static class BridgeDependencyCopies
 {
+    private const string EmptyCid = "00000000000000000000000000000000";
     internal sealed class Source
     {
         internal bool Builtin;
@@ -28,7 +29,13 @@ internal static class BridgeDependencyCopies
         foreach (var text in new[] { Encoding.UTF8.GetString(bytes), Encoding.Unicode.GetString(bytes),
                      bytes.Length > 1 ? Encoding.Unicode.GetString(bytes, 1, bytes.Length - 1) : "" })
             foreach (Match match in Regex.Matches(text, @"CID:([a-fA-F0-9]{32})(?![a-fA-F0-9])"))
-                result.Add(match.Groups[1].Value.ToLowerInvariant());
+            {
+                var cid = match.Groups[1].Value.ToLowerInvariant();
+                // Native AssetReference serializes an absent optional asset as Hash128.Empty.
+                // For example, lane-only NetPiecePrefabs legitimately have no geometry asset.
+                // This is not a dependency edge; required prefab slots are checked separately.
+                if (cid != EmptyCid) result.Add(cid);
+            }
         // UnityGUID references resolve to the game's built-in resource map and are terminal.
         return result;
     }
@@ -48,7 +55,8 @@ internal static class BridgeDependencyCopies
             while (pending.Count != 0)
             {
                 var cid = pending.Pop().ToLowerInvariant();
-                if (!Regex.IsMatch(cid, @"\A[a-f0-9]{32}\z")) { error = "Invalid dependency CID"; return false; }
+                if (cid == EmptyCid || !Regex.IsMatch(cid, @"\A[a-f0-9]{32}\z"))
+                { error = "Invalid dependency CID"; return false; }
                 if (!visited.Add(cid)) continue;
                 var source = resolve(cid);
                 if (source == null) { error = "Dependency unavailable: " + cid; return false; }

@@ -49,9 +49,19 @@ internal static class BridgePreviewState
         ResultRevision++;
     }
 
+    internal static void ImageFailed(string key, string image)
+    {
+        // Browser image callbacks can arrive after another selection has replaced the preview.
+        if (Selection == null || Key != key || Image != image || image.Length == 0) return;
+        Publish(Revision, string.Empty, "PreviewImageFailed");
+    }
+
     internal static void Publish(int revision, string image, string statusKey)
     {
         if (revision != Revision || Selection == null) return;
+        if (statusKey.Length != 0 && statusKey is not ("PreviewReady" or "PreviewBuilding" or "PreviewDisplaying")
+            && (statusKey != _statusKey || image != Image))
+            Mod.Log.Critical($"Bridge preview panel error: stage='{statusKey}'; selection='{Key}'. {RuntimeUiText.Get(statusKey)}");
         Image = image;
         _statusKey = statusKey;
         ResultRevision++;

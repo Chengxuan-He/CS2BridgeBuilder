@@ -2,6 +2,17 @@
 
 ## First rule: fix reported bugs immediately
 
+Native-pricing revision (user request 2026-10-07): use the game's native pricing exclusively.
+Preserve source roads' and bridge prototypes' PlaceableNetPiece/PlaceableObject construction,
+elevation and upkeep fees. Let the game select composition pieces and charge network length,
+height, auxiliary networks and placed objects. Do not bake a fixed total, apply a bridge-specific
+multiplier/offset/floor, zero fees, override runtime cost data, or create pricing-only copies.
+This supersedes all earlier requirements to retain the established Bridge Builder price and all
+permissions to clone private components for pricing. Legacy conversion removes the custom cost
+component while retaining its original native dependency graph and bridge/deck UUID/CID/geometry.
+Previously baked assets remain valid native data; do not guess original fees or remove referenced
+copies. Restoring their old fees requires authoritative original data and a separate verified migration.
+
 Legacy naming migration exception (user request 2026-10-07): self-check must replace reachable
 pre-UUID sections reached through the canonical bridge root's CID dependency graph, plus their
 derived pieces/LODs/geometry (never use section-name regexes or child-name prefixes)
@@ -1152,3 +1163,56 @@ files/directories as whole units, using collision-free backup names, without con
 inspection, hash checks or tree snapshots. Real move failures are reported.
 This rule supersedes earlier ownership requirements based on metadata, exact root names,
 content evidence or concurrent-change snapshots.
+
+## 19. Independent native persistence and additive legacy conversion
+
+User revision 2026-10-07; rollback baseline `dev`,
+`3289fc947637f88a9124c524bd1235029be802d1`. Preserve existing local edits and bridge assets.
+
+**Generated bridges must not depend on Bridge Builder. Bridge Builder is only the bridge asset manager.**
+This is an architectural requirement for generation, persistence and legacy conversion. Disabling,
+unsubscribing from or uninstalling Bridge Builder must not make persisted bridges unavailable or
+prevent their loading, display, native unlocking, construction, pricing or save/load operation.
+These behaviors must work after a cold start without the Bridge Builder assembly, runtime callbacks,
+patches, custom UI hosts or cached mod objects. Required base-game/DLC resources remain native
+dependencies; external asset snapshots still follow section 17. Acceptance must include a cold start
+with Bridge Builder absent and loading an existing save; a warm-session cache is not evidence.
+Clarification rollback reference: `refs/rollback/manager-only-contract-20261007` at the baseline above.
+
+Bridge Builder manages assets; new/converted saved prefabs must not depend on its assembly,
+runtime unlocking, price overrides, localization source or custom UI host. Persist nested native
+Unlockable AND/OR conditions, native construction fees on private structural copies, native LocaleAsset
+names and native thumbnail presentation. The previously deferred double-deck railway seam work remains
+an outstanding compatibility limitation, not permission to persist a mod dependency or to declare
+complete independence. This documentation change does not claim that limitation has been resolved.
+The user authorizes native private-component fee changes to retain the established price, superseding
+section 16's scalar-only/no-copy restriction. Geometry, original donors and shared component fees stay
+unchanged. Keep recursive byte-identical external dependency persistence with original CIDs.
+
+Legacy migration during post-load self-check is **additive**: preserve bridge and carried-deck UUID,
+CID, native prefab version, name and geometry. Save into the existing asset, never a new bridge identity.
+Add private dependencies and native payloads; retain original component files. Back up existing files,
+verify identities and CID sidecars after saving, restore originals on failure and log CRITICAL. A failed
+conversion alone is not proof of corruption and cannot authorize bridge removal. Actual damaged assets
+continue to follow repair-or-remove policy. Restart after successful migration; do not replace live
+network registrations. Healthy already converted assets need no rewrite. The earlier explicitly
+authorized shared legacy-name cleanup still requires reference checks before retiring old files.
+
+### Unified file layout and truthful migration notices
+
+User revision 2026-10-07; baseline `dev`, `3289fc947637f88a9124c524bd1235029be802d1`;
+rollback reference `refs/rollback/unified-migration-layout-20261007`. Preserve existing local edits.
+
+After successful self-check migration or repair, an old bridge must use the same directory layout,
+file naming rules, CID sidecars and dependency-copy layout as a newly generated bridge. Generation
+and migration must share the layout implementation; do not maintain an old-only naming scheme or
+skip layout migration merely because native component conversion already succeeded. Identity values
+may differ between distinct bridges, but their naming and directory conventions must match. Preserve
+the existing bridge and deck CID, UUID and geometry. Back up before relocation, handle collisions
+without overwriting unrelated files, and leave a repeated migration unchanged. Retained historical
+backup files belong outside the game's active asset directories, subject to shared-reference safety.
+
+Startup self-check must distinguish healthy legacy migration from damaged-asset repair/removal.
+Report migration as migration, never as repaired damage. When both occur, explicitly report both;
+when migration fails, report that failure without calling a healthy bridge damaged. Localize all
+new messages in every supported language and request restart after persistent changes.

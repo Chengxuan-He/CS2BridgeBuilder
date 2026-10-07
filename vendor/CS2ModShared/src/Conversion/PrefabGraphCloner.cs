@@ -291,7 +291,7 @@ internal sealed class PrefabGraphCloner
         if (icon.IndexOf("//roadbuilder", StringComparison.OrdinalIgnoreCase) >= 0) uiObject.m_Icon = string.Empty;
     }
 
-    private static bool ShouldStripComponent(ComponentBase component, bool isRoot)
+    internal static bool ShouldStripComponent(ComponentBase component, bool isRoot)
     {
         var type = component.GetType();
         if (string.Equals(type.Assembly.GetName().Name, "RoadBuilder", StringComparison.OrdinalIgnoreCase)

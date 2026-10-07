@@ -104,6 +104,9 @@ internal static class BridgeRuntimeRequests
                 or "CreatedLocked" or "Activated" or "ActivateLocked" or "Renamed" or "Deleted"
                 ? string.Empty : statusKey, arguments);
             _revision++;
+            // Log at publication, never from bindings/getters refreshed every frame or locale change.
+            if (_status.Text.Length != 0)
+                Mod.Log.Critical($"Bridge panel error: stage='{statusKey}'; context=[{string.Join(", ", arguments)}]. {_status.Text}");
         }
     }
 

@@ -2,6 +2,42 @@
 
 ## First rule: fix reported bugs immediately
 
+Native-pricing revision (user request 2026-10-07): use the game's native pricing exclusively.
+Preserve source roads' and bridge prototypes' PlaceableNetPiece/PlaceableObject construction,
+elevation and upkeep fees. Let the game select composition pieces and charge network length,
+height, auxiliary networks and placed objects. Do not bake a fixed total, apply a bridge-specific
+multiplier/offset/floor, zero fees, override runtime cost data, or create pricing-only copies.
+This supersedes all earlier requirements to retain the established Bridge Builder price and all
+permissions to clone private components for pricing. Legacy conversion removes the custom cost
+component while retaining its original native dependency graph and bridge/deck UUID/CID/geometry.
+Previously baked assets remain valid native data; do not guess original fees or remove referenced
+copies. Restoring their old fees requires authoritative original data and a separate verified migration.
+
+Independent persistence revision (user request 2026-10-07; baseline `dev`,
+`3289fc947637f88a9124c524bd1235029be802d1`): Generated bridges must not depend on Bridge Builder.
+Bridge Builder is only the bridge asset manager, never a required runtime dependency. Disabling or
+uninstalling it must leave persisted bridges loadable and usable after a cold start, without cached
+mod objects, callbacks or patches. See contract section 19; rollback reference for this clarification:
+`refs/rollback/manager-only-contract-20261007`. Persist native
+unlock conditions, native private-component costs, native locales and thumbnails; saved bridge
+prefabs must not require BridgeBuilder component types or UI hosts. The previously deferred double-deck
+rail seam work remains an outstanding compatibility limitation, not permission to persist a mod
+dependency or claim complete independence. Preserve the established construction price; private structural
+copies with rewritten native costs are authorized and supersede the old scalar-only pricing rule.
+Legacy migration is ADDITIVE: keep each existing bridge/root and deck CID, UUID/name, prefab version
+and geometry. Reuse the existing asset as the save target; never recreate the bridge under a new
+identity. Add dependencies and native payloads, retain original components' files, back up replaced
+bytes, and verify existing identities/CID sidecars after saving. Failed conversion restores originals
+and reports CRITICAL; conversion failure alone is not asset damage. Require restart after migration.
+Preserve current bridge files for persistence acceptance; do not perform the old blanket cleanup.
+
+Contract section 19's unified-layout revision requires old bridges after self-check to use the same
+file layout and naming rules as new bridges, preserving bridge/deck CID and UUID. Share generation
+and migration layout code; make relocation collision-safe, backed up and idempotent. Localized startup
+notices must distinguish legacy migration, damaged-asset repair/removal, and mixed outcomes.
+Baseline `dev`, `3289fc947637f88a9124c524bd1235029be802d1`;
+rollback reference `refs/rollback/unified-migration-layout-20261007`.
+
 Legacy naming migration exception (user request 2026-10-07): self-check must replace reachable
 pre-UUID sections reached through the canonical bridge root's CID dependency graph, plus their
 derived pieces/LODs/geometry (never use section-name regexes or child-name prefixes)

@@ -1,4 +1,4 @@
-﻿using BridgeBuilder.Bridges;
+using BridgeBuilder.Bridges;
 using BridgeBuilder.Runtime;
 using BridgeBuilder.Settings;
 using BridgeBuilder.UI;
@@ -58,6 +58,7 @@ public partial class BridgeGenerationSystem : GameSystemBase
     private BridgeAssetInfo? _removingAsset;
     private DateTime _removalStartedUtc;
     private bool _activationLocked;
+    private string _activationFailure = "ActivateFailed";
 
     protected override void OnCreate()
     {

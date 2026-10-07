@@ -10,6 +10,11 @@ namespace CS2Mods.Shared.Export;
 
 internal sealed class PrefabAssetWriter
 {
+    internal static AssetDataPath PathFor(string name) => AssetImportPipeline.GetPath(
+        null, name, name, DataType.Prefab, AssetDatabase.user, false);
+
+    internal static string RelativePathFor(string name) =>
+        PathFor(name).ToPath(new FileSystemDataSource.PathEscapePolicy()) + ".Prefab";
     private static readonly MethodInfo SetUninitializedInstanceMethod = typeof(PrefabAsset).GetMethod(
         "SetUninitializedInstance",
         BindingFlags.Instance | BindingFlags.NonPublic)
@@ -27,7 +32,9 @@ internal sealed class PrefabAssetWriter
         var pending = nodes.Where(node => node.NeedsSave).ToList();
         var assets = new List<PrefabAsset>(pending.Count);
         foreach (var node in pending) assets.Add(Register(node));
-        foreach (var asset in assets) asset.Save(false);
+        // Write only the explicit owned plan. Native recursive Save would also rewrite shared donors.
+        foreach (var asset in assets)
+            asset.Save(null, Colossal.IO.AssetDatabase.ContentType.Text, new HashSet<PrefabAsset>(), false, true);
         return pending.Count(node => !node.IsRoot);
     }
 
@@ -48,13 +55,7 @@ internal sealed class PrefabAssetWriter
 
         if (prefab.asset == null)
         {
-            var path = AssetImportPipeline.GetPath(
-                null,
-                prefab.name,
-                prefab.name,
-                DataType.Prefab,
-                AssetDatabase.user,
-                false);
+            var path = PathFor(prefab.name);
             return PrefabAssetExtensions.AddAsset(AssetDatabase.user, path, prefab);
         }
 
