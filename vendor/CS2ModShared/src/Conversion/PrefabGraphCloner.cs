@@ -16,6 +16,7 @@ internal sealed class PrefabGraphCloner
     private readonly ExportSettings _settings;
     private readonly ExportReport _report;
     private readonly bool _overwriteExisting;
+    private readonly string? _dependencyOwner;
     private readonly Dictionary<PrefabBase, PrefabBase> _clones =
         new(ReferenceEqualityComparer<PrefabBase>.Instance);
     private readonly List<PrefabCloneNode> _nodes = new();
@@ -25,12 +26,14 @@ internal sealed class PrefabGraphCloner
         PrefabSystem prefabSystem,
         ExportSettings settings,
         ExportReport report,
-        bool overwriteExisting)
+        bool overwriteExisting,
+        string? dependencyOwner = null)
     {
         _prefabSystem = prefabSystem;
         _settings = settings;
         _report = report;
         _overwriteExisting = overwriteExisting;
+        _dependencyOwner = dependencyOwner;
     }
 
     internal IReadOnlyList<PrefabCloneNode> Nodes => _nodes;
@@ -104,6 +107,14 @@ internal sealed class PrefabGraphCloner
             _settings.NamePrefix,
             targetType.Name,
             source.name ?? "Unnamed");
+        // Scope generated runtime dependencies before looking up existing assets; otherwise
+        // separate bridges can reuse the same old unowned RBBridgeDep prefab.
+        if (forcedName == null && !string.IsNullOrEmpty(_dependencyOwner))
+        {
+            var parts = targetName.Split(' ');
+            parts[0] += "-" + _dependencyOwner;
+            targetName = string.Join(" ", parts);
+        }
         var existing = FindExisting(targetType, targetName);
         var needsSave = existing == null || _overwriteExisting;
         var replacementAsset = needsSave ? existing?.asset : null;

@@ -34,6 +34,22 @@ internal sealed class BridgeSerializedReferences
         return result._valid && result._offset == text.Length;
     }
     internal string Name => Field(_root, "name")?.Text ?? string.Empty;
+    internal string TypeName
+    {
+        get
+        {
+            var type = Field(_root, "$type")?.Text ?? "";
+            return _types.TryGetValue(type, out var expanded) ? expanded : type;
+        }
+    }
+
+    internal string WithName(string name)
+    {
+        var field = Field(_root, "name");
+        if (field == null) return _text;
+        var quoted = "\"" + name.Replace("\\", "\\\\").Replace("\"", "\\\"") + "\"";
+        return _text.Remove(field.Start, field.End - field.Start).Insert(field.Start, quoted);
+    }
 
     internal Value? Component(string typeName)
     {

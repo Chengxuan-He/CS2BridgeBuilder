@@ -18,6 +18,8 @@ Bridge Builder lets you combine available roads or tracks with bridge styles in 
 
 Load a city and open Bridge Builder from its toolbar icon. Select a road or track and a bridge style. For a double-deck bridge, choose the second network and the deck-direction option. Review the preview and bridge name, then select Create or Create and build.
 
+- **If the bridge self-check is triggered, please restart the game.**
+
 ### Compatibility
 
 - Use Road Builder to create custom roads for your bridges. Once a bridge has been generated, deleting its source road in Road Builder does not prevent you from placing that saved bridge again. This does not mean required DLC, content mods or shared assets can be uninstalled.
@@ -53,6 +55,8 @@ Bridge Builder（桥梁建造器）让你在《Cities: Skylines II》中，将�
 
 进入城市后，点击 Bridge Builder 图标，选择道路或轨道及桥型；使用双层桥时再选择另一层路网和方向选项。确认预览与桥梁名称后，点击“创建”保存桥梁，或点击“创建并建造”开始铺设。
 
+- **如果触发了桥梁自检，请重启游戏。**
+
 ### 兼容性
 
 - 如需使用自定义道路创建桥梁，请使用 Road Builder。桥梁生成并保存后，即使在 Road Builder 中删除其原始道路，仍可继续铺设已保存的桥梁。这不代表可以卸载桥梁所需的 DLC、内容模组或共享资产。
@@ -87,6 +91,8 @@ Bridge Builder（橋梁建造器）讓你在《Cities: Skylines II》中，將�
 ### 使用方法
 
 進入城市後，點擊 Bridge Builder 圖示，選擇道路或軌道及橋型；使用雙層橋時，再選擇另一層路網和方向選項。確認預覽與橋梁名稱後，點擊建立按鈕儲存橋梁，或使用建立並建造功能開始鋪設。
+
+- **如果觸發了橋梁自檢，請重新啟動遊戲。**
 
 ### 相容性
 

@@ -1,7 +1,5 @@
 using CS2Mods.Shared.Infrastructure;
-using System;
 using System.Collections.Generic;
-using System.Globalization;
 
 namespace BridgeBuilder.Bridges;
 
@@ -31,51 +29,6 @@ internal static class BridgeNaming
         return Safe(string.Join(Separator, parts));
     }
 
-    /// <summary>
-    /// The name to use: what the player typed, or the generated one when they have typed nothing.
-    ///
-    /// A chosen name is taken as given apart from being made safe to write to disk. The generated one
-    /// is what the field shows by default, and it is regenerated whenever the configuration changes -
-    /// see <c>BridgeSetting</c> - so a name left alone always describes the bridge it will produce and
-    /// never a bridge two settings ago.
-    /// </summary>
-    internal static string BaseName(Deck upper, Deck? lower, BridgeStyle? style, string? chosen)
-    {
-        var trimmed = (chosen ?? string.Empty).Trim();
-        return trimmed.Length == 0
-            ? BaseName(upper, lower, style)
-            : Safe(trimmed);
-    }
-
-    /// <summary>
-    /// The name to write, made unique against <paramref name="taken"/>.
-    ///
-    /// <paramref name="reusable"/> is the one name that may collide without being a conflict: the
-    /// asset this same pairing produced last time, which a re-run is meant to replace rather than sit
-    /// beside as a second copy.
-    /// </summary>
-    internal static string UniqueName(
-        Deck upper,
-        Deck? lower,
-        BridgeStyle? style,
-        ICollection<string> taken,
-        Func<string, bool> reusable,
-        string? chosen = null)
-    {
-        var baseName = BaseName(upper, lower, style, chosen);
-        if (!taken.Contains(baseName) || reusable(baseName)) return baseName;
-
-        for (var index = 1; index < 1000; index++)
-        {
-            var candidate = baseName + " (" + index.ToString(CultureInfo.InvariantCulture) + ")";
-            if (!taken.Contains(candidate) || reusable(candidate)) return candidate;
-        }
-
-        // A thousand bridges from one pairing is not a case worth handling gracefully, but silently
-        // overwriting the first would be worse than an obviously odd name.
-        return baseName + " (overflow)";
-    }
-
     /// <summary>The name of the second asset a two-road-deck bridge needs.</summary>
     internal static string LowerDeckName(string bridgeName) => bridgeName + Separator + "Lower";
 
@@ -91,7 +44,7 @@ internal static class BridgeNaming
     /// this bridge supplies itself.
     /// </summary>
     internal static string SectionName(string bridgeName, string sectionName) =>
-        sectionName + Separator + bridgeName;
+        bridgeName + Separator + sectionName;
 
     internal static string CarriedDeckName(string bridgeName, bool above) =>
         above ? bridgeName + Separator + "Upper" : LowerDeckName(bridgeName);

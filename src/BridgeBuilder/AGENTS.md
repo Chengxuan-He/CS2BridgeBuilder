@@ -8,6 +8,13 @@ the repository root [`AGENTS.md`](../../AGENTS.md). Before editing this director
 
 ## Runtime invariants
 
+- Apply the root contract's legacy naming migration exception during self-check: create per-bridge
+  copies with "-b{uuid}" appended to the first space-delimited name token and new CIDs, update file references, and back up unreferenced old components.
+  Keep live prefabs unchanged and request restart.
+- Every modification requires the project-wide compatibility review mandated by the root instructions.
+  Trace all affected generation, naming, persistence, loading, migration, cleanup and UI/error paths,
+  including alternate bridge branches and legacy assets; fix incompatible callers and consumers
+  together. Build or preview success alone is insufficient; report pending in-game verification.
 - Use immutable, hardcoded archetype and component metadata produced by the metaprogramming step.
   Runtime code must not rediscover parts from bounds, topology, nearest vertices, connected components,
   height bands, ratios, names or other geometric resemblance.

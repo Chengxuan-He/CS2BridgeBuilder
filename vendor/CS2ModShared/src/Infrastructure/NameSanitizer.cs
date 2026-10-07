@@ -9,12 +9,6 @@ namespace CS2Mods.Shared.Infrastructure;
 
 internal static class NameSanitizer
 {
-    /// <summary>
-    /// The exported prefab name doubles as a directory and file name, so the path budget is spent
-    /// twice. Well below MAX_PATH once the user data folder is accounted for.
-    /// </summary>
-    private const int MaximumRoadNameLength = 96;
-
     private static readonly HashSet<string> ReservedDeviceNames = new(StringComparer.OrdinalIgnoreCase)
     {
         "CON", "PRN", "AUX", "NUL",
@@ -23,7 +17,7 @@ internal static class NameSanitizer
     };
 
     internal static string CreateDependencyName(string prefix, string typeName, string sourceName) =>
-        CreateName(prefix + "Dep", typeName + "_" + sourceName, typeName + ":" + sourceName, 112);
+        CreateName(prefix + "Dep", typeName + "_" + sourceName, typeName + ":" + sourceName);
 
     internal static string ShortHash(string value, int length = 10)
     {
@@ -62,15 +56,13 @@ internal static class NameSanitizer
         // Windows silently strips trailing dots and spaces from path components, which would make the
         // name on disk differ from the prefab name and break the lookup on the next run.
         var result = builder.ToString().Trim().TrimEnd('.', ' ', '_').TrimStart('_');
-        if (result.Length > MaximumRoadNameLength)
-            result = result.Substring(0, MaximumRoadNameLength).Trim().TrimEnd('.', ' ', '_');
 
         var withoutExtension = result.IndexOf('.') >= 0 ? result.Substring(0, result.IndexOf('.')) : result;
         if (ReservedDeviceNames.Contains(withoutExtension)) result += "_";
         return result;
     }
 
-    private static string CreateName(string prefix, string humanPart, string stableIdentity, int maximumLength)
+    private static string CreateName(string prefix, string humanPart, string stableIdentity)
     {
         var invalid = new HashSet<char>(Path.GetInvalidFileNameChars());
         var builder = new StringBuilder(humanPart.Length);
@@ -93,8 +85,6 @@ internal static class NameSanitizer
         var suffix = "_" + ShortHash(stableIdentity);
         var safePrefix = new string(prefix.Where(c => !invalid.Contains(c) && !char.IsWhiteSpace(c)).ToArray());
         if (safePrefix.Length == 0) safePrefix = "RBExport";
-        var available = Math.Max(8, maximumLength - safePrefix.Length - suffix.Length - 1);
-        if (safeHumanPart.Length > available) safeHumanPart = safeHumanPart.Substring(0, available).TrimEnd('_', '.', ' ');
         return safePrefix + "_" + safeHumanPart + suffix;
     }
 }

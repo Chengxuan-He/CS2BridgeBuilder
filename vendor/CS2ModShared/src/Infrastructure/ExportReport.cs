@@ -19,6 +19,8 @@ internal sealed class ExportReport
     internal int RemovedRoads { get; private set; }
     internal int RemovedDependencies { get; private set; }
     internal int SavedDependencies { get; set; }
+    internal string FailureDetails => string.Join("\n", _entries.FindAll(entry =>
+        entry.StartsWith("[FAIL]", StringComparison.Ordinal) || entry.StartsWith("[ERROR]", StringComparison.Ordinal)));
 
     internal void Exported(string name)
     {

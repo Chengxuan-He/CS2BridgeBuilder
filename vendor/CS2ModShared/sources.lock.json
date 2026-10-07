@@ -5,7 +5,7 @@
   },
   {
     "path": "src/Conversion/PrefabGraphCloner.cs",
-    "sha256": "6137a45b2f318eb60a5c3203687702f73580b86c2b43524d7ca042eb4bb67ee8"
+    "sha256": "6422f630fd79778c8e907e802cdec88647a5321103e4ac72c8d22cbce4df1f49"
   },
   {
     "path": "src/Conversion/SpeedLimitFix.cs",
@@ -45,7 +45,7 @@
   },
   {
     "path": "src/Infrastructure/ExportReport.cs",
-    "sha256": "30ccf1babf7229d019c36fc75fc1e99caba3695575dfb85a809f526785a72fa7"
+    "sha256": "e7fb6193f4ac304503dcd528c05b5b04a4b56dd0515d5a380a9cfe0fbd5acc90"
   },
   {
     "path": "src/Infrastructure/ExportSettings.cs",
@@ -57,7 +57,7 @@
   },
   {
     "path": "src/Infrastructure/NameSanitizer.cs",
-    "sha256": "1eb73a6c942ad1e6c68119af1fbeb00959e27aa08bc97834b609f1676ad73bfa"
+    "sha256": "c82e1d10860197044fe0ecabc1176d4750e8efc7ec7055b00199c496d2ee5593"
   },
   {
     "path": "src/Infrastructure/PrefabCatalog.cs",

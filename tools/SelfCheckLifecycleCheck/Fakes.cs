@@ -91,7 +91,7 @@ namespace BridgeBuilder
         public static void ShowMessage(string title, string message) => Messages.Add(message);
         public static void ShowRecoveryMessage(string message) => Messages.Add(message);
     }
-    public class Logger { public void Info(string s) { } public void Warn(string s) { } public void Warn(Exception e, string s) { } }
+    public class Logger { public void Info(string s) { } public void Warn(string s) { } public void Warn(Exception e, string s) { } public void Critical(string s) { } }
 }
 namespace BridgeBuilder.Settings
 {
@@ -127,6 +127,12 @@ namespace BridgeBuilder.Runtime
 }
 namespace BridgeBuilder.Runtime
 {
+    public static class BridgeLegacyNames {
+        public static bool Fail, Changed;
+        public static bool Run(string root, IEnumerable<string> owners, string backup, out HashSet<string> changed, out string error) {
+            changed = Changed ? new(owners) : new(); error = "fixture"; return !Fail;
+        }
+    }
     public static class BridgeAssetMigration {
         public static int Calls; public static bool Fail, Changed;
         public static bool Run(string owner, IEnumerable<string> seeds, out bool changed, out string error) {

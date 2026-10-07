@@ -1,0 +1,7 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup><OutputType>Exe</OutputType><TargetFramework>net8.0</TargetFramework><ImplicitUsings>enable</ImplicitUsings><Nullable>enable</Nullable></PropertyGroup>
+  <ItemGroup>
+    <Compile Include="../../src/BridgeBuilder/Bridges/TowerPrefabNaming.cs" Link="TowerPrefabNaming.cs" />
+    <Compile Include="../../vendor/CS2ModShared/src/Infrastructure/NameSanitizer.cs" Link="NameSanitizer.cs" />
+  </ItemGroup>
+</Project>

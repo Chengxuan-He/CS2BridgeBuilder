@@ -189,6 +189,17 @@ public partial class BridgeStartupAssetSystem : GameSystemBase
                 Mod.Log.Info($"Bridge retired UUID={failure.Key}; backup={backup}; backupComplete={error.Length == 0}");
                 if (error.Length != 0) Mod.Log.Warn(error);
             }
+            if (!BridgeLegacyNames.Run(UnityEngine.Application.persistentDataPath,
+                owners.Where(o => !failures.ContainsKey(o)), backup, out var renamed, out var renameError))
+            {
+                removalErrors++;
+                Mod.Log.Critical("Legacy bridge component migration failed: " + renameError);
+            }
+            else if (renamed.Count != 0)
+            {
+                _copiedOwners.UnionWith(renamed);
+                Mod.Log.Info($"Legacy bridge components migrated for {renamed.Count} bridge(s); UUID names and private CIDs saved; backup={backup}; restart required.");
+            }
             _restartNotice = BridgeStartupRecovery.Retired.Count != 0 || _copiedOwners.Count != 0 || removalErrors != 0 || migrated != 0;
             _pendingNotice = removalErrors != 0 ? "BridgeSelfCheckIncomplete"
                 : _restartNotice ? "BridgeSelfCheckRepaired" : manual ? "BridgeSelfCheckSuccess" : null;

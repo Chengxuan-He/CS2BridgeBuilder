@@ -376,10 +376,13 @@ public partial class BridgeGenerationSystem : GameSystemBase
             state.Save();
             report.Save(_gameMode.ToString(), operation);
         }
-        catch (Exception)
+        catch (Exception exception)
         {
-            // Generation diagnostics are silent; retain the external API exception boundary.
+            Mod.Log.Critical(exception, $"{operation}: could not save operation state or diagnostics.");
         }
+
+        if (report.FailedRoads != 0 || report.FailureDetails.Length != 0)
+            Mod.Log.Critical($"{operation} failed. {report.FailureDetails}\nSee ModsData/BridgeBuilder/last-export-report.txt.");
 
         ModHost.Log.Info(
             $"{operation}: {report.ExportedRoads} exported, {report.RemovedRoads} removed, "

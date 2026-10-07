@@ -2,6 +2,26 @@
 
 ## First rule: fix reported bugs immediately
 
+Legacy naming migration exception (user request 2026-10-07): self-check must replace reachable
+pre-UUID sections reached through the canonical bridge root's CID dependency graph, plus their
+derived pieces/LODs/geometry (never use section-name regexes or child-name prefixes)
+with per-bridge copies named by appending "-b{uuid}" to the first space-delimited name token. Rewrite file references to new private CIDs, back up originals,
+and remove old files only after no local prefab references remain. Do not mutate live prefabs; require
+restart. This narrowly scoped legacy exception supersedes the UUID-only rule for those source files
+and the ordinary byte-identical dependency-copy rule for this explicit rename migration only.
+Rollback baseline: `dev`, `673bc85e84a83ab14c957a6a9565a013f69209e5` (existing edits preserved).
+
+Every modification requires a compatibility review across the entire codebase, not only the edited
+files. Trace all affected producers, consumers, callers and alternate branches; update incompatible
+paths together. Check existing assets, persistence, loading, migration, cleanup and diagnostics when
+affected. For example, changing bridge identification must also check every generated asset naming
+and saving path. Compilation or preview success alone does not prove compatibility: perform the
+relevant end-to-end checks and explicitly report any unverified in-game behavior.
+
+Compatibility-rule rollback baseline: branch `dev`, HEAD
+`673bc85e84a83ab14c957a6a9565a013f69209e5`; local reference
+`refs/rollback/project-wide-compatibility-20261007`. Existing uncommitted changes are preserved.
+
 Fix every reported bug immediately. A user bug report authorizes the corresponding repair. After
 diagnosis, immediately proceed with implementation and verification; acknowledgment, analysis, a plan
 or a proposed next step must not replace the fix. Do not require the user to request the same fix again.

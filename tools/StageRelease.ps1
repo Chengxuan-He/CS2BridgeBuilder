@@ -18,7 +18,9 @@ $ui = Get-Content -LiteralPath (Join-Path $output 'BridgeBuilder.mjs') -Raw
 $uiVersion = [regex]::Match($ui, '(?m)^\s*\*\s*Version\s*:\s*(\S+)').Groups[1].Value
 $docs = Join-Path $projectRoot 'docs/publishing'
 [xml]$draft = Get-Content -LiteralPath (Join-Path $docs 'PublishConfiguration.draft.xml') -Raw
-if ($assemblyVersion -ne "$version.0" -or $uiVersion -ne $version -or $draft.Publish.ModVersion.Value -ne $version) {
+$expectedAssemblyVersion = [string]$project.Project.PropertyGroup.AssemblyVersion
+if (-not $expectedAssemblyVersion) { $expectedAssemblyVersion = "$version.0" }
+if ($assemblyVersion -ne $expectedAssemblyVersion -or $uiVersion -ne $version -or $draft.Publish.ModVersion.Value -ne $version) {
     throw "Release versions differ: project=$version, assembly=$assemblyVersion, UI=$uiVersion, draft=$($draft.Publish.ModVersion.Value)"
 }
 $files = @('BridgeBuilder.dll', '0Harmony.dll', 'Harmony-LICENSE.txt', 'BridgeBuilder.mjs', 'BridgeBuilder.css', 'BridgeBuilder.svg',

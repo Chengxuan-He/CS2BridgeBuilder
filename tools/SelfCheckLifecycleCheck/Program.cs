@@ -13,6 +13,7 @@ static Probe Fresh()
     Colossal.IO.AssetDatabase.AssetDatabase.user.Assets = new() { new() {
         path = Path.Combine(BridgeAssetCatalog.Root,"bridge","bridge.Prefab"), Instance = Game.Prefabs.PrefabSystem.Loaded[0] } };
     BridgeAssetMigration.Changed = false; BridgeAssetMigration.Calls = 0; BridgeAssetMigration.Fail = false;
+    BridgeLegacyNames.Changed = false; BridgeLegacyNames.Fail = false;
     BridgeNetworkValidation.Calls = 0; BridgeNetworkValidation.Invalid = false;
     BridgeNetworkValidation.Raise = false;
     ((Colossal.IO.AssetDatabase.ParadoxModsDataSource)Colossal.IO.AssetDatabase.AssetDatabase<Colossal.IO.AssetDatabase.ParadoxMods>.instance.dataSource).Cached = true;
@@ -101,6 +102,13 @@ Check(BridgeStartupRecovery.Retired.Contains("bridge") && BridgeDependencyPersis
 p = Fresh(); BridgeAssetMigration.Changed = true; p.ScheduleInspectionAfterLoad(); Menu(p);
 Check(BridgeStartupRecovery.Retired.Count == 0 && BridgeDependencyPersistence.Calls == 0
     && BridgeBuilder.Mod.Messages.Single() == "BridgeSelfCheckRepaired", "Successful dependency-only migration automatically shows repair popup without removal");
+p = Fresh(); BridgeLegacyNames.Changed = true; p.ScheduleInspectionAfterLoad(); Menu(p);
+Check(BridgeBuilder.Mod.Messages.Single() == "BridgeSelfCheckRepaired", "Legacy rename requests restart");
+p.RequestManualCheck(); p.Tick();
+Check(BridgeAssetMigration.Calls == 1, "Renamed bridge skips stale in-memory asset index until restart");
+p = Fresh(); BridgeLegacyNames.Fail = true; p.ScheduleInspectionAfterLoad(); Menu(p);
+Check(BridgeBuilder.Mod.Messages.Single() == "BridgeSelfCheckIncomplete" && BridgeStartupRecovery.Retired.Count == 0,
+    "Rename IO failure reports incomplete without removing healthy bridge");
 Console.WriteLine("PASS memory lifecycle: both load orders, healthy skips disk, manual inspection, retirement, incomplete inventory, city guard and idempotence");
 class Probe : BridgeStartupAssetSystem
 {

@@ -28,10 +28,7 @@ public partial class BridgeGenerationSystem
 {
     private void ExportOne()
     {
-        var state = ExportStateStore.Load();
-        var report = new ExportReport(logIssues: false);
         var setting = Mod.Setting;
-
         if ((_gameMode & GameMode.Editor) == 0
             && (_gameMode & GameMode.Game) != 0
             && !(setting?.AllowGameplayExport ?? false))
@@ -39,53 +36,16 @@ public partial class BridgeGenerationSystem
             RoadSelectionModel.PublishMessage(this, UiStringCatalog.Current.StateGameplayBlocked);
             return;
         }
-
-        var upper = DeckCatalog.Find(setting?.UpperDeckId);
-        if (upper == null)
+        // Both entry points allocate a UUID and publish through the same creation path.
+        CreateRuntimeBridge(new BridgeRuntimeRequest
         {
-            report.Failed("(no deck)", new InvalidOperationException(
-                "No upper deck is selected. Pick the road the bridge should carry."));
-            Finish(report, state, "Export bridge");
-            return;
-        }
-
-        var style = BridgeStyleCatalog.Resolve(setting?.BridgeStyleId);
-        if (style == null || !style.IsInstalled)
-        {
-            report.Failed(upper.DisplayName, new InvalidOperationException(
-                style == null
-                    ? "No bridge style is selected."
-                    : $"The bridge style '{style.Id}' has no prefab behind it in this installation, so "
-                      + "there is nothing to copy a look from. Pick another style."));
-            Finish(report, state, "Export bridge");
-            return;
-        }
-
-        var overwrite = setting?.OverwriteExisting ?? true;
-        var lower = DeckCatalog.Find(setting?.LowerDeckId);
-        var loaded = LoadedExportNames();
-        // A collision only counts as one when the existing asset is not this pairing's own earlier
-        // output: re-running the same pairing should replace it, not leave a second copy beside it.
-        var exportName = BridgeNaming.UniqueName(
-            upper, lower, style, loaded, name => overwrite && state.Contains(name),
-            setting?.BridgeName);
-        if (!overwrite && loaded.Contains(exportName))
-        {
-            report.Skipped(exportName, "the output asset already exists and overwrite is disabled");
-            Finish(report, state, "Export bridge");
-            return;
-        }
-
-        var options = setting?.ToBridgeOptions() ?? new BridgeOptions();
-        if (!TryBuildBridge(upper, lower, style, exportName, options, overwrite, report,
-            onPublished: ready =>
-            {
-                if (ready) state.Record(exportName, Fingerprint(upper));
-                Finish(report, state, "Export bridge");
-            }))
-            Finish(report, state, "Export bridge");
+            UpperDeckId = setting?.UpperDeckId ?? string.Empty,
+            LowerDeckId = setting?.LowerDeckId ?? string.Empty,
+            StyleId = BridgeStyleCatalog.Resolve(setting?.BridgeStyleId)?.Id ?? string.Empty,
+            DisplayName = setting?.BridgeName ?? string.Empty,
+            LowerDeckOpposite = setting?.LowerDeckOpposite ?? true,
+        }, setting?.ToBridgeOptions());
     }
-
     /// <summary>
     /// The one bridge construction path used by both the legacy options page and the runtime UI.
     /// A true result means that publication has been queued (or a private preview was built).
@@ -110,7 +70,7 @@ public partial class BridgeGenerationSystem
             return false;
         }
         var failuresBefore = report.FailedRoads;
-        var cloner = new PrefabGraphCloner(_prefabSystem, _settings, report, overwrite);
+        var cloner = new PrefabGraphCloner(_prefabSystem, _settings, report, overwrite, exportName);
         var towers = new TowerFactory(_prefabSystem, report, preview?.Geometry);
         var composer = BridgeGeneratorRouter.Create(style.Id, report, towers);
         if (composer == null) return false;
@@ -238,8 +198,14 @@ public partial class BridgeGenerationSystem
                 BridgeAssetCatalog.Attach(clone, new BridgeAssetInfo(clone.name,
                     BridgeNaming.BaseName(upper, chosen, style), upper.Id, options.DoubleDeck ? chosen?.Id : null,
                     style.Id, DateTime.UtcNow.ToString("O", CultureInfo.InvariantCulture)));
-            if (nodes.Any(node => node.NeedsSave && !BridgeAssetInfo.MatchesOwner(node.Target.name, clone.name)))
-            { report.Warning("Bridge persistence refused an asset without the bridge UUID in its name."); return false; }
+            var unowned = nodes.Where(node => node.NeedsSave && !BridgeAssetInfo.MatchesOwner(node.Target.name, clone.name))
+                .Select(node => $"{node.Target.name} ({node.Target.GetType().Name})").ToArray();
+            if (unowned.Length != 0)
+            {
+                report.Failed(exportName, new InvalidOperationException(
+                    $"Bridge persistence refused assets missing owner '{clone.name}': {string.Join(", ", unowned)}"));
+                return false;
+            }
             report.SavedDependencies = new PrefabAssetWriter().Save(nodes);
             if (!BridgeDependencyPersistence.Save(clone.name,
                 nodes.Where(node => node.NeedsSave && node.Target.asset != null)
@@ -504,24 +470,6 @@ public partial class BridgeGenerationSystem
         {
             // Generation diagnostics are silent; retain the external API exception boundary.
         }
-    }
-
-    /// <summary>
-    /// What the export was made from and with. A deck whose road is untouched still has to be built
-    /// again after the style or the deck spacing changes, so all of it counts.
-    /// </summary>
-    private static string Fingerprint(Deck upper)
-    {
-        var setting = Mod.Setting;
-        return string.Join("|", new[]
-        {
-            upper.Road?.Fingerprint ?? upper.Id,
-            setting?.BridgeStyleId ?? string.Empty,
-            setting?.BuildStyleOverride ?? string.Empty,
-            setting?.LowerDeckId ?? string.Empty,
-            (setting?.LowerDeckOpposite ?? false) ? "opp" : "same",
-            (setting?.DeckSpacing ?? 0f).ToString("0.##", CultureInfo.InvariantCulture),
-        });
     }
 
 }

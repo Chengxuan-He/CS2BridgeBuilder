@@ -54,11 +54,10 @@ internal sealed partial class TowerFactory
         // the eye moves along the bridge.
         _kerbPlans = null;
 
-        var wanted = TowerPrefabNaming.Safe(preserveGeometry
-            ? string.Format(CultureInfo.InvariantCulture, "{0}-{1}", bridgeName, source.name)
-            : BridgeTowers.BringsItsOwnRailings(_styleId)
-                ? string.Format(CultureInfo.InvariantCulture, "{0}-{1}", source.name, bridgeName)
-                : string.Format(CultureInfo.InvariantCulture, "{0} {1:0.#}", source.name, extra));
+        // Every derived section belongs to this bridge, including styles without railings.
+        // Put the owner first so filename truncation cannot discard the UUID.
+        var wanted = TowerPrefabNaming.Safe(
+            string.Format(CultureInfo.InvariantCulture, "{0}-{1}", bridgeName, source.name));
 
         if (_sectionsThisRun.TryGetValue(wanted, out var already))
         {

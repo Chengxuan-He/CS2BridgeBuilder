@@ -26,7 +26,7 @@ namespace BridgeBuilder.Systems;
 
 public partial class BridgeGenerationSystem
 {
-    private void CreateRuntimeBridge(BridgeRuntimeRequest request)
+    private void CreateRuntimeBridge(BridgeRuntimeRequest request, BridgeOptions? exportOptions = null)
     {
         var state = ExportStateStore.Load();
         var report = new ExportReport(logIssues: false);
@@ -101,7 +101,7 @@ public partial class BridgeGenerationSystem
         var displayName = string.IsNullOrWhiteSpace(request.DisplayName)
             ? BridgeNaming.BaseName(upper, lower, style)
             : request.DisplayName.Trim();
-        var options = new BridgeOptions
+        var options = exportOptions ?? new BridgeOptions
         {
             DoubleDeck = doubleDeck,
             LowerDeckId = lower?.Id,
@@ -112,6 +112,8 @@ public partial class BridgeGenerationSystem
         if (!BridgeAssetCatalog.Begin(new BridgeAssetInfo(prefabName, displayName,
             upper.Id, lower?.Id, style.Id, DateTime.UtcNow.ToString("O", CultureInfo.InvariantCulture), pending: true)))
         {
+            report.Failed(prefabName, new InvalidOperationException("Could not reserve the bridge UUID for creation."));
+            Finish(report, state, "Create runtime bridge", showMessage: false);
             BridgeRuntimeRequests.Complete("AssetMetadataFailed", displayName);
             return;
         }
@@ -183,6 +185,8 @@ public partial class BridgeGenerationSystem
 
     private void DeferFailedCreation(string prefabName, ExportReport report)
     {
+        if (report.FailedRoads == 0)
+            report.Failed(prefabName, new InvalidOperationException("Bridge creation stopped before publication completed."));
         BridgeAssetCatalog.EndCreation(prefabName);
         // Keep live native indices and geometry allocated; retire audited disk files at boot.
         foreach (var prefab in PrefabCatalog.GetAll(_prefabSystem).OfType<NetGeometryPrefab>())

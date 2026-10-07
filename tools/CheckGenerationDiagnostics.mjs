@@ -18,14 +18,15 @@ for (const file of readdirSync(resolve(root, runtime)).filter(x => /^BridgePrevi
 for (const path of [...readdirSync(resolve(root, "src/BridgeBuilder/Bridges/Common/Geometry")).filter(x => /^TowerFactory.*\.cs$/.test(x)).map(x => `Bridges/Common/Geometry/${x}`), "Systems/BridgePublicationSystem.cs", "Runtime/BridgeAssetPack.cs"])
     assert(!/Log\.(?:Error|Critical|Warn)\(/.test(read(`src/BridgeBuilder/${path}`)), path);
 const generation = readGenerationSource();
-assert.equal((generation.match(/new ExportReport\(logIssues: false\)/g) || []).length, 3,
-    "Export, create and preview reports must be silent; deletion keeps its diagnostics");
+assert.equal((generation.match(/new ExportReport\(logIssues: false\)/g) || []).length, 2,
+    "Reports aggregate diagnostics; permanent failures are surfaced once by Finish");
 const renderer = read(`${runtime}/BridgePreviewRenderer.cs`);
 assert(renderer.includes('Preview readback failed:') && renderer.includes('else Mod.Log.Warn(message)'),
     'Keep technical readback/render failure diagnostics without error popups');
 const deletion = generation.slice(generation.indexOf('private void FailDeletion('), generation.indexOf('private HashSet<string> LoadedExportNames'));
 assert.equal((deletion.match(/Log\.Critical\(/g) || []).length, 2, 'Keep explicit deletion failure diagnostics');
-assert.equal((generation.match(/Log\.Critical\(/g) || []).length, 2, 'No critical generation/preview logs');
+assert.equal((generation.match(/Log\.Critical\(/g) || []).length, 4, 'Deletion and completed permanent operations report critical failures');
+assert(generation.includes('report.FailureDetails'), 'Critical logs must include the original failure reason');
 assert(generation.includes("report.FailedRoads != failuresBefore"), "Do not remove publication guards");
 assert(generation.includes("_previewReleasePending = true"), "Failed previews must release resources");
 assert(generation.includes("BridgePreviewState.Publish(revision, string.Empty, stage)"));
@@ -34,4 +35,4 @@ const report = read("vendor/CS2ModShared/src/Infrastructure/ExportReport.cs");
 assert(report.includes("ExportReport(bool logIssues = true)"), "Other hosts keep default logging");
 assert(report.includes("FailedRoads++"), "Silent reports must still count failures");
 assert.equal((report.match(/if \(_logIssues\) ModHost\.Log\./g) || []).length, 3);
-console.log("PASS preview warnings without error popups, explicit deletion errors, retained generation failure guards");
+console.log("PASS silent previews, critical permanent-operation failures, retained generation failure guards");

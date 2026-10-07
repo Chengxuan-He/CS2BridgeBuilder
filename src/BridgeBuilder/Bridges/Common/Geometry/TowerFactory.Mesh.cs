@@ -444,8 +444,8 @@ internal sealed partial class TowerFactory
             // AssetDataPath reads the last period as an extension, and rejects any extension other
             // than the one belonging to GeometryAsset.
             var geometryAssetName = TowerPrefabNaming.Safe(name);
-            if (!BridgeBuilder.Runtime.BridgeAssetInfo.TryFileOwner(geometryAssetName, out _))
-            { _report.Defect("Geometry persistence requires a bridge UUID in its name."); return null; }
+            if (!BridgeBuilder.Runtime.BridgeAssetInfo.MatchesOwner(geometryAssetName, _bridgeName))
+            { _report.Defect($"Geometry persistence requires a bridge UUID in its name: '{geometryAssetName}' (owner '{_bridgeName}')."); return null; }
             asset = AssetDatabase.user.AddAsset(
                 AssetDataPath.Create("BridgeBuilder", geometryAssetName, EscapeStrategy.None),
                 geometry);
