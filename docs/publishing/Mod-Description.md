@@ -1,4 +1,4 @@
-# Bridge Builder · 桥梁建造者 · 橋梁建造者
+# Bridge Builder
 
 ## English
 
