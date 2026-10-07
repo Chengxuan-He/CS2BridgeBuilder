@@ -49,7 +49,7 @@ internal static class BridgeNativeUnlock
     }
 
     internal static bool Apply(NetGeometryPrefab root, BridgeUnlockExpression rule, PrefabSystem system,
-        List<PrefabBase> created, out string error)
+        List<PrefabBase> created, out string error, bool includeAuxiliary = true)
     {
         error = "";
         var groups = new List<PrefabBase>();
@@ -87,8 +87,8 @@ internal static class BridgeNativeUnlock
         {
             var requirement = ConvertRule(rule);
             if (requirement == null) { error = failure; return false; }
-            foreach (var net in new[] { root }.Concat(root.GetComponent<AuxiliaryNets>()?.m_AuxiliaryNets?
-                .Select(a => a.m_Prefab).OfType<NetGeometryPrefab>() ?? Enumerable.Empty<NetGeometryPrefab>()))
+            foreach (var net in new[] { root }.Concat(includeAuxiliary ? root.GetComponent<AuxiliaryNets>()?.m_AuxiliaryNets?
+                .Select(a => a.m_Prefab).OfType<NetGeometryPrefab>() ?? Enumerable.Empty<NetGeometryPrefab>() : Enumerable.Empty<NetGeometryPrefab>()))
             {
                 net.components.RemoveAll(c => c is UnlockableBase);
                 var gate = net.AddComponent<Unlockable>();

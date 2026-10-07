@@ -178,15 +178,14 @@ public sealed class Mod : IMod
             var dialog = new ConfirmationDialog(
                 LocalizedString.Value(UiStringCatalog.Current.Title),
                 LocalizedString.Value(message),
-                LocalizedString.Value(RuntimeUiText.Get("RecoveryOpenLabel")),
+                LocalizedString.Value(RuntimeUiText.Get("RecoveryRestartLabel")),
                 null,
-                LocalizedString.Value(RuntimeUiText.Get("RecoveryRestartLabel")));
+                LocalizedString.Value(RuntimeUiText.Get("RecoveryOpenLabel")));
             GameManager.instance?.userInterface?.appBindings?.ShowConfirmationDialog(dialog, result =>
             {
-                if (result == 0) BridgeRecoveryLocation.Open();
-                // Native close/Esc returns 1 as well as the cancel button. Restart must be
-                // an otherAction (2), never cancelAction, so dismissing cannot quit the game.
-                else if (result == 2) Runtime.BridgeGameRestart.Run();
+                if (result == 0) Runtime.BridgeGameRestart.Run();
+                // Native close/Esc returns 1; only the explicit buttons perform actions.
+                else if (result == 2) BridgeRecoveryLocation.Open();
             });
         }
         catch (Exception exception)

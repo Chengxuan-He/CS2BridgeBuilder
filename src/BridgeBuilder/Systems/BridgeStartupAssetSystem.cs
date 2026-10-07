@@ -117,6 +117,8 @@ public partial class BridgeStartupAssetSystem : GameSystemBase
             var failures = new Dictionary<string, string>(StringComparer.Ordinal);
             var system = World.GetOrCreateSystemManaged<PrefabSystem>();
             var assets = BridgeInspectionAssets.Read().Where(a => !_copiedOwners.Contains(a.Owner)).ToArray();
+            if (assets.Length != 0 && BridgeAssetPack.Ensure(system) == null)
+                Mod.Log.Error("Bridge pack icon could not be updated; existing bridge assets retained.");
             var owners = new HashSet<string>(assets.Select(a => a.Owner), StringComparer.Ordinal);
             var migrationCandidates = new HashSet<string>(StringComparer.Ordinal);
             foreach (var asset in assets)
@@ -159,55 +161,25 @@ public partial class BridgeStartupAssetSystem : GameSystemBase
                 Mod.Log.Info($"Bridge CID recovery copied UUID={recovery.Key}, dependencies={count}, recoveredCIDs={string.Join(",", recovery.Value)}; restart required; live references unchanged.");
             }
             var migrationErrors = 0;
-            var conversionFailures = new HashSet<string>(StringComparer.Ordinal);
             foreach (var owner in owners.Where(o => !failures.ContainsKey(o) && !_copiedOwners.Contains(o)))
             {
                 if (!BridgeAssetMigration.Run(owner, assets.Where(a => a.Owner == owner).Select(a => a.Cid),
                     out var changed, out var migrationError))
                 {
-                    // This bridge passed required-reference and registration validation.
-                    // A persistence failure is not evidence that the original bridge is broken.
                     migrationErrors++;
-                    conversionFailures.Add(owner);
-                    Mod.Log.Critical($"Bridge dependency migration failed UUID={owner}; original retained: {migrationError}");
+                    failures[owner] = "Dependency migration failed: " + migrationError;
+                    Mod.Log.Error($"Bridge dependency migration failed UUID={owner}; scheduling removal: {migrationError}");
                 }
                 else if (changed) migrationCandidates.Add(owner);
             }
             var persistenceMs = timer.ElapsedMilliseconds - validationMs;
-            var removed = 0;
-            var removalErrors = 0;
-            // One failed filesystem operation must not prevent retiring other damaged bridges.
-            foreach (var failure in failures)
-            {
-                var verdict = new Dictionary<string, string>(StringComparer.Ordinal) { [failure.Key] = failure.Value };
-                var audit = BridgeDiskAudit.ForMemoryFailures(UnityEngine.Application.persistentDataPath, verdict);
-                if (!audit.Complete)
-                {
-                    removalErrors++;
-                    Mod.Log.Warn($"Bridge removal failed UUID={failure.Key}: {audit.Error}");
-                    continue;
-                }
-                Mod.Log.Warn($"Bridge self-check retiring '{failure.Key}': {failure.Value}");
-                if (!audit.RetireFiles(new HashSet<string>(verdict.Keys, StringComparer.Ordinal), backup, out var error))
-                {
-                    removalErrors++;
-                    Mod.Log.Warn($"Bridge removal failed UUID={failure.Key}: {error}");
-                    continue;
-                }
-                BridgeStartupRecovery.Retired.Add(failure.Key);
-                _removedOwners.Add(failure.Key);
-                removed++;
-                Mod.Log.Info($"Bridge retired UUID={failure.Key}; backup={backup}; backupComplete={error.Length == 0}");
-                if (error.Length != 0) Mod.Log.Warn(error);
-            }
-            foreach (var owner in owners.Where(o => !failures.ContainsKey(o) && !_copiedOwners.Contains(o)
-                && !conversionFailures.Contains(o)))
+            foreach (var owner in owners.Where(o => !failures.ContainsKey(o) && !_copiedOwners.Contains(o)))
             {
                 if (!BridgePortableMigration.Run(owner, system, backup, out var converted, out var conversionError))
                 {
                     migrationErrors++;
-                    conversionFailures.Add(owner);
-                    Mod.Log.Critical($"Independent bridge migration failed UUID={owner}; original retained: {conversionError}");
+                    failures[owner] = "Independent migration failed: " + conversionError;
+                    Mod.Log.Error($"Independent bridge migration failed UUID={owner}; scheduling removal after rollback: {conversionError}");
                 }
                 else if (converted)
                 {
@@ -219,40 +191,63 @@ public partial class BridgeStartupAssetSystem : GameSystemBase
             }
             // Conversion writes the current disk graph. Normalize that graph in this SAME pass,
             // including previously converted assets, before any next-session validation.
-            var layoutOwners = owners.Where(o => !failures.ContainsKey(o)
-                && !conversionFailures.Contains(o)).ToArray();
-            if (!BridgeLegacyNames.Run(UnityEngine.Application.persistentDataPath,
-                layoutOwners, backup, out var renamed, out var renameError, PrefabAssetWriter.RelativePathFor))
+            foreach (var owner in owners.Where(o => !failures.ContainsKey(o)).ToArray())
             {
-                migrationErrors++;
-                Mod.Log.Critical("Legacy bridge component migration failed: " + renameError);
-            }
-            else
-            {
+                var selected = new[] { owner };
+                if (!BridgeLegacyNames.Run(UnityEngine.Application.persistentDataPath,
+                    selected, backup, out var renamed, out var renameError, PrefabAssetWriter.RelativePathFor))
+                {
+                    migrationErrors++;
+                    failures[owner] = "Legacy component migration failed: " + renameError;
+                    Mod.Log.Error($"Legacy bridge component migration failed UUID={owner}; scheduling removal: {renameError}");
+                    continue;
+                }
                 _copiedOwners.UnionWith(renamed);
                 migrationCandidates.UnionWith(renamed);
-                if (renamed.Count != 0)
-                    Mod.Log.Info($"Legacy bridge components migrated for {renamed.Count} bridge(s); UUID names and private CIDs saved; backup={backup}; restart required.");
-                if (!BridgeAssetLayout.Run(UnityEngine.Application.persistentDataPath, layoutOwners, backup,
+                if (!BridgeAssetLayout.Run(UnityEngine.Application.persistentDataPath, selected, backup,
                     PrefabAssetWriter.RelativePathFor, out var relocated, out var layoutError))
                 {
                     migrationErrors++;
-                    Mod.Log.Critical("Bridge file layout migration failed: " + layoutError);
+                    failures[owner] = "File layout migration failed: " + layoutError;
+                    Mod.Log.Error($"Bridge file layout migration failed UUID={owner}; scheduling removal: {layoutError}");
+                    continue;
                 }
-                else
-                {
-                    _copiedOwners.UnionWith(relocated);
-                    migrationCandidates.UnionWith(relocated);
-                    migrationCandidates.ExceptWith(conversionFailures);
-                    _migratedOwners.UnionWith(migrationCandidates);
-                    if (relocated.Count != 0)
-                        Mod.Log.Info($"Bridge file layout migrated for {relocated.Count} bridge(s); original CIDs retained; backup={backup}; restart required.");
-                }
+                _copiedOwners.UnionWith(relocated);
+                migrationCandidates.UnionWith(relocated);
+                if (migrationCandidates.Contains(owner)) _migratedOwners.Add(owner);
             }
+            var removed = 0;
+            var removalErrors = 0;
+            // One failed filesystem operation must not prevent retiring other damaged bridges.
+            foreach (var failure in failures)
+            {
+                var verdict = new Dictionary<string, string>(StringComparer.Ordinal) { [failure.Key] = failure.Value };
+                var audit = BridgeDiskAudit.ForMemoryFailures(UnityEngine.Application.persistentDataPath, verdict);
+                if (!audit.Complete)
+                {
+                    removalErrors++;
+                    Mod.Log.Error($"Bridge removal failed UUID={failure.Key}: {audit.Error}");
+                    continue;
+                }
+                Mod.Log.Warn($"Bridge self-check retiring '{failure.Key}': {failure.Value}");
+                if (!audit.RetireFiles(new HashSet<string>(verdict.Keys, StringComparer.Ordinal), backup, out var error))
+                {
+                    removalErrors++;
+                    Mod.Log.Error($"Bridge removal failed UUID={failure.Key}: {error}");
+                    continue;
+                }
+                BridgeStartupRecovery.Retired.Add(failure.Key);
+                _removedOwners.Add(failure.Key);
+                removed++;
+                Mod.Log.Info($"Bridge retired UUID={failure.Key}; backup={backup}; backupComplete={error.Length == 0}");
+                if (error.Length != 0) Mod.Log.Warn(error);
+            }
+            _copiedOwners.ExceptWith(failures.Keys);
+            _migratedOwners.ExceptWith(failures.Keys);
             _migratedOwners.ExceptWith(_removedOwners);
             var hadRemovals = _removedOwners.Count != 0;
             var migratedAny = _migratedOwners.Count != 0;
-            _migrationIncomplete |= migrationErrors != 0;
+            _migrationIncomplete |= migrationErrors != 0 && removalErrors != 0;
             _restartNotice = hadRemovals || migratedAny || removalErrors != 0 || _migrationIncomplete;
             if (_restartNotice) BridgeSessionState.RequireRestart();
             var notices = new List<string>();

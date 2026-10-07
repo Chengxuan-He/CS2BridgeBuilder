@@ -19,7 +19,7 @@ internal static class BridgeGameRestart
             using var current = Process.GetCurrentProcess();
             var executable = current.MainModule?.FileName;
             if (string.IsNullOrEmpty(executable) || !File.Exists(executable))
-            { Mod.Log.Critical("Game restart failed: executable unavailable; game left running."); return; }
+            { Mod.Log.Error("Game restart failed: executable unavailable; game left running."); return; }
             var arguments = string.Join(" ", Environment.GetCommandLineArgs().Skip(1).Select(QuoteArgument));
             string Literal(string value) => "'" + value.Replace("'", "''") + "'";
             // The helper survives normal game shutdown; never launch a competing game process.
@@ -41,14 +41,14 @@ internal static class BridgeGameRestart
                 CreateNoWindow = true,
                 WindowStyle = ProcessWindowStyle.Hidden
             });
-            if (helper == null) { Mod.Log.Critical("Game restart helper did not start; game left running."); return; }
+            if (helper == null) { Mod.Log.Error("Game restart helper did not start; game left running."); return; }
             _scheduled = true;
             Mod.Log.Info("Game restart scheduled after normal process exit.");
             GameManager.QuitGame();
         }
         catch (Exception exception)
         {
-            Mod.Log.Critical(exception, "Could not restart game.");
+            Mod.Log.Error(exception, "Could not restart game.");
         }
     }
 

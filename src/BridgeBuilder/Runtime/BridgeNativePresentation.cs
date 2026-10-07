@@ -50,7 +50,14 @@ internal static class BridgeNativePresentation
     }
 
     internal static bool Save(BridgeAssetInfo entry, out string error)
+        => Save(entry, false, out _, out error);
+
+    internal static bool EnsureDescriptions(BridgeAssetInfo entry, out bool changed, out string error)
+        => Save(entry, true, out changed, out error);
+
+    private static bool Save(BridgeAssetInfo entry, bool missingOnly, out bool changed, out string error)
     {
+        changed = false;
         error = "";
         try
         {
@@ -70,15 +77,28 @@ internal static class BridgeNativePresentation
             foreach (var locale in locales)
             {
                 var name = entry.PrefabName + "-" + locale.Id;
-                var asset = AssetDatabase.user.GetAssets(SearchFilter<LocaleAsset>.ByCondition(a => a.name == name)).FirstOrDefault()
-                    ?? AssetDatabase.user.AddAsset<LocaleAsset>(AssetDataPath.Create("ImportedData/" + entry.PrefabName, name));
-                var entries = new Dictionary<string, string>();
-                foreach (var suffix in new[] { "", "_Lower", "_Upper" })
-                    entries["Assets.NAME[" + entry.PrefabName + suffix + "]"] = entry.DisplayName;
-                foreach (var prefab in prefabs)
-                    entries["Assets.NAME[" + prefab.uiTag + "]"] = entry.DisplayName;
-                asset.SetData(new LocaleData(locale.Id, entries, new Dictionary<string, int>()), locale.Language, locale.Name);
+                var asset = AssetDatabase.user.GetAssets(SearchFilter<LocaleAsset>.ByCondition(a => a.name == name
+                    && BridgeAssetInfo.MatchesOwner(a.path, entry.PrefabName))).FirstOrDefault();
+                var existing = asset?.data;
+                var entries = existing == null ? new Dictionary<string, string>() : new Dictionary<string, string>(existing.entries);
+                var description = Settings.RuntimeUiText.Format(locale.Id, "BridgeAssetDescription");
+                var tags = new[] { "", "_Lower", "_Upper" }.Select(s => entry.PrefabName + s)
+                    .Concat(prefabs.Select(p => p!.uiTag)).Distinct();
+                foreach (var tag in tags)
+                {
+                    var nameKey = "Assets.NAME[" + tag + "]";
+                    var descriptionKey = "Assets.DESCRIPTION[" + tag + "]";
+                    if (!missingOnly || (!entries.TryGetValue(nameKey, out var label) || string.IsNullOrWhiteSpace(label))) entries[nameKey] = entry.DisplayName;
+                    if (!missingOnly || !entries.TryGetValue(descriptionKey, out var text) || string.IsNullOrWhiteSpace(text))
+                        entries[descriptionKey] = description;
+                }
+                if (existing != null && entries.Count == existing.entries.Count
+                    && entries.All(p => existing.entries.TryGetValue(p.Key, out var value) && value == p.Value)) continue;
+                asset ??= AssetDatabase.user.AddAsset<LocaleAsset>(AssetDataPath.Create("ImportedData/" + entry.PrefabName, name));
+                asset.SetData(new LocaleData(locale.Id, entries, existing == null
+                    ? new Dictionary<string, int>() : new Dictionary<string, int>(existing.indexCounts)), locale.Language, locale.Name);
                 asset.Save(true);
+                changed = true;
                 // Native asset change notifications register this source; startup discovers it globally.
             }
             return true;

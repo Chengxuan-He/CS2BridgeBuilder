@@ -62,10 +62,9 @@ public partial class BridgeGenerationSystem
             Mod.Log.Info("Bridge deletion replaced retained NetTool selection with: " + replacement.name);
         }
         // Placed instances have finished native cleanup before unregistering their prefabs.
-        var audit = BridgeDiskAudit.ForMemoryFailures(UnityEngine.Application.persistentDataPath,
-            new Dictionary<string, string> { [exportName] = "User requested removal" });
+        var audit = BridgeDiskAudit.ForAllBridges(UnityEngine.Application.persistentDataPath);
         if (!audit.Complete) { report.Warning(audit.Error); return removed; }
-        if (!audit.RetireFiles(new HashSet<string> { exportName }, BridgeRecoveryLocation.Path, out var moveError))
+        if (!audit.DeleteFiles(new HashSet<string> { exportName }, out var moveError))
         { report.Warning(moveError); return removed; }
         BridgeStartupRecovery.Retired.Add(exportName);
         foreach (var root in roots) HideRemovedBridge(root);

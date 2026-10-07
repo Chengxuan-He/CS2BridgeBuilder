@@ -33,11 +33,34 @@ foreach (var asset in assets.OrderBy(a => a.Data.localeId))
     var count = input.ReadInt32();
     for (var i = 0; i < count; i++)
     {
-        Check(input.ReadString().StartsWith("Assets.NAME[" + id), "Name entry lost its UUID");
-        Check(input.ReadString() == "Renamed bridge", "Rename was not persisted");
+        var key = input.ReadString();
+        var value = input.ReadString();
+        Check(key.Contains(id), "Entry lost its UUID");
+        Check(value == (key.StartsWith("Assets.NAME[") ? "Renamed bridge"
+            : BridgeBuilder.Settings.RuntimeUiText.Format(locale, "BridgeAssetDescription")), "Native text not persisted");
     }
 }
 Check(languages.Count == 12, "Native language collisions");
+var writes = assets.Sum(a => a.Saves);
+Check(BridgeNativePresentation.EnsureDescriptions(new(id, "Do not rename"), out var changed, out error) && !changed, error);
+Check(assets.Sum(a => a.Saves) == writes, "Complete descriptions were rewritten");
+var first = assets[0];
+first.Data.entries.Remove("Assets.DESCRIPTION[" + id + "]");
+first.Data.entries["Assets.DESCRIPTION[" + id + "_Lower]"] = " ";
+first.Data.entries["Unrelated.Entry"] = "preserved";
+first.Data.indexCounts["Unrelated.Count"] = 7;
+Check(BridgeNativePresentation.EnsureDescriptions(new(id, "Do not rename"), out changed, out error) && changed, error);
+Check(assets.Sum(a => a.Saves) == writes + 1, "Repair must save only the incomplete locale");
+Check(first.Data.entries["Assets.NAME[" + id + "]"] == "Renamed bridge"
+    && first.Data.entries["Unrelated.Entry"] == "preserved" && first.Data.indexCounts["Unrelated.Count"] == 7,
+    "Description repair changed existing names or other entries");
+Check(!string.IsNullOrWhiteSpace(first.Data.entries["Assets.DESCRIPTION[" + id + "_Lower]"]), "Blank description not repaired");
+Check(BridgeNativePresentation.EnsureDescriptions(new(id, "Do not rename"), out changed, out error) && !changed, "Repair is not idempotent");
+
+first.Data.entries["Assets.NAME[" + id + "]"] = " ";
+Check(BridgeNativePresentation.EnsureDescriptions(new(id, "Recovered name"), out changed, out error) && changed, error);
+Check(first.Data.entries["Assets.NAME[" + id + "]"] == "Recovered name", "Blank name not filled");
+Check(BridgeNativePresentation.EnsureDescriptions(new(id, "Do not rename"), out changed, out error) && !changed, "Name completion not idempotent");
 
 // Missing native metadata must fail before creating or saving even the first file.
 var bytes = assets.Select(a => Convert.ToHexString(a.Bytes)).ToArray();

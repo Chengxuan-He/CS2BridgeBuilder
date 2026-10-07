@@ -83,6 +83,29 @@ internal sealed class BridgeDiskAudit
         return candidate;
     }
 
+    // Explicit user deletion only. Self-check continues using RetireFiles and its backups.
+    internal bool DeleteFiles(ISet<string> owners, out string error)
+    {
+        error = "";
+        if (!Complete) { error = Error; return false; }
+        var errors = new List<string>();
+        foreach (var pair in FileOwners.Where(p => owners.Contains(p.Value)))
+        {
+            var path = Path.GetFullPath(pair.Key);
+            try
+            {
+                if ((!Below(path, _imported) && !Below(path, _geometry)) || !SafeParents(path))
+                { errors.Add("Unsafe deletion path: " + path); continue; }
+                if (Directory.Exists(BridgeFileAccess.Native(path))) Directory.Delete(BridgeFileAccess.Native(path), true);
+                else File.Delete(BridgeFileAccess.Native(path));
+                if (BridgeFileAccess.Exists(path)) errors.Add("File remains: " + path);
+            }
+            catch (Exception exception) { errors.Add(path + ": " + exception.Message); }
+        }
+        error = string.Join("; ", errors);
+        return errors.Count == 0;
+    }
+
     internal bool RetireFiles(ISet<string> owners, string backup, out string error)
     {
         error = "";

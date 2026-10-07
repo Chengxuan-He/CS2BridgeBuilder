@@ -1,4 +1,5 @@
 // Narrow game/disk adapters. The lifecycle under test is the actual production system.
+namespace BridgeBuilder.Runtime { internal static class BridgeAssetPack { internal static object Ensure(Game.Prefabs.PrefabSystem system) => new(); } }
 namespace Colossal.Serialization.Entities { public enum Purpose { Cleanup } }
 namespace Game
 {
@@ -91,7 +92,7 @@ namespace BridgeBuilder
         public static void ShowMessage(string title, string message) => Messages.Add(message);
         public static void ShowRecoveryMessage(string message) => Messages.Add(message);
     }
-    public class Logger { public void Info(string s) { } public void Warn(string s) { } public void Warn(Exception e, string s) { } public void Critical(string s) { } }
+    public class Logger { public void Info(string s) { } public void Warn(string s) { } public void Warn(Exception e, string s) { } public void Error(string s) { } }
 }
 namespace BridgeBuilder.Settings
 {

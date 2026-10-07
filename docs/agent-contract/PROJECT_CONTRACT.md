@@ -1166,6 +1166,47 @@ content evidence or concurrent-change snapshots.
 
 ## 19. Independent native persistence and additive legacy conversion
 
+### Explicit bulk deletion (2026-10-07)
+
+Baseline `dev` / `3223c89f9573c6d6515a9fb1c1b078576e8eb723`;
+rollback reference `refs/rollback/manual-bulk-delete-20261007`.
+The confirmed settings action to remove all bridges must run the same sequential deletion pipeline
+as individually deleting every Bridge Builder bridge. It is available in a ready main menu or loaded
+city. Permanently delete UUID-owned files, not move them. In a city remove placed bridge networks and
+wait for native entity cleanup before deleting files and unregistering the owned prefabs, including
+clearing tool/menu references. Keep the dangerous-operation confirmation, with localized
+"Continue removal" action and text describing permanent deletion and effects on other saves.
+Self-check retirement is separate: it still backs up/moves files and requires restart, without live
+prefab unregistration. Never execute either deletion during agent deployment for this task.
+
+### Migration failure falls back to removal (2026-10-07)
+
+Baseline: `dev`, `3223c89f9573c6d6515a9fb1c1b078576e8eb723`;
+rollback reference `refs/rollback/migration-failure-removal-20261007`.
+This supersedes all earlier instructions to retain a bridge after migration failure, including
+the field-by-field migration paragraph below. After an unsuccessful dependency, native conversion,
+legacy naming or layout migration, roll back that phase's incomplete changes and retire the affected
+bridge using UUID-string ownership and recursive backup/move. Process naming and layout per owner
+so a failure does not remove unrelated successful bridges. Do not unregister live prefabs; require
+restart. A successful fallback is removal, not migration success or incomplete retention. Actual
+backup/removal failures remain explicit failures; never claim files were removed when they remain.
+
+### Field-by-field migration (2026-10-07)
+
+Rollback baseline: `dev`, `3223c89f9573c6d6515a9fb1c1b078576e8eb723`;
+reference `refs/rollback/fieldwise-migration-20261007`. Preserve existing local edits.
+
+版本迁移需要逐个补全缺失字段。因为旧版桥梁可能来自不同版本，缺失的字段会各不相同。
+补全后的桥梁与新版本生成的桥梁在文件结构上一致，包括命名规则也需要一致。
+
+Inspect each persisted field/component independently on the root and its owned networks. A version
+marker or one complete root must not skip checks of other fields, auxiliary networks, locales,
+dependencies, names or layout. Preserve valid values, native unlock semantics, UUID/CID and geometry;
+write only assets needing an upgrade. Unknown optional historical values remain empty rather than
+invented; missing required information must produce an explicit migration failure retaining originals.
+Use the same native persistence helpers and naming/layout rules as generation. Repeated migration
+must make no changes after successful completion; report it as migration and require restart.
+
 User revision 2026-10-07; rollback baseline `dev`,
 `3289fc947637f88a9124c524bd1235029be802d1`. Preserve existing local edits and bridge assets.
 

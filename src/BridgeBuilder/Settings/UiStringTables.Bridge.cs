@@ -91,7 +91,7 @@ internal static partial class UiStringTables
 
     private static UiStrings SimplifiedChinese(UiStrings text)
     {
-        text.Title = "桥梁建造器";
+        text.Title = "桥梁建造者";
         text.TabBridge = "桥梁";
         text.GroupDeck = "上层";
         text.GroupStyle = "样式";
@@ -152,7 +152,7 @@ internal static partial class UiStringTables
 
     private static UiStrings TraditionalChinese(UiStrings text)
     {
-        text.Title = "橋樑建造器";
+        text.Title = "橋梁建造者";
         text.TabBridge = "橋樑";
         text.GroupDeck = "上層";
         text.GroupStyle = "樣式";

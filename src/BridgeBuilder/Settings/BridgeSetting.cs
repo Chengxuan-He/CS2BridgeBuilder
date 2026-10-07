@@ -25,10 +25,15 @@ namespace BridgeBuilder.Settings;
 /// </summary>
 [FileLocation("ModsSettings/BridgeBuilder/BridgeBuilder")]
 [SettingsUITabOrder(OptionsTab)]
+[SettingsUIGroupOrder(GeneralGroup, RecoveryGroup, DangerGroup)]
+[SettingsUIShowGroupName(GeneralGroup, RecoveryGroup, DangerGroup)]
 public sealed class BridgeSetting : ModSetting
 {
     internal const string BridgeTab = "Bridge";
     internal const string OptionsTab = "Options";
+    internal const string GeneralGroup = "General";
+    internal const string RecoveryGroup = "Recovery";
+    internal const string DangerGroup = "Danger";
 
     internal const string StatusGroup = "Status";
     internal const string DeckGroup = "Deck";
@@ -48,16 +53,16 @@ public sealed class BridgeSetting : ModSetting
     {
     }
 
-    [SettingsUISection(OptionsTab)]
+    [SettingsUISection(OptionsTab, GeneralGroup)]
     [SettingsUIKeyboardBinding(BindingKeyboard.B, ctrl: true)]
     public ProxyBinding TogglePanel { get; set; }
 
-    [SettingsUISection(OptionsTab)]
+    [SettingsUISection(OptionsTab, GeneralGroup)]
     public bool RemoveDevelopmentRestrictions { get; set; }
 
     private string? _recoveryCopyLocation;
 
-    [SettingsUISection(OptionsTab)]
+    [SettingsUISection(OptionsTab, RecoveryGroup)]
     [SettingsUIDirectoryPicker]
     public string RecoveryCopyLocation
     {
@@ -71,14 +76,14 @@ public sealed class BridgeSetting : ModSetting
         }
     }
 
-    [SettingsUISection(OptionsTab)]
+    [SettingsUISection(OptionsTab, RecoveryGroup)]
     [SettingsUIButton]
     public bool OpenRecoveryCopies
     {
         set => BridgeRecoveryLocation.Open();
     }
 
-    [SettingsUISection(OptionsTab)]
+    [SettingsUISection(OptionsTab, RecoveryGroup)]
     [SettingsUIButton]
     [SettingsUIDisableByCondition(typeof(BridgeSetting), nameof(SelfCheckUnavailable))]
     public bool BridgeSelfCheck
@@ -89,7 +94,7 @@ public sealed class BridgeSetting : ModSetting
 
     public bool SelfCheckUnavailable() => !BridgeBuilder.Systems.BridgeStartupAssetSystem.CanCheck;
 
-    [SettingsUISection(OptionsTab)]
+    [SettingsUISection(OptionsTab, DangerGroup)]
     [SettingsUIButton]
     [SettingsUIDisableByCondition(typeof(BridgeSetting), nameof(RemoveAllBridgesUnavailable))]
     public bool RemoveAllBridges

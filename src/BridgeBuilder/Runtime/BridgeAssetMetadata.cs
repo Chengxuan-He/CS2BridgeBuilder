@@ -22,8 +22,10 @@ internal static class BridgeAssetMetadata
         {
             var v = Encoding.UTF8.GetString(Convert.FromBase64String(value.Substring(Prefix.Length))).Split('\n')
                 .Select(x => Encoding.UTF8.GetString(Convert.FromBase64String(x))).ToArray();
-            if (v.Length != 7 || !BridgeAssetInfo.IsPrefabName(v[0])) return false;
-            entry = new BridgeAssetInfo(v[0], v[1], v[2], v[3], v[4], v[5], v[6] == "1"); return true;
+            if (v.Length < 1 || v.Length > 7 || !BridgeAssetInfo.IsPrefabName(v[0])) return false;
+            string Get(int index) => index < v.Length ? v[index] : "";
+            entry = new BridgeAssetInfo(v[0], string.IsNullOrWhiteSpace(Get(1)) ? v[0] : Get(1),
+                Get(2), Get(3), Get(4), Get(5), Get(6) == "1"); return true;
         }
         catch (Exception) { return false; }
     }

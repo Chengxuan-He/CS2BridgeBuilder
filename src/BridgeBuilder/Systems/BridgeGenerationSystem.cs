@@ -379,11 +379,11 @@ public partial class BridgeGenerationSystem : GameSystemBase
         }
         catch (Exception exception)
         {
-            Mod.Log.Critical(exception, $"{operation}: could not save operation state or diagnostics.");
+            Mod.Log.Error(exception, $"{operation}: could not save operation state or diagnostics.");
         }
 
         if (report.FailedRoads != 0 || report.FailureDetails.Length != 0)
-            Mod.Log.Critical($"{operation} failed. {report.FailureDetails}\nSee ModsData/BridgeBuilder/last-export-report.txt.");
+            Mod.Log.Error($"{operation} failed. {report.FailureDetails}\nSee ModsData/BridgeBuilder/last-export-report.txt.");
 
         ModHost.Log.Info(
             $"{operation}: {report.ExportedRoads} exported, {report.RemovedRoads} removed, "

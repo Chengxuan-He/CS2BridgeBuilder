@@ -2,6 +2,13 @@
 
 ## First rule: fix reported bugs immediately
 
+Migration-failure policy (2026-10-07): dependency, native conversion, legacy naming and layout
+migration failures must fall back to UUID-scoped recursive backup/removal after phase rollback.
+This supersedes the retain-on-conversion-failure instructions below. Never unregister live prefabs
+during self-check; require restart. Report actual removal failures explicitly. Contract section 19
+records baseline `dev` / `3223c89f9573c6d6515a9fb1c1b078576e8eb723` and rollback reference
+`refs/rollback/migration-failure-removal-20261007`.
+
 Native-pricing revision (user request 2026-10-07): use the game's native pricing exclusively.
 Preserve source roads' and bridge prototypes' PlaceableNetPiece/PlaceableObject construction,
 elevation and upkeep fees. Let the game select composition pieces and charge network length,

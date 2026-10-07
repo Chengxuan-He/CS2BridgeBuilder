@@ -74,9 +74,9 @@ p = Fresh(); Colossal.IO.AssetDatabase.AssetDatabase.user.Assets[0].Instance = n
 p.ScheduleInspectionAfterLoad(); Menu(p);
 Check(BridgeStartupRecovery.Retired.Contains("bridge"), "Explicit file damage covers missing cached object");
 p = Fresh(); BridgeAssetMigration.Fail = true; p.ScheduleInspectionAfterLoad(); Menu(p);
-Check(BridgeStartupRecovery.Retired.Count == 0 && BridgeDiskAudit.Calls == 0 && BridgeAssetMigration.Calls == 1
-    && BridgeBuilder.Mod.Messages.Single() == "BridgeSelfCheckMigrationIncomplete",
-    "Healthy registered bridge with dependency persistence failure is retained for migration, never retired");
+Check(BridgeStartupRecovery.Retired.Count == 1 && BridgeDiskAudit.Calls == 1 && BridgeAssetMigration.Calls == 1
+    && BridgeBuilder.Mod.Messages.Single() == "BridgeSelfCheckRemoved",
+    "Dependency migration failure falls back to removal");
 p = Fresh(); p.ScheduleInspectionAfterLoad(); Menu(p);
 Check(BridgeAssetMigration.Calls == 1 && BridgeDiskAudit.Calls == 0, "Healthy bridge migrates without disk integrity audit");
 p = Fresh(); Colossal.IO.AssetDatabase.AssetDatabase.user.Assets[0].path = Path.GetFullPath("unused/elsewhere/bridge/bridge.Prefab");
@@ -113,16 +113,16 @@ Check(BridgeBuilder.Mod.Messages.Single() == "BridgeSelfCheckMigrated", "Legacy 
 p.RequestManualCheck(); p.Tick();
 Check(BridgeAssetMigration.Calls == 1, "Renamed bridge skips stale in-memory asset index until restart");
 p = Fresh(); BridgeLegacyNames.Fail = true; p.ScheduleInspectionAfterLoad(); Menu(p);
-Check(BridgeBuilder.Mod.Messages.Single() == "BridgeSelfCheckMigrationIncomplete" && BridgeStartupRecovery.Retired.Count == 0,
-    "Rename IO failure reports incomplete without removing healthy bridge");
+Check(BridgeBuilder.Mod.Messages.Single() == "BridgeSelfCheckRemoved" && BridgeStartupRecovery.Retired.Count == 1,
+    "Rename failure falls back to removal");
 p = Fresh(); BridgePortableMigration.Changed = true; p.ScheduleInspectionAfterLoad(); Menu(p);
 Check(BridgeBuilder.Mod.Messages.Single() == "BridgeSelfCheckMigrated" && BridgeStartupRecovery.Retired.Count == 0,
     "Additive native conversion requests restart without removing bridge");
 p.RequestManualCheck(); p.Tick();
 Check(BridgeAssetMigration.Calls == 1, "Converted bridge skips stale cached objects until restart");
 p = Fresh(); BridgePortableMigration.Fail = true; p.ScheduleInspectionAfterLoad(); Menu(p);
-Check(BridgeBuilder.Mod.Messages.Single() == "BridgeSelfCheckMigrationIncomplete" && BridgeStartupRecovery.Retired.Count == 0,
-    "Conversion failure alone never authorizes bridge deletion");
+Check(BridgeBuilder.Mod.Messages.Single() == "BridgeSelfCheckRemoved" && BridgeStartupRecovery.Retired.Count == 1,
+    "Conversion failure falls back to removal");
 p = Fresh(); BridgePortableMigration.Changed = true; BridgeAssetLayout.Changed = true;
 p.ScheduleInspectionAfterLoad(); Menu(p);
 Check(BridgeAssetLayout.Owners == 1 && BridgeBuilder.Mod.Messages.Single() == "BridgeSelfCheckMigrated",
@@ -133,17 +133,22 @@ Check(BridgeAssetLayout.Owners == 1 && BridgeBuilder.Mod.Messages.Single() == "B
 p.RequestManualCheck(); p.Tick();
 Check(BridgeAssetLayout.Owners == 1 && BridgeAssetMigration.Calls == 1, "Moved files never reenter stale asset streams");
 p = Fresh(); BridgeAssetLayout.Fail = true; p.ScheduleInspectionAfterLoad(); Menu(p);
-Check(BridgeBuilder.Mod.Messages.Single() == "BridgeSelfCheckMigrationIncomplete" && BridgeStartupRecovery.Retired.Count == 0,
-    "Layout failure is migration failure and cannot retire healthy bridge");
+Check(BridgeBuilder.Mod.Messages.Single() == "BridgeSelfCheckRemoved" && BridgeStartupRecovery.Retired.Count == 1,
+    "Layout failure falls back to removal");
 p = Fresh(); BridgePortableMigration.Changed = true; BridgeAssetLayout.Fail = true;
 p.ScheduleInspectionAfterLoad(); Menu(p);
-Check(BridgeBuilder.Mod.Messages.Single() == "BridgeSelfCheckMigrationIncomplete", "Partial conversion cannot claim completed layout migration");
+Check(BridgeBuilder.Mod.Messages.Single() == "BridgeSelfCheckRemoved", "Partial conversion falls back to removal");
 p.RequestManualCheck(); p.Tick();
-Check(BridgeBuilder.Mod.Messages.Last() == "BridgeSelfCheckMigrationIncomplete", "Partial migration warning persists while cached files await restart");
+Check(BridgeBuilder.Mod.Messages.Last() == "BridgeSelfCheckRemoved", "Removal warning persists until restart");
 p = Fresh(); BridgeNetworkValidation.Invalid = true; BridgeLoadedCidRecovery.Outcome = BridgeLoadedCidRecovery.Result.Recoverable;
 BridgeAssetLayout.Changed = true; p.ScheduleInspectionAfterLoad(); Menu(p);
 Check(BridgeAssetLayout.Owners == 1 && BridgeBuilder.Mod.Messages.Single() == "BridgeSelfCheckMigrated",
     "Dependency supplementation and layout are both migration, not damage repair");
+p = Fresh(); BridgePortableMigration.Fail = true; BridgeDiskAudit.Incomplete = true;
+p.ScheduleInspectionAfterLoad(); Menu(p);
+Check(BridgeStartupRecovery.Retired.Count == 0
+    && BridgeBuilder.Mod.Messages.Single().Contains("BridgeSelfCheckIncomplete"),
+    "Failed removal is not reported as retired");
 Console.WriteLine("PASS memory lifecycle, native conversion, repair-or-remove, both load orders and idempotence");
 class Probe : BridgeStartupAssetSystem
 {

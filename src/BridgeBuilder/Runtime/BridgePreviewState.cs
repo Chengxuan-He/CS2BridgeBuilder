@@ -61,7 +61,7 @@ internal static class BridgePreviewState
         if (revision != Revision || Selection == null) return;
         if (statusKey.Length != 0 && statusKey is not ("PreviewReady" or "PreviewBuilding" or "PreviewDisplaying")
             && (statusKey != _statusKey || image != Image))
-            Mod.Log.Critical($"Bridge preview panel error: stage='{statusKey}'; selection='{Key}'. {RuntimeUiText.Get(statusKey)}");
+            Mod.Log.Error($"Bridge preview panel error: stage='{statusKey}'; selection='{Key}'. {RuntimeUiText.Get(statusKey)}");
         Image = image;
         _statusKey = statusKey;
         ResultRevision++;

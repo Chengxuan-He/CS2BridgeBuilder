@@ -6,8 +6,8 @@ internal static partial class UiStringTables
     {
         var labels = locale switch
         {
-            "zh-HANS" => ("快捷键", "打开或关闭桥梁建造器。", "移除发展点数限制", "允许建造本模组生成的所有桥梁，不再提示桥梁未解锁。取消勾选后恢复原型桥梁的解锁条件。"),
-            "zh-HANT" => ("快捷鍵", "開啟或關閉橋梁建造器。", "移除發展點數限制", "允許建造本模組產生的所有橋梁，不再提示橋梁未解鎖。取消勾選後恢復原型橋梁的解鎖條件。"),
+            "zh-HANS" => ("快捷键", "打开或关闭桥梁建造者。", "移除发展点数限制", "允许建造本模组生成的所有桥梁，不再提示桥梁未解锁。取消勾选后恢复原型桥梁的解锁条件。"),
+            "zh-HANT" => ("快捷鍵", "開啟或關閉橋梁建造者。", "移除發展點數限制", "允許建造本模組產生的所有橋梁，不再提示橋梁未解鎖。取消勾選後恢復原型橋梁的解鎖條件。"),
             "de-DE" => ("Tastenkürzel", "Bridge Builder öffnen oder schließen.", "Entwicklungspunkte-Beschränkungen aufheben", "Alle mit diesem Mod erstellten Brücken ohne Freischaltwarnung bauen. Deaktivieren stellt die Freischaltbedingungen des Vorbilds wieder her."),
             "es-ES" => ("Atajo de teclado", "Abrir o cerrar Bridge Builder.", "Eliminar restricciones de puntos de desarrollo", "Construye todos los puentes creados por este mod sin avisos de bloqueo. Al desactivar, se restauran los requisitos del puente original."),
             "fr-FR" => ("Raccourci clavier", "Ouvrir ou fermer Bridge Builder.", "Supprimer les restrictions de points de développement", "Construire tous les ponts créés par ce mod sans avertissement de verrouillage. Désactiver rétablit les conditions du pont d’origine."),

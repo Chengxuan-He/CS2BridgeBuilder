@@ -130,23 +130,6 @@ internal static class BridgeUnlockMigration
         catch (Exception exception) { error = "Access/migration incomplete (assets retained): " + exception.Message; return false; }
     }
 
-    internal static bool ReplaceGate(string path, string previous, string next, out string error)
-    {
-        error = string.Empty;
-        try
-        {
-            if (!BridgeAssetInfo.TryFileOwner(path, out _)) return false;
-            if (!BridgeUnlockExpression.TryDecode(previous, out _) || !BridgeUnlockExpression.TryDecode(next, out _)) return false;
-            var before = BridgeFileAccess.ReadText(path);
-            var marker = "\"" + previous + "\"";
-            if (before.IndexOf(marker, StringComparison.Ordinal) < 0
-                || before.IndexOf(marker, StringComparison.Ordinal) != before.LastIndexOf(marker, StringComparison.Ordinal))
-            { error = "Gate changed or ambiguous; file retained"; return false; }
-            return Commit(path, before, before.Replace(marker, "\"" + next + "\""), out error);
-        }
-        catch (Exception exception) { error = exception.Message; return false; }
-    }
-
     private static bool Commit(string path, string before, string after, out string error)
     {
         error = string.Empty;

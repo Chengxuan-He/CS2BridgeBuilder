@@ -16,6 +16,56 @@ internal static class RuntimeUiText
 
     private static readonly Dictionary<string, string[]> Entries = new(StringComparer.Ordinal)
     {
+        ["SettingsGeneral"] = new[]
+        {
+            "General", "常规", "一般", "Allgemein", "General", "Général",
+            "Generale", "一般", "일반", "Ogólne", "Geral", "Общие"
+        },
+        ["SettingsRecovery"] = new[]
+        {
+            "Backups and self-check", "备份与自检", "備份與自我檢查", "Sicherungen und Selbstprüfung", "Copias de seguridad y autocomprobación", "Sauvegardes et autodiagnostic",
+            "Backup e autodiagnosi", "バックアップと自己診断", "백업 및 자체 점검", "Kopie zapasowe i autodiagnostyka", "Backups e autoverificação", "Резервные копии и самопроверка"
+        },
+        ["SettingsDanger"] = new[]
+        {
+            "Dangerous operations", "危险操作", "危險操作", "Gefährliche Aktionen", "Operaciones peligrosas", "Opérations dangereuses",
+            "Operazioni pericolose", "危険な操作", "위험한 작업", "Niebezpieczne operacje", "Operações perigosas", "Опасные операции"
+        },
+        ["BridgeAssetDescription"] = new[]
+        {
+            "This bridge was created with Bridge Builder. Please use the Bridge Builder mod to manage this asset.",
+            "本桥梁由 Bridge Builder 生成。请通过 Bridge Builder 模组管理此资产。",
+            "本橋梁由 Bridge Builder 產生。請透過 Bridge Builder 模組管理此資產。",
+            "Diese Brücke wurde mit Bridge Builder erstellt. Bitte verwenden Sie die Mod Bridge Builder zur Verwaltung dieses Objekts.",
+            "Este puente se ha creado con Bridge Builder. Utilice el mod Bridge Builder para gestionar este recurso.",
+            "Ce pont a été créé avec Bridge Builder. Veuillez utiliser le mod Bridge Builder pour gérer cet élément.",
+            "Questo ponte è stato creato con Bridge Builder. Utilizzare la mod Bridge Builder per gestire questa risorsa.",
+            "この橋は Bridge Builder で作成されました。このアセットの管理には Bridge Builder MOD をご利用ください。",
+            "이 교량은 Bridge Builder로 생성되었습니다. 이 에셋을 관리하려면 Bridge Builder 모드를 사용해 주십시오.",
+            "Ten most został utworzony za pomocą Bridge Builder. Do zarządzania tym zasobem proszę używać modyfikacji Bridge Builder.",
+            "Esta ponte foi criada com o Bridge Builder. Utilize o mod Bridge Builder para gerenciar este recurso.",
+            "Этот мост создан с помощью Bridge Builder. Для управления этим объектом используйте мод Bridge Builder."
+        },
+        ["ContinueRemoval"] = new[]
+        {
+            "Continue removal",
+            "继续移除",
+            "繼續移除",
+            "Entfernung fortsetzen",
+            "Continuar eliminación",
+            "Poursuivre la suppression",
+            "Continua la rimozione",
+            "削除を続行",
+            "제거 계속",
+            "Kontynuuj usuwanie",
+            "Continuar remoção",
+            "Продолжить удаление"
+        },
+        ["Warning"] = new[]
+        {
+            "Warning", "警告", "警告", "Warnung", "Advertencia", "Avertissement",
+            "Avvertenza", "警告", "경고", "Ostrzeżenie", "Aviso", "Предупреждение"
+        },
         ["RemoveAllBridgesLabel"] = new[]
         {
             "Remove all Bridge Builder bridges", "移除所有 Bridge Builder 桥梁", "移除所有 Bridge Builder 橋梁",
@@ -25,48 +75,48 @@ internal static class RuntimeUiText
         },
         ["RemoveAllBridgesDescription"] = new[]
         {
-            "Dangerous operation. Requires confirmation and affects all saves using these bridges. Available only in the main menu after assets finish loading. Restart afterwards.",
-            "危险操作，需要弹窗确认，会影响所有使用这些桥梁的存档。仅在主菜单且资产加载完成后可用。操作后必须重启游戏。",
-            "危險操作，需要彈窗確認，會影響所有使用這些橋梁的存檔。僅在主選單且資產載入完成後可用。操作後必須重新啟動遊戲。",
-            "Gefährlicher Vorgang mit Bestätigung. Betrifft alle Spielstände mit diesen Brücken. Nur im Hauptmenü nach dem Laden aller Assets verfügbar. Danach neu starten.",
-            "Operación peligrosa que requiere confirmación y afecta a todas las partidas con estos puentes. Solo en el menú principal tras cargar los recursos. Reinicia después.",
-            "Opération dangereuse avec confirmation, affectant toutes les sauvegardes utilisant ces ponts. Disponible au menu principal après le chargement des ressources. Redémarrage requis.",
-            "Operazione pericolosa con conferma, che interessa tutti i salvataggi con questi ponti. Disponibile nel menu principale dopo il caricamento delle risorse. Riavvio necessario.",
-            "確認が必要な危険な操作です。これらの橋を使うすべてのセーブに影響します。アセット読み込み完了後のメインメニューでのみ実行できます。実行後は再起動が必要です。",
-            "확인이 필요한 위험한 작업이며 해당 교량을 사용하는 모든 저장 파일에 영향을 줍니다. 에셋 로딩 완료 후 메인 메뉴에서만 사용할 수 있습니다. 이후 게임을 다시 시작해야 합니다.",
-            "Niebezpieczna operacja wymagająca potwierdzenia, dotycząca wszystkich zapisów z tymi mostami. Dostępna w menu głównym po wczytaniu zasobów. Wymaga ponownego uruchomienia gry.",
-            "Operação perigosa que exige confirmação e afeta todos os jogos salvos com essas pontes. Disponível no menu principal após carregar os recursos. Reinicie depois.",
-            "Опасная операция с подтверждением. Затрагивает все сохранения с этими мостами. Доступна в главном меню после загрузки ресурсов. Затем перезапустите игру."
+            "Permanently delete all local Bridge Builder bridges. Removes their networks from the current city and affects other saves using these assets. Confirmation required.",
+            "永久删除本地所有 Bridge Builder 桥梁。会移除当前城市中的相关路网，并影响使用这些资产的其他存档。需要确认。",
+            "永久刪除本機所有 Bridge Builder 橋梁。會移除目前城市中的相關路網，並影響使用這些資產的其他存檔。需要確認。",
+            "Alle lokalen Bridge-Builder-Brücken dauerhaft löschen. Entfernt ihre Netze aus der aktuellen Stadt und betrifft andere Spielstände mit diesen Assets. Bestätigung erforderlich.",
+            "Elimina permanentemente todos los puentes locales de Bridge Builder, sus redes de la ciudad actual y afecta a otras partidas que usen estos recursos. Requiere confirmación.",
+            "Supprime définitivement tous les ponts Bridge Builder locaux et leurs réseaux dans la ville actuelle. Affecte les autres sauvegardes utilisant ces ressources. Confirmation requise.",
+            "Elimina definitivamente tutti i ponti locali di Bridge Builder e le relative reti nella città attuale. Interessa anche gli altri salvataggi che usano queste risorse. Richiede conferma.",
+            "ローカルの Bridge Builder の橋をすべて完全に削除します。現在の都市の関連ネットワークを撤去し、同じアセットを使う他のセーブにも影響します。確認が必要です。",
+            "로컬 Bridge Builder 교량을 모두 영구 삭제합니다. 현재 도시의 관련 도로망을 제거하며 같은 에셋을 사용하는 다른 저장 파일에도 영향을 줍니다. 확인이 필요합니다.",
+            "Trwale usuwa wszystkie lokalne mosty Bridge Builder i ich sieci z bieżącego miasta. Wpływa też na inne zapisy używające tych zasobów. Wymaga potwierdzenia.",
+            "Exclui permanentemente todas as pontes locais do Bridge Builder e suas redes da cidade atual. Afeta outros jogos salvos que usam esses recursos. Exige confirmação.",
+            "Безвозвратно удаляет все локальные мосты Bridge Builder и их сети из текущего города. Затрагивает другие сохранения с этими объектами. Требуется подтверждение."
         },
         ["RemoveAllBridgesConfirm"] = new[]
         {
-            "WARNING: Remove every locally saved Bridge Builder bridge? This affects ALL saves using these bridges; those saves will be missing the bridges after restart. Bridge asset folders, components and dependency copies will be moved to the backup directory. You must restart the game immediately afterwards. Continue?",
-            "警告：确定移除本地保存的所有 Bridge Builder 桥梁吗？这会影响所有使用这些桥梁的存档，重启后这些存档将缺失相应桥梁。桥梁资产目录、构件和依赖副本将移至备份目录。完成后必须立即重启游戏。是否继续？",
-            "警告：確定移除本機儲存的所有 Bridge Builder 橋梁嗎？這會影響所有使用這些橋梁的存檔，重新啟動後這些存檔將缺少相應橋梁。橋梁資產目錄、構件和依賴副本將移至備份目錄。完成後必須立即重新啟動遊戲。是否繼續？",
-            "WARNUNG: Alle lokal gespeicherten Bridge-Builder-Brücken entfernen? Dies betrifft ALLE Spielstände mit diesen Brücken; nach dem Neustart fehlen sie dort. Brückenordner, Bauteile und Abhängigkeitskopien werden in den Sicherungsordner verschoben. Starte das Spiel danach sofort neu. Fortfahren?",
-            "ADVERTENCIA: ¿Eliminar todos los puentes de Bridge Builder guardados localmente? Afectará a TODAS las partidas que los usan; faltarán esos puentes tras reiniciar. Las carpetas, componentes y copias de dependencias se moverán a la carpeta de respaldo. Debes reiniciar el juego inmediatamente después. ¿Continuar?",
-            "ATTENTION : supprimer tous les ponts Bridge Builder enregistrés localement ? TOUTES les sauvegardes qui les utilisent seront affectées : ces ponts manqueront après le redémarrage. Les dossiers, composants et copies des dépendances seront déplacés vers le dossier de sauvegarde des ressources. Redémarrez immédiatement le jeu ensuite. Continuer ?",
-            "ATTENZIONE: rimuovere tutti i ponti di Bridge Builder salvati localmente? Interessa TUTTI i salvataggi che li usano: dopo il riavvio questi ponti mancheranno. Cartelle, componenti e copie delle dipendenze verranno spostati nella cartella di backup. Riavvia subito il gioco al termine. Continuare?",
-            "警告：ローカルに保存された Bridge Builder の橋をすべて削除しますか？これらの橋を使うすべてのセーブに影響し、再起動後は該当する橋が失われます。橋のアセットフォルダー、構成部品、依存アセットのコピーをバックアップ先に移動します。完了後は直ちにゲームを再起動してください。続行しますか？",
-            "경고: 로컬에 저장된 Bridge Builder 교량을 모두 제거할까요? 해당 교량을 사용하는 모든 저장 파일에 영향을 주며, 재시작 후 해당 교량이 누락됩니다. 교량 에셋 폴더, 구성 요소 및 의존성 사본을 백업 폴더로 이동합니다. 완료 후 즉시 게임을 다시 시작해야 합니다. 계속할까요?",
-            "OSTRZEŻENIE: usunąć wszystkie lokalnie zapisane mosty Bridge Builder? Dotyczy to WSZYSTKICH zapisów korzystających z tych mostów; po ponownym uruchomieniu mostów będzie w nich brakować. Foldery, elementy i kopie zależności zostaną przeniesione do katalogu kopii zapasowych. Następnie natychmiast uruchom grę ponownie. Kontynuować?",
-            "AVISO: remover todas as pontes do Bridge Builder salvas localmente? Isso afeta TODOS os jogos salvos que as usam; essas pontes estarão ausentes após reiniciar. Pastas, componentes e cópias de dependências serão movidos para o diretório de backup. Reinicie o jogo imediatamente depois. Continuar?",
-            "ВНИМАНИЕ: удалить все локально сохранённые мосты Bridge Builder? Это затронет ВСЕ сохранения, использующие эти мосты: после перезапуска мосты в них будут отсутствовать. Папки ресурсов, компоненты и копии зависимостей будут перемещены в папку резервных копий. Затем немедленно перезапустите игру. Продолжить?"
+            "Permanently delete all Bridge Builder bridges? All bridges created with Bridge Builder on the map will also be removed. This action is irreversible.",
+            "是否永久删除全部 Bridge Builder 桥梁？地图中由 Bridge Builder 创建的所有桥梁也将一并移除。此操作不可撤销。",
+            "是否永久刪除全部 Bridge Builder 橋梁？地圖中由 Bridge Builder 建立的所有橋梁也將一併移除。此操作無法復原。",
+            "Sollen alle Bridge-Builder-Brücken endgültig gelöscht werden? Auch alle mit Bridge Builder erstellten Brücken auf der Karte werden entfernt. Dieser Vorgang ist unwiderruflich.",
+            "¿Desea borrar definitivamente todos los puentes de Bridge Builder? También se retirarán del mapa todos los puentes creados con Bridge Builder. Esta acción es irreversible.",
+            "Souhaitez-vous effacer définitivement tous les ponts Bridge Builder ? Tous les ponts créés avec Bridge Builder sur la carte seront également retirés. Cette action est irréversible.",
+            "Desidera eliminare definitivamente tutti i ponti di Bridge Builder? Verranno rimossi anche tutti i ponti creati con Bridge Builder presenti sulla mappa. Questa azione è irreversibile.",
+            "Bridge Builder の橋をすべて完全に削除しますか？マップ上にある Bridge Builder で作成された橋もすべて撤去されます。この操作は元に戻せません。",
+            "Bridge Builder 교량 전체를 영구 삭제하시겠습니까? 지도에서 Bridge Builder로 생성된 모든 교량도 함께 제거됩니다. 이 작업은 되돌릴 수 없습니다.",
+            "Czy usunąć bezpowrotnie wszystkie mosty Bridge Builder? Z mapy zostaną również usunięte wszystkie mosty utworzone za pomocą Bridge Builder. Ta operacja jest nieodwracalna.",
+            "Deseja excluir definitivamente todas as pontes do Bridge Builder? Todas as pontes criadas com o Bridge Builder presentes no mapa também serão removidas. Esta ação é irreversível.",
+            "Удалить все мосты Bridge Builder без возможности восстановления? Все мосты, созданные с помощью Bridge Builder и размещённые на карте, также будут удалены. Это действие необратимо."
         },
         ["RemoveAllBridgesDone"] = new[]
         {
-            "All locally saved Bridge Builder bridges have been moved to the backup directory. Restart the game now to finish removing them.",
-            "本地保存的所有 Bridge Builder 桥梁已移至备份目录。请立即重启游戏以完成移除。",
-            "本機儲存的所有 Bridge Builder 橋梁已移至備份目錄。請立即重新啟動遊戲以完成移除。",
-            "Alle lokal gespeicherten Bridge-Builder-Brücken wurden in den Sicherungsordner verschoben. Starte das Spiel jetzt neu, um die Entfernung abzuschließen.",
-            "Todos los puentes locales de Bridge Builder se han movido a la carpeta de respaldo. Reinicia el juego ahora para completar la eliminación.",
-            "Tous les ponts Bridge Builder locaux ont été déplacés vers le dossier de sauvegarde des ressources. Redémarrez maintenant le jeu pour terminer leur suppression.",
-            "Tutti i ponti locali di Bridge Builder sono stati spostati nella cartella di backup. Riavvia ora il gioco per completare la rimozione.",
-            "ローカルの Bridge Builder の橋をすべてバックアップ先に移動しました。削除を完了するには今すぐゲームを再起動してください。",
-            "로컬 Bridge Builder 교량을 모두 백업 폴더로 이동했습니다. 제거를 완료하려면 지금 게임을 다시 시작하세요.",
-            "Wszystkie lokalne mosty Bridge Builder przeniesiono do katalogu kopii zapasowych. Uruchom teraz grę ponownie, aby zakończyć usuwanie.",
-            "Todas as pontes locais do Bridge Builder foram movidas para o diretório de backup. Reinicie o jogo agora para concluir a remoção.",
-            "Все локальные мосты Bridge Builder перемещены в папку резервных копий. Перезапустите игру сейчас, чтобы завершить удаление."
+            "Removal of all Bridge Builder bridges is complete.",
+            "全部 Bridge Builder 桥梁均已移除。",
+            "全部 Bridge Builder 橋梁均已移除。",
+            "Die Entfernung aller Bridge-Builder-Brücken ist abgeschlossen.",
+            "Se ha completado la eliminación de todos los puentes de Bridge Builder.",
+            "La suppression de tous les ponts Bridge Builder est terminée.",
+            "La rimozione di tutti i ponti di Bridge Builder è stata completata.",
+            "Bridge Builder のすべての橋の削除が完了しました。",
+            "모든 Bridge Builder 교량의 제거가 완료되었습니다.",
+            "Usuwanie wszystkich mostów Bridge Builder zostało zakończone.",
+            "A remoção de todas as pontes do Bridge Builder foi concluída.",
+            "Удаление всех мостов Bridge Builder завершено."
         },
         ["RemoveAllBridgesEmpty"] = new[]
         {
@@ -77,18 +127,18 @@ internal static class RuntimeUiText
         },
         ["RemoveAllBridgesFailed"] = new[]
         {
-            "Not all Bridge Builder bridges could be removed. Some files may already have been moved to the backup directory. See the Bridge Builder log and restart the game before continuing.",
-            "未能移除所有 Bridge Builder 桥梁，部分文件可能已移至备份目录。请查看 Bridge Builder 日志，并在继续游戏前重启。",
-            "未能移除所有 Bridge Builder 橋梁，部分檔案可能已移至備份目錄。請查看 Bridge Builder 日誌，並在繼續遊戲前重新啟動。",
-            "Nicht alle Bridge-Builder-Brücken konnten entfernt werden. Einige Dateien wurden möglicherweise bereits gesichert. Prüfe das Bridge-Builder-Protokoll und starte das Spiel neu, bevor du fortfährst.",
-            "No se pudieron eliminar todos los puentes de Bridge Builder. Algunos archivos podrían haberse movido al respaldo. Consulta el registro de Bridge Builder y reinicia antes de continuar.",
-            "Certains ponts Bridge Builder n’ont pas pu être supprimés. Des fichiers ont peut-être déjà été déplacés vers le dossier de sauvegarde des ressources. Consultez le journal de Bridge Builder et redémarrez avant de continuer.",
-            "Non è stato possibile rimuovere tutti i ponti di Bridge Builder. Alcuni file potrebbero essere già nel backup. Consulta il registro di Bridge Builder e riavvia prima di continuare.",
-            "一部の Bridge Builder の橋を削除できませんでした。一部のファイルはすでにバックアップ先へ移動した可能性があります。Bridge Builder のログを確認し、続行する前に再起動してください。",
-            "일부 Bridge Builder 교량을 제거하지 못했습니다. 일부 파일은 이미 백업 폴더로 이동되었을 수 있습니다. Bridge Builder 로그를 확인하고 계속하기 전에 게임을 다시 시작하세요.",
-            "Nie udało się usunąć wszystkich mostów Bridge Builder. Część plików mogła już trafić do kopii zapasowej. Sprawdź dziennik Bridge Builder i przed kontynuowaniem uruchom grę ponownie.",
-            "Não foi possível remover todas as pontes do Bridge Builder. Alguns arquivos podem já ter sido movidos para o backup. Consulte o registro do Bridge Builder e reinicie antes de continuar.",
-            "Не удалось удалить все мосты Bridge Builder. Часть файлов, возможно, уже перемещена в резервную копию. Проверьте журнал Bridge Builder и перезапустите игру перед продолжением."
+            "Some bridges could not be fully removed. See the Bridge Builder log for details.",
+            "部分桥梁未能完全移除。请查看 Bridge Builder 日志了解详情。",
+            "部分橋梁未能完全移除。請查看 Bridge Builder 日誌了解詳情。",
+            "Einige Brücken konnten nicht vollständig entfernt werden. Details stehen im Bridge-Builder-Protokoll.",
+            "No se pudieron eliminar por completo algunos puentes. Consulta el registro de Bridge Builder.",
+            "Certains ponts n’ont pas pu être entièrement supprimés. Consultez le journal de Bridge Builder.",
+            "Non è stato possibile rimuovere completamente alcuni ponti. Consulta il registro di Bridge Builder.",
+            "一部の橋を完全に削除できませんでした。Bridge Builder のログを確認してください。",
+            "일부 교량을 완전히 제거하지 못했습니다. Bridge Builder 로그를 확인하십시오.",
+            "Nie udało się całkowicie usunąć niektórych mostów. Sprawdź dziennik Bridge Builder.",
+            "Não foi possível remover completamente algumas pontes. Consulte o log do Bridge Builder.",
+            "Некоторые мосты не удалось удалить полностью. Подробности в журнале Bridge Builder."
         },
         ["BridgeSelfCheckLabel"] = new[]
         {

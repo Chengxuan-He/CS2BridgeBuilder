@@ -74,3 +74,14 @@ Check(!BridgeAssetMigration.Run(legacy, new[] { "missing dependency" }, out migr
     && error == "copy failed" && File.ReadAllBytes(legacyPath).SequenceEqual(legacyOriginal),
     "real dependency failures still propagate without changing bridge bytes");
 Console.WriteLine($"PASS {count} metadata and migration checks");
+
+for (var fields = 1; fields <= 7; fields++)
+{
+    var values = new[] { a, "Existing name", "Road", "Track", "Style", "", "0" }.Take(fields);
+    var partial = BridgeAssetMetadata.Prefix + Convert.ToBase64String(Encoding.UTF8.GetBytes(
+        string.Join("\n", values.Select(v => Convert.ToBase64String(Encoding.UTF8.GetBytes(v))))));
+    Check(BridgeAssetMetadata.Decode(partial, out var recovered) && recovered.PrefabName == a
+        && recovered.DisplayName == (fields > 1 ? "Existing name" : a), "partial metadata fields=" + fields);
+    Check(BridgeAssetMetadata.Decode(BridgeAssetMetadata.Encode(recovered), out var completed)
+        && completed.PrefabName == a && completed.CreatedUtc == "", "canonical metadata preserves unknown history=" + fields);
+}

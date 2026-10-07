@@ -7,6 +7,7 @@ using Game.Prefabs;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.IO;
 using Unity.Entities;
 using UnityEngine;
 
@@ -17,38 +18,57 @@ internal static class BridgeAssetPack
 {
     // New identity avoids changing same-CID snapshots of the historical custom-host pack.
     internal const string PrefabName = "BridgeBuilder Native Asset Pack";
-    private const string Icon = "Media/Placeholder.svg";
+    private static string? _icon;
 
     internal static AssetPackPrefab? Ensure(PrefabSystem prefabs)
     {
         try
         {
+            if (_icon == null)
+            {
+                // Mods can be loaded from bytes, leaving Assembly.Location empty.
+                // Embed the source, then persist the complete icon rather than a mod URL.
+                using var resource = typeof(Mod).Assembly.GetManifestResourceStream("BridgeBuilderPack.svg");
+                if (resource == null)
+                {
+                    Mod.Log.Error("Embedded BridgeBuilderPack.svg is missing from the mod assembly.");
+                    return null;
+                }
+                using var bytes = new MemoryStream();
+                resource.CopyTo(bytes);
+                _icon = "data:image/svg+xml;base64," + Convert.ToBase64String(bytes.ToArray());
+            }
+            var icon = _icon;
             var pack = PrefabCatalog.GetAll(prefabs).OfType<AssetPackPrefab>()
                 .FirstOrDefault(item => item.name == PrefabName);
             if (pack != null)
             {
                 var ui = pack.AddOrGetComponent<UIObject>();
-                if (ui.m_Icon != Icon)
+                if (!BridgePackIcon.Persist(pack, icon, out var error))
+                {
+                    Mod.Log.Error("Could not persist the native Bridge Builder pack icon: " + error);
+                    return null;
+                }
+                if (ui.m_Icon != icon)
                 {
                     // ImageSystem reads UIObject directly. Update the shared pack only;
                     // do not recreate or reinitialize any bridge/network entity.
-                    ui.m_Icon = Icon;
-                    if (pack.asset != null && !pack.isReadOnly) pack.asset.Save(false);
+                    ui.m_Icon = icon;
                 }
                 return pack;
             }
             pack = ScriptableObject.CreateInstance<AssetPackPrefab>();
             pack.name = PrefabName;
-            pack.AddOrGetComponent<UIObject>().m_Icon = Icon;
+            pack.AddOrGetComponent<UIObject>().m_Icon = icon;
             // Give the shared pack a persistent asset ID before any bridge serializes its reference.
             new PrefabAssetWriter().Save(new[] { new PrefabCloneNode(pack, pack, false, true, null) });
             prefabs.AddOrUpdatePrefab(pack);
             if (prefabs.TryGetEntity(pack, out _)) return pack;
 
         }
-        catch (Exception)
+        catch (Exception exception)
         {
-            // Generation diagnostics are silent; retain the external API exception boundary.
+            Mod.Log.Error(exception, "Could not persist the native Bridge Builder pack icon.");
         }
         return null;
     }

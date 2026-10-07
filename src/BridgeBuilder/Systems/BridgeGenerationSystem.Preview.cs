@@ -104,7 +104,7 @@ public partial class BridgeGenerationSystem
         }
         catch (Exception exception)
         {
-            Mod.Log.Critical(exception, "Bridge preview failed.");
+            Mod.Log.Error(exception, "Bridge preview failed.");
             FailPreview(revision, "PreviewFailed");
             ClearPreview();
         }
@@ -113,7 +113,7 @@ public partial class BridgeGenerationSystem
     private void FailPreview(int revision, string stage)
     {
         // A cancelled/superseded selection is not a model generation failure.
-        // Publish each failed request once; the panel publisher records CRITICAL.
+        // Publish each failed request once; the panel publisher records ERROR.
         if (revision != BridgePreviewState.Revision || BridgePreviewState.Selection == null ||
             _previewFailedRevision == revision) return;
         _previewFailedRevision = revision;

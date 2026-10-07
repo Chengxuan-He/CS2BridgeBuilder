@@ -30,6 +30,9 @@ internal sealed class BridgeLocaleSource : IDictionarySource
             { $"Assets.NAME[{BridgeAssetPack.PrefabName}]", "BridgeBuilder" },
             { $"Assets.DESCRIPTION[{BridgeAssetPack.PrefabName}]", "BridgeBuilder" },
             { _setting.GetSettingsLocaleID(), _text.Title },
+            { _setting.GetOptionGroupLocaleID(BridgeSetting.GeneralGroup), RuntimeUiText.Format(_text.LocaleId, "SettingsGeneral") },
+            { _setting.GetOptionGroupLocaleID(BridgeSetting.RecoveryGroup), RuntimeUiText.Format(_text.LocaleId, "SettingsRecovery") },
+            { _setting.GetOptionGroupLocaleID(BridgeSetting.DangerGroup), RuntimeUiText.Format(_text.LocaleId, "SettingsDanger") },
             { _setting.GetOptionTabLocaleID(BridgeSetting.BridgeTab), _text.TabBridge },
             { _setting.GetOptionTabLocaleID(BridgeSetting.OptionsTab), _text.TabOptions },
             { _setting.GetOptionGroupLocaleID(BridgeSetting.StatusGroup), _text.GroupStatus },
@@ -58,7 +61,7 @@ internal sealed class BridgeLocaleSource : IDictionarySource
         {
             entries[$"Assets.NAME[{bridge.PrefabName}]"] = bridge.DisplayName;
             entries[$"Assets.DESCRIPTION[{bridge.PrefabName}]"] =
-                $"BridgeBuilder · {bridge.DisplayName}";
+                RuntimeUiText.Format(_text.LocaleId, "BridgeAssetDescription");
         }
 
         return entries;

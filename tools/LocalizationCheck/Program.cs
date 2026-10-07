@@ -63,34 +63,34 @@ internal static class Program
             Check(RuntimeUiText.ForLocale(input)["CreateTab"] == RuntimeUiText.ForLocale(expected)["CreateTab"], "Runtime fallback");
         }
 
-        // Every published panel error is critical; successful/status-only updates are quiet.
+        // Every published panel error is error; successful/status-only updates are quiet.
         BridgeBuilder.Mod.Log.Messages.Clear();
         foreach (var key in new[] { "CreatedActive", "CreatedManage", "CreatedLocked", "Activated", "ActivateLocked", "Renamed", "Deleted", "" })
             BridgeRuntimeRequests.Complete(key);
-        Check(BridgeBuilder.Mod.Log.Messages.Count == 0, "Routine completions emitted critical errors");
+        Check(BridgeBuilder.Mod.Log.Messages.Count == 0, "Routine completions emitted error errors");
         foreach (var key in new[] { "BridgeRestartRequired", "ActivateUnloaded", "ActivateNotReady", "ActivateToolFailed", "ActivateFailed", "NameRequired", "DeleteIncomplete", "UpperUnavailable" })
         {
             var count = BridgeBuilder.Mod.Log.Messages.Count;
             BridgeRuntimeRequests.Complete(key, "bridge-context");
-            Check(BridgeBuilder.Mod.Log.Messages.Count == count + 1, "Missing critical footer error: " + key);
+            Check(BridgeBuilder.Mod.Log.Messages.Count == count + 1, "Missing error footer error: " + key);
             Check(BridgeBuilder.Mod.Log.Messages.Last().Contains(key) && BridgeBuilder.Mod.Log.Messages.Last().Contains("bridge-context"), "Missing diagnostic context");
             _ = BridgeRuntimeRequests.Status;
             _ = BridgeRuntimeRequests.Status;
-            Check(BridgeBuilder.Mod.Log.Messages.Count == count + 1, "Footer reads duplicated critical logs");
+            Check(BridgeBuilder.Mod.Log.Messages.Count == count + 1, "Footer reads duplicated error logs");
         }
         BridgePreviewState.Select("Road", "", "Suspension");
         var errorRevision = BridgePreviewState.Revision;
         var errorsBefore = BridgeBuilder.Mod.Log.Messages.Count;
         BridgePreviewState.Publish(errorRevision - 1, "", "PreviewFailed");
-        Check(BridgeBuilder.Mod.Log.Messages.Count == errorsBefore, "Stale preview emitted critical");
+        Check(BridgeBuilder.Mod.Log.Messages.Count == errorsBefore, "Stale preview emitted error");
         BridgePreviewState.Publish(errorRevision, "", "PreviewFailed");
         BridgePreviewState.Publish(errorRevision, "", "PreviewFailed");
         Check(BridgeBuilder.Mod.Log.Messages.Count == errorsBefore + 1, "Preview failure missing or duplicated");
         BridgePreviewState.Publish(errorRevision, "image", "PreviewReady");
-        Check(BridgeBuilder.Mod.Log.Messages.Count == errorsBefore + 1, "Successful preview emitted critical");
+        Check(BridgeBuilder.Mod.Log.Messages.Count == errorsBefore + 1, "Successful preview emitted error");
         BridgePreviewState.ImageFailed("stale-key", "image");
         BridgePreviewState.ImageFailed(BridgePreviewState.Key, "stale-image");
-        Check(BridgeBuilder.Mod.Log.Messages.Count == errorsBefore + 1, "Stale image error emitted critical");
+        Check(BridgeBuilder.Mod.Log.Messages.Count == errorsBefore + 1, "Stale image error emitted error");
         BridgePreviewState.ImageFailed(BridgePreviewState.Key, "image");
         BridgePreviewState.ImageFailed(BridgePreviewState.Key, "image");
         Check(BridgeBuilder.Mod.Log.Messages.Count == errorsBefore + 2 && BridgePreviewState.Image == "",
@@ -223,6 +223,6 @@ namespace BridgeBuilder
     internal sealed class TestLog
     {
         internal readonly System.Collections.Generic.List<string> Messages = new();
-        internal void Critical(string message) => Messages.Add(message);
+        internal void Error(string message) => Messages.Add(message);
     }
 }

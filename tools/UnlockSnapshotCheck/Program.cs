@@ -35,6 +35,11 @@ var lower = new NetGeometryPrefab { name = portable.name + "_Lower" };
 lower.AddComponent<ManualUnlockable>();
 portable.AddComponent<AuxiliaryNets>().m_AuxiliaryNets = new[] { new AuxiliaryNetInfo { m_Prefab = lower } };
 var nativeGroups = new List<PrefabBase>();
+var untouchedLower = lower.AddComponent<Unlockable>();
+untouchedLower.m_IgnoreDependencies = true;
+var isolated = new List<PrefabBase>();
+Check(BridgeNativeUnlock.Apply(portable, rule, prefabs, isolated, out var isolatedError, includeAuxiliary: false), isolatedError);
+Check(ReferenceEquals(lower.GetComponent<Unlockable>(), untouchedLower), "individual migration preserves sibling unlock component");
 Check(BridgeNativeUnlock.Apply(portable, rule, prefabs, nativeGroups, out var nativeError), nativeError);
 bool Native(PrefabBase p)
 {

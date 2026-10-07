@@ -322,7 +322,7 @@ public partial class BridgeBuilderUISystem : UISystemBase
         }
         catch (Exception exception)
         {
-            Mod.Log.Critical(exception, "Bridge panel error: stage='UiRefreshFailed'. Could not update the BridgeBuilder runtime UI.");
+            Mod.Log.Error(exception, "Bridge panel error: stage='UiRefreshFailed'. Could not update the BridgeBuilder runtime UI.");
             _status.Update(RuntimeUiText.Get("UiRefreshFailed"));
         }
         finally

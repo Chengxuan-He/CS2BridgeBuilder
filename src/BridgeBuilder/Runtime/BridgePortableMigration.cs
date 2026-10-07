@@ -28,66 +28,84 @@ internal static class BridgePortableMigration
             var assets = BridgeInspectionAssets.Read().Where(a => a.Owner == owner && a.Prefab != null).ToArray();
             var root = assets.Select(a => a.Prefab).OfType<NetGeometryPrefab>().FirstOrDefault(p => p.name == owner);
             if (root == null) { error = "Canonical bridge unavailable for independent migration"; return false; }
-            var nativeReady = root.GetComponent<BridgeConstructionCost>() == null && root.GetComponent<Unlockable>() != null
-                && root.TryGet<UIObject>(out var nativeUi) && nativeUi.name.StartsWith(BridgeAssetMetadata.Prefix, StringComparison.Ordinal);
-            var icon = root.GetComponent<UIObject>()?.m_Icon;
-            if (nativeReady && !string.IsNullOrEmpty(icon)) return true;
             var metadata = BridgeAssetCatalog.Find(owner) ?? new BridgeAssetInfo(owner, owner, "", null, "", "");
-            if (string.IsNullOrEmpty(icon))
+            // Dependency snapshots are byte-identical external assets, not conversion targets.
+            var privateAssets = assets.Where(a => !BridgeFileAccess.Logical(a.Path)
+                .Split('\\', '/').Contains(owner + "_Dependencies")).ToArray();
+            var networks = privateAssets.Select(a => a.Prefab).OfType<NetGeometryPrefab>().Distinct().ToArray();
+            var pack = BridgeAssetPack.Ensure(system);
+            if (pack == null) { error = "Native asset pack unavailable"; return false; }
+            foreach (var source in networks.OrderBy(p => p == root ? 0 : 1))
             {
-                if (!BridgeStyleCatalog.Scanned)
-                    BridgeStyleCatalog.Rebuild(system, assets.Select(a => a.Prefab!.name).ToArray());
-                var variant = BridgeStyleCatalog.Find(metadata.StyleId)?.Select(NetWidth.RoadSurfaceOf(root),
-                    forRoad: root is RoadPrefab, doubleDeck: root.GetComponent<AuxiliaryNets>() != null).Variant;
-                icon = variant?.Donor.GetComponent<UIObject>()?.m_Icon;
-                if (string.IsNullOrEmpty(icon))
-                { error = "Original bridge icon unavailable; existing bridge retained"; return false; }
-            }
-            BridgeUnlockExpression rule = new();
-            if (!nativeReady && root.GetComponent<ManualUnlockable>() != null)
-            {
-                if (!BridgeUnlockSnapshot.Read(root, system, system.EntityManager, out rule))
-                { error = "Legacy unlock conditions unavailable"; return false; }
-            }
-            else if (!nativeReady && !BridgeUnlockSnapshot.Capture(root, system, system.EntityManager, out rule))
-            { error = "Native unlock conditions unavailable"; return false; }
-            NetGeometryPrefab CloneNet(NetGeometryPrefab source)
-            {
-                var copy = (NetGeometryPrefab)source.Clone(source.name);
-                copy.asset = source.asset;
+                var ui = source.GetComponent<UIObject>();
+                var gate = source.GetComponent<Unlockable>();
+                var needsUnlock = gate == null || !gate.m_IgnoreDependencies;
+                var needsIcon = source == root && (string.IsNullOrWhiteSpace(ui?.m_Icon)
+                    || ui!.m_Icon.IndexOf("coui://bridgebuilder", StringComparison.OrdinalIgnoreCase) >= 0);
+                var needsMetadata = source == root && ui?.name != BridgeAssetMetadata.Encode(metadata);
+                var packs = source.GetComponent<AssetPackItem>()?.m_Packs;
+                var needsPack = packs == null || packs.Length != 1 || packs[0] != pack;
+                var needsCleanup = source.components.Any(c => c is BridgeConstructionCost || c is ManualUnlockable
+                    || (c != null && PrefabGraphCloner.ShouldStripComponent(c, false)));
+                if (!needsUnlock && !needsIcon && !needsMetadata && !needsPack && !needsCleanup) continue;
+                if (source.asset == null || !BridgeAssetInfo.MatchesOwner(source.asset.path, owner))
+                { error = "Unowned migration target: " + source.name; return false; }
+                var target = (NetGeometryPrefab)source.Clone(source.name);
+                target.asset = source.asset;
                 instances[source.asset] = source;
                 identities[source.asset] = (source.asset.id.guid.ToString(), source.asset.path, source.name, source.version);
-                nodes.Add(new PrefabCloneNode(source, copy, source == root, true, source.asset));
-                return copy;
-            }
-            var target = CloneNet(root);
-            if (!nativeReady && target.TryGet<AuxiliaryNets>(out var auxiliary))
-            {
-                var copy = typeof(object).GetMethod("MemberwiseClone", BindingFlags.Instance | BindingFlags.NonPublic)!;
-                auxiliary.m_AuxiliaryNets = auxiliary.m_AuxiliaryNets.Select(a =>
+                nodes.Add(new PrefabCloneNode(source, target, source == root, true, source.asset));
+                if (needsUnlock)
                 {
-                    var entry = (AuxiliaryNetInfo)copy.Invoke(a, null)!;
-                    if (a.m_Prefab is NetGeometryPrefab deck && deck.asset != null
-                        && BridgeAssetInfo.MatchesOwner(deck.asset.path, owner)) entry.m_Prefab = CloneNet(deck);
-                    return entry;
-                }).ToArray();
-                if (auxiliary.m_AuxiliaryNets.Any(a => !nodes.Any(n => ReferenceEquals(n.Target, a.m_Prefab))))
-                { error = "Auxiliary network is not private to this bridge"; return false; }
+                    // Each network has its own missing fields. Never rebuild a valid sibling's rule.
+                    BridgeUnlockExpression rule;
+                    var read = source.GetComponent<ManualUnlockable>() != null
+                        ? BridgeUnlockSnapshot.Read(source, system, system.EntityManager, out rule)
+                        : BridgeUnlockSnapshot.Capture(source, system, system.EntityManager, out rule);
+                    if (!read) { error = "Unlock conditions unavailable: " + source.name; return false; }
+                    var created = new List<PrefabBase>();
+                    if (!BridgeNativeUnlock.Apply(target, rule, system, created, out error, includeAuxiliary: false)) return false;
+                    nodes.AddRange(created.Select(p => new PrefabCloneNode(p, p, false, true, null)));
+                }
+                else target.Remove<ManualUnlockable>();
+                if (needsIcon)
+                {
+                    if (!BridgeStyleCatalog.Scanned)
+                        BridgeStyleCatalog.Rebuild(system, assets.Select(a => a.Prefab!.name).ToArray());
+                    var variant = BridgeStyleCatalog.Find(metadata.StyleId)?.Select(NetWidth.RoadSurfaceOf(root),
+                        forRoad: root is RoadPrefab, doubleDeck: root.GetComponent<AuxiliaryNets>() != null).Variant;
+                    var icon = variant?.Donor.GetComponent<UIObject>()?.m_Icon;
+                    if (string.IsNullOrWhiteSpace(icon) || icon.IndexOf("coui://bridgebuilder", StringComparison.OrdinalIgnoreCase) >= 0)
+                    { error = "Original bridge icon unavailable; existing bridge retained"; return false; }
+                    target.AddOrGetComponent<UIObject>().m_Icon = icon;
+                }
+                if (needsMetadata) target.AddOrGetComponent<UIObject>().name = BridgeAssetMetadata.Encode(metadata);
+                if (needsPack) BridgeAssetPack.Assign(target, pack);
             }
-            var created = new List<PrefabBase>();
-            // Legacy fixed-price metadata is discarded; retain the original native fee graph.
-            if (!nativeReady && !BridgeNativeUnlock.Apply(target, rule, system, created, out error)) return false;
-            nodes.AddRange(created.Select(p => new PrefabCloneNode(p, p, false, true, null)));
+            // Private non-network components can also come from a different historical version.
+            foreach (var source in privateAssets.Select(a => a.Prefab!).Distinct().Where(p => p is not NetGeometryPrefab))
+            {
+                if (!source.components.Any(c => c is BridgeConstructionCost
+                    || (c != null && PrefabGraphCloner.ShouldStripComponent(c, false)))) continue;
+                if (source.asset == null || !BridgeAssetInfo.MatchesOwner(source.asset.path, owner))
+                { error = "Unowned migration target: " + source.name; return false; }
+                var target = source.Clone(source.name);
+                target.asset = source.asset;
+                instances[source.asset] = source;
+                identities[source.asset] = (source.asset.id.guid.ToString(), source.asset.path, source.name, source.version);
+                nodes.Add(new PrefabCloneNode(source, target, false, true, source.asset));
+            }
             foreach (var node in nodes)
             {
                 node.Target.Remove<BridgeConstructionCost>();
                 BridgeNativePresentation.Prepare(node.Target);
             }
-            var pack = BridgeAssetPack.Ensure(system);
-            if (pack == null) { error = "Native asset pack unavailable"; return false; }
-            foreach (var net in nodes.Select(n => n.Target).OfType<NetGeometryPrefab>()) BridgeAssetPack.Assign(net, pack);
-            target.AddOrGetComponent<UIObject>().name = BridgeAssetMetadata.Encode(metadata);
-            target.GetComponent<UIObject>().m_Icon = icon!;
+            // Complete every independent check before taking a no-Prefab-write path.
+            if (nodes.Count == 0)
+            {
+                if (!BridgeNativePresentation.Validate(owner, assets.Select(a => a.Prefab!), out error)) return false;
+                return BridgeNativePresentation.EnsureDescriptions(metadata, out changed, out error);
+            }
             // Back up every existing file that this transaction may replace, including CID sidecars.
             foreach (var node in nodes)
             {
@@ -99,7 +117,7 @@ internal static class BridgePortableMigration
                     if (!BridgeFileAccess.Exists(path)) { newFiles.Add(path); continue; }
                     if (originals.ContainsKey(path)) continue;
                     var bytes = File.ReadAllBytes(BridgeFileAccess.Native(path)); originals[path] = bytes;
-                    var relative = path.Substring(Application.persistentDataPath.Length).TrimStart('\\', '/');
+                    var relative = BridgeFileAccess.Logical(path).Substring(BridgeFileAccess.Logical(Application.persistentDataPath).Length).TrimStart('\\', '/');
                     var saved = Path.Combine(backup, "Portable", relative);
                     Directory.CreateDirectory(BridgeFileAccess.Native(Path.GetDirectoryName(saved)!));
                     File.WriteAllBytes(BridgeFileAccess.Native(saved), bytes);
@@ -127,8 +145,8 @@ internal static class BridgePortableMigration
                 { error = "Persisted bridge still contains a Bridge Builder component"; return false; }
             }
             if (!BridgeDependencyPersistence.Save(owner, nodes.Select(n => n.Target.asset.id.guid.ToString()), out _, out error)
-                || !BridgeNativePresentation.Validate(owner, nodes.Select(n => n.Target), out error)
-                || !BridgeNativePresentation.Save(metadata, out error)) return false;
+                || !BridgeNativePresentation.Validate(owner, assets.Select(a => a.Prefab!).Concat(nodes.Select(n => n.Target)), out error)
+                || !BridgeNativePresentation.EnsureDescriptions(metadata, out _, out error)) return false;
             changed = true;
             return true;
         }
@@ -138,7 +156,7 @@ internal static class BridgePortableMigration
             // Restore cached instances: this pass changes files, never publishes replacement live networks.
             foreach (var pair in instances)
                 try { swap.Invoke(pair.Key, new object[] { pair.Value }); }
-                catch (Exception exception) { Mod.Log.Critical("Could not restore cached bridge instance: " + exception); }
+                catch (Exception exception) { Mod.Log.Error("Could not restore cached bridge instance: " + exception); }
             if (!changed)
             {
                 foreach (var pair in originals)

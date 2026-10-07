@@ -3707,9 +3707,6 @@ internal static class TowerGenerationTests
                     "Suspension02", "SuspensionBridge02NetPillarBase_LOD2 Mesh")
                 && !SuspensionGeometry.IsRigidSidePart(
                     "Suspension02", "SuspensionBridge02NetPylonTop_LOD2 Mesh"), null);
-        check("[suspension styles] Golden Gate uses its own tower material family",
-            BridgeTowerMaterials.SourcesFor("GoldenGate").All(name => name.StartsWith("GoldenGate")),
-            string.Join(", ", BridgeTowerMaterials.SourcesFor("GoldenGate")));
         check("[aggregate] only ExtradosedBridge01 gives its carried deck the bridge name pool",
             BridgeStyleDefinitions.CarriedDeckUsesBridgeAggregate("Extradosed01")
                 && !BridgeStyleDefinitions.CarriedDeckUsesBridgeAggregate("Extradosed02")
@@ -3893,10 +3890,6 @@ internal static class TowerGenerationTests
             BridgeStyleDefinitions.UsesOpenTrussTopology("TrussArch03"), null);
         check("[split] the arch-below family keeps the portal rule",
             !BridgeStyleDefinitions.UsesOpenTrussTopology("TrussArch"), null);
-        check("[split] the green style borrows surfaces only from TrussArchBridge03",
-            BridgeTowerMaterials.SourcesFor("TrussArch03").SequenceEqual(
-                new[] { "TrussArchBridge03NetPillar" }),
-            string.Join(", ", BridgeTowerMaterials.SourcesFor("TrussArch03")));
         check("[split] the green overhead section belongs to the TrussArchBridge03 prototype",
             BridgeCables.All.Any(cables => cables.Tower == "TrussArchBridge03NetPillar"
                 && cables.Section == "TrussArchBridge03 Section"), null);

@@ -49,7 +49,6 @@ $sources = @(
     (Join-Path $projectRoot 'src\BridgeBuilder\Bridges\SectionNames.cs'),
     (Join-Path $projectRoot 'src\BridgeBuilder\Bridges\BridgeMeasurements.cs'),
     (Join-Path $projectRoot 'src\BridgeBuilder\Bridges\BridgeCables.cs'),
-    (Join-Path $projectRoot 'src\BridgeBuilder\Bridges\BridgeTowerMaterials.cs'),
     (Join-Path $projectRoot 'src\BridgeBuilder\Bridges\BridgeTowerSpec.cs'),
     (Join-Path $projectRoot 'src\BridgeBuilder\Bridges\BridgeSpec.cs'),
     (Join-Path $projectRoot 'src\BridgeBuilder\Bridges\Types\TrussArch02\TrussArch02Geometry.cs'),

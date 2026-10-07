@@ -1,4 +1,4 @@
-# Bridge Builder
+# Bridge Builder · 桥梁建造者 · 橋梁建造者
 
 ## English
 
@@ -19,6 +19,7 @@ Bridge Builder lets you combine available roads or tracks with bridge styles in 
 Load a city and open Bridge Builder from its toolbar icon. Select a road or track and a bridge style. For a double-deck bridge, choose the second network and the deck-direction option. Review the preview and bridge name, then select Create or Create and build.
 
 - **If the bridge self-check is triggered, please restart the game.**
+- Uninstalling Bridge Builder does not remove bridges you have already created. These saved bridges remain available for placement and use. To remove them, use Bridge Builder’s bridge management tools.
 
 ### Compatibility
 
@@ -41,7 +42,7 @@ Source: [GitHub](https://github.com/Chengxuan-He/CS2BridgeBuilder). Original pro
 
 ### 简介
 
-Bridge Builder（桥梁建造器）让你在《Cities: Skylines II》中，将可用的道路或轨道与桥梁样式组合，创建适合自己城市的桥梁。选择桥面、挑选桥型，在等轴测 3D 预览中查看组合效果，再将生成的桥梁交给游戏道路建造工具进行铺设。对于支持双层结构的桥型，你可以分别选择上下层路网，并设置上下层方向是否相反。
+Bridge Builder（桥梁建造者）让你在《Cities: Skylines II》中，将可用的道路或轨道与桥梁样式组合，创建适合自己城市的桥梁。选择桥面、挑选桥型，在等轴测 3D 预览中查看组合效果，再将生成的桥梁交给游戏道路建造工具进行铺设。对于支持双层结构的桥型，你可以分别选择上下层路网，并设置上下层方向是否相反。
 
 ### 主要功能
 
@@ -56,6 +57,7 @@ Bridge Builder（桥梁建造器）让你在《Cities: Skylines II》中，将�
 进入城市后，点击 Bridge Builder 图标，选择道路或轨道及桥型；使用双层桥时再选择另一层路网和方向选项。确认预览与桥梁名称后，点击“创建”保存桥梁，或点击“创建并建造”开始铺设。
 
 - **如果触发了桥梁自检，请重启游戏。**
+- 卸载桥梁建造者（Bridge Builder）不会自动删除已创建的桥梁。已保存的桥梁仍可正常铺设和使用。如需移除，请通过桥梁建造者的桥梁管理功能操作。
 
 ### 兼容性
 
@@ -78,7 +80,7 @@ Bridge Builder（桥梁建造器）让你在《Cities: Skylines II》中，将�
 
 ### 簡介
 
-Bridge Builder（橋梁建造器）讓你在《Cities: Skylines II》中，將可用的道路或軌道與橋梁樣式組合，建立適合自己城市的橋梁。選擇橋面、挑選橋型，在等軸測 3D 預覽中查看組合效果，再使用遊戲的道路建造工具鋪設生成的橋梁。對於支援雙層結構的橋型，你可以分別選擇上下層路網，並設定上下層方向是否相反。
+Bridge Builder（橋梁建造者）讓你在《Cities: Skylines II》中，將可用的道路或軌道與橋梁樣式組合，建立適合自己城市的橋梁。選擇橋面、挑選橋型，在等軸測 3D 預覽中查看組合效果，再使用遊戲的道路建造工具鋪設生成的橋梁。對於支援雙層結構的橋型，你可以分別選擇上下層路網，並設定上下層方向是否相反。
 
 ### 主要功能
 
@@ -93,6 +95,7 @@ Bridge Builder（橋梁建造器）讓你在《Cities: Skylines II》中，將�
 進入城市後，點擊 Bridge Builder 圖示，選擇道路或軌道及橋型；使用雙層橋時，再選擇另一層路網和方向選項。確認預覽與橋梁名稱後，點擊建立按鈕儲存橋梁，或使用建立並建造功能開始鋪設。
 
 - **如果觸發了橋梁自檢，請重新啟動遊戲。**
+- 解除安裝橋梁建造者（Bridge Builder）不會自動刪除已建立的橋梁。已儲存的橋梁仍可正常鋪設及使用。如需移除，請透過橋梁建造者的橋梁管理功能操作。
 
 ### 相容性
 

@@ -143,6 +143,7 @@ $arguments = @(
     $compiler,
     '/nologo',
     '/target:library',
+    ('/resource:' + (Join-Path $projectRoot 'assets\BridgeBuilderPack.svg') + ',BridgeBuilderPack.svg'),
     '/deterministic+',
     '/codepage:65001',
     '/optimize+',

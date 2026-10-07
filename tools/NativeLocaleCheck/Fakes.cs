@@ -50,6 +50,8 @@ namespace Colossal.IO.AssetDatabase
     public class LocaleAsset : AssetData
     {
         public LocaleData Data = null!;
+        public LocaleData data => Data;
+        public int Saves;
         public UnityEngine.SystemLanguage Language;
         public string LocalizedName = "";
         public byte[] Bytes = [];
@@ -58,6 +60,7 @@ namespace Colossal.IO.AssetDatabase
         // Same binary header/body order as native LocaleAsset.Save, inspected from the game DLL.
         public void Save(bool force)
         {
+            Saves++;
             using var output = new MemoryStream();
             using var writer = new BinaryWriter(output);
             writer.Write((ushort)1); writer.Write(Language.ToString()); writer.Write(Data.localeId); writer.Write(LocalizedName);
@@ -91,7 +94,16 @@ namespace Game.Prefabs
     }
     public class NetGeometryPrefab : PrefabBase { }
 }
-namespace BridgeBuilder.Settings { internal static class UiStringCatalog { internal static string[] LocaleIds = Game.SceneFlow.Localization.Languages.Keys.ToArray(); } }
+namespace BridgeBuilder.Settings
+{
+    internal static class UiStringCatalog
+    {
+        internal static string[] LocaleIds = Game.SceneFlow.Localization.Languages.Keys.ToArray();
+        internal static string Resolve(string? locale) => LocaleIds.Contains(locale) ? locale! : "en-US";
+        internal static UiStrings Current = new();
+    }
+    internal class UiStrings { internal string LocaleId = "en-US"; }
+}
 namespace BridgeBuilder.Runtime
 {
     internal class BridgeAssetInfo(string id, string name)

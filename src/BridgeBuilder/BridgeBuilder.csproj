@@ -4,10 +4,10 @@
     <AssemblyName>BridgeBuilder</AssemblyName>
     <RootNamespace>BridgeBuilder</RootNamespace>
     <!-- Public release version is specified by the user; CLR versions remain numeric. -->
-    <Version>26.10.7a</Version>
-    <PackageVersion>26.10.7-a</PackageVersion>
-    <AssemblyVersion>26.10.7.1</AssemblyVersion>
-    <FileVersion>26.10.7.1</FileVersion>
+    <Version>26.10.7b</Version>
+    <PackageVersion>26.10.7-b</PackageVersion>
+    <AssemblyVersion>26.10.7.2</AssemblyVersion>
+    <FileVersion>26.10.7.2</FileVersion>
     <GenerateAssemblyInfo>true</GenerateAssemblyInfo>
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
     <RestoreIgnoreFailedSources>true</RestoreIgnoreFailedSources>
@@ -21,6 +21,7 @@
     <Compile Include="..\..\vendor\CS2ModShared\src\**\*.cs" LinkBase="Shared" />
   </ItemGroup>
   <ItemGroup>
+    <EmbeddedResource Include="..\..\assets\BridgeBuilderPack.svg" LogicalName="BridgeBuilderPack.svg" />
     <None Include="..\..\assets\BridgeBuilder.svg" Link="BridgeBuilder.svg" CopyToOutputDirectory="PreserveNewest" />
     <None Include="..\..\assets\BridgeBuilderToolbar.svg" Link="BridgeBuilderToolbar.svg" CopyToOutputDirectory="PreserveNewest" />
     <None Include="..\..\assets\BridgeBuilderPack.svg" Link="BridgeBuilderPack.svg" CopyToOutputDirectory="PreserveNewest" />

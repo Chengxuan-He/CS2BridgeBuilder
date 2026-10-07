@@ -106,7 +106,7 @@ internal static class BridgeRuntimeRequests
             _revision++;
             // Log at publication, never from bindings/getters refreshed every frame or locale change.
             if (_status.Text.Length != 0)
-                Mod.Log.Critical($"Bridge panel error: stage='{statusKey}'; context=[{string.Join(", ", arguments)}]. {_status.Text}");
+                Mod.Log.Error($"Bridge panel error: stage='{statusKey}'; context=[{string.Join(", ", arguments)}]. {_status.Text}");
         }
     }
 

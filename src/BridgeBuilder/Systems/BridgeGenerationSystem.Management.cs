@@ -266,7 +266,7 @@ public partial class BridgeGenerationSystem
         }
         catch (Exception exception)
         {
-            Mod.Log.Critical(exception, $"Could not activate runtime bridge '{prefabName}'");
+            Mod.Log.Error(exception, $"Could not activate runtime bridge '{prefabName}'");
             return false;
         }
     }
@@ -365,7 +365,7 @@ public partial class BridgeGenerationSystem
         var state = ExportStateStore.Load();
         var report = new ExportReport();
         var removed = RemoveByName(prefabName, state, report);
-        // RemoveByName reports success only after file moves and native unregistration.
+        // RemoveByName reports success only after file deletion and native unregistration.
         if (removed.Contains(prefabName))
         {
             Mod.ReloadActiveLocale();
@@ -379,6 +379,7 @@ public partial class BridgeGenerationSystem
                 + "See ModsData/BridgeBuilder/last-export-report.txt for the operation failure.");
         }
 
+        BridgeBulkRemoval.Completed(prefabName, removed.Contains(prefabName));
         Finish(report, state, "Delete runtime bridge", showMessage: false);
         // Native removal has completed and state is saved. Also reflect partial
         // deletion accurately instead of keeping a stale list until reopening.
@@ -388,11 +389,12 @@ public partial class BridgeGenerationSystem
     private void FailDeletion(string prefabName, string stage, string reason, Exception? exception = null)
     {
         var message = $"Bridge deletion failed: stage='{stage}', prefab='{prefabName}'. {reason}";
-        if (exception == null) Mod.Log.Critical(message);
-        else Mod.Log.Critical(exception, message);
+        if (exception == null) Mod.Log.Error(message);
+        else Mod.Log.Error(exception, message);
         _pendingRemoval = null;
         _removingAsset = null;
         BridgeRuntimeRequests.Complete(stage);
+        BridgeBulkRemoval.Completed(prefabName, false);
     }
 
     private HashSet<string> LoadedExportNames()
