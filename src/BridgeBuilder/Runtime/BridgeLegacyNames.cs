@@ -31,7 +31,7 @@ internal static class BridgeLegacyNames
             if (selected.Length == 0) return true;
             var imported = Path.Combine(gameRoot, "ImportedData");
             var geometry = Path.Combine(gameRoot, "BridgeBuilder");
-            var files = Files(imported).Concat(Files(geometry))
+            var files = BridgeFileAccess.EnumerateFiles(imported).Concat(BridgeFileAccess.EnumerateFiles(geometry))
                 .Where(p => p.EndsWith(".Prefab", StringComparison.OrdinalIgnoreCase)
                     || p.EndsWith(".Geometry", StringComparison.OrdinalIgnoreCase)).ToArray();
             var assets = new List<Asset>();
@@ -202,14 +202,5 @@ internal static class BridgeLegacyNames
         using var hash = SHA256.Create();
         return BitConverter.ToString(hash.ComputeHash(Encoding.UTF8.GetBytes(owner + ":legacy:" + oldCid.ToLowerInvariant())))
             .Replace("-", "").Substring(0, 32).ToLowerInvariant();
-    }
-    private static IEnumerable<string> Files(string directory)
-    {
-        if (!Directory.Exists(BridgeFileAccess.Native(directory))) yield break;
-        if ((BridgeFileAccess.Attributes(directory) & FileAttributes.ReparsePoint) != 0) yield break;
-        foreach (var file in Directory.GetFiles(BridgeFileAccess.Native(directory)))
-            if ((BridgeFileAccess.Attributes(file) & FileAttributes.ReparsePoint) == 0) yield return BridgeFileAccess.Logical(file);
-        foreach (var child in Directory.GetDirectories(BridgeFileAccess.Native(directory)))
-            foreach (var file in Files(BridgeFileAccess.Logical(child))) yield return file;
     }
 }

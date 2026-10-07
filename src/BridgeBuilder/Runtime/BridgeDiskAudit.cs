@@ -38,7 +38,6 @@ internal sealed class BridgeDiskAudit
         }
         foreach (var root in new[] { audit._imported, audit._geometry })
         {
-            if (!SafeParents(root)) { audit.Error = "Unsafe asset root: " + root; return audit; }
             if (!Directory.Exists(BridgeFileAccess.Native(root))) continue;
             Select(root);
         }
@@ -53,7 +52,7 @@ internal sealed class BridgeDiskAudit
                     : BridgeAssetInfo.TryFileOwner(name, out var matched) ? matched : null;
                 if (owner == null)
                 {
-                    if (Directory.Exists(native) && (File.GetAttributes(native) & FileAttributes.ReparsePoint) == 0)
+                    if (Directory.Exists(native))
                         Select(path);
                     continue;
                 }
@@ -70,12 +69,6 @@ internal sealed class BridgeDiskAudit
     }
 
     private static bool Below(string path, string root) => path.StartsWith(root + Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase);
-    private static bool SafeParents(string path)
-    {
-        for (var directory = new DirectoryInfo(path); directory != null; directory = directory.Parent)
-            if (directory.Exists && (directory.Attributes & FileAttributes.ReparsePoint) != 0) return false;
-        return true;
-    }
     private static string UniqueTarget(string path)
     {
         var candidate = path;
@@ -94,7 +87,7 @@ internal sealed class BridgeDiskAudit
             var path = Path.GetFullPath(pair.Key);
             try
             {
-                if ((!Below(path, _imported) && !Below(path, _geometry)) || !SafeParents(path))
+                if (!Below(path, _imported) && !Below(path, _geometry))
                 { errors.Add("Unsafe deletion path: " + path); continue; }
                 if (Directory.Exists(BridgeFileAccess.Native(path))) Directory.Delete(BridgeFileAccess.Native(path), true);
                 else File.Delete(BridgeFileAccess.Native(path));
@@ -115,7 +108,7 @@ internal sealed class BridgeDiskAudit
         {
             backup = Path.GetFullPath(backup);
             var gameRoot = Path.GetDirectoryName(_imported)!;
-            if (string.Equals(backup, gameRoot, StringComparison.OrdinalIgnoreCase) || Below(backup, gameRoot) || !SafeParents(backup))
+            if (string.Equals(backup, gameRoot, StringComparison.OrdinalIgnoreCase) || Below(backup, gameRoot))
             { error = "Unsafe backup destination"; return false; }
             Directory.CreateDirectory(BridgeFileAccess.Native(backup));
         }
@@ -126,13 +119,11 @@ internal sealed class BridgeDiskAudit
             var source = Path.GetFullPath(pair.Key);
             try
             {
-                var parent = Path.GetDirectoryName(source)!;
                 // Containment protects the move destination and source roots, not asset validity.
-                if ((!Below(source, _imported) && !Below(source, _geometry)) || !SafeParents(parent))
+                if (!Below(source, _imported) && !Below(source, _geometry))
                 { errors.Add("Source outside asset roots: " + source); continue; }
                 var destinationRoot = Below(source, _geometry)
                     ? Path.Combine(backup, "BridgeBuilder") : backup;
-                if (!SafeParents(destinationRoot)) { errors.Add("Unsafe backup path: " + destinationRoot); continue; }
                 Directory.CreateDirectory(BridgeFileAccess.Native(destinationRoot));
                 var destination = UniqueTarget(Path.Combine(destinationRoot, Path.GetFileName(source)));
                 // Directory.Move/File.Move are the native equivalent of mv; no parsing, hashes,

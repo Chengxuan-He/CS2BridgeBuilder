@@ -25,7 +25,8 @@ internal static class BridgeAssetLayout
             if (selected.Count == 0) return true;
             var plan = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
             var targets = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-            var files = Files(Path.Combine(gameRoot, "ImportedData")).Concat(Files(Path.Combine(gameRoot, "BridgeBuilder"))).ToArray();
+            var files = BridgeFileAccess.EnumerateFiles(Path.Combine(gameRoot, "ImportedData"))
+                .Concat(BridgeFileAccess.EnumerateFiles(Path.Combine(gameRoot, "BridgeBuilder"))).ToArray();
             foreach (var source in files)
             {
                 var relative = source.Substring(gameRoot.Length + 1);
@@ -46,11 +47,6 @@ internal static class BridgeAssetLayout
                     || !BridgeAssetInfo.MatchesOwner(destination.Substring(gameRoot.Length), owner))
                 { error = "Unowned layout destination: " + destination; return false; }
                 if (source.Equals(destination, StringComparison.OrdinalIgnoreCase)) continue;
-                for (var parent = Path.GetDirectoryName(destination); parent != null && parent.Length > gameRoot.Length;
-                    parent = Path.GetDirectoryName(parent))
-                    if (Directory.Exists(BridgeFileAccess.Native(parent))
-                        && (BridgeFileAccess.Attributes(parent) & FileAttributes.ReparsePoint) != 0)
-                    { error = "Layout destination crosses a directory link: " + parent; return false; }
                 if (!BridgeFileAccess.Exists(source + ".cid"))
                 { error = "Missing CID sidecar: " + source; return false; }
                 foreach (var suffix in new[] { "", ".cid" })
@@ -96,13 +92,4 @@ internal static class BridgeAssetLayout
         }
     }
 
-    private static IEnumerable<string> Files(string directory)
-    {
-        if (!Directory.Exists(BridgeFileAccess.Native(directory))) yield break;
-        if ((BridgeFileAccess.Attributes(directory) & FileAttributes.ReparsePoint) != 0) yield break;
-        foreach (var file in Directory.GetFiles(BridgeFileAccess.Native(directory)))
-            if ((BridgeFileAccess.Attributes(file) & FileAttributes.ReparsePoint) == 0) yield return BridgeFileAccess.Logical(file);
-        foreach (var child in Directory.GetDirectories(BridgeFileAccess.Native(directory)))
-            foreach (var file in Files(BridgeFileAccess.Logical(child))) yield return file;
-    }
 }

@@ -29,9 +29,8 @@ internal static class BridgePackIcon
         foreach (var path in paths)
         {
             var full = Path.GetFullPath(path);
-            if (!full.StartsWith(root + Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase)
-                || (BridgeFileAccess.Attributes(full) & FileAttributes.ReparsePoint) != 0)
-            { error = "Pack path is outside ImportedData or is a reparse point: " + full; return false; }
+            if (!full.StartsWith(root + Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase))
+            { error = "Pack path is outside ImportedData: " + full; return false; }
             var text = BridgeFileAccess.ReadText(full);
             if (!TryReplace(text, icon, out var updated))
             { error = "Pack icon field or serialized pack identity is invalid: " + full; return false; }

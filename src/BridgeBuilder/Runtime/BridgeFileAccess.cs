@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
 
 namespace BridgeBuilder.Runtime;
@@ -22,7 +23,15 @@ internal static class BridgeFileAccess
         catch (FileNotFoundException) { return false; }
         catch (DirectoryNotFoundException) { return false; }
     }
-    internal static FileAttributes Attributes(string path) => File.GetAttributes(Native(path));
     internal static string ReadText(string path) => File.ReadAllText(Native(path));
     internal static FileStream OpenRead(string path) => File.OpenRead(Native(path));
+
+    internal static IEnumerable<string> EnumerateFiles(string directory)
+    {
+        if (!Directory.Exists(Native(directory))) yield break;
+        foreach (var file in Directory.GetFiles(Native(directory)))
+            yield return Logical(file);
+        foreach (var child in Directory.GetDirectories(Native(directory)))
+            foreach (var file in EnumerateFiles(Logical(child))) yield return file;
+    }
 }

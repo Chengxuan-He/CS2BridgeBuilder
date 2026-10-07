@@ -2,6 +2,12 @@
 
 ## First rule: fix reported bugs immediately
 
+The mod metadata name is immutable and must be exactly `Bridge Builder`. Changing, translating,
+replacing or appending any text to this metadata name is prohibited. Any page or field that uses
+this metadata title, including the heading of the mod description, must use exactly `Bridge Builder`;
+never substitute or append non-English translations. This rule does not rename existing localized
+in-game UI labels or prohibit translated description body text. See project contract section 20.
+
 Migration-failure policy (2026-10-07): dependency, native conversion, legacy naming and layout
 migration failures must fall back to UUID-scoped recursive backup/removal after phase rollback.
 This supersedes the retain-on-conversion-failure instructions below. Never unregister live prefabs

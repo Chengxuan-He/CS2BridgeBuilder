@@ -30,7 +30,7 @@ internal static class BridgeAssetCatalog
         var result = new List<BridgeAssetInfo>();
         try
         {
-            if (!BridgeFileAccess.Exists(Root) || (BridgeFileAccess.Attributes(Root) & FileAttributes.ReparsePoint) != 0)
+            if (!BridgeFileAccess.Exists(Root))
                 return result;
             foreach (var directory in Directory.GetDirectories(BridgeFileAccess.Native(Root)))
             {
@@ -50,8 +50,7 @@ internal static class BridgeAssetCatalog
         try
         {
             var path = PathFor(owner);
-            if (!BridgeFileAccess.Exists(path) || (BridgeFileAccess.Attributes(Path.GetDirectoryName(path)!) & FileAttributes.ReparsePoint) != 0
-                || (BridgeFileAccess.Attributes(path) & FileAttributes.ReparsePoint) != 0) return null;
+            if (!BridgeFileAccess.Exists(path)) return null;
             return BridgeAssetMetadata.TryRead(BridgeFileAccess.ReadText(path), out var entry)
                 && entry.PrefabName == owner ? entry : new BridgeAssetInfo(owner, owner, "", null, "", "");
         }
@@ -73,11 +72,9 @@ internal static class BridgeAssetCatalog
     {
         var entry = Creating.TryGetValue(prefab.name, out var pending) ? pending : fallback;
         var data = prefab.AddOrGetComponent<UIObject>();
-        Apply(data, entry);
+        data.name = BridgeAssetMetadata.Encode(entry);
         if (Creating.ContainsKey(prefab.name)) CreatingPrefabs[prefab.name] = prefab;
     }
-
-    private static void Apply(UIObject data, BridgeAssetInfo entry) => data.name = BridgeAssetMetadata.Encode(entry);
 
     internal static bool Commit(string owner)
     {
@@ -86,7 +83,7 @@ internal static class BridgeAssetCatalog
             pending.LowerDeckId, pending.StyleId, pending.CreatedUtc);
         if (!BridgeAssetMetadata.Write(PathFor(owner), entry)) return false;
         if (CreatingPrefabs.TryGetValue(owner, out var prefab)
-            && prefab.GetComponent<UIObject>() is { } data) Apply(data, entry);
+            && prefab.GetComponent<UIObject>() is { } data) data.name = BridgeAssetMetadata.Encode(entry);
         if (!BridgeNativePresentation.Save(entry, out _)) return false;
         EndCreation(owner);
         return true;

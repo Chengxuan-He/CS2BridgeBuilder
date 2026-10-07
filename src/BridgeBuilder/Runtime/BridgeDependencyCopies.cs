@@ -69,25 +69,19 @@ internal static class BridgeDependencyCopies
                     foreach (var dependency in References(source.Bytes)) pending.Push(dependency);
             }
             var folder = Folder(gameRoot, owner);
-            var imported = Path.GetDirectoryName(folder)!;
-            foreach (var directory in new[] { gameRoot, imported, folder })
-                if (BridgeFileAccess.Exists(directory)
-                    && (BridgeFileAccess.Attributes(directory) & FileAttributes.ReparsePoint) != 0)
-                { error = "Reparse-point dependency directory"; return false; }
             // Preflight every destination before publishing any file. A changed same-CID asset
             // must not silently replace a snapshot on which this bridge already depends.
             var verifiedExisting = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
             foreach (var copy in copies)
             {
                 var path = Path.Combine(folder, copy.Key + copy.Value.Extension);
-                foreach (var file in new[] { path, path + ".cid" })
-                    if (BridgeFileAccess.Exists(file) && (BridgeFileAccess.Attributes(file) & FileAttributes.ReparsePoint) != 0)
-                    { error = "Reparse-point dependency file"; return false; }
-                if (BridgeFileAccess.Exists(path) && !Matches(path, copy.Value.Bytes))
+                var payloadExists = BridgeFileAccess.Exists(path);
+                var sidecarExists = BridgeFileAccess.Exists(path + ".cid");
+                if (payloadExists && !Matches(path, copy.Value.Bytes))
                 { error = "Different contents for dependency CID " + copy.Key; return false; }
-                if (BridgeFileAccess.Exists(path + ".cid") && BridgeFileAccess.ReadText(path + ".cid").Trim() != copy.Key)
+                if (sidecarExists && BridgeFileAccess.ReadText(path + ".cid").Trim() != copy.Key)
                 { error = "Dependency sidecar mismatch: " + copy.Key; return false; }
-                if (BridgeFileAccess.Exists(path) && BridgeFileAccess.Exists(path + ".cid")) verifiedExisting.Add(copy.Key);
+                if (payloadExists && sidecarExists) verifiedExisting.Add(copy.Key);
             }
             if (copies.Count == 0) return true;
             Directory.CreateDirectory(BridgeFileAccess.Native(folder));

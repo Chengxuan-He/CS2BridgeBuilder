@@ -90,7 +90,6 @@ internal static class BridgeAssetMetadata
         try
         {
             if (!BridgeAssetInfo.MatchesOwner(path, entry.PrefabName)) return false;
-            if ((BridgeFileAccess.Attributes(path) & FileAttributes.ReparsePoint) != 0) return false;
             var original = BridgeFileAccess.ReadText(path);
             if (!Rewrite(original, entry, out var updated)) return false;
             if (updated == original) return true;

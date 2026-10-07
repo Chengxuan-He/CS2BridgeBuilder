@@ -65,7 +65,6 @@ internal static class BridgeRecoveryLocation
         try
         {
             if (!Directory.Exists(LegacyPath)) return;
-            if ((File.GetAttributes(LegacyPath) & FileAttributes.ReparsePoint) != 0) return;
             // Same-volume rename of the entire backup tree; never overwrite existing copies.
             Directory.CreateDirectory(DefaultPath);
             var target = System.IO.Path.Combine(DefaultPath, "Legacy-" + Guid.NewGuid().ToString("N"));

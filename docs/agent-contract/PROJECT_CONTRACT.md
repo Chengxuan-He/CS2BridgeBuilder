@@ -1257,3 +1257,18 @@ Startup self-check must distinguish healthy legacy migration from damaged-asset 
 Report migration as migration, never as repaired damage. When both occur, explicitly report both;
 when migration fails, report that failure without calling a healthy bridge damaged. Localize all
 new messages in every supported language and request restart after persistent changes.
+
+## 20. Immutable mod metadata name
+
+User instruction 2026-10-07. Baseline: `dev`, `99bed35b96074f4954ec51c06ec171437ff5c79e`.
+Rollback reference: `refs/rollback/fixed-mod-metadata-name-20261007`. Preserve existing local edits.
+
+The mod metadata name must always be exactly `Bridge Builder`. It must never be changed,
+translated, replaced, or extended with any prefix, suffix or additional language. Publishing
+metadata and any page or field using the metadata title, including the mod description heading,
+must use this exact English name. Non-English translations must not replace or accompany the
+name in these title positions. Before publishing or updating metadata or descriptions, verify
+that both the metadata name and the description heading satisfy this requirement.
+
+Localized in-game UI names and translated description body text remain permitted; they must not
+be copied into metadata title fields or metadata-based page headings.

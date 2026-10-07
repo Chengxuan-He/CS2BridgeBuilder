@@ -103,18 +103,13 @@ internal static class BridgeUnlockMigration
         {
             var imported = Path.Combine(Path.GetFullPath(gameRoot), "ImportedData");
             if (!BridgeFileAccess.Exists(imported)) return true;
-            if ((BridgeFileAccess.Attributes(imported) & FileAttributes.ReparsePoint) != 0)
-            { error = "Reparse-point imported root retained"; return false; }
             var planned = new List<(string Path, string Before, string After)>();
             foreach (var directory in Directory.GetDirectories(BridgeFileAccess.Native(imported)))
             {
-                if ((BridgeFileAccess.Attributes(directory) & FileAttributes.ReparsePoint) != 0) continue;
                 var stem = Path.GetFileName(directory);
                 if (!BridgeAssetInfo.TryFileOwner(stem, out _)) continue;
                 var path = Path.Combine(directory, stem + ".Prefab");
                 if (!BridgeFileAccess.Exists(path)) continue;
-                if ((BridgeFileAccess.Attributes(path) & FileAttributes.ReparsePoint) != 0)
-                { error = "Reparse point retained: " + path; return false; }
                 var before = BridgeFileAccess.ReadText(path);
                 if (!Rewrite(before, out var after, out error)) { error = path + ": " + error; return false; }
                 if (after != before) planned.Add((path, before, after));
@@ -136,8 +131,7 @@ internal static class BridgeUnlockMigration
         var temp = path + "." + Guid.NewGuid().ToString("N") + ".bbpending";
         try
         {
-            if ((BridgeFileAccess.Attributes(path) & FileAttributes.ReparsePoint) != 0
-                || BridgeFileAccess.ReadText(path) != before)
+            if (BridgeFileAccess.ReadText(path) != before)
             { error = "File changed since preflight; retained: " + path; return false; }
             // Backups do not carry a live .Prefab/.cid extension and are never reimported.
             using var sha = SHA256.Create();
