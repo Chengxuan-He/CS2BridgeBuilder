@@ -12,7 +12,7 @@ static Probe Fresh()
     Game.Prefabs.PrefabSystem.Loaded = new() { new Game.Prefabs.NetGeometryPrefab { name = "bridge", asset = new() } };
     Colossal.IO.AssetDatabase.AssetDatabase.user.Assets = new() { new() {
         path = Path.Combine(BridgeAssetCatalog.Root,"bridge","bridge.Prefab"), Instance = Game.Prefabs.PrefabSystem.Loaded[0] } };
-    BridgeAssetMigration.Changed = false; BridgeAssetMigration.Calls = 0; BridgeAssetMigration.Fail = false;
+    BridgeDependencyPersistence.MigrationChanged = false; BridgeDependencyPersistence.MigrationCalls = 0; BridgeDependencyPersistence.MigrationFail = false;
     BridgeLegacyNames.Changed = false; BridgeLegacyNames.Fail = false;
     BridgeAssetLayout.Changed = false; BridgeAssetLayout.Fail = false; BridgeAssetLayout.Owners = 0;
     BridgePortableMigration.Changed = false; BridgePortableMigration.Fail = false;
@@ -45,7 +45,7 @@ Menu(p); Check(BridgeNetworkValidation.Calls == 1, "State transition releases ch
 p = Fresh(); BridgeNetworkValidation.Invalid = true; p.ScheduleInspectionAfterLoad(); Menu(p);
 Check(BridgeStartupRecovery.Retired.Contains("bridge") && BridgeBuilder.Mod.Messages.Single() == "BridgeSelfCheckRemoved", "Memory evidence retires only owned files with restart notice");
 p = Fresh(); BridgeNetworkValidation.Invalid = true; BridgeDiskAudit.Incomplete = true; p.ScheduleInspectionAfterLoad(); Menu(p);
-Check(BridgeStartupRecovery.Retired.Count == 0 && BridgeBuilder.Mod.Messages.Single().Contains("BridgeSelfCheckIncomplete"), "Incomplete audit retains assets");
+Check(BridgeStartupRecovery.Retired.Count == 0 && BridgeBuilder.Mod.Messages.Single().Contains("BridgeSelfCheckIncomplete"), "Incomplete enumeration reports removal failure");
 p = Fresh(); p.ScheduleInspectionAfterLoad(); GameManager.instance.gameMode = GameMode.Game;
 GameManager.instance.state = GameManager.State.WorldReady; GameManager.instance.isGameLoading = false; p.Tick();
 Check(BridgeNetworkValidation.Calls == 0, "No retirement while city loaded");
@@ -62,26 +62,26 @@ p.RequestManualCheck(); p.Tick();
 Check(BridgeDiskAudit.Calls == 1 && BridgeNetworkValidation.Calls == 1, "Retired owners are not reprocessed");
 p = Fresh(); Game.Prefabs.PrefabSystem.Loaded[0].Registered = false;
 Game.Prefabs.PrefabSystem.Loaded.Clear(); p.ScheduleInspectionAfterLoad(); Menu(p);
-Check(BridgeStartupRecovery.Retired.Contains("bridge") && BridgeAssetMigration.Calls == 0,
-    "Unregistered cached prefab excluded from PrefabSystem is retired, not migrated (case 03)");
+Check(BridgeStartupRecovery.Retired.Contains("bridge") && BridgeDependencyPersistence.MigrationCalls == 1,
+    "Dependency migration is attempted before retiring an unregistered cached prefab (case 03)");
 p = Fresh(); Game.Prefabs.PrefabSystem.Loaded[0].Available = false;
 p.ScheduleInspectionAfterLoad(); Menu(p);
-Check(BridgeStartupRecovery.Retired.Contains("bridge") && BridgeAssetMigration.Calls == 0, "Unavailable bridge content is retired");
+Check(BridgeStartupRecovery.Retired.Contains("bridge") && BridgeDependencyPersistence.MigrationCalls == 1, "Unavailable bridge content is retired after attempted dependency migration");
 p = Fresh(); Colossal.IO.AssetDatabase.AssetDatabase.user.Assets[0].Instance = null;
 p.ScheduleInspectionAfterLoad(); Menu(p);
 Check(BridgeStartupRecovery.Retired.Contains("bridge") && BridgeBuilder.Mod.Messages.Single() == "BridgeSelfCheckRemoved", "Failed loading retires owner");
 p = Fresh(); Colossal.IO.AssetDatabase.AssetDatabase.user.Assets[0].Instance = null;
 p.ScheduleInspectionAfterLoad(); Menu(p);
 Check(BridgeStartupRecovery.Retired.Contains("bridge"), "Explicit file damage covers missing cached object");
-p = Fresh(); BridgeAssetMigration.Fail = true; p.ScheduleInspectionAfterLoad(); Menu(p);
-Check(BridgeStartupRecovery.Retired.Count == 1 && BridgeDiskAudit.Calls == 1 && BridgeAssetMigration.Calls == 1
+p = Fresh(); BridgeDependencyPersistence.MigrationFail = true; p.ScheduleInspectionAfterLoad(); Menu(p);
+Check(BridgeStartupRecovery.Retired.Count == 1 && BridgeDiskAudit.Calls == 1 && BridgeDependencyPersistence.MigrationCalls == 1
     && BridgeBuilder.Mod.Messages.Single() == "BridgeSelfCheckRemoved",
     "Dependency migration failure falls back to removal");
 p = Fresh(); p.ScheduleInspectionAfterLoad(); Menu(p);
-Check(BridgeAssetMigration.Calls == 1 && BridgeDiskAudit.Calls == 0, "Healthy bridge migrates without disk integrity audit");
+Check(BridgeDependencyPersistence.MigrationCalls == 1 && BridgeDiskAudit.Calls == 0, "Healthy bridge migrates without disk integrity audit");
 p = Fresh(); Colossal.IO.AssetDatabase.AssetDatabase.user.Assets[0].path = Path.GetFullPath("unused/elsewhere/bridge/bridge.Prefab");
 p.ScheduleInspectionAfterLoad(); Menu(p);
-Check(BridgeAssetMigration.Calls == 0 && BridgeNetworkValidation.Calls == 0, "Assets outside exact imported root excluded");
+Check(BridgeDependencyPersistence.MigrationCalls == 0 && BridgeNetworkValidation.Calls == 0, "Assets outside exact imported root excluded");
 p = Fresh(); var pdx = (Colossal.IO.AssetDatabase.ParadoxModsDataSource)Colossal.IO.AssetDatabase.AssetDatabase<Colossal.IO.AssetDatabase.ParadoxMods>.instance.dataSource;
 pdx.Cached = false; p.ScheduleInspectionAfterLoad(); Menu(p);
 Check(BridgeNetworkValidation.Calls == 0, "Main menu alone cannot inspect before PDX assets are cached");
@@ -105,13 +105,13 @@ p = Fresh(); BridgeNetworkValidation.Invalid = true; BridgeLoadedCidRecovery.Out
 p.ScheduleInspectionAfterLoad(); Menu(p);
 Check(BridgeStartupRecovery.Retired.Contains("bridge") && BridgeDependencyPersistence.Calls == 0,
     "Unknown reason for required null is retired, never retained as inconclusive");
-p = Fresh(); BridgeAssetMigration.Changed = true; p.ScheduleInspectionAfterLoad(); Menu(p);
+p = Fresh(); BridgeDependencyPersistence.MigrationChanged = true; p.ScheduleInspectionAfterLoad(); Menu(p);
 Check(BridgeStartupRecovery.Retired.Count == 0 && BridgeDependencyPersistence.Calls == 0
     && BridgeBuilder.Mod.Messages.Single() == "BridgeSelfCheckMigrated", "Healthy dependency-only migration is not reported as damage");
 p = Fresh(); BridgeLegacyNames.Changed = true; p.ScheduleInspectionAfterLoad(); Menu(p);
 Check(BridgeBuilder.Mod.Messages.Single() == "BridgeSelfCheckMigrated", "Legacy rename requests restart as migration");
 p.RequestManualCheck(); p.Tick();
-Check(BridgeAssetMigration.Calls == 1, "Renamed bridge skips stale in-memory asset index until restart");
+Check(BridgeDependencyPersistence.MigrationCalls == 1, "Renamed bridge skips stale in-memory asset index until restart");
 p = Fresh(); BridgeLegacyNames.Fail = true; p.ScheduleInspectionAfterLoad(); Menu(p);
 Check(BridgeBuilder.Mod.Messages.Single() == "BridgeSelfCheckRemoved" && BridgeStartupRecovery.Retired.Count == 1,
     "Rename failure falls back to removal");
@@ -119,7 +119,7 @@ p = Fresh(); BridgePortableMigration.Changed = true; p.ScheduleInspectionAfterLo
 Check(BridgeBuilder.Mod.Messages.Single() == "BridgeSelfCheckMigrated" && BridgeStartupRecovery.Retired.Count == 0,
     "Additive native conversion requests restart without removing bridge");
 p.RequestManualCheck(); p.Tick();
-Check(BridgeAssetMigration.Calls == 1, "Converted bridge skips stale cached objects until restart");
+Check(BridgeDependencyPersistence.MigrationCalls == 1, "Converted bridge skips stale cached objects until restart");
 p = Fresh(); BridgePortableMigration.Fail = true; p.ScheduleInspectionAfterLoad(); Menu(p);
 Check(BridgeBuilder.Mod.Messages.Single() == "BridgeSelfCheckRemoved" && BridgeStartupRecovery.Retired.Count == 1,
     "Conversion failure falls back to removal");
@@ -131,7 +131,7 @@ p = Fresh(); BridgeAssetLayout.Changed = true; p.ScheduleInspectionAfterLoad(); 
 Check(BridgeAssetLayout.Owners == 1 && BridgeBuilder.Mod.Messages.Single() == "BridgeSelfCheckMigrated",
     "Already native bridge still receives file layout migration");
 p.RequestManualCheck(); p.Tick();
-Check(BridgeAssetLayout.Owners == 1 && BridgeAssetMigration.Calls == 1, "Moved files never reenter stale asset streams");
+Check(BridgeAssetLayout.Owners == 1 && BridgeDependencyPersistence.MigrationCalls == 1, "Moved files never reenter stale asset streams");
 p = Fresh(); BridgeAssetLayout.Fail = true; p.ScheduleInspectionAfterLoad(); Menu(p);
 Check(BridgeBuilder.Mod.Messages.Single() == "BridgeSelfCheckRemoved" && BridgeStartupRecovery.Retired.Count == 1,
     "Layout failure falls back to removal");

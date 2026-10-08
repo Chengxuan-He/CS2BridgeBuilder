@@ -140,12 +140,6 @@ namespace BridgeBuilder.Runtime
             changed = Changed ? new(owners) : new(); error = "fixture"; return !Fail;
         }
     }
-    public static class BridgeAssetMigration {
-        public static int Calls; public static bool Fail, Changed;
-        public static bool Run(string owner, IEnumerable<string> seeds, out bool changed, out string error) {
-            Calls++; changed = Changed; error = "fixture"; return !Fail;
-        }
-    }
     public static class BridgeAssetLayout {
         public static bool Fail, Changed; public static int Owners;
         public static bool Run(string root, IEnumerable<string> owners, string backup, Func<string,string> path,
@@ -170,7 +164,8 @@ namespace BridgeBuilder.Runtime {
   }
  }
  public static class BridgeDependencyPersistence {
-  public static int Calls; public static bool Fail;
+  public static int Calls, MigrationCalls; public static bool Fail, MigrationFail, MigrationChanged;
+  public static bool Save(string owner,IEnumerable<string> seeds,out int count,out string error,out int writtenFiles) { MigrationCalls++;count=1;writtenFiles=MigrationChanged ? 1 : 0;error="copy failed";return !MigrationFail; }
   public static bool Save(string owner,IEnumerable<string> seeds,out int count,out string error) { Calls++;count=1;error="copy failed";return !Fail; }
  }
 }

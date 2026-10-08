@@ -2,6 +2,17 @@
 
 ## First rule: fix reported bugs immediately
 
+Self-check order (2026-10-08): prioritize normal game operation. First attempt asset version
+migration, completing missing fields and dependencies while preserving UUID/CID. Healthy current
+assets remain unchanged; successful migrations do not enter removal. Only after migration fails
+or is proven impossible, attempt UUID-scoped recursive
+backup/move; if backup creation, copying or moving fails, permanently delete the remaining owned
+source files/directories. Backup success is never a prerequisite for removal. Continue with other
+selected paths after individual failures, verify removal, and report any remaining inaccessible
+paths as removal failures. Never unregister live prefabs during self-check; require restart.
+See contract section 19; baseline `dev` / `713ee6be933a6e427d9e44fd41767513efcaca53`,
+rollback reference `refs/rollback/migration-first-removal-rule-20261008`.
+
 The mod metadata name is immutable and must be exactly `Bridge Builder`. Changing, translating,
 replacing or appending any text to this metadata name is prohibited. Any page or field that uses
 this metadata title, including the heading of the mod description, must use exactly `Bridge Builder`;
@@ -10,7 +21,7 @@ in-game UI labels or prohibit translated description body text. See project cont
 
 Migration-failure policy (2026-10-07): dependency, native conversion, legacy naming and layout
 migration failures must fall back to UUID-scoped recursive backup/removal after phase rollback.
-This supersedes the retain-on-conversion-failure instructions below. Never unregister live prefabs
+Never unregister live prefabs
 during self-check; require restart. Report actual removal failures explicitly. Contract section 19
 records baseline `dev` / `3223c89f9573c6d6515a9fb1c1b078576e8eb723` and rollback reference
 `refs/rollback/migration-failure-removal-20261007`.
@@ -40,8 +51,8 @@ copies with rewritten native costs are authorized and supersede the old scalar-o
 Legacy migration is ADDITIVE: keep each existing bridge/root and deck CID, UUID/name, prefab version
 and geometry. Reuse the existing asset as the save target; never recreate the bridge under a new
 identity. Add dependencies and native payloads, retain original components' files, back up replaced
-bytes, and verify existing identities/CID sidecars after saving. Failed conversion restores originals
-and reports CRITICAL; conversion failure alone is not asset damage. Require restart after migration.
+bytes, and verify existing identities/CID sidecars after saving. Failed conversion rolls back the
+incomplete phase, logs ERROR and enters removal. Require restart after migration or removal.
 Preserve current bridge files for persistence acceptance; do not perform the old blanket cleanup.
 
 Contract section 19's unified-layout revision requires old bridges after self-check to use the same
@@ -307,12 +318,10 @@ The subsequent migration revision (same `dev`/`3be5fed03b275a07850f413dc2396b018
 rollback baseline) must include cached user PrefabAssets that failed native registration, not only
 PrefabSystem's registered list. Do not call Load or republish to obtain a cached instance.
 Validate required references read-only; retire proven null references or loaded, available assets
-that failed registration. Missing cached instances or intentionally unavailable content alone are
-inconclusive and must not trigger deletion. A targeted serialized check is allowed when no cached
-instance exists. Healthy legacy bridges keep UUID, CID, name and geometry; copy external dependencies
+that failed registration. A targeted serialized check is allowed when no cached instance exists; unresolved required
+dependencies enter removal. Healthy legacy bridges keep UUID, CID, name and geometry; copy external dependencies
 before committing asset-local persistence version/metadata, backing up the original root. Do not
-invent missing historical recipe values or use a separate registration store. Migration I/O failures
-retain the bridge and report incomplete; successful migration is idempotent.
+invent missing historical recipe values or use a separate registration store. Migration I/O failures enter removal; successful migration is idempotent.
 
 
 Latest self-check revision (rollback baseline `dev`, HEAD
@@ -323,8 +332,7 @@ original serialized CID and verify that its PrefabAsset already has a cached ins
 recursively copy unchanged dependencies under the owning bridge UUID as in section 17, retain the
 original bridge and request restart; do not modify live references or force-load the dependency.
 If the CID is unavailable/not loaded or the source contains an explicit null with no CID, retire
-the owning bridge directories. Unknown serialization or copying I/O failure remains incomplete,
-not proof of corruption. This supersedes the earlier unconditional null-reference retirement rule.
+the owning bridge directories. Unknown serialization or copying I/O failure enters removal.
 
 
 Repair-or-remove policy update (baseline `dev`, HEAD

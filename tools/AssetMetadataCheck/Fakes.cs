@@ -1,4 +1,4 @@
-﻿namespace UnityEngine
+namespace UnityEngine
 {
     internal static class Application { internal static string persistentDataPath = ""; }
 }
@@ -40,14 +40,5 @@ namespace BridgeBuilder.Bridges
 namespace BridgeBuilder.Runtime {
  internal static class BridgeNativePresentation {
    internal static bool Save(BridgeAssetInfo entry, out string error) { error = ""; return true; }
- }
- internal static class BridgeDependencyPersistence {
-   internal static bool Fail; internal static int Calls, WrittenFiles;
-   internal static bool Save(string owner, IEnumerable<string> seeds, out int count, out string error) {
-     return Save(owner, seeds, out count, out error, out _);
-   }
-   internal static bool Save(string owner, IEnumerable<string> seeds, out int count, out string error, out int writtenFiles) {
-     Calls++; count = 2; writtenFiles = WrittenFiles; error = "copy failed"; return !Fail;
-   }
  }
 }

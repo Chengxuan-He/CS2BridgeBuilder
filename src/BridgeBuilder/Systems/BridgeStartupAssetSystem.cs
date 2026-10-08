@@ -19,7 +19,6 @@ public partial class BridgeStartupAssetSystem : GameSystemBase
     private bool _startupPending;
     private static bool _modLoaded;
     private bool _manualRequested;
-    private bool _restartNotice;
     private bool _migrationIncomplete;
     private string? _pendingNotice;
     private readonly HashSet<string> _copiedOwners = new(StringComparer.Ordinal);
@@ -108,7 +107,7 @@ public partial class BridgeStartupAssetSystem : GameSystemBase
         var timer = System.Diagnostics.Stopwatch.StartNew();
         IsStartupInspection = true;
         _pendingNotice = "BridgeSelfCheckIncomplete";
-        _restartNotice = true;
+        var restartNotice = true;
         Mod.Log.Info($"Bridge self-check started: {(manual ? "manual" : "mod initialized + all native asset batches complete")}");
         try
         {
@@ -121,8 +120,21 @@ public partial class BridgeStartupAssetSystem : GameSystemBase
                 Mod.Log.Error("Bridge pack icon could not be updated; existing bridge assets retained.");
             var owners = new HashSet<string>(assets.Select(a => a.Owner), StringComparer.Ordinal);
             var migrationCandidates = new HashSet<string>(StringComparer.Ordinal);
+            var migrationErrors = 0;
+            foreach (var owner in owners)
+            {
+                if (!BridgeDependencyPersistence.Save(owner, assets.Where(a => a.Owner == owner).Select(a => a.Cid),
+                    out _, out var migrationError, out var writtenFiles))
+                {
+                    migrationErrors++;
+                    failures[owner] = "Dependency migration failed: " + migrationError;
+                    Mod.Log.Error($"Bridge dependency migration failed UUID={owner}; scheduling removal: {migrationError}");
+                }
+                else if (writtenFiles != 0) migrationCandidates.Add(owner);
+            }
             foreach (var asset in assets)
             {
+                if (failures.ContainsKey(asset.Owner)) continue;
                 var prefab = asset.Prefab;
                 string reason;
                 if (prefab == null)
@@ -160,19 +172,8 @@ public partial class BridgeStartupAssetSystem : GameSystemBase
                 migrationCandidates.Add(recovery.Key);
                 Mod.Log.Info($"Bridge CID recovery copied UUID={recovery.Key}, dependencies={count}, recoveredCIDs={string.Join(",", recovery.Value)}; restart required; live references unchanged.");
             }
-            var migrationErrors = 0;
-            foreach (var owner in owners.Where(o => !failures.ContainsKey(o) && !_copiedOwners.Contains(o)))
-            {
-                if (!BridgeAssetMigration.Run(owner, assets.Where(a => a.Owner == owner).Select(a => a.Cid),
-                    out var changed, out var migrationError))
-                {
-                    migrationErrors++;
-                    failures[owner] = "Dependency migration failed: " + migrationError;
-                    Mod.Log.Error($"Bridge dependency migration failed UUID={owner}; scheduling removal: {migrationError}");
-                }
-                else if (changed) migrationCandidates.Add(owner);
-            }
             var persistenceMs = timer.ElapsedMilliseconds - validationMs;
+            // Recovered disk references are still null in memory until restart; never serialize them back.
             foreach (var owner in owners.Where(o => !failures.ContainsKey(o) && !_copiedOwners.Contains(o)))
             {
                 if (!BridgePortableMigration.Run(owner, system, backup, out var converted, out var conversionError))
@@ -248,8 +249,8 @@ public partial class BridgeStartupAssetSystem : GameSystemBase
             var hadRemovals = _removedOwners.Count != 0;
             var migratedAny = _migratedOwners.Count != 0;
             _migrationIncomplete |= migrationErrors != 0 && removalErrors != 0;
-            _restartNotice = hadRemovals || migratedAny || removalErrors != 0 || _migrationIncomplete;
-            if (_restartNotice) BridgeSessionState.RequireRestart();
+            restartNotice = hadRemovals || migratedAny || removalErrors != 0 || _migrationIncomplete;
+            if (restartNotice) BridgeSessionState.RequireRestart();
             var notices = new List<string>();
             if (migratedAny && hadRemovals) notices.Add("BridgeSelfCheckMigratedAndRemoved");
             else if (migratedAny) notices.Add("BridgeSelfCheckMigrated");
@@ -264,7 +265,7 @@ public partial class BridgeStartupAssetSystem : GameSystemBase
             // No exception capture; restore lifecycle state even when the game API fails.
             IsStartupInspection = false;
             Enabled = _pendingNotice != null || _startupPending;
-            Mod.Log.Info($"Bridge self-check finished: result={_pendingNotice ?? "passed"}, restartRecommended={_restartNotice}");
+            Mod.Log.Info($"Bridge self-check finished: result={_pendingNotice ?? "passed"}, restartRecommended={restartNotice}");
         }
     }
 }

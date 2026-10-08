@@ -1104,12 +1104,10 @@ The subsequent migration revision (same `dev`/`3be5fed03b275a07850f413dc2396b018
 rollback baseline) must include cached user PrefabAssets that failed native registration, not only
 PrefabSystem's registered list. Do not call Load or republish to obtain a cached instance.
 Validate required references read-only; retire proven null references or loaded, available assets
-that failed registration. Missing cached instances or intentionally unavailable content alone are
-inconclusive and must not trigger deletion. A targeted serialized check is allowed when no cached
-instance exists. Healthy legacy bridges keep UUID, CID, name and geometry; copy external dependencies
+that failed registration. A targeted serialized check is allowed when no cached instance exists; unresolved required
+dependencies enter removal. Healthy legacy bridges keep UUID, CID, name and geometry; copy external dependencies
 before committing asset-local persistence version/metadata, backing up the original root. Do not
-invent missing historical recipe values or use a separate registration store. Migration I/O failures
-retain the bridge and report incomplete; successful migration is idempotent.
+invent missing historical recipe values or use a separate registration store. Migration I/O failures enter removal; successful migration is idempotent.
 
 
 Latest self-check revision (rollback baseline `dev`, HEAD
@@ -1120,8 +1118,7 @@ original serialized CID and verify that its PrefabAsset already has a cached ins
 recursively copy unchanged dependencies under the owning bridge UUID as in section 17, retain the
 original bridge and request restart; do not modify live references or force-load the dependency.
 If the CID is unavailable/not loaded or the source contains an explicit null with no CID, retire
-the owning bridge directories. Unknown serialization or copying I/O failure remains incomplete,
-not proof of corruption. This supersedes the earlier unconditional null-reference retirement rule.
+the owning bridge directories. Unknown serialization or copying I/O failure enters removal.
 
 
 Repair-or-remove policy update (baseline `dev`, HEAD
@@ -1166,6 +1163,41 @@ content evidence or concurrent-change snapshots.
 
 ## 19. Independent native persistence and additive legacy conversion
 
+### Self-check order: migrate, back up/move, delete (2026-10-08)
+
+User clarification of the existing requirement. Baseline: `dev`,
+`713ee6be933a6e427d9e44fd41767513efcaca53`; rollback reference
+`refs/rollback/migration-first-removal-rule-20261008`. Preserve unrelated local changes.
+
+**自检的第一目标是保障游戏正常运行。优先尝试资产版本迁移；迁移失败后尝试备份并移出加载目录；备份或移动失败后，必须继续删除残留原资产，不能保留。**
+
+Apply this sequence per bridge. First attempt version migration using the shared generation
+format: complete missing fields and dependencies, preserve bridge UUID/CID and valid values,
+and normalize file layout/naming. Already valid current assets remain unchanged. Successful
+migration is reported as migration and must not fall through to removal. If migration fails or
+required information/dependencies make migration impossible, record the reason, roll back the
+incomplete migration phase, and proceed to recursive backup/move. Do not skip possible migration
+merely because an asset is old or has missing fields. A backup copy alone does not complete removal;
+the failed asset must also leave the active asset directories.
+
+For a bridge already selected for removal by self-check, first attempt recursive backup/move of
+its UUID-owned files/directories. If creating the backup destination, backing up files, or moving
+any selected path fails, permanently delete the remaining selected source files/directories.
+Do not return early, retain the faulty bridge, or skip removal merely because backup is unavailable.
+If a move partially succeeds, keep successful backups and delete the remaining owned source paths;
+do not restore faulty assets into active asset directories after entering removal.
+
+Use the existing b{uuid} string-only ownership rule and intended asset roots. This fallback applies
+only to bridges selected for removal, not healthy bridges or unrelated assets. Process all selected
+paths and bridges even when one operation fails. Verify that selected sources are absent before
+reporting removal success. Record backup failure separately from deletion failure: a failed backup
+followed by verified deletion is successful removal without a complete backup. If permissions or
+another filesystem error also prevent deletion, report removal failure and the remaining paths;
+never claim success or imply that the mod can override operating-system permissions.
+
+Self-check still does not unregister live prefabs or promise to repair the current game session.
+Require restart after removal; if removal fails, restarting alone does not resolve retained assets.
+
 ### Explicit bulk deletion (2026-10-07)
 
 Baseline `dev` / `3223c89f9573c6d6515a9fb1c1b078576e8eb723`;
@@ -1183,13 +1215,13 @@ prefab unregistration. Never execute either deletion during agent deployment for
 
 Baseline: `dev`, `3223c89f9573c6d6515a9fb1c1b078576e8eb723`;
 rollback reference `refs/rollback/migration-failure-removal-20261007`.
-This supersedes all earlier instructions to retain a bridge after migration failure, including
-the field-by-field migration paragraph below. After an unsuccessful dependency, native conversion,
+After an unsuccessful dependency, native conversion,
 legacy naming or layout migration, roll back that phase's incomplete changes and retire the affected
 bridge using UUID-string ownership and recursive backup/move. Process naming and layout per owner
 so a failure does not remove unrelated successful bridges. Do not unregister live prefabs; require
 restart. A successful fallback is removal, not migration success or incomplete retention. Actual
-backup/removal failures remain explicit failures; never claim files were removed when they remain.
+deletion failures remain explicit failures; a backup/move failure must first fall back to deletion.
+Never claim files were removed when they remain.
 
 ### Field-by-field migration (2026-10-07)
 
@@ -1203,7 +1235,7 @@ Inspect each persisted field/component independently on the root and its owned n
 marker or one complete root must not skip checks of other fields, auxiliary networks, locales,
 dependencies, names or layout. Preserve valid values, native unlock semantics, UUID/CID and geometry;
 write only assets needing an upgrade. Unknown optional historical values remain empty rather than
-invented; missing required information must produce an explicit migration failure retaining originals.
+invented; missing required information must produce an explicit migration failure followed by removal.
 Use the same native persistence helpers and naming/layout rules as generation. Repeated migration
 must make no changes after successful completion; report it as migration and require restart.
 
@@ -1233,9 +1265,9 @@ unchanged. Keep recursive byte-identical external dependency persistence with or
 Legacy migration during post-load self-check is **additive**: preserve bridge and carried-deck UUID,
 CID, native prefab version, name and geometry. Save into the existing asset, never a new bridge identity.
 Add private dependencies and native payloads; retain original component files. Back up existing files,
-verify identities and CID sidecars after saving, restore originals on failure and log CRITICAL. A failed
-conversion alone is not proof of corruption and cannot authorize bridge removal. Actual damaged assets
-continue to follow repair-or-remove policy. Restart after successful migration; do not replace live
+verify identities and CID sidecars after saving. On conversion failure, roll back the incomplete phase,
+log ERROR and remove the affected bridge. If backup/move fails, permanently delete remaining owned
+source paths. Restart after successful migration; do not replace live
 network registrations. Healthy already converted assets need no rewrite. The earlier explicitly
 authorized shared legacy-name cleanup still requires reference checks before retiring old files.
 

@@ -57,24 +57,6 @@ foreach (var file in args)
 }
 Console.WriteLine($"PASS {count} asset metadata checks. Scratch: {root}");
 
-var legacy = BridgeAssetInfo.NewPrefabName();
-var legacyPath = Install(legacy, "{\"name\":\"" + legacy + "\",\"components\":{\"$rcontent\":[]}}");
-var legacyOriginal = File.ReadAllBytes(legacyPath);
-var copyCalls = BridgeDependencyPersistence.Calls;
-BridgeDependencyPersistence.WrittenFiles = 2;
-Check(BridgeAssetMigration.Run(legacy, new[] { "seed" }, out var migrated, out var error) && migrated
-    && BridgeDependencyPersistence.Calls == copyCalls + 1, "bridge without metadata reaches dependency migration");
-Check(File.ReadAllBytes(legacyPath).SequenceEqual(legacyOriginal) && File.ReadAllText(legacyPath + ".cid") == "unchanged",
-    "migration never rewrites root or CID and never invents metadata");
-BridgeDependencyPersistence.WrittenFiles = 0;
-Check(BridgeAssetMigration.Run(legacy, new[] { "seed" }, out migrated, out error) && !migrated,
-    "repeat migration depends on missing copies, not version metadata");
-BridgeDependencyPersistence.Fail = true;
-Check(!BridgeAssetMigration.Run(legacy, new[] { "missing dependency" }, out migrated, out error)
-    && error == "copy failed" && File.ReadAllBytes(legacyPath).SequenceEqual(legacyOriginal),
-    "real dependency failures still propagate without changing bridge bytes");
-Console.WriteLine($"PASS {count} metadata and migration checks");
-
 for (var fields = 1; fields <= 7; fields++)
 {
     var values = new[] { a, "Existing name", "Road", "Track", "Style", "", "0" }.Take(fields);

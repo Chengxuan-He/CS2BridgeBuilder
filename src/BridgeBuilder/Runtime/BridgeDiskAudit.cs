@@ -10,7 +10,6 @@ internal sealed class BridgeDiskAudit
 {
     internal readonly Dictionary<string, string> Failures = new(StringComparer.Ordinal);
     internal readonly Dictionary<string, string> FileOwners = new(StringComparer.OrdinalIgnoreCase);
-    private readonly HashSet<string> _directories = new(StringComparer.OrdinalIgnoreCase);
     private readonly string _imported;
     private readonly string _geometry;
     internal bool Complete { get; private set; }
@@ -58,7 +57,6 @@ internal sealed class BridgeDiskAudit
                 }
                 audit.FileOwners[path] = owner;
                 if (failures == null) audit.Failures[owner] = "User requested removal of all bridges";
-                if (Directory.Exists(native)) audit._directories.Add(path);
             }
         }
         foreach (var owner in audit.Failures.Keys)
@@ -76,7 +74,7 @@ internal sealed class BridgeDiskAudit
         return candidate;
     }
 
-    // Explicit user deletion only. Self-check continues using RetireFiles and its backups.
+    // Shared by explicit deletion and the self-check fallback after backup/move failure.
     internal bool DeleteFiles(ISet<string> owners, out string error)
     {
         error = "";
@@ -109,10 +107,10 @@ internal sealed class BridgeDiskAudit
             backup = Path.GetFullPath(backup);
             var gameRoot = Path.GetDirectoryName(_imported)!;
             if (string.Equals(backup, gameRoot, StringComparison.OrdinalIgnoreCase) || Below(backup, gameRoot))
-            { error = "Unsafe backup destination"; return false; }
+            { error = "Unsafe backup destination"; return DeleteAfterBackupFailure(owners, ref error); }
             Directory.CreateDirectory(BridgeFileAccess.Native(backup));
         }
-        catch (Exception e) { error = "Backup unavailable: " + e.Message; return false; }
+        catch (Exception e) { error = "Backup unavailable: " + e.Message; return DeleteAfterBackupFailure(owners, ref error); }
         var errors = new List<string>();
         foreach (var pair in FileOwners.Where(p => owners.Contains(p.Value)))
         {
@@ -127,14 +125,23 @@ internal sealed class BridgeDiskAudit
                 Directory.CreateDirectory(BridgeFileAccess.Native(destinationRoot));
                 var destination = UniqueTarget(Path.Combine(destinationRoot, Path.GetFileName(source)));
                 // Directory.Move/File.Move are the native equivalent of mv; no parsing, hashes,
-                // tree snapshots, copying or deletion fallback. Failed moves remain explicit failures.
-                if (_directories.Contains(pair.Key))
+                // tree snapshots or content inspection. Failed moves fall back to deletion.
+                if (Directory.Exists(BridgeFileAccess.Native(source)))
                     Directory.Move(BridgeFileAccess.Native(source), BridgeFileAccess.Native(destination));
                 else File.Move(BridgeFileAccess.Native(source), BridgeFileAccess.Native(destination));
+                if (BridgeFileAccess.Exists(source)) errors.Add("Source remains after move: " + source);
             }
             catch (Exception e) { errors.Add("Move failed: " + source + ": " + e.Message); }
         }
         error = string.Join("; ", errors);
-        return errors.Count == 0;
+        return errors.Count == 0 || DeleteAfterBackupFailure(owners, ref error);
+    }
+
+    private bool DeleteAfterBackupFailure(ISet<string> owners, ref string error)
+    {
+        var removed = DeleteFiles(owners, out var deletionError);
+        error += removed ? "; remaining source assets deleted without complete backup"
+            : "; deletion failed: " + deletionError;
+        return removed;
     }
 }
