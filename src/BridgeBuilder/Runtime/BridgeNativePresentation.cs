@@ -16,32 +16,32 @@ internal static class BridgeNativePresentation
         error = "";
         try
         {
-            var pending = new Stack<AssetData>();
+            var pending = new Stack<string>();
+            ILookup<string, AssetData>? alternatives = null;
             foreach (var root in roots)
             {
                 if (root.asset == null || !BridgeAssetInfo.MatchesOwner(root.asset.path, owner))
                 { error = "Unowned persisted root"; return false; }
-                pending.Push(root.asset);
+                pending.Push(root.asset.id.guid.ToString());
             }
-            var visited = new HashSet<Colossal.Hash128>();
+            var visited = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
             while (pending.Count != 0)
             {
-                var asset = pending.Pop();
-                if (asset.isBuiltin || !visited.Add(asset.id.guid)) continue;
-                var extension = asset.GetMeta().extension;
+                var id = pending.Pop();
+                if (!visited.Add(id)) continue;
+                var source = BridgeDependencyPersistence.Resolve(id, owner, ref alternatives);
+                if (source == null) { error = "Saved dependency missing or disallowed: " + id; return false; }
+                if (source.Builtin) continue;
+                var extension = source.Extension;
                 if (!extension.Equals(".Prefab", StringComparison.OrdinalIgnoreCase)
                     && !extension.Equals(".Material", StringComparison.OrdinalIgnoreCase)) continue;
-                using var stream = asset.GetReadStream();
-                using var bytes = new MemoryStream(); stream.CopyTo(bytes);
-                var contents = bytes.ToArray();
+                var contents = source.Bytes;
                 var text = System.Text.Encoding.UTF8.GetString(contents);
                 if (text.Contains(", BridgeBuilder\"") || text.IndexOf("coui://bridgebuilder", StringComparison.OrdinalIgnoreCase) >= 0)
-                { error = "Saved prefab still requires Bridge Builder: " + asset.path; return false; }
+                { error = "Saved prefab still requires Bridge Builder: " + id; return false; }
                 foreach (var cid in BridgeDependencyCopies.References(contents))
                 {
-                    if (!AssetDatabase.global.TryGetAsset(Colossal.Hash128.Parse(cid), out AssetData dependency))
-                    { error = "Saved dependency missing: " + cid; return false; }
-                    pending.Push(dependency);
+                    pending.Push(cid);
                 }
             }
             return true;

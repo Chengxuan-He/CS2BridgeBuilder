@@ -112,6 +112,11 @@ namespace BridgeBuilder.Runtime
         internal static bool IsPrefabName(string name) => name.Length == 37 && name[0] == 'b' && Guid.TryParse(name[1..], out _);
         internal static bool MatchesOwner(string path, string owner) => path.Contains(owner);
     }
-    internal static class BridgeDependencyCopies { internal static IEnumerable<string> References(byte[] bytes) => Array.Empty<string>(); }
+    internal static class BridgeDependencyCopies { internal sealed class Source { internal bool Builtin; internal string Extension=".Prefab"; internal byte[] Bytes=[]; } internal static IEnumerable<string> References(byte[] bytes) => Array.Empty<string>(); }
 }
 namespace CS2Mods.Shared.Conversion { public static class PrefabGraphCloner { public static bool ShouldStripComponent(Game.Prefabs.ComponentBase c, bool root) => false; } }
+namespace BridgeBuilder.Runtime {
+ internal static class BridgeDependencyPersistence {
+  internal static BridgeDependencyCopies.Source? Resolve(string id,string owner,ref ILookup<string,Colossal.IO.AssetDatabase.AssetData>? alternatives) => null;
+ }
+}

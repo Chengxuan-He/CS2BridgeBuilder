@@ -1,4 +1,4 @@
-﻿using BridgeBuilder.Runtime;
+using BridgeBuilder.Runtime;
 using Game.Prefabs;
 
 var passed = 0;

@@ -71,7 +71,8 @@ internal static class BridgeLoadedCidRecovery
                     { why = "Null reference has no recoverable CID: " + prefab.name + "/" + slot.Field; return Result.Broken; }
                     var cid = identity.Substring(4);
                     // Same-CID snapshots may coexist; accept an already-loaded instance, never Load().
-                    var loaded = lookup.Find(cid, expected);
+                    BridgeAssetInfo.TryFileOwner(root.asset?.path, out var owner);
+                    var loaded = lookup.Find(cid, expected, owner);
                     if (loaded == null) { why = "CID asset not loaded: " + cid; return Result.Broken; }
                     needed.Add(cid);
                     return Visit(loaded, out why);
@@ -85,7 +86,7 @@ internal static class BridgeLoadedCidRecovery
     internal sealed class LoadedIndex
     {
         private Dictionary<string, List<PrefabBase>>? _loaded;
-        internal PrefabBase? Find(string cid, Type expected)
+        internal PrefabBase? Find(string cid, Type expected, string owner)
         {
             if (_loaded == null)
             {
@@ -99,7 +100,9 @@ internal static class BridgeLoadedCidRecovery
                     instances.Add(instance);
                 }
             }
-            return _loaded.TryGetValue(cid, out var matches) ? matches.FirstOrDefault(expected.IsInstanceOfType) : null;
+            return _loaded.TryGetValue(cid, out var matches) ? matches.FirstOrDefault(p => expected.IsInstanceOfType(p)
+                && !BridgeAssetInfo.IsOtherBridgePrefab(p.asset?.path, owner,
+                    Path.Combine(UnityEngine.Application.persistentDataPath, "ImportedData"))) : null;
         }
     }
 

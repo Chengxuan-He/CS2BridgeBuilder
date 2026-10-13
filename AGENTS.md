@@ -346,3 +346,12 @@ actual filesystem failures must be reported as removal failures, never falsely r
 A failure affecting one bridge must not block removal of other bridges.
 
 Bridge asset file operations must follow contract section 18: literal b{uuid} substring matching for one bridge, unanchored regex matching for all bridges; metadata never determines ownership.
+
+Source isolation (2026-10-13): creating bridges/copies must never select another bridge's Prefab from ImportedData (including UUID dependency directories), even with the same CID. Filter before reading; use original/permitted sources or fail. Ownership remains path-string-only. See contract's Source isolation subsection; baseline dev/5bea1d0bef04dd2ac718809852d3f657c7388e58, rollback refs/rollback/no-foreign-bridge-source-20261013.
+
+## English documentation maintenance (2026-10-13)
+
+Instruction and contract prose is maintained in English. This language-only revision preserves
+existing requirements, exceptions, identifiers and historical evidence. Baseline: branch `dev`,
+HEAD `5bea1d0bef04dd2ac718809852d3f657c7388e58`; rollback reference
+`refs/rollback/english-contracts-guide-20261013`. Existing local changes are preserved.

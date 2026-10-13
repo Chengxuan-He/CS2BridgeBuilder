@@ -41,3 +41,10 @@ Changes in this directory are source-code updates. After each update, perform th
 artifact described in project-contract section 13. After completing any code change, immediately
 build and deploy the updated mod to the game without waiting for another request. Back up the existing
 installation and verify installed files against the build output as required by that section.
+
+## English documentation maintenance (2026-10-13)
+
+Instruction and contract prose is maintained in English. This language-only revision preserves
+existing requirements, exceptions, identifiers and historical evidence. Baseline: branch `dev`,
+HEAD `5bea1d0bef04dd2ac718809852d3f657c7388e58`; rollback reference
+`refs/rollback/english-contracts-guide-20261013`. Existing local changes are preserved.

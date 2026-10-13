@@ -1,4 +1,5 @@
 using System;
+using System.IO;
 using System.Text.RegularExpressions;
 
 namespace BridgeBuilder.Runtime;
@@ -22,6 +23,17 @@ internal sealed class BridgeAssetInfo
     }
     internal static bool MatchesOwner(string? path, string owner) => IsPrefabName(owner)
         && path != null && path.IndexOf(owner, StringComparison.OrdinalIgnoreCase) >= 0;
+
+    internal static bool IsOtherBridgePrefab(string? path, string owner, string importedRoot)
+    {
+        if (string.IsNullOrEmpty(path) || !path.EndsWith(".Prefab", StringComparison.OrdinalIgnoreCase)) return false;
+        var full = Path.GetFullPath(BridgeFileAccess.Logical(path));
+        var root = Path.GetFullPath(importedRoot).TrimEnd('\\', '/') + Path.DirectorySeparatorChar;
+        if (!full.StartsWith(root, StringComparison.OrdinalIgnoreCase)) return false;
+        foreach (Match match in AssetOwner.Matches(full.Substring(root.Length)))
+            if (!match.Value.Equals(owner, StringComparison.OrdinalIgnoreCase)) return true;
+        return false;
+    }
 
     internal BridgeAssetInfo(
         string prefabName,

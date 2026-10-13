@@ -50,13 +50,14 @@ internal static class BridgeLegacyNames
                 }
                 assets.Add(asset);
             }
-            var byCid = assets.GroupBy(a => a.Cid, StringComparer.OrdinalIgnoreCase)
-                .ToDictionary(g => g.Key, g => g.First(), StringComparer.OrdinalIgnoreCase);
             var writes = new Dictionary<string, byte[]>(StringComparer.OrdinalIgnoreCase);
             var destinations = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
             var retire = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
             foreach (var owner in selected)
             {
+                var byCid = assets.Where(a => !BridgeAssetInfo.IsOtherBridgePrefab(a.Path, owner, imported))
+                    .GroupBy(a => a.Cid, StringComparer.OrdinalIgnoreCase)
+                    .ToDictionary(g => g.Key, g => g.First(), StringComparer.OrdinalIgnoreCase);
                 if (!BridgeAssetInfo.IsPrefabName(owner)) continue;
                 var owned = assets.Where(a => BridgeAssetInfo.MatchesOwner(a.Path, owner)).ToArray();
                 var reachable = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
@@ -139,7 +140,9 @@ internal static class BridgeLegacyNames
             var retained = new Stack<string>(keep);
             while (retained.Count != 0)
             {
-                if (!byCid.TryGetValue(retained.Pop(), out var asset)) continue;
+                var retainedCid = retained.Pop();
+                var asset = assets.FirstOrDefault(a => a.Cid.Equals(retainedCid, StringComparison.OrdinalIgnoreCase));
+                if (asset == null) continue;
                 foreach (var cid in BridgeDependencyCopies.References(asset.Bytes))
                     if (oldCids.Contains(cid) && keep.Add(cid)) retained.Push(cid);
             }

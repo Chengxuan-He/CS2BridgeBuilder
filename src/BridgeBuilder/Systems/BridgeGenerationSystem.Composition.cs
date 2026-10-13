@@ -62,6 +62,13 @@ public partial class BridgeGenerationSystem
         BridgePreviewSession? preview = null,
         Action<bool>? onPublished = null)
     {
+        var importedRoot = Path.Combine(UnityEngine.Application.persistentDataPath, "ImportedData");
+        if (BridgeAssetInfo.IsOtherBridgePrefab(upper.Prefab.asset?.path, exportName, importedRoot)
+            || BridgeAssetInfo.IsOtherBridgePrefab(chosen?.Prefab.asset?.path, exportName, importedRoot))
+        {
+            report.Failed(exportName, new InvalidOperationException("Another bridge's ImportedData Prefab cannot be used as a creation source."));
+            return false;
+        }
         var unsupported = BridgeStyleDefinitions.GenerationUnsupportedReason(style.Id, options.DoubleDeck);
         if (unsupported != null)
         {
