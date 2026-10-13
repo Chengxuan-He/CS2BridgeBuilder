@@ -246,7 +246,7 @@ pull request; your coding agent handles the implementation and reads the reposit
 
 ```mermaid
 flowchart TD
-    A[Fork and clone the repository] --> B[Create bridges/bridge-name branch]
+    A[Fork and clone the repository] --> B[Create bridge/bridge-name branch]
     B --> C[Tell your agent the bridge source and desired design]
     C --> F[Test the resulting build in game]
     F --> G{Acceptance checks pass?}
@@ -279,12 +279,12 @@ Do not ask the agent to infer dimensions from a screenshot or borrow another fam
 When evidence is missing, it should identify the missing data and complete independent work first.
 
 Fork [CS2BridgeBuilder](https://github.com/Chengxuan-He/CS2BridgeBuilder) on GitHub and clone your fork.
-Create a contribution branch named `bridges/<bridge-name>`, for example `bridges/stone-arch`.
+Create a contribution branch named `bridge/<bridge-name>`, for example `bridge/stone-arch`.
 Replace `<bridge-name>` with the name of the bridge you are adding. Keep the change focused on that
 bridge and leave unrelated local changes out of the contribution.
 
 ```powershell
-git switch -c bridges/stone-arch
+git switch -c bridge/stone-arch
 ```
 
 ### 2. Start with a concrete prompt
@@ -305,7 +305,7 @@ say so rather than guessing. Include any additional required DLC or mods separat
 
 ```text
 Add support for <style ID> using <exact prototype Prefab> from <source and version>.
-Support <single deck / double deck>; use contribution branch bridges/<bridge-name>.
+Support <single deck / double deck>; use contribution branch bridge/<bridge-name>.
 Evidence is available at <paths to anatomy, mesh/LOD exports and screenshots>.
 
 Read AGENTS.md, the complete project contract and applicable nested instructions.
@@ -315,7 +315,7 @@ do not copy another style's constants or infer part identity in runtime code.
 Keep generated bridges independent of Bridge Builder and preserve native pricing/unlocks.
 Do not use other bridges' ImportedData Prefabs as creation or copy sources.
 
-Use bridges/<bridge-name> for this contribution, overriding the older singular bridge/ convention.
+Use bridge/<bridge-name> for this contribution.
 Implement the style, build and install it locally according to the repository workflow,
 and report exact changes, evidence, checks and outstanding manual acceptance steps.
 Prepare the changes for a GitHub pull request. Do not publish to Paradox Mods or modify existing
@@ -447,7 +447,7 @@ The generated <style ID> bridge does not match the expected result.
 Prototype: <exact Prefab name>.
 Source and version: <base game + game version / DLC name + game version /
 Paradox Mods ID + mod name + mod version + game version>.
-Contribution branch: bridges/<bridge-name>.
+Contribution branch: bridge/<bridge-name>.
 
 Expected: <describe the correct appearance or behavior of the affected part>.
 Actual: <describe the difference, including which side, part or viewing distance is affected>.
@@ -472,15 +472,15 @@ evidence so your agent can compare attempts instead of repeating an unsupported 
 ### 8. Submit a GitHub pull request
 
 Contributors do not need mod publishing permissions. Upload your code to the
-`bridges/<bridge-name>` branch in your fork, then open a pull request against the upstream repository.
+`bridge/<bridge-name>` branch in your fork, then open a pull request against the upstream repository.
 For example, after reviewing the changes and staging only files belonging to your contribution:
 
 ```powershell
 git commit -m "Add stone arch bridge style"
-git push -u origin bridges/stone-arch
+git push -u origin bridge/stone-arch
 ```
 
-In GitHub, select your fork's `bridges/stone-arch` as the compare branch. Select the upstream target
+In GitHub, select your fork's `bridge/stone-arch` as the compare branch. Select the upstream target
 branch requested by the maintainers; if none has been specified, use the repository's default branch.
 Do not push changes to every upstream branch or upload a release to Paradox Mods. Maintainers review,
 merge and publish accepted contributions.
@@ -496,5 +496,5 @@ Include the following in your pull request:
 
 Have your agent help summarize the changes, but review the code and verify its claims before
 submitting. A successful build is not evidence that a bridge looks correct or survives a restart.
-Respond to review feedback with further commits on the same `bridges/<bridge-name>` branch.
+Respond to review feedback with further commits on the same `bridge/<bridge-name>` branch.
 <!-- END BRIDGE STYLE CONTRIBUTOR GUIDE -->
