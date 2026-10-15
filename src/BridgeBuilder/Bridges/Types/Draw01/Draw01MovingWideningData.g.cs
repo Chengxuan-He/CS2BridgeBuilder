@@ -11,6 +11,12 @@ internal static class Draw01MovingWideningData
     // The caller retains responsibility for fixed parts and creates fragment vertices afterward.
     internal static void Apply(int lod, float halfWidthDelta, Vector3[] positions)
     {
+        // High-detail central member 3763/11657 spans +/-0.40000152587890625 m.
+        // All LODs inherit it. Its own-span mapping cannot cross zero width:
+        // that reverses the native surface while its packed normals stay unchanged.
+        if (0.40000152587890625f + halfWidthDelta <= 0f)
+            throw new ArgumentOutOfRangeException(nameof(halfWidthDelta),
+                "Draw01 width change collapses or reverses the moving central structural member.");
         var expected = lod switch { 0 => 29840, 1 => 18772, 2 => 1118, _ => throw new ArgumentOutOfRangeException(nameof(lod)) };
         if (positions.Length != expected)
             throw new ArgumentException("Draw01 moving widening requires the original main-mesh vertex layout.");

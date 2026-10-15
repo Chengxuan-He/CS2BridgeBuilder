@@ -27,6 +27,16 @@ remain their measured proportional coefficients; no blanket near-zero snapping i
 
 ## Application
 
+The narrow central member (high first faces 3763/11657) has measured half-span
+0.40000152587890625 m. Applying the mandated own-span mapping with an equal or larger
+negative half-width increment collapses or reverses it. Actual native inspection at a full
+width reduction of 4 m exposed this condition. Apply throws for a nonpositive resulting
+member span, consistently across LODs, instead of emitting inverted surfaces with unchanged
+packed normals. It does not clamp the selected width or change the mandated part mapping.
+This limits supported narrower-road combinations and must not be described as unrestricted
+road-width support. A different treatment would require resolving the project's part rules,
+not silently changing the transformation in this data table.
+
 Apply receives the half-width increment and a complete original main-mesh position array. It
 changes X only for recorded moving vertices. It skips zero-coefficient operations to preserve
 native center residues and signed zero. No Y/Z, bone, material, topology, UV or other attribute
