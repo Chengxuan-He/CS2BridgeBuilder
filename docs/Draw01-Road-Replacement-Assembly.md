@@ -19,9 +19,11 @@ Original vertices and material slot 0 remain unchanged. Bone remains 0.
 
 Draw01RoadReplacement.CreateMainMeshPlan combines the two whole-road removal tables and all
 six fragment tables in one MovableStructureModel.Plan for main mesh 0. It takes source
-positions/indices and separately computed widened positions. The caller must resolve the
-recorded native source identity and supply the complete measured structural widening plan;
-matching array counts alone does not establish source identity or validate widening.
+positions/indices and a half-width increment, copies the original positions, then applies the
+moving and fixed widening records once each before constructing fragments. The caller must
+resolve the recorded native source identity; matching array counts alone does not establish it.
+Fixed building/frame shared vertices are handled once by the fixed table. The moving central
+member's collapse rejection applies before a plan is returned.
 
 All edge tables are appended first, then rear-slope and sidewalk interior vertices. Absolute
 fragment indices are calculated from these offsets, so multiple fragment tables cannot collide
@@ -40,9 +42,9 @@ Near/middle surfaces are separate and use the complete road-solid removal masks.
 
 ## Remaining integration
 
-This assembles the measured road-removal inputs, not the final bridge. Complete structural
-widening, selected-road geometry/material/marking construction, motion bounds, object assembly,
-owned-resource transfer and final generator routing remain required. Other main-mesh parts,
-glass, pillars and footings are not transformed by this main-mesh-0 helper. It has no final
+This assembles main-mesh widening and road removal, not the final bridge. Selected-road
+geometry/material/marking construction, motion bounds, object assembly, owned-resource transfer
+and final generator routing remain required. Separate glass uses the fixed widening helper;
+pillars and footings still require their own plans. This main-mesh-0 helper has no final
 generator caller yet. Native human near/far, motion, traffic, shipping and cold-start acceptance
 remain mandatory. No existing bridge is invalidated by an unused construction helper.

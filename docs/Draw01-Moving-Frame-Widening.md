@@ -42,11 +42,11 @@ changes X only for recorded moving vertices. It skips zero-coefficient operation
 native center residues and signed zero. No Y/Z, bone, material, topology, UV or other attribute
 is changed. The caller must first bind the original source identity and clone its positions.
 
-This is only the moving portion of structural widening. Fixed bridgeheads, control buildings,
-other meshes, pillars, footings and attachments require their corresponding plans. After all
-original vertices have their complete widening, CreateMainMeshPlan constructs the recorded
-road-boundary vertices from those widened source positions. Do not widen appended vertices a
-second time or use this moving-only helper as a complete Draw01 plan.
+This is only the moving portion of structural widening. CreateMainMeshPlan now copies the
+source positions and invokes this mapping and the fixed-frame mapping before constructing
+the recorded road-boundary vertices. Separate glass, pillars, footings and attachments require
+their corresponding operations. Do not widen appended vertices a second time or use this
+moving-only helper as a complete Draw01 plan.
 
 Complete generator routing and native human near/far, width, motion and shipping acceptance
 remain outstanding. This source increment has no final generator caller and changes no existing

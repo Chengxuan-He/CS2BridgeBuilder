@@ -47,8 +47,9 @@ corners; the final assembly must remove them and use the selected road.
 
 ## Integration boundary
 
-Apply the moving-frame mapping separately to its disjoint main-mesh membership. Do not use
-the fixed mapping on moving vertices, pillars or footings. A complete generator still needs
+`Draw01RoadReplacement.CreateMainMeshPlan` applies both moving and fixed mappings to a copy
+of the source positions before constructing fragments. Do not widen that result again.
+Do not use the fixed mapping on moving vertices, pillars or footings. A complete generator still needs
 source binding, the other structural render prefabs, selected-road conversion, attachment
 placement, ownership transfer and the final route. This helper alone publishes no bridge.
 The moving-frame central-member narrowing limit remains applicable to the combined structure.

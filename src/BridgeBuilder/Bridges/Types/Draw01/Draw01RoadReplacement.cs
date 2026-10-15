@@ -4,11 +4,11 @@ using UnityEngine;
 
 namespace BridgeBuilder.Bridges;
 
-// Main geometry mesh 0 only. Structural widening is supplied by its separate measured plan.
+// Main geometry mesh 0 only. Widen original vertices before constructing road-boundary fragments.
 internal static class Draw01RoadReplacement
 {
     internal static MovableStructureModel.Plan CreateMainMeshPlan(int lod, Vector3[] sourcePositions,
-        Vector3[] widenedPositions, int[][] sourceIndices)
+        float halfWidthDelta, int[][] sourceIndices)
     {
         var vertexCount = lod switch
         {
@@ -21,6 +21,10 @@ internal static class Draw01RoadReplacement
         if (sourcePositions.Length != vertexCount || sourceIndices.Length != 1 ||
             sourceIndices[0].Length != triangleCount * 3)
             throw new ArgumentException("Draw01 road replacement requires the measured main mesh 0 topology.");
+
+        var widenedPositions = (Vector3[])sourcePositions.Clone();
+        Draw01MovingWideningData.Apply(lod, halfWidthDelta, widenedPositions);
+        Draw01FixedWideningData.Apply(lod, 0, halfWidthDelta, widenedPositions);
 
         var removed = new bool[triangleCount];
         foreach (var face in Draw01MovingRoadData.RemovalFaces(lod)) removed[face] = true;
