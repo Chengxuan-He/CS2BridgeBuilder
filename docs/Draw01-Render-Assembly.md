@@ -1,5 +1,29 @@
 # Draw01 render assembly
 
+## Main mechanism call chain
+
+`Draw01RenderAssembly.CreateMechanism` accepts all three prepared selected-road levels and
+adds the measured original-structure transformation. It preflights native source names and
+foreign ownership before reading geometry, preserving the source mesh order: opaque main
+mesh followed by independent glass at LOD0/1, and only the main mesh at LOD2.
+
+The opaque mesh uses CreateMainMeshPlan, which widens both fixed/moving original vertices
+before removing prototype-road solids and constructing the retained structural fragments.
+The separate glass retains all 64 triangles and receives the same rigid positive-X shift as
+the control building. Each source receives its own copied positions; source prefabs and
+geometry are never mutated. Native surface slots retain their original ordering.
+
+The assembled levels preserve the caller's selected-road triangles, surfaces, partition,
+motion bounds, skeleton, lane geometry, road/object pose, world pose and appearance settings.
+They enter the existing owned render builder as a complete graph. A structure-only level or
+an already assembled level is an internal input error; it must not silently publish a
+mechanism without its selected road or apply the structural conversion a second time.
+
+This connects prepared selected-road input to the main render assembly. It does not resolve
+the selected road, compute its measured partition/motion bounds or project its decals.
+The shared builder still rejects unprojected decal batches rather than omitting markings.
+The caller and final bridge generator remain unfinished.
+
 ## Stacked column call chain
 
 `Draw01RenderAssembly.CreateColumn` connects the measured column transform to the shared

@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
 using BridgeBuilder.Runtime;
 using Colossal.Mathematics;
@@ -10,6 +11,63 @@ namespace BridgeBuilder.Bridges;
 
 internal static class Draw01RenderAssembly
 {
+    // Road levels already contain the resolved selected-road geometry, pose, partitions,
+    // native skeleton and motion bounds. Never replace that input with the prototype road.
+    internal static RenderPrefab? CreateMechanism(TowerFactory factory, string owner, string name,
+        IReadOnlyList<MovableRoadAssets.Level> roadLevels, float halfWidthDelta)
+    {
+        if (roadLevels.Count != 3)
+            throw new ArgumentException("Draw01 mechanism requires all three prepared road LODs.");
+        var expected = new[] { "DrawBridge01 Mesh", "DrawBridge01_LOD1 Mesh", "DrawBridge01_LOD2 Mesh" };
+        var imported = Path.Combine(Application.persistentDataPath, "ImportedData");
+        for (var lod = 0; lod < roadLevels.Count; lod++)
+        {
+            var level = roadLevels[lod];
+            if (!level.HasRoad || level.Partition == null || level.Structure != null)
+                throw new ArgumentException($"Draw01 mechanism LOD {lod} requires road input before structural assembly.");
+            var item = level.Source;
+            if (item == null || !string.Equals(item.name, expected[lod], StringComparison.Ordinal) ||
+                BridgeAssetInfo.IsOtherBridgePrefab(item.asset?.path, owner, imported))
+                throw new InvalidOperationException($"Draw01 mechanism LOD {lod} is not the permitted recorded source '{expected[lod]}'.");
+        }
+
+        var levels = new MovableRoadAssets.Level[3];
+        for (var lod = 0; lod < levels.Length; lod++)
+        {
+            Mesh[]? meshes = null;
+            try
+            {
+                var input = roadLevels[lod];
+                meshes = PrivateGeometryReader.Read(input.Source);
+                var meshCount = lod == 2 ? 1 : 2;
+                if (meshes.Length != meshCount)
+                    throw new InvalidOperationException($"Draw01 mechanism LOD {lod} requires {meshCount} native meshes.");
+                foreach (var mesh in meshes)
+                    if (mesh == null || mesh.subMeshCount != 1)
+                        throw new InvalidOperationException($"Draw01 mechanism LOD {lod} has an invalid native mesh or surface layout.");
+                var plans = new MovableStructureModel.Plan[meshCount];
+                plans[0] = Draw01RoadReplacement.CreateMainMeshPlan(lod, meshes[0].vertices,
+                    halfWidthDelta, new[] { meshes[0].GetIndices(0) });
+                if (meshCount == 2)
+                {
+                    var source = meshes[1].vertices;
+                    var positions = (Vector3[])source.Clone();
+                    var indices = meshes[1].GetIndices(0);
+                    if (indices.Length != 64 * 3)
+                        throw new InvalidOperationException($"Draw01 mechanism LOD {lod} glass requires its 64 native triangles.");
+                    Draw01FixedWideningData.Apply(lod, 1, halfWidthDelta, positions);
+                    plans[1] = new MovableStructureModel.Plan(source, positions,
+                        new[] { indices }, new[] { new bool[64] });
+                }
+                levels[lod] = new MovableRoadAssets.Level(input.Source, input.Triangles, input.Surfaces,
+                    input.Partition!, input.MotionBounds, input.RoadToObject, plans, input.Skeleton,
+                    input.Lanes, input.ClosedWorld, input.AppearancePageSize, input.TexelsPerMeter);
+            }
+            finally { PrivateGeometryReader.Release(meshes); }
+        }
+        return factory.CreateMovableRenderGraph(name, levels);
+    }
+
     // Native DrawBridge01's stacked middle render, not its ordinary network pillar.
     internal static RenderPrefab? CreateColumn(TowerFactory factory, string owner, string name,
         RenderPrefab source, float halfWidthDelta)
