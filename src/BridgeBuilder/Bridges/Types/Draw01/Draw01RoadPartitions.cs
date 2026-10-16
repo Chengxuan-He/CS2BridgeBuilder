@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using Game.Prefabs;
 using UnityEngine;
 using Partition = BridgeBuilder.Bridges.MovableRoadGeometry.Partition;
 
@@ -13,6 +14,31 @@ namespace BridgeBuilder.Bridges;
 // far mesh's flattened proxy is not a different road or a different bone assignment.
 internal static class Draw01RoadPartitions
 {
+    internal static Partition[] ForLanes(MovableClosedRoad.Result road)
+    {
+        var result = new Partition[road.LaneVisuals.Length];
+        for (var i = 0; i < result.Length; i++)
+        {
+            var batch = road.LaneVisuals[i];
+            if (batch.Decal)
+            {
+                // Decals have no lane triangles. Their actual parent is selected from
+                // the already partitioned receiver in MovableDecalGraph, including
+                // markings spanning both pavement and carriageway.
+                result[i] = new Partition(0);
+                continue;
+            }
+            var car = batch.SourceLane.GetComponent<CarLane>();
+            var pedestrian = batch.SourceLane.GetComponent<PedestrianLane>();
+            var track = batch.SourceLane.GetComponent<TrackLane>();
+            var parking = batch.SourceLane.GetComponent<ParkingLane>();
+            if (track != null || parking != null || (car != null) == (pedestrian != null))
+                throw new InvalidOperationException($"No unambiguous moving-surface role for lane '{batch.SourceLane.name}', part {batch.PartIndex}.");
+            result[i] = car != null ? Carriageway : Sidewalk;
+        }
+        return result;
+    }
+
     internal static IReadOnlyDictionary<(int Occurrence, int SourceTriangle), Partition> ForRoad(
         MovableClosedRoad.Result road)
     {

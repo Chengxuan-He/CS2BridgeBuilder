@@ -1,4 +1,6 @@
 using System;
+using System.Collections.Generic;
+using Colossal.Mathematics;
 using Game.Common;
 using Game.Net;
 using Game.Prefabs;
@@ -84,6 +86,24 @@ internal sealed class Draw01ClosedRoad : IDisposable
     // Their positions share Road's origin-relative frame, before mechanism bone binding.
     internal MovableNodeObjects.Result Objects()
         => Network.NodeObjects(1, _sourceTheme, _roadOrigin);
+
+    // All structural LODs use one selected-road snapshot and one set of measured
+    // seams. Bounds are supplied by the complete mechanism motion envelope.
+    internal MovableRoadAssets.Level[] PrepareRenderLevels(IReadOnlyList<RenderPrefab> sources,
+        IReadOnlyList<Bounds3> motionBounds, Matrix4x4 closedWorld)
+    {
+        if (sources.Count != 3 || motionBounds.Count != 3)
+            throw new ArgumentException("Draw01 road preparation requires three render sources and motion bounds.");
+        var roadPartitions = Draw01RoadPartitions.ForRoad(Road);
+        var lanePartitions = Draw01RoadPartitions.ForLanes(Road);
+        var levels = new MovableRoadAssets.Level[3];
+        for (var i = 0; i < levels.Length; i++)
+            levels[i] = new MovableRoadAssets.Level(sources[i], Road,
+                Draw01RoadPartitions.Carriageway, motionBounds[i], RoadToObject,
+                closedWorld: closedWorld, lanePartitions: lanePartitions,
+                roadTrianglePartitions: roadPartitions);
+        return levels;
+    }
 
     public void Dispose() => Network.Dispose();
 }
