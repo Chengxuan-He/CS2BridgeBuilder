@@ -8,6 +8,47 @@ namespace BridgeBuilder.Bridges;
 
 internal static class Draw01NetPillarAssembly
 {
+    internal static RenderPrefab? CreateFooting(TowerFactory factory, string owner, string name,
+        RenderPrefab source, float halfWidthDelta)
+    {
+        var lods = source.GetComponent<LodProperties>()?.m_LodMeshes;
+        if (lods == null || lods.Length != 2)
+            throw new InvalidOperationException("Draw01 ordinary footing requires both native LODs.");
+        var sources = new[] { source, lods[0], lods[1] };
+        var names = new[] { "DrawBridge01NetPillarBase Mesh", "DrawBridge01NetPillarBase_LOD1 Mesh",
+            "DrawBridge01NetPillarBase_LOD2 Mesh" };
+        var imported = Path.Combine(Application.persistentDataPath, "ImportedData");
+        for (var lod = 0; lod < sources.Length; lod++)
+            if (sources[lod] == null || !string.Equals(sources[lod].name, names[lod], StringComparison.Ordinal) ||
+                BridgeAssetInfo.IsOtherBridgePrefab(sources[lod].asset?.path, owner, imported))
+                throw new InvalidOperationException($"Draw01 ordinary footing LOD {lod} is not its permitted native source '{names[lod]}'.");
+
+        var levels = new MovableRoadAssets.Level[sources.Length];
+        for (var lod = 0; lod < sources.Length; lod++)
+        {
+            Mesh[]? meshes = null;
+            try
+            {
+                meshes = PrivateGeometryReader.Read(sources[lod]);
+                if (meshes.Length != 1 || meshes[0] == null || meshes[0].subMeshCount != 1)
+                    throw new InvalidOperationException($"Draw01 ordinary footing LOD {lod} requires its native mesh and surface slot.");
+                var plan = Draw01NetFootingData.CreatePlan(lod, meshes[0].vertices,
+                    meshes[0].GetIndices(0), halfWidthDelta);
+                // Preserve native vertical/longitudinal reach and encompass every widened
+                // far vertex, including its authored simplification beyond the near profile.
+                var bounds = sources[lod].bounds;
+                foreach (var position in plan.Positions)
+                {
+                    bounds.min.x = Math.Min(bounds.min.x, position.x);
+                    bounds.max.x = Math.Max(bounds.max.x, position.x);
+                }
+                levels[lod] = new MovableRoadAssets.Level(sources[lod], bounds, new[] { plan });
+            }
+            finally { PrivateGeometryReader.Release(meshes); }
+        }
+        return factory.CreateMovableRenderGraph(name, levels);
+    }
+
     // Native 1.6.2f1: one centred cylindrical column at all three LODs. Columns
     // translate with their authored centre; this centre is zero, so the displacement
     // is zero. Do not stretch its cross-section with the road or infer it at runtime.
