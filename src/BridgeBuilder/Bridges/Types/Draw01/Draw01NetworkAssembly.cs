@@ -27,7 +27,8 @@ internal static class Draw01NetworkAssembly
         // Replace elevated supports, preserving the selected road's outside connections
         // and ground attachments. Do not duplicate the prototype's road-specific sign.
         // The mechanism's recorded placement deliberately has RequireElevated=false.
-        objects.m_SubObjects = existing.Where(item => item == null || !item.m_RequireElevated)
+        objects.m_SubObjects = existing.Where(item => item == null ||
+                item.m_RequireOutsideConnection || !item.m_RequireElevated)
             .Concat(Draw01NetworkData.StructurePlacements(pillar, mechanism)).ToArray();
         objects.active = true;
     }
