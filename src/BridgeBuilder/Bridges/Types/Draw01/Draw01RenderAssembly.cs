@@ -61,7 +61,8 @@ internal static class Draw01RenderAssembly
                 }
                 levels[lod] = new MovableRoadAssets.Level(input.Source, input.Triangles, input.Surfaces,
                     input.Partition!, input.MotionBounds, input.RoadToObject, plans, input.Skeleton,
-                    input.Lanes, input.ClosedWorld, input.AppearancePageSize, input.TexelsPerMeter);
+                    input.Lanes, input.ClosedWorld, input.AppearancePageSize, input.TexelsPerMeter,
+                    input.RoadPartitions, input.LanePartitions);
             }
             finally { PrivateGeometryReader.Release(meshes); }
         }
