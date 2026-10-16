@@ -23,6 +23,21 @@ internal sealed class Draw01ClosedRoad : IDisposable
     private readonly Entity _sourceTheme;
     private readonly float3 _roadOrigin;
 
+    internal static Draw01ClosedRoad Sample(string owner, Entity selectedRoad,
+        StaticObjectPrefab mechanism, NetSubObjectInfo placement, RandomSeed seed,
+        Upgraded? upgrade = null)
+    {
+        using var environment = new MovableSamplingEnvironment(World.DefaultGameObjectInjectionWorld);
+        // The recorded native bridge's water elevation is 10 m. This private
+        // arrangement uses the same elevation over flat zero-height terrain.
+        // Calculation and visual extraction complete synchronously before the
+        // height arrays are disposed; the returned context retains its own entities.
+        return new Draw01ClosedRoad(owner, selectedRoad, mechanism, placement,
+            new float3(0f, 10f, 0f), new Elevation(new float2(10f)), environment.Terrain,
+            environment.Theme, environment.LeftHandTraffic, seed,
+            environment.BuildingConfiguration, upgrade);
+    }
+
     internal Draw01ClosedRoad(string owner, Entity selectedRoad, StaticObjectPrefab mechanism,
         NetSubObjectInfo placement, float3 roadOrigin, Elevation elevation,
         TerrainHeightData terrain, Entity sourceTheme, bool leftHandTraffic,
