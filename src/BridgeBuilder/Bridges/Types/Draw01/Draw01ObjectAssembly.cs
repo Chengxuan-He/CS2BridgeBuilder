@@ -12,12 +12,16 @@ internal static class Draw01ObjectAssembly
     internal static StaticObjectPrefab Create(TowerFactory factory, string owner, string name,
         RenderPrefab mechanism, RenderPrefab column, RenderPrefab footing, ContentPrefab content,
         Func<string, ObjectPrefab> resolveOriginal, float halfWidthDelta,
-        IReadOnlyList<ObjectSubObjectInfo> roadAttachments, Pose roadToObject,
-        IReadOnlyList<MovableRoadGeometry.Partition> attachmentPartitions)
+        Draw01ClosedRoad road)
     {
         if (mechanism == null || column == null || footing == null || content == null ||
             !float.IsFinite(halfWidthDelta))
             throw new ArgumentException("Draw01 requires three prepared render graphs, native content and a finite width change.");
+
+        // Resolve once from the same live sampling context that supplied the road
+        // geometry. Keep native selection order and each winning producer's identity.
+        var roadObjects = road.Objects();
+        var attachmentPartitions = Draw01RoadPartitions.ForObjects(roadObjects);
 
         // The four authored streetlights are road furniture. The selected-road producer
         // supplies their replacements in its closed-road frame. Binding must wait
@@ -50,7 +54,7 @@ internal static class Draw01ObjectAssembly
                 // extents, longitudinal gap, movement parameters and network node offset.
                 target.GetComponent<StandingObject>().m_LegSize.x += halfWidthDelta * 2f;
             });
-        factory.AttachMovableRoadObjects(result, roadAttachments, roadToObject, attachmentPartitions);
+        factory.AttachMovableRoadObjects(result, roadObjects.Placements, road.RoadToObject, attachmentPartitions);
         return result;
     }
 }

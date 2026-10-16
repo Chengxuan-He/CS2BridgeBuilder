@@ -14,6 +14,23 @@ namespace BridgeBuilder.Bridges;
 // far mesh's flattened proxy is not a different road or a different bone assignment.
 internal static class Draw01RoadPartitions
 {
+    internal static Partition[] ForObjects(MovableNodeObjects.Result objects)
+    {
+        if (objects.Sources.Length != objects.Placements.Length)
+            throw new InvalidOperationException("Draw01 object placements lost their source correspondence.");
+        var result = new Partition[objects.Placements.Length];
+        for (var i = 0; i < result.Length; i++)
+        {
+            var source = objects.Sources[i];
+            if (!source.HasValue)
+                throw new InvalidOperationException($"No measured moving-surface origin for node attachment '{objects.Placements[i].m_Object.name}' at index {i}.");
+            if (!MovableNativeRoadRoles.TryGetAttachment(source.Value, out var role))
+                throw new InvalidOperationException($"No measured attachment role for '{source.Value.SourcePiece.name}', rule {source.Value.SourceRuleIndex}, source '{source.Value.Prefab.name}'.");
+            result[i] = role == MovableNativeRoadRoles.Role.Carriageway ? Carriageway : Sidewalk;
+        }
+        return result;
+    }
+
     internal static Partition[] ForLanes(MovableClosedRoad.Result road)
     {
         var result = new Partition[road.LaneVisuals.Length];
