@@ -8,6 +8,26 @@ namespace BridgeBuilder.Bridges;
 
 internal static class Draw01NetPillarAssembly
 {
+    // Build the complete ordinary support in dependency order. Each graph joins
+    // factory.Created before the object, including partial results on failure,
+    // so the enclosing generation/preview transaction owns the entire lifetime.
+    internal static StaticObjectPrefab Create(TowerFactory factory, string owner, string name,
+        RenderPrefab nativeTop, RenderPrefab nativeColumn, RenderPrefab nativeFooting,
+        ContentPrefab content, float halfWidthDelta)
+    {
+        if (content == null || !float.IsFinite(halfWidthDelta))
+            throw new ArgumentException("Draw01 ordinary pillar requires native content and a finite width change.");
+        var top = CreateTop(factory, owner, name + " Top", nativeTop, halfWidthDelta)
+            ?? throw new InvalidOperationException("Draw01 ordinary cap render creation failed.");
+        var column = CreateColumn(factory, owner, name + " Column", nativeColumn)
+            ?? throw new InvalidOperationException("Draw01 ordinary column render creation failed.");
+        var footing = CreateFooting(factory, owner, name + " Footing", nativeFooting, halfWidthDelta)
+            ?? throw new InvalidOperationException("Draw01 ordinary footing render creation failed.");
+        // Render components, including stack/base and all LOD references, have
+        // already been copied by the graph builder. Do not add duplicate copies.
+        return Draw01PillarData.Create(factory, name, top, column, footing, content);
+    }
+
     internal static RenderPrefab? CreateTop(TowerFactory factory, string owner, string name,
         RenderPrefab source, float halfWidthDelta)
     {
