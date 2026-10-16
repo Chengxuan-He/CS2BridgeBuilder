@@ -29,6 +29,7 @@ internal static class BridgeGeneratorRouter
         ["TrussArch02"] = (report, towers) => new TrussArch02BridgeGenerator(report, towers),
         ["TrussArch03"] = (report, towers) => new TrussArch03BridgeGenerator(report, towers),
         ["TiedArch"] = (report, towers) => new TiedArchBridgeGenerator(report, towers),
+        ["Draw01"] = (report, towers) => new Draw01BridgeGenerator(report, towers),
         ["Grand"] = (report, towers) => new GrandBridgeGenerator(report, towers),
     };
 

@@ -1,4 +1,4 @@
-﻿
+
 using CS2Mods.Shared.Infrastructure;
 using Game.Prefabs;
 using System.Collections.Generic;
@@ -53,7 +53,7 @@ internal abstract partial class BridgeGeneratorBase
     /// Applies <paramref name="style"/> to <paramref name="target"/>, sized for the road's own width.
     /// Returns the variant that was used, or null when the style had nothing usable in it.
     /// </summary>
-    internal BridgeStyleVariant? Apply(
+    internal virtual BridgeStyleVariant? Apply(
         NetGeometryPrefab target, BridgeStyle style, float roadWidth, BridgeOptions options,
         NetGeometryPrefab? measure = null, Func<BridgeStyleVariant, bool>? allow = null)
     {
