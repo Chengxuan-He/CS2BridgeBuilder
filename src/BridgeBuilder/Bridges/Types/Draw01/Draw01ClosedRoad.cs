@@ -101,7 +101,8 @@ internal sealed class Draw01ClosedRoad : IDisposable
             {
                 (0, MovableNetworkContext.SurfacePart.EndNode),
                 (1, MovableNetworkContext.SurfacePart.StartNode)
-            }, new[] { centralNode }, roadOrigin);
+            }, new[] { centralNode }, roadOrigin,
+                replacedStructureLayers: NetPieceLayerMask.Bottom | NetPieceLayerMask.Side);
             RoadToObject = Network.RoadToMechanism(0, roadOrigin);
         }
         catch
