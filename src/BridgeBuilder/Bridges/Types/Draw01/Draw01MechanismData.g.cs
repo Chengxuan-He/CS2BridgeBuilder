@@ -4,6 +4,7 @@
 // Bind-pose field indices below are transposed once; numeric payloads are unchanged.
 // Resource path IDs are extraction provenance only; none is used at runtime.
 using System;
+using System.Linq;
 using Colossal.Mathematics;
 using Game.Prefabs;
 using Unity.Mathematics;
@@ -40,7 +41,7 @@ internal static class Draw01MechanismData
         standing.m_CircularLeg = false;
     }
 
-    private static ObjectMeshInfo[] Meshes(RenderPrefab[] prepared)
+    internal static ObjectMeshInfo[] Meshes(RenderPrefab[] prepared)
     {
         if (prepared.Length != 3) throw new ArgumentException("Draw01 requires its main, pillar and pillar-base render graphs.");
         return new[]
@@ -53,7 +54,10 @@ internal static class Draw01MechanismData
 
     // Full authored evidence. The generator replaces ordinary road attachments with
     // selected-road placements and widens structural attachments using measured plans.
-    internal static ObjectSubObjectInfo[] AuthoredAttachments(Func<string, ObjectPrefab> resolve) => new[]
+    internal static ObjectSubObjectInfo[] AuthoredAttachments(Func<string, ObjectPrefab> resolve)
+        => RoadAttachments(resolve).Concat(StructuralAttachments(resolve)).ToArray();
+
+    internal static ObjectSubObjectInfo[] RoadAttachments(Func<string, ObjectPrefab> resolve) => new[]
     {
         new ObjectSubObjectInfo
         {
@@ -83,6 +87,10 @@ internal static class Draw01MechanismData
             m_Rotation = new quaternion(0f, -0.7071068286895752f, 0f, 0.7071068286895752f),
             m_ParentMesh = 101, m_GroupIndex = 0, m_Probability = 100
         },
+    };
+
+    internal static ObjectSubObjectInfo[] StructuralAttachments(Func<string, ObjectPrefab> resolve) => new[]
+    {
         new ObjectSubObjectInfo
         {
             m_Object = resolve("WallLightShortRange03"),
