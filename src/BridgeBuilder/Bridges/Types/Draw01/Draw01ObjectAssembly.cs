@@ -12,17 +12,19 @@ internal static class Draw01ObjectAssembly
     internal static StaticObjectPrefab Create(TowerFactory factory, string owner, string name,
         RenderPrefab mechanism, RenderPrefab column, RenderPrefab footing, ContentPrefab content,
         Func<string, ObjectPrefab> resolveOriginal, float halfWidthDelta,
-        IReadOnlyList<ObjectSubObjectInfo> boundRoadAttachments)
+        IReadOnlyList<ObjectSubObjectInfo> roadAttachments, Pose roadToObject,
+        IReadOnlyList<MovableRoadGeometry.Partition> attachmentPartitions)
     {
         if (mechanism == null || column == null || footing == null || content == null ||
             !float.IsFinite(halfWidthDelta))
             throw new ArgumentException("Draw01 requires three prepared render graphs, native content and a finite width change.");
 
         // The four authored streetlights are road furniture. The selected-road producer
-        // supplies their replacements, already bound to the appropriate moving leaf.
+        // supplies their replacements in its closed-road frame. Binding must wait
+        // until the final root exists because native lamp effects belong to it.
         // Resolve only the eight structural attachments; never require the old streetlights.
         var authored = Draw01MechanismData.StructuralAttachments(resolveOriginal);
-        var attachments = new List<ObjectSubObjectInfo>(authored.Length + boundRoadAttachments.Count);
+        var attachments = new List<ObjectSubObjectInfo>(authored.Length);
         var imported = Path.Combine(Application.persistentDataPath, "ImportedData");
         foreach (var item in authored)
         {
@@ -39,8 +41,7 @@ internal static class Draw01ObjectAssembly
                 m_Probability = item.m_Probability
             });
         }
-        attachments.AddRange(boundRoadAttachments);
-        return factory.CreateMovableObject(name, false,
+        var result = factory.CreateMovableObject(name, false,
             Draw01MechanismData.Meshes(new[] { mechanism, column, footing }), attachments,
             target =>
             {
@@ -49,5 +50,7 @@ internal static class Draw01ObjectAssembly
                 // extents, longitudinal gap, movement parameters and network node offset.
                 target.GetComponent<StandingObject>().m_LegSize.x += halfWidthDelta * 2f;
             });
+        factory.AttachMovableRoadObjects(result, roadAttachments, roadToObject, attachmentPartitions);
+        return result;
     }
 }
