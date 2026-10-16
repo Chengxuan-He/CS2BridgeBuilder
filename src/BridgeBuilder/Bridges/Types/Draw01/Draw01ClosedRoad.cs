@@ -22,9 +22,11 @@ internal sealed class Draw01ClosedRoad : IDisposable
     internal readonly Pose RoadToObject;
     private readonly Entity _sourceTheme;
     private readonly float3 _roadOrigin;
+    private Draw01SamplingMechanism? _samplingMechanism;
 
     internal static Draw01ClosedRoad Sample(string owner, Entity selectedRoad,
-        StaticObjectPrefab mechanism, NetSubObjectInfo placement, RandomSeed seed,
+        IReadOnlyList<RenderPrefab> nativeRenderRoots, ContentPrefab content,
+        float halfWidthDelta, NetSubObjectInfo placement, RandomSeed seed,
         Upgraded? upgrade = null)
     {
         using var environment = new MovableSamplingEnvironment(World.DefaultGameObjectInjectionWorld);
@@ -32,10 +34,21 @@ internal sealed class Draw01ClosedRoad : IDisposable
         // arrangement uses the same elevation over flat zero-height terrain.
         // Calculation and visual extraction complete synchronously before the
         // height arrays are disposed; the returned context retains its own entities.
-        return new Draw01ClosedRoad(owner, selectedRoad, mechanism, placement,
-            new float3(0f, 10f, 0f), new Elevation(new float2(10f)), environment.Terrain,
-            environment.Theme, environment.LeftHandTraffic, seed,
-            environment.BuildingConfiguration, upgrade);
+        var mechanism = new Draw01SamplingMechanism(owner, nativeRenderRoots, content, halfWidthDelta);
+        try
+        {
+            var result = new Draw01ClosedRoad(owner, selectedRoad, mechanism.Prefab, placement,
+                new float3(0f, 10f, 0f), new Elevation(new float2(10f)), environment.Terrain,
+                environment.Theme, environment.LeftHandTraffic, seed,
+                environment.BuildingConfiguration, upgrade);
+            result._samplingMechanism = mechanism;
+            return result;
+        }
+        catch
+        {
+            mechanism.Dispose();
+            throw;
+        }
     }
 
     internal Draw01ClosedRoad(string owner, Entity selectedRoad, StaticObjectPrefab mechanism,
@@ -120,5 +133,9 @@ internal sealed class Draw01ClosedRoad : IDisposable
         return levels;
     }
 
-    public void Dispose() => Network.Dispose();
+    public void Dispose()
+    {
+        try { Network.Dispose(); }
+        finally { _samplingMechanism?.Dispose(); }
+    }
 }
