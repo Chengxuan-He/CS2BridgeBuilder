@@ -1,3 +1,5 @@
+using System;
+using System.Collections.Generic;
 using UnityEngine;
 using Partition = BridgeBuilder.Bridges.MovableRoadGeometry.Partition;
 
@@ -11,6 +13,28 @@ namespace BridgeBuilder.Bridges;
 // far mesh's flattened proxy is not a different road or a different bone assignment.
 internal static class Draw01RoadPartitions
 {
+    internal static IReadOnlyDictionary<(int Occurrence, int SourceTriangle), Partition> ForRoad(
+        MovableClosedRoad.Result road)
+    {
+        var sources = road.SourceFaces ?? throw new InvalidOperationException("Draw01 road sampling did not retain native source-face correspondence.");
+        var result = new Dictionary<(int, int), Partition>();
+        foreach (var triangle in road.Triangles)
+        {
+            var key = (triangle.Occurrence, triangle.SourceTriangle);
+            if (result.ContainsKey(key)) continue;
+            var source = sources[triangle.Occurrence][triangle.SourceTriangle];
+            // Each occurrence was compiled individually; the enclosing occurrence
+            // retains the selected-road identity across combined node contributions.
+            if (source.Piece != 0)
+                throw new InvalidOperationException("Draw01 source-face correspondence has an invalid local piece index.");
+            var piece = road.Occurrences[triangle.Occurrence].Prefab;
+            if (!MovableNativeRoadRoles.TryGet(piece, source, out var role))
+                throw new InvalidOperationException($"No measured road-surface role for '{piece.name}', geometry '{piece.geometryAsset?.id.guid}', mesh {source.Mesh}, submesh {source.Submesh}, face {source.Triangle}.");
+            result.Add(key, role == MovableNativeRoadRoles.Role.Carriageway ? Carriageway : Sidewalk);
+        }
+        return result;
+    }
+
     internal static readonly Partition Carriageway = Create(
         -83.740234375f, -83.58984375f, -0.05267906188964844f,
         0.05267906188964844f, 83.58984375f, 83.740234375f);
