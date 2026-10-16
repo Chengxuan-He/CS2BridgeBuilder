@@ -1,5 +1,7 @@
 // Generated from the game 1.6.2f1 native DrawBridge03 records.
 // Source SHA-256: 47EF0F1723E8643E74A17751AA480F97260BF6E549AA60EC9F14F8E003B12070
+// Native serialized matrix elements are row-major; audit labels came from managed field order.
+// Bind-pose field indices below are transposed once; numeric payloads are unchanged.
 // Resource path IDs are extraction provenance only; none is used at runtime.
 using System;
 using Colossal.Mathematics;
@@ -204,7 +206,7 @@ internal static class Draw03MechanismData
                     position = new Vector3(-0f, 0f, 0f),
                     rotation = new Quaternion(0f, -0f, -0f, 1f),
                     scale = new Vector3(1f, 1f, 1f),
-                    bindPose = new Matrix4x4 { m00 = 1f, m10 = 0f, m20 = -0f, m30 = -0f, m01 = 0f, m11 = 1f, m21 = 0f, m31 = 0f, m02 = -0f, m12 = 0f, m22 = 1f, m32 = 0f, m03 = 0f, m13 = 0f, m23 = 0f, m33 = 1f },
+                    bindPose = new Matrix4x4 { m00 = 1f, m01 = 0f, m02 = -0f, m03 = -0f, m10 = 0f, m11 = 1f, m12 = 0f, m13 = 0f, m20 = -0f, m21 = 0f, m22 = 1f, m23 = 0f, m30 = 0f, m31 = 0f, m32 = 0f, m33 = 1f },
                     parentId = -1, m_Type = (BoneType)0,
                     m_Speed = 0f, m_Acceleration = 0f,
                     m_ConnectionID = 0, m_SourceID = 0
@@ -215,7 +217,7 @@ internal static class Draw03MechanismData
                     position = new Vector3(-0f, 4.0459723472595215f, 75.3839111328125f),
                     rotation = new Quaternion(0f, -0f, -0f, 1f),
                     scale = new Vector3(1f, 1f, 1f),
-                    bindPose = new Matrix4x4 { m00 = 1f, m10 = 0f, m20 = -0f, m30 = -0f, m01 = 0f, m11 = 1f, m21 = 0f, m31 = -4.0459723472595215f, m02 = -0f, m12 = 0f, m22 = 1f, m32 = -75.3839111328125f, m03 = 0f, m13 = 0f, m23 = 0f, m33 = 1f },
+                    bindPose = new Matrix4x4 { m00 = 1f, m01 = 0f, m02 = -0f, m03 = -0f, m10 = 0f, m11 = 1f, m12 = 0f, m13 = -4.0459723472595215f, m20 = -0f, m21 = 0f, m22 = 1f, m23 = -75.3839111328125f, m30 = 0f, m31 = 0f, m32 = 0f, m33 = 1f },
                     parentId = 0, m_Type = (BoneType)33,
                     m_Speed = 0.014999999664723873f, m_Acceleration = 0.0030000000260770321f,
                     m_ConnectionID = 101, m_SourceID = 0
@@ -226,7 +228,7 @@ internal static class Draw03MechanismData
                     position = new Vector3(-0f, 4.0459718704223633f, -75.383903503417969f),
                     rotation = new Quaternion(6.1232342629258393e-17f, -1f, -6.1232342629258393e-17f, -7.5497901264043321e-08f),
                     scale = new Vector3(1f, 1f, 1f),
-                    bindPose = new Matrix4x4 { m00 = -1f, m10 = 1.2246468525851679e-16f, m20 = -1.5099580252808664e-07f, m30 = -1.1382652701286133e-05f, m01 = 1.2246469849340659e-16f, m11 = 1f, m21 = 1.2246468525851679e-16f, m31 = -4.0459718704223633f, m02 = 1.5099580252808664e-07f, m12 = 1.2246469849340659e-16f, m22 = -1f, m32 = -75.383903503417969f, m03 = 0f, m13 = 0f, m23 = 0f, m33 = 1f },
+                    bindPose = new Matrix4x4 { m00 = -1f, m01 = 1.2246468525851679e-16f, m02 = -1.5099580252808664e-07f, m03 = -1.1382652701286133e-05f, m10 = 1.2246469849340659e-16f, m11 = 1f, m12 = 1.2246468525851679e-16f, m13 = -4.0459718704223633f, m20 = 1.5099580252808664e-07f, m21 = 1.2246469849340659e-16f, m22 = -1f, m23 = -75.383903503417969f, m30 = 0f, m31 = 0f, m32 = 0f, m33 = 1f },
                     parentId = 0, m_Type = (BoneType)33,
                     m_Speed = 0.014999999664723873f, m_Acceleration = 0.0030000000260770321f,
                     m_ConnectionID = 100, m_SourceID = 0
@@ -240,7 +242,7 @@ internal static class Draw03MechanismData
                     position = new Vector3(0f, 0f, 0f),
                     rotation = new Quaternion(0f, 0f, 0f, 1f),
                     scale = new Vector3(1f, 1f, 1f),
-                    bindPose = new Matrix4x4 { m00 = 1f, m10 = 0f, m20 = 0f, m30 = 0f, m01 = 0f, m11 = 1f, m21 = 0f, m31 = 0f, m02 = 0f, m12 = 0f, m22 = 1f, m32 = 0f, m03 = 0f, m13 = 0f, m23 = 0f, m33 = 1f },
+                    bindPose = new Matrix4x4 { m00 = 1f, m01 = 0f, m02 = 0f, m03 = 0f, m10 = 0f, m11 = 1f, m12 = 0f, m13 = 0f, m20 = 0f, m21 = 0f, m22 = 1f, m23 = 0f, m30 = 0f, m31 = 0f, m32 = 0f, m33 = 1f },
                     parentId = -1, m_Type = (BoneType)0,
                     m_Speed = 0f, m_Acceleration = 0f,
                     m_ConnectionID = 0, m_SourceID = 0
@@ -251,7 +253,7 @@ internal static class Draw03MechanismData
                     position = new Vector3(0f, 4.0459723472595215f, 75.3839111328125f),
                     rotation = new Quaternion(0f, 0f, 0f, 1f),
                     scale = new Vector3(1f, 1f, 1f),
-                    bindPose = new Matrix4x4 { m00 = 1f, m10 = 0f, m20 = 0f, m30 = 0f, m01 = 0f, m11 = 1f, m21 = 0f, m31 = -4.0459723472595215f, m02 = 0f, m12 = 0f, m22 = 1f, m32 = -75.3839111328125f, m03 = 0f, m13 = 0f, m23 = 0f, m33 = 1f },
+                    bindPose = new Matrix4x4 { m00 = 1f, m01 = 0f, m02 = 0f, m03 = 0f, m10 = 0f, m11 = 1f, m12 = 0f, m13 = -4.0459723472595215f, m20 = 0f, m21 = 0f, m22 = 1f, m23 = -75.3839111328125f, m30 = 0f, m31 = 0f, m32 = 0f, m33 = 1f },
                     parentId = 0, m_Type = (BoneType)33,
                     m_Speed = 0.014999999664723873f, m_Acceleration = 0.0030000000260770321f,
                     m_ConnectionID = 101, m_SourceID = 0
@@ -262,7 +264,7 @@ internal static class Draw03MechanismData
                     position = new Vector3(0f, 4.0459718704223633f, -75.383903503417969f),
                     rotation = new Quaternion(6.1232342629258393e-17f, -1f, -6.1232342629258393e-17f, -7.5497901264043321e-08f),
                     scale = new Vector3(1f, 1f, 1f),
-                    bindPose = new Matrix4x4 { m00 = -1f, m10 = 1.2246468525851679e-16f, m20 = -1.5099580252808664e-07f, m30 = -1.1382652701286133e-05f, m01 = 1.2246469849340659e-16f, m11 = 1f, m21 = 1.2246468525851679e-16f, m31 = -4.0459718704223633f, m02 = 1.5099580252808664e-07f, m12 = 1.2246469849340659e-16f, m22 = -1f, m32 = -75.383903503417969f, m03 = 0f, m13 = 0f, m23 = 0f, m33 = 1f },
+                    bindPose = new Matrix4x4 { m00 = -1f, m01 = 1.2246468525851679e-16f, m02 = -1.5099580252808664e-07f, m03 = -1.1382652701286133e-05f, m10 = 1.2246469849340659e-16f, m11 = 1f, m12 = 1.2246468525851679e-16f, m13 = -4.0459718704223633f, m20 = 1.5099580252808664e-07f, m21 = 1.2246469849340659e-16f, m22 = -1f, m23 = -75.383903503417969f, m30 = 0f, m31 = 0f, m32 = 0f, m33 = 1f },
                     parentId = 0, m_Type = (BoneType)33,
                     m_Speed = 0.014999999664723873f, m_Acceleration = 0.0030000000260770321f,
                     m_ConnectionID = 100, m_SourceID = 0
@@ -276,7 +278,7 @@ internal static class Draw03MechanismData
                     position = new Vector3(0f, 0f, 0f),
                     rotation = new Quaternion(0f, 0f, 0f, 1f),
                     scale = new Vector3(1f, 1f, 1f),
-                    bindPose = new Matrix4x4 { m00 = 1f, m10 = 0f, m20 = 0f, m30 = 0f, m01 = 0f, m11 = 1f, m21 = 0f, m31 = 0f, m02 = 0f, m12 = 0f, m22 = 1f, m32 = 0f, m03 = 0f, m13 = 0f, m23 = 0f, m33 = 1f },
+                    bindPose = new Matrix4x4 { m00 = 1f, m01 = 0f, m02 = 0f, m03 = 0f, m10 = 0f, m11 = 1f, m12 = 0f, m13 = 0f, m20 = 0f, m21 = 0f, m22 = 1f, m23 = 0f, m30 = 0f, m31 = 0f, m32 = 0f, m33 = 1f },
                     parentId = -1, m_Type = (BoneType)0,
                     m_Speed = 0f, m_Acceleration = 0f,
                     m_ConnectionID = 0, m_SourceID = 0
@@ -287,7 +289,7 @@ internal static class Draw03MechanismData
                     position = new Vector3(0f, 4.0459723472595215f, 75.3839111328125f),
                     rotation = new Quaternion(0f, 0f, 0f, 1f),
                     scale = new Vector3(1f, 1f, 1f),
-                    bindPose = new Matrix4x4 { m00 = 1f, m10 = 0f, m20 = 0f, m30 = 0f, m01 = 0f, m11 = 1f, m21 = 0f, m31 = -4.0459723472595215f, m02 = 0f, m12 = 0f, m22 = 1f, m32 = -75.3839111328125f, m03 = 0f, m13 = 0f, m23 = 0f, m33 = 1f },
+                    bindPose = new Matrix4x4 { m00 = 1f, m01 = 0f, m02 = 0f, m03 = 0f, m10 = 0f, m11 = 1f, m12 = 0f, m13 = -4.0459723472595215f, m20 = 0f, m21 = 0f, m22 = 1f, m23 = -75.3839111328125f, m30 = 0f, m31 = 0f, m32 = 0f, m33 = 1f },
                     parentId = 0, m_Type = (BoneType)33,
                     m_Speed = 0.014999999664723873f, m_Acceleration = 0.0030000000260770321f,
                     m_ConnectionID = 101, m_SourceID = 0
@@ -298,7 +300,7 @@ internal static class Draw03MechanismData
                     position = new Vector3(0f, 4.0459718704223633f, -75.383903503417969f),
                     rotation = new Quaternion(6.1232342629258393e-17f, -1f, -6.1232342629258393e-17f, -7.5497901264043321e-08f),
                     scale = new Vector3(1f, 1f, 1f),
-                    bindPose = new Matrix4x4 { m00 = -1f, m10 = 1.2246468525851679e-16f, m20 = -1.5099580252808664e-07f, m30 = -1.1382652701286133e-05f, m01 = 1.2246469849340659e-16f, m11 = 1f, m21 = 1.2246468525851679e-16f, m31 = -4.0459718704223633f, m02 = 1.5099580252808664e-07f, m12 = 1.2246469849340659e-16f, m22 = -1f, m32 = -75.383903503417969f, m03 = 0f, m13 = 0f, m23 = 0f, m33 = 1f },
+                    bindPose = new Matrix4x4 { m00 = -1f, m01 = 1.2246468525851679e-16f, m02 = -1.5099580252808664e-07f, m03 = -1.1382652701286133e-05f, m10 = 1.2246469849340659e-16f, m11 = 1f, m12 = 1.2246468525851679e-16f, m13 = -4.0459718704223633f, m20 = 1.5099580252808664e-07f, m21 = 1.2246469849340659e-16f, m22 = -1f, m23 = -75.383903503417969f, m30 = 0f, m31 = 0f, m32 = 0f, m33 = 1f },
                     parentId = 0, m_Type = (BoneType)33,
                     m_Speed = 0.014999999664723873f, m_Acceleration = 0.0030000000260770321f,
                     m_ConnectionID = 100, m_SourceID = 0
