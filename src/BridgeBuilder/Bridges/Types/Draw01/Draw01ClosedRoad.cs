@@ -26,7 +26,7 @@ internal sealed class Draw01ClosedRoad : IDisposable
 
     internal static Draw01ClosedRoad Sample(string owner, Entity selectedRoad,
         IReadOnlyList<RenderPrefab> nativeRenderRoots, ContentPrefab content,
-        float halfWidthDelta, NetSubObjectInfo placement, RandomSeed seed,
+        float halfWidthDelta, RandomSeed seed,
         Upgraded? upgrade = null)
     {
         using var environment = new MovableSamplingEnvironment(World.DefaultGameObjectInjectionWorld);
@@ -37,7 +37,8 @@ internal sealed class Draw01ClosedRoad : IDisposable
         var mechanism = new Draw01SamplingMechanism(owner, nativeRenderRoots, content, halfWidthDelta);
         try
         {
-            var result = new Draw01ClosedRoad(owner, selectedRoad, mechanism.Prefab, placement,
+            var result = new Draw01ClosedRoad(owner, selectedRoad, mechanism.Prefab,
+                Draw01NetworkData.MechanismPlacement(mechanism.Prefab),
                 new float3(0f, 10f, 0f), new Elevation(new float2(10f)), environment.Terrain,
                 environment.Theme, environment.LeftHandTraffic, seed,
                 environment.BuildingConfiguration, upgrade);

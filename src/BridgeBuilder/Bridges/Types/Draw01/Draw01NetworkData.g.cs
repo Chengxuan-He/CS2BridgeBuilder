@@ -104,6 +104,12 @@ internal static class Draw01NetworkData
             m_RequireDeadEnd = false,
             m_RequireOrphan = false,
         },
+        MechanismPlacement(mechanism),
+    };
+
+    // Used by private closed-road sampling and by the persisted network. The
+    // mechanism's node anchoring must not acquire a second set of caller defaults.
+    internal static NetSubObjectInfo MechanismPlacement(ObjectPrefab mechanism) =>
         new NetSubObjectInfo
         {
             m_Object = mechanism,
@@ -117,8 +123,7 @@ internal static class Draw01NetworkData
             m_RequireOutsideConnection = false,
             m_RequireDeadEnd = false,
             m_RequireOrphan = false,
-        },
-    };
+        };
 
     private static NetSubObjectInfo[] OutsidePlacements(ObjectPrefab outsideConnection) => new[]
     {
