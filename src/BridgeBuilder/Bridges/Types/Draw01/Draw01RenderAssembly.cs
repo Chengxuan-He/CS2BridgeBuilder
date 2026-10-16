@@ -12,7 +12,7 @@ namespace BridgeBuilder.Bridges;
 internal static class Draw01RenderAssembly
 {
     // Road levels already contain the resolved selected-road geometry, pose, partitions,
-    // native skeleton and motion bounds. Never replace that input with the prototype road.
+    // native skeleton and local render bounds. Never replace that input with the prototype road.
     internal static RenderPrefab? CreateMechanism(TowerFactory factory, string owner, string name,
         IReadOnlyList<MovableRoadAssets.Level> roadLevels, float halfWidthDelta)
     {
@@ -59,8 +59,17 @@ internal static class Draw01RenderAssembly
                     plans[1] = new MovableStructureModel.Plan(source, positions,
                         new[] { indices }, new[] { new bool[64] });
                 }
+                // Include decoded/widened structural vertices as well as the prepared
+                // road. Native compressed vertices can exceed authored bounds slightly.
+                var bounds = input.RenderBounds;
+                foreach (var plan in plans)
+                    foreach (var position in plan.Positions)
+                    {
+                        bounds.min = math.min(bounds.min, (float3)position);
+                        bounds.max = math.max(bounds.max, (float3)position);
+                    }
                 levels[lod] = new MovableRoadAssets.Level(input.Source, input.Triangles, input.Surfaces,
-                    input.Partition!, input.MotionBounds, input.RoadToObject, plans, input.Skeleton,
+                    input.Partition!, bounds, input.RoadToObject, plans, input.Skeleton,
                     input.Lanes, input.ClosedWorld, input.AppearancePageSize, input.TexelsPerMeter,
                     input.RoadPartitions, input.LanePartitions, input.RoadTrianglePartitions);
             }

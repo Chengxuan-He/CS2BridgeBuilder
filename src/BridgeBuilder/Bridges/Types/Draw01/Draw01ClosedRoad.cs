@@ -115,22 +115,43 @@ internal sealed class Draw01ClosedRoad : IDisposable
     internal MovableNodeObjects.Result Objects()
         => Network.NodeObjects(1, _sourceTheme, _roadOrigin);
 
-    // All structural LODs use one selected-road snapshot and one set of measured
-    // seams. Bounds are supplied by the complete mechanism motion envelope.
+    // The local render bounds describe the closed geometry. Native StandingObject
+    // and StackProperties extend the object's culling bounds separately; a swept
+    // animation volume must not be substituted for authored stacking metadata.
     internal MovableRoadAssets.Level[] PrepareRenderLevels(IReadOnlyList<RenderPrefab> sources,
-        IReadOnlyList<Bounds3> motionBounds, Matrix4x4 closedWorld)
+        float halfWidthDelta, Matrix4x4 closedWorld)
     {
-        if (sources.Count != 3 || motionBounds.Count != 3)
-            throw new ArgumentException("Draw01 road preparation requires three render sources and motion bounds.");
+        if (sources.Count != 3 || !math.isfinite(halfWidthDelta))
+            throw new ArgumentException("Draw01 road preparation requires three render sources and a finite width delta.");
         var roadPartitions = Draw01RoadPartitions.ForRoad(Road);
         var lanePartitions = Draw01RoadPartitions.ForLanes(Road);
+        var road = MovableRoadGeometry.InFrame(Road.Triangles, RoadToObject);
+        var lanes = MovableRoadGeometry.InFrame(Road.LaneGeometry.Triangles, RoadToObject);
         var levels = new MovableRoadAssets.Level[3];
         for (var i = 0; i < levels.Length; i++)
+        {
+            var bounds = sources[i].bounds;
+            bounds.min.x -= halfWidthDelta;
+            bounds.max.x += halfWidthDelta;
+            Include(road, ref bounds);
+            Include(lanes, ref bounds);
             levels[i] = new MovableRoadAssets.Level(sources[i], Road,
-                Draw01RoadPartitions.Carriageway, motionBounds[i], RoadToObject,
+                Draw01RoadPartitions.Carriageway, bounds, RoadToObject,
                 closedWorld: closedWorld, lanePartitions: lanePartitions,
                 roadTrianglePartitions: roadPartitions);
+        }
         return levels;
+    }
+
+    private static void Include(IReadOnlyList<MovableRoadGeometry.Triangle> triangles, ref Bounds3 bounds)
+    {
+        foreach (var triangle in triangles)
+        {
+            bounds.min = math.min(bounds.min, math.min((float3)triangle.A.Position,
+                math.min((float3)triangle.B.Position, (float3)triangle.C.Position)));
+            bounds.max = math.max(bounds.max, math.max((float3)triangle.A.Position,
+                math.max((float3)triangle.B.Position, (float3)triangle.C.Position)));
+        }
     }
 
     public void Dispose()
