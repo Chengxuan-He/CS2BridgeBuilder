@@ -1,5 +1,7 @@
 // Generated from the game 1.6.2f1 native PedestrianDrawBridge02 records.
 // Source SHA-256: 47EF0F1723E8643E74A17751AA480F97260BF6E549AA60EC9F14F8E003B12070
+// Native serialized matrix elements are row-major; audit labels came from managed field order.
+// Bind-pose field indices below are transposed once; numeric payloads are unchanged.
 // Resource path IDs are extraction provenance only; none is used at runtime.
 using System;
 using Colossal.Mathematics;
@@ -78,7 +80,7 @@ internal static class PedestrianDraw02MechanismData
                     position = new Vector3(-0f, 0f, 0f),
                     rotation = new Quaternion(0f, -0f, -0f, 1f),
                     scale = new Vector3(1f, 1f, 1f),
-                    bindPose = new Matrix4x4 { m00 = 1f, m10 = 0f, m20 = -0f, m30 = -0f, m01 = 0f, m11 = 1f, m21 = 0f, m31 = 0f, m02 = -0f, m12 = 0f, m22 = 1f, m32 = 0f, m03 = 0f, m13 = 0f, m23 = 0f, m33 = 1f },
+                    bindPose = new Matrix4x4 { m00 = 1f, m01 = 0f, m02 = -0f, m03 = -0f, m10 = 0f, m11 = 1f, m12 = 0f, m13 = 0f, m20 = -0f, m21 = 0f, m22 = 1f, m23 = 0f, m30 = 0f, m31 = 0f, m32 = 0f, m33 = 1f },
                     parentId = -1, m_Type = (BoneType)0,
                     m_Speed = 0f, m_Acceleration = 0f,
                     m_ConnectionID = 0, m_SourceID = 0
@@ -89,7 +91,7 @@ internal static class PedestrianDraw02MechanismData
                     position = new Vector3(-0f, 7.3000001907348633f, 63.060001373291016f),
                     rotation = new Quaternion(0f, -0f, -0f, 1f),
                     scale = new Vector3(1f, 1f, 1f),
-                    bindPose = new Matrix4x4 { m00 = 1f, m10 = 0f, m20 = -0f, m30 = -0f, m01 = 0f, m11 = 1f, m21 = 0f, m31 = -7.3000001907348633f, m02 = -0f, m12 = 0f, m22 = 1f, m32 = -63.060001373291016f, m03 = 0f, m13 = 0f, m23 = 0f, m33 = 1f },
+                    bindPose = new Matrix4x4 { m00 = 1f, m01 = 0f, m02 = -0f, m03 = -0f, m10 = 0f, m11 = 1f, m12 = 0f, m13 = -7.3000001907348633f, m20 = -0f, m21 = 0f, m22 = 1f, m23 = -63.060001373291016f, m30 = 0f, m31 = 0f, m32 = 0f, m33 = 1f },
                     parentId = 0, m_Type = (BoneType)33,
                     m_Speed = 0.014999999664723873f, m_Acceleration = 0.0030000000260770321f,
                     m_ConnectionID = 101, m_SourceID = 0
@@ -100,7 +102,7 @@ internal static class PedestrianDraw02MechanismData
                     position = new Vector3(-0f, 7.3000001907348633f, -63.060001373291016f),
                     rotation = new Quaternion(0f, -0f, -0f, 1f),
                     scale = new Vector3(1f, 1f, 1f),
-                    bindPose = new Matrix4x4 { m00 = 1f, m10 = 0f, m20 = -0f, m30 = -0f, m01 = 0f, m11 = 1f, m21 = 0f, m31 = -7.3000001907348633f, m02 = -0f, m12 = 0f, m22 = 1f, m32 = 63.060001373291016f, m03 = 0f, m13 = 0f, m23 = 0f, m33 = 1f },
+                    bindPose = new Matrix4x4 { m00 = 1f, m01 = 0f, m02 = -0f, m03 = -0f, m10 = 0f, m11 = 1f, m12 = 0f, m13 = -7.3000001907348633f, m20 = -0f, m21 = 0f, m22 = 1f, m23 = 63.060001373291016f, m30 = 0f, m31 = 0f, m32 = 0f, m33 = 1f },
                     parentId = 0, m_Type = (BoneType)33,
                     m_Speed = -0.014999999664723873f, m_Acceleration = 0.0030000000260770321f,
                     m_ConnectionID = 100, m_SourceID = 0
@@ -111,7 +113,7 @@ internal static class PedestrianDraw02MechanismData
                     position = new Vector3(-0f, 27.600000381469727f, 68.454002380371094f),
                     rotation = new Quaternion(0f, -0f, -0f, 1f),
                     scale = new Vector3(1f, 1f, 1f),
-                    bindPose = new Matrix4x4 { m00 = 1f, m10 = 0f, m20 = -0f, m30 = -0f, m01 = 0f, m11 = 1f, m21 = 0f, m31 = -27.600000381469727f, m02 = -0f, m12 = 0f, m22 = 1f, m32 = -68.454002380371094f, m03 = 0f, m13 = 0f, m23 = 0f, m33 = 1f },
+                    bindPose = new Matrix4x4 { m00 = 1f, m01 = 0f, m02 = -0f, m03 = -0f, m10 = 0f, m11 = 1f, m12 = 0f, m13 = -27.600000381469727f, m20 = -0f, m21 = 0f, m22 = 1f, m23 = -68.454002380371094f, m30 = 0f, m31 = 0f, m32 = 0f, m33 = 1f },
                     parentId = 0, m_Type = (BoneType)34,
                     m_Speed = 0.89999997615814209f, m_Acceleration = 0f,
                     m_ConnectionID = 0, m_SourceID = 101
@@ -122,7 +124,7 @@ internal static class PedestrianDraw02MechanismData
                     position = new Vector3(-0f, 27.600000381469727f, -68.454002380371094f),
                     rotation = new Quaternion(0f, -0f, -0f, 1f),
                     scale = new Vector3(1f, 1f, 1f),
-                    bindPose = new Matrix4x4 { m00 = 1f, m10 = 0f, m20 = -0f, m30 = -0f, m01 = 0f, m11 = 1f, m21 = 0f, m31 = -27.600000381469727f, m02 = -0f, m12 = 0f, m22 = 1f, m32 = 68.454002380371094f, m03 = 0f, m13 = 0f, m23 = 0f, m33 = 1f },
+                    bindPose = new Matrix4x4 { m00 = 1f, m01 = 0f, m02 = -0f, m03 = -0f, m10 = 0f, m11 = 1f, m12 = 0f, m13 = -27.600000381469727f, m20 = -0f, m21 = 0f, m22 = 1f, m23 = 68.454002380371094f, m30 = 0f, m31 = 0f, m32 = 0f, m33 = 1f },
                     parentId = 0, m_Type = (BoneType)34,
                     m_Speed = 0.89999997615814209f, m_Acceleration = 0f,
                     m_ConnectionID = 0, m_SourceID = 100
@@ -136,7 +138,7 @@ internal static class PedestrianDraw02MechanismData
                     position = new Vector3(0f, 0f, 0f),
                     rotation = new Quaternion(0f, 0f, 0f, 1f),
                     scale = new Vector3(1f, 1f, 1f),
-                    bindPose = new Matrix4x4 { m00 = 1f, m10 = 0f, m20 = 0f, m30 = 0f, m01 = 0f, m11 = 1f, m21 = 0f, m31 = 0f, m02 = 0f, m12 = 0f, m22 = 1f, m32 = 0f, m03 = 0f, m13 = 0f, m23 = 0f, m33 = 1f },
+                    bindPose = new Matrix4x4 { m00 = 1f, m01 = 0f, m02 = 0f, m03 = 0f, m10 = 0f, m11 = 1f, m12 = 0f, m13 = 0f, m20 = 0f, m21 = 0f, m22 = 1f, m23 = 0f, m30 = 0f, m31 = 0f, m32 = 0f, m33 = 1f },
                     parentId = -1, m_Type = (BoneType)0,
                     m_Speed = 0f, m_Acceleration = 0f,
                     m_ConnectionID = 0, m_SourceID = 0
@@ -147,7 +149,7 @@ internal static class PedestrianDraw02MechanismData
                     position = new Vector3(0f, 7.3000001907348633f, 63.060001373291016f),
                     rotation = new Quaternion(0f, 0f, 0f, 1f),
                     scale = new Vector3(1f, 1f, 1f),
-                    bindPose = new Matrix4x4 { m00 = 1f, m10 = 0f, m20 = 0f, m30 = 0f, m01 = 0f, m11 = 1f, m21 = 0f, m31 = -7.3000001907348633f, m02 = 0f, m12 = 0f, m22 = 1f, m32 = -63.060001373291016f, m03 = 0f, m13 = 0f, m23 = 0f, m33 = 1f },
+                    bindPose = new Matrix4x4 { m00 = 1f, m01 = 0f, m02 = 0f, m03 = 0f, m10 = 0f, m11 = 1f, m12 = 0f, m13 = -7.3000001907348633f, m20 = 0f, m21 = 0f, m22 = 1f, m23 = -63.060001373291016f, m30 = 0f, m31 = 0f, m32 = 0f, m33 = 1f },
                     parentId = 0, m_Type = (BoneType)33,
                     m_Speed = 0.014999999664723873f, m_Acceleration = 0.0030000000260770321f,
                     m_ConnectionID = 101, m_SourceID = 0
@@ -158,7 +160,7 @@ internal static class PedestrianDraw02MechanismData
                     position = new Vector3(0f, 7.3000001907348633f, -63.060001373291016f),
                     rotation = new Quaternion(0f, 0f, 0f, 1f),
                     scale = new Vector3(1f, 1f, 1f),
-                    bindPose = new Matrix4x4 { m00 = 1f, m10 = 0f, m20 = 0f, m30 = 0f, m01 = 0f, m11 = 1f, m21 = 0f, m31 = -7.3000001907348633f, m02 = 0f, m12 = 0f, m22 = 1f, m32 = 63.060001373291016f, m03 = 0f, m13 = 0f, m23 = 0f, m33 = 1f },
+                    bindPose = new Matrix4x4 { m00 = 1f, m01 = 0f, m02 = 0f, m03 = 0f, m10 = 0f, m11 = 1f, m12 = 0f, m13 = -7.3000001907348633f, m20 = 0f, m21 = 0f, m22 = 1f, m23 = 63.060001373291016f, m30 = 0f, m31 = 0f, m32 = 0f, m33 = 1f },
                     parentId = 0, m_Type = (BoneType)33,
                     m_Speed = -0.014999999664723873f, m_Acceleration = 0.0030000000260770321f,
                     m_ConnectionID = 100, m_SourceID = 0
@@ -169,7 +171,7 @@ internal static class PedestrianDraw02MechanismData
                     position = new Vector3(0f, 27.600000381469727f, 68.454002380371094f),
                     rotation = new Quaternion(0f, 0f, 0f, 1f),
                     scale = new Vector3(1f, 1f, 1f),
-                    bindPose = new Matrix4x4 { m00 = 1f, m10 = 0f, m20 = 0f, m30 = 0f, m01 = 0f, m11 = 1f, m21 = 0f, m31 = -27.600000381469727f, m02 = 0f, m12 = 0f, m22 = 1f, m32 = -68.454002380371094f, m03 = 0f, m13 = 0f, m23 = 0f, m33 = 1f },
+                    bindPose = new Matrix4x4 { m00 = 1f, m01 = 0f, m02 = 0f, m03 = 0f, m10 = 0f, m11 = 1f, m12 = 0f, m13 = -27.600000381469727f, m20 = 0f, m21 = 0f, m22 = 1f, m23 = -68.454002380371094f, m30 = 0f, m31 = 0f, m32 = 0f, m33 = 1f },
                     parentId = 0, m_Type = (BoneType)33,
                     m_Speed = 0.014999999664723873f, m_Acceleration = 0.0030000000260770321f,
                     m_ConnectionID = 0, m_SourceID = 101
@@ -180,7 +182,7 @@ internal static class PedestrianDraw02MechanismData
                     position = new Vector3(0f, 27.600000381469727f, -68.454002380371094f),
                     rotation = new Quaternion(0f, 0f, 0f, 1f),
                     scale = new Vector3(1f, 1f, 1f),
-                    bindPose = new Matrix4x4 { m00 = 1f, m10 = 0f, m20 = 0f, m30 = 0f, m01 = 0f, m11 = 1f, m21 = 0f, m31 = -27.600000381469727f, m02 = 0f, m12 = 0f, m22 = 1f, m32 = 68.454002380371094f, m03 = 0f, m13 = 0f, m23 = 0f, m33 = 1f },
+                    bindPose = new Matrix4x4 { m00 = 1f, m01 = 0f, m02 = 0f, m03 = 0f, m10 = 0f, m11 = 1f, m12 = 0f, m13 = -27.600000381469727f, m20 = 0f, m21 = 0f, m22 = 1f, m23 = 68.454002380371094f, m30 = 0f, m31 = 0f, m32 = 0f, m33 = 1f },
                     parentId = 0, m_Type = (BoneType)33,
                     m_Speed = -0.014999999664723873f, m_Acceleration = 0.0030000000260770321f,
                     m_ConnectionID = 0, m_SourceID = 100
