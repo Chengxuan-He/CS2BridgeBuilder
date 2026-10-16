@@ -20,7 +20,7 @@ internal static class Draw01ObjectAssembly
 
         // Resolve once from the same live sampling context that supplied the road
         // geometry. Keep native selection order and each winning producer's identity.
-        var roadObjects = road.Objects();
+        var roadObjects = Draw01RoadLights.Place(road.Objects(), road.RoadToObject);
         var attachmentPartitions = Draw01RoadPartitions.ForObjects(roadObjects);
 
         // The four authored streetlights are road furniture. The selected-road producer
