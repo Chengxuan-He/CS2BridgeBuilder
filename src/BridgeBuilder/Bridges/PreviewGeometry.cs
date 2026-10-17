@@ -1,4 +1,5 @@
 using Colossal.AssetPipeline.Importers;
+using Colossal.IO.AssetDatabase;
 using Game.Prefabs;
 using System;
 using System.Collections.Generic;
@@ -14,10 +15,30 @@ namespace BridgeBuilder.Bridges;
 internal sealed class PreviewGeometry : IDisposable
 {
     private readonly Dictionary<RenderPrefab, Mesh[]> _meshes = new();
+    private readonly Dictionary<RenderPrefab, SurfaceAsset[]> _surfaces = new();
     private readonly List<Mesh> _owned = new();
+    private readonly HashSet<SurfaceAsset> _surfaceLeases = new();
     private bool _disposed;
+    private ILocalAssetDatabase? _nativeAssets;
 
-    internal bool Capture(RenderPrefab prefab, IReadOnlyList<ModelImporter.Model> models)
+    // Converted preview materials need native SurfaceAsset identities and may carry VT headers.
+    // Their database is temporary and private to this preview, never AssetDatabase.user.
+    internal ILocalAssetDatabase NativeAssets => !_disposed
+        ? _nativeAssets ??= AssetDatabase.GetTransient()
+        : throw new ObjectDisposedException(nameof(PreviewGeometry));
+
+    // Serialized surface references resolve through the global database, whereas our
+    // generated textures live in a private transient database. Keep their direct
+    // property references alive until the preview render resources have released them.
+    internal void RetainSurfaceProperties(SurfaceAsset surface)
+    {
+        if (_disposed) throw new ObjectDisposedException(nameof(PreviewGeometry));
+        if (!_surfaceLeases.Add(surface)) return;
+        surface.LoadProperties(useVT: true);
+    }
+
+    internal bool Capture(RenderPrefab prefab, IReadOnlyList<ModelImporter.Model> models,
+        IReadOnlyList<SurfaceAsset>? surfaces = null)
     {
         if (_disposed || _meshes.ContainsKey(prefab)) return false;
         var meshes = new Mesh[models.Count];
@@ -30,11 +51,22 @@ internal sealed class PreviewGeometry : IDisposable
             meshes[index] = mesh;
         }
         _meshes.Add(prefab, meshes);
+        // RenderPrefab stores only CIDs; private transient surfaces cannot be
+        // resolved through its global asset lookup. Keep the original references.
+        if (surfaces != null)
+        {
+            var captured = new SurfaceAsset[surfaces.Count];
+            for (var index = 0; index < captured.Length; index++) captured[index] = surfaces[index];
+            _surfaces.Add(prefab, captured);
+        }
         return true;
     }
 
     internal bool TryGetMeshes(RenderPrefab prefab, out Mesh[] meshes)
         => _meshes.TryGetValue(prefab, out meshes!);
+
+    internal bool TryGetSurfaces(RenderPrefab prefab, out SurfaceAsset[] surfaces)
+        => _surfaces.TryGetValue(prefab, out surfaces!);
 
     public void Dispose()
     {
@@ -44,5 +76,14 @@ internal sealed class PreviewGeometry : IDisposable
             if (mesh != null) UnityEngine.Object.DestroyImmediate(mesh);
         _owned.Clear();
         _meshes.Clear();
+        _surfaces.Clear();
+        foreach (var surface in _surfaceLeases) surface.UnloadProperties();
+        _surfaceLeases.Clear();
+        if (_nativeAssets != null)
+        {
+            _nativeAssets.MarkForDeletion();
+            _nativeAssets.Dispose();
+            _nativeAssets = null;
+        }
     }
 }

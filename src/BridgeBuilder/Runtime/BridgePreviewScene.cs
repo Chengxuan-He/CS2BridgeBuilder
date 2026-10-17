@@ -26,6 +26,51 @@ internal static class BridgePreviewScene
     {
         if (session.Root == null || !session.Root.TryGet<Bridge>(out var bridge))
             return false;
+        // A waterway mechanism is placed at a fixed-size crossing NODE, not on an
+        // ordinary elevated edge. Its object already contains the converted deck.
+        // Drawing the ordinary edge instead hides the entire mechanism and inserts
+        // stationary road and intermediate piers across the opening.
+        var mechanisms = session.Root.GetComponent<NetSubObjects>()?.m_SubObjects?
+            .Where(item => item?.m_Object is ObjectGeometryPrefab geometry &&
+                geometry.TryGet<MoveableBridge>(out var movable) && movable.active).ToArray()
+            ?? Array.Empty<NetSubObjectInfo>();
+        if (mechanisms.Length != 0)
+        {
+            foreach (var item in mechanisms)
+            {
+                var geometry = (ObjectGeometryPrefab)item.m_Object;
+                if (!draws.TryObjectLayout(geometry, out var layout)) return false;
+                var position = (Vector3)item.m_Position;
+                var pillar = geometry.GetComponent<PillarObject>();
+                var onGround = pillar != null && (pillar.m_Type == PillarType.Standalone ||
+                    pillar.m_Type == PillarType.Vertical || pillar.m_Type == PillarType.Base);
+                var anchorTop = item.m_AnchorTop || pillar != null &&
+                    (pillar.m_Type == PillarType.Standalone || pillar.m_Type == PillarType.Vertical);
+                var stack = layout.Align(ref position, anchorTop, item.m_AnchorCenter, onGround, -PreviewElevation);
+                if (!draws.AddObject(geometry, Matrix4x4.TRS(position, item.m_Rotation, Vector3.one),
+                    stack, onGround ? 0f : BridgePreviewObjectLayout.ChildElevation(PreviewElevation, position.y)))
+                    return false;
+            }
+            // The mechanism occupies a fixed-size crossing node. Its two adjacent
+            // ordinary edges are separate from the opened object and retain native
+            // road composition and supports. NodeOffset is the native endpoint extent.
+            var extent = mechanisms.Max(item =>
+                ((ObjectGeometryPrefab)item.m_Object).GetComponent<NetObject>()?.m_NodeOffset
+                ?? throw new InvalidOperationException("A movable preview has no native node offset."));
+            if (extent <= 0f || bridge.m_SegmentLength <= 0f)
+                throw new InvalidOperationException("A movable preview has invalid crossing/approach lengths.");
+            NetCompositionHelpers.GetRequirementFlags(
+                new[] { NetPieceRequirements.Edge, NetPieceRequirements.Elevated }, out var approachFlags, out _);
+            var approaches = new List<Span>
+            {
+                new(-extent - bridge.m_SegmentLength, bridge.m_SegmentLength, -1, approachFlags),
+                new(extent, bridge.m_SegmentLength, -1, approachFlags)
+            };
+            using var approachComposition = new BridgePreviewComposition();
+            return AddDeck(session.Root, Matrix4x4.identity, approaches, session, draws,
+                approachComposition, new HashSet<NetGeometryPrefab>(), PreviewElevation,
+                new HashSet<float> { -extent, extent }) && draws.Draws.Count != 0;
+        }
         // This scene consists of ordinary elevated EDGES. Elevated alone does
         // not match pieces requiring Edge (including the road surface and many
         // cable spans); native composition would then leave only the towers.
@@ -75,7 +120,8 @@ internal static class BridgePreviewScene
 
     private static bool AddDeck(NetGeometryPrefab deck, Matrix4x4 transform, List<Span> spans,
         BridgePreviewSession session, BridgePreviewDrawList draws,
-        BridgePreviewComposition composition, HashSet<NetGeometryPrefab> path, float elevation)
+        BridgePreviewComposition composition, HashSet<NetGeometryPrefab> path, float elevation,
+        HashSet<float>? crossingEnds = null)
     {
         if (!path.Add(deck)) return false;
         try
@@ -113,6 +159,7 @@ internal static class BridgePreviewScene
                 {
                     if (item?.m_Object is not ObjectGeometryPrefab geometry) continue;
                     if (item.m_RequireOutsideConnection || item.m_RequireOrphan) continue;
+                    if (crossingEnds != null && geometry.Has<MoveableBridge>()) continue;
                     var replacements = Resolve(geometry, session, draws, deckWidth, elevation + item.m_Position.y);
                     if (replacements.Count == 0)
                         return false;
@@ -129,7 +176,7 @@ internal static class BridgePreviewScene
                         }
                         if (!draws.TryObjectLayout(concrete, out var layout))
                             return false;
-                        foreach (var z in Positions(item, spans))
+                        foreach (var z in Positions(item, spans).Where(z => crossingEnds == null || !crossingEnds.Contains(z)))
                         {
                             var position = (Vector3)item.m_Position;
                             position.x += replacement.Offset;
@@ -150,6 +197,7 @@ internal static class BridgePreviewScene
                     if (item?.m_Prefab is not NetGeometryPrefab other) continue;
                     var local = Matrix4x4.Translate(item.m_Position);
                     var childSpans = spans;
+                    var childCrossingEnds = crossingEnds;
                     var leftHandTraffic = Unity.Entities.World.DefaultGameObjectInjectionWorld
                         .GetExistingSystemManaged<Game.City.CityConfigurationSystem>().leftHandTraffic;
                     if (Game.Net.NetUtils.ShouldInvert(item.m_InvertWhen, leftHandTraffic))
@@ -157,15 +205,17 @@ internal static class BridgePreviewScene
                         // CourseSplitSystem.GetAuxCourse reverses endpoints and
                         // rotates their frames by PI; its upgrade flags swap sides.
                         // For this straight course, reverse about its midpoint.
-                        var end = spans.Max(span => span.Start + span.Length);
+                        var end = spans.Min(span => span.Start) + spans.Max(span => span.Start + span.Length);
                         local *= Matrix4x4.Translate(new Vector3(0f, 0f, end)) *
                             Matrix4x4.Rotate(Quaternion.Euler(0f, 180f, 0f));
                         childSpans = spans.AsEnumerable().Reverse().Select(span => new Span(
                             end - span.Start - span.Length, span.Length, span.FixedIndex,
                             NetCompositionHelpers.InvertCompositionFlags(span.Flags))).ToList();
+                        childCrossingEnds = crossingEnds == null ? null :
+                            new HashSet<float>(crossingEnds.Select(z => end - z));
                     }
                     if (!AddDeck(other, transform * local, childSpans,
-                            session, draws, composition, path, elevation + item.m_Position.y)) return false;
+                            session, draws, composition, path, elevation + item.m_Position.y, childCrossingEnds)) return false;
                 }
             return true;
         }
@@ -252,7 +302,7 @@ internal static class BridgePreviewScene
             var fixedMatch = item.m_FixedIndex == span.FixedIndex;
             switch (item.m_Placement)
             {
-                case NetObjectPlacement.CourseStart: positions.Add(0f); break;
+                case NetObjectPlacement.CourseStart: positions.Add(spans[0].Start); break;
                 case NetObjectPlacement.CourseEnd: positions.Add(end); break;
                 case NetObjectPlacement.EdgeMiddle:
                 case NetObjectPlacement.NotWaterwayCrossingEdgeMiddle:

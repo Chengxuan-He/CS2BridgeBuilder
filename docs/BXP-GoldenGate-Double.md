@@ -1,7 +1,7 @@
 # BXP double-deck Golden Gate catalogue entry
 
 `GoldenGate` remains the single-deck DLC landmark. `GoldenGateDouble` is a separate
-double-only style named 双层悬索桥（金门大桥）, displayed as Mod: BXP (localized prefix).
+double-only style named Double-deck suspension bridge (Golden Gate), displayed as Mod: BXP (localized prefix).
 Only the recorded BXP Golden Gate Bridge Train/Subway donor identities match it;
 auxiliary network children remain excluded by the catalogue's lower-deck scan.
 

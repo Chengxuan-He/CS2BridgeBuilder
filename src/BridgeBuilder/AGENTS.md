@@ -4,9 +4,29 @@
 
 These instructions apply to `src/BridgeBuilder/**`. They add runtime-specific requirements to
 the repository root [`AGENTS.md`](../../AGENTS.md). Before editing this directory, read the complete
-[`PROJECT_CONTRACT.md`](../../docs/agent-contract/PROJECT_CONTRACT.md); this file does not replace it.
+[`PROJECT_CONTRACT.md`](../../docs/agent-contract/PROJECT_CONTRACT.md) and
+[`BRIDGE_GENERATION_CONTRACT.md`](../../docs/agent-contract/BRIDGE_GENERATION_CONTRACT.md).
+This file replaces neither. Numbered bridge rules refer to the bridge generation contract.
 
 ## Runtime invariants
+
+Bridge generation contract section 2 prohibits all Boolean operations with prototype geometry,
+including hardcoded copies of prototype faces. Apply immutable measured construction coordinates
+and rules directly; offline prototype inspection does not authorize runtime mesh intersection.
+
+
+- Meshes must reference the prototype bridge's corresponding LOD meshes. Excessive subdivision
+  or triangle cutting is prohibited. Follow bridge generation contract section 4, including for
+  converted road surfaces, UV tiling and marking clipping; existing LOD exceptions do not waive it.
+
+- Bridge generation contract section 25 applies to every generator: derive left/right sidewalk presence,
+  position and width from the selected elevated composition and upgrades. Adapt sidewalk-dependent
+  inner railings and bridge-authored sidewalk portions independently; never fabricate a missing
+  side or mirror unequal widths. Preserve unrelated structure and apply the layout to every LOD,
+  preview and persisted geometry. The root AGENTS.md is the routing authority for this rule.
+  Sidewalk portions embedded in fixed bases, end platforms or other composite components are also
+  subject to section 25. Only `Sidewalk` sections count as sidewalks; curbs do not. Adapt each side
+  independently without removing unrelated structural parts.
 
 - Self-check prioritizes normal game operation and attempts asset version migration first.
   Complete missing fields/dependencies without changing UUID/CID; leave healthy current assets
@@ -17,16 +37,8 @@ the repository root [`AGENTS.md`](../../AGENTS.md). Before editing this director
   Keep self-check free of live prefab unregistration and require restart. Contract section 19's
   2026-10-08 migration-first revision defines this sequence and mandatory deletion fallback.
 
-Native-pricing revision (user request 2026-10-07): use the game's native pricing exclusively.
-Preserve source roads' and bridge prototypes' PlaceableNetPiece/PlaceableObject construction,
-elevation and upkeep fees. Let the game select composition pieces and charge network length,
-height, auxiliary networks and placed objects. Do not bake a fixed total, apply a bridge-specific
-multiplier/offset/floor, zero fees, override runtime cost data, or create pricing-only copies.
-This supersedes all earlier requirements to retain the established Bridge Builder price and all
-permissions to clone private components for pricing. Legacy conversion removes the custom cost
-component while retaining its original native dependency graph and bridge/deck UUID/CID/geometry.
-Previously baked assets remain valid native data; do not guess original fees or remove referenced
-copies. Restoring their old fees requires authoritative original data and a separate verified migration.
+Follow the native-pricing revision in bridge generation contract section 16, including its restrictions
+on legacy conversion and fee restoration. The complete revision remains in the contract.
 
 - Self-check migration/repair and new generation share the same file layout and naming rules
   (contract section 19); preserve bridge/deck CID and UUID. Native conversion alone cannot skip
@@ -39,10 +51,10 @@ copies. Restoring their old fees requires authoritative original data and a sepa
   the deferred rail-seam limitation is unfinished compatibility work, not proof of independence.
 
 - Apply the root independent-persistence revision: legacy conversion is additive; root and deck
-  CID, UUID, version and geometry stay unchanged. Persist native unlocking, private-piece prices,
+  CID, UUID, version and geometry stay unchanged. Persist native unlocking, unchanged native fees,
   native locales and thumbnail data. No BridgeBuilder component or UI host may be required by
-  converted/new saved prefabs. Private structural cost copies are authorized; the scalar-only
-  pricing rule below is superseded. Preserve bridge assets during deployment for acceptance.
+  converted/new saved prefabs. Pricing-only copies and native fee rewrites are prohibited.
+  Deployment cleanup follows the affected-style rule in contract section 13.
 
 - Apply the root contract's legacy naming migration exception during self-check: create per-bridge
   copies with "-b{uuid}" appended to the first space-delimited name token and new CIDs, update file references, and back up unreferenced old components.
@@ -56,7 +68,11 @@ copies. Restoring their old fees requires authoritative original data and a sepa
   height bands, ratios, names or other geometric resemblance.
 - Runtime spatial tests may compare `x`, `y` or `z` only with zero, using equality or inequalities.
   For stretch versus translation, whether the authored part reaches or crosses `x = 0` is the sole,
-  non-overridable decision.
+  non-overridable decision outside the user-approved central railing post exception in contract
+  section 8 (baseline `dev/80eb1415e1a3b59263eb45693f7e2c5d80732447`, 2026-10-16).
+  An independently authored vertical railing post centred on the bridge centreline retains its
+  original width and centred position at every LOD. Use immutable measured membership, not runtime
+  shape/position heuristics. This does not exempt transverse rails or any other crossing structure.
 - Stretch a centre-crossing part against its own authored span. Translate a non-crossing side part
   rigidly. Never use one family's boundary, profile or measured constant to classify another family.
 - Treat the base only as the centre-crossing structure immediately adjacent to and below the deck.
@@ -65,9 +81,11 @@ copies. Restoring their old fees requires authoritative original data and a sepa
 - Translate bridge-pier columns. Do not stretch them.
 - Apply every part classification and transform to the highest-detail mesh and every LOD. Do not allow
   reduced LOD topology to reclassify a part.
-- Do not write an explicit `throw` statement under this directory. Return an explicit failure result,
-  report it and stop the affected prefab before persistent geometry is allocated or published. Catch
-  exceptions originating in game or third-party APIs at the boundary.
+- Do not over-defend internal mod logic. Internal invariant failures must surface as explicit ERROR,
+  with exceptions where appropriate, rather than being hidden by special cases, silent returns or
+  fallback values. Defend external boundaries, including generated Prefabs that can be damaged and
+  failures originating in game or third-party APIs. Stop failed operations before publishing invalid
+  geometry. This replaces the previous blanket prohibition on explicit `throw` statements.
 - Preserve the archetype's complete prefab behavior. A generated bridge changes only requested
   geometry and the selected road structure; derived tower, cable, piece and LOD prefabs remain unique
   to that generated bridge.
@@ -93,7 +111,23 @@ copies. Restoring their old fees requires authoritative original data and a sepa
   `x = 0` remains centred. Do not replace the selected road's ordinary street lighting with the
   archetype road's street lighting.
 
+## GPU computation and parallel generation
+
+Follow bridge generation contract section 23: expensive repeated matrix/pixel/image calculations must run
+on the GPU. Assume a game-capable GPU, never a specific vendor or CUDA availability. Use GPU
+facilities compatible with supported vendors. Run independent bridge-generation steps in parallel
+wherever possible while respecting data dependencies, resource ownership and native API thread
+and graphics-context requirements. This does not authorize parallel calls to thread-affine APIs.
+
 ## Completion
+
+The user-approved movable LOD subdivision exception in bridge generation contract section 5 applies here. Preserve original structural vertices, materials and interpolated
+attributes when necessary subdivisions separate merged LOD parts. Keep all authored-part width
+rules and all-LOD coverage. The user revoked the prohibition on high-detail-derived movable LODs
+on 2026-10-17: deriving, simplifying or supplementing LODs from measured prototype high-detail
+geometry is permitted under bridge generation contract section 5 and its scoped topology exception.
+Native bone ownership, existing materials and visual acceptance requirements remain unchanged.
+Compilation of partial stages is not completion.
 
 Persistence must implement contract section 17. Traverse serialized external dependencies to the
 built-in boundary and save byte-identical files plus original CID sidecars under
@@ -109,69 +143,62 @@ without asking whether to save or waiting for a manual exit. The user explicitly
 unsaved progress for this workflow. Verify the process is absent; still perform the post-edit
 shutdown and deployment procedure required below.
 
-Construction pricing must not allocate, clone, save or publish any pricing prefab. Price is a scalar
-property attached to the existing bridge prefab, projected onto native UI and composition cost data.
-Read selected road prices from initialized native data; preserve each archetype's signed offset and
-floor the total at the selected networks' elevated base price. See project contract section 16.
+Preserve native construction, elevation and upkeep fees. Do not allocate pricing-only prefabs,
+persist a custom scalar total or override runtime prices. See bridge generation contract section 16.
 
 After any source-code edit, follow contract section 13: invoke the exact `Cities2.exe` kill command,
-verify the game is stopped, remove all mod-created bridges and generated artifacts, and verify the
-ownership-scoped cleanup. After completing any code change, immediately build and deploy to the game
+verify the game is stopped, and determine whether bridge-generation code changed. If it did, remove
+all mod-created bridges only for the affected style IDs and their UUID-owned artifacts; preserve
+unaffected styles. If generation code did not change, remove no existing bridges. Shared generation
+changes require tracing the affected style IDs before cleanup. After completing any code change,
+immediately build and deploy to the game
 without waiting for another request; back up the existing installation and verify installed files
 against the build output as required by section 13. Compilation is not visual verification. For visual work, do not run unit
 tests; inspect generated geometry and confirm both near and far views in game.
 
-
-## Post-load self-check revision (2026-10-06)
-
-Rollback baseline before this instruction update: branch `dev`, HEAD
-`3be5fed03b275a07850f413dc2396b0182e532ea`.
-The user's subsequent request restores read-only in-memory validation for self-check only,
-after both Bridge Builder and the main menu have completed loading (including late mod loading).
-Healthy bridges skip file integrity scanning and remain unchanged. Invalid required references
-cause UUID-scoped backup/removal, never reference repair, registration rejection or quarantine.
-File ownership, path and change verification remain required before moving or clearing files;
-they are not a second integrity verdict. Dependency persistence remains byte-for-byte file copying.
+Documentation-only edits require no game shutdown, bridge removal, build or deployment. The
+2026-10-15 cleanup revision is recorded in contract section 13 at branch `dev`, HEAD
+`0f4b10ae47c5dc264249e0d877aacc326e3e9525`, rollback reference
+`refs/rollback/scoped-cleanup-docs-20261015`.
 
 
-The subsequent migration revision (same `dev`/`3be5fed03b275a07850f413dc2396b0182e532ea`
-rollback baseline) must include cached user PrefabAssets that failed native registration, not only
-PrefabSystem's registered list. Do not call Load or republish to obtain a cached instance.
-Validate required references read-only; retire proven null references or loaded, available assets
-that failed registration. A targeted serialized check is allowed when no cached instance exists; unresolved required
-dependencies enter removal. Healthy legacy bridges keep UUID, CID, name and geometry; copy external dependencies
-before committing asset-local persistence version/metadata, backing up the original root. Do not
-invent missing historical recipe values or use a separate registration store. Migration I/O failures enter removal; successful migration is idempotent.
+## Post-load self-check
 
+Contract section 19 defines migration-first self-check and its backup/removal fallback. Wait for
+native loading, mod initialization, PDX caching and active asset batches; observe both current
+readiness and completion events so late mod loading is covered. Include cached user PrefabAssets
+that failed registration without force-loading or republishing them. Validation of live references
+is read-only and is separate from dependency persistence under section 17.
 
-Latest self-check revision (rollback baseline `dev`, HEAD
-`3be5fed03b275a07850f413dc2396b0182e532ea`): wait for native loading, mod initialization,
-PDX database caching and active asset batch completion. Observe current state as well as completion
-events so late mod loading cannot miss the check. For a required null reference, read the exact
-original serialized CID and verify that its PrefabAsset already has a cached instance. If available,
-recursively copy unchanged dependencies under the owning bridge UUID as in section 17, retain the
-original bridge and request restart; do not modify live references or force-load the dependency.
-If the CID is unavailable/not loaded or the source contains an explicit null with no CID, retire
-the owning bridge directories. Unknown serialization or copying I/O failure enters removal.
-
-
-Repair-or-remove policy update (baseline `dev`, HEAD
-`3be5fed03b275a07850f413dc2396b0182e532ea`): game operability takes priority. After loading
-completes, faulty owned bridges have only two outcomes: successful recursive same-CID dependency
-copy for a null slot whose original CID is already loaded, or directory-scoped retirement.
-Unresolved source/serialization, unavailable content, failed registration, missing prefab/geometry,
-or unsuccessful dependency copy/migration must enter retirement, not an inconclusive-retention path.
-Check dependencies even for already migrated bridges. Keep ownership and concurrent-change safeguards;
-actual filesystem failures must be reported as removal failures, never falsely reported as success.
-A failure affecting one bridge must not block removal of other bridges.
-
-Contract section 18 supersedes earlier file ownership checks: b{uuid} path text is the sole ownership criterion for bridge asset reads, writes, moves and deletes.
+For required null references, inspect the exact serialized CID. If its dependency is already cached,
+copy permitted source bytes without modifying live references; require restart. Complete missing
+native payloads and layout through migration before considering removal. Failed or impossible
+migration enters section 19's per-UUID backup/move, then deletion fallback on backup/move failure.
+Do not unregister live prefabs. Report actual removal failures and preserve healthy current assets.
 
 Source isolation (2026-10-13): creating bridges/copies must never select another bridge's Prefab from ImportedData (including UUID dependency directories), even with the same CID. Filter before reading; use original/permitted sources or fail. Ownership remains path-string-only. See contract's Source isolation subsection; baseline dev/5bea1d0bef04dd2ac718809852d3f657c7388e58, rollback refs/rollback/no-foreign-bridge-source-20261013.
 
-## English documentation maintenance (2026-10-13)
+## Documentation language
 
-Instruction and contract prose is maintained in English. This language-only revision preserves
-existing requirements, exceptions, identifiers and historical evidence. Baseline: branch `dev`,
-HEAD `5bea1d0bef04dd2ac718809852d3f657c7388e58`; rollback reference
-`refs/rollback/english-contracts-guide-20261013`. Existing local changes are preserved.
+All documentation must be written in English, including audits and research reports.
+Preserve literal identifiers, paths and diagnostic evidence; explain them in English.
+The project contract records the expanded 2026-10-15 documentation policy. Preserve current requirements and
+historical evidence; the 2026-10-13 language-only baseline remains in the project contract.
+
+## Movable bridge size
+
+Follow bridge generation contract section 24: a generated movable bridge's total Prefab size, including
+its dependencies, must be comparable to its original counterpart. Measure the complete graph,
+not only its root or textures; preserve required content and report unresolved measurements.
+Revision baseline (2026-10-16): `dev/3b6363ada9f1f147b1a660e20c0d6246a54f82dd`.
+
+
+## Native marking conversion approval
+
+Follow the movable generation contract sections 7, 11 and 15: integrate paint into mechanism
+receiver geometry with existing native object materials. Do not create independent marking objects,
+material descriptors or baked textures. Curve segmentation, endpoint-fade and existing-atlas pattern
+differences remain accepted; the former object-decal representation is superseded. Preserve native
+motion, structural rules, selective persistence and human acceptance requirements.
+Revision baseline: `dev/3b6363ada9f1f147b1a660e20c0d6246a54f82dd`; rollback reference
+`refs/rollback/movable-generation-contract-20261017`.

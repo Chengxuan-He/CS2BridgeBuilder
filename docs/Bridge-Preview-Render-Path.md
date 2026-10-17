@@ -1,5 +1,9 @@
 # Temporary bridge preview rendering
 
+For current requirements, read the [bridge preview specification](Bridge-Preview-Specification.md).
+This file is a chronological implementation and diagnosis record. Earlier settings may be superseded
+by later entries; implementation statements do not establish visual acceptance.
+
 ## Scope and evidence (2026-09-19)
 
 The user reported a visible PNG containing disconnected, clipped white fragments.
@@ -392,3 +396,200 @@ verify Suspension01/Grand/GoldenGate bases, 30 m supports, double-deck separatio
 and management previews after source-road changes, including repeated switching
 and closing. No game was opened or controlled for visual testing. Existing bridge
 assets, savegames and mod caches are preserved during installation.
+
+## Movable preview ownership correction (2026-10-16)
+
+The actual preview entry point allocates `BridgePreviewSession.Name` as `tmp{uuid}` and passes
+that name to the shared generation pipeline. Permanent creation uses `b{uuid}`. Inspection found
+that moving-road render construction, network appearance conversion, curved-surface conversion
+and mechanism assembly all required a permanent UUID, making the temporary path fail before
+geometry creation even when all required inputs were supplied.
+
+These four paths now use `MovableAssetOwnership`. With no preview context, the existing permanent
+`BridgeAssetInfo.MatchesOwner` rule remains authoritative. With a preview context, the owner must
+be a valid `tmp{uuid}` and the generated name must contain that identity. The permanent identity
+recognizer, dependency ownership, migration and cleanup rules have not been broadened.
+
+Preview material resources still use the preview's transient native database, and preview geometry
+still uses `PreviewGeometry.Capture`; neither path writes generated geometry into the user database.
+Failed render construction now recognizes temporary resources during rollback and additionally
+requires their database to be the active preview database before deleting them. Permanent rollback
+continues to require the permanent owner. Only assets allocated by the failed call are candidates.
+
+Validation: Release compilation succeeded (the existing nine traffic-selection field warnings remain),
+18 original installed files were backed up and verified, and all 12 installed payload files matched
+the build. Backup: `artifacts/backups/movable-preview-ownership-20261016-042742`.
+No currently routed bridge output uses these new movable helpers, so no existing bridge was removed.
+This corrects an inspected code-path failure; it is not evidence of a rendered movable preview or
+completed generator. Final generator assembly, moving markings and native in-game acceptance remain
+outstanding. The saved-asset writer already accepts arbitrary owned Prefabs, but future generator
+integration must transfer every converted Section and Piece to its existing ownership list.
+
+## Open movable-bridge previews (2026-10-16)
+
+The initial implementation added support for settled open poses, but did not connect the
+waterway mechanism to the scene. The subsequent user screenshot disproved the claimed visible
+result. Objects carrying
+an active `MoveableBridge` use its second lift target (the native crossing's waterway target).
+`BridgePreviewOpenPose` evaluates the authored procedural bone hierarchy and source connections;
+it does not infer hinges from mesh bounds or use a bridge-style name to choose an opening angle.
+The supported native B&P motion types are aim-forward rotation, axis movement, scaled movement,
+rotation from vertical movement and scaled rotation. Source IDs are resolved as connection IDs,
+not array indices. Native rotation-from-movement speed uses the MeshSystem turns-to-radians rule.
+
+The implementation follows the installed game's `ObjectInterpolateSystem`, `MeshSystem`,
+`TrafficLightSystem.UpdateMoveableBridge`, `RenderingUtils.FindBoneIndex` and
+`RenderPrefabRenderer.Instance`. It binds current and previous skin matrices through the native
+`_BoneTransforms` buffer and procedural-animation shader variant. Bulk vertex skinning runs on
+the GPU; no custom shader or CPU vertex rewrite is introduced. Preview materials stay private,
+and streaming refresh preserves the animation keyword configuration.
+
+Mounted objects, including generated marking projectors and street lights, follow their native
+parent connection using the open/rest transform difference. Fixed attachments retain their frame.
+Camera framing includes transformed bounds so opening leaves and raised decks are not cropped
+by the previous closed-pose bounds. The bound is conservative; it is not geometry classification.
+Buffers are released with the preview draw list.
+
+This change is shared preview infrastructure on `dev`. It does not change generated Prefabs,
+saved geometry, native signal behavior, persistence, migration, style routing or creation messages.
+No existing bridge is removed. It does not complete missing generators for other styles.
+
+Validation: Release build passed; 18 original installation files were backed up and verified,
+and all 12 deployed payload files matched the build. Backup:
+`artifacts/backups/movable-open-preview-20261016-165510`.
+Human in-game verification remains pending: select a movable bridge and inspect its opened leaves
+or raised span, attached markings/lights and framing; switch to a fixed bridge and close/reopen the
+panel to check ordinary preview behavior and resource lifecycle. Compilation and source comparison
+are not visual acceptance.
+
+
+## Waterway mechanism scene correction (2026-10-16)
+
+The reported ordinary road and three piers came from the scene assembler, which constructed
+ordinary elevated edges and never selected the waterway crossing node object. Bone evaluation
+could not open a mechanism that was absent from the draw list.
+
+The scene now discovers active MoveableBridge objects in the generated network's NetSubObjects
+and draws those generated objects, including their converted decks and attachments, using the
+existing pillar anchor alignment. It does not overlay an ordinary elevated road across the opening.
+The native procedural pose remains GPU-skinned. Per-renderer local bounds now include the opened
+bone transforms, in addition to the camera bounds; shared meshes and persisted vertices are unchanged.
+
+The generation composition path also copies the native movable donor's aggregate type. The movable
+generator bypasses the fixed generator's aggregate-copy helper; previously a selected street retained
+its Street aggregate instead of the donor's Bridge aggregate. This correction affects new generation;
+it does not rename existing city network aggregates.
+
+The GPU bake clear kernel now initializes decal normal padding to the native neutral normal rather
+than zero. This corrects the padding value but does not establish the cause of the reported mesh
+artifact. Offline inspection of the 192 existing normal pages found that this change alone would not
+collapse them into constant textures. It must not be described as resolving generation performance.
+
+Validation: GPU bundle build and Release build succeeded. Eighteen installed original files were
+backed up, and twelve deployed payload files matched the build. Installation backup:
+`artifacts/backups/movable-preview-crossing-20261016-181713`.
+The generated-asset cleanup command was rejected by automatic approval policy before execution.
+The existing Draw01 assets and export-state rows remain; required cleanup is incomplete. The two
+recorded owners are `b8c113ba3-ad78-448d-9733-55a17831f8b3` and
+`bdfe541e7-1585-4bf0-9f3e-efbcd1f2502e`. No unrelated bridge cleanup was requested.
+
+Human verification remains required for the opened preview, attachments, clipping and native bridge
+naming after new generation. The reported placed-mesh artifact and long generation time remain
+unresolved. Actual source geometry shows retained structural faces near the converted carriageway
+height; whether these intersect the selected road requires further native component analysis.
+No structural Z correction, heuristic component deletion or replacement geometry was applied.
+
+
+## Transient surface property lifetime (2026-10-16)
+
+The subsequent Small Road movable preview failed at PreviewAssemblyFailed after appearance
+creation. Player.log also reported two unresolved asset CIDs immediately before that failure.
+The previous renderer swallowed geometry/material load exceptions, so the existing log does not
+identify the exact failing render or prove that those CID warnings caused this failure.
+
+Native SurfaceAsset.LoadProperties reconstructs texture references through
+AssetDatabase.global.TryGetAsset and can create a database-less dummy when resolution fails.
+Generated preview surfaces reference textures in the private transient database. Unloading those
+surface properties immediately after saving discards their direct texture references.
+
+PreviewGeometry now retains one additional property lease for successfully saved road and decal
+surfaces before the producer releases its lease. Rendering uses the retained references. Preview
+render resources are disposed first; PreviewGeometry then releases its property leases before
+removing the transient database. Permanent generation retains its existing release behavior.
+No global database registration, persisted output change or existing-bridge cleanup is introduced.
+
+Geometry and material loading exceptions now retain the asset name, CID and inner exception.
+Missing loaded geometry, material slots and invalid object layouts also identify the affected
+prefab instead of reducing every failure to an unexplained false result. Failures still reach the
+ordinary preview error handler; incomplete assets are not displayed as successful previews.
+
+Validation: Release build passed; 18 installed originals were backed up and 12 deployed payload
+files were hash-verified. Backup: `artifacts/backups/preview-surface-lifetime-20261016-220659`.
+The reference-lifetime defect is corrected in source. The reported assembly failure and opened
+preview still require human in-game reproduction/verification; compilation is not visual acceptance.
+
+
+## Direct transient surface references (2026-10-16)
+
+The next reproduction identified the precise assembly failure: material slot 0 for the
+preview mechanism had zero available materials. Native RenderPrefab.surfaceAssets stores
+AssetReference CIDs and resolves them through the global database when read. Generated
+preview surfaces live in a private transient database, so that getter returns unresolved
+references even when their texture properties remain loaded.
+
+PreviewGeometry now captures the direct SurfaceAsset references alongside generated meshes.
+Both moving-road LODs and native marking objects supply their original surface arrays.
+The preview renderer reads this captured array first; ordinary and borrowed existing assets
+continue using native surface lookup. Missing slots raise an error naming the prefab and slot.
+The captured array is cleared with the preview, while the existing property leases and private
+database disposal retain their lifetime responsibilities. Permanent saving, global registration,
+and existing bridge assets are unchanged. This is a preview-only correction.
+
+Validation: Release compilation succeeded. Eighteen installed original files were backed up to
+`artifacts/backups/preview-direct-surfaces-20261016-223634`; twelve deployed payload files
+were hash-verified. All three mesh-capture callers were inspected: the two movable producers
+pass surface references, while the existing structural capture retains native material lookup.
+In-game preview assembly, opening pose and rendered appearance still require human verification.
+
+The preceding game log also provides the first measured all-native-marking result for Small Road:
+five batches produced fifteen marking objects and zero baked marking textures in 22 ms.
+Road appearance generation remained 6,671 ms, with seven texture files totaling 36,217,438 bytes.
+These are measurements from the failed-preview run, not a complete persisted bridge size audit
+or visual acceptance. The earlier marking measurement was 24,583 ms for 192 decal pages.
+
+
+## Movable approaches and sidewalk investigation (2026-10-16)
+
+The mechanism-only preview returned immediately after adding the crossing object. It therefore
+omitted both adjacent stationary bridge spans. Preview assembly now draws the opened mechanism
+and two ordinary elevated approach spans. Their inner endpoints use the mechanism's native
+NetObject.m_NodeOffset and their lengths use Bridge.m_SegmentLength. For the current Draw01
+recipe, these are 90 m and 144 m respectively; the renderer contains no style-specific constants.
+Ordinary support placements at the crossing endpoints are excluded, because those endpoints belong
+to the fixed-size crossing node already supported by the mechanism. Other approach placements
+retain the existing rules. Auxiliary reversal now uses the entire course midpoint, including
+negative start coordinates. No stationary road is drawn across the opening.
+
+Release compilation succeeded. Eighteen original installation files were backed up under
+`artifacts/backups/movable-preview-approaches-20261016-230230`; twelve deployed payload files
+matched the build. The changed source passes git diff --check. This is a preview-only change;
+no saved bridges were removed or modified. Human verification of both ends, approach joins,
+opened parts and framing remains pending.
+
+The supplied original-game screenshot confirms a perforated metal-grid sidewalk. That visual
+property alone is not a torn mesh. The current generator deliberately removes the donor's road
+surface and substitutes the selected road's surface, including its sidewalk. Whether the user
+wants to retain the donor's grid instead is a separate appearance requirement requiring an explicit
+choice; it must not be silently inferred from the screenshot.
+
+The actual generated owner `b51e5ca7a-af67-4cda-a652-b4dfe8627ecb` was inspected read-only.
+All three mechanism LODs have valid finite positions and indices and zero triangles spanning
+multiple bone indices. Each LOD's generated road has 1,260 vertices and 420 triangles, spanning
+x = -6.5 to +6.5 m. At z = 40 m, both sidewalk top surfaces sample at y = 10.0000184 m
+for x = -6, -5, -4, +4, +5 and +6 m. The native donor's corresponding top is y = 10 m;
+that top is absent from the retained highest-detail structure at those sample locations.
+These measurements rule out an absent sidewalk or cross-bone triangle at the inspected locations;
+they do not prove correct material rendering, shadows or network/object overlap in the city.
+
+The reported single-side visual artifact remains unresolved. No speculative Z correction,
+structural deletion, shader replacement or change to the selected-road representation was made.

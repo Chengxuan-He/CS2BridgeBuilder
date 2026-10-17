@@ -63,6 +63,14 @@ Check(portable.GetComponent<ManualUnlockable>() == null && lower.GetComponent<Ma
 prefabs.All.Remove(milestone);
 Check(Eval() == null, "missing progression leaf defers, not unlocks");
 Check(BridgeNativeUnlock.Evaluate(portable, prefabs, manager) == null, "missing native leaf is not reported as locked");
+var duplicateEmpty = new BridgeUnlockExpression { Kind = 0,
+    Flags = new byte[] {1,1}, Children = new[] { new BridgeUnlockExpression(), new BridgeUnlockExpression() } };
+var compactRoot = new NetGeometryPrefab { name = "Compact" };
+var compactGroups = new List<PrefabBase>();
+Check(BridgeNativeUnlock.Apply(compactRoot, duplicateEmpty, prefabs, compactGroups, out var compactError), compactError);
+Check(compactGroups.Count == 1 && compactRoot.GetComponent<Unlockable>()!.m_RequireAll!.Length == 1,
+    "identical nested groups share one node and outer group is stored directly on network");
+Check(BridgeNativeUnlock.Evaluate(compactRoot,prefabs,manager) == true, "compaction preserves empty-group truth");
 var nativeCycle = new NetGeometryPrefab();
 var cycleGate = nativeCycle.AddComponent<Unlockable>();
 cycleGate.m_IgnoreDependencies = true;

@@ -29,6 +29,24 @@ var imported=Path.Combine(UnityEngine.Application.persistentDataPath,"ImportedDa
 Check(!BridgeAssetInfo.IsOtherBridgePrefab(Path.Combine(imported,owner+"_Dependencies",a+".Prefab"),owner,imported),"current bridge remains permitted");
 Check(!BridgeAssetInfo.IsOtherBridgePrefab(Path.Combine(imported+"Other","b"+Guid.NewGuid()+".Prefab"),owner,imported),"root containment has directory boundary");
 Check(BridgeAssetInfo.IsOtherBridgePrefab(foreign.Metadata.path.Replace("ImportedData", "IMPORTEDDATA").Replace(".Prefab", ".PREFAB"),owner,imported),"case-insensitive foreign ownership");
+foreach(var fixture in args) {
+ var payload=File.ReadAllBytes(fixture);
+ var refs=BridgeSurfaceReferences.Read(payload,(_,_)=>false);
+ foreach(var extension in new[]{".Surface",".Material"}) {
+  var materialOwner="b"+Guid.NewGuid();
+  AssetDatabase.global.Assets.Clear();
+  var material=new AssetData(a,()=>new MemoryStream(payload));
+  material.Metadata.extension=extension;material.Metadata.packaged=false;
+  material.Metadata.path=Path.Combine(imported,materialOwner+extension);
+  AssetDatabase.global.Assets.Add(material);
+  foreach(var cid in refs) {
+   var texture=new AssetData(cid,()=>new MemoryStream(new byte[]{4,2}));
+   texture.Metadata.extension=".Texture";AssetDatabase.global.Assets.Add(texture);
+  }
+  Check(BridgeDependencyPersistence.Save(materialOwner,new[]{a},out count,out error,out written)&&count==refs.Length&&written==refs.Length*2,
+   "owned native material traverses original texture CIDs: "+extension+" "+Path.GetFileName(fixture)+" "+error);
+ }
+}
 namespace UnityEngine {static class Application {public static string persistentDataPath="";}}
 namespace Colossal {record Hash128(string Value){public static Hash128 Parse(string s)=>new(s);public override string ToString()=>Value;}}
 namespace Colossal.IO.AssetDatabase {
@@ -40,6 +58,10 @@ namespace Colossal.IO.AssetDatabase {
   public Meta Metadata=new(); public Meta GetMeta()=>Metadata;public Stream GetReadStream()=>open();
  }
  class AssetDatabase {
+  public Resources resources=new();
+  public class Resources { public Library materialLibrary=new(); }
+  public class Library { public Description GetMaterialDescription(int template)=>new(); }
+  public class Description { public int GetStackConfigIndex(string property)=>property=="_BaseColorMap"?0:-1; }
   public static AssetDatabase global=new(); public List<AssetData> Assets=new();public int Scans;
   public bool TryGetAsset(Colossal.Hash128 cid,out AssetData asset){asset=Assets.FirstOrDefault(a=>a.id.guid==cid)!;return asset!=null;}
   public IEnumerable<T> GetAssets<T>(){Scans++;return Assets.Cast<T>();}

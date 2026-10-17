@@ -79,6 +79,7 @@ namespace BridgeBuilder
 }
 namespace UnityEngine
 {
+    public static class Object { public static void DestroyImmediate(object value) {} }
     public static class ScriptableObject { public static T CreateInstance<T>() where T : new() => new T(); }
     public static class Application { public static string persistentDataPath = Path.Combine(Path.GetTempPath(), "BBStartupCheck-" + Guid.NewGuid().ToString("N")); }
 }

@@ -1,6 +1,12 @@
 using System.Buffers.Binary;
 using Colossal.AssetPipeline.Native;
 
+if (args.Length == 3 && args[0] == "--skin-report")
+{
+    MovableSkinReport.Write(args[1], args[2]);
+    return 0;
+}
+
 if (args.Length == 4 && args[0] == "--a-pylon-cables")
 {
     APylonCables.Emit(args[1], args[2], args[3]);
@@ -191,7 +197,10 @@ if (args.Length >= 3)
 }
 return 0;
 
-internal sealed record MeshData(Position[] Positions, int[] Indices);
+internal sealed record MeshData(Position[] Positions, int[] Indices)
+{
+    internal uint[] BoneIndices { get; init; } = Array.Empty<uint>();
+}
 internal readonly record struct Position(float X, float Y, float Z);
 
 internal static class RawMeshFile
@@ -680,15 +689,17 @@ internal static class WhiteTrussCoefficients
 
 internal sealed class GeometryFile
 {
-    private const uint Zstd = 1;
-    private const uint Meshopt = 2;
+    // GeometryAsset.DecompressIndexData/DecompressAttributeData in game 1.6.2f1.
+    // Both flags are often set together, which concealed the previous reversed constants.
+    private const uint Zstd = 2;
+    private const uint Meshopt = 1;
     private const int AttributeCount = 14;
     private const int HeaderSize = 88;
     private const int SubMeshSize = 40;
 
     internal required IReadOnlyList<MeshData> Meshes { get; init; }
 
-    internal static GeometryFile Read(byte[] bytes)
+    internal static GeometryFile Read(byte[] bytes, bool readSkin = false)
     {
         var offset = 0;
         var version = ReadUInt16(bytes, ref offset);
@@ -724,7 +735,7 @@ internal sealed class GeometryFile
             var compressed = (fileFlags & Zstd) != 0
                 ? CompressionUtilities.Decompress(block, CompressionFormat.ZSTD)
                 : block;
-            var indexSize = header.VertexCount > ushort.MaxValue ? 4 : 2;
+            var indexSize = (header.Flags & 1) != 0 ? 4 : 2;
             var raw = (fileFlags & Meshopt) != 0
                 ? DecodeMeshoptIndices(compressed, header.IndexCount, indexSize)
                 : compressed;
@@ -732,6 +743,7 @@ internal sealed class GeometryFile
         }
 
         var positions = new Position[meshCount][];
+        var boneIndices = new uint[meshCount][];
         for (var attribute = 0; attribute < AttributeCount; attribute++)
         {
             for (var mesh = 0; mesh < meshCount; mesh++)
@@ -740,16 +752,33 @@ internal sealed class GeometryFile
                 var byteCount = header.AttributeBytes[attribute];
                 if (byteCount == 0) continue;
                 var block = Slice(bytes, ref offset, byteCount);
-                if (attribute != 0) continue;
+                if (attribute != 0 && !(readSkin && attribute == 13)) continue;
+
+                var format = (int)((header.AttributeFormats >> (attribute * 4)) & 15);
+                var dimension = (int)((header.AttributeDimensions >> (attribute * 2)) & 3) + 1;
+                // This inspection path preserves the native rigid, one-index representation.
+                // Other layouts need a separate measured decoder, never a four-weight guess.
+                if (attribute == 0 && (format != 0 || dimension != 3))
+                    throw new InvalidDataException("Expected native Float32x3 positions.");
+                if (attribute == 13 && (format != 10 || dimension != 1))
+                    throw new InvalidDataException("Skin inspection requires native UInt32x1 bone indices.");
 
                 var compressed = (fileFlags & Zstd) != 0
                     ? CompressionUtilities.Decompress(block, CompressionFormat.ZSTD)
                     : block;
-                const int stride = sizeof(float) * 3;
+                var stride = attribute == 0 ? sizeof(float) * 3 : sizeof(uint);
                 var raw = (fileFlags & Meshopt) != 0
                     ? DecodeMeshoptVertices(compressed, header.VertexCount, stride)
                     : compressed;
-                positions[mesh] = DecodePositions(raw, header.VertexCount);
+                if (raw.Length != checked(header.VertexCount * stride))
+                    throw new InvalidDataException("Decoded geometry attribute length differs from its header.");
+                if (attribute == 0) positions[mesh] = DecodePositions(raw, header.VertexCount);
+                else
+                {
+                    boneIndices[mesh] = new uint[header.VertexCount];
+                    for (var vertex = 0; vertex < header.VertexCount; vertex++)
+                        boneIndices[mesh][vertex] = BinaryPrimitives.ReadUInt32LittleEndian(raw.AsSpan(vertex * 4, 4));
+                }
             }
         }
 
@@ -758,7 +787,10 @@ internal sealed class GeometryFile
         for (var mesh = 0; mesh < meshCount; mesh++)
         {
             if (positions[mesh] == null) throw new InvalidDataException($"Mesh {mesh} has no position data.");
-            meshes[mesh] = new MeshData(positions[mesh], decodedIndices[mesh]);
+            meshes[mesh] = new MeshData(positions[mesh], decodedIndices[mesh])
+            {
+                BoneIndices = boneIndices[mesh] ?? Array.Empty<uint>()
+            };
         }
         return new GeometryFile { Meshes = meshes };
     }

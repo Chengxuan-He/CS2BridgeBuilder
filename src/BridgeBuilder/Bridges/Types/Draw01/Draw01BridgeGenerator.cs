@@ -38,14 +38,18 @@ internal sealed class Draw01BridgeGenerator : BridgeGeneratorBase
         var prefabs = World.DefaultGameObjectInjectionWorld.GetExistingSystemManaged<PrefabSystem>();
         if (!prefabs.TryGetEntity(selected, out var selectedEntity))
             throw new InvalidOperationException("Draw01 selected road is not registered with the native prefab system.");
+        var clock = System.Diagnostics.Stopwatch.StartNew();
         using var road = Draw01ClosedRoad.Sample(target.name, selectedEntity,
             new[] { main, column, footing }, content, halfDelta, RandomSeed.Next());
+        var samplingMs = clock.ElapsedMilliseconds;
         var lods = main.GetComponent<LodProperties>().m_LodMeshes;
         // Sampling uses identity rotation at the recorded 10 m closed deck elevation.
         var levels = road.PrepareRenderLevels(new[] { main, lods[0], lods[1] }, halfDelta,
             Matrix4x4.Translate(new Vector3(0f, 10f, 0f)));
-        var moving = Draw01RenderAssembly.CreateMechanism(factory, target.name, target.name + " Mechanism", levels, halfDelta)
+        var moving = Draw01RenderAssembly.CreateMechanism(factory, target.name, target.name + " Mechanism", levels, halfDelta,
+            new Draw01UndersideLayout(road.Road, road.RoadToObject))
             ?? throw new InvalidOperationException("Draw01 moving render graph creation failed.");
+        var mechanismMs = clock.ElapsedMilliseconds - samplingMs;
         var support = Draw01RenderAssembly.CreateColumn(factory, target.name, target.name + " Column", column, halfDelta)
             ?? throw new InvalidOperationException("Draw01 support render graph creation failed.");
         var foundation = Draw01RenderAssembly.CreateFooting(factory, target.name, target.name + " Footing", footing, halfDelta)
@@ -56,7 +60,10 @@ internal sealed class Draw01BridgeGenerator : BridgeGeneratorBase
             factory.ResolveOriginal<RenderPrefab>("DrawBridge01NetPillarTop Mesh"),
             factory.ResolveOriginal<RenderPrefab>("DrawBridge01NetPillar Mesh"),
             factory.ResolveOriginal<RenderPrefab>("DrawBridge01NetPillarBase Mesh"), content, halfDelta);
+        Draw01FixedBase.Apply(target, factory, halfDelta);
         Draw01NetworkAssembly.Apply(target, factory, pillar, mechanism);
+        Mod.Log.Info($"{target.name}: Draw01 generation samplingMs={samplingMs}; mechanismMs={mechanismMs}; " +
+            $"supports/objects/networkMs={clock.ElapsedMilliseconds - samplingMs - mechanismMs}; totalMs={clock.ElapsedMilliseconds}.");
         return variant;
     }
 }

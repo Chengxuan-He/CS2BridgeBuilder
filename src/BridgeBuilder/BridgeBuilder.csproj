@@ -21,6 +21,7 @@
     <Compile Include="..\..\vendor\CS2ModShared\src\**\*.cs" LinkBase="Shared" />
   </ItemGroup>
   <ItemGroup>
+    <EmbeddedResource Include="..\..\assets\bridgebake" LogicalName="BridgeBuilder.GpuBake" />
     <EmbeddedResource Include="..\..\assets\BridgeBuilderPack.svg" LogicalName="BridgeBuilderPack.svg" />
     <None Include="..\..\assets\BridgeBuilder.svg" Link="BridgeBuilder.svg" CopyToOutputDirectory="PreserveNewest" />
     <None Include="..\..\assets\BridgeBuilderToolbar.svg" Link="BridgeBuilderToolbar.svg" CopyToOutputDirectory="PreserveNewest" />
@@ -44,6 +45,7 @@
     <Reference Include="Colossal.Mathematics"><HintPath>$(GameManagedDir)/Colossal.Mathematics.dll</HintPath><Private>false</Private></Reference>
     <Reference Include="Colossal.UI"><HintPath>$(GameManagedDir)\Colossal.UI.dll</HintPath><Private>false</Private></Reference>
     <Reference Include="Colossal.UI.Binding"><HintPath>$(GameManagedDir)\Colossal.UI.Binding.dll</HintPath><Private>false</Private></Reference>
+    <Reference Include="UnityEngine.AssetBundleModule"><HintPath>$(GameManagedDir)\UnityEngine.AssetBundleModule.dll</HintPath><Private>false</Private></Reference>
     <Reference Include="UnityEngine.CoreModule"><HintPath>$(GameManagedDir)\UnityEngine.CoreModule.dll</HintPath><Private>false</Private></Reference>
     <Reference Include="UnityEngine.ImageConversionModule"><HintPath>$(GameManagedDir)\UnityEngine.ImageConversionModule.dll</HintPath><Private>false</Private></Reference>
     <Reference Include="UnityEngine.PhysicsModule"><HintPath>$(GameManagedDir)\UnityEngine.PhysicsModule.dll</HintPath><Private>false</Private></Reference>

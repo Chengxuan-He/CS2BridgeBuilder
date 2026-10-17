@@ -70,7 +70,7 @@ internal static class BridgeStyleCatalog
     private static List<BridgeStyle> CreateNamedStyles()
     {
         return BridgeStyleDefinitions.All
-            .Where(definition => BridgeStyleDefinitions.CanGenerate(definition.Id))
+            .Where(definition => BridgeStyleDefinitions.CanList(definition.Id))
             .Select(definition => new BridgeStyle(
                 definition.Id,
                 definition.NameSuffix,

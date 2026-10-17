@@ -14,7 +14,7 @@ internal static class Draw01RenderAssembly
     // Road levels already contain the resolved selected-road geometry, pose, partitions,
     // native skeleton and local render bounds. Never replace that input with the prototype road.
     internal static RenderPrefab? CreateMechanism(TowerFactory factory, string owner, string name,
-        IReadOnlyList<MovableRoadAssets.Level> roadLevels, float halfWidthDelta)
+        IReadOnlyList<MovableRoadAssets.Level> roadLevels, float halfWidthDelta, Draw01UndersideLayout underside)
     {
         if (roadLevels.Count != 3)
             throw new ArgumentException("Draw01 mechanism requires all three prepared road LODs.");
@@ -30,6 +30,26 @@ internal static class Draw01RenderAssembly
                 BridgeAssetInfo.IsOtherBridgePrefab(item.asset?.path, owner, imported))
                 throw new InvalidOperationException($"Draw01 mechanism LOD {lod} is not the permitted recorded source '{expected[lod]}'.");
         }
+
+        MovableRoadAssets.Supplement undersideLod;
+        Mesh[]? undersideMeshes = null;
+        try
+        {
+            // The native far atlas combines trusses and deck appearance, but has no
+            // independent carriageway underside after selected-road replacement.
+            // Carry the measured middle-detail slab into the far render itself.
+            undersideMeshes = PrivateGeometryReader.Read(roadLevels[1].Source);
+            var mesh = undersideMeshes[0];
+            var original = mesh.vertices;
+            var positions = (Vector3[])original.Clone();
+            var indices = mesh.GetIndices(0);
+            var removed = new bool[indices.Length / 3];
+            Array.Fill(removed, true);
+            Draw01UndersideData.Apply(1, underside, positions, removed);
+            undersideLod = new MovableRoadAssets.Supplement(roadLevels[1].Source, 0,
+                new MovableStructureModel.Plan(original, positions, new[] { indices }, new[] { removed }));
+        }
+        finally { PrivateGeometryReader.Release(undersideMeshes); }
 
         var levels = new MovableRoadAssets.Level[3];
         for (var lod = 0; lod < levels.Length; lod++)
@@ -47,7 +67,7 @@ internal static class Draw01RenderAssembly
                         throw new InvalidOperationException($"Draw01 mechanism LOD {lod} has an invalid native mesh or surface layout.");
                 var plans = new MovableStructureModel.Plan[meshCount];
                 plans[0] = Draw01RoadReplacement.CreateMainMeshPlan(lod, meshes[0].vertices,
-                    halfWidthDelta, new[] { meshes[0].GetIndices(0) });
+                    halfWidthDelta, new[] { meshes[0].GetIndices(0) }, underside);
                 if (meshCount == 2)
                 {
                     var source = meshes[1].vertices;
@@ -71,7 +91,8 @@ internal static class Draw01RenderAssembly
                 levels[lod] = new MovableRoadAssets.Level(input.Source, input.Triangles, input.Surfaces,
                     input.Partition!, bounds, input.RoadToObject, plans, input.Skeleton,
                     input.Lanes, input.ClosedWorld, input.AppearancePageSize, input.TexelsPerMeter,
-                    input.RoadPartitions, input.LanePartitions, input.RoadTrianglePartitions);
+                    input.RoadPartitions, input.LanePartitions, input.RoadTrianglePartitions,
+                    lod == 2 ? undersideLod : null, compactRoad: true);
             }
             finally { PrivateGeometryReader.Release(meshes); }
         }

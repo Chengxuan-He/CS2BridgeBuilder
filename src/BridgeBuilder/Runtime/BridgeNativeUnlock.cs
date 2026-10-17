@@ -67,10 +67,6 @@ internal static class BridgeNativeUnlock
                 return leaf;
             }
             if (expression.Kind != 0) { failure = "Unresolved legacy unlock rule"; return null; }
-            // A native asset with no UI membership carries each nested AND/OR group.
-            var group = ScriptableObject.CreateInstance<AssetPackPrefab>();
-            group.name = root.name + " Unlock " + groups.Count;
-            groups.Add(group);
             var all = new List<PrefabBase>(); var any = new List<PrefabBase>();
             for (var i = 0; i < expression.Children.Length; i++)
             {
@@ -79,6 +75,18 @@ internal static class BridgeNativeUnlock
                 if ((expression.Flags[i] & 1) != 0) all.Add(child);
                 if ((expression.Flags[i] & 2) != 0) any.Add(child);
             }
+            // Equal native requirement sets share one owned node within this bridge.
+            // Never share private nodes across independently persisted bridge owners.
+            all = all.Distinct().ToList(); any = any.Distinct().ToList();
+            foreach (var existing in groups)
+            {
+                var prior = existing.GetComponent<Unlockable>();
+                if (new HashSet<PrefabBase>(prior.m_RequireAll).SetEquals(all)
+                    && new HashSet<PrefabBase>(prior.m_RequireAny).SetEquals(any)) return existing;
+            }
+            var group = ScriptableObject.CreateInstance<AssetPackPrefab>();
+            group.name = root.name + " Unlock " + groups.Count;
+            groups.Add(group);
             var gate = group.AddComponent<Unlockable>();
             gate.m_IgnoreDependencies = true; gate.m_RequireAll = all.ToArray(); gate.m_RequireAny = any.ToArray();
             return group;
@@ -87,13 +95,24 @@ internal static class BridgeNativeUnlock
         {
             var requirement = ConvertRule(rule);
             if (requirement == null) { error = failure; return false; }
+            var rootGroup = groups.Contains(requirement) ? requirement.GetComponent<Unlockable>() : null;
+            var rootAll = rootGroup?.m_RequireAll ?? new[] { requirement };
+            var rootAny = rootGroup?.m_RequireAny ?? Array.Empty<PrefabBase>();
             foreach (var net in new[] { root }.Concat(includeAuxiliary ? root.GetComponent<AuxiliaryNets>()?.m_AuxiliaryNets?
                 .Select(a => a.m_Prefab).OfType<NetGeometryPrefab>() ?? Enumerable.Empty<NetGeometryPrefab>() : Enumerable.Empty<NetGeometryPrefab>()))
             {
                 net.components.RemoveAll(c => c is UnlockableBase);
                 var gate = net.AddComponent<Unlockable>();
-                gate.m_IgnoreDependencies = true; gate.m_RequireAll = new[] { requirement };
-                gate.m_RequireAny = Array.Empty<PrefabBase>();
+                gate.m_IgnoreDependencies = true; gate.m_RequireAll = rootAll.ToArray();
+                gate.m_RequireAny = rootAny.ToArray();
+            }
+            // The outer AND/OR gate belongs on the network itself; no extra Prefab
+            // is required to wrap the same native component.
+            if (rootGroup != null)
+            {
+                groups.Remove(requirement);
+                UnityEngine.Object.DestroyImmediate(rootGroup);
+                UnityEngine.Object.DestroyImmediate(requirement);
             }
             created.AddRange(groups);
             return true;

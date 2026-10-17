@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using Colossal.Mathematics;
 using Game.Common;
 using Game.Net;
@@ -102,7 +103,8 @@ internal sealed class Draw01ClosedRoad : IDisposable
                 (0, MovableNetworkContext.SurfacePart.EndNode),
                 (1, MovableNetworkContext.SurfacePart.StartNode)
             }, new[] { centralNode }, roadOrigin,
-                replacedStructureLayers: NetPieceLayerMask.Bottom | NetPieceLayerMask.Side);
+                replacedStructureLayers: NetPieceLayerMask.Bottom | NetPieceLayerMask.Side,
+                trackSourceFaces: false);
             RoadToObject = Network.RoadToMechanism(0, roadOrigin);
         }
         catch
@@ -125,22 +127,122 @@ internal sealed class Draw01ClosedRoad : IDisposable
     {
         if (sources.Count != 3 || !math.isfinite(halfWidthDelta))
             throw new ArgumentException("Draw01 road preparation requires three render sources and a finite width delta.");
-        var roadPartitions = Draw01RoadPartitions.ForRoad(Road);
-        var lanePartitions = Draw01RoadPartitions.ForLanes(Road);
+        var partition = Draw01RoadPartitions.Carriageway;
+        var roadPartitions = new MovableRoadGeometry.Partition[Road.Occurrences.Length];
+        var appearancePartitions = new MovableRoadGeometry.Partition[Road.Occurrences.Length];
+        var carriagewayAppearance = Draw01RoadPartitions.MaterialRegions(false, RoadToObject);
+        var sidewalkAppearance = Draw01RoadPartitions.MaterialRegions(true, RoadToObject);
+        for (var i = 0; i < Road.Occurrences.Length; i++)
+        {
+            // Native composition provenance identifies the section that owns this occurrence.
+            // Curbs may contain pedestrian lanes; those lanes do not make a curb a sidewalk.
+            var section = Road.Occurrences[i].RootSection
+                ?? throw new InvalidOperationException("Draw01 road occurrence has no source section provenance.");
+            var sidewalk = section.name == "Sidewalk" ||
+                section.name.StartsWith("Sidewalk ", StringComparison.Ordinal);
+            roadPartitions[i] = Draw01RoadPartitions.RoadSurface(sidewalk);
+            appearancePartitions[i] = sidewalk ? sidewalkAppearance : carriagewayAppearance;
+        }
+        var lanePartitions = new MovableRoadGeometry.Partition[Road.LaneVisuals.Length];
+        for (var i = 0; i < lanePartitions.Length; i++)
+            lanePartitions[i] = Road.LaneVisuals[i].SourceLane.Has<Game.Prefabs.PedestrianLane>()
+                ? Draw01RoadPartitions.Sidewalk : Draw01RoadPartitions.Carriageway;
+        // Native mesh 0 UV gradients: asphalt faces 1512/1513, grating 1819/1820,
+        // fixed carriageway concrete 2674/2675. Use their physical metre scale and
+        // axis directions, never the selected network shader's UV convention.
+        var frame = Matrix4x4.TRS(RoadToObject.position, RoadToObject.rotation, Vector3.one).transpose;
+        MovableExistingRoadSurface.Patch Project(Vector2 min, Vector2 max, Vector4 u, Vector4 v)
+            => new(min, max, u, v);
+        // Original UV min lands at texel X=50.94, inside the pale gutter (X<78).
+        // Keep a measured interior margin; retain the native UV-per-metre density.
+        const float asphaltMin = 96f / 4096f;
+        var asphaltWidth = (0.18f - asphaltMin) * 3.3660278f /
+            (0.2003173828125f - 0.0124359130859375f);
+        var concreteWidth = (0.93f - 0.72705078125f) * 3.4000244f /
+            (0.94873046875f - 0.72705078125f);
+        var positive = new[]
+            {
+                Project(new Vector2(asphaltMin,0.67822265625f), new Vector2(0.18f,0.85693359375f),
+                    new Vector4(1f/asphaltWidth,0,0,3.3660278f/asphaltWidth), new Vector4(0,0,.25f,-73.96094f/4f)),
+                Project(new Vector2(0.240478515625f,0.6611328125f),new Vector2(0.409423828125f,0.88427734375f),
+                    new Vector4(-1f/3.0269777f,0,0,(-3.3234863f-halfWidthDelta)/3.0269777f),
+                    new Vector4(0,0,-.25f,53.95996f/4f)),
+                Project(new Vector2(0.486083984375f,0.01238250732421875f),new Vector2(0.67529296875f,0.2734375f),
+                    new Vector4(1f/2.9000244f,0,0,0),new Vector4(0,0,-.25f,86f/4f)),
+                Project(new Vector2(0.72705078125f,0.01238250732421875f),new Vector2(0.93f,0.2734375f),
+                    new Vector4(1f/concreteWidth,0,0,3.4000244f/concreteWidth),new Vector4(0,0,-.25f,90f/4f)),
+                // Opposite sidewalk faces 2367/2368 keep the same U direction but
+                // have a different authored origin; widening moves that origin with the side.
+                Project(new Vector2(0.240478515625f,0.6611328125f),new Vector2(0.409423828125f,0.88427734375f),
+                    new Vector4(-1f/3.0269777f,0,0,(6.350464f+halfWidthDelta)/3.0269777f),
+                    new Vector4(0,0,-.25f,53.95996f/4f))
+            };
+        // Native right carriageway faces 2183/2184 reverse both U and V;
+        // fixed-cap faces 2682/2683 reverse U only. The negative leaf mirrors Z
+        // (9406/9407, 9713/9714, 10077/10078, 10261/10262, 10568/10569).
+        var patches = new MovableExistingRoadSurface.Patch[14];
+        Array.Copy(positive, patches, positive.Length);
+        var asphalt = positive[0]; var concrete = positive[3];
+        var rightU = asphalt.U; rightU.x = -rightU.x;
+        var rightV = -asphalt.V; rightV.w += 1f;
+        patches[5] = Project(asphalt.Min, asphalt.Max, rightU, rightV);
+        rightU = concrete.U; rightU.x = -rightU.x;
+        patches[6] = Project(concrete.Min, concrete.Max, rightU, concrete.V);
+        for (var i = 0; i < 7; i++)
+        {
+            var p = patches[i]; var u = p.U; var v = p.V;
+            u.z = -u.z; v.z = -v.z;
+            patches[i + 7] = Project(p.Min, p.Max, u, v);
+            patches[i] = Project(p.Min, p.Max, frame * p.U, frame * p.V);
+            patches[i + 7] = Project(p.Min,p.Max,frame * u,frame * v);
+        }
         var road = MovableRoadGeometry.InFrame(Road.Triangles, RoadToObject);
         var lanes = MovableRoadGeometry.InFrame(Road.LaneGeometry.Triangles, RoadToObject);
+        if (!MovableRoadGeometry.TryBind(road, partition, 3, Road.Surfaces.Length,
+                out var receivers, out var error, occurrencePartitions: roadPartitions))
+            throw new InvalidOperationException(error);
+        var converted = new bool[Road.Surfaces.Length];
+        for (var i = 0; i < converted.Length; i++)
+        {
+            Road.Surfaces[i].LoadHeader();
+            converted[i] = Road.Surfaces[i].materialTemplateHash is not (0 or 1 or 13 or 14 or 35 or 36);
+        }
+        var inverseRotation = Quaternion.Inverse(RoadToObject.rotation);
+        var objectToRoad = new Pose(inverseRotation * -RoadToObject.position, inverseRotation);
+        // The recorded seam frames above already define the complete fixed/leaf domains.
+        // Prepare once; no prototype triangle intersection is required at any LOD.
+        var prepared = MovableRoadTemplate.Prepare(receivers, converted);
+        if (!MovableRoadGeometry.TryBind(prepared, partition, 3, Road.Surfaces.Length,
+                out var paintReceivers, out error, occurrencePartitions: roadPartitions))
+            throw new InvalidOperationException(error);
+        var selectedMaterials = (Colossal.IO.AssetDatabase.SurfaceAsset[])Road.Surfaces.Clone();
+        // Native mechanism paint is part of its surface appearance, not an independent
+        // decal object. Inlay selected paint before road atlas repetition can fragment it.
+        var painted = MovableRoadPaint.Apply(paintReceivers, Road.LaneGeometry.Decals,
+            RoadToObject, 32f, ref selectedMaterials);
+        var selected = MovableRoadGeometry.InFrame(painted.Select(t => t.Geometry).ToArray(), objectToRoad);
+        // Decals have been consumed exactly once above. Keep every non-decal lane mesh
+        // and surface for the later native lane assembly, without repeating paint per LOD.
+        var remainingLanes = new MovableLaneGeometry.Result(Road.LaneGeometry.Triangles.ToList(),
+            Road.LaneGeometry.Surfaces.ToList(), new List<MovableLaneVisuals.Batch>());
         var levels = new MovableRoadAssets.Level[3];
         for (var i = 0; i < levels.Length; i++)
         {
+            var levelPatches = (MovableExistingRoadSurface.Patch[])patches.Clone();
+            if (i == 2) Draw01RoadLodProjection.Far(levelPatches, frame, sources[i].GetSurfaceAsset(0));
+            // Reconstruct from the selected closed geometry for each native LOD;
+            // never pass the already tiled near surface into a reduced level.
+            var visible = MovableExistingRoadSurface.Apply(selected, selectedMaterials,
+                carriagewayAppearance, sources[Math.Min(i, 1)].GetSurfaceAsset(0),
+                levelPatches, out var materials, occurrenceRegions: appearancePartitions);
             var bounds = sources[i].bounds;
             bounds.min.x -= halfWidthDelta;
             bounds.max.x += halfWidthDelta;
             Include(road, ref bounds);
             Include(lanes, ref bounds);
-            levels[i] = new MovableRoadAssets.Level(sources[i], Road,
-                Draw01RoadPartitions.Carriageway, bounds, RoadToObject,
-                closedWorld: closedWorld, lanePartitions: lanePartitions,
-                roadTrianglePartitions: roadPartitions);
+            levels[i] = new MovableRoadAssets.Level(sources[i], visible, materials,
+                partition, bounds, RoadToObject, lanes: remainingLanes, closedWorld: closedWorld,
+                roadPartitions: roadPartitions, lanePartitions: lanePartitions);
         }
         return levels;
     }

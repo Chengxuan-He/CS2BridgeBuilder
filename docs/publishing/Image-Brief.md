@@ -1,57 +1,52 @@
-# Bridge Builder — 发布介绍图片清单
+# Bridge Builder — publishing image brief
 
-以下为发布内容规划，不代表 Paradox Mods 平台强制要求的图片数量或尺寸。本次仅列清单，不生成图片。上传时以发布工具实际要求为准。
+This is a content plan, not a statement of Paradox Mods platform requirements for image counts or
+dimensions. It lists images without generating them. Follow the publishing tool's actual requirements when uploading.
 
-## 核心图片
+## Core images
 
-1. **发布封面 — Bridge Builder**
-   - 内容：一座已验收桥梁的游戏实景，配模组名称与纯白桥梁图标。
-   - 目标：让玩家一眼理解这是“自选道路与桥型”的桥梁生成模组。
-   - 文案：中文「你的道路，你的桥梁」；英文「Your roads. Your bridges.」。
-   - 要求：主体清晰，文字少；保留裁切安全区，避免缩略图中桥梁过细。
+1. **Cover — Bridge Builder**
+   - Content: an accepted bridge in the game, the mod name and a white bridge icon.
+   - Purpose: show immediately that players can combine their chosen road and bridge style.
+   - Copy: “Your roads. Your bridges.”
+   - Requirements: a clear subject and little text; retain a safe crop area and avoid a bridge that becomes too thin in the thumbnail.
+2. **Creation interface — Choose a network and bridge style**
+   - Content: both panels, with a selected road on the left and a working 3D preview, style cards and both creation buttons on the right.
+   - Purpose: explain the workflow and show that the preview is not a static bridge-style icon.
+   - Requirements: use the current interface, without old errors, obsolete refresh buttons or debug text.
+3. **Single-deck results — Custom bridge decks**
+   - Content: the same style with two different road widths or lane configurations, viewed from similar angles.
+   - Purpose: demonstrate road/style combinations; keep decks, markings, towers and piers clearly visible.
+   - Requirements: show only generated, accepted combinations; do not fabricate nonexistent bridge arrangements through compositing.
+4. **Double-deck results — Independent upper and lower decks**
+   - Content: an in-game double-deck bridge and an interface detail showing both deck selections and the opposite-direction checkbox.
+   - Purpose: explain double decks and direction settings; verify any illustrated road/track combination first.
+   - Requirements: identify the style's real source. Label the double-deck Golden Gate bridge as Bridge Expansion Pack content, not a base-game feature.
+5. **Bridge management — Manage your bridges**
+   - Content: the management list, search/filter controls, name field, preview and build action.
+   - Purpose: show that players can rename and reuse created bridges.
+   - Requirements: if deletion is illustrated, include “Deletion removes placed instances.”
+6. **Search and filters — Find the network you need**
+   - Content: an expanded network-type dropdown and a search-result detail, including road and track categories.
+   - Purpose: show that available tracks can be found as well as roads.
+   - Requirements: align dropdown contents with their button and keep names legible; do not use unavailable internal networks as examples.
 
-2. **创建界面 — 选择路网与桥型 / Choose a network and bridge style**
-   - 内容：完整左右面板；左侧选中道路，右侧有正常的 3D 预览、桥型卡片和两个创建按钮。
-   - 目标：说明基本工作流程，以及预览不是静态桥型图标。
-   - 要求：使用当前版本界面，不使用带旧报错、旧刷新按钮或调试文字的截图。
+## Optional images
 
-3. **单层桥效果 — 自定义桥面 / Custom bridge decks**
-   - 内容：同一种桥型搭配两种不同宽度或车道配置的道路，采用相近视角对比。
-   - 目标：展示桥型与路面组合的价值；桥面、标线、桥塔和桥墩应清楚可见。
-   - 要求：只展示已实际生成并验收的组合，不以拼图伪造不存在的桥梁形态。
+7. **Optional compatibility — Road Builder optional**
+   - Content: base-game selection without Road Builder on one side and Road Builder roads after loading it on the other.
+   - Copy: “Works without Road Builder.”
+   - Requirements: use screenshots from both actual environments; do not advertise an optional compatible mod as a prerequisite.
+8. **Style gallery — Bridge styles**
+   - Content: accepted suspension, cable-stayed, truss-arch and covered wooden bridges in the game.
+   - Purpose: demonstrate visual variety.
+   - Requirements: identify base-game, DLC or mod provenance for each example; do not show unsupported bascule or lift bridges.
 
-4. **双层桥效果 — 上下层独立选择 / Independent upper and lower decks**
-   - 内容：一张双层桥实景，加一张能看清上下层选择及“上下层方向相反”复选框的界面局部。
-   - 目标：明确双层功能和方向设置；如使用公路／轨道组合，必须先确认该组合可用。
-   - 要求：标注展示桥型的真实来源；使用双层金门大桥时标注 Bridge Expansion Pack，不写成基础版游戏功能。
+## Capture and layout
 
-5. **桥梁管理 — 创建后继续管理 / Manage your bridges**
-   - 内容：管理页中的桥梁清单、搜索／筛选、名称输入框、预览及建造操作。
-   - 目标：展示玩家可以重命名并再次使用已创建桥梁。
-   - 要求：如展示删除操作，附简短警示：「删除会移除地图实例 / Deletion removes placed instances」。
-
-6. **搜索与筛选 — 快速找到所需路网 / Find the network you need**
-   - 内容：道路类型下拉列表展开，另一局部展示搜索结果；包含道路与轨道分类。
-   - 目标：说明不仅能浏览道路，也可查找可用轨道。
-   - 要求：下拉内容与按钮对齐，名称清晰；不得用不可用的内部路网条目作示例。
-
-## 可选补充图片
-
-7. **可选兼容 — Road Builder optional**
-   - 内容：左侧为未加载 Road Builder 的基础版路网选择，右侧为加载后出现的 Road Builder 道路。
-   - 文案：「无需 Road Builder 也能使用 / Works without Road Builder」。
-   - 要求：通过两个实际环境截图证明，不把兼容模组宣传成必要依赖。
-
-8. **桥型画廊 — Bridge styles**
-   - 内容：已验收的悬索桥、斜拉桥、桁架拱桥与木廊桥等实景。
-   - 目标：展示造型多样性。
-   - 要求：逐项标注基础版游戏、DLC 或模组来源；不展示尚不支持的开合桥、升降桥。
-
-## 拍摄与排版原则
-
-- 封面可共用；有大量界面文字的教学图，优先分别准备简体中文和英文版本。
-- 优先使用当前验收版本的真实截图；场景光照自然，避免过曝、穿模、调试面板和无关模组遮挡。
-- 不在图片中承诺固定造价、全部组合兼容或免解锁。此前暂停排查的价格差异，不作为宣传卖点。
-- 不写未确认的模组版本号或游戏兼容版本，不绘制假的平台按钮或认证标志。
-- 文案应简短；具体限制和删除风险放在发布说明中，同时在涉及删除的图片上保留警示。
-- 上传前核对第三方素材使用权限。游戏截图不因本项目采用 MIT 协议而自动成为 MIT 授权素材。
+- The cover can be shared across locales. The original image plan recommended separate Simplified Chinese and English instructional images when interface text is extensive; this brief itself is maintained in English.
+- Prefer real screenshots of the currently accepted version, natural lighting, and no overexposure, clipping, debug panels or unrelated mod overlays.
+- Do not promise fixed prices, compatibility with every combination or unlocked access. Previously paused price-difference investigations are not a selling point.
+- Do not state unconfirmed mod/game compatibility versions or fabricate platform buttons or certification marks.
+- Keep copy short. Put detailed limitations and deletion risks in release descriptions, while retaining the warning in any image illustrating deletion.
+- Check third-party image permissions before upload. Game screenshots do not automatically become MIT-licensed because this project's original code uses MIT.

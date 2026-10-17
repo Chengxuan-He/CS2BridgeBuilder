@@ -41,6 +41,7 @@ internal sealed class BridgePreviewStage : IDisposable
 
         var groups = new Dictionary<(Mesh, Matrix4x4), Material[]>();
         var properties = new Dictionary<(Mesh, Matrix4x4), MaterialPropertyBlock>();
+        var localBounds = new Dictionary<(Mesh, Matrix4x4), Bounds>();
         foreach (var draw in draws.Draws)
         {
             var key = (draw.Mesh, draw.Transform);
@@ -48,6 +49,7 @@ internal sealed class BridgePreviewStage : IDisposable
             {
                 groups.Add(key, materials = new Material[draw.Mesh.subMeshCount]);
                 properties.Add(key, draw.Properties);
+                localBounds.Add(key, draw.LocalBounds);
             }
             materials[draw.SubMesh] = draw.Material;
         }
@@ -68,6 +70,7 @@ internal sealed class BridgePreviewStage : IDisposable
             var renderer = obj.AddComponent<MeshRenderer>();
             renderer.enabled = false;
             renderer.sharedMaterials = group.Value;
+            renderer.localBounds = localBounds[group.Key];
             renderer.SetPropertyBlock(properties[group.Key]);
             renderer.renderingLayerMask = LightingLayer;
             renderer.shadowCastingMode = ShadowCastingMode.On;

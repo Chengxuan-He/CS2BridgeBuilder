@@ -8,7 +8,7 @@ namespace BridgeBuilder.Bridges;
 internal static class Draw01RoadReplacement
 {
     internal static MovableStructureModel.Plan CreateMainMeshPlan(int lod, Vector3[] sourcePositions,
-        float halfWidthDelta, int[][] sourceIndices)
+        float halfWidthDelta, int[][] sourceIndices, Draw01UndersideLayout underside)
     {
         var vertexCount = lod switch
         {
@@ -29,6 +29,11 @@ internal static class Draw01RoadReplacement
         var removed = new bool[triangleCount];
         foreach (var face in Draw01MovingRoadData.RemovalFaces(lod)) removed[face] = true;
         foreach (var face in Draw01FixedRoadData.RemovalFaces(lod)) removed[face] = true;
+        // These measured faces are the fixed road's sidewalk slabs, not the supporting
+        // pier/control building. Replace them with the selected road just like the leaves.
+        foreach (var face in Draw01FixedRoadData.PlatformFaces(lod)) removed[face] = true;
+
+        Draw01UndersideData.Apply(lod, underside, widenedPositions, removed);
 
         var edges = new List<MovableStructureModel.EdgeVertex>();
         var moving = vertexCount + edges.Count;
@@ -58,6 +63,8 @@ internal static class Draw01RoadReplacement
         fragments.AddRange(Draw01FixedFrontFragmentData.Faces(lod, front));
         fragments.AddRange(Draw01FixedInnerFragmentData.Faces(lod, inner));
         fragments.AddRange(Draw01SidewalkFrontFragmentData.Faces(lod, sidewalk, sidewalkInterior));
+        // Keep the measured structural remnants of merged far-LOD faces. The selected
+        // road now supplies the fixed sidewalk surface, so do not restore whole platform faces.
         return new MovableStructureModel.Plan(sourcePositions, widenedPositions, sourceIndices,
             new[] { removed }, edges.ToArray(), fragments.ToArray(), interior.ToArray());
     }

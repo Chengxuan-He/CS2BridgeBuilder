@@ -34,12 +34,13 @@ internal static class BridgeNativePresentation
                 if (source.Builtin) continue;
                 var extension = source.Extension;
                 if (!extension.Equals(".Prefab", StringComparison.OrdinalIgnoreCase)
-                    && !extension.Equals(".Material", StringComparison.OrdinalIgnoreCase)) continue;
+                    && !extension.Equals(".Material", StringComparison.OrdinalIgnoreCase)
+                    && !extension.Equals(".Surface", StringComparison.OrdinalIgnoreCase)) continue;
                 var contents = source.Bytes;
                 var text = System.Text.Encoding.UTF8.GetString(contents);
                 if (text.Contains(", BridgeBuilder\"") || text.IndexOf("coui://bridgebuilder", StringComparison.OrdinalIgnoreCase) >= 0)
                 { error = "Saved prefab still requires Bridge Builder: " + id; return false; }
-                foreach (var cid in BridgeDependencyCopies.References(contents))
+                foreach (var cid in BridgeDependencyCopies.References(source))
                 {
                     pending.Push(cid);
                 }

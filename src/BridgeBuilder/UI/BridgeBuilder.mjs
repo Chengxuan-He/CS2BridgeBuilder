@@ -22,7 +22,6 @@ const decksBinding = api.bindValue(MOD, "Decks", []);
 const stylesBinding = api.bindValue(MOD, "Styles", []);
 const bridgesBinding = api.bindValue(MOD, "Bridges", []);
 const catalogLoadingBinding = api.bindValue(MOD, "CatalogLoading", true);
-const statusBinding = api.bindValue(MOD, "Status", "");
 const previewImageBinding = api.bindValue(MOD, "PreviewImage", "");
 const previewStatusBinding = api.bindValue(MOD, "PreviewStatus", "");
 const previewKeyBinding = api.bindValue(MOD, "PreviewKey", "");
@@ -193,7 +192,7 @@ function NetworkPicker({ decks, selectedId, onSelect, title, onOpenRoadBuilder }
             emptyText: t(decks.length ? "NoMatches" : "NoNetworks") })));
 }
 
-function ModelPreview({ upperId = "", lowerId = "", styleId = "", prefabName = "", lowerDeckOpposite = true, ready, onFailure }) {
+function ModelPreview({ upperId = "", lowerId = "", styleId = "", prefabName = "", lowerDeckOpposite = true, ready }) {
     const t = useText();
     const image = api.useValue(previewImageBinding);
     const status = api.useValue(previewStatusBinding);
@@ -250,9 +249,8 @@ function ModelPreview({ upperId = "", lowerId = "", styleId = "", prefabName = "
     const current = ready && resultKey === key;
     const imageReady = current && !!image && loadedImage === image && imageSize.width > 0;
     // No text (including a broken image's alt text) is drawn in the frame.
-    // Failures stop the spinner and are reported in the panel's status bar.
+    // Failures stop the spinner; error dialogs and logging are handled by the backend.
     const failure = !current ? "" : imageError ? t("PreviewImageFailed") : !loading && !image ? status : "";
-    React.useEffect(() => { onFailure?.(failure); }, [failure, onFailure]);
     const spinning = ready && !failure && (!current || loading || !imageReady);
     return h("div", { className: "bb-preview bb-model-preview" },
         h("div", { className: "bb-preview-image", ref: frameRef, "aria-label": t("PreviewAlt"), "aria-busy": spinning,
@@ -266,7 +264,7 @@ function ModelPreview({ upperId = "", lowerId = "", styleId = "", prefabName = "
                 h("div", { className: "bb-spinner", "aria-hidden": true })) : null));
 }
 
-function CreateView({ decks, styles, status, draft, onSaveDraft = () => {} }) {
+function CreateView({ decks, styles, draft, onSaveDraft = () => {} }) {
     const t = useText();
     const [doubleDeck, setDoubleDeck] = React.useState(draft?.doubleDeck ?? false);
     const [upperId, setUpperId] = React.useState(draft?.upperId ?? "");
@@ -275,7 +273,6 @@ function CreateView({ decks, styles, status, draft, onSaveDraft = () => {} }) {
     const [name, setName] = React.useState(draft?.name ?? "");
     const [customName, setCustomName] = React.useState(draft?.customName ?? false);
     const [styleQuery, setStyleQuery] = React.useState(draft?.styleQuery ?? "");
-    const [previewFailure, setPreviewFailure] = React.useState("");
     const [lowerDeckOpposite, setLowerDeckOpposite] = React.useState(draft?.lowerDeckOpposite ?? true);
 
     const openRoadBuilder = () => {
@@ -318,7 +315,6 @@ function CreateView({ decks, styles, status, draft, onSaveDraft = () => {} }) {
                 onSelect: item => setLowerId(item.id), title: t("LowerPicker") }) : null),
         h("section", { className: "bb-right" },
             h(ModelPreview, { upperId, lowerId: doubleDeck ? lowerId : "", styleId, lowerDeckOpposite,
-                onFailure: setPreviewFailure,
                 ready: !!selectedStyle && !!selectedUpper && (!doubleDeck || !!lowerId) }),
             h("div", { className: "bb-mode-tabs" },
                 h("button", { className: !doubleDeck ? "bb-active" : "", onClick: () => setDoubleDeck(false) }, t("SingleDeck")),
@@ -339,11 +335,10 @@ function CreateView({ decks, styles, status, draft, onSaveDraft = () => {} }) {
                     onChange: event => { setCustomName(true); setName(event.target.value); } }),
                 h("div", { className: "bb-create-actions" },
                     h("button", { disabled: !upperId || !styleId || (doubleDeck && !lowerId), onClick: () => create(false) }, t("Create")),
-                    h("button", { className: "bb-primary", disabled: !upperId || !styleId || (doubleDeck && !lowerId), onClick: () => create(true) }, t("CreateBuild")))),
-            previewFailure || status ? h("div", { className: "bb-status", role: "alert" }, previewFailure || status) : null));
+                    h("button", { className: "bb-primary", disabled: !upperId || !styleId || (doubleDeck && !lowerId), onClick: () => create(true) }, t("CreateBuild"))))));
 }
 
-function ManageView({ bridges, styles = [], status }) {
+function ManageView({ bridges, styles = [] }) {
     const t = useText();
     const [selectedId, setSelectedId] = React.useState("");
     const selected = bridges.find(bridge => bridge.prefabName === selectedId) || bridges[0];
@@ -352,12 +347,10 @@ function ManageView({ bridges, styles = [], status }) {
     const [mode, setMode] = React.useState("");
     const [availability, setAvailability] = React.useState("");
     const [style, setStyle] = React.useState("");
-    const [previewFailure, setPreviewFailure] = React.useState("");
 
     React.useEffect(() => {
         if (selected && selected.prefabName !== selectedId) setSelectedId(selected.prefabName);
         setName(selected?.displayName || "");
-        if (!selected) setPreviewFailure("");
     // Only switching bridges resets the draft: stale save acknowledgements must
     // not overwrite newer typing.
     }, [selected?.prefabName]);
@@ -392,7 +385,7 @@ function ManageView({ bridges, styles = [], status }) {
                     onSelect: item => setSelectedId(item.prefabName), emptyText: t(bridges.length ? "NoMatches" : "NoBridges") }))),
         h("section", { className: "bb-manage-right" },
         h("section", { className: "bb-manage-detail" }, selected ? h(React.Fragment, null,
-            h(ModelPreview, { prefabName: selected.prefabName, ready: !!selected.prefabName, onFailure: setPreviewFailure }),
+            h(ModelPreview, { prefabName: selected.prefabName, ready: !!selected.prefabName }),
             h("label", null, t("DisplayName")),
             h(NativeTextInput, { ...textInputProps, value: name, maxLength: 250,
                 placeholder: t("DisplayName"), onChange: rename })) :
@@ -401,8 +394,7 @@ function ManageView({ bridges, styles = [], status }) {
                 h("button", { className: "bb-primary", disabled: !selected.available,
                     onClick: () => trigger("ActivateBridge", selected.prefabName) }, t("Build")),
                 h("button", { className: "bb-danger",
-                    onClick: () => trigger("DeleteBridge", selected.prefabName) }, t("Delete"))) : null,
-            previewFailure || status ? h("div", { className: "bb-status", role: "alert" }, previewFailure || status) : null));
+                    onClick: () => trigger("DeleteBridge", selected.prefabName) }, t("Delete"))) : null));
 }
 
 function Panel() {
@@ -412,7 +404,6 @@ function Panel() {
     const decks = api.useValue(decksBinding) || [];
     const styles = api.useValue(stylesBinding) || [];
     const bridges = api.useValue(bridgesBinding) || [];
-    const status = api.useValue(statusBinding) || "";
     const [view, setView] = React.useState("create");
     // Panel stays mounted when closed; retain the handoff draft while Road Builder is open.
     const [draft, setDraft] = React.useState(null);
@@ -425,7 +416,7 @@ function Panel() {
                 h("button", { title: t("CreateTab"), className: view === "create" ? "bb-active" : "", onClick: () => setView("create") }, t("CreateTab")),
                 h("button", { title: t("ManageTab"), className: view === "manage" ? "bb-active" : "", onClick: () => setView("manage") }, t("ManageTab"))),
             h("button", { className: "bb-close", title: t("Close"), "aria-label": t("Close"), onClick: () => trigger("TogglePanel") }, "×")),
-        view === "create" ? h(CreateView, { decks, styles, status, draft, onSaveDraft: setDraft }) : h(ManageView, { bridges, styles, status }));
+        view === "create" ? h(CreateView, { decks, styles, draft, onSaveDraft: setDraft }) : h(ManageView, { bridges, styles }));
 }
 
 function ToolbarButton() {

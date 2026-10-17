@@ -10,7 +10,8 @@ namespace BridgeBuilder.Bridges;
 
 internal static class Draw01NetworkData
 {
-    // Every one of the seven native lateral occurrences has these same three branches.
+    // Native motion has three branches. Split fixed branches by elevation so only
+    // elevated road Bottom layers are replaced by the independent native base.
     // Selected-road conditions and lateral roles remain on the outer occurrence.
     internal static NetSectionInfo[] ConvertSections(string owner, NetSectionInfo[] source,
         out PrefabBase[] created)
@@ -25,9 +26,11 @@ internal static class Draw01NetworkData
 
     private static MovableSectionConversion.Branch[] Branches() => new[]
     {
-        new MovableSectionConversion.Branch(Array.Empty<NetPieceRequirements>(), Array.Empty<NetPieceRequirements>(), new[] { NetPieceRequirements.FixedNodeSize }, (NetPieceLayerMask)(0), false),
+        new MovableSectionConversion.Branch(Array.Empty<NetPieceRequirements>(), Array.Empty<NetPieceRequirements>(), new[] { NetPieceRequirements.FixedNodeSize, NetPieceRequirements.Elevated }, (NetPieceLayerMask)0, false),
+        new MovableSectionConversion.Branch(new[] { NetPieceRequirements.Elevated }, Array.Empty<NetPieceRequirements>(), new[] { NetPieceRequirements.FixedNodeSize }, NetPieceLayerMask.Bottom, false),
         new MovableSectionConversion.Branch(new[] { NetPieceRequirements.Node, NetPieceRequirements.FixedNodeSize }, Array.Empty<NetPieceRequirements>(), Array.Empty<NetPieceRequirements>(), (NetPieceLayerMask)(-1), false),
-        new MovableSectionConversion.Branch(new[] { NetPieceRequirements.FixedNodeSize }, Array.Empty<NetPieceRequirements>(), new[] { NetPieceRequirements.Node }, (NetPieceLayerMask)(0), true),
+        new MovableSectionConversion.Branch(new[] { NetPieceRequirements.FixedNodeSize }, Array.Empty<NetPieceRequirements>(), new[] { NetPieceRequirements.Node, NetPieceRequirements.Elevated }, (NetPieceLayerMask)0, true),
+        new MovableSectionConversion.Branch(new[] { NetPieceRequirements.FixedNodeSize, NetPieceRequirements.Elevated }, Array.Empty<NetPieceRequirements>(), new[] { NetPieceRequirements.Node }, NetPieceLayerMask.Bottom, true),
     };
 
     internal static void ApplyBridge(Bridge bridge)

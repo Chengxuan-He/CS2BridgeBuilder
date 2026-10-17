@@ -60,17 +60,24 @@ internal static class BridgeDependencyPersistence
         var owned = !meta.packaged && !meta.path.Contains(owner + "_Dependencies")
             && (BridgeAssetInfo.MatchesOwner(meta.path, owner) || BridgeAssetInfo.MatchesOwner(meta.subPath, owner));
         using var stream = asset.GetReadStream(); // Still open: missing/inaccessible owned files remain failures.
+        var surface = meta.extension.Equals(".Surface", StringComparison.OrdinalIgnoreCase)
+            || meta.extension.Equals(".Material", StringComparison.OrdinalIgnoreCase);
         if (owned && !meta.extension.Equals(".Prefab", StringComparison.OrdinalIgnoreCase)
-            && !meta.extension.Equals(".Material", StringComparison.OrdinalIgnoreCase))
+            && !surface)
             return new BridgeDependencyCopies.Source { Owned = true, Extension = meta.extension };
         // Private geometry is a terminal owned asset: its payload never needs copying or parsing.
         using var bytes = new MemoryStream();
         stream.CopyTo(bytes);
+        var payload = bytes.ToArray();
         return new BridgeDependencyCopies.Source
         {
             Extension = meta.extension,
             Owned = owned,
-            Bytes = bytes.ToArray(),
+            Bytes = payload,
+            SerializedReferences = surface ? BridgeSurfaceReferences.Read(payload, (template, property) =>
+                (AssetDatabase.global.resources.materialLibrary.GetMaterialDescription(template)
+                    ?? throw new InvalidDataException("Unknown native surface material template " + template))
+                    .GetStackConfigIndex(property) != -1) : null,
         };
     }
 }

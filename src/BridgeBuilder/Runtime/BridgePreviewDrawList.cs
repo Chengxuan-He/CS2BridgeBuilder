@@ -16,14 +16,16 @@ internal sealed class BridgePreviewDrawList : IDisposable
 {
     internal readonly struct Draw
     {
-        internal Draw(Mesh mesh, Material material, int subMesh, Matrix4x4 transform, MaterialPropertyBlock properties)
+        internal Draw(Mesh mesh, Material material, int subMesh, Matrix4x4 transform, MaterialPropertyBlock properties, Bounds? localBounds = null)
         {
             Mesh = mesh;
             Material = material;
             SubMesh = subMesh;
             Transform = transform;
             Properties = properties;
+            LocalBounds = localBounds ?? mesh.bounds;
         }
+        internal Bounds LocalBounds { get; }
         internal Mesh Mesh { get; }
         internal Material Material { get; }
         internal int SubMesh { get; }
@@ -37,8 +39,11 @@ internal sealed class BridgePreviewDrawList : IDisposable
     private readonly Dictionary<ObjectGeometryPrefab, BridgePreviewObjectLayout> _objectLayouts = new();
     private readonly BridgePreviewNetMesh _network = new();
     private readonly BridgePreviewLaneMesh _lanes = new();
+    private readonly Dictionary<RenderPrefab, BridgePreviewOpenPose> _openPoses = new();
     private bool _hasBounds;
     internal Bounds Bounds { get; private set; }
+    internal Bounds ViewBounds { get; private set; }
+    private bool _hasViewBounds;
     internal IReadOnlyList<Draw> Draws => _draws;
 
     internal BridgePreviewDrawList(BridgePreviewSession session)
@@ -73,7 +78,7 @@ internal sealed class BridgePreviewDrawList : IDisposable
         return true;
     }
 
-    internal bool AddRenderPrefab(RenderPrefab prefab, Matrix4x4 transform)
+    internal bool AddRenderPrefab(RenderPrefab prefab, Matrix4x4 transform, BridgePreviewOpenPose? pose = null)
     {
         // Unity type-pattern matching accepts wrappers whose native object has
         // already been destroyed. Do not touch name/materials on those wrappers.
@@ -82,23 +87,35 @@ internal sealed class BridgePreviewDrawList : IDisposable
             return false;
         }
         var meshes = _resources.Meshes(prefab);
+        if (meshes.Length == 0)
+            throw new InvalidOperationException($"Preview render has no loaded geometry: {prefab.name}.");
         var materials = _resources.Materials(prefab);
         var properties = _resources.Properties(prefab);
+        pose?.Bind(properties);
         var materialIndex = 0;
         var added = false;
         foreach (var mesh in meshes)
         {
             if (mesh == null) continue;
+            var localBounds = mesh.bounds;
+            if (pose != null)
+            {
+                var measured = BridgePreviewSkinBounds.Measure(mesh, pose.Skin,
+                    Matrix4x4.Rotate(Quaternion.Inverse(BridgePreviewCamera.ViewRotation)) * transform);
+                localBounds = measured.Local;
+                IncludeView(measured.View);
+            }
             for (var subMesh = 0; subMesh < mesh.subMeshCount; subMesh++)
             {
                 if (materialIndex >= materials.Length || materials[materialIndex] == null)
                 {
-                    return false;
+                    throw new InvalidOperationException($"Preview material slot {materialIndex} is missing for {prefab.name}; available={materials.Length}.");
                 }
-                _draws.Add(new Draw(mesh, materials[materialIndex++], subMesh, transform, properties));
+                _draws.Add(new Draw(mesh, materials[materialIndex++], subMesh, transform, properties, localBounds));
                 added = true;
             }
-            Encapsulate(mesh.bounds, transform);
+            if (pose == null) Encapsulate(mesh.bounds, transform);
+            else Encapsulate(localBounds, transform, includeView: false);
         }
         return added;
     }
@@ -116,7 +133,9 @@ internal sealed class BridgePreviewDrawList : IDisposable
             // Each first/middle/last mesh is a template for native stack
             // batching, not a complete tower to draw at its authored origin.
             var layoutFound = TryObjectLayout(prefab, out var layout);
-            if (!layoutFound && (prefab.m_Meshes?.Length ?? 0) != 0) return false;
+            var movable = prefab.GetComponent<MoveableBridge>();
+            if (!layoutFound && (prefab.m_Meshes?.Length ?? 0) != 0)
+                throw new InvalidOperationException($"Preview object layout is invalid: {prefab.name}.");
             var tileCounts = new int3(1);
             var offsets = float3.zero;
             var scales = new float3(1f);
@@ -144,7 +163,20 @@ internal sealed class BridgePreviewDrawList : IDisposable
                         BatchDataHelpers.CalculateStackSubMeshData(layout.StackData, offsets, scales,
                             tile, flags, ref position, ref scale);
                     var local = Matrix4x4.TRS(position, part.m_Rotation, scale);
-                    if (!AddRenderPrefab(mesh, transform * local)) return false;
+                    BridgePreviewOpenPose? pose = null;
+                    if (movable != null && movable.active &&
+                        mesh.TryGet<ProceduralAnimationProperties>(out var animation) && animation.active)
+                    {
+                        if (!_openPoses.TryGetValue(mesh, out pose))
+                        {
+                            // Native waterway signal group uses the second lift target.
+                            pose = new BridgePreviewOpenPose(animation,
+                                local.inverse.MultiplyPoint3x4(new Vector3(0f, movable.m_LiftOffsets.y, 0f)));
+                            _openPoses.Add(mesh, pose);
+                        }
+                        _resources.EnableProceduralAnimation(mesh);
+                    }
+                    if (!AddRenderPrefab(mesh, transform * local, pose)) return false;
                 }
             }
             // Authored children are part of the created object, not independent
@@ -167,6 +199,8 @@ internal sealed class BridgePreviewDrawList : IDisposable
                     if (child.m_ParentMesh == -1) position.y = -objectElevation;
                     else childElevation = BridgePreviewObjectLayout.ChildElevation(objectElevation, position.y);
                     var local = Matrix4x4.TRS(position, child.m_Rotation, Vector3.one);
+                    if (movable != null && movable.active)
+                        local = AttachmentPose(prefab, child.m_ParentMesh) * local;
                     if (!AddObject(geometry, transform * local, objectElevation: childElevation))
                     {
                         return false;
@@ -186,7 +220,29 @@ internal sealed class BridgePreviewDrawList : IDisposable
         return true;
     }
 
-    private void Encapsulate(Bounds local, Matrix4x4 transform)
+    private Matrix4x4 AttachmentPose(ObjectGeometryPrefab prefab, int connection)
+    {
+        var parts = prefab.m_Meshes ?? Array.Empty<ObjectMeshInfo>();
+        if (connection <= 0 || connection < parts.Length) return Matrix4x4.identity;
+        // RenderingUtils.FindBoneIndex increments the connection code per mesh slot.
+        foreach (var part in parts)
+        {
+            if (part?.m_Mesh is RenderPrefab render && _openPoses.TryGetValue(render, out var pose))
+            {
+                var bones = part.m_Mesh.GetComponent<ProceduralAnimationProperties>().m_Bones;
+                for (var i = 0; i < bones.Length; i++)
+                    if (bones[i].m_ConnectionID == connection)
+                    {
+                        var local = Matrix4x4.TRS(part.m_Position, part.m_Rotation, Vector3.one);
+                        return local * pose.Delta[i] * local.inverse;
+                    }
+            }
+            connection++;
+        }
+        throw new InvalidOperationException("Movable preview attachment has no matching bone connection.");
+    }
+
+    private void Encapsulate(Bounds local, Matrix4x4 transform, bool includeView = true)
     {
         // Bounds are used only for camera framing, never to infer bridge transforms.
         for (var x = -1; x <= 1; x += 2)
@@ -195,6 +251,8 @@ internal sealed class BridgePreviewDrawList : IDisposable
         {
             var point = transform.MultiplyPoint3x4(local.center +
                 Vector3.Scale(local.extents, new Vector3(x, y, z)));
+            if (includeView) IncludeView(new Bounds(
+                Quaternion.Inverse(BridgePreviewCamera.ViewRotation) * point, Vector3.zero));
             if (!_hasBounds)
             {
                 Bounds = new Bounds(point, Vector3.zero);
@@ -209,11 +267,19 @@ internal sealed class BridgePreviewDrawList : IDisposable
         }
     }
 
+    private void IncludeView(Bounds value)
+    {
+        if (!_hasViewBounds) { ViewBounds = value; _hasViewBounds = true; }
+        else { var bounds = ViewBounds; bounds.Encapsulate(value); ViewBounds = bounds; }
+    }
+
     public void Dispose()
     {
         _draws.Clear();
         _objectPath.Clear();
         _objectLayouts.Clear();
+        foreach (var pose in _openPoses.Values) pose.Dispose();
+        _openPoses.Clear();
         _network.Dispose();
         _lanes.Dispose();
         _resources.Dispose();

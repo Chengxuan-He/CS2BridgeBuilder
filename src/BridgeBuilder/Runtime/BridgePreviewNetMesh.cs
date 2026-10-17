@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
 using System.Reflection;
+using System.Linq;
+using Colossal.IO.AssetDatabase;
 using Colossal.Mathematics;
 using Game.Net;
 using Game.Prefabs;
@@ -18,7 +20,7 @@ namespace BridgeBuilder.Runtime;
 /// does not consume an ordinary stretched MeshFilter: it needs the native packed
 /// composition vertices AND the four Bezier composition matrices together.
 /// </summary>
-internal sealed class BridgePreviewNetMesh : IDisposable
+internal sealed partial class BridgePreviewNetMesh : IDisposable
 {
     private readonly World _world = new("BridgeBuilder preview network meshes");
     private readonly List<Mesh> _meshes = new();
@@ -26,7 +28,8 @@ internal sealed class BridgePreviewNetMesh : IDisposable
 
     internal bool Build(BridgePreviewComposition.Piece[] pieces, NetCompositionData data,
         BridgePreviewRenderResources resources, float length, out Mesh mesh,
-        out Material[] materials, out MaterialPropertyBlock properties)
+        out Material[] materials, out MaterialPropertyBlock properties,
+        List<SurfaceAsset>? resolvedSurfaces = null, List<SourceFace>? resolvedFaces = null)
     {
         mesh = null!;
         materials = Array.Empty<Material>();
@@ -41,24 +44,31 @@ internal sealed class BridgePreviewNetMesh : IDisposable
         manager.AddBuffer<MeshMaterial>(target);
         var input = new List<NetCompositionPiece>();
         var sourceMaterials = new List<Material>();
+        var sourceSurfaces = new List<SurfaceAsset>();
         var sources = new List<Entity>();
+        var origins = new List<(Entity Entity, int Piece, int Mesh)>();
         var pending = Mesh.AllocateWritableMeshData(1);
         var consumed = false;
         try
         {
-            foreach (var entry in pieces)
+            for (var pieceIndex = 0; pieceIndex < pieces.Length; pieceIndex++)
             {
+                var entry = pieces[pieceIndex];
                 var piece = entry.Composition;
                 if (!Visible(piece)) continue;
                 var materialIndex = 0;
                 var partMaterials = resources.Materials(entry.Prefab, true);
+                var partSurfaces = resolvedSurfaces == null ? Array.Empty<SurfaceAsset>()
+                    : entry.Prefab.surfaceAssets?.ToArray() ?? Array.Empty<SurfaceAsset>();
+                if (resolvedSurfaces != null && partSurfaces.Length != partMaterials.Length) return false;
                 var partMeshes = resources.Meshes(entry.Prefab);
                 if (partMeshes.Length == 0)
                 {
                     return false;
                 }
-                foreach (var source in partMeshes)
+                for (var meshIndex = 0; meshIndex < partMeshes.Length; meshIndex++)
                 {
+                    var source = partMeshes[meshIndex];
                     if (source == null) continue;
                     if (materialIndex + source.subMeshCount > partMaterials.Length)
                     {
@@ -67,8 +77,13 @@ internal sealed class BridgePreviewNetMesh : IDisposable
                     var entity = manager.CreateEntity();
                     sources.Add(entity);
                     Cache(source, entity, manager, sourceMaterials.Count);
+                    if (resolvedFaces != null) origins.Add((entity, pieceIndex, meshIndex));
                     for (var sub = 0; sub < source.subMeshCount; sub++)
-                        sourceMaterials.Add(partMaterials[materialIndex++]);
+                    {
+                        sourceMaterials.Add(partMaterials[materialIndex]);
+                        if (resolvedSurfaces != null) sourceSurfaces.Add(partSurfaces[materialIndex]);
+                        materialIndex++;
+                    }
                     piece.m_Piece = entity;
                     input.Add(piece);
                 }
@@ -94,6 +109,13 @@ internal sealed class BridgePreviewNetMesh : IDisposable
             _meshes.Add(mesh);
             Mesh.ApplyAndDisposeWritableMeshData(pending, mesh, MeshUpdateFlags.DontRecalculateBounds);
             consumed = true;
+            if (resolvedFaces != null)
+            {
+                resolvedFaces.AddRange(TraceSources(manager, input, origins, nativeData, mesh));
+                // The trace creates and destroys a temporary entity; reacquire the buffer
+                // after that structural change before resolving the original surfaces.
+                materialBuffer = manager.GetBuffer<MeshMaterial>(target);
+            }
 
             // The shader expands normalized composition coordinates to this edge.
             // Culling and the orthographic camera must use the expanded bounds.
@@ -120,7 +142,13 @@ internal sealed class BridgePreviewNetMesh : IDisposable
             properties.SetMatrix("colossal_CompositionMatrix2", parameters.m_CompositionMatrix2);
             properties.SetMatrix("colossal_CompositionMatrix3", parameters.m_CompositionMatrix3);
             properties.SetFloat("colossal_LodFade", 1f);
-            if (mesh.vertexCount != 0 && materials.Length != 0) return true;
+            if (mesh.vertexCount != 0 && materials.Length != 0)
+            {
+                if (resolvedSurfaces != null)
+                    for (var i = 0; i < materialBuffer.Length; i++)
+                        resolvedSurfaces.Add(sourceSurfaces[materialBuffer[i].m_MaterialIndex]);
+                return true;
+            }
 
             return false;
         }

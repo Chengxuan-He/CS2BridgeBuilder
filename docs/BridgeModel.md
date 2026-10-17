@@ -1,118 +1,103 @@
 # How Cities: Skylines II models a bridge
 
-Everything here was read out of `Game.dll` by reflection and out of installed `.Prefab` assets, not
-from documentation. It is written down because the design of this mod depends on it and because the
-first assumption a reader is likely to make about it is wrong.
+This document describes the native components used by Bridge Builder and the current generator
+boundaries. The project contract governs implementation and acceptance. Prototype measurements
+and dated audit reports are evidence for their recorded versions, not substitutes for current data.
 
-## Two things that are easy to conflate
+## Network and style identity
 
-`BridgeBuildStyle` is **not** what a player means by "bridge style":
+A bridge network is a `RoadPrefab`, `TrackPrefab` or `PathwayPrefab` derived from
+`NetGeometryPrefab`. `BridgeBuildStyle` describes ground treatment (`Elevated`, `Raised`, `Quay`),
+not a suspension, arch or cable-stayed design.
 
-```
-enum BridgeBuildStyle { Elevated, Raised, Quay }
-```
+Bridge Builder uses explicit stable style IDs, supported deck modes and generator routes.
+Runtime discovery supplies available prototype variants; an installed prefab alone does not enable
+an unsupported generator. Source binding prioritizes base game, DLC, then mod content and preserves
+the selected source's prerequisites. Generated bridges are excluded from source selection.
 
-That enum only says how a bridge meets the ground — a deck on pillars, an embankment, a shore-hugging
-quay. It has three values and always will.
+## Native components
 
-Suspension, extradosed and truss arch bridges are a different thing entirely: **ordinary net prefabs**
-that the game does ship, in the Bridges & Ports DLC. Read out of that DLC's own locale file:
+| Component | Responsibility |
+| --- | --- |
+| `Bridge` | Span length, hanging, water elevation, curvature and fixed-segment behavior |
+| `m_Sections` | The selected network's road/track structure and composition conditions |
+| `OverheadNetSections` | Additional authored sections such as cables and trusses |
+| `NetSubObjects` | Towers, piers and other objects with prototype-specific placement rules |
+| `AuxiliaryNets` | Additional networks with native ownership, offset and inversion behavior |
 
-| Prefab | Name in game |
-|---|---|
-| `SuspensionBridge01` … `04` | Two-Lane Suspension Bridge; Three-Lane Highway **Double-Decked** Suspension Bridge; … |
-| `ExtradosedBridge02` … `04` | Four-Lane **Double-Decked** Extradosed Bridge; … |
-| `TrussArchBridge02`, `03` | Four-Lane Truss Arch Bridge; … |
-| `DrawBridge01` … `03`, `LiftBridge01` … `05` | moveable bridges, carrying `MoveableBridge` |
-| `PedestrianDrawBridge01`, `02`, `PedestrianBridgeCoveredWood` | pedestrian bridges |
+These components form a graph, not a universal list that can be copied blindly. Preserve each
+prototype's behavior and references while replacing the selected road structure and deriving the
+required geometry. Fixed segments require compatible section states and placement indices.
 
-Their parts follow the game's net conventions — `SuspensionBridge01NetPylon`,
-`…NetPillarTop`, `…EndNet`, `…MiddleNet`, `DrawBridge01Bottom300cm`, `LiftBridge02Side30cm` — which
-is what confirms these are networks you draw, not objects you place. Asset packs such as the Bridge
-Expansion Pack add more of the same kind.
+## Geometry and width
 
-Two consequences the design leans on:
+Generation selects a compatible prototype and uses measured, immutable archetype data. Towers,
+cables, pieces and LODs are private derived assets. A part reaching or crossing `x = 0` stretches
+against its own authored span; a side part translates rigidly. Preserve height, depth, vertex
+formats, materials and component behavior, following the contract's separate base and pier rules.
 
-- The style list is **discovered at runtime**, never hard coded, so it covers the DLC, any asset pack,
-  and anything installed later, and it never offers a style that is not present.
-- **Double-decked bridges exist natively** (`SuspensionBridge02`, `ExtradosedBridge02`), which is what
-  establishes that the `AuxiliaryNets` route below is the game's own way of doing it rather than a
-  trick.
+Full-detail geometry and all LODs use the same part classification. Missing or mismatched metadata
+is an explicit unsupported case. There is no general offset-only fitting rule or arbitrary
+0.5x–2x clamp. Width means the complete span `maxX - minX`, measured on matching boundaries.
 
-## What a bridge prefab is made of
+## Double decks
 
-A bridge in an asset pack is an ordinary `RoadPrefab` (so, a `NetGeometryPrefab`) that additionally
-carries:
+Use a genuine double-deck archetype. Preserve its `AuxiliaryNets` positions, `m_InvertWhen`,
+`m_LinkEndOffsets` and fixed deck separation. Main/auxiliary ownership does not determine which
+deck is physically above the other. Both selected decks receive bridge-owned network copies.
 
-| Component | Field | What it contributes |
-|---|---|---|
-| `Bridge` | `m_SegmentLength`, `m_Hanging`, `m_ElevationOnWater`, `m_CanCurve`, `m_AllowMinimalLength`, `m_WaterFlow`, `m_BuildStyle`, `m_FixedSegments` | Span behaviour: how long a span is, how far it sags, whether it may curve, how fixed-length main spans are laid out |
-| `OverheadNetSections` | `m_Sections : NetSectionInfo[]` | The sections drawn **above** the deck — towers, cables, trusses |
-| `NetSubObjects` | `m_SubObjects : NetSubObjectInfo[]` | Props anchored along the deck — pylons, portals — each with a position, a spacing and a `m_RequireElevated` gate |
-| its own `m_Sections` | entries whose `m_RequireAll`/`m_RequireAny` contain `Elevated` or `Raised` | The deck edges: railings, the underside a bridge shows and a ground road does not |
-| `AuxiliaryNets` | `m_AuxiliaryNets : AuxiliaryNetInfo[]`, `m_LinkEndOffsets` | Other nets created alongside this one at a fixed offset |
+Auxiliary networks follow native editing and connection behavior. The double-deck rail-seam
+compatibility limitation remains subject to explicit testing, including a cold start without
+Bridge Builder. Successful generation alone does not establish independent operation.
 
-`NetSectionInfo` and `NetSubObjectInfo` both carry a `float3` offset/position, which is the hook this
-mod uses to fit a donor's structure to a different road width.
+## Movable bridges
 
-So, operationally: **a bridge style is the `Bridge` component plus `OverheadNetSections` plus
-`NetSubObjects` plus the elevated-only entries of `m_Sections`.** Copy those four onto a road prefab
-and the road becomes that style of bridge.
+Development is governed by the normative
+[movable bridge contract](agent-contract/MOVABLE_BRIDGES_CONTRACT.md), incorporated by project
+contract section 21. The required route generates the moving surface from the selected road's
+closed-pose composition, bakes persistent object geometry and binds it to the measured mechanism.
 
-## Double deck
+Native draw and lift bridges use an animated static-object prefab placed at a waterway-crossing
+node. That object carries `MoveableBridge`; its render prefabs carry procedural bone animation.
+Native traffic signals coordinate road/track/pedestrian clearance, bridge movement and watercraft.
+The road sections hide ordinary node meshes in the fixed-size moving span while preserving network
+connectivity; the animated bridge model provides the visible moving deck.
 
-`AuxiliaryNets` is the mechanism, and it is a stock game component, not a pack invention:
+Bridge Builder does not yet generate these styles. Existing labels, measurements or a root-level
+component-copy helper are not evidence of complete support. Implementation requires measured
+object placement, section conditions, skeleton/bind data, full-detail/LOD geometry and native
+waterway behavior. Historical dumps with depth-truncated bone data are insufficient for transforms.
 
-```
-class AuxiliaryNetInfo {
-    NetPrefab     m_Prefab;      // the net hung alongside
-    float3        m_Position;    // where, relative to the carrier
-    NetInvertMode m_InvertWhen;  // Never | LefthandTraffic | RighthandTraffic | Always
-}
-```
+The 2026-10-16 implementation review covers three road drawbridges, five lift bridges and two
+pedestrian drawbridges. The lift group includes the genuine road/rail auxiliary arrangement of
+`LiftBridge03`; its auxiliary track is not a separate mechanism. See the
+[implementation record](Movable-Bridges-Implementation.md) for per-style status.
 
-`m_InvertWhen = Always` is exactly "the lower deck runs the other way". `m_Position = (0, -spacing, 0)`
-puts it below. `m_LinkEndOffsets = true` keeps the two decks' ends together at the abutments.
+Shared runtime code now implements occurrence tracing, conditional section wrappers, straight-edge
+position/UV evaluation, clipping at measured seam frames, and native rigid-skin model encoding. These are
+construction primitives, not complete generators. Network-to-object materials, markings, measured
+structure replacement and persisted animated graphs still need integration before admission.
 
-The Bridge Expansion Pack's own double-deck bridges are built this way: a placeable upper prefab
-(`Bridge`, `PlaceableNet`, `UIObject`) that references a second, deliberately non-placeable prefab
-(no `PlaceableNet`, no `UIObject`) for the lower deck.
+In the audited highest-detail primary render prefabs, each mechanism has one principal opaque
+mesh with one submesh, plus a separate window mesh. This does not establish which triangles are
+road, structure or markings. Removing the opaque submesh would remove structure as well; a
+reviewed triangle-level separation must identify the prototype road contribution before replacing
+it with the selected road. Repeat the correspondence review for every LOD.
 
-The limitation that makes this feature experimental here is inherent to the mechanism: an auxiliary
-net is created and destroyed with its carrier and cannot be selected or edited on its own. A lower
-deck can therefore be placed, but connecting it to a separately built rail or subway line is not
-something this mod can guarantee.
+These primary meshes use `BlendIndices:UInt32x1`. Native procedural bone rest transforms, bind
+poses, hierarchy and motion fields live in `ProceduralAnimationProperties`. This must be traced
+together with the geometry's skinning channels. An empty `ModelImporter.Model.BoneInfo` array in
+an existing export helper alone does not prove that the saved native animation graph lacks bones.
+Likewise, a valid skinning layout does not establish material compatibility for a baked network.
 
-## Naming, and why grouping matters
+## Persistence and cleanup
 
-The two sources that ship bridges do not agree on how to name variants:
+Generated bridge assets use immutable `b<UUID>` identities, independent of editable display names.
+External non-built-in dependencies are copied byte-for-byte with original CIDs into each bridge's
+own dependency directory. Built-in game/DLC resources remain native prerequisites. Original assets
+and other bridges' private Prefabs are not modified or borrowed. Asset licenses remain applicable.
 
-- the game numbers them — `SuspensionBridge01`, `SuspensionBridge02`, `SuspensionBridge03`;
-- packs spell them out — `BXP Suspension Bridge - Highway Twoway - 6 Lanes`.
-
-Taken literally, either convention produces one "style" per variant, each with a single width, which
-also disables the width fitting below — it can only choose when the variants sit in one family. So
-discovery strips a one- or two-digit variant suffix and everything from the first ` - ` onwards, and
-asks the game's own dictionary for the family's display name (`Assets.NAME[SuspensionBridge01]` →
-"Two-Lane Suspension Bridge") rather than showing the raw identifier.
-
-## Width adaptation, and its honest limit
-
-Bridge sources author one prefab per lane count. A Road Builder road can be any width, so this mod:
-
-1. measures the road by summing its sections' widths (`NetPiecePrefab.m_Width`, taking the widest
-   piece per section because pieces at the same position are layers, not neighbours);
-2. picks the donor variant authored closest to that width;
-3. scales the **lateral** offsets only — `m_Offset.x` on sections, `m_Position.x` on sub-objects —
-   leaving height and longitudinal position alone, since those describe the structure itself.
-
-Meshes are not stretched, because they cannot be. Beyond roughly a factor of two the result stops
-resembling the style, so the scale is clamped to 0.5×–2× and the report says so when it clamps.
-
-## Dependency, deliberately
-
-Donor geometry is **referenced, not copied**. An exported bridge keeps needing whatever its style came
-from — the Bridges & Ports DLC for the built-in styles, or the asset pack for the rest. Copying the
-meshes would make the export self-contained but would also mean redistributing content this mod has
-no right to redistribute. The options page names the source for the selected style so the trade is
-visible before the export, not after.
+Persist native unlock conditions, pricing and presentation. Bridge Builder is the asset manager,
+not a required runtime dependency; cold-start acceptance must verify that requirement.
+Deployment cleanup follows contract section 13: remove all bridges only of the styles affected
+by a generation change, and remove no existing bridges when generation code is unchanged.

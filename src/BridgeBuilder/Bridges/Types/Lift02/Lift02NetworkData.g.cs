@@ -13,7 +13,7 @@ internal static class Lift02NetworkData
     internal enum Role { IntersectionMedian, Span }
 
     internal static NetSectionInfo[] ConvertSections(string owner, NetSectionInfo[] source,
-        IReadOnlyList<Role> roles, out NetSectionPrefab[] created)
+        IReadOnlyList<Role> roles, out PrefabBase[] created)
     {
         if (roles.Count != source.Length)
             throw new InvalidOperationException("Lift02 requires a measured role for each source occurrence.");

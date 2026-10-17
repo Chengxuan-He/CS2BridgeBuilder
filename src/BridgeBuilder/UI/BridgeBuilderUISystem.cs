@@ -278,7 +278,7 @@ public partial class BridgeBuilderUISystem : UISystemBase
 
             var styles = BridgeStyleCatalog.Styles
                 .Where(style => style.IsInstalled &&
-                    BridgeStyleDefinitions.CanGenerate(style.Id) &&
+                    BridgeStyleDefinitions.CanList(style.Id) &&
                     style.Variants.Any(variant => variant.IsAvailable))
                 .Select(style =>
                 {

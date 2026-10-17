@@ -24,11 +24,13 @@ internal sealed class BridgePreviewLanes : IDisposable
 {
     internal readonly struct Lane
     {
-        internal Lane(NetLaneGeometryPrefab prefab, Curve curve, EdgeLane? edge)
-        { Prefab = prefab; Curve = curve; Edge = edge; }
+        internal Lane(NetLaneGeometryPrefab prefab, Curve curve, EdgeLane? edge,
+            SubMeshFlags rejectedSubMeshes = 0)
+        { Prefab = prefab; Curve = curve; Edge = edge; RejectedSubMeshes = rejectedSubMeshes; }
         internal NetLaneGeometryPrefab Prefab { get; }
         internal Curve Curve { get; }
         internal EdgeLane? Edge { get; }
+        internal SubMeshFlags RejectedSubMeshes { get; }
     }
 
     private readonly World _world = new("BridgeBuilder preview lanes");
@@ -43,7 +45,7 @@ internal sealed class BridgePreviewLanes : IDisposable
         .GetExistingSystemManaged<CityConfigurationSystem>().leftHandTraffic;
 
     internal bool Build(BridgePreviewComposition.Piece[] pieces, NetCompositionData data,
-        float length, out Lane[] result)
+        float length, out Lane[] result, bool captureRenderState = false)
     {
         result = Array.Empty<Lane>();
         if (CreateArchetype == null)
@@ -139,7 +141,8 @@ internal sealed class BridgePreviewLanes : IDisposable
                         continue;
                     }
                     output.Add(new Lane(prefab, manager.GetComponentData<Curve>(entity),
-                        manager.HasComponent<EdgeLane>(entity) ? manager.GetComponentData<EdgeLane>(entity) : null));
+                        manager.HasComponent<EdgeLane>(entity) ? manager.GetComponentData<EdgeLane>(entity) : null,
+                        captureRenderState ? RejectedSubMeshes(manager, entity, LeftHandTraffic) : 0));
                 }
             result = output.ToArray();
             return true;
@@ -148,6 +151,31 @@ internal sealed class BridgePreviewLanes : IDisposable
         {
             return false;
         }
+    }
+
+    // Mirrors BatchInstanceSystem.UpdateLaneInstances for ordinary non-editor lane rendering.
+    // Flags come from the native generated lane, not an assumption that every lane is safe/clear.
+    internal static SubMeshFlags RejectedSubMeshes(EntityManager manager, Entity entity, bool leftHandTraffic)
+    {
+        var flags = SubMeshFlags.RequireEditor | (leftHandTraffic
+            ? SubMeshFlags.RequireRightHandTraffic : SubMeshFlags.RequireLeftHandTraffic);
+        if (manager.HasComponent<Game.Net.PedestrianLane>(entity) &&
+            (manager.GetComponentData<Game.Net.PedestrianLane>(entity).m_Flags & PedestrianLaneFlags.Unsafe) != 0)
+            flags |= SubMeshFlags.RequireSafe;
+        if (manager.HasComponent<Game.Net.CarLane>(entity))
+        {
+            var car = manager.GetComponentData<Game.Net.CarLane>(entity).m_Flags;
+            if ((car & CarLaneFlags.Unsafe) != 0) flags |= SubMeshFlags.RequireSafe;
+            if ((car & CarLaneFlags.LevelCrossing) == 0) flags |= SubMeshFlags.RequireLevelCrossing;
+        }
+        if (manager.HasComponent<Game.Net.TrackLane>(entity))
+        {
+            var track = manager.GetComponentData<Game.Net.TrackLane>(entity).m_Flags;
+            if ((track & TrackLaneFlags.LevelCrossing) == 0) flags |= SubMeshFlags.RequireLevelCrossing;
+            flags |= (track & (TrackLaneFlags.Switch | TrackLaneFlags.DiamondCrossing)) == 0
+                ? SubMeshFlags.RequireTrack : SubMeshFlags.RequireClear;
+        }
+        return flags;
     }
 
     private static Segment StraightSegment(float width, float length, float start = 0f) => new()

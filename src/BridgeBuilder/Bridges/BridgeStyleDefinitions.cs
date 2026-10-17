@@ -100,6 +100,13 @@ internal static class BridgeStyleDefinitions
     /// </summary>
     internal const string Default = "Suspension";
 
+    // Independent native mechanisms, not aliases. Admission does not imply a connected generator.
+    internal static bool IsMovable(string? id) => id is
+        "Draw01" or "Draw02" or "Draw03" or "Lift01" or "Lift02" or "Lift03" or
+        "Lift04" or "Lift05" or "PedestrianDraw01" or "PedestrianDraw02";
+
+    internal static bool CanList(string? id) => IsMovable(id) || CanGenerate(id);
+
     // Explicit generator coverage, not a list inferred from installed Bridge
     // components. These families have recorded TowerFactory/section generation
     // paths. TiedArch is generated through its overhead sections; CoveredWood and
@@ -120,6 +127,7 @@ internal static class BridgeStyleDefinitions
     {
         if (string.IsNullOrEmpty(styleId)) return "no bridge style was selected";
         if (!SupportsDeckMode(styleId, doubleDeck)) return "the selected bridge style does not support this deck count";
+        if (IsMovable(styleId)) return null;
         var deferred = DeferredReason(styleId);
         if (deferred != null) return deferred;
         if (!ImplementedStyles.Contains(styleId!) || !All.Any(item => item.Id == styleId))
@@ -141,6 +149,8 @@ internal static class BridgeStyleDefinitions
     {
         "GoldenGate" => !doubleDeck,
         "GoldenGateDouble" => doubleDeck,
+        "Lift03" => doubleDeck,
+        var id when IsMovable(id) => !doubleDeck,
         _ => true,
     };
 
@@ -239,6 +249,16 @@ internal static class BridgeStyleDefinitions
     /// </summary>
     internal static readonly IReadOnlyList<BridgeStyleDefinition> All = new[]
     {
+        new BridgeStyleDefinition("PedestrianDraw01", "Pedestrian Bascule Bridge 01", 0, "pedestriandrawbridge01"),
+        new BridgeStyleDefinition("PedestrianDraw02", "Pedestrian Bascule Bridge 02", 0, "pedestriandrawbridge02"),
+        new BridgeStyleDefinition("Draw01", "Bascule Bridge 01", 0, "drawbridge01"),
+        new BridgeStyleDefinition("Draw02", "Bascule Bridge 02", 0, "drawbridge02"),
+        new BridgeStyleDefinition("Draw03", "Bascule Bridge 03", 0, "drawbridge03"),
+        new BridgeStyleDefinition("Lift01", "Lift Bridge 01", 0, "liftbridge01"),
+        new BridgeStyleDefinition("Lift02", "Lift Bridge 02", 0, "liftbridge02"),
+        new BridgeStyleDefinition("Lift03", "Lift Bridge 03", 0, "liftbridge03"),
+        new BridgeStyleDefinition("Lift04", "Lift Bridge 04", 0, "liftbridge04"),
+        new BridgeStyleDefinition("Lift05", "Lift Bridge 05", 0, "liftbridge05"),
         new BridgeStyleDefinition("PedestrianDraw", "Pedestrian Bascule Bridge", 0, "pedestriandrawbridge"),
         new BridgeStyleDefinition(
             "WoodenCovered", "Wooden Covered Bridge", 0, "woodencoveredbridge"),

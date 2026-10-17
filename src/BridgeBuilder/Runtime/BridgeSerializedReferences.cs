@@ -131,9 +131,24 @@ internal sealed class BridgeSerializedReferences
         {
             while (_valid && !Take('}'))
             {
-                if (!Take('"')) { _valid = false; break; }
-                var key = String();
-                if (!Take(':')) { _valid = false; break; }
+                Space();
+                var entryStart = _offset;
+                string? key = null;
+                if (Take('"'))
+                {
+                    var candidate = String();
+                    if (Take(':')) key = candidate;
+                }
+                // Odin formatters serialize Vector3/Quaternion and other values as
+                // typed objects containing unnamed entries, not JSON field pairs.
+                if (key == null)
+                {
+                    _offset = entryStart;
+                    value.Items.Add(Read(depth + 1));
+                    if (Take('}')) break;
+                    if (!Take(',')) { _valid = false; break; }
+                    continue;
+                }
                 if (value.Fields.ContainsKey(key)) { _valid = false; break; }
                 var child = Read(depth + 1);
                 value.Fields.Add(key, child);

@@ -14,10 +14,15 @@ internal sealed class BridgePreviewComposition : IDisposable
 {
     internal readonly struct Piece
     {
-        internal Piece(NetPiecePrefab prefab, NetCompositionPiece composition)
-        { Prefab = prefab; Composition = composition; }
+        internal Piece(NetPiecePrefab prefab, NetCompositionPiece composition, string sourcePath = "",
+            NetSectionPrefab? rootSection = null)
+        { Prefab = prefab; Composition = composition; SourcePath = sourcePath; RootSection = rootSection; }
         internal NetPiecePrefab Prefab { get; }
         internal NetCompositionPiece Composition { get; }
+        internal string SourcePath { get; }
+        // Original top-level section occurrence, before native subsection selection.
+        // Existing preview-only callers need no section provenance.
+        internal NetSectionPrefab? RootSection { get; }
     }
 
     private readonly World _world = new("BridgeBuilder temporary preview composition");
@@ -25,8 +30,14 @@ internal sealed class BridgePreviewComposition : IDisposable
     private readonly Dictionary<NetPiecePrefab, Entity> _pieces = new();
     private readonly Dictionary<Entity, NetPiecePrefab> _prefabs = new();
     private readonly HashSet<NetSectionPrefab> _sectionPath = new();
+    private readonly Dictionary<Entity, string> _occurrences = new();
+    private readonly bool _trackOccurrences;
     private bool _invalidGraph;
     private bool _disposed;
+
+    // Moving road conversion needs a distinct entity for every graph occurrence. Prefab-only
+    // caching remains the default for existing preview and pricing callers.
+    internal BridgePreviewComposition(bool trackOccurrences = false) => _trackOccurrences = trackOccurrences;
 
     internal Piece[] Compose(NetGeometryPrefab prefab, CompositionFlags flags, out NetCompositionData data,
         bool priceComposition = false, bool includeOverhead = true)
@@ -50,12 +61,12 @@ internal sealed class BridgePreviewComposition : IDisposable
         }
         flags |= setStates;
         var geometry = new List<NetGeometrySection>();
-        AddSections(geometry, prefab.m_Sections, 0);
+        AddSections(geometry, prefab.m_Sections, 0, "sections");
         if (includeOverhead && prefab.TryGet<OverheadNetSections>(out var overhead))
-            AddSections(geometry, overhead.m_Sections, NetSectionFlags.Overhead);
+            AddSections(geometry, overhead.m_Sections, NetSectionFlags.Overhead, "overhead");
         // The default price includes buried utilities, unlike the visible preview.
         if (priceComposition && prefab.TryGet<UndergroundNetSections>(out var underground))
-            AddSections(geometry, underground.m_Sections, NetSectionFlags.Underground);
+            AddSections(geometry, underground.m_Sections, NetSectionFlags.Underground, "underground");
         if (_invalidGraph) return Array.Empty<Piece>();
         using var input = new NativeArray<NetGeometrySection>(geometry.ToArray(), Allocator.Temp);
         using var output = new NativeList<NetCompositionPiece>(Allocator.Temp);
@@ -63,12 +74,14 @@ internal sealed class BridgePreviewComposition : IDisposable
         data = helper.Compose(input, output, flags);
         var result = new List<Piece>();
         foreach (var piece in output.AsArray())
-            if (_prefabs.TryGetValue(piece.m_Piece, out var piecePrefab)) result.Add(new Piece(piecePrefab, piece));
+            if (_prefabs.TryGetValue(piece.m_Piece, out var piecePrefab))
+                result.Add(new Piece(piecePrefab, piece,
+                    _occurrences.TryGetValue(piece.m_Piece, out var path) ? path : ""));
         return result.ToArray();
     }
 
     private void AddSections(List<NetGeometrySection> geometry, NetSectionInfo[] sections,
-        NetSectionFlags sectionFlags)
+        NetSectionFlags sectionFlags, string sourcePath)
     {
         if (sections == null) return;
         var firstMedian = int.MaxValue;
@@ -87,7 +100,7 @@ internal sealed class BridgePreviewComposition : IDisposable
             if (source?.m_Section == null) continue;
             var section = new NetGeometrySection
             {
-                m_Section = Section(source.m_Section), m_Offset = source.m_Offset,
+                m_Section = Section(source.m_Section, _trackOccurrences ? sourcePath + "/" + i : ""), m_Offset = source.m_Offset,
                 m_Flags = sectionFlags
             };
             NetCompositionHelpers.GetRequirementFlags(source.m_RequireAll, out section.m_CompositionAll, out _);
@@ -110,7 +123,7 @@ internal sealed class BridgePreviewComposition : IDisposable
         }
     }
 
-    private Entity Section(NetSectionPrefab prefab)
+    private Entity Section(NetSectionPrefab prefab, string sourcePath)
     {
         if (_sectionPath.Contains(prefab))
         {
@@ -118,28 +131,34 @@ internal sealed class BridgePreviewComposition : IDisposable
             _invalidGraph = true;
             return Entity.Null;
         }
-        if (_sections.TryGetValue(prefab, out var existing)) return existing;
+        if (!_trackOccurrences && _sections.TryGetValue(prefab, out var existing)) return existing;
         _sectionPath.Add(prefab);
         var manager = _world.EntityManager;
         var entity = manager.CreateEntity();
-        _sections.Add(prefab, entity);
+        if (!_trackOccurrences) _sections.Add(prefab, entity);
         manager.AddBuffer<NetSubSection>(entity);
         manager.AddBuffer<NetSectionPiece>(entity);
         var children = new List<NetSubSection>();
-        foreach (var source in prefab.m_SubSections ?? Array.Empty<NetSubSectionInfo>())
+        var subSections = prefab.m_SubSections ?? Array.Empty<NetSubSectionInfo>();
+        for (var index = 0; index < subSections.Length; index++)
         {
+            var source = subSections[index];
             if (source?.m_Section == null) continue;
-            var child = new NetSubSection { m_SubSection = Section(source.m_Section) };
+            var child = new NetSubSection { m_SubSection = Section(source.m_Section,
+                _trackOccurrences ? sourcePath + "/subsections/" + index : "") };
             NetCompositionHelpers.GetRequirementFlags(source.m_RequireAll, out child.m_CompositionAll, out child.m_SectionAll);
             NetCompositionHelpers.GetRequirementFlags(source.m_RequireAny, out child.m_CompositionAny, out child.m_SectionAny);
             NetCompositionHelpers.GetRequirementFlags(source.m_RequireNone, out child.m_CompositionNone, out child.m_SectionNone);
             children.Add(child);
         }
         var pieces = new List<NetSectionPiece>();
-        foreach (var source in prefab.m_Pieces ?? Array.Empty<NetPieceInfo>())
+        var sourcePieces = prefab.m_Pieces ?? Array.Empty<NetPieceInfo>();
+        for (var index = 0; index < sourcePieces.Length; index++)
         {
+            var source = sourcePieces[index];
             if (source?.m_Piece == null) continue;
-            var piece = new NetSectionPiece { m_Piece = RegisterPiece(source.m_Piece), m_Offset = source.m_Offset };
+            var piece = new NetSectionPiece { m_Piece = RegisterPiece(source.m_Piece,
+                _trackOccurrences ? sourcePath + "/pieces/" + index : ""), m_Offset = source.m_Offset };
             NetCompositionHelpers.GetRequirementFlags(source.m_RequireAll, out piece.m_CompositionAll, out piece.m_SectionAll);
             NetCompositionHelpers.GetRequirementFlags(source.m_RequireAny, out piece.m_CompositionAny, out piece.m_SectionAny);
             NetCompositionHelpers.GetRequirementFlags(source.m_RequireNone, out piece.m_CompositionNone, out piece.m_SectionNone);
@@ -156,9 +175,9 @@ internal sealed class BridgePreviewComposition : IDisposable
         return entity;
     }
 
-    private Entity RegisterPiece(NetPiecePrefab prefab)
+    private Entity RegisterPiece(NetPiecePrefab prefab, string sourcePath)
     {
-        if (_pieces.TryGetValue(prefab, out var existing)) return existing;
+        if (!_trackOccurrences && _pieces.TryGetValue(prefab, out var existing)) return existing;
         var manager = _world.EntityManager;
         var entity = manager.CreateEntity();
         manager.AddComponentData(entity, new NetPieceData
@@ -168,8 +187,9 @@ internal sealed class BridgePreviewComposition : IDisposable
             m_WidthOffset = prefab.m_WidthOffset, m_NodeOffset = prefab.m_NodeOffset,
             m_SideConnectionOffset = prefab.m_SideConnectionOffset
         });
-        _pieces.Add(prefab, entity);
+        if (!_trackOccurrences) _pieces.Add(prefab, entity);
         _prefabs.Add(entity, prefab);
+        if (_trackOccurrences) _occurrences.Add(entity, sourcePath);
         return entity;
     }
 
@@ -211,7 +231,7 @@ internal sealed class BridgePreviewComposition : IDisposable
         if (_disposed) return;
         _disposed = true;
         _world.Dispose();
-        _sections.Clear(); _pieces.Clear(); _prefabs.Clear(); _sectionPath.Clear();
+        _sections.Clear(); _pieces.Clear(); _prefabs.Clear(); _sectionPath.Clear(); _occurrences.Clear();
     }
 
     [DisableAutoCreation]

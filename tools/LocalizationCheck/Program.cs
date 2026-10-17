@@ -13,6 +13,18 @@ internal static class Program
 
     private static void Main()
     {
+        foreach (var family in new[] { ("Draw", "DrawBridge", 3), ("Lift", "LiftBridge", 5), ("PedestrianDraw", "PedestrianDrawBridge", 2) })
+        for (var i = 1; i <= family.Item3; i++)
+        {
+            var id = family.Item1 + i.ToString("00");
+            Check(BridgeBuilder.Bridges.BridgeStyleDefinitions.Match(family.Item2 + i.ToString("00"))?.Id == id,
+                "Native movable root must resolve to its own style: " + id);
+            Check(BridgeBuilder.Bridges.BridgeStyleDefinitions.CanList(id), "Movable catalogue entry: " + id);
+            Check(BridgeBuilder.Bridges.BridgeStyleDefinitions.GenerationUnsupportedReason(id, id == "Lift03") == null,
+                "Movable requests must reach the router: " + id);
+            foreach (var locale in RuntimeUiText.LocaleIds)
+                Check(UiStringCatalog.ForLocale(locale).StyleName(id) != id, "Missing movable label: " + locale + "/" + id);
+        }
         var freshPrefabName = BridgeAssetInfo.NewPrefabName();
         Check(freshPrefabName.StartsWith("b", StringComparison.Ordinal)
             && Guid.TryParseExact(freshPrefabName.Substring(1), "D", out _), "New prefab must be b{uuid}");

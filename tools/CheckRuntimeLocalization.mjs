@@ -1,4 +1,4 @@
-﻿import { readGenerationSource } from './ReadGenerationSource.mjs';
+import { readGenerationSource } from './ReadGenerationSource.mjs';
 // Non-visual localization/selection regression checks. Does not load the game or generate geometry.
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
@@ -234,8 +234,7 @@ for (const view of ['CreateView({ decks, styles, status })', 'ManageView({ bridg
     context.status = "";
     assert(!render(view).some(n => n.props.className === "bb-status"), "No empty footer after routine actions");
     context.status = "Action failed";
-    assert(render(view).some(n => n.props.className === "bb-status" && n.props.role === "alert"
-        && n.children.includes("Action failed")), "Actual failures must remain visible");
+    assert(!render(view).some(n => n.props.className === "bb-status"), "Failures must not recreate the removed footer");
 }
 const generation = readGenerationSource();
 const activation = generation.split("private bool ActivatePrefab(string prefabName)")[1]
@@ -248,7 +247,7 @@ assert(lockCheck >= 0 && popup > lockCheck && tool > popup && close > tool,
     "Locked activation must show the localized dialog before any tool change; close only after activation");
 assert(activation.slice(popup, tool).includes("return false;"));
 assert(activation.slice(tool, close).includes("return false;"));
-console.log("PASS conditional error footer and shared lock-dialog/tool-activation guard ordering (source check)");
+console.log("PASS permanently removed error footer and shared lock-dialog/tool-activation guard ordering (source check)");
 
 // Pure UI filtering/state checks: no geometry, renderer or game is loaded.
 activeTexts = Object.fromEntries([...entries].map(([key, row]) => [key, row[0]]));
@@ -292,7 +291,7 @@ assert(!readyPreview.some(n => n.children.some(child => typeof child === "string
 console.log("PASS network/style/management filtering, selection retention, text-free preview and loading/failure state");
 
 for (const double of [false, true]) {
-    state = [double, "Road", double ? "Train" : "", "style", custom, true, "", "", true];
+    state = [double, "Road", double ? "Train" : "", "style", custom, true, "", true];
     const create = render('CreateView({ decks, styles, status: "" })');
     const toggle = create.find(n => n.type === "native-checkbox");
     assert.equal(!!toggle, double, "Direction option is only available with two decks");
@@ -317,7 +316,7 @@ console.log("PASS direction toggle, preview selection invalidation and immutable
 
 // Optional Road Builder handoff must preserve both decks and the player's name.
 context.savedDraft = null;
-state = [true, "Road", "Train", "style", custom, true, "filter", "", false];
+state = [true, "Road", "Train", "style", custom, true, "filter", false];
 triggers = [];
 const handoff = render('CreateView({ decks, styles, status: "", onSaveDraft: value => { savedDraft = value; } })');
 const pickers = handoff.filter(n => n.type?.name === "NetworkPicker");

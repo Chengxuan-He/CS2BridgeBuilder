@@ -14,6 +14,8 @@ internal static class Draw01NetworkAssembly
             throw new InvalidOperationException("Draw01 network assembly requires its owned pillar and mechanism objects.");
 
         var sections = Draw01NetworkData.ConvertSections(target.name, target.m_Sections, out var created);
+        Draw01BarrierRules.Apply(target.name, sections, ref created,
+            factory.ResolveOriginal<ObjectPrefab>("BasculeBridgeBarrier01 Placeholder"));
         factory.AdoptMovableSections(created);
         target.m_Sections = sections;
 
@@ -33,3 +35,4 @@ internal static class Draw01NetworkAssembly
         objects.active = true;
     }
 }
+

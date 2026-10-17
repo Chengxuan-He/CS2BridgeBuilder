@@ -36,8 +36,66 @@ Check(!BridgeDependencyCopies.Save(root,"../foreign",new[]{a},Resolve,out count,
 Check(!BridgeDependencyCopies.Save(root,second,new[]{new string('e',32)},Resolve,out count,out err,out _),"unavailable dependency fails before publishing");
 Check(!BridgeDependencyCopies.Save(root,owner,new[]{empty},Resolve,out count,out err,out _) && err=="Invalid dependency CID",
  "empty root seed is rejected, not silently accepted as a valid asset");
-foreach(var file in args) {
+foreach(var file in args.SelectMany(path=>Directory.Exists(path)?Directory.GetFiles(path,"*.Surface"):new[]{path})) {
  var bytes=File.ReadAllBytes(file);
+ if (Path.GetExtension(file)==".Surface") {
+  var stackProperties=new HashSet<string>{"_BaseColorMap","_NormalMap","_MaskMap","_ControlMask","_EmissiveColorMap"};
+  var refs=BridgeSurfaceReferences.Read(bytes,(template,property)=>new[]{0,1,16}.Contains(template)&&stackProperties.Contains(property));
+  Check(refs.OrderBy(cid=>cid).SequenceEqual(File.ReadAllLines(file+".refs")),"real native surface/VT payload graph: "+Path.GetFileName(file));
+  continue;
+ }
+ if (Path.GetExtension(file)==".bin") {
+  var refs=BridgeSurfaceReferences.Read(bytes,(_,_)=>throw new Exception("Expected ordinary non-VT source fixture"));
+  // Independent oracle for these extracted non-VT files: texture property names followed by
+  // native present marker + 16 raw hash bytes. The structured parser must match every reference.
+  var text=Encoding.Latin1.GetString(bytes);
+  var expected=System.Text.RegularExpressions.Regex.Matches(text,@"(_[A-Za-z][A-Za-z0-9_]*)\xff")
+   .Select(m=>string.Concat(bytes.Skip(m.Index+m.Length).Take(16).Select(v=>"0123456789abcdef"[v&15].ToString()+"0123456789abcdef"[v>>4])))
+   .Where(cid=>cid!=empty).Distinct().OrderBy(cid=>cid);
+  Check(refs.OrderBy(cid=>cid).SequenceEqual(expected),"actual native surface reference fields: "+Path.GetFileName(file));
+  continue;
+ }
  Check(!BridgeDependencyCopies.References(bytes).Contains(empty),"actual serialized fixture excludes empty geometry reference: "+Path.GetFileName(file));
+}
+var textureCid="0123456789abcdef0123456789abcdef";
+var vtCid="123456789abcdef0123456789abcdef0";
+var surfaceCid="23456789abcdef0123456789abcdef01";
+var ordinaryCid="3456789abcdef0123456789abcdef012";
+byte[] Surface(bool vt) {
+ using var stream=new MemoryStream();using var w=new BinaryWriter(stream);
+ void Hash(string cid) { for(int i=0;i<32;i+=2) w.Write((byte)(Convert.ToInt32(cid[i].ToString(),16)|(Convert.ToInt32(cid[i+1].ToString(),16)<<4))); }
+ w.Write((ushort)1);w.Write(16);w.Write(vt);
+ if(vt) {
+  w.Write(1);
+  for(int stack=0;stack<2;stack++) {
+   w.Write(1024);w.Write(1024);
+   for(int layer=0;layer<4;layer++)Hash(stack==0&&layer==0?textureCid:empty);
+   for(int layer=0;layer<4;layer++)Hash(stack==0&&layer==0?vtCid:empty);
+  }
+  w.Write((byte)255);Hash(surfaceCid);
+ }
+ for(int i=0;i<4;i++)w.Write((byte)0);
+ w.Write((byte)255);w.Write(2);
+ w.Write("_BaseColorMap");w.Write((byte)255);Hash(textureCid);
+ w.Write("_NonStackMap");w.Write((byte)255);Hash(ordinaryCid);
+ w.Write((byte)255);w.Write(1);w.Write("CID:"+a);
+ return stream.ToArray();
+}
+var vtBytes=Surface(true);
+var vtRefs=BridgeSurfaceReferences.Read(vtBytes,(template,property)=>template==16&&property=="_BaseColorMap");
+Check(vtRefs.OrderBy(x=>x).SequenceEqual(new[]{vtCid,surfaceCid,ordinaryCid}.OrderBy(x=>x)),"VT payloads and non-stack textures traversed; original VT source identity and keyword text excluded");
+Check(BridgeSurfaceReferences.Read(Surface(false),(_,_)=>false).OrderBy(x=>x).SequenceEqual(new[]{textureCid,ordinaryCid}.OrderBy(x=>x)),"ordinary binary texture identities use native Hash128 nibble order");
+sources[a]=new(){Owned=true,Extension=".Surface",Bytes=vtBytes,SerializedReferences=vtRefs};
+sources[vtCid]=new(){Extension=".VTTexture",Bytes=new byte[]{1,2,3}};
+sources[surfaceCid]=new(){Extension=".VTSurface",Bytes=new byte[]{4,5,6}};
+sources[ordinaryCid]=new(){Builtin=true};
+var vtOwner="b33333333-3333-3333-3333-333333333333";
+Check(BridgeDependencyCopies.Save(root,vtOwner,new[]{a},Resolve,out count,out err,out written)&&count==2&&written==4,"owned Surface follows binary references without copying the owned asset: "+err);
+Check(File.ReadAllBytes(Path.Combine(BridgeDependencyCopies.Folder(root,vtOwner),vtCid+".VTTexture")).SequenceEqual(sources[vtCid].Bytes),"VT payload snapshot is byte-identical");
+sources.Remove(vtCid);
+Check(!BridgeDependencyCopies.Save(root,vtOwner,new[]{a},Resolve,out _,out err,out _)&&err.Contains(vtCid),"missing VT payload is an explicit persistence failure");
+foreach(var invalid in new[]{vtBytes.Take(50).ToArray(),new byte[]{12,0,0,0,0,0,0},Surface(false).Concat(new byte[]{1}).ToArray()}) {
+ bool rejected=false;try {BridgeSurfaceReferences.Read(invalid,(_,_)=>false);}catch(Exception e) when(e is IOException or InvalidDataException){rejected=true;}
+ Check(rejected,"truncated, unsupported-version or trailing surface data rejected");
 }
 namespace BridgeBuilder.Runtime { internal static class BridgeAssetInfo { internal static bool IsPrefabName(string n)=>System.Text.RegularExpressions.Regex.IsMatch(n,@"\Ab[0-9a-f]{8}(?:-[0-9a-f]{4}){3}-[0-9a-f]{12}\z"); } }

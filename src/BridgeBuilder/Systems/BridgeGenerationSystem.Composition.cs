@@ -76,6 +76,7 @@ public partial class BridgeGenerationSystem
                 $"'{style.Id}' cannot be generated: {unsupported}."));
             return false;
         }
+        var generationClock = System.Diagnostics.Stopwatch.StartNew();
         var failuresBefore = report.FailedRoads;
         var cloner = new PrefabGraphCloner(_prefabSystem, _settings, report, overwrite, exportName);
         var towers = new TowerFactory(_prefabSystem, report, preview?.Geometry);
@@ -149,6 +150,13 @@ public partial class BridgeGenerationSystem
                 clone, style, structuralDeck.Width, options, measure: structuralDeck.Prefab);
             if (variant == null) return false;
 
+            // Movable generators bypass BridgeGeneratorBase's fixed-bridge behavior
+            // assembly, including CopyAggregate. Preserve the measured native naming
+            // category here for every movable route before auxiliary/persistence work.
+            if (BridgeStyleDefinitions.IsMovable(style.Id))
+                clone.m_AggregateType = variant.Donor.m_AggregateType
+                    ?? throw new InvalidOperationException("Movable bridge archetype has no network aggregate.");
+
             ApplyPrototypeIcon(clone, variant, report);
             AttachSecondDeck(
                 clone, auxiliary, secondNetAbove, exportName, cloner, doubleDeck, options,
@@ -219,7 +227,13 @@ public partial class BridgeGenerationSystem
                 node.Target.Remove<BridgeConstructionCost>();
                 BridgeNativePresentation.Prepare(node.Target);
             }
+            var saveStart = generationClock.ElapsedMilliseconds;
+            if (BridgeStyleDefinitions.IsMovable(style.Id))
+                Mod.Log.Info($"{exportName}: owned prefab graph: " + string.Join("; ", nodes
+                    .Where(node => node.NeedsSave).GroupBy(node => node.Target.GetType().Name)
+                    .OrderBy(group => group.Key).Select(group => $"{group.Key}={group.Count()}")));
             report.SavedDependencies = new PrefabAssetWriter().Save(nodes);
+            Mod.Log.Info($"{exportName}: prefab serialization count={report.SavedDependencies}; elapsedMs={generationClock.ElapsedMilliseconds-saveStart}; preSaveMs={saveStart}.");
             if (!BridgeDependencyPersistence.Save(clone.name,
                 nodes.Where(node => node.NeedsSave && node.Target.asset != null)
                     .Select(node => node.Target.asset.id.guid.ToString()), out var copied, out var copyError))
@@ -236,6 +250,7 @@ public partial class BridgeGenerationSystem
             Mod.Log.Info($"Bridge '{clone.name}' persisted {copied} external dependency copies with original CIDs.");
             return World.GetOrCreateSystemManaged<BridgePublicationSystem>().Publish(nodes, report, ready =>
             {
+                Mod.Log.Info($"{exportName}: generation through native publication elapsedMs={generationClock.ElapsedMilliseconds}; ready={ready}.");
                 if (ready) report.Exported(exportName);
                 onPublished?.Invoke(ready);
             });

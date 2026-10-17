@@ -13,7 +13,7 @@ internal static class Draw03NetworkData
     // Every one of the eleven native lateral occurrences has these same three branches.
     // Selected-road conditions and lateral roles remain on the outer occurrence.
     internal static NetSectionInfo[] ConvertSections(string owner, NetSectionInfo[] source,
-        out NetSectionPrefab[] created)
+        out PrefabBase[] created)
     {
         var rules = new MovableSectionConversion.Branch[source.Length][];
         for (var i = 0; i < source.Length; i++) rules[i] = Branches();

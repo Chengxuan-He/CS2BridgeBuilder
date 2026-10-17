@@ -83,9 +83,7 @@ internal sealed class BridgePreviewRenderer : IDisposable
         ConfigureFrame(additional, FrameSettingsField.SSR, false);
         ConfigureFrame(additional, FrameSettingsField.SSAO, false);
         additional.antialiasing = HDAdditionalCameraData.AntialiasingMode.None;
-        var framingBounds = draws.Bounds;
-        framingBounds.center += _stage.Origin;
-        _camera.Frame(framingBounds);
+        _camera.Frame(draws.ViewBounds, _stage.Origin);
         _volumeObject = new GameObject(prefix + "_renderpass")
         { hideFlags = HideFlags.HideAndDontSave, layer = PreviewVolumeLayer };
         _stage.MoveToScene(_volumeObject);

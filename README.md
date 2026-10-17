@@ -1,4 +1,4 @@
-# BridgeBuilder
+# Bridge Builder
 
 ![BridgeBuilder icon](assets/BridgeBuilder.svg)
 
@@ -21,8 +21,8 @@ The floating BridgeBuilder button opens the runtime builder in a loaded game. Ro
 icon-and-name cards (three per row); double-deck mode provides independent upper and lower network
 lists. Bridge styles are likewise selected from prototype cards, and unavailable styles are omitted
 when their providing DLC or mod is not installed. Creating a bridge publishes it into the running
-prefab world and activates the ordinary network construction tool; it does not place anything by
-itself.
+prefab world. Create-and-build also activates the ordinary network construction tool; neither action
+places a bridge automatically.
 
 Every bridge created there has two deliberately separate names:
 
@@ -87,29 +87,32 @@ is not offered as a *style* donor either.
 
 ## Bridge styles
 
-A fixed, named list — Suspension, Extradosed, Cable-Stayed, Truss Arch, Tied Arch, Grand, Bascule,
-Lift, Pedestrian Bascule, Covered Wooden — translated into all twelve shipped languages.
+Styles use stable IDs and localized labels. Discovery binds installed prototype variants, while
+explicit generator admission determines which styles and deck arrangements can be created.
+The runtime catalogue omits unavailable styles; discovering a prototype does not add support for it.
 
-It is fixed rather than assembled from whatever is registered, because the options page is built when
-the mod loads, long before any world exists; a discovered list would be empty exactly when you first
-open it. Discovery still runs, and supplies the **variants**: which prefabs provide each style and
-how wide each was authored. The base game covers most of the list (`SuspensionBridge01`–`04`,
-`ExtradosedBridge02`–`04`, `TrussArchBridge02`–`03`, the draw and lift bridges, the pedestrian ones);
-asset packs fill in the rest. A style with nothing behind it is shown as *(not available)* rather
-than silently missing, and a pack bridge matching no named style is appended under its own name.
+Draw, pedestrian draw and lift bridges remain unsupported by the current generators. Their animation,
+moving deck geometry and waterway behavior require a dedicated implementation and in-game acceptance.
+The presence of their names or measured parameters does not mean they can be generated.
 
-The opening mechanism of draw and lift bridges is carried over, so a converted lift bridge still
-lifts.
+Development now covers all ten audited Bridges & Ports movable mechanisms. The
+[implementation record](docs/Movable-Bridges-Implementation.md) tracks their separate identities,
+selected-road conversion work, backup and acceptance status. This is ongoing development, not
+an announcement that these styles are available in the builder.
+Shared runtime section conversion, occurrence tracing, closed-road position/UV evaluation, seam
+clipping and rigid road model encoding are implemented and compiled. Complete per-style generators, material conversion and persistence
+are still outstanding; the shared primitives do not enable movable styles in the catalogue.
 
-A generated bridge **references** its style's towers and cables rather than copying them, so it keeps
-needing whatever supplied them. The status panel names that source before you generate. See
-[docs/BridgeModel.md](docs/BridgeModel.md) for the data model this rests on.
+Generated towers, cables and LODs are private derived assets owned by the bridge. Required native
+game/DLC resources remain prerequisites; external non-built-in dependencies are persisted as
+byte-identical copies with original CIDs under the bridge's UUID directory.
 
 ### Width
 
-The closest-width variant is picked and its structure moved sideways to the deck edges. Meshes are
-not stretched — beyond about 2× the look stops matching the style, so the fit is clamped and both the
-status panel and the report say so.
+Generation selects a compatible prototype variant and uses its measured geometry data. Authored
+parts reaching or crossing the centre line stretch against their own span; side parts translate
+rigidly. The same classification applies to every LOD. Unsupported or missing metadata causes an
+explicit failure rather than an arbitrary width clamp or a fallback to another bridge design.
 
 ## Double decks
 
@@ -122,19 +125,12 @@ archetype is refused.
 Each generated deck has its own bridge-owned network copy. The auxiliary is placed with its carrier;
 its independent editing and connections remain subject to the game's auxiliary-network behavior.
 
-## Legacy options-page naming
+## Naming and repeated creation
 
-```
-<upper deck>_<lower deck>_<style>        two decks
-<upper deck>_<style>                    single deck
-<name> (1), (2), ...                    when the identifier is already taken
-```
-
-Every part is the untranslated identifier - the name registered in Road Builder, or the prefab name -
-so switching language never renames an asset. The name records the whole pairing because a bridge is
-defined by all three: two bridges differing in any one of them are different assets and must not
-overwrite each other. Re-running the *same* pairing does replace its own earlier output rather than
-leaving a second copy beside it.
+The runtime builder and legacy options page use the same creation path. Each creation allocates a
+new immutable `b<UUID>` identity, including when the selected roads and style match an existing
+bridge. A suggested display name describes the pairing; it is not an overwrite key. Renaming or
+switching language does not change asset identity or saved references.
 
 ## Building
 
@@ -210,25 +206,24 @@ Game assets and derived content remain subject to their original licenses.
 
 ### Creation durability and recovery
 
-Runtime creation first atomically writes a `pending` UUID registration, before saving any geometry or
-prefab. It commits that record only after native initialization succeeds. Pending entries are excluded
-from management and placement; after a process restart the registration guard rejects their graph.
-Boot inspection backs up and retires the UUID-owned prefab, CID and geometry files, then removes the
-pending record. This is a compensating transaction: live native indices/meshes are retained until
-world teardown, rather than destroyed during a failed creation. Interrupted retirement can be retried.
+Creation reserves a UUID in memory and stores incomplete-creation metadata on the bridge root asset.
+The catalogue commits the bridge after native publication succeeds. Bridge metadata is asset-local;
+there is no separate bridge registry file or registration guard rejecting native loads.
 
-The registry uses a flushed temporary file and atomic replacement, keeping the previous version in
-`bridge-registry.tsv.bak`. Malformed or unreadable input blocks writes and automatic retirement.
-Restore a verified registry backup manually with the game stopped; the mod never silently replaces
-unreadable data with an empty registry. Export-state is an ancillary cache, not the runtime commit point.
+Startup self-check waits for native loading, mod initialization and PDX asset batches. It attempts
+migration first, preserving UUID/CID and valid data. Failed or impossible migration enters UUID-scoped
+backup/removal; backup failure falls back to deleting the remaining selected source files. Actual
+removal failures are reported. Persistent changes require restart; self-check does not unregister
+live prefabs. See contract sections 17–19 for persistence, ownership and migration requirements.
 
 ### Source layout and checks
 
-`BridgeGenerationSystem` is split into lifecycle/catalogue, composition, preview, management, recovery
+`BridgeGenerationSystem` is split into lifecycle/catalogue, composition, preview, management
 and removal partial files. Source-policy checks read all these files together.
 
-Non-visual checks include `tools/RegistryCheck` (real filesystem failure cases), `tools/DiskAuditCheck`
-(interrupted creation and scoped recovery), `tools/PublicationCheck`, and `tools/Check*.mjs` (UI,
+Non-visual checks include `tools/AssetMetadataCheck`, `tools/DependencyCopyCheck`,
+`tools/DependencySourceCheck`, `tools/SelfCheckLifecycleCheck`, `tools/DiskAuditCheck`,
+`tools/PublicationCheck`, and `tools/Check*.mjs` (UI,
 localization and source policy). Renderer failures keep technical warning logs; preview/generation do
 not raise error popups. Explicit deletion failures retain their critical diagnostics.
 
@@ -315,7 +310,7 @@ do not copy another style's constants or infer part identity in runtime code.
 Keep generated bridges independent of Bridge Builder and preserve native pricing/unlocks.
 Do not use other bridges' ImportedData Prefabs as creation or copy sources.
 
-Use bridge/<bridge-name> for this contribution.
+Use the bridge/<style-slug> branch required by contract section 12; keep the style ID stable.
 Implement the style, build and install it locally according to the repository workflow,
 and report exact changes, evidence, checks and outstanding manual acceptance steps.
 Prepare the changes for a GitHub pull request. Do not publish to Paradox Mods or modify existing
@@ -404,10 +399,16 @@ From the repository root, the build entry point is:
 .\tools\Build.ps1 -Configuration Release
 ```
 
-Use `-GameDir` if automatic game discovery does not find the installation. Follow the current
-shutdown, backup, asset-preservation and installation instructions; later explicit preservation
-revisions supersede the old blanket cleanup rule. Verify installed files against the build output.
-Do not treat deployment as permission to delete test assets or publish to GitHub or Paradox Mods.
+Use `-GameDir` if automatic game discovery does not find the installation. Follow contract section 13
+for shutdown, backup, cleanup and installation. A bridge-generation change removes all mod-created
+bridges only for its affected style IDs, including their UUID-owned dependencies. Preserve all other
+styles. For example, a `GoldenGate`-only change removes `GoldenGate` bridges, not `GoldenGateDouble`
+or other suspension bridges. Trace the affected styles when shared generation code changes.
+
+If bridge-generation code did not change, remove no existing bridges. Documentation-only edits
+require no shutdown, cleanup, build or deployment. Preserve diagnostic evidence before scoped cleanup
+and verify both removal of selected assets and retention of unaffected assets. Verify installed files
+against the build output. Deployment does not authorize publishing to GitHub or Paradox Mods.
 
 Run relevant existing nonvisual checks for naming, source selection, persistence, localization,
 unlocking and native pricing when those paths change. Unit tests do not validate visual geometry and

@@ -18,6 +18,41 @@ byte[] Doc(string name) => Encoding.UTF8.GetBytes("{\"$type\":\"0|Game.Prefabs.R
 void Check(bool ok, string message) { if (!ok) throw new Exception(message); Console.WriteLine("PASS " + message); }
 try
 {
+    var odin = """
+        {"$id":0,"$type":"0|Game.Prefabs.RenderPrefab, Game","name":"moving",
+         "position":{"$type":"1|UnityEngine.Vector3, UnityEngine.CoreModule",0,6.62,-81.3},
+         "rotation":{"$type":"2|UnityEngine.Quaternion, UnityEngine.CoreModule",0,0,0,1},
+         "anonymous":{"$type":"3|Example", "literal", {"nested":true}},
+         "reference":$fstrref:"CID:0123456789abcdef0123456789abcdef"}
+        """;
+    Check(BridgeSerializedReferences.TryRead(odin, out var indexed) && indexed.Name == "moving",
+        "Odin typed anonymous values retain following fields and references");
+    Check(!BridgeSerializedReferences.TryRead(odin[..^2], out _), "truncated Odin still fails");
+    if (args.Length != 0)
+    {
+        var files = Directory.GetFiles(args[0], "*.Prefab", SearchOption.AllDirectories);
+        Check(files.Length != 0, "real saved Prefab fixtures found");
+        foreach (var file in files)
+            Check(BridgeSerializedReferences.TryRead(File.ReadAllText(file), out var document)
+                && !string.IsNullOrEmpty(document.Name)
+                && (file.Contains("_Dependencies") || document.Name == Path.GetFileNameWithoutExtension(file)), "saved file parses: " + Path.GetFileName(file));
+        var realGame = Path.Combine(sandbox, "real-game");
+        foreach (var file in Directory.GetFiles(args[0], "*", SearchOption.AllDirectories))
+        {
+            var relative = Path.GetRelativePath(args[0], file);
+            var destination = Path.Combine(realGame, relative.StartsWith("BridgeBuilder" + Path.DirectorySeparatorChar)
+                ? relative : Path.Combine("ImportedData", relative));
+            Directory.CreateDirectory(Path.GetDirectoryName(destination)!);
+            File.Copy(file, destination);
+        }
+        var realOwner = Path.GetFileNameWithoutExtension(files.First(f => Path.GetFileNameWithoutExtension(f).Length == 37));
+        var beforeFiles = Directory.GetFiles(realGame,"*",SearchOption.AllDirectories)
+            .ToDictionary(f => f, File.ReadAllBytes);
+        Check(BridgeAssetLayout.Run(realGame, new[] { realOwner }, Path.Combine(sandbox,"real-backup"),
+            PrefabPath, out var realChanges, out var realError) && realChanges.Count == 0,
+            "real bridge layout is valid and needs no migration: " + realError);
+        Check(beforeFiles.All(p => File.ReadAllBytes(p.Key).SequenceEqual(p.Value)), "real graph and CIDs remain byte-identical");
+    }
     var source = Save(Path.Combine("ImportedData", "old-" + owner, "old-root.Prefab"), Doc(owner));
     var deckName = owner + " Lower Road";
     var deck = Save(Path.Combine("ImportedData", "old-" + owner, "nested", "old-deck.Prefab"), Doc(deckName));

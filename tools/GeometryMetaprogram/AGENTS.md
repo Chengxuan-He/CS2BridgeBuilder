@@ -4,7 +4,7 @@
 
 These instructions apply to `tools/GeometryMetaprogram/**`. They add metaprogram-specific requirements
 to the repository root [`AGENTS.md`](../../AGENTS.md). Before editing this directory, read sections 1–9
-and 13 of [`PROJECT_CONTRACT.md`](../../docs/agent-contract/PROJECT_CONTRACT.md).
+and 13 of [`BRIDGE_GENERATION_CONTRACT.md`](../../docs/agent-contract/BRIDGE_GENERATION_CONTRACT.md).
 
 ## Identification phase
 
@@ -36,15 +36,24 @@ and 13 of [`PROJECT_CONTRACT.md`](../../docs/agent-contract/PROJECT_CONTRACT.md)
 
 ## Post-update cleanup
 
-Changes in this directory are source-code updates. After each update, perform the mandatory
-`Cities2.exe` stop, process verification and removal of every mod-created bridge and generated
-artifact described in project-contract section 13. After completing any code change, immediately
+After code updates in this directory, perform the mandatory `Cities2.exe` stop and process
+verification. If the change affects bridge generation, trace the affected style IDs and remove
+only those styles' mod-created bridges and UUID-owned artifacts under contract section 13.
+This includes changed archetype parameters or generated geometry data consumed by runtime.
+If bridge-generation code/data is unchanged, remove no existing bridges. Documentation-only edits
+require no shutdown, cleanup, build or deployment. After completing any code change, immediately
 build and deploy the updated mod to the game without waiting for another request. Back up the existing
 installation and verify installed files against the build output as required by that section.
 
+Cleanup-policy revision (2026-10-15): branch `dev`, HEAD
+`0f4b10ae47c5dc264249e0d877aacc326e3e9525`; rollback reference
+`refs/rollback/scoped-cleanup-docs-20261015`.
+
 ## English documentation maintenance (2026-10-13)
 
-Instruction and contract prose is maintained in English. This language-only revision preserves
+All documentation must be written in English, including audits and research reports.
+Preserve literal identifiers, paths and diagnostic evidence; explain them in English.
+The project contract records the expanded 2026-10-15 documentation policy. This language-only revision preserves
 existing requirements, exceptions, identifiers and historical evidence. Baseline: branch `dev`,
 HEAD `5bea1d0bef04dd2ac718809852d3f657c7388e58`; rollback reference
 `refs/rollback/english-contracts-guide-20261013`. Existing local changes are preserved.

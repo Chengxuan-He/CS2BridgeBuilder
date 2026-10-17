@@ -75,7 +75,7 @@ public partial class BridgeGenerationSystem
                     DoubleDeck = doubleDeck, LowerDeckId = lower?.Id, LowerDeckOpposite = request.LowerDeckOpposite
                 };
                 if (!TryBuildBridge(upper, lower, style, _previewSession.Name, options, false,
-                        new ExportReport(logIssues: false), _previewSession))
+                        new ExportReport(), _previewSession))
                 {
                     FailPreview(revision, "PreviewBuildFailed");
                     ClearPreview();

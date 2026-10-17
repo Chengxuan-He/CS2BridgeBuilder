@@ -13,7 +13,7 @@ internal static class Lift03NetworkData
     internal enum MainRole { Side, Deck }
 
     internal static NetSectionInfo[] ConvertMainSections(string owner, NetSectionInfo[] source,
-        IReadOnlyList<MainRole> roles, out NetSectionPrefab[] created)
+        IReadOnlyList<MainRole> roles, out PrefabBase[] created)
     {
         if (roles.Count != source.Length)
             throw new InvalidOperationException("Lift03 main mapping needs one role per source occurrence.");
@@ -46,7 +46,7 @@ internal static class Lift03NetworkData
     internal enum AuxiliaryRole { Side, TrackOrShoulder, Median }
 
     internal static NetSectionInfo[] ConvertAuxiliarySections(string owner, NetSectionInfo[] source,
-        IReadOnlyList<AuxiliaryRole> roles, out NetSectionPrefab[] created)
+        IReadOnlyList<AuxiliaryRole> roles, out PrefabBase[] created)
     {
         if (roles.Count != source.Length)
             throw new InvalidOperationException("Lift03 auxiliary mapping needs one role per source occurrence.");

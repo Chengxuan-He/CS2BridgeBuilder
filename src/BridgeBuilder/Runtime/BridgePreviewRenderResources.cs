@@ -30,6 +30,7 @@ internal sealed class BridgePreviewRenderResources : IDisposable
     private readonly Dictionary<(SurfaceAsset Surface, bool Network, bool Packed, RenderPrefab? Lane), Material> _surfaceMaterials = new();
     private readonly Dictionary<SurfaceAsset, Material> _sourceMaterials = new();
     private readonly List<Material> _ownedMaterials = new();
+    private readonly HashSet<RenderPrefab> _animated = new();
     private readonly TextureStreamingSystem? _streaming = World.DefaultGameObjectInjectionWorld?
         .GetExistingSystemManaged<TextureStreamingSystem>();
     private VTTextureRequester? _textureRequests;
@@ -44,6 +45,16 @@ internal sealed class BridgePreviewRenderResources : IDisposable
         block = new MaterialPropertyBlock();
         block.SetFloat("colossal_LodFade", 1f);
         block.SetVector("colossal_BuildingState", Vector4.zero);
+        // Static bridge objects receive native decals as Other. Object projectors need
+        // the same size/texture-area properties as native ManagedBatchSystem supplies.
+        block.SetFloat("colossal_DecalLayerMask", math.asfloat((int)Game.Rendering.DecalLayers.Other));
+        if (prefab.TryGet<DecalProperties>(out var decal))
+        {
+            block.SetVector("colossal_MeshSize", new float4(prefab.bounds.max - prefab.bounds.min, 0f));
+            block.SetVector("colossal_TextureArea", new float4(decal.m_TextureArea.min, decal.m_TextureArea.max));
+            block.SetFloat("colossal_DecalLayerMask", math.asfloat((int)decal.m_LayerMask));
+            block.SetFloat("colossal_LodDistanceFactor", Game.Rendering.RenderingUtils.CalculateDistanceFactor(0));
+        }
         if (prefab.TryGet<ColorProperties>(out var colors) && colors.active)
             for (sbyte channel = 0; channel < 3; channel++)
                 block.SetColor("colossal_ColorMask" + channel, colors.GetColor(0, channel));
@@ -97,9 +108,9 @@ internal sealed class BridgePreviewRenderResources : IDisposable
                 if (mesh != null) mesh.hideFlags = HideFlags.HideAndDontSave;
             return meshes;
         }
-        catch (Exception)
+        catch (Exception exception)
         {
-            return Array.Empty<Mesh>();
+            throw new InvalidOperationException($"Preview geometry load failed: {prefab.name} ({asset.id}).", exception);
         }
         finally
         {
@@ -108,6 +119,8 @@ internal sealed class BridgePreviewRenderResources : IDisposable
         }
     }
 
+    internal void EnableProceduralAnimation(RenderPrefab prefab) => _animated.Add(prefab);
+
     internal Material[] Materials(RenderPrefab prefab, bool network = false, bool lane = false)
     {
         if (_disposed) return Array.Empty<Material>();
@@ -115,15 +128,18 @@ internal sealed class BridgePreviewRenderResources : IDisposable
         {
             // ReleaseMaterials is a no-op. Acquire balanced surface leases here,
             // then copy the native material, including its virtual-texture bindings.
-            var surfaces = prefab.surfaceAssets?.ToArray();
+            var surfaces = _session.Geometry.TryGetSurfaces(prefab, out var captured)
+                ? captured : prefab.surfaceAssets?.ToArray();
             var meshes = Meshes(prefab);
             var packed = network || (meshes.Length != 0 &&
                 meshes[0].GetVertexAttributeDimension(VertexAttribute.Normal) == 2);
             materials = new Material[surfaces?.Length ?? 0];
             for (var i = 0; i < materials.Length; i++)
             {
-                if (surfaces![i] == null) return Array.Empty<Material>();
-                var material = MaterialFor(surfaces[i], network, packed, lane ? prefab : null);
+                if (surfaces![i] == null)
+                    throw new InvalidOperationException($"Preview surface slot {i} is unresolved for {prefab.name}.");
+                var material = MaterialFor(surfaces[i], network, packed,
+                    lane || prefab.Has<DecalProperties>() || _animated.Contains(prefab) ? prefab : null);
                 if (material == null) return Array.Empty<Material>();
                 materials[i] = material;
             }
@@ -176,9 +192,9 @@ internal sealed class BridgePreviewRenderResources : IDisposable
             _surfaceMaterials.Add(key, material);
             return material;
         }
-        catch (Exception)
+        catch (Exception exception)
         {
-            return null;
+            throw new InvalidOperationException($"Preview material load failed: {surface.name} ({surface.id}).", exception);
         }
         finally
         {
@@ -258,6 +274,11 @@ internal sealed class BridgePreviewRenderResources : IDisposable
             SetKeyword(material, "COLOSSAL_GEOMETRY_DEFAULT", !tiling);
             if (lane.TryGet<DecalProperties>(out var decal))
                 material.renderQueue = material.shader.renderQueue + decal.m_RendererPriority;
+            var animated = lane.TryGet<ProceduralAnimationProperties>(out var skeleton) && skeleton.active;
+            SetKeyword(material, "_GPU_ANIMATION_PROCEDURAL", animated);
+            SetKeyword(material, "_GPU_ANIMATION_OFF", !animated);
+            SetKeyword(material, "_GPU_ANIMATION_SHAPE", false);
+            SetKeyword(material, "_GPU_ANIMATION_NORMAL", false);
         }
         else if (!network)
         {

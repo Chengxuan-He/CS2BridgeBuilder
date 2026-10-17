@@ -17,10 +17,16 @@ internal static class BridgeDependencyCopies
         internal bool Owned;
         internal string Extension = "";
         internal byte[] Bytes = Array.Empty<byte>();
+        internal string[]? SerializedReferences;
     }
 
     internal static string Folder(string gameRoot, string owner) =>
         Path.Combine(gameRoot, "ImportedData", owner + "_Dependencies");
+
+    internal static IEnumerable<string> References(Source source) => source.SerializedReferences
+        ?? (source.Extension.Equals(".Prefab", StringComparison.OrdinalIgnoreCase)
+            || source.Extension.Equals(".Material", StringComparison.OrdinalIgnoreCase)
+            ? References(source.Bytes) : Array.Empty<string>());
 
     // Inspect serialized identifiers only. Never load, validate or repair a prefab instance.
     internal static IEnumerable<string> References(byte[] bytes)
@@ -64,9 +70,7 @@ internal static class BridgeDependencyCopies
                 if (!Regex.IsMatch(source.Extension, @"\A\.[A-Za-z0-9]+\z"))
                 { error = "Unsupported dependency extension: " + source.Extension; return false; }
                 if (!source.Owned) copies.Add(cid, source);
-                if (source.Extension.Equals(".Prefab", StringComparison.OrdinalIgnoreCase)
-                    || source.Extension.Equals(".Material", StringComparison.OrdinalIgnoreCase))
-                    foreach (var dependency in References(source.Bytes)) pending.Push(dependency);
+                foreach (var dependency in References(source)) pending.Push(dependency);
             }
             var folder = Folder(gameRoot, owner);
             // Preflight every destination before publishing any file. A changed same-CID asset

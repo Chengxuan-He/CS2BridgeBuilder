@@ -84,7 +84,6 @@
    Size the control explicitly: Cohtml does not stretch raw inputs like browser flex layouts do. */
 .bb-panel .bb-text-input { display: block; box-sizing: border-box; width: 100%; min-width: 0; min-height: 38rem; padding: 6rem 8rem 4rem; line-height: 24rem; font-size: var(--fontSizeM); border-radius: 5rem; }
 .bb-panel .bb-search .bb-text-input { width: 0; }
-.bb-status { flex-shrink: 0; min-height: 20rem; margin-top: 8rem; color: var(--textColorDisabled); }
 .bb-empty { padding: 24rem; text-align: center; color: var(--textColorDisabled); }
 .bb-list-loading { min-height: 120rem; display: flex; align-items: center; justify-content: center; padding: 24rem; }
 .bb-manage-list { display: flex; flex-direction: column; min-width: 0; min-height: 0; flex: 1.2 1 0; margin-right: 16rem; background-color: var(--sectionBackgroundColor); }
@@ -123,4 +122,3 @@
 .bb-header nav { flex: 1 1 0; min-width: 0; }
 .bb-header nav button { flex: 1 1 auto; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .bb-close { flex-shrink: 0; }
-.bb-status { overflow-wrap: break-word; }
