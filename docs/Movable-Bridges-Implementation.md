@@ -3,6 +3,46 @@
 Current appearance selection: [Existing Material Reuse](Movable-Road-Material-Reuse.md). Earlier
 baking/descriptor-generation descriptions below are historical and superseded by this revision.
 
+## Current implementation status (2026-10-19)
+
+This section supersedes the historical status statements below. Draw01 is the only routed
+movable generator. Its latest appearance repair was accepted by the user; that acceptance is
+not evidence for the other nine mechanisms. Their catalogue labels already cover the twelve
+supported UI languages, but no complete generator has been registered for them.
+
+The accepted working-tree baseline was preserved locally in `a342394`; no remote push was made.
+Shared private sampling was added on `dev` in `62d59e3`. `MovableSamplingMechanism` consumes
+explicit source identities and style-owned mesh/component constructors. `MovableStraightSample`
+retains native geometry/lane calculation, source occurrences, object-space transforms, per-LOD
+compilation and disposal. It contains no style switch, inferred road masks or animation controller.
+It is a single-network sampling primitive, not a dual-deck Lift03 implementation.
+
+Draw02's branch integration `5fd162c` (`dev` integration `6dfa943`) adds
+`Draw02RoadSampling` with its measured 144 m approach stations, 10 m water elevation and
+original mechanism placement. The placement is shared with `Draw02NetworkData.Placements`
+without changing its serialized values. No generator route calls this sampling adapter yet.
+Neither these additions nor successful compilation establish new playable bridge support.
+
+Outstanding geometry prerequisites remain substantive:
+
+- Draw02/Draw03: complete original-part widening maps, replacement surface/curb membership,
+  far-LOD shell closure, fixed approaches and source-specific appearance/motion regions.
+- Lift01/02/04/05: complete rail/deck versus structure membership at every LOD, deck/weight/pulley
+  ownership, end closure and selected-track attachment conversion.
+- Lift03: the above plus one coordinated main/auxiliary sampling and assembly arrangement;
+  two unrelated single-network samples are not sufficient.
+- PedestrianDraw01/02: complete mechanism/column widening and all-LOD road boundaries;
+  PedestrianDraw02's existing top-face and footing data do not supply those missing plans.
+
+Native Draw02 LOD2's broad top is at Y=10.52832, while its near road datum is Y=9.800049.
+The existing native UV and cross-section inspection shows an opaque shell with retained side/end
+neighbors. Top-face removal alone is not a complete replacement. Do not use the candidate face
+lists as a complete semantic mask, stretch entire bone groups, or register placeholder generators.
+
+Validation of this increment: Release compilation succeeded. No game construction or visual
+unit test ran. Draw01, fixed bridges, saved assets and self-check were not changed or removed.
+Human motion, near/far, shipping and independent cold-load acceptance for new styles is pending.
+
 ## 1. Status and scope
 
 Updated: 2026-10-16. The requested scope is all ten audited Bridges & Ports movable mechanisms,
