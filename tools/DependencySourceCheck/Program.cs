@@ -29,6 +29,9 @@ var imported=Path.Combine(UnityEngine.Application.persistentDataPath,"ImportedDa
 Check(!BridgeAssetInfo.IsOtherBridgePrefab(Path.Combine(imported,owner+"_Dependencies",a+".Prefab"),owner,imported),"current bridge remains permitted");
 Check(!BridgeAssetInfo.IsOtherBridgePrefab(Path.Combine(imported+"Other","b"+Guid.NewGuid()+".Prefab"),owner,imported),"root containment has directory boundary");
 Check(BridgeAssetInfo.IsOtherBridgePrefab(foreign.Metadata.path.Replace("ImportedData", "IMPORTEDDATA").Replace(".Prefab", ".PREFAB"),owner,imported),"case-insensitive foreign ownership");
+Check(BridgeAssetInfo.IsOtherBridgePrefab(Path.Combine(imported,"b"+Guid.NewGuid(),"Prefabs","Bridge.Prefab"),owner,imported),"short foreign prefab remains excluded by directory UUID");
+Check(BridgeAssetInfo.IsOtherBridgePrefab(Path.Combine(imported,"b"+Guid.NewGuid(),"Dependencies",a+".Prefab"),owner,imported),"new foreign dependency directory excluded");
+Check(BridgeDependencyCopies.Folder(UnityEngine.Application.persistentDataPath,owner)==Path.Combine(imported,owner,"Dependencies"),"dependency copies belong inside owner folder");
 foreach(var fixture in args) {
  var payload=File.ReadAllBytes(fixture);
  var refs=BridgeSurfaceReferences.Read(payload,(_,_)=>false);

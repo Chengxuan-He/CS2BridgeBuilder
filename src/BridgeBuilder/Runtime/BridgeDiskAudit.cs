@@ -12,6 +12,7 @@ internal sealed class BridgeDiskAudit
     internal readonly Dictionary<string, string> FileOwners = new(StringComparer.OrdinalIgnoreCase);
     private readonly string _imported;
     private readonly string _geometry;
+    private readonly string _virtual;
     internal bool Complete { get; private set; }
     internal string Error { get; private set; } = string.Empty;
 
@@ -19,6 +20,7 @@ internal sealed class BridgeDiskAudit
     {
         _imported = Path.GetFullPath(imported);
         _geometry = Path.Combine(Path.GetDirectoryName(_imported)!, "BridgeBuilder");
+        _virtual = Path.GetFullPath(Path.Combine(Path.GetDirectoryName(_imported)!, "StreamingData~/VT"));
     }
 
     internal static BridgeDiskAudit ForMemoryFailures(string gameRoot, IDictionary<string, string> failures)
@@ -35,7 +37,7 @@ internal sealed class BridgeDiskAudit
             { audit.Error = "Invalid bridge owner: " + failure.Key; return audit; }
             audit.Failures.Add(failure.Key, failure.Value);
         }
-        foreach (var root in new[] { audit._imported, audit._geometry })
+        foreach (var root in new[] { audit._imported, audit._geometry, audit._virtual })
         {
             if (!Directory.Exists(BridgeFileAccess.Native(root))) continue;
             Select(root);
@@ -85,7 +87,7 @@ internal sealed class BridgeDiskAudit
             var path = Path.GetFullPath(pair.Key);
             try
             {
-                if (!Below(path, _imported) && !Below(path, _geometry))
+                if (!Below(path, _imported) && !Below(path, _geometry) && !Below(path, _virtual))
                 { errors.Add("Unsafe deletion path: " + path); continue; }
                 if (Directory.Exists(BridgeFileAccess.Native(path))) Directory.Delete(BridgeFileAccess.Native(path), true);
                 else File.Delete(BridgeFileAccess.Native(path));
@@ -118,10 +120,11 @@ internal sealed class BridgeDiskAudit
             try
             {
                 // Containment protects the move destination and source roots, not asset validity.
-                if (!Below(source, _imported) && !Below(source, _geometry))
+                if (!Below(source, _imported) && !Below(source, _geometry) && !Below(source, _virtual))
                 { errors.Add("Source outside asset roots: " + source); continue; }
                 var destinationRoot = Below(source, _geometry)
-                    ? Path.Combine(backup, "BridgeBuilder") : backup;
+                    ? Path.Combine(backup, "BridgeBuilder")
+                    : Below(source, _virtual) ? Path.Combine(backup, "VT") : backup;
                 Directory.CreateDirectory(BridgeFileAccess.Native(destinationRoot));
                 var destination = UniqueTarget(Path.Combine(destinationRoot, Path.GetFileName(source)));
                 // Directory.Move/File.Move are the native equivalent of mv; no parsing, hashes,

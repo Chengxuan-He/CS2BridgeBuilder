@@ -189,6 +189,18 @@ internal sealed class BridgePreviewRenderResources : IDisposable
             HDMaterial.ValidateMaterial(material);
             ConfigurePreviewDepth(material, network, packed, lane);
             BindVirtualTextures(surface, material, true);
+            if(surface.name.Contains(" Road Surface", StringComparison.Ordinal))
+            {
+                var bindings = new System.Text.StringBuilder();
+                foreach(var property in new[]{"_BaseColorMap","_NormalMap","_MaskMap","_ControlMask"})
+                {
+                    var texture=material.GetTexture(property);
+                    bindings.Append($" {property}={texture?.name}/{texture?.width}x{texture?.height}/{texture?.graphicsFormat}/wrap={texture?.wrapMode};");
+                }
+                foreach(var property in new[]{"_BaseColorMap_ST","_BaseColor","_DoubleSidedConstants","colossal_ColorMask0","colossal_ColorMask1","colossal_ColorMask2"})
+                    if(material.HasProperty(property))bindings.Append($" {property}={material.GetVector(property)};");
+                Mod.Log.Info($"Composite preview binding: surface={surface.id}; VT={surface.isVTMaterial}; shader={material.shader.name}; keywords={string.Join(",",material.shaderKeywords)};{bindings}");
+            }
             _surfaceMaterials.Add(key, material);
             return material;
         }

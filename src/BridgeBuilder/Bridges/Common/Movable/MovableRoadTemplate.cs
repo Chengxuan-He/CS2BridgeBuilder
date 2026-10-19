@@ -29,10 +29,10 @@ internal static class MovableRoadTemplate
         var receivers = input.Select(b =>
         {
             var t = b.Geometry;
-            return b.Bone == 0 || !converted[t.Material] ? b : new Bound(new Triangle(
+            return !converted[t.Material] ? b : new Bound(new Triangle(
                 Receiver(t.A), Receiver(t.B), Receiver(t.C), t.Material, t.Occurrence, t.SourceTriangle), b.Bone);
         }).ToArray();
-        var prepared = MovableRoadLod.Compact(receivers).Select(b => b.Geometry).ToArray();
+        var prepared = receivers.Select(b => b.Geometry).ToArray();
         Mod.Log.Info($"Hardcoded road domains: selectedFaces={input.Length}; preparedFaces={prepared.Length}; prototype intersections=0.");
         return prepared;
     }

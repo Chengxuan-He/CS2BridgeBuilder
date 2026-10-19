@@ -123,7 +123,7 @@ internal sealed class Draw01ClosedRoad : IDisposable
     // and StackProperties extend the object's culling bounds separately; a swept
     // animation volume must not be substituted for authored stacking metadata.
     internal MovableRoadAssets.Level[] PrepareRenderLevels(IReadOnlyList<RenderPrefab> sources,
-        float halfWidthDelta, Matrix4x4 closedWorld)
+        float halfWidthDelta, Matrix4x4 closedWorld, MovableRoadMaterial roadMaterial)
     {
         if (sources.Count != 3 || !math.isfinite(halfWidthDelta))
             throw new ArgumentException("Draw01 road preparation requires three render sources and a finite width delta.");
@@ -198,50 +198,70 @@ internal sealed class Draw01ClosedRoad : IDisposable
         }
         var road = MovableRoadGeometry.InFrame(Road.Triangles, RoadToObject);
         var lanes = MovableRoadGeometry.InFrame(Road.LaneGeometry.Triangles, RoadToObject);
-        if (!MovableRoadGeometry.TryBind(road, partition, 3, Road.Surfaces.Length,
-                out var receivers, out var error, occurrencePartitions: roadPartitions))
-            throw new InvalidOperationException(error);
-        var converted = new bool[Road.Surfaces.Length];
-        for (var i = 0; i < converted.Length; i++)
-        {
-            Road.Surfaces[i].LoadHeader();
-            converted[i] = Road.Surfaces[i].materialTemplateHash is not (0 or 1 or 13 or 14 or 35 or 36);
-        }
         var inverseRotation = Quaternion.Inverse(RoadToObject.rotation);
         var objectToRoad = new Pose(inverseRotation * -RoadToObject.position, inverseRotation);
-        // The recorded seam frames above already define the complete fixed/leaf domains.
-        // Prepare once; no prototype triangle intersection is required at any LOD.
-        var prepared = MovableRoadTemplate.Prepare(receivers, converted);
-        if (!MovableRoadGeometry.TryBind(prepared, partition, 3, Road.Surfaces.Length,
-                out var paintReceivers, out error, occurrencePartitions: roadPartitions))
-            throw new InvalidOperationException(error);
-        var selectedMaterials = (Colossal.IO.AssetDatabase.SurfaceAsset[])Road.Surfaces.Clone();
-        // Native mechanism paint is part of its surface appearance, not an independent
-        // decal object. Inlay selected paint before road atlas repetition can fragment it.
-        var painted = MovableRoadPaint.Apply(paintReceivers, Road.LaneGeometry.Decals,
-            RoadToObject, 32f, ref selectedMaterials);
-        var selected = MovableRoadGeometry.InFrame(painted.Select(t => t.Geometry).ToArray(), objectToRoad);
-        // Decals have been consumed exactly once above. Keep every non-decal lane mesh
-        // and surface for the later native lane assembly, without repeating paint per LOD.
-        var remainingLanes = new MovableLaneGeometry.Result(Road.LaneGeometry.Triangles.ToList(),
-            Road.LaneGeometry.Surfaces.ToList(), new List<MovableLaneVisuals.Batch>());
+        foreach (var region in new[] { 0, 5, 7, 12 })
+        {
+            var patch = patches[region];
+            patches[region] = new MovableExistingRoadSurface.Patch(patch.Min, patch.Max,
+                patch.U, patch.V, roadMaterial.Asset);
+        }
+        foreach (var region in new[] { 1, 4, 8, 11 })
+        {
+            var patch = patches[region];
+            patches[region] = new MovableExistingRoadSurface.Patch(patch.Min, patch.Max,
+                patch.U, patch.V, repeat: true);
+        }
+        var inputs = new MovableSurfaceAtlas.Input[3];
+        var laneLevels = new MovableLaneGeometry.Result[3];
+        for (var i = 0; i < inputs.Length; i++)
+        {
+            // Each level starts with the selected road's corresponding native mesh.
+            // Native pieces without a reduced mesh retain their authored last level.
+            var levelRoad = i == 0 ? Road : Network.CompileRoad(new[]
+            {
+                (0, MovableNetworkContext.SurfacePart.EndNode),
+                (1, MovableNetworkContext.SurfacePart.StartNode)
+            }, new[] { new MovableNetworkContext.OwnerIndex(false, 1) }, _roadOrigin,
+                replacedStructureLayers: NetPieceLayerMask.Bottom | NetPieceLayerMask.Side,
+                trackSourceFaces: false, lod: i);
+            laneLevels[i] = new MovableLaneGeometry.Result(levelRoad.LaneGeometry.Triangles.ToList(),
+                levelRoad.LaneGeometry.Surfaces.ToList(), new List<MovableLaneVisuals.Batch>());
+            var levelGeometry = MovableRoadGeometry.InFrame(levelRoad.Triangles, RoadToObject);
+            if (!MovableRoadGeometry.TryBind(levelGeometry, partition, 3, levelRoad.Surfaces.Length,
+                out var receivers, out var error, occurrencePartitions: roadPartitions))
+                throw new InvalidOperationException(error);
+            var converted = new bool[levelRoad.Surfaces.Length];
+            for (var j = 0; j < converted.Length; j++)
+            {
+                levelRoad.Surfaces[j].LoadHeader();
+                converted[j] = !MovableSurfaceAssets.IsObjectSurface(levelRoad.Surfaces[j]);
+            }
+            var prepared = MovableRoadTemplate.Prepare(receivers, converted);
+            var selected = MovableRoadGeometry.InFrame(prepared, objectToRoad);
+            if (!MovableRoadGeometry.TryBind(selected, carriagewayAppearance, patches.Length,
+                levelRoad.Surfaces.Length, out var assigned, out error, occurrencePartitions: appearancePartitions))
+                throw new InvalidOperationException(error);
+            inputs[i] = new MovableSurfaceAtlas.Input
+            {
+                Faces = assigned, Materials = levelRoad.Surfaces, Patches = patches,
+                // The measured appearance patches address the native near atlas; its
+                // composed mip chain supplies far appearance without geometry tiling.
+                Native = sources[0].GetSurfaceAsset(0)
+            };
+        }
+        var visibleLevels = MovableSurfaceAtlas.Compose(inputs, roadMaterial,
+            Array.Empty<MovableNativeDecals.Region>(), out var materialLevels);
         var levels = new MovableRoadAssets.Level[3];
         for (var i = 0; i < levels.Length; i++)
         {
-            var levelPatches = (MovableExistingRoadSurface.Patch[])patches.Clone();
-            if (i == 2) Draw01RoadLodProjection.Far(levelPatches, frame, sources[i].GetSurfaceAsset(0));
-            // Reconstruct from the selected closed geometry for each native LOD;
-            // never pass the already tiled near surface into a reduced level.
-            var visible = MovableExistingRoadSurface.Apply(selected, selectedMaterials,
-                carriagewayAppearance, sources[Math.Min(i, 1)].GetSurfaceAsset(0),
-                levelPatches, out var materials, occurrenceRegions: appearancePartitions);
             var bounds = sources[i].bounds;
             bounds.min.x -= halfWidthDelta;
             bounds.max.x += halfWidthDelta;
             Include(road, ref bounds);
             Include(lanes, ref bounds);
-            levels[i] = new MovableRoadAssets.Level(sources[i], visible, materials,
-                partition, bounds, RoadToObject, lanes: remainingLanes, closedWorld: closedWorld,
+            levels[i] = new MovableRoadAssets.Level(sources[i], visibleLevels[i], materialLevels[i],
+                partition, bounds, RoadToObject, lanes: laneLevels[i], closedWorld: closedWorld,
                 roadPartitions: roadPartitions, lanePartitions: lanePartitions);
         }
         return levels;

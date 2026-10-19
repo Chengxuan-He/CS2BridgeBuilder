@@ -46,7 +46,7 @@ try
     Check(newA != sectionCid && File.ReadAllText(b).Contains(sectionCid), "private CID and unchanged other bridge");
     var renamedPiece = Path.Combine(game, "ImportedData", Expected(pieceName, ownerA), Expected(pieceName, ownerA) + ".Prefab");
     Check(File.ReadAllText(renamedPiece).Contains(materialCid), "preserve external material reference");
-    Check(File.ReadAllBytes(Path.Combine(game, "BridgeBuilder", Expected(pieceName, ownerA) + ".Geometry")).SequenceEqual(new byte[] {0,255,17,42}), "geometry byte preservation");
+    Check(File.ReadAllBytes(Path.Combine(game, "ImportedData", ownerA,"Geometry", BridgeAssetInfo.ShortName(Expected(pieceName, ownerA),ownerA) + ".Geometry")).SequenceEqual(new byte[] {0,255,17,42}), "geometry byte preservation");
     Check(Run(game, new[] { ownerB }, Path.Combine(sandbox, "backupB"), out changed, out error), error);
     Check(!File.Exists(old) && !File.Exists(piece) && !File.Exists(g), "retire old files after last bridge migrates");
     Check(File.Exists(Path.Combine(sandbox, "backupB", "LegacyNames", "ImportedData", section, section + ".Prefab")), "old files backed up");
@@ -67,8 +67,15 @@ try
     File.WriteAllText(Path.Combine(deps, geometryCid + ".Geometry.cid"), geometryCid);
     Check(Run(game, new[] { ownerC }, Path.Combine(sandbox, "backupC"), out changed, out error)
         && changed.Contains(ownerC) && !File.ReadAllText(c).Contains(sectionCid), "migrate CID-named snapshots without original files");
-    Check(File.ReadAllBytes(Path.Combine(game, "BridgeBuilder", Expected(pieceName + " Geometry", ownerC) + ".Geometry"))
+    Check(File.ReadAllBytes(Path.Combine(game,"ImportedData",ownerC,"Geometry",BridgeAssetInfo.ShortName(Expected(pieceName + " Geometry", ownerC),ownerC) + ".Geometry"))
         .SequenceEqual(new byte[] { 0, 255, 17, 42 }), "snapshot-only geometry gets an owned name without changing bytes");
+    var shortGeometry = Path.Combine(game,"ImportedData",ownerA,"Geometry","Piece.Geometry");
+    var ownedGeometry = Path.Combine(game,"ImportedData",ownerA,"Geometry",BridgeAssetInfo.ShortName(Expected(pieceName,ownerA),ownerA)+".Geometry");
+    File.Move(ownedGeometry,shortGeometry); File.Move(ownedGeometry+".cid",shortGeometry+".cid");
+    var shortCid = File.ReadAllText(shortGeometry+".cid");
+    Check(Run(game,new[]{ownerA},Path.Combine(sandbox,"short-geometry"),out changed,out error)
+        && changed.Count==0 && File.ReadAllText(shortGeometry+".cid")==shortCid,
+        "short geometry filename is already owned; no new CID or legacy reconversion");
     var ownerD = "b44444444-4444-4444-4444-444444444444";
     var goodCid = new string('8', 32); var badCid = new string('9', 32);
     var leafCid = new string('f', 32);

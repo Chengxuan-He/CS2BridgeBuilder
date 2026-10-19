@@ -21,7 +21,7 @@ internal static class BridgeDependencyCopies
     }
 
     internal static string Folder(string gameRoot, string owner) =>
-        Path.Combine(gameRoot, "ImportedData", owner + "_Dependencies");
+        Path.Combine(gameRoot, "ImportedData", owner, "Dependencies");
 
     internal static IEnumerable<string> References(Source source) => source.SerializedReferences
         ?? (source.Extension.Equals(".Prefab", StringComparison.OrdinalIgnoreCase)

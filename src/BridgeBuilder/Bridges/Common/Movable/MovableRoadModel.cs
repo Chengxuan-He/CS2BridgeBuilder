@@ -26,6 +26,8 @@ internal static class MovableRoadModel
         var count = triangles.Count * 3;
         var positions = new float[count * 3]; var normals = new uint[count];
         var tangents = new uint[count]; var uv = new ushort[count * 4];
+        var surfaceUV = new float[count * 2];
+        var planarUV = true;
         var colors = new byte[count * 4]; var bones = new uint[count];
         var slots = new List<int>[materialCount];
         for (var i = 0; i < slots.Length; i++) slots[i] = new List<int>();
@@ -46,6 +48,9 @@ internal static class MovableRoadModel
                 positions[index * 3 + 2] = vertex.Position.z;
                 normals[index] = MathUtils.NormalToOctahedral((float3)vertex.Normal);
                 tangents[index] = MathUtils.TangentToOctahedral((float4)vertex.Tangent);
+                surfaceUV[index * 2] = vertex.UV.x;
+                surfaceUV[index * 2 + 1] = vertex.UV.y;
+                planarUV &= vertex.UV.z == 0f && vertex.UV.w == 0f;
                 for (var k = 0; k < 4; k++)
                 {
                     var value = new half(vertex.UV[k]);
@@ -72,7 +77,13 @@ internal static class MovableRoadModel
             attributes.Add(Attribute(VertexAttribute.Position, VertexAttributeFormat.Float32, 3, positions));
             attributes.Add(Attribute(VertexAttribute.Normal, VertexAttributeFormat.SNorm16, 2, normals));
             attributes.Add(Attribute(VertexAttribute.Tangent, VertexAttributeFormat.Float32, 1, tangents));
-            attributes.Add(Attribute(VertexAttribute.TexCoord0, VertexAttributeFormat.Float16, 4, uv));
+            // Packed atlas coordinates can differ by less than one half-float ULP.
+            // Quantizing them collapses thin, otherwise valid triangles in UV space.
+            // Float32x2 is accepted by native MeshUV0.Unpack as well as object rendering.
+            // Keep all four native components for lane formats that carry extra data.
+            attributes.Add(planarUV
+                ? Attribute(VertexAttribute.TexCoord0, VertexAttributeFormat.Float32, 2, surfaceUV)
+                : Attribute(VertexAttribute.TexCoord0, VertexAttributeFormat.Float16, 4, uv));
             attributes.Add(Attribute(VertexAttribute.Color, VertexAttributeFormat.UNorm8, 4, colors));
             attributes.Add(Attribute(VertexAttribute.BlendIndices, VertexAttributeFormat.UInt32, 1, bones));
             var combined = new List<int>(count); var submeshes = new SubMeshDescriptor[materialCount];

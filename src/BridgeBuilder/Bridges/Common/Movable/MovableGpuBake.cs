@@ -4,7 +4,7 @@ using UnityEngine;
 
 namespace BridgeBuilder.Bridges;
 
-// Retains the vendor-neutral compute loader for preview skin bounds only.
+// Vendor-neutral generation-only compute: preview bounds and appearance composition.
 internal static class MovableGpuBake
 {
     private static ComputeShader? _template;

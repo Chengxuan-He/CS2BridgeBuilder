@@ -28,11 +28,16 @@ This is a general contract routing requirement, not a movable-bridge-only rule.
 
 ## Specialist contracts
 
+[Generator code organization](GENERATOR_CODE_CONTRACT.md) governs base-class inheritance,
+one concrete generator file per style, shared lifecycle ownership and style-specific hooks.
+
 [MOVABLE_BRIDGES_CONTRACT.md](MOVABLE_BRIDGES_CONTRACT.md) is the bridge generation contract's normative movable-bridge
 supplement, incorporated by section 21. It defines a general method derived from the implemented
 pipeline: selected-road geometry conversion, physical motion domains, existing materials and
-prototype UV projection, integrated paint, native Prefab graph construction, selective persistence
-and unlocks. Section 15 records encountered failures and required solutions. Acceptance is recorded
+prototype UV projection, separate native skinned paint, native Prefab graph construction, selective persistence
+and unlocks. **Read sections 16–23 first for the accepted 2026-10-18 material, marking, binding,
+LOD and persistence pipeline.** Earlier conflicting recipes are historical. Section 15 records
+encountered failures and required solutions. Acceptance is recorded
 per style; the general method does not claim every registered generator is complete. Supporting
 audits retain measurements and implementation history rather than overriding current requirements.
 [Bridge asset persistence and reference policy](../Bridge-Asset-Persistence.md) is the normative
@@ -96,3 +101,9 @@ Organization-only revision (2026-10-17): branch `dev`, HEAD
 Original requirement text, examples, exceptions and revision records are retained. Existing
 numbered sections and heading anchors are preserved; headings, placement and navigation are
 organized without changing requirements or implementation acceptance.
+
+
+The [approved persistence directory and migration specification](../Bridge-Asset-Persistence.md#6-approved-owner-directory-layout)
+consolidates assets under a UUID, removes that prefix from owned filenames and places external
+snapshots in its Dependencies subdirectory. This 2026-10-18 decision is not yet implemented;
+VT/mid-mip placement remains pending verification. Read section 7 for migration safeguards.

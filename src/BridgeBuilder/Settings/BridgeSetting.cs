@@ -60,6 +60,10 @@ public sealed class BridgeSetting : ModSetting
     [SettingsUISection(OptionsTab, GeneralGroup)]
     public bool RemoveDevelopmentRestrictions { get; set; }
 
+    [SettingsUISection(OptionsTab, GeneralGroup)]
+    [SettingsUIDirectoryPicker]
+    public string DefaultExportDirectory { get; set; } = BridgeBuilder.Runtime.BridgeZipExport.DefaultDirectory;
+
     private string? _recoveryCopyLocation;
 
     [SettingsUISection(OptionsTab, RecoveryGroup)]
@@ -267,6 +271,7 @@ public sealed class BridgeSetting : ModSetting
         ResetKeyBindings();
         RemoveDevelopmentRestrictions = false;
         _recoveryCopyLocation = null;
+        DefaultExportDirectory = BridgeBuilder.Runtime.BridgeZipExport.DefaultDirectory;
         UpperDeckId = string.Empty;
         BridgeStyleId = BridgeStyleDefinitions.Default;
         BuildStyleOverride = DonorBuildStyle;

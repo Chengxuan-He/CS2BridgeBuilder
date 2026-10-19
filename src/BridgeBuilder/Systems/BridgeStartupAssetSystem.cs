@@ -8,7 +8,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.IO;
-using CS2Mods.Shared.Export;
 
 namespace BridgeBuilder.Systems;
 
@@ -196,7 +195,7 @@ public partial class BridgeStartupAssetSystem : GameSystemBase
             {
                 var selected = new[] { owner };
                 if (!BridgeLegacyNames.Run(UnityEngine.Application.persistentDataPath,
-                    selected, backup, out var renamed, out var renameError, PrefabAssetWriter.RelativePathFor))
+                    selected, backup, out var renamed, out var renameError, BridgePrefabPersistence.RelativePathFor))
                 {
                     migrationErrors++;
                     failures[owner] = "Legacy component migration failed: " + renameError;
@@ -206,11 +205,12 @@ public partial class BridgeStartupAssetSystem : GameSystemBase
                 _copiedOwners.UnionWith(renamed);
                 migrationCandidates.UnionWith(renamed);
                 if (!BridgeAssetLayout.Run(UnityEngine.Application.persistentDataPath, selected, backup,
-                    PrefabAssetWriter.RelativePathFor, out var relocated, out var layoutError))
+                    BridgePrefabPersistence.RelativePathFor, out var relocated, out var layoutError))
                 {
                     migrationErrors++;
-                    failures[owner] = "File layout migration failed: " + layoutError;
-                    Mod.Log.Error($"Bridge file layout migration failed UUID={owner}; scheduling removal: {layoutError}");
+                    _migrationIncomplete = true;
+                    if (migrationCandidates.Contains(owner)) _migratedOwners.Add(owner);
+                    Mod.Log.Error($"Bridge file layout migration failed UUID={owner}; preserving assets for retry after restart: {layoutError}");
                     continue;
                 }
                 _copiedOwners.UnionWith(relocated);

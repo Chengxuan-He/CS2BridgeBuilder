@@ -10,106 +10,11 @@ This file replaces neither. Numbered bridge rules refer to the bridge generation
 
 ## Runtime invariants
 
-Bridge generation contract section 2 prohibits all Boolean operations with prototype geometry,
-including hardcoded copies of prototype faces. Apply immutable measured construction coordinates
-and rules directly; offline prototype inspection does not authorize runtime mesh intersection.
-
-
-- Meshes must reference the prototype bridge's corresponding LOD meshes. Excessive subdivision
-  or triangle cutting is prohibited. Follow bridge generation contract section 4, including for
-  converted road surfaces, UV tiling and marking clipping; existing LOD exceptions do not waive it.
-
-- Bridge generation contract section 25 applies to every generator: derive left/right sidewalk presence,
-  position and width from the selected elevated composition and upgrades. Adapt sidewalk-dependent
-  inner railings and bridge-authored sidewalk portions independently; never fabricate a missing
-  side or mirror unequal widths. Preserve unrelated structure and apply the layout to every LOD,
-  preview and persisted geometry. The root AGENTS.md is the routing authority for this rule.
-  Sidewalk portions embedded in fixed bases, end platforms or other composite components are also
-  subject to section 25. Only `Sidewalk` sections count as sidewalks; curbs do not. Adapt each side
-  independently without removing unrelated structural parts.
-
-- Self-check prioritizes normal game operation and attempts asset version migration first.
-  Complete missing fields/dependencies without changing UUID/CID; leave healthy current assets
-  unchanged. Only failed or impossible migration enters recursive backup/move. Failed backup
-  creation/copy/move must fall back to permanent deletion of
-  remaining UUID-owned source files/directories, not retention or an early return. Continue other
-  selected paths, verify absence, and report actual deletion/access failures without claiming success.
-  Keep self-check free of live prefab unregistration and require restart. Contract section 19's
-  2026-10-08 migration-first revision defines this sequence and mandatory deletion fallback.
-
-Follow the native-pricing revision in bridge generation contract section 16, including its restrictions
-on legacy conversion and fee restoration. The complete revision remains in the contract.
-
-- Self-check migration/repair and new generation share the same file layout and naming rules
-  (contract section 19); preserve bridge/deck CID and UUID. Native conversion alone cannot skip
-  layout migration. Localized notices distinguish migration from damage repair and report both
-  when both occurred. Relocation is backed up, collision-safe and idempotent.
-
-- Generated bridges must not depend on Bridge Builder; it is only the bridge asset manager.
-  Persisted assets must remain loadable and usable after a cold start with the mod disabled or
-  uninstalled, without its assembly, callbacks, patches or cached objects. Follow contract section 19;
-  the deferred rail-seam limitation is unfinished compatibility work, not proof of independence.
-
-- Apply the root independent-persistence revision: legacy conversion is additive; root and deck
-  CID, UUID, version and geometry stay unchanged. Persist native unlocking, unchanged native fees,
-  native locales and thumbnail data. No BridgeBuilder component or UI host may be required by
-  converted/new saved prefabs. Pricing-only copies and native fee rewrites are prohibited.
-  Deployment cleanup follows the affected-style rule in contract section 13.
-
-- Apply the root contract's legacy naming migration exception during self-check: create per-bridge
-  copies with "-b{uuid}" appended to the first space-delimited name token and new CIDs, update file references, and back up unreferenced old components.
-  Keep live prefabs unchanged and request restart.
-- Every modification requires the project-wide compatibility review mandated by the root instructions.
-  Trace all affected generation, naming, persistence, loading, migration, cleanup and UI/error paths,
-  including alternate bridge branches and legacy assets; fix incompatible callers and consumers
-  together. Build or preview success alone is insufficient; report pending in-game verification.
-- Use immutable, hardcoded archetype and component metadata produced by the metaprogramming step.
-  Runtime code must not rediscover parts from bounds, topology, nearest vertices, connected components,
-  height bands, ratios, names or other geometric resemblance.
-- Runtime spatial tests may compare `x`, `y` or `z` only with zero, using equality or inequalities.
-  For stretch versus translation, whether the authored part reaches or crosses `x = 0` is the sole,
-  non-overridable decision outside the user-approved central railing post exception in contract
-  section 8 (baseline `dev/80eb1415e1a3b59263eb45693f7e2c5d80732447`, 2026-10-16).
-  An independently authored vertical railing post centred on the bridge centreline retains its
-  original width and centred position at every LOD. Use immutable measured membership, not runtime
-  shape/position heuristics. This does not exempt transverse rails or any other crossing structure.
-- Stretch a centre-crossing part against its own authored span. Translate a non-crossing side part
-  rigidly. Never use one family's boundary, profile or measured constant to classify another family.
-- Treat the base only as the centre-crossing structure immediately adjacent to and below the deck.
-  Transform its x coordinates with `x -> x + sign(x) * delta`; do not scale its width and do not
-  misclassify bridge-pier columns, footings or foundations as the base.
-- Translate bridge-pier columns. Do not stretch them.
-- Apply every part classification and transform to the highest-detail mesh and every LOD. Do not allow
-  reduced LOD topology to reclassify a part.
-- Do not over-defend internal mod logic. Internal invariant failures must surface as explicit ERROR,
-  with exceptions where appropriate, rather than being hidden by special cases, silent returns or
-  fallback values. Defend external boundaries, including generated Prefabs that can be damaged and
-  failures originating in game or third-party APIs. Stop failed operations before publishing invalid
-  geometry. This replaces the previous blanket prohibition on explicit `throw` statements.
-- Preserve the archetype's complete prefab behavior. A generated bridge changes only requested
-  geometry and the selected road structure; derived tower, cable, piece and LOD prefabs remain unique
-  to that generated bridge.
-- Preserve the archetype-specific constant `bridge width - deck width`. The width definition and the
-  constant must come from a same-basis comparison of a real archetype and a real newly generated
-  bridge, not runtime geometry inference or source arithmetic alone. Width is the complete
-  left-to-right span `maxX - minX`, and the audited width increment is the increment of that complete
-  span; it is not a per-side x-coordinate correction. If the absolute full-span width increment is
-  greater than 1 m, do not change that bridge; report and record the bridge for review. Absence of a
-  generated sample does not satisfy that skip condition:
-  the invariant pass stays incomplete until a human creates the missing bridge from a selected road
-  and its real report and geometry are retained. The Agent must not open or control the game or issue
-  an API/request-file bridge-construction request for sample creation.
-- Never apply an audit or geometry correction in runtime bridge-generation code. Metaprogramming must
-  finish the correction and fold it into the original immutable archetype parameters or generated
-  source metadata. Runtime may consume those final parameters as ordinary generation inputs, but it
-  must not contain an audit-correction table, add a post-measurement delta, double a per-side result,
-  or otherwise know that a correction step existed.
-- Preserve bridge-specific lighting from the same archetype. Carry tower/pylon `ObjectSubObjects` and
-  their referenced light/effect prefabs without filtering by names or rebuilding effect fields. Keep
-  rotations, parent-mesh indices, groups, probabilities and activation data unchanged. A mounted
-  object's non-zero x position follows its parent mesh's rigid half-width displacement; an object on
-  `x = 0` remains centred. Do not replace the selected road's ordinary street lighting with the
-  archetype road's street lighting.
+Read the [retained runtime invariants](../../docs/agent-contract/MOVABLE_INSTRUCTION_RECORDS.md#runtime-invariants-retained-from-srcbridgebuilderagentsmd)
+in full before code changes. They remain binding except where the accepted movable contract
+sections 16–23 explicitly supersede historical marking/material recipes. Preserve native asset
+ownership, API thread affinity, source provenance, skeletons, structure channels and independent
+persistence. This relocation changes no unrelated runtime requirement.
 
 ## GPU computation and parallel generation
 
@@ -131,7 +36,7 @@ Compilation of partial stages is not completion.
 
 Persistence must implement contract section 17. Traverse serialized external dependencies to the
 built-in boundary and save byte-identical files plus original CID sidecars under
-`ImportedData/<bridgeUUID>_Dependencies/`. One bridge stores one copy per CID; two bridges store
+`ImportedData/<bridgeUUID>/Dependencies/`. One bridge stores one copy per CID; two bridges store
 separate copies of a shared CID. Do not deserialize or modify prefab instances to make these copies.
 Do not rename copied prefabs, allocate replacement CIDs or rewrite their references. Keep generated
 bridge/geometry identities distinct from these unchanged dependency snapshots. Missing dependencies
@@ -193,12 +98,25 @@ not only its root or textures; preserve required content and report unresolved m
 Revision baseline (2026-10-16): `dev/3b6363ada9f1f147b1a660e20c0d6246a54f82dd`.
 
 
-## Native marking conversion approval
+## Accepted movable generation baseline (2026-10-18)
 
-Follow the movable generation contract sections 7, 11 and 15: integrate paint into mechanism
-receiver geometry with existing native object materials. Do not create independent marking objects,
-material descriptors or baked textures. Curve segmentation, endpoint-fade and existing-atlas pattern
-differences remain accepted; the former object-decal representation is superseded. Preserve native
-motion, structural rules, selective persistence and human acceptance requirements.
-Revision baseline: `dev/3b6363ada9f1f147b1a660e20c0d6246a54f82dd`; rollback reference
-`refs/rollback/movable-generation-contract-20261017`.
+Read [MOVABLE_BRIDGES_CONTRACT.md sections 16–23](../../docs/agent-contract/MOVABLE_BRIDGES_CONTRACT.md#16-accepted-generation-pipeline-and-source-map) before implementing or modifying movable bridges.
+Those sections consolidate the accepted current pipeline and supersede conflicting historical
+paint/material recipes: original structural Surface/VT references; measured non-VT repeating road
+and grating units plus bounded native VT composites; separate single-sided native skinned paint
+with 0.001 m clearance on the original road bones, matching stack metadata and transforms.
+No receiver cuts for markings, no child projectors, no structural receiver-only material copies,
+no moving the road onto marking bones, and no runtime synchronization dependency. Acceptance is
+specific to the latest Draw01 visual repair; new styles still require their own archetype data and
+acceptance. Baseline: dev/d21433ed2a9ee233c8525ce6a0fe2515f973dc7a plus preserved working changes.
+
+Prior long instruction records are preserved in [retained movable instruction records](../../docs/agent-contract/MOVABLE_INSTRUCTION_RECORDS.md).
+Use the current accepted contract for conflicting appearance/marking decisions.
+
+
+Persistence layout revision (2026-10-19): branch `dev`, HEAD
+`d21433ed2a9ee233c8525ce6a0fe2515f973dc7a`, preserving prior working changes.
+Follow Bridge-Asset-Persistence.md sections 6–7 for owner-local short filenames, VT/mid-mip
+placement and backed-up file-only migration. Legacy sibling dependency directories remain valid
+migration inputs. Layout conflicts preserve healthy bridges and report incomplete migration;
+they do not authorize damaged-asset retirement. Native cold-load acceptance remains separate.

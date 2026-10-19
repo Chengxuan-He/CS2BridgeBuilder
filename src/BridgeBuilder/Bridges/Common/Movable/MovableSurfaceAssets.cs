@@ -7,10 +7,15 @@ namespace BridgeBuilder.Bridges;
 // Unmatched curved appearances use the prototype object's material, never a new descriptor.
 internal static class MovableSurfaceAssets
 {
+    // Both native shader families support the procedural skeleton and packed tangents.
+    // Template 11 is the forward transparent material used by composed road paint.
+    internal static bool IsObjectSurface(SurfaceAsset surface) =>
+        surface.materialTemplateHash is 0 or 1 or 11 or 13 or 14 or 35 or 36;
+
     internal static SurfaceAsset ExistingObject(SurfaceAsset source, SurfaceAsset prototype)
     {
         source.LoadHeader();
-        if (source.materialTemplateHash is 0 or 1 or 13 or 14 or 35 or 36) return source;
+        if (IsObjectSurface(source)) return source;
         var cid = source.id.ToString() switch
         {
             "3fd47dc01126f4121ed6c363f854e9cb" => "652dd064690d2eab0f150ad10b93e50d",

@@ -30,8 +30,7 @@ internal static class BridgePortableMigration
             if (root == null) { error = "Canonical bridge unavailable for independent migration"; return false; }
             var metadata = BridgeAssetCatalog.Find(owner) ?? new BridgeAssetInfo(owner, owner, "", null, "", "");
             // Dependency snapshots are byte-identical external assets, not conversion targets.
-            var privateAssets = assets.Where(a => !BridgeFileAccess.Logical(a.Path)
-                .Split('\\', '/').Contains(owner + "_Dependencies")).ToArray();
+            var privateAssets = assets.Where(a => !BridgeAssetInfo.IsDependencyPath(a.Path, owner)).ToArray();
             var networks = privateAssets.Select(a => a.Prefab).OfType<NetGeometryPrefab>().Distinct().ToArray();
             var pack = BridgeAssetPack.Ensure(system);
             if (pack == null) { error = "Native asset pack unavailable"; return false; }
@@ -110,7 +109,7 @@ internal static class BridgePortableMigration
             foreach (var node in nodes)
             {
                 var assetPath = node.ReplacementAsset?.path ?? node.Target.asset?.path
-                    ?? Path.Combine(Application.persistentDataPath, PrefabAssetWriter.RelativePathFor(node.Target.name));
+                    ?? Path.Combine(Application.persistentDataPath, BridgePrefabPersistence.RelativePathFor(node.Target.name));
                 if (!BridgeAssetInfo.MatchesOwner(assetPath, owner)) { error = "Unowned migration target"; return false; }
                 foreach (var path in new[] { assetPath, assetPath + ".cid" })
                 {
@@ -123,7 +122,7 @@ internal static class BridgePortableMigration
                     File.WriteAllBytes(BridgeFileAccess.Native(saved), bytes);
                 }
             }
-            new PrefabAssetWriter().Save(nodes);
+            BridgePrefabPersistence.Save(nodes);
             // Migration augments the existing asset. Root/deck identity and sidecar bytes are immutable.
             foreach (var pair in identities)
             {

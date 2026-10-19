@@ -149,8 +149,8 @@ namespace BridgeBuilder.Runtime
     }
 }
 
-namespace CS2Mods.Shared.Export {
-    public static class PrefabAssetWriter { public static string RelativePathFor(string name) => name; }
+namespace BridgeBuilder.Runtime {
+    public static class BridgePrefabPersistence { public static string RelativePathFor(string name) => name; }
 }
 
 namespace Colossal { public class Hash128 { } }

@@ -29,7 +29,7 @@ internal sealed partial class BridgePreviewNetMesh : IDisposable
     internal bool Build(BridgePreviewComposition.Piece[] pieces, NetCompositionData data,
         BridgePreviewRenderResources resources, float length, out Mesh mesh,
         out Material[] materials, out MaterialPropertyBlock properties,
-        List<SurfaceAsset>? resolvedSurfaces = null, List<SourceFace>? resolvedFaces = null)
+        List<SurfaceAsset>? resolvedSurfaces = null, List<SourceFace>? resolvedFaces = null, int lod = 0)
     {
         mesh = null!;
         materials = Array.Empty<Material>();
@@ -57,11 +57,15 @@ internal sealed partial class BridgePreviewNetMesh : IDisposable
                 var piece = entry.Composition;
                 if (!Visible(piece)) continue;
                 var materialIndex = 0;
-                var partMaterials = resources.Materials(entry.Prefab, true);
+                RenderPrefab render = entry.Prefab;
+                var levels = render.GetComponent<LodProperties>()?.m_LodMeshes;
+                if (lod > 0 && levels != null && levels.Length > 0)
+                    render = levels[Math.Min(lod - 1, levels.Length - 1)];
+                var partMaterials = resources.Materials(render, true);
                 var partSurfaces = resolvedSurfaces == null ? Array.Empty<SurfaceAsset>()
-                    : entry.Prefab.surfaceAssets?.ToArray() ?? Array.Empty<SurfaceAsset>();
+                    : render.surfaceAssets?.ToArray() ?? Array.Empty<SurfaceAsset>();
                 if (resolvedSurfaces != null && partSurfaces.Length != partMaterials.Length) return false;
-                var partMeshes = resources.Meshes(entry.Prefab);
+                var partMeshes = resources.Meshes(render);
                 if (partMeshes.Length == 0)
                 {
                     return false;

@@ -58,14 +58,7 @@ internal static class BridgeBulkRemoval
         try
         {
             var root = UnityEngine.Application.persistentDataPath;
-            var audit = BridgeDiskAudit.ForAllBridges(root);
-            if (!audit.Complete) { Failed(audit.Error); return; }
-            var owners = new HashSet<string>(audit.Failures.Keys, StringComparer.Ordinal);
-            foreach (var entry in BridgeAssetCatalog.Load()) owners.Add(entry.PrefabName);
-            var prefabs = Unity.Entities.World.DefaultGameObjectInjectionWorld?.GetExistingSystemManaged<Game.Prefabs.PrefabSystem>();
-            if (prefabs != null)
-                foreach (var prefab in CS2Mods.Shared.Infrastructure.PrefabCatalog.GetAll(prefabs))
-                    if (BridgeAssetInfo.TryFileOwner(prefab.name, out var owner)) owners.Add(owner);
+            var owners = new HashSet<string>(BridgeOwnedDirectoryRemoval.Owners(root), StringComparer.Ordinal);
             if (owners.Count == 0)
             {
                 Mod.ShowMessage(UiStringCatalog.Current.Title, RuntimeUiText.Get("RemoveAllBridgesEmpty"));

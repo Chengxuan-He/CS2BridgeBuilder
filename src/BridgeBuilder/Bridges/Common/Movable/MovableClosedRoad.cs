@@ -29,11 +29,11 @@ internal static class MovableClosedRoad
         internal Result(MovableRoadGeometry.Triangle[] triangles, SurfaceAsset[] surfaces,
             BridgePreviewComposition.Piece[] occurrences, NetCompositionData[] compositions,
             int[] occurrenceStarts, MovableLaneVisuals.Batch[] laneVisuals, MovableRoadObjects.Rule[][] objectRules,
-            BridgePreviewNetMesh.SourceFace[][]? sourceFaces = null)
+            BridgePreviewNetMesh.SourceFace[][]? sourceFaces = null, int lod = 0)
         { Triangles = triangles; Surfaces = surfaces; Occurrences = occurrences; Compositions = compositions;
             OccurrenceStarts = occurrenceStarts;
             SourceFaces = sourceFaces;
-            LaneVisuals = laneVisuals; LaneGeometry = MovableLaneGeometry.Compile(laneVisuals, triangles);
+            LaneVisuals = laneVisuals; LaneGeometry = MovableLaneGeometry.Compile(laneVisuals, triangles, lod);
             ObjectRules = objectRules; }
 
 

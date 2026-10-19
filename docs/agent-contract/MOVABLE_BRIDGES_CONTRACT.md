@@ -17,9 +17,26 @@
 - [13. Acceptance and completion criteria](#13-acceptance-and-completion-criteria)
 - [14. Evidence references and maintenance](#14-evidence-references-and-maintenance)
 - [15. Observed failures and mandatory prevention](#15-observed-failures-and-mandatory-prevention)
+- [16. Accepted generation pipeline and source map](#16-accepted-generation-pipeline-and-source-map)
+- [17. Material families, UV density and texture ownership](#17-material-families-uv-density-and-texture-ownership)
+- [18. Marking layout, mesh and native material](#18-marking-layout-mesh-and-native-material)
+- [19. Common motion, stacking, visibility and underside](#19-common-motion-stacking-visibility-and-underside)
+- [20. LOD, topology and prototype-specific extension](#20-lod-topology-and-prototype-specific-extension)
+- [21. Preview, native persistence and failures](#21-preview-native-persistence-and-failures)
+- [22. Performance and diagnostic requirements](#22-performance-and-diagnostic-requirements)
+- [23. Acceptance record and contributor checklist](#23-acceptance-record-and-contributor-checklist)
 - [Organization revision record](#organization-revision-record)
 
 ## 1. Authority, scope and implementation status
+
+Current accepted generation baseline: **2026-10-18**. Sections 16–23 consolidate the latest
+implemented flow and the user's acceptance after restoring native structural materials. Read
+these sections before adding any movable style. They supersede earlier conflicting paint,
+material-copy and texture-composition instructions in this document and its historical records.
+Unrelated geometry, traffic, native persistence and archetype-evidence requirements remain in force.
+Acceptance covers the latest reported Draw01 visual repair; it does not certify every input,
+other mechanisms, traffic/shipping tests or manager-independent cold loading.
+
 
 This is the normative supplement to [BRIDGE_GENERATION_CONTRACT.md](BRIDGE_GENERATION_CONTRACT.md) for bascule/draw
 bridges, vertical lift bridges and any subsequently admitted movable design. Read it together with
@@ -84,7 +101,7 @@ remains a native prerequisite. Manager independence does not imply DLC independe
 | Resolve | Selected road and supported native state to sections, pieces, lanes and evaluated closed geometry | Preserve conditional alternatives and selected layout; no prototype-section whitelist. |
 | Prepare mechanism | Immutable prototype parts, motion domains, skeleton, materials and LOD data to width-adjusted structure | Preserve authored transforms, fixed platforms and native behavior. |
 | Convert surfaces | Evaluated road to object-local triangles clipped by motion and appearance domains | One native bone per triangle; fixed and moving regions remain distinct. |
-| Assign appearance | Compatible source or existing native object material plus measured projection to renderable road and paint | No new material/texture, baking or independent marking objects. |
+| Assign appearance | Native structural references, measured repeating road units, bounded local composites and separate skinned paint | Follow sections 17–19; no road cuts for paint or texture repetition, no custom shaders. |
 | Assemble | Structure, converted road, native attachments and per-material models to the prototype's mechanism hierarchy | Correct material batch counts, bones, bounds and all LODs. |
 | Build network graph | Native crossing conditions plus selected-road sections to minimal changed Section/Piece nodes | Preserve lanes, signals, fees, upgrade logic and unlock AND/OR groups. |
 | Preview or save | Same generated graph to a temporary open-pose assembly or registered native assets | Preview writes no formal assets; saving preserves owned identity and original dependency references. |
@@ -305,14 +322,12 @@ selected-road heights, curbs, asymmetric sidewalks and bone ownership at every l
 
 ### Integrated paint and receiver geometry
 
-Preserve geometry attributes and marking placement. Adapt appearance and UVs to existing native
-materials under the approved existing-materials-only policy; no pixel baking is permitted.
-Markings emitted through native lane/decal evaluation must be converted into paint footprints
-and integrated into the existing mechanism's road geometry. Clip receiver triangles into painted
-and unpainted polygons on the same surface, preserving interpolated attributes and bone ownership.
-Do not emit independent marking StaticObjectPrefabs, RenderPrefabs, projection volumes, overlapping
-paint surfaces or thick paint geometry. Do not move geometry in Z or add depth offsets to conceal
-projection errors. Prevent duplicate stationary visuals while preserving native traffic lanes.
+Markings remain part of the native mechanism render graph but use a separate single-sided
+skinned mesh. Evaluate native selected-road marking footprints, partition only those polygons at
+physical motion seams, match the evaluated upper road height and bind them to the original road
+bones. The authorized clearance is 0.001 m along the local upper normal. Do not cut road receiver
+triangles at marking edges, render projection boxes, create one child object per dash, or move
+the road onto marking bones. Sections 18–19 define the complete current implementation.
 
 ### Selected-road sidewalk composition
 
@@ -327,17 +342,18 @@ subsurface semantics, not a blanket assumption that every face has the same role
 Reuse a source-road material when its vertex layout and native animated-object rendering path are
 compatible. Otherwise choose an existing compatible native object material measured from the
 prototype or another permitted native resource. Keep carried structural materials unchanged.
-Neither preview nor saved generation may create materials, rewrite templates, bake textures or
-introduce custom shaders. Existing atlas pattern-detail differences are accepted for markings.
-Curve segmentation and endpoint-fade differences remain accepted; earlier independent object-decal
-implementations are superseded. No pixel-baking fallback is permitted.
+Generated native material descriptors and GPU extraction/composition from existing native textures
+are permitted under section 17. Custom shaders and structural receiver-only descriptor rewrites
+are prohibited. Native marking layout is evaluated before producing the skinned paint described
+in section 18; this is not the native projector shader or a full reproduction of decal fading.
 
 For converted surfaces, derive UV axes, origin and physical scale from prototype object-space
 projection. Separate measured material, side and leaf-orientation domains; one global projection
 or copied network-packed UVs is insufficient. Keep compatible object materials' own UVs. Exclude
 embedded prototype paint and pale gutters from sampled asphalt/concrete regions to avoid repeated
 false lines. Inspect the existing atlas interior and filtering margin, retaining measured physical
-texture density when cropping its rectangle; never repair this by baking a replacement texture.
+texture density when cropping its rectangle. Extract repeat units without enlarging them to cover
+the complete bridge; preserve native channels, filtering and physical UV gradients (section 17).
 Build tangent frames from triangle position/UV derivatives with consistent handedness; when the
 projection has zero UV area, retain a valid source frame rather than divide by a singular mapping.
 Do not claim exact authored UV-island or LOD-atlas reproduction without verifying it.
@@ -514,6 +530,11 @@ Revision baseline (2026-10-16): `dev/3b6363ada9f1f147b1a660e20c0d6246a54f82dd`.
 
 ## 12. Integration and update scope
 
+Follow the [generator code organization contract](GENERATOR_CODE_CONTRACT.md). Every movable
+generator inherits the shared movable generation base, itself derived from `BridgeGeneratorBase`.
+Keep one concrete generator file per style, containing only its unique rules and hooks; common
+generation lifecycle logic belongs in the shared bases.
+
 Use existing generation/persistence extension points and the simplest implementation that satisfies
 this contract. `BridgePreviewComposition` and `BridgePreviewNetMesh` provide useful composition and
 preview paths, but neither proves persistent bone-bound mesh export. Trace their dependencies before
@@ -546,11 +567,12 @@ Remove unnecessary texture/material generation and redundant Prefab wrappers bef
 remaining arithmetic. Compare full dependency footprints on the same basis with the prototype.
 
 Follow bridge generation contract section 23 for vendor-neutral GPU bulk matrix/image work; never require
-CUDA. There is no runtime pixel-baking work in this method. Independent pure geometry operations
+CUDA. Generation-time GPU extraction/composition is allowed; persisted bridges require no ongoing
+baking or manager callbacks. Independent pure geometry operations
 may process immutable triangle chunks with local output buffers and deterministic merges. Native
 asset lookup, Unity/ECS operations, render creation and persistence retain their required thread
-and graphics context; parallelism does not authorize unsafe native API calls. Current paint
-clipping is parallel managed geometry, not evidence of GPU execution or an end-to-end speed target.
+and graphics context; parallelism does not authorize unsafe native API calls. Do not claim
+parallel execution or an end-to-end timing target without measuring the actual current path.
 
 ## 13. Acceptance and completion criteria
 
@@ -641,8 +663,8 @@ other bridge has passed acceptance.
 | Missing or asymmetric sidewalks became symmetric prototype strips | Lateral role selection used prototype curb positions | Use actual selected pedestrian occurrences and geometry; do not fabricate a missing side or mirror its width. |
 | Texture scale or direction differed from prototype | Network UV encoding and one global projection did not reproduce object-space atlas domains | Use measured UV-per-metre scale, separate side/leaf origins and mirrors, and verify all LODs. |
 | Projection caused invalid tangents | Per-vertex axis projection can vanish or disagree in handedness | Derive per-triangle frames, preserve one handedness, handle singular UV derivatives explicitly without suppressing validation. |
-| Paint looked like raised blocks and inflated the graph | Decal projection volumes were rendered as surface geometry; per-marking objects multiplied nodes | Partition receiver triangles into paint and road in the mechanism render graph; no independent objects, overlap, depth correction or new materials. |
-| Generation took seconds to minutes and dependencies grew | Historical appearance baking incurred texture upload, mip and save work; redundant wrappers/marking nodes multiplied registration | Reuse existing materials, remove baking and redundant nodes, measure remaining stages; old timings do not describe the current path. |
+| Paint looked like raised blocks and inflated the graph | Decal projection volumes were rendered as surface geometry; per-marking objects multiplied nodes | Use one compact single-sided skinned paint mesh on the original mechanism with 1 mm clearance; never cut road receivers for markings (sections 18–19). |
+| Generation took seconds to minutes and dependencies grew | Historical appearance baking incurred texture upload, mip and save work; redundant wrappers/marking nodes multiplied registration | Reuse structural materials, extract bounded repeat units, share appearance across LODs and remove redundant nodes; measure GPU, VT and persistence costs separately (section 22). |
 | Moving lights duplicated or failed at a seam | Network producers and moving visuals had separate ownership/placement | Preserve native traffic/light functions while suppressing duplicate stationary visuals; use measured native lamp mounts where approved, retaining selected model, lateral placement and orientation. |
 | Preview omitted ends, remained closed or was off-centre | Complete open-pose assembly and transformed bounds are required | Assemble fixed ends plus moving centre and fit the camera to all transformed bounds; inspect actual panel output. |
 | Persisted mechanism was scheduled for removal | The helper parser rejected valid typed anonymous Odin values | Support the native format in the shared reader, replay real Prefabs/layout migration without identity changes, then check native cold loading. |
@@ -661,3 +683,373 @@ Organization-only revision (2026-10-17): branch `dev`, HEAD
 Original requirement text, examples, exceptions and revision records are retained. Existing
 numbered sections and heading anchors are preserved; headings, placement and navigation are
 organized without changing requirements or implementation acceptance.
+
+
+## Approved native tiled road material descriptor (2026-10-17)
+
+Historical decision record. For current implementation requirements, use sections 16–23;
+conflicting details below are superseded, not alternative implementation choices.
+
+The user explicitly permits a new native object-material descriptor that references existing
+tileable road textures to eliminate atlas-repeat geometry cuts. This is a scoped exception to
+the existing-material-only rule: do not create or bake textures, introduce custom shaders, modify
+source assets, or change structural and marking materials. Keep one descriptor per required
+appearance within each bridge owner and share it across LODs. Preview descriptors belong only to
+the preview's transient database. Persist formal descriptors with private identities and original
+texture references; native cold loading must not depend on Bridge Builder. Unchanged built-in
+textures remain references, and external dependencies retain the normal snapshot policy.
+
+Use continuous object-local UVs and the native sampler for whole-texture repetition; do not apply
+vertex-wise fractional UVs or cut triangles at repeat boundaries. This exception does not permit
+repeating a mixed atlas as though it were a tileable road texture. Other geometry, marking,
+sidewalk, LOD and acceptance requirements remain unchanged.
+
+Baseline: `dev/d21433ed2a9ee233c8525ce6a0fe2515f973dc7a`; rollback reference
+`refs/rollback/native-tiled-road-material-20261017`. This permission does not establish visual or
+cold-load acceptance.
+
+## Approved GPU composition from existing textures (2026-10-17)
+
+Historical decision record. For current implementation requirements, use sections 16–23;
+conflicting details below are superseded, not alternative implementation choices.
+
+The user explicitly authorizes composing new textures from existing textures. For converted
+movable-road appearance, this supersedes the earlier existing-materials-only, no-new-texture,
+no-baking and no-new-descriptor restrictions, including the narrower tiled-asphalt exception.
+It does not authorize custom runtime shaders, independent marking objects, depth offsets,
+prototype mesh Boolean operations, or source-asset mutation.
+
+- Compose road appearance and paint using existing native texture inputs on a vendor-neutral GPU.
+  Save owner-local textures and native object-material descriptors; do not bake per marking or
+  create separate marking Prefabs. Preserve needed color, alpha, normal and mask channels.
+- Paint must not cut the receiving road. Texture repeat boundaries must not subdivide geometry.
+  Evaluate repetition and paint in pixels. Only physical boundaries, native motion seams and
+  required appearance-domain boundaries may partition the road.
+- Build each of the three LODs from its corresponding native mesh input and measured bridge
+  construction rules. Do not feed the painted/tiled near mesh into every level. Retain the last
+  authored road-piece LOD where the native piece supplies fewer levels. Share composed appearance
+  across levels; use mip filtering rather than replicating paint geometry.
+- Keep prototype structural meshes, skinning, thickness, sidewalk adaptation and LOD thresholds.
+  This appearance permission does not authorize deleting structure to meet a triangle budget.
+- Bound atlas dimensions and share resources within each owner. Generate mipmaps on the GPU,
+  respecting color space and tangent-space normals. Persist textures and descriptors under the
+  bridge's identity; preview resources belong to the transient preview database. Delete failed
+  generation resources. Preserve the existing external dependency snapshot rules.
+- Verify stage times, per-LOD triangles, total serialized size including dependencies, reload and
+  near/far visual appearance. Compilation alone does not establish acceptance or size parity.
+
+Instruction-edit baseline: `dev/d21433ed2a9ee233c8525ce6a0fe2515f973dc7a`.
+Rollback reference: `refs/rollback/gpu-road-composition-20261017`.
+
+## Native separated movable paint revision (2026-10-18)
+
+Historical decision record. For current implementation requirements, use sections 16–23;
+conflicting details below are superseded, not alternative implementation choices.
+
+The user now requests separate native markings and prototype-based asphalt with preserved UV scale.
+This supersedes the prohibition on independent marking objects only for native decal child renderers
+attached to the mechanism's recorded motion connections. Keep each disjoint projector in its own native object-space clipping bounds. The native shader
+clips against one box per object: grouping disjoint volumes is prohibited unless a compatible native
+per-instance clipping representation is verified. Supply its normal and tangent attributes and bind
+each projector to its motion connection. Keep geometry as closed projection volumes; never render those volumes
+as road surface triangles. Only projection volumes may be partitioned at physical motion seams;
+markings and texture repetition must never cut receiving road geometry.
+
+Remove full-road transparent paint overlays. Reuse the native decal material and measured native
+paint patches. Asphalt uses a repeatable unit extracted from the prototype atlas, including its
+albedo, normal, mask and control channels. Preserve the measured per-metre UV gradients, direction
+and phase on both leaves. BC block alignment may round the extracted pixel dimensions up; do not
+stretch a low-resolution whole-span atlas over the road. Other appearance domains retain their
+existing path. Keep native asset persistence and owner-scoped rollback/cleanup for the complete graph.
+Preview, placement, opening/closing, LOD transitions and cold loading require human game verification;
+a successful build does not establish visual acceptance.
+
+Revision baseline: `dev/d21433ed2a9ee233c8525ce6a0fe2515f973dc7a`.
+
+## Preserve original road skinning (2026-10-18)
+
+Historical decision record. For current implementation requirements, use sections 16–23;
+conflicting details below are superseded, not alternative implementation choices.
+
+The user revoked moving the road onto marking child transforms. Keep Draw01 road geometry in its original procedural skeleton and skinning path, with all three LODs, UVs and materials retained. Markings must adapt to the original road bones; never move road receivers into history-driven child objects to compensate for decal lag. Native independent persistence remains mandatory, without runtime synchronization patches. Structure/underside surfaces use the original native descriptors, texture references and VT resources without receiver-only material copies or descriptor rewrites. Single-sided skinned paint replaces the old projectors; disabling structural decal reception is no longer required. The earlier rigid road child implementation is withdrawn. A native decal shader without procedural skinning must not be treated as supporting bone-bound paint merely by assigning indices.
+
+Revision baseline: dev/d21433ed2a9ee233c8525ce6a0fe2515f973dc7a.
+
+## Authorized native skinned paint exception (2026-10-18)
+
+Historical decision record. For current implementation requirements, use sections 16–23;
+conflicting details below are superseded, not alternative implementation choices.
+
+The user explicitly permits native skinned paint surfaces and minimum anti-coplanar clearance. Draw01 keeps its original road skeleton and receiver topology. Marking polygons alone may be partitioned at motion seams and bound with the road bone indices/bind poses. Use a native procedural-skinning material, single-sided paint, and 0.001 m clearance; no custom shader or runtime synchronization patch. Paint is an additional mesh on the same native mechanism object, with matching StackProperties, authored bounds and object transform, not a history-driven child projector. Preserve source marking layout/color; do not cut the road. A compact paint mesh remains present across road LOD transitions. This supersedes earlier prohibitions on overlapping marking surfaces and the native child-projector requirement for this implementation. Preview, motion, far views and cold loading still require verification.
+
+Revision baseline: dev/d21433ed2a9ee233c8525ce6a0fe2515f973dc7a.
+
+
+## 16. Accepted generation pipeline and source map
+
+Revision baseline: branch `dev`, HEAD `d21433ed2a9ee233c8525ce6a0fe2515f973dc7a`.
+The accepted implementation includes working-tree changes beyond that commit. The original
+contract files were backed up before this revision; do not treat HEAD alone as the accepted code.
+On 2026-10-18 the user reported acceptance after removal of `Structure No Decals` copies.
+
+Follow this dependency order for a new mechanism:
+
+1. Measure the exact prototype's structure, materials, every LOD, fixed platforms, skeleton,
+   inverse binds, connection codes, stacking and native traffic/signal behavior offline.
+2. Resolve the selected elevated road and upgrades. Evaluate closed-pose road geometry, lane
+   visuals and marking layout in the same native sampling context. Keep traffic connectivity
+   separate from visible moving geometry.
+3. Define prototype-specific road-to-object transforms, physical motion domains and appearance
+   frames. Preserve actual asymmetric sidewalks and fixed cap domains.
+4. Prepare each road LOD from its appropriate native road input. Convert network attributes to
+   object attributes and bind road regions to the original mechanism skeleton. Physical seams
+   may require clipping; texture periods and paint edges must not drive road subdivision.
+5. Build the appearance resources in section 17 and retain all original structural surface slots.
+6. Produce the separate marking mesh in section 18 and append it to the same mechanism object
+   using the binding and stacking rules in section 19. Keep existing mesh ordering unchanged.
+7. Assemble native network conditions, approaches, lamps, barriers and mechanism references.
+8. Use the same graph for temporary preview or native persistence. Register only after required
+   dependencies and any generated VT mid-mip data are complete. Verify using section 23.
+
+| Responsibility | Current source reference |
+| --- | --- |
+| Closed road sampling and per-LOD appearance domains | `Draw01ClosedRoad.Sample`, `PrepareRenderLevels` |
+| Immutable mechanism rules | Draw01 measured data and `Draw01RoadPartitions`; replace with each new prototype's own measurements |
+| Material/texture production | `MovableSurfaceAtlas`, `MovableRoadMaterial`, `MovableGpuBake` |
+| Render models and original structural references | `MovableRoadAssets`, `MovableRoadModel` |
+| Marking footprint and mesh generation | `MovableNativeDecals.Regions`, `TowerFactory.AttachMovablePaint` |
+| Marking material persistence | `CreateSkinnedPaintSurface`, `ReadNativePaintColor` in `TowerFactory.MovablePaint.cs` |
+| Final attachment | `Draw01ObjectAssembly` and shared `TowerFactory` |
+
+These are source navigation references, not permission to copy Draw01 dimensions, atlas patches,
+bone indices or LOD counts into other styles. Retain the shared generator architecture of section 2
+and the generator code contract.
+
+## 17. Material families, UV density and texture ownership
+
+Keep these four material paths distinct. A global switch to VT or a global material replacement
+cannot implement them correctly.
+
+| Family | Current generation/persistence treatment | Required invariant |
+| --- | --- | --- |
+| Carried prototype structure, underside, towers and supplements | Reference original native Surface assets in original slot order | Do not copy/rewrite descriptors just to disable decals; preserve native textures, VT identity, UVs and channels |
+| Converted repeating asphalt | Extract a verified unpainted prototype atlas unit; save native non-VT textures and an object-compatible native Surface | Continuous UV repetition preserves measured prototype gradients and physical scale |
+| Converted repeating metal grating | Extract the native grating unit with its channels; use native `DefaultCutoutDoubleSided`, non-VT Repeat | Preserve alpha/cutout holes and two-sided behavior; never turn the sidewalk into opaque asphalt |
+| Other converted local road appearances | GPU composition of existing native inputs into bounded shared atlas pages; native VT persistence where currently used | Preserve fixed-cap/material domains, channel semantics, padding, mips and per-LOD UV assignment |
+
+Paint is a fifth, separate family defined in section 18. Do not bake it into the asphalt or into
+structural underside textures. `Draw01ClosedRoad` currently passes an empty marking-region list
+to `MovableSurfaceAtlas.Compose` and attaches paint separately afterward.
+
+For repeating units, derive UV axes, orientation and origin from measured prototype object-space
+patches. The current extractor sizes the unit from the source atlas rectangle, rounded to BC7
+block alignment; it does not stretch a full-span baked image. Record actual dimensions and density
+for each generated material. A cropped unit need not equal the dimensions of the full source atlas.
+Do not claim every material is 1024 x 1024 or 409.6 pixels/metre: these are not universal constants
+and the accepted prototype-derived path must be measured on its own inputs.
+
+For each physical unit direction d, verify density using the final texture dimensions and UV
+Jacobian: sqrt((width * du/dm)^2 + (height * dv/dm)^2). Check both longitudinal and transverse
+axes, including mirrored leaves, after cropping, packing and persistence. Preserve native scale
+within necessary block-alignment rounding; document rounding rather than claiming bit-exact density.
+Do not add triangles at Repeat boundaries or expand units to 16384-square full-span images.
+
+Color is sampled with its proper sRGB semantics; normal, mask and control data are linear.
+Preserve the native channel meanings and valid normals/tangents. Generated object meshes use
+packed octahedral normals/tangents, so the saved material must carry `_TANGENTSPACE_OCTO`.
+Preview-only keyword injection is insufficient. Native object skinning support must be verified
+in the selected template; toggling a keyword cannot add missing shader functionality.
+
+Keep Repeat units non-VT in the current native object loading path: its VT sampler uses Clamp.
+For remaining VT composites use native configuration, BC7 formats and native ZSTD compression
+setting; never modify global compression configuration to speed one generation. Complete the
+matching mid-mip cache (currently three levels), register/refresh VT resources and preserve the
+whole dependency chain before publishing the render. A mismatch between requested and stored
+mid mips is a generation failure, not a reason to suppress the error.
+
+## 18. Marking layout, mesh and native material
+
+The current implementation uses native **layout and texture input**, rendered by an object
+material that supports procedural skinning. It does not run native child decal projectors.
+
+1. Read selected-road lane/decal evaluation batches. `MovableNativeDecals.Regions` supplies the
+   supported white/yellow footprints in the road-to-object frame. Preserve spacing, direction,
+   color and supported footprint shape; do not derive lane positions from a fixed lane count.
+2. Partition marking polygons only at measured physical motion seams, discarding gap regions.
+   Find each footprint vertex's upper receiver height on the evaluated generated road. This is
+   not Boolean intersection with prototype geometry. Missing receivers must fail explicitly.
+3. Offset the paint by **0.001 m** along the local upper normal, then triangulate the paint
+   polygons and assign the same physical-domain bone as the road beneath them. This adds paint
+   triangles; it neither cuts receiver triangles nor moves the original road.
+4. Combine supported footprints into a compact paint model with the native object vertex layout,
+   UInt32 bone indices, valid normal/tangent channels and matching winding. Append one paint
+   RenderPrefab/ObjectMeshInfo to the mechanism rather than one StaticObjectPrefab per dash.
+5. Use the native `Default` object template with procedural skinning, opaque single-sided paint,
+   backface culling and decal reception disabled on **paint only**. Do not render projection
+   volume sidewalls or enable double-sided markings. The underside must remain unpainted.
+
+The current paint color source is the native No Parking surface. The implementation persists
+its actual decoded color texture at the source resolution (2048 x 2048 in the measured source),
+then samples measured white/yellow locations with constant UVs. Polygon outlines supply the
+marking shape. It also writes a neutral 1 x 1 control texture and native non-VT Surface. This is
+not a textured dash atlas baked across the full bridge, nor complete native decal shading.
+Measured source identifiers/texel coordinates live in implementation data, not universal rules.
+Complex symbols, additional colors, fades or infoview semantics require explicit implementation
+and acceptance before claiming support; grouping metadata alone does not implement their shading.
+
+A native VT surface's original Texture CID may be provenance only and unavailable as a real
+.Texture asset. Resolve the actual VTSurface color layer or preprocessed VTTexture backing,
+decode/read it through the existing GPU path, and persist the owned texture before referencing
+it. Do not serialize a missing original color CID. Restore graphics state, balance texture leases
+and destroy only privately created resources on success and failure.
+
+## 19. Common motion, stacking, visibility and underside
+
+The road retains the original mechanism skeleton and skinning path. Paint adapts to that road;
+never move road geometry onto marking child bones or history-driven transforms.
+
+The paint render must copy the original road's `ProceduralAnimationProperties`, use identical
+bone numbering/rest transforms/bind poses and match its `ObjectMeshInfo` position and rotation.
+Copy `StackProperties` when present and preserve the same authored root bounds. Matching bones
+alone is insufficient when the native object applies stack placement or scale. Do not substitute
+swept animation bounds for authored stacking bounds; preserve native animated culling behavior.
+
+Why child projectors are withdrawn: the inspected native update order let relative child objects
+read previous-frame BoneHistory while the skinned road used the current frame. The resulting
+misalignment occurred during movement and disappeared on pause. Increasing projection depth or
+moving the road into that delayed path does not meet the requirement. No Bridge Builder update
+loop, Harmony synchronization patch or custom shader may be required after generation.
+
+Keep paint single-sided and above its upper receiver under the same transform. Do not disable
+decal reception by cloning every structural Surface; that obsolete workaround preceded the
+large-scale structural material corruption report. Restoring original structural references was
+the change subsequently accepted by the user. This acceptance does not establish a universal
+engine defect in all Surface copying, and does not authorize editing built-in resources.
+
+The current compact paint mesh remains present across road LOD transitions rather than being
+culled dash by dash. Verify native group bounds and visibility at all distances and during motion.
+The previously measured 384 paint triangles are one sample, not a fixed count or future budget.
+
+## 20. LOD, topology and prototype-specific extension
+
+Draw01 currently prepares three road render levels from corresponding native road inputs and
+shares generated appearance resources. Original structure slots and native far structure remain
+separate from road conversion. Another prototype may have a different graph; measure it.
+
+Maintain these distinctions when reporting face counts:
+
+- Carried/width-adjusted prototype structural triangles, including each actual LOD.
+- Converted selected-road triangles, including required physical/appearance-domain partitioning
+  without coplanar coalescing or its retriangulation.
+- Deliberately supplied structural supplements, if the current measured style requires them.
+- Additional single-sided paint triangles, generated from marking footprints only.
+
+Do not claim that generation adds no triangles: paint does add them. Do not introduce road
+subdivision to encode paint outlines or texture periods. Any LOD supplement needs source geometry,
+material and part provenance and a stated purpose; never automatically copy a mid-distance bottom
+plate into every far LOD. Retain native simplified underside where present and test underside
+appearance at transitions. The paint exception does not authorize arbitrary structure replacement.
+
+For each new style supply its own fixed/moving partitions, upper receiver roles, stack semantics,
+source atlas regions and mirrored projection frames. Keep source grating, caps and railings on the
+correct side according to the actual selected sidewalk layout. Exercise seam-crossing paint and
+both motion directions before generalizing from the Draw01 implementation.
+
+## 21. Preview, native persistence and failures
+
+Preview and placed assets must use the same geometry, material families, bone binding and stack
+rules. Preview resources belong to its private database/capture lifetime; never rely on private
+preview texture references resolving through the global database after disposal.
+
+Persist generated Geometry, Surface, Texture and any VTSurface/mid-mip dependencies through the
+existing UUID-owned native asset graph. Keep unchanged built-in material references; snapshot
+required external dependencies according to the general persistence contract. Persist paint
+geometry/material/texture before publishing their references. Roll back owned partial outputs
+on failure and report the unavailable dependency/stage rather than publishing a broken bridge.
+
+Generated bridges remain independent native assets with required game/DLC content as prerequisites.
+No manager-driven material rebinding, per-frame animation repair or regeneration is allowed.
+On a generation repair follow owner-scoped backup/cleanup and deployment rules; stale saved
+assets do not acquire new serialized materials just because the DLL was replaced. Never delete
+unrelated bridges or native resources. Cold-load tests remain a separate acceptance requirement.
+
+## 22. Performance and diagnostic requirements
+
+Preserve source-scale repeat units instead of baking the entire span. Share composed resources
+across LODs within their owner; reuse original structure assets. Avoid one object/material per dash,
+unnecessary native texture decoding, repeated VT compilation and redundant registration wrappers.
+Bulk image work uses the existing vendor-neutral GPU path; native Unity/database calls retain
+thread affinity. Do not reduce native texture quality or global compression settings to meet a target.
+
+Record sampling, road conversion, GPU composition/readback, texture and VT writing, mid-mip
+completion, paint generation, dependency persistence and registration timings separately. Include
+selected road/style, cold versus warm generation, output texture dimensions, Repeat/VT treatment,
+material and triangle counts by LOD, and native dependency errors. Count total time without double
+counting nested stages. The user requested seconds-scale creation; do not assert that target is
+met without a new measurement. Stale log labels such as 'paint uses native decals' are not proof
+that the current renderer uses projectors; trace the actual `AttachMovablePaint` path.
+
+## 23. Acceptance record and contributor checklist
+
+User acceptance on 2026-10-18 follows the restoration of original structural materials after the
+massive white/blue corruption report. Record this as acceptance of the latest Draw01 visual repair,
+not blanket certification of every style/input, persistence scenario or performance target.
+
+Before declaring a newly added mechanism complete:
+
+- Compare closed, opening, fully open and closing states at near/far distances. Run motion as well
+  as pause: pause alone masked the historical transform lag. Inspect both leaves and the underside.
+- Check paint placement, backface absence, 1 mm clearance, distance visibility and no deck slicing.
+  Confirm grating holes, caps, towers and structural materials retain prototype appearance.
+- Measure native versus generated UV density in both axes and verify material slots at every LOD.
+- Exercise preview and newly placed output separately, then save/restart with the manager absent
+  and required DLC present. Verify all owned references and VT mip dependencies.
+- Complete the traffic, shipping, supported upgrades/asymmetry and lifecycle checks of section 13.
+- Report actual face/material/texture counts and generation timings, distinguishing sample results
+  from universal rules. Compilation, hash verification and a static preview are not visual acceptance.
+
+Do not use game UI automation or construction request files. Human users create and inspect game
+samples under the project rules. If a check is pending, state its precise scope without undoing
+already confirmed acceptance or claiming unrelated tests have passed.
+
+### Grouped generated LOD directories (2026-10-18)
+
+Historical layout; the owner-directory layout is now implemented as specified in persistence policy
+sections 6–7. All owned LOD Prefabs share `Prefabs/`; native identities remain separate.
+
+Generated Prefabs with the terminal naming suffix ` LOD<number>` share the main component's
+ImportedData directory. For example, `Fixed Base 0 LOD1.Prefab` is stored alongside
+`Fixed Base 0.Prefab` in the latter's directory. Each remains a separate native asset with its
+own CID and unchanged LodProperties references. Geometry paths and material sharing are unchanged.
+`BridgePrefabPersistence` is the common creation and migration path authority; the shared native
+writer remains unchanged. Existing assets retain their identities; self-check layout migration
+backs up and moves Prefabs plus CID sidecars without rewriting payloads and requests restart.
+This is a storage-layout change, not geometry regeneration or a reason to remove healthy bridges.
+
+
+### Preserve partitioned road triangles (2026-10-18)
+
+The user requested removal of coplanar road coalescing. Road preparation, atlas input/output and
+final render assembly now retain each partitioned input triangle rather than merging adjacent
+faces and fan-triangulating the result. Texture charts may still share appearance resources;
+chart sharing must not merge geometry. Motion/appearance-domain clipping, measured prototype
+replacement fragments and separate paint polygon triangulation remain in place. This supersedes
+earlier road-compaction descriptions; do not restore that optimization without a new user decision.
+Actual post-change face counts and performance must be measured on newly generated assets.
+
+
+### Approved next persistence layout (2026-10-18)
+
+Follow [persistence policy sections 6–7](../Bridge-Asset-Persistence.md#6-approved-owner-directory-layout)
+for UUID-contained Prefabs, Geometry, Appearance, Locales and Dependencies, exact filename-prefix
+removal, paired CID migration and on-demand directories. This supersedes the prior grouped-LOD
+folder design as a target specification, not as a statement of current implementation. Internal
+names and references remain unchanged. VT/mid-mip placement must be verified before promising
+single-directory packaging. No code or live asset migration accompanies this documentation update.
+
+
+Persistence implementation revision (2026-10-19): generated appearance, VT and mid-mip resources
+now reside below the owner UUID. See Bridge-Asset-Persistence.md sections 6–7 for the shared
+creation/migration mapping and native streaming discovery evidence. This storage change does not
+change geometry, bones, materials, marking depth or the accepted motion behavior. Cold-load
+verification of the new directory layout remains pending.

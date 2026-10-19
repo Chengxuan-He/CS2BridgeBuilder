@@ -61,7 +61,7 @@ internal static class BridgeAssetPack
             pack.name = PrefabName;
             pack.AddOrGetComponent<UIObject>().m_Icon = icon;
             // Give the shared pack a persistent asset ID before any bridge serializes its reference.
-            new PrefabAssetWriter().Save(new[] { new PrefabCloneNode(pack, pack, false, true, null) });
+            BridgePrefabPersistence.Save(new[] { new PrefabCloneNode(pack, pack, false, true, null) });
             prefabs.AddOrUpdatePrefab(pack);
             if (prefabs.TryGetEntity(pack, out _)) return pack;
 

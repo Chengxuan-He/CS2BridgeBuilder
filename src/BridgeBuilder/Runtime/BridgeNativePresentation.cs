@@ -78,7 +78,8 @@ internal static class BridgeNativePresentation
             foreach (var locale in locales)
             {
                 var name = entry.PrefabName + "-" + locale.Id;
-                var asset = AssetDatabase.user.GetAssets(SearchFilter<LocaleAsset>.ByCondition(a => a.name == name
+                var shortName = BridgeAssetInfo.ShortName(name, entry.PrefabName);
+                var asset = AssetDatabase.user.GetAssets(SearchFilter<LocaleAsset>.ByCondition(a => (a.name == name || a.name == shortName || a.name == locale.Id || a.name == "-" + locale.Id)
                     && BridgeAssetInfo.MatchesOwner(a.path, entry.PrefabName))).FirstOrDefault();
                 var existing = asset?.data;
                 var entries = existing == null ? new Dictionary<string, string>() : new Dictionary<string, string>(existing.entries);
@@ -95,7 +96,7 @@ internal static class BridgeNativePresentation
                 }
                 if (existing != null && entries.Count == existing.entries.Count
                     && entries.All(p => existing.entries.TryGetValue(p.Key, out var value) && value == p.Value)) continue;
-                asset ??= AssetDatabase.user.AddAsset<LocaleAsset>(AssetDataPath.Create("ImportedData/" + entry.PrefabName, name));
+                asset ??= AssetDatabase.user.AddAsset<LocaleAsset>(BridgePrefabPersistence.ResourcePath(name, "Locales"));
                 asset.SetData(new LocaleData(locale.Id, entries, existing == null
                     ? new Dictionary<string, int>() : new Dictionary<string, int>(existing.indexCounts)), locale.Language, locale.Name);
                 asset.Save(true);

@@ -6,7 +6,7 @@ using UnityEngine;
 namespace BridgeBuilder.Bridges;
 
 // Offline measurements of the native LaneLine atlas. These are geometry masks,
-// not generated textures. Paint is sampled from native bridge object atlases by MovableRoadPaint.
+// used by GPU appearance composition. Paint does not subdivide the receiving geometry.
 internal static class MovableExistingMarkings
 {
     internal readonly struct Stroke

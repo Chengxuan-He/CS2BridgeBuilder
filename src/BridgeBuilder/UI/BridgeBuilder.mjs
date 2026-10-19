@@ -9,12 +9,25 @@ const React = window.React;
 const ui = window["cs2/ui"];
 const api = window["cs2/api"];
 const modding = window["cs2/modding"];
+const NativePickerBackdrop = modding.getModule("game-ui/common/panel/panel-backdrop.tsx", "PanelBackdrop");
+const NativePickerFocusRoot = modding.getModule("game-ui/common/focus/focus-root.tsx", "FocusRoot");
+const NativePickerNavigation = modding.getModule("game-ui/common/focus/auto-navigation-scope.tsx", "AutoNavigationScope");
+const NativePickerBack = modding.getModule("game-ui/common/input-events/input-action-consumer.tsx", "BackConsumer");
+const nativePickerTheme = modding.getModule("game-ui/menu/widgets/directory-picker/bound-directory-picker.module.scss", "classes");
+const NativeWidgetList = modding.getModule("game-ui/editor/widgets/editor-widget-renderer.tsx", "EditorWidgetListRenderer");
+const NativeDirectoryTitleContext = modding.getModule("game-ui/menu/widgets/directory-picker/bound-directory-picker.tsx", "DirectoryPickerDialogContext");
 const NativeTextInput = modding.getModule("game-ui/common/input/text/text-input.tsx", "TextInput");
 const NativeCheckbox = modding.getModule("game-ui/common/input/toggle/checkbox/checkbox.tsx", "Checkbox");
 const inputTheme = modding.getModule("game-ui/editor/widgets/item/editor-item.module.scss", "classes");
 const textInputProps = { multiline: 1, type: "text", focusKey: window["cs2/input"].FOCUS_DISABLED,
     className: `${inputTheme.input} bb-text-input` };
 const MOD = "BridgeBuilder";
+const exportSuccessPathBinding = api.bindValue(MOD, "ExportSuccessPath", "");
+const exportBrowserBinding = api.bindValue("BridgeBuilderExportBrowser", "children", []);
+const exportBrowserOpenBinding = api.bindValue(MOD, "ExportBrowserOpen", false);
+const exportFolderBinding = api.bindValue(MOD, "ExportFolder", "");
+const exportPathBinding = api.bindValue(MOD, "ExportPath", "");
+const exportBusyBinding = api.bindValue(MOD, "ExportBusy", false);
 
 const titleBinding = api.bindValue(MOD, "Title", "BridgeBuilder");
 const panelOpenBinding = api.bindValue(MOD, "PanelOpen", false);
@@ -29,6 +42,17 @@ const previewLoadingBinding = api.bindValue(MOD, "PreviewLoading", false);
 
 // English fallback is kept in sync with RuntimeUiText by the localization check.
 const defaultText = {
+    "Cancel": "Cancel",
+    "Export": "Export",
+    "OpenExportDirectory": "Open folder",
+    "ExportSuccess": "Bridge exported to:\n{0}",
+    "BrowseDirectory": "Choose folder…",
+    "ExportTab": "Export bridge",
+    "ExportFolder": "Top-level folder name",
+    "ExportFolderInvalid": "Enter a folder name of 1\u2013255 characters. Do not use control characters, < > : \" / \\ | ? *, reserved device names, or a trailing space or period.",
+    "ExportPath": "Save location and filename",
+    "ExportBusy": "Exporting…",
+
     "CustomRoad": "+ Custom road",
     "Scanning": "Reading networks and bridge prototypes…",
     "SameDirection": "Same direction",
@@ -339,6 +363,7 @@ function CreateView({ decks, styles, draft, onSaveDraft = () => {} }) {
 }
 
 function ManageView({ bridges, styles = [] }) {
+    const busy = api.useValue(exportBusyBinding);
     const t = useText();
     const [selectedId, setSelectedId] = React.useState("");
     const selected = bridges.find(bridge => bridge.prefabName === selectedId) || bridges[0];
@@ -393,8 +418,64 @@ function ManageView({ bridges, styles = [] }) {
             selected ? h("div", { className: "bb-actions" },
                 h("button", { className: "bb-primary", disabled: !selected.available,
                     onClick: () => trigger("ActivateBridge", selected.prefabName) }, t("Build")),
+                h("button", { disabled: busy, onClick: () => trigger("PrepareExport", selected.prefabName) }, t(busy ? "ExportBusy" : "Export")),
                 h("button", { className: "bb-danger",
                     onClick: () => trigger("DeleteBridge", selected.prefabName) }, t("Delete"))) : null));
+}
+
+function ExportSuccessDialog() {
+    const t = useText();
+    const path = api.useValue(exportSuccessPathBinding);
+    if (!path) return null;
+    return h(ui.ConfirmationDialog, {
+        title: t("ExportTab"), confirm: t("OpenExportDirectory"), cancel: t("Close"),
+        onConfirm: () => trigger("OpenExportDirectory"),
+        onCancel: () => trigger("DismissExportSuccess")
+    }, h("div", { className: "bb-export-success-path" }, t("ExportSuccess").replace("{0}", () => path)));
+}
+
+function isValidExportFolder(folder) {
+    return !!folder.trim() && folder.length <= 255
+        && !/[<>:"/\\|?*\x00-\x1f]/.test(folder)
+        && !/[ .]$/.test(folder)
+        && !/^(CON|PRN|AUX|NUL|COM[1-9¹²³]|LPT[1-9¹²³])(?:\.|$)/i.test(folder);
+}
+
+function ExportDialog() {
+    const t = useText();
+    const browserOpen = api.useValue(exportBrowserOpenBinding);
+    const browserWidgets = api.useValue(exportBrowserBinding);
+    const requested = api.useValue(exportPathBinding);
+    const defaultFolder = api.useValue(exportFolderBinding);
+    const [folder, setFolder] = React.useState("");
+    React.useEffect(() => setFolder(defaultFolder || ""), [!!requested, defaultFolder]);
+    const [path, setPath] = React.useState("");
+    React.useEffect(() => setPath(requested || ""), [requested]);
+    if (!requested) return null;
+    // Match the native DirectoryPickerDialog container/focus hierarchy. A message
+    // dialog's centered text slot cannot lay out the directory picker's page view.
+    if (browserOpen) return h(NativePickerBackdrop, { className: `${nativePickerTheme.backdrop} bb-export-browser-layer`, onMouseDown: () => trigger("CloseExportBrowser") },
+        h("div", { className: nativePickerTheme.panel },
+            h(NativePickerBack, { onAction: () => trigger("CloseExportBrowser") },
+                h(NativePickerFocusRoot, null,
+                    h(NativePickerNavigation, null,
+                        h("div", { className: nativePickerTheme.header }, t("BrowseDirectory")),
+                        h(NativeWidgetList, { parent: { group: "BridgeBuilderExportBrowser", path: [] }, data: browserWidgets }))))));
+    return h(ui.ConfirmationDialog, {
+            title: t("ExportTab"), confirm: t("Export"), cancel: t("Cancel"),
+            disableContinue: !path.trim() || !isValidExportFolder(folder),
+            onConfirm: () => { if (path.trim() && isValidExportFolder(folder)) trigger("ConfirmExport", path.trim(), folder); },
+            onCancel: () => trigger("CancelExport")
+        }, h("div", { className: "bb-export-fields" },
+            h("label", null, t("ExportPath")),
+            h("div", { className: "bb-export-path-row" },
+                h(NativeTextInput, { ...textInputProps, multiline: undefined, value: path, maxLength: 4096, onChange: event => setPath(event.target.value) }),
+                h(ui.Tooltip, { tooltip: t("BrowseDirectory") },
+                    h(ui.Button, { className: "bb-export-browse", src: "Media/Editor/Folder.svg", tinted: true,
+                        "aria-label": t("BrowseDirectory"), onSelect: () => trigger("BrowseExportDirectory", path.trim()) }))),
+            h("label", null, t("ExportFolder")),
+            h(NativeTextInput, { ...textInputProps, multiline: undefined, value: folder, maxLength: 255, onChange: event => setFolder(event.target.value) }),
+            !isValidExportFolder(folder) ? h("div", { className: "bb-export-folder-error", role: "alert" }, t("ExportFolderInvalid")) : null));
 }
 
 function Panel() {
@@ -427,9 +508,31 @@ function ToolbarButton() {
             onSelect: () => trigger("TogglePanel") }, h("span", { className: "bb-white-icon", "aria-hidden": true })));
 }
 
+// Native directory fields eagerly share one title. Scope the correction to our
+// two settings fields, and publish their title when the player interacts with them.
+function withDirectoryTitle(Original) {
+    return function BridgeDirectoryField(props) {
+        const context = React.useContext(NativeDirectoryTitleContext);
+        const quietContext = React.useMemo(() => ({ setHeader: () => {} }), []);
+        const owned = typeof props.path === "string" &&
+            /(?:^|\.)BridgeSetting\.(DefaultExportDirectory|RecoveryCopyLocation)$/.test(props.path);
+        if (!owned) return h(Original, props);
+        const activate = () => context.setHeader(props.props.displayName);
+        return h("div", { className: "bb-directory-option-host", onMouseDownCapture: activate,
+            onClickCapture: activate, onFocusCapture: activate },
+            h(NativeDirectoryTitleContext.Provider, { value: quietContext }, h(Original, props)));
+    };
+}
+
 const register = uiSlots => {
+    uiSlots.extend("game-ui/menu/widgets/option-widget-renderer.tsx", "optionsWidgetComponents", components => ({
+        ...components,
+        "Game.UI.Widgets.DirectoryPickerField": withDirectoryTitle(components["Game.UI.Widgets.DirectoryPickerField"])
+    }));
     uiSlots.append("GameTopLeft", ToolbarButton);
     uiSlots.append("Game", Panel);
+    uiSlots.append("Game", ExportDialog);
+    uiSlots.append("Game", ExportSuccessDialog);
 };
 
 const hasCSS = true;

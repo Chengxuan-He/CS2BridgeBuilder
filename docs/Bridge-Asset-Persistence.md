@@ -7,6 +7,8 @@
 - [3. Evidence from the existing creation path](#3-evidence-from-the-existing-creation-path)
 - [4. Application to movable-road conversion](#4-application-to-movable-road-conversion)
 - [5. Review and acceptance](#5-review-and-acceptance)
+- [6. Approved owner-directory layout](#6-approved-owner-directory-layout)
+- [7. Legacy-to-owner-directory migration](#7-legacy-to-owner-directory-migration)
 - [Movable bridge size acceptance](#movable-bridge-size-acceptance)
 - [Organization revision record](#organization-revision-record)
 
@@ -18,6 +20,11 @@ Reviewed on 2026-10-16 against the local working tree on branch `dev`, committed
 `0f4b10ae47c5dc264249e0d877aacc326e3e9525`. Rollback reference:
 `refs/rollback/asset-persistence-scope-20261016`. The reference records committed history, not the
 pre-existing uncommitted implementation or documentation changes.
+
+The owner-directory layout in sections 6–7 is implemented in creation and self-check migration
+(2026-10-19). It supersedes sibling `_Dependencies` and per-component LOD directories.
+Section 3 retains historical path evidence. VT and mid-mip caches are included in the owner
+folder; native cold loading and packaging without Bridge Builder still require game acceptance.
 
 ## 1. Four distinct operations
 
@@ -107,7 +114,7 @@ built-in provenance. It also excludes another bridge's private Prefab as a depen
 
 `src/BridgeBuilder/Runtime/BridgeDependencyCopies.cs` traverses CIDs, deduplicates within each owner,
 preflights destination conflicts, and copies unchanged external bytes with original CID sidecars.
-The destination is:
+The current implementation uses the following legacy destination; section 6 moves it inside the UUID directory:
 
 ```text
 ImportedData/<bridgeUUID>_Dependencies/<CID>.<original extension>
@@ -229,3 +236,297 @@ Organization-only revision (2026-10-17): branch `dev`, HEAD
 Original requirement text, examples, exceptions and revision records are retained. Existing
 numbered sections and heading anchors are preserved; headings, placement and navigation are
 organized without changing requirements or implementation acceptance.
+
+
+## Approved native tiled road material descriptor (2026-10-17)
+
+The user explicitly permits a new native object-material descriptor that references existing
+tileable road textures to eliminate atlas-repeat geometry cuts. This is a scoped exception to
+the existing-material-only rule: do not create or bake textures, introduce custom shaders, modify
+source assets, or change structural and marking materials. Keep one descriptor per required
+appearance within each bridge owner and share it across LODs. Preview descriptors belong only to
+the preview's transient database. Persist formal descriptors with private identities and original
+texture references; native cold loading must not depend on Bridge Builder. Unchanged built-in
+textures remain references, and external dependencies retain the normal snapshot policy.
+
+Use continuous object-local UVs and the native sampler for whole-texture repetition; do not apply
+vertex-wise fractional UVs or cut triangles at repeat boundaries. This exception does not permit
+repeating a mixed atlas as though it were a tileable road texture. Other geometry, marking,
+sidewalk, LOD and acceptance requirements remain unchanged.
+
+Baseline: `dev/d21433ed2a9ee233c8525ce6a0fe2515f973dc7a`; rollback reference
+`refs/rollback/native-tiled-road-material-20261017`. This permission does not establish visual or
+cold-load acceptance.
+
+## Approved GPU composition from existing textures (2026-10-17)
+
+The user explicitly authorizes composing new textures from existing textures. For converted
+movable-road appearance, this supersedes the earlier existing-materials-only, no-new-texture,
+no-baking and no-new-descriptor restrictions, including the narrower tiled-asphalt exception.
+It does not authorize custom runtime shaders, independent marking objects, depth offsets,
+prototype mesh Boolean operations, or source-asset mutation.
+
+- Compose road appearance and paint using existing native texture inputs on a vendor-neutral GPU.
+  Save owner-local textures and native object-material descriptors; do not bake per marking or
+  create separate marking Prefabs. Preserve needed color, alpha, normal and mask channels.
+- Paint must not cut the receiving road. Texture repeat boundaries must not subdivide geometry.
+  Evaluate repetition and paint in pixels. Only physical boundaries, native motion seams and
+  required appearance-domain boundaries may partition the road.
+- Build each of the three LODs from its corresponding native mesh input and measured bridge
+  construction rules. Do not feed the painted/tiled near mesh into every level. Retain the last
+  authored road-piece LOD where the native piece supplies fewer levels. Share composed appearance
+  across levels; use mip filtering rather than replicating paint geometry.
+- Keep prototype structural meshes, skinning, thickness, sidewalk adaptation and LOD thresholds.
+  This appearance permission does not authorize deleting structure to meet a triangle budget.
+- Bound atlas dimensions and share resources within each owner. Generate mipmaps on the GPU,
+  respecting color space and tangent-space normals. Persist textures and descriptors under the
+  bridge's identity; preview resources belong to the transient preview database. Delete failed
+  generation resources. Preserve the existing external dependency snapshot rules.
+- Verify stage times, per-LOD triangles, total serialized size including dependencies, reload and
+  near/far visual appearance. Compilation alone does not establish acceptance or size parity.
+
+Instruction-edit baseline: `dev/d21433ed2a9ee233c8525ce6a0fe2515f973dc7a`.
+Rollback reference: `refs/rollback/gpu-road-composition-20261017`.
+
+### Grouped generated LOD directories (2026-10-18)
+
+Historical implemented layout. Sections 6–7 supersede this directory design; migration to the
+new target layout is implemented in the shared persistence and migration paths.
+
+Generated Prefabs with the terminal naming suffix ` LOD<number>` share the main component's
+ImportedData directory. For example, `Fixed Base 0 LOD1.Prefab` is stored alongside
+`Fixed Base 0.Prefab` in the latter's directory. Each remains a separate native asset with its
+own CID and unchanged LodProperties references. Geometry paths and material sharing are unchanged.
+`BridgePrefabPersistence` is the common creation and migration path authority; the shared native
+writer remains unchanged. Existing assets retain their identities; self-check layout migration
+backs up and moves Prefabs plus CID sidecars without rewriting payloads and requests restart.
+This is a storage-layout change, not geometry regeneration or a reason to remove healthy bridges.
+
+
+## 6. Approved owner-directory layout
+
+Decision date: 2026-10-18. Documentation baseline: branch `dev`, HEAD
+`d21433ed2a9ee233c8525ce6a0fe2515f973dc7a`, with existing working-tree changes preserved.
+This specification applies to fixed and movable bridges. Do not infer implementation or cold-load
+acceptance from its approval. Original documents are backed up separately from active assets.
+
+```text
+ImportedData/<UUID>/
+  Prefabs/         All owned Prefabs, including every LOD
+  Geometry/        Owned generated geometry
+  Appearance/      Owned Surface, Material and ordinary Texture files
+    VT/            Owned VTSurface and VTTexture payloads
+    MidMips/       Owned native mid-mip caches (original tag-bearing filenames)
+  Locales/         Owned native locale assets
+  Dependencies/    Byte-identical external non-built-in dependency snapshots
+```
+
+These are optional categories, not a mandatory pre-created tree. Do not introduce extra folders
+for mechanism, supports, attachments, material types or individual LODs. Names distinguish those
+assets. Keep each Prefab/geometry/texture independently identified by its CID. Do not merge payloads.
+
+### Filename and identity rules
+
+- For owned filenames, remove exactly one (the first) match of `-?b{uuid}[-_ ]?`, where
+  `b{uuid}` is the escaped owning identity and comparison is case-insensitive. Both optional
+  characters are greedy: consume a preceding hyphen and one following hyphen, underscore or ASCII space when present.
+  All characters outside this one match remain exactly unchanged, including spaces, hyphens,
+  underscores, further occurrences and the extension. Do not trim or normalize the result.
+  Names without a match remain unchanged. The explicitly named root Prefab exception below
+  remains `Bridge.Prefab`; an empty name for another asset is an error, not an invented name.
+  New creation and migration share this rule. Migration transforms the existing disk basename,
+  never substitutes the serialized Prefab name for it.
+- The main Prefab whose stem equals the owner UUID becomes `Prefabs/Bridge.Prefab`.
+- A `.cid` sidecar follows its payload's new path/name. Its bytes and the payload's CID do not change.
+- Internal Prefab names, serialized references, versions, geometry, materials and animation remain
+  unchanged during layout migration. The on-disk basename may therefore differ from the internal name;
+  validators must not require equality. Retain UUID-bearing internal names for native identity.
+- Flattening or UUID removal can produce a filename collision. Reuse only byte-identical
+  payload/CID pairs; otherwise report the conflict without overwriting or inventing a suffix.
+  Unknown types are handled under section 7.
+- Dependency snapshots keep their CID-based filenames and original contents. Never apply owned-file
+  renaming or type-category routing inside `Dependencies`. Built-in assets remain references.
+
+Example (sidecars follow the same mapping):
+
+```text
+ImportedData/<UUID> Fixed Base 0 LOD1/<UUID> Fixed Base 0 LOD1.Prefab
+  -> ImportedData/<UUID>/Prefabs/ Fixed Base 0 LOD1.Prefab
+ImportedData/<UUID>/<UUID>.Prefab
+  -> ImportedData/<UUID>/Prefabs/Bridge.Prefab
+ImportedData/<old component directory>/GoldenGateDouble-38_5-<UUID>.Prefab
+  -> ImportedData/<UUID>/Prefabs/GoldenGateDouble-38_5.Prefab
+ImportedData/<UUID>/Locales/<UUID>-en-US.loc
+  -> ImportedData/<UUID>/Locales/en-US.loc
+```
+
+### Empty directories and ownership
+
+Create a category directory only when its first actual payload is written. No placeholder files
+or empty directory skeletons. Missing optional directories are not damage; validate required
+references and payloads instead. Failed generation removes only its own created files and then
+its newly empty directories. Successful migration removes emptied source directories only after
+verification, within verified owner-scoped boundaries. Never remove unrelated or nonempty folders.
+
+An asset is owned by the UUID path context even when its basename no longer contains a UUID.
+Update ownership, cleanup, export, audit and source-isolation code accordingly before deployment.
+Keep logs, manager state, reports, backups and preview caches outside the active bridge directory.
+
+### VT and packaging boundary
+
+Generated `.VTSurface` and `.VTTexture` files use `Appearance/VT/`; native `.MidMips`
+files use `Appearance/MidMips/`. These optional directories are created only when needed.
+The native file data source enumerates supported extensions recursively. Surface headers resolve
+VT by CID; `TextureStreamingSystem` discovers mid-mip caches by the tag assigned from the cache
+filename by `MidMipCacheAsset.PostCreate`. Preserve that filename, tag, payload and CID.
+
+The native VT writer derives temporary streaming filenames from the full Surface/Texture name.
+Keep owner-qualified names during that write, then relocate the generated resources before native
+streaming captures file descriptors. New mid-mip caches are written directly to their final path.
+Do not use native `MoveTo` within one database: it is a cross-database transfer that deletes the
+source registration. The generation helper copies payload/sidecar, switches the native data-source
+entry with the original CID, and restores the original on a registration failure. This is a creation
+operation only; saved bridges require no manager updates or patches to resolve their resources.
+
+The intended packaging boundary is the complete UUID directory, with required game/DLC resources
+present. External non-built-in dependencies retain their byte-identical CID snapshots under
+`Dependencies`. File-layout and native API inspection are not cold-load acceptance: verify loading
+and packaging without Bridge Builder in game before claiming that acceptance.
+
+## 7. Legacy-to-owner-directory migration
+
+Use the owner UUID, dependency provenance and file extension. No bridge-style, bone, LOD or
+component-name classification is necessary. New creation and migration must share the same path
+mapping. The following table describes the implemented target layout.
+
+Apply rules in this order:
+
+| Priority | Source | Destination |
+| --- | --- | --- |
+| 1 | Files under `ImportedData/<UUID>_Dependencies/` | `ImportedData/<UUID>/Dependencies/`, preserving every relative path and filename |
+| 2 | Files already under `<UUID>/Dependencies/` | Leave in place; never parse or rename an external Prefab as an owned component |
+| 3 | Owned `.Prefab`, from old per-Prefab, grouped-LOD or nested directories | `<UUID>/Prefabs/<short name>.Prefab`; exact UUID root becomes `Bridge.Prefab` |
+| 4 | Owned `.Geometry`, including files in the old `BridgeBuilder/` tree | `<UUID>/Geometry/<short name>.Geometry` |
+| 5 | Owned `.Surface`, `.Material`, `.Texture` | `<UUID>/Appearance/<short name>.<extension>` |
+| 6 | Owned `.loc` (native) or legacy `.Locale` | `<UUID>/Locales/<short name>.<original extension>` |
+| 7 | `.cid` sidecar | Follow its corresponding payload; never map it independently |
+| 8 | Owned `.VTSurface`, `.VTTexture`, including old `StreamingData~/VT/` files | `<UUID>/Appearance/VT/<short name>.<extension>` |
+| 9 | Owned `.MidMips`, including old `BridgeBuilder/<UUID> Road Surface/` caches | `<UUID>/Appearance/MidMips/<original filename>` |
+| 10 | Unrecognized types | Retain in place for explicit review; never delete unknown payloads |
+
+`<short name>` follows section 6's owner-UUID removal rule. Resolve ownership using existing approved
+UUID/path rules plus the new UUID-directory context. Ambiguous or foreign ownership must not be
+guessed. References to another bridge's private resources remain disallowed. Legacy internal-name
+conversion is a separate existing operation; this layout migration does not rename serialized objects.
+
+### Transaction and collision rules
+
+1. Inventory the selected owner's files and required references; construct the full mapping before
+   writing. Keep originals and CID sidecars paired. Missing required payloads/sidecars are errors.
+2. Check that all resolved absolute paths remain in the intended source/target scope. Preflight
+   flattened filename collisions, including two old folders mapping to the same short basename.
+3. If already at the target path, do nothing. An existing destination may only be reused after
+   proving identical payload bytes and identical CID sidecar bytes. Different bytes or identities
+   stop this owner's layout migration and report the conflict; do not overwrite or invent suffixes.
+4. Back up every affected original file and sidecar before moving anything. Backups contain originals
+   only, outside the active asset tree. Retain source bytes for rollback until the transaction succeeds.
+5. Move without reserializing payloads, reallocating CIDs or rewriting references. Verify target
+   bytes/identity and all mapped reference resolutions. Remove old duplicates only after verified
+   identity and backup. On failure restore affected paths; report any incomplete rollback explicitly.
+6. Remove verified empty old owner directories. Re-running migration must be a no-op. Unknown
+   files stay in place for review; their presence must not trigger blanket deletion.
+7. Request restart after a file-only migration that affects cached native assets. Do not continue
+   reading stale database streams, mutate live Prefabs, or represent a directory move as rebuilding
+   a bridge. A layout conflict alone does not authorize deletion of a healthy bridge; distinguish
+   it from the existing damaged-asset repair/removal policy.
+
+### Required implementation review and acceptance
+
+Before implementing this layout, update all producers and consumers together: Prefab/geometry/
+material/texture/locale writers, dependency writer and exclusions, source isolation, disk audit,
+legacy-name handling, file-layout migration, pending-creation cleanup, UUID deletion/backup, and
+pack/export discovery. Disk filename and internal Prefab name must be allowed to differ.
+
+Verify migrations from both the old per-Prefab layout and the grouped-LOD layout, already-migrated
+inputs, identical and conflicting destinations, missing sidecars, rollback after partial IO failure,
+unknown types, dependency Prefabs with unrelated internal names, and preservation of other owners.
+Then verify native cold loading and packaging without Bridge Builder. Keep documentation approval,
+implementation, deployment and game acceptance as separate statuses.
+
+### Implementation and verification record (2026-10-19)
+
+- `BridgePrefabPersistence` and `BridgeAssetInfo` share category/short-name rules across Prefabs,
+  geometry, paint resources, locales, movable material finalization and file-only migration.
+- `BridgeAssetLayout` handles old per-component/grouped LOD folders, ordinary appearance files,
+  VT, mid-mip caches and dependency directories. Complete payload/CID pairs are preflighted and
+  backed up; identical pairs may be reused. Conflicts preserve healthy bridges. Partial moves
+  roll back, and successful reruns do nothing. Internal names and native references are unchanged.
+- Root lookup accepts `Prefabs/Bridge.Prefab` and the legacy UUID filename. Dependency provenance
+  and foreign-source isolation accept both layouts. Legacy-name migration recognizes short-named
+  owned geometry, avoiding unnecessary new identities after layout migration.
+- Automated checks cover layout, resource relocation, self-check lifecycle, dependency copying,
+  source isolation, legacy conversion and scoped cleanup. Native VT discovery/tag handling was
+  inspected in the installed game code. This record does not assert in-game cold-load acceptance.
+
+### Filename rule revision (2026-10-19)
+
+The latest user instruction supersedes the earlier global-removal/trim rule. Remove only one
+match of `-?b{uuid}[-_ ]?` and preserve every other character. For example, `Name-b{uuid}_LOD1`
+becomes `NameLOD1`, while `b{uuid}-en-US.loc` becomes `en-US.loc`.
+`b{uuid} Fixed Base 0 LOD1.Prefab` becomes `Fixed Base 0 LOD1.Prefab`.
+Only one following separator is consumed; additional spaces and tabs remain unchanged.
+Already-short names without an owner match are not trimmed retroactively.
+The native locale extension is `.loc`; migration recognizes it as well as legacy `.Locale`.
+Serialized names, resource contents and CID sidecars remain unchanged. Locale lookup accepts
+legacy UUID-bearing names, previous short locale IDs and the exact new filename.
+Baseline: `dev/d21433ed2a9ee233c8525ce6a0fe2515f973dc7a` plus preserved working changes.
+
+## Bridge ZIP export (2026-10-19)
+
+Export is an action button named **Export** inside **Manage bridges**, alongside Build
+and Delete. There is no separate export tab or page. Select a bridge and click Export,
+then confirm its editable absolute ZIP path and top-level archive folder before any output
+is created. The default
+path is `<configured export directory>/<bridge display name>.zip`; characters invalid
+in a filename are replaced with underscores. The mod settings directory picker defaults
+to `Documents/BridgeBuilder/Exports`.
+
+Export copies all files recursively from `ImportedData/<bridge UUID>/`, including CID
+sidecars and owner-local dependency, VT and mid-mip files. Archive entry names are
+prefixed by exactly one player-selected top-level folder, defaulting to the selected
+bridge identity `b{uuid}`: `b{uuid}/Prefabs/Bridge.Prefab`, for example. The folder name
+is independent of the ZIP filename and is editable for each export. It must be one
+nonempty valid Windows directory name, not a path: reject separators, control characters,
+reserved device names, `.`/`..`, and trailing spaces or periods. Invalid names produce the
+normal export-failure popup without creating an archive. Do not silently rewrite the name.
+Empty directories are omitted. Export does not alter
+source files, asset identities, references, geometry or migration rules.
+
+Compression runs on a file-only background worker. A temporary archive is completed
+before it is moved to the chosen destination. Existing destination files are not
+overwritten. Failures remove the temporary archive when accessible, report a warning
+and show a failure popup; they do not use the ERROR channel. Successful export shows
+the destination in a popup. File checks cover the archive root, unchanged file bytes,
+CID sidecars, nested dependencies, collision protection and failed-export cleanup.
+In-game interaction remains subject to player acceptance.
+
+ZIP wrapper revision baseline: `dev/d21433ed2a9ee233c8525ce6a0fe2515f973dc7a`,
+preserving existing working changes. This supersedes the earlier wrapper-free ZIP rule.
+The wrapper name does not change internal bridge ownership or asset identities.
+
+Export interaction uses the native `cs2/ui.ConfirmationDialog`, native TextInput and
+Button controls, and native `DirectoryBrowserPanel` with mod-owned `WidgetBindings`, rendered by
+`EditorWidgetListRenderer` inside the native directory-picker panel/backdrop theme,
+with native `FocusRoot`, `AutoNavigationScope` and `BackConsumer`. Do not put the directory
+page view in a message dialog text slot; it needs the native picker layout constraints. Do not use the settings-only
+`OptionsUISystem.OpenDirectoryBrowser`: it does not update outside the options screen.
+Both export text inputs are single-line. The dialog mounts separately from the non-interactive bridge
+panel. Choose folder preserves the editable ZIP filename and custom archive-root name;
+canceling the browser leaves those fields intact. The confirmation action is **Export**.
+
+The export-success notification uses a native confirmation dialog with **Open folder**
+and **Close** actions. Render the formatted success text as a plain React text child,
+not the native rich-text message property: Windows backslashes must remain literal.
+Open folder uses the parent directory of the completed export path held by the backend,
+not a path supplied by the click event. Failure to open that directory is reported as
+an open-folder failure without changing the successful export status.

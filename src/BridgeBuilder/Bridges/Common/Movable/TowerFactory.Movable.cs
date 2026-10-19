@@ -8,6 +8,9 @@ namespace BridgeBuilder.Bridges;
 
 internal sealed partial class TowerFactory
 {
+    internal MovableRoadMaterial CreateMovableRoadMaterial(Colossal.IO.AssetDatabase.SurfaceAsset source)
+        => new(_bridgeName, source, _previewGeometry);
+
     // Lighting conversion writes native root-owned effects. Bind only AFTER the
     // final mechanism exists, so these effects are not left on a staging object.
     internal void AttachMovableRoadObjects(StaticObjectPrefab mechanism,

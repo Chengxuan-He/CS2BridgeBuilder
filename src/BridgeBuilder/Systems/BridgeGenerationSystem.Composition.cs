@@ -232,7 +232,7 @@ public partial class BridgeGenerationSystem
                 Mod.Log.Info($"{exportName}: owned prefab graph: " + string.Join("; ", nodes
                     .Where(node => node.NeedsSave).GroupBy(node => node.Target.GetType().Name)
                     .OrderBy(group => group.Key).Select(group => $"{group.Key}={group.Count()}")));
-            report.SavedDependencies = new PrefabAssetWriter().Save(nodes);
+            report.SavedDependencies = BridgePrefabPersistence.Save(nodes);
             Mod.Log.Info($"{exportName}: prefab serialization count={report.SavedDependencies}; elapsedMs={generationClock.ElapsedMilliseconds-saveStart}; preSaveMs={saveStart}.");
             if (!BridgeDependencyPersistence.Save(clone.name,
                 nodes.Where(node => node.NeedsSave && node.Target.asset != null)

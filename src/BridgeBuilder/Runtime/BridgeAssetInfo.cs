@@ -14,6 +14,30 @@ namespace BridgeBuilder.Runtime;
 /// </summary>
 internal sealed class BridgeAssetInfo
 {
+    internal static bool IsDependencyPath(string path, string owner)
+    {
+        var parts = path.Split('\\', '/');
+        for (var i = 0; i < parts.Length; i++)
+            if (parts[i].Equals(owner + "_Dependencies", StringComparison.OrdinalIgnoreCase)
+                || (parts[i].Equals(owner, StringComparison.OrdinalIgnoreCase) && i + 1 < parts.Length
+                    && parts[i + 1].Equals("Dependencies", StringComparison.OrdinalIgnoreCase))) return true;
+        return false;
+    }
+
+    internal static string ShortName(string name, string owner)
+    {
+        return new Regex("-?" + Regex.Escape(owner) + "[-_ ]?", RegexOptions.IgnoreCase).Replace(name, "", 1);
+    }
+
+    internal static string OwnedDirectory(string owner, string category) => "ImportedData/" + owner + "/" + category;
+
+    internal static string? AssetCategory(string extension) => extension.ToLowerInvariant() switch
+    {
+        ".prefab" => "Prefabs", ".geometry" => "Geometry",
+        ".surface" or ".material" or ".texture" => "Appearance", ".locale" or ".loc" => "Locales",
+        ".vtsurface" or ".vttexture" => "Appearance/VT", ".midmips" => "Appearance/MidMips", _ => null
+    };
+
     private static readonly Regex AssetOwner = new(@"b[0-9a-fA-F]{8}(?:-[0-9a-fA-F]{4}){3}-[0-9a-fA-F]{12}");
     internal static bool TryFileOwner(string? path, out string owner)
     {

@@ -122,3 +122,24 @@
 .bb-header nav { flex: 1 1 0; min-width: 0; }
 .bb-header nav button { flex: 1 1 auto; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .bb-close { flex-shrink: 0; }
+
+
+/* Content stays within the native dialog; only the form controls are styled here. */
+.bb-export-fields { width: 100%; max-width: 100%; min-width: 0; box-sizing: border-box; pointer-events: auto; display: flex; flex-direction: column; text-align: left; padding: 4rem 0; }
+.bb-export-fields label { font-size: 16rem; line-height: 22rem; margin-top: 20rem; margin-bottom: 8rem; }
+.bb-export-fields label:first-child { margin-top: 0; }
+.bb-export-fields .bb-text-input { width: 100%; min-width: 0; max-width: 100%; height: 34rem; box-sizing: border-box; margin: 0; padding: 5rem 8rem; font-size: 16rem; text-align: left; }
+.bb-export-path-row { display: flex; align-items: center; width: 100%; min-width: 0; }
+.bb-export-path-row .bb-text-input { flex: 1 1 0; width: 0; }
+.bb-export-fields .bb-export-browse { flex: 0 0 34rem; width: 34rem; height: 34rem; box-sizing: border-box; margin-left: 8rem; padding: 6rem; border: 1rem solid rgba(180,205,225,0.7); border-radius: 4rem; background-color: rgba(12,24,42,0.45); color: white; }
+.bb-export-fields .bb-export-browse:hover { border-color: #63c8e8; background-color: rgba(60,115,150,0.6); }
+.bb-export-fields .bb-export-browse:focus-visible { border-color: #63c8e8; }
+
+/* Place the native picker above the gameplay management panel. */
+.bb-export-browser-layer { z-index: 100; }
+
+.bb-directory-option-host { width: 100%; min-width: 0; }
+
+.bb-export-success-path { width: 100%; min-width: 0; white-space: pre-wrap; overflow-wrap: break-word; word-break: break-all; text-align: left; }
+
+.bb-export-folder-error { margin-top: 8rem; color: #ffb4ab; font-size: 14rem; text-align: left; white-space: pre-wrap; }

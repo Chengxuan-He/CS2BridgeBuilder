@@ -5,6 +5,7 @@
 - [Contract routing and scope](#contract-routing-and-scope)
 - [First rule: fix reported bugs immediately](#first-rule-fix-reported-bugs-immediately)
 - [Computer-use prohibition](#computer-use-prohibition)
+- [Native game UI windows (2026-10-19)](#native-game-ui-windows-2026-10-19)
 - [20. Immutable mod metadata name](#20-immutable-mod-metadata-name)
 - [All documentation is written in English (2026-10-15)](#all-documentation-is-written-in-english-2026-10-15)
 - [Default documentation format (2026-10-15)](#default-documentation-format-2026-10-15)
@@ -75,6 +76,32 @@ native desktop control, and browser UI automation through computer-use. Use file
 tools, command-line tools, or purpose-built APIs instead. When no permitted
 alternative exists, request manual UI interaction from the user. Do not circumvent
 this prohibition with another UI automation tool.
+
+## Native game UI windows (2026-10-19)
+
+All UI windows must be created through Cities: Skylines II native UI APIs and components.
+This includes panels, modal dialogs, confirmation/message windows and file/directory pickers.
+Do not substitute custom HTML/CSS window shells or operating-system dialogs for native game
+windows. Mod-specific content, localized labels and bindings may be composed inside native
+containers; styling alone does not make a custom window native.
+
+Use the native window lifecycle, focus, input handling and modal backdrop. File or directory
+selection must use the game's native picker interface rather than only a text field. Inspect
+the installed game's API and existing native usage before choosing an interface; do not invent
+unsupported calls. For example, the export flow uses `cs2/ui.ConfirmationDialog`, native input
+and button components, and `DirectoryBrowserPanel` with mod-owned `WidgetBindings` and
+`EditorWidgetListRenderer` inside the native directory-picker panel/backdrop theme,
+with native `FocusRoot`, `AutoNavigationScope` and `BackConsumer`. Do not put the directory
+page view in a message dialog text slot; it needs the native picker layout constraints. The options-only directory browser
+does not update while the options screen is closed; do not use it for gameplay dialogs.
+Keep dialogs out of non-interactive parents that suppress pointer events. Verify clicking,
+text entry, selection, cancellation and confirmation in game before claiming interaction works;
+compilation alone is insufficient. The computer-use prohibition still applies.
+
+Instruction-edit baseline: branch `dev`, HEAD
+`d21433ed2a9ee233c8525ce6a0fe2515f973dc7a`. Existing working-tree changes are preserved.
+This revision records the user's project-wide requirement; it does not establish acceptance
+of existing windows or authorize unrelated code changes in this documentation-only task.
 
 ## 20. Immutable mod metadata name
 

@@ -62,7 +62,7 @@ internal static class BridgeLegacyNames
                 var owned = assets.Where(a => BridgeAssetInfo.MatchesOwner(a.Path, owner)).ToArray();
                 var reachable = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
                 var pending = new Stack<string>(owned.Where(a => a.Name == owner
-                    && !a.Path.Contains(owner + "_Dependencies")).Select(a => a.Cid));
+                    && !BridgeAssetInfo.IsDependencyPath(a.Path, owner)).Select(a => a.Cid));
                 while (pending.Count != 0)
                 {
                     var cid = pending.Pop();
@@ -85,7 +85,10 @@ internal static class BridgeLegacyNames
                         && part.Type != "Game.Prefabs.RenderPrefab, Game"
                         && !part.Path.EndsWith(".Geometry", StringComparison.OrdinalIgnoreCase)) continue;
                     var partName = part.Name.Length == 0 ? Path.GetFileNameWithoutExtension(part.Path) : part.Name;
-                    if (!BridgeAssetInfo.MatchesOwner(partName, owner)) components.Add(cid, part);
+                    var ownedGeometry = part.Path.EndsWith(".Geometry", StringComparison.OrdinalIgnoreCase)
+                        && BridgeAssetInfo.MatchesOwner(part.Path, owner)
+                        && !BridgeAssetInfo.IsDependencyPath(part.Path, owner);
+                    if (!ownedGeometry && !BridgeAssetInfo.MatchesOwner(partName, owner)) components.Add(cid, part);
                     foreach (var child in BridgeDependencyCopies.References(part.Bytes))
                     {
                         pending.Push(child);
@@ -107,7 +110,8 @@ internal static class BridgeLegacyNames
                     var extension = Path.GetExtension(asset.Path);
                     var path = extension.Equals(".Prefab", StringComparison.OrdinalIgnoreCase)
                         ? Path.Combine(gameRoot, prefabPath(name))
-                        : Path.Combine(geometry, name + extension);
+                        : Path.Combine(gameRoot, BridgeAssetInfo.OwnedDirectory(owner, "Geometry"),
+                            BridgeAssetInfo.ShortName(name, owner) + extension);
                     var bytes = asset.Text.Length == 0 ? File.ReadAllBytes(BridgeFileAccess.Native(asset.Path)) : asset.Bytes;
                     if (asset.Text.Length != 0)
                     {

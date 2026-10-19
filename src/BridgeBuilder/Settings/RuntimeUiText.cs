@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Globalization;
 
@@ -16,6 +16,58 @@ internal static class RuntimeUiText
 
     private static readonly Dictionary<string, string[]> Entries = new(StringComparer.Ordinal)
     {
+        ["BrowseDirectory"] = new[]
+        {
+            "Choose folder…", "选择目录…", "選擇目錄…", "Ordner auswählen…", "Elegir carpeta…", "Choisir un dossier…", "Scegli cartella…", "フォルダーを選択…", "폴더 선택…", "Wybierz folder…", "Escolher pasta…", "Выбрать папку…"
+        },
+        ["OpenExportDirectory"] = new[]
+        {
+            "Open folder", "打开目录", "開啟目錄", "Ordner öffnen", "Abrir carpeta", "Ouvrir le dossier", "Apri cartella", "フォルダーを開く", "폴더 열기", "Otwórz folder", "Abrir pasta", "Открыть папку"
+        },
+        ["OpenExportDirectoryFailed"] = new[]
+        {
+            "The bridge was exported, but its folder could not be opened.", "桥梁已导出，但无法打开所在目录。", "橋梁已匯出，但無法開啟所在目錄。", "Die Brücke wurde exportiert, aber der Ordner konnte nicht geöffnet werden.", "El puente se exportó, pero no se pudo abrir su carpeta.", "Le pont a été exporté, mais son dossier n’a pas pu être ouvert.", "Il ponte è stato esportato, ma non è stato possibile aprire la cartella.", "橋はエクスポートされましたが、フォルダーを開けませんでした。", "교량은 내보냈지만 폴더를 열 수 없습니다.", "Most wyeksportowano, ale nie można otworzyć folderu.", "A ponte foi exportada, mas não foi possível abrir a pasta.", "Мост экспортирован, но открыть папку не удалось."
+        },
+        ["Export"] = new[]
+        {
+            "Export", "导出", "匯出", "Exportieren", "Exportar", "Exporter", "Esporta", "エクスポート", "내보내기", "Eksportuj", "Exportar", "Экспорт"
+        },
+        ["ExportTab"] = new[]
+        {
+            "Export bridge", "导出桥梁", "匯出橋梁", "Brücke exportieren", "Exportar puente", "Exporter le pont", "Esporta ponte", "橋をエクスポート", "교량 내보내기", "Eksportuj most", "Exportar ponte", "Экспорт моста"
+        },
+        ["ExportFolder"] = new[]
+        {
+            "Top-level folder name", "一级目录名称", "第一層目錄名稱", "Name des obersten Ordners", "Nombre de la carpeta principal", "Nom du dossier racine", "Nome della cartella principale", "最上位フォルダー名", "최상위 폴더 이름", "Nazwa folderu głównego", "Nome da pasta principal", "Имя корневой папки"
+        },
+        ["ExportFolderInvalid"] = new[]
+        {
+            "Enter a folder name of 1–255 characters. Do not use control characters, < > : \" / \\ | ? *, reserved device names, or a trailing space or period.", "请输入 1–255 个字符的目录名称。不能包含控制字符、< > : \" / \\ | ? *，不能使用系统保留设备名，也不能以空格或句点结尾。", "請輸入 1–255 個字元的目錄名稱。不得包含控制字元、< > : \" / \\ | ? *，不得使用系統保留裝置名稱，也不得以空格或句點結尾。", "Geben Sie einen Ordnernamen mit 1–255 Zeichen ein. Keine Steuerzeichen, < > : \" / \\ | ? *, reservierten Gerätenamen oder Leerzeichen/Punkte am Ende.", "Introduce un nombre de 1–255 caracteres. No uses caracteres de control, < > : \" / \\ | ? *, nombres de dispositivo reservados ni espacios o puntos al final.", "Saisissez un nom de 1 à 255 caractères, sans caractères de contrôle, < > : \" / \\ | ? *, noms de périphériques réservés, ni espace ou point final.", "Inserisci un nome di 1–255 caratteri. Non usare caratteri di controllo, < > : \" / \\ | ? *, nomi di dispositivi riservati o spazi e punti finali.", "1～255 文字のフォルダー名を入力してください。制御文字、< > : \" / \\ | ? *、予約済みデバイス名、末尾の空白やピリオドは使用できません。", "1–255자의 폴더 이름을 입력하세요. 제어 문자, < > : \" / \\ | ? *, 예약된 장치 이름, 끝의 공백이나 마침표는 사용할 수 없습니다.", "Wpisz nazwę folderu o długości 1–255 znaków. Bez znaków sterujących, < > : \" / \\ | ? *, zastrzeżonych nazw urządzeń oraz spacji lub kropki na końcu.", "Insira um nome de 1–255 caracteres. Não use caracteres de controle, < > : \" / \\ | ? *, nomes de dispositivos reservados nem espaço ou ponto no final.", "Введите имя папки длиной 1–255 символов. Нельзя использовать управляющие символы, < > : \" / \\ | ? *, зарезервированные имена устройств, пробел или точку в конце."
+        },
+        ["ExportPath"] = new[]
+        {
+            "Save location and filename", "保存位置和文件名", "儲存位置與檔名", "Speicherort und Dateiname", "Ubicación y nombre del archivo", "Emplacement et nom du fichier", "Percorso e nome del file", "保存先とファイル名", "저장 위치 및 파일 이름", "Lokalizacja i nazwa pliku", "Local e nome do arquivo", "Путь и имя файла"
+        },
+        ["ExportBusy"] = new[]
+        {
+            "Exporting…", "正在导出…", "正在匯出…", "Export läuft…", "Exportando…", "Exportation…", "Esportazione…", "エクスポート中…", "내보내는 중…", "Eksportowanie…", "Exportando…", "Экспорт…"
+        },
+        ["ExportDirectory"] = new[]
+        {
+            "Default export directory", "默认导出目录", "預設匯出目錄", "Standard-Exportordner", "Carpeta de exportación predeterminada", "Dossier d’exportation par défaut", "Cartella di esportazione predefinita", "既定のエクスポート先", "기본 내보내기 폴더", "Domyślny folder eksportu", "Pasta padrão de exportação", "Папка экспорта по умолчанию"
+        },
+        ["ExportDirectoryDescription"] = new[]
+        {
+            "Default folder for bridge ZIP files. Confirm or change the path and filename before exporting.", "桥梁 ZIP 的默认保存目录。导出前可确认或更改路径和文件名。", "橋梁 ZIP 的預設儲存目錄。匯出前可確認或更改路徑與檔名。", "Standardordner für Brücken-ZIP-Dateien. Pfad und Dateiname vor dem Export bestätigen oder ändern.", "Carpeta predeterminada para ZIP de puentes. Confirma o cambia la ruta y el nombre antes de exportar.", "Dossier par défaut des ZIP de ponts. Confirmez ou modifiez le chemin et le nom avant l’exportation.", "Cartella predefinita per gli ZIP dei ponti. Conferma o modifica percorso e nome prima di esportare.", "橋の ZIP の既定フォルダー。エクスポート前にパスとファイル名を確認・変更できます。", "교량 ZIP의 기본 폴더입니다. 내보내기 전에 경로와 파일 이름을 확인하거나 변경하세요.", "Domyślny folder plików ZIP mostów. Przed eksportem potwierdź lub zmień ścieżkę i nazwę.", "Pasta padrão dos ZIPs de pontes. Confirme ou altere o caminho e o nome antes de exportar.", "Папка ZIP-файлов мостов. Перед экспортом подтвердите или измените путь и имя."
+        },
+        ["ExportSuccess"] = new[]
+        {
+            "Bridge exported to:\n{0}", "桥梁已导出至：\n{0}", "橋梁已匯出至：\n{0}", "Brücke exportiert nach:\n{0}", "Puente exportado a:\n{0}", "Pont exporté vers :\n{0}", "Ponte esportato in:\n{0}", "橋のエクスポート先：\n{0}", "교량 내보내기 완료:\n{0}", "Most wyeksportowano do:\n{0}", "Ponte exportada para:\n{0}", "Мост экспортирован:\n{0}"
+        },
+        ["ExportFailed"] = new[]
+        {
+            "Bridge export failed:\n{0}", "桥梁导出失败：\n{0}", "橋梁匯出失敗：\n{0}", "Brückenexport fehlgeschlagen:\n{0}", "Error al exportar el puente:\n{0}", "Échec de l’exportation du pont :\n{0}", "Esportazione del ponte non riuscita:\n{0}", "橋のエクスポートに失敗：\n{0}", "교량 내보내기 실패:\n{0}", "Eksport mostu nie powiódł się:\n{0}", "Falha ao exportar ponte:\n{0}", "Не удалось экспортировать мост:\n{0}"
+        },
         ["SettingsGeneral"] = new[]
         {
             "General", "常规", "一般", "Allgemein", "General", "Général",

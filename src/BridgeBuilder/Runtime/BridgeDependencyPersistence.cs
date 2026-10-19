@@ -57,7 +57,7 @@ internal static class BridgeDependencyPersistence
         var meta = asset.GetMeta();
         if (BridgeAssetInfo.IsOtherBridgePrefab(meta.path, owner,
             Path.Combine(UnityEngine.Application.persistentDataPath, "ImportedData"))) return null;
-        var owned = !meta.packaged && !meta.path.Contains(owner + "_Dependencies")
+        var owned = !meta.packaged && !BridgeAssetInfo.IsDependencyPath(meta.path, owner)
             && (BridgeAssetInfo.MatchesOwner(meta.path, owner) || BridgeAssetInfo.MatchesOwner(meta.subPath, owner));
         using var stream = asset.GetReadStream(); // Still open: missing/inaccessible owned files remain failures.
         var surface = meta.extension.Equals(".Surface", StringComparison.OrdinalIgnoreCase)

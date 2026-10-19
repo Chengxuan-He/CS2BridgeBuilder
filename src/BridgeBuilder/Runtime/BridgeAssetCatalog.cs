@@ -15,11 +15,12 @@ internal static class BridgeAssetCatalog
     internal static string Root => Path.Combine(UnityEngine.Application.persistentDataPath, "ImportedData");
     private static string PathFor(string owner)
     {
-        var canonical = Path.Combine(Root, owner, owner + ".Prefab");
+        var canonical = Path.Combine(Root, owner, "Prefabs", "Bridge.Prefab");
         if (BridgeFileAccess.Exists(canonical) || !Directory.Exists(BridgeFileAccess.Native(Root))) return canonical;
         return Directory.EnumerateFiles(BridgeFileAccess.Native(Root), "*.Prefab", SearchOption.AllDirectories)
             .Select(BridgeFileAccess.Logical)
-            .FirstOrDefault(p => BridgeAssetInfo.MatchesOwner(p.Substring(Root.Length), owner)) ?? canonical;
+            .FirstOrDefault(p => !BridgeAssetInfo.IsDependencyPath(p, owner)
+                && Path.GetFileName(p).Equals(owner + ".Prefab", StringComparison.OrdinalIgnoreCase)) ?? canonical;
     }
 
     internal static IReadOnlyList<BridgeAssetInfo> Load() => ReadAll().Where(e => !e.Pending)

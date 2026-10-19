@@ -29,7 +29,7 @@ const known = key => assert(entries.has(key), `Untranslated key: ${key}`);
 const uiSource = read("src/BridgeBuilder/UI/BridgeBuilder.mjs");
 for (const match of uiSource.matchAll(/\bt\("(\w+)"\)/g)) known(match[1]);
 const consumers = [
-    "UI/BridgeBuilderUISystem.cs", "Systems/BridgeGenerationSystem.cs",
+    "UI/BridgeBuilderUISystem.cs", "UI/BridgeBuilderUISystem.Export.cs", "Systems/BridgeGenerationSystem.cs",
     "Runtime/BridgePreviewRenderer.cs", "Runtime/BridgePreviewState.cs", "Bridges/BridgePrototypeSource.cs",
     "Systems/BridgeStartupAssetSystem.cs", "Mod.cs"
 ].map(path => path === "Systems/BridgeGenerationSystem.cs" ? readGenerationSource() : read(`src/BridgeBuilder/${path}`));
@@ -60,6 +60,13 @@ const context = vm.createContext({ window: {
     "cs2/ui": {},
     "cs2/input": { FOCUS_DISABLED: "focus-disabled" },
     "cs2/modding": { getModule: (path, name) => {
+        if (path === "game-ui/common/panel/panel-backdrop.tsx" && name === "PanelBackdrop") return "native-backdrop";
+        if (path === "game-ui/common/focus/focus-root.tsx" && name === "FocusRoot") return "native-focus-root";
+        if (path === "game-ui/common/focus/auto-navigation-scope.tsx" && name === "AutoNavigationScope") return "native-navigation";
+        if (path === "game-ui/common/input-events/input-action-consumer.tsx" && name === "BackConsumer") return "native-back";
+        if (path === "game-ui/menu/widgets/directory-picker/bound-directory-picker.module.scss" && name === "classes") return { panel: "native-picker-panel", backdrop: "native-picker-backdrop", header: "native-picker-header" };
+        if (path === "game-ui/editor/widgets/editor-widget-renderer.tsx" && name === "EditorWidgetListRenderer") return "native-widget-list";
+        if (path === "game-ui/menu/widgets/directory-picker/bound-directory-picker.tsx" && name === "DirectoryPickerDialogContext") return {};
         if (path === "game-ui/common/input/text/text-input.tsx" && name === "TextInput") return "input";
         if (path === "game-ui/common/input/toggle/checkbox/checkbox.tsx" && name === "Checkbox") return "native-checkbox";
         if (path === "game-ui/editor/widgets/item/editor-item.module.scss" && name === "classes") return { input: "native-input-theme" };

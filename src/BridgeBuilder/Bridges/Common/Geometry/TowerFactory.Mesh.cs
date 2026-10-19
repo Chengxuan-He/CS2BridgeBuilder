@@ -447,7 +447,7 @@ internal sealed partial class TowerFactory
             if (!BridgeBuilder.Runtime.BridgeAssetInfo.MatchesOwner(geometryAssetName, _bridgeName))
             { _report.Defect($"Geometry persistence requires a bridge UUID in its name: '{geometryAssetName}' (owner '{_bridgeName}')."); return null; }
             asset = AssetDatabase.user.AddAsset(
-                AssetDataPath.Create("BridgeBuilder", geometryAssetName, EscapeStrategy.None),
+                BridgeBuilder.Runtime.BridgePrefabPersistence.ResourcePath(geometryAssetName, "Geometry"),
                 geometry);
 
             // Registering an asset is not writing it. Without this the geometry existed in the database

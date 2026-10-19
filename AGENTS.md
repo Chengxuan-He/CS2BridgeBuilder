@@ -5,6 +5,18 @@ including documentation, README files, manifests, checksum files or additional m
 
 # Repository Agent Instructions
 
+## Multilingual adaptation is required for every change
+
+Every project modification must include a localization review. All new or changed user-visible
+text, including labels, settings, tooltips, dialogs, validation messages, success/failure notices
+and generated asset display text, must use the project's localization system and provide complete
+translations for every supported UI language in the same change. Do not hardcode user-facing
+strings or treat English fallback text as completed multilingual support. Check affected callers
+and alternate/error paths, preserve format placeholders, and run the applicable localization checks
+before delivery. Changes with no user-visible text must still verify that existing localization
+behavior is preserved. Keep technical identifiers and asset identities unlocalized; project
+documentation remains in English as required above.
+
 ## Current documentation baseline
 
 Bridge revision history is retained in the bridge generation contract under "Retained repository routing records".
@@ -92,6 +104,15 @@ desktop control, or browser UI automation through computer-use. Use file tools,
 command-line tools, or purpose-built APIs instead. If an operation requires UI
 interaction and no permitted alternative is available, ask the user to perform it
 manually; do not bypass this prohibition through another UI automation tool.
+
+## Native game UI windows
+
+All UI windows must be created through Cities: Skylines II native UI APIs and components,
+including panels, dialogs and file/directory pickers. Do not build custom HTML/CSS window
+shells or substitute operating-system dialogs. Compose mod-specific content within native
+containers and preserve native focus, input and modal behavior. Follow
+[Project contract: Native game UI windows](docs/agent-contract/PROJECT_CONTRACT.md#native-game-ui-windows-2026-10-19).
+Baseline: `dev/d21433ed2a9ee233c8525ce6a0fe2515f973dc7a` (2026-10-19).
 
 ## GPU computation and parallel bridge generation
 
@@ -214,16 +235,16 @@ attributes; this does not permit changing the part-transform rule. On 2026-10-17
 the prohibition on high-detail-derived movable LODs: deriving, simplifying or supplementing LODs
 from measured prototype high-detail geometry is permitted under bridge generation contract section 5,
 including its scoped vertex/index/topology exception. Other structural, material and acceptance
-requirements remain in force. Moving-road paint must be integrated into mechanism surface geometry with existing materials;
-independent marking objects, new material descriptors, texture baking and custom shaders are
-prohibited. Curve segmentation, endpoint-fade and existing-atlas pattern differences remain
+requirements remain in force. Moving-road paint must be integrated into mechanism appearance;
+independent marking objects and custom runtime shaders are prohibited. The GPU composition
+exception below permits new textures composed from existing native textures and native descriptors. Curve segmentation, endpoint-fade and existing-atlas pattern differences remain
 accepted. Earlier independent object-decal permissions are superseded. Follow the general method
 and failure-prevention rules in the movable generation contract sections 7, 11 and 15.
 Revision baseline: `dev/3b6363ada9f1f147b1a660e20c0d6246a54f82dd`; rollback reference
 `refs/rollback/movable-generation-contract-20261017`.
 
 Persistence also follows contract section 17: recursively copy external non-built-in asset
-dependencies byte-for-byte with their original CIDs into `ImportedData/<bridgeUUID>_Dependencies/`.
+dependencies byte-for-byte with their original CIDs into `ImportedData/<bridgeUUID>/Dependencies/`.
 Deduplicate by CID within one bridge only; different bridges retain separate copies. Stop at built-in
 assets, preserve references and source files, and scope backup/cleanup to the owning bridge UUID.
 Intentional identical-CID snapshots are not generated-prefab identity collisions. Never restore
@@ -309,3 +330,26 @@ Follow bridge generation contract section 24: a generated movable bridge's total
 its dependencies, must be comparable to its original counterpart. Measure the complete graph,
 not only its root or textures; preserve required content and report unresolved measurements.
 Revision baseline (2026-10-16): `dev/3b6363ada9f1f147b1a660e20c0d6246a54f82dd`.
+
+## Accepted movable generation baseline (2026-10-18)
+
+Read [MOVABLE_BRIDGES_CONTRACT.md sections 16–23](docs/agent-contract/MOVABLE_BRIDGES_CONTRACT.md#16-accepted-generation-pipeline-and-source-map) before implementing or modifying movable bridges.
+Those sections consolidate the accepted current pipeline and supersede conflicting historical
+paint/material recipes: original structural Surface/VT references; measured non-VT repeating road
+and grating units plus bounded native VT composites; separate single-sided native skinned paint
+with 0.001 m clearance on the original road bones, matching stack metadata and transforms.
+No receiver cuts for markings, no child projectors, no structural receiver-only material copies,
+no moving the road onto marking bones, and no runtime synchronization dependency. Acceptance is
+specific to the latest Draw01 visual repair; new styles still require their own archetype data and
+acceptance. Baseline: dev/d21433ed2a9ee233c8525ce6a0fe2515f973dc7a plus preserved working changes.
+
+Prior long instruction records are preserved in [retained movable instruction records](docs/agent-contract/MOVABLE_INSTRUCTION_RECORDS.md).
+Use the current accepted contract for conflicting appearance/marking decisions.
+
+
+Persistence layout revision (2026-10-19): branch `dev`, HEAD
+`d21433ed2a9ee233c8525ce6a0fe2515f973dc7a`, preserving prior working changes.
+Follow Bridge-Asset-Persistence.md sections 6–7 for owner-local short filenames, VT/mid-mip
+placement and backed-up file-only migration. Legacy sibling dependency directories remain valid
+migration inputs. Layout conflicts preserve healthy bridges and report incomplete migration;
+they do not authorize damaged-asset retirement. Native cold-load acceptance remains separate.

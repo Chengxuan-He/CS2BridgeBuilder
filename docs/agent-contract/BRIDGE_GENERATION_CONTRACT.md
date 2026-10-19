@@ -45,6 +45,7 @@ The reference records committed history, not those local changes.
 ## Contract routing
 
 - All bridge work: this contract and the [project contract](PROJECT_CONTRACT.md).
+- Generator implementation and refactoring: additionally [generator code organization](GENERATOR_CODE_CONTRACT.md).
 - Movable bridges: additionally [movable bridge generation](MOVABLE_BRIDGES_CONTRACT.md), incorporated by section 21.
 - Persistence: additionally [asset persistence policy](../Bridge-Asset-Persistence.md), incorporated by section 17.
 - Previews: additionally [preview specification](../Bridge-Preview-Specification.md).
@@ -1265,8 +1266,8 @@ uncommitted changes. This documentation clarification requires no bridge removal
 Store copies under:
 
 ```text
-ImportedData/<bridgeUUID>_Dependencies/<CID>.<original extension>
-ImportedData/<bridgeUUID>_Dependencies/<CID>.<original extension>.cid
+ImportedData/<bridgeUUID>/Dependencies/<CID>.<original extension>
+ImportedData/<bridgeUUID>/Dependencies/<CID>.<original extension>.cid
 ```
 
 Use a visited-CID set for each bridge traversal. Multiple references to the same CID within one bridge
@@ -1807,3 +1808,111 @@ Organization-only revision (2026-10-17): branch `dev`, HEAD
 Original requirement text, examples, exceptions and revision records are retained. Existing
 numbered sections and heading anchors are preserved; headings, placement and navigation are
 organized without changing requirements or implementation acceptance.
+
+
+## Approved native tiled road material descriptor (2026-10-17)
+
+The user explicitly permits a new native object-material descriptor that references existing
+tileable road textures to eliminate atlas-repeat geometry cuts. This is a scoped exception to
+the existing-material-only rule: do not create or bake textures, introduce custom shaders, modify
+source assets, or change structural and marking materials. Keep one descriptor per required
+appearance within each bridge owner and share it across LODs. Preview descriptors belong only to
+the preview's transient database. Persist formal descriptors with private identities and original
+texture references; native cold loading must not depend on Bridge Builder. Unchanged built-in
+textures remain references, and external dependencies retain the normal snapshot policy.
+
+Use continuous object-local UVs and the native sampler for whole-texture repetition; do not apply
+vertex-wise fractional UVs or cut triangles at repeat boundaries. This exception does not permit
+repeating a mixed atlas as though it were a tileable road texture. Other geometry, marking,
+sidewalk, LOD and acceptance requirements remain unchanged.
+
+Baseline: `dev/d21433ed2a9ee233c8525ce6a0fe2515f973dc7a`; rollback reference
+`refs/rollback/native-tiled-road-material-20261017`. This permission does not establish visual or
+cold-load acceptance.
+
+## Approved GPU composition from existing textures (2026-10-17)
+
+The user explicitly authorizes composing new textures from existing textures. For converted
+movable-road appearance, this supersedes the earlier existing-materials-only, no-new-texture,
+no-baking and no-new-descriptor restrictions, including the narrower tiled-asphalt exception.
+It does not authorize custom runtime shaders, independent marking objects, depth offsets,
+prototype mesh Boolean operations, or source-asset mutation.
+
+- Compose road appearance and paint using existing native texture inputs on a vendor-neutral GPU.
+  Save owner-local textures and native object-material descriptors; do not bake per marking or
+  create separate marking Prefabs. Preserve needed color, alpha, normal and mask channels.
+- Paint must not cut the receiving road. Texture repeat boundaries must not subdivide geometry.
+  Evaluate repetition and paint in pixels. Only physical boundaries, native motion seams and
+  required appearance-domain boundaries may partition the road.
+- Build each of the three LODs from its corresponding native mesh input and measured bridge
+  construction rules. Do not feed the painted/tiled near mesh into every level. Retain the last
+  authored road-piece LOD where the native piece supplies fewer levels. Share composed appearance
+  across levels; use mip filtering rather than replicating paint geometry.
+- Keep prototype structural meshes, skinning, thickness, sidewalk adaptation and LOD thresholds.
+  This appearance permission does not authorize deleting structure to meet a triangle budget.
+- Bound atlas dimensions and share resources within each owner. Generate mipmaps on the GPU,
+  respecting color space and tangent-space normals. Persist textures and descriptors under the
+  bridge's identity; preview resources belong to the transient preview database. Delete failed
+  generation resources. Preserve the existing external dependency snapshot rules.
+- Verify stage times, per-LOD triangles, total serialized size including dependencies, reload and
+  near/far visual appearance. Compilation alone does not establish acceptance or size parity.
+
+Instruction-edit baseline: `dev/d21433ed2a9ee233c8525ce6a0fe2515f973dc7a`.
+Rollback reference: `refs/rollback/gpu-road-composition-20261017`.
+
+## Native separated movable paint revision (2026-10-18)
+
+The user now requests separate native markings and prototype-based asphalt with preserved UV scale.
+This supersedes the prohibition on independent marking objects only for native decal child renderers
+attached to the mechanism's recorded motion connections. Keep each disjoint projector in its own native object-space clipping bounds. The native shader
+clips against one box per object: grouping disjoint volumes is prohibited unless a compatible native
+per-instance clipping representation is verified. Supply its normal and tangent attributes and bind
+each projector to its motion connection. Keep geometry as closed projection volumes; never render those volumes
+as road surface triangles. Only projection volumes may be partitioned at physical motion seams;
+markings and texture repetition must never cut receiving road geometry.
+
+Remove full-road transparent paint overlays. Reuse the native decal material and measured native
+paint patches. Asphalt uses a repeatable unit extracted from the prototype atlas, including its
+albedo, normal, mask and control channels. Preserve the measured per-metre UV gradients, direction
+and phase on both leaves. BC block alignment may round the extracted pixel dimensions up; do not
+stretch a low-resolution whole-span atlas over the road. Other appearance domains retain their
+existing path. Keep native asset persistence and owner-scoped rollback/cleanup for the complete graph.
+Preview, placement, opening/closing, LOD transitions and cold loading require human game verification;
+a successful build does not establish visual acceptance.
+
+Revision baseline: `dev/d21433ed2a9ee233c8525ce6a0fe2515f973dc7a`.
+
+## Preserve original road skinning (2026-10-18)
+
+The user revoked moving the road onto marking child transforms. Keep Draw01 road geometry in its original procedural skeleton and skinning path, with all three LODs, UVs and materials retained. Markings must adapt to the original road bones; never move road receivers into history-driven child objects to compensate for decal lag. Native independent persistence remains mandatory, without runtime synchronization patches. Structure/underside surfaces use the original native descriptors, texture references and VT resources without receiver-only material copies or descriptor rewrites. Single-sided skinned paint replaces the old projectors; disabling structural decal reception is no longer required. The earlier rigid road child implementation is withdrawn. A native decal shader without procedural skinning must not be treated as supporting bone-bound paint merely by assigning indices.
+
+Revision baseline: dev/d21433ed2a9ee233c8525ce6a0fe2515f973dc7a.
+
+## Authorized native skinned paint exception (2026-10-18)
+
+The user explicitly permits native skinned paint surfaces and minimum anti-coplanar clearance. Draw01 keeps its original road skeleton and receiver topology. Marking polygons alone may be partitioned at motion seams and bound with the road bone indices/bind poses. Use a native procedural-skinning material, single-sided paint, and 0.001 m clearance; no custom shader or runtime synchronization patch. Paint is an additional mesh on the same native mechanism object, with matching StackProperties, authored bounds and object transform, not a history-driven child projector. Preserve source marking layout/color; do not cut the road. A compact paint mesh remains present across road LOD transitions. This supersedes earlier prohibitions on overlapping marking surfaces and the native child-projector requirement for this implementation. Preview, motion, far views and cold loading still require verification.
+
+Revision baseline: dev/d21433ed2a9ee233c8525ce6a0fe2515f973dc7a.
+
+## Accepted movable generation baseline (2026-10-18)
+
+Read [MOVABLE_BRIDGES_CONTRACT.md sections 16–23](MOVABLE_BRIDGES_CONTRACT.md#16-accepted-generation-pipeline-and-source-map) before implementing or modifying movable bridges.
+Those sections consolidate the accepted current pipeline and supersede conflicting historical
+paint/material recipes: original structural Surface/VT references; measured non-VT repeating road
+and grating units plus bounded native VT composites; separate single-sided native skinned paint
+with 0.001 m clearance on the original road bones, matching stack metadata and transforms.
+No receiver cuts for markings, no child projectors, no structural receiver-only material copies,
+no moving the road onto marking bones, and no runtime synchronization dependency. Acceptance is
+specific to the latest Draw01 visual repair; new styles still require their own archetype data and
+acceptance. Baseline: dev/d21433ed2a9ee233c8525ce6a0fe2515f973dc7a plus preserved working changes.
+
+Prior long instruction records are preserved in [retained movable instruction records](MOVABLE_INSTRUCTION_RECORDS.md).
+Use the current accepted contract for conflicting appearance/marking decisions.
+
+
+Persistence layout revision (2026-10-19): branch `dev`, HEAD
+`d21433ed2a9ee233c8525ce6a0fe2515f973dc7a`, preserving prior working changes.
+Follow Bridge-Asset-Persistence.md sections 6–7 for owner-local short filenames, VT/mid-mip
+placement and backed-up file-only migration. Legacy sibling dependency directories remain valid
+migration inputs. Layout conflicts preserve healthy bridges and report incomplete migration;
+they do not authorize damaged-asset retirement. Native cold-load acceptance remains separate.

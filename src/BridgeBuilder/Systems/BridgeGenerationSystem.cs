@@ -97,6 +97,7 @@ public partial class BridgeGenerationSystem : GameSystemBase
 
     protected override void OnDestroy()
     {
+        ReleaseRoadBufferDiagnostics();
         ClearPreview();
         BridgePreviewState.Clear();
         RoadSelectionModel.ReleaseIfOwner(this, UiStringCatalog.Current.StateNoWorld);
@@ -115,6 +116,7 @@ public partial class BridgeGenerationSystem : GameSystemBase
 
     protected override void OnUpdate()
     {
+        InspectPlacedRoadMaterials();
         // A queued update may need the next outer PrefabSystem pass. Do not process another
         // create/delete request until its scheduled publication callback has finished.
         if (World.GetOrCreateSystemManaged<BridgePublicationSystem>().IsPending) return;

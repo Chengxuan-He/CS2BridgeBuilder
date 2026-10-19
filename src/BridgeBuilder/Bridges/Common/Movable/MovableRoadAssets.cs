@@ -53,7 +53,6 @@ internal static class MovableRoadAssets
         internal readonly int AppearancePageSize;
         internal readonly float TexelsPerMeter;
         internal readonly Supplement? ExtraStructure;
-        internal readonly bool CompactRoad;
 
         // Carries the same compiled receivers and lane result into the existing appearance,
         // partition, skinning and owned-asset path. Decals remain subject to that path's checks.
@@ -64,10 +63,10 @@ internal static class MovableRoadAssets
             IReadOnlyList<MovableRoadGeometry.Partition>? roadPartitions = null,
             IReadOnlyList<MovableRoadGeometry.Partition>? lanePartitions = null,
             IReadOnlyDictionary<(int Occurrence, int SourceTriangle), MovableRoadGeometry.Partition>? roadTrianglePartitions = null,
-            Supplement? extraStructure = null, bool compactRoad = false)
+            Supplement? extraStructure = null)
             : this(source, road.Triangles, road.Surfaces, partition, renderBounds, roadToObject,
                 structure, skeleton, road.LaneGeometry, closedWorld, appearancePageSize, texelsPerMeter,
-                roadPartitions, lanePartitions, roadTrianglePartitions, extraStructure, compactRoad) { }
+                roadPartitions, lanePartitions, roadTrianglePartitions, extraStructure) { }
 
         internal Level(RenderPrefab source, IReadOnlyList<MovableRoadGeometry.Triangle> triangles,
             SurfaceAsset[] surfaces, MovableRoadGeometry.Partition partition, Bounds3 renderBounds, Pose roadToObject,
@@ -77,7 +76,7 @@ internal static class MovableRoadAssets
             IReadOnlyList<MovableRoadGeometry.Partition>? roadPartitions = null,
             IReadOnlyList<MovableRoadGeometry.Partition>? lanePartitions = null,
             IReadOnlyDictionary<(int Occurrence, int SourceTriangle), MovableRoadGeometry.Partition>? roadTrianglePartitions = null,
-            Supplement? extraStructure = null, bool compactRoad = false)
+            Supplement? extraStructure = null)
         {
             HasRoad = true;
             Source = source; Triangles = triangles; Surfaces = (SurfaceAsset[])surfaces.Clone();
@@ -91,7 +90,6 @@ internal static class MovableRoadAssets
             RoadToObject = roadToObject;
             AppearancePageSize = appearancePageSize; TexelsPerMeter = texelsPerMeter;
             ExtraStructure = extraStructure;
-            CompactRoad = compactRoad;
         }
 
         // Fixed support renders share geometry ownership, LOD remapping and rollback with
@@ -152,7 +150,7 @@ internal static class MovableRoadAssets
                 { error = $"Moving road LOD {i} has no resolved object surfaces."; return false; }
                 var levelName = i == 0 ? name : name + " LOD" + i;
                 if (preview == null && AssetDatabase.user.Exists<GeometryAsset>(
-                        AssetDataPath.Create("BridgeBuilder", levelName, EscapeStrategy.None), out _))
+                        BridgeBuilder.Runtime.BridgePrefabPersistence.ResourcePath(levelName, "Geometry"), out _))
                 { error = $"Movable render geometry already exists: '{levelName}'."; return false; }
                 var roadTriangles = level.Triangles;
                 var roadSurfaces = level.Surfaces;
@@ -169,12 +167,11 @@ internal static class MovableRoadAssets
                         if (surface == null)
                         { error = $"Moving road LOD {i} has an unresolved surface reference."; return false; }
                         surface.LoadHeader();
-                        // Measured SG_DefaultShader templates in game 1.6.2f1 support procedural
+                        // Measured native object templates in game 1.6.2f1 support procedural
                         // object skinning. This guard checks representation, not appearance equality.
                         // Network inputs must have been assigned existing object materials by the caller.
                         var template = surface.materialTemplateHash;
-                        if (template != 0 && template != 1 && template != 13 && template != 14 &&
-                            template != 35 && template != 36)
+                        if (!MovableSurfaceAssets.IsObjectSurface(surface))
                         { error = $"Moving road LOD {i} surface '{surface.name}' requires an unimplemented object conversion (template {template})."; return false; }
                     }
                     // Appearance is evaluated in the selected-road frame. Only evaluated geometry
@@ -184,7 +181,7 @@ internal static class MovableRoadAssets
                             skeleton!.m_Bones.Length, roadSurfaces.Length, out var triangles, out error,
                             occurrencePartitions: level.RoadPartitions, trianglePartitions: level.RoadTrianglePartitions))
                     { error = $"Moving road LOD {i}: {error}"; return false; }
-                    // Atlas clipping and partitioning interpolate new vertices. Include
+                    // Motion partitioning interpolates seam vertices. Include
                     // the emitted positions, not only pre-conversion input extrema.
                     foreach (var triangle in triangles)
                     {
@@ -193,11 +190,8 @@ internal static class MovableRoadAssets
                         Include(ref bounds, triangle.Geometry.C.Position);
                     }
                     if (level.Lanes != null && level.Lanes.Decals.Length != 0)
-                        triangles = MovableRoadPaint.Apply(triangles, level.Lanes.Decals,
-                            level.RoadToObject, level.TexelsPerMeter, ref roadSurfaces);
-                    // Appearance and paint boundaries are already encoded in vertex attributes.
-                    // Prototype face IDs are provenance, not mandatory seams on a flat receiver.
-                    if (level.CompactRoad) triangles = MovableRoadLod.Compact(triangles);
+                        throw new InvalidOperationException("Moving-road paint must be composed before render assembly; geometry inlay is prohibited.");
+                    // Preserve partitioned road triangles; do not coalesce or retriangulate them.
                     roadModels = BuildMaterialMeshes(levelName, triangles, roadSurfaces,
                         skeleton.m_Bones.Length, models, out roadSurfaces);
                 }
@@ -228,6 +222,8 @@ internal static class MovableRoadAssets
                                 foreach (var position in level.Structure[part].Positions)
                                     Include(ref bounds, position);
                         }
+                        // Preserve native structural surfaces and their VT resource identity.
+                        // Paint is a separate single-sided skinned mesh, not a projector.
                         surfaces.AddRange(originals);
                     }
                     finally { PrivateGeometryReader.Release(loaded); }
@@ -247,7 +243,8 @@ internal static class MovableRoadAssets
                                 extra.Plan, boneCount, out var model, out error, compact: true)) return false;
                         models.Add(model!); batch.Add(model!);
                         var slot = loaded.Take(extra.Mesh).Sum(mesh => mesh.subMeshCount);
-                        surfaces.Add(extra.Source.GetSurfaceAsset(slot));
+                        var extraSurface = extra.Source.GetSurfaceAsset(slot);
+                        surfaces.Add(extraSurface);
                         for (var slotIndex = 0; slotIndex < extra.Plan.SourceIndices.Length; slotIndex++)
                             for (var face = 0; face < extra.Plan.RemoveTriangles[slotIndex].Length; face++)
                                 if (!extra.Plan.RemoveTriangles[slotIndex][face])
@@ -257,7 +254,8 @@ internal static class MovableRoadAssets
                     finally { PrivateGeometryReader.Release(loaded); }
                 }
                 // Original slots retain their order across every structural mesh; converted road
-                // slots follow them. No native structural surface is cloned or reassigned.
+                // slots follow them. Native structural descriptors, textures and UVs
+                // remain unchanged across preview and persisted geometry.
                 if (roadModels.Length != 0) { batch.AddRange(roadModels); surfaces.AddRange(roadSurfaces); }
                 laneSlotStarts.Add(surfaces.Count);
                 var lanes = level.Lanes;
@@ -293,6 +291,13 @@ internal static class MovableRoadAssets
                 levelModels.Add(batch.ToArray()); levelSurfaces.Add(surfaces.ToArray()); levelNames.Add(levelName);
                 renderBounds.Add(bounds);
             }
+
+            // RequiredBatchesSystem creates at most 16 batches across the root and its LODs.
+            // Publishing more silently drops all later surfaces in the native renderer.
+            var batchCount = levelModels.Sum(level => level.Length);
+            if (batchCount > 16)
+                throw new InvalidOperationException($"Moving bridge LOD group requires {batchCount} material batches; native maximum is 16.");
+            Mod.Log.Info($"Moving bridge native batches: {string.Join("/", levelModels.Select(level => level.Length))}; total={batchCount}/16.");
 
             var visited = new HashSet<RenderPrefab>();
             if (!Visit(levels[0].Source, indices, visited, new HashSet<RenderPrefab>()) ||
@@ -342,6 +347,12 @@ internal static class MovableRoadAssets
                     if (component != null && component is not ProceduralAnimationProperties) prefab.AddComponentFrom(component);
                 if (level.Skeleton != null) prefab.AddComponentFrom(level.Skeleton);
                 prefab.surfaceAssets = levelSurfaces[i];
+                // Generated atlas receivers need full native VT requests. Otherwise
+                // ManagedBatchSystem's alpha-test fallback caps requests at 8 texels;
+                // empty atlas space can then erase opaque small charts in coarse mips.
+                // Persist the native flag so cold loads work without this mod as well.
+                prefab.manualVTRequired = level.Source.manualVTRequired ||
+                    (level.HasRoad && levelSurfaces[i].Any(surface => surface.isVTMaterial));
                 prefab.bounds = renderBounds[i];
                 prefab.vertexCount = levelModels[i].Sum(model => model.vertexCount);
                 prefab.indexCount = levelModels[i].Sum(model => model.indexCount);
@@ -368,7 +379,7 @@ internal static class MovableRoadAssets
                     continue;
                 }
                 var asset = AssetDatabase.user.AddAsset(
-                    AssetDataPath.Create("BridgeBuilder", prefabs[i].name, EscapeStrategy.None),
+                    BridgeBuilder.Runtime.BridgePrefabPersistence.ResourcePath(prefabs[i].name, "Geometry"),
                     new Geometry(levelModels[i]));
                 assets.Add(asset);
                 // AddAsset copies model buffers into native asset data (CreateDataFromGeometry).

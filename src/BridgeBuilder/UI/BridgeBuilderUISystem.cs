@@ -83,6 +83,8 @@ public partial class BridgeBuilderUISystem : UISystemBase
             Group, "RenameBridge", QueueRename, new BridgeStringReader(), new BridgeStringReader()));
         AddBinding(new TriggerBinding<string>(Group, "DeleteBridge", ConfirmDelete, new BridgeStringReader()));
 
+        BindExport();
+
         // OnGamePreload enables the system only when the GameMode.Game mask above matches. Keeping
         // it disabled until that callback also closes the short startup window before a mode exists.
         Enabled = false;
@@ -91,6 +93,7 @@ public partial class BridgeBuilderUISystem : UISystemBase
     [Preserve]
     protected override void OnUpdate()
     {
+        PollExport();
         if (_panelOpen.value && UnityEngine.Time.realtimeSinceStartup >= _nextSourceCheck)
         {
             _nextSourceCheck = UnityEngine.Time.realtimeSinceStartup + 1f;

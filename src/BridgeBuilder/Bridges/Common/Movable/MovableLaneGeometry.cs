@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using BridgeBuilder.Runtime;
 using Colossal.IO.AssetDatabase;
 using Game.Prefabs;
@@ -24,7 +25,7 @@ internal static class MovableLaneGeometry
     }
 
     internal static Result Compile(IReadOnlyList<MovableLaneVisuals.Batch> batches,
-        IReadOnlyList<MovableRoadGeometry.Triangle> receiver)
+        IReadOnlyList<MovableRoadGeometry.Triangle> receiver, int lod = 0)
     {
         var triangles = new List<MovableRoadGeometry.Triangle>();
         var surfaces = new List<SurfaceAsset>();
@@ -36,15 +37,20 @@ internal static class MovableLaneGeometry
             {
                 var batch = batches[occurrence];
                 if (batch.Decal) { decals.Add(batch); continue; }
-                if (!meshes.TryGetValue(batch.Source, out var parts))
+                var render = batch.Source;
+                var levels = render.GetComponent<LodProperties>()?.m_LodMeshes;
+                if (lod > 0 && levels != null && levels.Length > 0)
+                    render = levels[Math.Min(lod - 1, levels.Length - 1)];
+                var materialSlots = render == batch.Source ? batch.Surfaces : render.surfaceAssets.ToArray();
+                if (!meshes.TryGetValue(render, out var parts))
                 {
-                    parts = PrivateGeometryReader.Read(batch.Source);
-                    meshes.Add(batch.Source, parts);
+                    parts = PrivateGeometryReader.Read(render);
+                    meshes.Add(render, parts);
                 }
                 if (parts.Length == 0)
                     throw new InvalidDataException("No lane geometry could be read for " + batch.Source.name);
                 var firstMaterial = surfaces.Count;
-                surfaces.AddRange(batch.Surfaces);
+                surfaces.AddRange(materialSlots);
                 var slot = 0;
                 var sourceTriangle = 0;
                 foreach (var mesh in parts)
@@ -55,7 +61,7 @@ internal static class MovableLaneGeometry
                             position => ReceiverHeight(receiver, position));
                     for (var submesh = 0; submesh < mesh.subMeshCount; submesh++, slot++)
                     {
-                        if (slot >= batch.Surfaces.Length || mesh.GetTopology(submesh) != MeshTopology.Triangles)
+                        if (slot >= materialSlots.Length || mesh.GetTopology(submesh) != MeshTopology.Triangles)
                             throw new InvalidDataException("Invalid lane material/topology in " + batch.Source.name);
                         var indices = mesh.GetIndices(submesh);
                         if (indices.Length % 3 != 0) throw new InvalidDataException("Incomplete lane triangle.");
@@ -65,7 +71,7 @@ internal static class MovableLaneGeometry
                                 firstMaterial + slot, occurrence, sourceTriangle++));
                     }
                 }
-                if (slot != batch.Surfaces.Length)
+                if (slot != materialSlots.Length)
                     throw new InvalidDataException("Lane surface slots do not match geometry: " + batch.Source.name);
             }
             return new Result(triangles, surfaces, decals);

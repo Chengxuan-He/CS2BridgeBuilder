@@ -31,7 +31,7 @@ internal sealed partial class MovableNetworkContext
     // The requested composition must be the visible closed-road state before hiding the moving
     // network surface. The actual prepared edge/node geometry supplies its deformation frame.
     internal Surface CompileSurface(int edgeIndex, SurfacePart part, float3 origin,
-        NetPieceLayerMask replacedStructureLayers = 0, bool trackSourceFaces = true)
+        NetPieceLayerMask replacedStructureLayers = 0, bool trackSourceFaces = true, int lod = 0)
     {
         var manager = World.EntityManager;
         var edge = Edges[edgeIndex];
@@ -65,7 +65,7 @@ internal sealed partial class MovableNetworkContext
             // Build emits native packed geometry. Its preview-only bounds/matrix block is not
             // consumed; evaluation uses the actual network parameters calculated above.
             if (!generator.Build(new[] { piece }, data, resources,
-                    manager.GetComponentData<Curve>(edge).m_Length, out var mesh, out _, out _, slots, faces))
+                    manager.GetComponentData<Curve>(edge).m_Length, out var mesh, out _, out _, slots, faces, lod))
                 throw new InvalidOperationException($"Native mesh generation failed for '{piece.Prefab.name}'.");
             foreach (var surface in slots)
                 if (surface == null || (surface.materialTemplateHash != 17 && surface.materialTemplateHash != 33))
@@ -92,7 +92,7 @@ internal sealed partial class MovableNetworkContext
     // the combined receivers, so a lane crossing an edge/node seam is not truncated to one part.
     internal MovableClosedRoad.Result CompileRoad(IReadOnlyList<(int Edge, SurfacePart Part)> contributions,
         IReadOnlyList<OwnerIndex> laneOwners, float3 origin,
-        NetPieceLayerMask replacedStructureLayers = 0, bool trackSourceFaces = true)
+        NetPieceLayerMask replacedStructureLayers = 0, bool trackSourceFaces = true, int lod = 0)
     {
         var triangles = new List<MovableRoadGeometry.Triangle>();
         var materials = new List<SurfaceAsset>();
@@ -104,7 +104,7 @@ internal sealed partial class MovableNetworkContext
         for (var i = 0; i < contributions.Count; i++)
         {
             var input = contributions[i];
-            var surface = CompileSurface(input.Edge, input.Part, origin, replacedStructureLayers, trackSourceFaces);
+            var surface = CompileSurface(input.Edge, input.Part, origin, replacedStructureLayers, trackSourceFaces, lod);
             var firstMaterial = materials.Count;
             var firstOccurrence = occurrences.Count;
             occurrenceStarts[i] = firstOccurrence;
@@ -123,7 +123,7 @@ internal sealed partial class MovableNetworkContext
         if (triangles.Count == 0)
             throw new InvalidOperationException("The selected closed-road contributions contain no visible surface.");
         return new MovableClosedRoad.Result(triangles.ToArray(), materials.ToArray(), occurrences.ToArray(),
-            compositions, occurrenceStarts, LaneVisuals(laneOwners, origin), rules, sourceFaces.ToArray());
+            compositions, occurrenceStarts, LaneVisuals(laneOwners, origin), rules, sourceFaces.ToArray(), lod);
     }
 
     private Entity SurfaceComposition(int edgeIndex, SurfacePart part)

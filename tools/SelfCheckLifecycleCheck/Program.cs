@@ -133,13 +133,13 @@ Check(BridgeAssetLayout.Owners == 1 && BridgeBuilder.Mod.Messages.Single() == "B
 p.RequestManualCheck(); p.Tick();
 Check(BridgeAssetLayout.Owners == 1 && BridgeDependencyPersistence.MigrationCalls == 1, "Moved files never reenter stale asset streams");
 p = Fresh(); BridgeAssetLayout.Fail = true; p.ScheduleInspectionAfterLoad(); Menu(p);
-Check(BridgeBuilder.Mod.Messages.Single() == "BridgeSelfCheckRemoved" && BridgeStartupRecovery.Retired.Count == 1,
-    "Layout failure falls back to removal");
+Check(BridgeBuilder.Mod.Messages.Single().Contains("BridgeSelfCheckMigrationIncomplete") && BridgeStartupRecovery.Retired.Count == 0,
+    "Layout conflict preserves healthy bridge");
 p = Fresh(); BridgePortableMigration.Changed = true; BridgeAssetLayout.Fail = true;
 p.ScheduleInspectionAfterLoad(); Menu(p);
-Check(BridgeBuilder.Mod.Messages.Single() == "BridgeSelfCheckRemoved", "Partial conversion falls back to removal");
+Check(BridgeBuilder.Mod.Messages.Single().Contains("BridgeSelfCheckMigrated") && BridgeStartupRecovery.Retired.Count == 0, "Successful conversion survives layout conflict");
 p.RequestManualCheck(); p.Tick();
-Check(BridgeBuilder.Mod.Messages.Last() == "BridgeSelfCheckRemoved", "Removal warning persists until restart");
+Check(BridgeBuilder.Mod.Messages.Last().Contains("BridgeSelfCheckMigrationIncomplete"), "Incomplete migration warning persists until restart");
 p = Fresh(); BridgeNetworkValidation.Invalid = true; BridgeLoadedCidRecovery.Outcome = BridgeLoadedCidRecovery.Result.Recoverable;
 BridgeAssetLayout.Changed = true; p.ScheduleInspectionAfterLoad(); Menu(p);
 Check(BridgeAssetLayout.Owners == 1 && BridgeBuilder.Mod.Messages.Single() == "BridgeSelfCheckMigrated",

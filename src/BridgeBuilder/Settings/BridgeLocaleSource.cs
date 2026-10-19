@@ -44,6 +44,9 @@ internal sealed class BridgeLocaleSource : IDictionarySource
             { _setting.GetOptionGroupLocaleID(BridgeSetting.MaintenanceGroup), _text.GroupMaintenance },
         };
 
+        entries[_setting.GetOptionLabelLocaleID(nameof(BridgeSetting.DefaultExportDirectory))] = RuntimeUiText.Format(_text.LocaleId, "ExportDirectory");
+        entries[_setting.GetOptionDescLocaleID(nameof(BridgeSetting.DefaultExportDirectory))] = RuntimeUiText.Format(_text.LocaleId, "ExportDirectoryDescription");
+
         foreach (var option in _text.Options)
         {
             entries[_setting.GetOptionLabelLocaleID(option.Key)] = option.Value.Label;
