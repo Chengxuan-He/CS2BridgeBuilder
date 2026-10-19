@@ -21,6 +21,11 @@ and 13 of [`BRIDGE_GENERATION_CONTRACT.md`](../../docs/agent-contract/BRIDGE_GEN
   Reject a candidate that does not reach or cross `x = 0`; do not substitute a pier, footing,
   foundation or similarly named prefab.
 
+The hardcoding requirement is retained because other players may lack the original prototype files.
+Compact measured profiles, ranges or recipes are allowed instead of exhaustive vertex literals when
+they preserve the same part identities and result. No requirement to finish all styles' audits before
+integrating an executable stage is implied by this identification phase.
+
 ## Output contract
 
 - Emit reviewed, immutable source data keyed by exact archetype and mesh/LOD identity, with exact
@@ -31,23 +36,15 @@ and 13 of [`BRIDGE_GENERATION_CONTRACT.md`](../../docs/agent-contract/BRIDGE_GEN
 - A base adjustment emits the mapping `x -> x + sign(x) * delta`, not a width scale.
 - Preserve side-part shape under translation and preserve each crossing member's own span under
   stretching. Keep bridge-pier columns translational.
-- Inspect both near and far generated geometry. Unit tests are not evidence for visual component
-  generation and must not be run for that purpose.
+- Inspect both near and far generated geometry. Automated checks may verify geometry invariants; they do not establish visual acceptance.
 
-## Post-update cleanup
+## Iteration and deployment
 
-After code updates in this directory, perform the mandatory `Cities2.exe` stop and process
-verification. If the change affects bridge generation, trace the affected style IDs and remove
-only those styles' mod-created bridges and UUID-owned artifacts under contract section 13.
-This includes changed archetype parameters or generated geometry data consumed by runtime.
-If bridge-generation code/data is unchanged, remove no existing bridges. Documentation-only edits
-require no shutdown, cleanup, build or deployment. After completing any code change, immediately
-build and deploy the updated mod to the game without waiting for another request. Back up the existing
-installation and verify installed files against the build output as required by that section.
-
-Cleanup-policy revision (2026-10-15): branch `dev`, HEAD
-`0f4b10ae47c5dc264249e0d877aacc326e3e9525`; rollback reference
-`refs/rollback/scoped-cleanup-docs-20261015`.
+Follow the current bridge generation contract sections 12–13. Style branches are optional; keep
+variant-specific measured data separate. Build and deploy coherent code increments. Documentation
+and analysis artifacts alone require no deployment. Preserve healthy bridge assets unless an
+identified incompatibility requires scoped, backed-up recovery. Do not pause implementation merely
+because another style's tables or human visual acceptance are unfinished.
 
 ## English documentation maintenance (2026-10-13)
 

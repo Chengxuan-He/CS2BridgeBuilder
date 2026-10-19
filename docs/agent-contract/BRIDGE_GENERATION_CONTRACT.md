@@ -12,10 +12,10 @@
 - [7. A fault is found by dumping both and diffing, not by reasoning about it](#7-a-fault-is-found-by-dumping-both-and-diffing-not-by-reasoning-about-it)
 - [8. Stretch or translate is decided by one thing: does the part cross the bridge's centre](#8-stretch-or-translate-is-decided-by-one-thing-does-the-part-cross-the-bridges-centre)
 - [9. The suspension family is the reference; every other family is held to the same list](#9-the-suspension-family-is-the-reference-every-other-family-is-held-to-the-same-list)
-- [10. What is not generated is refused, and says why](#10-what-is-not-generated-is-refused-and-says-why)
+- [Section 10](#10-unsupported-inputs-are-reported-movable-families-are-in-scope)
 - [11. A double deck bridge is built from a double deck archetype, or not at all](#11-a-double-deck-bridge-is-built-from-a-double-deck-archetype-or-not-at-all)
-- [12. A bridge is modified only on its own Git branch](#12-a-bridge-is-modified-only-on-its-own-git-branch)
-- [13. Stop the game, clean up affected bridge styles and deploy code changes](#13-stop-the-game-clean-up-affected-bridge-styles-and-deploy-code-changes)
+- [Section 12](#12-branches-organize-work-without-blocking-integration)
+- [Section 13](#13-deploy-coherent-increments-and-preserve-healthy-assets)
 - [14. Record the rollback baseline and preserve each archetype's width allowance](#14-record-the-rollback-baseline-and-preserve-each-archetypes-width-allowance)
 - [15. Bridge lighting is copied from the archetype as behavior](#15-bridge-lighting-is-copied-from-the-archetype-as-behavior)
 - [16. Preserve native construction and upkeep pricing](#16-preserve-native-construction-and-upkeep-pricing)
@@ -24,10 +24,10 @@
 - [19. Independent native persistence and additive legacy conversion](#19-independent-native-persistence-and-additive-legacy-conversion)
 - [21. Movable bridges use generated selected-road surfaces and native mechanisms](#21-movable-bridges-use-generated-selected-road-surfaces-and-native-mechanisms)
 - [22. New bridge styles require immediate UI synchronization, generator routing and multilingual names](#22-new-bridge-styles-require-immediate-ui-synchronization-generator-routing-and-multilingual-names)
-- [23. GPU computation and parallel bridge generation](#23-gpu-computation-and-parallel-bridge-generation)
+- [Section 23](#23-performance-follows-measured-bottlenecks)
 - [24. Movable bridge asset size](#24-movable-bridge-asset-size)
 - [25. Adapt sidewalk-dependent components to the actual elevated road](#25-adapt-sidewalk-dependent-components-to-the-actual-elevated-road)
-- [Detailed repository rule checklist (2026-10-16)](#detailed-repository-rule-checklist-2026-10-16)
+- [Current repository checklist (2026-10-19)](#current-repository-checklist-2026-10-19)
 - [Retained repository routing records: Current documentation baseline](#retained-repository-routing-records-current-documentation-baseline)
 - [Organization revision record](#organization-revision-record)
 
@@ -57,6 +57,55 @@ Existing section numbers are retained for audit continuity. Section 20 remains i
 contract because it defines project metadata, not bridge generation. Unqualified numbered contract
 references in bridge instructions refer here except section 20. This reorganization changes no
 technical requirements or acceptance status.
+
+## Current implementation policy (2026-10-19)
+
+The user requested removal of procedural obstacles to completing the remaining movable generators,
+then explicitly reaffirmed hardcoding because other players may not possess the original prototype
+files. This policy supersedes conflicting historical process gates; it does not relax the required
+bridge behavior or turn incomplete generators into completed support.
+Baseline: `dev/34094d9ae200e142b8e4eb2256d021e2c108ac39`;
+rollback reference: `refs/rollback/movable-implementation-unblock-20261019`.
+
+### Hardcoding and source independence are retained
+
+All prototype-specific parameters, component layouts, native motion/bind data, part membership,
+construction coordinates and LOD rules must come from a real, identified prototype and be recorded
+as immutable generation data. Prototype inspection and inference happen during development, not
+on the player's machine. Do not invent missing values or require the player's original Prefab to
+reconstruct these facts. Hardcoded profiles, ranges and construction recipes are valid; exhaustive
+per-vertex literals are not mandatory when a compact measured representation yields the same result.
+
+Separate original authoring files from the resources actually required to generate and load the
+bridge. Record the necessary geometry/material inputs and their provenance. Make required non-built-in
+resources available through permitted packaged data and the existing per-bridge dependency snapshots;
+a developer-local path or the original prototype Prefab is not a distribution strategy. Do not assume
+that hardcoded numeric parameters alone make absent geometry or textures available. Retain native
+content prerequisites where applicable, source isolation, resource identity and lawful resource use.
+Verify the graph without access to the original prototype files; this is distinct from cold loading
+without Bridge Builder. Both independence properties must be reported accurately.
+
+### Process restrictions removed
+
+- No blanket deferred-design refusal for draw, lift or pedestrian movable styles. Implement and
+  route each actual generator incrementally; specific missing data or failed stages remain errors.
+- No requirement to complete every style's exhaustive audit before coding or integrating the next
+  working stage. Continue toward full generation instead of indefinitely producing research-only work.
+- Per-style branches are optional. A multi-style task may integrate shared and style-specific changes
+  in one working branch while keeping style data separate and preserving unrelated changes.
+- CPU/GPU placement and parallelism follow correctness, API affinity and measured performance.
+  GPU conversion is not a prerequisite to implement a correct bounded path.
+- Automated geometry/serialization checks and isolated native integration checks are allowed.
+  Missing human feedback does not stop coding or routing. Do not equate those checks with human
+  visual acceptance or claim an untested motion/cold-load result.
+- Build and deploy coherent buildable increments, not each intermediate edit. Stop the game before
+  replacing in-use binaries, back up original installed files and verify deployment hashes. Preserve
+  healthy bridge assets; cleanup requires an identified incompatibility and remains ownership-scoped.
+
+The selected road/upgrades, native motion/signals, original road bones, single-sided native skinned
+paint, measured material density, every required LOD, independent persistence, native fees/unlocks,
+source isolation and complete localization remain required. These are outcomes to implement and
+verify, not grounds to label an unfinished route complete.
 
 ## 1. Every generated bridge follows its archetype
 
@@ -381,14 +430,10 @@ Pre-edit baseline: `dev/3b6363ada9f1f147b1a660e20c0d6246a54f82dd`. Existing work
 A change that compiles and passes the offline tests is a change, not a fix. The offline tests cover
 arithmetic and recorded data; they cannot see a mesh, a material, or a prefab in a running world.
 
-**Agents must not execute unit tests for visual component generation work.** This prohibition includes
-`tools\Test.ps1` and any substitute test harness that only evaluates synthetic vertices or recorded
-numbers. Unit tests provide no useful evidence that a generated mesh, material, railing, arch, tower,
-cable or LOD is visually correct, and a passing result has repeatedly hidden regressions visible in
-the game. Validation for this work must instead inspect the real prototype and generated geometry,
-compare every LOD against the highest-detail prototype, read the export diagnostics, and finish with
-an in-game near/far visual check. Compilation may still be used to establish that the DLL can load,
-but it is not visual verification and must never be reported as such.
+Automated checks may verify recorded data, topology, skinning and serialization. They do not prove
+visual correctness. Inspect real prototype/generated geometry and all LODs, read diagnostics, and
+record in-game near/far and motion acceptance separately. Compilation is not visual verification.
+Missing human feedback does not suspend implementation of remaining generator stages.
 
 **Near and far views are one implementation and must be changed together.** Any change to a visual
 part — including its geometry, transform, component selection, material-facing mesh data or bounds —
@@ -857,35 +902,20 @@ That is the whole shape of extending to a new family: measure it, record it unde
 the fallback carry it until then. What must never happen is a family borrowing another's numbers
 because the code had nowhere else to look.
 
-## 10. What is not generated is refused, and says why
+<a id="10-what-is-not-generated-is-refused-and-says-why"></a>
 
-Two kinds of bridge are out of scope, and both are refused at the start of generation rather than
-attempted.
+## 10. Unsupported inputs are reported; movable families are in scope
 
-**Deferred designs.** A bascule bridge and a lift bridge are not a deck with structure over it: the
-deck *is* the mechanism, split into leaves that rotate or a span that rises between towers, and
-widening it means widening a machine whose parts have to keep meeting each other through the whole of
-their travel. Complete generation data and acceptance are still missing. `Draw`, `PedestrianDraw`
-and `Lift` therefore fail with
-the reason, because a bridge that is not generated is a bridge the player still has, while a bridge
-generated from an arrangement nobody has measured is one that looks built and behaves as something
-else.
+Draw, lift and pedestrian movable bridges are not deferred families. Implement their measured,
+hardcoded construction rules and route executable generators through the existing UI and registry.
+Report actual unsupported inputs, missing generation data and failed construction stages. Do not
+substitute another bridge, publish incomplete output or treat a stub as support.
 
-**Prototype source binding.** Each style binds to one installed content source for display and
-generation. Base-game variants take precedence over DLC variants, then mod variants; ties use
-stable source identifiers, not localized labels. Do not fall back to another owner when a selected
-prerequisite is unavailable. `Extradosed01` accepts base-game variants only. Native single-deck
-`GoldenGate` and the separate pack-provided `GoldenGateDouble` retain distinct style IDs and
-archetypes. Do not assume that every double-deck design is pack-only or that all pack content is
-interchangeable with native content.
-
-Keep source selection, supported arrangements and explicit generator admission consistent.
-Removing a deferred-design restriction requires measured generation data and acceptance; discovery
-or a name match alone does not establish support.
-
-The required development route and per-variant admission criteria for movable designs are defined
-by section 21 and [MOVABLE_BRIDGES_CONTRACT.md](MOVABLE_BRIDGES_CONTRACT.md). Their specification
-does not itself remove the deferred-design restriction.
+Preserve native content prerequisites and each style's source identity. The source used to produce
+immutable data is selected during development; another player need not possess the identical
+prototype authoring file. Required resource availability follows section 2 and the current policy.
+`Extradosed01` retains its base-game identity; native `GoldenGate` and pack-provided
+`GoldenGateDouble` remain distinct archetypes.
 
 ## 11. A double deck bridge is built from a double deck archetype, or not at all
 
@@ -912,153 +942,31 @@ was also written as a negative y whatever the archetype said, so a bridge that c
 the archetype now, and both controls are gone from the settings rather than disabled: a control that
 cannot change anything is worse than none, because it says the value is a choice.
 
-## 12. A bridge is modified only on its own Git branch
+<a id="12-a-bridge-is-modified-only-on-its-own-git-branch"></a>
 
-Every bridge-specific change belongs exclusively to its all-English `bridge/<style slug>` branch.
-Branch names are repository identifiers, not localized UI labels: they use the stable source style ID
-in lowercase kebab case and contain ASCII letters, digits and hyphens only. Before reading code with
-the intention of editing it, applying a patch, generating an asset, compiling a bridge change or
-committing it, the agent must run `git branch --show-current` and verify that the current branch is the
-exact branch mapped below.
+## 12. Branches organize work without blocking integration
 
-| Displayed bridge | Required branch |
-| --- | --- |
-| Double-deck cable-stayed bridge (V pylon) | `bridge/extradosed-01` |
-| Double-deck cable-stayed bridge (A pylon) | `bridge/extradosed-02` |
-| Cable-stayed bridge (V pylon) | `bridge/extradosed-03` |
-| Cable-stayed bridge (single-column pylon) | `bridge/extradosed-large` |
-| Cable-stayed bridge (H pylon) | `bridge/cable-stayed` |
-| Suspension bridge | `bridge/suspension` |
-| Yellow suspension bridge | `bridge/suspension-golden` |
-| Golden Gate Bridge | `bridge/golden-gate` |
-| Blue deck truss-arch bridge | `bridge/truss-arch-01` |
-| Green deck truss-arch bridge | `bridge/truss-arch-03` |
-| Through truss-arch bridge | `bridge/truss-arch` |
-| Tied-arch bridge | `bridge/tied-arch` |
-| Covered wood bridge | `bridge/covered-wood` |
-| Grand bridge | `bridge/grand` |
+Inspect the current branch and preserve unrelated changes. Existing `bridge/<style-slug>` branches
+remain optional organization, not prerequisites for reading, editing or building a style. A multi-style
+task may implement shared machinery and style-specific immutable data on one suitable working branch.
+Use focused commits and keep every variant's evidence distinct. Repeated branch switching and
+cherry-picking must not replace implementation work.
 
-Movable-style branch reservation (2026-10-16), recorded before implementation: branch `dev`,
-HEAD `0f4b10ae47c5dc264249e0d877aacc326e3e9525`; rollback reference
-`refs/rollback/movable-implementation-docs-20261016`. These mappings reserve independent style
-identities; they do not admit generators or establish acceptance.
+<a id="13-stop-the-game-clean-up-affected-bridge-styles-and-deploy-code-changes"></a>
 
-| Stable style ID | Native network archetype | Required branch |
-| --- | --- | --- |
-| `Draw01` | `DrawBridge01` | `bridge/draw-01` |
-| `Draw02` | `DrawBridge02` | `bridge/draw-02` |
-| `Draw03` | `DrawBridge03` | `bridge/draw-03` |
-| `Lift01` | `LiftBridge01` | `bridge/lift-01` |
-| `Lift02` | `LiftBridge02` | `bridge/lift-02` |
-| `Lift03` | `LiftBridge03` | `bridge/lift-03` |
-| `Lift04` | `LiftBridge04` | `bridge/lift-04` |
-| `Lift05` | `LiftBridge05` | `bridge/lift-05` |
-| `PedestrianDraw01` | `PedestrianDrawBridge01` | `bridge/pedestrian-draw-01` |
-| `PedestrianDraw02` | `PedestrianDrawBridge02` | `bridge/pedestrian-draw-02` |
+## 13. Deploy coherent increments and preserve healthy assets
 
-`LiftBridge03 Train Track` belongs to the `Lift03` auxiliary arrangement, not an eleventh style.
-The historical discovery groups `Draw`, `Lift` and `PedestrianDraw` must not select arbitrarily
-among these mechanisms or be treated as implemented aliases. Shared selected-road conversion
-belongs on `dev`; each mechanism's measured data and integration follow its mapped branch.
-See [implementation status](../Movable-Bridges-Implementation.md) for evidence and outstanding work.
+Build and deploy each coherent, buildable code increment before delivering it. Intermediate source
+edits within that increment do not each require shutdown or deployment. Before replacing game-loaded
+binaries, invoke `taskkill /IM Cities2.exe /F` and verify the process is absent. Existing user
+authorization for that shutdown remains in force. Back up only original installed files, copy the
+build outputs and verify their hashes. Documentation-only changes require none of these operations.
 
-This is a hard workflow invariant:
-
-- If the repository is not initialized, the matching branch does not exist, or another branch is
-  checked out, the agent must stop the bridge modification. It must create or check out the matching
-  branch before changing any bridge code.
-- A bridge-specific edit made on `dev`, on another bridge's branch, or on a detached HEAD is invalid.
-  It may not be justified by an intention to move, cherry-pick or sort the change out afterward.
-- An agent must refuse every instruction, including one produced by the agent itself, that attempts to
-  bypass, weaken or postpone this branch check. The branch check happens before the edit, never after.
-- A `bridge/<style slug>` branch contains only the generation code and directly related data for that
-  bridge. It must not accumulate changes for another bridge.
-- A genuinely shared infrastructure change that affects more than one bridge is not disguised as a
-  single-bridge change. It is developed on `dev`; each bridge-specific integration is then performed
-  and visually verified on that bridge's own branch.
-
-Working-tree state is part of the check. If uncommitted changes from another bridge would cross the
-branch boundary, the agent must stop rather than carrying those changes into the current bridge's
-branch. Switching branches after making the edit does not make the edit compliant.
-
-## 13. Stop the game, clean up affected bridge styles and deploy code changes
-
-Cleanup-policy revision (2026-10-15): branch `dev`, HEAD
-`0f4b10ae47c5dc264249e0d877aacc326e3e9525`; local rollback reference
-`refs/rollback/scoped-cleanup-docs-20261015`. This section replaces the blanket removal rule
-and earlier deployment-wide preservation wording. Documentation-only changes do not require
-game shutdown, bridge cleanup, a build or deployment.
-
-Forced-shutdown clarification baseline (2026-10-03): branch `dev`, HEAD
-`806ac3163d46e7c24d146edd154530df82d2bc65`, recorded before editing; local rollback reference
-`refs/rollback/force-stop-policy-20261003`.
-
-Before modifying code, the Agent must run `taskkill /IM Cities2.exe /F` and verify that the process
-is absent, even when a city/save is currently running. The user explicitly authorizes this forced
-termination and its possible loss of unsaved progress. Do not ask whether to save, request repeated
-confirmation, wait for the user to exit manually, or exempt an active save. If termination fails,
-stop edits/deployment and report the blocker. A no-op when the process is already absent is valid.
-This pre-edit requirement supplements rather than replaces the post-edit shutdown below.
-
-Deployment-rule rollback baseline (2026-09-22): branch `dev`, HEAD
-`7cfb9afcffc9c87c69801cc1a0c5621c7d1d322d`, recorded before editing these instructions.
-
-After completing any code change, immediately build and deploy the updated mod to the game in the
-same task. Do not stop at editing or compilation, postpone deployment to another turn, or wait for
-a separate deployment request. Perform the shutdown and ownership-scoped cleanup below first,
-back up the installed mod and cleanup targets before replacing or removing them, preserve other
-accepted functionality, and verify the installed payload against the successful build output.
-If building or deployment fails, resolve what can be resolved and report the exact remaining blocker;
-never install a failed build or claim an unsuccessful deployment succeeded. Deployment is not visual
-acceptance: the human near/far checks required by section 6 remain mandatory.
-
-After every source-code update, the Agent must invoke a kill command for the exact `Cities2.exe`
-process. This command is mandatory even when the process is not observed running; a no-op result is
-acceptable, omitting the command is not. The Agent must then verify that no `Cities2.exe` process
-remains before touching installed mod files or generated game assets.
-
-### Determine the affected styles before cleanup
-
-Remove generated bridges only when bridge-generation code changes, and only for the styles affected
-by that change. Remove all mod-created bridges of each affected style, regardless of their selected
-roads, widths or display names. Preserve every bridge of an unaffected style.
-
-For example, a generation change limited to Golden Gate Suspension Bridge (`GoldenGate`) removes
-all mod-created `GoldenGate` bridges. It does not remove `GoldenGateDouble`, `SuspensionGolden`,
-other suspension styles, or original game/DLC bridges merely because their names are similar.
-
-Generation changes include changes to geometry, composition, generated components, archetype
-parameters and generated metadata used to construct bridges. For shared generation code, trace its
-callers and affected branches and record the exact affected style IDs. Remove bridges only for those
-styles; a shared file or a new mod version alone is not evidence that every style is affected.
-Adding a new style does not invalidate existing styles unless their generation paths also change.
-
-If bridge-generation code has not changed, do not remove any existing bridge as part of the update.
-This includes changes limited to documentation, UI, localization, preview rendering, diagnostics,
-build/publishing tooling or asset management that do not change bridge generation.
-
-### Remove only the selected styles' owned assets
-
-Before removal, list the affected styles and resolve their existing bridge UUIDs from reliable
-creation/style records. Style selection determines the cleanup scope; file ownership is still
-determined exclusively by the `b{uuid}` path rule in section 18. Never use a display-name substring
-or a broad all-UUID match as a substitute for selecting the affected styles. If a bridge's style
-cannot be established, preserve it and report the unresolved scope rather than deleting it by guess.
-
-With the game stopped, back up and remove only the selected UUIDs' generated bridge/deck prefabs,
-derived towers, pieces, LODs, geometry and dependency-copy directories from the active asset roots.
-Remove only their entries from export state or other caches that could recreate references; do not
-clear a shared state file containing unaffected bridges. Preserve source roads, game/DLC resources,
-other mods' assets, user saves, unaffected bridges and their dependencies.
-
-Verify the selected source paths are absent, confirm unaffected bridges remain, and report the
-removed styles/UUIDs and any failures. Retain required diagnostic evidence outside active asset
-directories before cleanup. Building or installing a DLL does not replace the applicable shutdown,
-backup and scoped cleanup steps; complete them in the same task.
-
-Startup self-check repair/removal and an explicitly confirmed user deletion are separate operations
-governed by section 19. Do not invoke either as a shortcut for deployment cleanup, and do not import
-the self-check's backup-failure deletion fallback into this deployment procedure.
+A new style or uncalled generation stage does not invalidate existing assets. Do not delete healthy
+bridges merely because generator code changed. When a concrete incompatibility requires recovery,
+identify the affected style IDs and UUID-owned artifacts, follow the existing backed-up recovery
+procedure, verify the result and preserve unrelated assets. This changes no self-check, migration,
+explicit deletion or ownership semantics. Deployment is not in-game visual acceptance.
 
 ## 14. Record the rollback baseline and preserve each archetype's width allowance
 
@@ -1565,10 +1473,10 @@ road surface, not permission to re-encode carried archetype structure meshes und
 Section 8's structural widening and offline part-identification rules remain unchanged. Use measured
 partition data; do not infer authored hinges or part membership at runtime.
 
-Section 10's deferred status remains until each claimed variant has measured generation data and
-the supplement's actual acceptance evidence. Documentation, discovery, compilation and preview
-success alone do not enable a style. Sections 12–19 continue to govern branching, style-scoped
-cleanup, width audits, native pricing, ownership, persistence and migration.
+There is no deferred-family gate. Integrate executable variants using their own hardcoded generation
+data, and report the supplement's verification evidence separately. Documentation and discovery are
+not implementation; compilation and preview are not full acceptance. Sections 12–19 govern workflow,
+scoped recovery, width audits, native pricing, ownership, persistence and migration.
 
 ## 22. New bridge styles require immediate UI synchronization, generator routing and multilingual names
 
@@ -1623,26 +1531,16 @@ Pre-edit baseline: branch `dev`, HEAD `0f4b10ae47c5dc264249e0d877aacc326e3e9525`
 rollback reference `refs/rollback/registered-style-ui-parity-20261016`. Existing working-tree changes
 are preserved. Implementation status remains documented accurately in development records.
 
-## 23. GPU computation and parallel bridge generation
+<a id="23-gpu-computation-and-parallel-bridge-generation"></a>
 
-User requirement dated 2026-10-16. Pre-edit baseline: branch `dev`, HEAD
-`3b6363ada9f1f147b1a660e20c0d6246a54f82dd`. Existing working-tree changes are preserved.
+## 23. Performance follows measured bottlenecks
 
-Computationally expensive repeated operations, including bulk matrix calculations, pixel processing
-and image algorithms, must use GPU execution. Assume the user has a GPU capable of meeting
-Cities: Skylines II's system requirements. GPU availability does not imply NVIDIA hardware or
-CUDA availability: use game/engine GPU facilities or other APIs compatible with supported GPU
-vendors. Do not make CUDA or another vendor-exclusive facility the required computation path.
-
-During bridge generation, run independent steps in parallel wherever possible. Identify their data
-dependencies and synchronize only where a downstream step needs the results. Preserve required
-ordering, resource ownership and deterministic results where generation depends on them. Respect
-Unity/game API thread affinity and graphics-context requirements; parallel execution does not
-permit calling main-thread-only APIs from worker threads or racing shared asset mutations.
-This is a runtime generation requirement, not authorization to delegate work to coding agents.
-
-This documentation update establishes the implementation rule; it does not claim that every
-existing generator has already been migrated to GPU computation or parallel execution.
+Use CPU or vendor-compatible GPU APIs as appropriate. Prefer GPU execution for large pixel workloads
+and parallelize independent work when beneficial. A correct bounded CPU path is permitted; GPU
+conversion is not a prerequisite for integrating a generator. Do not require vendor-exclusive APIs.
+Respect Unity/game thread affinity, resource ownership and deterministic construction. Measure and
+fix actual slow stages without postponing complete generation for speculative optimization.
+This runtime scheduling policy does not authorize delegation to coding agents.
 
 ## 24. Movable bridge asset size
 
@@ -1709,81 +1607,21 @@ adapting bridge-owned geometry. This rule governs sidewalk-dependent presence an
 does not authorize guesses about structural parts or changes to unrelated geometry. Verify roads
 with zero sidewalks, one sidewalk and unequal left/right sidewalk widths when claiming support.
 
-## Detailed repository rule checklist (2026-10-16)
+<a id="detailed-repository-rule-checklist-2026-10-16"></a>
 
-Moved without removing requirements from root AGENTS.md to keep the automatic instruction
-chain below 32 KiB. Baseline: `dev/3b6363ada9f1f147b1a660e20c0d6246a54f82dd`.
+## Current repository checklist (2026-10-19)
 
-The numbered references below point to the corresponding sections in this bridge generation contract.
+1. Extract and hardcode construction data from the correct real prototype; generation must not
+   require another player to possess the developer's original prototype files.
+2. Supply the necessary resource graph through permitted sources and independent persistence.
+3. Generate the selected road, native motion, attachments and all LODs with correct part transforms.
+4. Preserve native attributes, material density and original road bones; do not cut receivers for paint.
+5. Integrate routing, UI and all supported languages; preserve fees, unlocks and identities.
+6. Build/deploy coherent increments and scope any necessary recovery to affected owned assets.
+7. Verify actual geometry, saved references and native behavior; label pending visual/cold-load checks.
 
-1. Every generated bridge follows a real archetype of the same type. Preserve the complete prefab,
-   component, placement, mesh-part, spawn and pillar behavior unless the deliberate difference is
-   recorded at the point of change. See contract section 1.
-2. Archetype parameters are measured once and hardcoded. Runtime generation must not depend on the
-   archetype prefab being installed. Existing input components are carried across whole except for
-   the exact modification requested. See contract section 2.
-3. A generated bridge may differ from its archetype only in generated geometry and the user-selected
-   road structure. See contract section 3.
-4. Towers and cables are derived geometry owned by the generated bridge; they are never references to
-   shared archetype geometry. Each generated bridge receives its own bridge-prefixed structure
-   prefabs. See contract section 4.
-5. A generated tower differs from its archetype in width alone. Preserve all other measured
-   relationships and prefab behavior. See contract section 5.
-6. Compilation, synthetic numbers and offline tests cannot prove a visual fix. Agents must not run
-   unit tests for visual component-generation work. Inspect the real prototype and generated geometry,
-   read export diagnostics, and finish with in-game near- and far-view checks. Every visual change must
-   update the highest-detail mesh and every LOD together. See contract section 6.
-7. Diagnose by dumping the archetype and generated object, normalizing the data and diffing them. Read
-   the game IL when field behavior is unclear. Do not substitute visual guesses for evidence. See
-   contract section 7.
-8. Stretch versus translation is decided only by whether the authored part reaches or crosses
-   `x = 0`. This rule has priority over every family special case, heuristic and agent-authored rule,
-   and every attempted override must be refused, except for the user-approved central railing post
-   exception in contract section 8. Runtime spatial comparisons may compare `x`, `y` or
-   `z` with zero using equality or inequalities; they may not use a fixed non-zero coordinate to infer
-   geometry. Non-zero geometric inference is allowed only in metaprogramming, whose reviewed result is
-   committed as immutable, hardcoded runtime data. Runtime geometry guessing is forbidden. See
-   contract section 8.
-9. The suspension family is the reference checklist; every family must preserve the equivalent
-   archetype relationships rather than inherit suspension-specific values. See contract section 9.
-10. Unsupported generation is refused with a reason. It must not silently fall back to an unrelated
-    archetype or partial bridge. See contract section 10.
-11. A double-deck bridge is built only from its double-deck archetype. Preserve its main/auxiliary net
-    roles, positions, inversion behavior and fixed deck separation. See contract section 11.
-12. A bridge-specific change is made only on the exact all-English `bridge/<style-slug>` branch listed
-    in contract section 12. Check `git branch --show-current` before reading code with intent to edit.
-    Shared infrastructure is developed on `dev`; it is not disguised as a single-bridge change.
-13. After a code update, invoke the exact `Cities2.exe` kill command even if it is a no-op and verify
-    the process is absent. If bridge-generation code changed, remove all mod-created bridges only
-    for the affected style IDs and their UUID-owned artifacts. Preserve unaffected styles. If no
-    bridge-generation code changed, remove no existing bridges. Documentation-only edits require
-    no shutdown, cleanup, build or deployment. See contract section 13.
-14. Before editing any contract or `AGENTS.md`, record the current branch and exact `HEAD` commit as
-    the rollback baseline. Every generated bridge must preserve its archetype's measured constant in
-    `bridge width - deck width`. Width is always the complete left-to-right span `maxX - minX`; a
-    one-sided x coordinate, `abs(x)`, or twice a one-sided boundary is not width. The audit uses only
-    `widthIncrement = (archetypeBridgeWidth - archetypeRoadWidth) - (generatedBridgeWidth -
-    generatedRoadWidth)` and `newBridgeWidth = generatedBridgeWidth + widthIncrement`, evaluated as
-    bitwise-exact binary32 without rounding, tolerance or a forced result. `widthIncrement` is the
-    increment of that complete span. If `abs(widthIncrement) > 1 m`, skip that bridge and record the
-    evidence. Establish every input by comparing a real archetype with a real newly generated bridge;
-    never infer it from source
-    arithmetic alone. A missing generated sample is never a reason to skip: the required new bridge
-    must be created and measured, and the pass remains incomplete until that real sample exists.
-    Creating and judging the sample is a human game operation; the Agent must not open or control the
-    game or issue an API/request-file bridge-construction request. See contract section 14.
-15. Bridge-generation code must never calculate, look up or apply an audit correction at runtime.
-    Width and geometry corrections are completed during metaprogramming and folded into the original,
-    immutable archetype parameters or generated source data. Runtime consumes only those final values;
-    it must not know an audit delta exists. See contract section 14.
-16. Bridge-specific lighting is archetype behavior. Preserve every authored bridge light, its effect
-    prefab and fields, placement, parent mesh, rotation, group, probability and activation conditions.
-    Side-mounted tower lights follow the same rigid width displacement as their parent mesh; lights on
-    `x = 0` remain centred. Ordinary lighting belonging to the user-selected road remains part of that
-    road structure. See contract section 15.
-17. Preserve native construction, elevation and upkeep fees. The game calculates charges for the
-    generated network and its objects. Do not add a custom scalar total, multiplier, offset, floor,
-    runtime price override or pricing-only prefab. See contract section 16.
+Historical procedural checklists do not restore deferred-family bans, mandatory style branches,
+per-edit deployment, mandatory GPU implementation or manual-feedback gates on further coding.
 
 ## Retained repository routing records: Current documentation baseline
 

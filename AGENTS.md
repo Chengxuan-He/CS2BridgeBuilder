@@ -17,6 +17,19 @@ before delivery. Changes with no user-visible text must still verify that existi
 behavior is preserved. Keep technical identifiers and asset identities unlocalized; project
 documentation remains in English as required above.
 
+## Current implementation policy
+
+Follow the [current implementation policy](docs/agent-contract/BRIDGE_GENERATION_CONTRACT.md#current-implementation-policy-2026-10-19). Prototype data must still be extracted from real sources and
+hardcoded: other players may not have the same prototype files. Offline identification remains
+required, but compact measured profiles/recipes may replace exhaustive per-vertex literals.
+Do not depend on the original prototype Prefab at generation time. Preserve the required resource
+graph through permitted packaged data and per-bridge dependency snapshots.
+
+Mandatory per-style branches, blanket movable-family deferral, per-edit deployment, GPU-first
+implementation and human-feedback gates on further coding are removed. These process changes
+supersede conflicting historical routing records. They do not waive correct native behavior,
+all-LOD geometry, original road bones, independent persistence or multilingual adaptation.
+
 ## Current documentation baseline
 
 Bridge revision history is retained in the bridge generation contract under "Retained repository routing records".
@@ -114,28 +127,14 @@ containers and preserve native focus, input and modal behavior. Follow
 [Project contract: Native game UI windows](docs/agent-contract/PROJECT_CONTRACT.md#native-game-ui-windows-2026-10-19).
 Baseline: `dev/d21433ed2a9ee233c8525ce6a0fe2515f973dc7a` (2026-10-19).
 
-## GPU computation and parallel bridge generation
+## Performance and deployment
 
-Computationally expensive repeated operations, including bulk matrix calculations and image
-algorithms, must execute on the GPU. Assume users have a GPU capable of running Cities: Skylines II;
-do not assume an NVIDIA GPU or CUDA availability. Use GPU APIs compatible with supported vendors.
-During bridge generation, execute independent steps in parallel wherever possible, respecting data
-dependencies and the game/Unity API's thread and graphics-context requirements. See bridge generation contract
-section 23. This rule concerns the generation pipeline, not delegation to coding agents.
-
-## Deploy immediately after every code change
-
-Before modifying code, run `taskkill /IM Cities2.exe /F` and verify the process is absent,
-even when a city/save is currently running. The user explicitly authorizes this forced shutdown;
-do not ask whether to save, request another confirmation, or wait for a manual exit. Unsaved progress
-may be lost. This pre-edit requirement supplements the mandatory post-edit shutdown below.
-
-After completing any code change, immediately build and deploy the updated mod to the game.
-Do not stop at editing or compilation, defer deployment to another turn, or wait for a separate
-deployment request. Follow the mandatory shutdown, backup and ownership-scoped cleanup procedure in
-contract section 13, preserve other accepted functionality, and verify the installed files against
-the build output. If deployment fails, report the exact blocker; never claim deployment succeeded.
-Deployment does not replace human in-game visual acceptance.
+Follow bridge generation contract sections 13 and 23. Choose CPU/GPU placement and parallelism from
+correctness, native API affinity and measured cost; GPU conversion is not an implementation gate.
+Build and deploy coherent buildable code increments, not every intermediate edit. Stop and verify
+the game before replacing loaded binaries, back up original installed files and verify output hashes.
+Preserve healthy generated assets unless a concrete incompatibility requires ownership-scoped recovery.
+Documentation-only changes require no build, game shutdown or deployment.
 
 ## Release workflow
 
@@ -187,7 +186,7 @@ read the complete project and bridge generation contracts.
 ## Non-negotiable project rules
 
 The detailed checklist formerly here is preserved in the bridge generation contract under
-"Detailed repository rule checklist (2026-10-16)". It remains mandatory. Read the complete
+"Detailed repository rule checklist (2026-10-16)". It is superseded by the current implementation policy where conflicting. Read the complete
 numbered contract; this index does not replace or weaken its rules.
 
 - Sections 1–5: preserve the measured archetype, its component/reference graph, native raw mesh
@@ -196,12 +195,12 @@ numbered contract; this index does not replace or weaken its rules.
   the mandatory authored-part crossing rule, and do not claim visual acceptance from compilation.
 - Sections 10–11 and 21–22: preserve actual variant/arrangement requirements and registered-style
   UI parity; missing generator routes raise ERROR through normal operation handling.
-- Sections 12–14: verify the exact style branch before edits; shared code belongs on dev. Stop the
-  game, clean only affected styles, deploy and hash-check. Record instruction-edit baselines and
+- Sections 12–14: use a suitable branch and preserve unrelated changes. Deploy coherent increments
+  and hash-check; recover only demonstrably incompatible owned assets. Record instruction-edit baselines and
   establish the full-span width invariant from real samples; no runtime audit corrections.
 - Sections 15–20: preserve native lights, fees, independence, identity, dependency snapshots,
   UUID-string ownership, migration/removal order, source isolation and metadata naming.
-- Sections 23–24: use vendor-compatible GPU computation, overlap independent generation work,
+- Sections 23–24: select CPU/GPU execution from measured needs, overlap safe independent work,
   and verify comparable total movable-bridge size including dependencies.
 
 ## Elevated-road sidewalks: all bridge generators
@@ -276,13 +275,13 @@ in-memory integrity checks or quarantine as part of this persistence workflow.
 2. Read the instruction files required by the table above.
 3. Inspect the archetype and current generated output before changing transformation code.
 4. For contract maintenance, record the branch and exact `HEAD` before the first instruction edit.
-5. If a required generated sample is absent, keep the pass incomplete and request the exact human
-   sample-creation step. Do not open or control the game, issue an API/request-file construction
-   request, skip the bridge, or close the audit merely because the sample is missing.
-6. Make only the requested, branch-valid change. Keep runtime inference and metaprogramming separate.
+5. If a generated sample is absent, record the unverified acceptance item and continue implementation.
+   Do not claim visual acceptance from compilation or stop unblocked work waiting for human feedback.
+6. Make the requested change on a suitable working branch. Keep offline identification and hardcoded
+   runtime construction separate; use compact recorded data when sufficient.
 7. Apply the change consistently to the full-detail mesh and all LODs.
-8. After any code edit, perform the mandatory process stop. For generation changes, identify affected
-   styles and clean up only their UUID-owned bridges under section 13. Otherwise retain all bridges.
+8. Build and deploy coherent code increments under section 13. Preserve healthy assets; identify actual
+   incompatibilities before any scoped recovery. Documentation-only work does not trigger deployment.
 9. After completing any code change, immediately build and deploy to the game, then verify the
    installed files against the build output. Compilation is only a loadability check.
 10. Do not call a visual issue fixed until the in-game near/far result has been observed.

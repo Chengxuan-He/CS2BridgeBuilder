@@ -2,7 +2,10 @@
 
 These records preserve prior instruction text. Current movable appearance and animation rules
 are defined by [MOVABLE_BRIDGES_CONTRACT.md sections 16–23](MOVABLE_BRIDGES_CONTRACT.md#16-accepted-generation-pipeline-and-source-map).
-Conflicting historical recipes are not implementation alternatives. Unrelated requirements remain binding.
+Conflicting historical recipes are not implementation alternatives. The current implementation policy in BRIDGE_GENERATION_CONTRACT.md takes precedence over all process
+instructions retained here. Hardcoding from real prototype evidence remains required; removed branch,
+GPU-first, per-edit deployment and audit-before-coding gates must not be reintroduced from this archive.
+Unrelated current outcome requirements remain binding.
 
 
 ## Historical instructions from AGENTS.md

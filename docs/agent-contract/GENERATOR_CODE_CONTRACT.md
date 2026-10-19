@@ -43,3 +43,11 @@ does not imply that unimplemented styles are supported.
 
 Baseline (2026-10-17): `dev/d21433ed2a9ee233c8525ce6a0fe2515f973dc7a`.
 Rollback reference: `refs/rollback/generator-base-contract-20261017`. Existing local changes are preserved.
+
+## Implementation policy synchronization (2026-10-19)
+
+Follow the current bridge generation policy. Retain style-specific hardcoded data derived from real
+prototypes and the existing shared lifecycle; do not require players to own identical prototype
+files. Compact measured data is sufficient where equivalent to vertex tables. Per-style branches,
+complete audits and human feedback are not prerequisites for integrating executable stages.
+This revision does not permit empty generators or false completion claims.

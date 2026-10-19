@@ -1,5 +1,13 @@
 # Project contract
 
+## Bridge implementation policy synchronization (2026-10-19)
+
+For bridge work, the [current implementation policy](BRIDGE_GENERATION_CONTRACT.md#current-implementation-policy-2026-10-19)
+supersedes conflicting historical process gates. Hardcoded data from real prototypes and independence
+from the original prototype files are retained. Optional style branches, coherent-increment deployment,
+measured CPU/GPU choices and incremental integration replace the former procedural restrictions.
+Correct native behavior, resource ownership, persistence and localization requirements remain in force.
+
 ## Contents
 
 - [Contract routing and scope](#contract-routing-and-scope)

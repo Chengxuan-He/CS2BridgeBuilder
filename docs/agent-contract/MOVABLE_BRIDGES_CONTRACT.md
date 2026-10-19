@@ -29,6 +29,18 @@
 
 ## 1. Authority, scope and implementation status
 
+The [2026-10-19 implementation policy](BRIDGE_GENERATION_CONTRACT.md#current-implementation-policy-2026-10-19)
+removes process gates on completing the remaining generators. Hardcoding is explicitly retained:
+extract from real prototypes during development, then use immutable construction data without
+requiring the player's identical original prototype files. Compact profiles/recipes are permitted;
+runtime rediscovery of prototype parts is not. Supply required resource inputs through the permitted
+packaged/persisted resource graph. A local developer file path is never a deployment dependency.
+
+Per-style branches and exhaustive audit-before-implementation are not admission gates. Route actual
+working implementations incrementally and record remaining acceptance work honestly. Existing
+appearance, skeleton, persistence and localization outcomes remain mandatory.
+
+
 Current accepted generation baseline: **2026-10-18**. Sections 16–23 consolidate the latest
 implemented flow and the user's acceptance after restoring native structural materials. Read
 these sections before adding any movable style. They supersede earlier conflicting paint,
@@ -148,7 +160,8 @@ The record must cover:
 - Hinges, moving-span endpoints, fixed transition areas, opening envelope and closed deck datum.
 - Mounted lights, barriers, effects, parent relationships and any counterweight/pulley coupling.
 
-Identify authored mechanism parts offline. Commit reviewed immutable data using the existing
+Identify authored mechanism parts offline. Compact measured profiles and recipes are permitted;
+per-vertex enumeration is required only when needed to represent the part. Commit immutable data using the existing
 metaprogramming workflow; do not rediscover parts at generation time from bounds, nearest vertices,
 names, connected components or non-zero coordinate thresholds. Preserve every variant's own data.
 Do not apply DrawBridge03's hinge positions or LiftBridge01's travel to another variant.
@@ -315,7 +328,7 @@ Authored mechanism membership must already be known offline. Generated road clip
 performed in the recorded seam's local frame against its zero plane; it must not infer a hinge or
 part boundary from road bounds or introduce a new transverse widening criterion.
 
-Prototype-face intersection is prohibited by general bridge contract section 2. Use the
+Prototype-face intersection remains prohibited by general bridge contract section 2. Use the
 hardcoded motion/appearance frames directly on selected-road geometry; never intersect it
 with a prototype mesh or a stored copy of its triangles to rebuild a road LOD. Preserve
 selected-road heights, curbs, asymmetric sidewalks and bone ownership at every level.
@@ -540,15 +553,12 @@ this contract. `BridgePreviewComposition` and `BridgePreviewNetMesh` provide use
 preview paths, but neither proves persistent bone-bound mesh export. Trace their dependencies before
 reuse; do not promote disposable preview assets into formal saved assets.
 
-Develop genuinely shared machinery on `dev`. Before a style-specific implementation begins, record
-its stable style ID and exact English `bridge/<style-slug>` mapping under bridge generation contract section
-12. Existing discovery labels do not authorize a new generator or an invented branch mapping.
+Use a suitable working branch for shared machinery and style-specific data. Per-style branches are
+optional under section 12. Preserve stable style IDs and keep each variant's hardcoded rules distinct.
 
-Deployment follows bridge generation contract section 13. Generation changes remove all mod-created bridges
-only of the exact affected styles and their UUID-owned assets. Trace shared-code callers to identify
-that set. A new movable style alone does not invalidate fixed bridges. No generation change means
-no removal of existing bridges; documentation-only work requires no shutdown, cleanup, build or
-deployment. Keep deployment cleanup separate from migration and user-requested deletion.
+Deployment follows section 13: build/deploy coherent increments, back up installed originals and
+verify hashes. Preserve healthy assets. Recover only specifically incompatible owned assets; adding
+a new movable style does not invalidate fixed bridges. Documentation-only changes require no deployment.
 
 ### Preview and performance
 
@@ -612,8 +622,8 @@ checks remain applicable where their paths change.
 
 Delivery must state what is measured, implemented, built/deployed and manually accepted separately.
 Attach the actual evidence and list remaining checks. A missing sample or untested native cycle
-keeps the relevant support claim incomplete. Do not remove section 10's deferred status wholesale
-when only one variant has passed.
+keeps the relevant support claim incomplete. There is no family-wide deferred status. Implementation and verification status are recorded per
+variant; missing human acceptance does not block coding or routing the remaining variants.
 
 ## 14. Evidence references and maintenance
 

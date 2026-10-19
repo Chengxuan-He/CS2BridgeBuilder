@@ -11,18 +11,18 @@ This file replaces neither. Numbered bridge rules refer to the bridge generation
 ## Runtime invariants
 
 Read the [retained runtime invariants](../../docs/agent-contract/MOVABLE_INSTRUCTION_RECORDS.md#runtime-invariants-retained-from-srcbridgebuilderagentsmd)
-in full before code changes. They remain binding except where the accepted movable contract
+in full before code changes. Apply the current implementation policy first; historical process gates are retired.
+Prototype parameters and part maps remain hardcoded and independent of the original prototype file.
+The retained requirements remain binding except where the accepted movable contract
 sections 16–23 explicitly supersede historical marking/material recipes. Preserve native asset
 ownership, API thread affinity, source provenance, skeletons, structure channels and independent
 persistence. This relocation changes no unrelated runtime requirement.
 
-## GPU computation and parallel generation
+## Performance and iteration
 
-Follow bridge generation contract section 23: expensive repeated matrix/pixel/image calculations must run
-on the GPU. Assume a game-capable GPU, never a specific vendor or CUDA availability. Use GPU
-facilities compatible with supported vendors. Run independent bridge-generation steps in parallel
-wherever possible while respecting data dependencies, resource ownership and native API thread
-and graphics-context requirements. This does not authorize parallel calls to thread-affine APIs.
+Follow bridge generation contract sections 13 and 23. Choose CPU/GPU execution and parallelism from
+native API affinity, correctness and measured performance. Neither GPU conversion nor a specific
+style branch is a prerequisite for implementation. Build/deploy coherent increments, not every edit.
 
 ## Completion
 
@@ -43,29 +43,14 @@ bridge/geometry identities distinct from these unchanged dependency snapshots. M
 or differing contents at an existing same-CID destination fail persistence explicitly. File self-check
 and cleanup must recognize UUID-directory ownership and intentional identical-CID duplicates.
 
-Before modifying runtime code, run `taskkill /IM Cities2.exe /F` even if a city/save is running,
-without asking whether to save or waiting for a manual exit. The user explicitly authorizes losing
-unsaved progress for this workflow. Verify the process is absent; still perform the post-edit
-shutdown and deployment procedure required below.
+Preserve native construction, elevation and upkeep fees under section 16.
 
-Preserve native construction, elevation and upkeep fees. Do not allocate pricing-only prefabs,
-persist a custom scalar total or override runtime prices. See bridge generation contract section 16.
-
-After any source-code edit, follow contract section 13: invoke the exact `Cities2.exe` kill command,
-verify the game is stopped, and determine whether bridge-generation code changed. If it did, remove
-all mod-created bridges only for the affected style IDs and their UUID-owned artifacts; preserve
-unaffected styles. If generation code did not change, remove no existing bridges. Shared generation
-changes require tracing the affected style IDs before cleanup. After completing any code change,
-immediately build and deploy to the game
-without waiting for another request; back up the existing installation and verify installed files
-against the build output as required by section 13. Compilation is not visual verification. For visual work, do not run unit
-tests; inspect generated geometry and confirm both near and far views in game.
-
-Documentation-only edits require no game shutdown, bridge removal, build or deployment. The
-2026-10-15 cleanup revision is recorded in contract section 13 at branch `dev`, HEAD
-`0f4b10ae47c5dc264249e0d877aacc326e3e9525`, rollback reference
-`refs/rollback/scoped-cleanup-docs-20261015`.
-
+Before replacing game-loaded binaries, stop `Cities2.exe`, verify it is absent, back up originals
+and verify installed hashes. Build and deploy each coherent buildable code increment. Do not remove
+healthy existing bridges merely because generation code changed; recover only concretely incompatible
+style/UUID-owned assets under section 13. Documentation-only changes require no deployment.
+Automated geometry and serialization checks are permitted but do not prove visual acceptance.
+Keep unfinished native motion, near/far and cold-load checks explicit and continue unblocked work.
 
 ## Post-load self-check
 
