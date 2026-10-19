@@ -101,20 +101,7 @@ internal static class Draw02NetworkData
             m_RequireDeadEnd = false,
             m_RequireOrphan = false,
         },
-        new NetSubObjectInfo
-        {
-            m_Object = mechanism,
-            m_Position = new float3(0.0f, 0.0f, 0.0f),
-            m_Rotation = new quaternion(0.0f, 0.0f, 0.0f, 1.0f),
-            m_Placement = (NetObjectPlacement)16,
-            m_FixedIndex = 0, m_Spacing = 0.0f,
-            m_AnchorTop = false,
-            m_AnchorCenter = false,
-            m_RequireElevated = false,
-            m_RequireOutsideConnection = false,
-            m_RequireDeadEnd = false,
-            m_RequireOrphan = false,
-        },
+        MechanismPlacement(mechanism),
         new NetSubObjectInfo
         {
             m_Object = outsideConnection,
@@ -130,4 +117,19 @@ internal static class Draw02NetworkData
             m_RequireOrphan = false,
         },
     };
+    internal static NetSubObjectInfo MechanismPlacement(ObjectPrefab mechanism) =>
+        new NetSubObjectInfo
+        {
+            m_Object = mechanism,
+            m_Position = new float3(0.0f, 0.0f, 0.0f),
+            m_Rotation = new quaternion(0.0f, 0.0f, 0.0f, 1.0f),
+            m_Placement = (NetObjectPlacement)16,
+            m_FixedIndex = 0, m_Spacing = 0.0f,
+            m_AnchorTop = false,
+            m_AnchorCenter = false,
+            m_RequireElevated = false,
+            m_RequireOutsideConnection = false,
+            m_RequireDeadEnd = false,
+            m_RequireOrphan = false,
+        };
 }
