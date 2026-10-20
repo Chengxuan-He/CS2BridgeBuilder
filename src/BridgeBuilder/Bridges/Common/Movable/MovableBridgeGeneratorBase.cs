@@ -17,9 +17,21 @@ internal abstract class MovableBridgeGeneratorBase<TSample> : BridgeGeneratorBas
     protected MovableBridgeGeneratorBase(ExportReport report, TowerFactory? towers) : base(report, towers) { }
 
     protected abstract string NativeVariantName { get; }
+    protected abstract string NativeAggregateName { get; }
+    protected abstract string NativeIcon { get; }
     protected abstract float NativeRoadWidth { get; }
     // Main mechanism first, followed by the style's sampling supports.
-    protected abstract RenderPrefab[] ResolveRenderRoots(TowerFactory factory);
+    protected abstract RenderSources ResolveRenderRoots(TowerFactory factory);
+    // A reconstructed source graph must outlive sampling and assembly, but must
+    // never transfer its temporary Prefabs to the persisted output graph.
+    protected sealed class RenderSources : IDisposable
+    {
+        internal readonly RenderPrefab[] Roots;
+        private readonly IDisposable? _owner;
+        internal RenderSources(RenderPrefab[] roots, IDisposable? owner = null)
+        { Roots = roots; _owner = owner; }
+        public void Dispose() => _owner?.Dispose();
+    }
     protected abstract TSample SampleRoad(string owner, Entity selectedRoad, RenderPrefab[] roots,
         ContentPrefab content, float halfDelta, RandomSeed seed);
     protected abstract RenderPrefab BuildMechanism(TowerFactory factory, string owner, TSample road,
@@ -41,7 +53,8 @@ internal abstract class MovableBridgeGeneratorBase<TSample> : BridgeGeneratorBas
             throw new InvalidOperationException($"{StyleId} selected road has no initialized surface width.");
         var halfDelta = (width - NativeRoadWidth) * 0.5f;
         factory.BeginBridge(StyleId, bridgeName: target.name);
-        var roots = ResolveRenderRoots(factory);
+        using var sources = ResolveRenderRoots(factory);
+        var roots = sources.Roots;
         var main = roots[0];
         var content = main.GetComponent<ContentPrerequisite>()?.m_ContentPrerequisite
             ?? throw new InvalidOperationException($"{StyleId} mechanism content prerequisite is missing.");
@@ -60,6 +73,12 @@ internal abstract class MovableBridgeGeneratorBase<TSample> : BridgeGeneratorBas
         var moving = BuildMechanism(factory, target.name, road, nativeLevels, halfDelta, material);
         var mechanismMs = clock.ElapsedMilliseconds - samplingMs;
         AssembleBridge(target, factory, roots, content, halfDelta, road, moving);
+        // These fields are measured style data, not runtime reads from the original
+        // network Prefab. The shared native aggregate remains a required resource.
+        target.m_AggregateType = factory.ResolveOriginal<AggregateNetPrefab>(NativeAggregateName);
+        var ui = target.GetComponent<UIObject>();
+        if (ui != null) ui.m_Icon = NativeIcon;
+        else _report.Warning($"'{target.name}' has no UIObject; the recorded bridge icon could not be assigned.");
         Mod.Log.Info($"{target.name}: {StyleId} generation samplingMs={samplingMs}; mechanismMs={mechanismMs}; " +
             $"supports/objects/networkMs={clock.ElapsedMilliseconds - samplingMs - mechanismMs}; totalMs={clock.ElapsedMilliseconds}.");
         // Transfer material ownership only after the complete native graph exists.

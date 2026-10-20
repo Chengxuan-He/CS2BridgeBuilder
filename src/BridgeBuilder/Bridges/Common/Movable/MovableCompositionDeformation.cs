@@ -56,9 +56,11 @@ internal sealed class MovableCompositionDeformation
 
         // Mapping distance follows UV.z, including native skew correction. Geometry follows the
         // synchronized position.x; these are distinct coordinates and must not be conflated.
-        var startDirection = math.normalize(math.lerp(left.c1.xz - left.c0.xz,
+        // A node curve can have coincident endpoint controls. Such an endpoint contributes
+        // no skew correction; normalizing its zero tangent would poison even a zero UV rate.
+        var startDirection = math.normalizesafe(math.lerp(left.c1.xz - left.c0.xz,
             right.c1.xz - right.c0.xz, texture.z));
-        var endDirection = math.normalize(math.lerp(left.c2.xz - left.c3.xz,
+        var endDirection = math.normalizesafe(math.lerp(left.c2.xz - left.c3.xz,
             right.c2.xz - right.c3.xz, texture.z));
         var skew = (lateral - texture.z) * math.saturate(math.dot(startDirection, -endDirection));
         var startCorrection = math.dot(right.c0.xz - left.c0.xz, startDirection) * skew;

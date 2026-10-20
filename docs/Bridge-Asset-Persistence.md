@@ -1,5 +1,20 @@
 # Bridge asset persistence and reference policy
 
+## Safe owned asset filename stems (2026-10-20)
+
+After removing one owner token, replace each Windows-invalid filename character
+(`<>:"/\|?*` and control characters U+0000 through U+001F), and every period in
+the filename stem, with `_`. Preserve other characters and append the real native
+extension separately. For example, `RB_Empty_Section_2.5` becomes
+`RB_Empty_Section_2_5.Prefab`. Internal Prefab names and CIDs remain unchanged.
+This supersedes earlier preservation of every non-owner character for disk stems.
+
+Creation, generated-resource relocation and backed-up file-only migration share
+`BridgeAssetInfo.FileStem`. Collision checks still apply: never overwrite a
+different payload or CID. External dependency snapshots remain byte-identical with
+their original paths. Native mid-mip tag filenames remain unchanged. Extensions
+and paired `.cid` suffixes are not part of the stem replacement.
+
 ## Contents
 
 - [1. Four distinct operations](#1-four-distinct-operations)

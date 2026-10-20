@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Game.Prefabs;
@@ -13,10 +13,34 @@ namespace BridgeBuilder.Bridges;
 /// </summary>
 internal sealed class BridgeStyleVariant
 {
+    private readonly NetGeometryPrefab? _donor;
+    private readonly Bridge? _bridge;
+    private readonly string? _recordedName;
+    private readonly bool _recordedRoad;
+    private readonly float? _recordedAuxiliaryHeight;
+    internal string? RecordedIcon { get; }
+    internal bool IsRecorded => _donor == null;
+
+    // Catalogue metadata only: no synthetic network is registered or persisted.
+    // The movable generator reconstructs components from its measured source tables.
+    internal BridgeStyleVariant(string name, bool road, string icon, BridgePrototypeSource source,
+        float? auxiliaryHeight = null)
+    {
+        if (!BridgeMeasurements.TryGet(name, out var roadWidth, out var structureWidth))
+            throw new ArgumentException("Recorded movable variant has no measured dimensions: " + name);
+        _recordedName = name;
+        _recordedRoad = road;
+        _recordedAuxiliaryHeight = auxiliaryHeight;
+        RecordedIcon = icon;
+        Source = source;
+        Width = RoadWidth = roadWidth;
+        StructureWidth = structureWidth;
+    }
+
     internal BridgeStyleVariant(NetGeometryPrefab donor, Bridge bridge, float width, bool bxpGoldenGate = false)
     {
-        Donor = donor;
-        Bridge = bridge;
+        _donor = donor;
+        _bridge = bridge;
         Width = width;
         Source = BridgePrototypeSource.Inspect(donor, bxpGoldenGate);
 
@@ -35,9 +59,13 @@ internal sealed class BridgeStyleVariant
         }
     }
 
-    internal NetGeometryPrefab Donor { get; }
+    internal NetGeometryPrefab Donor => _donor ?? throw new InvalidOperationException(
+        "Recorded movable variants must use their measured generator, not a live prototype network.");
 
-    internal Bridge Bridge { get; }
+    internal Bridge Bridge => _bridge ?? throw new InvalidOperationException(
+        "Recorded movable variants reconstruct their Bridge component through the measured generator.");
+    internal bool IsRoad => IsRecorded ? _recordedRoad : Donor is RoadPrefab;
+    internal bool IsBuiltin => IsRecorded || Donor.isBuiltin;
 
     /// <summary>The DLC, mod, asset pack or base game installation that owns this donor.</summary>
     internal BridgePrototypeSource Source { get; }
@@ -48,17 +76,17 @@ internal sealed class BridgeStyleVariant
     /// <summary>Metres. 0 when the donor's sections could not be measured.</summary>
     internal float Width { get; }
 
-    internal string Name => Donor.name;
+    internal string Name => _recordedName ?? Donor.name;
 
-    internal OverheadNetSections? Overhead => Donor.GetComponent<OverheadNetSections>();
+    internal OverheadNetSections? Overhead => _donor?.GetComponent<OverheadNetSections>();
 
-    internal NetSubObjects? SubObjects => Donor.GetComponent<NetSubObjects>();
+    internal NetSubObjects? SubObjects => _donor?.GetComponent<NetSubObjects>();
 
     /// <summary>
     /// Whether the donor carries a second deck of its own. Such a bridge places its towers and cables
     /// around two levels, so its structure only reads correctly on something that also has two.
     /// </summary>
-    internal bool IsDoubleDeck => Donor.GetComponent<AuxiliaryNets>()?.m_AuxiliaryNets?.Length > 0;
+    internal bool IsDoubleDeck => _recordedAuxiliaryHeight.HasValue || _donor?.GetComponent<AuxiliaryNets>()?.m_AuxiliaryNets?.Length > 0;
 
     /// <summary>
     /// The arrangement this bridge hangs its lower deck by, or null when it has none.
@@ -69,8 +97,12 @@ internal sealed class BridgeStyleVariant
     /// separation - move them apart and the lower deck passes through structure that was modelled to
     /// clear it.
     /// </summary>
+    // Recorded variants expose placement metadata only. Their coordinated generator
+    // supplies the private selected auxiliary network; this descriptor is never persisted.
     internal AuxiliaryNetInfo? LowerDeck =>
-        Donor.GetComponent<AuxiliaryNets>()?.m_AuxiliaryNets?.FirstOrDefault(info => info != null);
+        _recordedAuxiliaryHeight.HasValue
+            ? new AuxiliaryNetInfo { m_Position = new() { y = _recordedAuxiliaryHeight.Value } }
+            : _donor?.GetComponent<AuxiliaryNets>()?.m_AuxiliaryNets?.FirstOrDefault(info => info != null);
 
     /// <summary>
     /// How wide the structure above the deck actually is, in metres. 0 when nothing can be measured.
@@ -135,7 +167,7 @@ internal sealed class BridgeStyleVariant
     /// <summary>Whether this donor hangs the named tower along its deck.</summary>
     internal bool CarriesTower(string towerName)
     {
-        var subObjects = Donor.GetComponent<NetSubObjects>();
+        var subObjects = SubObjects;
         if (subObjects?.m_SubObjects == null) return false;
 
         foreach (var info in subObjects.m_SubObjects)
@@ -155,6 +187,7 @@ internal sealed class BridgeStyleVariant
     /// </summary>
     internal string DescribeTowers()
     {
+        if (IsRecorded) return $"recorded {Name}: {StructureWidth:0.#}m; assembled by the movable generator";
         var parts = new List<string>();
 
         var overhead = Donor.GetComponent<OverheadNetSections>();
@@ -468,7 +501,7 @@ internal sealed class BridgeStyle
     {
         try
         {
-            return variant.Donor.isBuiltin;
+            return variant.IsBuiltin;
         }
         catch (Exception)
         {
@@ -530,8 +563,8 @@ internal sealed class BridgeStyle
         // No structure at all produces a bare bridge: correct in every measurement, visibly missing
         // its towers.
         if (variant.StructureWidth <= 0f) penalty += 8;
-        if (variant.Donor is RoadPrefab != forRoad) penalty += 4;
-        if (forRoad && CarriesRails(variant.Donor.name)) penalty += 4;
+        if (variant.IsRoad != forRoad) penalty += 4;
+        if (forRoad && CarriesRails(variant.Name)) penalty += 4;
         return penalty;
     }
 

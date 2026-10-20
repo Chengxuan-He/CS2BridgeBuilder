@@ -44,8 +44,14 @@ internal static class PedestrianDraw02RoadReplacement
                 throw new InvalidOperationException($"PedestrianDraw02 LOD {lod} structure fragment would restore removed road triangle {fragment.Triangle}.");
         var positions = new Vector3[vertexCount];
         Array.Copy(structure.Positions, positions, vertexCount);
+        // Subdivided coarse faces can have explicitly widened boundaries whose X
+        // differs from interpolation of the original corners. Preserve that result.
+        var constructedX = new float[structure.ConstructedCount];
+        for (var i = 0; i < constructedX.Length; i++)
+            constructedX[i] = structure.Positions[vertexCount + i].x;
         return new MovableStructureModel.Plan(structure.SourcePositions, positions, structure.SourceIndices,
-            new[] { removed }, structure.AddedVertices, structure.Fragments, structure.InteriorVertices);
+            new[] { removed }, structure.AddedVertices, structure.Fragments, structure.InteriorVertices,
+            constructedX);
     }
 
     private static (int Triangle, int A, int B, int C)[] Faces(int lod) => lod switch

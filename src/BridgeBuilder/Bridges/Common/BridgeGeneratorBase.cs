@@ -39,7 +39,38 @@ internal abstract partial class BridgeGeneratorBase
     protected readonly TowerFactory? _towers;
 
     internal abstract string StyleId { get; }
+    internal virtual bool ApplyUnlocks(NetGeometryPrefab target, BridgeStyleVariant variant,
+        List<PrefabBase> created) => BridgeUnlockPolicy.Apply(target, variant, _report, created);
     internal virtual bool StructureFollowsUpperAuxiliary => false;
+    // Some native mechanisms animate both selected networks as one object. Their
+    // auxiliary clone must exist before sampling, not be attached after generation.
+    internal virtual bool BuildsAuxiliaryDeck => false;
+    protected sealed class AuxiliaryDeckInput
+    {
+        internal readonly NetGeometryPrefab Source, Target;
+        internal readonly bool Opposite;
+        internal AuxiliaryDeckInput(NetGeometryPrefab source, NetGeometryPrefab target, bool opposite)
+        { Source = source; Target = target; Opposite = opposite; }
+    }
+    protected AuxiliaryDeckInput? AuxiliaryDeck { get; private set; }
+
+    internal void SetAuxiliaryDeck(NetGeometryPrefab source, NetGeometryPrefab target, bool opposite)
+    {
+        if (!BuildsAuxiliaryDeck || AuxiliaryDeck != null || ReferenceEquals(source, target))
+            throw new InvalidOperationException("Coordinated deck generation requires one private auxiliary clone.");
+        AuxiliaryDeck = new AuxiliaryDeckInput(source, target, opposite);
+    }
+
+    // The common caller verifies the exact clone before publishing. A second clone
+    // or a shared selected network must never replace the coordinated sampling input.
+    internal void VerifyAuxiliaryDeck(NetGeometryPrefab main)
+    {
+        var input = AuxiliaryDeck ?? throw new InvalidOperationException("Coordinated auxiliary input is missing.");
+        var entries = main.GetComponent<AuxiliaryNets>()?.m_AuxiliaryNets;
+        if (entries == null || entries.Length != 1 ||
+            !ReferenceEquals(entries[0]?.m_Prefab, input.Target))
+            throw new InvalidOperationException("Coordinated generation did not attach its owned auxiliary network.");
+    }
     protected virtual bool AllTowersUseReferenceDeck => false;
     protected virtual bool WidthFollowsSidewalks => false;
 

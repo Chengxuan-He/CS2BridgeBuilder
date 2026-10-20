@@ -111,7 +111,7 @@ internal static class BridgeLegacyNames
                     var path = extension.Equals(".Prefab", StringComparison.OrdinalIgnoreCase)
                         ? Path.Combine(gameRoot, prefabPath(name))
                         : Path.Combine(gameRoot, BridgeAssetInfo.OwnedDirectory(owner, "Geometry"),
-                            BridgeAssetInfo.ShortName(name, owner) + extension);
+                            BridgeAssetInfo.FileStem(name, owner) + extension);
                     var bytes = asset.Text.Length == 0 ? File.ReadAllBytes(BridgeFileAccess.Native(asset.Path)) : asset.Bytes;
                     if (asset.Text.Length != 0)
                     {

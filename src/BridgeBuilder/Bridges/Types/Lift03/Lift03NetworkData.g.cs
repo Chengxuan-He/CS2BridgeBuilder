@@ -10,6 +10,9 @@ namespace BridgeBuilder.Bridges;
 
 internal static class Lift03NetworkData
 {
+    internal const float ApproachLength = 200f;
+    internal const float MainElevation = 20f;
+    internal static readonly float3 AuxiliaryOffset = new(0f, -10f, 0f);
     internal enum MainRole { Side, Deck }
 
     internal static NetSectionInfo[] ConvertMainSections(string owner, NetSectionInfo[] source,
@@ -87,9 +90,9 @@ internal static class Lift03NetworkData
 
     internal static void ApplyMainBridge(Bridge bridge)
     {
-        bridge.m_SegmentLength = 200.0f;
+        bridge.m_SegmentLength = ApproachLength;
         bridge.m_Hanging = 0.0f;
-        bridge.m_ElevationOnWater = 20.0f;
+        bridge.m_ElevationOnWater = MainElevation;
         bridge.m_CanCurve = true;
         bridge.m_AllowMinimalLength = false;
         bridge.m_WaterFlow = (BridgeWaterFlow)0;
@@ -99,9 +102,9 @@ internal static class Lift03NetworkData
 
     internal static void ApplyAuxiliaryBridge(Bridge bridge)
     {
-        bridge.m_SegmentLength = 200.0f;
+        bridge.m_SegmentLength = ApproachLength;
         bridge.m_Hanging = 0.0f;
-        bridge.m_ElevationOnWater = 10.0f;
+        bridge.m_ElevationOnWater = MainElevation + AuxiliaryOffset.y;
         bridge.m_CanCurve = true;
         bridge.m_AllowMinimalLength = false;
         bridge.m_WaterFlow = (BridgeWaterFlow)0;
@@ -135,7 +138,7 @@ internal static class Lift03NetworkData
         }).ToArray();
     }
 
-    internal static NetSubObjectInfo[] MainPlacements(ObjectPrefab pillar, ObjectPrefab mechanism, ObjectPrefab outsideConnection) => new[]
+    internal static NetSubObjectInfo[] StructurePlacements(ObjectPrefab pillar, ObjectPrefab mechanism) => new[]
     {
         new NetSubObjectInfo
         {
@@ -165,20 +168,12 @@ internal static class Lift03NetworkData
             m_RequireDeadEnd = false,
             m_RequireOrphan = false,
         },
-        new NetSubObjectInfo
-        {
-            m_Object = mechanism,
-            m_Position = new float3(0.0f, 0.0f, 0.0f),
-            m_Rotation = new quaternion(0.0f, 0.0f, 0.0f, 1.0f),
-            m_Placement = (NetObjectPlacement)16,
-            m_FixedIndex = 0, m_Spacing = 0.0f,
-            m_AnchorTop = false,
-            m_AnchorCenter = false,
-            m_RequireElevated = false,
-            m_RequireOutsideConnection = false,
-            m_RequireDeadEnd = false,
-            m_RequireOrphan = false,
-        },
+        MechanismPlacement(mechanism),
+    };
+
+    internal static NetSubObjectInfo[] MainPlacements(ObjectPrefab pillar, ObjectPrefab mechanism,
+        ObjectPrefab outsideConnection) => StructurePlacements(pillar, mechanism).Concat(new[]
+    {
         new NetSubObjectInfo
         {
             m_Object = outsideConnection,
@@ -193,6 +188,18 @@ internal static class Lift03NetworkData
             m_RequireDeadEnd = false,
             m_RequireOrphan = false,
         },
+    }).ToArray();
+
+    internal static NetSubObjectInfo MechanismPlacement(ObjectPrefab mechanism) => new()
+    {
+        m_Object = mechanism,
+        m_Position = new float3(0f, 0f, 0f),
+        m_Rotation = quaternion.identity,
+        m_Placement = (NetObjectPlacement)16,
+        m_FixedIndex = 0, m_Spacing = 0f,
+        m_AnchorTop = false, m_AnchorCenter = false,
+        m_RequireElevated = false, m_RequireOutsideConnection = false,
+        m_RequireDeadEnd = false, m_RequireOrphan = false,
     };
 
     internal static NetSubObjectInfo[] AuxiliaryPlacements(ObjectPrefab outsideConnection) => new[]
@@ -222,7 +229,7 @@ internal static class Lift03NetworkData
             new AuxiliaryNetInfo
             {
                 m_Prefab = auxiliary,
-                m_Position = new float3(0.0f, -10.0f, 0.0f),
+                m_Position = AuxiliaryOffset,
                 m_InvertWhen = (NetInvertMode)0
             }
         };

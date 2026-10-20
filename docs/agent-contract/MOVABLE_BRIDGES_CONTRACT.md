@@ -1,5 +1,17 @@
 # Movable bridge generation contract
 
+## No special road-width adaptation (2026-10-20)
+
+Movable bridges must not perform any special adaptation based on road width.
+Apply the ordinary measured width-difference rules without narrow-road-specific
+compensation, limits, geometry substitution or bone reassignment. Remove dedicated
+narrow-road diagnostic branches. Narrow-road adaptation and its compatibility
+tests are withdrawn from the current batch scope; do not continue treating the
+PedestrianDraw02 extreme-narrowing investigations as a completion blocker.
+Preserve finite-input and native geometry validity checks. This does not assert
+support for every narrow input. Non-movable bridge behavior is outside this change.
+This rule supersedes conflicting historical width-adaptation requirements below.
+
 ## Contents
 
 - [1. Authority, scope and implementation status](#1-authority-scope-and-implementation-status)
@@ -609,7 +621,7 @@ claiming support, not claims that they have already passed:
 | LOD and lighting | Near/far views throughout motion, nighttime lights and correct culling/shadows |
 | Traffic | Clear-before-open, no new entry while unavailable, safe resumption, queue/repeated-request recovery |
 | Shipping | Clearance-sufficient vessels and vessels needing opening, repeated vessels and both supported travel directions |
-| Variants | Prototype-width, wider/narrower and supported asymmetric roads; each claimed pedestrian/rail/double-deck mode |
+| Variants | Prototype-width, wider and supported asymmetric roads; each claimed pedestrian/rail/double-deck mode. No dedicated narrow-road adaptation. |
 | Persistence | Fresh cold start and existing save with Bridge Builder absent; required game/DLC content retained |
 | Interrupted movement | Save/reload while opening, open and closing; return to valid native operation |
 | Editing and lifecycle | Supported placement, reconnection, upgrade and demolition preserve native ownership and clear entities correctly |

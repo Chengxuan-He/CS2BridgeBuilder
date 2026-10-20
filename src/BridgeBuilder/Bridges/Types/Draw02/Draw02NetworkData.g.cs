@@ -71,7 +71,22 @@ internal static class Draw02NetworkData
     // The caller supplies private generated pillar/mechanism objects and the selected
     // road outside-connection object. Original native placement fields are preserved.
     internal static NetSubObjectInfo[] Placements(ObjectPrefab pillar, ObjectPrefab mechanism,
-        ObjectPrefab outsideConnection) => new[]
+        ObjectPrefab outsideConnection) => StructurePlacements(pillar, mechanism).Concat(new[]
+        {
+            new NetSubObjectInfo
+            {
+                m_Object = outsideConnection,
+                m_Position = new float3(0f, 5f, 0f),
+                m_Rotation = quaternion.identity,
+                m_Placement = (NetObjectPlacement)0,
+                m_FixedIndex = 0, m_Spacing = 0f,
+                m_AnchorTop = false, m_AnchorCenter = false,
+                m_RequireElevated = false, m_RequireOutsideConnection = true,
+                m_RequireDeadEnd = false, m_RequireOrphan = false
+            }
+        }).ToArray();
+
+    internal static NetSubObjectInfo[] StructurePlacements(ObjectPrefab pillar, ObjectPrefab mechanism) => new[]
     {
         new NetSubObjectInfo
         {
@@ -102,20 +117,6 @@ internal static class Draw02NetworkData
             m_RequireOrphan = false,
         },
         MechanismPlacement(mechanism),
-        new NetSubObjectInfo
-        {
-            m_Object = outsideConnection,
-            m_Position = new float3(0.0f, 5.0f, 0.0f),
-            m_Rotation = new quaternion(0.0f, 0.0f, 0.0f, 1.0f),
-            m_Placement = (NetObjectPlacement)0,
-            m_FixedIndex = 0, m_Spacing = 0.0f,
-            m_AnchorTop = false,
-            m_AnchorCenter = false,
-            m_RequireElevated = false,
-            m_RequireOutsideConnection = true,
-            m_RequireDeadEnd = false,
-            m_RequireOrphan = false,
-        },
     };
     internal static NetSubObjectInfo MechanismPlacement(ObjectPrefab mechanism) =>
         new NetSubObjectInfo

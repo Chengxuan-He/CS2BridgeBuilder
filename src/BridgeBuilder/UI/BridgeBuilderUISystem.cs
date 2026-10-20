@@ -290,7 +290,7 @@ public partial class BridgeBuilderUISystem : UISystemBase
                     {
                         Id = style.Id,
                         Name = style.DisplayName,
-                        Icon = preview == null ? string.Empty : ImageSystem.GetIcon(preview.Donor) ?? string.Empty,
+                        Icon = preview == null ? string.Empty : preview.RecordedIcon ?? ImageSystem.GetIcon(preview.Donor) ?? string.Empty,
                         Source = preview?.Source.LocalizedLabel ?? string.Empty,
                         SupportsSingle = style.Variants.Any(variant => variant.IsAvailable && !variant.IsDoubleDeck),
                         SupportsDouble = style.Variants.Any(variant => variant.IsAvailable && variant.IsDoubleDeck),

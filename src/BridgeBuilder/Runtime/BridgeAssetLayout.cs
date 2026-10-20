@@ -51,7 +51,7 @@ internal static class BridgeAssetLayout
                     if (category == null) continue;
                     var stem = Path.GetFileNameWithoutExtension(source);
                     var shortName = category == "Prefabs" && stem.Equals(owner, StringComparison.OrdinalIgnoreCase)
-                        ? "Bridge" : BridgeAssetInfo.ShortName(stem, owner);
+                        ? "Bridge" : category == "Appearance/MidMips" ? stem : BridgeAssetInfo.FileStem(stem, owner);
                     if (shortName.Length == 0) throw new IOException("Empty filename after UUID removal: " + source);
                     destination = Path.Combine(gameRoot, BridgeAssetInfo.OwnedDirectory(owner, category), shortName + extension);
                 }

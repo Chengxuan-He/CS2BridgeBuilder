@@ -46,9 +46,8 @@ internal static class Draw03MechanismData
         };
     }
 
-    // Full authored evidence. The generator replaces ordinary road attachments with
-    // selected-road placements and widens structural attachments using measured plans.
-    internal static ObjectSubObjectInfo[] AuthoredAttachments(Func<string, ObjectPrefab> resolve) => new[]
+    // Native road lamps supply longitudinal stations; the selected road supplies lamp types.
+    internal static ObjectSubObjectInfo[] RoadAttachments(Func<string, ObjectPrefab> resolve) => new[]
     {
         new ObjectSubObjectInfo
         {
@@ -106,6 +105,11 @@ internal static class Draw03MechanismData
             m_Rotation = new quaternion(0f, -0.7071068286895752f, 0f, 0.7071068286895752f),
             m_ParentMesh = 100, m_GroupIndex = 0, m_Probability = 100
         },
+    };
+
+    // Two fixed flagpoles and ten wall lights; all retain native parent connection 0.
+    internal static ObjectSubObjectInfo[] StructuralAttachments(Func<string, ObjectPrefab> resolve) => new[]
+    {
         new ObjectSubObjectInfo
         {
             m_Object = resolve("FlagPole01"),

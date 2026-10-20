@@ -234,22 +234,22 @@ These checks and a successful build do not establish in-game visual correctness 
 
 This guide helps contributors extend Bridge Builder with a measured bridge archetype. A new style
 requires a working generator, compatible persisted assets and human in-game acceptance; adding a
-catalogue entry alone is not sufficient. You provide the design, test it in game and submit a GitHub
-pull request; your coding agent handles the implementation and reads the repository instructions.
+catalogue entry alone is not sufficient. You provide the design and test it in game; your coding
+agent handles implementation and reads the repository instructions. Local delivery is sufficient;
+GitHub publication is optional and does not require upstream write access when using a fork.
 
 ### Contribution workflow
 
 ```mermaid
 flowchart TD
-    A[Fork and clone the repository] --> B[Create bridge/bridge-name branch]
+    A[Prepare a local checkout] --> B[Create bridge/bridge-name branch]
     B --> C[Tell your agent the bridge source and desired design]
     C --> F[Test the resulting build in game]
     F --> G{Acceptance checks pass?}
     G -- No --> H[Share logs, screenshots and reproduction steps with the agent]
     H --> F
-    G -- Yes --> I[Review changes and push the contribution branch]
-    I --> J[Open a GitHub pull request]
-    J --> K[Respond to review comments and update your pull request]
+    G -- Yes --> I[Review changes and deliver locally or as a patch]
+    I -. Optional with explicit authorization .-> J[Publish a fork branch and open a pull request]
 ```
 
 ### 1. Prepare the repository and evidence
@@ -273,7 +273,8 @@ Give the agent these inputs:
 Do not ask the agent to infer dimensions from a screenshot or borrow another family's constants.
 When evidence is missing, it should identify the missing data and complete independent work first.
 
-Fork [CS2BridgeBuilder](https://github.com/Chengxuan-He/CS2BridgeBuilder) on GitHub and clone your fork.
+Use a local copy of [CS2BridgeBuilder](https://github.com/Chengxuan-He/CS2BridgeBuilder).
+A GitHub account or fork is not required; create a fork only if you choose to contribute through GitHub.
 Create a contribution branch named `bridge/<bridge-name>`, for example `bridge/stone-arch`.
 Replace `<bridge-name>` with the name of the bridge you are adding. Keep the change focused on that
 bridge and leave unrelated local changes out of the contribution.
@@ -313,8 +314,8 @@ Do not use other bridges' ImportedData Prefabs as creation or copy sources.
 Use the bridge/<style-slug> branch required by contract section 12; keep the style ID stable.
 Implement the style, build and install it locally according to the repository workflow,
 and report exact changes, evidence, checks and outstanding manual acceptance steps.
-Prepare the changes for a GitHub pull request. Do not publish to Paradox Mods or modify existing
-bridge identities. I will create the test bridges
+Deliver the changes locally with a review summary. Do not push to GitHub, publish to Paradox Mods
+or modify existing bridge identities. I will create the test bridges
 and provide near/far screenshots and cold-start results for visual acceptance.
 ```
 
@@ -463,18 +464,21 @@ correction or borrow another style's measurements. Preserve unrelated working be
 existing bridge identities. Implement the smallest justified fix, check affected callers,
 build and install it locally, and explain what I should retest in game.
 If evidence is missing, tell me exactly which screenshot, log or measurement you need.
-Do not publish a release. I will verify the result before updating the pull request.
+Do not publish a release or push to GitHub. I will verify the local result.
 ```
 
 After testing the next build, report whether the same reproduction steps now pass and attach new
 screenshots. If the defect persists, explicitly say it is the same issue and retain the previous
 evidence so your agent can compare attempts instead of repeating an unsupported explanation.
 
-### 8. Submit a GitHub pull request
+### 8. Deliver locally; optionally submit a GitHub pull request
 
-Contributors do not need mod publishing permissions. Upload your code to the
-`bridge/<bridge-name>` branch in your fork, then open a pull request against the upstream repository.
-For example, after reviewing the changes and staging only files belonging to your contribution:
+Deliver a reviewed local working tree or patch with the evidence and verification summary below.
+No GitHub account, upload or pull request is required to complete development.
+
+If you explicitly choose GitHub contribution and have permission to publish to your fork, you may
+upload the contribution branch and open a pull request. The following commands are optional, not
+automatic agent actions; stage only files belonging to the contribution:
 
 ```powershell
 git commit -m "Add stone arch bridge style"
@@ -486,7 +490,7 @@ branch requested by the maintainers; if none has been specified, use the reposit
 Do not push changes to every upstream branch or upload a release to Paradox Mods. Maintainers review,
 merge and publish accepted contributions.
 
-Include the following in your pull request:
+Include the following in the local handoff or optional pull request:
 
 - The bridge style and supported deck modes, with required DLC or source assets.
 - A short explanation of the implementation and any shared code it changes.
@@ -496,6 +500,6 @@ Include the following in your pull request:
 - Any effect on existing bridges and how migration preserves their identity.
 
 Have your agent help summarize the changes, but review the code and verify its claims before
-submitting. A successful build is not evidence that a bridge looks correct or survives a restart.
-Respond to review feedback with further commits on the same `bridge/<bridge-name>` branch.
+delivery. A successful build is not evidence that a bridge looks correct or survives a restart.
+Address review feedback locally; update a remote pull request only if that optional workflow was chosen.
 <!-- END BRIDGE STYLE CONTRIBUTOR GUIDE -->

@@ -41,12 +41,12 @@ internal static class MovableStructureAttributes
                 using var values = new NativeArray<MeshTangent>(3, Allocator.Temp);
                 MeshTangent.Unpack(new NativeSlice<byte>(input), values, 3, attribute.format, attribute.dimension);
                 var first = values[0].m_Tangent;
-                if ((weightB != 0f && values[1].m_Tangent.w != first.w) ||
-                    (weightC != 0f && values[2].m_Tangent.w != first.w))
-                    throw new InvalidDataException("A structural subdivision crosses incompatible tangent handedness.");
-                var value = first.xyz + (values[1].m_Tangent.xyz - first.xyz) * weightB +
-                    (values[2].m_Tangent.xyz - first.xyz) * weightC;
-                encoded = MathUtils.TangentToOctahedral(new float4(Unit(value), first.w));
+                // Native source triangles can contain both handedness signs (Lift01 pillar
+                // top LOD2 does). Interpolate the full tangent before native packing selects
+                // the sign of w; retaining the first endpoint's sign biases the new vertex.
+                var value = first + (values[1].m_Tangent - first) * weightB +
+                    (values[2].m_Tangent - first) * weightC;
+                encoded = MathUtils.TangentToOctahedral(new float4(Unit(value.xyz), value.w));
             }
             Buffer.BlockCopy(BitConverter.GetBytes(encoded), 0, bytes, output, 4);
             return true;

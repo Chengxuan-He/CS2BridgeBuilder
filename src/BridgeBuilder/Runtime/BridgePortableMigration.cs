@@ -73,7 +73,7 @@ internal static class BridgePortableMigration
                         BridgeStyleCatalog.Rebuild(system, assets.Select(a => a.Prefab!.name).ToArray());
                     var variant = BridgeStyleCatalog.Find(metadata.StyleId)?.Select(NetWidth.RoadSurfaceOf(root),
                         forRoad: root is RoadPrefab, doubleDeck: root.GetComponent<AuxiliaryNets>() != null).Variant;
-                    var icon = variant?.Donor.GetComponent<UIObject>()?.m_Icon;
+                    var icon = variant?.RecordedIcon ?? variant?.Donor.GetComponent<UIObject>()?.m_Icon;
                     if (string.IsNullOrWhiteSpace(icon) || icon.IndexOf("coui://bridgebuilder", StringComparison.OrdinalIgnoreCase) >= 0)
                     { error = "Original bridge icon unavailable; existing bridge retained"; return false; }
                     target.AddOrGetComponent<UIObject>().m_Icon = icon;

@@ -29,6 +29,16 @@ internal sealed class BridgeAssetInfo
         return new Regex("-?" + Regex.Escape(owner) + "[-_ ]?", RegexOptions.IgnoreCase).Replace(name, "", 1);
     }
 
+    // Input is the asset name/stem, never a payload filename with its real extension.
+    internal static string FileStem(string name, string owner)
+    {
+        var chars = (owner.Length == 0 ? name : ShortName(name, owner)).ToCharArray();
+        for (var i = 0; i < chars.Length; i++)
+            if (chars[i] < 32 || ".<>:\"/\\|?*".IndexOf(chars[i]) >= 0)
+                chars[i] = '_';
+        return new string(chars);
+    }
+
     internal static string OwnedDirectory(string owner, string category) => "ImportedData/" + owner + "/" + category;
 
     internal static string? AssetCategory(string extension) => extension.ToLowerInvariant() switch

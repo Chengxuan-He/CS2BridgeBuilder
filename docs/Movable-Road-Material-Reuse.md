@@ -1,5 +1,39 @@
 # Movable Bridge Existing Material Implementation
 
+## Native cable conversion (2026-10-20)
+
+The later converted-road appearance permission below supersedes the historical
+no-new-descriptor statement. The four measured native train/tram cable render
+inputs use Surface CID `106cc56e9f15a135bb6ea7b99d675c2d`, a textureless
+`CurvedTransparent` descriptor. They now receive an owner-local native `Default`
+object descriptor after their curved geometry has been evaluated. This is scoped
+to that measured CID, not a generic transparent-material conversion or a change
+to carried structural surfaces.
+
+`MovableCableSurface` preserves the source's float32 RGBA
+`(0.018867909908294678, 0.018867909908294678, 0.018867909908294678, 1)`,
+and its template defaults: metallic 0, smoothness 0.5 and snow 0. A persisted
+1x1 zero control map prevents Default's absent-map palette tinting. Packed
+tangents use `_TANGENTSPACE_OCTO`. The source is fully opaque; the new native
+object shader provides the same procedural skeleton path as the converted road,
+without retaining network curve deformation or a mod-driven rebinding loop.
+
+One descriptor/control pair is shared across the render graph's LODs, including
+distinct source object instances carrying that same CID. Preview allocates into
+its private database and retains properties through its existing lifetime.
+Formal resources use the existing owner-local Appearance path. Both resources
+enter the existing failed-call rollback list immediately after allocation and
+are reachable through the final render's material dependency graph on success.
+Original built-in assets and existing saved bridges are unchanged.
+
+`MovableCableMaterialCheck.py` checks the original 83-byte asset's SHA-256,
+bit-exact color, alpha and template coefficients against the production helper.
+Compilation and this audit do not prove complete shader equivalence, game
+appearance, preview teardown or cold-load persistence. Those remain native
+checks; neutral-wind geometry still does not reproduce dynamic wind sway.
+Other unmatched curved materials retain their previous fallback pending their
+own measured conversion.
+
 ## Material selection
 
 Preview and formal creation now reference existing materials. The generation path performs no

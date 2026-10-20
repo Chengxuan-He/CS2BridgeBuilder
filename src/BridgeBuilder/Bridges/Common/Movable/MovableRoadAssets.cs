@@ -308,6 +308,7 @@ internal static class MovableRoadAssets
             // It changes only curved-lane material slots; structural and prepared road slots keep
             // their exact references. Every geometry model is already validated before this write.
             var laneMaterials = new Dictionary<SurfaceAsset, SurfaceAsset>();
+            SurfaceAsset? cableSurface = null;
             for (var i = 0; i < levels.Count; i++)
                 for (var slot = laneSlotStarts[i]; slot < levelSurfaces[i].Length; slot++)
                 {
@@ -315,7 +316,9 @@ internal static class MovableRoadAssets
                     if (source == null) throw new InvalidOperationException($"Moving lane LOD {i} has an unresolved material slot {slot}.");
                     if (!laneMaterials.TryGetValue(source, out var converted))
                     {
-                        converted = MovableSurfaceAssets.ExistingObject(source, levels[0].Source.GetSurfaceAsset(0));
+                        converted = source.id.ToString() == MovableCableSurface.SourceCid
+                            ? cableSurface ??= MovableCableSurface.Create(name, preview, assets)
+                            : MovableSurfaceAssets.ExistingObject(source, levels[0].Source.GetSurfaceAsset(0));
                         laneMaterials.Add(source, converted);
                     }
                     levelSurfaces[i][slot] = converted;
@@ -432,7 +435,8 @@ internal static class MovableRoadAssets
     {
         var meshes = new List<ModelImporter.Model>();
         var materials = new List<SurfaceAsset>();
-        foreach (var group in triangles.GroupBy(t => t.Geometry.Material).OrderBy(g => g.Key))
+        var canonical = MovableMaterialSlots.Canonical(surfaces);
+        foreach (var group in triangles.GroupBy(t => canonical[t.Geometry.Material]).OrderBy(g => g.Key))
         {
             var selected = group.Select(t => new MovableRoadGeometry.BoundTriangle(
                 new MovableRoadGeometry.Triangle(t.Geometry.A, t.Geometry.B, t.Geometry.C,

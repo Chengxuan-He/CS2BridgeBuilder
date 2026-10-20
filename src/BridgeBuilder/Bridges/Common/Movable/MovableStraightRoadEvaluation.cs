@@ -63,7 +63,13 @@ internal static class MovableStraightRoadEvaluation
                     vertices[i] = deformation.Evaluate(p, normals[i].m_Normal,
                         tangents[i].m_Tangent, texture, selector);
                     if (!MovableRoadGeometry.Valid(vertices[i]))
-                    { error = $"Road vertex {i} produced invalid native composition attributes."; return false; }
+                    {
+                        var v = vertices[i];
+                        error = $"Road vertex {i} produced invalid native composition attributes: " +
+                            $"position={v.Position}; normal={v.Normal}; tangent={v.Tangent}; UV={v.UV}; " +
+                            $"packed position={p}; packed UV={texture}; selectors={selector}.";
+                        return false;
+                    }
                     continue;
                 }
                 // Straight edges use matrices (0,2) or (1,3). Node/divider and terrain-driven

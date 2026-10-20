@@ -136,6 +136,16 @@ the game before replacing loaded binaries, back up original installed files and 
 Preserve healthy generated assets unless a concrete incompatibility requires ownership-scoped recovery.
 Documentation-only changes require no build, game shutdown or deployment.
 
+## GitHub publication is optional
+
+GitHub access, pushing branches, opening pull requests and remote synchronization are not
+requirements for ordinary development or local delivery. Developers may deliver reviewed
+local changes or a patch without GitHub permissions. Publish to GitHub only when explicitly requested
+by the user and permitted by the account. The explicit release workflow below is unchanged; its
+GitHub synchronization requirement applies to authorized releases, not ordinary contributions.
+Local backups, rollback baselines, builds and verification remain required where applicable.
+See [the project policy](docs/agent-contract/PROJECT_CONTRACT.md#optional-github-publication-2026-10-19).
+
 ## Release workflow
 
 The release version is specified by the user. Never invent or automatically increment it.

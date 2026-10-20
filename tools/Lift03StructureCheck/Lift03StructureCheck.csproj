@@ -1,0 +1,25 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net8.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="../../src/BridgeBuilder/Bridges/Types/Lift03/Lift03RigidParts.g.cs" Link="Lift03RigidParts.g.cs" />
+    <Compile Include="../../src/BridgeBuilder/Bridges/Types/Lift03/Lift03DeckBases.g.cs" Link="Lift03DeckBases.g.cs" />
+    <Compile Include="../../src/BridgeBuilder/Bridges/Types/Lift03/Lift03CrossingMembers.g.cs" Link="Lift03CrossingMembers.g.cs" />
+    <Compile Include="../../src/BridgeBuilder/Bridges/Types/Lift03/Lift03Frames.g.cs" Link="Lift03Frames.g.cs" />
+    <Compile Include="../../src/BridgeBuilder/Bridges/Types/Lift03/Lift03RoadTops.g.cs" Link="Lift03RoadTops.g.cs" />
+    <Compile Include="../../src/BridgeBuilder/Bridges/Types/Lift03/Lift03EndBeams.g.cs" Link="Lift03EndBeams.g.cs" />
+    <Compile Include="../../src/BridgeBuilder/Bridges/Types/Lift03/Lift03JoinedShells.g.cs" />
+    <Compile Include="../../src/BridgeBuilder/Bridges/Types/Lift03/Lift03DetailedStructure.cs" />
+    <Compile Include="../../src/BridgeBuilder/Bridges/Types/Lift03/Lift03TallSupports.g.cs" />
+    <Compile Include="../../src/BridgeBuilder/Bridges/Types/Lift03/Lift03SlopedSupports.g.cs" />
+    <Compile Include="../../src/BridgeBuilder/Bridges/Types/Lift03/Lift03FarSupports.cs" />
+    <Compile Include="../../src/BridgeBuilder/Bridges/Types/Lift03/Lift03SupportFaces.g.cs" />
+    <Compile Include="../../src/BridgeBuilder/Bridges/Types/Lift03/Lift03FarDeckBases.g.cs" />
+    <Compile Include="../../src/BridgeBuilder/Bridges/Types/Lift03/Lift03TrackRemoval.g.cs" />
+    <Compile Include="../../src/BridgeBuilder/Bridges/Types/Lift03/Lift03DeckRailings.g.cs" />
+  </ItemGroup>
+</Project>

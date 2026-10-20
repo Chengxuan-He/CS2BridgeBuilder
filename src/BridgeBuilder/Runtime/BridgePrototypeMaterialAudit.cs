@@ -17,6 +17,7 @@ internal sealed class BridgePrototypeMaterialAudit
     internal void Inspect(PrefabSystem system)
     {
         var roots = BridgeStyleCatalog.Styles.SelectMany(style => style.Variants)
+            .Where(variant => !variant.IsRecorded)
             .Select(variant => variant.Donor).Distinct().Where(root => !_checked.Contains(root)).ToArray();
         if (roots.Length == 0) return;
         var replacements = new Dictionary<PrefabBase, List<PrefabBase>>();

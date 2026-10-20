@@ -7,6 +7,14 @@ Directory.CreateDirectory(sandbox);
 try {
     var root=BridgePrefabPersistence.RelativePathFor(owner).Replace('\\','/');
     Check(root==$"ImportedData/{owner}/Prefabs/Bridge.Prefab","new root filename");
+    Check(BridgePrefabPersistence.RelativePathFor("RBBridgeDep_NetSectionPrefab_RB_Empty_Section_2.5_499b37c1e0-"+owner).Replace('\\','/')
+        ==$"ImportedData/{owner}/Prefabs/RBBridgeDep_NetSectionPrefab_RB_Empty_Section_2_5_499b37c1e0.Prefab",
+        "Road Builder decimal stem retains real Prefab extension");
+    Check(BridgeAssetInfo.FileStem("A.<>:\"/\\|?*\u0001-"+owner,owner)=="A___________",
+        "period and Windows-invalid characters replaced individually");
+    Check(BridgeAssetInfo.FileStem("-Part 2.5","")=="-Part 2_5","unowned resource keeps prefix");
+    Check(BridgePrefabPersistence.ResourcePath(owner+" Road 2.5","Geometry").ToPath(new()).Replace('\\','/')
+        ==$"ImportedData/{owner}/Geometry/Road 2_5","generated geometry uses same safe stem");
     Check(BridgePrefabPersistence.RelativePathFor(owner+" Fixed Base 0 LOD2").Replace('\\','/')==$"ImportedData/{owner}/Prefabs/Fixed Base 0 LOD2.Prefab","flat LOD path");
     Check(BridgeAssetInfo.ShortName("Part-"+owner+" Mesh",owner)=="PartMesh","embedded owner UUID removed");
     Check(BridgePrefabPersistence.RelativePathFor("GoldenGateDouble-38_5-"+owner).Replace('\\','/')==$"ImportedData/{owner}/Prefabs/GoldenGateDouble-38_5.Prefab","requested GoldenGate filename");

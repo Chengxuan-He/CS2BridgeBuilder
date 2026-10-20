@@ -2,6 +2,7 @@
 // Source audit SHA-256: 47EF0F1723E8643E74A17751AA480F97260BF6E549AA60EC9F14F8E003B12070
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using Game.Prefabs;
 using Unity.Mathematics;
 
@@ -56,9 +57,29 @@ internal static class Lift02NetworkData
         bridge.m_FixedSegments = Array.Empty<FixedNetSegmentInfo>();
     }
 
-    // Supply generated Lift02 objects and the selected network outside connection.
+    // Full native placement recipe retained for audited reconstruction.
     internal static NetSubObjectInfo[] Placements(ObjectPrefab pillar, ObjectPrefab mechanism,
-        ObjectPrefab outsideConnection) => new[]
+        ObjectPrefab outsideConnection) => StructurePlacements(pillar, mechanism).Concat(new[]
+    {
+        new NetSubObjectInfo
+        {
+            m_Object = outsideConnection,
+            m_Position = new float3(0.0f, 8.0f, 0.0f),
+            m_Rotation = new quaternion(0.0f, 0.0f, 0.0f, 1.0f),
+            m_Placement = (NetObjectPlacement)0,
+            m_FixedIndex = 0, m_Spacing = 0.0f,
+            m_AnchorTop = false,
+            m_AnchorCenter = false,
+            m_RequireElevated = false,
+            m_RequireOutsideConnection = true,
+            m_RequireDeadEnd = false,
+            m_RequireOrphan = false,
+        },
+    }).ToArray();
+
+    // Generated networks retain their selected network's outside-connection rules.
+    internal static NetSubObjectInfo[] StructurePlacements(ObjectPrefab pillar,
+        ObjectPrefab mechanism) => new[]
     {
         new NetSubObjectInfo
         {
@@ -88,33 +109,21 @@ internal static class Lift02NetworkData
             m_RequireDeadEnd = false,
             m_RequireOrphan = false,
         },
+        MechanismPlacement(mechanism),
+    };
+    internal static NetSubObjectInfo MechanismPlacement(ObjectPrefab mechanism) =>
         new NetSubObjectInfo
         {
             m_Object = mechanism,
-            m_Position = new float3(0.0f, 70.5999984741211f, 0.0f),
-            m_Rotation = new quaternion(0.0f, 0.0f, 0.0f, 1.0f),
+            m_Position = new float3(0f, 70.599998474121094f, 0f),
+            m_Rotation = new quaternion(0f, 0f, 0f, 1f),
             m_Placement = (NetObjectPlacement)16,
-            m_FixedIndex = 0, m_Spacing = 0.0f,
+            m_FixedIndex = 0, m_Spacing = 0f,
             m_AnchorTop = false,
             m_AnchorCenter = false,
             m_RequireElevated = false,
             m_RequireOutsideConnection = false,
             m_RequireDeadEnd = false,
             m_RequireOrphan = false,
-        },
-        new NetSubObjectInfo
-        {
-            m_Object = outsideConnection,
-            m_Position = new float3(0.0f, 8.0f, 0.0f),
-            m_Rotation = new quaternion(0.0f, 0.0f, 0.0f, 1.0f),
-            m_Placement = (NetObjectPlacement)0,
-            m_FixedIndex = 0, m_Spacing = 0.0f,
-            m_AnchorTop = false,
-            m_AnchorCenter = false,
-            m_RequireElevated = false,
-            m_RequireOutsideConnection = true,
-            m_RequireDeadEnd = false,
-            m_RequireOrphan = false,
-        },
-    };
+        };
 }

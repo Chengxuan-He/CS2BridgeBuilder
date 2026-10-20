@@ -63,6 +63,23 @@ internal static class MovableRoadGeometry
         internal BoundTriangle(Triangle geometry, uint bone) { Geometry = geometry; Bone = bone; }
     }
 
+    // A repeating UV projection must stay invertible over the interpolated normal
+    // field, not merely at its endpoints. Opposite signs cross a singular frame.
+    internal static bool CanRepeatProjection(Vector4 u, Vector4 v, Vector3 plane,
+        Vector3 a, Vector3 b, Vector3 c)
+    {
+        var gradientNormal = Vector3.Cross((Vector3)u, (Vector3)v);
+        var determinant = Vector3.Dot(gradientNormal, plane);
+        if (!Finite(determinant) || Mathf.Abs(determinant) <= 1e-10f) return false;
+        var sign = determinant > 0f ? 1f : -1f;
+        bool Compatible(Vector3 normal)
+        {
+            var value = Vector3.Dot(gradientNormal, normal) * sign;
+            return Finite(value) && value > 1e-10f;
+        }
+        return Compatible(a) && Compatible(b) && Compatible(c);
+    }
+
     // The selected road and the native mechanism have different local origins. A measured
     // rigid pose aligns newly evaluated road/lane vertices; authored structure stays untouched.
     // Texture coordinates and source provenance are preserved after appearance evaluation.
@@ -116,10 +133,18 @@ internal static class MovableRoadGeometry
         for (var i = 0; i < source.Count; i++)
         {
             var triangle = source[i];
-            if (triangle.Material < 0 || triangle.Material >= materialCount ||
-                !Valid(triangle.A) || !Valid(triangle.B) || !Valid(triangle.C) ||
-                triangle.A.Tangent.w != triangle.B.Tangent.w || triangle.A.Tangent.w != triangle.C.Tangent.w)
-            { error = $"Road triangle {i} has invalid attributes, material index or mixed tangent handedness."; return false; }
+            if (triangle.Material < 0 || triangle.Material >= materialCount)
+            { error = $"Road triangle {i} has invalid material index {triangle.Material}/{materialCount}."; return false; }
+            if (!Valid(triangle.A) || !Valid(triangle.B) || !Valid(triangle.C))
+            {
+                error = $"Road triangle {i} has invalid attributes: valid A/B/C={Valid(triangle.A)}/{Valid(triangle.B)}/{Valid(triangle.C)}; source={triangle.Occurrence}/{triangle.SourceTriangle}; material={triangle.Material}.";
+                return false;
+            }
+            if (triangle.A.Tangent.w != triangle.B.Tangent.w || triangle.A.Tangent.w != triangle.C.Tangent.w)
+            {
+                error = $"Road triangle {i} has mixed tangent handedness {triangle.A.Tangent.w}/{triangle.B.Tangent.w}/{triangle.C.Tangent.w}; source={triangle.Occurrence}/{triangle.SourceTriangle}; material={triangle.Material}.";
+                return false;
+            }
             var selected = partition;
             if (trianglePartitions != null)
             {

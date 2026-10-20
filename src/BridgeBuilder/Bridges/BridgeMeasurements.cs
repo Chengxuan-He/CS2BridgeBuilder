@@ -25,12 +25,42 @@ namespace BridgeBuilder.Bridges;
 /// </summary>
 internal static class BridgeMeasurements
 {
+    // DrawBridge02: four 3 m carriageway occurrences and two 3.5 m sidewalks.
+    // Exclude both 0.6 m outward strips and count mutually exclusive network branches once.
+    // Source: all-movable-audit.json, RoadPrefab 118590; pieces 120675 / 120789.
+    internal const int Draw02RoadWidth = 19;
+    // Draw03: six 3 m carriageways and two 3.5 m sidewalks. The eleven lateral
+    // occurrences each have three conditional branches, not three parallel strips.
+    // Exclude the two outward 0.5 m sides. Native pieces 79448/79451/79454/79457.
+    internal const int Draw03RoadWidth = 25;
+    // Native Pavement Path Section 8 between two zero-width side sections.
+    internal const int PedestrianDraw02RoadWidth = 8;
+    // PedestrianDraw01 root 118833 has the same single 8m pavement occurrence.
+    internal const int PedestrianDraw01RoadWidth = 8;
+    // Lift01 elevated composition: two 1 m shoulders plus one 4 m train strip.
+    // Train Shoulder 2 selects its 1 m piece for Elevated; ground width is different.
+    // Near/middle source road tops independently span X=-3..3 m.
+    internal const int Lift01RoadWidth = 6;
+    // Lift05: two 3 m tram strips plus two 1 m shoulders; conditional branches count once.
+    internal const int Lift05RoadWidth = 8;
+    // Lift02: two 4 m tracks and two 1 m shoulders; exclude outward 0.3 m sides.
+    // Native pieces 79483/79475; each occurrence has three mutually exclusive branches.
+    internal const int Lift02RoadWidth = 10;
+    // Lift04 elevated composition: two 4 m subway tracks and two 1 m shoulders.
+    // Pieces 120985/120981; outward 0.5 m sides do not widen the road envelope.
+    internal const int Lift04RoadWidth = 10;
+    // Lift03 main: four 4 m highway strips plus two 2 m shoulders.
+    // Auxiliary elevated track: two 4 m strips plus two 1 m shoulders.
+    // Native roots 118610/118609; mutually exclusive branches count once.
+    internal const int Lift03RoadWidth = 20;
+    internal const int Lift03AuxiliaryRoadWidth = 10;
+
     /// <summary>Road width and tower width in whole metres, keyed by prefab name.</summary>
     private static readonly Dictionary<string, (int Road, int Tower)> Table =
         new(StringComparer.Ordinal)
         {
-            ["PedestrianDrawBridge01"] = (27, 10),
-            ["PedestrianDrawBridge02"] = (27, 16),
+            ["PedestrianDrawBridge01"] = (PedestrianDraw01RoadWidth, 10),
+            ["PedestrianDrawBridge02"] = (PedestrianDraw02RoadWidth, 16),
             ["PedestrianBridgeCoveredWood01"] = (18, 10),
             ["BXP PedestrianBridgeCoveredWood01 Revised"] = (18, 10),
             ["BXP Golden Gate Bridge Subway Track"] = (14, 0),
@@ -126,8 +156,8 @@ internal static class BridgeMeasurements
             ["Grand Bridge"] = (21, 44),
             ["BXP Grand Bridge Viaduct"] = (33, 34),
             ["BXP Grand Bridge - Center Tram"] = (33, 44),
-            ["DrawBridge03"] = (78, 57),
-            ["DrawBridge02"] = (61, 37),
+            ["DrawBridge03"] = (Draw03RoadWidth, 57),
+            ["DrawBridge02"] = (Draw02RoadWidth, 37),
             ["DrawBridge01"] = (42, 19),
             ["BXP DrawBridge02 One-Way"] = (61, 37),
             ["BXP DrawBridge01 One-Way"] = (42, 19),
@@ -135,12 +165,12 @@ internal static class BridgeMeasurements
             ["BXP BikeDrawBridge02"] = (27, 16),
             ["BXP DrawBridge03 One-Way"] = (78, 57),
             ["BXP BikeDrawBridge01"] = (27, 10),
-            ["LiftBridge01"] = (26, 41),
-            ["LiftBridge03"] = (62, 93),
-            ["LiftBridge02"] = (32, 42),
-            ["LiftBridge04"] = (42, 24),
-            ["LiftBridge05"] = (30, 26),
-            ["LiftBridge03 Train Track"] = (50, 0),
+            ["LiftBridge01"] = (Lift01RoadWidth, 41),
+            ["LiftBridge03"] = (Lift03RoadWidth, 93),
+            ["LiftBridge02"] = (Lift02RoadWidth, 42),
+            ["LiftBridge04"] = (Lift04RoadWidth, 24),
+            ["LiftBridge05"] = (Lift05RoadWidth, 26),
+            ["LiftBridge03 Train Track"] = (Lift03AuxiliaryRoadWidth, 0),
             ["Arc Bike Bridge"] = (4, 6),
             ["Arc Pedestrian Bridge"] = (4, 6),
             ["BXP Arc Pedestrian Bridge Revised"] = (4, 6),
@@ -192,3 +222,4 @@ internal static class BridgeMeasurements
     /// </summary>
     internal static IEnumerable<KeyValuePair<string, (int Road, int Tower)>> All => Table;
 }
+

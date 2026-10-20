@@ -1,0 +1,34 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup><OutputType>Exe</OutputType><TargetFramework>net8.0</TargetFramework><ImplicitUsings>enable</ImplicitUsings><Nullable>enable</Nullable></PropertyGroup>
+  <ItemGroup>
+    <Compile Include="../../src/BridgeBuilder/Bridges/Types/Lift02/Lift02RigidParts.g.cs" Link="Lift02RigidParts.cs" />
+    <Compile Include="../../src/BridgeBuilder/Bridges/Types/Lift02/Lift02CounterweightGeometry.g.cs" Link="Lift02CounterweightGeometry.cs" />
+    <Compile Include="../../src/BridgeBuilder/Bridges/Types/Lift02/Lift02RoofBraceGeometry.g.cs" Link="Lift02RoofBraceGeometry.cs" />
+    <Compile Include="../../src/BridgeBuilder/Bridges/Types/Lift02/Lift02TowerBeamGeometry.g.cs" Link="Lift02TowerBeamGeometry.cs" />
+    <Compile Include="../../src/BridgeBuilder/Bridges/Types/Lift02/Lift02TowerDiagonalGeometry.g.cs" Link="Lift02TowerDiagonalGeometry.cs" />
+    <Compile Include="../../src/BridgeBuilder/Bridges/Types/Lift02/Lift02MovingFrameGeometry.g.cs" Link="Lift02MovingFrameGeometry.cs" />
+    <Compile Include="../../src/BridgeBuilder/Bridges/Types/Lift02/Lift02MovingBaseGeometry.g.cs" Link="Lift02MovingBaseGeometry.cs" />
+    <Compile Include="../../src/BridgeBuilder/Bridges/Types/Lift02/Lift02TowerShellGeometry.g.cs" Link="Lift02TowerShellGeometry.cs" />
+    <Compile Include="../../src/BridgeBuilder/Bridges/Types/Lift02/Lift02PlatformDeckGeometry.g.cs" Link="Lift02PlatformDeckGeometry.cs" />
+    <Compile Include="../../src/BridgeBuilder/Bridges/Types/Lift02/Lift02PlatformSupportGeometry.g.cs" Link="Lift02PlatformSupportGeometry.cs" />
+    <Compile Include="../../src/BridgeBuilder/Bridges/Types/Lift02/Lift02PlatformFrameGeometry.g.cs" Link="Lift02PlatformFrameGeometry.cs" />
+    <Compile Include="../../src/BridgeBuilder/Bridges/Types/Lift02/Lift02RoadbedGeometry.g.cs" Link="Lift02RoadbedGeometry.cs" />
+    <Compile Include="../../src/BridgeBuilder/Bridges/Types/Lift02/Lift02TransverseWebGeometry.g.cs" Link="Lift02TransverseWebGeometry.cs" />
+    <Compile Include="../../src/BridgeBuilder/Bridges/Types/Lift02/Lift02EndFrameGeometry.g.cs" Link="Lift02EndFrameGeometry.cs" />
+    <Compile Include="../../src/BridgeBuilder/Bridges/Types/Lift02/Lift02FixedBasesGeometry.g.cs" Link="Lift02FixedBasesGeometry.cs" />
+    <Compile Include="../../src/BridgeBuilder/Bridges/Types/Lift02/Lift02VerticalBraceGeometry.g.cs" Link="Lift02VerticalBraceGeometry.cs" />
+    <Compile Include="../../src/BridgeBuilder/Bridges/Types/Lift02/Lift02CrossMemberGeometry.g.cs" Link="Lift02CrossMemberGeometry.cs" />
+    <Compile Include="../../src/BridgeBuilder/Bridges/Types/Lift02/Lift02MachineryGeometry.g.cs" Link="Lift02MachineryGeometry.cs" />
+    <Compile Include="../../src/BridgeBuilder/Bridges/Types/Lift02/Lift02JointPlateGeometry.g.cs" Link="Lift02JointPlateGeometry.cs" />
+    <Compile Include="../../src/BridgeBuilder/Bridges/Types/Lift02/Lift02DeckCrossMemberGeometry.g.cs" Link="Lift02DeckCrossMemberGeometry.cs" />
+    <Compile Include="../../src/BridgeBuilder/Bridges/Types/Lift02/Lift02HalfDiagonalGeometry.g.cs" Link="Lift02HalfDiagonalGeometry.cs" />
+    <Compile Include="../../src/BridgeBuilder/Bridges/Types/Lift02/Lift02CentralHardwareGeometry.g.cs" Link="Lift02CentralHardwareGeometry.cs" />
+    <Compile Include="../../src/BridgeBuilder/Bridges/Types/Lift02/Lift02StructureWidthPlan.cs" Link="Plan.cs" />
+    <Compile Include="../../src/BridgeBuilder/Bridges/Types/Lift02/Lift02StructurePlan.cs" Link="RoadPlan.cs" />
+    <Compile Include="../../src/BridgeBuilder/Bridges/Types/Lift02/Lift02FarRoadTops.g.cs" Link="RoadTops.cs" />
+    <Compile Include="../../src/BridgeBuilder/Bridges/Types/Lift02/Lift02TrackRemoval.g.cs" Link="TrackRemoval.cs" />
+    <Compile Include="../../src/BridgeBuilder/Bridges/Types/Lift02/Lift02FarRoadBoundary.g.cs" Link="FarRoadBoundary.cs" />
+  </ItemGroup>
+</Project>
+
+

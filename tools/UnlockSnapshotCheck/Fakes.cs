@@ -57,6 +57,10 @@ namespace Game.Prefabs
     public class PrefabSystem
     {
         public Dictionary<Unity.Entities.Entity, PrefabBase> All = new();
+        // Tests explicitly mark non-unlockable native resources. Other fixtures
+        // represent initialized progression/requirement nodes.
+        public HashSet<PrefabBase> NotUnlockable = new();
+        public bool IsUnlockable(PrefabBase prefab) => !NotUnlockable.Contains(prefab);
         public bool TryGetEntity(PrefabBase prefab, out Unity.Entities.Entity entity)
         { entity = All.FirstOrDefault(p => ReferenceEquals(p.Value, prefab)).Key; return entity.Id != 0; }
         public bool TryGetPrefab<T>(Unity.Entities.Entity e, out T? prefab) where T : PrefabBase

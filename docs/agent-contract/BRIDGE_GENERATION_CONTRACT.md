@@ -1,5 +1,21 @@
 # Bridge generation contract
 
+## Movable bridges: no special road-width adaptation (2026-10-20)
+
+Do not apply special adaptation based on road width to movable bridges. The user
+withdraws narrow-road adaptation from the current implementation scope. Retain the
+ordinary measured target-minus-prototype width mapping; do not add narrow-road
+compensation, clamps, replacement geometry, special bone precedence or dedicated
+width thresholds. Remove narrow-road-specific generation branches and diagnostics.
+Narrow-road compatibility is no longer a completion gate for the movable batch.
+Finite input checks and validity of the native geometry/skeleton remain required.
+This is not a claim that every arbitrarily narrow input produces a valid bridge.
+
+This revision applies only to movable bridges. Do not change non-movable bridge
+selection, geometry, validation or persistence. It supersedes conflicting historical
+narrow-road adaptation requirements for movable bridges, including their test matrix.
+Existing saved assets are not rewritten merely because generation code changes.
+
 ## Contents
 
 - [Contract routing](#contract-routing)

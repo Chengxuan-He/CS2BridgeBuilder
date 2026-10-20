@@ -1,0 +1,27 @@
+using System;
+using System.Collections.Generic;
+using Game.Prefabs;
+
+namespace BridgeBuilder.Bridges;
+
+internal static class PedestrianDraw01RenderAssembly
+{
+    internal static RenderPrefab? CreateMechanism(TowerFactory factory, string name,
+        IReadOnlyList<MovableRoadAssets.Level> roadLevels, float halfWidthDelta)
+    {
+        var expected = new[] { "PedestrianDrawBridge01 Mesh", "PedestrianDrawBridge01_LOD1 Mesh", "PedestrianDrawBridge01_LOD2 Mesh" };
+        if (roadLevels.Count != expected.Length)
+            throw new ArgumentException("PedestrianDraw01 mechanism requires all three native road LODs.");
+        for (var lod = 0; lod < expected.Length; lod++)
+        {
+            var source = roadLevels[lod].Source;
+            if (source == null || source.asset != null ||
+                !string.Equals(source.name, expected[lod], StringComparison.Ordinal))
+                throw new InvalidOperationException($"PedestrianDraw01 LOD {lod} requires its reconstructed native source.");
+        }
+        return MovableRenderAssembly.CreateMechanism(factory, name, roadLevels, new[] { 2, 2, 1 },
+            (lod, mesh, source, indices) => mesh == 1
+                ? PedestrianDraw01Glass.Create(lod, source, indices, halfWidthDelta)
+                : PedestrianDraw01StructurePlan.Create(lod, source, indices, halfWidthDelta));
+    }
+}

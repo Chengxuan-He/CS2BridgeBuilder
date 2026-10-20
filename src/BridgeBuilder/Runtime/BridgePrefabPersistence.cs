@@ -16,15 +16,15 @@ internal static class BridgePrefabPersistence
     {
         if (BridgeAssetInfo.TryFileOwner(name, out var owner))
             return AssetDataPath.Create(BridgeAssetInfo.OwnedDirectory(owner, "Prefabs"),
-                name.Equals(owner, StringComparison.OrdinalIgnoreCase) ? "Bridge" : BridgeAssetInfo.ShortName(name, owner), EscapeStrategy.None);
+                name.Equals(owner, StringComparison.OrdinalIgnoreCase) ? "Bridge" : BridgeAssetInfo.FileStem(name, owner), EscapeStrategy.None);
         return AssetImportPipeline.GetPath(null, name, name, DataType.Prefab, AssetDatabase.user, false);
     }
 
     internal static AssetDataPath ResourcePath(string name, string category) =>
         BridgeAssetInfo.TryFileOwner(name, out var owner)
             ? AssetDataPath.Create(BridgeAssetInfo.OwnedDirectory(owner, category),
-                BridgeAssetInfo.ShortName(name, owner), EscapeStrategy.None)
-            : AssetDataPath.Create("BridgeBuilder", name, EscapeStrategy.None);
+                BridgeAssetInfo.FileStem(name, owner), EscapeStrategy.None)
+            : AssetDataPath.Create("BridgeBuilder", BridgeAssetInfo.FileStem(name, ""), EscapeStrategy.None);
 
     internal static string RelativePathFor(string name) =>
         PathFor(name).ToPath(new FileSystemDataSource.PathEscapePolicy()) + ".Prefab";
@@ -37,7 +37,7 @@ internal static class BridgePrefabPersistence
         var original = asset.GetMeta();
         var oldId = asset.id;
         var path = AssetDataPath.Create(BridgeAssetInfo.OwnedDirectory(owner, category),
-            BridgeAssetInfo.ShortName(asset.name, owner), EscapeStrategy.None);
+            BridgeAssetInfo.FileStem(asset.name, owner), EscapeStrategy.None);
         var target = Path.Combine(database.rootPath,
             path.ToPath(new FileSystemDataSource.PathEscapePolicy()) + original.extension);
         if (Path.GetFullPath(original.path).Equals(Path.GetFullPath(target), StringComparison.OrdinalIgnoreCase)) return;

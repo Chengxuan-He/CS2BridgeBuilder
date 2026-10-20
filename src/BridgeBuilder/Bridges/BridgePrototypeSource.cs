@@ -37,6 +37,15 @@ internal sealed class BridgePrototypeSource
 
     internal string Label { get; }
 
+    internal static BridgePrototypeSource RecordedContent(ContentPrefab content)
+    {
+        if (!content.isBuiltin)
+            throw new ArgumentException("Recorded movable content must resolve to the original built-in prerequisite.");
+        // Gate on the real DLC resource, not on an optional original network Prefab.
+        return new BridgePrototypeSource("DLC: " + content.name, content,
+            Array.Empty<AssetPackPrefab>(), prefab: content);
+    }
+
     internal bool IsBaseGame => _metadataReadable && _prerequisite == null && _packs.Length == 0
         && Label == "Base game";
 

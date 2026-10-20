@@ -14,8 +14,12 @@ internal static class MovableLaneDeformation
         MovableRoadGeometry.Vertex vertex, Func<Vector3, float>? projectedHeight)
     {
         if (batch.Decal) throw new InvalidOperationException("A decal volume requires surface projection, not mesh export.");
-        if (batch.HangingSwaying)
-            throw new NotSupportedException("A hanging/swaying lane requires its native dynamic attachment representation: " + batch.Source.name);
+        // Native LaneSystem already puts static cable sag into Curve.m_Bezier.
+        // Evaluate its closed, neutral-wind pose just like other curved geometry:
+        // SG_CurvedShader 570/10 adds HangingDistances only to control-point X/Z
+        // for wind sway; zero wind leaves the supplied curve and derivative intact.
+        // Do not sag it again, omit cable batches, or retain a network-only shader
+        // dependency. Converted cable geometry follows the recorded road bones.
 
         var transform = batch.Transform;
         var scale = new Vector3(((Vector3)transform.GetColumn(0)).magnitude,

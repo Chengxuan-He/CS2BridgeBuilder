@@ -100,19 +100,21 @@ internal static class PedestrianDraw02NetworkData
             m_RequireDeadEnd = false,
             m_RequireOrphan = false,
         },
+        MechanismPlacement(mechanism),
+    };
+    internal static NetSubObjectInfo MechanismPlacement(ObjectPrefab mechanism) =>
         new NetSubObjectInfo
         {
             m_Object = mechanism,
-            m_Position = new float3(0.0f, 0.0f, 0.0f),
-            m_Rotation = new quaternion(0.0f, 0.0f, 0.0f, 1.0f),
+            m_Position = new float3(0f, 0f, 0f),
+            m_Rotation = new quaternion(0f, 0f, 0f, 1f),
             m_Placement = (NetObjectPlacement)16,
-            m_FixedIndex = 0, m_Spacing = 0.0f,
+            m_FixedIndex = 0, m_Spacing = 0f,
             m_AnchorTop = false,
             m_AnchorCenter = false,
             m_RequireElevated = false,
             m_RequireOutsideConnection = false,
             m_RequireDeadEnd = false,
             m_RequireOrphan = false,
-        },
-    };
+        };
 }

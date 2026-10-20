@@ -8,7 +8,7 @@ namespace BridgeBuilder.Bridges;
 // Native Sidewalk Piece 3.5 - NoTram uses BasculeBridgeBarrier01 Placeholder
 // for LevelCrossing. Highway Shoulder 2 uses Traffic Sign Placeholder instead.
 // Adapt the producer in the hidden mechanism node, retaining native node ownership.
-internal static class Draw01BarrierRules
+internal static class MovableBarrierRules
 {
     internal static void Apply(string owner, NetSectionInfo[] sections,
         ref PrefabBase[] created, ObjectPrefab barrier)

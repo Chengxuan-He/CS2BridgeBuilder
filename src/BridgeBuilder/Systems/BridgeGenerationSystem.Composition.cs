@@ -140,6 +140,17 @@ public partial class BridgeGenerationSystem
             var clone = CloneDeck(cloner, main, exportName, report);
             if (clone == null) return false;
 
+            if (composer.BuildsAuxiliaryDeck)
+            {
+                if (!options.DoubleDeck || auxiliary == null)
+                    throw new InvalidOperationException(
+                        $"'{style.Id}' requires both selected networks for coordinated generation.");
+                var auxiliaryClone = CloneDeck(cloner, auxiliary,
+                    BridgeNaming.CarriedDeckName(exportName, secondNetAbove), report);
+                if (auxiliaryClone == null) return false;
+                composer.SetAuxiliaryDeck(auxiliary.Prefab, auxiliaryClone, options.LowerDeckOpposite);
+            }
+
             // Size from the archetype's root ownership role. For Suspension and ExtradosedBridge01
             // that is the converted upper road; for ExtradosedBridge02 the auxiliary is above, so
             // the chosen lower road/track is the root and supplies the width reference.
@@ -150,17 +161,16 @@ public partial class BridgeGenerationSystem
                 clone, style, structuralDeck.Width, options, measure: structuralDeck.Prefab);
             if (variant == null) return false;
 
-            // Movable generators bypass BridgeGeneratorBase's fixed-bridge behavior
-            // assembly, including CopyAggregate. Preserve the measured native naming
-            // category here for every movable route before auxiliary/persistence work.
-            if (BridgeStyleDefinitions.IsMovable(style.Id))
-                clone.m_AggregateType = variant.Donor.m_AggregateType
-                    ?? throw new InvalidOperationException("Movable bridge archetype has no network aggregate.");
-
-            ApplyPrototypeIcon(clone, variant, report);
-            AttachSecondDeck(
-                clone, auxiliary, secondNetAbove, exportName, cloner, doubleDeck, options,
-                style.Id, variant, report);
+            // Movable generators apply their recorded aggregate and icon. Do not
+            // replace them with another read from the original network Prefab here.
+            if (!BridgeStyleDefinitions.IsMovable(style.Id))
+                ApplyPrototypeIcon(clone, variant, report);
+            if (composer.BuildsAuxiliaryDeck)
+                composer.VerifyAuxiliaryDeck(clone);
+            else
+                AttachSecondDeck(
+                    clone, auxiliary, secondNetAbove, exportName, cloner, doubleDeck, options,
+                    style.Id, variant, report);
             // Extra auxiliary networks inherited from a road may still be shared native assets.
             // Never edit their unlock components as if the bridge owned them.
             var ownedNets = new HashSet<PrefabBase>(cloner.Nodes.Where(node => node.NeedsSave)
@@ -173,7 +183,7 @@ public partial class BridgeGenerationSystem
                 return false;
             }
             var nativeAssets = new List<PrefabBase>();
-            if (preview == null && !BridgeUnlockPolicy.Apply(clone, variant, report, nativeAssets)) return false;
+            if (preview == null && !composer.ApplyUnlocks(clone, variant, nativeAssets)) return false;
             // Preserve native piece/object fees from the selected networks and bridge prototype.
             // Native initialization and construction calculate the resulting cost, including auxiliary decks.
             if (preview == null)

@@ -21,91 +21,101 @@ internal sealed partial class TowerFactory
     internal void AttachMovablePaint(StaticObjectPrefab mechanism,
         IReadOnlyList<MovableLaneVisuals.Batch> batches, Pose roadToObject,
         MovableRoadGeometry.Partition partition, IReadOnlyList<MovableRoadGeometry.Triangle> receivers)
+        => AttachMovablePaint(mechanism, new[] { new MovablePaintDeck(batches, roadToObject, partition, receivers) });
+
+    internal void AttachMovablePaint(StaticObjectPrefab mechanism, IReadOnlyList<MovablePaintDeck> decks)
     {
-        var groups = new Dictionary<(int Bone, bool Yellow, int Priority, bool Infoview, Quaternion Rotation), List<Vector3[]>>();
-        foreach (var batch in batches)
+        var triangles = new List<MovableRoadGeometry.BoundTriangle>();
+        foreach (var deck in decks)
         {
-            var properties = batch.Source.GetComponent<DecalProperties>();
-            foreach (var region in MovableNativeDecals.Regions(batch, roadToObject, 32f))
+            var batches = deck.Batches;
+            var roadToObject = deck.RoadToObject;
+            var partition = deck.Partition;
+            var receivers = deck.Receivers;
+            var groups = new Dictionary<(int Bone, bool Yellow, int Priority, bool Infoview, Quaternion Rotation), List<Vector3[]>>();
+            foreach (var batch in batches)
             {
-                var corners = new List<Vector3> {
-                    region.Center-region.Right*region.Half.x-region.Forward*region.Half.z,
-                    region.Center-region.Right*region.Half.x+region.Forward*region.Half.z,
-                    region.Center+region.Right*region.Half.x+region.Forward*region.Half.z,
-                    region.Center+region.Right*region.Half.x-region.Forward*region.Half.z };
-                Divide(corners, partition);
-                void Divide(List<Vector3> polygon, MovableRoadGeometry.Partition part)
+                var properties = batch.Source.GetComponent<DecalProperties>();
+                foreach (var region in MovableNativeDecals.Regions(batch, roadToObject, 32f))
                 {
-                    if (polygon.Count < 3 || part.IsGap) return;
-                    if (part.Bone >= 0)
+                    var corners = new List<Vector3> {
+                        region.Center-region.Right*region.Half.x-region.Forward*region.Half.z,
+                        region.Center-region.Right*region.Half.x+region.Forward*region.Half.z,
+                        region.Center+region.Right*region.Half.x+region.Forward*region.Half.z,
+                        region.Center+region.Right*region.Half.x-region.Forward*region.Half.z };
+                    Divide(corners, partition);
+                    void Divide(List<Vector3> polygon, MovableRoadGeometry.Partition part)
                     {
-                        var key = (part.Bone, region.Yellow, properties.m_RendererPriority, properties.m_EnableInfoviewColor, Quaternion.LookRotation(region.Forward,region.Up));
-                        if (!groups.TryGetValue(key, out var volumes)) groups.Add(key, volumes = new());
-                        var volume = new Vector3[polygon.Count];
-                        for(int i=0;i<polygon.Count;i++)
+                        if (polygon.Count < 3 || part.IsGap) return;
+                        if (part.Bone >= 0)
                         {
-                            // User-approved 1 mm physical paint clearance, following
-                            // the same skin transform as the original road.
-                            volume[i]=RoadHeight(polygon[i])+region.Up*.001f;
+                            var key = (part.Bone, region.Yellow, properties.m_RendererPriority, properties.m_EnableInfoviewColor, Quaternion.LookRotation(region.Forward,region.Up));
+                            if (!groups.TryGetValue(key, out var volumes)) groups.Add(key, volumes = new());
+                            var volume = new Vector3[polygon.Count];
+                            for(int i=0;i<polygon.Count;i++)
+                            {
+                                // User-approved 1 mm physical paint clearance, following
+                                // the same skin transform as the original road.
+                                volume[i]=RoadHeight(polygon[i])+region.Up*.001f;
+                            }
+                            volumes.Add(volume);
+                            return;
                         }
-                        volumes.Add(volume);
-                        return;
-                    }
-                    var negative=new List<Vector3>();var positive=new List<Vector3>();
-                    var previous=polygon[polygon.Count-1];
-                    var before=part.ObjectToSeam.MultiplyPoint3x4(previous).z;
-                    foreach(var point in polygon)
-                    {
-                        var distance=part.ObjectToSeam.MultiplyPoint3x4(point).z;
-                        if((before<0 && distance>0)||(before>0 && distance<0))
+                        var negative=new List<Vector3>();var positive=new List<Vector3>();
+                        var previous=polygon[polygon.Count-1];
+                        var before=part.ObjectToSeam.MultiplyPoint3x4(previous).z;
+                        foreach(var point in polygon)
                         {
-                            var crossing=Vector3.LerpUnclamped(previous,point,before/(before-distance));
-                            negative.Add(crossing);positive.Add(crossing);
+                            var distance=part.ObjectToSeam.MultiplyPoint3x4(point).z;
+                            if((before<0 && distance>0)||(before>0 && distance<0))
+                            {
+                                var crossing=Vector3.LerpUnclamped(previous,point,before/(before-distance));
+                                negative.Add(crossing);positive.Add(crossing);
+                            }
+                            if(distance<=0)negative.Add(point);
+                            if(distance>=0)positive.Add(point);
+                            previous=point;before=distance;
                         }
-                        if(distance<=0)negative.Add(point);
-                        if(distance>=0)positive.Add(point);
-                        previous=point;before=distance;
+                        Divide(negative,part.Negative!);Divide(positive,part.Positive!);
                     }
-                    Divide(negative,part.Negative!);Divide(positive,part.Positive!);
                 }
             }
-        }
-        Vector3 RoadHeight(Vector3 point)
-        {
-            var found=false;var best=float.PositiveInfinity;var height=0f;
-            foreach(var triangle in receivers)
+            Vector3 RoadHeight(Vector3 point)
             {
-                if(triangle.A.Normal.y+triangle.B.Normal.y+triangle.C.Normal.y<1.5f)continue;
-                var a=triangle.A.Position;var ab=triangle.B.Position-a;var ac=triangle.C.Position-a;
-                var d=point-a;var determinant=ab.x*ac.z-ab.z*ac.x;
-                if(Mathf.Abs(determinant)<1e-10f)continue;
-                var u=(d.x*ac.z-d.z*ac.x)/determinant;
-                var v=(ab.x*d.z-ab.z*d.x)/determinant;
-                if(u<-.0001f || v<-.0001f || u+v>1.0001f)continue;
-                var y=a.y+u*ab.y+v*ac.y;var distance=Mathf.Abs(y-point.y);
-                if(distance>=best)continue;
-                found=true;best=distance;height=y;
+                var found=false;var best=float.PositiveInfinity;var height=0f;
+                foreach(var triangle in receivers)
+                {
+                    if(triangle.A.Normal.y+triangle.B.Normal.y+triangle.C.Normal.y<1.5f)continue;
+                    var a=triangle.A.Position;var ab=triangle.B.Position-a;var ac=triangle.C.Position-a;
+                    var d=point-a;var determinant=ab.x*ac.z-ab.z*ac.x;
+                    if(Mathf.Abs(determinant)<1e-10f)continue;
+                    var u=(d.x*ac.z-d.z*ac.x)/determinant;
+                    var v=(ab.x*d.z-ab.z*d.x)/determinant;
+                    if(u<-.0001f || v<-.0001f || u+v>1.0001f)continue;
+                    var y=a.y+u*ab.y+v*ac.y;var distance=Mathf.Abs(y-point.y);
+                    if(distance>=best)continue;
+                    found=true;best=distance;height=y;
+                }
+                if(!found)throw new InvalidOperationException($"Native paint has no upward road receiver at {point}.");
+                return new Vector3(point.x,height,point.z);
             }
-            if(!found)throw new InvalidOperationException($"Native paint has no upward road receiver at {point}.");
-            return new Vector3(point.x,height,point.z);
-        }
-        var root = (RenderPrefab)mechanism.m_Meshes[0].m_Mesh;
-        var skeleton = root.GetComponent<ProceduralAnimationProperties>();
-        var triangles = new List<MovableRoadGeometry.BoundTriangle>();
-        foreach (var group in groups)
-        foreach (var polygon in group.Value)
-        {
-            var uv = group.Key.Yellow ? new Vector4(400.5f/2048f,35.5f/2048f,0f,0f)
-                : new Vector4(14.5f/2048f,1610.5f/2048f,0f,0f);
-            var normal = group.Key.Rotation * Vector3.up;
-            var right = group.Key.Rotation * Vector3.right;
-            MovableRoadGeometry.Vertex Vertex(int i) => new(polygon[i], normal,
-                new Vector4(right.x,right.y,right.z,1f), uv, Color.white);
-            for (var i=1;i<polygon.Length-1;i++)
-                triangles.Add(new MovableRoadGeometry.BoundTriangle(
-                    new MovableRoadGeometry.Triangle(Vertex(0),Vertex(i),Vertex(i+1),0,-1,-1),(uint)group.Key.Bone));
+            foreach (var group in groups)
+            foreach (var polygon in group.Value)
+            {
+                var uv = group.Key.Yellow ? new Vector4(400.5f/2048f,35.5f/2048f,0f,0f)
+                    : new Vector4(14.5f/2048f,1610.5f/2048f,0f,0f);
+                var normal = group.Key.Rotation * Vector3.up;
+                var right = group.Key.Rotation * Vector3.right;
+                MovableRoadGeometry.Vertex Vertex(int i) => new(polygon[i], normal,
+                    new Vector4(right.x,right.y,right.z,1f), uv, Color.white);
+                for (var i=1;i<polygon.Length-1;i++)
+                    triangles.Add(new MovableRoadGeometry.BoundTriangle(
+                        new MovableRoadGeometry.Triangle(Vertex(0),Vertex(i),Vertex(i+1),0,-1,-1),(uint)group.Key.Bone));
+            }
         }
         if(triangles.Count==0)return;
+        var root = (RenderPrefab)mechanism.m_Meshes[0].m_Mesh;
+        var skeleton = root.GetComponent<ProceduralAnimationProperties>();
         var assets = new List<AssetData>();
         try
         {

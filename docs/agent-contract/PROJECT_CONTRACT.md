@@ -8,8 +8,27 @@ from the original prototype files are retained. Optional style branches, coheren
 measured CPU/GPU choices and incremental integration replace the former procedural restrictions.
 Correct native behavior, resource ownership, persistence and localization requirements remain in force.
 
+## Optional GitHub publication (2026-10-19)
+
+Ordinary development and local delivery do not require GitHub access, branch pushes,
+pull requests or synchronization of remote branches. A reviewed local working tree or patch is a
+valid delivery. GitHub contribution is optional and requires an explicit user request and available
+permissions. Do not automatically push ordinary contributions to all existing branches. Lack of GitHub permissions must
+not block implementation, validation or local delivery. Existing local backup, rollback-baseline,
+build, localization and verification requirements remain in force. Paradox Mods release requirements
+and the original four-step release workflow remain unchanged, including synchronization of release
+code to every existing GitHub branch. These requirements apply only to an authorized release;
+contributors without publishing permissions can complete development through local delivery.
+
+This policy replaces mandatory GitHub publication instructions for ordinary development and
+contributions only. It does not override the release workflow in AGENTS.md. Historical publication
+records describe past actions only, not additional future obligations.
+Pre-edit baseline: branch `dev`, HEAD `541f91039a9a1ab981b9785eb940e76e6da5e23f`;
+local rollback reference `refs/rollback/optional-github-20261019`.
+
 ## Contents
 
+- [Optional GitHub publication (2026-10-19)](#optional-github-publication-2026-10-19)
 - [Contract routing and scope](#contract-routing-and-scope)
 - [First rule: fix reported bugs immediately](#first-rule-fix-reported-bugs-immediately)
 - [Computer-use prohibition](#computer-use-prohibition)

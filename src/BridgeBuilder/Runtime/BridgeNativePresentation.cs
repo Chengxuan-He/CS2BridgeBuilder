@@ -78,7 +78,7 @@ internal static class BridgeNativePresentation
             foreach (var locale in locales)
             {
                 var name = entry.PrefabName + "-" + locale.Id;
-                var shortName = BridgeAssetInfo.ShortName(name, entry.PrefabName);
+                var shortName = BridgeAssetInfo.FileStem(name, entry.PrefabName);
                 var asset = AssetDatabase.user.GetAssets(SearchFilter<LocaleAsset>.ByCondition(a => (a.name == name || a.name == shortName || a.name == locale.Id || a.name == "-" + locale.Id)
                     && BridgeAssetInfo.MatchesOwner(a.path, entry.PrefabName))).FirstOrDefault();
                 var existing = asset?.data;

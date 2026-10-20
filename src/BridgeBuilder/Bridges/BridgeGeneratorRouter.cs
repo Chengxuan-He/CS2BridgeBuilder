@@ -30,6 +30,15 @@ internal static class BridgeGeneratorRouter
         ["TrussArch03"] = (report, towers) => new TrussArch03BridgeGenerator(report, towers),
         ["TiedArch"] = (report, towers) => new TiedArchBridgeGenerator(report, towers),
         ["Draw01"] = (report, towers) => new Draw01BridgeGenerator(report, towers),
+        ["Draw02"] = (report, towers) => new Draw02BridgeGenerator(report, towers),
+        ["Draw03"] = (report, towers) => new Draw03BridgeGenerator(report, towers),
+        ["Lift01"] = (report, towers) => new Lift01BridgeGenerator(report, towers),
+        ["Lift02"] = (report, towers) => new Lift02BridgeGenerator(report, towers),
+        ["Lift05"] = (report, towers) => new Lift05BridgeGenerator(report, towers),
+        ["Lift03"] = (report, towers) => new Lift03BridgeGenerator(report, towers),
+        ["Lift04"] = (report, towers) => new Lift04BridgeGenerator(report, towers),
+        ["PedestrianDraw01"] = (report, towers) => new PedestrianDraw01BridgeGenerator(report, towers),
+        ["PedestrianDraw02"] = (report, towers) => new PedestrianDraw02BridgeGenerator(report, towers),
         ["Grand"] = (report, towers) => new GrandBridgeGenerator(report, towers),
     };
 
@@ -41,3 +50,4 @@ internal static class BridgeGeneratorRouter
         return null;
     }
 }
+

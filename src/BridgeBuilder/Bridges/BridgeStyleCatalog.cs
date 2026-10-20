@@ -93,6 +93,29 @@ internal static class BridgeStyleCatalog
     {
         var named = CreateNamedStyles();
         var byId = named.ToDictionary(style => style.Id, StringComparer.Ordinal);
+        // These routes already reconstruct their render, mechanism, network and unlock
+        // inputs. Their optional original network Prefabs are not catalogue prerequisites.
+        var recorded = new HashSet<string>(StringComparer.Ordinal);
+        var movableContent = PrefabCatalog.GetAll(prefabSystem).OfType<ContentPrefab>()
+            .FirstOrDefault(content => content.name == "BridgesAndPorts" && content.isBuiltin);
+        if (movableContent != null)
+        {
+            var source = BridgePrototypeSource.RecordedContent(movableContent);
+            AddRecorded("Draw02", "DrawBridge02", true, "Media/Game/Icons/DrawBridge02.svg");
+            AddRecorded("Draw03", "DrawBridge03", true, "Media/Game/Icons/DrawBridge03.svg");
+            AddRecorded("Lift01", "LiftBridge01", false, "Media/Game/Icons/LiftBridge01.svg");
+            AddRecorded("Lift02", "LiftBridge02", false, "Media/Game/Icons/LiftBridge02.svg");
+            AddRecorded("Lift03", "LiftBridge03", true, "Media/Game/Icons/LiftBridge03.svg", Lift03NetworkData.AuxiliaryOffset.y);
+            AddRecorded("Lift04", "LiftBridge04", false, "Media/Game/Icons/DoubleTramTrackLiftBridge.svg");
+            AddRecorded("Lift05", "LiftBridge05", false, "Media/Game/Icons/DoubleSubwayTrackLiftBridge.svg");
+            AddRecorded("PedestrianDraw01", "PedestrianDrawBridge01", false, "Media/Game/Icons/PedestrianDrawBridge01.svg");
+            AddRecorded("PedestrianDraw02", "PedestrianDrawBridge02", false, "Media/Game/Icons/PedestrianDrawBridge02.svg");
+            void AddRecorded(string id, string name, bool road, string icon, float? auxiliaryHeight = null)
+            {
+                byId[id].Add(new BridgeStyleVariant(name, road, icon, source, auxiliaryHeight));
+                recorded.Add(id);
+            }
+        }
 
         // Every net that some other prefab hangs underneath itself. Collected before anything is
         // offered, because a lower deck is not a bridge to build from - it is half of one.
@@ -166,6 +189,7 @@ internal static class BridgeStyleCatalog
 
             var definition = BridgeStyleDefinitions.Match(prefab.name);
             if (definition == null || !byId.TryGetValue(definition.Id, out var style)) continue;
+            if (recorded.Contains(style.Id)) continue;
 
             var variant = new BridgeStyleVariant(prefab, bridge, NetWidth.Of(prefab), style.Id == "GoldenGateDouble");
             if (!BridgeStyleDefinitions.SupportsDeckMode(style.Id, variant.IsDoubleDeck)) continue;

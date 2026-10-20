@@ -122,4 +122,35 @@ using (var locked = new FileStream(path, FileMode.Open, FileAccess.ReadWrite, Fi
     BridgeStartupRecovery.Start(finalAttempt: true);
     Check(BridgeSessionState.Restart && File.Exists(path), "unresolved access failure retains assets and suspends deletion");
 }
+var explicitLeaf = new PrefabBase { name = "RecordedExplicitLeaf" };
+var implicitLeaf = new PrefabBase { name = "RecordedImplicitLeaf" };
+var alternateLeaf = new PrefabBase { name = "RecordedAlternateLeaf" };
+var eExplicit = Add(901, explicitLeaf, false, Edge(new(901)));
+var eImplicit = Add(902, implicitLeaf, true, Edge(new(902)));
+var eAlternate = Add(903, alternateLeaf, false, Edge(new(903)));
+var nonUnlockable = new PrefabBase { name = "NativeGeometryResource" };
+prefabs.NotUnlockable.Add(nonUnlockable);
+Check(BridgeUnlockSnapshot.CaptureRequirements(new[] { implicitLeaf, nonUnlockable },
+    new[] { explicitLeaf }, new[] { alternateLeaf }, false, prefabs, manager, out var recordedRule),
+    "capture recorded requirements without an original network Prefab");
+Check(recordedRule.Flags.SequenceEqual(new byte[] { 1, 1, 2 }),
+    "retain implicit AND, explicit AND and explicit OR flags; skip non-unlockable resources");
+Check(recordedRule.Evaluate(id => BridgeUnlockSnapshot.IsUnlocked(id, prefabs, manager)) == false,
+    "implicit native dependency remains locked even when explicit requirements are unlocked");
+manager.All[eImplicit].Locked = false;
+Check(recordedRule.Evaluate(id => BridgeUnlockSnapshot.IsUnlocked(id, prefabs, manager)) == true,
+    "recorded snapshot follows native progression instead of creation-time state");
+manager.All[eImplicit].Locked = true;
+Check(BridgeUnlockSnapshot.CaptureRequirements(new[] { implicitLeaf }, new[] { explicitLeaf },
+    new[] { alternateLeaf }, true, prefabs, manager, out var ignoredRule) &&
+    ignoredRule.Evaluate(id => BridgeUnlockSnapshot.IsUnlocked(id, prefabs, manager)) == true,
+    "native ignore-dependencies flag omits only implicit requirements");
+manager.All[eAlternate].Locked = true;
+Check(ignoredRule.Evaluate(id => BridgeUnlockSnapshot.IsUnlocked(id, prefabs, manager)) == false,
+    "ignore-dependencies does not discard the explicit OR gate");
+Check(!BridgeUnlockSnapshot.CaptureRequirements(Array.Empty<PrefabBase>(),
+    new[] { new PrefabBase { name = "MissingProgression" } }, Array.Empty<PrefabBase>(),
+    false, prefabs, manager, out _), "unavailable recorded unlock requirement fails capture");
+Check(recordedRule.Children.Length == 3 && ignoredRule.Children.Length == 2,
+    "separate reconstructed bridges retain independent rule arrays");
 Console.WriteLine($"{count} snapshot/recovery checks passed using fake native buffers; game startup acceptance still required.");

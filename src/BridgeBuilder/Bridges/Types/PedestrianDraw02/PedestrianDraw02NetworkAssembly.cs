@@ -9,10 +9,18 @@ internal static class PedestrianDraw02NetworkAssembly
     // Apply after sampling the original visible road and preparing all structure objects.
     // The target is the private selected-network clone owned by the normal generation path.
     internal static void Apply(NetGeometryPrefab target, TowerFactory factory,
-        ObjectPrefab pillar, StaticObjectPrefab mechanism)
+        StaticObjectPrefab mechanism)
     {
-        if (!factory.Created.Contains(pillar) || !factory.Created.Contains(mechanism))
-            throw new InvalidOperationException("PedestrianDraw02 network assembly requires its prepared owned pillar and mechanism.");
+        if (!factory.Created.Contains(mechanism))
+            throw new InvalidOperationException("PedestrianDraw02 network assembly requires its prepared owned mechanism.");
+
+        // Native SpawnableObject.m_Placeholders references populate this exact object's
+        // replacement buffer in ObjectInitializeSystem. A private clone would have no
+        // reverse references and therefore could not select the native pillar variants.
+        // This is a generic built-in pathway placeholder, not the bridge prototype.
+        var pillar = factory.ResolveOriginal<ObjectPrefab>("Pillar Pedestrian Placeholder");
+        if (!pillar.isBuiltin || !pillar.Has<PlaceholderObject>())
+            throw new InvalidOperationException("PedestrianDraw02 requires the built-in pedestrian pillar placeholder.");
 
         var sections = PedestrianDraw02NetworkData.ConvertSections(target.name,
             target.m_Sections, out var created);

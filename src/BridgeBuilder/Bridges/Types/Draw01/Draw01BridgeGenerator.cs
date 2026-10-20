@@ -12,15 +12,18 @@ internal sealed class Draw01BridgeGenerator : MovableBridgeGeneratorBase<Draw01C
     internal Draw01BridgeGenerator(ExportReport report, TowerFactory? towers) : base(report, towers) { }
     internal override string StyleId => "Draw01";
     protected override string NativeVariantName => "DrawBridge01";
+    // Native 1.6.2f1 root 118584, aggregate 120422 and UIObject 70051.
+    protected override string NativeAggregateName => "Bridge";
+    protected override string NativeIcon => "Media/Game/Icons/DrawBridge01.svg";
     // Two 3 m drive pieces and two 3.5 m sidewalks; outer 0.5 m sections excluded.
     protected override float NativeRoadWidth => 13f;
 
-    protected override RenderPrefab[] ResolveRenderRoots(TowerFactory factory) => new[]
+    protected override RenderSources ResolveRenderRoots(TowerFactory factory) => new(new[]
     {
         factory.ResolveOriginal<RenderPrefab>("DrawBridge01 Mesh"),
         factory.ResolveOriginal<RenderPrefab>("DrawBridge01Pillar Mesh"),
         factory.ResolveOriginal<RenderPrefab>("DrawBridge01PillarBase Mesh")
-    };
+    });
 
     protected override Draw01ClosedRoad SampleRoad(string owner, Entity selectedRoad,
         RenderPrefab[] roots, ContentPrefab content, float halfDelta, RandomSeed seed) =>

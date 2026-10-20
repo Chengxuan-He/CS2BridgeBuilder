@@ -12,12 +12,15 @@ must not be changed to solve this signal-producer difference.
 
 ## Implementation
 
-`Draw01BarrierRules` adapts only the converted `Node + FixedNodeSize` section graph.
+`MovableBarrierRules` adapts only the converted `Node + FixedNodeSize` section graph.
 For ordinary signal placeholder rules that can run at a level crossing, the crossing
 branch references the existing native barrier placeholder. A rule that also applies
 outside crossings is split into mutually exclusive crossing/non-crossing branches.
 Rules excluding crossings, existing native barrier producers, ordinary connection
-segments, and other styles retain their existing behavior.
+segments, and styles not invoking this conversion retain their existing behavior.
+Draw01 and Draw02 invoke the same conversion: both recorded prototypes use the native
+`Sidewalk Piece 3.5 - NoTram` barrier producer. The helper was moved to `Common/Movable`
+without changing its rule conversion or ownership behavior.
 
 All original placement fields and additional conditions are preserved, including
 position, longitudinal placement, rotation, curve rotation, inversion, and spacing.

@@ -1,0 +1,136 @@
+"""Emit the measured Lift01 ordinary support, including its far cap centre seam.
+Usage: python Lift01NetPillarGeometry.py RESEARCH_DIRECTORY OUTPUT_CS
+The single central column and foundation stay fixed. Only the road-adjacent cap
+widens; its forty separate lateral braces/plates translate with their side.
+"""
+from pathlib import Path
+import hashlib
+import json
+import sys
+import numpy as np
+
+r, output = map(Path, sys.argv[1:])
+inventory = json.loads((r / 'lift01-netpillar-inventory.json').read_text())
+tables = []
+edges, fragments = [], []
+for record in inventory:
+    part, lod = record['part'], record['lod']
+    stem = ('LiftBridge01NetPillarTop', 'LiftBridge01NetPillar', 'LiftBridge01NetPillarBase')[part]
+    name = stem + (f'_LOD{lod}' if lod else '') + ' Mesh.Geometry'
+    digest = hashlib.sha256((r / 'lift01-network-pillar' / name).read_bytes()).hexdigest()
+    assert digest == record['sha256']
+    d = np.load(r / f'lift01-netpillar-{part}-{lod}.npz')
+    v, f = d['positions'], d['indices']
+    assert (len(v), len(f)) == (record['vertices'], record['triangles'])
+    weights = np.sign(v[:, 0]) if part == 0 else np.zeros(len(v))
+    if part == 0 and lod < 2:
+        groups = json.loads((r / f'lift01-netpillar-top-{lod}-parts.json').read_text())
+        assert len(groups) == 41
+        assert groups[0]['minimum'][0] < 0 < groups[0]['maximum'][0]
+        assert sorted(i for group in groups for i in group['vertices']) == list(range(len(v)))
+        for group in groups[1:]:
+            assert len(set(weights[group['vertices']])) == 1
+            assert weights[group['vertices'][0]] != 0
+    expanded = v.copy()
+    final = []
+    if part == 0 and lod == 2:
+        edge_ids = {}
+        def boundary(a, b):
+            a, b = sorted((int(a), int(b)))
+            key = (a, b)
+            if key not in edge_ids:
+                t = float(-float(v[a, 0]) / (float(v[b, 0]) - float(v[a, 0])))
+                assert 0 < t < 1
+                edge_ids[key] = len(v) + len(edges)
+                edges.append((a, b, t))
+            return edge_ids[key]
+        for face, triangle in enumerate(f):
+            x = v[triangle, 0]
+            if not (x.min() < 0 < x.max()):
+                final.append(list(triangle))
+                continue
+            triangles = []
+            for side in (-1, 1):
+                polygon = []
+                for a, b in zip(triangle, np.roll(triangle, -1)):
+                    if side * v[a, 0] >= 0:
+                        polygon.append(int(a))
+                    if v[a, 0] * v[b, 0] < 0:
+                        polygon.append(boundary(a, b))
+                for i in range(1, len(polygon) - 1):
+                    triangles.append([polygon[0], polygon[i], polygon[i + 1]])
+            fragments.append((face, np.asarray(triangles).ravel().tolist()))
+            final.extend(triangles)
+        assert len(fragments) == 30
+        additions = np.asarray([v[a].astype(float) + (v[b].astype(float) - v[a]) * t for a, b, t in edges])
+        additions[:, 0] = 0
+        expanded = np.vstack((v, additions)).astype(np.float32)
+        weights = np.concatenate((weights, np.zeros(len(edges))))
+    else:
+        final = f
+    final = np.asarray(final)
+    original_triangles = expanded[final].astype(float)
+    normals = np.cross(original_triangles[:, 1] - original_triangles[:, 0], original_triangles[:, 2] - original_triangles[:, 0])
+    for delta in (-2.99, -2.75, -2, -1, 0, 2, 8):
+        moved = expanded.copy()
+        moved[:, 0] += weights * delta
+        assert np.array_equal(moved[:, 1:], expanded[:, 1:])
+        if part:
+            assert np.array_equal(moved, expanded)
+        q = moved[final].astype(float)
+        after = np.cross(q[:, 1] - q[:, 0], q[:, 2] - q[:, 0])
+        valid = np.linalg.norm(normals, axis=1) > 1e-8
+        assert np.isfinite(moved).all()
+        if delta >= -1:
+            assert np.all((normals[valid] * after[valid]).sum(1) > 0)
+        else:
+            print(f"Pillar {part} LOD{lod} delta={delta}: {np.count_nonzero((normals[valid]*after[valid]).sum(1) <= 0)} collapsed/reversed faces retained by signed mapping")
+    # At native width subdivision preserves total surface area.
+    native = v[f].astype(float)
+    area = np.linalg.norm(np.cross(native[:, 1] - native[:, 0], native[:, 2] - native[:, 0]), axis=1).sum()
+    assert np.isclose(np.linalg.norm(normals, axis=1).sum(), area, rtol=1e-6)
+    ranges = []
+    if part == 0:
+        for i, w in enumerate(weights[:len(v)]):
+            if ranges and ranges[-1][1] + 1 == i and ranges[-1][2] == w:
+                ranges[-1][1] = i
+            else:
+                ranges.append([i, i, int(w)])
+    tables.append((part, lod, len(v), len(f), ranges, digest))
+    print(f'Part {part} LOD{lod}: {len(f)} -> {len(final)} triangles; seven width checks passed')
+
+lines = ['// Native LiftBridge01 ordinary pillar, game 1.6.2f1.',
+         '// Generated by tools/GeometryMetaprogram/Lift01NetPillarGeometry.py.',
+         'using System;', 'using UnityEngine;', '', 'namespace BridgeBuilder.Bridges;', '',
+         'internal static class Lift01NetPillarGeometry', '{',
+    
+         '    internal static MovableStructureModel.Plan Create(int part, int lod, Vector3[] source, int[] indices, float delta)',
+         '    {', '        var counts = (part, lod) switch', '        {']
+for part, lod, nv, nf, _, _ in tables:
+    lines.append(f'            ({part}, {lod}) => (Vertices: {nv}, Triangles: {nf}),')
+lines += ['            _ => throw new ArgumentOutOfRangeException(nameof(part))', '        };',
+          '        if (source.Length != counts.Vertices || indices.Length != counts.Triangles * 3 ||',
+          '            !float.IsFinite(delta))',
+          '            throw new InvalidOperationException("Lift01 ordinary pillar requires its measured layout.");',
+          '        var positions = (Vector3[])source.Clone();',
+          '        if (part == 0)', '            foreach (var range in CapRanges[lod])',
+          '                for (var i = range.First; i <= range.Last; i++)',
+          '                    positions[i].x = source[i].x + range.Direction * delta;',
+          '        var split = part == 0 && lod == 2;',
+          '        return new MovableStructureModel.Plan(source, positions, new[] { indices },',
+          '            new[] { new bool[counts.Triangles] },',
+          '            addedVertices: split ? Edges : null, fragments: split ? Fragments : null,',
+          '            constructedX: split ? new float[Edges.Length] : null);', '    }', '',
+          '    private static readonly (int First, int Last, int Direction)[][] CapRanges =', '    {']
+for part, lod, nv, nf, ranges, digest in tables:
+    if part:
+        continue
+    lines += [f'        // Geometry SHA-256: {digest}', '        new (int, int, int)[]', '        {']
+    lines += [f'            ({a}, {b}, {w}),' for a, b, w in ranges]
+    lines += ['        },']
+lines += ['    };', '', '    private static readonly MovableStructureModel.EdgeVertex[] Edges =', '    {']
+lines += [f'        new({a}, {b}, {t:.17g}f),' for a, b, t in edges]
+lines += ['    };', '', '    private static readonly MovableStructureModel.Fragment[] Fragments =', '    {']
+lines += [f'        new(0, {face}, {", ".join(map(str, ids))}),' for face, ids in fragments]
+lines += ['    };', '}', '']
+output.write_text('\n'.join(lines), encoding='utf-8')

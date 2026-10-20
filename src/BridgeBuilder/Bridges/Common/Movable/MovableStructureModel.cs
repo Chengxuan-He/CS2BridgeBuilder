@@ -52,6 +52,8 @@ internal static class MovableStructureModel
         internal readonly EdgeVertex[] AddedVertices;
         internal readonly TriangleVertex[] InteriorVertices;
         internal readonly Fragment[] Fragments;
+        // Only measured LOD reconstruction opts in; ordinary width plans preserve Y/Z.
+        internal readonly bool ReconstructsAuthoredPositions;
         internal int ConstructedCount => AddedVertices.Length + InteriorVertices.Length;
 
         internal TriangleVertex Construction(int index)
@@ -63,8 +65,10 @@ internal static class MovableStructureModel
 
         internal Plan(Vector3[] sourcePositions, Vector3[] positions, int[][] sourceIndices,
             bool[][] removeTriangles, EdgeVertex[]? addedVertices = null, Fragment[]? fragments = null,
-            TriangleVertex[]? interiorVertices = null, float[]? constructedX = null)
+            TriangleVertex[]? interiorVertices = null, float[]? constructedX = null,
+            bool reconstructsAuthoredPositions = false)
         {
+            ReconstructsAuthoredPositions = reconstructsAuthoredPositions;
             SourcePositions = (Vector3[])sourcePositions.Clone();
             SourceIndices = sourceIndices.Select(indices => (int[])indices.Clone()).ToArray();
             RemoveTriangles = removeTriangles.Select(mask => (bool[])mask.Clone()).ToArray();
@@ -168,7 +172,8 @@ internal static class MovableStructureModel
                 for (var axis = 0; axis < 3; axis++)
                     if (positions[i][axis] != plan.SourcePositions[i][axis] || !float.IsFinite(plan.Positions[i][axis]))
                     { error = $"Structural vertex {i} does not match its measured source or has invalid output."; return false; }
-                if (plan.Positions[i].y != positions[i].y || plan.Positions[i].z != positions[i].z)
+                if (!plan.ReconstructsAuthoredPositions &&
+                    (plan.Positions[i].y != positions[i].y || plan.Positions[i].z != positions[i].z))
                 { error = $"Structural vertex {i} changes an authored Y/Z coordinate."; return false; }
             }
             for (var i = positions.Length; i < outputCount; i++)

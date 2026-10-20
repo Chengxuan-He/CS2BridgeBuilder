@@ -8,6 +8,40 @@ namespace BridgeBuilder.Runtime;
 
 internal static class BridgeUnlockSnapshot
 {
+    // For reconstructed archetypes: callers supply the measured native dependency
+    // list as well as explicit rules. Do not substitute the selected road's graph.
+    // Resource dependencies remain initialized native Prefabs; the original bridge
+    // network itself need not exist. Mirrors Unlockable.LateInitialize filtering.
+    internal static bool CaptureRequirements(IEnumerable<PrefabBase> dependencies,
+        IEnumerable<PrefabBase> requireAll, IEnumerable<PrefabBase> requireAny,
+        bool ignoreDependencies, PrefabSystem prefabs, EntityManager manager,
+        out BridgeUnlockExpression rule)
+    {
+        rule = new();
+        var children = new List<BridgeUnlockExpression>();
+        var flags = new List<byte>();
+        var budget = 4096;
+        var path = new HashSet<Entity>();
+        bool Append(IEnumerable<PrefabBase> inputs, byte flag)
+        {
+            foreach (var source in inputs)
+            {
+                if (source == null) return false;
+                if (!prefabs.IsUnlockable(source)) continue;
+                if (!prefabs.TryGetEntity(source, out var entity) ||
+                    !Capture(entity, prefabs, manager, path, ref budget, out var child)) return false;
+                children.Add(child);
+                flags.Add(flag);
+            }
+            return true;
+        }
+        if ((!ignoreDependencies && !Append(dependencies, 1)) ||
+            !Append(requireAll, 1) || !Append(requireAny, 2)) return false;
+        rule.Children = children.ToArray();
+        rule.Flags = flags.ToArray();
+        return true;
+    }
+
     internal static bool Capture(PrefabBase source, PrefabSystem prefabs, EntityManager manager,
         out BridgeUnlockExpression rule)
     {

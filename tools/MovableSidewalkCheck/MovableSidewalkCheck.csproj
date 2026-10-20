@@ -1,0 +1,13 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net8.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="../../src/BridgeBuilder/Bridges/Common/Movable/MovableSelectedRoadLayout.cs" Link="SelectedLayout.cs" />
+    <Compile Include="../../src/BridgeBuilder/Bridges/Types/Draw02/Draw02FixedSidewalks.g.cs" Link="FixedSidewalks.cs" />
+    <Compile Include="../../src/BridgeBuilder/Bridges/Types/Draw03/Draw03JointLayout.g.cs" Link="JointLayout.cs" />
+  </ItemGroup>
+</Project>

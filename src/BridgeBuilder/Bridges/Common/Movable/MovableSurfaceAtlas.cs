@@ -14,7 +14,7 @@ using TextureAsset = Colossal.IO.AssetDatabase.TextureAsset;
 namespace BridgeBuilder.Bridges;
 
 // Extract a repeating prototype asphalt unit and preserve its measured UV gradients.
-// Paint is rendered by native child decals, not a coplanar receiver overlay.
+// Paint is rendered separately on the original road skeleton.
 // Other appearances retain their packed charts.
 internal sealed class MovableSurfaceAtlas
 {
@@ -75,12 +75,12 @@ internal sealed class MovableSurfaceAtlas
                 // The material's tangent frame uses authored vertex normals, which may
                 // differ from the geometric plane normal at curbs and smooth edges.
                 // Decide the complete receiver representation before composing alpha.
-                bool repeat=(source==owner.Asset || patch.Repeat) && Mathf.Abs(ProjectionDeterminant(patch,normal))>1e-10f &&
-                    panel.Vertices.All(vertex=>Mathf.Abs(ProjectionDeterminant(patch,vertex.Normal))>1e-10f);
+                bool repeat=(source==owner.Asset || patch.Repeat) &&
+                    MovableRoadGeometry.CanRepeatProjection(patch.U,patch.V,normal,t.A.Normal,t.B.Normal,t.C.Normal);
                 var chart = charts.FirstOrDefault(c => c.Source==(repeat ? input.Native : source) && c.Origin==origin && c.U==u && c.V==v &&
                     c.Repeat==repeat &&
                     c.Patch.Min==patch.Min && c.Patch.Max==patch.Max &&
-                    c.Patch.U==patch.U && c.Patch.V==patch.V);
+                    c.Patch.U==patch.U && c.Patch.V==patch.V && c.Patch.Bands==patch.Bands);
                 if (chart == null)
                 {
                     chart = new Chart { Origin=origin,U=u,V=v,Normal=normal,Min=min,Max=max,Patch=patch,Source=repeat ? input.Native : source };
@@ -227,6 +227,7 @@ internal sealed class MovableSurfaceAtlas
                 // clamping produced 109 texels/m across a road but only 25 along it;
                 // the resulting mip footprint blurred longitudinal paint even further.
                 var density=du>0 && dv>0 ? Mathf.Min(du,dv) : Mathf.Max(du,dv);
+                c.Density=new Vector2(density,density);
                 var pixels=new Vector2(Mathf.Max(1,span.x*density),Mathf.Max(1,span.y*density));
                 var capacity=pageSize-2f*padding;
                 var fitted=pixels*Mathf.Min(1,capacity/Mathf.Max(pixels.x,pixels.y));
@@ -259,7 +260,9 @@ internal sealed class MovableSurfaceAtlas
                     item.Key.H=Mathf.CeilToInt(Mathf.Max(1,item.Value.y*packingScale))+2*padding;
                 }
                 var free=new List<List<RectInt>> {new() {new RectInt(0,0,pageSize,pageSize)}};
-                pages.Add(new List<Chart>());
+                // Repeat-only receivers have no packed charts. Their first tile
+                // must own page zero, not follow an empty synthetic atlas page.
+                if(desired.Count>0)pages.Add(new List<Chart>());
                 foreach(var c in desired.Keys.OrderByDescending(c=>Math.Max(c.W,c.H)).ThenByDescending(c=>c.W*c.H))
                 {
                     int selected=-1,score=int.MaxValue,area=int.MaxValue;
@@ -316,26 +319,56 @@ internal sealed class MovableSurfaceAtlas
             {
                 var span=c.Max-c.Min;
                 c.Width=c.Height=pageSize;
-                c.Density=new Vector2((c.W-2f*padding)/span.x,(c.H-2f*padding)/span.y);
+                // Native node receivers can collapse to a line on one chart axis. The
+                // allocated one-pixel strip still uses the source sampling density there;
+                // dividing by zero would turn its constant coordinate into 0 * Infinity.
+                c.Density=new Vector2(span.x>0f?(c.W-2f*padding)/span.x:c.Density.x,
+                    span.y>0f?(c.H-2f*padding)/span.y:c.Density.y);
             }
             // Extract one native atlas asphalt unit. Continuous receiver UVs repeat
             // this unit; no road triangle is cut and no whole-span paint overlay remains.
-            var repeatPages=new Dictionary<(Vector2 Min,Vector2 Max),int>();
+            var repeatPages=new Dictionary<(SurfaceAsset Source,Vector2 Min,Vector2 Max,bool Grating,MovableExistingRoadSurface.RepeatBand[]? Bands),int>();
             foreach(var c in charts.Where(c=>c.Repeat))
             {
-                var key=(c.Patch.Min,c.Patch.Max);
+                var key=(c.Source,c.Patch.Min,c.Patch.Max,c.Patch.Repeat,c.Patch.Bands);
                 if(!repeatPages.TryGetValue(key,out var tilePage))
                 {
                     var nativeTexture=Load(c.Source).GetTexture("_BaseColorMap");
                     var width=4*Mathf.CeilToInt((c.Patch.Max.x-c.Patch.Min.x)*nativeTexture.width/4f);
                     var height=4*Mathf.CeilToInt((c.Patch.Max.y-c.Patch.Min.y)*nativeTexture.height/4f);
+                    var bands=c.Patch.Bands;
+                    if(bands!=null)
+                    {
+                        float previous=0f,requiredWidth=0f,requiredHeight=0f;
+                        foreach(var band in bands)
+                        {
+                            if(band.Start!=previous || band.End<=band.Start || band.End>1f ||
+                                band.Max.x<=band.Min.x || band.Max.y<=band.Min.y)
+                                throw new InvalidOperationException("A repeating surface requires contiguous, non-empty texture bands.");
+                            requiredWidth=Mathf.Max(requiredWidth,(band.Max.x-band.Min.x)*nativeTexture.width/(band.End-band.Start));
+                            requiredHeight=Mathf.Max(requiredHeight,(band.Max.y-band.Min.y)*nativeTexture.height);
+                            previous=band.End;
+                        }
+                        if(previous!=1f)throw new InvalidOperationException("Repeating surface bands must cover the complete unit.");
+                        width=4*Mathf.CeilToInt(requiredWidth/4f);
+                        height=4*Mathf.CeilToInt(requiredHeight/4f);
+                    }
                     tilePage=pages.Count;repeatPages.Add(key,tilePage);
-                    pages.Add(new List<Chart>{new Chart {
-                        Source=c.Source,Repeat=true,Origin=Vector3.zero,
-                        U=Vector3.right,V=Vector3.forward,Normal=Vector3.up,Min=Vector2.zero,Max=Vector2.one,
-                        X=0,Y=0,W=width,H=height,Density=new Vector2(width,height),
-                        Patch=new MovableExistingRoadSurface.Patch(c.Patch.Min,c.Patch.Max,
-                            new Vector4(1,0,0,0),new Vector4(0,0,1,0),repeat:c.Patch.Repeat)}});
+                    var tile=new List<Chart>();
+                    void AddBand(int x,int end,Vector2 min,Vector2 max)
+                    {
+                        if(end<=x)throw new InvalidOperationException("A repeating surface band has no output pixels.");
+                        tile.Add(new Chart {
+                            Source=c.Source,Repeat=true,Origin=Vector3.zero,
+                            U=Vector3.right,V=Vector3.forward,Normal=Vector3.up,Min=Vector2.zero,Max=Vector2.one,
+                            X=x,Y=0,W=end-x,H=height,Width=width,Height=height,Density=new Vector2(end-x,height),
+                            Patch=new MovableExistingRoadSurface.Patch(min,max,
+                                new Vector4(1,0,0,0),new Vector4(0,0,1,0),repeat:c.Patch.Repeat)});
+                    }
+                    if(bands==null)AddBand(0,width,c.Patch.Min,c.Patch.Max);
+                    else foreach(var band in bands)
+                        AddBand(Mathf.RoundToInt(band.Start*width),Mathf.RoundToInt(band.End*width),band.Min,band.Max);
+                    pages.Add(tile);
                     Mod.Log.Info($"Native repeating unit: {width}x{height}; grating={c.Patch.Repeat}; source={c.Source.name}; no span atlas scaling.");
                 }
                 c.Page=tilePage;
@@ -343,7 +376,7 @@ internal sealed class MovableSurfaceAtlas
             foreach(var c in desired.Keys)
                 Mod.Log.Info($"Moving-road chart density: source={c.Source.name}; span={c.Max-c.Min}; pixels={c.W-2*padding}x{c.H-2*padding}; texels/metre={c.Density}; page={c.Page}.");
             Mod.Log.Info($"Moving-road packed VT: domains={charts.Count}; unique={desired.Count}; pages={pages.Count}; pageSize={pageSize}; packingScale={packingScale:R}; minimum native-density scale={minimumChartScale*packingScale:R}; max LOD-group batches=16.");
-            var pixelCount=pages.Sum(page=>page[0].Repeat?(long)page[0].W*page[0].H:(long)pageSize*pageSize);
+            var pixelCount=pages.Sum(page=>page[0].Repeat?(long)page[0].Width*page[0].Height:(long)pageSize*pageSize);
             Mod.Log.Info($"Moving-road VT composition: panels={panels.Sum(p=>p.Count)}; shared charts={charts.Count}; pages={pages.Count}; pixels={pixelCount}; receiver topology unchanged; prototype asphalt repeats; paint uses native decals.");
             var composites=new List<SurfaceAsset>();
             for(int page=0;page<pages.Count;page++)
@@ -351,8 +384,8 @@ internal sealed class MovableSurfaceAtlas
                 var pageClock=System.Diagnostics.Stopwatch.StartNew();
                 long readbackMs=0,textureSaveMs=0;
                 bool tiled=pages[page][0].Repeat;
-                int width=tiled?pages[page][0].W:pageSize;
-                int height=tiled?pages[page][0].H:pageSize;
+                int width=tiled?pages[page][0].Width:pageSize;
+                int height=tiled?pages[page][0].Height:pageSize;
                 int border=tiled?0:padding;
                 foreach(var c in pages[page]){c.Width=width;c.Height=height;}
                 for(int i=0;i<targets.Length;i++)

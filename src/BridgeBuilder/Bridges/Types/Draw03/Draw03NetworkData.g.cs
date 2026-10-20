@@ -68,10 +68,9 @@ internal static class Draw03NetworkData
         }).ToArray();
     }
 
-    // The caller supplies private generated pillar/mechanism objects and the selected
-    // road outside-connection object. Original native placement fields are preserved.
-    internal static NetSubObjectInfo[] Placements(ObjectPrefab pillar, ObjectPrefab mechanism,
-        ObjectPrefab outsideConnection) => new[]
+    // Only structural placements are inherited. Outside connections retain the selected
+    // network's complete original rules through Draw03NetworkAssembly.
+    internal static NetSubObjectInfo[] StructurePlacements(ObjectPrefab pillar, ObjectPrefab mechanism) => new[]
     {
         new NetSubObjectInfo
         {
@@ -101,33 +100,21 @@ internal static class Draw03NetworkData
             m_RequireDeadEnd = false,
             m_RequireOrphan = false,
         },
+        MechanismPlacement(mechanism),
+    };
+    internal static NetSubObjectInfo MechanismPlacement(ObjectPrefab mechanism) =>
         new NetSubObjectInfo
         {
             m_Object = mechanism,
-            m_Position = new float3(0.0f, 0.0f, 0.0f),
-            m_Rotation = new quaternion(0.0f, 0.0f, 0.0f, 1.0f),
+            m_Position = new float3(0f, 0f, 0f),
+            m_Rotation = new quaternion(0f, 0f, 0f, 1f),
             m_Placement = (NetObjectPlacement)16,
-            m_FixedIndex = 0, m_Spacing = 0.0f,
+            m_FixedIndex = 0, m_Spacing = 0f,
             m_AnchorTop = false,
             m_AnchorCenter = false,
             m_RequireElevated = false,
             m_RequireOutsideConnection = false,
             m_RequireDeadEnd = false,
             m_RequireOrphan = false,
-        },
-        new NetSubObjectInfo
-        {
-            m_Object = outsideConnection,
-            m_Position = new float3(0.0f, 5.0f, 0.0f),
-            m_Rotation = new quaternion(0.0f, 0.0f, 0.0f, 1.0f),
-            m_Placement = (NetObjectPlacement)0,
-            m_FixedIndex = 0, m_Spacing = 0.0f,
-            m_AnchorTop = false,
-            m_AnchorCenter = false,
-            m_RequireElevated = false,
-            m_RequireOutsideConnection = true,
-            m_RequireDeadEnd = false,
-            m_RequireOrphan = false,
-        },
-    };
+        };
 }
