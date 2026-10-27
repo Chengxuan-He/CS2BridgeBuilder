@@ -1,0 +1,699 @@
+{
+  "schema": "Draw01/NativeSources/1",
+  "sources": [
+    {
+      "cid": "16b28f9bc6abc54fd73acbdfa5f14978",
+      "sha256": "2d821cde8d3b99205eedeae22f74999f39f5ba60154c7514ae0a05fa84eb87c7",
+      "template": 17,
+      "builtin": true,
+      "dependencies": [
+        {
+          "cid": "d99de72b9a3e4442445ad6720119e4fc",
+          "kind": "Texture",
+          "bytes": 22369662,
+          "layers": [
+            {
+              "property": "_BaseColorMap",
+              "width": 4096,
+              "height": 4096
+            }
+          ]
+        },
+        {
+          "cid": "2ae97c5ed8cb4ef6561cba57795d0966",
+          "kind": "Texture",
+          "bytes": 22369662,
+          "layers": [
+            {
+              "property": "_MaskMap",
+              "width": 4096,
+              "height": 4096
+            }
+          ]
+        },
+        {
+          "cid": "dae791c517af749a9c6be7b4f422db9c",
+          "kind": "Texture",
+          "bytes": 22369662,
+          "layers": [
+            {
+              "property": "_NormalMap",
+              "width": 4096,
+              "height": 4096
+            }
+          ]
+        }
+      ],
+      "binding": "retain-original-surface",
+      "mipPolicy": "retain-native-resource-graph-without-decoding",
+      "nativeSampling": "original atlas UV; native material and texture sampling settings unchanged"
+    },
+    {
+      "cid": "1aca42fbf5ccb4d74005ae5ae40f3eb7",
+      "sha256": "682247b4b7e5499148515cd5c85ff9b5c35e4ccf9b85f9844751836574c7a076",
+      "template": 0,
+      "builtin": true,
+      "dependencies": [
+        {
+          "cid": "1011a4b81e3aa59dbb634eccabe35e1a",
+          "kind": "VTTexture",
+          "bytes": 12986422,
+          "layers": [
+            {
+              "stack": 0,
+              "layer": 0,
+              "width": 4096,
+              "height": 4096
+            }
+          ]
+        },
+        {
+          "cid": "d7e2b24ca26d5e626756dc54771aac16",
+          "kind": "VTTexture",
+          "bytes": 17607785,
+          "layers": [
+            {
+              "stack": 0,
+              "layer": 1,
+              "width": 4096,
+              "height": 4096
+            }
+          ]
+        },
+        {
+          "cid": "78f95467f35895b6d286480ee181fb04",
+          "kind": "VTTexture",
+          "bytes": 14011056,
+          "layers": [
+            {
+              "stack": 0,
+              "layer": 2,
+              "width": 4096,
+              "height": 4096
+            }
+          ]
+        }
+      ],
+      "binding": "retain-original-surface",
+      "mipPolicy": "retain-native-resource-graph-without-decoding",
+      "nativeSampling": "original atlas UV; native material and texture sampling settings unchanged"
+    },
+    {
+      "cid": "28fdf51684995e85c497cd6683defa8a",
+      "sha256": "1fc89418b45dac97003635c634b267f43135210d7b9ce0d7b58732daa21bfe0a",
+      "template": 0,
+      "builtin": true,
+      "dependencies": [
+        {
+          "cid": "f5bca65be6d1b5080c7f9bec67301c80",
+          "kind": "VTSurface",
+          "bytes": 567035,
+          "layers": [
+            {
+              "stack": 0,
+              "layer": 0,
+              "width": 512,
+              "height": 512
+            },
+            {
+              "stack": 0,
+              "layer": 1,
+              "width": 512,
+              "height": 512
+            },
+            {
+              "stack": 0,
+              "layer": 2,
+              "width": 512,
+              "height": 512
+            }
+          ]
+        }
+      ],
+      "binding": "retain-original-surface",
+      "mipPolicy": "retain-native-resource-graph-without-decoding",
+      "nativeSampling": "original atlas UV; native material and texture sampling settings unchanged"
+    },
+    {
+      "cid": "34c330920b267eb387cf791528c96522",
+      "sha256": "605f8a2c39b82ca0660018b9d01f7ab36e8b8989d198836101124229eeccd9aa",
+      "template": 0,
+      "builtin": true,
+      "dependencies": [
+        {
+          "cid": "d9c13cbe9e4f3b0dae58533b57e53d0f",
+          "kind": "VTSurface",
+          "bytes": 387011,
+          "layers": [
+            {
+              "stack": 0,
+              "layer": 0,
+              "width": 512,
+              "height": 512
+            },
+            {
+              "stack": 0,
+              "layer": 1,
+              "width": 512,
+              "height": 512
+            },
+            {
+              "stack": 0,
+              "layer": 2,
+              "width": 512,
+              "height": 512
+            }
+          ]
+        }
+      ],
+      "binding": "retain-original-surface",
+      "mipPolicy": "retain-native-resource-graph-without-decoding",
+      "nativeSampling": "original atlas UV; native material and texture sampling settings unchanged"
+    },
+    {
+      "cid": "3b942b3a39d17e415d347c08f2474aa2",
+      "sha256": "682247b4b7e5499148515cd5c85ff9b5c35e4ccf9b85f9844751836574c7a076",
+      "template": 0,
+      "builtin": true,
+      "dependencies": [
+        {
+          "cid": "1011a4b81e3aa59dbb634eccabe35e1a",
+          "kind": "VTTexture",
+          "bytes": 12986422,
+          "layers": [
+            {
+              "stack": 0,
+              "layer": 0,
+              "width": 4096,
+              "height": 4096
+            }
+          ]
+        },
+        {
+          "cid": "d7e2b24ca26d5e626756dc54771aac16",
+          "kind": "VTTexture",
+          "bytes": 17607785,
+          "layers": [
+            {
+              "stack": 0,
+              "layer": 1,
+              "width": 4096,
+              "height": 4096
+            }
+          ]
+        },
+        {
+          "cid": "78f95467f35895b6d286480ee181fb04",
+          "kind": "VTTexture",
+          "bytes": 14011056,
+          "layers": [
+            {
+              "stack": 0,
+              "layer": 2,
+              "width": 4096,
+              "height": 4096
+            }
+          ]
+        }
+      ],
+      "binding": "retain-original-surface",
+      "mipPolicy": "retain-native-resource-graph-without-decoding",
+      "nativeSampling": "original atlas UV; native material and texture sampling settings unchanged"
+    },
+    {
+      "cid": "45f6fe14df0150267b86e281c8d17ec2",
+      "sha256": "2d821cde8d3b99205eedeae22f74999f39f5ba60154c7514ae0a05fa84eb87c7",
+      "template": 17,
+      "builtin": true,
+      "dependencies": [
+        {
+          "cid": "d99de72b9a3e4442445ad6720119e4fc",
+          "kind": "Texture",
+          "bytes": 22369662,
+          "layers": [
+            {
+              "property": "_BaseColorMap",
+              "width": 4096,
+              "height": 4096
+            }
+          ]
+        },
+        {
+          "cid": "2ae97c5ed8cb4ef6561cba57795d0966",
+          "kind": "Texture",
+          "bytes": 22369662,
+          "layers": [
+            {
+              "property": "_MaskMap",
+              "width": 4096,
+              "height": 4096
+            }
+          ]
+        },
+        {
+          "cid": "dae791c517af749a9c6be7b4f422db9c",
+          "kind": "Texture",
+          "bytes": 22369662,
+          "layers": [
+            {
+              "property": "_NormalMap",
+              "width": 4096,
+              "height": 4096
+            }
+          ]
+        }
+      ],
+      "binding": "retain-original-surface",
+      "mipPolicy": "retain-native-resource-graph-without-decoding",
+      "nativeSampling": "original atlas UV; native material and texture sampling settings unchanged"
+    },
+    {
+      "cid": "7271f977513970fff2c709a721970e75",
+      "sha256": "eb8ccf270ed33f4a8b7b59b004d1e19b16a1f37ab27eb9c432cb877ac6c3f814",
+      "template": 1,
+      "builtin": true,
+      "dependencies": [
+        {
+          "cid": "e29cd31919744369fb34dc632f506ad4",
+          "kind": "VTSurface",
+          "bytes": 438801,
+          "layers": [
+            {
+              "stack": 0,
+              "layer": 0,
+              "width": 512,
+              "height": 512
+            },
+            {
+              "stack": 0,
+              "layer": 1,
+              "width": 512,
+              "height": 512
+            },
+            {
+              "stack": 0,
+              "layer": 2,
+              "width": 512,
+              "height": 512
+            }
+          ]
+        }
+      ],
+      "binding": "retain-original-surface",
+      "mipPolicy": "retain-native-resource-graph-without-decoding",
+      "nativeSampling": "original atlas UV; native material and texture sampling settings unchanged"
+    },
+    {
+      "cid": "74d8e6705bad22ec9e1a1413a9fa0b06",
+      "sha256": "708214ddb04d5e723dedf05e4d8508fc198958ccd772d550bb82bae0797fa208",
+      "template": 0,
+      "builtin": true,
+      "dependencies": [
+        {
+          "cid": "b768ddeb8fb365d670fa09c33883c749",
+          "kind": "VTSurface",
+          "bytes": 538684,
+          "layers": [
+            {
+              "stack": 0,
+              "layer": 0,
+              "width": 512,
+              "height": 512
+            },
+            {
+              "stack": 0,
+              "layer": 1,
+              "width": 512,
+              "height": 512
+            },
+            {
+              "stack": 0,
+              "layer": 2,
+              "width": 512,
+              "height": 512
+            }
+          ]
+        }
+      ],
+      "binding": "retain-original-surface",
+      "mipPolicy": "retain-native-resource-graph-without-decoding",
+      "nativeSampling": "original atlas UV; native material and texture sampling settings unchanged"
+    },
+    {
+      "cid": "7d4cadeea169f7fea7346da830d9c49d",
+      "sha256": "682247b4b7e5499148515cd5c85ff9b5c35e4ccf9b85f9844751836574c7a076",
+      "template": 0,
+      "builtin": true,
+      "dependencies": [
+        {
+          "cid": "1011a4b81e3aa59dbb634eccabe35e1a",
+          "kind": "VTTexture",
+          "bytes": 12986422,
+          "layers": [
+            {
+              "stack": 0,
+              "layer": 0,
+              "width": 4096,
+              "height": 4096
+            }
+          ]
+        },
+        {
+          "cid": "d7e2b24ca26d5e626756dc54771aac16",
+          "kind": "VTTexture",
+          "bytes": 17607785,
+          "layers": [
+            {
+              "stack": 0,
+              "layer": 1,
+              "width": 4096,
+              "height": 4096
+            }
+          ]
+        },
+        {
+          "cid": "78f95467f35895b6d286480ee181fb04",
+          "kind": "VTTexture",
+          "bytes": 14011056,
+          "layers": [
+            {
+              "stack": 0,
+              "layer": 2,
+              "width": 4096,
+              "height": 4096
+            }
+          ]
+        }
+      ],
+      "binding": "retain-original-surface",
+      "mipPolicy": "retain-native-resource-graph-without-decoding",
+      "nativeSampling": "original atlas UV; native material and texture sampling settings unchanged"
+    },
+    {
+      "cid": "854586b4f5f1673ebb8ad8c9573a29c5",
+      "sha256": "bcc2018aeeef6a93860d71a751cad52f5558ffcf738cbfcda6f2d6e7d22cb6a5",
+      "template": 0,
+      "builtin": true,
+      "dependencies": [
+        {
+          "cid": "57eb33e0e5d658a7db0160b523446551",
+          "kind": "VTSurface",
+          "bytes": 541988,
+          "layers": [
+            {
+              "stack": 0,
+              "layer": 0,
+              "width": 512,
+              "height": 512
+            },
+            {
+              "stack": 0,
+              "layer": 1,
+              "width": 512,
+              "height": 512
+            },
+            {
+              "stack": 0,
+              "layer": 2,
+              "width": 512,
+              "height": 512
+            }
+          ]
+        }
+      ],
+      "binding": "retain-original-surface",
+      "mipPolicy": "retain-native-resource-graph-without-decoding",
+      "nativeSampling": "original atlas UV; native material and texture sampling settings unchanged"
+    },
+    {
+      "cid": "8f424eb10e5caa7edce9770e4350d542",
+      "sha256": "2d821cde8d3b99205eedeae22f74999f39f5ba60154c7514ae0a05fa84eb87c7",
+      "template": 17,
+      "builtin": true,
+      "dependencies": [
+        {
+          "cid": "d99de72b9a3e4442445ad6720119e4fc",
+          "kind": "Texture",
+          "bytes": 22369662,
+          "layers": [
+            {
+              "property": "_BaseColorMap",
+              "width": 4096,
+              "height": 4096
+            }
+          ]
+        },
+        {
+          "cid": "2ae97c5ed8cb4ef6561cba57795d0966",
+          "kind": "Texture",
+          "bytes": 22369662,
+          "layers": [
+            {
+              "property": "_MaskMap",
+              "width": 4096,
+              "height": 4096
+            }
+          ]
+        },
+        {
+          "cid": "dae791c517af749a9c6be7b4f422db9c",
+          "kind": "Texture",
+          "bytes": 22369662,
+          "layers": [
+            {
+              "property": "_NormalMap",
+              "width": 4096,
+              "height": 4096
+            }
+          ]
+        }
+      ],
+      "binding": "retain-original-surface",
+      "mipPolicy": "retain-native-resource-graph-without-decoding",
+      "nativeSampling": "original atlas UV; native material and texture sampling settings unchanged"
+    },
+    {
+      "cid": "97291ab7f7938fc35cc670b15f2bca36",
+      "sha256": "c93b794bd592145931c03b5e4b6e7c247d7d7174f87ef0d1c6d844bf979af341",
+      "template": 1,
+      "builtin": true,
+      "dependencies": [
+        {
+          "cid": "4cb754112888b8e94be8cae9ad700ac4",
+          "kind": "VTSurface",
+          "bytes": 34300,
+          "layers": [
+            {
+              "stack": 0,
+              "layer": 3,
+              "width": 4096,
+              "height": 4096
+            }
+          ]
+        },
+        {
+          "cid": "1011a4b81e3aa59dbb634eccabe35e1a",
+          "kind": "VTTexture",
+          "bytes": 12986422,
+          "layers": [
+            {
+              "stack": 0,
+              "layer": 0,
+              "width": 4096,
+              "height": 4096
+            }
+          ]
+        },
+        {
+          "cid": "d7e2b24ca26d5e626756dc54771aac16",
+          "kind": "VTTexture",
+          "bytes": 17607785,
+          "layers": [
+            {
+              "stack": 0,
+              "layer": 1,
+              "width": 4096,
+              "height": 4096
+            }
+          ]
+        },
+        {
+          "cid": "78f95467f35895b6d286480ee181fb04",
+          "kind": "VTTexture",
+          "bytes": 14011056,
+          "layers": [
+            {
+              "stack": 0,
+              "layer": 2,
+              "width": 4096,
+              "height": 4096
+            }
+          ]
+        }
+      ],
+      "binding": "retain-original-surface",
+      "mipPolicy": "retain-native-resource-graph-without-decoding",
+      "nativeSampling": "original atlas UV; native material and texture sampling settings unchanged"
+    },
+    {
+      "cid": "cac567d9af5ed26eeccb16fafbdced82",
+      "sha256": "682247b4b7e5499148515cd5c85ff9b5c35e4ccf9b85f9844751836574c7a076",
+      "template": 0,
+      "builtin": true,
+      "dependencies": [
+        {
+          "cid": "1011a4b81e3aa59dbb634eccabe35e1a",
+          "kind": "VTTexture",
+          "bytes": 12986422,
+          "layers": [
+            {
+              "stack": 0,
+              "layer": 0,
+              "width": 4096,
+              "height": 4096
+            }
+          ]
+        },
+        {
+          "cid": "d7e2b24ca26d5e626756dc54771aac16",
+          "kind": "VTTexture",
+          "bytes": 17607785,
+          "layers": [
+            {
+              "stack": 0,
+              "layer": 1,
+              "width": 4096,
+              "height": 4096
+            }
+          ]
+        },
+        {
+          "cid": "78f95467f35895b6d286480ee181fb04",
+          "kind": "VTTexture",
+          "bytes": 14011056,
+          "layers": [
+            {
+              "stack": 0,
+              "layer": 2,
+              "width": 4096,
+              "height": 4096
+            }
+          ]
+        }
+      ],
+      "binding": "retain-original-surface",
+      "mipPolicy": "retain-native-resource-graph-without-decoding",
+      "nativeSampling": "original atlas UV; native material and texture sampling settings unchanged"
+    }
+  ],
+  "textureResources": [
+    {
+      "cid": "1011a4b81e3aa59dbb634eccabe35e1a",
+      "archive": "D:\\Program Files (x86)\\Steam\\steamapps\\common\\Cities Skylines II\\Cities2_Data\\Content\\BridgesAndPorts\\VT.cok",
+      "entry": "DrawBridge01_BaseColor_010f42df245c243c5b08084103271c9c.VTTexture",
+      "bytes": 12986422,
+      "archiveCompressedBytes": 12986422,
+      "sha256": "8b3fde0544bf5a0234d4e1c5837959cbcd228db5564ede248bc60e9ede22412e",
+      "builtin": true
+    },
+    {
+      "cid": "2ae97c5ed8cb4ef6561cba57795d0966",
+      "archive": "D:\\Program Files (x86)\\Steam\\steamapps\\common\\Cities Skylines II\\Cities2_Data\\Content\\BridgesAndPorts\\Blob.cok",
+      "entry": "DrawBridge02BottomEdge350cm_MaskMap_e12aab8c9950ca6b97325033776d9aa9.Texture",
+      "bytes": 22369662,
+      "archiveCompressedBytes": 22369662,
+      "sha256": "878c211d8cac8b09b5e8a669bc942dfbcb30bd1d99828fc1ef7232ab3498cce2",
+      "builtin": true
+    },
+    {
+      "cid": "4cb754112888b8e94be8cae9ad700ac4",
+      "archive": "D:\\Program Files (x86)\\Steam\\steamapps\\common\\Cities Skylines II\\Cities2_Data\\Content\\BridgesAndPorts\\VT.cok",
+      "entry": "DrawBridge01_418e8e1321a6434c35ae95484367d5b0.VTSurface",
+      "bytes": 34300,
+      "archiveCompressedBytes": 34300,
+      "sha256": "6a676bbbf22268fa7e02bcab1c46e7fc117556eaac9165be6089f79f69b35850",
+      "builtin": true
+    },
+    {
+      "cid": "57eb33e0e5d658a7db0160b523446551",
+      "archive": "D:\\Program Files (x86)\\Steam\\steamapps\\common\\Cities Skylines II\\Cities2_Data\\Content\\BridgesAndPorts\\VT.cok",
+      "entry": "DrawBridge01NetPillarBase_LOD2_38b949a711d22bf71da9cf6fc758c59c.VTSurface",
+      "bytes": 541988,
+      "archiveCompressedBytes": 541988,
+      "sha256": "615e50367e78a7ca6cae3feb431427527eb7612beeb8f469b98c3eb13da63ae5",
+      "builtin": true
+    },
+    {
+      "cid": "78f95467f35895b6d286480ee181fb04",
+      "archive": "D:\\Program Files (x86)\\Steam\\steamapps\\common\\Cities Skylines II\\Cities2_Data\\Content\\BridgesAndPorts\\VT.cok",
+      "entry": "DrawBridge01_MaskMap_aa367187c21286a834afa72fb391838d.VTTexture",
+      "bytes": 14011056,
+      "archiveCompressedBytes": 14011056,
+      "sha256": "2751bac44513c95e2d472f6123f7321f93160404e4173381ec178de65c226f89",
+      "builtin": true
+    },
+    {
+      "cid": "b768ddeb8fb365d670fa09c33883c749",
+      "archive": "D:\\Program Files (x86)\\Steam\\steamapps\\common\\Cities Skylines II\\Cities2_Data\\Content\\BridgesAndPorts\\VT.cok",
+      "entry": "DrawBridge01NetPillarTop_LOD2_694bb91d68635ecabf76a00ea8e9ba60.VTSurface",
+      "bytes": 538684,
+      "archiveCompressedBytes": 538684,
+      "sha256": "3508a84dade83c2513011fa2bdc5c930bc3282ed680326f07a72adf9ffb2c511",
+      "builtin": true
+    },
+    {
+      "cid": "d7e2b24ca26d5e626756dc54771aac16",
+      "archive": "D:\\Program Files (x86)\\Steam\\steamapps\\common\\Cities Skylines II\\Cities2_Data\\Content\\BridgesAndPorts\\VT.cok",
+      "entry": "DrawBridge01_Normal_0fb6e642782f1c6db87b96fcc704f3c6.VTTexture",
+      "bytes": 17607785,
+      "archiveCompressedBytes": 17607785,
+      "sha256": "a3dfa2ab5b4b55a315da6456bda6a12fb98e7817f9059953bb1e222620fdb23f",
+      "builtin": true
+    },
+    {
+      "cid": "d99de72b9a3e4442445ad6720119e4fc",
+      "archive": "D:\\Program Files (x86)\\Steam\\steamapps\\common\\Cities Skylines II\\Cities2_Data\\Content\\BridgesAndPorts\\Blob.cok",
+      "entry": "DrawBridge02BottomEdge350cm_BaseColor_89f6f5b74c1a1c7b2554fd38de9a2f23.Texture",
+      "bytes": 22369662,
+      "archiveCompressedBytes": 22369662,
+      "sha256": "b3d55dd47168df48e117265736677e1b4cf883d248376a7aeb15940bd3d7da92",
+      "builtin": true
+    },
+    {
+      "cid": "d9c13cbe9e4f3b0dae58533b57e53d0f",
+      "archive": "D:\\Program Files (x86)\\Steam\\steamapps\\common\\Cities Skylines II\\Cities2_Data\\Content\\BridgesAndPorts\\VT.cok",
+      "entry": "DrawBridge01Pillar_LOD2_163167dd3ddafc08f5d86d1721018245.VTSurface",
+      "bytes": 387011,
+      "archiveCompressedBytes": 387011,
+      "sha256": "674d9e5192cbc7ea55ceb6c822dbe952b6b488226eb0c249d5bcd84e0dd76d2d",
+      "builtin": true
+    },
+    {
+      "cid": "dae791c517af749a9c6be7b4f422db9c",
+      "archive": "D:\\Program Files (x86)\\Steam\\steamapps\\common\\Cities Skylines II\\Cities2_Data\\Content\\BridgesAndPorts\\Blob.cok",
+      "entry": "DrawBridge02BottomEdge350cm_Normal_c7f1159dce2efc0f83dc43835ef913af.Texture",
+      "bytes": 22369662,
+      "archiveCompressedBytes": 22369662,
+      "sha256": "d1ae240b8c514e7137ddd7d0377d4ab7b5cfffb3fbbd29592feb461f9028d1f0",
+      "builtin": true
+    },
+    {
+      "cid": "e29cd31919744369fb34dc632f506ad4",
+      "archive": "D:\\Program Files (x86)\\Steam\\steamapps\\common\\Cities Skylines II\\Cities2_Data\\Content\\BridgesAndPorts\\VT.cok",
+      "entry": "DrawBridge01_LOD2_a6af09fceb3b967407f306ae7af478a8.VTSurface",
+      "bytes": 438801,
+      "archiveCompressedBytes": 438801,
+      "sha256": "57e0fc26fe6cf7d734ceb2a8c32d3ced03f2e181c0409764654d402bc1518415",
+      "builtin": true
+    },
+    {
+      "cid": "f5bca65be6d1b5080c7f9bec67301c80",
+      "archive": "D:\\Program Files (x86)\\Steam\\steamapps\\common\\Cities Skylines II\\Cities2_Data\\Content\\BridgesAndPorts\\VT.cok",
+      "entry": "DrawBridge01PillarBase_LOD2_99820a2b3f39368075a47570628bf0dc.VTSurface",
+      "bytes": 567035,
+      "archiveCompressedBytes": 567035,
+      "sha256": "4cc72da938a2b4c53a3392b8cafd2a355b1e74559b4cca2ef49e95efb7c453b9",
+      "builtin": true
+    }
+  ]
+}

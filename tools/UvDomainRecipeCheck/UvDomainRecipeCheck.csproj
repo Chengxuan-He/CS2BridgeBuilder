@@ -1,0 +1,8 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup><TargetFramework>net8.0</TargetFramework><OutputType>Exe</OutputType><ImplicitUsings>enable</ImplicitUsings><Nullable>enable</Nullable><ImportDirectoryBuildTargets>false</ImportDirectoryBuildTargets></PropertyGroup>
+  <ItemGroup>
+    <Reference Include="UnityEngine.CoreModule"><HintPath>$(GameManagedDir)/UnityEngine.CoreModule.dll</HintPath></Reference>
+    <Compile Include="../../src/BridgeBuilder/Bridges/HardcodedNumbers.cs" Link="HardcodedNumbers.cs" />
+    <Compile Include="../../src/BridgeBuilder/Bridges/Common/Movable/MovableUvDomains.cs" Link="MovableUvDomains.cs" />
+  </ItemGroup>
+</Project>

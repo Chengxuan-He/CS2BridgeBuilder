@@ -7,7 +7,6 @@ using Game.Prefabs;
 using Unity.Mathematics;
 
 namespace BridgeBuilder.Bridges;
-
 internal sealed class Lift01PillarSources : MovableSourceRenders
 {
     internal Lift01PillarSources(RenderPrefab nativeDefaultBase, ContentPrefab content)
@@ -16,117 +15,108 @@ internal sealed class Lift01PillarSources : MovableSourceRenders
         {
             var part0 = new[]
             {
-                Create("LiftBridge01NetPillarTop Mesh", "e9fd9a7784a80d2a83b7f7251912e017",
-                    new[] { "6cea3c92f68858af086f7811c19021b6" },
-                    new Bounds3(new float3(-7.4527745246887207f, 0.26592445373535156f, -13.708984375f), new float3(7.4527745246887207f, 7.3916110992431641f, 13.708984375f)),
-                    1989, 3228, 1, 677.6138916015625f),
-                Create("LiftBridge01NetPillarTop_LOD1 Mesh", "11b9e7ca7775a3405e27599e8c0cb924",
-                    new[] { "6cea3c92f68858af086f7811c19021b6" },
-                    new Bounds3(new float3(-7.4527745246887207f, 0.26592445373535156f, -13.708984375f), new float3(7.4527745246887207f, 7.3916110992431641f, 13.708984375f)),
-                    1204, 1932, 1, 656.45965576171875f),
-                Create("LiftBridge01NetPillarTop_LOD2 Mesh", "68991811c7d59e733bd4d936992af132",
-                    new[] { "16a52de087b6ece13df610d551958903" },
-                    new Bounds3(new float3(-7.4267487525939941f, 0.25156354904174805f, -13.688034057617188f), new float3(7.4259505271911621f, 7.3925175666809082f, 13.736564636230469f)),
-                    572, 900, 1, 874.9385986328125f),
+                Create("LiftBridge01NetPillarTop Mesh", "e9fd9a7784a80d2a83b7f7251912e017", new[] { "6cea3c92f68858af086f7811c19021b6" }, new Bounds3(new float3(-Numeric_Types_Lift01_Lift01PillarSources_cs.Values.F32[0], Numeric_Types_Lift01_Lift01PillarSources_cs.Values.F32[1], -Numeric_Types_Lift01_Lift01PillarSources_cs.Values.F32[2]), new float3(Numeric_Types_Lift01_Lift01PillarSources_cs.Values.F32[3], Numeric_Types_Lift01_Lift01PillarSources_cs.Values.F32[4], Numeric_Types_Lift01_Lift01PillarSources_cs.Values.F32[5])), Numeric_Types_Lift01_Lift01PillarSources_cs.Values.I32[0], Numeric_Types_Lift01_Lift01PillarSources_cs.Values.I32[1], Numeric_Types_Lift01_Lift01PillarSources_cs.Values.I32[2], Numeric_Types_Lift01_Lift01PillarSources_cs.Values.F32[6]),
+                Create("LiftBridge01NetPillarTop_LOD1 Mesh", "11b9e7ca7775a3405e27599e8c0cb924", new[] { "6cea3c92f68858af086f7811c19021b6" }, new Bounds3(new float3(-Numeric_Types_Lift01_Lift01PillarSources_cs.Values.F32[7], Numeric_Types_Lift01_Lift01PillarSources_cs.Values.F32[8], -Numeric_Types_Lift01_Lift01PillarSources_cs.Values.F32[9]), new float3(Numeric_Types_Lift01_Lift01PillarSources_cs.Values.F32[10], Numeric_Types_Lift01_Lift01PillarSources_cs.Values.F32[11], Numeric_Types_Lift01_Lift01PillarSources_cs.Values.F32[12])), Numeric_Types_Lift01_Lift01PillarSources_cs.Values.I32[3], Numeric_Types_Lift01_Lift01PillarSources_cs.Values.I32[4], Numeric_Types_Lift01_Lift01PillarSources_cs.Values.I32[5], Numeric_Types_Lift01_Lift01PillarSources_cs.Values.F32[13]),
+                Create("LiftBridge01NetPillarTop_LOD2 Mesh", "68991811c7d59e733bd4d936992af132", new[] { "16a52de087b6ece13df610d551958903" }, new Bounds3(new float3(-Numeric_Types_Lift01_Lift01PillarSources_cs.Values.F32[14], Numeric_Types_Lift01_Lift01PillarSources_cs.Values.F32[15], -Numeric_Types_Lift01_Lift01PillarSources_cs.Values.F32[16]), new float3(Numeric_Types_Lift01_Lift01PillarSources_cs.Values.F32[17], Numeric_Types_Lift01_Lift01PillarSources_cs.Values.F32[18], Numeric_Types_Lift01_Lift01PillarSources_cs.Values.F32[19])), Numeric_Types_Lift01_Lift01PillarSources_cs.Values.I32[6], Numeric_Types_Lift01_Lift01PillarSources_cs.Values.I32[7], Numeric_Types_Lift01_Lift01PillarSources_cs.Values.I32[8], Numeric_Types_Lift01_Lift01PillarSources_cs.Values.F32[20]),
             };
-            var lod0 = part0[0].AddComponent<LodProperties>();
-            lod0.m_Bias = 0f;
-            lod0.m_ShadowBias = 0f;
-            lod0.m_LodMeshes = new[] { part0[1], part0[2] };
-            var stack0 = part0[0].AddComponent<StackProperties>();
-            stack0.m_Direction = (StackDirection)2;
-            stack0.m_Order = (StackOrder)2;
-            stack0.m_StartOverlap = 4.5f;
-            stack0.m_EndOverlap = 0f;
+            var lod0 = part0[Numeric_Types_Lift01_Lift01PillarSources_cs.Values.I32[9]].AddComponent<LodProperties>();
+            lod0.m_Bias = Numeric_Types_Lift01_Lift01PillarSources_cs.Values.F32[21];
+            lod0.m_ShadowBias = Numeric_Types_Lift01_Lift01PillarSources_cs.Values.F32[22];
+            lod0.m_LodMeshes = new[]
+            {
+                part0[Numeric_Types_Lift01_Lift01PillarSources_cs.Values.I32[10]],
+                part0[Numeric_Types_Lift01_Lift01PillarSources_cs.Values.I32[11]]
+            };
+            var stack0 = part0[Numeric_Types_Lift01_Lift01PillarSources_cs.Values.I32[12]].AddComponent<StackProperties>();
+            stack0.m_Direction = (StackDirection)Numeric_Types_Lift01_Lift01PillarSources_cs.Values.I32[13];
+            stack0.m_Order = (StackOrder)Numeric_Types_Lift01_Lift01PillarSources_cs.Values.I32[14];
+            stack0.m_StartOverlap = Numeric_Types_Lift01_Lift01PillarSources_cs.Values.F32[23];
+            stack0.m_EndOverlap = Numeric_Types_Lift01_Lift01PillarSources_cs.Values.F32[24];
             stack0.m_ForbidScaling = true;
-            part0[0].AddComponent<ContentPrerequisite>().m_ContentPrerequisite = content;
-            part0[1].AddComponent<ContentPrerequisite>().m_ContentPrerequisite = content;
-            part0[2].AddComponent<ContentPrerequisite>().m_ContentPrerequisite = content;
+            part0[Numeric_Types_Lift01_Lift01PillarSources_cs.Values.I32[15]].AddComponent<ContentPrerequisite>().m_ContentPrerequisite = content;
+            part0[Numeric_Types_Lift01_Lift01PillarSources_cs.Values.I32[16]].AddComponent<ContentPrerequisite>().m_ContentPrerequisite = content;
+            part0[Numeric_Types_Lift01_Lift01PillarSources_cs.Values.I32[17]].AddComponent<ContentPrerequisite>().m_ContentPrerequisite = content;
             var part1 = new[]
             {
-                Create("LiftBridge01NetPillar Mesh", "0c83946dd6bfaf6b65f767d9a376981f",
-                    new[] { "41651e4b9109d39a013df9dbbef9ade4" },
-                    new Bounds3(new float3(-7.2849216461181641f, -5.0000009536743164f, -7.4820175170898438f), new float3(7.2849216461181641f, 5.0000019073486328f, 7.4820175170898438f)),
-                    192, 432, 1, 592.91796875f),
-                Create("LiftBridge01NetPillar_LOD1 Mesh", "f326c45e1be8deac3171bc43124a3f48",
-                    new[] { "41651e4b9109d39a013df9dbbef9ade4" },
-                    new Bounds3(new float3(-7.2849216461181641f, -5.0000009536743164f, -7.4820175170898438f), new float3(7.2849216461181641f, 5.0000019073486328f, 7.4820175170898438f)),
-                    205, 258, 1, 588.9091796875f),
-                Create("LiftBridge01NetPillar_LOD2 Mesh", "ade82e37dbd2f9ec745543770ba938ea",
-                    new[] { "8fc915f9441286191fef80f0b4e61fbd" },
-                    new Bounds3(new float3(-7.2631921768188477f, -5.0524945259094238f, -7.4157590866088867f), new float3(7.2706098556518555f, 5.0179390907287598f, 7.4278793334960938f)),
-                    126, 300, 1, 1155.139404296875f),
+                Create("LiftBridge01NetPillar Mesh", "0c83946dd6bfaf6b65f767d9a376981f", new[] { "41651e4b9109d39a013df9dbbef9ade4" }, new Bounds3(new float3(-Numeric_Types_Lift01_Lift01PillarSources_cs.Values.F32[25], -Numeric_Types_Lift01_Lift01PillarSources_cs.Values.F32[26], -Numeric_Types_Lift01_Lift01PillarSources_cs.Values.F32[27]), new float3(Numeric_Types_Lift01_Lift01PillarSources_cs.Values.F32[28], Numeric_Types_Lift01_Lift01PillarSources_cs.Values.F32[29], Numeric_Types_Lift01_Lift01PillarSources_cs.Values.F32[30])), Numeric_Types_Lift01_Lift01PillarSources_cs.Values.I32[18], Numeric_Types_Lift01_Lift01PillarSources_cs.Values.I32[19], Numeric_Types_Lift01_Lift01PillarSources_cs.Values.I32[20], Numeric_Types_Lift01_Lift01PillarSources_cs.Values.F32[31]),
+                Create("LiftBridge01NetPillar_LOD1 Mesh", "f326c45e1be8deac3171bc43124a3f48", new[] { "41651e4b9109d39a013df9dbbef9ade4" }, new Bounds3(new float3(-Numeric_Types_Lift01_Lift01PillarSources_cs.Values.F32[32], -Numeric_Types_Lift01_Lift01PillarSources_cs.Values.F32[33], -Numeric_Types_Lift01_Lift01PillarSources_cs.Values.F32[34]), new float3(Numeric_Types_Lift01_Lift01PillarSources_cs.Values.F32[35], Numeric_Types_Lift01_Lift01PillarSources_cs.Values.F32[36], Numeric_Types_Lift01_Lift01PillarSources_cs.Values.F32[37])), Numeric_Types_Lift01_Lift01PillarSources_cs.Values.I32[21], Numeric_Types_Lift01_Lift01PillarSources_cs.Values.I32[22], Numeric_Types_Lift01_Lift01PillarSources_cs.Values.I32[23], Numeric_Types_Lift01_Lift01PillarSources_cs.Values.F32[38]),
+                Create("LiftBridge01NetPillar_LOD2 Mesh", "ade82e37dbd2f9ec745543770ba938ea", new[] { "8fc915f9441286191fef80f0b4e61fbd" }, new Bounds3(new float3(-Numeric_Types_Lift01_Lift01PillarSources_cs.Values.F32[39], -Numeric_Types_Lift01_Lift01PillarSources_cs.Values.F32[40], -Numeric_Types_Lift01_Lift01PillarSources_cs.Values.F32[41]), new float3(Numeric_Types_Lift01_Lift01PillarSources_cs.Values.F32[42], Numeric_Types_Lift01_Lift01PillarSources_cs.Values.F32[43], Numeric_Types_Lift01_Lift01PillarSources_cs.Values.F32[44])), Numeric_Types_Lift01_Lift01PillarSources_cs.Values.I32[24], Numeric_Types_Lift01_Lift01PillarSources_cs.Values.I32[25], Numeric_Types_Lift01_Lift01PillarSources_cs.Values.I32[26], Numeric_Types_Lift01_Lift01PillarSources_cs.Values.F32[45]),
             };
-            var lod1 = part1[0].AddComponent<LodProperties>();
-            lod1.m_Bias = 0f;
-            lod1.m_ShadowBias = 0f;
-            lod1.m_LodMeshes = new[] { part1[1], part1[2] };
-            var stack1 = part1[0].AddComponent<StackProperties>();
-            stack1.m_Direction = (StackDirection)2;
-            stack1.m_Order = (StackOrder)1;
-            stack1.m_StartOverlap = 0f;
-            stack1.m_EndOverlap = 0f;
+            var lod1 = part1[Numeric_Types_Lift01_Lift01PillarSources_cs.Values.I32[27]].AddComponent<LodProperties>();
+            lod1.m_Bias = Numeric_Types_Lift01_Lift01PillarSources_cs.Values.F32[46];
+            lod1.m_ShadowBias = Numeric_Types_Lift01_Lift01PillarSources_cs.Values.F32[47];
+            lod1.m_LodMeshes = new[]
+            {
+                part1[Numeric_Types_Lift01_Lift01PillarSources_cs.Values.I32[28]],
+                part1[Numeric_Types_Lift01_Lift01PillarSources_cs.Values.I32[29]]
+            };
+            var stack1 = part1[Numeric_Types_Lift01_Lift01PillarSources_cs.Values.I32[30]].AddComponent<StackProperties>();
+            stack1.m_Direction = (StackDirection)Numeric_Types_Lift01_Lift01PillarSources_cs.Values.I32[31];
+            stack1.m_Order = (StackOrder)Numeric_Types_Lift01_Lift01PillarSources_cs.Values.I32[32];
+            stack1.m_StartOverlap = Numeric_Types_Lift01_Lift01PillarSources_cs.Values.F32[48];
+            stack1.m_EndOverlap = Numeric_Types_Lift01_Lift01PillarSources_cs.Values.F32[49];
             stack1.m_ForbidScaling = false;
-            part1[0].AddComponent<ContentPrerequisite>().m_ContentPrerequisite = content;
-            part1[1].AddComponent<ContentPrerequisite>().m_ContentPrerequisite = content;
-            part1[2].AddComponent<ContentPrerequisite>().m_ContentPrerequisite = content;
+            part1[Numeric_Types_Lift01_Lift01PillarSources_cs.Values.I32[33]].AddComponent<ContentPrerequisite>().m_ContentPrerequisite = content;
+            part1[Numeric_Types_Lift01_Lift01PillarSources_cs.Values.I32[34]].AddComponent<ContentPrerequisite>().m_ContentPrerequisite = content;
+            part1[Numeric_Types_Lift01_Lift01PillarSources_cs.Values.I32[35]].AddComponent<ContentPrerequisite>().m_ContentPrerequisite = content;
             var part2 = new[]
             {
-                Create("LiftBridge01NetPillarBase Mesh", "ce897e52eed783ec8952ef0623e532be",
-                    new[] { "010aece9917bb4a19615cbb2c3f77ede" },
-                    new Bounds3(new float3(-7.6601200103759766f, -1.0051209926605225f, -7.8572006225585938f), new float3(7.6601200103759766f, 4.9158382415771484f, 7.8572006225585938f)),
-                    144, 336, 1, 369.88455200195312f),
-                Create("LiftBridge01NetPillarBase_LOD1 Mesh", "651a21997bf54b31fc05aeda877a1327",
-                    new[] { "010aece9917bb4a19615cbb2c3f77ede" },
-                    new Bounds3(new float3(-7.6601200103759766f, -1.0051209926605225f, -7.8572006225585938f), new float3(7.6601200103759766f, 4.9158382415771484f, 7.8572006225585938f)),
-                    152, 198, 1, 365.88702392578125f),
-                Create("LiftBridge01NetPillarBase_LOD2 Mesh", "9679d40fa050f6c94a9979d8b02d6c37",
-                    new[] { "c27bc9280c2e8730d4be9b153ef75180" },
-                    new Bounds3(new float3(-7.635009765625f, -0.99375534057617188f, -7.8571624755859375f), new float3(7.6601200103759766f, 4.9445371627807617f, 7.857177734375f)),
-                    136, 300, 1, 714.4964599609375f),
+                Create("LiftBridge01NetPillarBase Mesh", "ce897e52eed783ec8952ef0623e532be", new[] { "010aece9917bb4a19615cbb2c3f77ede" }, new Bounds3(new float3(-Numeric_Types_Lift01_Lift01PillarSources_cs.Values.F32[50], -Numeric_Types_Lift01_Lift01PillarSources_cs.Values.F32[51], -Numeric_Types_Lift01_Lift01PillarSources_cs.Values.F32[52]), new float3(Numeric_Types_Lift01_Lift01PillarSources_cs.Values.F32[53], Numeric_Types_Lift01_Lift01PillarSources_cs.Values.F32[54], Numeric_Types_Lift01_Lift01PillarSources_cs.Values.F32[55])), Numeric_Types_Lift01_Lift01PillarSources_cs.Values.I32[36], Numeric_Types_Lift01_Lift01PillarSources_cs.Values.I32[37], Numeric_Types_Lift01_Lift01PillarSources_cs.Values.I32[38], Numeric_Types_Lift01_Lift01PillarSources_cs.Values.F32[56]),
+                Create("LiftBridge01NetPillarBase_LOD1 Mesh", "651a21997bf54b31fc05aeda877a1327", new[] { "010aece9917bb4a19615cbb2c3f77ede" }, new Bounds3(new float3(-Numeric_Types_Lift01_Lift01PillarSources_cs.Values.F32[57], -Numeric_Types_Lift01_Lift01PillarSources_cs.Values.F32[58], -Numeric_Types_Lift01_Lift01PillarSources_cs.Values.F32[59]), new float3(Numeric_Types_Lift01_Lift01PillarSources_cs.Values.F32[60], Numeric_Types_Lift01_Lift01PillarSources_cs.Values.F32[61], Numeric_Types_Lift01_Lift01PillarSources_cs.Values.F32[62])), Numeric_Types_Lift01_Lift01PillarSources_cs.Values.I32[39], Numeric_Types_Lift01_Lift01PillarSources_cs.Values.I32[40], Numeric_Types_Lift01_Lift01PillarSources_cs.Values.I32[41], Numeric_Types_Lift01_Lift01PillarSources_cs.Values.F32[63]),
+                Create("LiftBridge01NetPillarBase_LOD2 Mesh", "9679d40fa050f6c94a9979d8b02d6c37", new[] { "c27bc9280c2e8730d4be9b153ef75180" }, new Bounds3(new float3(-Numeric_Types_Lift01_Lift01PillarSources_cs.Values.F32[64], -Numeric_Types_Lift01_Lift01PillarSources_cs.Values.F32[65], -Numeric_Types_Lift01_Lift01PillarSources_cs.Values.F32[66]), new float3(Numeric_Types_Lift01_Lift01PillarSources_cs.Values.F32[67], Numeric_Types_Lift01_Lift01PillarSources_cs.Values.F32[68], Numeric_Types_Lift01_Lift01PillarSources_cs.Values.F32[69])), Numeric_Types_Lift01_Lift01PillarSources_cs.Values.I32[42], Numeric_Types_Lift01_Lift01PillarSources_cs.Values.I32[43], Numeric_Types_Lift01_Lift01PillarSources_cs.Values.I32[44], Numeric_Types_Lift01_Lift01PillarSources_cs.Values.F32[70]),
             };
-            var lod2 = part2[0].AddComponent<LodProperties>();
-            lod2.m_Bias = 0f;
-            lod2.m_ShadowBias = 0f;
-            lod2.m_LodMeshes = new[] { part2[1], part2[2] };
-            var stack2 = part2[0].AddComponent<StackProperties>();
-            stack2.m_Direction = (StackDirection)2;
-            stack2.m_Order = (StackOrder)0;
-            stack2.m_StartOverlap = 0f;
-            stack2.m_EndOverlap = 0f;
+            var lod2 = part2[Numeric_Types_Lift01_Lift01PillarSources_cs.Values.I32[45]].AddComponent<LodProperties>();
+            lod2.m_Bias = Numeric_Types_Lift01_Lift01PillarSources_cs.Values.F32[71];
+            lod2.m_ShadowBias = Numeric_Types_Lift01_Lift01PillarSources_cs.Values.F32[72];
+            lod2.m_LodMeshes = new[]
+            {
+                part2[Numeric_Types_Lift01_Lift01PillarSources_cs.Values.I32[46]],
+                part2[Numeric_Types_Lift01_Lift01PillarSources_cs.Values.I32[47]]
+            };
+            var stack2 = part2[Numeric_Types_Lift01_Lift01PillarSources_cs.Values.I32[48]].AddComponent<StackProperties>();
+            stack2.m_Direction = (StackDirection)Numeric_Types_Lift01_Lift01PillarSources_cs.Values.I32[49];
+            stack2.m_Order = (StackOrder)Numeric_Types_Lift01_Lift01PillarSources_cs.Values.I32[50];
+            stack2.m_StartOverlap = Numeric_Types_Lift01_Lift01PillarSources_cs.Values.F32[73];
+            stack2.m_EndOverlap = Numeric_Types_Lift01_Lift01PillarSources_cs.Values.F32[74];
             stack2.m_ForbidScaling = false;
-            var foundation = part2[0].AddComponent<BaseProperties>();
+            var foundation = part2[Numeric_Types_Lift01_Lift01PillarSources_cs.Values.I32[51]].AddComponent<BaseProperties>();
             foundation.m_BaseType = nativeDefaultBase;
             foundation.m_UseMinBounds = true;
-            part2[0].AddComponent<ContentPrerequisite>().m_ContentPrerequisite = content;
-            part2[1].AddComponent<ContentPrerequisite>().m_ContentPrerequisite = content;
-            part2[2].AddComponent<ContentPrerequisite>().m_ContentPrerequisite = content;
-            Roots = new[] { part0[0], part1[0], part2[0] };
+            part2[Numeric_Types_Lift01_Lift01PillarSources_cs.Values.I32[52]].AddComponent<ContentPrerequisite>().m_ContentPrerequisite = content;
+            part2[Numeric_Types_Lift01_Lift01PillarSources_cs.Values.I32[53]].AddComponent<ContentPrerequisite>().m_ContentPrerequisite = content;
+            part2[Numeric_Types_Lift01_Lift01PillarSources_cs.Values.I32[54]].AddComponent<ContentPrerequisite>().m_ContentPrerequisite = content;
+            Roots = new[]
+            {
+                part0[Numeric_Types_Lift01_Lift01PillarSources_cs.Values.I32[55]],
+                part1[Numeric_Types_Lift01_Lift01PillarSources_cs.Values.I32[56]],
+                part2[Numeric_Types_Lift01_Lift01PillarSources_cs.Values.I32[57]]
+            };
         }
-        catch { Dispose(); throw; }
+        catch
+        {
+            Dispose();
+            throw;
+        }
     }
 
     // Inputs here are generated, factory-owned render graphs, not the temporary source roots.
-    internal static StaticObjectPrefab CreateObject(TowerFactory factory, string name,
-        RenderPrefab top, RenderPrefab column, RenderPrefab footing, ContentPrefab content)
-        => factory.CreateMovableObject(name, false, new[]
-        {
-            new ObjectMeshInfo { m_Mesh = top, m_Position = float3.zero,
-                m_Rotation = quaternion.identity, m_RequireState = 0 },
-            new ObjectMeshInfo { m_Mesh = column, m_Position = float3.zero,
-                m_Rotation = quaternion.identity, m_RequireState = 0 },
-            new ObjectMeshInfo { m_Mesh = footing, m_Position = float3.zero,
-                m_Rotation = quaternion.identity, m_RequireState = 0 },
-        }, Array.Empty<ObjectSubObjectInfo>(), target =>
-        {
-            var pillar = target.AddComponent<PillarObject>();
-            pillar.m_Type = (PillarType)2;
-            pillar.m_AnchorOffset = 0f;
-            pillar.m_VerticalPillarOffsetRange = new Bounds1(-1f, 1f);
-            var standing = target.AddComponent<StandingObject>();
-            standing.m_LegSize = new float3(15f, 0.5f, 15f);
-            standing.m_LegGap = new float2(0f, 0f);
-            standing.m_CircularLeg = false;
-            target.AddComponent<ContentPrerequisite>().m_ContentPrerequisite = content;
-        });
+    internal static StaticObjectPrefab CreateObject(TowerFactory factory, string name, RenderPrefab top, RenderPrefab column, RenderPrefab footing, ContentPrefab content) => factory.CreateMovableObject(name, false, new[] { new ObjectMeshInfo { m_Mesh = top, m_Position = float3.zero, m_Rotation = quaternion.identity, m_RequireState = (Game.Objects.ObjectState)(Numeric_Types_Lift01_Lift01PillarSources_cs.Values.I32[58]) }, new ObjectMeshInfo { m_Mesh = column, m_Position = float3.zero, m_Rotation = quaternion.identity, m_RequireState = (Game.Objects.ObjectState)(Numeric_Types_Lift01_Lift01PillarSources_cs.Values.I32[59]) }, new ObjectMeshInfo { m_Mesh = footing, m_Position = float3.zero, m_Rotation = quaternion.identity, m_RequireState = (Game.Objects.ObjectState)(Numeric_Types_Lift01_Lift01PillarSources_cs.Values.I32[60]) }, }, Array.Empty<ObjectSubObjectInfo>(), target =>
+    {
+        var pillar = target.AddComponent<PillarObject>();
+        pillar.m_Type = (PillarType)Numeric_Types_Lift01_Lift01PillarSources_cs.Values.I32[61];
+        pillar.m_AnchorOffset = Numeric_Types_Lift01_Lift01PillarSources_cs.Values.F32[75];
+        pillar.m_VerticalPillarOffsetRange = new Bounds1(-Numeric_Types_Lift01_Lift01PillarSources_cs.Values.F32[76], Numeric_Types_Lift01_Lift01PillarSources_cs.Values.F32[77]);
+        var standing = target.AddComponent<StandingObject>();
+        standing.m_LegSize = new float3(Numeric_Types_Lift01_Lift01PillarSources_cs.Values.F32[78], Numeric_Types_Lift01_Lift01PillarSources_cs.Values.F32[79], Numeric_Types_Lift01_Lift01PillarSources_cs.Values.F32[80]);
+        standing.m_LegGap = new float2(Numeric_Types_Lift01_Lift01PillarSources_cs.Values.F32[81], Numeric_Types_Lift01_Lift01PillarSources_cs.Values.F32[82]);
+        standing.m_CircularLeg = false;
+        target.AddComponent<ContentPrerequisite>().m_ContentPrerequisite = content;
+    });
+}
+
+// Embedded numerical arrays: Types_Lift01_Lift01PillarSources_cs
+internal static class Numeric_Types_Lift01_Lift01PillarSources_cs
+{
+    static Numeric_Types_Lift01_Lift01PillarSources_cs() {}
+    internal static readonly HardcodedNumbers Values = HardcodedNumbers.Load("Types_Lift01_Lift01PillarSources_cs");
 }

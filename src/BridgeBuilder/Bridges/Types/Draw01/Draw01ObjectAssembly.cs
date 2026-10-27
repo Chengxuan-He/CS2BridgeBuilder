@@ -6,23 +6,16 @@ using Game.Prefabs;
 using UnityEngine;
 
 namespace BridgeBuilder.Bridges;
-
 internal static class Draw01ObjectAssembly
 {
-    internal static StaticObjectPrefab Create(TowerFactory factory, string owner, string name,
-        RenderPrefab mechanism, RenderPrefab column, RenderPrefab footing, ContentPrefab content,
-        Func<string, ObjectPrefab> resolveOriginal, float halfWidthDelta,
-        Draw01ClosedRoad road)
+    internal static StaticObjectPrefab Create(TowerFactory factory, string owner, string name, RenderPrefab mechanism, RenderPrefab column, RenderPrefab footing, ContentPrefab content, Func<string, ObjectPrefab> resolveOriginal, float halfWidthDelta, Draw01ClosedRoad road)
     {
-        if (mechanism == null || column == null || footing == null || content == null ||
-            !float.IsFinite(halfWidthDelta))
+        if (mechanism == null || column == null || footing == null || content == null || !float.IsFinite(halfWidthDelta))
             throw new ArgumentException("Draw01 requires three prepared render graphs, native content and a finite width change.");
-
         // Resolve once from the same live sampling context that supplied the road
         // geometry. Keep native selection order and each winning producer's identity.
-        var roadObjects = Draw01RoadLights.Place(road.Objects(), road.RoadToObject);
+        var roadObjects = Draw01RoadLights.Place(road.Objects(), road.RoadToObject, halfWidthDelta);
         var attachmentPartitions = Draw01RoadPartitions.ForObjects(roadObjects, halfWidthDelta);
-
         // The four authored streetlights are road furniture. The selected-road producer
         // supplies their replacements in its closed-road frame. Binding must wait
         // until the final root exists because native lamp effects belong to it.
@@ -38,25 +31,25 @@ internal static class Draw01ObjectAssembly
             // Their six lights and two vents follow that same rigid displacement.
             var position = item.m_Position;
             position.x += halfWidthDelta;
-            attachments.Add(new ObjectSubObjectInfo
-            {
-                m_Object = item.m_Object, m_Position = position, m_Rotation = item.m_Rotation,
-                m_ParentMesh = item.m_ParentMesh, m_GroupIndex = item.m_GroupIndex,
-                m_Probability = item.m_Probability
-            });
+            attachments.Add(new ObjectSubObjectInfo { m_Object = item.m_Object, m_Position = position, m_Rotation = item.m_Rotation, m_ParentMesh = item.m_ParentMesh, m_GroupIndex = item.m_GroupIndex, m_Probability = item.m_Probability });
         }
-        var result = factory.CreateMovableObject(name, false,
-            Draw01MechanismData.Meshes(new[] { mechanism, column, footing }), attachments,
-            target =>
-            {
-                Draw01MechanismData.ApplyComponents(target, content);
-                // StandingObject uses the complete support span; preserve its native Y/Z
-                // extents, longitudinal gap, movement parameters and network node offset.
-                target.GetComponent<StandingObject>().m_LegSize.x += halfWidthDelta * 2f;
-            });
+
+        var result = factory.CreateMovableObject(name, false, Draw01MechanismData.Meshes(new[] { mechanism, column, footing }), attachments, target =>
+        {
+            Draw01MechanismData.ApplyComponents(target, content);
+            // StandingObject uses the complete support span; preserve its native Y/Z
+            // extents, longitudinal gap, movement parameters and network node offset.
+            target.GetComponent<StandingObject>().m_LegSize.x += halfWidthDelta * Numeric_Types_Draw01_Draw01ObjectAssembly_cs.Values.F32[0];
+        });
         factory.AttachMovableRoadObjects(result, roadObjects.Placements, road.RoadToObject, attachmentPartitions);
-        factory.AttachMovablePaint(result, road.Road.LaneGeometry.Decals, road.RoadToObject, Draw01RoadPartitions.Carriageway,
-            MovableRoadGeometry.InFrame(road.Road.Triangles, road.RoadToObject));
+        factory.AttachMovablePaint(result, road.Road.LaneGeometry.Decals, road.RoadToObject, Draw01RoadPartitions.Carriageway, MovableRoadGeometry.InFrame(road.Road.Triangles, road.RoadToObject));
         return result;
     }
+}
+
+// Embedded numerical arrays: Types_Draw01_Draw01ObjectAssembly_cs
+internal static class Numeric_Types_Draw01_Draw01ObjectAssembly_cs
+{
+    static Numeric_Types_Draw01_Draw01ObjectAssembly_cs() {}
+    internal static readonly HardcodedNumbers Values = HardcodedNumbers.Load("Types_Draw01_Draw01ObjectAssembly_cs");
 }

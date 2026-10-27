@@ -3691,11 +3691,11 @@ internal static class TowerGenerationTests
         check("[suspension styles] suspension sheets inherit one full-detail affine span at every LOD",
             SuspensionGeometry.TryGetContinuousSpan(
                 "Suspension01", "SuspensionBridge01EndNet Mesh", out var singleFull)
-                && SuspensionGeometry.TryGetContinuousSpan(
+                & SuspensionGeometry.TryGetContinuousSpan(
                     "Suspension01", "SuspensionBridge01EndNet_LOD2 Mesh", out var singleLod)
-                && SuspensionGeometry.TryGetContinuousSpan(
+                & SuspensionGeometry.TryGetContinuousSpan(
                     "Suspension02", "SuspensionBridge02Net Mesh", out var doubleFull)
-                && SuspensionGeometry.TryGetContinuousSpan(
+                & SuspensionGeometry.TryGetContinuousSpan(
                     "Suspension02", "SuspensionBridge02Net_LOD2 Mesh", out var doubleLod)
                 && BitConverter.SingleToInt32Bits(singleFull) == BitConverter.SingleToInt32Bits(singleLod)
                 && BitConverter.SingleToInt32Bits(doubleFull) == BitConverter.SingleToInt32Bits(doubleLod),
@@ -3707,10 +3707,12 @@ internal static class TowerGenerationTests
                     "Suspension02", "SuspensionBridge02NetPillarBase_LOD2 Mesh")
                 && !SuspensionGeometry.IsRigidSidePart(
                     "Suspension02", "SuspensionBridge02NetPylonTop_LOD2 Mesh"), null);
-        check("[aggregate] only ExtradosedBridge01 gives its carried deck the bridge name pool",
-            BridgeStyleDefinitions.CarriedDeckUsesBridgeAggregate("Extradosed01")
-                && !BridgeStyleDefinitions.CarriedDeckUsesBridgeAggregate("Extradosed02")
-                && !BridgeStyleDefinitions.CarriedDeckUsesBridgeAggregate("Suspension02"), null);
+        check("[aggregate] recorded carried decks preserve their bridge name pool",
+            BridgeStyleDefinitions.CarriedDeckUsesBridgeAggregate("Extradosed01", true)
+                && !BridgeStyleDefinitions.CarriedDeckUsesBridgeAggregate("Extradosed02", true)
+                && !BridgeStyleDefinitions.CarriedDeckUsesBridgeAggregate("Suspension02", true)
+                && BridgeStyleDefinitions.CarriedDeckUsesBridgeAggregate("GoldenGateDouble", true)
+                && !BridgeStyleDefinitions.CarriedDeckUsesBridgeAggregate("GoldenGateDouble", false), null);
     }
 
     /// <summary>

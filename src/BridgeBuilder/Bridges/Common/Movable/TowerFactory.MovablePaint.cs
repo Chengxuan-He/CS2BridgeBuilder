@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.IO;
 using Colossal.AssetPipeline;
 using Colossal.AssetPipeline.Importers;
 using Colossal.IO.AssetDatabase;
@@ -119,7 +118,8 @@ internal sealed partial class TowerFactory
         var assets = new List<AssetData>();
         try
         {
-            var surface = CreateSkinnedPaintSurface(mechanism.name, assets);
+            var surface = BridgeBuilder.Runtime.BridgePreparedMaterials.Paint(
+                _styleId ?? throw new InvalidOperationException("Movable paint requires a bridge style."));
             if(!MovableRoadModel.TryBuild(mechanism.name+" Skinned Paint",triangles,1,
                 skeleton.m_Bones.Length,out var model,out var error))throw new InvalidOperationException(error);
             using(model)
@@ -164,111 +164,4 @@ internal sealed partial class TowerFactory
         }
     }
 
-    private SurfaceAsset CreateSkinnedPaintSurface(string owner,List<AssetData> assets)
-    {
-        if(!AssetDatabase.global.TryGetAsset(Colossal.Hash128.Parse("4b5500b1b5c270890d99149f7f62e51a"),out SurfaceAsset source))
-            throw new InvalidOperationException("Native paint source is unavailable.");
-        source.LoadProperties(useVT:true);
-        try
-        {
-            var database=_previewGeometry?.NativeAssets??AssetDatabase.user;
-            // A VT surface's original Texture CID is provenance, not necessarily a
-            // shipped asset. Persist pixels from the actual native VT backing data.
-            var color=database.AddAsset<Colossal.IO.AssetDatabase.TextureAsset>(BridgeBuilder.Runtime.BridgePrefabPersistence.ResourcePath(owner+" Skinned Paint Color", "Appearance"));
-            assets.Add(color);
-            var pixels=ReadNativePaintColor(source);
-            try { color.SetData(pixels);color.Save(compress:true);color.Unload(); }
-            finally { UnityEngine.Object.Destroy(pixels); }
-            // Object Default supports procedural skinning; DefaultDecal does not.
-            using var data=new Surface(owner+" Skinned Paint Surface","Default");
-            var surface=database.AddAsset(BridgeBuilder.Runtime.BridgePrefabPersistence.ResourcePath(data.name, "Appearance"),data);
-            assets.Add(surface);
-            var control=database.AddAsset<Colossal.IO.AssetDatabase.TextureAsset>(BridgeBuilder.Runtime.BridgePrefabPersistence.ResourcePath(owner+" Skinned Paint Control", "Appearance"));
-            assets.Add(control);
-            var zero=new Texture2D(1,1,TextureFormat.RGBA32,false,true);
-            try { zero.SetPixel(0,0,Color.clear);control.SetData(zero);control.Save(compress:true);control.Unload(); }
-            finally { UnityEngine.Object.Destroy(zero); }
-            surface.UpdateTextures(new Dictionary<string,Colossal.IO.AssetDatabase.TextureAsset> {
-                ["_BaseColorMap"]=color,["_ControlMask"]=control });
-            surface.UpdateKeywords(new HashSet<string>(surface.keywords){"_TANGENTSPACE_OCTO","_DISABLE_DECALS"});
-            // One-sided opaque paint cannot project onto the bridge underside.
-            surface.UpdateFloats(new Dictionary<string,float> { ["_SupportDecals"]=0f,
-                ["_Snow"]=0f,["_Metallic"]=0f,["_Smoothness"]=0.35f,
-                ["_DoubleSidedEnable"]=0f,["_CullMode"]=2f,["_CullModeForward"]=2f });
-            if(!surface.Save(mipBias:0,force:true,saveTextures:false,vt:false))
-                throw new InvalidOperationException("Could not persist native skinned marking material.");
-            _previewGeometry?.RetainSurfaceProperties(surface);
-            surface.UnloadProperties();
-            return surface;
-        }
-        finally { source.UnloadProperties(); }
-    }
-
-    private static Texture2D ReadNativePaintColor(SurfaceAsset source)
-    {
-        var template=AssetDatabase.global.resources.materialLibrary.GetMaterial(source.materialTemplateHash);
-        var material=new Material(template);
-        var decoded=new HashSet<Texture>();
-        VTTextureAsset? acquired=null;
-        RenderTexture? target=null;
-        Texture2D? result=null;
-        var previous=RenderTexture.active;
-        var previousSrgbWrite=GL.sRGBWrite;
-        try
-        {
-            Texture texture;
-            if(source.isVTMaterial)
-            {
-                var description=AssetDatabase.global.resources.materialLibrary.GetMaterialDescription(source.materialTemplateHash);
-                using var handler=source.hasVTSurfaceAsset?new VTSurfaceDataHandler():null;
-                if(handler!=null)
-                {
-                    try
-                    {
-                        using var reader=new BinaryReader(source.vtSurfaceAsset.GetReadStream());
-                        handler.ReadHeader(reader);handler.FillDebugMaterial(reader,material,description);
-                    }
-                    finally
-                    {
-                        foreach(var property in material.GetTexturePropertyNames())
-                            if(material.GetTexture(property) is Texture2D value && value!=template.GetTexture(property))decoded.Add(value);
-                    }
-                }
-                var stack=description.GetStackConfigIndex("_BaseColorMap");
-                if(stack<0)throw new InvalidOperationException("Native paint has no color VT stack.");
-                var layer=Array.IndexOf(description.m_Stacks[stack].m_PropertyNames,"_BaseColorMap");
-                if(layer<0)throw new InvalidOperationException("Native paint color VT layer is missing.");
-                if(handler!=null && handler.HandledByVTSurfaceData(stack,layer))texture=material.GetTexture("_BaseColorMap");
-                else
-                {
-                    var cid=source.preProcessedTextureGuids.ToArray()[stack*4+layer];
-                    if(!source.database.TryGetAsset(cid,out VTTextureAsset asset) && !AssetDatabase.global.TryGetAsset(cid,out asset))
-                        throw new InvalidOperationException($"Native paint preprocessed color texture is missing: {cid}.");
-                    if(asset.state!=LoadState.Full && asset.state!=LoadState.Object)acquired=asset;
-                    texture=asset.Load();
-                }
-            }
-            else texture=source.Load(useVT:false).GetTexture("_BaseColorMap");
-            if(texture==null)throw new InvalidOperationException("Native paint color decoding produced no texture.");
-            target=RenderTexture.GetTemporary(texture.width,texture.height,0,RenderTextureFormat.ARGB32,RenderTextureReadWrite.sRGB);
-            GL.sRGBWrite=QualitySettings.activeColorSpace==ColorSpace.Linear;
-            Graphics.Blit(texture,target);
-            RenderTexture.active=target;
-            result=new Texture2D(texture.width,texture.height,TextureFormat.RGBA32,true,false);
-            result.ReadPixels(new Rect(0,0,texture.width,texture.height),0,0);
-            result.Apply(updateMipmaps:true,makeNoLongerReadable:false);
-            Mod.Log.Info($"Native paint color persisted from backing data: {texture.width}x{texture.height}; source VT={source.isVTMaterial}.");
-            return result;
-        }
-        catch { if(result!=null)UnityEngine.Object.Destroy(result);throw; }
-        finally
-        {
-            RenderTexture.active=previous;
-            GL.sRGBWrite=previousSrgbWrite;
-            if(target!=null)RenderTexture.ReleaseTemporary(target);
-            foreach(var texture in decoded)UnityEngine.Object.Destroy(texture);
-            acquired?.Unload();
-            UnityEngine.Object.Destroy(material);
-        }
-    }
 }

@@ -91,6 +91,15 @@ binary was replaced and no existing generated asset was changed by this incremen
 
 ## Approach layout and render assembly (2026-10-20)
 
+Current correction (2026-10-21): the first-strip-only widening described below is
+superseded by the user's complete fixed-truss stretch requirement. Families 0–3
+scale local X and native piece widths by `1 + halfWidthDelta / 12.5`; family 4
+retains its width. Native layout distributes the scale across all structural
+strips, with no centre-gap expansion. The old central-brace override is no longer
+called. All three LODs retain source topology, Y/Z, materials and native behavior.
+The updated extraction validates all fifteen meshes and eighteen layout cases.
+These checks establish geometry invariants, not in-game visual acceptance.
+
 `Draw03ApproachLayout.py` records six structural sections and all 33 native
 occurrence branches from network 118597. It preserves occurrence order, inverted
 sides, median and half-length flags, offsets, hidden layers and native requirement
@@ -708,3 +717,79 @@ dotnet run --project tools/MovableSidewalkCheck -c Release -- <research-director
 
 No user-facing text or localization keys changed. No installed binaries or saved
 assets were modified.
+
+## Fixed mechanism end-truss correction (2026-10-22)
+
+The approach piece meshes are not the complete fixed structure. The main mechanism
+also contains 92 bone-zero end-truss components in each detailed LOD: longitudinal
+beams, diagonal members and riveted bearing/connection plates. These were previously
+left on rigid side translation or independent centre-member stretching. They now
+use the same `x + (x / 12.5) * delta` mapping as the complete deck truss, through
+`Draw03Truss.py` and its DLL-embedded membership ranges. This adds 4,680 near and
+4,239 middle vertices without changing their bone, Y/Z, UVs, materials or topology.
+The far native mesh represents these details as one merged support shell; it contains
+no separate bearing plates or longitudinal end-truss components. Its existing continuous
+shell mapping is retained rather than injecting detailed geometry into that LOD.
+
+Regression checks cover all 92 components at multiple positive-span widths as well
+as the five moving longitudinal frames. New generation consumes this correction;
+existing saved geometry is not rewritten. In-game near/far acceptance remains manual.
+No user-facing strings change, so existing localization remains intact.
+
+## Native light road-wear bands (2026-10-22)
+
+Draw03 now keeps the native light lane-wear profile instead of using only the
+uniform asphalt crop. The measured source interval is atlas columns 3084..3380,
+rows 818..1194 (4096 square texture, bottom-left UV origin). It excludes white
+paint. The two lateral minima bound a 3.10781622 m native lane-profile period,
+converted using face 58054's measured 9.399904251098633 m / V-span relation.
+The light interior and dark margins are copied from the native material channels;
+no invented white stripes, additional receiver geometry or runtime shader is used.
+
+The private native road sample records visible, non-master, straight CarLane
+centres. Draw03 repositions one fixed-width source profile per lane. Overlapping
+profiles on closely spaced lanes are clipped at the midpoint, not narrowed.
+The complete repeat texture covers the measured road surface span so parking or
+wide margins do not wrap into additional wear lanes. Sidewalk domains keep their
+previous material. Longitudinal native texel scale is retained. All detailed/far
+road receivers share the same repeat resources through the existing appearance
+pipeline and normal owner-local persistence. Existing saved bridges are unchanged.
+
+`Draw03WearCheck` verifies native lateral scale, centres, contiguous atlas rows,
+no-traffic behavior and sidewalk exclusion across multiple lane layouts. The
+existing horizontal RepeatBand path remains the default for other styles. The new
+BandRows path composes vertical bands without cutting triangles or adding batches.
+This implementation is scoped to Draw03's measured native texture; other archetypes
+must supply their own measured profile before enabling the effect. No localized
+UI strings change. In-game color, motion, LOD and cold-load acceptance are pending.
+
+### Tiled asphalt between wear bands (2026-10-22)
+
+The dark four-row native asphalt crop previously mapped once across each complete
+inter-lane gap, stretching its texels. RepeatBand now carries an explicit Y repeat
+count. Draw03 computes this count from gap length and the same measured atlas-V per
+metre gradient as the wear profile. GPU composition repeats the crop, including a
+fractional final tile, and allocates texel density including all repetitions.
+No triangle subdivision or per-tile dispatch is required. Other callers default to
+one repetition. Wear width, lane centres, native material channels and LOD sharing
+are unchanged. Draw03WearCheck verifies the gap and wear gradients match at multiple
+lane spacings. No user-visible text changes; game visual acceptance remains pending.
+
+### Inter-wear stripe regression (2026-10-22)
+
+The preceding four-row crop failed visual acceptance: correct repeat density
+alone does not prevent a four-row strip from degenerating to a single repeated
+row under mip filtering. This creates correlated longitudinal streaks that look
+like stretching. Replace that crop with the measured 296-by-32 dark interior at
+native columns 3084..3380, rows 802..834 (bottom-left UV origin). Preserve the
+same native density and fractional repeat handling. The complete wear profiles,
+their widths and their lane centres are unchanged.
+
+The crop height is stored in the existing embedded typed-array resource. The
+new pixel regression `tools/Draw03WearCheck/verify-texture.py` reads the exact
+decoded native texture, verifies its SHA-256, excludes white paint, and tests
+transverse grain after mip-2 filtering. The former four-row crop has zero
+transverse variation at that level; the new unit retains grain. This supplements
+the UV/layout regression, which alone did not catch the defect. No new runtime
+shader, receiver cuts, user-visible text or changes to the accepted rail repair
+are introduced. Actual game appearance and cold loading remain manual checks.

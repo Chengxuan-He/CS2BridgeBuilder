@@ -33,8 +33,9 @@ required geometry. Fixed segments require compatible section states and placemen
 
 Generation selects a compatible prototype and uses measured, immutable archetype data. Towers,
 cables, pieces and LODs are private derived assets. A part reaching or crossing `x = 0` stretches
-against its own authored span; a side part translates rigidly. Preserve height, depth, vertex
-formats, materials and component behavior, following the contract's separate base and pier rules.
+against its own authored span; a side part translates rigidly. Apply the contract's measured
+base, centred-post, Draw03 truss and Golden ornament/support exceptions. Preserve native behavior
+and apply only the scoped topology, representation and density-preserving material conversions.
 
 Full-detail geometry and all LODs use the same part classification. Missing or mismatched metadata
 is an explicit unsupported case. There is no general offset-only fitting rule or arbitrary
@@ -53,8 +54,8 @@ Bridge Builder. Successful generation alone does not establish independent opera
 ## Movable bridges
 
 Development is governed by the normative
-[movable bridge contract](agent-contract/MOVABLE_BRIDGES_CONTRACT.md), incorporated by project
-contract section 21. The required route generates the moving surface from the selected road's
+[movable bridge contract](agent-contract/MOVABLE_BRIDGES_CONTRACT.md), incorporated by bridge
+generation contract section 21. The required route generates the moving surface from the selected road's
 closed-pose composition, bakes persistent object geometry and binds it to the measured mechanism.
 
 Native draw and lift bridges use an animated static-object prefab placed at a waterway-crossing
@@ -63,20 +64,11 @@ Native traffic signals coordinate road/track/pedestrian clearance, bridge moveme
 The road sections hide ordinary node meshes in the fixed-size moving span while preserving network
 connectivity; the animated bridge model provides the visible moving deck.
 
-Bridge Builder does not yet generate these styles. Existing labels, measurements or a root-level
-component-copy helper are not evidence of complete support. Implementation requires measured
-object placement, section conditions, skeleton/bind data, full-detail/LOD geometry and native
-waterway behavior. Historical dumps with depth-truncated bone data are insufficient for transforms.
-
-The 2026-10-16 implementation review covers three road drawbridges, five lift bridges and two
-pedestrian drawbridges. The lift group includes the genuine road/rail auxiliary arrangement of
-`LiftBridge03`; its auxiliary track is not a separate mechanism. See the
-[implementation record](Movable-Bridges-Implementation.md) for per-style status.
-
-Shared runtime code now implements occurrence tracing, conditional section wrappers, straight-edge
-position/UV evaluation, clipping at measured seam frames, and native rigid-skin model encoding. These are
-construction primitives, not complete generators. Network-to-object materials, markings, measured
-structure replacement and persisted animated graphs still need integration before admission.
+The router contains generators for Draw01–Draw03, Lift01–Lift05 and PedestrianDraw01/02.
+Lift03 retains its native road/rail auxiliary arrangement. Generator routing does not establish
+acceptance of every road, LOD, motion cycle or cold-load scenario. Consult the
+[implementation record](Movable-Bridges-Implementation.md) for evidence and remaining work.
+Material migration status is recorded in [prepared materials](Prepared-Materials.md).
 
 In the audited highest-detail primary render prefabs, each mechanism has one principal opaque
 mesh with one submesh, plus a separate window mesh. This does not establish which triangles are
@@ -99,5 +91,6 @@ and other bridges' private Prefabs are not modified or borrowed. Asset licenses 
 
 Persist native unlock conditions, pricing and presentation. Bridge Builder is the asset manager,
 not a required runtime dependency; cold-start acceptance must verify that requirement.
-Deployment cleanup follows contract section 13: remove all bridges only of the styles affected
-by a generation change, and remove no existing bridges when generation code is unchanged.
+Deployment follows bridge generation contract section 13: preserve healthy bridges. Recovery
+requires a demonstrated incompatibility and is limited to the affected UUID-owned assets.
+A source change alone does not authorize deleting every bridge of a style.

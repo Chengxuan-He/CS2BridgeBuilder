@@ -6,6 +6,13 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="../../src/BridgeBuilder/Bridges/Common/Movable/MovableCatenarySampling.cs" Link="MovableCatenarySampling.cs" />
+    <Compile Include="../../src/BridgeBuilder/Runtime/BridgePreviewLanes.Lane.cs" Link="BridgePreviewLanes.Lane.cs" />
+    <Reference Include="Game"><HintPath>$(GameManagedDir)/Game.dll</HintPath></Reference>
+    <Reference Include="Unity.Mathematics"><HintPath>$(GameManagedDir)/Unity.Mathematics.dll</HintPath></Reference>
+    <Reference Include="Unity.Entities"><HintPath>$(GameManagedDir)/Unity.Entities.dll</HintPath></Reference>
+    <Reference Include="Unity.Collections"><HintPath>$(GameManagedDir)/Unity.Collections.dll</HintPath></Reference>
+    <Reference Include="Colossal.Mathematics"><HintPath>$(GameManagedDir)/Colossal.Mathematics.dll</HintPath></Reference>
     <Compile Include="../../src/BridgeBuilder/Bridges/Common/Movable/MovableLaneDeformation.cs" Link="MovableLaneDeformation.cs" />
     <Reference Include="UnityEngine.CoreModule">
       <HintPath>$(GameManagedDir)/UnityEngine.CoreModule.dll</HintPath>

@@ -250,10 +250,10 @@ internal sealed partial class TowerFactory
     private static float3[] ToPoints(Vector3[] vertices)
     {
         var points = new float3[vertices.Length];
-        for (var index = 0; index < vertices.Length; index++)
+        AffineGeometry.For(0, vertices.Length, index =>
         {
             points[index] = new float3(vertices[index].x, vertices[index].y, vertices[index].z);
-        }
+        });
 
         return points;
     }
@@ -261,10 +261,10 @@ internal sealed partial class TowerFactory
     private static Vector3[] ToVectors(float3[] points)
     {
         var vertices = new Vector3[points.Length];
-        for (var index = 0; index < points.Length; index++)
+        AffineGeometry.For(0, points.Length, index =>
         {
             vertices[index] = new Vector3(points[index].x, points[index].y, points[index].z);
-        }
+        });
 
         return vertices;
     }

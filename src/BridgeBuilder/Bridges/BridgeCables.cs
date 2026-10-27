@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 
 namespace BridgeBuilder.Bridges;
-
 /// <summary>
 /// The overhead section each tower's bridge carries - the cables - and how wide it is, measured in a
 /// running game.
@@ -43,14 +42,11 @@ internal static class BridgeCables
             Outer = outer;
         }
 
-        /// <summary>The tower in <see cref="BridgeTowers"/> whose bridge carries this section.</summary>
+        /// <summary>The tower in <see cref = "BridgeTowers"/> whose bridge carries this section.</summary>
         internal string Tower { get; }
-
         internal string Section { get; }
-
         /// <summary>Metres across, from the section's own pieces.</summary>
         internal float Width { get; }
-
         /// <summary>
         /// Whether this section is the bridge's outer envelope - the main cables, running down either
         /// side of the carriageway - or structure inboard of it.
@@ -65,39 +61,7 @@ internal static class BridgeCables
         internal bool Outer { get; }
     }
 
-    private static readonly Cables[] Measured =
-    {
-        new Cables("2LaneSuspensionBridgePillar Placeholder", "2-Lane Suspension Bridge", 15f, outer: true),
-        new Cables("3LaneSuspensionBridgePillar Placeholder", "3-Lane Suspension Bridge", 19f, outer: true),
-        new Cables("4LaneSuspensionBridgePillar Placeholder", "4-Lane Suspension Bridge", 23f, outer: true),
-        new Cables("5LaneSuspensionBridgePillar Placeholder", "5-Lane Suspension Bridge", 27f, outer: true),
-        new Cables("8LaneCableStayedBridgePillar Placeholder", "8-Lane Cable Stayed Bridge 00", 35f, outer: true),
-        new Cables("PedestrianBridgeCableStayedPillar Placeholder", "Cable Stayed Pedestrian Bridge", 4f, outer: true),
-        new Cables("ExtradosedBridge01NetPillar", "ExtradosedBridge01 Section", 31.6f),
-        new Cables("ExtradosedBridge02NetPillar", "ExtradosedBridge02 Section", 23f),
-        new Cables("ExtradosedBridge03NetPillar", "ExtradosedBridge03 Section", 33.1f),
-        // Outer, on the corrected road: 33.8 m of cable over a 32 m carriageway, 1.8 m clear each
-        // side. It was not marked so while the road was recorded at 50, because 33.8 m cannot be the
-        // envelope of a 50 m road - the contradiction that named the wrong number.
-        new Cables("SuspensionBridge03NetPylon", "SuspensionBridge03 Section", 33.8f, outer: true),
-        new Cables("SuspensionBridge03NetPillar", "SuspensionBridge03 Section", 33.8f, outer: true),
-        // The housing a covered bridge is spanned by, and the envelope its path runs through: 9.5 m
-        // over a 6 m path. Not marked so while the road was recorded at 16, for the usual reason.
-        new Cables("PedestrianBridgeCoveredWood01NetPillar", "PedestrianBridgeCoveredWood01 Section",
-            9.5f, outer: true),
-
-        new Cables("GrandBridgePylon Placeholder", "Grand Bridge", 21f),
-        new Cables("GrandBridgePillar Placeholder", "Grand Bridge", 21f),
-        new Cables("LiftBridge01", "LiftBridge01 Section", 8f),
-        new Cables("LiftBridge03", "LiftBridge03 Section", 21.2f),
-        // Outer, on the corrected road: 15.4 m of arch over a 10 m carriageway, which the road runs
-        // between. It was not marked so while the road was recorded at 20, because 15.4 m cannot be
-        // the envelope of a 20 m road - the same contradiction from the other direction.
-        new Cables("TrussArchBridge01NetPillar", "TrussArchBridge01 Section", 15.4f, outer: true),
-        new Cables("TrussArchBridge02NetPillar", "TrussArchBridge02 Section", 20.8f),
-        new Cables("TrussArchBridge03NetPillar", "TrussArchBridge03 Section", 14.1f),
-    };
-
+    private static readonly Cables[] Measured = ReadPackedMeasured();
     /// <summary>Everything measured, for the tests to hold the tower table against.</summary>
     internal static IEnumerable<Cables> All => Measured;
 
@@ -106,7 +70,8 @@ internal static class BridgeCables
     {
         foreach (var entry in Measured)
         {
-            if (string.Equals(entry.Tower, towerName, StringComparison.Ordinal)) return entry;
+            if (string.Equals(entry.Tower, towerName, StringComparison.Ordinal))
+                return entry;
         }
 
         return null;
@@ -116,8 +81,7 @@ internal static class BridgeCables
     /// How far a suspension or cable-stayed bridge's cables hang outside the carriageway, both sides
     /// together. Constant across every size the game ships of both designs.
     /// </summary>
-    internal const float Margin = 3f;
-
+    internal static float Margin => Numeric_BridgeCables_cs.Values.F32[19];
     /// <summary>
     /// How far the tower stands outside the carriageway, both sides together, for the blue suspension
     /// family - and the check that fixed a road width when its own measurement was unusable.
@@ -133,10 +97,9 @@ internal static class BridgeCables
     /// as confirming the 50 it replaced. Three families, three overhangs, and every attempt to carry
     /// one to another has cost a round - rule 9.
     /// </summary>
-    internal const float Overhang = 10f;
-
+    internal static float Overhang => Numeric_BridgeCables_cs.Values.F32[20];
     /// <summary>The golden family's, measured the same way: a 50.4 m pylon over a 24 m carriageway.</summary>
-    internal const float GoldenOverhang = 26.4f;
+    internal static float GoldenOverhang => Numeric_BridgeCables_cs.Values.F32[21];
 
     /// <summary>
     /// A cable piece disables texture tiling, and that is not only about textures.
@@ -157,23 +120,16 @@ internal static class BridgeCables
     /// not one: the mesh was fine and the composition put it somewhere else.
     /// </summary>
     internal const bool PieceDisablesTextureTiling = true;
-
     /// <summary>
     /// <c>NetPieceFlags.DisableTiling</c> and its neighbours, so the value above can be checked against
     /// what the flag actually is rather than trusted.
     /// </summary>
-    internal const int PieceFlagDisableTiling = 16;
-
-    internal const int PieceFlagPreserveShape = 1;
-
-    internal const int PieceFlagBlockTraffic = 2;
-
-    internal const int PieceFlagBlockCrosswalk = 4;
-
-    internal const int PieceFlagSurface = 8;
-
-    internal const int PieceFlagLowerBottomToTerrain = 32;
-
+    internal static int PieceFlagDisableTiling => Numeric_BridgeCables_cs.Values.I32[0];
+    internal static int PieceFlagPreserveShape => Numeric_BridgeCables_cs.Values.I32[1];
+    internal static int PieceFlagBlockTraffic => Numeric_BridgeCables_cs.Values.I32[2];
+    internal static int PieceFlagBlockCrosswalk => Numeric_BridgeCables_cs.Values.I32[3];
+    internal static int PieceFlagSurface => Numeric_BridgeCables_cs.Values.I32[4];
+    internal static int PieceFlagLowerBottomToTerrain => Numeric_BridgeCables_cs.Values.I32[5];
     /// <summary>
     /// How far each part of a tower stands outside the cables, measured from the game's own bridges.
     ///
@@ -198,25 +154,18 @@ internal static class BridgeCables
     /// tower - and the same tower is carried by several. Let those resolve to different bridges and the
     /// distance becomes tower(A) minus cables(B), which is not this constant and never was.
     /// </summary>
-    internal const float TowerBaseOutsideCables = 5.27667f;
-
-    internal const float TowerLegOutsideCables = 3.53745f;
-
-    internal const float TowerTopOutsideCables = 3.67887f;
+    internal static float TowerBaseOutsideCables => Numeric_BridgeCables_cs.Values.F32[22];
+    internal static float TowerLegOutsideCables => Numeric_BridgeCables_cs.Values.F32[23];
+    internal static float TowerTopOutsideCables => Numeric_BridgeCables_cs.Values.F32[24];
 
     /// <summary>
     /// Which of the three a part is, by its place in the stack - base at the bottom, top at the end,
     /// legs between. A tower of one part is a placeholder, and a placeholder carries the top alone:
     /// the archetype's placeholder mesh is its top mesh, same vertex count and same reach across.
     /// </summary>
-    internal static float TowerOutsideCables(int part, int parts) =>
-        Suspension.For(part, parts);
-
-    /// <summary>The five lane suspension bridge, as a <see cref="Spacing"/> - the family these came from.</summary>
-    internal static Spacing Suspension =>
-        new("5LaneSuspensionBridgePillar Placeholder",
-            TowerBaseOutsideCables, TowerLegOutsideCables, TowerTopOutsideCables);
-
+    internal static float TowerOutsideCables(int part, int parts) => Suspension.For(part, parts);
+    /// <summary>The five lane suspension bridge, as a <see cref = "Spacing"/> - the family these came from.</summary>
+    internal static Spacing Suspension => new("5LaneSuspensionBridgePillar Placeholder", TowerBaseOutsideCables, TowerLegOutsideCables, TowerTopOutsideCables);
     /// <summary>
     /// How far the measured distance may differ before it is reported.
     ///
@@ -224,9 +173,9 @@ internal static class BridgeCables
     /// the same half of the same number, so anything above this is a difference in kind - a tower and a
     /// cable section that came from different bridges - rather than rounding.
     /// </summary>
-    internal const float SpacingTolerance = 0.01f;
+    internal static float SpacingTolerance => Numeric_BridgeCables_cs.Values.F32[25];
 
-    /// <summary>Whether a measured distance is the archetype's, within <see cref="SpacingTolerance"/>.</summary>
+    /// <summary>Whether a measured distance is the archetype's, within <see cref = "SpacingTolerance"/>.</summary>
     internal static bool SpacingHolds(Spacing spacing, float measured, int part, int parts)
     {
         return Math.Abs(measured - spacing.For(part, parts)) <= SpacingTolerance;
@@ -234,7 +183,7 @@ internal static class BridgeCables
 
     /// <summary>
     /// How much wider than its archetype a tower has to be to stand the archetype's distance outside
-    /// cables whose outer edge is at <paramref name="cableOuter"/>.
+    /// cables whose outer edge is at <paramref name = "cableOuter"/>.
     ///
     /// Solving <c>towerOuter + extra/2 == cableOuter + distance</c>. It comes out the same whichever
     /// part is measured, because the archetype satisfies all three distances at once - a placeholder's
@@ -248,15 +197,13 @@ internal static class BridgeCables
     /// the cables come from whichever installed bridge carries it. Measuring against the cables cannot
     /// drift that way, because the cables are the thing the distance is to.
     /// </summary>
-    internal static float ExtraForTower(
-        Spacing spacing, float cableOuter, float towerOuter, int part, int parts)
+    internal static float ExtraForTower(Spacing spacing, float cableOuter, float towerOuter, int part, int parts)
     {
-        return 2f * (cableOuter + spacing.For(part, parts) - towerOuter);
+        return Numeric_BridgeCables_cs.Values.F32[26] * (cableOuter + spacing.For(part, parts) - towerOuter);
     }
 
     /// <summary>Which part of a tower stands beside the cables: the legs, or a placeholder's only part.</summary>
-    internal static int LegIndexOf(int parts) => parts >= 3 ? 1 : 0;
-
+    internal static int LegIndexOf(int parts) => parts >= Numeric_BridgeCables_cs.Values.I32[6] ? Numeric_BridgeCables_cs.Values.I32[7] : Numeric_BridgeCables_cs.Values.I32[8];
     /// <summary>
     /// How far each part of one tower stands outside its cables. Measured, per tower.
     /// </summary>
@@ -271,19 +218,18 @@ internal static class BridgeCables
         }
 
         internal string Tower { get; }
-
         internal float Base { get; }
-
         internal float Leg { get; }
-
         internal float Top { get; }
 
         /// <summary>Which of the three a part is, by its place in the stack.</summary>
         internal float For(int part, int parts)
         {
-            if (parts <= 1) return Top;
-            if (part <= 0) return Base;
-            return part >= parts - 1 ? Top : Leg;
+            if (parts <= Numeric_BridgeCables_cs.Values.I32[9])
+                return Top;
+            if (part <= Numeric_BridgeCables_cs.Values.I32[10])
+                return Base;
+            return part >= parts - Numeric_BridgeCables_cs.Values.I32[11] ? Top : Leg;
         }
     }
 
@@ -309,21 +255,17 @@ internal static class BridgeCables
     /// overhead section is not the envelope the road runs between - an extradosed bridge fans its
     /// cables from a low pylon over the deck and its section is 21 m against roads of 31 and 61, a lift
     /// bridge's section is its lifting mechanism - so there is no distance of this kind to measure.
-    /// <see cref="Cables.Outer"/> is the recorded test for that, and both have to hold before a tower is
+    /// <see cref = "Cables.Outer"/> is the recorded test for that, and both have to hold before a tower is
     /// sized against its cables.
     /// </summary>
-    private static readonly Spacing[] Spacings =
-    {
-        new Spacing("5LaneSuspensionBridgePillar Placeholder", 5.27667f, 3.53745f, 3.67887f),
-        new Spacing("4LaneSuspensionBridgePillar Placeholder", 5.27667f, 3.53745f, 3.67887f),
-    };
-
+    private static readonly Spacing[] Spacings = ReadPackedSpacings();
     /// <summary>The measured distances for a tower, or null when none were taken.</summary>
     internal static Spacing? SpacingFor(string towerName)
     {
         foreach (var entry in Spacings)
         {
-            if (string.Equals(entry.Tower, towerName, StringComparison.Ordinal)) return entry;
+            if (string.Equals(entry.Tower, towerName, StringComparison.Ordinal))
+                return entry;
         }
 
         return null;
@@ -342,7 +284,8 @@ internal static class BridgeCables
     internal static Spacing? SizingSpacingFor(string towerName)
     {
         var cables = For(towerName);
-        if (cables == null || !cables.Value.Outer) return null;
+        if (cables == null || !cables.Value.Outer)
+            return null;
         return SpacingFor(towerName);
     }
 
@@ -360,10 +303,73 @@ internal static class BridgeCables
     internal static float NarrowestDeckFor(string towerName, float authoredRoad)
     {
         var cables = For(towerName);
-        if (cables == null || cables.Value.Width <= 0f) return 0f;
-
+        if (cables == null || cables.Value.Width <= Numeric_BridgeCables_cs.Values.F32[33])
+            return Numeric_BridgeCables_cs.Values.F32[34];
         // Losing the whole of it leaves nothing; a metre of margin keeps the result a structure rather
         // than a seam.
-        return authoredRoad - cables.Value.Width + 1f;
+        return authoredRoad - cables.Value.Width + Numeric_BridgeCables_cs.Values.F32[35];
     }
+
+    private static Cables[] ReadPackedMeasured()
+    {
+        var d = Numeric_BridgeCables_cs.Values;
+        var values = new Cables[19];
+        for (int i = 0; i < 1; i++)
+            values[0 + i] = new Cables("2LaneSuspensionBridgePillar Placeholder", "2-Lane Suspension Bridge", d.F32[0 + i * 1], outer: true);
+        for (int i = 0; i < 1; i++)
+            values[1 + i] = new Cables("3LaneSuspensionBridgePillar Placeholder", "3-Lane Suspension Bridge", d.F32[1 + i * 1], outer: true);
+        for (int i = 0; i < 1; i++)
+            values[2 + i] = new Cables("4LaneSuspensionBridgePillar Placeholder", "4-Lane Suspension Bridge", d.F32[2 + i * 1], outer: true);
+        for (int i = 0; i < 1; i++)
+            values[3 + i] = new Cables("5LaneSuspensionBridgePillar Placeholder", "5-Lane Suspension Bridge", d.F32[3 + i * 1], outer: true);
+        for (int i = 0; i < 1; i++)
+            values[4 + i] = new Cables("8LaneCableStayedBridgePillar Placeholder", "8-Lane Cable Stayed Bridge 00", d.F32[4 + i * 1], outer: true);
+        for (int i = 0; i < 1; i++)
+            values[5 + i] = new Cables("PedestrianBridgeCableStayedPillar Placeholder", "Cable Stayed Pedestrian Bridge", d.F32[5 + i * 1], outer: true);
+        for (int i = 0; i < 1; i++)
+            values[6 + i] = new Cables("ExtradosedBridge01NetPillar", "ExtradosedBridge01 Section", d.F32[6 + i * 1]);
+        for (int i = 0; i < 1; i++)
+            values[7 + i] = new Cables("ExtradosedBridge02NetPillar", "ExtradosedBridge02 Section", d.F32[7 + i * 1]);
+        for (int i = 0; i < 1; i++)
+            values[8 + i] = new Cables("ExtradosedBridge03NetPillar", "ExtradosedBridge03 Section", d.F32[8 + i * 1]);
+        for (int i = 0; i < 1; i++)
+            values[9 + i] = new Cables("SuspensionBridge03NetPylon", "SuspensionBridge03 Section", d.F32[9 + i * 1], outer: true);
+        for (int i = 0; i < 1; i++)
+            values[10 + i] = new Cables("SuspensionBridge03NetPillar", "SuspensionBridge03 Section", d.F32[10 + i * 1], outer: true);
+        for (int i = 0; i < 1; i++)
+            values[11 + i] = new Cables("PedestrianBridgeCoveredWood01NetPillar", "PedestrianBridgeCoveredWood01 Section", d.F32[11 + i * 1], outer: true);
+        for (int i = 0; i < 1; i++)
+            values[12 + i] = new Cables("GrandBridgePylon Placeholder", "Grand Bridge", d.F32[12 + i * 1]);
+        for (int i = 0; i < 1; i++)
+            values[13 + i] = new Cables("GrandBridgePillar Placeholder", "Grand Bridge", d.F32[13 + i * 1]);
+        for (int i = 0; i < 1; i++)
+            values[14 + i] = new Cables("LiftBridge01", "LiftBridge01 Section", d.F32[14 + i * 1]);
+        for (int i = 0; i < 1; i++)
+            values[15 + i] = new Cables("LiftBridge03", "LiftBridge03 Section", d.F32[15 + i * 1]);
+        for (int i = 0; i < 1; i++)
+            values[16 + i] = new Cables("TrussArchBridge01NetPillar", "TrussArchBridge01 Section", d.F32[16 + i * 1], outer: true);
+        for (int i = 0; i < 1; i++)
+            values[17 + i] = new Cables("TrussArchBridge02NetPillar", "TrussArchBridge02 Section", d.F32[17 + i * 1]);
+        for (int i = 0; i < 1; i++)
+            values[18 + i] = new Cables("TrussArchBridge03NetPillar", "TrussArchBridge03 Section", d.F32[18 + i * 1]);
+        return values;
+    }
+
+    private static Spacing[] ReadPackedSpacings()
+    {
+        var d = Numeric_BridgeCables_cs.Values;
+        var values = new Spacing[2];
+        for (int i = 0; i < 1; i++)
+            values[0 + i] = new Spacing("5LaneSuspensionBridgePillar Placeholder", d.F32[27 + i * 3], d.F32[28 + i * 3], d.F32[29 + i * 3]);
+        for (int i = 0; i < 1; i++)
+            values[1 + i] = new Spacing("4LaneSuspensionBridgePillar Placeholder", d.F32[30 + i * 3], d.F32[31 + i * 3], d.F32[32 + i * 3]);
+        return values;
+    }
+}
+
+// Embedded numerical arrays: BridgeCables_cs
+internal static class Numeric_BridgeCables_cs
+{
+    static Numeric_BridgeCables_cs() {}
+    internal static readonly HardcodedNumbers Values = HardcodedNumbers.Load("BridgeCables_cs");
 }

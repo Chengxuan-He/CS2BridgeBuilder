@@ -41,6 +41,13 @@ $output = Join-Path $projectRoot 'tests\bin'
 $exe = Join-Path $output 'TowerTests.dll'
 
 $sources = @(
+    (Join-Path $projectRoot 'src\BridgeBuilder\Bridges\HardcodedNumbers.cs'),
+    (Join-Path $projectRoot 'src\BridgeBuilder\Bridges\AffineGeometry.cs'),
+    (Join-Path $projectRoot 'src\BridgeBuilder\Bridges\Types\Suspension\SuspensionGeometry.cs'),
+    (Join-Path $projectRoot 'src\BridgeBuilder\Settings\UiStringCatalog.cs'),
+    (Join-Path $projectRoot 'src\BridgeBuilder\Settings\UiStrings.cs'),
+    (Join-Path $projectRoot 'src\BridgeBuilder\Settings\RuntimeUiText.cs'),
+    (Join-Path $projectRoot 'tests\LocalizationStubs.cs'),
     (Join-Path $projectRoot 'vendor\CS2ModShared\src\Infrastructure\NameSanitizer.cs'),
     (Join-Path $projectRoot 'src\BridgeBuilder\Bridges\GoldenBridgeRailings.cs'),
     (Join-Path $projectRoot 'src\BridgeBuilder\Bridges\BridgeTowers.cs'),
@@ -59,6 +66,7 @@ $sources = @(
     (Join-Path $projectRoot 'tests\TowerGenerationTests.cs')
 )
 $sources += @(Get-ChildItem -LiteralPath (Join-Path $projectRoot 'src\BridgeBuilder\Bridges\Common\Geometry') -Filter 'TowerWidening*.cs' -File | Select-Object -ExpandProperty FullName)
+$sources += @(Get-ChildItem -LiteralPath (Join-Path $projectRoot 'src\BridgeBuilder\Settings') -Filter 'UiStringTables*.cs' -File | Select-Object -ExpandProperty FullName)
 foreach ($source in $sources) {
     if (-not (Test-Path -LiteralPath $source)) { throw "Missing source: $source" }
 }
@@ -68,7 +76,12 @@ $arguments = @(
     '/langversion:latest', ('/out:' + $exe)
 ) + $references + $sources
 
-& dotnet @arguments
+$arguments += @(Get-ChildItem -LiteralPath (Join-Path $projectRoot 'assets/HardcodedNumbers') -Recurse -Filter '*.bin' | ForEach-Object {
+    '/resource:' + $_.FullName + ',BridgeBuilder.Numbers.' + $_.Name
+})
+$response = Join-Path $output 'TowerTests.rsp'
+[IO.File]::WriteAllLines($response, @($arguments | Select-Object -Skip 1 | ForEach-Object { '"' + $_ + '"' }))
+& dotnet $compiler ('@' + $response)
 if ($LASTEXITCODE -ne 0) { throw "Test compilation failed with exit code $LASTEXITCODE" }
 
 $runtimeConfig = Join-Path $output 'TowerTests.runtimeconfig.json'

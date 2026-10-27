@@ -3,39 +3,29 @@ using System.Collections.Generic;
 using Unity.Mathematics;
 
 namespace BridgeBuilder.Bridges;
-
 /// <summary>An actual outer road section edge, measured from the target road prefab at generation.</summary>
 internal readonly struct RoadEdge
 {
-    internal RoadEdge(float outerBoundary, float innerBoundary, bool isSidewalk)
-        : this(outerBoundary, outerBoundary, innerBoundary, isSidewalk)
+    internal RoadEdge(float outerBoundary, float innerBoundary, bool isSidewalk) : this(outerBoundary, outerBoundary, innerBoundary, isSidewalk)
     {
     }
 
-    internal RoadEdge(
-        float outerBoundary,
-        float sidewalkOuterBoundary,
-        float sidewalkInnerBoundary,
-        bool isSidewalk)
+    internal RoadEdge(float outerBoundary, float sidewalkOuterBoundary, float sidewalkInnerBoundary, bool isSidewalk)
     {
-        OuterBoundary = Math.Max(0f, outerBoundary);
-        SidewalkOuterBoundary = Math.Max(0f, sidewalkOuterBoundary);
-        InnerBoundary = Math.Max(0f, sidewalkInnerBoundary);
+        OuterBoundary = Math.Max(Numeric_GoldenBridgeRailings_cs.Values.F32[0], outerBoundary);
+        SidewalkOuterBoundary = Math.Max(Numeric_GoldenBridgeRailings_cs.Values.F32[1], sidewalkOuterBoundary);
+        InnerBoundary = Math.Max(Numeric_GoldenBridgeRailings_cs.Values.F32[2], sidewalkInnerBoundary);
         IsSidewalk = isSidewalk;
     }
 
     /// <summary>The road surface edge, measured from x=0.</summary>
     internal float OuterBoundary { get; }
-
     /// <summary>The edge of the outermost sidewalk that is farthest from x=0.</summary>
     internal float SidewalkOuterBoundary { get; }
-
     /// <summary>The edge of that same sidewalk that is nearest x=0.</summary>
     internal float InnerBoundary { get; }
     internal bool IsSidewalk { get; }
-    internal float SidewalkWidth => IsSidewalk
-        ? Math.Max(0f, SidewalkOuterBoundary - InnerBoundary)
-        : 0f;
+    internal float SidewalkWidth => IsSidewalk ? Math.Max(Numeric_GoldenBridgeRailings_cs.Values.F32[3], SidewalkOuterBoundary - InnerBoundary) : Numeric_GoldenBridgeRailings_cs.Values.F32[4];
 }
 
 /// <summary>
@@ -44,7 +34,8 @@ internal readonly struct RoadEdge
 /// </summary>
 internal static class GoldenBridgeRailings
 {
-    private const float Bucket = 0.25f;
+    private static float Bucket => Numeric_GoldenBridgeRailings_cs.Values.F32[5];
+
     internal readonly struct Band
     {
         internal Band(float from, float to)
@@ -69,19 +60,13 @@ internal static class GoldenBridgeRailings
 
         /// <summary>The only band that may be moved or removed.</summary>
         internal Band Inner { get; }
-
         /// <summary>The deck-edge outer railing, present on both sides of the bridge.</summary>
         internal Band Outer { get; }
     }
 
     internal readonly struct Plan
     {
-        internal Plan(
-            Layout layout,
-            float side,
-            RoadEdge roadEdge,
-            float innerEdgeBefore,
-            float outerEdgeAfter)
+        internal Plan(Layout layout, float side, RoadEdge roadEdge, float innerEdgeBefore, float outerEdgeAfter)
         {
             Layout = layout;
             Side = Math.Sign(side);
@@ -96,10 +81,9 @@ internal static class GoldenBridgeRailings
         internal float SidewalkWidth => RoadEdge.SidewalkWidth;
         /// <summary>The inner railing edge nearest the road centre, before it is fitted.</summary>
         internal float InnerEdgeBefore { get; }
-
         /// <summary>The outer railing edge nearest the road boundary, after deck widening.</summary>
         internal float OuterEdgeAfter { get; }
-        internal bool Remove => !RoadEdge.IsSidewalk || SidewalkWidth <= 0f;
+        internal bool Remove => !RoadEdge.IsSidewalk || SidewalkWidth <= Numeric_GoldenBridgeRailings_cs.Values.F32[6];
         internal float RailingGap => SidewalkWidth;
         internal float RoadOuterBoundary => RoadEdge.OuterBoundary;
         internal float SidewalkInnerBoundary => RoadEdge.InnerBoundary;
@@ -108,7 +92,7 @@ internal static class GoldenBridgeRailings
         // A shoulder/empty strip outside that sidewalk must not shift its inner railing outward.
         // Retain the measured outer-railing inset, but never deduct a fixed surface strip.
         internal float InnerTarget => RoadEdge.SidewalkOuterBoundary - RailingGap - OuterInset;
-        internal float Shift => Remove ? 0f : Side * (InnerTarget - InnerEdgeBefore);
+        internal float Shift => Remove ? Numeric_GoldenBridgeRailings_cs.Values.F32[7] : Side * (InnerTarget - InnerEdgeBefore);
     }
 
     /// <summary>The occupied absolute-X bands at railing height, from the centre outwards.</summary>
@@ -117,7 +101,8 @@ internal static class GoldenBridgeRailings
         var occupied = new SortedSet<int>();
         foreach (var vertex in vertices)
         {
-            if (vertex.y <= low || vertex.y >= high) continue;
+            if (vertex.y <= low || vertex.y >= high)
+                continue;
             occupied.Add((int)Math.Floor(Math.Abs(vertex.x) / Bucket));
         }
 
@@ -132,19 +117,18 @@ internal static class GoldenBridgeRailings
                 continue;
             }
 
-            if (slot == previous + 1)
+            if (slot == previous + Numeric_GoldenBridgeRailings_cs.Values.I32[0])
             {
                 previous = slot;
                 continue;
             }
 
-            bands.Add(new Band(start * Bucket, (previous + 1) * Bucket));
+            bands.Add(new Band(start * Bucket, (previous + Numeric_GoldenBridgeRailings_cs.Values.I32[1]) * Bucket));
             start = previous = slot;
         }
 
         if (start != int.MinValue)
-            bands.Add(new Band(start * Bucket, (previous + 1) * Bucket));
-
+            bands.Add(new Band(start * Bucket, (previous + Numeric_GoldenBridgeRailings_cs.Values.I32[2]) * Bucket));
         return bands;
     }
 
@@ -156,73 +140,46 @@ internal static class GoldenBridgeRailings
     /// road's complete sidewalk width; using either band's
     /// centre or the inner band's outward edge changes that span.
     /// </summary>
-    internal static bool TryPlan(
-        IReadOnlyList<Band> bands,
-        float3[] source,
-        float3[] moved,
-        float low,
-        float high,
-        RoadEdge roadEdge,
-        float side,
-        out Plan plan)
+    internal static bool TryPlan(IReadOnlyList<Band> bands, float3[] source, float3[] moved, float low, float high, RoadEdge roadEdge, float side, out Plan plan)
     {
         plan = default;
-        if (bands.Count < 2 || source.Length != moved.Length || Math.Abs(side) < 0.5f)
+        if (bands.Count < Numeric_GoldenBridgeRailings_cs.Values.I32[3] || source.Length != moved.Length || Math.Abs(side) < Numeric_GoldenBridgeRailings_cs.Values.F32[8])
             return false;
-
-        var outerAt = -1;
-        var outerEdgeAfter = 0f;
+        var outerAt = -Numeric_GoldenBridgeRailings_cs.Values.I32[4];
+        var outerEdgeAfter = Numeric_GoldenBridgeRailings_cs.Values.F32[9];
         var closest = float.MaxValue;
-        for (var index = 1; index < bands.Count; index++)
+        for (var index = Numeric_GoldenBridgeRailings_cs.Values.I32[5]; index < bands.Count; index++)
         {
-            if (!TryEdge(
-                    bands[index], source, moved, low, high, side, outermost: true,
-                    out var candidateEdge))
+            if (!TryEdge(bands[index], source, moved, low, high, side, outermost: true, out var candidateEdge))
                 continue;
-
             var distance = Math.Abs(candidateEdge - roadEdge.OuterBoundary);
-            if (distance >= closest) continue;
+            if (distance >= closest)
+                continue;
             closest = distance;
             outerAt = index;
             outerEdgeAfter = candidateEdge;
         }
 
-        if (outerAt <= 0) return false;
-
-        var layout = new Layout(bands[outerAt - 1], bands[outerAt]);
-        if (!TryEdge(
-                layout.Inner, source, source, low, high, side, outermost: false,
-                out var innerEdgeBefore))
+        if (outerAt <= Numeric_GoldenBridgeRailings_cs.Values.I32[6])
             return false;
-
-        plan = new Plan(
-            layout,
-            side,
-            roadEdge,
-            innerEdgeBefore,
-            outerEdgeAfter);
+        var layout = new Layout(bands[outerAt - Numeric_GoldenBridgeRailings_cs.Values.I32[7]], bands[outerAt]);
+        if (!TryEdge(layout.Inner, source, source, low, high, side, outermost: false, out var innerEdgeBefore))
+            return false;
+        plan = new Plan(layout, side, roadEdge, innerEdgeBefore, outerEdgeAfter);
         return true;
     }
 
-    private static bool TryEdge(
-        Band band,
-        float3[] source,
-        float3[] positioned,
-        float low,
-        float high,
-        float side,
-        bool outermost,
-        out float edge)
+    private static bool TryEdge(Band band, float3[] source, float3[] positioned, float low, float high, float side, bool outermost, out float edge)
     {
         var minimum = float.MaxValue;
         var maximum = float.MinValue;
-        for (var index = 0; index < source.Length; index++)
+        for (var index = Numeric_GoldenBridgeRailings_cs.Values.I32[8]; index < source.Length; index++)
         {
             var vertex = source[index];
             if (vertex.y <= low || vertex.y >= high || Math.Sign(vertex.x) != Math.Sign(side))
                 continue;
-
-            if (!band.Covers(Math.Abs(vertex.x))) continue;
+            if (!band.Covers(Math.Abs(vertex.x)))
+                continue;
             var absoluteX = Math.Abs(positioned[index].x);
             minimum = Math.Min(minimum, absoluteX);
             maximum = Math.Max(maximum, absoluteX);
@@ -230,11 +187,18 @@ internal static class GoldenBridgeRailings
 
         if (minimum == float.MaxValue)
         {
-            edge = 0f;
+            edge = Numeric_GoldenBridgeRailings_cs.Values.F32[10];
             return false;
         }
 
         edge = outermost ? maximum : minimum;
         return true;
     }
+}
+
+// Embedded numerical arrays: GoldenBridgeRailings_cs
+internal static class Numeric_GoldenBridgeRailings_cs
+{
+    static Numeric_GoldenBridgeRailings_cs() {}
+    internal static readonly HardcodedNumbers Values = HardcodedNumbers.Load("GoldenBridgeRailings_cs");
 }

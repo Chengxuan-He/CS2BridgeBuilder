@@ -1,0 +1,21 @@
+#pragma kernel Probe
+Texture2D<float4> Source;
+SamplerState sampler_Source;
+StructuredBuffer<float2> Coordinates;
+RWStructuredBuffer<float4> Samples;
+float4 A, B, C;
+int Mip, IsNormal;
+[numthreads(8,1,1)]
+void Probe(uint3 id:SV_DispatchThreadID)
+{
+ if(id.x>=6)return;
+ float2 raw=Coordinates[id.x],q=frac(raw);
+ bool reverse=q.x+q.y>1;
+ if(reverse)q=1-q;
+ float2 expected=A.xy+q.x*(B.xy-A.xy)+q.y*(C.xy-A.xy);
+ float2 affine=A.xy+raw.x*(B.xy-A.xy)+raw.y*(C.xy-A.xy);
+ float4 e=Source.SampleLevel(sampler_Source,expected,Mip);
+ if(reverse && IsNormal!=0)e=float4(1-e.r*e.a,1-e.g,e.b,1);
+ Samples[id.x*2]=e;
+ Samples[id.x*2+1]=Source.SampleLevel(sampler_Source,affine,Mip);
+}

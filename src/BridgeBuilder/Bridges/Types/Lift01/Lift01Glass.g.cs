@@ -6,18 +6,28 @@ using System;
 using UnityEngine;
 
 namespace BridgeBuilder.Bridges;
-
 internal static class Lift01Glass
 {
-    internal static MovableStructureModel.Plan Create(int lod, Vector3[] source,
-        int[] indices, float delta)
+    internal static MovableStructureModel.Plan Create(int lod, Vector3[] source, int[] indices, float delta)
     {
-        if ((lod != 0 && lod != 1) || source.Length != 160 || indices.Length != 240 || !float.IsFinite(delta))
+        if ((lod != Numeric_Types_Lift01_Lift01Glass_g_cs.Values.I32[0] && lod != Numeric_Types_Lift01_Lift01Glass_g_cs.Values.I32[1]) || source.Length != Numeric_Types_Lift01_Lift01Glass_g_cs.Values.I32[2] || indices.Length != Numeric_Types_Lift01_Lift01Glass_g_cs.Values.I32[3] || !float.IsFinite(delta))
             throw new InvalidOperationException("Lift01 glass requires its recorded mesh-1 layout.");
         var positions = (Vector3[])source.Clone();
-        for (var i = 0; i < 80; i++) positions[i].x -= delta;
-        for (var i = 80; i < 160; i++) positions[i].x += delta;
-        return new MovableStructureModel.Plan(source, positions,
-            new[] { indices }, new[] { new bool[80] });
+        AffineGeometry.For(Numeric_Types_Lift01_Lift01Glass_g_cs.Values.I32[4], Numeric_Types_Lift01_Lift01Glass_g_cs.Values.I32[5], i =>
+        {
+            positions[i].x = AffineGeometry.Translate(positions[i].x, -(delta));
+        });
+        AffineGeometry.For(Numeric_Types_Lift01_Lift01Glass_g_cs.Values.I32[6], Numeric_Types_Lift01_Lift01Glass_g_cs.Values.I32[7], i =>
+        {
+            positions[i].x = AffineGeometry.Translate(positions[i].x, delta);
+        });
+        return new MovableStructureModel.Plan(source, positions, new[] { indices }, new[] { new bool[Numeric_Types_Lift01_Lift01Glass_g_cs.Values.I32[8]] });
     }
+}
+
+// Embedded numerical arrays: Types_Lift01_Lift01Glass_g_cs
+internal static class Numeric_Types_Lift01_Lift01Glass_g_cs
+{
+    static Numeric_Types_Lift01_Lift01Glass_g_cs() {}
+    internal static readonly HardcodedNumbers Values = HardcodedNumbers.Load("Types_Lift01_Lift01Glass_g_cs");
 }

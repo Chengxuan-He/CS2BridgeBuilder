@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 
 namespace BridgeBuilder.Bridges;
-
 /// <summary>
 /// What a bridge prefab is, apart from the parts it references - as numbers, read out of the game once.
 ///
@@ -33,18 +32,7 @@ internal static class BridgeSpec
     /// <summary>The archetype of one bridge type, as far as it has been measured.</summary>
     internal readonly struct Archetype
     {
-        internal Archetype(
-            string measuredFrom,
-            float segmentLength,
-            float hanging,
-            float elevationOnWater,
-            bool canCurve,
-            bool allowMinimalLength,
-            float towerHeightAboveOrigin,
-            float elevationMin,
-            float elevationMax,
-            bool allowParallelMode,
-            int xpReward)
+        internal Archetype(string measuredFrom, float segmentLength, float hanging, float elevationOnWater, bool canCurve, bool allowMinimalLength, float towerHeightAboveOrigin, float elevationMin, float elevationMax, bool allowParallelMode, int xpReward)
         {
             MeasuredFrom = measuredFrom;
             SegmentLength = segmentLength;
@@ -61,18 +49,12 @@ internal static class BridgeSpec
 
         /// <summary>The bridge these numbers were read from, so a wrong one can be traced.</summary>
         internal string MeasuredFrom { get; }
-
         /// <summary>How far apart the towers stand.</summary>
         internal float SegmentLength { get; }
-
         internal float Hanging { get; }
-
         internal float ElevationOnWater { get; }
-
         internal bool CanCurve { get; }
-
         internal bool AllowMinimalLength { get; }
-
         /// <summary>
         /// Where the deck meets the tower, measured up from the tower's own origin - the y of the
         /// bridge's tower sub object.
@@ -82,7 +64,6 @@ internal static class BridgeSpec
         /// relative to the road rather than describing it.
         /// </summary>
         internal float TowerHeightAboveOrigin { get; }
-
         /// <summary>
         /// How high the bridge may be built, and how low.
         ///
@@ -92,31 +73,15 @@ internal static class BridgeSpec
         /// was never drawn for.
         /// </summary>
         internal float ElevationMin { get; }
-
         internal float ElevationMax { get; }
-
         internal bool AllowParallelMode { get; }
-
         internal int XpReward { get; }
     }
 
-    private static readonly Dictionary<string, Archetype> Table =
-        new(StringComparer.Ordinal)
-        {
-            ["Suspension"] = new Archetype(
-                "Suspension Bridge - Highway Oneway - 5 Lanes",
-                segmentLength: 256f,
-                hanging: 0f,
-                elevationOnWater: 10f,
-                canCurve: false,
-                allowMinimalLength: false,
-                towerHeightAboveOrigin: 77.9f,
-                elevationMin: 0f,
-                elevationMax: 200f,
-                allowParallelMode: true,
-                xpReward: 4),
-        };
-
+    private static readonly Dictionary<string, Archetype> Table = new(StringComparer.Ordinal)
+    {
+        ["Suspension"] = new Archetype("Suspension Bridge - Highway Oneway - 5 Lanes", segmentLength: Numeric_BridgeSpec_cs.Values.F32[0], hanging: Numeric_BridgeSpec_cs.Values.F32[1], elevationOnWater: Numeric_BridgeSpec_cs.Values.F32[2], canCurve: false, allowMinimalLength: false, towerHeightAboveOrigin: Numeric_BridgeSpec_cs.Values.F32[3], elevationMin: Numeric_BridgeSpec_cs.Values.F32[4], elevationMax: Numeric_BridgeSpec_cs.Values.F32[5], allowParallelMode: true, xpReward: Numeric_BridgeSpec_cs.Values.I32[0]),
+    };
     /// <summary>The archetype for a bridge type, or null when it has not been measured yet.</summary>
     internal static Archetype? For(string styleId)
     {
@@ -125,7 +90,6 @@ internal static class BridgeSpec
 
     /// <summary>Every type with a recorded archetype, for the tests to walk.</summary>
     internal static IEnumerable<string> Styles => Table.Keys;
-
     /// <summary>
     /// How a bridge anchors its tower, field by field, keyed by the field's own name.
     ///
@@ -141,42 +105,47 @@ internal static class BridgeSpec
     /// <c>m_Object</c> and <c>m_Position</c> are absent on purpose - the first is the tower being
     /// placed and the second depends on which tower it is, so both are supplied by the caller.
     /// </summary>
-    internal static IReadOnlyDictionary<string, object> TowerBinding { get; } =
-        new Dictionary<string, object>(StringComparer.Ordinal)
+    internal static IReadOnlyDictionary<string, object> TowerBinding { get; } = new Dictionary<string, object>(StringComparer.Ordinal)
+    {
+        // quaternion.identity, as four components. The archetype places its tower unrotated.
+        ["m_Rotation"] = new[]
         {
-            // quaternion.identity, as four components. The archetype places its tower unrotated.
-            ["m_Rotation"] = new[] { 0f, 0f, 0f, 1f },
-
-            // NetObjectPlacement.EdgeMiddle: one tower at the middle of each span.
-            ["m_Placement"] = PlacementEdgeMiddle,
-
-            ["m_FixedIndex"] = 0,
-
-            // Zero, because EdgeMiddle places one per edge rather than repeating along it. A bridge's
-            // span length is what puts the towers apart, not this.
-            ["m_Spacing"] = 0f,
-
-            ["m_AnchorTop"] = false,
-            ["m_AnchorCenter"] = false,
-
-            // Clear on the archetype. Setting it was a deviation that also changed how the road's own
-            // props were sorted, because the same flag is what tells a bridge's structure from a
-            // road's default pillars.
-            ["m_RequireElevated"] = false,
-
-            ["m_RequireOutsideConnection"] = false,
-            ["m_RequireDeadEnd"] = false,
-            ["m_RequireOrphan"] = false,
-        };
-
+            Numeric_BridgeSpec_cs.Values.F32[6],
+            Numeric_BridgeSpec_cs.Values.F32[7],
+            Numeric_BridgeSpec_cs.Values.F32[8],
+            Numeric_BridgeSpec_cs.Values.F32[9]
+        },
+        // NetObjectPlacement.EdgeMiddle: one tower at the middle of each span.
+        ["m_Placement"] = PlacementEdgeMiddle,
+        ["m_FixedIndex"] = Numeric_BridgeSpec_cs.Values.I32[1],
+        // Zero, because EdgeMiddle places one per edge rather than repeating along it. A bridge's
+        // span length is what puts the towers apart, not this.
+        ["m_Spacing"] = Numeric_BridgeSpec_cs.Values.F32[10],
+        ["m_AnchorTop"] = false,
+        ["m_AnchorCenter"] = false,
+        // Clear on the archetype. Setting it was a deviation that also changed how the road's own
+        // props were sorted, because the same flag is what tells a bridge's structure from a
+        // road's default pillars.
+        ["m_RequireElevated"] = false,
+        ["m_RequireOutsideConnection"] = false,
+        ["m_RequireDeadEnd"] = false,
+        ["m_RequireOrphan"] = false,
+    };
     /// <summary><c>NetObjectPlacement.EdgeMiddle</c>, as its number so this file needs nothing from the game.</summary>
-    internal const int PlacementEdgeMiddle = 2;
+    internal static int PlacementEdgeMiddle => Numeric_BridgeSpec_cs.Values.I32[2];
 
     /// <summary>Where a bridge draws its cables: centred, and marked as a median section.</summary>
     internal static class CablePlacement
     {
-        internal const float Offset = 0f;
+        internal static float Offset => Numeric_BridgeSpec_cs.Values.F32[11];
 
         internal const bool Median = true;
     }
+}
+
+// Embedded numerical arrays: BridgeSpec_cs
+internal static class Numeric_BridgeSpec_cs
+{
+    static Numeric_BridgeSpec_cs() {}
+    internal static readonly HardcodedNumbers Values = HardcodedNumbers.Load("BridgeSpec_cs");
 }

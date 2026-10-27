@@ -4,87 +4,62 @@ using System;
 using UnityEngine;
 
 namespace BridgeBuilder.Bridges;
-
 internal static class Lift05CounterweightGeometry
 {
     internal static void Apply(int lod, Vector3[] source, Vector3[] positions, float delta)
     {
         var data = lod switch
         {
-            0 => (Count: 47062, Parts: Parts0),
-            1 => (Count: 36479, Parts: Parts1),
-            2 => (Count: 2500, Parts: Parts2),
-            _ => throw new ArgumentOutOfRangeException(nameof(lod))
-        };
+            0 => (Count: Numeric_Types_Lift05_Lift05CounterweightGeometry_g_cs.Values.I32[0], Parts: Parts0),
+            1 => (Count: Numeric_Types_Lift05_Lift05CounterweightGeometry_g_cs.Values.I32[1], Parts: Parts1),
+            2 => (Count: Numeric_Types_Lift05_Lift05CounterweightGeometry_g_cs.Values.I32[2], Parts: Parts2),
+            _ => throw new ArgumentOutOfRangeException(nameof(lod))};
         if (source.Length != data.Count || positions.Length != data.Count || !float.IsFinite(delta))
             throw new InvalidOperationException("Lift05 counterweights require their native layout.");
         foreach (var part in data.Parts)
-            for (var i = part.First; i <= part.Last; i++)
-                positions[i].x = source[i].x + source[i].x / 6.0191650390625f * delta;
+            AffineGeometry.For(part.First, checked((part.Last) + 1), i =>
+            {
+                positions[i].x = AffineGeometry.AddScaled(source[i].x, source[i].x / Numeric_Types_Lift05_Lift05CounterweightGeometry_g_cs.Values.F32[0], delta);
+            });
     }
 
     // Geometry SHA-256: 10a9c40e522c91debff4bc0251dbe93980cac6b92ff6b176c216e27ba52c05fb
-    private static readonly (int First, int Last)[] Parts0 =
-    {
-        (0, 13),
-        (18, 23),
-        (2296, 2327),
-        (2372, 2391),
-        (3264, 3295),
-        (3428, 3475),
-        (12663, 12902),
-        (16507, 16554),
-        (19826, 19845),
-        (21624, 21675),
-        (22558, 22589),
-        (22706, 22753),
-        (28428, 28667),
-        (32321, 32368),
-    };
-
+    private static readonly (int First, int Last)[] Parts0 = ReadPackedParts0();
     // Geometry SHA-256: dc4b8d4ae9688952992b03d724d8549cdb79f52eb0877c7f6fe62d1246ce286e
-    private static readonly (int First, int Last)[] Parts1 =
-    {
-        (0, 11),
-        (16, 21),
-        (2138, 2173),
-        (2211, 2228),
-        (2615, 2620),
-        (2633, 2643),
-        (2936, 2997),
-        (3121, 3141),
-        (3697, 3726),
-        (3865, 3903),
-        (5754, 5813),
-        (5848, 5856),
-        (10660, 10763),
-        (12217, 12225),
-        (12835, 12839),
-        (15742, 15759),
-        (17418, 17470),
-        (17913, 17918),
-        (17923, 17937),
-        (18150, 18209),
-        (18329, 18347),
-        (18678, 18704),
-        (18838, 18876),
-        (20907, 20969),
-        (20976, 20983),
-        (22534, 22619),
-        (24007, 24015),
-        (24846, 24847),
-    };
-
+    private static readonly (int First, int Last)[] Parts1 = ReadPackedParts1();
     // Geometry SHA-256: 6ea1ea24f714feca8794c31500c743e3c599067a9da37a46ae83c1eaa8bc4160
-    private static readonly (int First, int Last)[] Parts2 =
+    private static readonly (int First, int Last)[] Parts2 = ReadPackedParts2();
+    private static (int First, int Last)[] ReadPackedParts0()
     {
-        (262, 265),
-        (281, 284),
-        (611, 614),
-        (681, 684),
-        (1391, 1398),
-        (1593, 1596),
-        (1663, 1666),
-    };
+        var d = Numeric_Types_Lift05_Lift05CounterweightGeometry_g_cs.Values;
+        var values = new (int First, int Last)[14];
+        for (int i = 0; i < 14; i++)
+            values[0 + i] = (d.I32[3 + i * 2], d.I32[4 + i * 2]);
+        return values;
+    }
 
+    private static (int First, int Last)[] ReadPackedParts1()
+    {
+        var d = Numeric_Types_Lift05_Lift05CounterweightGeometry_g_cs.Values;
+        var values = new (int First, int Last)[28];
+        for (int i = 0; i < 28; i++)
+            values[0 + i] = (d.I32[31 + i * 2], d.I32[32 + i * 2]);
+        return values;
+    }
+
+    private static (int First, int Last)[] ReadPackedParts2()
+    {
+        var d = Numeric_Types_Lift05_Lift05CounterweightGeometry_g_cs.Values;
+        var values = new (int First, int Last)[7];
+        for (int i = 0; i < 7; i++)
+            values[0 + i] = (d.I32[87 + i * 2], d.I32[88 + i * 2]);
+        return values;
+    }
+}
+
+// Embedded numerical arrays: Types_Lift05_Lift05CounterweightGeometry_g_cs
+internal static class Numeric_Types_Lift05_Lift05CounterweightGeometry_g_cs
+{
+    static Numeric_Types_Lift05_Lift05CounterweightGeometry_g_cs() {}
+    internal static readonly HardcodedNumbers Values = HardcodedNumbers.Load("Types_Lift05_Lift05CounterweightGeometry_g_cs");
 }

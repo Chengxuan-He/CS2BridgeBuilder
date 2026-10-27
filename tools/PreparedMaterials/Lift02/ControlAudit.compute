@@ -1,0 +1,9 @@
+#pragma kernel ReadMip
+Texture2D<float4> Source;
+RWStructuredBuffer<float4> Pixels;
+int2 Extent;
+int Mip;
+[numthreads(8,8,1)] void ReadMip(uint3 id:SV_DispatchThreadID) {
+ if(any(id.xy >= (uint2)Extent))return;
+ Pixels[id.y*Extent.x+id.x]=Source.Load(int3(id.xy,Mip));
+}

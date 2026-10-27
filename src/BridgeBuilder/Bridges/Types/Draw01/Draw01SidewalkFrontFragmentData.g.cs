@@ -3,7 +3,6 @@
 using System;
 
 namespace BridgeBuilder.Bridges;
-
 internal static class Draw01SidewalkFrontFragmentData
 {
     internal static MovableStructureModel.EdgeVertex[] Edges(int lod) => lod switch
@@ -11,57 +10,59 @@ internal static class Draw01SidewalkFrontFragmentData
         0 or 1 => Array.Empty<MovableStructureModel.EdgeVertex>(),
         2 => new[]
         {
-            new MovableStructureModel.EdgeVertex(170, 171, 0.96809279918670654f),
-            new MovableStructureModel.EdgeVertex(170, 172, 0.96809279918670654f),
-            new MovableStructureModel.EdgeVertex(170, 171, 0.96809279918670654f),
-            new MovableStructureModel.EdgeVertex(173, 170, 0.0022395097184926271f),
-            new MovableStructureModel.EdgeVertex(443, 442, 0.96809279918670654f),
-            new MovableStructureModel.EdgeVertex(443, 444, 0.96809279918670654f),
-            new MovableStructureModel.EdgeVertex(443, 442, 0.96809279918670654f),
-            new MovableStructureModel.EdgeVertex(445, 443, 0.0022395097184926271f),
-            new MovableStructureModel.EdgeVertex(723, 722, 0.96809279918670654f),
-            new MovableStructureModel.EdgeVertex(723, 724, 0.96809279918670654f),
-            new MovableStructureModel.EdgeVertex(723, 722, 0.96809279918670654f),
-            new MovableStructureModel.EdgeVertex(725, 723, 0.0022395097184926271f),
-            new MovableStructureModel.EdgeVertex(998, 999, 0.96809279918670654f),
-            new MovableStructureModel.EdgeVertex(998, 1000, 0.96809279918670654f),
-            new MovableStructureModel.EdgeVertex(998, 999, 0.96809279918670654f),
-            new MovableStructureModel.EdgeVertex(1001, 998, 0.0022395097184926271f),
+            new MovableStructureModel.EdgeVertex(Numeric_Types_Draw01_Draw01SidewalkFrontFragmentData_g_cs.Values.I32[0], Numeric_Types_Draw01_Draw01SidewalkFrontFragmentData_g_cs.Values.I32[1], Numeric_Types_Draw01_Draw01SidewalkFrontFragmentData_g_cs.Values.F32[0]),
+            new MovableStructureModel.EdgeVertex(Numeric_Types_Draw01_Draw01SidewalkFrontFragmentData_g_cs.Values.I32[2], Numeric_Types_Draw01_Draw01SidewalkFrontFragmentData_g_cs.Values.I32[3], Numeric_Types_Draw01_Draw01SidewalkFrontFragmentData_g_cs.Values.F32[1]),
+            new MovableStructureModel.EdgeVertex(Numeric_Types_Draw01_Draw01SidewalkFrontFragmentData_g_cs.Values.I32[4], Numeric_Types_Draw01_Draw01SidewalkFrontFragmentData_g_cs.Values.I32[5], Numeric_Types_Draw01_Draw01SidewalkFrontFragmentData_g_cs.Values.F32[2]),
+            new MovableStructureModel.EdgeVertex(Numeric_Types_Draw01_Draw01SidewalkFrontFragmentData_g_cs.Values.I32[6], Numeric_Types_Draw01_Draw01SidewalkFrontFragmentData_g_cs.Values.I32[7], Numeric_Types_Draw01_Draw01SidewalkFrontFragmentData_g_cs.Values.F32[3]),
+            new MovableStructureModel.EdgeVertex(Numeric_Types_Draw01_Draw01SidewalkFrontFragmentData_g_cs.Values.I32[8], Numeric_Types_Draw01_Draw01SidewalkFrontFragmentData_g_cs.Values.I32[9], Numeric_Types_Draw01_Draw01SidewalkFrontFragmentData_g_cs.Values.F32[4]),
+            new MovableStructureModel.EdgeVertex(Numeric_Types_Draw01_Draw01SidewalkFrontFragmentData_g_cs.Values.I32[10], Numeric_Types_Draw01_Draw01SidewalkFrontFragmentData_g_cs.Values.I32[11], Numeric_Types_Draw01_Draw01SidewalkFrontFragmentData_g_cs.Values.F32[5]),
+            new MovableStructureModel.EdgeVertex(Numeric_Types_Draw01_Draw01SidewalkFrontFragmentData_g_cs.Values.I32[12], Numeric_Types_Draw01_Draw01SidewalkFrontFragmentData_g_cs.Values.I32[13], Numeric_Types_Draw01_Draw01SidewalkFrontFragmentData_g_cs.Values.F32[6]),
+            new MovableStructureModel.EdgeVertex(Numeric_Types_Draw01_Draw01SidewalkFrontFragmentData_g_cs.Values.I32[14], Numeric_Types_Draw01_Draw01SidewalkFrontFragmentData_g_cs.Values.I32[15], Numeric_Types_Draw01_Draw01SidewalkFrontFragmentData_g_cs.Values.F32[7]),
+            new MovableStructureModel.EdgeVertex(Numeric_Types_Draw01_Draw01SidewalkFrontFragmentData_g_cs.Values.I32[16], Numeric_Types_Draw01_Draw01SidewalkFrontFragmentData_g_cs.Values.I32[17], Numeric_Types_Draw01_Draw01SidewalkFrontFragmentData_g_cs.Values.F32[8]),
+            new MovableStructureModel.EdgeVertex(Numeric_Types_Draw01_Draw01SidewalkFrontFragmentData_g_cs.Values.I32[18], Numeric_Types_Draw01_Draw01SidewalkFrontFragmentData_g_cs.Values.I32[19], Numeric_Types_Draw01_Draw01SidewalkFrontFragmentData_g_cs.Values.F32[9]),
+            new MovableStructureModel.EdgeVertex(Numeric_Types_Draw01_Draw01SidewalkFrontFragmentData_g_cs.Values.I32[20], Numeric_Types_Draw01_Draw01SidewalkFrontFragmentData_g_cs.Values.I32[21], Numeric_Types_Draw01_Draw01SidewalkFrontFragmentData_g_cs.Values.F32[10]),
+            new MovableStructureModel.EdgeVertex(Numeric_Types_Draw01_Draw01SidewalkFrontFragmentData_g_cs.Values.I32[22], Numeric_Types_Draw01_Draw01SidewalkFrontFragmentData_g_cs.Values.I32[23], Numeric_Types_Draw01_Draw01SidewalkFrontFragmentData_g_cs.Values.F32[11]),
+            new MovableStructureModel.EdgeVertex(Numeric_Types_Draw01_Draw01SidewalkFrontFragmentData_g_cs.Values.I32[24], Numeric_Types_Draw01_Draw01SidewalkFrontFragmentData_g_cs.Values.I32[25], Numeric_Types_Draw01_Draw01SidewalkFrontFragmentData_g_cs.Values.F32[12]),
+            new MovableStructureModel.EdgeVertex(Numeric_Types_Draw01_Draw01SidewalkFrontFragmentData_g_cs.Values.I32[26], Numeric_Types_Draw01_Draw01SidewalkFrontFragmentData_g_cs.Values.I32[27], Numeric_Types_Draw01_Draw01SidewalkFrontFragmentData_g_cs.Values.F32[13]),
+            new MovableStructureModel.EdgeVertex(Numeric_Types_Draw01_Draw01SidewalkFrontFragmentData_g_cs.Values.I32[28], Numeric_Types_Draw01_Draw01SidewalkFrontFragmentData_g_cs.Values.I32[29], Numeric_Types_Draw01_Draw01SidewalkFrontFragmentData_g_cs.Values.F32[14]),
+            new MovableStructureModel.EdgeVertex(Numeric_Types_Draw01_Draw01SidewalkFrontFragmentData_g_cs.Values.I32[30], Numeric_Types_Draw01_Draw01SidewalkFrontFragmentData_g_cs.Values.I32[31], Numeric_Types_Draw01_Draw01SidewalkFrontFragmentData_g_cs.Values.F32[15]),
         },
-        _ => throw new ArgumentOutOfRangeException(nameof(lod))
-    };
-
+        _ => throw new ArgumentOutOfRangeException(nameof(lod))};
     internal static MovableStructureModel.TriangleVertex[] Interior(int lod) => lod switch
     {
         0 or 1 => Array.Empty<MovableStructureModel.TriangleVertex>(),
         2 => new[]
         {
-            new MovableStructureModel.TriangleVertex(171, 170, 173, 0.0022395097184926271f, 0.022865211591124535f),
-            new MovableStructureModel.TriangleVertex(171, 170, 173, 0.0022395097184926271f, 0.002963813254609704f),
-            new MovableStructureModel.TriangleVertex(443, 442, 445, 0.97518521547317505f, 0.023839686065912247f),
-            new MovableStructureModel.TriangleVertex(443, 442, 445, 0.99509251117706299f, 0.0039581814780831337f),
-            new MovableStructureModel.TriangleVertex(723, 722, 725, 0.97489529848098755f, 0.022865211591124535f),
-            new MovableStructureModel.TriangleVertex(723, 722, 725, 0.99479669332504272f, 0.002963813254609704f),
-            new MovableStructureModel.TriangleVertex(999, 998, 1001, 0.00097512529464438558f, 0.023839686065912247f),
-            new MovableStructureModel.TriangleVertex(999, 998, 1001, 0.00094931427156552672f, 0.0039581814780831337f),
+            new MovableStructureModel.TriangleVertex(Numeric_Types_Draw01_Draw01SidewalkFrontFragmentData_g_cs.Values.I32[32], Numeric_Types_Draw01_Draw01SidewalkFrontFragmentData_g_cs.Values.I32[33], Numeric_Types_Draw01_Draw01SidewalkFrontFragmentData_g_cs.Values.I32[34], Numeric_Types_Draw01_Draw01SidewalkFrontFragmentData_g_cs.Values.F32[16], Numeric_Types_Draw01_Draw01SidewalkFrontFragmentData_g_cs.Values.F32[17]),
+            new MovableStructureModel.TriangleVertex(Numeric_Types_Draw01_Draw01SidewalkFrontFragmentData_g_cs.Values.I32[35], Numeric_Types_Draw01_Draw01SidewalkFrontFragmentData_g_cs.Values.I32[36], Numeric_Types_Draw01_Draw01SidewalkFrontFragmentData_g_cs.Values.I32[37], Numeric_Types_Draw01_Draw01SidewalkFrontFragmentData_g_cs.Values.F32[18], Numeric_Types_Draw01_Draw01SidewalkFrontFragmentData_g_cs.Values.F32[19]),
+            new MovableStructureModel.TriangleVertex(Numeric_Types_Draw01_Draw01SidewalkFrontFragmentData_g_cs.Values.I32[38], Numeric_Types_Draw01_Draw01SidewalkFrontFragmentData_g_cs.Values.I32[39], Numeric_Types_Draw01_Draw01SidewalkFrontFragmentData_g_cs.Values.I32[40], Numeric_Types_Draw01_Draw01SidewalkFrontFragmentData_g_cs.Values.F32[20], Numeric_Types_Draw01_Draw01SidewalkFrontFragmentData_g_cs.Values.F32[21]),
+            new MovableStructureModel.TriangleVertex(Numeric_Types_Draw01_Draw01SidewalkFrontFragmentData_g_cs.Values.I32[41], Numeric_Types_Draw01_Draw01SidewalkFrontFragmentData_g_cs.Values.I32[42], Numeric_Types_Draw01_Draw01SidewalkFrontFragmentData_g_cs.Values.I32[43], Numeric_Types_Draw01_Draw01SidewalkFrontFragmentData_g_cs.Values.F32[22], Numeric_Types_Draw01_Draw01SidewalkFrontFragmentData_g_cs.Values.F32[23]),
+            new MovableStructureModel.TriangleVertex(Numeric_Types_Draw01_Draw01SidewalkFrontFragmentData_g_cs.Values.I32[44], Numeric_Types_Draw01_Draw01SidewalkFrontFragmentData_g_cs.Values.I32[45], Numeric_Types_Draw01_Draw01SidewalkFrontFragmentData_g_cs.Values.I32[46], Numeric_Types_Draw01_Draw01SidewalkFrontFragmentData_g_cs.Values.F32[24], Numeric_Types_Draw01_Draw01SidewalkFrontFragmentData_g_cs.Values.F32[25]),
+            new MovableStructureModel.TriangleVertex(Numeric_Types_Draw01_Draw01SidewalkFrontFragmentData_g_cs.Values.I32[47], Numeric_Types_Draw01_Draw01SidewalkFrontFragmentData_g_cs.Values.I32[48], Numeric_Types_Draw01_Draw01SidewalkFrontFragmentData_g_cs.Values.I32[49], Numeric_Types_Draw01_Draw01SidewalkFrontFragmentData_g_cs.Values.F32[26], Numeric_Types_Draw01_Draw01SidewalkFrontFragmentData_g_cs.Values.F32[27]),
+            new MovableStructureModel.TriangleVertex(Numeric_Types_Draw01_Draw01SidewalkFrontFragmentData_g_cs.Values.I32[50], Numeric_Types_Draw01_Draw01SidewalkFrontFragmentData_g_cs.Values.I32[51], Numeric_Types_Draw01_Draw01SidewalkFrontFragmentData_g_cs.Values.I32[52], Numeric_Types_Draw01_Draw01SidewalkFrontFragmentData_g_cs.Values.F32[28], Numeric_Types_Draw01_Draw01SidewalkFrontFragmentData_g_cs.Values.F32[29]),
+            new MovableStructureModel.TriangleVertex(Numeric_Types_Draw01_Draw01SidewalkFrontFragmentData_g_cs.Values.I32[53], Numeric_Types_Draw01_Draw01SidewalkFrontFragmentData_g_cs.Values.I32[54], Numeric_Types_Draw01_Draw01SidewalkFrontFragmentData_g_cs.Values.I32[55], Numeric_Types_Draw01_Draw01SidewalkFrontFragmentData_g_cs.Values.F32[30], Numeric_Types_Draw01_Draw01SidewalkFrontFragmentData_g_cs.Values.F32[31]),
         },
-        _ => throw new ArgumentOutOfRangeException(nameof(lod))
-    };
-
+        _ => throw new ArgumentOutOfRangeException(nameof(lod))};
     internal static MovableStructureModel.Fragment[] Faces(int lod, int firstEdge, int firstInterior) => lod switch
     {
         0 or 1 => Array.Empty<MovableStructureModel.Fragment>(),
         2 => new[]
         {
-            new MovableStructureModel.Fragment(0, 105, 170, firstEdge + 0, firstEdge + 1),
-            new MovableStructureModel.Fragment(0, 106, firstEdge + 2, 170, firstEdge + 3, firstEdge + 2, firstEdge + 3, firstInterior + 0, 171, firstInterior + 1, firstEdge + 3, 171, firstEdge + 3, 173),
-            new MovableStructureModel.Fragment(0, 268, firstEdge + 4, 443, firstEdge + 5),
-            new MovableStructureModel.Fragment(0, 269, 443, firstEdge + 6, firstInterior + 2, 443, firstInterior + 2, firstEdge + 7, 442, 445, firstEdge + 7, 442, firstEdge + 7, firstInterior + 3),
-            new MovableStructureModel.Fragment(0, 433, firstEdge + 8, 723, firstEdge + 9),
-            new MovableStructureModel.Fragment(0, 434, 723, firstEdge + 10, firstInterior + 4, 723, firstInterior + 4, firstEdge + 11, 722, 725, firstEdge + 11, 722, firstEdge + 11, firstInterior + 5),
-            new MovableStructureModel.Fragment(0, 592, 998, firstEdge + 12, firstEdge + 13),
-            new MovableStructureModel.Fragment(0, 593, firstEdge + 14, 998, firstEdge + 15, firstEdge + 14, firstEdge + 15, firstInterior + 6, 999, firstInterior + 7, firstEdge + 15, 999, firstEdge + 15, 1001),
+            new MovableStructureModel.Fragment(Numeric_Types_Draw01_Draw01SidewalkFrontFragmentData_g_cs.Values.I32[56], Numeric_Types_Draw01_Draw01SidewalkFrontFragmentData_g_cs.Values.I32[57], Numeric_Types_Draw01_Draw01SidewalkFrontFragmentData_g_cs.Values.I32[58], firstEdge + Numeric_Types_Draw01_Draw01SidewalkFrontFragmentData_g_cs.Values.I32[59], firstEdge + Numeric_Types_Draw01_Draw01SidewalkFrontFragmentData_g_cs.Values.I32[60]),
+            new MovableStructureModel.Fragment(Numeric_Types_Draw01_Draw01SidewalkFrontFragmentData_g_cs.Values.I32[61], Numeric_Types_Draw01_Draw01SidewalkFrontFragmentData_g_cs.Values.I32[62], firstEdge + Numeric_Types_Draw01_Draw01SidewalkFrontFragmentData_g_cs.Values.I32[63], Numeric_Types_Draw01_Draw01SidewalkFrontFragmentData_g_cs.Values.I32[64], firstEdge + Numeric_Types_Draw01_Draw01SidewalkFrontFragmentData_g_cs.Values.I32[65], firstEdge + Numeric_Types_Draw01_Draw01SidewalkFrontFragmentData_g_cs.Values.I32[66], firstEdge + Numeric_Types_Draw01_Draw01SidewalkFrontFragmentData_g_cs.Values.I32[67], firstInterior + Numeric_Types_Draw01_Draw01SidewalkFrontFragmentData_g_cs.Values.I32[68], Numeric_Types_Draw01_Draw01SidewalkFrontFragmentData_g_cs.Values.I32[69], firstInterior + Numeric_Types_Draw01_Draw01SidewalkFrontFragmentData_g_cs.Values.I32[70], firstEdge + Numeric_Types_Draw01_Draw01SidewalkFrontFragmentData_g_cs.Values.I32[71], Numeric_Types_Draw01_Draw01SidewalkFrontFragmentData_g_cs.Values.I32[72], firstEdge + Numeric_Types_Draw01_Draw01SidewalkFrontFragmentData_g_cs.Values.I32[73], Numeric_Types_Draw01_Draw01SidewalkFrontFragmentData_g_cs.Values.I32[74]),
+            new MovableStructureModel.Fragment(Numeric_Types_Draw01_Draw01SidewalkFrontFragmentData_g_cs.Values.I32[75], Numeric_Types_Draw01_Draw01SidewalkFrontFragmentData_g_cs.Values.I32[76], firstEdge + Numeric_Types_Draw01_Draw01SidewalkFrontFragmentData_g_cs.Values.I32[77], Numeric_Types_Draw01_Draw01SidewalkFrontFragmentData_g_cs.Values.I32[78], firstEdge + Numeric_Types_Draw01_Draw01SidewalkFrontFragmentData_g_cs.Values.I32[79]),
+            new MovableStructureModel.Fragment(Numeric_Types_Draw01_Draw01SidewalkFrontFragmentData_g_cs.Values.I32[80], Numeric_Types_Draw01_Draw01SidewalkFrontFragmentData_g_cs.Values.I32[81], Numeric_Types_Draw01_Draw01SidewalkFrontFragmentData_g_cs.Values.I32[82], firstEdge + Numeric_Types_Draw01_Draw01SidewalkFrontFragmentData_g_cs.Values.I32[83], firstInterior + Numeric_Types_Draw01_Draw01SidewalkFrontFragmentData_g_cs.Values.I32[84], Numeric_Types_Draw01_Draw01SidewalkFrontFragmentData_g_cs.Values.I32[85], firstInterior + Numeric_Types_Draw01_Draw01SidewalkFrontFragmentData_g_cs.Values.I32[86], firstEdge + Numeric_Types_Draw01_Draw01SidewalkFrontFragmentData_g_cs.Values.I32[87], Numeric_Types_Draw01_Draw01SidewalkFrontFragmentData_g_cs.Values.I32[88], Numeric_Types_Draw01_Draw01SidewalkFrontFragmentData_g_cs.Values.I32[89], firstEdge + Numeric_Types_Draw01_Draw01SidewalkFrontFragmentData_g_cs.Values.I32[90], Numeric_Types_Draw01_Draw01SidewalkFrontFragmentData_g_cs.Values.I32[91], firstEdge + Numeric_Types_Draw01_Draw01SidewalkFrontFragmentData_g_cs.Values.I32[92], firstInterior + Numeric_Types_Draw01_Draw01SidewalkFrontFragmentData_g_cs.Values.I32[93]),
+            new MovableStructureModel.Fragment(Numeric_Types_Draw01_Draw01SidewalkFrontFragmentData_g_cs.Values.I32[94], Numeric_Types_Draw01_Draw01SidewalkFrontFragmentData_g_cs.Values.I32[95], firstEdge + Numeric_Types_Draw01_Draw01SidewalkFrontFragmentData_g_cs.Values.I32[96], Numeric_Types_Draw01_Draw01SidewalkFrontFragmentData_g_cs.Values.I32[97], firstEdge + Numeric_Types_Draw01_Draw01SidewalkFrontFragmentData_g_cs.Values.I32[98]),
+            new MovableStructureModel.Fragment(Numeric_Types_Draw01_Draw01SidewalkFrontFragmentData_g_cs.Values.I32[99], Numeric_Types_Draw01_Draw01SidewalkFrontFragmentData_g_cs.Values.I32[100], Numeric_Types_Draw01_Draw01SidewalkFrontFragmentData_g_cs.Values.I32[101], firstEdge + Numeric_Types_Draw01_Draw01SidewalkFrontFragmentData_g_cs.Values.I32[102], firstInterior + Numeric_Types_Draw01_Draw01SidewalkFrontFragmentData_g_cs.Values.I32[103], Numeric_Types_Draw01_Draw01SidewalkFrontFragmentData_g_cs.Values.I32[104], firstInterior + Numeric_Types_Draw01_Draw01SidewalkFrontFragmentData_g_cs.Values.I32[105], firstEdge + Numeric_Types_Draw01_Draw01SidewalkFrontFragmentData_g_cs.Values.I32[106], Numeric_Types_Draw01_Draw01SidewalkFrontFragmentData_g_cs.Values.I32[107], Numeric_Types_Draw01_Draw01SidewalkFrontFragmentData_g_cs.Values.I32[108], firstEdge + Numeric_Types_Draw01_Draw01SidewalkFrontFragmentData_g_cs.Values.I32[109], Numeric_Types_Draw01_Draw01SidewalkFrontFragmentData_g_cs.Values.I32[110], firstEdge + Numeric_Types_Draw01_Draw01SidewalkFrontFragmentData_g_cs.Values.I32[111], firstInterior + Numeric_Types_Draw01_Draw01SidewalkFrontFragmentData_g_cs.Values.I32[112]),
+            new MovableStructureModel.Fragment(Numeric_Types_Draw01_Draw01SidewalkFrontFragmentData_g_cs.Values.I32[113], Numeric_Types_Draw01_Draw01SidewalkFrontFragmentData_g_cs.Values.I32[114], Numeric_Types_Draw01_Draw01SidewalkFrontFragmentData_g_cs.Values.I32[115], firstEdge + Numeric_Types_Draw01_Draw01SidewalkFrontFragmentData_g_cs.Values.I32[116], firstEdge + Numeric_Types_Draw01_Draw01SidewalkFrontFragmentData_g_cs.Values.I32[117]),
+            new MovableStructureModel.Fragment(Numeric_Types_Draw01_Draw01SidewalkFrontFragmentData_g_cs.Values.I32[118], Numeric_Types_Draw01_Draw01SidewalkFrontFragmentData_g_cs.Values.I32[119], firstEdge + Numeric_Types_Draw01_Draw01SidewalkFrontFragmentData_g_cs.Values.I32[120], Numeric_Types_Draw01_Draw01SidewalkFrontFragmentData_g_cs.Values.I32[121], firstEdge + Numeric_Types_Draw01_Draw01SidewalkFrontFragmentData_g_cs.Values.I32[122], firstEdge + Numeric_Types_Draw01_Draw01SidewalkFrontFragmentData_g_cs.Values.I32[123], firstEdge + Numeric_Types_Draw01_Draw01SidewalkFrontFragmentData_g_cs.Values.I32[124], firstInterior + Numeric_Types_Draw01_Draw01SidewalkFrontFragmentData_g_cs.Values.I32[125], Numeric_Types_Draw01_Draw01SidewalkFrontFragmentData_g_cs.Values.I32[126], firstInterior + Numeric_Types_Draw01_Draw01SidewalkFrontFragmentData_g_cs.Values.I32[127], firstEdge + Numeric_Types_Draw01_Draw01SidewalkFrontFragmentData_g_cs.Values.I32[128], Numeric_Types_Draw01_Draw01SidewalkFrontFragmentData_g_cs.Values.I32[129], firstEdge + Numeric_Types_Draw01_Draw01SidewalkFrontFragmentData_g_cs.Values.I32[130], Numeric_Types_Draw01_Draw01SidewalkFrontFragmentData_g_cs.Values.I32[131]),
         },
-        _ => throw new ArgumentOutOfRangeException(nameof(lod))
-    };
+        _ => throw new ArgumentOutOfRangeException(nameof(lod))};
+}
+
+// Embedded numerical arrays: Types_Draw01_Draw01SidewalkFrontFragmentData_g_cs
+internal static class Numeric_Types_Draw01_Draw01SidewalkFrontFragmentData_g_cs
+{
+    static Numeric_Types_Draw01_Draw01SidewalkFrontFragmentData_g_cs() {}
+    internal static readonly HardcodedNumbers Values = HardcodedNumbers.Load("Types_Draw01_Draw01SidewalkFrontFragmentData_g_cs");
 }

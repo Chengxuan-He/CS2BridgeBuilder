@@ -3,217 +3,62 @@ using System;
 using UnityEngine;
 
 namespace BridgeBuilder.Bridges;
-
 internal static class Lift04Crossbeams
 {
     internal static void Apply(int lod, Vector3[] source, Vector3[] positions, float delta)
     {
         var data = lod switch
         {
-            0 => (Count: 60636, Parts: Level0),
-            1 => (Count: 45780, Parts: Level1),
-            2 => (Count: 3212, Parts: Level2),
-            _ => throw new ArgumentOutOfRangeException(nameof(lod))
-        };
+            0 => (Count: Numeric_Types_Lift04_Lift04Crossbeams_g_cs.Values.I32[0], Parts: Level0),
+            1 => (Count: Numeric_Types_Lift04_Lift04Crossbeams_g_cs.Values.I32[1], Parts: Level1),
+            2 => (Count: Numeric_Types_Lift04_Lift04Crossbeams_g_cs.Values.I32[2], Parts: Level2),
+            _ => throw new ArgumentOutOfRangeException(nameof(lod))};
         if (source.Length != data.Count || positions.Length != data.Count || !float.IsFinite(delta))
             throw new InvalidOperationException("Lift04 crossbeams require their recorded topology.");
         foreach (var part in data.Parts)
-            for (var i = part.First; i <= part.Last; i++)
-                positions[i].x = source[i].x + source[i].x / part.HalfSpan * delta;
+            AffineGeometry.For(part.First, checked((part.Last) + 1), i =>
+            {
+                positions[i].x = AffineGeometry.AddScaled(source[i].x, source[i].x / part.HalfSpan, delta);
+            });
     }
 
     // Geometry SHA-256: 869158c6d06c9a9717851460adf922838d45c294c4b1e692b7b96e4585422980
-    private static readonly (int First, int Last, float HalfSpan)[] Level0 =
-    {
-        (5630, 5693, 3.9650269f),
-        (5902, 5933, 3.9650269f),
-        (7742, 7773, 3.9650269f),
-        (8214, 8245, 3.9650269f),
-        (13889, 13920, 3.9650269f),
-        (15609, 15640, 3.9650269f),
-        (16081, 16112, 3.9650269f),
-        (17305, 17336, 3.9650269f),
-        (19181, 19212, 3.9650269f),
-        (22239, 22302, 3.9650269f),
-        (22511, 22542, 3.9650269f),
-        (24115, 24146, 3.9650269f),
-        (24587, 24618, 3.9650269f),
-        (25867, 25898, 3.9650269f),
-        (26339, 26370, 3.9650269f),
-        (27619, 27650, 3.9650269f),
-        (28091, 28122, 3.9650269f),
-        (29275, 29306, 3.9650269f),
-        (46298, 46361, 3.9650269f),
-        (46570, 46601, 3.9650269f),
-        (48120, 48151, 3.9650269f),
-        (56015, 56046, 3.9650269f),
-        (58228, 58387, 3.9650269f),
-        (108, 123, 5.1018066f),
-        (38334, 38349, 5.1018066f),
-        (4942, 4957, 5.1018066f),
-        (38350, 38365, 5.1018066f),
-        (5186, 5201, 5.1018066f),
-        (38286, 38301, 5.1018066f),
-        (5202, 5217, 5.1018066f),
-        (38270, 38285, 5.1018066f),
-        (5218, 5233, 5.1018066f),
-        (38302, 38317, 5.1018066f),
-        (5234, 5249, 5.1018066f),
-        (38318, 38333, 5.1018066f),
-        (38442, 38457, 5.1018066f),
-        (40208, 40223, 5.1018066f),
-        (39159, 39174, 5.1018066f),
-        (40224, 40239, 5.1018066f),
-        (39391, 39406, 5.1018066f),
-        (40160, 40175, 5.1018066f),
-        (39407, 39422, 5.1018066f),
-        (40144, 40159, 5.1018066f),
-        (39423, 39438, 5.1018066f),
-        (40176, 40191, 5.1018066f),
-        (39439, 39454, 5.1018066f),
-        (40192, 40207, 5.1018066f),
-        (11052, 11055, 5.2906494f),
-        (11193, 11200, 5.2906494f),
-        (11205, 11216, 5.2906494f),
-        (11220, 11223, 5.2906494f),
-        (11228, 11231, 5.2906494f),
-        (11056, 11059, 5.2906494f),
-        (11243, 11266, 5.2906494f),
-        (11271, 11306, 5.2906494f),
-        (12098, 12101, 5.2906494f),
-        (12199, 12222, 5.2906494f),
-        (12227, 12262, 5.2906494f),
-        (12567, 12598, 5.2906494f),
-        (20616, 20619, 5.2906494f),
-        (20757, 20764, 5.2906494f),
-        (20769, 20780, 5.2906494f),
-        (20784, 20787, 5.2906494f),
-        (20792, 20795, 5.2906494f),
-        (20620, 20623, 5.2906494f),
-        (20807, 20830, 5.2906494f),
-        (20835, 20870, 5.2906494f),
-        (21542, 21545, 5.2906494f),
-        (21643, 21666, 5.2906494f),
-        (21671, 21706, 5.2906494f),
-        (45852, 45855, 5.2906494f),
-        (45942, 45965, 5.2906494f),
-        (45970, 46005, 5.2906494f),
-    };
-
+    private static readonly (int First, int Last, float HalfSpan)[] Level0 = ReadPackedLevel0();
     // Geometry SHA-256: 4d57e1fe16365bf8702d310191fefbbbbbece9fcafb413b980052640e26d1b6f
-    private static readonly (int First, int Last, float HalfSpan)[] Level1 =
-    {
-        (5596, 5643, 3.9650269f),
-        (5836, 5859, 3.9650269f),
-        (7058, 7081, 3.9650269f),
-        (7442, 7465, 3.9650269f),
-        (11970, 11993, 3.9650269f),
-        (13149, 13172, 3.9650269f),
-        (13524, 13547, 3.9650269f),
-        (14307, 14330, 3.9650269f),
-        (15859, 15882, 3.9650269f),
-        (18079, 18126, 3.9650269f),
-        (18320, 18343, 3.9650269f),
-        (19730, 19753, 3.9650269f),
-        (20097, 20120, 3.9650269f),
-        (20892, 20915, 3.9650269f),
-        (21262, 21285, 3.9650269f),
-        (22109, 22132, 3.9650269f),
-        (22485, 22508, 3.9650269f),
-        (23181, 23204, 3.9650269f),
-        (35882, 35929, 3.9650269f),
-        (36120, 36143, 3.9650269f),
-        (37125, 37148, 3.9650269f),
-        (42258, 42277, 3.9650269f),
-        (42561, 42564, 3.9650269f),
-        (43761, 43880, 3.9650269f),
-        (108, 123, 5.1018066f),
-        (4048, 4059, 5.1018066f),
-        (27908, 27911, 5.1018066f),
-        (5061, 5076, 5.1018066f),
-        (7882, 7893, 5.1018066f),
-        (27912, 27915, 5.1018066f),
-        (5298, 5313, 5.1018066f),
-        (7846, 7857, 5.1018066f),
-        (27896, 27899, 5.1018066f),
-        (5314, 5329, 5.1018066f),
-        (7834, 7845, 5.1018066f),
-        (27892, 27895, 5.1018066f),
-        (5330, 5345, 5.1018066f),
-        (7858, 7869, 5.1018066f),
-        (27900, 27903, 5.1018066f),
-        (5346, 5361, 5.1018066f),
-        (7870, 7881, 5.1018066f),
-        (27904, 27907, 5.1018066f),
-        (27944, 27959, 5.1018066f),
-        (29639, 29654, 5.1018066f),
-        (28649, 28664, 5.1018066f),
-        (29655, 29670, 5.1018066f),
-        (28881, 28896, 5.1018066f),
-        (29591, 29606, 5.1018066f),
-        (28897, 28912, 5.1018066f),
-        (29575, 29590, 5.1018066f),
-        (28913, 28928, 5.1018066f),
-        (29607, 29622, 5.1018066f),
-        (28929, 28944, 5.1018066f),
-        (29623, 29638, 5.1018066f),
-        (10022, 10029, 5.2906494f),
-        (10034, 10045, 5.2906494f),
-        (10049, 10052, 5.2906494f),
-        (10057, 10060, 5.2906494f),
-        (10072, 10095, 5.2906494f),
-        (10100, 10131, 5.2906494f),
-        (10839, 10862, 5.2906494f),
-        (10867, 10898, 5.2906494f),
-        (11161, 11188, 5.2906494f),
-        (16942, 16949, 5.2906494f),
-        (16954, 16961, 5.2906494f),
-        (16965, 16968, 5.2906494f),
-        (16973, 16976, 5.2906494f),
-        (16988, 17011, 5.2906494f),
-        (17016, 17047, 5.2906494f),
-        (17690, 17712, 5.2906494f),
-        (17717, 17748, 5.2906494f),
-        (35623, 35646, 5.2906494f),
-        (35651, 35682, 5.2906494f),
-    };
-
+    private static readonly (int First, int Last, float HalfSpan)[] Level1 = ReadPackedLevel1();
     // Geometry SHA-256: ab81a0e0cdd6345fd8e80cdbad7c52b947fc7281aca1c1c37f986af0d49e863d
-    private static readonly (int First, int Last, float HalfSpan)[] Level2 =
+    private static readonly (int First, int Last, float HalfSpan)[] Level2 = ReadPackedLevel2();
+    private static (int First, int Last, float HalfSpan)[] ReadPackedLevel0()
     {
-        (0, 3, 5.1018066f),
-        (130, 141, 5.1018066f),
-        (4, 15, 5.1018066f),
-        (203, 206, 5.1018066f),
-        (155, 158, 5.1018066f),
-        (191, 202, 5.1018066f),
-        (159, 186, 5.1018066f),
-        (2278, 2281, 5.1018066f),
-        (187, 190, 5.1018066f),
-        (207, 218, 5.1018066f),
-        (2422, 2425, 5.1018066f),
-        (2550, 2561, 5.1018066f),
-        (2426, 2437, 5.1018066f),
-        (2623, 2626, 5.1018066f),
-        (2575, 2578, 5.1018066f),
-        (2611, 2622, 5.1018066f),
-        (2579, 2606, 5.1018066f),
-        (3004, 3007, 5.1018066f),
-        (2607, 2610, 5.1018066f),
-        (2627, 2638, 5.1018066f),
-        (511, 518, 5.2906494f),
-        (523, 530, 5.2906494f),
-        (519, 522, 5.2906494f),
-        (531, 558, 5.2906494f),
-        (687, 718, 5.2906494f),
-        (783, 798, 5.2906494f),
-        (999, 1006, 5.2906494f),
-        (1011, 1018, 5.2906494f),
-        (1007, 1010, 5.2906494f),
-        (1019, 1046, 5.2906494f),
-        (1179, 1210, 5.2906494f),
-        (1457, 1460, 5.2906494f),
-        (1477, 1504, 5.2906494f),
-    };
+        var d = Numeric_Types_Lift04_Lift04Crossbeams_g_cs.Values;
+        var values = new (int First, int Last, float HalfSpan)[73];
+        for (int i = 0; i < 73; i++)
+            values[0 + i] = (d.I32[3 + i * 2], d.I32[4 + i * 2], d.F32[0 + i * 1]);
+        return values;
+    }
 
+    private static (int First, int Last, float HalfSpan)[] ReadPackedLevel1()
+    {
+        var d = Numeric_Types_Lift04_Lift04Crossbeams_g_cs.Values;
+        var values = new (int First, int Last, float HalfSpan)[73];
+        for (int i = 0; i < 73; i++)
+            values[0 + i] = (d.I32[149 + i * 2], d.I32[150 + i * 2], d.F32[73 + i * 1]);
+        return values;
+    }
+
+    private static (int First, int Last, float HalfSpan)[] ReadPackedLevel2()
+    {
+        var d = Numeric_Types_Lift04_Lift04Crossbeams_g_cs.Values;
+        var values = new (int First, int Last, float HalfSpan)[33];
+        for (int i = 0; i < 33; i++)
+            values[0 + i] = (d.I32[295 + i * 2], d.I32[296 + i * 2], d.F32[146 + i * 1]);
+        return values;
+    }
+}
+
+// Embedded numerical arrays: Types_Lift04_Lift04Crossbeams_g_cs
+internal static class Numeric_Types_Lift04_Lift04Crossbeams_g_cs
+{
+    static Numeric_Types_Lift04_Lift04Crossbeams_g_cs() {}
+    internal static readonly HardcodedNumbers Values = HardcodedNumbers.Load("Types_Lift04_Lift04Crossbeams_g_cs");
 }

@@ -108,6 +108,13 @@ Check(BridgeStartupRecovery.Retired.Contains("bridge") && BridgeDependencyPersis
 p = Fresh(); BridgeDependencyPersistence.MigrationChanged = true; p.ScheduleInspectionAfterLoad(); Menu(p);
 Check(BridgeStartupRecovery.Retired.Count == 0 && BridgeDependencyPersistence.Calls == 0
     && BridgeBuilder.Mod.Messages.Single() == "BridgeSelfCheckMigrated", "Healthy dependency-only migration is not reported as damage");
+Check(BridgeDependencyPersistence.MigrationCalls == 1 && BridgeNetworkValidation.Calls == 1,
+    "Healthy live references do not bypass external material snapshot supplementation");
+BridgeDependencyPersistence.MigrationChanged = false;
+p.RequestManualCheck(); p.Tick();
+Check(BridgeDependencyPersistence.MigrationCalls == 2 && BridgeDiskAudit.Calls == 0
+    && BridgeBuilder.Mod.Messages.Last() == "BridgeSelfCheckMigrated",
+    "Complete dependency snapshots are rechecked without removal; restart notice is retained");
 p = Fresh(); BridgeLegacyNames.Changed = true; p.ScheduleInspectionAfterLoad(); Menu(p);
 Check(BridgeBuilder.Mod.Messages.Single() == "BridgeSelfCheckMigrated", "Legacy rename requests restart as migration");
 p.RequestManualCheck(); p.Tick();

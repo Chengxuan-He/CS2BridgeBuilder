@@ -1,0 +1,19 @@
+--- a/src/BridgeBuilder/Bridges/Common/Movable/MovableStructureTiles.cs
++++ b/src/BridgeBuilder/Bridges/Common/Movable/MovableStructureTiles.cs
+@@ -43,6 +43,16 @@
+                 stream.CopyTo(bytes);
+                 _sourceDigests.Add(source,digest=MovableStructureKey.Digest(bytes.ToArray()));
+             }
++            if (_style == "Draw01")
++            {
++                // The compatible original-Surface path above remains unchanged.
++                // Old per-sampler folded images are derived artifacts, not native
++                // prototype sampling semantics or an allowed fallback.
++                Draw01NativeMaterialBinding.RequireCompatible(digest, unit);
++                slots.Add(unit.Id, new Slot { Surface = source, Original = unit });
++                originals++;
++                continue;
++            }
+             var key=MovableStructureKey.For(digest,unit.Triangle,unit.Bounds,unit.A,unit.B,unit.C);
+             slots.Add(unit.Id,new Slot{Surface=BridgePreparedMaterials.Structure(_style,key)});
+         }

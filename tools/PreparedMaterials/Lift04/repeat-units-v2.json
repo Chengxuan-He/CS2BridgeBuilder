@@ -1,0 +1,1958 @@
+{
+  "schema": "BridgeBuilder/RepeatUnits/2",
+  "style": "Lift04",
+  "sources": [
+    {
+      "cid": "6b973ac2133fa9bd8d897bc9eff3363f",
+      "template": 0,
+      "channels": [
+        {
+          "stack": 0,
+          "layer": 0,
+          "name": "_BaseColorMap"
+        },
+        {
+          "stack": 0,
+          "layer": 1,
+          "name": "_NormalMap"
+        },
+        {
+          "stack": 0,
+          "layer": 2,
+          "name": "_MaskMap"
+        },
+        {
+          "stack": 0,
+          "layer": 3,
+          "name": "_ControlMask"
+        },
+        {
+          "stack": 1,
+          "layer": 0,
+          "name": "_EmissiveColorMap"
+        }
+      ]
+    }
+  ],
+  "units": [
+    {
+      "id": "Lift04RoadUnit",
+      "sourceCid": "6b973ac2133fa9bd8d897bc9eff3363f",
+      "sourceSHA256": "ab2b09795bfa036e68938504786a9b2f3e62ae9b000fc60cbcb6e0f3b1a45a39",
+      "sourceDigest": "ab2b09795bfa036e68938504786a9b2f3e62ae9b000fc60cbcb6e0f3b1a45a39",
+      "min": [
+        0.4697265625,
+        0.8251953125
+      ],
+      "max": [
+        0.62548828125,
+        0.9814453125
+      ],
+      "baseLevelPixelExtent": [
+        638.0,
+        640.0
+      ],
+      "physicalSizeUV": [
+        4.0,
+        4.0
+      ],
+      "densityUV": [
+        159.5,
+        160.0
+      ],
+      "physicalScalePolicy": "Per-use source sizes/densities are authoritative; pixel unit is shared.",
+      "cutout": true,
+      "rows": false,
+      "bands": null,
+      "channels": [
+        {
+          "property": "_BaseColorMap",
+          "cid": "a66819e9780aa14044c36a85fd77c781",
+          "sha256": "847f74b01697c3f1a65bb14697587a1fe860008fe4bb390755a796494bb334d2",
+          "nativeBytes": 8314627,
+          "kind": "VTTexture",
+          "width": 4096,
+          "height": 4096,
+          "mipCount": 13,
+          "format": 108,
+          "filter": 2,
+          "wrap": 1,
+          "aniso": 16,
+          "tileSize": 512,
+          "nativeMidMipField": 3,
+          "mipTailBytes": 1392,
+          "mipTailSHA256": "ae815102cc058739baaf2622790ddeba1d7992c4f52f609a7b9f7d8fe341aca7",
+          "tileBlocks": 85,
+          "fullTilePayloadExtentVerified": true,
+          "levels": [
+            {
+              "level": 0,
+              "sourceSize": [
+                4096,
+                4096
+              ],
+              "sourceRegionMinPixels": [
+                1924.0,
+                3380.0
+              ],
+              "sourceRegionMaxPixels": [
+                2562.0,
+                4020.0
+              ]
+            },
+            {
+              "level": 1,
+              "sourceSize": [
+                2048,
+                2048
+              ],
+              "sourceRegionMinPixels": [
+                962.0,
+                1690.0
+              ],
+              "sourceRegionMaxPixels": [
+                1281.0,
+                2010.0
+              ]
+            },
+            {
+              "level": 2,
+              "sourceSize": [
+                1024,
+                1024
+              ],
+              "sourceRegionMinPixels": [
+                481.0,
+                845.0
+              ],
+              "sourceRegionMaxPixels": [
+                640.5,
+                1005.0
+              ]
+            },
+            {
+              "level": 3,
+              "sourceSize": [
+                512,
+                512
+              ],
+              "sourceRegionMinPixels": [
+                240.5,
+                422.5
+              ],
+              "sourceRegionMaxPixels": [
+                320.25,
+                502.5
+              ]
+            },
+            {
+              "level": 4,
+              "sourceSize": [
+                256,
+                256
+              ],
+              "sourceRegionMinPixels": [
+                120.25,
+                211.25
+              ],
+              "sourceRegionMaxPixels": [
+                160.125,
+                251.25
+              ]
+            },
+            {
+              "level": 5,
+              "sourceSize": [
+                128,
+                128
+              ],
+              "sourceRegionMinPixels": [
+                60.125,
+                105.625
+              ],
+              "sourceRegionMaxPixels": [
+                80.0625,
+                125.625
+              ]
+            },
+            {
+              "level": 6,
+              "sourceSize": [
+                64,
+                64
+              ],
+              "sourceRegionMinPixels": [
+                30.0625,
+                52.8125
+              ],
+              "sourceRegionMaxPixels": [
+                40.03125,
+                62.8125
+              ]
+            },
+            {
+              "level": 7,
+              "sourceSize": [
+                32,
+                32
+              ],
+              "sourceRegionMinPixels": [
+                15.03125,
+                26.40625
+              ],
+              "sourceRegionMaxPixels": [
+                20.015625,
+                31.40625
+              ]
+            },
+            {
+              "level": 8,
+              "sourceSize": [
+                16,
+                16
+              ],
+              "sourceRegionMinPixels": [
+                7.515625,
+                13.203125
+              ],
+              "sourceRegionMaxPixels": [
+                10.0078125,
+                15.703125
+              ]
+            },
+            {
+              "level": 9,
+              "sourceSize": [
+                8,
+                8
+              ],
+              "sourceRegionMinPixels": [
+                3.7578125,
+                6.6015625
+              ],
+              "sourceRegionMaxPixels": [
+                5.00390625,
+                7.8515625
+              ]
+            },
+            {
+              "level": 10,
+              "sourceSize": [
+                4,
+                4
+              ],
+              "sourceRegionMinPixels": [
+                1.87890625,
+                3.30078125
+              ],
+              "sourceRegionMaxPixels": [
+                2.501953125,
+                3.92578125
+              ]
+            },
+            {
+              "level": 11,
+              "sourceSize": [
+                2,
+                2
+              ],
+              "sourceRegionMinPixels": [
+                0.939453125,
+                1.650390625
+              ],
+              "sourceRegionMaxPixels": [
+                1.2509765625,
+                1.962890625
+              ]
+            },
+            {
+              "level": 12,
+              "sourceSize": [
+                1,
+                1
+              ],
+              "sourceRegionMinPixels": [
+                0.4697265625,
+                0.8251953125
+              ],
+              "sourceRegionMaxPixels": [
+                0.62548828125,
+                0.9814453125
+              ]
+            }
+          ],
+          "preservation": "Use every authored source mip; no mip-zero-only decoding or regeneration."
+        },
+        {
+          "property": "_NormalMap",
+          "cid": "592b73eb8d41d9f8586f6742284efc7f",
+          "sha256": "c2aa00671e387270da6ead1210f96ffaf806197d4fc186aa4cf055a9c3f40fba",
+          "nativeBytes": 10915076,
+          "kind": "VTTexture",
+          "width": 4096,
+          "height": 4096,
+          "mipCount": 13,
+          "format": 109,
+          "filter": 2,
+          "wrap": 1,
+          "aniso": 16,
+          "tileSize": 512,
+          "nativeMidMipField": 3,
+          "mipTailBytes": 1392,
+          "mipTailSHA256": "59119e5e51aa13dab138919e7d87ab0514ba8fb1b79cfb96275aa34181ca5d65",
+          "tileBlocks": 85,
+          "fullTilePayloadExtentVerified": true,
+          "levels": [
+            {
+              "level": 0,
+              "sourceSize": [
+                4096,
+                4096
+              ],
+              "sourceRegionMinPixels": [
+                1924.0,
+                3380.0
+              ],
+              "sourceRegionMaxPixels": [
+                2562.0,
+                4020.0
+              ]
+            },
+            {
+              "level": 1,
+              "sourceSize": [
+                2048,
+                2048
+              ],
+              "sourceRegionMinPixels": [
+                962.0,
+                1690.0
+              ],
+              "sourceRegionMaxPixels": [
+                1281.0,
+                2010.0
+              ]
+            },
+            {
+              "level": 2,
+              "sourceSize": [
+                1024,
+                1024
+              ],
+              "sourceRegionMinPixels": [
+                481.0,
+                845.0
+              ],
+              "sourceRegionMaxPixels": [
+                640.5,
+                1005.0
+              ]
+            },
+            {
+              "level": 3,
+              "sourceSize": [
+                512,
+                512
+              ],
+              "sourceRegionMinPixels": [
+                240.5,
+                422.5
+              ],
+              "sourceRegionMaxPixels": [
+                320.25,
+                502.5
+              ]
+            },
+            {
+              "level": 4,
+              "sourceSize": [
+                256,
+                256
+              ],
+              "sourceRegionMinPixels": [
+                120.25,
+                211.25
+              ],
+              "sourceRegionMaxPixels": [
+                160.125,
+                251.25
+              ]
+            },
+            {
+              "level": 5,
+              "sourceSize": [
+                128,
+                128
+              ],
+              "sourceRegionMinPixels": [
+                60.125,
+                105.625
+              ],
+              "sourceRegionMaxPixels": [
+                80.0625,
+                125.625
+              ]
+            },
+            {
+              "level": 6,
+              "sourceSize": [
+                64,
+                64
+              ],
+              "sourceRegionMinPixels": [
+                30.0625,
+                52.8125
+              ],
+              "sourceRegionMaxPixels": [
+                40.03125,
+                62.8125
+              ]
+            },
+            {
+              "level": 7,
+              "sourceSize": [
+                32,
+                32
+              ],
+              "sourceRegionMinPixels": [
+                15.03125,
+                26.40625
+              ],
+              "sourceRegionMaxPixels": [
+                20.015625,
+                31.40625
+              ]
+            },
+            {
+              "level": 8,
+              "sourceSize": [
+                16,
+                16
+              ],
+              "sourceRegionMinPixels": [
+                7.515625,
+                13.203125
+              ],
+              "sourceRegionMaxPixels": [
+                10.0078125,
+                15.703125
+              ]
+            },
+            {
+              "level": 9,
+              "sourceSize": [
+                8,
+                8
+              ],
+              "sourceRegionMinPixels": [
+                3.7578125,
+                6.6015625
+              ],
+              "sourceRegionMaxPixels": [
+                5.00390625,
+                7.8515625
+              ]
+            },
+            {
+              "level": 10,
+              "sourceSize": [
+                4,
+                4
+              ],
+              "sourceRegionMinPixels": [
+                1.87890625,
+                3.30078125
+              ],
+              "sourceRegionMaxPixels": [
+                2.501953125,
+                3.92578125
+              ]
+            },
+            {
+              "level": 11,
+              "sourceSize": [
+                2,
+                2
+              ],
+              "sourceRegionMinPixels": [
+                0.939453125,
+                1.650390625
+              ],
+              "sourceRegionMaxPixels": [
+                1.2509765625,
+                1.962890625
+              ]
+            },
+            {
+              "level": 12,
+              "sourceSize": [
+                1,
+                1
+              ],
+              "sourceRegionMinPixels": [
+                0.4697265625,
+                0.8251953125
+              ],
+              "sourceRegionMaxPixels": [
+                0.62548828125,
+                0.9814453125
+              ]
+            }
+          ],
+          "preservation": "Use every authored source mip; no mip-zero-only decoding or regeneration."
+        },
+        {
+          "property": "_MaskMap",
+          "cid": "5d8b72ae9162225d8d768190434d3131",
+          "sha256": "19b9b5dee64728a34ce8670d7f26977ea817b47f52e3e0d5d93182e675dbc609",
+          "nativeBytes": 9192140,
+          "kind": "VTTexture",
+          "width": 4096,
+          "height": 4096,
+          "mipCount": 13,
+          "format": 109,
+          "filter": 2,
+          "wrap": 1,
+          "aniso": 16,
+          "tileSize": 512,
+          "nativeMidMipField": 3,
+          "mipTailBytes": 1392,
+          "mipTailSHA256": "53c4316a17a45990cf0d14a6f983a9b4ef67592364063ff85184bb61fce328bf",
+          "tileBlocks": 85,
+          "fullTilePayloadExtentVerified": true,
+          "levels": [
+            {
+              "level": 0,
+              "sourceSize": [
+                4096,
+                4096
+              ],
+              "sourceRegionMinPixels": [
+                1924.0,
+                3380.0
+              ],
+              "sourceRegionMaxPixels": [
+                2562.0,
+                4020.0
+              ]
+            },
+            {
+              "level": 1,
+              "sourceSize": [
+                2048,
+                2048
+              ],
+              "sourceRegionMinPixels": [
+                962.0,
+                1690.0
+              ],
+              "sourceRegionMaxPixels": [
+                1281.0,
+                2010.0
+              ]
+            },
+            {
+              "level": 2,
+              "sourceSize": [
+                1024,
+                1024
+              ],
+              "sourceRegionMinPixels": [
+                481.0,
+                845.0
+              ],
+              "sourceRegionMaxPixels": [
+                640.5,
+                1005.0
+              ]
+            },
+            {
+              "level": 3,
+              "sourceSize": [
+                512,
+                512
+              ],
+              "sourceRegionMinPixels": [
+                240.5,
+                422.5
+              ],
+              "sourceRegionMaxPixels": [
+                320.25,
+                502.5
+              ]
+            },
+            {
+              "level": 4,
+              "sourceSize": [
+                256,
+                256
+              ],
+              "sourceRegionMinPixels": [
+                120.25,
+                211.25
+              ],
+              "sourceRegionMaxPixels": [
+                160.125,
+                251.25
+              ]
+            },
+            {
+              "level": 5,
+              "sourceSize": [
+                128,
+                128
+              ],
+              "sourceRegionMinPixels": [
+                60.125,
+                105.625
+              ],
+              "sourceRegionMaxPixels": [
+                80.0625,
+                125.625
+              ]
+            },
+            {
+              "level": 6,
+              "sourceSize": [
+                64,
+                64
+              ],
+              "sourceRegionMinPixels": [
+                30.0625,
+                52.8125
+              ],
+              "sourceRegionMaxPixels": [
+                40.03125,
+                62.8125
+              ]
+            },
+            {
+              "level": 7,
+              "sourceSize": [
+                32,
+                32
+              ],
+              "sourceRegionMinPixels": [
+                15.03125,
+                26.40625
+              ],
+              "sourceRegionMaxPixels": [
+                20.015625,
+                31.40625
+              ]
+            },
+            {
+              "level": 8,
+              "sourceSize": [
+                16,
+                16
+              ],
+              "sourceRegionMinPixels": [
+                7.515625,
+                13.203125
+              ],
+              "sourceRegionMaxPixels": [
+                10.0078125,
+                15.703125
+              ]
+            },
+            {
+              "level": 9,
+              "sourceSize": [
+                8,
+                8
+              ],
+              "sourceRegionMinPixels": [
+                3.7578125,
+                6.6015625
+              ],
+              "sourceRegionMaxPixels": [
+                5.00390625,
+                7.8515625
+              ]
+            },
+            {
+              "level": 10,
+              "sourceSize": [
+                4,
+                4
+              ],
+              "sourceRegionMinPixels": [
+                1.87890625,
+                3.30078125
+              ],
+              "sourceRegionMaxPixels": [
+                2.501953125,
+                3.92578125
+              ]
+            },
+            {
+              "level": 11,
+              "sourceSize": [
+                2,
+                2
+              ],
+              "sourceRegionMinPixels": [
+                0.939453125,
+                1.650390625
+              ],
+              "sourceRegionMaxPixels": [
+                1.2509765625,
+                1.962890625
+              ]
+            },
+            {
+              "level": 12,
+              "sourceSize": [
+                1,
+                1
+              ],
+              "sourceRegionMinPixels": [
+                0.4697265625,
+                0.8251953125
+              ],
+              "sourceRegionMaxPixels": [
+                0.62548828125,
+                0.9814453125
+              ]
+            }
+          ],
+          "preservation": "Use every authored source mip; no mip-zero-only decoding or regeneration."
+        }
+      ],
+      "uses": [
+        {
+          "alias": 0,
+          "render": "LiftBridge04 Mesh",
+          "mesh": 0,
+          "faces": [
+            33328,
+            33329
+          ],
+          "region": "fixed-approach",
+          "physicalSizeUV": [
+            4.0,
+            4.0
+          ],
+          "densityUV": [
+            159.5,
+            160.0
+          ],
+          "boundary": [
+            [
+              [
+                0.4697265625,
+                0.9814453125
+              ],
+              [
+                0.62548828125,
+                0.9814453125
+              ]
+            ],
+            [
+              [
+                0.62548828125,
+                0.8251953125
+              ],
+              [
+                0.62548828125,
+                0.9814453125
+              ]
+            ],
+            [
+              [
+                0.4697265625,
+                0.8251953125
+              ],
+              [
+                0.62548828125,
+                0.8251953125
+              ]
+            ],
+            [
+              [
+                0.4697265625,
+                0.8251953125
+              ],
+              [
+                0.4697265625,
+                0.9814453125
+              ]
+            ]
+          ],
+          "sourceFaces": [
+            {
+              "face": 33328,
+              "vertices": [
+                54951,
+                54952,
+                54953
+              ],
+              "positions": [
+                [
+                  -4.0,
+                  9.71875,
+                  -96.0
+                ],
+                [
+                  2.00001522898674e-06,
+                  9.71875,
+                  -92.0
+                ],
+                [
+                  3.00002284348011e-06,
+                  9.71875,
+                  -96.0
+                ]
+              ],
+              "uv": [
+                [
+                  0.62548828125,
+                  0.8251953125
+                ],
+                [
+                  0.4697265625,
+                  0.9814453125
+                ],
+                [
+                  0.62548828125,
+                  0.9814453125
+                ]
+              ],
+              "pixelsPerMetreXZ": [
+                159.99987999917622,
+                159.5000000000048
+              ],
+              "sourceGradientXZ": [
+                [
+                  -0.0,
+                  0.03906247070292388
+                ],
+                [
+                  -0.038940429687499944,
+                  9.765692042900908e-09
+                ]
+              ]
+            },
+            {
+              "face": 33329,
+              "vertices": [
+                54952,
+                54951,
+                54954
+              ],
+              "positions": [
+                [
+                  2.00001522898674e-06,
+                  9.71875,
+                  -92.0
+                ],
+                [
+                  -4.0,
+                  9.71875,
+                  -96.0
+                ],
+                [
+                  -4.0,
+                  9.71875,
+                  -92.0
+                ]
+              ],
+              "uv": [
+                [
+                  0.4697265625,
+                  0.9814453125
+                ],
+                [
+                  0.62548828125,
+                  0.8251953125
+                ],
+                [
+                  0.4697265625,
+                  0.8251953125
+                ]
+              ],
+              "pixelsPerMetreXZ": [
+                159.99991999943086,
+                159.50000000000006
+              ],
+              "sourceGradientXZ": [
+                [
+                  -0.0,
+                  0.03906248046861105
+                ],
+                [
+                  -0.038940429687500014,
+                  2.4135270551614187e-18
+                ]
+              ]
+            }
+          ]
+        },
+        {
+          "alias": 1,
+          "render": "LiftBridge04 Mesh",
+          "mesh": 0,
+          "faces": [
+            10581,
+            10582
+          ],
+          "region": "fixed-approach",
+          "physicalSizeUV": [
+            4.0,
+            4.0
+          ],
+          "densityUV": [
+            159.5,
+            160.0
+          ],
+          "boundary": [
+            [
+              [
+                0.4697265625,
+                0.9814453125
+              ],
+              [
+                0.62548828125,
+                0.9814453125
+              ]
+            ],
+            [
+              [
+                0.62548828125,
+                0.8251953125
+              ],
+              [
+                0.62548828125,
+                0.9814453125
+              ]
+            ],
+            [
+              [
+                0.4697265625,
+                0.8251953125
+              ],
+              [
+                0.62548828125,
+                0.8251953125
+              ]
+            ],
+            [
+              [
+                0.4697265625,
+                0.8251953125
+              ],
+              [
+                0.4697265625,
+                0.9814453125
+              ]
+            ]
+          ],
+          "sourceFaces": [
+            {
+              "face": 10581,
+              "vertices": [
+                18117,
+                18118,
+                18119
+              ],
+              "positions": [
+                [
+                  4.0,
+                  9.71875,
+                  96.0
+                ],
+                [
+                  6.00004568696022e-06,
+                  9.71875,
+                  92.0
+                ],
+                [
+                  6.00004568696022e-06,
+                  9.71875,
+                  96.0
+                ]
+              ],
+              "uv": [
+                [
+                  0.62548828125,
+                  0.8251953125
+                ],
+                [
+                  0.4697265625,
+                  0.9814453125
+                ],
+                [
+                  0.62548828125,
+                  0.9814453125
+                ]
+              ],
+              "pixelsPerMetreXZ": [
+                160.00024000218752,
+                159.49999999999977
+              ],
+              "sourceGradientXZ": [
+                [
+                  0.0,
+                  -0.039062558594284064
+                ],
+                [
+                  0.038940429687499944,
+                  1.7347260780857376e-17
+                ]
+              ]
+            },
+            {
+              "face": 10582,
+              "vertices": [
+                18118,
+                18117,
+                18120
+              ],
+              "positions": [
+                [
+                  6.00004568696022e-06,
+                  9.71875,
+                  92.0
+                ],
+                [
+                  4.0,
+                  9.71875,
+                  96.0
+                ],
+                [
+                  4.0,
+                  9.71875,
+                  92.0
+                ]
+              ],
+              "uv": [
+                [
+                  0.4697265625,
+                  0.9814453125
+                ],
+                [
+                  0.62548828125,
+                  0.8251953125
+                ],
+                [
+                  0.4697265625,
+                  0.8251953125
+                ]
+              ],
+              "pixelsPerMetreXZ": [
+                160.00024000218755,
+                159.50000000000014
+              ],
+              "sourceGradientXZ": [
+                [
+                  0.0,
+                  -0.03906255859428407
+                ],
+                [
+                  0.038940429687500035,
+                  6.033830230334211e-18
+                ]
+              ]
+            }
+          ]
+        },
+        {
+          "alias": 2,
+          "render": "LiftBridge04 Mesh",
+          "mesh": 0,
+          "faces": [
+            28426,
+            28427
+          ],
+          "region": "moving-deck",
+          "physicalSizeUV": [
+            3.806640625,
+            4.0
+          ],
+          "densityUV": [
+            167.60184710107748,
+            160.0
+          ],
+          "boundary": [
+            [
+              [
+                0.4697265625,
+                0.9814453125
+              ],
+              [
+                0.62548828125,
+                0.9814453125
+              ]
+            ],
+            [
+              [
+                0.4697265625,
+                0.8251953125
+              ],
+              [
+                0.4697265625,
+                0.9814453125
+              ]
+            ],
+            [
+              [
+                0.4697265625,
+                0.8251953125
+              ],
+              [
+                0.62548828125,
+                0.8251953125
+              ]
+            ],
+            [
+              [
+                0.62548828125,
+                0.8251953125
+              ],
+              [
+                0.62548828125,
+                0.9814453125
+              ]
+            ]
+          ],
+          "sourceFaces": [
+            {
+              "face": 28426,
+              "vertices": [
+                46546,
+                46547,
+                46548
+              ],
+              "positions": [
+                [
+                  -1.100008375942707e-05,
+                  9.71875,
+                  -64.72265625
+                ],
+                [
+                  -4.0,
+                  9.71875,
+                  -68.529296875
+                ],
+                [
+                  -4.0,
+                  9.71875,
+                  -64.72265625
+                ]
+              ],
+              "uv": [
+                [
+                  0.4697265625,
+                  0.8251953125
+                ],
+                [
+                  0.62548828125,
+                  0.9814453125
+                ],
+                [
+                  0.4697265625,
+                  0.9814453125
+                ]
+              ],
+              "pixelsPerMetreXZ": [
+                160.00044000456032,
+                167.60184710107737
+              ],
+              "sourceGradientXZ": [
+                [
+                  -1.1102230246251565e-16,
+                  -0.03906260742298836
+                ],
+                [
+                  -0.04091841970241147,
+                  -6.861438152673503e-18
+                ]
+              ]
+            },
+            {
+              "face": 28427,
+              "vertices": [
+                46547,
+                46546,
+                46549
+              ],
+              "positions": [
+                [
+                  -4.0,
+                  9.71875,
+                  -68.529296875
+                ],
+                [
+                  -1.100008375942707e-05,
+                  9.71875,
+                  -64.72265625
+                ],
+                [
+                  -8.00006091594696e-06,
+                  9.71875,
+                  -68.529296875
+                ]
+              ],
+              "uv": [
+                [
+                  0.62548828125,
+                  0.9814453125
+                ],
+                [
+                  0.4697265625,
+                  0.8251953125
+                ],
+                [
+                  0.62548828125,
+                  0.8251953125
+                ]
+              ],
+              "pixelsPerMetreXZ": [
+                160.00032000307667,
+                167.6018471011251
+              ],
+              "sourceGradientXZ": [
+                [
+                  -0.0,
+                  -0.03906257812575114
+                ],
+                [
+                  -0.040918419702411536,
+                  -3.0785313953593866e-08
+                ]
+              ]
+            }
+          ]
+        },
+        {
+          "alias": 3,
+          "render": "LiftBridge04 Mesh",
+          "mesh": 0,
+          "faces": [
+            4198,
+            4199
+          ],
+          "region": "moving-deck",
+          "physicalSizeUV": [
+            3.806640625,
+            4.0
+          ],
+          "densityUV": [
+            167.60184710107748,
+            160.0
+          ],
+          "boundary": [
+            [
+              [
+                0.62548828125,
+                0.8251953125
+              ],
+              [
+                0.62548828125,
+                0.9814453125
+              ]
+            ],
+            [
+              [
+                0.4697265625,
+                0.8251953125
+              ],
+              [
+                0.62548828125,
+                0.8251953125
+              ]
+            ],
+            [
+              [
+                0.4697265625,
+                0.8251953125
+              ],
+              [
+                0.4697265625,
+                0.9814453125
+              ]
+            ],
+            [
+              [
+                0.4697265625,
+                0.9814453125
+              ],
+              [
+                0.62548828125,
+                0.9814453125
+              ]
+            ]
+          ],
+          "sourceFaces": [
+            {
+              "face": 4198,
+              "vertices": [
+                5878,
+                5879,
+                5880
+              ],
+              "positions": [
+                [
+                  -1.100008375942707e-05,
+                  9.71875,
+                  64.72265625
+                ],
+                [
+                  -4.0,
+                  9.71875,
+                  68.529296875
+                ],
+                [
+                  -8.00006091594696e-06,
+                  9.71875,
+                  68.529296875
+                ]
+              ],
+              "uv": [
+                [
+                  0.4697265625,
+                  0.8251953125
+                ],
+                [
+                  0.62548828125,
+                  0.9814453125
+                ],
+                [
+                  0.62548828125,
+                  0.8251953125
+                ]
+              ],
+              "pixelsPerMetreXZ": [
+                160.00032000307667,
+                167.6018471011251
+              ],
+              "sourceGradientXZ": [
+                [
+                  -0.0,
+                  -0.03906257812575114
+                ],
+                [
+                  0.040918419702411536,
+                  3.0785313953593866e-08
+                ]
+              ]
+            },
+            {
+              "face": 4199,
+              "vertices": [
+                5879,
+                5878,
+                5881
+              ],
+              "positions": [
+                [
+                  -4.0,
+                  9.71875,
+                  68.529296875
+                ],
+                [
+                  -1.100008375942707e-05,
+                  9.71875,
+                  64.72265625
+                ],
+                [
+                  -4.0,
+                  9.71875,
+                  64.72265625
+                ]
+              ],
+              "uv": [
+                [
+                  0.62548828125,
+                  0.9814453125
+                ],
+                [
+                  0.4697265625,
+                  0.8251953125
+                ],
+                [
+                  0.4697265625,
+                  0.9814453125
+                ]
+              ],
+              "pixelsPerMetreXZ": [
+                160.00044000456032,
+                167.60184710107737
+              ],
+              "sourceGradientXZ": [
+                [
+                  -1.1102230246251565e-16,
+                  -0.03906260742298836
+                ],
+                [
+                  0.04091841970241147,
+                  6.861438152673503e-18
+                ]
+              ]
+            }
+          ]
+        }
+      ],
+      "oldRepeatKeys": [
+        "28dc86a8c640b80ac3c0ad59d935ab79c4fdf2ba1919b36f1bd6df07da896505"
+      ],
+      "oldStructureKeys": [
+        "19e8a1b18bf2b7dd55f708ce62d6362207568cecf5055f7ad4771dd1856b28fc"
+      ],
+      "descriptorPolicy": "Road cutout and structural descriptor parameters remain distinct; shared texels do not imply identical material descriptors.",
+      "unitEvidence": "All four original quadrilateral road surfaces map the same measured complete rectangle; no arbitrary triangle/chart creates a unit."
+    }
+  ],
+  "unmatchedStructureKeys": [
+    "00f55925ce7c4322ad539181cca9800328208611d9b20983c892658358a3e995",
+    "01691ceeeb829d4fec4f84ccdb85943e7d7f55d3189b69e544fff625baf84b32",
+    "0181eeb0e3eb15042394656307f4460d1311ad69be6aeec83368db0ca33eb1c2",
+    "025ae1aa09652e43be4631cec809cea1982cb82e9d216de2321a4b8b340acf6d",
+    "027a7d873e916c052dd4bfa860916e0ce28f310f39d03b65bb006090653920cc",
+    "0335f7ecd037ec687f3a8b6f21f2209c5119da58d3f380cd5298246d60d1b171",
+    "0399bb0d88420b7e41befb464314d6b9625fff1579c6f0580f792ebe74b42495",
+    "0417567722182f13a28350459caeff93200ff53494d60a6ad5b73471b64524de",
+    "05fad5466f21b7d80d17065904a1ac397d30a397e8e9afae165f225c252f4676",
+    "061aa92a11e6e04df4accf576080bab6d7dbf107fade3e79bf7fec2f412124f8",
+    "06a76978238615617da3f73d5d84353dd8ed29bfdce8229974091559f013fe4e",
+    "06acac4796ec83656c0e0818815212ce00564643f82b22a0a49d2a4dbde24310",
+    "085b0651b66a23e02bd0daaf054217dc8999fe81a6ac9be66c5ee95b4fb1799c",
+    "0a7d46706daee77c3c01c0f6ec1733cf53ca1344aaf084728f230eeca548b8fd",
+    "0a96b462a773086c0fb8cce2eafc913167eb12fb95d7181b54948f2502a6caa0",
+    "0ad395152aa7cdb9583db92a7707b342587362068a6af3acefc0ca02f29d904c",
+    "0b50a094eab6c7ea38ea1dd3d8b4a430936814b5d0509136073abf614a242d2f",
+    "0b8adae7e936d13d4076066c688c83640a6c0d2d579c9617773f2aa5d8b6ab53",
+    "0bd6f4cbe1139f6241cfb4ae7f2debd66e6a02dd58127ea31c665ff5504c6c4a",
+    "0be26af594738a4d0c055fbdfd4fdd79011a92bce9eff8b6747a6530b2615b77",
+    "0c7701a15bbc623778fa0111898d6012fda96274c0115df1ed806f8c2b8f0290",
+    "0c8b890de99dcc7dec43cc1f3da390510dd582e0e36577f26d03ae30bb69d587",
+    "0c90bc9bf9d919a88b4e29bde5aa9ee3920135d1141e2d573a799c7866de05c2",
+    "0d5708b695995de78569afae1bc95e77960133591fba1b6f62d0f2ebd1496550",
+    "0d9d45275202152394544cf92c77e5126a47b776cb403c937d3820f04ab3b717",
+    "0df421d202ca11bd3213fd4a5f57d3d11e1a8bc81d8ad2dba9e40ce88d0c7434",
+    "0e3163cc7ee13d2e1bb21b5f33bb8c975afed1b9406fb6ef424d03d8fff3672d",
+    "0e477ea2583e029a83c7e0d7e9cb69b68f044802feeb9ea44ac728cd5260c3ac",
+    "0e47fb798ef25ee532a78c04237cce6d3df05f2717beaaaea76c30da50a402b0",
+    "0ef2235129411a27eee15480b6519ee21b53a030115536083c6d9bd1aac8add6",
+    "0f30cd8775ab4adccd05b58333d377650119cdbfbea7f24dc4347922028cda48",
+    "11e7acf7cea043a35f00aaf21b572bb89107a476a7841bd8da0fd05f86a92cb1",
+    "1241aa4176e6bf053d34ce391184943e3670876b99635de1c4a963452d0ddd48",
+    "12be9019596a2e950e2eb82babdba30428b389d59f8b0f6c72854f8afb35aac7",
+    "1315c04620407f62279250bfa85ad7672f83cef5c8b3b2be1a21eb9b4a5f4536",
+    "135dd11de05542ee533c97056d8a1bff160b8db74ccf5e64e68b2f9d419dba26",
+    "142516bfbce7d5934b62ca0fe69aefa1cf79f1cbeaad1510e24e571a0dcd18a1",
+    "14e9781078f21432f5708f5a8533049578df4505aa8f24108071d6848395af67",
+    "150504f3c4c64c42d357161edf4c4c64dd32e07ed473a69037954614c4265c27",
+    "16ecd11f104d4360be7638d5ccc5807e5535621d8851ba3340e459b6ad319e9f",
+    "18fc19eb4150507acc9083aacbfcb008bd52dea0d88dcf8564cb7fa296927b73",
+    "190f520edaa72770cf8da58d51c8d10948cf2e3ed2ed93d9467315e12ee67ac5",
+    "193e33d76ae8f3e2b12b58b458ce09a9b9cc5146b850f0447149b48cffe40dc4",
+    "19644bf4e07cd367d7d8df81a1b6b5a19af92e8a429e6061ec9580d50be013ce",
+    "196cd4e3282b6b3044ef8716be4a5cd3ce467212af0dada7bef1c265d600161a",
+    "199f30f312dd0eb828f64d5666e829e09a05fdd3e42e7fbba9f4ba0e5aaf13a9",
+    "1b3094650f9aa210e44c809e86a622d2fa55e0392a0982f7025663c7a3d991e5",
+    "1b47d3254e9a2a35c890f3bfcbeefccec7f19153c901e0fd6dc835d28177104e",
+    "1c19bbdd5a6e82082bd85ce07675d03e951640fb8230344c0f1c90b862767965",
+    "1c60ded1ddf6ed2e60048f6386fc6b022921b9bb54089bbce3f89c6b7325c4b1",
+    "1ca8a45d2ddf596b6db5e8cbdbf719615864a35684190ff7766ac58c6e30301a",
+    "1d48b2d2cb263e88681d3eb1e58a2cfa5c6d624155226937983e4c02ade13472",
+    "1d985b3327feb28a7acb18de06099cd63fd89418bd5499d8e213652e9b1bf59f",
+    "1da4a0d9d892b82dd8cdf570f127242b3c4dd14fdbd29e65f59a47d70130c346",
+    "1e6b7e3ba7e2017b9fb7da0c827227d7e6d74fa40bae60c1781a37ed0929912b",
+    "1f6ae33b59084e3748cc7f8349133936455c347fdee399fa6090d333fc0c054f",
+    "2002cae3ef3b744c2376dba7fabaeb3891a3850611aaf1439917c17213137f48",
+    "205d875c0b59d443e1f65e35ac197c10b3348f83a9f8346ab79b62af3a3157c5",
+    "20aeb6e117878e83552b1ee6a6d1bf57a6b9b805cd3bb6574e378c7e3d2ecf59",
+    "22d7725aef00f667390bc84597600a7b0aa1ca69226b9e5b6c760029cea5c998",
+    "2434131d9c0b00d1f9dce7dfec62466719fba98b4791023b018e71886b27d03c",
+    "2487684b513abce3803f2f05477d67a3afc2ee4b0387c88c680f9ca6fdd86f88",
+    "26bc98f5ef1d0b4b747c86717e4f98dbb53c2d1d7e8e08350a5ad33a93520fd3",
+    "279aa62dc622e431ce1c6b3505cc49d9e5e19f172b5379ef8edc86ae2d689050",
+    "27bae00d43dea52911271a91b48b29cbce942e5c8f65e6167eaa419e7a6699ae",
+    "27f289c99ae8f826e936112684f95a71fe373ede6f0a040e7c24833ca7f7bfa2",
+    "284eeb5b68b3607fab500875d22e686609c15ed30dfab5f4f3715c8a9bb59b55",
+    "2a2e6ce3a5ae0cf93195dce441e3d99fa4dbe3ede5304a1c43e7841f67e237cc",
+    "2ab67a3d86c29f74cf0bb9f31004157b54994223717b264a7c1899f03d553f29",
+    "2ae99547e8b279c99dabf220e3eb490c0d173970b8fc2951c7bedf004a4255b2",
+    "2b57ea32963a5528076622688b3d33704b86e605a4841a22bf7e8130c0a19fa3",
+    "2c3593c440d4387e35f94449586570f797a28ad11315424197a2cdf0f81cc012",
+    "2c461fd41b606ff3de7b851f14e97e5eb5ad8e0520752e1626261e809181e1a3",
+    "2d0a8e4ab9f3172862f38a346348838d984aa9ab35797ee39e1c978daac32a71",
+    "2d456961c3dedf4557a9a5f3c2175dafdd9ccceaf9e893ee757a32d8ac9b8c4a",
+    "2d56f683af9006637d9388c517278c1e13ec27bf8bf7062a6ddd79ba4e80c2e8",
+    "2daa651caee1e76fc7cdf303d2a33d7e1243bf1c5828a773e0ffabb68668f4e6",
+    "2ddf303cb9cfd901189edd50e9e1c5fbdb3edbd8fceec94ec0ec05853691d98d",
+    "2e4b0d9b9479b8cfa016239ef19878dc3e8787e871bf359d1a3a06047c897519",
+    "2e82b900c9c285feb353b52f02037d9e8101d9bff1d436edfb7ae9b32f84b1d8",
+    "2e9ee6ecef4be477b0b26902116ce13b20a42b49db50a9d0997ebc66e4f5ee1d",
+    "2eaf51840223591f99e5a17abe862e61df3597d001eea00ee1d740f7bd789835",
+    "2eb2d79a3efde7fb76559264f3cf9a77202420c88349a0b6f514e304446e1ff4",
+    "2ec97fb8e997f769d9f09fddcd28818a4a8a6aa0716b6c5b3dd082a627949a3c",
+    "2fe42db699b2897aa7f813fb27ef7df7426e199a62fa977be181e8b38216ab33",
+    "30413efc17e5182c38576f8b33528bf7fa72d815765048fc623f8bce30227f9a",
+    "305d3733a11839b362bd09631df8981e26a559faa8d6e045947580d8b0dc9d5c",
+    "3086fa765bbf28c36c411f78f8a7619ac5f7e4b1d1b3413ae10621dfa697e669",
+    "31511e1dd4d7d9a661443fa8002a90a8269589c4ed4af13be79e2f71322b33e9",
+    "322aa28b4000e63b417596390ee6b08a9bc3f963155dcb6ef8ebdb31c394c0a3",
+    "32c71978810842ec955844c847c961b0312c07f78b57e00c5e1512757968590c",
+    "32ee28e09032ac4890507e84fa37b3de0bbacff07853a85ea477c0e4670345b2",
+    "32f9c6a4647528bb75480b6b2eb5dbceff379ed448f87807705b4671780e8c31",
+    "331817af872f9143ffdfac0666689f74c58d7bc3ded76e904f924b7ddd61fa75",
+    "341ba35a9936269b45bd0b6d59ba1fd326352cd528b460725ed12ad10aac51db",
+    "343ffbc97dfec66599c1821d285c43f493a7f16712a78d3f6af8a03f55774091",
+    "35265a7d7a752284f4a0346ff4435a1fafb65c128482b1617cc3b64bcb0d9fe9",
+    "361eed3c62bc21870277e07fa70843bf917699db9219b99b9e7ae418e495b41d",
+    "36217c7ae52b098451515719eff51a639411a32cd84f3a4f3d8853c79c61ca00",
+    "368ea8807a00afa12dde1de2b7e9d0a78a8258ceb5f3e8a02eabeff41a20c4d5",
+    "37323a7756b79637f0b9df1d88b50f18c066a4f920ba2c74d1770a4647e71889",
+    "377f668235711462d7956810fa2e2522ee9ec788b541c792691da4151ff43e43",
+    "3785698c78dc14d8fcca258ffb202dc27c10885813a94cdd29ae51f97f9e1a09",
+    "3946e503e8ae7d275aecd3128dbce097b176690fa2de78badbb8cbc505927b19",
+    "3989744456dae92cfe715e2d57ace21d95edb1a6afa9e6cc91575b6190f8f8cf",
+    "3a5e8d6ebd0394e3e9a3970e90f53b6a7cab55badd65885aa74eb7ba1a2ef3ce",
+    "3a5f4c8f0f6269eca571ed53fb6830bb31b05cb8b814f6a8b1f0924d8f0a3cf3",
+    "3a65d1931d16a18c0842f2e764fb933949c661a9446d185492df1e798094d194",
+    "3a6b52a2f11b5f47a772019ede5b99ac0f7deeba307698e16acf4f1f85fa46af",
+    "3abbf11dfa46566785fc137be3b21cf58539e19682b8bf4bc843eb71a68e66f3",
+    "3ac14a8512c610eca426c9084b62cf02942a1868af55b1d279dc0a3a65cab091",
+    "3b1d884ab10e1c58a9fd1b3143e1f620d91c4119462698b1b2f4850d68130b41",
+    "3b415645cef2a185a027adff12b0dbbe19800877697aa3bde76fc94139d331ff",
+    "3b51179f503fd2f941186973c8642ef40dedb8ee417fd4618c75b998d5f7b574",
+    "3ba01a4fa7980173950cb6f21fda7e94b4a599747bbaaf6839d994d32be0ed2c",
+    "3c98179349cdc0f23f1008c06818c782ab0dc5a89dc66fa4bdc7839521b36b6e",
+    "3eb0b976a6d217846b799d0efbf605e1285c9e66863d0c0492bcce76cd737abb",
+    "3fc4c721f543be219e721ee39c912e57f5579abb986b4dd522c62b521a747d2e",
+    "3fdc73ba5965c60edb7fe133529426a13b943e13e0a819e7a1cd0368b614f67d",
+    "408f45fc8927badac52d4a689deb105e3eee12312a1a156d678f805ff970c112",
+    "40d640e3a0457ea182f72969ccbee22ef4b819f42bcef7aa09adabdcb5c15477",
+    "40f6b2df7d7e7e42a6f23d77df7ee1e80d680d746d6104de68d008cd03d66d83",
+    "410eb48e54292eb432fbc32feae240985b42b872e47cfa69eb07078f515ff86d",
+    "411c01c00b39fbb232728eb17d08678c59d90c222b6c82566d77720458fe6dee",
+    "416ae56c3ab0f5f8e1d0a163cb8af919e6bcee21ad94c5dae624f9ca83991df7",
+    "418232011690d1cb12ce11df9b9e48b9b5ef693fb11682f558f90dd6c499c587",
+    "426d1aa885513d694e3bb871a3099f2f26cd60f089c024f3cca31c5e9cd51b08",
+    "43a40491c7767776d98ecf9f02e73b9c21b80380e5e9c8941b2fa7f118c8c233",
+    "43cdd594bf9e3dc0b6c8b502fb23cea18150db73f456ce734c13580c57e9a94e",
+    "4485dd523546c6de062e8073d102e977c9cf4530d5404f4993f3e5c4d03fd8c9",
+    "44a4e73e1d9829907723c6c71b70ff7245ce215454a2ea0879dc3644848fe55b",
+    "44aff68bcc2642bdf7460a54488c982fd9c0332c919c62ab99fd4219c0101b26",
+    "44c79fefda965fe830e12526c70e71a3e0ccb2171e2119894069a88a24d0e618",
+    "459416192f59e156720be88490987d852bc0598a0063b61a15d4acd577d7709c",
+    "45ca6753a67e3535fd88e87f1432a97272fdd97705c7d7f110fef9ce003ab656",
+    "4682cd2601112897b653b918c6f014233c163a91dbbe0eee05c148fbb1fb7cd4",
+    "46a2fae3af547a04fea7347d012c668c81a09cd79ff83d5118c836aade6c8f26",
+    "46e4553eb410425eb4d36dc9df44bb5dbeabc3eb9a7060bcb4f6d77020eb5c6f",
+    "46f78a468aa7f6a99728515f35779dde235eddef4358f40a722b57902a813063",
+    "4775161fd56c2e64c6f48579b96fd7a282cf22436d5f490d3ff603fe8650b463",
+    "47fc19283b0188f11fe35fa682172f683cbf5842535f7df43e93e06192db68af",
+    "48868f5892159cfef4c968a6b8516cd7e82695035f1c7c4326ca18e3c14fb94b",
+    "4921a034c2fce8afde9a68527c9afa41a40f8c8e5e1dbe83afea5c1f03bef8f9",
+    "493b763454ea308f7acbd56ba634ab7909d58c3f3d38237104c749cfb9746ddc",
+    "49c34cf570be9f8b8e6eaa3919e5912a01ecfc8dffc1bb5be53d6594a88d7825",
+    "4a02458963cb4e353bac343e04bcb7837473917544626e35ec5f0ac192d49748",
+    "4a3ae8e60a7228619c56bacce9aef72fbcdce7df16b9bcfe9711ea4b0837488c",
+    "4a917cd7e4d70a1c71b403bfc35fff72dc451e9f085138046a4ba205f98359bc",
+    "4ab01cbe5f1db8f011ec60d8af4374326acbb2e56b6e05af3c9fe33d8c7a287f",
+    "4b213fb206c33f84743a821f3d77c0762f518b6a5cceb22d3b1b3f8f996199fe",
+    "4b8e11c19ff034adef27b0f52edbb73883931a48c0841da9a88a525e4fc0208b",
+    "4bdfbdca428da22776b47c8bd17a64b36190324d9d29041cbd6c64c0efdbdef0",
+    "4bfad5799791e916d4dd7714044b5e32d06f7be965f1d3a9cdff27d9f8073946",
+    "4c324a6c5b314ce0664336c2b4773f91e9c23fa77ac51dcccf3ae0e4bbcb3ed5",
+    "4d2bdf292b5fb82a9e7fdf336c4d151cb05049899eb2ea4e42439062fdf40956",
+    "4eb7c9e453cec926aa9070b20fcbe1bcca01620aaa9893087742985145f7b461",
+    "4f4e9535773764437e4b04a8401cd54bd2177c72eb6b9a3acf7b4d7ace9d1619",
+    "504ed64489083105c4aac791326c0c09a43cab3fb2356d61e54b94494a4392ec",
+    "50d6d7de9c540de2a5d11df120a71acd8313ac26e242a70f32174c33010dba2e",
+    "5192135cc9b669c04e036975d868852486e69687bd32d8467ad4ea02538d4035",
+    "52e263ef13b46a27e5aca177d100ec2d3935efaa392aeb1e3b64d0c8c8d61a27",
+    "54cd8fefbdb88bcadd400b4fd16429b826387ad7769cfde74fd6225a5b31d66b",
+    "556a1e73f0a2cf53b66a4aebb26dd084ff7291f903c938f1c04f4a0512d5c827",
+    "556cda0718b18d7449797d9b2a64864380aaf6eb783d0af482bf297d65e98115",
+    "5578c252acf53524b1f7d6f9edb3d678981bbf29ad19ea2d62febad8104104e3",
+    "570668484630e75e13f53071b2afb0d391c940048e22a5f7621b5fdebcc8d630",
+    "5710ef477cedeb6cb2064d50eec94c87e6ee026efee4ac4b08830e7bb7e00cd9",
+    "57120e4379d070094718578f9a573848cad89268fcca14a4d3d91dc87ac2151a",
+    "58c115315332d5d4cba72590b278415e917a90af7bc6c5f47daa0761265b3384",
+    "5910d045c892532cbd0a502aba5185324b518911f561f5fd0b3fb8b513e814ce",
+    "5946f2001113527b945d60074ba8a892c06d691006e7d3bdd1ce8d4c75d0736d",
+    "594845b3b493945def417dc745f3061274ad3e89c200e8c11161e8a391ada00a",
+    "594c2968343f9359c925d0a221c8dcb4aa9024d0bcea745cc36b021b93b707b9",
+    "5b08abcb44bcd1739bd9e921ae79b74a8c995409fff0c760c0fabc04f9dba770",
+    "5b1f6514e477d987dc168904fce5dbef1f6f00fe4830a0c4c754a8e8ee0b1113",
+    "5b87f6d0d99350fbe8c6cf900fdb1139e8e02d3b8472fda56cf32f2a106f4439",
+    "5cf7cdb843c2408d2bac291b46fb91decd98abdbe3c316677b5eae9fb70d45c2",
+    "5d147bc63e5e0447a9ee3ff748c7551003e369f5edb25a710128dbdb38839b19",
+    "5dbc40a76700fc90c7dfa5975c203e9fc5ca5bf0994dc3e7435e64c68941e36e",
+    "5e4e38f0d06495f1d7c322c1d155f1e2f6f2bf775a0ddc5b487c355c6b837575",
+    "5e9ba97fa95d0eec4db4ef033085272851d47c59137af46a6fb690c0ddcce378",
+    "5eec47243087a68c2af77530b95211ad55d59610d399e0b9b2ee772fc5b65692",
+    "5f0b21305f67661d963410e285bdd993169db919a6556a03950aa5ba27865f62",
+    "5f19a5e226e8f14f64920c09a63c946a11992af295bace347c9ad5d26f6cc10d",
+    "61a7d26b9eecb51ae73a12ebc8f68287c4702b4f91611b91752053b49d0810ae",
+    "6247af31defe89f417cfd0d72f9acf11fc74c4f576500efde2c510daf4df9279",
+    "631b096034bfcc03358d3ad96dece19d915d270f8d9734b3a5cb1b996250a1c1",
+    "64a30562226b6006888d02cf70409f47f17cbd929ab7ed6bac9206f6a3f3c106",
+    "658c6e850139930611212607e544b3395147d37486475c0a3c8d8ad205d8548a",
+    "66592520a2ab33b010a1491a377e442b2af05e308ac67243dcd388dc8d9d5ad1",
+    "6922257522e61e9d57a63c4be971fcc7f445847def116502883dadb23e69c996",
+    "6a6965f2bfb7e63cdbcde1cf17bd13f74903346519df4f2ae191cc7a90c400a1",
+    "6a72334bca4007d5d08f39d419cfc7b5a253e998dd786dca21cc9df9acde1745",
+    "6b52e216f6a30d908bd52ea0ca64fc0aaed7e5371c60601683f81eb200f44e91",
+    "6bdee072b7358367750c7bdfc57b3e73af597b8f926a18a2a2497e32fb4b2726",
+    "6bdf5e590ae9b9f0757b640e1eb6c0481103e1590e7ee8e8365fb8f8804f00ca",
+    "6c568102fbcc0eb1cd329698e9b86772d96d16b71a0cd2818c83818cef0c80c9",
+    "6ce25cdbd872b451674462320060b3f0879e1b0354606aa98ec500afb27471dd",
+    "6d689b958829475b7d44a32026f63da1cd4361a4c1e8bcbb879ebaf382323b78",
+    "6d6e603bfdef0fdfc63902f368cd554f239a771c2b6d71a8d0c0b5b143093d79",
+    "6dae8c801e760c7df2c841f354abd7605e3852fc8e9c5fb72f0ba3fb029c30cc",
+    "6dc9dc61bd0412e6266da2e42bb8396321b70bbc0cedbc69799c75f643794314",
+    "6de41bba3b2ec602cf983e7379f5dff11b9030d655c6513f046fb2de5a86f7af",
+    "6e4b34b7b60cdbcda3dc12bd16e8a72fc06039d8c2911f0133786b31ab15c9d6",
+    "6f2a8c2056ad782c1338b954b16a05ac754e2e4f531a7ef786cde0e400ac8596",
+    "70052d4c561f95b28a6e077da7543ec33141e99e38bdb151cc5624e69e873df7",
+    "70d36159800b22b3755cf080e8a4347ab164b8d5e19ae22465cdad34b2e161d6",
+    "70d4854a6f6b1276420a69312f2a73c48fc42a789caec947a7979790653750e6",
+    "71c696420f33c049c89620b62c3d396914b110128f11ae32ce20f2fe6aa80559",
+    "7324460d14a021d5d615cf11d2ae1073e928f8f6e7234fa0a964afc63c059b09",
+    "73384e3d5fd5a050a4ae231cd8a1a99546a4895f4ff3c02d49c02f93d59c036a",
+    "73940e3f5aaed4a3758632e677f2eb57f6e43384c667412cb194e9c9a868dfa0",
+    "73947abd256a784e0e7b26c13aaeb4ba61f2030fbce3995e49dc0c64029a34c6",
+    "73f59e95f00a74f0ea94bb5cffca4ead885c9a75ce8f40be6c6cd11738347138",
+    "7406bf399e10916af90760a6906177d18adbb322b47befbeb9a3f1aef773ae5f",
+    "743492c903d28f3c9b15bb4361cc14c317e0e4ba270271550b46160af43f1d46",
+    "745ae770751c1725ea9ca4ee585d26e799f4a9b396a26423085e965525b06417",
+    "74f40129c8c1e307dea0fceb7dee55627cf8ac6fd45b5b1dde9c25b3b4187047",
+    "751a1429e3b27129e4a6f3fc446c3c1b66a89c037f10c6080a070597fb513f5f",
+    "765677d346ece6de4bba74686ab792fa82f0804c688b5e2739c0f2a193c47ed2",
+    "769c4e7c3245e298bb3b47ffb1eaf699056047089591226dcd762c151edd0399",
+    "76ae891494ef98f949b56f613d757ae34e35f09365244ccb4214811e728fa7d9",
+    "7725b60ef944c6ceda0bd949ee952202053de10551439492ddb6ca6e879afd18",
+    "77c00484fe30d0ed5d12e44c8b483ba6ae45a81fb53da6df78b5deacea6457cf",
+    "77d69f01776cea051ab661fbb397553b1e3ec64df4cc450968a5eaefd8f1c049",
+    "78422573a0eac2dad26ec8d38a9bb5e146838c7cc957e0786142c49197323dd6",
+    "78b7b08839440831bf5e2b33b35a35d7d399152f9e5ddd5791367b643b949496",
+    "7906256534e082132ac80e723e27ab1ea61278055e8ceeadd7204b7223f267ac",
+    "7a6e5563a060c068978b95ec0a8be9c988b00db39e4751c82ada6efacbc03bc9",
+    "7a907f3c3a1ba330b8bbe658160322185073f52e6de0f78c4620b6d4a7d63c9f",
+    "7ad1acd0bf3363905abb9ae790b7d80dcaa37daf359c8b05cad09ed3d48d26b4",
+    "7b1abf2aef43d0ab0f9cd59d7486cdd30d173ddb9e5191de5afb3277355a3b8c",
+    "7b876f1b9ecb6463b1300377ef0e756e1897c494dc5da6189afca494b549d164",
+    "7bbbb44d827feec0db558dd3e2bc74e1025bfd3b401f8bd85aa67f4d672125c1",
+    "7dbd9794f669c0b473e9087819d0904032cb5e4bf2b46a246856f7e826cba059",
+    "7dc87894c16d2cc687b797a2bee1820371e70eab60597f703ff18ba2e2f28fac",
+    "7df5fcac11d3b434820082f739a05e09ab3cb71a9bf8519f6e01f56ef4744c39",
+    "7e24ef07169c0f1c6693d1c414de85ce92155a56cdd4d333651b6bf4fa1a9f27",
+    "7e390a2ab3b94588aae8d2bce0a74632e41c14b04209cff03c5e59c664088f3d",
+    "7e3e4819dd4519771deb623f8a365912b66b3ed3023a83ef4080dbb310a2896d",
+    "7e8701a4ff529a87c52191d01c518fb73ec74886dec34c3b6cb5e891946b6092",
+    "7e90192ac9afd8576006ff6e8e6100fb52f4fcb0d7027ceb16af103d5021c6bb",
+    "7e9dfe3181b309cf3289a87d3df017a2bbb5f386ad93a8d383480ec65afe61aa",
+    "7ee7fd865f4916304ca93b3d6ca601fbc41c36d85cc18c64d84dda7304e67264",
+    "7f8be89090dd76609646d9c66b4df78d658698d2459a26364565518da54f49c6",
+    "7fbe11d84951cfac556e85a7b102793971ff4b8d90953374407dd0cb9b102120",
+    "7fe2b987ffa305c073153ce44eb8c3c17172a5e8f95b2486039dc6232372c2d1",
+    "802afda1cc666757c6a9d4e4d8c02442689b59c4ba086a547b068f18280da08d",
+    "80835c3c9648d434dd4f145a1c02d3406ab7129f939d9dfa0e5c0e5637a3474e",
+    "80d24a722ad1cd1ce3584fbf15c5e795fd95bdfe738f5857f17ddf54bd9ab371",
+    "8249d819762dd581680ae93a9541b341a8fa41ce6156f70c84f7167b275e4d54",
+    "826afaa9cd9a9a7c794f39e8ec079a37caab2c3fbba74324b5252360c87d5772",
+    "829a865a4f5eb549adb28ab717bd3da8532407604cf91aa6b38fc44e2e420633",
+    "8374a3ed744087c07bdb6f46432ee016ba41dbdefec73ff1c4548cad3265a441",
+    "84a7e244aaf339453a5ce7c9b374c4ad745a779aa9ec88cbe7d35c5a5ba14a87",
+    "85e63d301a7be2259bb3c750138f839d57dd94d857b817dc8bf9884075b1012c",
+    "86c990b085ac3c8587e558eb2b768cff3bc35b7b80f60363b35150d98d48b837",
+    "86f1917989f3b43978a14ba1702d42cc1669d05d016bbaf4c054f339bd041c1c",
+    "87a02fcb14a64eb806a572176913fab1e30c1b7d38482ed56473111a52fadded",
+    "89016a95e567b235ee7cec1b7a8c6aeeb21796d269ef397864227d7c70452c0a",
+    "894a8ecabc4fa647cef851c01edb80234a49f57ba71de7315b91116e00d3aab7",
+    "894f0370ac130941a055d2f3e708d71cc18ca89329198b0e157f26ffcc73460b",
+    "89ae926fa5d77cb78c0bdaa582a546fb9fbcbd9649e257ca81111f56b74d4e7b",
+    "89bc05decd084dc4812f7873e242877d07169d8ab6173aed9651feb1e8a32510",
+    "89ceff84e1c6b0408fe4addcd0362ff6ae25987781923f48b5286982789b98b5",
+    "89de90f11becbe9a496f8b3479f56fcc3ad07a7ecae04ebea1771ee0dfdbe98c",
+    "8aa7d9c6d126c8a62690eac64086f656fe3788e5158daf62bbca71a03d413c41",
+    "8b11d0c642e10d6f9b67a66bcc4f701ef5e055814450327fa0974c864e3f7f73",
+    "8b19a10d7d7438417ed34ec96b123b3627370674d5742a2f69ce62bb14afbc2a",
+    "8b258b039b75df71f9b479c304a15e08b4a24418cb5eb08eab764fbfd9c33661",
+    "8be09d7374c0bb6d9f8033cdbd0ccf54808791c9c6988f4581c128fb09df2163",
+    "8d10861aff77ed6ca8cc8497fc13ed2a3739fa6a45c3cdd361fd333322a2535d",
+    "8d35389832bf21ec6be3393b405e2799e5116a2607d1ffed11e169523922dd3f",
+    "8ddde1f64bceb1d9e991aaac61dd44beb0caffc51558cb8ad28e6ad31d340035",
+    "8df71fd0d663df0b77121544756a31156735a4c8346bf29a1eb2824ef838f37d",
+    "8e2ca6359dbbeabfedd6e0c3be8d4a98b89b2c410df6892725217e7e449787e8",
+    "8ec49330645e8a0159e6bfab04710d15828d250ec2802c02815c139ad972f12b",
+    "8edd16adcd7ee7ae6467711d568fbfd8604edd4e0f06032e4dbab9ff91c3d4d3",
+    "8ef63783528695cfdf3d2b248a776f01bb158bc0962a9d2b3ae9c6c52d6e3f7e",
+    "8f3c11ff7ead1d8f2e8e90b9acb7036471ee351427789b3cde2e364c2882a3c3",
+    "8f7da77ce1c2c51ccd8129b873f796aaba717ab80e140197a3f07aa1fff43f6b",
+    "8fa1dfc9fee7377c045dfb11c39a55f56dc7f9cc554a8d633a6f63ad68dbd00c",
+    "902ec9fdf99f4dd1870c6a31ae5eaead41a6b1811845d4ba0c54fd874bc742e5",
+    "9054a7fba34578bd355a0113025a2529e2ece3606f01bbf04a84e2a1be84158b",
+    "907d3dd97dc6f902d353e0f2db34215f22caf2487f7bc1b82883439c65820af6",
+    "90a24384f588616308019e967e2a42e3c93c5d54f2d525a085f7986a50b8c92f",
+    "90dff4389754762a7467e1d55900413d6417de8522b9fbedee2c2d26079588fb",
+    "91cd0c286f81e2dc43e542e6fe0a39c5cac798e2dc718d336a4423f46512931f",
+    "930e7e08228f369c33388e7a7cb72d250549df0d08128b112554e93efdfbf65c",
+    "94368bc6b64bfef3d561d9ef0753aada961f90a01f65159618122afe62364f83",
+    "944a19c18cb3b8a932d78746007684deb9d492061067c09c0d8716b57e216a28",
+    "949493307bf629def94d51e253ed1debf9826ee93de0e65e50767a1e66872cf7",
+    "9573b400aece318ebb05781ecb34fdd24bab7d7a65f5bf9400ac4853f4304b99",
+    "95c6ca9e868b2baa63535ccf16bd24ef65c2ae2de5546c4715a638d8523068fc",
+    "96bb886da2fe25cd5b00bdf1a0b0b48d765d37d198482c93be6c43f258f5edbd",
+    "97a6a169b7c21e4cd8cacdfd7ef38192551f54566d3aa37e21535299df0c0a11",
+    "980a1ac60db6fa65ed613f62edf6a75f71d68c0ed93e003cbd62b8ee5599bf6f",
+    "9865384904489c52bd2744fe318f0c4d0befee7a925b42b77b42920c2a3ed1a0",
+    "9915923c88df9f355946f36bed95c051346557e554f87188daa9c31bfe841d00",
+    "99248ee470f374ddb4c5237a71b90bc79341badc01ac3abacc1821995c3e34cd",
+    "996fd7502acfc3c422bef56586896aeb926a3aaa95bff17cd558ee07b9284b4b",
+    "99d2715d04bb136950019d1f1d03df6616a9eef7462404a6908f774df18a14fa",
+    "9a4a82db87d86284f5358b0aecf6b92be94faa0de0370c728b85a9b58c286c7d",
+    "9a87bc5510ab8a422ac7cae1e204e3ca0abd99a9f473b9a90734f58200442862",
+    "9b5fb681618a0eaaefbd6c4217a485e67125310882843b4f06205f714819de53",
+    "9bfbdc7ef02815871f0f2d627ae28e77fa810ee2bcfe411c703b19e200d44aaa",
+    "9c6cbc50acd775500c3d28926778f371f2d814c307481bbf377cd490e3f1d1aa",
+    "9de017b0c184cddcf6382e41e105abc65509ec82dd26d78dcc186cafc4b455d0",
+    "9ef01f268ab59f7f049a2f0395e8307f1095e7c7e385857285a080204e4ab907",
+    "9f0b8a2ed06e943243da87521b61e6ae4863ff97aa902da82c046291ce1b151c",
+    "a0aef391349926e00e7e717e0542e14816ab4a877e232f368f864fbdecb6572b",
+    "a10c2801516cc35a01d777c52a34ddf7b9c67ca0d4ed62c46371f32940764fa4",
+    "a161264725d51a6dd90048b904e2143831ded97b4c5e3687f4c9cf59889f2f30",
+    "a187581554684c3e8e26d7a6a9fbe3139832afae5ae3dfc7521a003996c185b8",
+    "a2cf6f7b3c23731068d9aff8dc5727f9480fadb6a24b09f82455e166faae141e",
+    "a2e8450e750feb99d831b40963283aa50325eb8a7080d56e2f19a5e869f00fb2",
+    "a38cf05cb2d7e4c71b60e58249d1a0b15560577a608b5d7cca51c7d5035e6cd3",
+    "a3d0fccd3b0b55a6039f96b2671ef71a08725efd9f87083ba57cb2d3abbf8d92",
+    "a4a88192d5390ca953863a7d25cfb7bd2b50b733a0d128c35c62ea69d7c08a19",
+    "a4ba0ceeedf40b799aa29d9e8faa94b7c0a73f0e22035dbf4abf9f7b85bcc0be",
+    "a58d7b072e406f8b59ee6dea80644d6a777a307205aab28a2e1c7d0755f4b35f",
+    "a5a605670460743a7f41a5ab51881de376dea804ea366dfc8c17c75b1cebfaa1",
+    "a5d0ad87bed16fe36988d2f7f387eff75a835330740fe0457dba1e037326828d",
+    "a60a5099b4ca61fff454aba672cb16af82968e342b21e4235772b4de9893b296",
+    "a6394e263a73b0829335bfaed539e8ed919f3c863c430014a927a955e709a83f",
+    "a7351821c61968e56d7b06ee55df103b29c95c916d847e1359624dac4f172961",
+    "a7a5db66f6b4ffbae925c42d98e382e889b4d6b5f4c8a5fc16e9a93b4484d8e6",
+    "a7fa20ae62736278e88c50bf2b188f037e2886a74f033dd4c8056414e959d37e",
+    "a7fa44aa4b5c4a506468b9023d58671fbe62f2b01822625a9b4606683f913958",
+    "a837480a9b8aaac8b2b14dc7ac98987f48cbc33758ac4362ae5a8fdcd597807f",
+    "a84a123b124fb13012f988517ce7a6e2f93d0ed7725e4c58f5df4eede93d89fb",
+    "a87120778d71df79be84dc7b522503ffd979407b6512763839eb0cbfba2a1a01",
+    "a89eb31a518e4a239daf7f85cb2a9701ea103963308c58d921daa715b8aaad9c",
+    "a93d1e7abc41e0bbb387ae36bd51c42b73b71f5ccc4b4c3133969c1080ef2123",
+    "a93ea15dffece6f9dcd01c87c7647388e1575d9b62bf3cf7ad9458d61b12c36a",
+    "a9b036c715dacdd2c4c882c44f7d321d322c6502fd81cc7ba7007c980c89155e",
+    "a9f8537e28c33cbfd3addd6695303afb7cb6d375d7673dfcfd938cdfb4927f68",
+    "abee5ae21c552f3cf26fd6c3939fe5e7d14b9aa670090d498d1aa111956fe0cf",
+    "ad4f751c46d65c723814e12a8dec6bc36ce774a3db56f9c2e63287dc26a8219f",
+    "adfcfbe826c1e02b8ef89bc6c18849634b227f8e17c98bcfb1738a6c418d6c43",
+    "ae1105ef9f4714a0ae0ac5486d8a5b1e92b8f786b8cd5e720e7983d3acb51f11",
+    "ae230fccb6bc367c92c8b2e6197e0b6fb408f409b1dc8da50826a9f26f8f6a13",
+    "ae511d0757d678a4600bd9ac35297d5ede12cd5e3fd99271ad94021231b10240",
+    "ae7b37e74f6b09919696466419d9a9f4926b644de6daf7a3144df5d3288b033c",
+    "b0f57d477f46ce6041ccf2dfd47980456e7979a1b1fa1da7135bbfd1c1f8b22f",
+    "b109d18257ff34fd77b000645b15c4cc8943fbfed6e887e42f84349136b35742",
+    "b16ed3b8f50aeffeb671515fbca6b2d197d3dea373aa2f533e255157a2845426",
+    "b26d0455c4b488ca1102d04cca2918fafc785b20d4884fbbd310691767f0965c",
+    "b353ef4c0ece7f0598cb55528ef7d154b3465bba804c4d39f91435ce795d9a00",
+    "b376921c02e604729261830eb44f28c4cc0de0c0c320b006dd6e4d065fc92190",
+    "b3bab3fd882d4bab88492d7cebad831431b4b9a22490e03b58700c52c51591a2",
+    "b43652963d74cb4567df955825b2294b3e994f6859b457c012972e90aca5c20e",
+    "b53158a2f779f720e8c9c3046bb61e325e6f668fc3ff7e0cc80d964b39e1a6e9",
+    "b539eabadefe52def60cf1240abe389fc73c2d6dffd143678bf707a7688185aa",
+    "b5925319caab04dcaab900042bea8a51cb4fe71fa8a07e04e2b1814f4a0eeed8",
+    "b5b7767ae17d8acc7704e3ed0886f7efa85f6c7d1ac6286428eccf5dfd415cd7",
+    "b66cfe0b7e8d2c4bb3486cc62d814b571d947faf5e2fba644c88e9c88bd39e09",
+    "b7246e13af30625aad8f0e9c319f80d8eee3e2f5793d3e25384095c7b71e0556",
+    "b7340abeab9f1d8d3ff9a11a9278475f0972f2c07fa38bd62b08cf200a66705d",
+    "b7d4d5347aaf64c4f524a7fd1a0b7cd847af04b644fd80c35741123ea100154d",
+    "b8ef76a9205fc303dbb68e6d9b998aca20f2d1c9ff147173452ce9a6f647898f",
+    "b977dc73cc155a521620c12c256cb6256a59a2361e03bc34506511b64d2cba8f",
+    "bb229e6b8a8f71a2265f65c14cd4a6390cf2f57262681b8bf48fc1276d219eff",
+    "bbbdede357aa4faa0f0c01f79ac9f55675a67b59fdb6a0a25f78257949bcc6ab",
+    "bcb24b2a6bf04c69e2a28aa5a0d9470bc491a6a83bc32cf45d156a9637f218a0",
+    "bcb495bb6c1a5738c8e77690109a9dd3e8b858dd8b5f0446d3add09c0f7ddde7",
+    "bd73587b0ead39172a9c1f2905dbc387f60b7147ccf9956120147656c1abe4b2",
+    "bd8f5284ce0103a78bd9967455ceec3d551a0adb0b11a413b34af697c6f7e023",
+    "bdba95863e90dbb8794cc0f19231551bb635516572f0392981b02ab445b205bf",
+    "be3eb02af41b76bbd8cacd9f5a57252e5dfd77e4d50047a2afa5316ff4e54ee7",
+    "be402724dd2ebda435b69ea991f41bbcdf53c317e272236c6c4e3f5eb74d9253",
+    "beb9a7c04e52a82954531c72177381b51f9036837d5f339ae717847e6a99c2a1",
+    "c07d6be6d02209a23b6ac6ffcfa71513b74178c55ca74d9ef53ea82390656900",
+    "c09ba883f6b5394df21b02f2e23c0a39c180ef2aa6fcf8ce7031d675860759a6",
+    "c1afb11a2e884ab3e543a67a87a011b563d60ac55804a0c285b3442775659b9d",
+    "c1ed0b8c80c94415f428e5938bd69fd3505f0d7887c43b6031e33ea575ac1d13",
+    "c2b4717f9820449bb8738a15b4b8beeb478866c402e3a55f63888e033be97956",
+    "c473c8e7d16d8bff655c2a6b6321b3535a34427c4b865eafb4455689f95647c2",
+    "c48c9f6778ed593dbed85423bb7194b39d5d4cf5af610e24515d6d7ff8c292bd",
+    "c4a00aab807d2bb55b71f1b6cac34ecbb8f9460191d6d3e033304a7f04e5775d",
+    "c4a450de2598e215fa63f9c612393b18598b4a0ae2ad06d56e9525ff2d71dd8a",
+    "c5900ec0019b8dfe46ca6fad4b79be1852f5946f8be9a1b6f677e729d3ee754f",
+    "c638c7620596a23c6a8b08a42cbbbd5ba32701f3ea3c1e570fbd1ede52aaaaca",
+    "c6578ed45757d77eb98c3d083a68fd81a9b71a025b7013ff7fcfaa81d3584bff",
+    "c66efbc447a145bb006fc5599ed4d5341c4874cc40dd57bd438c911576479ff1",
+    "c69b59eaf540a37c7fe33e00fd80b734ee8bb31c96a092048cd7510ff40c5dc7",
+    "c6cc8fbef4ad724fb8c7b33e265ad34c6d6cce76e221273bad01a3d9ea01cbd2",
+    "c725cb27393a6004cd405d06bb1bdd7927a0201de45d48c1c9d2c2765eedaddb",
+    "c76079d0f2cf7f7c44e1799f2a6004016a9b61c30b3e4ac3ac1ab89ba07fcec2",
+    "c7cf79e4c8333ed185723d634cca3b9d75b7b46e53f9330ea15cb74f3e4297de",
+    "c7fb4efd748cf7d618ddd90832f859a7b07140011637a873c2075f76f5c20155",
+    "c80b2e66844b14d8bb2fcbbf28e1631a451cb4b687aa2bd31808b057ad4e95bd",
+    "c83cdcca46f1865f601b3193e8ea9a144f33e6f3658297eb70dd2395906d31e6",
+    "c85e20ca3d0f96a014a879aef2fd9f254a269b42c029b6343d08429e1bdefcbe",
+    "c85fbc6a6f28ba3bd017940f080fbd564a316ffca3ee9f97723ed02a898050df",
+    "c923fda710e2cae27654509783666ad7a1451825911fa9eac73f7c3d912cd2ee",
+    "ca82b5839f0b133f2b6f36c9a66d2edb2109439c28e4f04423507fc537ba3602",
+    "caad5f12768d1e5052a5dfe823d6c3746eddf296dc220f935ed3c43c5ebb8d95",
+    "cad17debdff55aa6a47041aeb8a72028ab8bf038ba1047da21011f1c5a01c1c1",
+    "cae1eae4d2748708eec6947d0a276987075dd4aff20d576ccd8c0ad10cb0caa7",
+    "cb08cf5062c0f298712418fd1d1d2453d143793d9f44e21c9e732a871287ad52",
+    "cb46a33e3085e529d07f7e3e0b0254d0f93b2a256bcbcd73ed24ed83a980c1f9",
+    "cb82d2e126227f2f15fb41723875e151279f2f6e8874b6f688ad096927a2cf2a",
+    "cb8c84fab1e372f9a3431312443a2c4c608fadc9965edad6a1af5eacd36a9b83",
+    "cbba8572bbdd2f0addc1e16878c7340927020caa91389e1e288962181796eab5",
+    "cbbed42f4a75686844d593a728542276d7370be423dd02a04d3184aa32d3e528",
+    "cc180594cf98daee6da11320e046738033584eef7e4de08d8608e053c5277296",
+    "cd5165af8ce28f0972cf43d9be4ac2915e3ed082a2ea1e9631c880e8b1d0e97d",
+    "cd9fdbe01d1cefc7d8150b8e76fb87d172380da5a1a7d0fcc54cc843b9167a16",
+    "cda7001beff41f19cd1daf866a66f72386e669af90cd8a3fe5418122c74d792f",
+    "cddf2298f00403339b80fd8ba7167ec9c0b4a32945e81efa8e7513363a00d1d1",
+    "cdf030e8fa7fbdefa917afca6bb682c069a010ec63352d53bfe4b26d14af5c2b",
+    "cf6e20acfaa0779d058527ed57b503237ad44cd1e9592c371c404c17aeb5c561",
+    "cfc459d19d1f06fd72cdc65620e387e8b20333976aa15562984706a416b40472",
+    "d0b101488f696bee11f8684342b8d9006f92ddb8ec81561ff767ebe5715d1ee8",
+    "d0f206a17906c23c91c6b275954f1691e67dd09546a28153b6d2abba442b96c4",
+    "d10ccf0afbbfabe230b92e4c7f07a101c3a5178f87f727c131c6e18f40df3633",
+    "d2d7153188ad93faf9d0db18d73ca6d73988f4226728278a2c2b4cc08c3634c8",
+    "d345bd6b27b20f1789749da7f5909d9a5b60158529fbea3d6e0341144d27c64d",
+    "d370a07fe8e7c569522b88b7af5980d88a2e45bfb6c121d9b44ace0b8fcfdc6a",
+    "d3b677cb8953145125e961ef0796cfb4b90c9ef6bb018def0bb02ce13816a985",
+    "d3e3ffe788b595c2dbcacdd9abb384f4ea6629357ececa612a20413bfa5a8e22",
+    "d421264eb3d87f33653bcbaf02b747b0675a4f9c46e68b4b718ebac93bfa46ad",
+    "d449b0b7c1b86fcbc7dfad5977a7d485a4bcd9b597a15c7582dd6c9cfbb7970f",
+    "d45438c2c01fe28dd94ebe5dc56bbfca312a4651be41354727aea66dafdcf8eb",
+    "d542a9762d78cac7ea2efe0afe94db8d56a17e242ca76fdfb0dffdaf7f6ba0b2",
+    "d5720933509bd82d24b89402d496a17d7f7cf792e055b5ac230726014fd083d3",
+    "d5f586e67f643855da8fc32f905badac8d881ac8f218a210ca421f7b82b614f6",
+    "d608b8d207b036486f58ed03d92248bc0bbcc75a7455db90ec615a552e1f3043",
+    "d664ede6e513ed04018392a2957dea4e11133d91b3f333a76322c010b72b43a0",
+    "d67c20142229cd7b064bcec00fbeaeefd023507604d2f4b937a3bbeed17ff132",
+    "d741ec4ba1b0ac351b779adb72f69695b1896c713373ceb180aa51183f080c2c",
+    "d7834abd4837bb85b9895e11a24a499db6b96b4ef68d22d92f3bc18b980bef06",
+    "d7b816edf7a295b4a93aa5882cda4e855a436fc8a625aa6d644d967d58c6ffd8",
+    "d7d939e670e51cd5c7597a991f9a0fc831a193ded6a33fe47e58fa76df0e06e7",
+    "d91948e720a53720eac2c737f8c624b7742dedc58c2a59f7ab8366f2d3c042b1",
+    "d96266a644d4d60cc6894232e2d09bb3a152e61f0665a8887002f0d8c2c9f2cd",
+    "da174617fece45a1c876f9bca3af26881427942300a4f17040465b1e218590bd",
+    "da5ba91d4b830734f23003f96122980883403f65ef29701a9d6e0883d0fde09c",
+    "dac9260a080916ca0475927719836111152e8d409a6c7147758a1d5ba0dddc45",
+    "dad6534b856ad8d71abffc89b66d44831fca59fe97ff14967a5925f84448441a",
+    "db6331510ed3a31f89a17d7a772089cdea190e0b096ef07084bbc4fd11a19fb4",
+    "dbcfe9449a9f07f598651ebb5f4e28110671feb059beac5bf734c88e71e05c7b",
+    "dc2f5af72deb14ea61bdeb0230af6d6d7417726c9b1ec5714d2c2c480fbb225a",
+    "dc4983fd62f0378b42b5950358e9243f2c787f552d434301dcdf423db1b07492",
+    "de03d8625932d89f07f86811ffff2149f9f33bf65f2605a3aa1ded613c01eb8f",
+    "de3e6fdf8376713dc93c35d88df829464309d9d49f9872861082c2a338c9156b",
+    "de8f86c9443bd13a5dc98a4f8469889ea1149a1ec84811999bd75e3f588866e2",
+    "debe8218ad0dfd45e7e9044422c29ab0be9b3724315094e676b214b034fc8b13",
+    "df5e0db1d45c92bb64ccca6c52e26839d5ff0fda014dad93a914e15cdcec6147",
+    "df790964309cab22715ec9357be4b1d569357ae52f914b1db2469b46f4901c31",
+    "dfe12ba2ff37e7bf943568c89c134541d403fd8a4487b6e690bc9891946f7a83",
+    "e154276acae6e9e08cf79692efe7d333a46f49839896ea67681303a3da1e9024",
+    "e23abed55b91a43982934615d97d5cf40ab16ecfd16a9def707bc6aa6c67a8a8",
+    "e23b8c01ea5cce437d3a6534f2b05f19a2c26dde9dda76fde20b564e51086626",
+    "e25c3c6b68861cf7754d07f143d75eaf2c000e1f995cbfd97cb24dd5941aeb0e",
+    "e2e3c7d646b1630cc386180a85feb465dc13ac4f03eec10edbbac00b4a81c6ac",
+    "e325a31f6e17952e7b33fb4dbbfaf82852a5c8b731368ab97fbbebc8d05924e3",
+    "e330905ea64e38af4e8d053e403d91bed9fe4bfb24c47f8f147e5baf1fe02e22",
+    "e38917e209221a396056787de7789ba785ed77957b4fe6b87ce4f951709fc91d",
+    "e3b7a25cde2d81819a1938beb770615712181e59478422d00b7c6b708cf2a04d",
+    "e491eaa7fa8e112d408071d44f15c4e25dd17c010473ee7f412286b97e4ac27e",
+    "e4d2cc9ce49d6caa83d6015e1f08b77851791b5bc30af3a009030a2c19207c0c",
+    "e4d6f6b5430f427fab2fbfe6a5eb19dda37e793e9ea9794042b1dbbcd2126692",
+    "e58e07c10232c3e61a855d5ba7ee3511c15d481b919d422276fe2912f534d17a",
+    "e5a002fe622c932741a42eeffda2e153ee1a42be8a2fcc79cbf9a165d608c786",
+    "e6432bb3f6c1aa389d9c198293ca62e7fc8170b694c50fd742a9742664746571",
+    "e69107dda4de41eb0b5a5b1b114bab535051cc9a318b2d93271b6de37660aaac",
+    "e77aac1d063d30bc8022775898d2f3f85ad9ec27d92e87966553c9f881844f5e",
+    "e7cf0675385b7dfe204e70104355281b93a7d927f97d0f2532d5e194bbb1d0a0",
+    "e87a96ab546a4d751aaa0c62101259380fb5995a50051cf54bb8cc44d32e4e59",
+    "e8af2a1676235b1a2865f75c51cecefb793fc720f3d0cca773e4f910debb77ae",
+    "e8d1f65890f9fddfe48ea04d1fb7c1632026430d799b9f4f84c5349160dbcf37",
+    "e902823263d5c9b1c93e396077ea9ee35147e8e22135ed4d28d4a9f18e47cf26",
+    "e9acd9f6d3f8079e071f920e48c9bddfb6c8a39fc75cd863b31f31df5f5aea5b",
+    "e9d8c9669c2199b23f2eeb289187ba62a0127c104be06bde27ba843760d1110f",
+    "e9dafb73b14e0413e0fa552d05c46cc0cf82c7e21b120abaa152d458e6eb8c51",
+    "ea0dda2e4ab000d431b79da5a6b64dfafef77f3bdd0e78c27b30e53947ee0e85",
+    "ea3191951a099a2330f59924f4c6b5f451a2199781b53a7a115394d37988af23",
+    "ea3f7aa3f7f8d80855e80884cdf94c0cb7c5503f2e1507c559275087ca3333b2",
+    "ebde02bf0853690a1b373e49674f8641d7df2bb8600927b174ab9665bc023640",
+    "ec2456482299f1974699159850cffec2b95e353229ceb0d6c9e46136cea66d98",
+    "ec3d56f2c98eb2fd17246047daf1fecc434a079ac8f22bb72693cc1fbfec9fa5",
+    "ec54fa4e998e5703f16fb41f82962958026a2ff20153b84bfc32170a43498bf4",
+    "eca9045c25fb0bf0064adebb187cce8a96f8051b63080b42f04e1d93f1540693",
+    "ed02230d60652f6bb4218de58ddc761f881cef8cd640fbb70e608e58f914c644",
+    "edaa7a1193106202f2015879990bcbba117bf39f5856da256ad6f1da0b0ab5bf",
+    "ee0badab8da8ea2faae42d6c97346846af9567943f468b4995dd729a69d52557",
+    "ee21aa095e1a6e8dc1b54c5012710cfe48719826f67426e24e88827d224bad9d",
+    "ef5b0f43022c5bc8aa413b9f3c0c7787e9a6e11fd2c803cc889392fc0d6fe6a9",
+    "eff1b635b58923565c2dafcc2084eb85fa8b8608e150da136f807313f6334318",
+    "f00764f1079ee0e49853775959b871ebfbe5302c6eea0fa1a6bb68ba6742cef7",
+    "f0e048f0e147cfe2652af60085988e2b7e4c6ffd817426c5a1c358294993ee05",
+    "f0f0683ac4c5324b2bbc713e197474c747c69cc895cad080d04a735f1348f617",
+    "f17449c6576773a0b71baf3aabfc0e0c3a9f4533f5e058a43016f06994127335",
+    "f1b54372c2ff1eefa0db60f7e45a6229a90990c9983c00e04c2195803a2e62ca",
+    "f23ae7b16f70bfa17058b06f7160f8eff8190c639b80d57deff0505c3ed16bff",
+    "f2ecfdecace76489b6b534de80b201a2cf6b7f1bb143004d65de26e94c6efcff",
+    "f320dc52558a3a711870f6ff8e9a441b54aa8208c98a273b7319372cfb503138",
+    "f366b091350529820ded08d802435cfb76ab010cfd36676c31bbbba073b26a2d",
+    "f54ecc30a021116ddad0d0dcc0ab002b0946463ece76d0e82c6f2093d4f3f937",
+    "f5adbb6d56d9928454be2d92bdfcc4e7d4bd27358e984d251e16ab367254d144",
+    "f5afbd3c5b86f847ac499275903e2cf538bd1e99483b94933eaf6e00f3217789",
+    "f697c59384775e596663bed954e086c58bc711b987f284999746e9d993ae16be",
+    "f6db2825286faead8114374459768df7349a3660d566217be91190401cd5e087",
+    "f7c6103805f2085612fac9d85eaf641b847781f95653c5490459419c46b2ba7d",
+    "f8b1783a10cde7bbf0c4589f3209569eba14b9fef5ac9192c8f982b8a3909660",
+    "f8cebb85aa7aaa54ffaf210da7df14c941f3dac0af717a46d8823222fd9e93e7",
+    "f9a0cd17e1ab77cf8b0c912f278fb5f20b207d73dda3fba8aa802f47551123fb",
+    "fb7a8c15bfb67978809719c8410436347873c7c5cebf286af37571ef700b67fb",
+    "fc2bff8437a4a81c20da205686f0710a9194ab9c15561eca5bf2d4c90dd44b51",
+    "fc4532d50c4e8eb195324f48e6d395fe673c56c41e854d3e6db56407683f0c2b",
+    "fc4c708baa6ecb49f5efb4cc4a462e29fecedaff1c3988799432542e70d9239d",
+    "fd0159494de825949dd7c4b0b0dbcae2a9afa68c53bec9809fe1fb037e10c71d",
+    "fd58cfdcff8c9cca020137ccd4fad82559cb6561689a68216d4e4a2fcf33c810",
+    "fd82d73280bbc859827ccb2b66913cdce1a88c9849d4d37bd5178645d167b55e",
+    "fdc723cd226ba946a6b2f5e4633b8df283b0e11940c814074b8966f476e400cb",
+    "fdd46a59e088e457705f45cb4da777469add2a308e101b678874091b0d4fe69c",
+    "fde975c65497004805f07e5904b2f598d6b63131050b52ad2ddcc184069bb678",
+    "fe11ce61f7201a60fe8d670f4edd253d440c1e472b017344b8e480abae37c26a",
+    "fe65a1692e536bc4f2e277d0d3a23e0ee3335ffb1c7d760b6c8f57bf82c439f1",
+    "ff03a1439d9259c5ac7ffd702e6d386fe2db81ca22afa16f83ffcc5b8da6f5be",
+    "ffc3ff4225f2e3af55ed035175f8572424a1b59295f62da56b34fad4230e0866",
+    "ffc81e00e85aed5bfbbe80f0069a671f4babe36ac7019d6fe08428b77198ab37"
+  ],
+  "unmatchedPolicy": "Unimplemented source-level chart mapping; never bake arbitrary triangle/chart payloads.",
+  "evidence": {
+    "sourceMeshSHA256": "4f1fcb2cce6aba77adf1379d7cb51321a537e0982aba3735ceb4c0ad827ba81f",
+    "runtimeSourceSHA256": "5f4d296863b53dde2b71fe414acb138ed3ca78a9b0f7318ca95031c2ba62c8ec",
+    "numericalResourceSHA256": "62ef6f00905a3bb4f46e65a88dfced5126679ba677d361568e14dc3a598b4d66",
+    "boundsFloat32Bits": [
+      "0080f03e",
+      "0040533f",
+      "0020203f",
+      "00407b3f"
+    ],
+    "projectionLengths": [
+      4.0,
+      4.0,
+      3.806640625
+    ],
+    "lateralLength": 4.0
+  },
+  "outputRequirements": [
+    "Preserve fractional source extents at lower mip levels.",
+    "Do not rescale 638 base texels to block-aligned 640 texels.",
+    "Source payload headers, tails and all tile extents are verified here; actual decoded per-mip texels and native output need the new full-mip producer/validator."
+  ],
+  "state": "SOURCE_UNIT_MEASURED_OUTPUT_NOT_BAKED",
+  "localization": "No runtime UI text or localization changes."
+}

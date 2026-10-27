@@ -1,0 +1,18 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net8.0</TargetFramework>
+    <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
+    <Nullable>enable</Nullable>
+    <BaseOutputPath>../../../artifacts/agent-material-env/PedestrianDraw02/native-sampling-test/bin/</BaseOutputPath>
+    <UnityManaged Condition="'$(UnityManaged)' == ''">D:/Program Files (x86)/Steam/steamapps/common/Cities Skylines II/Cities2_Data/Managed</UnityManaged>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="UnityEngine.CoreModule"><HintPath>$(UnityManaged)/UnityEngine.CoreModule.dll</HintPath></Reference>
+    <Compile Include="NativeSampling.Tests.cs" />
+    <Compile Include="PedestrianDraw02NativeSampling.cs" />
+    <Compile Include="../../../src/BridgeBuilder/Bridges/Common/Movable/MovableStructurePacking.cs" />
+    <Compile Include="../../../src/BridgeBuilder/Bridges/Common/Movable/MovableTextureFootprint.cs" />
+    <Compile Include="../../../src/BridgeBuilder/Bridges/Common/Movable/MovableUvChart.cs" />
+  </ItemGroup>
+</Project>

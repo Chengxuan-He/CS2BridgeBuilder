@@ -1,0 +1,16 @@
+--- a/src/BridgeBuilder/Bridges/Common/Movable/MovableStructureTiles.cs
++++ b/src/BridgeBuilder/Bridges/Common/Movable/MovableStructureTiles.cs
+@@ -43,6 +43,13 @@
+                 stream.CopyTo(bytes);
+                 _sourceDigests.Add(source,digest=MovableStructureKey.Digest(bytes.ToArray()));
+             }
++            if(_style=="Lift02")
++            {
++                var native=Lift02NativeStructureBinding.Bind(source,digest,unit);
++                slots.Add(unit.Id,new Slot{Surface=native,Original=unit});
++                originals++;
++                continue;
++            }
+             var key=MovableStructureKey.For(digest,unit.Triangle,unit.Bounds,unit.A,unit.B,unit.C);
+             slots.Add(unit.Id,new Slot{Surface=BridgePreparedMaterials.Structure(_style,key)});
+         }

@@ -1,0 +1,16 @@
+#pragma kernel Compare
+Texture2D<float4> Source;
+SamplerState sampler_Source;
+RWStructuredBuffer<float4> Results;
+float4 A,B,C,Bounds;
+int Triangle,Normal,Mip;
+float2 Map(float2 p){return Triangle!=0?A.xy+p.x*(B.xy-A.xy)+p.y*(C.xy-A.xy):Bounds.xy+p*(Bounds.zw-Bounds.xy);}
+[numthreads(64,1,1)] void Compare(uint3 id:SV_DispatchThreadID){
+ if(id.x>=289)return;
+ float2 q=float2(id.x%17,id.x/17)*.1875-.9999;
+ float2 local=frac(q);bool reverse=Triangle!=0&&local.x+local.y>1;if(reverse)local=1-local;
+ float4 expected=Source.SampleLevel(sampler_Source,Map(local),Mip);
+ if(reverse&&Normal!=0)expected=float4(1-expected.r*expected.a,1-expected.g,expected.b,1);
+ float4 affine=Source.SampleLevel(sampler_Source,Map(q),Mip);
+ float4 e=abs(expected-affine);Results[id.x]=float4(max(max(e.x,e.y),max(e.z,e.w)),0,0,0);
+}

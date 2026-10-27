@@ -61,15 +61,28 @@ internal static class MovableRoadPreparation
                 source.Surfaces[i].LoadHeader();
                 converted[i] = !MovableSurfaceAssets.IsObjectSurface(source.Surfaces[i]);
             }
-            var prepared = MovableRoadTemplate.Prepare(receivers, converted);
+            var bones = sources[0].GetComponent<ProceduralAnimationProperties>().m_Bones;
+            bool Original(MovableRoadGeometry.BoundTriangle face) => bones[face.Bone].m_ConnectionID != 0;
+            var original = receivers.Where(Original).ToArray();
+            var prepared = MovableRoadTemplate.Prepare(receivers.Where(face => !Original(face)).ToArray(), converted);
             var selected = MovableRoadGeometry.InFrame(prepared, inverse);
-            if (!MovableRoadGeometry.TryBind(selected, carriagewayAppearance, patches.Length,
-                source.Surfaces.Length, out var assigned, out error, occurrencePartitions: appearance))
+            var assigned = Array.Empty<MovableRoadGeometry.BoundTriangle>();
+            if (selected.Length != 0 && !MovableRoadGeometry.TryBind(selected, carriagewayAppearance, patches.Length,
+                source.Surfaces.Length, out assigned, out error, occurrencePartitions: appearance))
                 throw new InvalidOperationException(error);
+            var moving = MovableRoadGeometry.InFrame(original.Select(face => face.Geometry).ToArray(), inverse);
+            var movingAppearance = Array.Empty<MovableRoadGeometry.BoundTriangle>();
+            if (moving.Length != 0 && !MovableRoadGeometry.TryBind(moving, carriagewayAppearance, patches.Length,
+                source.Surfaces.Length, out movingAppearance, out error))
+                throw new InvalidOperationException(error);
+            assigned = assigned.Concat(movingAppearance.Select(face => new MovableRoadGeometry.BoundTriangle(
+                face.Geometry, face.Bone | MovableSurfaceAtlas.MovingSurface))).ToArray();
             inputs[lod] = new MovableSurfaceAtlas.Input
             {
+                PrototypeRoad = layout.Prototype is "Draw02" or "Draw03" or "Lift03 Main",
                 Faces = assigned, Materials = source.Surfaces, Patches = patches,
-                Native = sources[0].GetSurfaceAsset(0)
+                Native = sources[0].GetSurfaceAsset(0),
+                SourceFrame = closedWorld * Matrix4x4.TRS(pose.position, pose.rotation, Vector3.one)
             };
             bounds[lod] = sources[lod].bounds;
             bounds[lod].min.x -= halfDelta;

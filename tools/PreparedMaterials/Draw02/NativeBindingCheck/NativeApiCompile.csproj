@@ -1,0 +1,8 @@
+<Project Sdk="Microsoft.NET.Sdk">
+<PropertyGroup><TargetFramework>net8.0</TargetFramework><ImplicitUsings>enable</ImplicitUsings><Nullable>enable</Nullable><EnableDefaultCompileItems>false</EnableDefaultCompileItems><BaseIntermediateOutputPath>obj-native/</BaseIntermediateOutputPath><OutputPath>bin-native/</OutputPath></PropertyGroup>
+<ItemGroup><Compile Include="NativeApiStubs.cs"/><Compile Include="../../../../src/BridgeBuilder/Bridges/Types/Draw02/Draw02NativeSourceBindings.cs"/><Compile Include="../../../../src/BridgeBuilder/Bridges/Types/Draw02/Draw02NativeSourceCatalog.g.cs"/>
+<Reference Include="Colossal.IO.AssetDatabase"><HintPath>D:/Program Files (x86)/Steam/steamapps/common/Cities Skylines II/Cities2_Data/Managed/Colossal.IO.AssetDatabase.dll</HintPath></Reference>
+<Reference Include="Colossal.Core"><HintPath>D:/Program Files (x86)/Steam/steamapps/common/Cities Skylines II/Cities2_Data/Managed/Colossal.Core.dll</HintPath></Reference>
+<Reference Include="Colossal.IO"><HintPath>D:/Program Files (x86)/Steam/steamapps/common/Cities Skylines II/Cities2_Data/Managed/Colossal.IO.dll</HintPath></Reference>
+<Reference Include="UnityEngine.CoreModule"><HintPath>D:/Program Files (x86)/Steam/steamapps/common/Cities Skylines II/Cities2_Data/Managed/UnityEngine.CoreModule.dll</HintPath></Reference>
+</ItemGroup></Project>

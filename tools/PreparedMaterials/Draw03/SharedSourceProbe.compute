@@ -1,0 +1,17 @@
+// Offline hardware-sampling probe only; never shipped as a runtime shader.
+#pragma kernel Probe
+Texture2D<float4> Source;
+SamplerState sampler_Source;
+StructuredBuffer<float4> Coordinates;
+StructuredBuffer<float2> Local;
+float4 Origin,BasisX,BasisY;
+RWStructuredBuffer<float4> Samples;
+int Count,Level;
+[numthreads(16,1,1)] void Probe(uint3 id:SV_DispatchThreadID) {
+ if(id.x>=Count)return;
+ float4 uv=Coordinates[id.x];
+ Samples[id.x*3]=Source.SampleLevel(sampler_Source,uv.xy,Level);
+ float2 transformed=Origin.xy+Local[id.x].x*BasisX.xy+Local[id.x].y*BasisY.xy;
+ Samples[id.x*3+1]=Source.SampleLevel(sampler_Source,transformed,Level);
+ Samples[id.x*3+2]=Source.SampleLevel(sampler_Source,uv.zw,Level);
+}

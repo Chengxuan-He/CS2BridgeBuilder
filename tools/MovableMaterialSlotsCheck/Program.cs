@@ -1,5 +1,41 @@
 using BridgeBuilder.Bridges;
 
+if (MovableMaterialSlots.RenderGroups(new[] { 6, 6, 5 }, new[] { 4, 4, 3 }).Length != 2 ||
+    MovableMaterialSlots.RenderGroups(new[] { 6, 5, 5 }, new[] { 4, 4, 3 }).Length != 1 ||
+    MovableMaterialSlots.RenderGroups(new[] { 12, 10, 10 }, new[] { 6, 5, 5 }).Length != 2)
+    throw new Exception("Native LOD batch budget planning failed.");
+foreach (var input in new[] {
+    (new[] { 12, 12, 10 }, new[] { 6, 6, 5 }),
+    (new[] { 12, 12, 10 }, new[] { 4, 4, 3 }),
+    (new[] { 35, 28, 16 }, new[] { 35, 28, 16 }),
+    (new[] { 64, 64, 64 }, new[] { 0, 0, 0 }) })
+{
+    var groups = MovableMaterialSlots.RenderGroups(input.Item1, input.Item2);
+    foreach (var group in groups)
+        if (group.Length != input.Item1.Length || group.Any(slots => slots.Length == 0) ||
+            group.Sum(slots => slots.Length) > 16)
+            throw new Exception("Incomplete or overflowing native group.");
+    for (int level = 0; level < input.Item1.Length; level++)
+        if (!groups.SelectMany(group => group[level]).SequenceEqual(Enumerable.Range(0, input.Item1[level])))
+            throw new Exception("A material slot was lost, duplicated, or reordered across groups.");
+}
+try { MovableMaterialSlots.RenderGroups(new[] { 8, 8, 1 }, new[] { 4, 4, 1 }); throw new Exception("An unverified empty-LOD group was fabricated."); }
+catch (InvalidOperationException) { }
+Console.WriteLine("PASS 16/32 boundaries, 34/79/192-batch complete grouping, exact per-LOD coverage and no fabricated empty LODs.");
+
+foreach(var totals in new[]{new[]{48,24,2},new[]{256,8,1},new[]{1024,16,4},Enumerable.Repeat(1,16).Append(1).Take(16).Select((n,i)=>i==0?33:n).ToArray()})
+{
+    int minimum=MovableMaterialSlots.MinimumLodSlots(totals);
+    var balanced=totals.Select(n=>Math.Max(n,minimum)).ToArray();
+    var groups=MovableMaterialSlots.RenderGroups(balanced,new int[totals.Length]);
+    if(groups.Any(g=>g.Sum(slots=>slots.Length)>16 || g.Any(slots=>slots.Length==0)))
+        throw new Exception("Unequal near/far native batch planning failed.");
+    for(int lod=0;lod<totals.Length;lod++)
+        if(!groups.SelectMany(g=>g[lod]).SequenceEqual(Enumerable.Range(0,balanced[lod])))
+            throw new Exception("Balanced native groups changed slot coverage.");
+}
+Console.WriteLine("PASS unequal 48/24/2, 256/8/1, 1024/16/4 and sixteen-level grouping.");
+
 // Deliberately value-equal but separately owned descriptors must not coalesce.
 var cable = new Surface("cable");
 var rail = new Surface("rail");

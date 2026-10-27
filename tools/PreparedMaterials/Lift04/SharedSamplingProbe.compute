@@ -1,0 +1,24 @@
+#pragma kernel Probe
+Texture2D<float4> Source;
+SamplerState sampler_Source;
+SamplerState reference_linear_clamp_sampler;
+StructuredBuffer<float2> Coordinates;
+RWStructuredBuffer<float4> Expected;
+RWStructuredBuffer<float4> Direct;
+float4 Bounds, A, B, C;
+int Triangle, Normal, Count, Mip;
+float2 Atlas(float2 q) {
+    return Triangle != 0 ? A.xy + q.x*(B.xy-A.xy) + q.y*(C.xy-A.xy)
+                         : Bounds.xy + q*(Bounds.zw-Bounds.xy);
+}
+[numthreads(64,1,1)] void Probe(uint3 id : SV_DispatchThreadID) {
+    if(id.x >= Count) return;
+    float2 q = Coordinates[id.x];
+    float2 local = frac(q);
+    bool reverse = Triangle != 0 && local.x+local.y>1;
+    if(reverse) local = 1-local;
+    float4 expected = Source.SampleLevel(reference_linear_clamp_sampler, Atlas(local), Mip);
+    if(reverse && Normal != 0) expected = float4(1-expected.r*expected.a,1-expected.g,expected.b,1);
+    Expected[id.x] = expected;
+    Direct[id.x] = Source.SampleLevel(sampler_Source, Atlas(q), Mip);
+}

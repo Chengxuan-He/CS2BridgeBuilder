@@ -1,0 +1,21 @@
+#pragma kernel Sample
+Texture2D<float4> Reference, Candidate, UnityBlack, Transparent;
+SamplerState sampler_Reference, sampler_Candidate, sampler_UnityBlack, sampler_Transparent;
+StructuredBuffer<float4> Cases;
+RWStructuredBuffer<float4> Results;
+int Count, Mode;
+[numthreads(64,1,1)] void Sample(uint3 id:SV_DispatchThreadID) {
+ if(id.x>=Count)return;
+ float4 c=Cases[id.x];float2 dx=float2(c.w,0),dy=float2(0,c.w*.125);
+ if(Mode==0) {
+  Results[id.x*4]=Reference.SampleLevel(sampler_Reference,c.xy,c.z);
+  Results[id.x*4+1]=Candidate.SampleLevel(sampler_Candidate,c.xy,c.z);
+  Results[id.x*4+2]=UnityBlack.SampleLevel(sampler_UnityBlack,c.xy,c.z);
+  Results[id.x*4+3]=Transparent.SampleLevel(sampler_Transparent,c.xy,c.z);
+ } else {
+  Results[id.x*4]=Reference.SampleGrad(sampler_Reference,c.xy,dx,dy);
+  Results[id.x*4+1]=Candidate.SampleGrad(sampler_Candidate,c.xy,dx,dy);
+  Results[id.x*4+2]=UnityBlack.SampleGrad(sampler_UnityBlack,c.xy,dx,dy);
+  Results[id.x*4+3]=Transparent.SampleGrad(sampler_Transparent,c.xy,dx,dy);
+ }
+}

@@ -1,0 +1,10 @@
+#pragma kernel CheckZero
+Texture2D<float4> Source;
+RWStructuredBuffer<uint> Nonzero;
+int Mip;
+int2 Extent;
+[numthreads(8,8,1)] void CheckZero(uint3 p:SV_DispatchThreadID) {
+    if(any(p.xy >= (uint2)Extent))return;
+    float4 value=Source.Load(int3(p.xy,Mip));
+    [unroll]for(int i=0;i<4;i++)if(value[i]!=0)InterlockedAdd(Nonzero[i],1);
+}

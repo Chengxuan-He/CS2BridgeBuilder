@@ -13,52 +13,51 @@ using TextureAsset = Colossal.IO.AssetDatabase.TextureAsset;
 
 namespace BridgeBuilder.Bridges;
 
-// Owns the native tiled source descriptor and the composed appearance resources.
-// The latter are shared across LODs and persist without manager callbacks.
+// Borrows the prepared tiled source and owns only newly composed resources.
+// Both are shared across LODs and persist without manager callbacks.
 internal sealed class MovableRoadMaterial : IDisposable
 {
     private const int RequestedMidMipLevels = 3;
     internal SurfaceAsset Asset { get; }
+    internal string StyleId { get; }
     internal float UVScale { get; }
+    internal TextureAsset AsphaltTexture { get; }
     private bool _keep;
     private readonly PreviewGeometry? _preview;
-    private readonly string _owner;
+    private readonly string _owner, _name;
+    private ILocalAssetDatabase Database => _preview?.NativeAssets ?? AssetDatabase.user;
     private readonly List<AssetData> _composed = new();
 
     internal TextureAsset SaveTexture(UnityEngine.Texture2D texture, int channel, int page)
     {
-        var asset = Asset.database.AddAsset<TextureAsset>(AssetDataPath.Create("BridgeBuilder",
-            Asset.name + " Composite " + page + " " + channel, EscapeStrategy.None));
+        var asset = Database.AddAsset<TextureAsset>(AssetDataPath.Create("BridgeBuilder",
+            _name + " Composite " + page + " " + channel, EscapeStrategy.None));
         _composed.Add(asset);
         asset.SetData(texture);
-        // Use the native texture writer's lossless compression setting as well as BC7.
-        asset.Save(compress: true);
+        // Preview intermediates are short-lived native database files. BC7 mip bytes
+        // are identical without the second, lossless file-compression pass.
+        // Persisted bridges retain the native compressed representation.
+        asset.Save(compress: _preview == null);
+        if (channel == 0)
+            Mod.Log.Info($"Appearance intermediate textures: {_name}; page={page}; losslessFileCompression={_preview == null}; BC7=true; resultCache=false.");
         asset.Unload();
         return asset;
     }
 
-    internal SurfaceAsset SaveRepeatingAsphalt(Dictionary<string, TextureAsset> textures)
+    internal SurfaceAsset SaveRepeat(Dictionary<string, TextureAsset> textures, int page, bool grating)
     {
-        // Match the release below: the existing preview lease must remain alive.
-        Asset.LoadProperties(useVT: false);
-        Asset.UpdateTextures(textures);
-        if (!Asset.Save(mipBias: 0, force: true, saveTextures: false, vt: false))
-            throw new InvalidOperationException("Could not persist the prototype asphalt repeat unit.");
-        _preview?.RetainSurfaceProperties(Asset);
-        Asset.UnloadProperties();
-        return Asset;
-    }
-
-    internal SurfaceAsset SaveRepeatingGrating(Dictionary<string, TextureAsset> textures, int page)
-    {
-        using var data = new Surface(Asset.name + " Repeat " + page, "DefaultCutoutDoubleSided");
-        var asset = Asset.database.AddAsset(AssetDataPath.Create("BridgeBuilder", data.name, EscapeStrategy.None), data);
+        // A repeat page is one distinct source rectangle/band recipe. Do not update
+        // Asset in place: earlier pages and LODs would then sample the last unit's
+        // textures with a different unit's UVs. The input descriptor is immutable.
+        using var data = new Surface(_name + " Repeat " + page,
+            grating ? "DefaultCutoutDoubleSided" : "Default");
+        var asset = Database.AddAsset(AssetDataPath.Create("BridgeBuilder", data.name, EscapeStrategy.None), data);
         _composed.Add(asset);
         asset.UpdateTextures(textures);
         asset.UpdateKeywords(new HashSet<string>(asset.keywords) { "_TANGENTSPACE_OCTO" });
         asset.UpdateFloats(new Dictionary<string,float> { ["_Snow"] = 0f });
         if (!asset.Save(mipBias: 0, force: true, saveTextures: false, vt: false))
-            throw new InvalidOperationException("Could not save native repeating grating.");
+            throw new InvalidOperationException("Could not save native repeating surface.");
         _preview?.RetainSurfaceProperties(asset);
         asset.UnloadProperties();
         return asset;
@@ -67,8 +66,8 @@ internal sealed class MovableRoadMaterial : IDisposable
     internal SurfaceAsset SaveComposite(Dictionary<string, TextureAsset> textures, int page)
     {
         var timer = System.Diagnostics.Stopwatch.StartNew();
-        using var data = new Surface(Asset.name + " Composite " + page, "DefaultCutoutDoubleSided");
-        var asset = Asset.database.AddAsset(AssetDataPath.Create("BridgeBuilder", data.name, EscapeStrategy.None), data);
+        using var data = new Surface(_name + " Composite " + page, "DefaultCutoutDoubleSided");
+        var asset = Database.AddAsset(AssetDataPath.Create("BridgeBuilder", data.name, EscapeStrategy.None), data);
         _composed.Add(asset);
         asset.UpdateTextures(textures);
         // MovableRoadModel stores octahedral normals and tangents. The preview
@@ -115,7 +114,6 @@ internal sealed class MovableRoadMaterial : IDisposable
     {
         if (_preview != null || surfaces.Count == 0) return;
         // Finish relocation before native streaming captures any file descriptors.
-        MoveResource(Asset);
         foreach (var asset in _composed) MoveResource(asset);
         var config = Resources.Load<VirtualTexturingConfig>("VirtualTexturingConfig");
         var grouper = new AtlasMaterialsGrouper(config.stackDatas.Length, config.tileSize, RequestedMidMipLevels);
@@ -144,7 +142,7 @@ internal sealed class MovableRoadMaterial : IDisposable
             }
             grouper.ResolveDuplicates(references, references.Length);
             grouper.GroupEntries(config, pixels, references);
-            var cache = Asset.database.AddAsset<MidMipCacheAsset>(AssetDataPath.Create(
+            var cache = Database.AddAsset<MidMipCacheAsset>(AssetDataPath.Create(
                 BridgeBuilder.Runtime.BridgeAssetInfo.OwnedDirectory(_owner, "Appearance/MidMips"),
                 AtlasMaterialsGrouper.GetAssetName(config.tileSize, RequestedMidMipLevels), EscapeStrategy.None));
             _composed.Add(cache);
@@ -152,7 +150,7 @@ internal sealed class MovableRoadMaterial : IDisposable
             var streaming = World.DefaultGameObjectInjectionWorld.GetExistingSystemManaged<TextureStreamingSystem>();
             // Use native cache discovery/reservation before any generated render is published.
             streaming.MarkVTAssetsDirty();
-            streaming.RefreshVT(Asset.database);
+            streaming.RefreshVT(Database);
             foreach (var surface in surfaces)
                 surface.LoadVTAsync(streaming, streaming.mipBias, streaming.tileSize, RequestedMidMipLevels);
             Mod.Log.Info($"Composite native mid-mip cache saved: {cache.path}; surfaces={surfaces.Count}; levels={RequestedMidMipLevels}.");
@@ -164,87 +162,38 @@ internal sealed class MovableRoadMaterial : IDisposable
         }
     }
 
-    internal MovableRoadMaterial(string owner, SurfaceAsset source, PreviewGeometry? preview)
+    internal MovableRoadMaterial(string owner, string styleId, SurfaceAsset source, PreviewGeometry? preview)
     {
+        StyleId = styleId;
         _preview = preview;
         _owner = owner;
+        _name = owner + " Road Surface";
         if (!MovableAssetOwnership.Matches(owner, owner, preview))
             throw new ArgumentException("Moving road material requires an owned generation identity.");
-        source.LoadProperties(useVT: true);
-        SurfaceAsset? created = null;
         try
         {
-            // This conversion is defined for the native network worldspace layer.
-            // Atlas bindings and VT provenance IDs are not interchangeable with it.
-            if (source.materialTemplateHash != 17)
-                throw new NotSupportedException($"No measured worldspace conversion for '{source.name}'.");
-            var textures = new Dictionary<string, TextureAsset>();
-            Bind("_WorldspaceAlbedo", "_BaseColorMap");
-            Bind("_WorldspaceNormalMap", "_NormalMap");
-            Bind("_WorldspaceMaskMap", "_MaskMap");
-            UVScale = source.TryGetFloatProperty("_WorldspaceUVScale", out var scale) ? scale :
-                AssetDatabase.global.resources.materialLibrary.GetMaterial(17).GetFloat("_WorldspaceUVScale");
-            if (!float.IsFinite(UVScale) || UVScale <= 0f)
-                throw new InvalidOperationException($"Invalid native road UV scale: {UVScale}.");
-
-            var database = preview?.NativeAssets ?? AssetDatabase.user;
-            using var data = new Surface(owner + " Road Surface", "Default");
-            created = database.AddAsset(AssetDataPath.Create("BridgeBuilder", data.name,
-                EscapeStrategy.None), data);
-            // Network worldspace asphalt has no object palette regions. SG_Default's
-            // missing _ControlMask is WHITE, enabling every city color region instead.
-            // Persist a zero mask so preview, native batches and cold loads agree.
-            var control = database.AddAsset<TextureAsset>(AssetDataPath.Create("BridgeBuilder",
-                owner + " Road Surface Control", EscapeStrategy.None));
-            _composed.Add(control);
-            var zero = new Texture2D(1, 1, TextureFormat.RGBA32, false, true);
-            try
-            {
-                zero.SetPixel(0, 0, Color.clear);
-                control.SetData(zero);
-                control.Save(compress: true);
-                control.Unload();
-            }
-            finally { UnityEngine.Object.Destroy(zero); }
-            textures.Add("_ControlMask", control);
-            created.UpdateTextures(textures);
-            created.UpdateKeywords(new HashSet<string>(created.keywords) { "_TANGENTSPACE_OCTO" });
-            created.UpdateFloats(new Dictionary<string,float> { ["_Snow"] = 0f });
-            // The overload explicitly disables texture saving and VT production.
-            // Save only the descriptor and its CID; native source textures are unchanged.
-            if (!created.Save(mipBias: 0, force: false, saveTextures: false, vt: false))
-                throw new InvalidOperationException("Could not save the native moving-road material descriptor.");
-            _preview?.RetainSurfaceProperties(created);
-            created.UnloadProperties();
-            Asset = created;
+            Asset = MovableRoadSurface.Create(owner, styleId, source, preview, _composed,
+                out var uvScale, out var asphalt);
+            UVScale = uvScale;
+            AsphaltTexture = asphalt;
             Mod.Log.Info($"{owner}: native tiled road material={Asset.id}; UV/metre={UVScale}; " +
-                "descriptors=1; generated control mask=1x1 zero; native road textures unchanged; texture baking=0.");
-
-            void Bind(string from, string to)
-            {
-                if (!source.TryGetTexture(from, out var texture) || texture == null || texture.isDummy)
-                    throw new InvalidOperationException($"'{source.name}' has no persistent native texture for {from}.");
-                textures.Add(to, texture);
-            }
+                $"prepared={_composed.Count == 0}; native road textures unchanged; texture baking=0.");
         }
         catch
         {
-            if (created != null) created.database.DeleteAsset(created);
-            foreach (var asset in _composed) asset.database.DeleteAsset(asset);
+            for (var i = _composed.Count - 1; i >= 0; i--)
+                _composed[i].database.DeleteAsset(_composed[i]);
             throw;
         }
-        finally { source.UnloadProperties(); }
     }
-
-    // The completed render graph owns the saved descriptor. Preview descriptors
-    // remain in PreviewGeometry's private database and die with that session.
+    // Transfer locally created resources only. Prepared materials remain immutable
+    // source dependencies, outside preview cleanup and owner relocation.
     internal void Keep()
     {
         // Native VT writers derive streaming filenames from the full asset name.
         // Relocate only after all VT/cache writes have completed; keep every CID/payload.
         if (_preview == null)
         {
-            MoveResource(Asset);
             foreach (var asset in _composed)
                 MoveResource(asset);
         }
@@ -257,7 +206,6 @@ internal sealed class MovableRoadMaterial : IDisposable
 
     public void Dispose()
     {
-        if (!_keep) Asset.database.DeleteAsset(Asset);
         if (!_keep) for (var i = _composed.Count - 1; i >= 0; i--)
             _composed[i].database.DeleteAsset(_composed[i]);
     }

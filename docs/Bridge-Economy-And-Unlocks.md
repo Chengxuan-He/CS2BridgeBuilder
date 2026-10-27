@@ -43,8 +43,8 @@ Legacy conversion preserves bridge/deck UUID, CID and geometry, completes missin
 and uses the shared file layout. Successful conversion is idempotent. Failed migration follows
 contract section 19's rollback and backup/removal rules; persistent changes require restart.
 
-Deployment follows contract section 13. Remove bridges only for styles affected by a generation
-change. If bridge-generation code did not change, remove no existing bridges. Do not use an old
+Deployment follows contract section 13. Preserve healthy bridges; recover only specifically
+incompatible style/UUID-owned assets. A generation-code change alone does not require removal. Do not use an old
 pricing implementation or a mod version change alone as a reason to clear assets.
 
 ## Verification

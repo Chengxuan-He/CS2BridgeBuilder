@@ -4,7 +4,6 @@ using Patch = BridgeBuilder.Bridges.MovableExistingRoadSurface.Patch;
 using Partition = BridgeBuilder.Bridges.MovableRoadGeometry.Partition;
 
 namespace BridgeBuilder.Bridges;
-
 // DrawBridge03 mesh 0, game 1.6.2f1. Geometry SHA-256:
 // f7ecc824ad55745e791e40b18fd12f5def20657ed8ea56d373429d5a1337588f.
 // Native top faces 58046/58054, 58174/58180 and their opposite-side copies.
@@ -12,52 +11,52 @@ namespace BridgeBuilder.Bridges;
 // The original complete road island contains paint and must not be repeated.
 internal static class Draw03RoadAppearance
 {
-    private const float FixedUnitEnd = 88.041015625f;
-    private const float OuterEnd = 96f;
+    private static float FixedUnitEnd => Numeric_Types_Draw03_Draw03RoadAppearance_cs.Values.F32[0];
+    private static float OuterEnd => Numeric_Types_Draw03_Draw03RoadAppearance_cs.Values.F32[1];
 
-    internal static Patch[] Patches(MovableSelectedRoadLayout layout, Pose roadToObject)
+    internal static Patch[] Patches(MovableSelectedRoadLayout layout, Pose roadToObject, Vector2? surfaceSpan = null)
     {
         var frame = Matrix4x4.TRS(roadToObject.position, roadToObject.rotation, Vector3.one).transpose;
-        var result = new Patch[24];
-        for (var zone = 0; zone < 3; zone++)
-        for (var half = 0; half < 2; half++)
-        for (var walk = 0; walk < 2; walk++)
-        for (var side = 0; side < 2; side++)
-        {
-            var direction = half == 0 ? -1f : 1f;
-            var sideSign = side == 0 ? -1f : 1f;
-            var length = zone == 2 ? OuterEnd - FixedUnitEnd : 8f;
-            var origin = zone == 2 ? OuterEnd : zone == 1 ? FixedUnitEnd
-                : walk == 0 ? 72.015625f : 80.015625f;
-            var u = frame * new Vector4(0f, 0f, -direction / length, origin / length);
-            Vector2 min, max;
-            Vector4 v;
-            if (walk != 0)
-            {
-                min = new Vector2(.7529296875f, .01087188720703125f);
-                max = new Vector2(.9892578125f, .1024169921875f);
-                var span = side == 0 ? layout.LeftSidewalk : layout.RightSidewalk;
-                var outer = side == 0 ? span.x : span.y;
-                // Move the sampling origin with each selected sidewalk's outer edge;
-                // retain the measured 3.10009765625 m native period independently.
-                var gradient = -sideSign / 3.10009765625f;
-                v = frame * new Vector4(gradient, 0f, 0f, -gradient * outer);
-            }
-            else
-            {
-                min = new Vector2(.7529296875f, .3203125f);
-                max = new Vector2(.9892578125f, .3603515625f);
-                // Preserve the native atlas-V/metre gradient after selecting a smaller
-                // paint-free crop. The crop is not stretched across the road width.
-                var width = 9.39990234375f - sideSign * direction * .0000019073486328125f;
-                var gradient = -sideSign * (.385986328125f - .10833740234375f) / width;
-                var crop = max.y - min.y;
-                v = frame * new Vector4(gradient / crop, 0f, 0f,
-                    (.385986328125f - gradient * direction * .0000019073486328125f - min.y) / crop);
-            }
-            result[zone * 8 + half * 4 + walk * 2 + side] = new Patch(min, max, u, v, repeat: true);
-        }
-        return result;
+        var result = new Patch[Numeric_Types_Draw03_Draw03RoadAppearance_cs.Values.I32[0]];
+        for (var zone = Numeric_Types_Draw03_Draw03RoadAppearance_cs.Values.I32[1]; zone < Numeric_Types_Draw03_Draw03RoadAppearance_cs.Values.I32[2]; zone++)
+            for (var half = Numeric_Types_Draw03_Draw03RoadAppearance_cs.Values.I32[3]; half < Numeric_Types_Draw03_Draw03RoadAppearance_cs.Values.I32[4]; half++)
+                for (var walk = Numeric_Types_Draw03_Draw03RoadAppearance_cs.Values.I32[5]; walk < Numeric_Types_Draw03_Draw03RoadAppearance_cs.Values.I32[6]; walk++)
+                    for (var side = Numeric_Types_Draw03_Draw03RoadAppearance_cs.Values.I32[7]; side < Numeric_Types_Draw03_Draw03RoadAppearance_cs.Values.I32[8]; side++)
+                    {
+                        var direction = half == Numeric_Types_Draw03_Draw03RoadAppearance_cs.Values.I32[9] ? -Numeric_Types_Draw03_Draw03RoadAppearance_cs.Values.F32[2] : Numeric_Types_Draw03_Draw03RoadAppearance_cs.Values.F32[3];
+                        var sideSign = side == Numeric_Types_Draw03_Draw03RoadAppearance_cs.Values.I32[10] ? -Numeric_Types_Draw03_Draw03RoadAppearance_cs.Values.F32[4] : Numeric_Types_Draw03_Draw03RoadAppearance_cs.Values.F32[5];
+                        var length = zone == Numeric_Types_Draw03_Draw03RoadAppearance_cs.Values.I32[11] ? OuterEnd - FixedUnitEnd : Numeric_Types_Draw03_Draw03RoadAppearance_cs.Values.F32[6];
+                        var origin = zone == Numeric_Types_Draw03_Draw03RoadAppearance_cs.Values.I32[12] ? OuterEnd : zone == Numeric_Types_Draw03_Draw03RoadAppearance_cs.Values.I32[13] ? FixedUnitEnd : walk == Numeric_Types_Draw03_Draw03RoadAppearance_cs.Values.I32[14] ? Numeric_Types_Draw03_Draw03RoadAppearance_cs.Values.F32[7] : Numeric_Types_Draw03_Draw03RoadAppearance_cs.Values.F32[8];
+                        var u = frame * new Vector4(Numeric_Types_Draw03_Draw03RoadAppearance_cs.Values.F32[9], Numeric_Types_Draw03_Draw03RoadAppearance_cs.Values.F32[10], -direction / length, origin / length);
+                        Vector2 min, max;
+                        Vector4 v;
+                        if (walk != Numeric_Types_Draw03_Draw03RoadAppearance_cs.Values.I32[15])
+                        {
+                            min = new Vector2(Numeric_Types_Draw03_Draw03RoadAppearance_cs.Values.F32[11], Numeric_Types_Draw03_Draw03RoadAppearance_cs.Values.F32[12]);
+                            max = new Vector2(Numeric_Types_Draw03_Draw03RoadAppearance_cs.Values.F32[13], Numeric_Types_Draw03_Draw03RoadAppearance_cs.Values.F32[14]);
+                            var span = side == Numeric_Types_Draw03_Draw03RoadAppearance_cs.Values.I32[16] ? layout.LeftSidewalk : layout.RightSidewalk;
+                            var outer = side == Numeric_Types_Draw03_Draw03RoadAppearance_cs.Values.I32[17] ? span.x : span.y;
+                            // Move the sampling origin with each selected sidewalk's outer edge;
+                            // retain the measured 3.10009765625 m native period independently.
+                            var gradient = -sideSign / Numeric_Types_Draw03_Draw03RoadAppearance_cs.Values.F32[15];
+                            v = frame * new Vector4(gradient, Numeric_Types_Draw03_Draw03RoadAppearance_cs.Values.F32[16], Numeric_Types_Draw03_Draw03RoadAppearance_cs.Values.F32[17], -gradient * outer);
+                        }
+                        else
+                        {
+                            min = new Vector2(Numeric_Types_Draw03_Draw03RoadAppearance_cs.Values.F32[18], Numeric_Types_Draw03_Draw03RoadAppearance_cs.Values.F32[19]);
+                            max = new Vector2(Numeric_Types_Draw03_Draw03RoadAppearance_cs.Values.F32[20], Numeric_Types_Draw03_Draw03RoadAppearance_cs.Values.F32[21]);
+                            // Preserve the native atlas-V/metre gradient after selecting a smaller
+                            // paint-free crop. The crop is not stretched across the road width.
+                            var width = Numeric_Types_Draw03_Draw03RoadAppearance_cs.Values.F32[22] - sideSign * direction * Numeric_Types_Draw03_Draw03RoadAppearance_cs.Values.F32[23];
+                            var gradient = -sideSign * (Numeric_Types_Draw03_Draw03RoadAppearance_cs.Values.F32[24] - Numeric_Types_Draw03_Draw03RoadAppearance_cs.Values.F32[25]) / width;
+                            var crop = max.y - min.y;
+                            v = frame * new Vector4(gradient / crop, Numeric_Types_Draw03_Draw03RoadAppearance_cs.Values.F32[26], Numeric_Types_Draw03_Draw03RoadAppearance_cs.Values.F32[27], (Numeric_Types_Draw03_Draw03RoadAppearance_cs.Values.F32[28] - gradient * direction * Numeric_Types_Draw03_Draw03RoadAppearance_cs.Values.F32[29] - min.y) / crop);
+                        }
+
+                        result[zone * Numeric_Types_Draw03_Draw03RoadAppearance_cs.Values.I32[18] + half * Numeric_Types_Draw03_Draw03RoadAppearance_cs.Values.I32[19] + walk * Numeric_Types_Draw03_Draw03RoadAppearance_cs.Values.I32[20] + side] = new Patch(min, max, u, v, repeat: true);
+                    }
+
+        return Draw03RoadWear.Apply(result, layout.CarLaneCenters, frame, surfaceSpan ?? layout.SurfaceSpan);
     }
 
     internal static Partition Regions(bool sidewalk, Pose roadToObject)
@@ -65,30 +64,43 @@ internal static class Draw03RoadAppearance
         var pose = Matrix4x4.TRS(roadToObject.position, roadToObject.rotation, Vector3.one);
         Partition Cut(float z, Partition negative, Partition positive)
         {
-            var frame = Matrix4x4.identity; frame.m23 = -z;
+            var frame = Matrix4x4.identity;
+            frame.m23 = -z;
             return new Partition(frame * pose, negative, positive);
         }
+
         Partition Sides(int zone, int half)
         {
-            var offset = zone * 8 + half * 4 + (sidewalk ? 2 : 0);
+            var offset = zone * Numeric_Types_Draw03_Draw03RoadAppearance_cs.Values.I32[21] + half * Numeric_Types_Draw03_Draw03RoadAppearance_cs.Values.I32[22] + (sidewalk ? Numeric_Types_Draw03_Draw03RoadAppearance_cs.Values.I32[23] : Numeric_Types_Draw03_Draw03RoadAppearance_cs.Values.I32[24]);
             var frame = Matrix4x4.identity;
-            frame.m00 = 0f; frame.m02 = -1f; frame.m20 = 1f; frame.m22 = 0f;
-            return new Partition(frame * pose, new Partition(offset), new Partition(offset + 1));
+            frame.m00 = Numeric_Types_Draw03_Draw03RoadAppearance_cs.Values.F32[30];
+            frame.m02 = -Numeric_Types_Draw03_Draw03RoadAppearance_cs.Values.F32[31];
+            frame.m20 = Numeric_Types_Draw03_Draw03RoadAppearance_cs.Values.F32[32];
+            frame.m22 = Numeric_Types_Draw03_Draw03RoadAppearance_cs.Values.F32[33];
+            return new Partition(frame * pose, new Partition(offset), new Partition(offset + Numeric_Types_Draw03_Draw03RoadAppearance_cs.Values.I32[25]));
         }
+
         Partition Convert(Partition node)
         {
-            if (node.IsGap) return Partition.Gap;
+            if (node.IsGap)
+                return Partition.Gap;
             if (node.Negative != null && node.Positive != null)
                 return new Partition(node.ObjectToSeam * pose, Convert(node.Negative), Convert(node.Positive));
             return node.Bone switch
             {
-                0 => Cut(0f, Cut(-FixedUnitEnd, Sides(2, 0), Sides(1, 0)),
-                    Cut(FixedUnitEnd, Sides(1, 1), Sides(2, 1))),
-                1 => Sides(0, 1),
-                2 => Sides(0, 0),
-                _ => throw new InvalidOperationException("Draw03 road appearance requires its original three bones.")
-            };
+                0 => Cut(Numeric_Types_Draw03_Draw03RoadAppearance_cs.Values.F32[34], Cut(-FixedUnitEnd, Sides(Numeric_Types_Draw03_Draw03RoadAppearance_cs.Values.I32[26], Numeric_Types_Draw03_Draw03RoadAppearance_cs.Values.I32[27]), Sides(Numeric_Types_Draw03_Draw03RoadAppearance_cs.Values.I32[28], Numeric_Types_Draw03_Draw03RoadAppearance_cs.Values.I32[29])), Cut(FixedUnitEnd, Sides(Numeric_Types_Draw03_Draw03RoadAppearance_cs.Values.I32[30], Numeric_Types_Draw03_Draw03RoadAppearance_cs.Values.I32[31]), Sides(Numeric_Types_Draw03_Draw03RoadAppearance_cs.Values.I32[32], Numeric_Types_Draw03_Draw03RoadAppearance_cs.Values.I32[33]))),
+                1 => Sides(Numeric_Types_Draw03_Draw03RoadAppearance_cs.Values.I32[34], Numeric_Types_Draw03_Draw03RoadAppearance_cs.Values.I32[35]),
+                2 => Sides(Numeric_Types_Draw03_Draw03RoadAppearance_cs.Values.I32[36], Numeric_Types_Draw03_Draw03RoadAppearance_cs.Values.I32[37]),
+                _ => throw new InvalidOperationException("Draw03 road appearance requires its original three bones.")};
         }
+
         return Convert(sidewalk ? Draw03RoadPartitions.Sidewalk : Draw03RoadPartitions.Carriageway);
     }
+}
+
+// Embedded numerical arrays: Types_Draw03_Draw03RoadAppearance_cs
+internal static class Numeric_Types_Draw03_Draw03RoadAppearance_cs
+{
+    static Numeric_Types_Draw03_Draw03RoadAppearance_cs() {}
+    internal static readonly HardcodedNumbers Values = HardcodedNumbers.Load("Types_Draw03_Draw03RoadAppearance_cs");
 }

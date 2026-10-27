@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 
 namespace BridgeBuilder.Bridges;
-
 /// <summary>
 /// What the measured archetype does with the ordinary road's white elevated-edge railing on a
 /// continuous bridge span. This is immutable metaprogram output from the prefab anatomy dump; it is
@@ -13,7 +12,6 @@ internal enum RoadRailingPolicy
 {
     /// <summary>The archetype carries the ordinary road/path side railing along its span.</summary>
     KeepOnRun,
-
     /// <summary>The archetype carries no ordinary road railing on the run; retain it only at joins.</summary>
     EndsAndNodesOnly,
 }
@@ -23,17 +21,11 @@ internal enum RoadRailingPolicy
 /// </summary>
 internal sealed class BridgeStyleDefinition
 {
-    internal BridgeStyleDefinition(string id, string nameSuffix, int clearance, params string[] patterns)
-        : this(id, nameSuffix, clearance, 0f, patterns)
+    internal BridgeStyleDefinition(string id, string nameSuffix, int clearance, params string[] patterns) : this(id, nameSuffix, clearance, Numeric_BridgeStyleDefinitions_cs.Values.F32[0], patterns)
     {
     }
 
-    internal BridgeStyleDefinition(
-        string id,
-        string nameSuffix,
-        int clearance,
-        float archetypeStructureAllowance,
-        params string[] patterns)
+    internal BridgeStyleDefinition(string id, string nameSuffix, int clearance, float archetypeStructureAllowance, params string[] patterns)
     {
         Id = id;
         NameSuffix = nameSuffix;
@@ -44,14 +36,12 @@ internal sealed class BridgeStyleDefinition
 
     /// <summary>Stored in the settings file and never translated.</summary>
     internal string Id { get; }
-
     /// <summary>
     /// What an exported asset is called after the road name. Deliberately not the translated name:
     /// an asset that renamed itself when the player switched language would stop matching its own
     /// export record, and would look like a different asset to anyone it was shared with.
     /// </summary>
     internal string NameSuffix { get; }
-
     /// <summary>
     /// How much wider than the road this kind of bridge is built, in whole metres.
     ///
@@ -62,14 +52,12 @@ internal sealed class BridgeStyleDefinition
     /// rule out every variant they have.
     /// </summary>
     internal int Clearance { get; }
-
     /// <summary>
     /// The archetype's authored structural allowance beyond its target-minus-prototype-road delta.
     /// This is final immutable source metadata emitted by offline metaprogramming, not a runtime
     /// audit result or a post-generation correction.
     /// </summary>
     internal float ArchetypeStructureAllowance { get; }
-
     /// <summary>Normalised fragments; a prefab belongs to this style if its name contains any of them.</summary>
     internal IReadOnlyList<string> Patterns { get; }
 }
@@ -99,14 +87,9 @@ internal static class BridgeStyleDefinitions
     /// that matches none of its entries.
     /// </summary>
     internal const string Default = "Suspension";
-
     // Independent native mechanisms, not aliases. Admission does not imply a connected generator.
-    internal static bool IsMovable(string? id) => id is
-        "Draw01" or "Draw02" or "Draw03" or "Lift01" or "Lift02" or "Lift03" or
-        "Lift04" or "Lift05" or "PedestrianDraw01" or "PedestrianDraw02";
-
+    internal static bool IsMovable(string? id) => id is "Draw01" or "Draw02" or "Draw03" or "Lift01" or "Lift02" or "Lift03" or "Lift04" or "Lift05" or "PedestrianDraw01" or "PedestrianDraw02";
     internal static bool CanList(string? id) => IsMovable(id) || CanGenerate(id);
-
     // Explicit generator coverage, not a list inferred from installed Bridge
     // components. These families have recorded TowerFactory/section generation
     // paths. TiedArch is generated through its overhead sections; CoveredWood and
@@ -114,25 +97,41 @@ internal static class BridgeStyleDefinitions
     // Adding a definition, translation or donor alone must not enable generation.
     private static readonly HashSet<string> ImplementedStyles = new(StringComparer.Ordinal)
     {
-        "WoodenCovered", "CoveredWood",
-        "Suspension", "SuspensionDouble", "Suspension01", "Suspension02",
-        "SuspensionGolden", "GoldenGate", "GoldenGateDouble",
-        "Extradosed01", "Extradosed02", "Extradosed03", "ExtradosedLarge",
-        "CableStayed", "TrussArch", "TrussArch01", "TrussArch02", "TrussArch03",
-        "TiedArch", "Grand",
+        "WoodenCovered",
+        "CoveredWood",
+        "Suspension",
+        "SuspensionDouble",
+        "Suspension01",
+        "Suspension02",
+        "SuspensionGolden",
+        "GoldenGate",
+        "GoldenGateDouble",
+        "Extradosed01",
+        "Extradosed02",
+        "Extradosed03",
+        "ExtradosedLarge",
+        "CableStayed",
+        "TrussArch",
+        "TrussArch01",
+        "TrussArch02",
+        "TrussArch03",
+        "TiedArch",
+        "Grand",
     };
-
     /// <summary>The common catalogue, preview and generation admission rule.</summary>
     internal static string? GenerationUnsupportedReason(string? styleId, bool doubleDeck = false)
     {
-        if (string.IsNullOrEmpty(styleId)) return "no bridge style was selected";
-        if (!SupportsDeckMode(styleId, doubleDeck)) return "the selected bridge style does not support this deck count";
-        if (IsMovable(styleId)) return null;
+        if (string.IsNullOrEmpty(styleId))
+            return "no bridge style was selected";
+        if (!SupportsDeckMode(styleId, doubleDeck))
+            return "the selected bridge style does not support this deck count";
+        if (IsMovable(styleId))
+            return null;
         var deferred = DeferredReason(styleId);
-        if (deferred != null) return deferred;
+        if (deferred != null)
+            return deferred;
         if (!ImplementedStyles.Contains(styleId!) || !All.Any(item => item.Id == styleId))
             return "no bridge generator is implemented for this style";
-
         // Check the Chinese translation independently of the active UI locale.
         // Switching the game to English must not remove implemented bridges.
         var chineseName = Settings.UiStringCatalog.ForLocale("zh-HANS").StyleName(styleId!);
@@ -141,9 +140,7 @@ internal static class BridgeStyleDefinitions
         return null;
     }
 
-    internal static bool CanGenerate(string? styleId) => GenerationUnsupportedReason(styleId) == null
-        || GenerationUnsupportedReason(styleId, true) == null;
-
+    internal static bool CanGenerate(string? styleId) => GenerationUnsupportedReason(styleId) == null || GenerationUnsupportedReason(styleId, true) == null;
     // The DLC landmark and BXP's genuine auxiliary-net archetypes are separate products.
     internal static bool SupportsDeckMode(string? styleId, bool doubleDeck) => styleId switch
     {
@@ -153,10 +150,7 @@ internal static class BridgeStyleDefinitions
         var id when IsMovable(id) => !doubleDeck,
         _ => true,
     };
-
-    internal static bool AcceptsSource(string styleId, bool isBaseGame) =>
-        styleId != "Extradosed01" || isBaseGame;
-
+    internal static bool AcceptsSource(string styleId, bool isBaseGame) => styleId != "Extradosed01" || isBaseGame;
     /// <summary>
     /// Recorded central cable sheet, not a frame straddling the road. Its source geometry
     /// 28ab220c7162571f5effdf1fd5de7c6a spans x=-0.299219..+0.299219 although the
@@ -164,9 +158,7 @@ internal static class BridgeStyleDefinitions
     /// This exact archetype identity is resolved offline, never from runtime mesh bounds
     /// or m_Median (other median sections contain full-width, paired cable assemblies).
     /// </summary>
-    internal static bool PreservesOverheadGeometry(string? styleId, string sectionName) =>
-        styleId == "ExtradosedLarge" && sectionName == "6-Lane Extradosed Bridge";
-
+    internal static bool PreservesOverheadGeometry(string? styleId, string sectionName) => styleId == "ExtradosedLarge" && sectionName == "6-Lane Extradosed Bridge";
     /// <summary>
     /// The ordinary white road-railing policy measured on every generated bridge family.
     ///
@@ -184,25 +176,13 @@ internal static class BridgeStyleDefinitions
     {
         // Road Side 0 is node-only in these road prototypes. TrussArchBridge01/03 are track
         // prototypes, and TrussArchBridge02 has its own structural outer railing instead.
-        "Suspension01" or
-        "SuspensionGolden" or
-        "GoldenGate" or
-        "GoldenGateDouble" or
-        "Extradosed01" or
-        "Extradosed02" or
-        "Extradosed03" or
-        "ExtradosedBridge" or // the separately discovered ExtradosedBridge04 family
-        "TrussArch01" or
-        "TrussArch02" or
-        "TrussArch03" or
-        "Grand" => RoadRailingPolicy.EndsAndNodesOnly,
-
+        "Suspension01" or "SuspensionGolden" or "GoldenGate" or "GoldenGateDouble" or "Extradosed01" or "Extradosed02" or "Extradosed03" or "ExtradosedBridge" or // the separately discovered ExtradosedBridge04 family
+ "TrussArch01" or "TrussArch02" or "TrussArch03" or "Grand" => RoadRailingPolicy.EndsAndNodesOnly,
         // Suspension, Suspension02, ExtradosedLarge, CableStayed, TrussArch, TiedArch and CoveredWood expose
         // an ordinary span-side section in their measured archetypes. Deferred mechanism styles and
         // unknown third-party styles also take the non-destructive default.
         _ => RoadRailingPolicy.KeepOnRun,
     };
-
     /// <summary>
     /// Whether a style's overhead section is an open, member-built truss.
     ///
@@ -212,9 +192,7 @@ internal static class BridgeStyleDefinitions
     /// whole connected component. Keeping this classification here prevents one colour silently
     /// falling back to the height-band portal rule.
     /// </summary>
-    internal static bool UsesOpenTrussTopology(string? styleId) =>
-        styleId is "TrussArch01" or "TrussArch02" or "TrussArch03";
-
+    internal static bool UsesOpenTrussTopology(string? styleId) => styleId is "TrussArch01" or "TrussArch02" or "TrussArch03";
     /// <summary>
     /// Whether an open-truss prototype authors its inner railing and outer arch as one side assembly.
     /// Such an assembly must be carried rigidly; scaling across its x extent changes the authored
@@ -222,16 +200,13 @@ internal static class BridgeStyleDefinitions
     /// inward rods and centre pivots need the shared transverse scale instead.
     /// </summary>
     internal static bool PreservesOpenTrussSideAssembly(string? styleId) => styleId == "TrussArch03";
-
     /// <summary>
     /// Whether the carried deck must use the bridge aggregate rather than the selected network's
     /// ordinary road or track aggregate. ExtradosedBridge01's lower network is structurally part of
     /// the same named bridge, so leaving its original aggregate in place gives it an unrelated street,
     /// road or track name.
     /// </summary>
-    internal static bool CarriedDeckUsesBridgeAggregate(string? styleId, bool carriedIsRoad) =>
-        styleId == "Extradosed01" || (styleId == "GoldenGateDouble" && carriedIsRoad);
-
+    internal static bool CarriedDeckUsesBridgeAggregate(string? styleId, bool carriedIsRoad) => styleId == "Extradosed01" || (styleId == "GoldenGateDouble" && carriedIsRoad);
     /// <summary>
     /// Order matters: the first matching entry wins, so the narrower patterns come first. Without
     /// that, "PedestrianDrawBridge01" would be filed under the road-carrying bascule bridges.
@@ -249,57 +224,42 @@ internal static class BridgeStyleDefinitions
     /// </summary>
     internal static readonly IReadOnlyList<BridgeStyleDefinition> All = new[]
     {
-        new BridgeStyleDefinition("PedestrianDraw01", "Pedestrian Bascule Bridge 01", 0, "pedestriandrawbridge01"),
-        new BridgeStyleDefinition("PedestrianDraw02", "Pedestrian Bascule Bridge 02", 0, "pedestriandrawbridge02"),
-        new BridgeStyleDefinition("Draw01", "Bascule Bridge 01", 0, "drawbridge01"),
-        new BridgeStyleDefinition("Draw02", "Bascule Bridge 02", 0, "drawbridge02"),
-        new BridgeStyleDefinition("Draw03", "Bascule Bridge 03", 0, "drawbridge03"),
-        new BridgeStyleDefinition("Lift01", "Lift Bridge 01", 0, "liftbridge01"),
-        new BridgeStyleDefinition("Lift02", "Lift Bridge 02", 0, "liftbridge02"),
-        new BridgeStyleDefinition("Lift03", "Lift Bridge 03", 0, "liftbridge03"),
-        new BridgeStyleDefinition("Lift04", "Lift Bridge 04", 0, "liftbridge04"),
-        new BridgeStyleDefinition("Lift05", "Lift Bridge 05", 0, "liftbridge05"),
-        new BridgeStyleDefinition("PedestrianDraw", "Pedestrian Bascule Bridge", 0, "pedestriandrawbridge"),
-        new BridgeStyleDefinition(
-            "WoodenCovered", "Wooden Covered Bridge", 0, "woodencoveredbridge"),
-        new BridgeStyleDefinition(
-            "CoveredWood", "Covered Wooden Bridge", 0, -2f, // 0xC0000000
-            "pedestrianbridgecoveredwood", "coveredwood"),
+        new BridgeStyleDefinition("PedestrianDraw01", "Pedestrian Bascule Bridge 01", Numeric_BridgeStyleDefinitions_cs.Values.I32[0], "pedestriandrawbridge01"),
+        new BridgeStyleDefinition("PedestrianDraw02", "Pedestrian Bascule Bridge 02", Numeric_BridgeStyleDefinitions_cs.Values.I32[1], "pedestriandrawbridge02"),
+        new BridgeStyleDefinition("Draw01", "Bascule Bridge 01", Numeric_BridgeStyleDefinitions_cs.Values.I32[2], "drawbridge01"),
+        new BridgeStyleDefinition("Draw02", "Bascule Bridge 02", Numeric_BridgeStyleDefinitions_cs.Values.I32[3], "drawbridge02"),
+        new BridgeStyleDefinition("Draw03", "Bascule Bridge 03", Numeric_BridgeStyleDefinitions_cs.Values.I32[4], "drawbridge03"),
+        new BridgeStyleDefinition("Lift01", "Lift Bridge 01", Numeric_BridgeStyleDefinitions_cs.Values.I32[5], "liftbridge01"),
+        new BridgeStyleDefinition("Lift02", "Lift Bridge 02", Numeric_BridgeStyleDefinitions_cs.Values.I32[6], "liftbridge02"),
+        new BridgeStyleDefinition("Lift03", "Lift Bridge 03", Numeric_BridgeStyleDefinitions_cs.Values.I32[7], "liftbridge03"),
+        new BridgeStyleDefinition("Lift04", "Lift Bridge 04", Numeric_BridgeStyleDefinitions_cs.Values.I32[8], "liftbridge04"),
+        new BridgeStyleDefinition("Lift05", "Lift Bridge 05", Numeric_BridgeStyleDefinitions_cs.Values.I32[9], "liftbridge05"),
+        new BridgeStyleDefinition("PedestrianDraw", "Pedestrian Bascule Bridge", Numeric_BridgeStyleDefinitions_cs.Values.I32[10], "pedestriandrawbridge"),
+        new BridgeStyleDefinition("WoodenCovered", "Wooden Covered Bridge", Numeric_BridgeStyleDefinitions_cs.Values.I32[11], "woodencoveredbridge"),
+        new BridgeStyleDefinition("CoveredWood", "Covered Wooden Bridge", Numeric_BridgeStyleDefinitions_cs.Values.I32[12], -Numeric_BridgeStyleDefinitions_cs.Values.F32[1], // 0xC0000000
+ "pedestrianbridgecoveredwood", "coveredwood"),
         // SuspensionBridge01 and 02 are the pale-grey designs. They are separate because 01 is a
         // single-deck bridge while 02 owns an auxiliary upper road and is therefore a double-deck
         // bridge. Exact numbered patterns must precede the pack-family patterns below.
-        new BridgeStyleDefinition(
-            "Suspension01", "Gray Suspension Bridge", 25, "suspensionbridge01"),
-        new BridgeStyleDefinition(
-            "Suspension02", "Gray Double-Deck Suspension Bridge", 33, "suspensionbridge02"),
-
+        new BridgeStyleDefinition("Suspension01", "Gray Suspension Bridge", Numeric_BridgeStyleDefinitions_cs.Values.I32[13], "suspensionbridge01"),
+        new BridgeStyleDefinition("Suspension02", "Gray Double-Deck Suspension Bridge", Numeric_BridgeStyleDefinitions_cs.Values.I32[14], "suspensionbridge02"),
         // Golden Gate is its own design, tower family and exported name. It previously matched the
         // generic golden entry, which hid it behind the same label and made its generation use the
         // SuspensionBridge03 tower metadata.
-        new BridgeStyleDefinition(
-            "GoldenGateDouble", "Golden Gate Double-Deck Suspension Bridge", 49,
-            "bxpgoldengatebridgesubway", "bxpgoldengatebridgetrain"),
-        new BridgeStyleDefinition(
-            "GoldenGate", "Golden Gate Suspension Bridge", 49, "goldengate"),
-
+        new BridgeStyleDefinition("GoldenGateDouble", "Golden Gate Double-Deck Suspension Bridge", Numeric_BridgeStyleDefinitions_cs.Values.I32[15], "bxpgoldengatebridgesubway", "bxpgoldengatebridgetrain"),
+        new BridgeStyleDefinition("GoldenGate", "Golden Gate Suspension Bridge", Numeric_BridgeStyleDefinitions_cs.Values.I32[16], "goldengate"),
         // 03 and 04 are the gold-painted pair. The number is an identity rather than a size, so asking
         // for a suspension bridge must not decide the colour by whichever donor happens to fit.
-        new BridgeStyleDefinition(
-            "SuspensionGolden", "Golden Suspension Bridge", 17, -1f, // 0xBF800000
-            "suspensionbridge03", "suspensionbridge04"),
-
+        new BridgeStyleDefinition("SuspensionGolden", "Golden Suspension Bridge", Numeric_BridgeStyleDefinitions_cs.Values.I32[17], -Numeric_BridgeStyleDefinitions_cs.Values.F32[2], // 0xBF800000
+ "suspensionbridge03", "suspensionbridge04"),
         // The expansion-pack double-deck suspension family shares the blue structure but not the
         // single-deck arrangement. Declare it first so the more general highway pattern below cannot
         // absorb it and leave both deck counts under one indistinguishable name.
-        new BridgeStyleDefinition(
-            "SuspensionDouble", "Blue Double-Deck Suspension Bridge", 7, -3.8146973E-06f,
-            "doubledecksuspensionbridge"),
-
+        new BridgeStyleDefinition("SuspensionDouble", "Blue Double-Deck Suspension Bridge", Numeric_BridgeStyleDefinitions_cs.Values.I32[18], -Numeric_BridgeStyleDefinitions_cs.Values.F32[3], "doubledecksuspensionbridge"),
         // Only the remaining blue highway suspension bridges. The numbered vanilla designs above are
         // separate designs that happen to share the suspension principle.
-        new BridgeStyleDefinition(
-            "Suspension", "Blue Suspension Bridge", 7, -3.8146973E-06f, // 0xB6800000
-            "suspensionbridgehighway", "suspensionhighway"),
+        new BridgeStyleDefinition("Suspension", "Blue Suspension Bridge", Numeric_BridgeStyleDefinitions_cs.Values.I32[19], -Numeric_BridgeStyleDefinitions_cs.Values.F32[4], // 0xB6800000
+ "suspensionbridgehighway", "suspensionhighway"),
         // The cable-stayed family, one style per pylon. They were one entry and are five bridges: the
         // pylon is what a cable-stayed design is, and a road fitted to one of them cannot wear
         // another's. Declared before the general patterns, so the specific name wins - the same
@@ -309,20 +269,17 @@ internal static class BridgeStyleDefinitions
         // does not. That is not recorded here: BridgeStyle.Select reads it off the variant, so asking
         // for a single deck bridge from a double deck archetype refuses on what the prefab is rather
         // than on what a table remembers about it.
-        new BridgeStyleDefinition(
-            "Extradosed01", "Extradosed Bridge", 23, 20f, "extradosedbridge01"),
-        new BridgeStyleDefinition("Extradosed02", "Extradosed Bridge", 23, "extradosedbridge02"),
-        new BridgeStyleDefinition(
-            "Extradosed03", "Extradosed Bridge", 23, 18.999992f, // 0x4197FFFC
-            "extradosedbridge03"),
-        new BridgeStyleDefinition(
-            "ExtradosedLarge", "Extradosed Bridge", 23, "extradosedbridgelargeroaddivided"),
+        new BridgeStyleDefinition("Extradosed01", "Extradosed Bridge", Numeric_BridgeStyleDefinitions_cs.Values.I32[20], Numeric_BridgeStyleDefinitions_cs.Values.F32[5], "extradosedbridge01"),
+        new BridgeStyleDefinition("Extradosed02", "Extradosed Bridge", Numeric_BridgeStyleDefinitions_cs.Values.I32[21], "extradosedbridge02"),
+        new BridgeStyleDefinition("Extradosed03", "Extradosed Bridge", Numeric_BridgeStyleDefinitions_cs.Values.I32[22], Numeric_BridgeStyleDefinitions_cs.Values.F32[6], // 0x4197FFFC
+ "extradosedbridge03"),
+        new BridgeStyleDefinition("ExtradosedLarge", "Extradosed Bridge", Numeric_BridgeStyleDefinitions_cs.Values.I32[23], "extradosedbridgelargeroaddivided"),
         // No catch-all "Extradosed" style. It offered a choice between designs rather than between
         // sizes of one - the pylon is what a cable-stayed bridge is - and every design that has been
         // looked at now has a style of its own above. A prefab matching none of the implemented styles
         // is excluded rather than offered without a corresponding generator.
-        new BridgeStyleDefinition("CableStayed", "Cable-Stayed Bridge", 3,       // 3.1 over 4
-            "cablestayed", "cablestay"),
+        new BridgeStyleDefinition("CableStayed", "Cable-Stayed Bridge", Numeric_BridgeStyleDefinitions_cs.Values.I32[24], // 3.1 over 4
+ "cablestayed", "cablestay"),
         // Before the general truss arch pattern, so the specific name wins - the same ordering that
         // keeps SuspensionBridge03 out of the blue suspension family.
         //
@@ -336,35 +293,29 @@ internal static class BridgeStyleDefinitions
         // the general truss-arch pattern: each generated bridge must copy the complete section, tower
         // and material family of the prototype the player selected, rather than sharing a donor with
         // another colour.
-        new BridgeStyleDefinition(
-            "TrussArch01", "Truss Arch Bridge 01", 3, 11.019386f, // 0x41304F68
-            "trussarchbridge01"),
-        new BridgeStyleDefinition("TrussArch02", "Truss Arch Bridge 02", 3, "trussarchbridge02"),
-        new BridgeStyleDefinition(
-            "TrussArch03", "Truss Arch Bridge 03", 3, 12.000008f, // 0x41400008
-            "trussarchbridge03"),
-        new BridgeStyleDefinition(
-            "TrussArch", "Truss Arch Bridge", 3, 3.8146973E-06f, // 0x36800000
-            "trussarchbridge", "trussarch"),
-        new BridgeStyleDefinition(
-            "TiedArch", "Tied Arch Bridge", 1, 2f, // 0x40000000; retained skipped span
-            "tiedarch"),
-        new BridgeStyleDefinition("Grand", "Extra-Large Suspension Bridge", 23, // 23.2 over 2
-            "grandbridge"),
+        new BridgeStyleDefinition("TrussArch01", "Truss Arch Bridge 01", Numeric_BridgeStyleDefinitions_cs.Values.I32[25], Numeric_BridgeStyleDefinitions_cs.Values.F32[7], // 0x41304F68
+ "trussarchbridge01"),
+        new BridgeStyleDefinition("TrussArch02", "Truss Arch Bridge 02", Numeric_BridgeStyleDefinitions_cs.Values.I32[26], "trussarchbridge02"),
+        new BridgeStyleDefinition("TrussArch03", "Truss Arch Bridge 03", Numeric_BridgeStyleDefinitions_cs.Values.I32[27], Numeric_BridgeStyleDefinitions_cs.Values.F32[8], // 0x41400008
+ "trussarchbridge03"),
+        new BridgeStyleDefinition("TrussArch", "Truss Arch Bridge", Numeric_BridgeStyleDefinitions_cs.Values.I32[28], Numeric_BridgeStyleDefinitions_cs.Values.F32[9], // 0x36800000
+ "trussarchbridge", "trussarch"),
+        new BridgeStyleDefinition("TiedArch", "Tied Arch Bridge", Numeric_BridgeStyleDefinitions_cs.Values.I32[29], Numeric_BridgeStyleDefinitions_cs.Values.F32[10], // 0x40000000; retained skipped span
+ "tiedarch"),
+        new BridgeStyleDefinition("Grand", "Extra-Large Suspension Bridge", Numeric_BridgeStyleDefinitions_cs.Values.I32[30], // 23.2 over 2
+ "grandbridge"),
         // Moveable bridges lift their deck instead of standing over it, so no sample of either had a
         // structure wider than its road. Demanding a margin would rule out every variant they have.
-        new BridgeStyleDefinition("Draw", "Bascule Bridge", 0, "drawbridge", "bascule"),
-        new BridgeStyleDefinition("Lift", "Lift Bridge", 0, "liftbridge"),
+        new BridgeStyleDefinition("Draw", "Bascule Bridge", Numeric_BridgeStyleDefinitions_cs.Values.I32[31], "drawbridge", "bascule"),
+        new BridgeStyleDefinition("Lift", "Lift Bridge", Numeric_BridgeStyleDefinitions_cs.Values.I32[32], "liftbridge"),
     };
-
     /// <summary>The style a prefab belongs to, or null when it is not one of the named styles.</summary>
     internal static BridgeStyleDefinition? Match(string prefabName)
     {
         var normalised = Normalise(prefabName);
-        if (normalised.Length == 0) return null;
-
-        return All.FirstOrDefault(definition =>
-            definition.Patterns.Any(pattern => normalised.Contains(pattern)));
+        if (normalised.Length == Numeric_BridgeStyleDefinitions_cs.Values.I32[33])
+            return null;
+        return All.FirstOrDefault(definition => definition.Patterns.Any(pattern => normalised.Contains(pattern)));
     }
 
     /// <summary>
@@ -375,15 +326,16 @@ internal static class BridgeStyleDefinitions
     /// </summary>
     private static string Normalise(string? name)
     {
-        if (string.IsNullOrEmpty(name)) return string.Empty;
-
+        if (string.IsNullOrEmpty(name))
+            return string.Empty;
         var builder = new System.Text.StringBuilder(name!.Length);
         foreach (var character in name)
         {
             // Digits are kept. Dropping them turned "SuspensionBridge03" into "suspensionbridge", so a
             // pattern naming the third design could never match one - which is why the golden bridges
             // stayed filed under the plain suspension style no matter how the rule was written.
-            if (char.IsLetterOrDigit(character)) builder.Append(char.ToLowerInvariant(character));
+            if (char.IsLetterOrDigit(character))
+                builder.Append(char.ToLowerInvariant(character));
         }
 
         return builder.ToString();
@@ -398,7 +350,6 @@ internal static class BridgeStyleDefinitions
     /// vanilla one cannot.
     /// </summary>
     internal const string SupersededPackPrefix = "BXP ";
-
     /// <summary>
     /// Whether a prefab belongs to a pack the base game has absorbed - by name alone.
     ///
@@ -407,9 +358,7 @@ internal static class BridgeStyleDefinitions
     /// has no archetype for - a second deck - is kept, because skipping it removes the capability
     /// rather than a duplicate of it.
     /// </summary>
-    internal static bool IsSupersededPack(string? name) =>
-        name != null && name.StartsWith(SupersededPackPrefix, StringComparison.Ordinal);
-
+    internal static bool IsSupersededPack(string? name) => name != null && name.StartsWith(SupersededPackPrefix, StringComparison.Ordinal);
     /// <summary>
     /// Styles whose generation is deferred, and why.
     ///
@@ -422,22 +371,24 @@ internal static class BridgeStyleDefinitions
     /// still has; a bridge generated from an arrangement nobody has measured is one that looks built
     /// and behaves as something else.
     /// </summary>
-    private static readonly Dictionary<string, string> Deferred =
-        new(StringComparer.Ordinal)
-        {
-            ["Draw"] = "a bascule bridge's deck is its mechanism - leaves that rotate - and widening "
-                + "one has not been worked out",
-            ["PedestrianDraw"] = "a bascule bridge's deck is its mechanism - leaves that rotate - and "
-                + "widening one has not been worked out",
-            ["Lift"] = "a lift bridge's deck is its mechanism - a span that rises between towers - and "
-                + "widening one has not been worked out",
-        };
-
+    private static readonly Dictionary<string, string> Deferred = new(StringComparer.Ordinal)
+    {
+        ["Draw"] = "a bascule bridge's deck is its mechanism - leaves that rotate - and widening " + "one has not been worked out",
+        ["PedestrianDraw"] = "a bascule bridge's deck is its mechanism - leaves that rotate - and " + "widening one has not been worked out",
+        ["Lift"] = "a lift bridge's deck is its mechanism - a span that rises between towers - and " + "widening one has not been worked out",
+    };
     /// <summary>Why a style is deferred, or null when it is not.</summary>
     internal static string? DeferredReason(string? styleId)
     {
-        if (styleId == null) return null;
+        if (styleId == null)
+            return null;
         return Deferred.TryGetValue(styleId, out var reason) ? reason : null;
     }
+}
 
+// Embedded numerical arrays: BridgeStyleDefinitions_cs
+internal static class Numeric_BridgeStyleDefinitions_cs
+{
+    static Numeric_BridgeStyleDefinitions_cs() {}
+    internal static readonly HardcodedNumbers Values = HardcodedNumbers.Load("BridgeStyleDefinitions_cs");
 }

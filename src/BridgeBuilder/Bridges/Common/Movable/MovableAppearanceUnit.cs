@@ -13,7 +13,9 @@ internal static class MovableAppearanceUnit
         MovableExistingRoadSurface.Patch patch,IReadOnlyList<MovableNativeDecals.Region> paint)
     {
         var values=new List<int>();
-        void Add(float value)=>values.Add(Mathf.RoundToInt(value*10000));
+        // Similar phases are not identical resources. Quantizing here can make
+        // a later receiver use another chart's pixels at a different source phase.
+        void Add(float value)=>values.Add(BitConverter.SingleToInt32Bits(value));
         void Vector(Vector3 value){Add(value.x);Add(value.y);Add(value.z);}
         var normal=Vector3.Cross(u,v).normalized;
         Add(extent.x);Add(extent.y);Vector(u);Vector(v);

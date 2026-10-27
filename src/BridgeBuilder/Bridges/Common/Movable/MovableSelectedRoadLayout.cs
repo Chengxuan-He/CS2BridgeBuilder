@@ -7,10 +7,22 @@ namespace BridgeBuilder.Bridges;
 internal sealed class MovableSelectedRoadLayout
 {
     internal readonly bool[] SidewalkOccurrences;
+    internal readonly string Prototype;
+    internal readonly float[] CarLaneCenters;
+    internal readonly Vector2 SurfaceSpan;
     internal readonly Vector2 LeftSidewalk, RightSidewalk;
 
-    internal MovableSelectedRoadLayout(MovableClosedRoad.Result road, Pose roadToObject)
+    internal MovableSelectedRoadLayout(MovableClosedRoad.Result road, Pose roadToObject, string prototype)
     {
+        Prototype = prototype;
+        var carCenters = new System.Collections.Generic.List<float>();
+        foreach(var center in road.CarLaneCenters)
+        {
+            var x=(roadToObject.rotation*center+roadToObject.position).x;
+            if(!carCenters.Exists(value => Mathf.Abs(value-x)<.01f)) carCenters.Add(x);
+        }
+        carCenters.Sort();
+        CarLaneCenters=carCenters.ToArray();
         SidewalkOccurrences = new bool[road.Occurrences.Length];
         var spans = new Vector2[road.Occurrences.Length];
         for (var i = 0; i < spans.Length; i++)
@@ -27,6 +39,9 @@ internal sealed class MovableSelectedRoadLayout
             Add(triangle.Occurrence, triangle.B.Position);
             Add(triangle.Occurrence, triangle.C.Position);
         }
+        var surfaceSpan = new Vector2(float.PositiveInfinity, float.NegativeInfinity);
+        foreach(var span in spans) if(span.y>span.x) Extend(ref surfaceSpan,span);
+        SurfaceSpan=surfaceSpan;
         var left = new Vector2(float.PositiveInfinity, float.NegativeInfinity);
         var right = left;
         for (var i = 0; i < spans.Length; i++)

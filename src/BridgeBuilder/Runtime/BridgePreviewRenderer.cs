@@ -24,6 +24,10 @@ internal sealed class BridgePreviewRenderer : IDisposable
     private int _renderedFrame = -1;
     private int _sampleIndex;
     private Color[]? _accumulated;
+    private Texture2D? _readbackPixels;
+    private Texture2D? _readbackCoverage;
+    private readonly System.Diagnostics.Stopwatch _timer = new();
+    private double _readbackMs, _accumulateMs, _resolveMs, _encodeMs;
     private const int TextureWarmupFrames = 8;
     private const int PreviewVolumeLayer = BridgePreviewStage.Layer;
     private const float StudioEV100 = 11f;
@@ -144,6 +148,8 @@ internal sealed class BridgePreviewRenderer : IDisposable
         if (_disposed || _completion != null) return;
         _completion = completion;
         _startedFrame = Time.frameCount;
+        _timer.Restart();
+        _readbackMs = _accumulateMs = _resolveMs = _encodeMs = 0;
         _sampleIndex = 0;
         _accumulated = new Color[ImageWidth * ImageHeight];
         Mod.Log.Info($"Preview render start: {_diagnosticId}; frame={_startedFrame}; "
@@ -194,31 +200,30 @@ internal sealed class BridgePreviewRenderer : IDisposable
             Finish(string.Empty, _pass.Error);
             return;
         }
-        Texture2D? pixels = null;
-        Texture2D? coverage = null;
         var previous = RenderTexture.active;
         try
         {
             var target = _shadedCapture;
+            var phase = _timer.Elapsed.TotalMilliseconds;
             RenderTexture.active = target;
-            pixels = new Texture2D(target.width, target.height, TextureFormat.RGBAFloat, false, true)
+            var pixels = _readbackPixels ??= new Texture2D(target.width, target.height, TextureFormat.RGBAFloat, false, true)
             { hideFlags = HideFlags.HideAndDontSave };
             pixels.ReadPixels(new Rect(0, 0, target.width, target.height), 0, 0, false);
-            pixels.Apply(false, false);
             var linear = pixels.GetPixels();
             RenderTexture.active = _capture;
-            coverage = new Texture2D(target.width, target.height, TextureFormat.RGBA32, false, true)
+            var coverage = _readbackCoverage ??= new Texture2D(target.width, target.height, TextureFormat.RGBA32, false, true)
             { hideFlags = HideFlags.HideAndDontSave };
             coverage.ReadPixels(new Rect(0, 0, target.width, target.height), 0, 0, false);
-            coverage.Apply(false, false);
             var mask = coverage.GetPixels32();
-            for (var i = 0; i < linear.Length; i++) linear[i].a = mask[i].a / 255f;
-            if (!HasVisibleContent(linear))
+            _readbackMs += _timer.Elapsed.TotalMilliseconds - phase;
+            phase = _timer.Elapsed.TotalMilliseconds;
+            bool visible = BridgePreviewPixels.Accumulate(linear, mask, _accumulated!, ImageWidth, ImageHeight, SampleScale);
+            _accumulateMs += _timer.Elapsed.TotalMilliseconds - phase;
+            if (!visible)
             {
                 Finish(string.Empty, "RenderEmpty");
                 return;
             }
-            AccumulateCoverage(linear, target.width);
             if (++_sampleIndex < SubpixelSamples)
             {
                 // The next sample is another submitted camera frame, not a second
@@ -227,13 +232,18 @@ internal sealed class BridgePreviewRenderer : IDisposable
                 BeginSample();
                 return;
             }
+            phase = _timer.Elapsed.TotalMilliseconds;
             var output = ResolveCoverage();
+            _resolveMs += _timer.Elapsed.TotalMilliseconds - phase;
+            phase = _timer.Elapsed.TotalMilliseconds;
             var png = new Texture2D(ImageWidth, ImageHeight, TextureFormat.RGBA32, false);
             try
             {
                 png.SetPixels32(output);
                 png.Apply(false, false);
-                Finish("data:image/png;base64," + Convert.ToBase64String(ImageConversion.EncodeToPNG(png)), string.Empty);
+                var image = "data:image/png;base64," + Convert.ToBase64String(ImageConversion.EncodeToPNG(png));
+                _encodeMs += _timer.Elapsed.TotalMilliseconds - phase;
+                Finish(image, string.Empty);
             }
             finally { UnityEngine.Object.DestroyImmediate(png); }
         }
@@ -246,31 +256,6 @@ internal sealed class BridgePreviewRenderer : IDisposable
         finally
         {
             RenderTexture.active = previous;
-            if (pixels != null) UnityEngine.Object.DestroyImmediate(pixels);
-            if (coverage != null) UnityEngine.Object.DestroyImmediate(coverage);
-        }
-    }
-
-    private void AccumulateCoverage(Color[] linear, int sourceWidth)
-    {
-        for (var y = 0; y < ImageHeight; y++)
-        for (var x = 0; x < ImageWidth; x++)
-        {
-            var sum = Color.clear;
-            for (var sy = 0; sy < SampleScale; sy++)
-            for (var sx = 0; sx < SampleScale; sx++)
-            {
-                var p = linear[(y * SampleScale + sy) * sourceWidth + x * SampleScale + sx];
-                if (float.IsNaN(p.a) || float.IsInfinity(p.a) || p.a <= 0f) continue;
-                var alpha = Mathf.Clamp01(p.a);
-                // Resolve in premultiplied linear space. Averaging straight RGB
-                // with clear black first would put dark fringes around the cables.
-                sum.r += FiniteRadiance(p.r) * alpha;
-                sum.g += FiniteRadiance(p.g) * alpha;
-                sum.b += FiniteRadiance(p.b) * alpha;
-                sum.a += alpha;
-            }
-            _accumulated![y * ImageWidth + x] += sum;
         }
     }
 
@@ -290,9 +275,6 @@ internal sealed class BridgePreviewRenderer : IDisposable
         return output;
     }
 
-    private static float FiniteRadiance(float value)
-        => float.IsNaN(value) || float.IsInfinity(value) ? 0f : Mathf.Max(0f, value);
-
     private static Color32 Display(Color linear)
     {
         // One exposure/shoulder multiplier for the entire RGB vector. Applying
@@ -308,17 +290,6 @@ internal sealed class BridgePreviewRenderer : IDisposable
             Mathf.LinearToGammaSpace(linear.b * shoulder), linear.a);
     }
 
-    private static bool HasVisibleContent(Color[] pixels)
-    {
-        if (pixels.Length == 0) return false;
-        foreach (var pixel in pixels)
-        {
-            if (pixel.a > 0f && (pixel.r > 0f || pixel.g > 0f || pixel.b > 0f) &&
-                !float.IsNaN(pixel.r) && !float.IsNaN(pixel.g) && !float.IsNaN(pixel.b)) return true;
-        }
-        return false;
-    }
-
     private void Finish(string image, string error)
     {
         _camera.Camera.enabled = false;
@@ -329,6 +300,7 @@ internal sealed class BridgePreviewRenderer : IDisposable
         _accumulated = null;
         var message = $"Preview render finish: {_diagnosticId}; frame={Time.frameCount}; "
             + $"elapsedFrames={Time.frameCount - _startedFrame}; samples={_sampleIndex}/{SubpixelSamples}; "
+            + $"readbackMs={_readbackMs:F2}; accumulateMs={_accumulateMs:F2}; resolveMs={_resolveMs:F2}; encodeMs={_encodeMs:F2}; totalMs={_timer.Elapsed.TotalMilliseconds:F2}; "
             + $"result={(error.Length == 0 ? "OK" : error)}";
         if (error.Length == 0) Mod.Log.Info(message);
         else Mod.Log.Warn(message);
@@ -357,6 +329,10 @@ internal sealed class BridgePreviewRenderer : IDisposable
         if (_capture != null) _capture.Release();
         UnityEngine.Object.DestroyImmediate(_capture);
         _shadedHandle?.Release();
+        if (_readbackPixels != null) UnityEngine.Object.DestroyImmediate(_readbackPixels);
+        if (_readbackCoverage != null) UnityEngine.Object.DestroyImmediate(_readbackCoverage);
+        _readbackPixels = null;
+        _readbackCoverage = null;
         if (_shadedCapture != null) _shadedCapture.Release();
         UnityEngine.Object.DestroyImmediate(_shadedCapture);
         _camera?.Dispose();

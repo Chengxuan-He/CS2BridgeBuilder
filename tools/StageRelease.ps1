@@ -32,6 +32,7 @@ foreach ($file in $files) {
 $content = Join-Path $destinationRoot 'content'
 [IO.Directory]::CreateDirectory($content) | Out-Null
 foreach ($file in $files) { Copy-Item -LiteralPath (Join-Path $output $file) -Destination $content }
+& (Join-Path $PSScriptRoot 'Copy-PreparedMaterials.ps1') -Source (Join-Path $output 'Materials') -DestinationRoot $content
 Copy-Item -LiteralPath (Join-Path $projectRoot 'LICENSE') -Destination (Join-Path $content 'LICENSE.txt')
 foreach ($file in @('Mod-Description.md', 'PublishConfiguration.draft.xml', 'Thumbnail.png')) {
     Copy-Item -LiteralPath (Join-Path $docs $file) -Destination $destinationRoot
@@ -52,8 +53,8 @@ $manifest = [ordered]@{
     SourceBranch = (& git -C $projectRoot branch --show-current).Trim()
     WorkingTreeStatus = @(& git -C $projectRoot status --porcelain)
     SourceFiles = $sourceHashes
-    ContentFiles = @(Get-ChildItem -LiteralPath $content -File | Sort-Object Name | ForEach-Object {
-        @{ Name = $_.Name; SHA256 = (Get-FileHash -LiteralPath $_.FullName -Algorithm SHA256).Hash }
+    ContentFiles = @(Get-ChildItem -LiteralPath $content -Recurse -File | Sort-Object FullName | ForEach-Object {
+        @{ Name = [IO.Path]::GetRelativePath($content, $_.FullName); SHA256 = (Get-FileHash -LiteralPath $_.FullName -Algorithm SHA256).Hash }
     })
     OfficialPostProcessing = 'PENDING; must run on an isolated copy and retain its output/log before upload'
     InGameValidation = 'NOT_PERFORMED_ON_THIS_CANDIDATE'

@@ -23,6 +23,8 @@ Load a city and open Bridge Builder from its toolbar icon. Select a road or trac
 
 ### Compatibility
 
+- Compatible with [BridgeBuilder (ID 164700)](https://mods.paradoxplaza.com/mods/164700/Windows), a separate, similarly named mod.
+
 - Use Road Builder to create custom roads for your bridges. Once a bridge has been generated, deleting its source road in Road Builder does not prevent you from placing that saved bridge again. This does not mean required DLC, content mods or shared assets can be uninstalled.
 
 - Compatible with [Road Builder](https://mods.paradoxplaza.com/mods/87190/Windows) and [Bridge Expansion Pack](https://mods.paradoxplaza.com/mods/92245/Windows). **Both mods are optional, not required dependencies of Bridge Builder.** Install them only to use their roads or supported bridge styles.

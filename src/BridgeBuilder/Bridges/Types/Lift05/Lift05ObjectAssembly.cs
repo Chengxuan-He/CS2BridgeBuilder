@@ -5,12 +5,9 @@ using Game.Prefabs;
 using UnityEngine;
 
 namespace BridgeBuilder.Bridges;
-
 internal static class Lift05ObjectAssembly
 {
-    internal static StaticObjectPrefab Create(TowerFactory factory, string owner, string name,
-        RenderPrefab mechanism, RenderPrefab column, RenderPrefab footing, ContentPrefab content,
-        float halfWidthDelta, MovableStraightSample road, MovableRoadGeometry.Partition physical)
+    internal static StaticObjectPrefab Create(TowerFactory factory, string owner, string name, RenderPrefab mechanism, RenderPrefab column, RenderPrefab footing, ContentPrefab content, float halfWidthDelta, MovableStraightSample road, MovableRoadGeometry.Partition physical)
     {
         // Recorded native attachments: twelve wall lights and sixteen roof vents.
         // All retain parent connection 0, rotations, groups and probabilities.
@@ -23,19 +20,24 @@ internal static class Lift05ObjectAssembly
             // Contract attachment rule: nonzero X follows its parent's side displacement.
             item.m_Position.x += Math.Sign(item.m_Position.x) * halfWidthDelta;
         }
-        var result = factory.CreateMovableObject(name, false,
-            Lift05MechanismData.Meshes(new[] { mechanism, column, footing }), attachments,
-            target =>
-            {
-                Lift05MechanismData.ApplyComponents(target, content);
-                target.GetComponent<StandingObject>().m_LegSize.x += halfWidthDelta * 2f;
-            });
+
+        var result = factory.CreateMovableObject(name, false, Lift05MechanismData.Meshes(new[] { mechanism, column, footing }), attachments, target =>
+        {
+            Lift05MechanismData.ApplyComponents(target, content);
+            target.GetComponent<StandingObject>().m_LegSize.x += halfWidthDelta * Numeric_Types_Lift05_Lift05ObjectAssembly_cs.Values.F32[0];
+        });
         var objects = road.Objects();
         var partitions = new MovableRoadGeometry.Partition[objects.Placements.Length];
         Array.Fill(partitions, physical);
         factory.AttachMovableRoadObjects(result, objects.Placements, road.RoadToObject, partitions);
-        factory.AttachMovablePaint(result, road.Road.LaneGeometry.Decals, road.RoadToObject,
-            physical, MovableRoadGeometry.InFrame(road.Road.Triangles, road.RoadToObject));
+        factory.AttachMovablePaint(result, road.Road.LaneGeometry.Decals, road.RoadToObject, physical, MovableRoadGeometry.InFrame(road.Road.Triangles, road.RoadToObject));
         return result;
     }
+}
+
+// Embedded numerical arrays: Types_Lift05_Lift05ObjectAssembly_cs
+internal static class Numeric_Types_Lift05_Lift05ObjectAssembly_cs
+{
+    static Numeric_Types_Lift05_Lift05ObjectAssembly_cs() {}
+    internal static readonly HardcodedNumbers Values = HardcodedNumbers.Load("Types_Lift05_Lift05ObjectAssembly_cs");
 }

@@ -7,16 +7,15 @@ using Game.Prefabs;
 using Unity.Entities;
 
 namespace BridgeBuilder.Bridges;
-
 // Sampling input only; the style's all-LOD structure and road conversion follow separately.
 internal static class PedestrianDraw01RoadSampling
 {
-    internal static MovableStraightSample Create(string owner, Entity selectedRoad,
-        RenderPrefab[] roots, ContentPrefab content, float halfWidthDelta,
-        RandomSeed seed, NetPieceLayerMask replacedLayers, Upgraded? upgrade = null) =>
-        MovableStraightSample.Create(owner, selectedRoad, roots, content, halfWidthDelta, seed,
-            new[] { "PedestrianDrawBridge01 Mesh", "PedestrianDrawBridge01Pillar Mesh", "PedestrianDrawBridge01PillarBase Mesh" },
-            PedestrianDraw01MechanismData.Meshes, PedestrianDraw01MechanismData.ApplyComponents,
-            PedestrianDraw01NetworkData.MechanismPlacement, 144f,
-            10f, replacedLayers, upgrade);
+    internal static MovableStraightSample Create(string owner, Entity selectedRoad, RenderPrefab[] roots, ContentPrefab content, float halfWidthDelta, RandomSeed seed, NetPieceLayerMask replacedLayers, Upgraded? upgrade = null) => MovableStraightSample.Create(owner, selectedRoad, roots, content, halfWidthDelta, seed, new[] { "PedestrianDrawBridge01 Mesh", "PedestrianDrawBridge01Pillar Mesh", "PedestrianDrawBridge01PillarBase Mesh" }, PedestrianDraw01MechanismData.Meshes, PedestrianDraw01MechanismData.ApplyComponents, PedestrianDraw01NetworkData.MechanismPlacement, Numeric_Types_PedestrianDraw01_PedestrianDraw01RoadSampling_cs.Values.F32[0], Numeric_Types_PedestrianDraw01_PedestrianDraw01RoadSampling_cs.Values.F32[1], replacedLayers, upgrade);
+}
+
+// Embedded numerical arrays: Types_PedestrianDraw01_PedestrianDraw01RoadSampling_cs
+internal static class Numeric_Types_PedestrianDraw01_PedestrianDraw01RoadSampling_cs
+{
+    static Numeric_Types_PedestrianDraw01_PedestrianDraw01RoadSampling_cs() {}
+    internal static readonly HardcodedNumbers Values = HardcodedNumbers.Load("Types_PedestrianDraw01_PedestrianDraw01RoadSampling_cs");
 }

@@ -3,72 +3,62 @@ using System;
 using UnityEngine;
 
 namespace BridgeBuilder.Bridges;
-
 internal static class Lift04Machinery
 {
     internal static void Apply(int lod, Vector3[] source, Vector3[] positions, float delta)
     {
         var data = lod switch
         {
-            0 => (Count: 60636, Parts: Level0),
-            1 => (Count: 45780, Parts: Level1),
-            2 => (Count: 3212, Parts: Level2),
-            _ => throw new ArgumentOutOfRangeException(nameof(lod))
-        };
+            0 => (Count: Numeric_Types_Lift04_Lift04Machinery_g_cs.Values.I32[0], Parts: Level0),
+            1 => (Count: Numeric_Types_Lift04_Lift04Machinery_g_cs.Values.I32[1], Parts: Level1),
+            2 => (Count: Numeric_Types_Lift04_Lift04Machinery_g_cs.Values.I32[2], Parts: Level2),
+            _ => throw new ArgumentOutOfRangeException(nameof(lod))};
         if (source.Length != data.Count || positions.Length != data.Count || !float.IsFinite(delta))
             throw new InvalidOperationException("Lift04 machinery require their recorded topology.");
         foreach (var part in data.Parts)
-            for (var i = part.First; i <= part.Last; i++)
-                positions[i].x = source[i].x + source[i].x / part.HalfSpan * delta;
+            AffineGeometry.For(part.First, checked((part.Last) + 1), i =>
+            {
+                positions[i].x = AffineGeometry.AddScaled(source[i].x, source[i].x / part.HalfSpan, delta);
+            });
     }
 
     // Geometry SHA-256: 869158c6d06c9a9717851460adf922838d45c294c4b1e692b7b96e4585422980
-    private static readonly (int First, int Last, float HalfSpan)[] Level0 =
-    {
-        (2999, 3066, 5.272217f),
-        (4760, 4931, 5.272217f),
-        (38861, 38928, 5.272217f),
-        (38981, 39152, 5.272217f),
-        (4332, 4339, 1.2853088f),
-        (4356, 4359, 1.2853088f),
-        (4736, 4739, 1.2853088f),
-        (4756, 4759, 1.2853088f),
-        (43130, 43133, 1.2853088f),
-        (44582, 44589, 1.2853088f),
-        (44606, 44609, 1.2853088f),
-        (44986, 44989, 1.2853088f),
-        (45006, 45009, 1.2853088f),
-        (45166, 45169, 1.2853088f),
-    };
-
+    private static readonly (int First, int Last, float HalfSpan)[] Level0 = ReadPackedLevel0();
     // Geometry SHA-256: 4d57e1fe16365bf8702d310191fefbbbbbece9fcafb413b980052640e26d1b6f
-    private static readonly (int First, int Last, float HalfSpan)[] Level1 =
-    {
-        (2824, 2891, 5.272217f),
-        (4888, 5059, 5.272217f),
-        (28353, 28420, 5.272217f),
-        (28472, 28642, 5.272217f),
-        (4495, 4502, 1.2853088f),
-        (4519, 4522, 1.2853088f),
-        (4864, 4867, 1.2853088f),
-        (4884, 4887, 1.2853088f),
-        (7899, 7902, 1.2853088f),
-        (34601, 34608, 1.2853088f),
-        (34625, 34628, 1.2853088f),
-        (34735, 34737, 1.2853088f),
-        (34778, 34779, 1.2853088f),
-        (35019, 35021, 1.2853088f),
-        (35038, 35039, 1.2853088f),
-        (35046, 35047, 1.2853088f),
-    };
-
+    private static readonly (int First, int Last, float HalfSpan)[] Level1 = ReadPackedLevel1();
     // Geometry SHA-256: ab81a0e0cdd6345fd8e80cdbad7c52b947fc7281aca1c1c37f986af0d49e863d
-    private static readonly (int First, int Last, float HalfSpan)[] Level2 =
+    private static readonly (int First, int Last, float HalfSpan)[] Level2 = ReadPackedLevel2();
+    private static (int First, int Last, float HalfSpan)[] ReadPackedLevel0()
     {
-        (110, 125, 5.272217f),
-        (2282, 2289, 5.272217f),
-        (2530, 2545, 5.272217f),
-        (3008, 3015, 5.272217f),
-    };
+        var d = Numeric_Types_Lift04_Lift04Machinery_g_cs.Values;
+        var values = new (int First, int Last, float HalfSpan)[14];
+        for (int i = 0; i < 14; i++)
+            values[0 + i] = (d.I32[3 + i * 2], d.I32[4 + i * 2], d.F32[0 + i * 1]);
+        return values;
+    }
 
+    private static (int First, int Last, float HalfSpan)[] ReadPackedLevel1()
+    {
+        var d = Numeric_Types_Lift04_Lift04Machinery_g_cs.Values;
+        var values = new (int First, int Last, float HalfSpan)[16];
+        for (int i = 0; i < 16; i++)
+            values[0 + i] = (d.I32[31 + i * 2], d.I32[32 + i * 2], d.F32[14 + i * 1]);
+        return values;
+    }
+
+    private static (int First, int Last, float HalfSpan)[] ReadPackedLevel2()
+    {
+        var d = Numeric_Types_Lift04_Lift04Machinery_g_cs.Values;
+        var values = new (int First, int Last, float HalfSpan)[4];
+        for (int i = 0; i < 4; i++)
+            values[0 + i] = (d.I32[63 + i * 2], d.I32[64 + i * 2], d.F32[30 + i * 1]);
+        return values;
+    }
+}
+
+// Embedded numerical arrays: Types_Lift04_Lift04Machinery_g_cs
+internal static class Numeric_Types_Lift04_Lift04Machinery_g_cs
+{
+    static Numeric_Types_Lift04_Lift04Machinery_g_cs() {}
+    internal static readonly HardcodedNumbers Values = HardcodedNumbers.Load("Types_Lift04_Lift04Machinery_g_cs");
 }

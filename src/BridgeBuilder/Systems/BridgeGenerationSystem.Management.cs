@@ -359,7 +359,6 @@ public partial class BridgeGenerationSystem
         var assetInfo = _removingAsset;
         var placed = _pendingRemoval?.DeletedEntities.Count ?? 0;
         _pendingRemoval = null;
-        _removingAsset = null;
         if (assetInfo == null) return;
         var prefabName = assetInfo.PrefabName;
         var state = ExportStateStore.Load();
@@ -384,6 +383,7 @@ public partial class BridgeGenerationSystem
         // Native removal has completed and state is saved. Also reflect partial
         // deletion accurately instead of keeping a stale list until reopening.
         Refresh();
+        _removingAsset = null;
     }
 
     private void FailDeletion(string prefabName, string stage, string reason, Exception? exception = null)

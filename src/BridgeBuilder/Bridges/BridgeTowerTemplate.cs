@@ -1,10 +1,7 @@
-﻿
 using Colossal.Mathematics;
 using Game.Prefabs;
 
-
 namespace BridgeBuilder.Bridges;
-
 /// <summary>
 /// What a bridge tower prefab is, apart from its geometry - written down rather than copied.
 ///
@@ -56,10 +53,8 @@ internal static class BridgeTowerTemplate
     /// small adjustment it is allowed either way, not a stretching distance - which is why a tower
     /// cannot be made to reach further by widening this.
     /// </summary>
-    internal const PillarType Pillar = (PillarType)BridgeTowerSpec.PillarTypeStandalone;
-
-    internal static Bounds1 VerticalRange =>
-        new(BridgeTowerSpec.VerticalRangeMin, BridgeTowerSpec.VerticalRangeMax);
+    internal static readonly PillarType Pillar = (PillarType)BridgeTowerSpec.PillarTypeStandalone;
+    internal static Bounds1 VerticalRange => new(BridgeTowerSpec.VerticalRangeMin, BridgeTowerSpec.VerticalRangeMax);
 
     /// <summary>
     /// The half of a tower the net names, before the game swaps it for the real one.
@@ -73,11 +68,9 @@ internal static class BridgeTowerTemplate
     internal static void ApplyToPlaceholder(ObjectGeometryPrefab tower)
     {
         tower.m_Circular = BridgeTowerSpec.Circular;
-
         var placeholder = tower.AddComponent<PlaceholderObject>();
         placeholder.m_RandomizeGroupIndex = false;
         placeholder.active = true;
-
         ApplyPillar(tower);
     }
 
@@ -87,13 +80,14 @@ internal static class BridgeTowerTemplate
     internal static void ApplyToReplacement(ObjectGeometryPrefab tower, ObjectPrefab standsFor)
     {
         tower.m_Circular = BridgeTowerSpec.Circular;
-
         var spawnable = tower.AddComponent<SpawnableObject>();
-        spawnable.m_Placeholders = new[] { standsFor };
+        spawnable.m_Placeholders = new[]
+        {
+            standsFor
+        };
         spawnable.m_Probability = BridgeTowerSpec.SpawnProbability;
         spawnable.m_RandomizationGroup = null;
         spawnable.active = true;
-
         // No UIObject here. The archetype carries one on each of the tower's parts and none on
         // the tower, which a dump that did not distinguish a mesh from its owner read the other
         // way round. Their components are carried across with the derived meshes.

@@ -1,0 +1,18 @@
+#pragma kernel Sample
+Texture2D<float4> Source;
+SamplerState sampler_Source;
+StructuredBuffer<float2> Cases;
+RWStructuredBuffer<float4> Results;
+float4 A, B, C, Bounds;
+int Triangle, Normal, Count;
+float2 Map(float2 q) { return Triangle!=0 ? A.xy+q.x*(B.xy-A.xy)+q.y*(C.xy-A.xy) : Bounds.xy+q*(Bounds.zw-Bounds.xy); }
+[numthreads(8,1,1)] void Sample(uint3 id:SV_DispatchThreadID) {
+ if(id.x>=Count)return;
+ float2 original=Cases[id.x],q=frac(original);
+ bool reverse=Triangle!=0 && q.x+q.y>1;
+ if(reverse)q=1-q;
+ float4 required=Source.SampleLevel(sampler_Source,Map(q),0);
+ if(reverse && Normal!=0)required=float4(1-required.r*required.a,1-required.g,required.b,1);
+ Results[id.x*2]=required;
+ Results[id.x*2+1]=Source.SampleLevel(sampler_Source,Map(original),0);
+}

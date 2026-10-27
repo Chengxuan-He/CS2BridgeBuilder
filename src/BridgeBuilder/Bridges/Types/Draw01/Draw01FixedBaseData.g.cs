@@ -2,64 +2,246 @@
 // Seam memberships are measured offline, never classified from runtime geometry.
 using System;
 using UnityEngine;
+
 namespace BridgeBuilder.Bridges;
 internal static class Draw01FixedBaseData
 {
-    internal static readonly string[] Names = {
+    internal static readonly string[] Names =
+    {
         "DrawBridge01Bottom300cm Mesh",
         "DrawBridge01BottomNode300cm Mesh",
         "DrawBridge01BottomEdge350cm Mesh",
         "DrawBridge01BottomEdgeNode350cm Mesh",
         "DrawBridge01BottomIntersectionMiddle200cm Mesh"
     };
-    private static readonly int[][] Counts = {
-        new[] { 980, 692, 188 },
-        new[] { 40, 40, 36 },
-        new[] { 1232, 942, 304 },
-        new[] { 584, 464, 188 },
-        new[] { 62 }
-    };
-    private static readonly int[][] Triangles = {
-        new[] { 646, 454, 136 },
-        new[] { 32, 32, 32 },
-        new[] { 798, 604, 240 },
-        new[] { 460, 364, 164 },
-        new[] { 63 }
-    };
-    private static readonly int[][][] Seam = {
-        new[] {
-            new[] { 0, 2, 4, 6, 8, 10, 12, 14, 16, 18, 20, 22, 24, 26, 28, 30, 32, 34, 36, 38, 41, 43, 44, 47, 49, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 90, 93, 94, 97, 99, 161, 163, 164, 166, 168, 180, 181, 182, 183, 184, 185, 186, 187, 188, 189, 210, 213, 214, 217, 219, 281, 283, 284, 286, 288, 300, 301, 302, 303, 304, 305, 306, 307, 308, 309, 330, 332, 335, 337, 339, 401, 403, 405, 407, 408, 420, 421, 422, 423, 424, 425, 426, 427, 428, 429, 450, 452, 454, 457, 459, 521, 522, 525, 526, 528, 530, 533, 534, 536, 538, 540, 542, 545, 546, 548, 550, 553, 554, 557, 558, 561, 562, 565, 566, 568, 570, 573, 574, 577, 578, 581, 582, 584, 586, 588, 590, 593, 594, 596, 598, 600, 602, 605, 606, 608, 610, 613, 614, 617, 618, 621, 622, 625, 626, 628, 630, 632, 634, 637, 638, 640, 642, 644, 646, 649, 650, 652, 654, 657, 658, 661, 662, 665, 666, 669, 670, 673, 674, 677, 678, 681, 682, 685, 686, 689, 691, 692, 694, 697, 699, 701, 703, 705, 707, 709, 711, 713, 715, 717, 719, 721, 722, 725, 726, 729, 730, 733, 734, 736, 738, 741, 742, 745, 746, 748, 750, 753, 754, 756, 758, 761, 762, 765, 766, 769, 771, 773, 775, 777, 778, 781, 782, 784, 786, 789, 790, 792, 794, 796, 798, 801, 802, 804, 806, 809, 810, 813, 814, 817, 818, 821, 822, 824, 826, 829, 830, 833, 834, 837, 838, 840, 842, 844, 846, 849, 850, 852, 854, 856, 858, 861, 862, 864, 866, 869, 870, 873, 874, 877, 878, 881, 882, 884, 886, 888, 890, 893, 894, 896, 898, 900, 902, 905, 906, 908, 910, 913, 914, 917, 918, 921, 922, 925, 926, 929, 930, 932, 934, 937, 938, 940, 942, 944, 946, 949, 950, 952, 954, 957, 958, 961, 962, 964, 966, 969, 970, 973, 974, 977, 979 },
-            new[] { 0, 2, 4, 6, 8, 10, 12, 14, 16, 18, 20, 22, 24, 26, 28, 30, 32, 34, 36, 38, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 51, 53, 54, 57, 59, 70, 73, 74, 77, 79, 120, 121, 122, 123, 124, 125, 126, 127, 128, 129, 131, 133, 134, 137, 139, 150, 152, 155, 157, 159, 200, 201, 202, 203, 204, 205, 206, 207, 208, 209, 211, 213, 214, 216, 218, 230, 232, 235, 237, 239, 280, 281, 282, 283, 284, 285, 286, 287, 288, 289, 291, 293, 295, 296, 298, 310, 312, 314, 316, 318, 361, 362, 364, 366, 368, 370, 372, 374, 377, 378, 381, 382, 385, 386, 389, 390, 392, 394, 397, 398, 400, 402, 405, 406, 408, 410, 412, 414, 416, 418, 421, 422, 425, 426, 428, 430, 433, 434, 436, 438, 440, 442, 444, 446, 449, 450, 453, 454, 457, 458, 461, 462, 465, 466, 469, 470, 473, 475, 476, 478, 481, 483, 485, 487, 489, 491, 493, 495, 497, 498, 501, 502, 505, 506, 509, 510, 512, 514, 517, 518, 521, 522, 524, 526, 529, 530, 532, 534, 537, 538, 541, 542, 545, 547, 549, 551, 553, 554, 556, 558, 560, 562, 564, 566, 569, 570, 573, 574, 577, 578, 581, 582, 584, 586, 589, 590, 592, 594, 597, 598, 600, 602, 604, 606, 608, 610, 613, 614, 617, 618, 620, 622, 625, 626, 628, 630, 632, 634, 636, 638, 641, 642, 645, 646, 649, 650, 653, 654, 656, 658, 660, 662, 664, 666, 669, 670, 673, 674, 676, 678, 681, 682, 685, 686, 689, 691 },
-            new[] { 0, 2, 5, 7, 9, 11, 13, 14, 17, 18, 20, 22, 25, 26, 29, 30, 32, 34, 36, 38, 41, 42, 44, 46, 49, 50, 52, 54, 57, 58, 60, 62, 65, 66, 68, 70, 73, 74, 76, 78, 81, 82, 84, 86, 89, 91, 93, 95, 97, 99, 101, 103, 105, 107, 109, 111, 113, 115, 117, 118, 121, 123, 125, 127, 129, 130, 132, 134, 136, 138, 140, 142, 144, 146, 148, 150, 153, 154, 156, 158, 160, 162, 164, 166, 168, 170, 172, 174, 176, 179, 181, 182, 184, 186 }
-        },
-        new[] {
-            new[] { 0, 2, 4, 6, 8, 10, 12, 14, 16, 18, 20, 22, 24, 26, 28, 30, 32, 34, 36, 38 },
-            new[] { 0, 2, 4, 6, 8, 10, 12, 14, 16, 18, 20, 22, 24, 26, 28, 30, 32, 34, 36, 38 },
-            new[] { 0, 2, 5, 6, 9, 10, 13, 15, 16, 18, 20, 22, 24, 26, 28, 30, 32, 34 }
-        },
-    };
-    internal static MovableStructureModel.Plan Plan(int family, int lod, Vector3[] source,
-        int[] indices, float halfDelta)
+    private static readonly int[][] Counts = ReadPackedCounts();
+    private static readonly int[][] Triangles = ReadPackedTriangles();
+    private static readonly int[][][] Seam = ReadPackedSeam();
+    internal static MovableStructureModel.Plan Plan(int family, int lod, Vector3[] source, int[] indices, float halfDelta)
     {
-        if (lod >= Counts[family].Length || source.Length != Counts[family][lod] ||
-            indices.Length != Triangles[family][lod] * 3)
+        if (lod >= Counts[family].Length || source.Length != Counts[family][lod] || indices.Length != Triangles[family][lod] * Numeric_Types_Draw01_Draw01FixedBaseData_g_cs.Values.I32[774])
             throw new InvalidOperationException($"Draw01 fixed base {family} LOD {lod} differs from its measured geometry.");
         var positions = (Vector3[])source.Clone();
-        if (family < 2)
+        if (family < Numeric_Types_Draw01_Draw01FixedBaseData_g_cs.Values.I32[775])
         {
             // Right strip centre moves by delta/2 in the independently composed base.
             // In bridge coordinates its non-seam vertices translate by delta; seam stays x=0.
-            for (var i = 0; i < positions.Length; i++) positions[i].x += halfDelta * 0.5f;
-            foreach (var i in Seam[family][lod]) positions[i].x -= halfDelta;
+            AffineGeometry.For(Numeric_Types_Draw01_Draw01FixedBaseData_g_cs.Values.I32[776], positions.Length, i =>
+            {
+                positions[i].x = AffineGeometry.Translate(positions[i].x, halfDelta * Numeric_Types_Draw01_Draw01FixedBaseData_g_cs.Values.F32[0]);
+            });
+            foreach (var i in Seam[family][lod])
+                positions[i].x = AffineGeometry.Translate(positions[i].x, -(halfDelta));
         }
-        else if (family == 4)
+        else if (family == Numeric_Types_Draw01_Draw01FixedBaseData_g_cs.Values.I32[777])
         {
-            for (var i = 0; i < positions.Length; i++)
-                positions[i].x += Math.Sign(source[i].x) * halfDelta;
+            AffineGeometry.For(Numeric_Types_Draw01_Draw01FixedBaseData_g_cs.Values.I32[778], positions.Length, i =>
+            {
+                positions[i].x = AffineGeometry.Translate(positions[i].x, Math.Sign(source[i].x) * halfDelta);
+            });
         }
+
         // Outer strips have no local deformation. Their network placement supplies
         // the rigid half-width translation. No Y/Z or original UV channels change.
-        return new MovableStructureModel.Plan(source, positions, new[] { indices },
-            new[] { new bool[indices.Length / 3] });
+        return new MovableStructureModel.Plan(source, positions, new[] { indices }, new[] { new bool[indices.Length / Numeric_Types_Draw01_Draw01FixedBaseData_g_cs.Values.I32[779]] });
     }
+
+    private static int[] ReadPackedCounts_0()
+    {
+        var d = Numeric_Types_Draw01_Draw01FixedBaseData_g_cs.Values;
+        var values = new int[3];
+        for (int i = 0; i < 3; i++)
+            values[0 + i] = d.I32[0 + i * 1];
+        return values;
+    }
+
+    private static int[] ReadPackedCounts_1()
+    {
+        var d = Numeric_Types_Draw01_Draw01FixedBaseData_g_cs.Values;
+        var values = new int[3];
+        for (int i = 0; i < 3; i++)
+            values[0 + i] = d.I32[3 + i * 1];
+        return values;
+    }
+
+    private static int[] ReadPackedCounts_2()
+    {
+        var d = Numeric_Types_Draw01_Draw01FixedBaseData_g_cs.Values;
+        var values = new int[3];
+        for (int i = 0; i < 3; i++)
+            values[0 + i] = d.I32[6 + i * 1];
+        return values;
+    }
+
+    private static int[] ReadPackedCounts_3()
+    {
+        var d = Numeric_Types_Draw01_Draw01FixedBaseData_g_cs.Values;
+        var values = new int[3];
+        for (int i = 0; i < 3; i++)
+            values[0 + i] = d.I32[9 + i * 1];
+        return values;
+    }
+
+    private static int[] ReadPackedCounts_4()
+    {
+        var d = Numeric_Types_Draw01_Draw01FixedBaseData_g_cs.Values;
+        var values = new int[1];
+        for (int i = 0; i < 1; i++)
+            values[0 + i] = d.I32[12 + i * 1];
+        return values;
+    }
+
+    private static int[][] ReadPackedCounts()
+    {
+        var values = new int[5][];
+        values[0] = ReadPackedCounts_0();
+        values[1] = ReadPackedCounts_1();
+        values[2] = ReadPackedCounts_2();
+        values[3] = ReadPackedCounts_3();
+        values[4] = ReadPackedCounts_4();
+        return values;
+    }
+
+    private static int[] ReadPackedTriangles_0()
+    {
+        var d = Numeric_Types_Draw01_Draw01FixedBaseData_g_cs.Values;
+        var values = new int[3];
+        for (int i = 0; i < 3; i++)
+            values[0 + i] = d.I32[13 + i * 1];
+        return values;
+    }
+
+    private static int[] ReadPackedTriangles_1()
+    {
+        var d = Numeric_Types_Draw01_Draw01FixedBaseData_g_cs.Values;
+        var values = new int[3];
+        for (int i = 0; i < 3; i++)
+            values[0 + i] = d.I32[16 + i * 1];
+        return values;
+    }
+
+    private static int[] ReadPackedTriangles_2()
+    {
+        var d = Numeric_Types_Draw01_Draw01FixedBaseData_g_cs.Values;
+        var values = new int[3];
+        for (int i = 0; i < 3; i++)
+            values[0 + i] = d.I32[19 + i * 1];
+        return values;
+    }
+
+    private static int[] ReadPackedTriangles_3()
+    {
+        var d = Numeric_Types_Draw01_Draw01FixedBaseData_g_cs.Values;
+        var values = new int[3];
+        for (int i = 0; i < 3; i++)
+            values[0 + i] = d.I32[22 + i * 1];
+        return values;
+    }
+
+    private static int[] ReadPackedTriangles_4()
+    {
+        var d = Numeric_Types_Draw01_Draw01FixedBaseData_g_cs.Values;
+        var values = new int[1];
+        for (int i = 0; i < 1; i++)
+            values[0 + i] = d.I32[25 + i * 1];
+        return values;
+    }
+
+    private static int[][] ReadPackedTriangles()
+    {
+        var values = new int[5][];
+        values[0] = ReadPackedTriangles_0();
+        values[1] = ReadPackedTriangles_1();
+        values[2] = ReadPackedTriangles_2();
+        values[3] = ReadPackedTriangles_3();
+        values[4] = ReadPackedTriangles_4();
+        return values;
+    }
+
+    private static int[] ReadPackedSeam_0_0()
+    {
+        var d = Numeric_Types_Draw01_Draw01FixedBaseData_g_cs.Values;
+        var values = new int[330];
+        for (int i = 0; i < 330; i++)
+            values[0 + i] = d.I32[26 + i * 1];
+        return values;
+    }
+
+    private static int[] ReadPackedSeam_0_1()
+    {
+        var d = Numeric_Types_Draw01_Draw01FixedBaseData_g_cs.Values;
+        var values = new int[266];
+        for (int i = 0; i < 266; i++)
+            values[0 + i] = d.I32[356 + i * 1];
+        return values;
+    }
+
+    private static int[] ReadPackedSeam_0_2()
+    {
+        var d = Numeric_Types_Draw01_Draw01FixedBaseData_g_cs.Values;
+        var values = new int[94];
+        for (int i = 0; i < 94; i++)
+            values[0 + i] = d.I32[622 + i * 1];
+        return values;
+    }
+
+    private static int[][] ReadPackedSeam_0()
+    {
+        var values = new int[3][];
+        values[0] = ReadPackedSeam_0_0();
+        values[1] = ReadPackedSeam_0_1();
+        values[2] = ReadPackedSeam_0_2();
+        return values;
+    }
+
+    private static int[] ReadPackedSeam_1_0()
+    {
+        var d = Numeric_Types_Draw01_Draw01FixedBaseData_g_cs.Values;
+        var values = new int[20];
+        for (int i = 0; i < 20; i++)
+            values[0 + i] = d.I32[716 + i * 1];
+        return values;
+    }
+
+    private static int[] ReadPackedSeam_1_1()
+    {
+        var d = Numeric_Types_Draw01_Draw01FixedBaseData_g_cs.Values;
+        var values = new int[20];
+        for (int i = 0; i < 20; i++)
+            values[0 + i] = d.I32[736 + i * 1];
+        return values;
+    }
+
+    private static int[] ReadPackedSeam_1_2()
+    {
+        var d = Numeric_Types_Draw01_Draw01FixedBaseData_g_cs.Values;
+        var values = new int[18];
+        for (int i = 0; i < 18; i++)
+            values[0 + i] = d.I32[756 + i * 1];
+        return values;
+    }
+
+    private static int[][] ReadPackedSeam_1()
+    {
+        var values = new int[3][];
+        values[0] = ReadPackedSeam_1_0();
+        values[1] = ReadPackedSeam_1_1();
+        values[2] = ReadPackedSeam_1_2();
+        return values;
+    }
+
+    private static int[][][] ReadPackedSeam()
+    {
+        var values = new int[2][][];
+        values[0] = ReadPackedSeam_0();
+        values[1] = ReadPackedSeam_1();
+        return values;
+    }
+}
+
+// Embedded numerical arrays: Types_Draw01_Draw01FixedBaseData_g_cs
+internal static class Numeric_Types_Draw01_Draw01FixedBaseData_g_cs
+{
+    static Numeric_Types_Draw01_Draw01FixedBaseData_g_cs() {}
+    internal static readonly HardcodedNumbers Values = HardcodedNumbers.Load("Types_Draw01_Draw01FixedBaseData_g_cs");
 }

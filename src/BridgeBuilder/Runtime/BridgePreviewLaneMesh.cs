@@ -60,8 +60,7 @@ internal sealed class BridgePreviewLaneMesh : IDisposable
                     partCurve.m_Length = curve.m_Length * (range.y - range.x);
                     if (partCurve.m_Length <= 0f) continue;
                 }
-                var scale = lane.Edge.HasValue ? BatchDataHelpers.BuildCurveScale(lane.Edge.Value) :
-                    BatchDataHelpers.BuildCurveScale();
+                var scale = lane.CurveScale();
                 var decal = (data.m_State & MeshFlags.Decal) != 0;
                 var native = BatchDataHelpers.BuildTransformMatrix(partCurve, size, scale,
                     data.m_SmoothingDistance, decal, true);
@@ -70,8 +69,7 @@ internal sealed class BridgePreviewLaneMesh : IDisposable
                 properties.SetFloat("colossal_LodFade", 1f);
                 properties.SetMatrix("colossal_CurveMatrix", BatchDataHelpers.BuildCurveMatrix(partCurve, affine, size, data.m_TilingCount));
                 properties.SetVector("colossal_CurveScale", scale);
-                properties.SetVector("colossal_CurveParams", lane.Edge.HasValue ?
-                    BatchDataHelpers.BuildCurveParams(size, lane.Edge.Value) : BatchDataHelpers.BuildCurveParams(size));
+                properties.SetVector("colossal_CurveParams", lane.CurveParameters(size));
                 properties.SetVector("colossal_CurveDeterioration", Vector4.zero);
                 properties.SetVector("colossal_MeshSize", size);
                 properties.SetFloat("_SmoothingDistance", data.m_SmoothingDistance);

@@ -12,7 +12,10 @@ if ($files.Count -eq 0) { throw "No persisted files found for $Owner under $root
 $groups = @($files | Group-Object Extension | ForEach-Object {
     [pscustomobject]@{ Extension=$_.Name; Files=$_.Count; Bytes=[long](($_.Group | Measure-Object Length -Sum).Sum) }
 })
-$dependencies = @($files | Where-Object { $_.FullName.Contains($Owner + '_Dependencies') })
+$dependencies = @($files | Where-Object {
+    $relative = $_.FullName.Substring($root.Length).Replace('\', '/')
+    $relative.Contains($Owner + '_Dependencies') -or $relative.Contains($Owner + '/Dependencies/')
+})
 [pscustomobject]@{
     Owner=$Owner
     PhysicalFiles=$files.Count

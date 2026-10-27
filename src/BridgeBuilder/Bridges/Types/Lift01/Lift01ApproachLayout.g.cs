@@ -8,13 +8,12 @@ using Unity.Mathematics;
 using UnityEngine;
 
 namespace BridgeBuilder.Bridges;
-
 internal static class Lift01ApproachLayout
 {
     // The caller supplies widened, factory-owned pieces in recorded family order.
     internal static void Apply(NetGeometryPrefab target, TowerFactory factory, NetPiecePrefab[] pieces, ContentPrefab content)
     {
-        if (pieces.Length != 1 || pieces.Any(piece => piece == null || !factory.Created.Contains(piece)))
+        if (pieces.Length != Numeric_Types_Lift01_Lift01ApproachLayout_g_cs.Values.I32[0] || pieces.Any(piece => piece == null || !factory.Created.Contains(piece)))
             throw new InvalidOperationException("Lift01 approaches require one owned structural piece.");
         var section0 = ScriptableObject.CreateInstance<NetSectionPrefab>();
         section0.name = target.name + " Fixed Approach Section 0";
@@ -25,11 +24,18 @@ internal static class Lift01ApproachLayout
         {
             new NetPieceInfo
             {
-                m_Piece = pieces[0],
-                m_Offset = new float3(0f, -10f, 0f),
+                m_Piece = pieces[Numeric_Types_Lift01_Lift01ApproachLayout_g_cs.Values.I32[1]],
+                m_Offset = new float3(Numeric_Types_Lift01_Lift01ApproachLayout_g_cs.Values.F32[0], -Numeric_Types_Lift01_Lift01ApproachLayout_g_cs.Values.F32[1], Numeric_Types_Lift01_Lift01ApproachLayout_g_cs.Values.F32[2]),
                 m_RequireAll = Array.Empty<NetPieceRequirements>(),
-                m_RequireAny = new[] { NetPieceRequirements.Edge, NetPieceRequirements.Elevated },
-                m_RequireNone = new[] { NetPieceRequirements.Node },
+                m_RequireAny = new[]
+                {
+                    NetPieceRequirements.Edge,
+                    NetPieceRequirements.Elevated
+                },
+                m_RequireNone = new[]
+                {
+                    NetPieceRequirements.Node
+                },
             },
         };
         var overhead = target.AddOrGetComponent<OverheadNetSections>();
@@ -38,30 +44,43 @@ internal static class Lift01ApproachLayout
             new NetSectionInfo
             {
                 m_Section = section0,
-                m_HiddenLayers = (NetPieceLayerMask)(0),
-                m_Offset = new float3(0f, 0f, 0f),
+                m_HiddenLayers = (NetPieceLayerMask)(Numeric_Types_Lift01_Lift01ApproachLayout_g_cs.Values.I32[2]),
+                m_Offset = new float3(Numeric_Types_Lift01_Lift01ApproachLayout_g_cs.Values.F32[3], Numeric_Types_Lift01_Lift01ApproachLayout_g_cs.Values.F32[4], Numeric_Types_Lift01_Lift01ApproachLayout_g_cs.Values.F32[5]),
                 m_Invert = false,
                 m_Flip = false,
                 m_Median = true,
                 m_HalfLength = false,
                 m_RequireAll = Array.Empty<NetPieceRequirements>(),
                 m_RequireAny = Array.Empty<NetPieceRequirements>(),
-                m_RequireNone = new[] { NetPieceRequirements.FixedNodeSize },
+                m_RequireNone = new[]
+                {
+                    NetPieceRequirements.FixedNodeSize
+                },
             },
             new NetSectionInfo
             {
                 m_Section = section0,
-                m_HiddenLayers = (NetPieceLayerMask)(0),
-                m_Offset = new float3(0f, 0f, 0f),
+                m_HiddenLayers = (NetPieceLayerMask)(Numeric_Types_Lift01_Lift01ApproachLayout_g_cs.Values.I32[3]),
+                m_Offset = new float3(Numeric_Types_Lift01_Lift01ApproachLayout_g_cs.Values.F32[6], Numeric_Types_Lift01_Lift01ApproachLayout_g_cs.Values.F32[7], Numeric_Types_Lift01_Lift01ApproachLayout_g_cs.Values.F32[8]),
                 m_Invert = false,
                 m_Flip = false,
                 m_Median = true,
                 m_HalfLength = true,
-                m_RequireAll = new[] { NetPieceRequirements.FixedNodeSize },
+                m_RequireAll = new[]
+                {
+                    NetPieceRequirements.FixedNodeSize
+                },
                 m_RequireAny = Array.Empty<NetPieceRequirements>(),
                 m_RequireNone = Array.Empty<NetPieceRequirements>(),
             },
         };
         overhead.active = true;
     }
+}
+
+// Embedded numerical arrays: Types_Lift01_Lift01ApproachLayout_g_cs
+internal static class Numeric_Types_Lift01_Lift01ApproachLayout_g_cs
+{
+    static Numeric_Types_Lift01_Lift01ApproachLayout_g_cs() {}
+    internal static readonly HardcodedNumbers Values = HardcodedNumbers.Load("Types_Lift01_Lift01ApproachLayout_g_cs");
 }

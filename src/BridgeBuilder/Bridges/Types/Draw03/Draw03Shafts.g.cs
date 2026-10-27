@@ -3,48 +3,58 @@ using System;
 using UnityEngine;
 
 namespace BridgeBuilder.Bridges;
-
 internal static class Draw03Shafts
 {
     internal static void Apply(int lod, Vector3[] source, Vector3[] positions, float delta)
     {
         var data = lod switch
         {
-            0 => (Count: 186078, Parts: Near),
-            1 => (Count: 146988, Parts: Middle),
-            _ => throw new ArgumentOutOfRangeException(nameof(lod))
-        };
+            0 => (Count: Numeric_Types_Draw03_Draw03Shafts_g_cs.Values.I32[0], Parts: Near),
+            1 => (Count: Numeric_Types_Draw03_Draw03Shafts_g_cs.Values.I32[1], Parts: Middle),
+            _ => throw new ArgumentOutOfRangeException(nameof(lod))};
         if (source.Length != data.Count || positions.Length != data.Count || !float.IsFinite(delta))
             throw new InvalidOperationException("Draw03 shafts require their recorded main mesh.");
         foreach (var part in data.Parts)
         {
             var span = part.Max - part.Min;
             foreach (var range in part.Ranges)
-                for (var i = range.First; i <= range.Last; i++)
-                    positions[i].x = source[i].x + (2f * source[i].x - part.Min - part.Max) / span * delta;
+                AffineGeometry.For(range.First, checked((range.Last) + 1), i =>
+                {
+                    positions[i].x = AffineGeometry.AddScaled(source[i].x, (Numeric_Types_Draw03_Draw03Shafts_g_cs.Values.F32[0] * source[i].x - part.Min - part.Max) / span, delta);
+                });
         }
     }
 
     // Geometry SHA-256: f7ecc824ad55745e791e40b18fd12f5def20657ed8ea56d373429d5a1337588f
-    private static readonly (float Min, float Max, (int First, int Last)[] Ranges)[] Near =
-    {
-        (-12.184082f, 12.3774414f, new (int, int)[] { (24503, 25402), (26435, 26566), (26633, 26698), (26765, 27730), (28763, 28894), (28961, 29026), (29093, 30058), (31091, 31222), (31289, 31354), (31421, 32386), (33419, 33550), (33617, 33682), (33749, 34714) }),
-        (-12.184082f, 12.3774414f, new (int, int)[] { (25403, 26434), (26567, 26632), (26699, 26764), (27731, 28762), (28895, 28960), (29027, 29092), (30059, 31090), (31223, 31288), (31355, 31420), (32387, 33418), (33551, 33616), (33683, 33748), (34715, 35614) }),
-        (-12.3774414f, 12.184082f, new (int, int)[] { (116591, 117490), (118523, 118654), (118721, 118786), (118853, 119818), (120851, 120982), (121049, 121114), (121181, 122146), (123179, 123310), (123377, 123442), (123509, 124474), (125507, 125638), (125705, 125770), (125837, 126802) }),
-        (-12.3774414f, 12.184082f, new (int, int)[] { (117491, 118522), (118655, 118720), (118787, 118852), (119819, 120850), (120983, 121048), (121115, 121180), (122147, 123178), (123311, 123376), (123443, 123508), (124475, 125506), (125639, 125704), (125771, 125836), (126803, 127702) }),
-        (-13.2155762f, 13.2155762f, new (int, int)[] { (115939, 116136), (116265, 116462) }),
-        (-13.2155762f, 13.2155762f, new (int, int)[] { (23851, 24048), (24177, 24374) }),
-    };
-
+    private static readonly (float Min, float Max, (int First, int Last)[] Ranges)[] Near = ReadPackedNear();
     // Geometry SHA-256: 15b8419da13d6e99e1dc0591f12f4019f0be09c3b220a481d24720daf7b57e12
-    private static readonly (float Min, float Max, (int First, int Last)[] Ranges)[] Middle =
+    private static readonly (float Min, float Max, (int First, int Last)[] Ranges)[] Middle = ReadPackedMiddle();
+    private static (float Min, float Max, (int First, int Last)[] Ranges)[] ReadPackedNear()
     {
-        (-12.184082f, 12.3774414f, new (int, int)[] { (20236, 20795), (21477, 21527), (21643, 21739), (21863, 22536), (23235, 23279), (23395, 23495), (23619, 24294), (25001, 25047), (25163, 25263), (25387, 26062), (26761, 26813), (26929, 27027), (27151, 27799) }),
-        (-12.184082f, 12.3774414f, new (int, int)[] { (20796, 21476), (21528, 21642), (21740, 21862), (22537, 23234), (23280, 23394), (23496, 23618), (24295, 25000), (25048, 25162), (25264, 25386), (26063, 26760), (26814, 26928), (27028, 27150), (27800, 28403) }),
-        (-12.3774414f, 12.184082f, new (int, int)[] { (93674, 94233), (94919, 94969), (95085, 95181), (95305, 95979), (96672, 96716), (96832, 96932), (97056, 97734), (98443, 98489), (98605, 98705), (98829, 99504), (100211, 100263), (100377, 100475), (100599, 101249) }),
-        (-12.3774414f, 12.184082f, new (int, int)[] { (94234, 94918), (94970, 95084), (95182, 95304), (95980, 96671), (96717, 96831), (96933, 97055), (97735, 98442), (98490, 98604), (98706, 98828), (99505, 100210), (100264, 100376), (100476, 100598), (101250, 101853) }),
-        (-13.2155762f, 13.2155762f, new (int, int)[] { (93281, 93424), (93471, 93623) }),
-        (-13.2155762f, 13.2155762f, new (int, int)[] { (19848, 19988), (20035, 20185) }),
-    };
+        var d = Numeric_Types_Draw03_Draw03Shafts_g_cs.Values;
+        var values = new (float Min, float Max, (int First, int Last)[] Ranges)[6];
+        for (int i = 0; i < 4; i++)
+            values[0 + i] = (-d.F32[1 + i * 2], d.F32[2 + i * 2], new (int, int)[] { (d.I32[2 + i * 26], d.I32[3 + i * 26]), (d.I32[4 + i * 26], d.I32[5 + i * 26]), (d.I32[6 + i * 26], d.I32[7 + i * 26]), (d.I32[8 + i * 26], d.I32[9 + i * 26]), (d.I32[10 + i * 26], d.I32[11 + i * 26]), (d.I32[12 + i * 26], d.I32[13 + i * 26]), (d.I32[14 + i * 26], d.I32[15 + i * 26]), (d.I32[16 + i * 26], d.I32[17 + i * 26]), (d.I32[18 + i * 26], d.I32[19 + i * 26]), (d.I32[20 + i * 26], d.I32[21 + i * 26]), (d.I32[22 + i * 26], d.I32[23 + i * 26]), (d.I32[24 + i * 26], d.I32[25 + i * 26]), (d.I32[26 + i * 26], d.I32[27 + i * 26]) });
+        for (int i = 0; i < 2; i++)
+            values[4 + i] = (-d.F32[9 + i * 2], d.F32[10 + i * 2], new (int, int)[] { (d.I32[106 + i * 4], d.I32[107 + i * 4]), (d.I32[108 + i * 4], d.I32[109 + i * 4]) });
+        return values;
+    }
 
+    private static (float Min, float Max, (int First, int Last)[] Ranges)[] ReadPackedMiddle()
+    {
+        var d = Numeric_Types_Draw03_Draw03Shafts_g_cs.Values;
+        var values = new (float Min, float Max, (int First, int Last)[] Ranges)[6];
+        for (int i = 0; i < 4; i++)
+            values[0 + i] = (-d.F32[13 + i * 2], d.F32[14 + i * 2], new (int, int)[] { (d.I32[114 + i * 26], d.I32[115 + i * 26]), (d.I32[116 + i * 26], d.I32[117 + i * 26]), (d.I32[118 + i * 26], d.I32[119 + i * 26]), (d.I32[120 + i * 26], d.I32[121 + i * 26]), (d.I32[122 + i * 26], d.I32[123 + i * 26]), (d.I32[124 + i * 26], d.I32[125 + i * 26]), (d.I32[126 + i * 26], d.I32[127 + i * 26]), (d.I32[128 + i * 26], d.I32[129 + i * 26]), (d.I32[130 + i * 26], d.I32[131 + i * 26]), (d.I32[132 + i * 26], d.I32[133 + i * 26]), (d.I32[134 + i * 26], d.I32[135 + i * 26]), (d.I32[136 + i * 26], d.I32[137 + i * 26]), (d.I32[138 + i * 26], d.I32[139 + i * 26]) });
+        for (int i = 0; i < 2; i++)
+            values[4 + i] = (-d.F32[21 + i * 2], d.F32[22 + i * 2], new (int, int)[] { (d.I32[218 + i * 4], d.I32[219 + i * 4]), (d.I32[220 + i * 4], d.I32[221 + i * 4]) });
+        return values;
+    }
+}
+
+// Embedded numerical arrays: Types_Draw03_Draw03Shafts_g_cs
+internal static class Numeric_Types_Draw03_Draw03Shafts_g_cs
+{
+    static Numeric_Types_Draw03_Draw03Shafts_g_cs() {}
+    internal static readonly HardcodedNumbers Values = HardcodedNumbers.Load("Types_Draw03_Draw03Shafts_g_cs");
 }

@@ -15,6 +15,17 @@ for the evidence, implementation and acceptance workflow.
 This project's original code is available under the [MIT License](LICENSE).
 Game assets and third-party dependencies retain their respective licenses.
 
+## Geometry calculation
+
+Bridge geometry uses measured affine coefficients for X, Y and Z, stored in DLL-embedded
+typed arrays and compact part recipes. Independent numerical batches and movable LOD plans
+run on the CPU through `AffineGeometry`; native mesh access, materials and asset persistence
+remain on the main thread. Small batches execute serially to avoid scheduling overhead.
+This changes generation-time computation, not the runtime requirements of saved bridges.
+See the [affine execution contract](docs/agent-contract/BRIDGE_GENERATION_CONTRACT.md#cpu-affine-geometry-execution)
+and [contributor workflow](docs/Adding-Bridge-Styles-With-Coding-Agents.md#affine-matrix-generation-step).
+End-to-end speed improvements require in-game measurements.
+
 ## In-game builder and identity
 
 The floating BridgeBuilder button opens the runtime builder in a loaded game. Roads are shown as
@@ -91,17 +102,12 @@ Styles use stable IDs and localized labels. Discovery binds installed prototype 
 explicit generator admission determines which styles and deck arrangements can be created.
 The runtime catalogue omits unavailable styles; discovering a prototype does not add support for it.
 
-Draw, pedestrian draw and lift bridges remain unsupported by the current generators. Their animation,
-moving deck geometry and waterway behavior require a dedicated implementation and in-game acceptance.
-The presence of their names or measured parameters does not mean they can be generated.
-
-Development now covers all ten audited Bridges & Ports movable mechanisms. The
-[implementation record](docs/Movable-Bridges-Implementation.md) tracks their separate identities,
-selected-road conversion work, backup and acceptance status. This is ongoing development, not
-an announcement that these styles are available in the builder.
-Shared runtime section conversion, occurrence tracing, closed-road position/UV evaluation, seam
-clipping and rigid road model encoding are implemented and compiled. Complete per-style generators, material conversion and persistence
-are still outstanding; the shared primitives do not enable movable styles in the catalogue.
+The router includes all ten Bridges & Ports movable styles: Draw01–Draw03, Lift01–Lift05
+and PedestrianDraw01/02. Registered styles use the same catalogue and operation behavior;
+missing native prerequisites still prevent generation. Routing and compilation do not establish
+human acceptance of every selected road, motion cycle, LOD or independent cold load.
+See the [implementation record](docs/Movable-Bridges-Implementation.md) for per-style evidence
+and [prepared materials](docs/Prepared-Materials.md) for unfinished material migration.
 
 Generated towers, cables and LODs are private derived assets owned by the bridge. Required native
 game/DLC resources remain prerequisites; external non-built-in dependencies are persisted as
@@ -113,6 +119,14 @@ Generation selects a compatible prototype variant and uses its measured geometry
 parts reaching or crossing the centre line stretch against their own span; side parts translate
 rigidly. The same classification applies to every LOD. Unsupported or missing metadata causes an
 explicit failure rather than an arbitrary width clamp or a fallback to another bridge design.
+
+The [material contract](docs/agent-contract/MATERIAL_GENERATION_CONTRACT.md#2-preserve-source-resolution-and-pattern-scale)
+allows verified non-tiling prototype UV mappings to stretch with that geometry while retaining
+authored UVs, original textures, resolution, channels, mips and compatible material identity.
+Tiling mappings retain original physical density. Evidence must identify the source, part, LOD
+and affected axes; a failed mapping or missing repeat evidence does not qualify. Selected-road
+appearance and marking layout retain their existing rules. This permission is not an implementation
+or visual-acceptance claim.
 
 ## Double decks
 
@@ -165,16 +179,18 @@ The sibling projects describe the source family. This checkout builds from its o
 
 Every run writes `ModsData\BridgeBuilder\last-export-report.txt`, including the structural
 counts that separate "the deck came out wrong" from "the style did not attach": sections, overhead
-sections, sub-objects and auxiliary nets. Generation failures are recorded in the report and shown
-through localized UI status. Preview failures retain technical warnings; explicit deletion failures
-retain critical diagnostics.
+sections, sub-objects and auxiliary nets. Generation and preview failures are recorded with their underlying diagnostics and shown
+through localized operation-failure dialogs. The preview frame remains text-free; deletion
+failures retain their operation diagnostics.
 
 The log line `Bridge styles: N of M available, from D donor prefab(s) out of K bridge-capable
 prefab(s)`, followed by one line per style, is the authoritative record of what discovery bound.
 
 ## What the composer does not touch
 
-The road's own `m_Sections` are left exactly as they are.
+Preserve the selected road's lane layout, upgrade alternatives and native semantics. Fixed
+bridge composition retains unchanged section references; movable generation derives the
+necessary section conditions and visible object geometry under the movable contract.
 
 An earlier version also appended the donor's elevated-only sections, to pick up the deck edges. That
 is the one operation that changes how the net tiles across its own width — the composition system
@@ -224,8 +240,9 @@ and removal partial files. Source-policy checks read all these files together.
 Non-visual checks include `tools/AssetMetadataCheck`, `tools/DependencyCopyCheck`,
 `tools/DependencySourceCheck`, `tools/SelfCheckLifecycleCheck`, `tools/DiskAuditCheck`,
 `tools/PublicationCheck`, and `tools/Check*.mjs` (UI,
-localization and source policy). Renderer failures keep technical warning logs; preview/generation do
-not raise error popups. Explicit deletion failures retain their critical diagnostics.
+localization and source policy). Preview/generation failures use localized failure dialogs
+and ERROR diagnostics; the preview itself has no inline error footer. Deletion failures
+retain their operation diagnostics.
 
 These checks and a successful build do not establish in-game visual correctness or save compatibility.
 
@@ -242,7 +259,7 @@ GitHub publication is optional and does not require upstream write access when u
 
 ```mermaid
 flowchart TD
-    A[Prepare a local checkout] --> B[Create bridge/bridge-name branch]
+    A[Prepare a local checkout] --> B[Choose a suitable working branch]
     B --> C[Tell your agent the bridge source and desired design]
     C --> F[Test the resulting build in game]
     F --> G{Acceptance checks pass?}
@@ -257,8 +274,8 @@ flowchart TD
 Use a local checkout with the game and its required DLC or source asset installed, a working .NET
 build environment, and a disposable test city. Back up saves and existing bridge assets.
 You do not need to read AGENTS.md or the internal contracts; ask your coding agent to read and follow them.
-The workflow requires forced game shutdown before code edits and before deployment, so save your
-work first. Computer-use automation and agent-driven bridge placement are prohibited in this project.
+The workflow requires game shutdown before replacing loaded binaries during deployment;
+save your work before that step. Intermediate source edits do not require shutdown. Computer-use automation and agent-driven bridge placement are prohibited in this project.
 
 Give the agent these inputs:
 
@@ -275,9 +292,9 @@ When evidence is missing, it should identify the missing data and complete indep
 
 Use a local copy of [CS2BridgeBuilder](https://github.com/Chengxuan-He/CS2BridgeBuilder).
 A GitHub account or fork is not required; create a fork only if you choose to contribute through GitHub.
-Create a contribution branch named `bridge/<bridge-name>`, for example `bridge/stone-arch`.
-Replace `<bridge-name>` with the name of the bridge you are adding. Keep the change focused on that
-bridge and leave unrelated local changes out of the contribution.
+Use a suitable working branch. A per-style `bridge/<bridge-name>` branch, such as
+`bridge/stone-arch`, is optional. Shared multi-style work may use one branch while keeping
+style data distinct. Preserve unrelated local changes. Optional branch creation:
 
 ```powershell
 git switch -c bridge/stone-arch
@@ -301,7 +318,7 @@ say so rather than guessing. Include any additional required DLC or mods separat
 
 ```text
 Add support for <style ID> using <exact prototype Prefab> from <source and version>.
-Support <single deck / double deck>; use contribution branch bridge/<bridge-name>.
+Support <single deck / double deck>; use a suitable working branch (a style branch is optional).
 Evidence is available at <paths to anatomy, mesh/LOD exports and screenshots>.
 
 Read AGENTS.md, the complete project contract and applicable nested instructions.
@@ -311,7 +328,7 @@ do not copy another style's constants or infer part identity in runtime code.
 Keep generated bridges independent of Bridge Builder and preserve native pricing/unlocks.
 Do not use other bridges' ImportedData Prefabs as creation or copy sources.
 
-Use the bridge/<style-slug> branch required by contract section 12; keep the style ID stable.
+Follow contract section 12's optional branch policy and keep the style ID stable.
 Implement the style, build and install it locally according to the repository workflow,
 and report exact changes, evidence, checks and outstanding manual acceptance steps.
 Deliver the changes locally with a review summary. Do not push to GitHub, publish to Paradox Mods
@@ -348,14 +365,53 @@ Provide labels in every supported UI language. The current admission rule also c
 display name independently of the active locale. Keep style IDs unlocalized and the mod metadata
 title exactly `Bridge Builder`. Check catalogue cards, preview selection and actual creation together.
 
+Bridge generation contract section 22 requires immediate UI synchronization and connection of each new bridge
+style to the generator router, with multilingual style names in the same implementation increment.
+Include the creation-list entry, search/filter behavior,
+preview, both creation actions and management labels. Verify all supported locales and live language
+changes; the existing Chinese-name admission check alone does not establish translation coverage.
+A working generator without its working UI entry is not a completed contribution.
+
+#### Affine matrix generation step
+
+Use the [CPU affine execution contract](docs/agent-contract/BRIDGE_GENERATION_CONTRACT.md#cpu-affine-geometry-execution)
+for every style's coordinate stage:
+
+1. Extract measured origins, coefficient rows, parameter domains and part membership offline.
+   Each of X, Y and Z may depend on width; a constant axis has zero coefficients.
+2. Store numerical values in the existing DLL-embedded typed arrays. Sparse vertex weights and
+   part ranges are valid matrix representations; the BBN1 format need not change or expand to
+   dense matrices. Preserve float bits, anchors and evaluation order.
+3. Snapshot native mesh inputs on the main thread. Evaluate independent coordinate ranges with
+   `AffineGeometry.For`, source-only sparse assignments with `Scatter`, and repeated additive
+   index recipes with `Indices`. Use `Row`/`Matrix` for general XYZ parameter mappings and the
+   specialized scalar kernels where appropriate. Retain dependent stage ordering.
+4. Shared movable assembly schedules independent LOD plans with `Groups`, waits for completion,
+   then creates native render assets on the main thread. Do not put Mesh, Prefab, material or
+   persistence API calls into numerical workers. Small batches and nested work stay serial.
+5. After regenerating recipes, review the [offline lowering pass](tools/AffineGeometryMigration/README.md)
+   and preserve manual coefficient caches and snapshot boundaries. Run `AffineGeometryCheck`,
+   resource integrity checks, affected geometry/LOD regressions and localization checks.
+   Compare actual cold/warm preview and creation timings before claiming an acceleration.
+
+The implementation entry points are [AffineGeometry.cs](src/BridgeBuilder/Bridges/AffineGeometry.cs),
+[HardcodedNumbers.cs](src/BridgeBuilder/Bridges/HardcodedNumbers.cs) and
+[MovableRenderAssembly.cs](src/BridgeBuilder/Bridges/Common/Movable/MovableRenderAssembly.cs).
+This stage changes computation only: preserve topology, native bone ownership, material/UV
+semantics and independent asset persistence.
+
 ### 4. Measure geometry before implementing transforms
 
 Identify authored parts offline using the highest-detail prototype. Record exact mesh/LOD identity
 and part membership as immutable data; runtime code consumes this data without rediscovering parts
 from bounds, topology, thresholds or name resemblance.
 
-- A part reaching or crossing `x = 0` stretches against its own span. A side part translates rigidly.
-- Preserve tower height and depth, side-part thickness, vertex formats, indices, materials and behavior.
+- Apply contract section 8's explicit base, centred-post and Draw03 truss rules and section 5's
+  measured Golden mappings; otherwise a part
+  reaching or crossing `x = 0` stretches against its own span and a side part translates rigidly.
+- Preserve tower height/depth outside the measured Golden ornament exception, side-part thickness
+  and native behavior. Apply only the contracts' scoped topology, native representation and
+  UV/material rules, including the verified prototype non-tiling exception.
 - Carry the highest-detail classification to all LODs. Repoint derived LOD references to derived meshes.
 - Preserve prototype placement, stacking, tiling, lights and their parent relationships.
 - Apply the contract's separate base and pier rules using structural evidence, not names.
@@ -401,10 +457,9 @@ From the repository root, the build entry point is:
 ```
 
 Use `-GameDir` if automatic game discovery does not find the installation. Follow contract section 13
-for shutdown, backup, cleanup and installation. A bridge-generation change removes all mod-created
-bridges only for its affected style IDs, including their UUID-owned dependencies. Preserve all other
-styles. For example, a `GoldenGate`-only change removes `GoldenGate` bridges, not `GoldenGateDouble`
-or other suspension bridges. Trace the affected styles when shared generation code changes.
+for shutdown, backup, recovery and installation. Preserve healthy bridges when generation code
+changes. Only a demonstrated incompatibility permits recovery of the affected style/UUID-owned
+assets; preserve unrelated bridges and dependencies. Trace shared-code impacts before recovery.
 
 If bridge-generation code did not change, remove no existing bridges. Documentation-only edits
 require no shutdown, cleanup, build or deployment. Preserve diagnostic evidence before scoped cleanup
@@ -418,10 +473,10 @@ implementation or claim a build proves appearance.
 
 Test the following in your local game and give the results to your agent:
 
-1. The intended style is discoverable only with its required prototype available; unsupported modes
-   and unavailable sources report clear errors.
-2. Creation and placement work at prototype, wider and narrower road widths, including supported
-   asymmetric roads and both deck directions where relevant.
+1. The intended style is discoverable with required native content and packaged resources available.
+   Players need not own identical original prototype files; missing required resources fail explicitly.
+2. Creation and placement work at prototype and wider widths, including supported asymmetric
+   roads and both deck directions. Movable bridges have no special narrow-road adaptation gate.
 3. Towers, deck, cables, railings, lights and materials remain correct up close and through LOD changes.
 4. Native unlock conditions, construction cost, labels, descriptions and icons are correct.
 5. Saving, exiting and cold-start loading preserve geometry and references; healthy self-check is inert.
@@ -440,7 +495,7 @@ Attach a screenshot of the prototype and a comparable screenshot of the generate
 LOD issue, include both near and far views. Provide the selected road or track, deck mode, width,
 elevation, bridge UUID if known, and whether the problem occurs immediately or only after reloading.
 Include the relevant log and export report if available; a visual defect can occur without a logged
-error. Save your city before requesting another code change, because the agent's workflow stops the game.
+error. Save your city before requesting another code change, because deployment stops the game before replacing loaded binaries.
 
 Use this follow-up prompt:
 

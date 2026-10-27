@@ -1,0 +1,35 @@
+--- a/src/BridgeBuilder/Bridges/Common/Movable/MovableStructureTiles.cs
++++ b/src/BridgeBuilder/Bridges/Common/Movable/MovableStructureTiles.cs
+@@ -18,9 +18,14 @@
+     }
+ 
+     private readonly string _style;
++    private readonly Draw02NativeSourceBindings? _draw02;
+     private readonly Dictionary<SurfaceAsset,string> _sourceDigests=new();
+ 
+-    internal MovableStructureTiles(string style) => _style=style;
++    internal MovableStructureTiles(string style)
++    {
++        _style=style;
++        if(style=="Draw02")_draw02=new Draw02NativeSourceBindings();
++    }
+ 
+     internal Dictionary<int,Slot> Build(SurfaceAsset source,IEnumerable<MovableStructurePacking.Unit> units)
+     {
+@@ -28,6 +33,16 @@
+         int originals=0;
+         foreach(var unit in units)
+         {
++            // Draw02 shares the complete original native graph when its actual
++            // receiver mapping is proven. Unimplemented uses must not rebake.
++            if(_draw02!=null)
++            {
++                if(!_draw02.TryBind(source,unit,out var native,out var requirement))
++                    throw new System.NotSupportedException(requirement);
++                slots.Add(unit.Id,native!);
++                originals++;
++                continue;
++            }
+             // Retain a fully compatible original before opening its file or
+             // consulting prepared resources. The catalogue owns all other slots.
+             if(unit.CanUseSource)

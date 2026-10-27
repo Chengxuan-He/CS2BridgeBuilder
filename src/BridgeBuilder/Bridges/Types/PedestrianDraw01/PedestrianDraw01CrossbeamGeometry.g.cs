@@ -3,51 +3,55 @@ using System;
 using UnityEngine;
 
 namespace BridgeBuilder.Bridges;
-
 internal static class PedestrianDraw01CrossbeamGeometry
 {
     internal static void Apply(int lod, Vector3[] source, Vector3[] positions, float delta)
     {
         var data = lod switch
         {
-            0 => (Count: 34931, Parts: Parts0),
-            1 => (Count: 33598, Parts: Parts1),
-            2 => (Count: 1702, Parts: Parts2),
-            _ => throw new ArgumentOutOfRangeException(nameof(lod))
-        };
-        if (source.Length != data.Count || positions.Length != data.Count || !float.IsFinite(delta) || delta <= -3.886474609375f)
+            0 => (Count: Numeric_Types_PedestrianDraw01_PedestrianDraw01CrossbeamGeometry_g_cs.Values.I32[0], Parts: Parts0),
+            1 => (Count: Numeric_Types_PedestrianDraw01_PedestrianDraw01CrossbeamGeometry_g_cs.Values.I32[1], Parts: Parts1),
+            2 => (Count: Numeric_Types_PedestrianDraw01_PedestrianDraw01CrossbeamGeometry_g_cs.Values.I32[2], Parts: Parts2),
+            _ => throw new ArgumentOutOfRangeException(nameof(lod))};
+        if (source.Length != data.Count || positions.Length != data.Count || !float.IsFinite(delta) || delta <= -Numeric_Types_PedestrianDraw01_PedestrianDraw01CrossbeamGeometry_g_cs.Values.F32[0])
             throw new InvalidOperationException("PedestrianDraw01 crossbeams require their recorded layout and positive span.");
         foreach (var part in data.Parts)
-            for (var i = part.First; i <= part.Last; i++)
-                positions[i].x = source[i].x + source[i].x / 3.886474609375f * delta;
+            AffineGeometry.For(part.First, checked((part.Last) + 1), i =>
+            {
+                positions[i].x = AffineGeometry.AddScaled(source[i].x, source[i].x / Numeric_Types_PedestrianDraw01_PedestrianDraw01CrossbeamGeometry_g_cs.Values.F32[1], delta);
+            });
     }
 
     // Geometry SHA-256: 491d8dae6420e0b5b00fbf0014ff74a8aff44c45a1bd48ab40708978888d7f05
-    private static readonly (int First, int Last)[] Parts0 =
-    {
-        (1379, 1390),
-        (3166, 3177),
-        (8519, 8710),
-        (16845, 16856),
-        (17480, 17491),
-        (22977, 23168),
-    };
-
+    private static readonly (int First, int Last)[] Parts0 = ReadPackedParts0();
     // Geometry SHA-256: 0b0544aff8720327910927fda2f398ce78c8e3e3d2a1262de8204acdcac34053
-    private static readonly (int First, int Last)[] Parts1 =
-    {
-        (1427, 1438),
-        (2756, 2761),
-        (3698, 3703),
-        (9011, 9202),
-        (16679, 16690),
-        (17312, 17323),
-        (22706, 22897),
-    };
-
+    private static readonly (int First, int Last)[] Parts1 = ReadPackedParts1();
     // Geometry SHA-256: d514d88bf5fd4d8453a81578b36f099887cf562ad55255d4ca97267add15952b
     private static readonly (int First, int Last)[] Parts2 =
     {
     };
+    private static (int First, int Last)[] ReadPackedParts0()
+    {
+        var d = Numeric_Types_PedestrianDraw01_PedestrianDraw01CrossbeamGeometry_g_cs.Values;
+        var values = new (int First, int Last)[6];
+        for (int i = 0; i < 6; i++)
+            values[0 + i] = (d.I32[3 + i * 2], d.I32[4 + i * 2]);
+        return values;
+    }
 
+    private static (int First, int Last)[] ReadPackedParts1()
+    {
+        var d = Numeric_Types_PedestrianDraw01_PedestrianDraw01CrossbeamGeometry_g_cs.Values;
+        var values = new (int First, int Last)[7];
+        for (int i = 0; i < 7; i++)
+            values[0 + i] = (d.I32[15 + i * 2], d.I32[16 + i * 2]);
+        return values;
+    }
+}
+
+// Embedded numerical arrays: Types_PedestrianDraw01_PedestrianDraw01CrossbeamGeometry_g_cs
+internal static class Numeric_Types_PedestrianDraw01_PedestrianDraw01CrossbeamGeometry_g_cs
+{
+    static Numeric_Types_PedestrianDraw01_PedestrianDraw01CrossbeamGeometry_g_cs() {}
+    internal static readonly HardcodedNumbers Values = HardcodedNumbers.Load("Types_PedestrianDraw01_PedestrianDraw01CrossbeamGeometry_g_cs");
 }

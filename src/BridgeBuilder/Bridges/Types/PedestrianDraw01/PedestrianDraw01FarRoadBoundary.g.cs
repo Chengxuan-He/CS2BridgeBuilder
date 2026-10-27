@@ -3,69 +3,57 @@ using System;
 using UnityEngine;
 
 namespace BridgeBuilder.Bridges;
-
 internal static class PedestrianDraw01FarRoadBoundary
 {
     internal static MovableStructureModel.Plan Apply(MovableStructureModel.Plan plan)
     {
-        if (plan.SourcePositions.Length != 1702 || plan.SourceIndices.Length != 1 || plan.SourceIndices[0].Length != 3204)
+        if (plan.SourcePositions.Length != Numeric_Types_PedestrianDraw01_PedestrianDraw01FarRoadBoundary_g_cs.Values.I32[0] || plan.SourceIndices.Length != Numeric_Types_PedestrianDraw01_PedestrianDraw01FarRoadBoundary_g_cs.Values.I32[1] || plan.SourceIndices[Numeric_Types_PedestrianDraw01_PedestrianDraw01FarRoadBoundary_g_cs.Values.I32[2]].Length != Numeric_Types_PedestrianDraw01_PedestrianDraw01FarRoadBoundary_g_cs.Values.I32[3])
             throw new InvalidOperationException("PedestrianDraw01 far boundary source layout changed.");
         var positions = new Vector3[plan.SourcePositions.Length];
         Array.Copy(plan.Positions, positions, positions.Length);
-        foreach (var row in Vertices) {
+        foreach (var row in Vertices)
+        {
             var source = plan.SourcePositions[row.Index];
             if (source.y != row.SourceY || source.z != row.SourceZ)
                 throw new InvalidOperationException("PedestrianDraw01 far boundary source coordinates changed.");
-            positions[row.Index].y = row.Y; positions[row.Index].z = row.Z;
+            positions[row.Index].y = row.Y;
+            positions[row.Index].z = row.Z;
         }
+
         var x = new float[plan.ConstructedCount];
-        for (var i = 0; i < x.Length; i++) x[i] = plan.Positions[positions.Length + i].x;
-        return new MovableStructureModel.Plan(plan.SourcePositions, positions, plan.SourceIndices, plan.RemoveTriangles,
-            addedVertices: plan.AddedVertices, interiorVertices: plan.InteriorVertices, fragments: plan.Fragments,
-            constructedX: x, reconstructsAuthoredPositions: true);
+        AffineGeometry.For(Numeric_Types_PedestrianDraw01_PedestrianDraw01FarRoadBoundary_g_cs.Values.I32[4], x.Length, i =>
+        {
+            x[i] = plan.Positions[positions.Length + i].x;
+        });
+        return new MovableStructureModel.Plan(plan.SourcePositions, positions, plan.SourceIndices, plan.RemoveTriangles, addedVertices: plan.AddedVertices, interiorVertices: plan.InteriorVertices, fragments: plan.Fragments, constructedX: x, reconstructsAuthoredPositions: true);
     }
 
-    private static readonly (int Index, float SourceY, float SourceZ, float Y, float Z)[] Vertices =
+    private static readonly (int Index, float SourceY, float SourceZ, float Y, float Z)[] Vertices = ReadPackedVertices();
+    private static (int Index, float SourceY, float SourceZ, float Y, float Z)[] ReadPackedVertices()
     {
-        (604, 10.10009765625f, -30.1748046875f, 10f, -30.1748046875f),
-        (605, 10.10009765625f, -60.28515625f, 10f, -60.28515625f),
-        (606, 10.10009765625f, -30.1748046875f, 10f, -30.1748046875f),
-        (607, 10.10009765625f, -60.28515625f, 10f, -60.28515625f),
-        (608, 10.10009765625f, 29.14306640625f, 10f, 29.14306640625f),
-        (610, 10.10009765625f, 58.2216796875f, 10f, 58.2216796875f),
-        (612, 10.10009765625f, 29.14306640625f, 10f, 29.14306640625f),
-        (614, 10.10009765625f, 0.06464385986328125f, 10f, 0.029998779296875f),
-        (772, 10.10009765625f, 60.28515625f, 10f, 60.28515625f),
-        (774, 10.10009765625f, 60.28515625f, 10f, 60.28515625f),
-        (783, 10.10009765625f, 60.28515625f, 10f, 60.28515625f),
-        (786, 10.10009765625f, 60.28515625f, 10f, 60.28515625f),
-        (1418, 10.10009765625f, 60.28515625f, 10f, 60.28515625f),
-        (1419, 10.10009765625f, 30.1748046875f, 10f, 30.1748046875f),
-        (1420, 10.10009765625f, 30.1748046875f, 10f, 30.1748046875f),
-        (1421, 10.10009765625f, 60.28515625f, 10f, 60.28515625f),
-        (1422, 10.10009765625f, -29.14306640625f, 10f, -29.14306640625f),
-        (1425, 10.10009765625f, -58.2216796875f, 10f, -58.2216796875f),
-        (1426, 10.10009765625f, -29.14306640625f, 10f, -29.14306640625f),
-        (1429, 10.10009765625f, -0.06464385986328125f, 10f, -0.029998779296875f),
-        (1586, 10.10009765625f, -60.28515625f, 10f, -60.28515625f),
-        (1589, 10.10009765625f, -60.28515625f, 10f, -60.28515625f),
-        (1597, 10.10009765625f, -60.28515625f, 10f, -60.28515625f),
-        (1601, 10.10009765625f, -60.28515625f, 10f, -60.28515625f),
-        (1654, 10.10009765625f, 30.1748046875f, 10f, 30.1748046875f),
-        (1655, 10.10009765625f, 0.06464385986328125f, 10f, 0.029998779296875f),
-        (1656, 10.10009765625f, 0.06464385986328125f, 10f, 0.029998779296875f),
-        (1657, 10.10009765625f, 30.1748046875f, 10f, 30.1748046875f),
-        (1658, 10.10009765625f, -0.06464385986328125f, 10f, -0.029998779296875f),
-        (1659, 10.10009765625f, -30.1748046875f, 10f, -30.1748046875f),
-        (1660, 10.10009765625f, -0.06464385986328125f, 10f, -0.029998779296875f),
-        (1661, 10.10009765625f, -30.1748046875f, 10f, -30.1748046875f),
-        (1674, 10.10009765625f, 58.2216796875f, 10f, 58.2216796875f),
-        (1676, 10.10009765625f, 29.14306640625f, 10f, 29.14306640625f),
-        (1678, 10.10009765625f, 0.06464385986328125f, 10f, 0.029998779296875f),
-        (1680, 10.10009765625f, 29.14306640625f, 10f, 29.14306640625f),
-        (1694, 10.10009765625f, -58.2216796875f, 10f, -58.2216796875f),
-        (1697, 10.10009765625f, -29.14306640625f, 10f, -29.14306640625f),
-        (1698, 10.10009765625f, -0.06464385986328125f, 10f, -0.029998779296875f),
-        (1701, 10.10009765625f, -29.14306640625f, 10f, -29.14306640625f),
-    };
+        var d = Numeric_Types_PedestrianDraw01_PedestrianDraw01FarRoadBoundary_g_cs.Values;
+        var values = new (int Index, float SourceY, float SourceZ, float Y, float Z)[40];
+        for (int i = 0; i < 4; i++)
+            values[0 + i] = (d.I32[5 + i * 1], d.F32[0 + i * 4], -d.F32[1 + i * 4], d.F32[2 + i * 4], -d.F32[3 + i * 4]);
+        for (int i = 0; i < 12; i++)
+            values[4 + i] = (d.I32[9 + i * 1], d.F32[16 + i * 4], d.F32[17 + i * 4], d.F32[18 + i * 4], d.F32[19 + i * 4]);
+        for (int i = 0; i < 8; i++)
+            values[16 + i] = (d.I32[21 + i * 1], d.F32[64 + i * 4], -d.F32[65 + i * 4], d.F32[66 + i * 4], -d.F32[67 + i * 4]);
+        for (int i = 0; i < 4; i++)
+            values[24 + i] = (d.I32[29 + i * 1], d.F32[96 + i * 4], d.F32[97 + i * 4], d.F32[98 + i * 4], d.F32[99 + i * 4]);
+        for (int i = 0; i < 4; i++)
+            values[28 + i] = (d.I32[33 + i * 1], d.F32[112 + i * 4], -d.F32[113 + i * 4], d.F32[114 + i * 4], -d.F32[115 + i * 4]);
+        for (int i = 0; i < 4; i++)
+            values[32 + i] = (d.I32[37 + i * 1], d.F32[128 + i * 4], d.F32[129 + i * 4], d.F32[130 + i * 4], d.F32[131 + i * 4]);
+        for (int i = 0; i < 4; i++)
+            values[36 + i] = (d.I32[41 + i * 1], d.F32[144 + i * 4], -d.F32[145 + i * 4], d.F32[146 + i * 4], -d.F32[147 + i * 4]);
+        return values;
+    }
+}
+
+// Embedded numerical arrays: Types_PedestrianDraw01_PedestrianDraw01FarRoadBoundary_g_cs
+internal static class Numeric_Types_PedestrianDraw01_PedestrianDraw01FarRoadBoundary_g_cs
+{
+    static Numeric_Types_PedestrianDraw01_PedestrianDraw01FarRoadBoundary_g_cs() {}
+    internal static readonly HardcodedNumbers Values = HardcodedNumbers.Load("Types_PedestrianDraw01_PedestrianDraw01FarRoadBoundary_g_cs");
 }

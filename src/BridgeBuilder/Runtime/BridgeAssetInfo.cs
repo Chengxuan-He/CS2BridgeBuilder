@@ -59,8 +59,12 @@ internal sealed class BridgeAssetInfo
         && path != null && path.IndexOf(owner, StringComparison.OrdinalIgnoreCase) >= 0;
 
     internal static bool IsOtherBridgePrefab(string? path, string owner, string importedRoot)
+        => path != null && path.EndsWith(".Prefab", StringComparison.OrdinalIgnoreCase)
+            && IsOtherBridgeAsset(path, owner, importedRoot);
+
+    internal static bool IsOtherBridgeAsset(string? path, string owner, string importedRoot)
     {
-        if (string.IsNullOrEmpty(path) || !path.EndsWith(".Prefab", StringComparison.OrdinalIgnoreCase)) return false;
+        if (string.IsNullOrEmpty(path)) return false;
         var full = Path.GetFullPath(BridgeFileAccess.Logical(path));
         var root = Path.GetFullPath(importedRoot).TrimEnd('\\', '/') + Path.DirectorySeparatorChar;
         if (!full.StartsWith(root, StringComparison.OrdinalIgnoreCase)) return false;

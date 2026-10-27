@@ -1,5 +1,11 @@
 # Movable lane deformation check
 
+The track regression also links the production `BridgePreviewLanes.Lane`
+snapshot and real game `BatchDataHelpers`. It checks node/edge/elevation/fallback
+selection, native shared-endpoint factors, node scale and unprojected rail and
+sleeper heights for ordinary and tiled geometry. The height fixture is synthetic;
+it proves preservation of the supplied native datum, not visual acceptance.
+
 Run against the installed game's managed math library:
 
 ```powershell

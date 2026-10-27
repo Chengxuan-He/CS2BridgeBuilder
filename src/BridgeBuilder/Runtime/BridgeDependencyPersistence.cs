@@ -15,14 +15,28 @@ internal static class BridgeDependencyPersistence
     {
         var timer = System.Diagnostics.Stopwatch.StartNew();
         ILookup<string, AssetData>? alternatives = null;
+        var footprint = new BridgeMaterialFootprint();
         var result = BridgeDependencyCopies.Save(UnityEngine.Application.persistentDataPath, owner, seeds,
-            cid => Resolve(cid, owner, ref alternatives), out count, out error, out writtenFiles);
+            cid => Resolve(cid, owner, ref alternatives), out count, out error, out writtenFiles, footprint.Observe);
+        if(result)
+        {
+            try
+            {
+                var report=footprint.Write(UnityEngine.Application.persistentDataPath,owner,
+                    typeof(BridgeDependencyPersistence).Assembly.ManifestModule.ModuleVersionId.ToString());
+                Mod.Log.Info("Saved-owner material footprint: "+report);
+            }
+            catch(Exception exception){Mod.Log.Warn("Saved-owner material measurement unavailable: "+exception.Message);}
+        }
         Mod.Log.Info($"Bridge dependency persistence UUID={owner}: elapsedMs={timer.ElapsedMilliseconds}, copies={count}, writtenFiles={writtenFiles}, success={result}");
         return result;
     }
 
     internal static BridgeDependencyCopies.Source? Resolve(string cid, string owner, ref ILookup<string, AssetData>? alternatives)
     {
+        // Packaged source bytes take precedence over identical-CID snapshots in
+        // other bridges, including stale registrations after those bridges delete.
+        if (BridgePreparedMaterials.TryGet(cid, out var prepared)) return Read(prepared, owner);
         AssetDatabase.global.TryGetAsset(Colossal.Hash128.Parse(cid), out AssetData asset);
         if (asset != null)
         {
@@ -53,9 +67,9 @@ internal static class BridgeDependencyPersistence
 
     private static BridgeDependencyCopies.Source? ReadSource(AssetData asset, string owner)
     {
-        if (asset.isBuiltin) return new BridgeDependencyCopies.Source { Builtin = true };
+        if (asset.isBuiltin) return new BridgeDependencyCopies.Source { Builtin = true, Extension = asset.GetMeta().extension };
         var meta = asset.GetMeta();
-        if (BridgeAssetInfo.IsOtherBridgePrefab(meta.path, owner,
+        if (BridgeAssetInfo.IsOtherBridgeAsset(meta.path, owner,
             Path.Combine(UnityEngine.Application.persistentDataPath, "ImportedData"))) return null;
         var owned = !meta.packaged && !BridgeAssetInfo.IsDependencyPath(meta.path, owner)
             && (BridgeAssetInfo.MatchesOwner(meta.path, owner) || BridgeAssetInfo.MatchesOwner(meta.subPath, owner));
@@ -64,7 +78,7 @@ internal static class BridgeDependencyPersistence
             || meta.extension.Equals(".Material", StringComparison.OrdinalIgnoreCase);
         if (owned && !meta.extension.Equals(".Prefab", StringComparison.OrdinalIgnoreCase)
             && !surface)
-            return new BridgeDependencyCopies.Source { Owned = true, Extension = meta.extension };
+            return new BridgeDependencyCopies.Source { Owned = true, Extension = meta.extension, PhysicalPath = meta.path };
         // Private geometry is a terminal owned asset: its payload never needs copying or parsing.
         using var bytes = new MemoryStream();
         stream.CopyTo(bytes);
@@ -73,6 +87,7 @@ internal static class BridgeDependencyPersistence
         {
             Extension = meta.extension,
             Owned = owned,
+            PhysicalPath = meta.path,
             Bytes = payload,
             SerializedReferences = surface ? BridgeSurfaceReferences.Read(payload, (template, property) =>
                 (AssetDatabase.global.resources.materialLibrary.GetMaterialDescription(template)

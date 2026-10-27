@@ -6,291 +6,269 @@ using Game.Prefabs;
 using Unity.Mathematics;
 
 namespace BridgeBuilder.Bridges;
-
 internal sealed class Draw02ApproachSources : MovableSourceRenders
 {
     internal Draw02ApproachSources(ContentPrefab content)
     {
         try
         {
-            var p0l0 = Create<NetPiecePrefab>("DrawBridge02BottomInner300cm Mesh", "30c43214f8df4127b8107e3451d91238",
-                new[] { "5d98bd98700c73926bb2b3ff69c784e2" },
-                new Bounds3(new float3(-1.5f, -3.690000057220459f, -31.999992370605469f), new float3(1.5f, -0.29999995231628418f, 32.000007629394531f)),
-                910, 1950, 1, 768.1075439453125f);
-            p0l0.m_Layer = (NetPieceLayer)1;
-            p0l0.m_Width = 3f;
-            p0l0.m_Length = 64f;
-            p0l0.m_WidthOffset = 0f;
-            p0l0.m_NodeOffset = 0.5f;
-            p0l0.m_SideConnectionOffset = 0f;
-            p0l0.m_HeightRange = new Bounds1(-3.690000057220459f, -0.30000001192092896f);
-            p0l0.m_SurfaceHeights = new float4(-3.690000057220459f, -3.690000057220459f, -3.690000057220459f, -3.690000057220459f);
+            var p0l0 = Create<NetPiecePrefab>("DrawBridge02BottomInner300cm Mesh", "30c43214f8df4127b8107e3451d91238", new[] { "5d98bd98700c73926bb2b3ff69c784e2" }, new Bounds3(new float3(-Numeric_Types_Draw02_Draw02ApproachSources_g_cs.Values.F32[0], -Numeric_Types_Draw02_Draw02ApproachSources_g_cs.Values.F32[1], -Numeric_Types_Draw02_Draw02ApproachSources_g_cs.Values.F32[2]), new float3(Numeric_Types_Draw02_Draw02ApproachSources_g_cs.Values.F32[3], -Numeric_Types_Draw02_Draw02ApproachSources_g_cs.Values.F32[4], Numeric_Types_Draw02_Draw02ApproachSources_g_cs.Values.F32[5])), Numeric_Types_Draw02_Draw02ApproachSources_g_cs.Values.I32[0], Numeric_Types_Draw02_Draw02ApproachSources_g_cs.Values.I32[1], Numeric_Types_Draw02_Draw02ApproachSources_g_cs.Values.I32[2], Numeric_Types_Draw02_Draw02ApproachSources_g_cs.Values.F32[6]);
+            p0l0.m_Layer = (NetPieceLayer)Numeric_Types_Draw02_Draw02ApproachSources_g_cs.Values.I32[3];
+            p0l0.m_Width = Numeric_Types_Draw02_Draw02ApproachSources_g_cs.Values.F32[7];
+            p0l0.m_Length = Numeric_Types_Draw02_Draw02ApproachSources_g_cs.Values.F32[8];
+            p0l0.m_WidthOffset = Numeric_Types_Draw02_Draw02ApproachSources_g_cs.Values.F32[9];
+            p0l0.m_NodeOffset = Numeric_Types_Draw02_Draw02ApproachSources_g_cs.Values.F32[10];
+            p0l0.m_SideConnectionOffset = Numeric_Types_Draw02_Draw02ApproachSources_g_cs.Values.F32[11];
+            p0l0.m_HeightRange = new Bounds1(-Numeric_Types_Draw02_Draw02ApproachSources_g_cs.Values.F32[12], -Numeric_Types_Draw02_Draw02ApproachSources_g_cs.Values.F32[13]);
+            p0l0.m_SurfaceHeights = new float4(-Numeric_Types_Draw02_Draw02ApproachSources_g_cs.Values.F32[14], -Numeric_Types_Draw02_Draw02ApproachSources_g_cs.Values.F32[15], -Numeric_Types_Draw02_Draw02ApproachSources_g_cs.Values.F32[16], -Numeric_Types_Draw02_Draw02ApproachSources_g_cs.Values.F32[17]);
             var cost0 = p0l0.AddComponent<PlaceableNetPiece>();
-            cost0.m_ConstructionCost = 10;
-            cost0.m_ElevationCost = 0;
-            cost0.m_UpkeepCost = 3f;
+            cost0.m_ConstructionCost = (uint)(Numeric_Types_Draw02_Draw02ApproachSources_g_cs.Values.I32[4]);
+            cost0.m_ElevationCost = (uint)(Numeric_Types_Draw02_Draw02ApproachSources_g_cs.Values.I32[5]);
+            cost0.m_UpkeepCost = Numeric_Types_Draw02_Draw02ApproachSources_g_cs.Values.F32[18];
             p0l0.AddComponent<ContentPrerequisite>().m_ContentPrerequisite = content;
-            var p0l1 = Create<RenderPrefab>("DrawBridge02BottomInner300cm_LOD1 Mesh", "a60e3bcff09b8fea5e973562e46140e7",
-                new[] { "9f31e9f71c97263c984303131decbfb0" },
-                new Bounds3(new float3(-1.5f, -3.690000057220459f, -31.999992370605469f), new float3(1.5f, -0.29999995231628418f, 32.000007629394531f)),
-                742, 1566, 1, 761.69097900390625f);
+            var p0l1 = Create<RenderPrefab>("DrawBridge02BottomInner300cm_LOD1 Mesh", "a60e3bcff09b8fea5e973562e46140e7", new[] { "9f31e9f71c97263c984303131decbfb0" }, new Bounds3(new float3(-Numeric_Types_Draw02_Draw02ApproachSources_g_cs.Values.F32[19], -Numeric_Types_Draw02_Draw02ApproachSources_g_cs.Values.F32[20], -Numeric_Types_Draw02_Draw02ApproachSources_g_cs.Values.F32[21]), new float3(Numeric_Types_Draw02_Draw02ApproachSources_g_cs.Values.F32[22], -Numeric_Types_Draw02_Draw02ApproachSources_g_cs.Values.F32[23], Numeric_Types_Draw02_Draw02ApproachSources_g_cs.Values.F32[24])), Numeric_Types_Draw02_Draw02ApproachSources_g_cs.Values.I32[6], Numeric_Types_Draw02_Draw02ApproachSources_g_cs.Values.I32[7], Numeric_Types_Draw02_Draw02ApproachSources_g_cs.Values.I32[8], Numeric_Types_Draw02_Draw02ApproachSources_g_cs.Values.F32[25]);
             p0l1.AddComponent<ContentPrerequisite>().m_ContentPrerequisite = content;
-            var p0l2 = Create<RenderPrefab>("DrawBridge02BottomInner300cm_LOD2 Mesh", "57ca0ed86ffcba3d34a53c6f838a1d46",
-                new[] { "9b0ef24ab46511040acf280f549a3a73" },
-                new Bounds3(new float3(-1.5000009536743164f, -3.6900010108947754f, -32f), new float3(1.5000009536743164f, -0.29999995231628418f, 32.000007629394531f)),
-                306, 684, 1, 704.67193603515625f);
+            var p0l2 = Create<RenderPrefab>("DrawBridge02BottomInner300cm_LOD2 Mesh", "57ca0ed86ffcba3d34a53c6f838a1d46", new[] { "9b0ef24ab46511040acf280f549a3a73" }, new Bounds3(new float3(-Numeric_Types_Draw02_Draw02ApproachSources_g_cs.Values.F32[26], -Numeric_Types_Draw02_Draw02ApproachSources_g_cs.Values.F32[27], -Numeric_Types_Draw02_Draw02ApproachSources_g_cs.Values.F32[28]), new float3(Numeric_Types_Draw02_Draw02ApproachSources_g_cs.Values.F32[29], -Numeric_Types_Draw02_Draw02ApproachSources_g_cs.Values.F32[30], Numeric_Types_Draw02_Draw02ApproachSources_g_cs.Values.F32[31])), Numeric_Types_Draw02_Draw02ApproachSources_g_cs.Values.I32[9], Numeric_Types_Draw02_Draw02ApproachSources_g_cs.Values.I32[10], Numeric_Types_Draw02_Draw02ApproachSources_g_cs.Values.I32[11], Numeric_Types_Draw02_Draw02ApproachSources_g_cs.Values.F32[32]);
             p0l2.AddComponent<ContentPrerequisite>().m_ContentPrerequisite = content;
             var lod0 = p0l0.AddComponent<LodProperties>();
-            lod0.m_Bias = 0f;
-            lod0.m_ShadowBias = 0f;
-            lod0.m_LodMeshes = new[] { p0l1, p0l2 };
-            var p1l0 = Create<NetPiecePrefab>("DrawBridge02BottomInnerNode300cm Mesh", "9f1028f3c061d338eabee188ab795110",
-                new[] { "4f700e65d6da0bd1ada6e8986ba5844f" },
-                new Bounds3(new float3(-1.5f, -1.5599989891052246f, -31.999990463256836f), new float3(1.5f, -1.5599970817565918f, 32.000007629394531f)),
-                82, 192, 1, 192f);
-            p1l0.m_Layer = (NetPieceLayer)1;
-            p1l0.m_Width = 3f;
-            p1l0.m_Length = 64f;
-            p1l0.m_WidthOffset = 0f;
-            p1l0.m_NodeOffset = 0.5f;
-            p1l0.m_SideConnectionOffset = 0f;
-            p1l0.m_HeightRange = new Bounds1(-1.559999942779541f, -1.559999942779541f);
-            p1l0.m_SurfaceHeights = new float4(-1.559999942779541f, -1.559999942779541f, -1.559999942779541f, -1.559999942779541f);
+            lod0.m_Bias = Numeric_Types_Draw02_Draw02ApproachSources_g_cs.Values.F32[33];
+            lod0.m_ShadowBias = Numeric_Types_Draw02_Draw02ApproachSources_g_cs.Values.F32[34];
+            lod0.m_LodMeshes = new[]
+            {
+                p0l1,
+                p0l2
+            };
+            var p1l0 = Create<NetPiecePrefab>("DrawBridge02BottomInnerNode300cm Mesh", "9f1028f3c061d338eabee188ab795110", new[] { "4f700e65d6da0bd1ada6e8986ba5844f" }, new Bounds3(new float3(-Numeric_Types_Draw02_Draw02ApproachSources_g_cs.Values.F32[35], -Numeric_Types_Draw02_Draw02ApproachSources_g_cs.Values.F32[36], -Numeric_Types_Draw02_Draw02ApproachSources_g_cs.Values.F32[37]), new float3(Numeric_Types_Draw02_Draw02ApproachSources_g_cs.Values.F32[38], -Numeric_Types_Draw02_Draw02ApproachSources_g_cs.Values.F32[39], Numeric_Types_Draw02_Draw02ApproachSources_g_cs.Values.F32[40])), Numeric_Types_Draw02_Draw02ApproachSources_g_cs.Values.I32[12], Numeric_Types_Draw02_Draw02ApproachSources_g_cs.Values.I32[13], Numeric_Types_Draw02_Draw02ApproachSources_g_cs.Values.I32[14], Numeric_Types_Draw02_Draw02ApproachSources_g_cs.Values.F32[41]);
+            p1l0.m_Layer = (NetPieceLayer)Numeric_Types_Draw02_Draw02ApproachSources_g_cs.Values.I32[15];
+            p1l0.m_Width = Numeric_Types_Draw02_Draw02ApproachSources_g_cs.Values.F32[42];
+            p1l0.m_Length = Numeric_Types_Draw02_Draw02ApproachSources_g_cs.Values.F32[43];
+            p1l0.m_WidthOffset = Numeric_Types_Draw02_Draw02ApproachSources_g_cs.Values.F32[44];
+            p1l0.m_NodeOffset = Numeric_Types_Draw02_Draw02ApproachSources_g_cs.Values.F32[45];
+            p1l0.m_SideConnectionOffset = Numeric_Types_Draw02_Draw02ApproachSources_g_cs.Values.F32[46];
+            p1l0.m_HeightRange = new Bounds1(-Numeric_Types_Draw02_Draw02ApproachSources_g_cs.Values.F32[47], -Numeric_Types_Draw02_Draw02ApproachSources_g_cs.Values.F32[48]);
+            p1l0.m_SurfaceHeights = new float4(-Numeric_Types_Draw02_Draw02ApproachSources_g_cs.Values.F32[49], -Numeric_Types_Draw02_Draw02ApproachSources_g_cs.Values.F32[50], -Numeric_Types_Draw02_Draw02ApproachSources_g_cs.Values.F32[51], -Numeric_Types_Draw02_Draw02ApproachSources_g_cs.Values.F32[52]);
             var cost1 = p1l0.AddComponent<PlaceableNetPiece>();
-            cost1.m_ConstructionCost = 10;
-            cost1.m_ElevationCost = 0;
-            cost1.m_UpkeepCost = 3f;
+            cost1.m_ConstructionCost = (uint)(Numeric_Types_Draw02_Draw02ApproachSources_g_cs.Values.I32[16]);
+            cost1.m_ElevationCost = (uint)(Numeric_Types_Draw02_Draw02ApproachSources_g_cs.Values.I32[17]);
+            cost1.m_UpkeepCost = Numeric_Types_Draw02_Draw02ApproachSources_g_cs.Values.F32[53];
             p1l0.AddComponent<ContentPrerequisite>().m_ContentPrerequisite = content;
-            var p1l1 = Create<RenderPrefab>("DrawBridge02BottomInnerNode300cm_LOD1 Mesh", "18219ea1ee358e424c8ff13d129daa90",
-                new[] { "af48c4b16775963b7d025f9f672722f1" },
-                new Bounds3(new float3(-1.5f, -1.5599989891052246f, -31.999990463256836f), new float3(1.5f, -1.5599970817565918f, 32.000007629394531f)),
-                82, 192, 1, 192f);
+            var p1l1 = Create<RenderPrefab>("DrawBridge02BottomInnerNode300cm_LOD1 Mesh", "18219ea1ee358e424c8ff13d129daa90", new[] { "af48c4b16775963b7d025f9f672722f1" }, new Bounds3(new float3(-Numeric_Types_Draw02_Draw02ApproachSources_g_cs.Values.F32[54], -Numeric_Types_Draw02_Draw02ApproachSources_g_cs.Values.F32[55], -Numeric_Types_Draw02_Draw02ApproachSources_g_cs.Values.F32[56]), new float3(Numeric_Types_Draw02_Draw02ApproachSources_g_cs.Values.F32[57], -Numeric_Types_Draw02_Draw02ApproachSources_g_cs.Values.F32[58], Numeric_Types_Draw02_Draw02ApproachSources_g_cs.Values.F32[59])), Numeric_Types_Draw02_Draw02ApproachSources_g_cs.Values.I32[18], Numeric_Types_Draw02_Draw02ApproachSources_g_cs.Values.I32[19], Numeric_Types_Draw02_Draw02ApproachSources_g_cs.Values.I32[20], Numeric_Types_Draw02_Draw02ApproachSources_g_cs.Values.F32[60]);
             p1l1.AddComponent<ContentPrerequisite>().m_ContentPrerequisite = content;
-            var p1l2 = Create<RenderPrefab>("DrawBridge02BottomInnerNode300cm_LOD2 Mesh", "37d33902b1f663367aa350b910f8d4bf",
-                new[] { "55697a0c744a3cfa77056b9ff0f93646" },
-                new Bounds3(new float3(-1.5f, -1.5599989891052246f, -31.999990463256836f), new float3(1.5f, -1.5599970817565918f, 32.000007629394531f)),
-                34, 96, 1, 192f);
+            var p1l2 = Create<RenderPrefab>("DrawBridge02BottomInnerNode300cm_LOD2 Mesh", "37d33902b1f663367aa350b910f8d4bf", new[] { "55697a0c744a3cfa77056b9ff0f93646" }, new Bounds3(new float3(-Numeric_Types_Draw02_Draw02ApproachSources_g_cs.Values.F32[61], -Numeric_Types_Draw02_Draw02ApproachSources_g_cs.Values.F32[62], -Numeric_Types_Draw02_Draw02ApproachSources_g_cs.Values.F32[63]), new float3(Numeric_Types_Draw02_Draw02ApproachSources_g_cs.Values.F32[64], -Numeric_Types_Draw02_Draw02ApproachSources_g_cs.Values.F32[65], Numeric_Types_Draw02_Draw02ApproachSources_g_cs.Values.F32[66])), Numeric_Types_Draw02_Draw02ApproachSources_g_cs.Values.I32[21], Numeric_Types_Draw02_Draw02ApproachSources_g_cs.Values.I32[22], Numeric_Types_Draw02_Draw02ApproachSources_g_cs.Values.I32[23], Numeric_Types_Draw02_Draw02ApproachSources_g_cs.Values.F32[67]);
             p1l2.AddComponent<ContentPrerequisite>().m_ContentPrerequisite = content;
             var lod1 = p1l0.AddComponent<LodProperties>();
-            lod1.m_Bias = 0f;
-            lod1.m_ShadowBias = 0f;
-            lod1.m_LodMeshes = new[] { p1l1, p1l2 };
-            var p2l0 = Create<NetPiecePrefab>("DrawBridge02BottomOuter300cm Mesh", "c53202d8fd068ba8e8494c77579fd31a",
-                new[] { "8ce855cf963887d8c227feb4c454f720" },
-                new Bounds3(new float3(-1.5f, -3.690000057220459f, -31.999992370605469f), new float3(1.5f, -0.29999995231628418f, 32.000007629394531f)),
-                908, 1950, 1, 731.8785400390625f);
-            p2l0.m_Layer = (NetPieceLayer)1;
-            p2l0.m_Width = 3f;
-            p2l0.m_Length = 64f;
-            p2l0.m_WidthOffset = 0f;
-            p2l0.m_NodeOffset = 0.5f;
-            p2l0.m_SideConnectionOffset = 0f;
-            p2l0.m_HeightRange = new Bounds1(-3.690000057220459f, -0.30000001192092896f);
-            p2l0.m_SurfaceHeights = new float4(-3.690000057220459f, -3.690000057220459f, -3.690000057220459f, -3.690000057220459f);
+            lod1.m_Bias = Numeric_Types_Draw02_Draw02ApproachSources_g_cs.Values.F32[68];
+            lod1.m_ShadowBias = Numeric_Types_Draw02_Draw02ApproachSources_g_cs.Values.F32[69];
+            lod1.m_LodMeshes = new[]
+            {
+                p1l1,
+                p1l2
+            };
+            var p2l0 = Create<NetPiecePrefab>("DrawBridge02BottomOuter300cm Mesh", "c53202d8fd068ba8e8494c77579fd31a", new[] { "8ce855cf963887d8c227feb4c454f720" }, new Bounds3(new float3(-Numeric_Types_Draw02_Draw02ApproachSources_g_cs.Values.F32[70], -Numeric_Types_Draw02_Draw02ApproachSources_g_cs.Values.F32[71], -Numeric_Types_Draw02_Draw02ApproachSources_g_cs.Values.F32[72]), new float3(Numeric_Types_Draw02_Draw02ApproachSources_g_cs.Values.F32[73], -Numeric_Types_Draw02_Draw02ApproachSources_g_cs.Values.F32[74], Numeric_Types_Draw02_Draw02ApproachSources_g_cs.Values.F32[75])), Numeric_Types_Draw02_Draw02ApproachSources_g_cs.Values.I32[24], Numeric_Types_Draw02_Draw02ApproachSources_g_cs.Values.I32[25], Numeric_Types_Draw02_Draw02ApproachSources_g_cs.Values.I32[26], Numeric_Types_Draw02_Draw02ApproachSources_g_cs.Values.F32[76]);
+            p2l0.m_Layer = (NetPieceLayer)Numeric_Types_Draw02_Draw02ApproachSources_g_cs.Values.I32[27];
+            p2l0.m_Width = Numeric_Types_Draw02_Draw02ApproachSources_g_cs.Values.F32[77];
+            p2l0.m_Length = Numeric_Types_Draw02_Draw02ApproachSources_g_cs.Values.F32[78];
+            p2l0.m_WidthOffset = Numeric_Types_Draw02_Draw02ApproachSources_g_cs.Values.F32[79];
+            p2l0.m_NodeOffset = Numeric_Types_Draw02_Draw02ApproachSources_g_cs.Values.F32[80];
+            p2l0.m_SideConnectionOffset = Numeric_Types_Draw02_Draw02ApproachSources_g_cs.Values.F32[81];
+            p2l0.m_HeightRange = new Bounds1(-Numeric_Types_Draw02_Draw02ApproachSources_g_cs.Values.F32[82], -Numeric_Types_Draw02_Draw02ApproachSources_g_cs.Values.F32[83]);
+            p2l0.m_SurfaceHeights = new float4(-Numeric_Types_Draw02_Draw02ApproachSources_g_cs.Values.F32[84], -Numeric_Types_Draw02_Draw02ApproachSources_g_cs.Values.F32[85], -Numeric_Types_Draw02_Draw02ApproachSources_g_cs.Values.F32[86], -Numeric_Types_Draw02_Draw02ApproachSources_g_cs.Values.F32[87]);
             var cost2 = p2l0.AddComponent<PlaceableNetPiece>();
-            cost2.m_ConstructionCost = 10;
-            cost2.m_ElevationCost = 0;
-            cost2.m_UpkeepCost = 3f;
+            cost2.m_ConstructionCost = (uint)(Numeric_Types_Draw02_Draw02ApproachSources_g_cs.Values.I32[28]);
+            cost2.m_ElevationCost = (uint)(Numeric_Types_Draw02_Draw02ApproachSources_g_cs.Values.I32[29]);
+            cost2.m_UpkeepCost = Numeric_Types_Draw02_Draw02ApproachSources_g_cs.Values.F32[88];
             p2l0.AddComponent<ContentPrerequisite>().m_ContentPrerequisite = content;
-            var p2l1 = Create<RenderPrefab>("DrawBridge02BottomOuter300cm_LOD1 Mesh", "84c97b69cdd9ce95858aa6b4e32d8c39",
-                new[] { "34c9949500ff04bf4852f3c3d43d52f0" },
-                new Bounds3(new float3(-1.5f, -3.690000057220459f, -31.999992370605469f), new float3(1.5f, -0.29999995231628418f, 32.000007629394531f)),
-                740, 1566, 1, 725.39544677734375f);
+            var p2l1 = Create<RenderPrefab>("DrawBridge02BottomOuter300cm_LOD1 Mesh", "84c97b69cdd9ce95858aa6b4e32d8c39", new[] { "34c9949500ff04bf4852f3c3d43d52f0" }, new Bounds3(new float3(-Numeric_Types_Draw02_Draw02ApproachSources_g_cs.Values.F32[89], -Numeric_Types_Draw02_Draw02ApproachSources_g_cs.Values.F32[90], -Numeric_Types_Draw02_Draw02ApproachSources_g_cs.Values.F32[91]), new float3(Numeric_Types_Draw02_Draw02ApproachSources_g_cs.Values.F32[92], -Numeric_Types_Draw02_Draw02ApproachSources_g_cs.Values.F32[93], Numeric_Types_Draw02_Draw02ApproachSources_g_cs.Values.F32[94])), Numeric_Types_Draw02_Draw02ApproachSources_g_cs.Values.I32[30], Numeric_Types_Draw02_Draw02ApproachSources_g_cs.Values.I32[31], Numeric_Types_Draw02_Draw02ApproachSources_g_cs.Values.I32[32], Numeric_Types_Draw02_Draw02ApproachSources_g_cs.Values.F32[95]);
             p2l1.AddComponent<ContentPrerequisite>().m_ContentPrerequisite = content;
-            var p2l2 = Create<RenderPrefab>("DrawBridge02BottomOuter300cm_LOD2 Mesh", "746a32a13455d59c9aa9c605c9d84a38",
-                new[] { "2df8eba06013ff484033c13b88132e60" },
-                new Bounds3(new float3(-1.5000009536743164f, -3.6900010108947754f, -32f), new float3(1.5000009536743164f, -0.29999995231628418f, 32.000007629394531f)),
-                306, 684, 1, 668.67181396484375f);
+            var p2l2 = Create<RenderPrefab>("DrawBridge02BottomOuter300cm_LOD2 Mesh", "746a32a13455d59c9aa9c605c9d84a38", new[] { "2df8eba06013ff484033c13b88132e60" }, new Bounds3(new float3(-Numeric_Types_Draw02_Draw02ApproachSources_g_cs.Values.F32[96], -Numeric_Types_Draw02_Draw02ApproachSources_g_cs.Values.F32[97], -Numeric_Types_Draw02_Draw02ApproachSources_g_cs.Values.F32[98]), new float3(Numeric_Types_Draw02_Draw02ApproachSources_g_cs.Values.F32[99], -Numeric_Types_Draw02_Draw02ApproachSources_g_cs.Values.F32[100], Numeric_Types_Draw02_Draw02ApproachSources_g_cs.Values.F32[101])), Numeric_Types_Draw02_Draw02ApproachSources_g_cs.Values.I32[33], Numeric_Types_Draw02_Draw02ApproachSources_g_cs.Values.I32[34], Numeric_Types_Draw02_Draw02ApproachSources_g_cs.Values.I32[35], Numeric_Types_Draw02_Draw02ApproachSources_g_cs.Values.F32[102]);
             p2l2.AddComponent<ContentPrerequisite>().m_ContentPrerequisite = content;
             var lod2 = p2l0.AddComponent<LodProperties>();
-            lod2.m_Bias = 0f;
-            lod2.m_ShadowBias = 0f;
-            lod2.m_LodMeshes = new[] { p2l1, p2l2 };
-            var p3l0 = Create<NetPiecePrefab>("DrawBridge02BottomOuterNode300cm Mesh", "425fa9376f14d223830ec2889ec95c20",
-                new[] { "e038420b81ed5bb1f99fb41f30a4553c" },
-                new Bounds3(new float3(-1.5f, -1.5599989891052246f, -31.999990463256836f), new float3(1.5f, -1.5599970817565918f, 32.000007629394531f)),
-                80, 192, 1, 192f);
-            p3l0.m_Layer = (NetPieceLayer)1;
-            p3l0.m_Width = 3f;
-            p3l0.m_Length = 64f;
-            p3l0.m_WidthOffset = 0f;
-            p3l0.m_NodeOffset = 0.5f;
-            p3l0.m_SideConnectionOffset = 0f;
-            p3l0.m_HeightRange = new Bounds1(-1.559999942779541f, -1.559999942779541f);
-            p3l0.m_SurfaceHeights = new float4(-1.559999942779541f, -1.559999942779541f, -1.559999942779541f, -1.559999942779541f);
+            lod2.m_Bias = Numeric_Types_Draw02_Draw02ApproachSources_g_cs.Values.F32[103];
+            lod2.m_ShadowBias = Numeric_Types_Draw02_Draw02ApproachSources_g_cs.Values.F32[104];
+            lod2.m_LodMeshes = new[]
+            {
+                p2l1,
+                p2l2
+            };
+            var p3l0 = Create<NetPiecePrefab>("DrawBridge02BottomOuterNode300cm Mesh", "425fa9376f14d223830ec2889ec95c20", new[] { "e038420b81ed5bb1f99fb41f30a4553c" }, new Bounds3(new float3(-Numeric_Types_Draw02_Draw02ApproachSources_g_cs.Values.F32[105], -Numeric_Types_Draw02_Draw02ApproachSources_g_cs.Values.F32[106], -Numeric_Types_Draw02_Draw02ApproachSources_g_cs.Values.F32[107]), new float3(Numeric_Types_Draw02_Draw02ApproachSources_g_cs.Values.F32[108], -Numeric_Types_Draw02_Draw02ApproachSources_g_cs.Values.F32[109], Numeric_Types_Draw02_Draw02ApproachSources_g_cs.Values.F32[110])), Numeric_Types_Draw02_Draw02ApproachSources_g_cs.Values.I32[36], Numeric_Types_Draw02_Draw02ApproachSources_g_cs.Values.I32[37], Numeric_Types_Draw02_Draw02ApproachSources_g_cs.Values.I32[38], Numeric_Types_Draw02_Draw02ApproachSources_g_cs.Values.F32[111]);
+            p3l0.m_Layer = (NetPieceLayer)Numeric_Types_Draw02_Draw02ApproachSources_g_cs.Values.I32[39];
+            p3l0.m_Width = Numeric_Types_Draw02_Draw02ApproachSources_g_cs.Values.F32[112];
+            p3l0.m_Length = Numeric_Types_Draw02_Draw02ApproachSources_g_cs.Values.F32[113];
+            p3l0.m_WidthOffset = Numeric_Types_Draw02_Draw02ApproachSources_g_cs.Values.F32[114];
+            p3l0.m_NodeOffset = Numeric_Types_Draw02_Draw02ApproachSources_g_cs.Values.F32[115];
+            p3l0.m_SideConnectionOffset = Numeric_Types_Draw02_Draw02ApproachSources_g_cs.Values.F32[116];
+            p3l0.m_HeightRange = new Bounds1(-Numeric_Types_Draw02_Draw02ApproachSources_g_cs.Values.F32[117], -Numeric_Types_Draw02_Draw02ApproachSources_g_cs.Values.F32[118]);
+            p3l0.m_SurfaceHeights = new float4(-Numeric_Types_Draw02_Draw02ApproachSources_g_cs.Values.F32[119], -Numeric_Types_Draw02_Draw02ApproachSources_g_cs.Values.F32[120], -Numeric_Types_Draw02_Draw02ApproachSources_g_cs.Values.F32[121], -Numeric_Types_Draw02_Draw02ApproachSources_g_cs.Values.F32[122]);
             var cost3 = p3l0.AddComponent<PlaceableNetPiece>();
-            cost3.m_ConstructionCost = 10;
-            cost3.m_ElevationCost = 0;
-            cost3.m_UpkeepCost = 3f;
+            cost3.m_ConstructionCost = (uint)(Numeric_Types_Draw02_Draw02ApproachSources_g_cs.Values.I32[40]);
+            cost3.m_ElevationCost = (uint)(Numeric_Types_Draw02_Draw02ApproachSources_g_cs.Values.I32[41]);
+            cost3.m_UpkeepCost = Numeric_Types_Draw02_Draw02ApproachSources_g_cs.Values.F32[123];
             p3l0.AddComponent<ContentPrerequisite>().m_ContentPrerequisite = content;
-            var p3l1 = Create<RenderPrefab>("DrawBridge02BottomOuterNode300cm_LOD1 Mesh", "f3c6bac2597def92e2b4065abd33b73c",
-                new[] { "bca14529bb6eb82a20ba60fb1eb3e9cf" },
-                new Bounds3(new float3(-1.5f, -1.5599989891052246f, -31.999990463256836f), new float3(1.5f, -1.5599970817565918f, 32.000007629394531f)),
-                80, 192, 1, 192f);
+            var p3l1 = Create<RenderPrefab>("DrawBridge02BottomOuterNode300cm_LOD1 Mesh", "f3c6bac2597def92e2b4065abd33b73c", new[] { "bca14529bb6eb82a20ba60fb1eb3e9cf" }, new Bounds3(new float3(-Numeric_Types_Draw02_Draw02ApproachSources_g_cs.Values.F32[124], -Numeric_Types_Draw02_Draw02ApproachSources_g_cs.Values.F32[125], -Numeric_Types_Draw02_Draw02ApproachSources_g_cs.Values.F32[126]), new float3(Numeric_Types_Draw02_Draw02ApproachSources_g_cs.Values.F32[127], -Numeric_Types_Draw02_Draw02ApproachSources_g_cs.Values.F32[128], Numeric_Types_Draw02_Draw02ApproachSources_g_cs.Values.F32[129])), Numeric_Types_Draw02_Draw02ApproachSources_g_cs.Values.I32[42], Numeric_Types_Draw02_Draw02ApproachSources_g_cs.Values.I32[43], Numeric_Types_Draw02_Draw02ApproachSources_g_cs.Values.I32[44], Numeric_Types_Draw02_Draw02ApproachSources_g_cs.Values.F32[130]);
             p3l1.AddComponent<ContentPrerequisite>().m_ContentPrerequisite = content;
-            var p3l2 = Create<RenderPrefab>("DrawBridge02BottomOuterNode300cm_LOD2 Mesh", "d839be070496dd230a2383cbbe62b208",
-                new[] { "1475f619dbbb4437aca2c49623c0a1e1" },
-                new Bounds3(new float3(-1.5f, -1.5599989891052246f, -31.999990463256836f), new float3(1.5f, -1.5599970817565918f, 32.000007629394531f)),
-                34, 96, 1, 192f);
+            var p3l2 = Create<RenderPrefab>("DrawBridge02BottomOuterNode300cm_LOD2 Mesh", "d839be070496dd230a2383cbbe62b208", new[] { "1475f619dbbb4437aca2c49623c0a1e1" }, new Bounds3(new float3(-Numeric_Types_Draw02_Draw02ApproachSources_g_cs.Values.F32[131], -Numeric_Types_Draw02_Draw02ApproachSources_g_cs.Values.F32[132], -Numeric_Types_Draw02_Draw02ApproachSources_g_cs.Values.F32[133]), new float3(Numeric_Types_Draw02_Draw02ApproachSources_g_cs.Values.F32[134], -Numeric_Types_Draw02_Draw02ApproachSources_g_cs.Values.F32[135], Numeric_Types_Draw02_Draw02ApproachSources_g_cs.Values.F32[136])), Numeric_Types_Draw02_Draw02ApproachSources_g_cs.Values.I32[45], Numeric_Types_Draw02_Draw02ApproachSources_g_cs.Values.I32[46], Numeric_Types_Draw02_Draw02ApproachSources_g_cs.Values.I32[47], Numeric_Types_Draw02_Draw02ApproachSources_g_cs.Values.F32[137]);
             p3l2.AddComponent<ContentPrerequisite>().m_ContentPrerequisite = content;
             var lod3 = p3l0.AddComponent<LodProperties>();
-            lod3.m_Bias = 0f;
-            lod3.m_ShadowBias = 0f;
-            lod3.m_LodMeshes = new[] { p3l1, p3l2 };
-            var p4l0 = Create<NetPiecePrefab>("DrawBridge02BottomEdge350cm Mesh", "4a88afa34128e4a010383ec47e873941",
-                new[] { "448cdebf6179c890a5db485ced29e061" },
-                new Bounds3(new float3(-1.8458729982376099f, -3.4800000190734863f, -31.999994277954102f), new float3(1.7499998807907104f, -0.29999995231628418f, 32.000007629394531f)),
-                1240, 2658, 1, 845.8614501953125f);
-            p4l0.m_Layer = (NetPieceLayer)1;
-            p4l0.m_Width = 3.5f;
-            p4l0.m_Length = 64f;
-            p4l0.m_WidthOffset = 0f;
-            p4l0.m_NodeOffset = 0.5f;
-            p4l0.m_SideConnectionOffset = 0f;
-            p4l0.m_HeightRange = new Bounds1(-3.4800000190734863f, -0.30000001192092896f);
-            p4l0.m_SurfaceHeights = new float4(-3.4800000190734863f, -3.4800000190734863f, -3.4800000190734863f, -3.4800000190734863f);
+            lod3.m_Bias = Numeric_Types_Draw02_Draw02ApproachSources_g_cs.Values.F32[138];
+            lod3.m_ShadowBias = Numeric_Types_Draw02_Draw02ApproachSources_g_cs.Values.F32[139];
+            lod3.m_LodMeshes = new[]
+            {
+                p3l1,
+                p3l2
+            };
+            var p4l0 = Create<NetPiecePrefab>("DrawBridge02BottomEdge350cm Mesh", "4a88afa34128e4a010383ec47e873941", new[] { "448cdebf6179c890a5db485ced29e061" }, new Bounds3(new float3(-Numeric_Types_Draw02_Draw02ApproachSources_g_cs.Values.F32[140], -Numeric_Types_Draw02_Draw02ApproachSources_g_cs.Values.F32[141], -Numeric_Types_Draw02_Draw02ApproachSources_g_cs.Values.F32[142]), new float3(Numeric_Types_Draw02_Draw02ApproachSources_g_cs.Values.F32[143], -Numeric_Types_Draw02_Draw02ApproachSources_g_cs.Values.F32[144], Numeric_Types_Draw02_Draw02ApproachSources_g_cs.Values.F32[145])), Numeric_Types_Draw02_Draw02ApproachSources_g_cs.Values.I32[48], Numeric_Types_Draw02_Draw02ApproachSources_g_cs.Values.I32[49], Numeric_Types_Draw02_Draw02ApproachSources_g_cs.Values.I32[50], Numeric_Types_Draw02_Draw02ApproachSources_g_cs.Values.F32[146]);
+            p4l0.m_Layer = (NetPieceLayer)Numeric_Types_Draw02_Draw02ApproachSources_g_cs.Values.I32[51];
+            p4l0.m_Width = Numeric_Types_Draw02_Draw02ApproachSources_g_cs.Values.F32[147];
+            p4l0.m_Length = Numeric_Types_Draw02_Draw02ApproachSources_g_cs.Values.F32[148];
+            p4l0.m_WidthOffset = Numeric_Types_Draw02_Draw02ApproachSources_g_cs.Values.F32[149];
+            p4l0.m_NodeOffset = Numeric_Types_Draw02_Draw02ApproachSources_g_cs.Values.F32[150];
+            p4l0.m_SideConnectionOffset = Numeric_Types_Draw02_Draw02ApproachSources_g_cs.Values.F32[151];
+            p4l0.m_HeightRange = new Bounds1(-Numeric_Types_Draw02_Draw02ApproachSources_g_cs.Values.F32[152], -Numeric_Types_Draw02_Draw02ApproachSources_g_cs.Values.F32[153]);
+            p4l0.m_SurfaceHeights = new float4(-Numeric_Types_Draw02_Draw02ApproachSources_g_cs.Values.F32[154], -Numeric_Types_Draw02_Draw02ApproachSources_g_cs.Values.F32[155], -Numeric_Types_Draw02_Draw02ApproachSources_g_cs.Values.F32[156], -Numeric_Types_Draw02_Draw02ApproachSources_g_cs.Values.F32[157]);
             var cost4 = p4l0.AddComponent<PlaceableNetPiece>();
-            cost4.m_ConstructionCost = 10;
-            cost4.m_ElevationCost = 0;
-            cost4.m_UpkeepCost = 3f;
+            cost4.m_ConstructionCost = (uint)(Numeric_Types_Draw02_Draw02ApproachSources_g_cs.Values.I32[52]);
+            cost4.m_ElevationCost = (uint)(Numeric_Types_Draw02_Draw02ApproachSources_g_cs.Values.I32[53]);
+            cost4.m_UpkeepCost = Numeric_Types_Draw02_Draw02ApproachSources_g_cs.Values.F32[158];
             var asym4l0 = p4l0.AddComponent<AsymmetricPieceMesh>();
             asym4l0.m_Sideways = true;
             asym4l0.m_Lengthwise = false;
             p4l0.AddComponent<ContentPrerequisite>().m_ContentPrerequisite = content;
-            var p4l1 = Create<RenderPrefab>("DrawBridge02BottomEdge350cm_LOD1 Mesh", "c70a1024deb2b0e99f6df8bca1a99198",
-                new[] { "7afdcc5d945bab37e86b2f076ea06ab1" },
-                new Bounds3(new float3(-1.8458729982376099f, -3.4800000190734863f, -31.999994277954102f), new float3(1.7499998807907104f, -0.29999995231628418f, 32.000007629394531f)),
-                939, 2070, 1, 834.6669921875f);
+            var p4l1 = Create<RenderPrefab>("DrawBridge02BottomEdge350cm_LOD1 Mesh", "c70a1024deb2b0e99f6df8bca1a99198", new[] { "7afdcc5d945bab37e86b2f076ea06ab1" }, new Bounds3(new float3(-Numeric_Types_Draw02_Draw02ApproachSources_g_cs.Values.F32[159], -Numeric_Types_Draw02_Draw02ApproachSources_g_cs.Values.F32[160], -Numeric_Types_Draw02_Draw02ApproachSources_g_cs.Values.F32[161]), new float3(Numeric_Types_Draw02_Draw02ApproachSources_g_cs.Values.F32[162], -Numeric_Types_Draw02_Draw02ApproachSources_g_cs.Values.F32[163], Numeric_Types_Draw02_Draw02ApproachSources_g_cs.Values.F32[164])), Numeric_Types_Draw02_Draw02ApproachSources_g_cs.Values.I32[54], Numeric_Types_Draw02_Draw02ApproachSources_g_cs.Values.I32[55], Numeric_Types_Draw02_Draw02ApproachSources_g_cs.Values.I32[56], Numeric_Types_Draw02_Draw02ApproachSources_g_cs.Values.F32[165]);
             p4l1.AddComponent<ContentPrerequisite>().m_ContentPrerequisite = content;
-            var p4l2 = Create<RenderPrefab>("DrawBridge02BottomEdge350cm_LOD2 Mesh", "6e65de4480532f602be75cde2ac2619e",
-                new[] { "02716b2feb419ec9313c34ae298a4a2b" },
-                new Bounds3(new float3(-1.7500100135803223f, -3.4800000190734863f, -32f), new float3(1.7500021457672119f, -0.29999995231628418f, 32.000007629394531f)),
-                272, 588, 1, 669.2822265625f);
+            var p4l2 = Create<RenderPrefab>("DrawBridge02BottomEdge350cm_LOD2 Mesh", "6e65de4480532f602be75cde2ac2619e", new[] { "02716b2feb419ec9313c34ae298a4a2b" }, new Bounds3(new float3(-Numeric_Types_Draw02_Draw02ApproachSources_g_cs.Values.F32[166], -Numeric_Types_Draw02_Draw02ApproachSources_g_cs.Values.F32[167], -Numeric_Types_Draw02_Draw02ApproachSources_g_cs.Values.F32[168]), new float3(Numeric_Types_Draw02_Draw02ApproachSources_g_cs.Values.F32[169], -Numeric_Types_Draw02_Draw02ApproachSources_g_cs.Values.F32[170], Numeric_Types_Draw02_Draw02ApproachSources_g_cs.Values.F32[171])), Numeric_Types_Draw02_Draw02ApproachSources_g_cs.Values.I32[57], Numeric_Types_Draw02_Draw02ApproachSources_g_cs.Values.I32[58], Numeric_Types_Draw02_Draw02ApproachSources_g_cs.Values.I32[59], Numeric_Types_Draw02_Draw02ApproachSources_g_cs.Values.F32[172]);
             p4l2.AddComponent<ContentPrerequisite>().m_ContentPrerequisite = content;
             var lod4 = p4l0.AddComponent<LodProperties>();
-            lod4.m_Bias = 0f;
-            lod4.m_ShadowBias = 0f;
-            lod4.m_LodMeshes = new[] { p4l1, p4l2 };
-            var p5l0 = Create<NetPiecePrefab>("DrawBridge02BottomEdgeNode350cm Mesh", "4b2295319d1725874c01739db2617810",
-                new[] { "763e635445dd0cb62c4bd10f1efc35a1" },
-                new Bounds3(new float3(-1.8458729982376099f, -2.8599989414215088f, -31.999990463256836f), new float3(1.7499998807907104f, -0.66899991035461426f, 32.000007629394531f)),
-                400, 1188, 1, 553.8736572265625f);
-            p5l0.m_Layer = (NetPieceLayer)1;
-            p5l0.m_Width = 3.5f;
-            p5l0.m_Length = 64f;
-            p5l0.m_WidthOffset = 0f;
-            p5l0.m_NodeOffset = 0.5f;
-            p5l0.m_SideConnectionOffset = 0f;
-            p5l0.m_HeightRange = new Bounds1(-2.8599998950958252f, -0.66900002956390381f);
-            p5l0.m_SurfaceHeights = new float4(-2.8599998950958252f, -2.8599998950958252f, -2.8599998950958252f, -2.8599998950958252f);
+            lod4.m_Bias = Numeric_Types_Draw02_Draw02ApproachSources_g_cs.Values.F32[173];
+            lod4.m_ShadowBias = Numeric_Types_Draw02_Draw02ApproachSources_g_cs.Values.F32[174];
+            lod4.m_LodMeshes = new[]
+            {
+                p4l1,
+                p4l2
+            };
+            var p5l0 = Create<NetPiecePrefab>("DrawBridge02BottomEdgeNode350cm Mesh", "4b2295319d1725874c01739db2617810", new[] { "763e635445dd0cb62c4bd10f1efc35a1" }, new Bounds3(new float3(-Numeric_Types_Draw02_Draw02ApproachSources_g_cs.Values.F32[175], -Numeric_Types_Draw02_Draw02ApproachSources_g_cs.Values.F32[176], -Numeric_Types_Draw02_Draw02ApproachSources_g_cs.Values.F32[177]), new float3(Numeric_Types_Draw02_Draw02ApproachSources_g_cs.Values.F32[178], -Numeric_Types_Draw02_Draw02ApproachSources_g_cs.Values.F32[179], Numeric_Types_Draw02_Draw02ApproachSources_g_cs.Values.F32[180])), Numeric_Types_Draw02_Draw02ApproachSources_g_cs.Values.I32[60], Numeric_Types_Draw02_Draw02ApproachSources_g_cs.Values.I32[61], Numeric_Types_Draw02_Draw02ApproachSources_g_cs.Values.I32[62], Numeric_Types_Draw02_Draw02ApproachSources_g_cs.Values.F32[181]);
+            p5l0.m_Layer = (NetPieceLayer)Numeric_Types_Draw02_Draw02ApproachSources_g_cs.Values.I32[63];
+            p5l0.m_Width = Numeric_Types_Draw02_Draw02ApproachSources_g_cs.Values.F32[182];
+            p5l0.m_Length = Numeric_Types_Draw02_Draw02ApproachSources_g_cs.Values.F32[183];
+            p5l0.m_WidthOffset = Numeric_Types_Draw02_Draw02ApproachSources_g_cs.Values.F32[184];
+            p5l0.m_NodeOffset = Numeric_Types_Draw02_Draw02ApproachSources_g_cs.Values.F32[185];
+            p5l0.m_SideConnectionOffset = Numeric_Types_Draw02_Draw02ApproachSources_g_cs.Values.F32[186];
+            p5l0.m_HeightRange = new Bounds1(-Numeric_Types_Draw02_Draw02ApproachSources_g_cs.Values.F32[187], -Numeric_Types_Draw02_Draw02ApproachSources_g_cs.Values.F32[188]);
+            p5l0.m_SurfaceHeights = new float4(-Numeric_Types_Draw02_Draw02ApproachSources_g_cs.Values.F32[189], -Numeric_Types_Draw02_Draw02ApproachSources_g_cs.Values.F32[190], -Numeric_Types_Draw02_Draw02ApproachSources_g_cs.Values.F32[191], -Numeric_Types_Draw02_Draw02ApproachSources_g_cs.Values.F32[192]);
             var cost5 = p5l0.AddComponent<PlaceableNetPiece>();
-            cost5.m_ConstructionCost = 10;
-            cost5.m_ElevationCost = 0;
-            cost5.m_UpkeepCost = 3f;
+            cost5.m_ConstructionCost = (uint)(Numeric_Types_Draw02_Draw02ApproachSources_g_cs.Values.I32[64]);
+            cost5.m_ElevationCost = (uint)(Numeric_Types_Draw02_Draw02ApproachSources_g_cs.Values.I32[65]);
+            cost5.m_UpkeepCost = Numeric_Types_Draw02_Draw02ApproachSources_g_cs.Values.F32[193];
             var asym5l0 = p5l0.AddComponent<AsymmetricPieceMesh>();
             asym5l0.m_Sideways = true;
             asym5l0.m_Lengthwise = false;
             p5l0.AddComponent<ContentPrerequisite>().m_ContentPrerequisite = content;
-            var p5l1 = Create<RenderPrefab>("DrawBridge02BottomEdgeNode350cm_LOD1 Mesh", "3179be8c2a670d0562192593d85e3bf4",
-                new[] { "b34daec532867997c185d328653bd0bb" },
-                new Bounds3(new float3(-1.8458729982376099f, -2.8599989414215088f, -31.999990463256836f), new float3(1.7499998807907104f, -0.66899991035461426f, 32.000007629394531f)),
-                357, 990, 1, 553.05548095703125f);
+            var p5l1 = Create<RenderPrefab>("DrawBridge02BottomEdgeNode350cm_LOD1 Mesh", "3179be8c2a670d0562192593d85e3bf4", new[] { "b34daec532867997c185d328653bd0bb" }, new Bounds3(new float3(-Numeric_Types_Draw02_Draw02ApproachSources_g_cs.Values.F32[194], -Numeric_Types_Draw02_Draw02ApproachSources_g_cs.Values.F32[195], -Numeric_Types_Draw02_Draw02ApproachSources_g_cs.Values.F32[196]), new float3(Numeric_Types_Draw02_Draw02ApproachSources_g_cs.Values.F32[197], -Numeric_Types_Draw02_Draw02ApproachSources_g_cs.Values.F32[198], Numeric_Types_Draw02_Draw02ApproachSources_g_cs.Values.F32[199])), Numeric_Types_Draw02_Draw02ApproachSources_g_cs.Values.I32[66], Numeric_Types_Draw02_Draw02ApproachSources_g_cs.Values.I32[67], Numeric_Types_Draw02_Draw02ApproachSources_g_cs.Values.I32[68], Numeric_Types_Draw02_Draw02ApproachSources_g_cs.Values.F32[200]);
             p5l1.AddComponent<ContentPrerequisite>().m_ContentPrerequisite = content;
-            var p5l2 = Create<RenderPrefab>("DrawBridge02BottomEdgeNode350cm_LOD2 Mesh", "b2cfb0179d1e4104ae2f62ed3791b2dd",
-                new[] { "1a7e0469c2e6fc4a4c5069c21bd1afe6" },
-                new Bounds3(new float3(-1.7500020265579224f, -2.8725008964538574f, -32f), new float3(1.7500089406967163f, -0.66899895668029785f, 32.000007629394531f)),
-                214, 594, 1, 497.9671630859375f);
+            var p5l2 = Create<RenderPrefab>("DrawBridge02BottomEdgeNode350cm_LOD2 Mesh", "b2cfb0179d1e4104ae2f62ed3791b2dd", new[] { "1a7e0469c2e6fc4a4c5069c21bd1afe6" }, new Bounds3(new float3(-Numeric_Types_Draw02_Draw02ApproachSources_g_cs.Values.F32[201], -Numeric_Types_Draw02_Draw02ApproachSources_g_cs.Values.F32[202], -Numeric_Types_Draw02_Draw02ApproachSources_g_cs.Values.F32[203]), new float3(Numeric_Types_Draw02_Draw02ApproachSources_g_cs.Values.F32[204], -Numeric_Types_Draw02_Draw02ApproachSources_g_cs.Values.F32[205], Numeric_Types_Draw02_Draw02ApproachSources_g_cs.Values.F32[206])), Numeric_Types_Draw02_Draw02ApproachSources_g_cs.Values.I32[69], Numeric_Types_Draw02_Draw02ApproachSources_g_cs.Values.I32[70], Numeric_Types_Draw02_Draw02ApproachSources_g_cs.Values.I32[71], Numeric_Types_Draw02_Draw02ApproachSources_g_cs.Values.F32[207]);
             p5l2.AddComponent<ContentPrerequisite>().m_ContentPrerequisite = content;
             var lod5 = p5l0.AddComponent<LodProperties>();
-            lod5.m_Bias = 0f;
-            lod5.m_ShadowBias = 0f;
-            lod5.m_LodMeshes = new[] { p5l1, p5l2 };
-            var p6l0 = Create<NetPiecePrefab>("DrawBridge02BottomIntersectionMiddle200cm Mesh", "36b8ce85f2e4cc7c313dfee1f8de5b51",
-                new[] { "dee7bfe689bf6752861f0f6f29a6c8e2" },
-                new Bounds3(new float3(-1f, -1.5599989891052246f, -32f), new float3(1f, -1.5599989891052246f, 32f)),
-                62, 189, 1, 128f);
-            p6l0.m_Layer = (NetPieceLayer)1;
-            p6l0.m_Width = 0f;
-            p6l0.m_Length = 64f;
-            p6l0.m_WidthOffset = 0f;
-            p6l0.m_NodeOffset = 0.5f;
-            p6l0.m_SideConnectionOffset = 0f;
-            p6l0.m_HeightRange = new Bounds1(-1.559999942779541f, -1.559999942779541f);
-            p6l0.m_SurfaceHeights = new float4(-1.559999942779541f, -1.559999942779541f, -1.559999942779541f, -1.559999942779541f);
+            lod5.m_Bias = Numeric_Types_Draw02_Draw02ApproachSources_g_cs.Values.F32[208];
+            lod5.m_ShadowBias = Numeric_Types_Draw02_Draw02ApproachSources_g_cs.Values.F32[209];
+            lod5.m_LodMeshes = new[]
+            {
+                p5l1,
+                p5l2
+            };
+            var p6l0 = Create<NetPiecePrefab>("DrawBridge02BottomIntersectionMiddle200cm Mesh", "36b8ce85f2e4cc7c313dfee1f8de5b51", new[] { "dee7bfe689bf6752861f0f6f29a6c8e2" }, new Bounds3(new float3(-Numeric_Types_Draw02_Draw02ApproachSources_g_cs.Values.F32[210], -Numeric_Types_Draw02_Draw02ApproachSources_g_cs.Values.F32[211], -Numeric_Types_Draw02_Draw02ApproachSources_g_cs.Values.F32[212]), new float3(Numeric_Types_Draw02_Draw02ApproachSources_g_cs.Values.F32[213], -Numeric_Types_Draw02_Draw02ApproachSources_g_cs.Values.F32[214], Numeric_Types_Draw02_Draw02ApproachSources_g_cs.Values.F32[215])), Numeric_Types_Draw02_Draw02ApproachSources_g_cs.Values.I32[72], Numeric_Types_Draw02_Draw02ApproachSources_g_cs.Values.I32[73], Numeric_Types_Draw02_Draw02ApproachSources_g_cs.Values.I32[74], Numeric_Types_Draw02_Draw02ApproachSources_g_cs.Values.F32[216]);
+            p6l0.m_Layer = (NetPieceLayer)Numeric_Types_Draw02_Draw02ApproachSources_g_cs.Values.I32[75];
+            p6l0.m_Width = Numeric_Types_Draw02_Draw02ApproachSources_g_cs.Values.F32[217];
+            p6l0.m_Length = Numeric_Types_Draw02_Draw02ApproachSources_g_cs.Values.F32[218];
+            p6l0.m_WidthOffset = Numeric_Types_Draw02_Draw02ApproachSources_g_cs.Values.F32[219];
+            p6l0.m_NodeOffset = Numeric_Types_Draw02_Draw02ApproachSources_g_cs.Values.F32[220];
+            p6l0.m_SideConnectionOffset = Numeric_Types_Draw02_Draw02ApproachSources_g_cs.Values.F32[221];
+            p6l0.m_HeightRange = new Bounds1(-Numeric_Types_Draw02_Draw02ApproachSources_g_cs.Values.F32[222], -Numeric_Types_Draw02_Draw02ApproachSources_g_cs.Values.F32[223]);
+            p6l0.m_SurfaceHeights = new float4(-Numeric_Types_Draw02_Draw02ApproachSources_g_cs.Values.F32[224], -Numeric_Types_Draw02_Draw02ApproachSources_g_cs.Values.F32[225], -Numeric_Types_Draw02_Draw02ApproachSources_g_cs.Values.F32[226], -Numeric_Types_Draw02_Draw02ApproachSources_g_cs.Values.F32[227]);
             var asym6l0 = p6l0.AddComponent<AsymmetricPieceMesh>();
             asym6l0.m_Sideways = false;
             asym6l0.m_Lengthwise = true;
             p6l0.AddComponent<ContentPrerequisite>().m_ContentPrerequisite = content;
-            var p7l0 = Create<NetPiecePrefab>("DrawBridge02Side60cm Mesh", "ae181efc3b18e5eba215255bbfdfdcc0",
-                new[] { "c86995482a1880b32fe94ddd1411bd1e" },
-                new Bounds3(new float3(-0.30000001192092896f, -0.95000100135803223f, -32.000007629394531f), new float3(0.30000001192092896f, 1.5000150203704834f, 32.000007629394531f)),
-                1056, 2922, 1, 248.343017578125f);
-            p7l0.m_Layer = (NetPieceLayer)3;
-            p7l0.m_Width = 0.60000002384185791f;
-            p7l0.m_Length = 64f;
-            p7l0.m_WidthOffset = 0f;
-            p7l0.m_NodeOffset = 2f;
-            p7l0.m_SideConnectionOffset = 0f;
-            p7l0.m_HeightRange = new Bounds1(-0.94999998807907104f, 1.5f);
-            p7l0.m_SurfaceHeights = new float4(0f, 0f, 0f, 0f);
+            var p7l0 = Create<NetPiecePrefab>("DrawBridge02Side60cm Mesh", "ae181efc3b18e5eba215255bbfdfdcc0", new[] { "c86995482a1880b32fe94ddd1411bd1e" }, new Bounds3(new float3(-Numeric_Types_Draw02_Draw02ApproachSources_g_cs.Values.F32[228], -Numeric_Types_Draw02_Draw02ApproachSources_g_cs.Values.F32[229], -Numeric_Types_Draw02_Draw02ApproachSources_g_cs.Values.F32[230]), new float3(Numeric_Types_Draw02_Draw02ApproachSources_g_cs.Values.F32[231], Numeric_Types_Draw02_Draw02ApproachSources_g_cs.Values.F32[232], Numeric_Types_Draw02_Draw02ApproachSources_g_cs.Values.F32[233])), Numeric_Types_Draw02_Draw02ApproachSources_g_cs.Values.I32[76], Numeric_Types_Draw02_Draw02ApproachSources_g_cs.Values.I32[77], Numeric_Types_Draw02_Draw02ApproachSources_g_cs.Values.I32[78], Numeric_Types_Draw02_Draw02ApproachSources_g_cs.Values.F32[234]);
+            p7l0.m_Layer = (NetPieceLayer)Numeric_Types_Draw02_Draw02ApproachSources_g_cs.Values.I32[79];
+            p7l0.m_Width = Numeric_Types_Draw02_Draw02ApproachSources_g_cs.Values.F32[235];
+            p7l0.m_Length = Numeric_Types_Draw02_Draw02ApproachSources_g_cs.Values.F32[236];
+            p7l0.m_WidthOffset = Numeric_Types_Draw02_Draw02ApproachSources_g_cs.Values.F32[237];
+            p7l0.m_NodeOffset = Numeric_Types_Draw02_Draw02ApproachSources_g_cs.Values.F32[238];
+            p7l0.m_SideConnectionOffset = Numeric_Types_Draw02_Draw02ApproachSources_g_cs.Values.F32[239];
+            p7l0.m_HeightRange = new Bounds1(-Numeric_Types_Draw02_Draw02ApproachSources_g_cs.Values.F32[240], Numeric_Types_Draw02_Draw02ApproachSources_g_cs.Values.F32[241]);
+            p7l0.m_SurfaceHeights = new float4(Numeric_Types_Draw02_Draw02ApproachSources_g_cs.Values.F32[242], Numeric_Types_Draw02_Draw02ApproachSources_g_cs.Values.F32[243], Numeric_Types_Draw02_Draw02ApproachSources_g_cs.Values.F32[244], Numeric_Types_Draw02_Draw02ApproachSources_g_cs.Values.F32[245]);
             var asym7l0 = p7l0.AddComponent<AsymmetricPieceMesh>();
             asym7l0.m_Sideways = true;
             asym7l0.m_Lengthwise = false;
             var cost7 = p7l0.AddComponent<PlaceableNetPiece>();
-            cost7.m_ConstructionCost = 10;
-            cost7.m_ElevationCost = 0;
-            cost7.m_UpkeepCost = 3f;
+            cost7.m_ConstructionCost = (uint)(Numeric_Types_Draw02_Draw02ApproachSources_g_cs.Values.I32[80]);
+            cost7.m_ElevationCost = (uint)(Numeric_Types_Draw02_Draw02ApproachSources_g_cs.Values.I32[81]);
+            cost7.m_UpkeepCost = Numeric_Types_Draw02_Draw02ApproachSources_g_cs.Values.F32[246];
             p7l0.AddComponent<ContentPrerequisite>().m_ContentPrerequisite = content;
-            var p7l1 = Create<RenderPrefab>("DrawBridge02Side60cm_LOD1 Mesh", "60530d1d03a3166e8ea22642a7618cb6",
-                new[] { "098b37d5459adb82958e07f038efbca2" },
-                new Bounds3(new float3(-0.30000001192092896f, -0.95000100135803223f, -32.000007629394531f), new float3(0.30000001192092896f, 1.5000150203704834f, 32.000007629394531f)),
-                836, 1962, 1, 235.3916015625f);
+            var p7l1 = Create<RenderPrefab>("DrawBridge02Side60cm_LOD1 Mesh", "60530d1d03a3166e8ea22642a7618cb6", new[] { "098b37d5459adb82958e07f038efbca2" }, new Bounds3(new float3(-Numeric_Types_Draw02_Draw02ApproachSources_g_cs.Values.F32[247], -Numeric_Types_Draw02_Draw02ApproachSources_g_cs.Values.F32[248], -Numeric_Types_Draw02_Draw02ApproachSources_g_cs.Values.F32[249]), new float3(Numeric_Types_Draw02_Draw02ApproachSources_g_cs.Values.F32[250], Numeric_Types_Draw02_Draw02ApproachSources_g_cs.Values.F32[251], Numeric_Types_Draw02_Draw02ApproachSources_g_cs.Values.F32[252])), Numeric_Types_Draw02_Draw02ApproachSources_g_cs.Values.I32[82], Numeric_Types_Draw02_Draw02ApproachSources_g_cs.Values.I32[83], Numeric_Types_Draw02_Draw02ApproachSources_g_cs.Values.I32[84], Numeric_Types_Draw02_Draw02ApproachSources_g_cs.Values.F32[253]);
             p7l1.AddComponent<ContentPrerequisite>().m_ContentPrerequisite = content;
-            var p7l2 = Create<RenderPrefab>("DrawBridge02Side60cm_LOD2 Mesh", "da270d48e69a03b6a4641120b3da50e0",
-                new[] { "b5a85908d68601f6e92b034c127ee893" },
-                new Bounds3(new float3(-0.30000001192092896f, -0.95000100135803223f, -31.999996185302734f), new float3(0.30000001192092896f, 1.5000150203704834f, 32f)),
-                264, 576, 1, 186.02784729003906f);
+            var p7l2 = Create<RenderPrefab>("DrawBridge02Side60cm_LOD2 Mesh", "da270d48e69a03b6a4641120b3da50e0", new[] { "b5a85908d68601f6e92b034c127ee893" }, new Bounds3(new float3(-Numeric_Types_Draw02_Draw02ApproachSources_g_cs.Values.F32[254], -Numeric_Types_Draw02_Draw02ApproachSources_g_cs.Values.F32[255], -Numeric_Types_Draw02_Draw02ApproachSources_g_cs.Values.F32[256]), new float3(Numeric_Types_Draw02_Draw02ApproachSources_g_cs.Values.F32[257], Numeric_Types_Draw02_Draw02ApproachSources_g_cs.Values.F32[258], Numeric_Types_Draw02_Draw02ApproachSources_g_cs.Values.F32[259])), Numeric_Types_Draw02_Draw02ApproachSources_g_cs.Values.I32[85], Numeric_Types_Draw02_Draw02ApproachSources_g_cs.Values.I32[86], Numeric_Types_Draw02_Draw02ApproachSources_g_cs.Values.I32[87], Numeric_Types_Draw02_Draw02ApproachSources_g_cs.Values.F32[260]);
             p7l2.AddComponent<ContentPrerequisite>().m_ContentPrerequisite = content;
             var lod7 = p7l0.AddComponent<LodProperties>();
-            lod7.m_Bias = 0f;
-            lod7.m_ShadowBias = 0f;
-            lod7.m_LodMeshes = new[] { p7l1, p7l2 };
-            var p8l0 = Create<NetPiecePrefab>("DrawBridge02SideNode60cm Mesh", "841e7b4adecbc1c807e943583df4124d",
-                new[] { "f5597f87ae66edd64396638a06f22e86" },
-                new Bounds3(new float3(-0.30000001192092896f, -0.94999998807907104f, -32.000007629394531f), new float3(0.30000001192092896f, 1.5000150203704834f, 32f)),
-                340, 768, 1, 294.48687744140625f);
-            p8l0.m_Layer = (NetPieceLayer)3;
-            p8l0.m_Width = 0.60000002384185791f;
-            p8l0.m_Length = 64f;
-            p8l0.m_WidthOffset = 0f;
-            p8l0.m_NodeOffset = 2f;
-            p8l0.m_SideConnectionOffset = 0f;
-            p8l0.m_HeightRange = new Bounds1(-0.94999998807907104f, 1.5f);
-            p8l0.m_SurfaceHeights = new float4(0f, 0f, 0f, 0f);
+            lod7.m_Bias = Numeric_Types_Draw02_Draw02ApproachSources_g_cs.Values.F32[261];
+            lod7.m_ShadowBias = Numeric_Types_Draw02_Draw02ApproachSources_g_cs.Values.F32[262];
+            lod7.m_LodMeshes = new[]
+            {
+                p7l1,
+                p7l2
+            };
+            var p8l0 = Create<NetPiecePrefab>("DrawBridge02SideNode60cm Mesh", "841e7b4adecbc1c807e943583df4124d", new[] { "f5597f87ae66edd64396638a06f22e86" }, new Bounds3(new float3(-Numeric_Types_Draw02_Draw02ApproachSources_g_cs.Values.F32[263], -Numeric_Types_Draw02_Draw02ApproachSources_g_cs.Values.F32[264], -Numeric_Types_Draw02_Draw02ApproachSources_g_cs.Values.F32[265]), new float3(Numeric_Types_Draw02_Draw02ApproachSources_g_cs.Values.F32[266], Numeric_Types_Draw02_Draw02ApproachSources_g_cs.Values.F32[267], Numeric_Types_Draw02_Draw02ApproachSources_g_cs.Values.F32[268])), Numeric_Types_Draw02_Draw02ApproachSources_g_cs.Values.I32[88], Numeric_Types_Draw02_Draw02ApproachSources_g_cs.Values.I32[89], Numeric_Types_Draw02_Draw02ApproachSources_g_cs.Values.I32[90], Numeric_Types_Draw02_Draw02ApproachSources_g_cs.Values.F32[269]);
+            p8l0.m_Layer = (NetPieceLayer)Numeric_Types_Draw02_Draw02ApproachSources_g_cs.Values.I32[91];
+            p8l0.m_Width = Numeric_Types_Draw02_Draw02ApproachSources_g_cs.Values.F32[270];
+            p8l0.m_Length = Numeric_Types_Draw02_Draw02ApproachSources_g_cs.Values.F32[271];
+            p8l0.m_WidthOffset = Numeric_Types_Draw02_Draw02ApproachSources_g_cs.Values.F32[272];
+            p8l0.m_NodeOffset = Numeric_Types_Draw02_Draw02ApproachSources_g_cs.Values.F32[273];
+            p8l0.m_SideConnectionOffset = Numeric_Types_Draw02_Draw02ApproachSources_g_cs.Values.F32[274];
+            p8l0.m_HeightRange = new Bounds1(-Numeric_Types_Draw02_Draw02ApproachSources_g_cs.Values.F32[275], Numeric_Types_Draw02_Draw02ApproachSources_g_cs.Values.F32[276]);
+            p8l0.m_SurfaceHeights = new float4(Numeric_Types_Draw02_Draw02ApproachSources_g_cs.Values.F32[277], Numeric_Types_Draw02_Draw02ApproachSources_g_cs.Values.F32[278], Numeric_Types_Draw02_Draw02ApproachSources_g_cs.Values.F32[279], Numeric_Types_Draw02_Draw02ApproachSources_g_cs.Values.F32[280]);
             var asym8l0 = p8l0.AddComponent<AsymmetricPieceMesh>();
             asym8l0.m_Sideways = true;
             asym8l0.m_Lengthwise = false;
             var cost8 = p8l0.AddComponent<PlaceableNetPiece>();
-            cost8.m_ConstructionCost = 10;
-            cost8.m_ElevationCost = 0;
-            cost8.m_UpkeepCost = 3f;
+            cost8.m_ConstructionCost = (uint)(Numeric_Types_Draw02_Draw02ApproachSources_g_cs.Values.I32[92]);
+            cost8.m_ElevationCost = (uint)(Numeric_Types_Draw02_Draw02ApproachSources_g_cs.Values.I32[93]);
+            cost8.m_UpkeepCost = Numeric_Types_Draw02_Draw02ApproachSources_g_cs.Values.F32[281];
             p8l0.AddComponent<ContentPrerequisite>().m_ContentPrerequisite = content;
-            var p8l1 = Create<RenderPrefab>("DrawBridge02SideNode60cm_LOD1 Mesh", "00391cd9e5028bd02854040d346cf94b",
-                new[] { "b7d515053369a3f5257ed3df86e38a29" },
-                new Bounds3(new float3(-0.30000001192092896f, -0.94999998807907104f, -32.000007629394531f), new float3(0.30000001192092896f, 1.5000150203704834f, 32f)),
-                300, 672, 1, 288.08697509765625f);
+            var p8l1 = Create<RenderPrefab>("DrawBridge02SideNode60cm_LOD1 Mesh", "00391cd9e5028bd02854040d346cf94b", new[] { "b7d515053369a3f5257ed3df86e38a29" }, new Bounds3(new float3(-Numeric_Types_Draw02_Draw02ApproachSources_g_cs.Values.F32[282], -Numeric_Types_Draw02_Draw02ApproachSources_g_cs.Values.F32[283], -Numeric_Types_Draw02_Draw02ApproachSources_g_cs.Values.F32[284]), new float3(Numeric_Types_Draw02_Draw02ApproachSources_g_cs.Values.F32[285], Numeric_Types_Draw02_Draw02ApproachSources_g_cs.Values.F32[286], Numeric_Types_Draw02_Draw02ApproachSources_g_cs.Values.F32[287])), Numeric_Types_Draw02_Draw02ApproachSources_g_cs.Values.I32[94], Numeric_Types_Draw02_Draw02ApproachSources_g_cs.Values.I32[95], Numeric_Types_Draw02_Draw02ApproachSources_g_cs.Values.I32[96], Numeric_Types_Draw02_Draw02ApproachSources_g_cs.Values.F32[288]);
             p8l1.AddComponent<ContentPrerequisite>().m_ContentPrerequisite = content;
-            var p8l2 = Create<RenderPrefab>("DrawBridge02SideNode60cm_LOD2 Mesh", "f63f529a4fca7b41ad14cc38f48dd5e7",
-                new[] { "5dda22824230637ababd26c26ced6705" },
-                new Bounds3(new float3(-0.30000001192092896f, -0.95000100135803223f, -31.999996185302734f), new float3(0.30000001192092896f, 1.5000150203704834f, 32f)),
-                192, 468, 1, 287.42556762695312f);
+            var p8l2 = Create<RenderPrefab>("DrawBridge02SideNode60cm_LOD2 Mesh", "f63f529a4fca7b41ad14cc38f48dd5e7", new[] { "5dda22824230637ababd26c26ced6705" }, new Bounds3(new float3(-Numeric_Types_Draw02_Draw02ApproachSources_g_cs.Values.F32[289], -Numeric_Types_Draw02_Draw02ApproachSources_g_cs.Values.F32[290], -Numeric_Types_Draw02_Draw02ApproachSources_g_cs.Values.F32[291]), new float3(Numeric_Types_Draw02_Draw02ApproachSources_g_cs.Values.F32[292], Numeric_Types_Draw02_Draw02ApproachSources_g_cs.Values.F32[293], Numeric_Types_Draw02_Draw02ApproachSources_g_cs.Values.F32[294])), Numeric_Types_Draw02_Draw02ApproachSources_g_cs.Values.I32[97], Numeric_Types_Draw02_Draw02ApproachSources_g_cs.Values.I32[98], Numeric_Types_Draw02_Draw02ApproachSources_g_cs.Values.I32[99], Numeric_Types_Draw02_Draw02ApproachSources_g_cs.Values.F32[295]);
             p8l2.AddComponent<ContentPrerequisite>().m_ContentPrerequisite = content;
             var lod8 = p8l0.AddComponent<LodProperties>();
-            lod8.m_Bias = 0f;
-            lod8.m_ShadowBias = 0f;
-            lod8.m_LodMeshes = new[] { p8l1, p8l2 };
-            Roots = new RenderPrefab[] { p0l0, p1l0, p2l0, p3l0, p4l0, p5l0, p6l0, p7l0, p8l0 };
+            lod8.m_Bias = Numeric_Types_Draw02_Draw02ApproachSources_g_cs.Values.F32[296];
+            lod8.m_ShadowBias = Numeric_Types_Draw02_Draw02ApproachSources_g_cs.Values.F32[297];
+            lod8.m_LodMeshes = new[]
+            {
+                p8l1,
+                p8l2
+            };
+            Roots = new RenderPrefab[]
+            {
+                p0l0,
+                p1l0,
+                p2l0,
+                p3l0,
+                p4l0,
+                p5l0,
+                p6l0,
+                p7l0,
+                p8l0
+            };
         }
-        catch { Dispose(); throw; }
+        catch
+        {
+            Dispose();
+            throw;
+        }
     }
+}
+
+// Embedded numerical arrays: Types_Draw02_Draw02ApproachSources_g_cs
+internal static class Numeric_Types_Draw02_Draw02ApproachSources_g_cs
+{
+    static Numeric_Types_Draw02_Draw02ApproachSources_g_cs() {}
+    internal static readonly HardcodedNumbers Values = HardcodedNumbers.Load("Types_Draw02_Draw02ApproachSources_g_cs");
 }

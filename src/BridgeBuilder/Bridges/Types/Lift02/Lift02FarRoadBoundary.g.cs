@@ -3,12 +3,11 @@ using System;
 using UnityEngine;
 
 namespace BridgeBuilder.Bridges;
-
 internal static class Lift02FarRoadBoundary
 {
     internal static MovableStructureModel.Plan Apply(MovableStructureModel.Plan plan)
     {
-        if (plan.SourcePositions.Length != 4152 || plan.SourceIndices.Length != 1 || plan.SourceIndices[0].Length != 7800)
+        if (plan.SourcePositions.Length != Numeric_Types_Lift02_Lift02FarRoadBoundary_g_cs.Values.I32[0] || plan.SourceIndices.Length != Numeric_Types_Lift02_Lift02FarRoadBoundary_g_cs.Values.I32[1] || plan.SourceIndices[Numeric_Types_Lift02_Lift02FarRoadBoundary_g_cs.Values.I32[2]].Length != Numeric_Types_Lift02_Lift02FarRoadBoundary_g_cs.Values.I32[3])
             throw new InvalidOperationException("Lift02 far road boundary requires its recorded native layout.");
         var positions = (Vector3[])plan.Positions.Clone();
         foreach (var row in Vertices)
@@ -19,83 +18,50 @@ internal static class Lift02FarRoadBoundary
             positions[row.Index].y = row.Y;
             positions[row.Index].z = row.Z;
         }
-        return new MovableStructureModel.Plan(plan.SourcePositions, positions, plan.SourceIndices,
-            plan.RemoveTriangles, reconstructsAuthoredPositions: true);
+
+        return new MovableStructureModel.Plan(plan.SourcePositions, positions, plan.SourceIndices, plan.RemoveTriangles, reconstructsAuthoredPositions: true);
     }
 
-    private static readonly (int Index, float SourceY, float SourceZ, float Y, float Z)[] Vertices =
+    private static readonly (int Index, float SourceY, float SourceZ, float Y, float Z)[] Vertices = ReadPackedVertices();
+    private static (int Index, float SourceY, float SourceZ, float Y, float Z)[] ReadPackedVertices()
     {
-        (627, 7.955810546875f, 81.96875f, 7.955810546875f, 82f),
-        (629, 7.955810546875f, 81.96875f, 7.955810546875f, 82f),
-        (630, 7.955810546875f, 81.96875f, 7.955810546875f, 82f),
-        (631, 9.818359375f, 81.96875f, 9.2666015625f, 82f),
-        (632, 7.955810546875f, 81.96875f, 7.955810546875f, 82f),
-        (633, 9.818359375f, 81.96875f, 9.2666015625f, 82f),
-        (634, 9.818359375f, 81.96875f, 9.2666015625f, 82f),
-        (635, 9.818359375f, 106.009765625f, 9.2666015625f, 106f),
-        (636, 9.818359375f, 81.96875f, 9.2666015625f, 82f),
-        (637, 9.818359375f, 106.009765625f, 9.2666015625f, 106f),
-        (638, 9.818359375f, 106.009765625f, 9.2666015625f, 106f),
-        (639, 7.9708251953125f, 106.009765625f, 7.9708251953125f, 106f),
-        (640, 9.818359375f, 106.009765625f, 9.2666015625f, 106f),
-        (641, 7.9708251953125f, 106.009765625f, 7.9708251953125f, 106f),
-        (642, 7.9708251953125f, 106.009765625f, 7.9708251953125f, 106f),
-        (644, 7.9708251953125f, 106.009765625f, 7.9708251953125f, 106f),
-        (647, 9.818359375f, 81.96875f, 9.2666015625f, 82f),
-        (648, 7.955810546875f, 81.96875f, 7.955810546875f, 82f),
-        (652, 9.818359375f, 106.009765625f, 9.2666015625f, 106f),
-        (653, 7.9708251953125f, 106.009765625f, 7.9708251953125f, 106f),
-        (655, 9.818359375f, 106.009765625f, 9.2666015625f, 106f),
-        (656, 7.9708251953125f, 106.009765625f, 7.9708251953125f, 106f),
-        (657, 9.818359375f, 81.96875f, 9.2666015625f, 82f),
-        (661, 7.955810546875f, 81.96875f, 7.955810546875f, 82f),
-        (1831, 7.955810546875f, -81.96875f, 7.955810546875f, -82f),
-        (1832, 7.955810546875f, -81.96875f, 7.955810546875f, -82f),
-        (1834, 7.955810546875f, -81.96875f, 7.955810546875f, -82f),
-        (1835, 9.818359375f, -81.96875f, 9.2666015625f, -82f),
-        (1836, 9.818359375f, -81.96875f, 9.2666015625f, -82f),
-        (1837, 7.955810546875f, -81.96875f, 7.955810546875f, -82f),
-        (1838, 9.818359375f, -81.96875f, 9.2666015625f, -82f),
-        (1839, 9.818359375f, -106.009765625f, 9.2666015625f, -106f),
-        (1840, 9.818359375f, -106.009765625f, 9.2666015625f, -106f),
-        (1841, 9.818359375f, -81.96875f, 9.2666015625f, -82f),
-        (1842, 9.818359375f, -106.009765625f, 9.2666015625f, -106f),
-        (1843, 7.9708251953125f, -106.009765625f, 7.9708251953125f, -106f),
-        (1844, 7.9708251953125f, -106.009765625f, 7.9708251953125f, -106f),
-        (1845, 9.818359375f, -106.009765625f, 9.2666015625f, -106f),
-        (1846, 7.9708251953125f, -106.009765625f, 7.9708251953125f, -106f),
-        (1849, 7.9708251953125f, -106.009765625f, 7.9708251953125f, -106f),
-        (1851, 7.955810546875f, -81.96875f, 7.955810546875f, -82f),
-        (1852, 9.818359375f, -81.96875f, 9.2666015625f, -82f),
-        (1856, 9.818359375f, -106.009765625f, 9.2666015625f, -106f),
-        (1857, 7.9708251953125f, -106.009765625f, 7.9708251953125f, -106f),
-        (1859, 7.9708251953125f, -106.009765625f, 7.9708251953125f, -106f),
-        (1860, 9.818359375f, -106.009765625f, 9.2666015625f, -106f),
-        (1861, 9.818359375f, -81.96875f, 9.2666015625f, -82f),
-        (1865, 7.955810546875f, -81.96875f, 7.955810546875f, -82f),
-        (2508, 7.92041015625f, -81.96875f, 7.92041015625f, -82f),
-        (2509, 7.92041015625f, 81.96875f, 7.92041015625f, 82f),
-        (2510, 7.92041015625f, 81.96875f, 7.92041015625f, 82f),
-        (2511, 7.92041015625f, -81.96875f, 7.92041015625f, -82f),
-        (2512, 9.818359375f, 81.96875f, 9.2666015625f, 82f),
-        (2513, 7.92041015625f, -81.96875f, 7.92041015625f, -82f),
-        (2514, 7.92041015625f, 81.96875f, 7.92041015625f, 82f),
-        (2515, 9.818359375f, -81.96875f, 9.2666015625f, -82f),
-        (2516, 9.818359375f, -81.96875f, 9.2666015625f, -82f),
-        (2517, 9.818359375f, 81.96875f, 9.2666015625f, 82f),
-        (2518, 9.818359375f, -81.96875f, 9.2666015625f, -82f),
-        (2519, 9.818359375f, 81.96875f, 9.2666015625f, 82f),
-        (2520, 9.818359375f, 81.96875f, 9.2666015625f, 82f),
-        (2521, 7.92041015625f, 81.96875f, 7.92041015625f, 82f),
-        (2522, 9.818359375f, 81.96875f, 9.2666015625f, 82f),
-        (2523, 7.92041015625f, 81.96875f, 7.92041015625f, 82f),
-        (2524, 9.818359375f, 81.96875f, 9.2666015625f, 82f),
-        (2525, 7.92041015625f, -81.96875f, 7.92041015625f, -82f),
-        (2526, 9.818359375f, -81.96875f, 9.2666015625f, -82f),
-        (2527, 7.92041015625f, 81.96875f, 7.92041015625f, 82f),
-        (2528, 7.92041015625f, -81.96875f, 7.92041015625f, -82f),
-        (2529, 9.818359375f, -81.96875f, 9.2666015625f, -82f),
-        (2530, 9.818359375f, -81.96875f, 9.2666015625f, -82f),
-        (2531, 7.92041015625f, -81.96875f, 7.92041015625f, -82f),
-    };
+        var d = Numeric_Types_Lift02_Lift02FarRoadBoundary_g_cs.Values;
+        var values = new (int Index, float SourceY, float SourceZ, float Y, float Z)[72];
+        for (int i = 0; i < 24; i++)
+            values[0 + i] = (d.I32[4 + i * 1], d.F32[0 + i * 4], d.F32[1 + i * 4], d.F32[2 + i * 4], d.F32[3 + i * 4]);
+        for (int i = 0; i < 25; i++)
+            values[24 + i] = (d.I32[28 + i * 1], d.F32[96 + i * 4], -d.F32[97 + i * 4], d.F32[98 + i * 4], -d.F32[99 + i * 4]);
+        for (int i = 0; i < 2; i++)
+            values[49 + i] = (d.I32[53 + i * 1], d.F32[196 + i * 4], d.F32[197 + i * 4], d.F32[198 + i * 4], d.F32[199 + i * 4]);
+        for (int i = 0; i < 1; i++)
+            values[51 + i] = (d.I32[55 + i * 1], d.F32[204 + i * 4], -d.F32[205 + i * 4], d.F32[206 + i * 4], -d.F32[207 + i * 4]);
+        for (int i = 0; i < 1; i++)
+            values[52 + i] = (d.I32[56 + i * 1], d.F32[208 + i * 4], d.F32[209 + i * 4], d.F32[210 + i * 4], d.F32[211 + i * 4]);
+        for (int i = 0; i < 1; i++)
+            values[53 + i] = (d.I32[57 + i * 1], d.F32[212 + i * 4], -d.F32[213 + i * 4], d.F32[214 + i * 4], -d.F32[215 + i * 4]);
+        for (int i = 0; i < 1; i++)
+            values[54 + i] = (d.I32[58 + i * 1], d.F32[216 + i * 4], d.F32[217 + i * 4], d.F32[218 + i * 4], d.F32[219 + i * 4]);
+        for (int i = 0; i < 2; i++)
+            values[55 + i] = (d.I32[59 + i * 1], d.F32[220 + i * 4], -d.F32[221 + i * 4], d.F32[222 + i * 4], -d.F32[223 + i * 4]);
+        for (int i = 0; i < 1; i++)
+            values[57 + i] = (d.I32[61 + i * 1], d.F32[228 + i * 4], d.F32[229 + i * 4], d.F32[230 + i * 4], d.F32[231 + i * 4]);
+        for (int i = 0; i < 1; i++)
+            values[58 + i] = (d.I32[62 + i * 1], d.F32[232 + i * 4], -d.F32[233 + i * 4], d.F32[234 + i * 4], -d.F32[235 + i * 4]);
+        for (int i = 0; i < 6; i++)
+            values[59 + i] = (d.I32[63 + i * 1], d.F32[236 + i * 4], d.F32[237 + i * 4], d.F32[238 + i * 4], d.F32[239 + i * 4]);
+        for (int i = 0; i < 2; i++)
+            values[65 + i] = (d.I32[69 + i * 1], d.F32[260 + i * 4], -d.F32[261 + i * 4], d.F32[262 + i * 4], -d.F32[263 + i * 4]);
+        for (int i = 0; i < 1; i++)
+            values[67 + i] = (d.I32[71 + i * 1], d.F32[268 + i * 4], d.F32[269 + i * 4], d.F32[270 + i * 4], d.F32[271 + i * 4]);
+        for (int i = 0; i < 4; i++)
+            values[68 + i] = (d.I32[72 + i * 1], d.F32[272 + i * 4], -d.F32[273 + i * 4], d.F32[274 + i * 4], -d.F32[275 + i * 4]);
+        return values;
+    }
+}
+
+// Embedded numerical arrays: Types_Lift02_Lift02FarRoadBoundary_g_cs
+internal static class Numeric_Types_Lift02_Lift02FarRoadBoundary_g_cs
+{
+    static Numeric_Types_Lift02_Lift02FarRoadBoundary_g_cs() {}
+    internal static readonly HardcodedNumbers Values = HardcodedNumbers.Load("Types_Lift02_Lift02FarRoadBoundary_g_cs");
 }

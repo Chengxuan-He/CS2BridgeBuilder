@@ -1,0 +1,5 @@
+namespace BridgeBuilder.Bridges;
+internal static class Numeric_Types_PedestrianDraw01_PedestrianDraw01RoadAppearance_cs
+{
+ internal static readonly HardcodedNumbers Values=HardcodedNumbers.Load("Types_PedestrianDraw01_PedestrianDraw01RoadAppearance_cs");
+}

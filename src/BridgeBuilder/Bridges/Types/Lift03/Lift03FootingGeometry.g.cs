@@ -3,46 +3,68 @@ using System;
 using UnityEngine;
 
 namespace BridgeBuilder.Bridges;
-
 internal static class Lift03FootingGeometry
 {
     internal static MovableStructureModel.Plan Create(int lod, Vector3[] source, int[] indices, float delta)
     {
         var data = lod switch
         {
-            0 => (Count: 2152, Indices: 7824, Parts: Parts0),
-            1 => (Count: 2256, Indices: 6258, Parts: Parts1),
-            2 => (Count: 424, Indices: 1200, Parts: Parts2),
-            _ => throw new ArgumentOutOfRangeException(nameof(lod))
-        };
+            0 => (Count: Numeric_Types_Lift03_Lift03FootingGeometry_g_cs.Values.I32[0], Indices: Numeric_Types_Lift03_Lift03FootingGeometry_g_cs.Values.I32[1], Parts: Parts0),
+            1 => (Count: Numeric_Types_Lift03_Lift03FootingGeometry_g_cs.Values.I32[2], Indices: Numeric_Types_Lift03_Lift03FootingGeometry_g_cs.Values.I32[3], Parts: Parts1),
+            2 => (Count: Numeric_Types_Lift03_Lift03FootingGeometry_g_cs.Values.I32[4], Indices: Numeric_Types_Lift03_Lift03FootingGeometry_g_cs.Values.I32[5], Parts: Parts2),
+            _ => throw new ArgumentOutOfRangeException(nameof(lod))};
         if (source.Length != data.Count || indices.Length != data.Indices || !float.IsFinite(delta))
             throw new InvalidOperationException("Lift03 footing requires its recorded native topology.");
         var positions = (Vector3[])source.Clone();
         foreach (var part in data.Parts)
         {
             var span = part.Maximum - part.Minimum;
-            for (var i = part.First; i <= part.Last; i++)
-                positions[i].x += (2f * (source[i].x - part.Minimum) / span - 1f) * delta;
+            AffineGeometry.For(part.First, checked((part.Last) + 1), i =>
+            {
+                positions[i].x = AffineGeometry.Translate(positions[i].x, (Numeric_Types_Lift03_Lift03FootingGeometry_g_cs.Values.F32[0] * (source[i].x - part.Minimum) / span - Numeric_Types_Lift03_Lift03FootingGeometry_g_cs.Values.F32[1]) * delta);
+            });
         }
-        return new MovableStructureModel.Plan(source, positions, new[] { indices },
-            new[] { new bool[indices.Length / 3] });
+
+        return new MovableStructureModel.Plan(source, positions, new[] { indices }, new[] { new bool[indices.Length / Numeric_Types_Lift03_Lift03FootingGeometry_g_cs.Values.I32[6]] });
     }
+
     // Geometry SHA-256: 3ebea1b5996139c7c0830f2ec4814f83b392d89c8040f43fbd2e9da307f2d3e4
-    private static readonly (int First, int Last, float Minimum, float Maximum)[] Parts0 =
-    {
-        (0, 1075, -46.6201171875f, 46.6201171875f),
-        (1076, 2151, -46.6201171875f, 46.6201171875f),
-    };
+    private static readonly (int First, int Last, float Minimum, float Maximum)[] Parts0 = ReadPackedParts0();
     // Geometry SHA-256: a10bfa33e05223b9e61ff47bc4a951046653f476e1bb613aaf7f2d31574c50c0
-    private static readonly (int First, int Last, float Minimum, float Maximum)[] Parts1 =
-    {
-        (0, 1113, -46.6201171875f, 46.6201171875f),
-        (1114, 2255, -46.6201171875f, 46.6142578125f),
-    };
+    private static readonly (int First, int Last, float Minimum, float Maximum)[] Parts1 = ReadPackedParts1();
     // Geometry SHA-256: cf49402959aeab30071f2b3b06bfb1b7d54022d02246bc57f904d0807132946d
-    private static readonly (int First, int Last, float Minimum, float Maximum)[] Parts2 =
+    private static readonly (int First, int Last, float Minimum, float Maximum)[] Parts2 = ReadPackedParts2();
+    private static (int First, int Last, float Minimum, float Maximum)[] ReadPackedParts0()
     {
-        (0, 202, -46.6552734375f, 46.6455078125f),
-        (203, 423, -46.6748046875f, 46.666015625f),
-    };
+        var d = Numeric_Types_Lift03_Lift03FootingGeometry_g_cs.Values;
+        var values = new (int First, int Last, float Minimum, float Maximum)[2];
+        for (int i = 0; i < 2; i++)
+            values[0 + i] = (d.I32[7 + i * 2], d.I32[8 + i * 2], -d.F32[2 + i * 2], d.F32[3 + i * 2]);
+        return values;
+    }
+
+    private static (int First, int Last, float Minimum, float Maximum)[] ReadPackedParts1()
+    {
+        var d = Numeric_Types_Lift03_Lift03FootingGeometry_g_cs.Values;
+        var values = new (int First, int Last, float Minimum, float Maximum)[2];
+        for (int i = 0; i < 2; i++)
+            values[0 + i] = (d.I32[11 + i * 2], d.I32[12 + i * 2], -d.F32[6 + i * 2], d.F32[7 + i * 2]);
+        return values;
+    }
+
+    private static (int First, int Last, float Minimum, float Maximum)[] ReadPackedParts2()
+    {
+        var d = Numeric_Types_Lift03_Lift03FootingGeometry_g_cs.Values;
+        var values = new (int First, int Last, float Minimum, float Maximum)[2];
+        for (int i = 0; i < 2; i++)
+            values[0 + i] = (d.I32[15 + i * 2], d.I32[16 + i * 2], -d.F32[10 + i * 2], d.F32[11 + i * 2]);
+        return values;
+    }
+}
+
+// Embedded numerical arrays: Types_Lift03_Lift03FootingGeometry_g_cs
+internal static class Numeric_Types_Lift03_Lift03FootingGeometry_g_cs
+{
+    static Numeric_Types_Lift03_Lift03FootingGeometry_g_cs() {}
+    internal static readonly HardcodedNumbers Values = HardcodedNumbers.Load("Types_Lift03_Lift03FootingGeometry_g_cs");
 }

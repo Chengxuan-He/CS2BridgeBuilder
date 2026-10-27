@@ -52,6 +52,7 @@ internal static class MovableStructureModel
         internal readonly EdgeVertex[] AddedVertices;
         internal readonly TriangleVertex[] InteriorVertices;
         internal readonly Fragment[] Fragments;
+        internal readonly KeyValuePair<int, Vector2>[] UvCorrections;
         // Only measured LOD reconstruction opts in; ordinary width plans preserve Y/Z.
         internal readonly bool ReconstructsAuthoredPositions;
         internal int ConstructedCount => AddedVertices.Length + InteriorVertices.Length;
@@ -66,8 +67,13 @@ internal static class MovableStructureModel
         internal Plan(Vector3[] sourcePositions, Vector3[] positions, int[][] sourceIndices,
             bool[][] removeTriangles, EdgeVertex[]? addedVertices = null, Fragment[]? fragments = null,
             TriangleVertex[]? interiorVertices = null, float[]? constructedX = null,
-            bool reconstructsAuthoredPositions = false)
+            bool reconstructsAuthoredPositions = false, KeyValuePair<int, Vector2>[]? uvCorrections = null)
         {
+            UvCorrections = uvCorrections == null ? Array.Empty<KeyValuePair<int, Vector2>>() : (KeyValuePair<int, Vector2>[])uvCorrections.Clone();
+            foreach (var correction in UvCorrections)
+                if (correction.Key < 0 || correction.Key >= sourcePositions.Length ||
+                    !float.IsFinite(correction.Value.x) || !float.IsFinite(correction.Value.y))
+                    throw new ArgumentException("Invalid measured structural UV correction.");
             ReconstructsAuthoredPositions = reconstructsAuthoredPositions;
             SourcePositions = (Vector3[])sourcePositions.Clone();
             SourceIndices = sourceIndices.Select(indices => (int[])indices.Clone()).ToArray();
@@ -247,8 +253,14 @@ internal static class MovableStructureModel
                 { error = $"Unsupported structural attribute {attribute.attribute}:{attribute.format}x{attribute.dimension}."; return false; }
 
             using var read = Mesh.AcquireReadOnlyMeshData(source);
-            foreach (var attribute in declared)
+            foreach (var declaration in declared)
             {
+                // Constructed UVs need sub-texel interpolation; quantizing them
+                // back to Half can erase the gradient on narrow authored fragments.
+                var attribute=declaration;
+                bool promote=plan.ConstructedCount>0 && attribute.attribute==VertexAttribute.TexCoord0 &&
+                    attribute.format==VertexAttributeFormat.Float16;
+                if(promote)attribute=new VertexAttributeDescriptor(attribute.attribute,VertexAttributeFormat.Float32,attribute.dimension,attribute.stream);
                 var size = Size(attribute.format) * attribute.dimension;
                 var bytes = new byte[checked(size * outputCount)];
                 if (attribute.attribute == VertexAttribute.Position)
@@ -257,8 +269,8 @@ internal static class MovableStructureModel
                     for (var i = 0; i < outputCount; i++)
                     {
                         values[i * 3] = plan.Positions[i].x;
-                        values[i * 3 + 1] = i < positions.Length ? positions[i].y : plan.Positions[i].y;
-                        values[i * 3 + 2] = i < positions.Length ? positions[i].z : plan.Positions[i].z;
+                        values[i * 3 + 1] = plan.Positions[i].y;
+                        values[i * 3 + 2] = plan.Positions[i].z;
                     }
                     Buffer.BlockCopy(values, 0, bytes, 0, bytes.Length);
                 }
@@ -267,11 +279,33 @@ internal static class MovableStructureModel
                     var raw = read[0].GetVertexData<byte>(attribute.stream);
                     var stride = source.GetVertexBufferStride(attribute.stream);
                     var offset = source.GetVertexAttributeOffset(attribute.attribute);
-                    if (offset < 0 || stride < offset + size ||
-                        (long)(positions.Length - 1) * stride + offset + size > raw.Length)
+                    var sourceSize=Size(declaration.format)*declaration.dimension;
+                    if (offset < 0 || stride < offset + sourceSize ||
+                        (long)(positions.Length - 1) * stride + offset + sourceSize > raw.Length)
                     { error = $"Structural channel {attribute.attribute} has an incomplete raw buffer."; return false; }
                     for (var i = 0; i < positions.Length; i++)
-                        NativeArray<byte>.Copy(raw, i * stride + offset, bytes, i * size, size);
+                    {
+                        if(!promote){NativeArray<byte>.Copy(raw,i*stride+offset,bytes,i*size,size);continue;}
+                        for(int axis=0;axis<attribute.dimension;axis++)
+                        {
+                            int at=i*stride+offset+axis*2;
+                            float value=(float)new half {value=(ushort)(raw[at]|raw[at+1]<<8)};
+                            Buffer.BlockCopy(BitConverter.GetBytes(value),0,bytes,i*size+axis*4,4);
+                        }
+                    }
+                    if (attribute.attribute == VertexAttribute.TexCoord0 && plan.UvCorrections.Length != 0)
+                    {
+                        if (attribute.dimension < 2 || (attribute.format != VertexAttributeFormat.Float32 && attribute.format != VertexAttributeFormat.Float16))
+                            throw new InvalidOperationException("Measured UV correction requires a floating-point UV0 channel.");
+                        var width = Size(attribute.format);
+                        foreach (var correction in plan.UvCorrections)
+                            for (var axis = 0; axis < 2; axis++)
+                            {
+                                var value = axis == 0 ? correction.Value.x : correction.Value.y;
+                                var encoded = width == 4 ? BitConverter.GetBytes(value) : BitConverter.GetBytes(new half(value).value);
+                                Buffer.BlockCopy(encoded, 0, bytes, correction.Key * size + axis * width, width);
+                            }
+                    }
                     for (var i = 0; i < plan.ConstructedCount; i++)
                     {
                         var vertex = plan.Construction(i);
@@ -283,7 +317,7 @@ internal static class MovableStructureModel
                         if (identical) { Buffer.BlockCopy(bytes, a, bytes, destination, size); continue; }
                         if (MovableStructureAttributes.TryInterpolate(attribute, bytes,
                             a, b, c, destination, vertex.WeightB, vertex.WeightC)) continue;
-                        // UVs retain the source format. Integer bone identities and unknown
+                        // Other UVs retain the source format. Integer bone identities and unknown
                         // encodings are never blended into a guessed native value.
                         if (attribute.attribute < VertexAttribute.TexCoord0 || attribute.attribute > VertexAttribute.TexCoord7 ||
                             (attribute.format != VertexAttributeFormat.Float16 && attribute.format != VertexAttributeFormat.Float32))

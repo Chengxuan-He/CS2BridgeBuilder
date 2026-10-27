@@ -122,8 +122,25 @@ internal sealed partial class MovableNetworkContext
         }
         if (triangles.Count == 0)
             throw new InvalidOperationException("The selected closed-road contributions contain no visible surface.");
-        return new MovableClosedRoad.Result(triangles.ToArray(), materials.ToArray(), occurrences.ToArray(),
+        var result = new MovableClosedRoad.Result(triangles.ToArray(), materials.ToArray(), occurrences.ToArray(),
             compositions, occurrenceStarts, LaneVisuals(laneOwners, origin), rules, sourceFaces.ToArray(), lod);
+        var centers = new List<UnityEngine.Vector3>();
+        var visited = new HashSet<Entity>();
+        foreach (var owner in laneOwners)
+        foreach (var entry in World.EntityManager.GetBuffer<Game.Net.SubLane>(Owner(owner), true))
+        {
+            var lane = entry.m_SubLane;
+            if (!visited.Add(lane) || !World.EntityManager.HasComponent<Game.Net.CarLane>(lane) ||
+                World.EntityManager.HasComponent<Game.Net.MasterLane>(lane) ||
+                World.EntityManager.HasComponent<Game.Common.Deleted>(lane) ||
+                World.EntityManager.HasComponent<Game.Tools.Hidden>(lane)) continue;
+            var curve = World.EntityManager.GetComponentData<Curve>(lane).m_Bezier;
+            // This appearance recipe is for straight longitudinal road lanes only.
+            if (math.abs(curve.a.x-curve.d.x) > .01f || math.abs(curve.a.z-curve.d.z) < .01f) continue;
+            centers.Add((UnityEngine.Vector3)((curve.a+curve.d)*.5f-origin));
+        }
+        result.CarLaneCenters = centers.ToArray();
+        return result;
     }
 
     private Entity SurfaceComposition(int edgeIndex, SurfacePart part)

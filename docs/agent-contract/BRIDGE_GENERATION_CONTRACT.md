@@ -1,9 +1,8 @@
 # Bridge generation contract
 
-## Movable bridges: no special road-width adaptation (2026-10-20)
+## Movable bridges: no special road-width adaptation
 
-Do not apply special adaptation based on road width to movable bridges. The user
-withdraws narrow-road adaptation from the current implementation scope. Retain the
+Do not apply special adaptation based on road width to movable bridges. Retain the
 ordinary measured target-minus-prototype width mapping; do not add narrow-road
 compensation, clamps, replacement geometry, special bone precedence or dedicated
 width thresholds. Remove narrow-road-specific generation branches and diagnostics.
@@ -11,14 +10,16 @@ Narrow-road compatibility is no longer a completion gate for the movable batch.
 Finite input checks and validity of the native geometry/skeleton remain required.
 This is not a claim that every arbitrarily narrow input produces a valid bridge.
 
-This revision applies only to movable bridges. Do not change non-movable bridge
-selection, geometry, validation or persistence. It supersedes conflicting historical
-narrow-road adaptation requirements for movable bridges, including their test matrix.
+This rule applies only to movable bridges. Do not change non-movable bridge
+selection, geometry, validation or persistence. Narrow-road adaptation is outside the movable
+generation and acceptance scope.
 Existing saved assets are not rewritten merely because generation code changes.
 
 ## Contents
 
+- [Movable bridges: no special road-width adaptation](#movable-bridges-no-special-road-width-adaptation)
 - [Contract routing](#contract-routing)
+- [Current implementation policy](#current-implementation-policy)
 - [1. Every generated bridge follows its archetype](#1-every-generated-bridge-follows-its-archetype)
 - [2. The archetype is hardcoded, never copied](#2-the-archetype-is-hardcoded-never-copied)
 - [3. A generated bridge differs from its archetype in geometry and road structure alone](#3-a-generated-bridge-differs-from-its-archetype-in-geometry-and-road-structure-alone)
@@ -28,11 +29,11 @@ Existing saved assets are not rewritten merely because generation code changes.
 - [7. A fault is found by dumping both and diffing, not by reasoning about it](#7-a-fault-is-found-by-dumping-both-and-diffing-not-by-reasoning-about-it)
 - [8. Stretch or translate is decided by one thing: does the part cross the bridge's centre](#8-stretch-or-translate-is-decided-by-one-thing-does-the-part-cross-the-bridges-centre)
 - [9. The suspension family is the reference; every other family is held to the same list](#9-the-suspension-family-is-the-reference-every-other-family-is-held-to-the-same-list)
-- [Section 10](#10-unsupported-inputs-are-reported-movable-families-are-in-scope)
+- [10. Unsupported inputs are reported; movable families are in scope](#10-unsupported-inputs-are-reported-movable-families-are-in-scope)
 - [11. A double deck bridge is built from a double deck archetype, or not at all](#11-a-double-deck-bridge-is-built-from-a-double-deck-archetype-or-not-at-all)
-- [Section 12](#12-branches-organize-work-without-blocking-integration)
-- [Section 13](#13-deploy-coherent-increments-and-preserve-healthy-assets)
-- [14. Record the rollback baseline and preserve each archetype's width allowance](#14-record-the-rollback-baseline-and-preserve-each-archetypes-width-allowance)
+- [12. Branches organize work without blocking integration](#12-branches-organize-work-without-blocking-integration)
+- [13. Deploy coherent increments and preserve healthy assets](#13-deploy-coherent-increments-and-preserve-healthy-assets)
+- [14. Preserve each archetype's width allowance](#14-preserve-each-archetypes-width-allowance)
 - [15. Bridge lighting is copied from the archetype as behavior](#15-bridge-lighting-is-copied-from-the-archetype-as-behavior)
 - [16. Preserve native construction and upkeep pricing](#16-preserve-native-construction-and-upkeep-pricing)
 - [17. Persist external dependencies as identical-CID copies owned by each bridge](#17-persist-external-dependencies-as-identical-cid-copies-owned-by-each-bridge)
@@ -40,23 +41,16 @@ Existing saved assets are not rewritten merely because generation code changes.
 - [19. Independent native persistence and additive legacy conversion](#19-independent-native-persistence-and-additive-legacy-conversion)
 - [21. Movable bridges use generated selected-road surfaces and native mechanisms](#21-movable-bridges-use-generated-selected-road-surfaces-and-native-mechanisms)
 - [22. New bridge styles require immediate UI synchronization, generator routing and multilingual names](#22-new-bridge-styles-require-immediate-ui-synchronization-generator-routing-and-multilingual-names)
-- [Section 23](#23-performance-follows-measured-bottlenecks)
+- [23. Performance follows measured bottlenecks](#23-performance-follows-measured-bottlenecks)
 - [24. Movable bridge asset size](#24-movable-bridge-asset-size)
 - [25. Adapt sidewalk-dependent components to the actual elevated road](#25-adapt-sidewalk-dependent-components-to-the-actual-elevated-road)
-- [Current repository checklist (2026-10-19)](#current-repository-checklist-2026-10-19)
-- [Retained repository routing records: Current documentation baseline](#retained-repository-routing-records-current-documentation-baseline)
-- [Organization revision record](#organization-revision-record)
+- [Current repository checklist](#current-repository-checklist)
 
 This is the general normative contract for every bridge generator, fixed or movable. It is
 separate from the [project contract](PROJECT_CONTRACT.md), which governs project-wide workflow,
 communication and documentation. Read both together with applicable AGENTS.md instructions.
 Bridge geometry, native behavior, generation, preview acceptance, persistence and lifecycle rules
 are owned here; they are not optional appendices of the movable-bridge contract.
-
-Split baseline (2026-10-17): branch `dev`, HEAD
-`3b6363ada9f1f147b1a660e20c0d6246a54f82dd`; rollback reference
-`refs/rollback/split-bridge-contract-20261017`. Existing working-tree changes are preserved.
-The reference records committed history, not those local changes.
 
 ## Contract routing
 
@@ -65,23 +59,20 @@ The reference records committed history, not those local changes.
 - Movable bridges: additionally [movable bridge generation](MOVABLE_BRIDGES_CONTRACT.md), incorporated by section 21.
 - Persistence: additionally [asset persistence policy](../Bridge-Asset-Persistence.md), incorporated by section 17.
 - Previews: additionally [preview specification](../Bridge-Preview-Specification.md).
+- Materials: additionally [material generation](MATERIAL_GENERATION_CONTRACT.md).
 - Sidewalk-dependent components in every bridge: section 25. Use each side's actual elevated-mode
   sidewalk presence, position and width, including absent and asymmetric sidewalks. Adapt inner
   railings and bridge-authored sidewalk parts accordingly; never impose the prototype's layout.
 
 Existing section numbers are retained for audit continuity. Section 20 remains in the project
 contract because it defines project metadata, not bridge generation. Unqualified numbered contract
-references in bridge instructions refer here except section 20. This reorganization changes no
-technical requirements or acceptance status.
+references in bridge instructions refer here except section 20.
 
-## Current implementation policy (2026-10-19)
+## Current implementation policy
 
-The user requested removal of procedural obstacles to completing the remaining movable generators,
-then explicitly reaffirmed hardcoding because other players may not possess the original prototype
-files. This policy supersedes conflicting historical process gates; it does not relax the required
-bridge behavior or turn incomplete generators into completed support.
-Baseline: `dev/34094d9ae200e142b8e4eb2256d021e2c108ac39`;
-rollback reference: `refs/rollback/movable-implementation-unblock-20261019`.
+Implement the remaining movable generators incrementally using hardcoded data from real
+prototypes: other players may not possess the original prototype files. Preserve required
+bridge behavior and distinguish executable stages from completed support.
 
 ### Hardcoding and source independence are retained
 
@@ -101,7 +92,7 @@ content prerequisites where applicable, source isolation, resource identity and 
 Verify the graph without access to the original prototype files; this is distinct from cold loading
 without Bridge Builder. Both independence properties must be reported accurately.
 
-### Process restrictions removed
+### Incremental implementation
 
 - No blanket deferred-design refusal for draw, lift or pedestrian movable styles. Implement and
   route each actual generator incrementally; specific missing data or failed stages remain errors.
@@ -119,7 +110,7 @@ without Bridge Builder. Both independence properties must be reported accurately
   healthy bridge assets; cleanup requires an identified incompatibility and remains ownership-scoped.
 
 The selected road/upgrades, native motion/signals, original road bones, single-sided native skinned
-paint, measured material density, every required LOD, independent persistence, native fees/unlocks,
+paint, material contract section 2's mapping-specific density, every required LOD, independent persistence, native fees/unlocks,
 source isolation and complete localization remain required. These are outcomes to implement and
 verify, not grounds to label an unfinished route complete.
 
@@ -162,12 +153,85 @@ Faults that came from breaking this rule, each found only by looking at a screen
 
 ## 2. The archetype is hardcoded, never copied
 
-The archetype's parameters are read out of the game once and written into the source as data. They are
+### Numeric storage in embedded typed arrays
+
+Hardcoding means immutable, offline-measured prototype data, not giant C# literal initializers.
+Store recorded numerical values in typed arrays in versioned, uncompressed BBN1 binary
+resources embedded in the mod DLL. Preserve signedness, integer width, IEEE floating-point bits,
+array order and all measured values. Store the `.bin` source files under
+`assets/HardcodedNumbers/<BridgeType>/`; use `Shared/` only for data genuinely shared by bridge
+types. Each resource is independently readable so requesting one bridge never requires
+loading another bridge's data. The checked-in resources are part of the source delivery
+and must be embedded by both the command-line production build and the project build. Do not
+also ship compressed duplicates or a monolithic archive of all bridge arrays. Compression belongs
+to the complete Paradox Mods package; do not add per-resource compression when the final package
+sizes are similar. Compare identical publication file lists after official postprocessing.
+
+Load each resource only when its owning bridge/data class actually needs it.
+Do not load all resources at startup, catalogue enumeration or style selection. Prevent
+eager static initialization of unused numerical resource holders. Validate the resource format,
+array lengths, complete payload and checksum directly from the embedded stream and read its
+typed arrays. Uncompressed loading needs no extraction file. If a development conversion needs
+decompression, its decoded file must be temporary and deleted on success or failure, never a
+persistent extraction cache or installed/generated bridge asset. Retain only the decoded typed
+arrays in static storage for that class, like DLL-owned static variables, so subsequent use does
+not read the same resource again. Do not require loose files beside the DLL,
+an installed prototype, a network request, or runtime geometry inspection to reconstruct the values.
+Use bounded loops to reconstruct compound records from the numerical arrays; do not regenerate
+huge static initializer methods. Ordinary algorithmic constants, enum values, array indices and
+compile-time language requirements are code, not prototype measurements.
+
+Migrate every existing recorded numerical table and parameter, including non-movable bridge data,
+without changing geometry, transformation rules, material references, bones, identity or behavior.
+Preserve the offline extraction tools and make resource conversion repeatable after regeneration.
+Verify numerical values and ordering against the measured source data, verify all embedded
+resources, and run affected checks. Generated bridge assets remain independently persisted native
+assets: they must never acquire a runtime dependency on these mod resources.
+
+The archetype's parameters are read out of the game once and written into embedded data arrays. They are
 **not** copied from the archetype prefab at generation time.
 
-The reason is that the archetype may not be installed. A road can be converted with none of the style's
-content present, and the generator still has to produce a prefab that behaves like a bridge. Code that
-copies from a prefab works until the prefab is missing and then produces something subtly inert.
+### CPU affine geometry execution
+
+Express measured coordinate transformations as affine parameter matrices:
+`position = origin + C0*p0 + C1*p1 + C2*p2`. X, Y and Z each have their own row;
+constant axes are zero-coefficient rows. Width parameters may be distinct for the
+upper deck, lower deck and structure. Preserve measured branch/domain membership,
+anchors and arithmetic order. Do not replace piecewise rules with a global scale,
+infer missing coefficients at runtime, or introduce new width-specific behavior.
+
+Use `AffineGeometry` for CPU numerical execution. Existing per-vertex coefficient
+arrays and part-range recipes are sparse matrix storage; they need not expand into
+a dense matrix per vertex. Keep their BBN1 typed payloads inside independently readable embedded
+resources and preserve exact numeric bits when the existing representation suffices. Decode reusable coefficient tables
+once. General XYZ matrices and specialized scale, translation and single-coefficient
+rows share the same numerical execution path. Avoid extra zero operations on
+constant axes and do not fuse or reassociate measured multiply/add operations.
+
+Snapshot native mesh channels on the main thread before scheduling work. Independent
+LOD plans and disjoint vertex batches may run concurrently; native Mesh, Prefab,
+asset database, material and persistence operations remain on the main thread.
+Finish all workers before publishing their arrays. Bound parallelism, batch vertex
+work and suppress nested parallel scheduling. Small batches may execute serially.
+
+Execute overlapping recipe stages in authored order. Within a source-only scatter
+table, retain the last row for each repeated destination. Repeated additive index
+operations retain their multiplicity and order per destination. Never parallelize
+shared topology counters, output lists or dependent writes without first making
+ownership explicit. Numerical parallelism does not authorize triangle changes,
+bone changes, material changes or persistence-format changes.
+
+Regenerated measured code must retain these kernels. The offline
+`tools/AffineGeometryMigration` lowering pass handles independent coordinate loops;
+manually prepared maps and engine snapshot boundaries require review. Run the
+resource integrity check, numerical equivalence/race checks, relevant measured
+geometry checks and localization checks before deployment. Generated native assets
+must remain usable without the mod. Record snapshot and parallel-plan timings;
+build success and microbenchmarks do not prove an in-game speed improvement.
+
+The original authoring Prefab need not be installed. Required native game/DLC content and
+permitted packaged resources must still be available; hardcoded numbers do not replace missing
+material, geometry or behavior dependencies. Report an unavailable required resource explicitly.
 
 Where this lives:
 
@@ -212,7 +276,7 @@ be reconciled with a measurement is wrong even when the bridge looks right.
 recorded as — a support column read as a portal — is marked, not removed. Deleting it only means it
 gets measured again.
 
-### No Boolean operations with prototype geometry (2026-10-17)
+### No Boolean operations with prototype geometry
 
 Bridge generation must not perform any Boolean operation with the prototype bridge:
 intersection, union, difference or clipping against its meshes, triangles or reconstructed
@@ -232,22 +296,21 @@ This rule applies to every bridge style, every LOD, preview and saved generation
 prototype-face intersection with direct generation using the recorded construction rules;
 do not merely move the same Boolean operation behind a helper or a hardcoded triangle table.
 
-Pre-edit baseline: `dev/3b6363ada9f1f147b1a660e20c0d6246a54f82dd`;
-rollback reference `refs/rollback/no-prototype-booleans-20261017`. Existing changes are preserved.
-
 ## 3. A generated bridge differs from its archetype in geometry and road structure alone
 
-Everything else is identical: the components and their fields, the bridge behaviour, how the tower is
+Except for the native representation, UV-density, LOD and persistence changes explicitly
+required by this contract and its specialist contracts, preserve the components and their fields, the bridge behaviour, how the tower is
 anchored, where the cables are drawn, the placement flags. Two things are allowed to differ, and they
 are the two the mod exists to change —
 
 - **the road structure**, because the point is to carry a road the archetype does not have;
 - **the geometry**, because a road of a different width needs a tower and cables of a different width.
 
-Anything else that differs is a defect. When a generated bridge and its archetype are dumped by
+Any difference without such a required conversion or measured generation rule is a defect. When a generated bridge and its archetype are dumped by
 `AssetAnatomy`, the two should read the same line for line apart from what identifies an asset rather
 than describes it — names, the four `m_GuidPart` fields, `version` (which `OnSerializing` stamps and
-nothing else reads) — plus mesh contents and the road's own `m_Sections`.
+nothing else reads) — plus mesh contents, the road's own `m_Sections` and the explicitly required
+native representation, material and persistence conversions above.
 
 ## 4. The tower and the cables are derived geometry, never referenced geometry
 
@@ -261,9 +324,14 @@ is. A descriptor built from the three-argument constructor leaves that field at 
 mesh this mod wrote declared a zero-size box at the origin. Each submesh's bounds are measured from the
 widened vertices it indexes.
 
-Modifying means the vertex positions and nothing else. Every other part of a mesh — its vertex
-channels, their formats, the index buffer, the submeshes, the materials — is carried across exactly as
-the source declares it.
+For carried structural meshes, preserve raw channels, formats, indices, submeshes and material
+semantics by default. The explicit movable LOD and selected-road conversion rules permit their
+scoped changes. Density-preserving UV remapping and prepared repeat resources are required where
+geometry deformation would stretch a tiling source pattern. Verified prototype non-tiling mappings
+may retain authored UVs and stretch with geometry under material contract section 2, including
+interpolation for permitted construction fragments; missing repeat evidence is not proof.
+Neither path permits unrelated
+channel re-encoding, topology changes or appearance substitution.
 
 That last point is not a detail. A net piece declares:
 
@@ -285,11 +353,11 @@ the same way: the fields were carried across and the components were not, so the
 correct and the result was in the wrong place. They are recorded and applied like every other
 archetype parameter, by rule 2.
 
-So nothing is re-encoded. The raw vertex buffer is read, each attribute is lifted out of its stream at
+Outside those explicit conversion paths, nothing is re-encoded. The raw vertex buffer is read, each attribute is lifted out of its stream at
 the offset and width the mesh says it occupies, and handed on unchanged. Only the positions are
-rewritten.
+rewritten unless the density-preserving UV rule requires a measured remapping.
 
-### Prototype-referenced mesh complexity (2026-10-17)
+### Prototype-referenced mesh complexity
 
 Generated bridge meshes must use the prototype bridge's meshes as their reference.
 Excessive mesh subdivision or triangle cutting is prohibited. This applies to fixed and movable
@@ -305,34 +373,30 @@ Preserve required road composition, appearance, structural parts and bone owners
 geometry appropriate to the prototype's corresponding LOD. Inspect the resulting topology and
 triangle counts against that reference; compilation alone does not establish compliance.
 
-Pre-edit baseline: branch `dev`, HEAD `3b6363ada9f1f147b1a660e20c0d6246a54f82dd`;
-rollback reference `refs/rollback/prototype-mesh-complexity-20261017`. Existing local changes are preserved.
-
 ## 5. A generated tower differs from its archetype in width alone
 
 ### General width-only transformation rules
 
-The only thing generation may change about a tower is how wide it is. Everything else — height, the
+Except for the measured Golden ornament exception below, generation changes only tower width. Everything else — height, the
 shape of the legs, the parts and where they sit, the materials, every component and field — is the
 archetype's.
 
-Concretely, `TowerWidening` moves vertices along x and nothing else. Whether a part is stretched or
+This tower rule keeps height and depth unchanged outside that explicit ornament exception. Other measured movable-part recipes may
+have width-dependent X, Y and Z coefficients under section 2; those coefficients must come
+from that part's prototype evidence, not an invented tower deformation.
+Concretely, the tower-width mapping in `TowerWidening` moves vertices along x. Whether a part is stretched or
 translated is rule 8's question and only rule 8's — does it cross the centre line — and both answers
 move the part's outer edge by half the extra width, so the two agree wherever parts meet.
 
-An earlier version split by vertex position instead, at half the road: outside that boundary a vertex
-moved rigidly, inside it a vertex scaled. It is kept here as the mistake it was. The boundary is a
-plane through the model rather than a property of the part, so it can pass through a leg, and where it
-did the leg was cut in two and splayed. See rule 8.
+Do not split the stretch/translate decision by vertex position or half the road width. Such a
+boundary can cut through one authored leg and give its vertices incompatible displacements.
+Classify the complete part under rule 8. Outside the explicit base mapping, do not apply
+`sign(x)` translation to a continuous centre-crossing member: the discontinuity opens a gap.
 
-The translation alone was tried and is wrong. `sign(x)` is discontinuous at the centre line, so every
-crossbeam spanning the middle was torn open by exactly the shift - invisible at four metres, and a
-tower in pieces at forty. It reads as a width past which the mesh explodes, and it is not: it is a tear
-that was always there, growing.
-
-Height and depth are untouched by construction. Mesh part offsets move by the same shift as the
-vertices they belong to, so the parts stay together. Bounds are derived from the archetype's bounds with
-only x adjusted, never recomputed from the vertices — a pillar's authored bounds reach below what its
+Outside the measured Golden ornament exception, tower height and depth are untouched by construction.
+Mesh part offsets move by the same shift as the
+vertices they belong to, so the parts stay together. Authored placement/stacking bounds are derived from the archetype with only x adjusted;
+these are distinct from the indexed mesh/submesh bounds that section 4 requires computing — a pillar's authored bounds reach below what its
 geometry draws, and that is how the game knows how far down it may be placed.
 
 At the archetype's own width the shift is zero and the result is the archetype, vertex for vertex. That
@@ -353,10 +417,10 @@ Two consequences worth stating, because both were got wrong:
 
   The tower's width is derived from this, not from the road. Solving
   `towerOuter + extra/2 == cableOuter + distance` gives the widening directly, and it comes out the same
-  whichever part is measured because the archetype satisfies all three distances at once. The rule this
-  replaces — the deck's width minus the road the tower was authored for — gives the same answer whenever
-  the tower and the cables came from the same bridge, and only this one is right when they did not. With
-  no cables to measure against, which is most bridge types, the road rule is what there is.
+  whichever part is measured because the archetype satisfies all three distances at once. The deck's
+  width minus the tower's authored road width gives the same answer when the tower and cables share
+  an archetype; it does not establish the required gap when their sources differ. For bridge types
+  without cables, use the measured road-width relationship.
 
   This holds because the legs are carried out rigidly by half the extra width and the cable sheet is
   stretched from the span it draws, which moves its outer edge by the same half — two code paths that
@@ -377,69 +441,71 @@ Two consequences worth stating, because both were got wrong:
   carried. Both put the outer edge in the same place. Before rule 8 this was two named rules a caller
   had to choose between, and choosing the portal rule for a sheet tore it open down the centre line.
 
-### Approved movable LOD representation exception (2026-10-16)
+### Approved movable LOD representation exception
 
-Rollback baseline: `dev`, `ac1f8df28c1259bc205817ccab40dca79aaf2835`, reference
-`refs/rollback/movable-approved-conversion-20261016`.
-The user explicitly permits necessary triangle subdivision when a merged structural LOD face
-contains parts requiring different authored width transforms. Retain original vertices,
-materials and interpolated original attributes. This narrowly overrides section 4's unchanged
-index requirement for those faces; it does not override section 8's authored-part classification
-or authorize replacing structural materials, inventing geometry or skipping any LOD.
+When a merged structural LOD triangle cannot represent its authored parts' separate width
+transforms, subdivide only as necessary. Preserve original vertices, interpolate original
+attributes, retain material semantics and apply the same offline part classification. This
+scoped index/topology change does not authorize runtime part discovery or excessive tessellation.
 
-The earlier DefaultDecal fade approval is historical: the current representation integrates paint
-into mechanism surface geometry under the movable contract section 7. Independent marking decal
+Integrate paint into the same mechanism using a separate skinned mesh under movable contract
+sections 7 and 18–19. Independent marking decal
 objects are prohibited. No custom shader or mod-dependent runtime controller is authorized.
 
-### High-detail-derived movable LODs permitted (2026-10-17)
+### High-detail-derived movable LODs permitted
 
-The user revoked the prohibition on generating or replacing movable-bridge LODs from the measured
-prototype's high-detail geometry. Deriving, simplifying or supplementing those LODs is permitted;
-it is no longer limited to subdividing existing coarse triangles. This permission overrides the
-unchanged vertex/index/topology requirements for that LOD derivation, including the earlier
-restriction on substitute LOD geometry. It does not change authored-part classification and width
+Deriving, simplifying or supplementing movable LODs from the measured prototype's
+high-detail geometry is permitted; it is not limited to subdividing existing coarse triangles.
+Vertex/index/topology changes are limited to that measured LOD derivation. It does not change authored-part classification and width
 transforms, native skeleton/bone ownership, existing-material reuse, UV projection requirements,
-all-LOD coverage or human visual acceptance. The prohibition on baking and custom shaders remains.
+all-LOD coverage or human visual acceptance. Custom runtime shaders remain prohibited. Material preparation follows the material generation contract.
 
-Pre-edit baseline: branch `dev`, HEAD `3b6363ada9f1f147b1a660e20c0d6246a54f82dd`;
-rollback reference `refs/rollback/repeal-high-detail-lod-20261017`. Existing local changes are preserved.
+### Golden ornament and support mappings
 
-### Existing materials only (2026-10-17)
+The measured Golden tower fan ornament uses uniform XY scaling about the top of its central
+spoke, with Z unchanged. Its recorded mounted lamps follow the same position map; their
+rotation, effects and other fields stay unchanged. Tower legs and the upper crossbeam retain
+their ordinary mappings. Apply only the exact offline membership and LOD correspondence in
+[Golden ornament mapping](GOLDEN_ORNAMENT_MAPPING.md).
 
-The user requires movable-bridge surfaces and markings to use existing materials and explicitly
-accepts marking pattern-detail differences when using an existing game marking atlas. This
-supersedes earlier requirements to retain original marking textures when no compatible existing
-object material exists. Neither preview nor formal generation may bake appearance textures,
-clone surfaces or rewrite material templates. Retain compatible source materials; otherwise
-select an existing native object material and adapt generated geometry/UVs. Keep structural
-materials unchanged. Never modify source materials. Persist generated geometry and attachments;
-retain built-in references and snapshot unchanged external dependencies under existing rules.
-This does not change traffic behavior, structural width rules or human visual acceptance.
+The recorded Golden below-deck centre truss retains its original coordinates. Side structures
+remain width-adjusted; each outer vertical return follows its complete side upright with one
+rigid displacement. See [Golden support mapping](GOLDEN_SUPPORT_MAPPING.md) and
+[return alignment](GOLDEN_RETURN_ALIGNMENT.md). These measured exceptions do not authorize
+runtime detection or changes to other structures. Their evidence does not imply visual acceptance.
 
-Pre-edit baseline: `dev/3b6363ada9f1f147b1a660e20c0d6246a54f82dd`.
+### Native materials and prepared resources
 
-### Existing-material road marking representation (2026-10-17)
+Follow the [material generation contract](MATERIAL_GENERATION_CONTRACT.md). Fully compatible
+original materials remain direct references without new descriptors or texture payloads. Required
+native object-template conversions preserve source appearance and dependencies; known, preparable constant derived
+materials are prepared offline and packaged per style. Runtime generation only copies and binds
+those finished resources. Repeatable units retain original per-axis texel density and pattern
+scale; never bake them into full-span images. Verified prototype non-tiling mappings may stretch
+with geometry while retaining authored UVs, native textures and material identity under material
+contract section 2; record source/part/LOD/axis evidence. Genuinely variable, nonperiodic content may use
+bounded native composition without reducing density. Selected third-party road/track inputs that
+are unavailable before runtime may receive necessary descriptor or bounded texture conversion
+under material contract section 4, after direct reuse and descriptor-only options are considered.
+Missing known prepared resources do not qualify; no per-sampler bake or cross-bridge generated-result
+cache is permitted. Do not modify original assets or introduce
+custom runtime shaders. Preserve independent per-owner external dependency snapshots.
 
-The latest user requirement supersedes the earlier permission to create independent moving-road
-marking decal objects. Do not create separate marking StaticObjectPrefabs, RenderPrefabs or decal
-projection volumes. Integrate paint into the existing mechanism render geometry using compatible
-existing object materials. Preserve the selected road's marking layout through geometric conversion;
-accepted pattern-detail and curve-approximation differences remain permitted. Do not bake textures,
-create material descriptors or introduce custom shaders. Paint and road triangles must share their
-receiver surface and native motion domain without thick geometry or depth corrections.
+### Moving-road marking representation
 
-Implementation and validation evidence: `docs/Movable-Road-Paint-And-Platforms.md` (repository root relative).
+Use a compact single-sided native skinned paint mesh on the same mechanism object, with
+0.001 m upper-normal clearance and the original road bones, transforms and stacking metadata.
+Preserve selected-road layout and color. Marking polygons may split at motion seams; receiver
+triangles must not be cut for paint or texture periods. No child projectors or per-dash objects.
+See movable contract sections 18–19 for material, binding, visibility and persistence requirements.
 
-### Approved native marking approximation (2026-10-16)
+### Approved native marking approximation
 
 Curve segmentation and endpoint-fade differences remain accepted for converted markings, together
-with existing-atlas pattern differences. The later requirement prohibits independent marking
-objects and supersedes the former object-decal representation. Integrate paint into the mechanism's
-receiver geometry using existing object materials; preserve measured bone ownership. Do not add
-custom shaders, material descriptors or texture baking. Structural rules, traffic lanes and human
+with existing-atlas pattern differences. Independent marking objects are prohibited.
+Use separate single-sided skinned paint on the same mechanism with compatible native materials; preserve measured bone ownership. Do not add
+custom shaders. Material descriptors and offline texture preparation follow the material generation contract. Structural rules, traffic lanes and human
 visual acceptance remain unchanged. See the movable generation contract sections 7 and 15.
-
-Pre-edit baseline: `dev/3b6363ada9f1f147b1a660e20c0d6246a54f82dd`. Existing working-tree changes are preserved.
 
 ## 6. Nothing is claimed as fixed until it has been seen working
 
@@ -533,36 +599,21 @@ they must be per-subject rather than per-run.
 
 ### A check that reports is an instrument, and is wrong until it has met its cases
 
-The thickness check was added to see the one thing no width could: whether material standing clear of
-the centre kept its shape. It was right about that and wrong about three things in a row, each of which
-reached the log as an ERROR against a mesh that was fine.
+Validate diagnostic quantities against the actual authored parts and representations they measure:
 
-- It measured "before" against the scope the widening was decided by — a whole section, anchorage
-  included — and "after" against the mesh in hand. Two measurements of different things, reported as
-  9.89 m of material becoming 0.32 m.
-- It treated the extent of a member that spans the centre as a thickness. That extent changes with the
-  widening by design, so every spanning member reported itself as a leg that had been scaled.
-- It treated material carried across the centre as material that had lost its thickness. There is no
-  thickness to lose: the run has merged over the middle and stands clear of nothing.
+- Compare the same mesh and part membership before and after transformation; do not compare a
+  whole section including anchorages with one isolated output mesh.
+- Distinguish a spanning member's intended width change from a side member's thickness.
+- When sampled runs overlap or merge across the centre, inspect their recorded membership and
+  transformations before interpreting the aggregate run length as thickness.
+- A vertical member must receive one consistent authored-part mapping at every height. Merging
+  runs caused by incompatible displacements within that member indicate a real defect; do not
+  dismiss the measurement merely because another case produced a false positive.
 
-- It treated two runs merging into one as material having changed thickness. Material either side of
-  the span boundary moves by different amounts, by design, so gaps between them close and runs merge
-  without any shape being scaled.
-
-The first three were the check not having been asked what it would say about the shapes it was going
-to meet, and are the reason a check earns its ERROR by being run against the cases it will see: a
-coarse level of detail, a spanning sheet, a bridge narrower than its archetype.
-
-The fourth was not a fault of the check. It was withdrawn on the reading that merging runs made its
-quantity meaningless — and the runs were merging because two neighbours either side of a band boundary
-really were moving by different amounts and really had run into each other. The measurement was right,
-the shapes had changed, and the fault was that a vertical member was being asked the crossing question
-once per height rather than once for itself.
-
-So the harder half of the rule: an indirect quantity is not a wrong one. Three false reports do not
-make the fourth false, and "the measure is fragile" is a comfortable thing to conclude about an
-instrument that keeps pointing somewhere nobody has looked. Check what it is pointing at before
-concluding it is pointing at nothing — the check went out and the fault it had found stayed in.
+Exercise applicable coarse-LOD and spanning-surface cases before promoting a diagnostic to ERROR.
+Respect the movable no-special-width rule: diagnostic validation does not authorize a narrow-road
+correction or an additional compatibility gate. Inspect the reported geometry before changing or
+removing a check; an indirect measurement can expose a defect that aggregate width misses.
 
 ### Say plainly when a fix is not the reported fault
 
@@ -603,8 +654,8 @@ is what showed the tower width was not the cable fault, and the same table is wh
 
 ### A field that describes the result is computed, not carried across
 
-Rule 4 says everything but the positions is carried across exactly, and that rule sounded complete for
-months while having a hole in it. Bounds are not a property of the source that can be copied and not a
+Rule 4 preserves source channels except for its explicitly required conversions. Bounds are not a
+property of the source that can be copied and not a
 property of the vertices that anything derives automatically — they describe the *result*, and the only
 code in a position to compute them is the code that produced it.
 
@@ -671,15 +722,13 @@ recently, and looking there first is what cost rounds 1 to 3.
 
 ## 8. Stretch or translate is decided by one thing: does the part cross the bridge's centre
 
-### User-approved central railing post exception (2026-10-16)
+### User-approved central railing post exception
 
-Rollback baseline: branch `dev`, HEAD `80eb1415e1a3b59263eb45693f7e2c5d80732447`.
-Existing working-tree changes are preserved. The user explicitly permits an independent vertical
-railing post centred on the bridge centreline to retain its original width and centred position.
-Apply zero transverse displacement to that entire authored post at every road width and every LOD.
-Identify its exact membership offline from the highest-detail archetype; no runtime position band,
-aspect-ratio test or name heuristic may identify it. Coarse merged faces require the same measured
-part correspondence and the existing subdivision restrictions.
+An independent vertical railing post centred on the bridge centreline retains its original
+width and centred position. Apply zero transverse displacement to that entire authored post
+at every road width and LOD. Identify exact membership offline from the highest-detail
+archetype; no runtime position band, aspect-ratio test or name heuristic may identify it.
+Coarse merged faces use the same measured correspondence and permitted subdivision.
 
 This exception takes precedence over the general centre-crossing stretch rule and its refusal
 language throughout this contract and its instruction summaries. It does not apply to transverse
@@ -687,33 +736,29 @@ rails, crossbeams, walls, decks, side posts or unrelated structural parts. It do
 new structural materials, skipped LODs or a fixed-width whole bridge. Permission to derive movable
 LODs from high-detail prototype geometry is defined separately in section 5.
 
-### General classification outside the approved exception
+### General classification outside the explicit exceptions
 
 A part that crosses the centre line is stretched. A part that does not is translated. That is the whole
 rule, and it is the only criterion — not how far a vertex sits from the middle, not how wide the road
 is, not which mesh the part belongs to.
 
-### The `x = 0` decision is non-overridable
+### Default classification and explicit measured exceptions
 
-This decision has higher priority than every bridge-family special case, measured boundary, fallback,
-heuristic and Agent-authored rule. A special case may help discover where one authored part ends and
-another begins; after that discovery it may not change the result: a part which reaches or crosses
-`x = 0` is stretched, and a part which does not is translated.
-
-An Agent must refuse any request, plan or implementation which overrides, replaces, weakens or bypasses
-this decision, including an override proposed by the Agent itself. The generation flow must enforce the
-same refusal in code: if a transform attempts to stretch a part which does not reach `x = 0`, or to
-translate a part which does, generation reports the rejected mapping and stops before the mesh is
-written. Silently selecting a family-specific
-alternative is forbidden. A failed invariant is an error to diagnose against the archetype, never
-permission to emit the geometry.
+The default authored-part decision is whether the complete part reaches or crosses `x = 0`:
+crossing parts stretch against their own span; side parts translate rigidly. Apply the recorded
+deck-adjacent base mapping, centred vertical railing-post exception and complete Draw03 truss
+exception in this section and the Golden mappings in section 5 before that default. All are measured offline and apply at every LOD.
+Do not invent other family-specific boundaries or overrides. Reject a mapping inconsistent with
+its recorded rule before writing geometry. Metaprogramming records the applicable rule and exact
+membership; runtime does not rediscover or reclassify the part.
 
 ### Runtime contains no coordinate heuristics
 
-No bridge-generation decision may contain a fixed, non-zero coordinate. Comparisons of `x`, `y` or `z`
+Runtime authored-part identification must not use a fixed, non-zero coordinate. Applying an
+explicitly recorded construction coordinate or transform is permitted. Comparisons of `x`, `y` or `z`
 with zero are valid runtime spatial tests with any comparison operator (`<`, `<=`, `>`, `>=`, `==`
-or `!=`); for the stretch-or-translate decision specifically, the `x = 0` axis remains the sole and
-highest-priority boundary. A test such as “translate this part when `x > 10 m`”,
+or `!=`); for the stretch-or-translate decision specifically, the `x = 0` axis remains the default
+classification boundary outside the explicit exceptions above. A test such as “translate this part when `x > 10 m`”,
 “this is a railing between `y = -0.5 m` and `y = 3 m`”, or the same test hidden behind a named constant,
 ratio, road-width fraction, bounding-box extent or family-specific fallback is forbidden. A small
 numeric tolerance may implement equality with an axis origin; it is not another boundary and may never
@@ -732,8 +777,8 @@ coordinates. It may not inspect bounds, nearest vertices, connected components, 
 span, aspect ratio, mesh size or naming resemblance to guess which part it has. Missing or mismatched
 metadata is unsupported input to report, never permission to fall back to a geometric heuristic.
 
-Metaprogramming does not get a vote on rule 8. It records which logical authored parts touch or cross
-`x = 0`; those recorded parts stretch and every recorded side part translates. Its purpose is to move
+Metaprogramming records which logical authored parts touch or cross `x = 0` and the exact
+membership of the explicit exceptions. It may not invent additional transform rules. Its purpose is to move
 the expensive geometric identification out of the game runtime, not to introduce another criterion.
 
 The highest-detail archetype mesh makes this decision once for itself and for every level of detail.
@@ -742,91 +787,68 @@ whether a part reaches `x = 0`. A coarse mesh may weld together parts which the 
 its reduced topology must never turn a translated side truss, arch or railing into stretched material.
 Every LOD reuses the full-detail part profile, and generation reports the mismatch and stops the
 derived prefab if a carried range does not receive the same rigid translation at every level. Apply
-the revised error-boundary policy below; stop rejection before geometry is written.
+the error-boundary policy below; stop rejection before geometry is written.
 
 ### Runtime error boundaries
 
-Runtime failure contract, revised 2026-10-16: excessive defensive programming is prohibited.
+Runtime failure contract: excessive defensive programming is prohibited.
 Defend external logic and data outside the mod's control, including generated bridge Prefabs that
 can subsequently be damaged. Validate external input and contain game or third-party API failures
 at their boundaries. Internal mod logic should not fail during correct operation: violated internal
 invariants must surface as explicit ERROR, with exceptions where appropriate and diagnostic context
 preserved. Do not add special cases, silent returns, fallback values or exception swallowing merely
 to suppress an internal error. Fix the underlying defect. Stop failed operations before publishing
-invalid geometry. This replaces the blanket prohibition on explicit `throw` statements.
+invalid geometry.
 
-Pre-edit baseline: branch `dev`, HEAD `0f4b10ae47c5dc264249e0d877aacc326e3e9525`;
-rollback reference `refs/rollback/error-boundary-policy-20261016`. Existing working-tree changes are
-preserved.
+### Authored-part measurement
 
-### Authored-part measurement and earlier classification failures
-
-"Part" is decided by where the shape stops crossing the centre, and that boundary is **measured from
-the shape at each height**: slice it across its height, and in each slice take how close the shape
-comes to the centre line. Outside that, at that height, nothing crosses, so the material is carried
-out rigidly. Inside it the shape does cross, so the material is scaled about the centre. The two agree
-exactly at the boundary, so nothing tears. A slice with material standing on the centre — a cable
-sheet is continuous from side to side at every height — comes zero close and scales entire, which is
-the right answer for a sheet and falls out of the same rule.
-
-The question has to be asked **per height**, and answered by **closest approach**. Both halves of that
-were got wrong before, and each cost a round:
-
-- **One boundary for the whole shape.** Only true of a pylon whose legs are vertical. A V pylon's legs
-  converge downward and an A pylon's diverge, so their opening is a different number at every height.
-  Taking the widest — the top of the V, 36 m, giving a boundary of 18 — puts the boundary outside the
-  legs at every height below the top, and legs that run from 2 to 20 were scaled almost entire. Taking
-  the narrowest instead fails the other way: any shape with a crossbeam has a slice with no opening at
-  all, and the whole shape would scale.
-- **Nearest vertex on each side, counted separately.** Reads a crossbeam as an opening. The beam has
-  material on both sides of the centre and its nearest vertex either side stands a metre out, which
-  answers "one metre of opening" and carries the beam's own interior out rigidly instead of stretching
-  it. The vertex sitting *on* the centre is the one that settles it, and the closest approach in |x| is
-  what sees it — a beam comes zero close, a leg does not.
-
-- **The widest thing at that height, as the scale.** Right for a sheet that spans the full width and
-  wrong for anything narrower. The golden bridge's top decoration spans to about 12 m between legs
-  standing at 26; scaled against the legs' reach its ends moved less than half as far as the legs did,
-  and a gap opened either side of it that grew with every metre of road. A crossing member is scaled
-  against **its own** outer end, and everything past that end is clear of the centre and is carried.
-  Which means the vertices are not enough: at that height there is material at 12, at 22 and at 26,
-  and which numbers belong to one member and which to another is a question about what is joined to
-  what. The triangles answer it - an edge is material between its ends, so walking the edges outward
-  from the centre finds where the material stops being continuous.
-
-Two earlier units were tried, and each was wrong in a way worth keeping:
-
-- **Half the road.** A guess about where the legs begin. Where the guess fell inside a leg the leg was
-  cut in two — outer portion carried, inner portion scaled — and the column came out a splayed slab.
-- **Connected components.** The right question, the wrong unit: a portal's legs are joined to each
-  other through its crossbeams, so the whole tower is one component, it does cross the centre, and the
-  whole tower scaled. Rule 5 says a tower is never scaled; this scaled every one of them, and on a
-  bridge whose extra width is negative it drew the two legs together until the portal read as a single
-  column standing in the road.
-
-The rule this replaces split by vertex position: everything beyond half the road moved rigidly and
-everything inside it scaled. It reads as the same thing and is not, because the boundary is a plane
-through the model rather than a property of the part. Where that plane fell inside a leg, the leg was
-cut in two — the outer portion carried across, the inner portion scaled — and the column came out a
-splayed slab instead of the column it was. Nothing reported it: the outer edge still landed exactly
-where it belonged, so every width in every measurement was right.
-
-Half the road is a guess about where the legs begin. The centre line is not a guess: a crossbeam spans
-it by construction and a leg cannot, whatever the leg's thickness, whatever the road's width, whatever
-bridge it came from.
+Identify complete authored members offline from the highest-detail prototype and carry their
+membership to every LOD. Height slices and connected components are analysis aids, not the
+units that independently choose transforms. A connected portal contains distinct columns and
+crossbeams; a column must not change displacement at different heights. Use each crossing
+member's own measured reach, never half the road width or the envelope of the entire tower.
+Store the resulting membership and affine coefficients as immutable data. Runtime applies
+those data without slicing, topology searches or part reclassification.
 
 ### Coordinate mappings
 
-Both cases are mappings, and this is the whole of rule 8. With `d` half the extra width, and `s` the
-span of the crossing member at that height:
+Outside the explicit exceptions, use `d` for half the extra width and `s` for the
+recorded positive half-span (axis-to-end reach) of the crossing member, not its full width:
 
     does not cross    (x, y, z)  ->  (x + sgn(x) * d,  y, z)
     crosses           (x, y, z)  ->  (x * (s + d) / s, y, z)
 
 The first has no stop at the centre, and no part of the tower is held back so that another can avoid
-reaching it. The second is about the member's own span, never about the widest thing at that height.
+reaching it. The second uses the complete member's own recorded reach, not a height-dependent tower envelope.
 
 ### Deck-adjacent base definition and transformation
+
+**Draw03 complete deck-base truss exception:** the user requires the moving deck-base
+trusses to stretch rather than translate. Near/middle measured parts 0 and 1 form one
+positive-leaf base; part 88 is the negative-leaf base. Use their full authored span
+[-12.5, 12.5] m: `x' = x + (x / 12.5) * delta`, preserving Y/Z, topology, materials
+and original bones. Do not stretch the positive halves independently.
+The complete moving under-deck truss (five longitudinal frames,
+diagonals and connectors, 1,498 measured components per near/middle LOD) uses the
+same full-deck scale. This overrides both side-part translation and independent
+centre-member stretching for these recorded vertices. Use `Draw03Truss.py` data;
+do not classify components at runtime.
+Fixed approaches are explicitly included: First300, Second300, Last300 and
+Edge350 structural families scale their local X and native piece widths by
+`1 + delta / 12.5` in every LOD. The Side50 railing remains rigid and follows
+the resulting native layout. Do not put the entire width increment in First300,
+or apply the old independent central-brace mapping afterward. Piers and mechanism
+axles retain their separate mappings. All Y/Z, materials, bones and topology remain.
+The far merged moving shells already use measured span stretching; retain that recipe.
+Store membership and measured values in embedded arrays, with CPU affine execution.
+
+The complete Draw03 fixed-truss stretch includes the 92 fixed-bone end
+components embedded in the main mechanism mesh, not only the independent approach
+NetPieces. Apply the shared deck-span affine map to their longitudinal beams,
+diagonals and bearing/connection plates in both detailed LODs. Preserve bone zero,
+materials and topology. The native far merged shell has no separate bearing details;
+retain its continuous shell representation. Do not classify masonry foundations or
+ordinary network pillars as trusses merely because they are stationary.
 
 **The base is the structure immediately beneath the bridge deck.** "Base" has this one exact meaning in this project: the base
 structure directly below and immediately adjacent to the road deck which supports or frames that deck.
@@ -837,9 +859,9 @@ Agent must locate this below-deck structure in the bridge archetype and apply th
 highest-detail mesh and every LOD; modifying another structure is not an implementation of a base
 request.
 
-**The base that carries the road deck takes the first mapping, by the whole of `d`, always.** Its
-blocks stand clear of the centre — the road passes between them and rests on them — so it is material
-belonging to one side and is carried, not scaled. It is also the part seen against the road: when it
+**Outside the explicit Draw03 truss exception, the deck-adjacent base uses
+`x -> x + sign(x) * d`.** Apply the complete displacement to its recorded side blocks.
+Classify the complete base offline; its individual blocks need not cross the centre. It is also the part seen against the road: when it
 is a metre out, the bridge is a metre out, whatever the rest of the tower is doing. Nothing about
 another part of the same tower may reduce the `d` it is carried by.
 
@@ -854,7 +876,9 @@ for every other one: a V pylon whose legs stand 5.79 m apart at the bottom held 
 narrowing where the road wanted 8, and the base came out three metres too wide to protect a part nobody
 was looking at.
 
-A part carried through the centre is reported and left alone. What it means is that the road is
+For movable bridges, do not add a dedicated narrow-road diagnostic or correction for a part
+carried through the centre. Preserve native validity/error checks. Other width audits record the
+measured result without changing the authored mapping. What it means is that the road is
 narrower than the design was drawn for, which is a fact about the pairing and not something a widening
 rule can repair.
 
@@ -984,14 +1008,7 @@ identify the affected style IDs and UUID-owned artifacts, follow the existing ba
 procedure, verify the result and preserve unrelated assets. This changes no self-check, migration,
 explicit deletion or ownership semantics. Deployment is not in-game visual acceptance.
 
-## 14. Record the rollback baseline and preserve each archetype's width allowance
-
-Before changing this contract, the root `AGENTS.md`, or a directory-level `AGENTS.md`, the Agent must
-record the current Git branch and the exact commit named by `HEAD` **before the first instruction-file
-edit**. The work record must make that pair visible as the rollback baseline. Create a durable local
-rollback reference when practical; the reference supplements the recorded branch and commit and does
-not replace them. If the repository has no commit at `HEAD`, record that fact and the complete working
-tree state before editing. A contract edit made without this pre-edit baseline is incomplete.
+## 14. Preserve each archetype's width allowance
 
 Every bridge generated by this mod preserves a bridge-type-specific width allowance:
 
@@ -1017,8 +1034,10 @@ Failure of the selected road to support that bridge type means another road must
 not waive the sample requirement. A missing sample is never a skip condition and never completes the
 audit. Creating and judging the sample is an in-game operation reserved for human judgment. The Agent
 must not open or control the game, expose or consume a bridge-construction API, or create a persistent
-request file for that operation. The Agent must request the exact human sample-creation step and keep
-the task and audit explicitly incomplete until the real sample exists. It must not invent a result or
+request file for that operation. The Agent must identify the exact human sample-creation step and keep
+the audit and its compliance claim explicitly incomplete until the real sample exists. Readiness for
+human acceptance may complete an implementation task when that is the user's stated delivery boundary;
+it does not complete the audit. The Agent must not invent a result or
 report an absent sample as a skipped bridge, compliant bridge or final unchanged disposition.
 
 For an existing generated sample, the audit executes exactly these two formulae, in this written
@@ -1045,7 +1064,7 @@ discrepancy is evidence that the bridge or the measurement basis needs separate 
 not permission for a large automatic correction.
 
 Apply a verified correction to the full-detail mesh and every LOD together, subject to rule 8 and the
-bridge-specific branch rule in section 12. Never turn this invariant into runtime geometric guessing.
+optional branch policy in section 12. Never turn this invariant into runtime geometric guessing.
 The metaprogramming step may identify the affected authored parts and emit reviewed immutable data;
 runtime code consumes only that hardcoded result.
 
@@ -1058,11 +1077,15 @@ to a span, or post-process generated geometry to make an audited result fit. Run
 hardcoded archetype parameters produced by metaprogramming as ordinary inputs; it must not know that
 a correction step existed.
 
-The audit record for the pass which introduced this rule is
+The measured audit evidence is
 [`BRIDGE_WIDTH_INVARIANT_AUDIT.md`](BRIDGE_WIDTH_INVARIANT_AUDIT.md). A bridge without the required
 real generated sample remains mandatory unfinished work. A human must select a road and actually
 create a new bridge before the bridge can receive the `1 m` decision. It must not be marked skipped,
 compliant or complete merely because the implementation's algebra appears to preserve the constant.
+
+The measured Grand reference-road correction is a specifically authorized exception to the
+1 m audit limit: use the native 19 m reference, without a runtime correction. See
+[Grand reference evidence](GRAND_REFERENCE_WIDTH.md). It does not waive the limit for other cases.
 
 ## 15. Bridge lighting is copied from the archetype as behavior
 
@@ -1079,7 +1102,8 @@ its prefab references whole. A referenced light/effect prefab which is not itsel
 exact shared archetype reference. If a carried component points to a prefab which is being derived,
 repoint only that reference to the corresponding generated prefab, as required by rule 2.
 
-Tower-mounted objects must remain attached when the tower width changes. `m_ParentMesh` identifies the
+Tower-mounted objects must remain attached when the tower width changes. The recorded Golden
+ornament lamps follow section 5's ornament map; the following rigid rule applies to other mounts. `m_ParentMesh` identifies the
 authored mesh part whose displacement applies. A child object standing at non-zero x is a rigid side
 part and its x position moves by the same signed half-width delta as that parent mesh; a child at
 `x = 0` remains on the centre line. Its y and z coordinates, rotation, parent-mesh index, group,
@@ -1099,11 +1123,7 @@ in-game comparison at night in near and far views; the Agent must not open or co
 
 ## 16. Preserve native construction and upkeep pricing
 
-Rollback baseline recorded before this rule's first edit: branch `dev`, HEAD
-`8c90b34a617b272d08ed3b27b2d24c7230f79458`; local reference
-`rollback/economy-no-pricing-20260919`.
-
-The current pricing policy is the user's 2026-10-07 native-pricing revision. Preserve the source
+Preserve the source
 roads' and bridge prototypes' `PlaceableNetPiece`/`PlaceableObject` construction, elevation and
 upkeep fees. The game selects composition pieces and calculates charges for network length,
 height, auxiliary networks and placed objects.
@@ -1118,25 +1138,7 @@ remain valid data: do not guess their original values or delete referenced copie
 requires authoritative original data and a separately verified migration. Deployment cleanup
 follows section 13; pricing history alone is not permission to delete existing bridges.
 
-### Retained pricing and legacy migration routing
-
-Native-pricing revision (user request 2026-10-07): use the game's native pricing exclusively.
-Preserve source roads' and bridge prototypes' PlaceableNetPiece/PlaceableObject construction,
-elevation and upkeep fees. Let the game select composition pieces and charge network length,
-height, auxiliary networks and placed objects. Do not bake a fixed total, apply a bridge-specific
-multiplier/offset/floor, zero fees, override runtime cost data, or create pricing-only copies.
-This supersedes all earlier requirements to retain the established Bridge Builder price and all
-permissions to clone private components for pricing. Legacy conversion removes the custom cost
-component while retaining its original native dependency graph and bridge/deck UUID/CID/geometry.
-Previously baked assets remain valid native data; do not guess original fees or remove referenced
-copies. Restoring their old fees requires authoritative original data and a separate verified migration.
-
 ## 17. Persist external dependencies as identical-CID copies owned by each bridge
-
-Rollback baseline recorded before this rule's first edit (2026-10-06): branch `dev`, HEAD
-`3be5fed03b275a07850f413dc2396b0182e532ea`; local reference
-`refs/rollback/recursive-dependency-contract-20261006`. This reference records the committed baseline;
-it does not include the existing uncommitted implementation changes.
 
 The existing bridge persistence workflow must also preserve its external asset dependencies locally.
 A bridge saved in `ImportedData` can be deserialized before a subscribed asset pack becomes available.
@@ -1158,14 +1160,12 @@ placement without requiring a new marking texture or material.
 
 Keep the external-dependency requirements below: unchanged non-built-in dependencies require
 original-byte, original-CID snapshots; this is distinct from creating a modified resource with a
-private identity. A genuinely necessary resource conversion must identify the changed data and
+private identity. This includes materials from other mods and Bridge Builder's packaged materials,
+with their required non-built-in textures and VT payloads. Retaining the source mod reference alone
+is insufficient; reuse within the current owner must not borrow another bridge's private files.
+A genuinely necessary resource conversion must identify the changed data and
 its native serialization requirement. Do not save preview-only objects or shader state as bridge
 assets, and do not omit required references by interpreting "no resource export" as "no reference".
-
-Clarification baseline (2026-10-16): branch `dev`, HEAD
-`0f4b10ae47c5dc264249e0d877aacc326e3e9525`; rollback reference
-`refs/rollback/asset-persistence-scope-20261016`. This records committed history, not existing
-uncommitted changes. This documentation clarification requires no bridge removal or asset migration.
 
 ### Copy the serialized dependency graph without changing asset identity
 
@@ -1218,8 +1218,9 @@ Back up and retire dependency copies with their owning bridge. Deleting one brid
 another bridge's copy or the source asset in its original package. Ownership-scoped maintenance and
 cleanup tools must include the dependency directories, including partial files from interrupted saves.
 
-This is a file persistence operation. Do not reintroduce in-memory prefab integrity inspection,
-reference repair, quarantine or registration rejection to implement it. Resolving an asset identifier
+Dependency copying is a file persistence operation. Do not add live integrity inspection,
+reference repair, quarantine or registration rejection to that operation. The separate post-load
+self-check uses the read-only inspection expressly defined below and in section 19. Resolving an asset identifier
 to its original data stream for copying is distinct from inspecting a live prefab for damage.
 
 Verification must cover recursive text/binary references, stopping at built-in assets, byte and CID
@@ -1229,10 +1230,6 @@ remain required to establish that the game discovers and resolves the copies bef
 initialization. File equality, a DAG check or a successful build alone does not establish that timing.
 
 ### Post-load inspection and recovery prerequisites
-
-Historical baseline for the 2026-10-06 self-check revisions: branch `dev`, HEAD
-`3be5fed03b275a07850f413dc2396b0182e532ea`. Section 19 defines the current migration-first
-outcomes and supersedes the earlier immediate-retirement sequence.
 
 Run self-check only after native loading, mod initialization, PDX database caching and active asset
 batches complete at a ready main menu. Observe current state as well as completion events so late
@@ -1254,9 +1251,6 @@ Process each bridge independently. File ownership is determined by section 18, n
 content, hash or concurrent-snapshot verdict. Actual filesystem failures must be reported.
 
 ## 18. Bridge asset file ownership is determined only by b{uuid} text
-
-Rollback baseline: branch `dev`, HEAD `0f889f67b7498afa7126ca5fa78e441cb240efe8`;
-local ref `refs/rollback/string-ownership-contract-20261006`. Existing uncommitted fixes are preserved.
 
 A bridge asset file belongs to Bridge Builder if its relative asset path contains
 `b{uuid}`. For one bridge, use literal substring matching with the fixed bridge UUID.
@@ -1282,28 +1276,21 @@ operation alone does not rewrite source metadata. For deployment cleanup, sectio
 affected style IDs and bridge UUIDs first; this section then determines the files owned by those
 UUIDs. Move selected files/directories as whole units with collision-free backup names. Do not
 inspect contents, hashes or tree snapshots to establish ownership. Report real move failures.
-This rule supersedes earlier ownership requirements based on metadata, exact root names,
-content evidence or concurrent-change snapshots.
 
-### Source isolation between bridges (2026-10-13)
+### Source isolation between bridges
 
-Baseline: `dev` / `5bea1d0bef04dd2ac718809852d3f657c7388e58`;
-rollback reference `refs/rollback/no-foreign-bridge-source-20261013`.
-Whenever creating a bridge or any dependency/migration copy, never select another Bridge Builder
-bridge's Prefab from ImportedData, including Prefabs below its b{uuid}_Dependencies directory.
-Identify ownership by path b{uuid} text alone. A same CID does not override this prohibition,
-even if the other bridge's file is readable. Exclude the candidate before opening its stream;
-try the original source or a permitted same-CID source. Current-owner assets remain permitted
-for additive migration. If no permitted source exists, fail explicitly; never borrow another
-bridge's private Prefab or silently omit a dependency. Apply this to first-match and fallback
-CID lookup, generation inputs, native validation, and legacy dependency-copy selection.
+Whenever creating a bridge or any dependency/migration copy, exclude another generated bridge's
+ImportedData resources, including Prefabs and materials under its UUID dependency directories.
+Determine ownership from path UUID text before opening the stream; matching CIDs do not permit
+borrowing another bridge's private resources. Try the original source or a permitted packaged
+same-CID source. Current-owner assets remain valid inputs for additive migration only while
+their files exist. If no permitted source exists, fail explicitly without omitting dependencies.
+Apply this rule to first-match and fallback CID lookup, generation inputs, native validation,
+texture streaming and legacy dependency-copy selection. Deleted files must never be reopened.
 
 ## 19. Independent native persistence and additive legacy conversion
 
 ### Manager independence and additive conversion
-
-User revision 2026-10-07; rollback baseline `dev`,
-`3289fc947637f88a9124c524bd1235029be802d1`. Preserve existing local edits and bridge assets.
 
 **Generated bridges must not depend on Bridge Builder. Bridge Builder is only the bridge asset manager.**
 This is an architectural requirement for generation, persistence and legacy conversion. Disabling,
@@ -1313,14 +1300,13 @@ These behaviors must work after a cold start without the Bridge Builder assembly
 patches, custom UI hosts or cached mod objects. Required base-game/DLC resources remain native
 dependencies; external asset snapshots still follow section 17. Acceptance must include a cold start
 with Bridge Builder absent and loading an existing save; a warm-session cache is not evidence.
-Clarification rollback reference: `refs/rollback/manager-only-contract-20261007` at the baseline above.
 
 Bridge Builder manages assets; new/converted saved prefabs must not depend on its assembly,
 runtime unlocking, price overrides, localization source or custom UI host. Persist nested native
 Unlockable AND/OR conditions, unchanged native construction fees, native LocaleAsset
-names and native thumbnail presentation. The previously deferred double-deck railway seam work remains
+names and native thumbnail presentation. The double-deck railway seam work remains
 an outstanding compatibility limitation, not permission to persist a mod dependency or to declare
-complete independence. This documentation change does not claim that limitation has been resolved.
+complete independence.
 Follow section 16: do not rewrite native fees or create pricing-only copies. Preserve original
 donors and shared component fees. Keep recursive byte-identical external dependency persistence
 with original CIDs.
@@ -1331,14 +1317,10 @@ Add private dependencies and native payloads; retain original component files. B
 verify identities and CID sidecars after saving. On conversion failure, roll back the incomplete phase,
 log ERROR and remove the affected bridge. If backup/move fails, permanently delete remaining owned
 source paths. Restart after successful migration; do not replace live
-network registrations. Healthy already converted assets need no rewrite. The earlier explicitly
+network registrations. Healthy already converted assets need no rewrite. The explicitly
 authorized shared legacy-name cleanup still requires reference checks before retiring old files.
 
-### Self-check order: migrate, back up/move, delete (2026-10-08)
-
-User clarification of the existing requirement. Baseline: `dev`,
-`713ee6be933a6e427d9e44fd41767513efcaca53`; rollback reference
-`refs/rollback/migration-first-removal-rule-20261008`. Preserve unrelated local changes.
+### Self-check order: migrate, back up/move, delete
 
 **The primary objective of self-check is normal game operation. Attempt asset version migration first; if migration fails, attempt backup and removal from the loading directory. If backup or moving fails, continue deleting the remaining original assets rather than retaining them.**
 
@@ -1369,7 +1351,7 @@ never claim success or imply that the mod can override operating-system permissi
 Self-check still does not unregister live prefabs or promise to repair the current game session.
 Require restart after removal; if removal fails, restarting alone does not resolve retained assets.
 
-### Retained repository routing records: Post-load self-check
+### Post-load self-check requirements
 
 Contract section 19 defines migration-first self-check and its backup/removal fallback. Wait for
 native loading, mod initialization, PDX caching and active asset batches; observe both current
@@ -1383,14 +1365,20 @@ native payloads and layout through migration before considering removal. Failed 
 migration enters section 19's per-UUID backup/move, then deletion fallback on backup/move failure.
 Do not unregister live prefabs. Report actual removal failures and preserve healthy current assets.
 
-Source isolation follows this bridge generation contract's 2026-10-13 subsection: exclude other bridges'
-ImportedData Prefabs, including same-CID private dependencies, before reading. Use only original or
-permitted sources, or fail. Ownership remains path-string-only. See the contract for its baseline.
+Source isolation requires: exclude other bridges'
+ImportedData assets of every type, including same-CID private dependencies, before reading. Use only original or
+permitted sources, or fail. Ownership remains path-string-only.
 
-### Explicit bulk deletion (2026-10-07)
+Self-check must supplement missing copies of other mods' materials and their required non-built-in
+dependencies for every inspected owner, including bridges with valid live references and current
+metadata. Run the creation dependency traversal before live-reference validation; do not wait for
+missing materials or a version change. Keep existing complete copies unchanged, preserve UUID/CID
+and geometry, and report new copies as migration requiring restart. Resolve only original sources,
+permitted packaged resources or existing current-owner files. Unavailable sources and byte conflicts
+remain explicit migration failures under the policy above; never recover from another bridge.
 
-Baseline `dev` / `3223c89f9573c6d6515a9fb1c1b078576e8eb723`;
-rollback reference `refs/rollback/manual-bulk-delete-20261007`.
+### Explicit bulk deletion
+
 The confirmed settings action to remove all bridges must run the same sequential deletion pipeline
 as individually deleting every Bridge Builder bridge. It is available in a ready main menu or loaded
 city. Permanently delete UUID-owned files, not move them. In a city remove placed bridge networks and
@@ -1400,22 +1388,17 @@ clearing tool/menu references. Keep the dangerous-operation confirmation, with l
 Self-check retirement is separate: it still backs up/moves files and requires restart, without live
 prefab unregistration. Neither operation replaces the style-scoped deployment cleanup in section 13.
 
-### Migration failure falls back to removal (2026-10-07)
+### Migration failure falls back to removal
 
-Baseline: `dev`, `3223c89f9573c6d6515a9fb1c1b078576e8eb723`;
-rollback reference `refs/rollback/migration-failure-removal-20261007`.
-After an unsuccessful dependency, native conversion,
-legacy naming or layout migration, roll back that phase's incomplete changes and retire the affected
-bridge using UUID-string ownership and recursive backup/move. Process naming and layout per owner
-so a failure does not remove unrelated successful bridges. Do not unregister live prefabs; require
-restart. A successful fallback is removal, not migration success or incomplete retention. Actual
-deletion failures remain explicit failures; a backup/move failure must first fall back to deletion.
-Never claim files were removed when they remain.
+After failed dependency, native-conversion or legacy naming migration leaves an unusable bridge,
+restore incomplete changes from that phase, then retire only the affected owner through recursive
+backup/move. Process owners independently; do not unregister live Prefabs, and require restart.
+A failed backup/move must fall back to deleting remaining selected source paths. Report removal
+as removal, not migration success; verify absence and report actual failures. A layout collision
+alone does not authorize retiring a healthy bridge: preserve it and report incomplete migration
+under the persistence policy. Never claim files were removed while they remain.
 
-### Field-by-field migration (2026-10-07)
-
-Rollback baseline: `dev`, `3223c89f9573c6d6515a9fb1c1b078576e8eb723`;
-reference `refs/rollback/fieldwise-migration-20261007`. Preserve existing local edits.
+### Field-by-field migration
 
 Version migration must complete missing fields individually, because legacy bridges may originate from different versions and lack different fields.
 After migration, bridges must use the same file structure and naming conventions as bridges generated by the current version.
@@ -1430,19 +1413,15 @@ must make no changes after successful completion; report it as migration and req
 
 ### Legacy naming migration exception
 
-Legacy naming migration exception (user request 2026-10-07): self-check must replace reachable
+Legacy naming migration exception: self-check must replace reachable
 pre-UUID sections reached through the canonical bridge root's CID dependency graph, plus their
 derived pieces/LODs/geometry (never use section-name regexes or child-name prefixes)
 with per-bridge copies named by appending "-b{uuid}" to the first space-delimited name token. Rewrite file references to new private CIDs, back up originals,
 and remove old files only after no local prefab references remain. Do not mutate live prefabs; require
-restart. This narrowly scoped legacy exception supersedes the UUID-only rule for those source files
-and the ordinary byte-identical dependency-copy rule for this explicit rename migration only.
-Rollback baseline: `dev`, `673bc85e84a83ab14c957a6a9565a013f69209e5` (existing edits preserved).
+restart. This exception permits graph-based source selection and changed identities only for
+these pre-UUID files during explicit rename migration; ordinary snapshots remain byte-identical.
 
 ### Unified file layout and truthful migration notices
-
-User revision 2026-10-07; baseline `dev`, `3289fc947637f88a9124c524bd1235029be802d1`;
-rollback reference `refs/rollback/unified-migration-layout-20261007`. Preserve existing local edits.
 
 After successful self-check migration or repair, an old bridge must use the same directory layout,
 file naming rules, CID sidecars and dependency-copy layout as a newly generated bridge. Generation
@@ -1453,6 +1432,11 @@ the existing bridge and deck CID, UUID and geometry. Back up before relocation, 
 without overwriting unrelated files, and leave a repeated migration unchanged. Retained historical
 backup files belong outside the game's active asset directories, subject to shared-reference safety.
 
+Use [asset persistence sections 6–7](../Bridge-Asset-Persistence.md#6-approved-owner-directory-layout)
+for owner-local Prefabs, Geometry, Appearance, VT/mid-mips, Locales and Dependencies. Legacy sibling
+dependency directories remain migration inputs. Preserve healthy bridges on layout collisions;
+native cold-load acceptance remains separate.
+
 Startup self-check must distinguish healthy legacy migration from damaged-asset repair/removal.
 Report migration as migration, never as repaired damage. When both occur, explicitly report both;
 when migration fails, report that failure without calling a healthy bridge damaged. Localize all
@@ -1460,21 +1444,15 @@ new messages in every supported language and request restart after persistent ch
 
 ## 21. Movable bridges use generated selected-road surfaces and native mechanisms
 
-User-selected technical route, specified on 2026-10-15. Pre-edit baseline: branch `dev`, HEAD
-`0f4b10ae47c5dc264249e0d877aacc326e3e9525`; rollback reference
-`refs/rollback/movable-bridge-contract-20261015`. Existing local changes are preserved.
-
 [MOVABLE_BRIDGES_CONTRACT.md](MOVABLE_BRIDGES_CONTRACT.md) is the normative supplement for draw,
 lift, pedestrian and subsequently admitted movable mechanisms. Read it before their development.
 Its sections 2–12 define the general generation, rendering, graph and persistence method; section 15
 records encountered failures and mandatory solutions. The method derives from the implemented
 pipeline; per-style dimensions and historical section tables are evidence, not universal rules.
-Section 7 requires existing materials, prototype-based UV projection and paint integrated into
-mechanism geometry, with no independent marking objects or texture baking. Section 11 requires
+Section 7 requires source-faithful materials, measured UV projection and paint integrated into
+mechanism geometry, with separate skinned paint under sections 18–19 of the movable contract.
+Material preparation follows the material generation contract. Section 11 requires
 selective Section/Piece persistence, native unlock semantics and native-format reader compatibility.
-
-Contract synchronization baseline (2026-10-17): `dev/3b6363ada9f1f147b1a660e20c0d6246a54f82dd`;
-rollback reference `refs/rollback/movable-generation-contract-20261017`. Local edits are preserved.
 
 Generate the visible moving road from the selected road's resolved closed-pose composition, convert
 it into persistent object geometry, partition it and bind it to the measured native mechanism.
@@ -1495,9 +1473,6 @@ not implementation; compilation and preview are not full acceptance. Sections 12
 scoped recovery, width audits, native pricing, ownership, persistence and migration.
 
 ## 22. New bridge styles require immediate UI synchronization, generator routing and multilingual names
-
-User requirement dated 2026-10-16. Pre-edit baseline: branch `dev`, HEAD
-`0f4b10ae47c5dc264249e0d877aacc326e3e9525`. Existing working-tree changes are preserved.
 
 Whenever a new bridge style is created, immediately synchronize the UI and connect the new style
 to the generator router. Complete both in the same implementation increment. This applies to
@@ -1521,11 +1496,10 @@ an incomplete style implementation; UI integration must not be deferred to anoth
   management labels and language changes together. Run the existing relevant localization checks;
   record any pending human UI verification explicitly. Compilation alone is not UI acceptance.
 
-### Registered-style behavior parity for testing (2026-10-16)
+### Registered-style behavior parity for testing
 
 All registered bridge styles must use identical UI and operation behavior regardless of implementation
-completeness. This requirement applies to fixed and movable styles and overrides the previous rule
-that retained completion-based admission safeguards.
+completeness. This requirement applies to fixed and movable styles.
 
 - Never display a notice, warning, tooltip, badge, placeholder or other message stating that a bridge
   style is unfinished, incomplete, not ready or still under development. Its messages and notification
@@ -1543,10 +1517,6 @@ that retained completion-based admission safeguards.
   Report success only when the requested operation actually succeeds. This rule does not authorize
   publishing invalid or partial assets, or claiming that an unverified generator is complete.
 
-Pre-edit baseline: branch `dev`, HEAD `0f4b10ae47c5dc264249e0d877aacc326e3e9525`;
-rollback reference `refs/rollback/registered-style-ui-parity-20261016`. Existing working-tree changes
-are preserved. Implementation status remains documented accurately in development records.
-
 <a id="23-gpu-computation-and-parallel-bridge-generation"></a>
 
 ## 23. Performance follows measured bottlenecks
@@ -1560,8 +1530,32 @@ This runtime scheduling policy does not authorize delegation to coding agents.
 
 ## 24. Movable bridge asset size
 
-User requirement dated 2026-10-16. Pre-edit baseline: branch `dev`, HEAD
-`3b6363ada9f1f147b1a660e20c0d6246a54f82dd`. Existing working-tree changes are preserved.
+Report delivery size using three distinct scopes: (1) the source-delivery files selected by Git,
+with component subtotals and an explicit distinction between tracked files and pending additions;
+(2) the complete Paradox Mods content package after official postprocessing and SDK packaging,
+including embedded data, prepared materials, required libraries, UI files and any shipped symbols;
+(3) one generated bridge's complete asset footprint. For scope 2 measure the final compressed ZIP's
+actual length, state the publication file list, toolchain and whether it was packaged locally or
+downloaded from a published version. A local SDK package is not proof of publication. Covers and
+listing screenshots are separate uploads, not installed content. For scopes 1 and 3 sum actual file
+lengths without transport compression. State exact bytes and units for every scope; disk allocation
+and an unpacked build-directory total are not package-size substitutes. Local authoring intermediates and backups are not delivery-size metrics. Keep them
+out of source publication and compiled output, and do not describe their size as mod or bridge size.
+
+Keep the generated bridge's material footprint as small as possible without compromising
+material resolution. Material generation contract sections 2 and 5 impose two separate limits:
+10,000,000 bytes for one generated owner's complete persisted material dependency graph, and
+50,000,000 bytes for the complete compressed official SDK content package. The working material
+budget is 5–10 MB; smaller outputs must not be padded. A prepared style-directory subtotal proves
+neither limit, and an unavailable complete-owner measurement must remain explicitly unverified.
+These limits do not define a byte ceiling for geometry or the entire generated Prefab graph;
+the complete-graph comparison below remains independently required. An oversized package is not
+a final deliverable or ready for human acceptance. Reduce redundant storage through original-resource
+reuse, identical-resource sharing and source-density tiling, not resolution loss. Continue to
+report the exact complete bridge footprint, including geometry, every LOD, materials, texture
+and VT/mip payloads, dependency snapshots, presentation resources and CID sidecars. Control
+mod-package size through the same reuse policy without duplicate baking, and report it separately
+from the size of an individual generated bridge.
 
 The total size of a generated movable bridge Prefab, including its dependencies, must be
 comparable to the corresponding original movable bridge. The root Prefab file alone is not
@@ -1585,10 +1579,6 @@ manager-owned runtime reconstruction dependency. Measure a human-created persist
 before claiming this requirement is met. No arbitrary acceptance ratio is implied by this rule.
 
 ## 25. Adapt sidewalk-dependent components to the actual elevated road
-
-User requirement dated 2026-10-17. Pre-edit baseline: branch `dev`, HEAD
-`3b6363ada9f1f147b1a660e20c0d6246a54f82dd`; rollback reference
-`refs/rollback/elevated-sidewalk-contract-20261017`. Existing working-tree changes are preserved.
 
 This rule applies to every bridge generator, including fixed and movable bridges. Roads do not
 necessarily have sidewalks on both sides, and their sides are not necessarily symmetric: a road
@@ -1623,150 +1613,13 @@ adapting bridge-owned geometry. This rule governs sidewalk-dependent presence an
 does not authorize guesses about structural parts or changes to unrelated geometry. Verify roads
 with zero sidewalks, one sidewalk and unequal left/right sidewalk widths when claiming support.
 
-<a id="detailed-repository-rule-checklist-2026-10-16"></a>
-
-## Current repository checklist (2026-10-19)
+## Current repository checklist
 
 1. Extract and hardcode construction data from the correct real prototype; generation must not
    require another player to possess the developer's original prototype files.
 2. Supply the necessary resource graph through permitted sources and independent persistence.
 3. Generate the selected road, native motion, attachments and all LODs with correct part transforms.
-4. Preserve native attributes, material density and original road bones; do not cut receivers for paint.
+4. Preserve native attributes, material contract section 2's mapping-specific density and original road bones; do not cut receivers for paint.
 5. Integrate routing, UI and all supported languages; preserve fees, unlocks and identities.
 6. Build/deploy coherent increments and scope any necessary recovery to affected owned assets.
 7. Verify actual geometry, saved references and native behavior; label pending visual/cold-load checks.
-
-Historical procedural checklists do not restore deferred-family bans, mandatory style branches,
-per-edit deployment, mandatory GPU implementation or manual-feedback gates on further coding.
-
-## Retained repository routing records: Current documentation baseline
-
-Error-boundary policy revision (2026-10-16): branch `dev`, HEAD
-`0f4b10ae47c5dc264249e0d877aacc326e3e9525`; rollback reference
-`refs/rollback/error-boundary-policy-20261016`. Existing working-tree changes are preserved.
-
-Backup-content rule revision (2026-10-16): branch `dev`, HEAD
-`0f4b10ae47c5dc264249e0d877aacc326e3e9525`. Existing working-tree changes are preserved.
-
-Documentation revision (2026-10-15): branch `dev`, HEAD
-`0f4b10ae47c5dc264249e0d877aacc326e3e9525`; rollback reference
-`refs/rollback/scoped-cleanup-docs-20261015`. Contract section 13 is the authority for deployment
-cleanup: generation changes remove only affected styles' bridges; without a generation change,
-remove no existing bridges. Documentation-only edits require no game shutdown, build or deployment.
-
-## Organization revision record
-
-Organization-only revision (2026-10-17): branch `dev`, HEAD
-`3b6363ada9f1f147b1a660e20c0d6246a54f82dd`; rollback reference
-`refs/rollback/contract-organization-20261017`. Existing working-tree changes are preserved.
-Original requirement text, examples, exceptions and revision records are retained. Existing
-numbered sections and heading anchors are preserved; headings, placement and navigation are
-organized without changing requirements or implementation acceptance.
-
-
-## Approved native tiled road material descriptor (2026-10-17)
-
-The user explicitly permits a new native object-material descriptor that references existing
-tileable road textures to eliminate atlas-repeat geometry cuts. This is a scoped exception to
-the existing-material-only rule: do not create or bake textures, introduce custom shaders, modify
-source assets, or change structural and marking materials. Keep one descriptor per required
-appearance within each bridge owner and share it across LODs. Preview descriptors belong only to
-the preview's transient database. Persist formal descriptors with private identities and original
-texture references; native cold loading must not depend on Bridge Builder. Unchanged built-in
-textures remain references, and external dependencies retain the normal snapshot policy.
-
-Use continuous object-local UVs and the native sampler for whole-texture repetition; do not apply
-vertex-wise fractional UVs or cut triangles at repeat boundaries. This exception does not permit
-repeating a mixed atlas as though it were a tileable road texture. Other geometry, marking,
-sidewalk, LOD and acceptance requirements remain unchanged.
-
-Baseline: `dev/d21433ed2a9ee233c8525ce6a0fe2515f973dc7a`; rollback reference
-`refs/rollback/native-tiled-road-material-20261017`. This permission does not establish visual or
-cold-load acceptance.
-
-## Approved GPU composition from existing textures (2026-10-17)
-
-The user explicitly authorizes composing new textures from existing textures. For converted
-movable-road appearance, this supersedes the earlier existing-materials-only, no-new-texture,
-no-baking and no-new-descriptor restrictions, including the narrower tiled-asphalt exception.
-It does not authorize custom runtime shaders, independent marking objects, depth offsets,
-prototype mesh Boolean operations, or source-asset mutation.
-
-- Compose road appearance and paint using existing native texture inputs on a vendor-neutral GPU.
-  Save owner-local textures and native object-material descriptors; do not bake per marking or
-  create separate marking Prefabs. Preserve needed color, alpha, normal and mask channels.
-- Paint must not cut the receiving road. Texture repeat boundaries must not subdivide geometry.
-  Evaluate repetition and paint in pixels. Only physical boundaries, native motion seams and
-  required appearance-domain boundaries may partition the road.
-- Build each of the three LODs from its corresponding native mesh input and measured bridge
-  construction rules. Do not feed the painted/tiled near mesh into every level. Retain the last
-  authored road-piece LOD where the native piece supplies fewer levels. Share composed appearance
-  across levels; use mip filtering rather than replicating paint geometry.
-- Keep prototype structural meshes, skinning, thickness, sidewalk adaptation and LOD thresholds.
-  This appearance permission does not authorize deleting structure to meet a triangle budget.
-- Bound atlas dimensions and share resources within each owner. Generate mipmaps on the GPU,
-  respecting color space and tangent-space normals. Persist textures and descriptors under the
-  bridge's identity; preview resources belong to the transient preview database. Delete failed
-  generation resources. Preserve the existing external dependency snapshot rules.
-- Verify stage times, per-LOD triangles, total serialized size including dependencies, reload and
-  near/far visual appearance. Compilation alone does not establish acceptance or size parity.
-
-Instruction-edit baseline: `dev/d21433ed2a9ee233c8525ce6a0fe2515f973dc7a`.
-Rollback reference: `refs/rollback/gpu-road-composition-20261017`.
-
-## Native separated movable paint revision (2026-10-18)
-
-The user now requests separate native markings and prototype-based asphalt with preserved UV scale.
-This supersedes the prohibition on independent marking objects only for native decal child renderers
-attached to the mechanism's recorded motion connections. Keep each disjoint projector in its own native object-space clipping bounds. The native shader
-clips against one box per object: grouping disjoint volumes is prohibited unless a compatible native
-per-instance clipping representation is verified. Supply its normal and tangent attributes and bind
-each projector to its motion connection. Keep geometry as closed projection volumes; never render those volumes
-as road surface triangles. Only projection volumes may be partitioned at physical motion seams;
-markings and texture repetition must never cut receiving road geometry.
-
-Remove full-road transparent paint overlays. Reuse the native decal material and measured native
-paint patches. Asphalt uses a repeatable unit extracted from the prototype atlas, including its
-albedo, normal, mask and control channels. Preserve the measured per-metre UV gradients, direction
-and phase on both leaves. BC block alignment may round the extracted pixel dimensions up; do not
-stretch a low-resolution whole-span atlas over the road. Other appearance domains retain their
-existing path. Keep native asset persistence and owner-scoped rollback/cleanup for the complete graph.
-Preview, placement, opening/closing, LOD transitions and cold loading require human game verification;
-a successful build does not establish visual acceptance.
-
-Revision baseline: `dev/d21433ed2a9ee233c8525ce6a0fe2515f973dc7a`.
-
-## Preserve original road skinning (2026-10-18)
-
-The user revoked moving the road onto marking child transforms. Keep Draw01 road geometry in its original procedural skeleton and skinning path, with all three LODs, UVs and materials retained. Markings must adapt to the original road bones; never move road receivers into history-driven child objects to compensate for decal lag. Native independent persistence remains mandatory, without runtime synchronization patches. Structure/underside surfaces use the original native descriptors, texture references and VT resources without receiver-only material copies or descriptor rewrites. Single-sided skinned paint replaces the old projectors; disabling structural decal reception is no longer required. The earlier rigid road child implementation is withdrawn. A native decal shader without procedural skinning must not be treated as supporting bone-bound paint merely by assigning indices.
-
-Revision baseline: dev/d21433ed2a9ee233c8525ce6a0fe2515f973dc7a.
-
-## Authorized native skinned paint exception (2026-10-18)
-
-The user explicitly permits native skinned paint surfaces and minimum anti-coplanar clearance. Draw01 keeps its original road skeleton and receiver topology. Marking polygons alone may be partitioned at motion seams and bound with the road bone indices/bind poses. Use a native procedural-skinning material, single-sided paint, and 0.001 m clearance; no custom shader or runtime synchronization patch. Paint is an additional mesh on the same native mechanism object, with matching StackProperties, authored bounds and object transform, not a history-driven child projector. Preserve source marking layout/color; do not cut the road. A compact paint mesh remains present across road LOD transitions. This supersedes earlier prohibitions on overlapping marking surfaces and the native child-projector requirement for this implementation. Preview, motion, far views and cold loading still require verification.
-
-Revision baseline: dev/d21433ed2a9ee233c8525ce6a0fe2515f973dc7a.
-
-## Accepted movable generation baseline (2026-10-18)
-
-Read [MOVABLE_BRIDGES_CONTRACT.md sections 16–23](MOVABLE_BRIDGES_CONTRACT.md#16-accepted-generation-pipeline-and-source-map) before implementing or modifying movable bridges.
-Those sections consolidate the accepted current pipeline and supersede conflicting historical
-paint/material recipes: original structural Surface/VT references; measured non-VT repeating road
-and grating units plus bounded native VT composites; separate single-sided native skinned paint
-with 0.001 m clearance on the original road bones, matching stack metadata and transforms.
-No receiver cuts for markings, no child projectors, no structural receiver-only material copies,
-no moving the road onto marking bones, and no runtime synchronization dependency. Acceptance is
-specific to the latest Draw01 visual repair; new styles still require their own archetype data and
-acceptance. Baseline: dev/d21433ed2a9ee233c8525ce6a0fe2515f973dc7a plus preserved working changes.
-
-Prior long instruction records are preserved in [retained movable instruction records](MOVABLE_INSTRUCTION_RECORDS.md).
-Use the current accepted contract for conflicting appearance/marking decisions.
-
-
-Persistence layout revision (2026-10-19): branch `dev`, HEAD
-`d21433ed2a9ee233c8525ce6a0fe2515f973dc7a`, preserving prior working changes.
-Follow Bridge-Asset-Persistence.md sections 6–7 for owner-local short filenames, VT/mid-mip
-placement and backed-up file-only migration. Legacy sibling dependency directories remain valid
-migration inputs. Layout conflicts preserve healthy bridges and report incomplete migration;
-they do not authorize damaged-asset retirement. Native cold-load acceptance remains separate.

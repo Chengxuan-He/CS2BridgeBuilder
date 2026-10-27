@@ -9,7 +9,6 @@ using UnityEngine;
 using Transform = Game.Objects.Transform;
 
 namespace BridgeBuilder.Bridges;
-
 // PedestrianDraw02's straight closed-pose sampling arrangement. The approaches supply native
 // connectivity; only the two central-node halves become the mechanism's road input.
 // This is not a city-construction request and does not persist the sampling entities.
@@ -20,12 +19,7 @@ internal sealed class PedestrianDraw02ClosedRoad : IDisposable
     internal readonly Pose RoadToObject;
     private readonly Entity _sourceTheme;
     private readonly float3 _roadOrigin;
-
-    internal PedestrianDraw02ClosedRoad(string owner, Entity selectedRoad, StaticObjectPrefab mechanism,
-        NetSubObjectInfo placement, float3 roadOrigin, Elevation elevation,
-        TerrainHeightData terrain, Entity sourceTheme, bool leftHandTraffic,
-        RandomSeed randomSeed, BuildingConfigurationData buildingConfiguration,
-        Upgraded? upgrade = null)
+    internal PedestrianDraw02ClosedRoad(string owner, Entity selectedRoad, StaticObjectPrefab mechanism, NetSubObjectInfo placement, float3 roadOrigin, Elevation elevation, TerrainHeightData terrain, Entity sourceTheme, bool leftHandTraffic, RandomSeed randomSeed, BuildingConfigurationData buildingConfiguration, Upgraded? upgrade = null)
     {
         _sourceTheme = sourceTheme;
         _roadOrigin = roadOrigin;
@@ -35,43 +29,27 @@ internal sealed class PedestrianDraw02ClosedRoad : IDisposable
         // native GeometrySystem on both incident edges.
         var positions = new[]
         {
-            roadOrigin + new float3(0f, 0f, -144f), roadOrigin,
-            roadOrigin + new float3(0f, 0f, 144f)
+            roadOrigin + new float3(Numeric_Types_PedestrianDraw02_PedestrianDraw02ClosedRoad_cs.Values.F32[0], Numeric_Types_PedestrianDraw02_PedestrianDraw02ClosedRoad_cs.Values.F32[1], -Numeric_Types_PedestrianDraw02_PedestrianDraw02ClosedRoad_cs.Values.F32[2]),
+            roadOrigin,
+            roadOrigin + new float3(Numeric_Types_PedestrianDraw02_PedestrianDraw02ClosedRoad_cs.Values.F32[3], Numeric_Types_PedestrianDraw02_PedestrianDraw02ClosedRoad_cs.Values.F32[4], Numeric_Types_PedestrianDraw02_PedestrianDraw02ClosedRoad_cs.Values.F32[5])
         };
-        var random = randomSeed.GetRandom(0);
+        var random = randomSeed.GetRandom(Numeric_Types_PedestrianDraw02_PedestrianDraw02ClosedRoad_cs.Values.I32[0]);
         var nodes = new MovableNetworkContext.NodeInput[positions.Length];
-        for (var i = 0; i < nodes.Length; i++)
-            nodes[i] = new MovableNetworkContext.NodeInput(selectedRoad,
-                new Node { m_Position = positions[i], m_Rotation = quaternion.identity },
-                new PseudoRandomSeed(ref random), elevation);
-        var edges = new MovableNetworkContext.EdgeInput[2];
-        for (var i = 0; i < edges.Length; i++)
-            edges[i] = new MovableNetworkContext.EdgeInput(selectedRoad, i, i + 1,
-                NetUtils.StraightCurve(positions[i], positions[i + 1]),
-                new PseudoRandomSeed(ref random), elevation, upgrade);
-        var centralNode = new MovableNetworkContext.OwnerIndex(false, 1);
+        for (var i = Numeric_Types_PedestrianDraw02_PedestrianDraw02ClosedRoad_cs.Values.I32[1]; i < nodes.Length; i++)
+            nodes[i] = new MovableNetworkContext.NodeInput(selectedRoad, new Node { m_Position = positions[i], m_Rotation = quaternion.identity }, new PseudoRandomSeed(ref random), elevation);
+        var edges = new MovableNetworkContext.EdgeInput[Numeric_Types_PedestrianDraw02_PedestrianDraw02ClosedRoad_cs.Values.I32[2]];
+        for (var i = Numeric_Types_PedestrianDraw02_PedestrianDraw02ClosedRoad_cs.Values.I32[3]; i < edges.Length; i++)
+            edges[i] = new MovableNetworkContext.EdgeInput(selectedRoad, i, i + Numeric_Types_PedestrianDraw02_PedestrianDraw02ClosedRoad_cs.Values.I32[4], NetUtils.StraightCurve(positions[i], positions[i + Numeric_Types_PedestrianDraw02_PedestrianDraw02ClosedRoad_cs.Values.I32[5]]), new PseudoRandomSeed(ref random), elevation, upgrade);
+        var centralNode = new MovableNetworkContext.OwnerIndex(false, Numeric_Types_PedestrianDraw02_PedestrianDraw02ClosedRoad_cs.Values.I32[6]);
         var mechanisms = new[]
         {
-            new MovableNetworkContext.MechanismInput(mechanism, centralNode,
-                new Transform { m_Position = roadOrigin, m_Rotation = quaternion.identity },
-                placement, new TrafficLights
-                {
-                    m_State = TrafficLightState.Ongoing, m_CurrentSignalGroup = 1,
-                    m_NextSignalGroup = 1, m_SignalGroupCount = 2
-                }, new PseudoRandomSeed(ref random))
+            new MovableNetworkContext.MechanismInput(mechanism, centralNode, new Transform { m_Position = roadOrigin, m_Rotation = quaternion.identity }, placement, new TrafficLights { m_State = TrafficLightState.Ongoing, m_CurrentSignalGroup = (byte)(Numeric_Types_PedestrianDraw02_PedestrianDraw02ClosedRoad_cs.Values.I32[7]), m_NextSignalGroup = (byte)(Numeric_Types_PedestrianDraw02_PedestrianDraw02ClosedRoad_cs.Values.I32[8]), m_SignalGroupCount = (byte)(Numeric_Types_PedestrianDraw02_PedestrianDraw02ClosedRoad_cs.Values.I32[9]) }, new PseudoRandomSeed(ref random))
         };
-        Network = new MovableNetworkContext(owner, nodes, edges, mechanisms,
-            Array.Empty<MovableNetworkContext.MiddleInput>(),
-            Array.Empty<MovableNetworkContext.ParentInput>(), terrain, sourceTheme,
-            leftHandTraffic, randomSeed, buildingConfiguration);
+        Network = new MovableNetworkContext(owner, nodes, edges, mechanisms, Array.Empty<MovableNetworkContext.MiddleInput>(), Array.Empty<MovableNetworkContext.ParentInput>(), terrain, sourceTheme, leftHandTraffic, randomSeed, buildingConfiguration);
         try
         {
-            Road = Network.CompileRoad(new[]
-            {
-                (0, MovableNetworkContext.SurfacePart.EndNode),
-                (1, MovableNetworkContext.SurfacePart.StartNode)
-            }, new[] { centralNode }, roadOrigin);
-            RoadToObject = Network.RoadToMechanism(0, roadOrigin);
+            Road = Network.CompileRoad(new[] { (Numeric_Types_PedestrianDraw02_PedestrianDraw02ClosedRoad_cs.Values.I32[10], MovableNetworkContext.SurfacePart.EndNode), (Numeric_Types_PedestrianDraw02_PedestrianDraw02ClosedRoad_cs.Values.I32[11], MovableNetworkContext.SurfacePart.StartNode) }, new[] { centralNode }, roadOrigin);
+            RoadToObject = Network.RoadToMechanism(Numeric_Types_PedestrianDraw02_PedestrianDraw02ClosedRoad_cs.Values.I32[12], roadOrigin);
         }
         catch
         {
@@ -82,8 +60,13 @@ internal sealed class PedestrianDraw02ClosedRoad : IDisposable
 
     // Resolve native node objects while the private lanes and signal needs still exist.
     // Their positions share Road's origin-relative frame, before mechanism bone binding.
-    internal MovableNodeObjects.Result Objects()
-        => Network.NodeObjects(1, _sourceTheme, _roadOrigin);
-
+    internal MovableNodeObjects.Result Objects() => Network.NodeObjects(Numeric_Types_PedestrianDraw02_PedestrianDraw02ClosedRoad_cs.Values.I32[13], _sourceTheme, _roadOrigin);
     public void Dispose() => Network.Dispose();
+}
+
+// Embedded numerical arrays: Types_PedestrianDraw02_PedestrianDraw02ClosedRoad_cs
+internal static class Numeric_Types_PedestrianDraw02_PedestrianDraw02ClosedRoad_cs
+{
+    static Numeric_Types_PedestrianDraw02_PedestrianDraw02ClosedRoad_cs() {}
+    internal static readonly HardcodedNumbers Values = HardcodedNumbers.Load("Types_PedestrianDraw02_PedestrianDraw02ClosedRoad_cs");
 }

@@ -1,0 +1,10 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup><OutputType>Exe</OutputType><TargetFramework>net8.0</TargetFramework><ImplicitUsings>enable</ImplicitUsings><Nullable>enable</Nullable></PropertyGroup>
+  <ItemGroup>
+    <Reference Include="UnityEngine.CoreModule"><HintPath>$(GameManagedDir)/UnityEngine.CoreModule.dll</HintPath></Reference>
+    <Compile Include="../../src/BridgeBuilder/Bridges/Common/Movable/MovableUvDomains.cs" Link="MovableUvDomains.cs" />
+    <Compile Include="../../src/BridgeBuilder/Bridges/Common/Movable/MovableUvCatalogue.g.cs" Link="MovableUvCatalogue.g.cs" />
+    <Compile Include="../../src/BridgeBuilder/Bridges/Common/Movable/MovableStructureKey.cs" Link="MovableStructureKey.cs" />
+    <Compile Include="../../src/BridgeBuilder/Bridges/Types/Draw01/Draw01UndersideUv.cs" Link="Draw01UndersideUv.cs" />
+  </ItemGroup>
+</Project>

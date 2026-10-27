@@ -1,202 +1,100 @@
-# Movable Bridge Existing Material Implementation
-
-## Native cable conversion (2026-10-20)
-
-The later converted-road appearance permission below supersedes the historical
-no-new-descriptor statement. The four measured native train/tram cable render
-inputs use Surface CID `106cc56e9f15a135bb6ea7b99d675c2d`, a textureless
-`CurvedTransparent` descriptor. They now receive an owner-local native `Default`
-object descriptor after their curved geometry has been evaluated. This is scoped
-to that measured CID, not a generic transparent-material conversion or a change
-to carried structural surfaces.
-
-`MovableCableSurface` preserves the source's float32 RGBA
-`(0.018867909908294678, 0.018867909908294678, 0.018867909908294678, 1)`,
-and its template defaults: metallic 0, smoothness 0.5 and snow 0. A persisted
-1x1 zero control map prevents Default's absent-map palette tinting. Packed
-tangents use `_TANGENTSPACE_OCTO`. The source is fully opaque; the new native
-object shader provides the same procedural skeleton path as the converted road,
-without retaining network curve deformation or a mod-driven rebinding loop.
-
-One descriptor/control pair is shared across the render graph's LODs, including
-distinct source object instances carrying that same CID. Preview allocates into
-its private database and retains properties through its existing lifetime.
-Formal resources use the existing owner-local Appearance path. Both resources
-enter the existing failed-call rollback list immediately after allocation and
-are reachable through the final render's material dependency graph on success.
-Original built-in assets and existing saved bridges are unchanged.
-
-`MovableCableMaterialCheck.py` checks the original 83-byte asset's SHA-256,
-bit-exact color, alpha and template coefficients against the production helper.
-Compilation and this audit do not prove complete shader equivalence, game
-appearance, preview teardown or cold-load persistence. Those remain native
-checks; neutral-wind geometry still does not reproduce dynamic wind sway.
-Other unmatched curved materials retain their previous fallback pending their
-own measured conversion.
+# Movable bridge material reuse and conversion
 
 ## Material selection
 
-Preview and formal creation now reference existing materials. The generation path performs no
-moving-road or marking texture baking, material cloning, template rewriting, mip generation or
-material serialization. This replaces the earlier conditional reuse policy.
+Follow the [material generation contract](agent-contract/MATERIAL_GENERATION_CONTRACT.md)
+and [movable surface selection](agent-contract/MOVABLE_BRIDGES_CONTRACT.md#243-material-selection-order).
+Choose by actual surface type and physical motion domain, not by the containing section's name.
+All asphalt, including empty lanes and parking areas, is road surface. Unsupported moving surface
+types and rails/sleepers preserve the selected source appearance; stationary edge abutments keep
+their separate rules. Never substitute a visually similar prototype material for missing conversion.
 
-| Content | Existing material selected | Generated data |
+| Content | Required appearance and representation |
+| --- | --- |
+| Compatible original object material | Direct original reference and compatible UVs; no new material or texture |
+| Carried prototype structure | Original material semantics; measured repeat/remapping when width deformation changes density |
+| Repeating road or grating | Original compatible texture/material, or an offline-prepared repeat unit at native density |
+| Fixed platforms and caps | Separate measured appearance domains, preserved structure and per-side sidewalk layout |
+| Rails and sleepers | Selected track's original appearance and UVs; measured native object conversion only when necessary |
+| Overhead wires | Selected native cable appearance and measured object conversion; no invented transparent fallback |
+| Road paint | Separate single-sided skinned paint on original road bones, 0.001 m upper-normal clearance |
+| Variable mixed surfaces | Native composition of required layers; repeating base cannot become a full-span bake |
+
+Full reuse creates no new descriptor, identity or duplicate texture. Constant derived appearances
+must be prepared before runtime and packaged by style. Preview/create/regenerate/export copy
+finished native bytes and bind them without rebaking or recompression. No first-use or prior-bridge
+result cache satisfies that requirement. Preserve both directional texel densities and all channels,
+mips, normal encoding and filtering semantics.
+
+## Native cable source evidence
+
+Four measured train/tram cable inputs reference Surface CID
+106cc56e9f15a135bb6ea7b99d675c2d, a textureless CurvedTransparent descriptor. Its measured
+opaque float32 RGBA is (0.018867909908294678, 0.018867909908294678,
+0.018867909908294678, 1); template defaults include metallic 0, smoothness 0.5 and snow 0.
+The measured Default object conversion uses a neutral 1x1 control map and
+_TANGENTSPACE_OCTO, preserving appearance while removing network curve deformation.
+This does not authorize generic conversion of transparent or textured surfaces.
+
+Preserve exact source/version and parameters in the prepared recipe; one appearance can be shared
+across LODs within an owner. A matching CID does not authorize borrowing another bridge's files.
+MovableCableMaterialCheck.py checks the original 83-byte asset hash and parameter bits. These
+checks do not establish complete shader equivalence, motion, wind sway or cold-load acceptance.
+
+## Native road source evidence
+
+The measured native Road material 1d7dad9f64c9fe55a809f1080c39fb92 supplies these worldspace inputs:
+
+| Object property | Native texture CID | Native texture |
 | --- | --- | --- |
-| Native structure | Original prototype materials at every LOD | Width-adjusted structure geometry |
-| Object-compatible road surfaces | Original source material and UVs | Moving geometry and skinning |
-| Network carriageway | Prototype asphalt atlas region | Selected-road geometry and remapped UVs |
-| Network moving walkways | Prototype metal-grating atlas region | Selected-road geometry and remapped UVs |
-| Fixed end walkways | Prototype opaque paving atlas region | Selected-road geometry and remapped UVs |
-| Curved lane geometry | Measured native object counterpart with matching texture references; otherwise prototype material | Evaluated lane geometry and skinning |
-| Lane lines | Existing parking decal material, white/yellow paint regions | Approximate stroke coverage and bone attachments |
-| Other paint decals | Existing parking decal stripe presentation | Segmented native object decals |
-| Deterioration, pavement transitions and rail-bed blending | Appearance supplied by existing bridge road surface | No separately reconstructed blend overlay |
+| _BaseColorMap | b00176216b0ce36579bce6fc675cfb77 | RoadEUWorldspace_BaseColor |
+| _NormalMap | 9f446790360787756b0e5909db12e200 | RoadEUWorldspace_Normal |
+| _MaskMap | 375b871b66aaf675dacef141eb2a9810 | RoadEUWorldspace_MaskMap |
 
-Matching texture references does not prove identical coefficients. The selected existing material
-supplies its own coefficients. Unmatched curved lane surfaces receive the prototype material with
-their evaluated UVs; exact rail/fence appearance is not established. Decorative wear and transition
-blending differ from the ordinary road. Native traffic lanes remain independent of these visuals.
+The inspected 1024x1024 texture and 0.4 UV cycles/metre yield 409.6 texels/metre.
+These values describe that source, not all roads or bridge prototypes. Read actual overrides,
+worldspace masks and channel scales when identifying a recipe. Matching texture references alone
+does not establish equal material parameters, blending or appearance.
 
-## Native asset evidence
+Native LOD0 faces 1512/1513 and 1819/1820 in the inspected prototype identify asphalt and grating
+regions. Such face identities and Float16 UV bounds belong to exact prototype data, not universal
+selection rules. Extract verified atlas interiors offline, excluding paint and pale gutters, and
+preserve their physical scale. Continuous Repeat UVs must not be reduced to fractional values at
+vertices. Do not cut receiver triangles at texture periods or expand a repeat unit across the span.
 
-The existing `NoParkingStripingDecal01` SurfaceAsset CID is
-`4b5500b1b5c270890d99149f7f62e51a`, template 18. Its original atlas is 2048 by 2048.
-White paint uses pixel rectangle `(13.5, 1600.5)` to `(15.5, 1620.5)`; yellow paint uses
-`(390.5, 30.5)` to `(410.5, 40.5)`. Original BC7 pixels and alpha were inspected offline.
-No copied atlas is exported.
+An inspection found 91 curved/object candidates by texture-reference sets. Those candidates are
+evidence for further comparison, not permission to substitute materials without matching template
+defaults, overrides, stack order, channels and sampling. Missing required conversion fails explicitly.
 
-Forty-six connected rectangles, measured from the native LaneLine atlas at 512 by 128 inspection
-resolution, approximate line/dash coverage. They are geometry masks, not new textures. Runtime
-intersects them with source decal UV intervals and longitudinal repetition, then clips actual
-receivers by stroke and native bone domain. Existing bounded chord subdivision handles curves.
-Fine wear, triangular paint silhouettes, endpoint fading and other pattern details can differ.
-Other paint types currently use a stripe approximation rather than their original full pattern.
+## Native paint source evidence
 
-Native LOD0 faces 1512/1513 provide the current prototype's asphalt UV rectangle; 1819/1820
-provide grating. Their measured Float16 UV bounds are embedded in the generator. Material regions
-use measured curb positions, without a section-Prefab replacement table. Geometry is still
-extracted from the selected road, including components absent from the prototype. Visual acceptance
-of every component is not established by that extraction.
+NoParkingStripingDecal01 has Surface CID 4b5500b1b5c270890d99149f7f62e51a, template 18,
+and a measured 2048x2048 original atlas. White source pixels occupy rectangle
+(13.5, 1600.5) to (15.5, 1620.5); yellow occupies (390.5, 30.5) to (410.5, 40.5).
+Keep these measured coordinates in source data. Resolve actual VT backing during offline
+preparation rather than serializing an unavailable authoring Texture CID.
 
-Ninety-one native curved-to-object material pairs were found by inspecting texture-reference sets.
-The resolver uses original CIDs and does not search generated bridges for donors. Unknown or
-external curved inputs use the prototype object material.
+Prepare the required native skinned object appearance and texture at source resolution offline.
+Polygon footprints supply the marking outline; bind them to the road's original bones with
+single-sided rendering. No child decal projectors, per-dash Prefabs, receiver cuts, coplanar
+full-road paint overlays or structural receiver-only material copies are permitted.
+The measured 46-rectangle LaneLine approximation is not proof of exact complex symbols,
+endpoint fading or all native decal behavior. Those require separate implementation and acceptance.
 
-## Persistence and performance
+## Persistence and implementation status
 
-Built-in materials remain references. Unchanged external dependencies retain the byte-identical
-per-owner snapshot rules. Generated geometry, Prefabs, UVs, skinning and placements are persisted.
-Existing materials are not added to the owned newly-created asset list. Preview uses the same
-selection without saving formal bridge assets.
+Built-in original materials remain references. Unchanged external dependencies and prepared
+resources retain byte-identical, original-CID snapshots under each owner. Copy all required
+texture/VT/mip dependencies, preserve source files and never read a deleted bridge's resource.
+Preview resources belong to the private preview lifetime; failed generation cleans only its own
+partial output. Persisted assets must operate without manager callbacks after a cold start.
 
-Unused appearance-atlas, pixel-evaluator, texture-writer and material-descriptor writer code has
-been removed. The compute loader remains for GPU preview skin bounds. The old embedded bundle
-still contains unused appearance kernels; no generation caller dispatches them. No new rendering
-shader was introduced. Geometry extraction, clipping and native asset serialization remain costs.
+The required offline migration is not complete. [Prepared materials](Prepared-Materials.md)
+records packaging, actual resource availability and remaining runtime binding/baking work.
+This document specifies the target behavior and source evidence; it does not claim that every
+current material path already avoids runtime baking or that all styles passed visual acceptance.
 
-Removing baking removes the old atlas/upload/save stage. It does not prove a particular total
-speedup or comparable total Prefab size without newly measured output.
-
-## Verification
-
-- Offline checks verified all 91 native material pairs against source texture references and
-  object templates, and verified nonzero alpha across both selected paint patches.
-- Release build passed; all 12 installed payload files match the build output.
-- All 18 original installation files were backed up and verified in
-  `artifacts/backups/existing-materials-only-20261017-011607`.
-- Draw01 branch commit `b122412` was integrated by exact patch into the dev workspace.
-- Road render callers, lane conversion, markings, preview capture and persistence allocation were
-  reviewed. Structural-only callers retain original materials.
-- Human in-game visuals, opening animation, near/far rendering, cold loading, timings and total
-  dependency size remain unverified. Old saved bridges retain their previous generated resources.
-- Earlier affected-asset cleanup was rejected by automatic execution policy (`blocked by policy`).
-  This change has not removed or migrated those assets. Evaluate newly created bridge assets.
-
-## Fixed platforms and marking batches
-
-The fixed-platform partition and grouped marking persistence now follow
-[the measured repair record](Movable-Fixed-Platforms-And-Generation-Cost.md). Fixed bridge ends no
-longer select the grating patch. Matching paint volumes share a Prefab per bone/render-settings group.
-
-
-## Native tiled carriageway descriptor (2026-10-17)
-
-The approved descriptor exception supersedes the earlier absolute no-descriptor statement for
-carriageway asphalt only. The current Draw01 route creates one native `Default` surface in the
-bridge owner's namespace, shared by all three LODs. It uses the native `Road` material
-`1d7dad9f64c9fe55a809f1080c39fb92` worldspace texture layer:
-
-| Object property | Existing texture CID | Native texture |
-| --- | --- | --- |
-| `_BaseColorMap` | `b00176216b0ce36579bce6fc675cfb77` | RoadEUWorldspace_BaseColor |
-| `_NormalMap` | `9f446790360787756b0e5909db12e200` | RoadEUWorldspace_Normal |
-| `_MaskMap` | `375b871b66aaf675dacef141eb2a9810` | RoadEUWorldspace_MaskMap |
-
-All three payloads were resolved in the installed native packages. This is the native EU Road
-appearance, not an implementation of arbitrary selected-road worldspace blending, wear or tint.
-The source worldspace UV scale (template default 0.4 cycles/metre unless overridden) is encoded
-in closed object-local UVs. The skin carries those coordinates during opening; no world-position
-sampling is needed. Carriageway domains 0, 5, 7 and 12 use whole-texture continuous sampling.
-The superseded far asphalt atlas projection is removed. Fixed caps, grating and paint retain
-their prior materials and atlas behavior; their existing geometric partitions still remain.
-
-The helper saves with `saveTextures: false` and `vt: false`: no texture saving, compression, VT
-production or pixel baking. Formal descriptors use the owner-prefixed BridgeBuilder resource
-path; existing dependency traversal reads their texture CIDs and stops at built-in resources.
-Preview descriptors use PreviewGeometry.NativeAssets and are deleted with that database. A
-failed generation deletes the newly allocated descriptor. Existing assets are not migrated.
-
-Release compilation passed. Actual new triangle counts, appearance at all distances, native
-opening and cold loading with the mod disabled require newly created in-game samples. Compilation
-and the reference audit do not establish these results.
-
-## Approved GPU composition from existing textures (2026-10-17)
-
-The user explicitly authorizes composing new textures from existing textures. For converted
-movable-road appearance, this supersedes the earlier existing-materials-only, no-new-texture,
-no-baking and no-new-descriptor restrictions, including the narrower tiled-asphalt exception.
-It does not authorize custom runtime shaders, independent marking objects, depth offsets,
-prototype mesh Boolean operations, or source-asset mutation.
-
-- Compose road appearance and paint using existing native texture inputs on a vendor-neutral GPU.
-  Save owner-local textures and native object-material descriptors; do not bake per marking or
-  create separate marking Prefabs. Preserve needed color, alpha, normal and mask channels.
-- Paint must not cut the receiving road. Texture repeat boundaries must not subdivide geometry.
-  Evaluate repetition and paint in pixels. Only physical boundaries, native motion seams and
-  required appearance-domain boundaries may partition the road.
-- Build each of the three LODs from its corresponding native mesh input and measured bridge
-  construction rules. Do not feed the painted/tiled near mesh into every level. Retain the last
-  authored road-piece LOD where the native piece supplies fewer levels. Share composed appearance
-  across levels; use mip filtering rather than replicating paint geometry.
-- Keep prototype structural meshes, skinning, thickness, sidewalk adaptation and LOD thresholds.
-  This appearance permission does not authorize deleting structure to meet a triangle budget.
-- Bound atlas dimensions and share resources within each owner. Generate mipmaps on the GPU,
-  respecting color space and tangent-space normals. Persist textures and descriptors under the
-  bridge's identity; preview resources belong to the transient preview database. Delete failed
-  generation resources. Preserve the existing external dependency snapshot rules.
-- Verify stage times, per-LOD triangles, total serialized size including dependencies, reload and
-  near/far visual appearance. Compilation alone does not establish acceptance or size parity.
-
-Instruction-edit baseline: `dev/d21433ed2a9ee233c8525ce6a0fe2515f973dc7a`.
-Rollback reference: `refs/rollback/gpu-road-composition-20261017`.
-
-
-## Native asphalt density approval and implementation (2026-10-18)
-
-The user authorizes non-VT repeating asphalt and separate paint sampling, prioritizing
-native road density over the previous combined-VT requirement. The inspected road uses
-1024 by 1024 source textures and 0.4 UV units per metre (409.6 texels per metre).
-
-The asphalt descriptor retains the native albedo, normal and mask texture references.
-Continuous projected UVs do not take fractional values at vertices. Asphalt is excluded
-from the paint chart rasterization; the chart remains transparent outside paint. The
-cutout batch and opaque asphalt batch share receiver positions, triangulation and bone
-ownership, with no depth offset, road cuts or separate marking objects. This adds receiver
-triangles for the second material pass; it does not claim a zero-triangle increase.
-Two composed pages leave room for the repeating asphalt batch at each LOD within the
-native group limit. The repeating descriptor is now retained as a saved dependency.
-
-Build validation is not visual acceptance. Coplanar marking depth behavior, native cold
-loading, near/far appearance and the generated face counts require a new human-created
-sample. This change preserves native asphalt density; it does not establish native marking
-texel density or complete appearance parity.
+Verify original identity for full reuse, exact packaged bytes, per-axis output density, every LOD,
+paint visibility, source isolation and independent persistence. Measure native decoding, composition,
+readback, texture/VT writing and publication separately on fresh comparable requests. A source audit,
+successful build or smaller texture page does not establish visual parity or a game speedup.

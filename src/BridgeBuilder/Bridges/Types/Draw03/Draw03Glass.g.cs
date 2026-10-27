@@ -4,43 +4,66 @@ using System;
 using UnityEngine;
 
 namespace BridgeBuilder.Bridges;
-
 internal static class Draw03Glass
 {
     internal static MovableStructureModel.Plan Create(int lod, Vector3[] source, int[] indices, float delta)
     {
         var data = lod switch
         {
-            0 => (Vertices: 704, Triangles: 360, Ranges: Near),
-            1 => (Vertices: 160, Triangles: 88, Ranges: Middle),
-            _ => throw new ArgumentOutOfRangeException(nameof(lod))
-        };
-        if (source.Length != data.Vertices || indices.Length != data.Triangles * 3 || !float.IsFinite(delta))
+            0 => (Vertices: Numeric_Types_Draw03_Draw03Glass_g_cs.Values.I32[0], Triangles: Numeric_Types_Draw03_Draw03Glass_g_cs.Values.I32[1], Ranges: Near),
+            1 => (Vertices: Numeric_Types_Draw03_Draw03Glass_g_cs.Values.I32[2], Triangles: Numeric_Types_Draw03_Draw03Glass_g_cs.Values.I32[3], Ranges: Middle),
+            _ => throw new ArgumentOutOfRangeException(nameof(lod))};
+        if (source.Length != data.Vertices || indices.Length != data.Triangles * Numeric_Types_Draw03_Draw03Glass_g_cs.Values.I32[4] || !float.IsFinite(delta))
             throw new InvalidOperationException("Draw03 glass requires its recorded mesh-1 layout.");
         var positions = (Vector3[])source.Clone();
         foreach (var range in data.Ranges)
-            for (var i = range.First; i <= range.Last; i++) positions[i].x += range.Side * delta;
-        return new MovableStructureModel.Plan(source, positions, new[] { indices },
-            new[] { new bool[data.Triangles] });
+            AffineGeometry.For(range.First, checked((range.Last) + 1), i =>
+            {
+                positions[i].x = AffineGeometry.Translate(positions[i].x, range.Side * delta);
+            });
+        return new MovableStructureModel.Plan(source, positions, new[] { indices }, new[] { new bool[data.Triangles] });
     }
 
     // Geometry SHA-256: f7ecc824ad55745e791e40b18fd12f5def20657ed8ea56d373429d5a1337588f
-    private static readonly (int First, int Last, int Side)[] Near =
-    {
-        (0, 339, -1),
-        (340, 351, 1),
-        (352, 363, -1),
-        (364, 703, 1),
-    };
-
+    private static readonly (int First, int Last, int Side)[] Near = ReadPackedNear();
     // Geometry SHA-256: 15b8419da13d6e99e1dc0591f12f4019f0be09c3b220a481d24720daf7b57e12
-    private static readonly (int First, int Last, int Side)[] Middle =
+    private static readonly (int First, int Last, int Side)[] Middle = ReadPackedMiddle();
+    private static (int First, int Last, int Side)[] ReadPackedNear()
     {
-        (0, 61, 1),
-        (62, 129, -1),
-        (130, 141, 1),
-        (142, 153, -1),
-        (154, 159, 1),
-    };
+        var d = Numeric_Types_Draw03_Draw03Glass_g_cs.Values;
+        var values = new (int First, int Last, int Side)[4];
+        for (int i = 0; i < 1; i++)
+            values[0 + i] = (d.I32[5 + i * 3], d.I32[6 + i * 3], -d.I32[7 + i * 3]);
+        for (int i = 0; i < 1; i++)
+            values[1 + i] = (d.I32[8 + i * 3], d.I32[9 + i * 3], d.I32[10 + i * 3]);
+        for (int i = 0; i < 1; i++)
+            values[2 + i] = (d.I32[11 + i * 3], d.I32[12 + i * 3], -d.I32[13 + i * 3]);
+        for (int i = 0; i < 1; i++)
+            values[3 + i] = (d.I32[14 + i * 3], d.I32[15 + i * 3], d.I32[16 + i * 3]);
+        return values;
+    }
 
+    private static (int First, int Last, int Side)[] ReadPackedMiddle()
+    {
+        var d = Numeric_Types_Draw03_Draw03Glass_g_cs.Values;
+        var values = new (int First, int Last, int Side)[5];
+        for (int i = 0; i < 1; i++)
+            values[0 + i] = (d.I32[17 + i * 3], d.I32[18 + i * 3], d.I32[19 + i * 3]);
+        for (int i = 0; i < 1; i++)
+            values[1 + i] = (d.I32[20 + i * 3], d.I32[21 + i * 3], -d.I32[22 + i * 3]);
+        for (int i = 0; i < 1; i++)
+            values[2 + i] = (d.I32[23 + i * 3], d.I32[24 + i * 3], d.I32[25 + i * 3]);
+        for (int i = 0; i < 1; i++)
+            values[3 + i] = (d.I32[26 + i * 3], d.I32[27 + i * 3], -d.I32[28 + i * 3]);
+        for (int i = 0; i < 1; i++)
+            values[4 + i] = (d.I32[29 + i * 3], d.I32[30 + i * 3], d.I32[31 + i * 3]);
+        return values;
+    }
+}
+
+// Embedded numerical arrays: Types_Draw03_Draw03Glass_g_cs
+internal static class Numeric_Types_Draw03_Draw03Glass_g_cs
+{
+    static Numeric_Types_Draw03_Draw03Glass_g_cs() {}
+    internal static readonly HardcodedNumbers Values = HardcodedNumbers.Load("Types_Draw03_Draw03Glass_g_cs");
 }

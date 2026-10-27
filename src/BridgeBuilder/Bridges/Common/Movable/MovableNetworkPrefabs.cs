@@ -168,6 +168,18 @@ internal sealed partial class MovableNetworkPrefabs
         CopyBuffer<NetCompositionLane>(source, target);
         CopyBuffer<NetCompositionCrosswalk>(source, target);
         CopyBuffer<AuxiliaryNetLane>(source, target);
+        if (_target.HasComponent<TrackLaneData>(target) && _target.HasBuffer<AuxiliaryNetLane>(target))
+        {
+            var auxiliary = _target.GetBuffer<AuxiliaryNetLane>(target);
+            for (var i = 0; i < auxiliary.Length; i++)
+            {
+                var lane = auxiliary[i];
+                if (_target.HasComponent<UtilityLaneData>(lane.m_Prefab) &&
+                    (_target.GetComponentData<NetLaneData>(lane.m_Prefab).m_Flags & LaneFlags.Underground) == 0)
+                    auxiliary[i] = MovableCatenarySampling.ForNode(lane,
+                        _target.GetComponentData<UtilityLaneData>(lane.m_Prefab).m_UtilityTypes);
+            }
+        }
         CopyBuffer<DefaultNetLane>(source, target);
         CopyBuffer<SecondaryNetLane>(source, target);
         CopyBuffer<PlaceholderObjectElement>(source, target);

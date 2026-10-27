@@ -120,6 +120,8 @@ public partial class BridgeStartupAssetSystem : GameSystemBase
             var owners = new HashSet<string>(assets.Select(a => a.Owner), StringComparer.Ordinal);
             var migrationCandidates = new HashSet<string>(StringComparer.Ordinal);
             var migrationErrors = 0;
+            // Missing material snapshots can be hidden by a currently installed source mod.
+            // Traverse every owner's disk graph, even when its live references are healthy.
             foreach (var owner in owners)
             {
                 if (!BridgeDependencyPersistence.Save(owner, assets.Where(a => a.Owner == owner).Select(a => a.Cid),
@@ -129,7 +131,11 @@ public partial class BridgeStartupAssetSystem : GameSystemBase
                     failures[owner] = "Dependency migration failed: " + migrationError;
                     Mod.Log.Error($"Bridge dependency migration failed UUID={owner}; scheduling removal: {migrationError}");
                 }
-                else if (writtenFiles != 0) migrationCandidates.Add(owner);
+                else if (writtenFiles != 0)
+                {
+                    migrationCandidates.Add(owner);
+                    Mod.Log.Info($"Bridge dependency snapshots supplemented UUID={owner}; writtenFiles={writtenFiles}; external material dependencies included; restart required; live references unchanged.");
+                }
             }
             foreach (var asset in assets)
             {

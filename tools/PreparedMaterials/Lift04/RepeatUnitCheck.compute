@@ -1,0 +1,44 @@
+#pragma kernel Check
+Texture2D<float4> Source;
+SamplerState sampler_Source;
+Texture2D<float4> Product;
+SamplerState sampler_Product;
+RWStructuredBuffer<float4> Results;
+float4 Region;
+int2 Extent;
+int2 RepeatAxes;
+int Mip;
+int Mode;
+// Compare persisted native pixels, then exercise native Repeat on both axes.
+[numthreads(8,8,1)]
+void Check(uint3 p:SV_DispatchThreadID)
+{
+ if(any(p.xy >= Extent)) return;
+ float2 q=(float2(p.xy)+0.5)/Extent;
+ float4 a,b;
+ if(Mode==0) {
+  float2 sourceQ=q;
+  if(RepeatAxes.x==0)sourceQ.x=saturate(2*q.x-.5);
+  if(RepeatAxes.y==0)sourceQ.y=saturate(2*q.y-.5);
+  a=Source.SampleLevel(sampler_Source,Region.xy+sourceQ*Region.zw,Mip);
+  b=Product.SampleLevel(sampler_Product,q,Mip);
+ } else if(Mode==1) {
+  // Includes samples on, immediately inside and outside the native repeat seam.
+  q=float2((float(p.x)-2.0)/float(Extent.x), (float(p.y)-2.0)/float(Extent.y));
+  a=Product.SampleLevel(sampler_Product,q,Mip);
+  b=Product.SampleLevel(sampler_Product,q+float2(RepeatAxes.x,-RepeatAxes.y),Mip);
+ } else {
+  // Compare the authored atlas boundary with the isolated repeat boundary.
+  // Different atlas neighbours can make this differ despite exact pixel centers.
+  if(p.x==0) q.x=0;
+  if(p.x==Extent.x-1) q.x=1;
+  if(p.y==0) q.y=0;
+  if(p.y==Extent.y-1) q.y=1;
+  a=Source.SampleLevel(sampler_Source,Region.xy+q*Region.zw,Mip);
+  if(RepeatAxes.x==0)q.x=q.x*.5+.25;
+  if(RepeatAxes.y==0)q.y=q.y*.5+.25;
+  b=Product.SampleLevel(sampler_Product,q,Mip);
+  if(p.x!=0&&p.x!=Extent.x-1&&p.y!=0&&p.y!=Extent.y-1) a=b;
+ }
+ Results[p.y*Extent.x+p.x]=abs(a-b);
+}

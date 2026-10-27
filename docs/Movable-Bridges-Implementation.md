@@ -1,5 +1,10 @@
 # Bridges & Ports movable bridge implementation
 
+This file retains version-specific implementation evidence, not competing specification revisions.
+The current router includes all ten movable generators. Earlier statements about absent routes
+describe their recorded implementation stage and must not be used as current admission rules.
+Use the current contracts for requirements and Prepared-Materials.md for remaining material migration.
+
 ## Reproducible native render-input check (2026-10-20)
 
 `tools/GeometryMetaprogram/MovableRenderInputCheck.py` now verifies all nine newly
@@ -1029,11 +1034,6 @@ The [project contract](agent-contract/PROJECT_CONTRACT.md) and
 [bridge generation contract](agent-contract/BRIDGE_GENERATION_CONTRACT.md) and
 [movable bridge contract](agent-contract/MOVABLE_BRIDGES_CONTRACT.md) remain normative.
 This record describes progress, not exceptions to either contract.
-
-Repository baseline: `dev` at `0f4b10ae47c5dc264249e0d877aacc326e3e9525`.
-Existing uncommitted documentation changes are preserved. Before instruction edits, the same
-baseline was recorded as `refs/rollback/movable-implementation-docs-20261016`.
-The rollback reference captures committed files only, not the existing working-tree changes.
 
 ## 2. Independent mechanisms
 

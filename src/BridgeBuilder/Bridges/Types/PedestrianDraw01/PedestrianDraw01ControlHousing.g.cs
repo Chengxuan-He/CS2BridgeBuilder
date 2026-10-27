@@ -3,82 +3,63 @@ using System;
 using UnityEngine;
 
 namespace BridgeBuilder.Bridges;
-
 internal static class PedestrianDraw01ControlHousing
 {
     internal static void Apply(int lod, Vector3[] source, Vector3[] positions, float delta)
     {
         var data = lod switch
         {
-            0 => (Count: 34931, Parts: Parts0),
-            1 => (Count: 33598, Parts: Parts1),
-            2 => (Count: 1702, Parts: Parts2),
-            _ => throw new ArgumentOutOfRangeException(nameof(lod))
-        };
-        const float halfSpan = 0.25726318359375f;
+            0 => (Count: Numeric_Types_PedestrianDraw01_PedestrianDraw01ControlHousing_g_cs.Values.I32[0], Parts: Parts0),
+            1 => (Count: Numeric_Types_PedestrianDraw01_PedestrianDraw01ControlHousing_g_cs.Values.I32[1], Parts: Parts1),
+            2 => (Count: Numeric_Types_PedestrianDraw01_PedestrianDraw01ControlHousing_g_cs.Values.I32[2], Parts: Parts2),
+            _ => throw new ArgumentOutOfRangeException(nameof(lod))};
+        float halfSpan = Numeric_Types_PedestrianDraw01_PedestrianDraw01ControlHousing_g_cs.Values.F32[0];
         if (source.Length != data.Count || positions.Length != data.Count || !float.IsFinite(delta) || delta <= -halfSpan)
             throw new InvalidOperationException("PedestrianDraw01 control enclosure requires its native layout and positive span.");
         foreach (var part in data.Parts)
-            for (var i = part.First; i <= part.Last; i++)
-                positions[i].x = source[i].x + source[i].x / halfSpan * delta;
+            AffineGeometry.For(part.First, checked((part.Last) + 1), i =>
+            {
+                positions[i].x = AffineGeometry.AddScaled(source[i].x, source[i].x / halfSpan, delta);
+            });
     }
 
     // Geometry SHA-256: 491d8dae6420e0b5b00fbf0014ff74a8aff44c45a1bd48ab40708978888d7f05
-    private static readonly (int First, int Last)[] Parts0 =
-    {
-        (76, 89),
-        (176, 233),
-        (390, 391),
-        (393, 393),
-        (396, 398),
-        (1182, 1182),
-        (1185, 1187),
-        (1191, 1192),
-        (14407, 14492),
-        (15856, 15857),
-        (15859, 15859),
-        (15862, 15863),
-        (15865, 15865),
-        (16647, 16647),
-        (16651, 16653),
-        (16657, 16658),
-        (32325, 32396),
-        (33841, 33926),
-    };
-
+    private static readonly (int First, int Last)[] Parts0 = ReadPackedParts0();
     // Geometry SHA-256: 0b0544aff8720327910927fda2f398ce78c8e3e3d2a1262de8204acdcac34053
-    private static readonly (int First, int Last)[] Parts1 =
-    {
-        (91, 104),
-        (207, 260),
-        (412, 413),
-        (415, 415),
-        (418, 420),
-        (1227, 1227),
-        (1230, 1232),
-        (1236, 1237),
-        (3190, 3213),
-        (14289, 14342),
-        (15657, 15658),
-        (15660, 15660),
-        (15663, 15664),
-        (15666, 15666),
-        (16418, 16421),
-        (16496, 16496),
-        (16500, 16500),
-        (31347, 31416),
-        (32636, 32704),
-    };
-
+    private static readonly (int First, int Last)[] Parts1 = ReadPackedParts1();
     // Geometry SHA-256: d514d88bf5fd4d8453a81578b36f099887cf562ad55255d4ca97267add15952b
-    private static readonly (int First, int Last)[] Parts2 =
+    private static readonly (int First, int Last)[] Parts2 = ReadPackedParts2();
+    private static (int First, int Last)[] ReadPackedParts0()
     {
-        (0, 11),
-        (192, 195),
-        (265, 268),
-        (838, 849),
-        (1030, 1033),
-        (1083, 1086),
-    };
+        var d = Numeric_Types_PedestrianDraw01_PedestrianDraw01ControlHousing_g_cs.Values;
+        var values = new (int First, int Last)[18];
+        for (int i = 0; i < 18; i++)
+            values[0 + i] = (d.I32[3 + i * 2], d.I32[4 + i * 2]);
+        return values;
+    }
 
+    private static (int First, int Last)[] ReadPackedParts1()
+    {
+        var d = Numeric_Types_PedestrianDraw01_PedestrianDraw01ControlHousing_g_cs.Values;
+        var values = new (int First, int Last)[19];
+        for (int i = 0; i < 19; i++)
+            values[0 + i] = (d.I32[39 + i * 2], d.I32[40 + i * 2]);
+        return values;
+    }
+
+    private static (int First, int Last)[] ReadPackedParts2()
+    {
+        var d = Numeric_Types_PedestrianDraw01_PedestrianDraw01ControlHousing_g_cs.Values;
+        var values = new (int First, int Last)[6];
+        for (int i = 0; i < 6; i++)
+            values[0 + i] = (d.I32[77 + i * 2], d.I32[78 + i * 2]);
+        return values;
+    }
+}
+
+// Embedded numerical arrays: Types_PedestrianDraw01_PedestrianDraw01ControlHousing_g_cs
+internal static class Numeric_Types_PedestrianDraw01_PedestrianDraw01ControlHousing_g_cs
+{
+    static Numeric_Types_PedestrianDraw01_PedestrianDraw01ControlHousing_g_cs() {}
+    internal static readonly HardcodedNumbers Values = HardcodedNumbers.Load("Types_PedestrianDraw01_PedestrianDraw01ControlHousing_g_cs");
 }

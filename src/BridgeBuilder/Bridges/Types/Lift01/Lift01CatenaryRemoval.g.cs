@@ -3,39 +3,48 @@
 using System;
 
 namespace BridgeBuilder.Bridges;
-
 internal static class Lift01CatenaryRemoval
 {
     internal static void Remove(int lod, bool[] removed)
     {
         var data = lod switch
         {
-            0 => (Count: 380478, Ranges: Lod0),
-            1 => (Count: 228254, Ranges: Lod1),
-            _ => throw new ArgumentOutOfRangeException(nameof(lod))
-        };
+            0 => (Count: Numeric_Types_Lift01_Lift01CatenaryRemoval_g_cs.Values.I32[0], Ranges: Lod0),
+            1 => (Count: Numeric_Types_Lift01_Lift01CatenaryRemoval_g_cs.Values.I32[1], Ranges: Lod1),
+            _ => throw new ArgumentOutOfRangeException(nameof(lod))};
         if (removed.Length != data.Count)
             throw new InvalidOperationException("Lift01 overhead source layout changed.");
         foreach (var range in data.Ranges)
-            for (var i = range.First; i <= range.Last; i++) removed[i] = true;
+            for (var i = range.First; i <= range.Last; i++)
+                removed[i] = true;
     }
 
     // Geometry SHA-256: cc34bfcb478f5621513c458120bacfb395e21548e3eee2e753dca97e138b5714
-    private static readonly (int First, int Last)[] Lod0 =
-    {
-        (75983, 81150),
-        (260174, 263481),
-        (372420, 375727),
-        (379786, 380477),
-    };
-
+    private static readonly (int First, int Last)[] Lod0 = ReadPackedLod0();
     // Geometry SHA-256: c5694dce731ce05218de15761665cc1d234723049c48bd707c87587509ed8e4e
-    private static readonly (int First, int Last)[] Lod1 =
+    private static readonly (int First, int Last)[] Lod1 = ReadPackedLod1();
+    private static (int First, int Last)[] ReadPackedLod0()
     {
-        (50667, 53651),
-        (166709, 167991),
-        (223285, 224581),
-        (227820, 228253),
-    };
+        var d = Numeric_Types_Lift01_Lift01CatenaryRemoval_g_cs.Values;
+        var values = new (int First, int Last)[4];
+        for (int i = 0; i < 4; i++)
+            values[0 + i] = (d.I32[2 + i * 2], d.I32[3 + i * 2]);
+        return values;
+    }
 
+    private static (int First, int Last)[] ReadPackedLod1()
+    {
+        var d = Numeric_Types_Lift01_Lift01CatenaryRemoval_g_cs.Values;
+        var values = new (int First, int Last)[4];
+        for (int i = 0; i < 4; i++)
+            values[0 + i] = (d.I32[10 + i * 2], d.I32[11 + i * 2]);
+        return values;
+    }
+}
+
+// Embedded numerical arrays: Types_Lift01_Lift01CatenaryRemoval_g_cs
+internal static class Numeric_Types_Lift01_Lift01CatenaryRemoval_g_cs
+{
+    static Numeric_Types_Lift01_Lift01CatenaryRemoval_g_cs() {}
+    internal static readonly HardcodedNumbers Values = HardcodedNumbers.Load("Types_Lift01_Lift01CatenaryRemoval_g_cs");
 }

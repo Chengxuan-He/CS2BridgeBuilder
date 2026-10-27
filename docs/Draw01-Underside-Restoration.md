@@ -68,3 +68,58 @@ adds indices to existing structural meshes, without creating Prefabs, materials 
 Preview and saved bridges use the same plan; registration and loading formats are unchanged.
 Rebuild and deployment are loadability checks. A newly generated bridge still requires
 human inspection of exposed slab edges and all LOD transitions.
+
+## Bottom atlas-coordinate correction (2026-10-23)
+
+The user's close-up disproves the earlier claim that the underside appearance was fixed.
+The far supplement repairs missing coverage, but does not repair the original UV error.
+Both detailed levels have a solid underside on the negative-Z leaf mapped into the native
+asphalt/yellow-line atlas island. The opposite leaf maps into the unpainted underside island.
+The defect was preserved by copying all structural UVs unchanged. It is not explained solely
+by different LODs or missing triangles.
+
+The correction replaces UV0 on 176 measured bottom vertices in LOD0 and 158 in LOD1.
+Offline correspondence rotates the source X/Z by 180 degrees onto the opposite leaf's
+actual bottom triangles and interpolates their native UV0. This also handles the differing
+middle-LOD triangulation. Runtime data is a checksum-validated embedded typed array;
+no prototype lookup, geometric classifier or texture sampling occurs at runtime.
+Only these bottom UVs change. Positions, indices, normals, bones, material references and
+other channels stay intact. The far supplement applies the same LOD1 UV correction before
+compaction. No replacement texture, material or additional object is introduced.
+
+Validation uses the actual embedded arrays exported by `tools/Draw01UndersideCheck` and
+`check_texture.py` against the native raw atlas (raw image rows already correspond to V;
+they must not be flipped again). A triangular barycentric grid sampled 13,464 yellow pixels
+at LOD0 and 7,584 at LOD1 before correction, and zero after correction. The geometry check
+covers 9,600 downward-facing points across both leaves and three sidewalk layouts, with
+zero uncovered points. These checks establish the measured mapping and coverage, not
+in-game visual acceptance. Inspect newly generated previews/bridges in open and closed
+poses at all LODs. Existing saved bridge meshes are not rewritten by installing the DLL.
+
+Release compilation and material-slot regression checks passed. No user-facing strings
+were added or changed; existing localization behavior is preserved. This scoped UV repair
+supersedes the original-UV preservation requirement above for the measured bottom vertices
+only. The historical far-LOD restriction below/above is superseded by the permitted middle-LOD
+supplement documented in Draw01-Far-Underside.md.
+
+## UV seam regression (2026-10-23, follow-up)
+
+The preceding per-vertex opposite-leaf lookup was incorrect at UV seams. A position on a
+shared geometric boundary can belong to several independent atlas islands. Choosing the
+first containing triangle independently for each vertex caused one slab triangle to interpolate
+between unrelated atlas regions. The yellow-pixel check did not detect this failure.
+
+The new offline extractor (`tools/Draw01UndersideCheck/extract_island_uv.py`) groups bottom
+triangles by shared vertex indices and matches complete panels. Each panel uses one measured
+rectangular counterpart and its local bounds; all its vertices are evaluated within that same
+UV island. The middle LOD has 45 source islands versus 44 opposite-leaf islands; incomplete
+triangular donor islands are excluded, rather than extrapolating UVs outside them. Near LOD
+has 44 islands on each leaf. The embedded resource still corrects 176/158 vertices, and the
+far supplement consumes the corrected middle-LOD data. This replaces the earlier per-vertex
+lookup, without changing positions, bones, topology or material identities.
+
+This repairs cross-island interpolation. It does not establish native texel density after
+arbitrary structural widening: lateral geometric scaling still scales the native panel texture.
+A separate repeat-unit implementation would be required to guarantee width-independent bottom
+texture density. Visual acceptance and the separately reported missing upper asphalt surface
+remain open; neither is claimed resolved by this UV resource update.

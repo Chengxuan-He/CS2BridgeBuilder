@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using Unity.Mathematics;
 
 namespace BridgeBuilder.Bridges;
-
 /// <summary>
 /// Widens a tower by moving its vertices apart, without changing anything else about it.
 ///
@@ -36,27 +35,26 @@ internal static partial class TowerWidening
 {
     /// <summary>A vertex closer than this to the centre line is on it, and stays put.</summary>
     internal const float CentreEpsilon = 0.001f;
-
     /// <summary>
-    /// A copy of <paramref name="vertices"/> widened by <paramref name="extra"/> metres. The input is
+    /// A copy of <paramref name = "vertices"/> widened by <paramref name = "extra"/> metres. The input is
     /// never modified, so a caller can compare before against after.
     /// </summary>
     internal static float3[] Widen(float3[] vertices, float extra)
     {
         var result = new float3[vertices.Length];
         Array.Copy(vertices, result, vertices.Length);
-        if (Math.Abs(extra) < CentreEpsilon) return result;
-
-        for (var index = 0; index < result.Length; index++)
+        if (Math.Abs(extra) < CentreEpsilon)
+            return result;
+        AffineGeometry.For(0, result.Length, index =>
         {
             result[index].x = Spread(result[index].x, extra);
-        }
+        });
 
         return result;
     }
 
     /// <summary>
-    /// One coordinate carried outward by half of <paramref name="extra"/>, away from the centre line.
+    /// One coordinate carried outward by half of <paramref name = "extra"/>, away from the centre line.
     ///
     /// Everything that has to stay attached to the tower moves through here, not just the tower's own
     /// vertices: the cables, the deck props, anything the donor bridge placed out to either side. They
@@ -67,24 +65,24 @@ internal static partial class TowerWidening
     /// </summary>
     internal static float Spread(float x, float extra)
     {
-        if (Math.Abs(x) <= CentreEpsilon) return x;
-
+        if (Math.Abs(x) <= CentreEpsilon)
+            return x;
         var shift = extra * 0.5f;
-        return x + (x > 0f ? shift : -shift);
+        return AffineGeometry.Translate(x, x > 0f ? shift : -shift);
     }
 
     /// <summary>
     /// A portal widened properly: the legs carried apart, the span between them stretched to follow.
     ///
-    /// <see cref="Spread"/> alone is right for anything that belongs to one leg and wrong for anything
+    /// <see cref = "Spread"/> alone is right for anything that belongs to one leg and wrong for anything
     /// crossing between them, and a portal is both. Its legs stand outside the carriageway and its
     /// crossbeams run from one to the other, straight through the centre line - and a rule built on
     /// sign(x) has a discontinuity exactly there. Every vertex left of centre jumps one way, every
     /// vertex right of it jumps the other, and the beams that spanned the middle are torn open by
-    /// precisely <paramref name="extra"/> metres. Small shifts look like nothing; large ones look like
+    /// precisely <paramref name = "extra"/> metres. Small shifts look like nothing; large ones look like
     /// the tower has come apart, which is why it appeared to have a width beyond which it broke.
     ///
-    /// <paramref name="inner"/> is where the legs begin - half the road, since the road is what passes
+    /// <paramref name = "inner"/> is where the legs begin - half the road, since the road is what passes
     /// between them. Outside it a vertex belongs to a leg and moves rigidly, so the legs keep their
     /// shape and thickness; inside it a vertex belongs to the span and moves in proportion, so the
     /// beams stay attached at both ends. The two agree at the boundary, so nothing tears anywhere.
@@ -96,22 +94,21 @@ internal static partial class TowerWidening
     {
         var result = new float3[vertices.Length];
         Array.Copy(vertices, result, vertices.Length);
-        if (Math.Abs(extra) < CentreEpsilon) return result;
-
+        if (Math.Abs(extra) < CentreEpsilon)
+            return result;
         // Nothing sensible to divide by: fall back to carrying the halves apart, which is what this
         // did before the span was accounted for.
-        if (inner <= CentreEpsilon) return Widen(vertices, extra);
-
+        if (inner <= CentreEpsilon)
+            return Widen(vertices, extra);
         var shift = extra * 0.5f;
         var ratio = (inner + shift) / inner;
-
-        for (var index = 0; index < result.Length; index++)
+        AffineGeometry.For(0, result.Length, index =>
         {
             var x = result[index].x;
             if (Math.Abs(x) < inner)
             {
-                result[index].x = x * ratio;
-                continue;
+                result[index].x = AffineGeometry.Scale(x, ratio);
+                return;
             }
 
             // Carried outward, and never past the centre. A leg brought in by more than it stands out
@@ -119,8 +116,7 @@ internal static partial class TowerWidening
             // on the other branch, arrived at by the other arithmetic. Both stop at zero.
             var moved = x + (x > 0f ? shift : -shift);
             result[index].x = x > 0f ? Math.Max(0f, moved) : Math.Min(0f, moved);
-        }
-
+        });
         return result;
     }
 
@@ -135,10 +131,10 @@ internal static partial class TowerWidening
     }
 
     /// <summary>
-    /// A copy of <paramref name="vertices"/> stretched from <paramref name="width"/> to
-    /// <paramref name="width"/> plus <paramref name="extra"/>, every coordinate moving in proportion.
+    /// A copy of <paramref name = "vertices"/> stretched from <paramref name = "width"/> to
+    /// <paramref name = "width"/> plus <paramref name = "extra"/>, every coordinate moving in proportion.
     ///
-    /// The rule for a continuous surface, and the opposite of what <see cref="Widen"/> does. A portal is
+    /// The rule for a continuous surface, and the opposite of what <see cref = "Widen"/> does. A portal is
     /// two legs with nothing between them, so its halves are carried apart rigidly and the gap in the
     /// middle simply grows. A net piece is a sheet spanning its whole width - the cables, the hangers
     /// and whatever ties them together are one surface - and carrying its halves apart tears it: every
@@ -154,22 +150,21 @@ internal static partial class TowerWidening
     {
         var result = new float3[vertices.Length];
         Array.Copy(vertices, result, vertices.Length);
-        if (width <= CentreEpsilon || Math.Abs(extra) < CentreEpsilon) return result;
-
+        if (width <= CentreEpsilon || Math.Abs(extra) < CentreEpsilon)
+            return result;
         var ratio = (width + extra) / width;
-        for (var index = 0; index < result.Length; index++)
+        AffineGeometry.For(0, result.Length, index =>
         {
-            result[index].x *= ratio;
-        }
-
+            result[index].x = AffineGeometry.Scale(result[index].x, ratio);
+        });
         return result;
     }
 
     /// <summary>How far the vertices reach across x: the width the shape spans.</summary>
     internal static float WidthOf(float3[] vertices)
     {
-        if (vertices.Length == 0) return 0f;
-
+        if (vertices.Length == 0)
+            return 0f;
         var min = float.MaxValue;
         var max = float.MinValue;
         foreach (var vertex in vertices)
@@ -200,20 +195,18 @@ internal static partial class TowerWidening
     /// the descriptor describes, and from the widened positions rather than the source, because those
     /// are what get written.
     /// </summary>
-    internal static void ExtentOf(
-        float3[] points, IReadOnlyList<int> indices, int from, int count,
-        out float3 min, out float3 max)
+    internal static void ExtentOf(float3[] points, IReadOnlyList<int> indices, int from, int count, out float3 min, out float3 max)
     {
         min = default;
         max = default;
-        if (points.Length == 0 || count <= 0) return;
-
+        if (points.Length == 0 || count <= 0)
+            return;
         var started = false;
         for (var step = 0; step < count; step++)
         {
             var index = indices[from + step];
-            if (index < 0 || index >= points.Length) continue;
-
+            if (index < 0 || index >= points.Length)
+                continue;
             var point = points[index];
             if (!started)
             {
@@ -223,31 +216,31 @@ internal static partial class TowerWidening
                 continue;
             }
 
-            min = new float3(
-                Math.Min(min.x, point.x), Math.Min(min.y, point.y), Math.Min(min.z, point.z));
-            max = new float3(
-                Math.Max(max.x, point.x), Math.Max(max.y, point.y), Math.Max(max.z, point.z));
+            min = new float3(Math.Min(min.x, point.x), Math.Min(min.y, point.y), Math.Min(min.z, point.z));
+            max = new float3(Math.Max(max.x, point.x), Math.Max(max.y, point.y), Math.Max(max.z, point.z));
         }
     }
 
     /// <summary>The lowest and highest vertex index a run of indices refers to.</summary>
-    internal static void IndexRangeOf(
-        IReadOnlyList<int> indices, int from, int count, out int first, out int used)
+    internal static void IndexRangeOf(IReadOnlyList<int> indices, int from, int count, out int first, out int used)
     {
         first = 0;
         used = 0;
-        if (count <= 0) return;
-
+        if (count <= 0)
+            return;
         var low = int.MaxValue;
         var high = int.MinValue;
         for (var step = 0; step < count; step++)
         {
             var index = indices[from + step];
-            if (index < low) low = index;
-            if (index > high) high = index;
+            if (index < low)
+                low = index;
+            if (index > high)
+                high = index;
         }
 
-        if (low > high) return;
+        if (low > high)
+            return;
         first = low;
         used = (high - low) + 1;
     }
@@ -270,8 +263,8 @@ internal static partial class TowerWidening
     /// </summary>
     internal static float ClearSpanOf(float3[] vertices, int bands)
     {
-        if (vertices.Length == 0 || bands <= 0) return 0f;
-
+        if (vertices.Length == 0 || bands <= 0)
+            return 0f;
         var low = float.MaxValue;
         var high = float.MinValue;
         foreach (var vertex in vertices)
@@ -281,8 +274,8 @@ internal static partial class TowerWidening
         }
 
         var height = high - low;
-        if (height <= CentreEpsilon) bands = 1;
-
+        if (height <= CentreEpsilon)
+            bands = 1;
         var right = new float[bands];
         var left = new float[bands];
         for (var band = 0; band < bands; band++)
@@ -294,21 +287,24 @@ internal static partial class TowerWidening
         foreach (var vertex in vertices)
         {
             var band = bands == 1 ? 0 : (int)((vertex.y - low) / height * bands);
-            if (band < 0) band = 0;
-            if (band >= bands) band = bands - 1;
-
-            if (vertex.x > CentreEpsilon) right[band] = Math.Min(right[band], vertex.x);
-            else if (vertex.x < -CentreEpsilon) left[band] = Math.Min(left[band], -vertex.x);
+            if (band < 0)
+                band = 0;
+            if (band >= bands)
+                band = bands - 1;
+            if (vertex.x > CentreEpsilon)
+                right[band] = Math.Min(right[band], vertex.x);
+            else if (vertex.x < -CentreEpsilon)
+                left[band] = Math.Min(left[band], -vertex.x);
         }
 
         var widest = 0f;
         for (var band = 0; band < bands; band++)
         {
-            if (right[band] == float.MaxValue || left[band] == float.MaxValue) continue;
+            if (right[band] == float.MaxValue || left[band] == float.MaxValue)
+                continue;
             widest = Math.Max(widest, right[band] + left[band]);
         }
 
         return widest;
     }
-
 }

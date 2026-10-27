@@ -1,0 +1,12 @@
+#pragma kernel Compare
+Texture2D<float4> Source;
+SamplerState sampler_Source;
+StructuredBuffer<float4> Coordinates;
+RWStructuredBuffer<float4> Differences;
+int Count;
+[numthreads(64,1,1)] void Compare(uint3 id:SV_DispatchThreadID)
+{
+    if(id.x>=Count)return;
+    float4 uv=Coordinates[id.x];
+    Differences[id.x]=abs(Source.SampleLevel(sampler_Source,uv.xy,0)-Source.SampleLevel(sampler_Source,uv.zw,0));
+}

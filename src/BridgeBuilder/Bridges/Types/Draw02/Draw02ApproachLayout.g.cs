@@ -8,13 +8,12 @@ using Unity.Mathematics;
 using UnityEngine;
 
 namespace BridgeBuilder.Bridges;
-
 internal static class Draw02ApproachLayout
 {
     // The caller supplies widened, factory-owned pieces in recorded family order.
     internal static void Apply(NetGeometryPrefab target, TowerFactory factory, NetPiecePrefab[] pieces, float layoutRemainder)
     {
-        if (pieces.Length != 9 || pieces.Any(piece => piece == null || !factory.Created.Contains(piece)))
+        if (pieces.Length != Numeric_Types_Draw02_Draw02ApproachLayout_g_cs.Values.I32[0] || pieces.Any(piece => piece == null || !factory.Created.Contains(piece)))
             throw new InvalidOperationException("Draw02 approaches require nine owned structural pieces.");
         var section0 = ScriptableObject.CreateInstance<NetSectionPrefab>();
         section0.name = target.name + " Fixed Approach Section 0";
@@ -24,17 +23,27 @@ internal static class Draw02ApproachLayout
         {
             new NetPieceInfo
             {
-                m_Piece = pieces[0],
-                m_Offset = new float3(0f, 0f, 0f),
-                m_RequireAll = new[] { NetPieceRequirements.Elevated },
+                m_Piece = pieces[Numeric_Types_Draw02_Draw02ApproachLayout_g_cs.Values.I32[1]],
+                m_Offset = new float3(Numeric_Types_Draw02_Draw02ApproachLayout_g_cs.Values.F32[0], Numeric_Types_Draw02_Draw02ApproachLayout_g_cs.Values.F32[1], Numeric_Types_Draw02_Draw02ApproachLayout_g_cs.Values.F32[2]),
+                m_RequireAll = new[]
+                {
+                    NetPieceRequirements.Elevated
+                },
                 m_RequireAny = Array.Empty<NetPieceRequirements>(),
-                m_RequireNone = new[] { NetPieceRequirements.Node },
+                m_RequireNone = new[]
+                {
+                    NetPieceRequirements.Node
+                },
             },
             new NetPieceInfo
             {
-                m_Piece = pieces[1],
-                m_Offset = new float3(0f, 0f, 0f),
-                m_RequireAll = new[] { NetPieceRequirements.Elevated, NetPieceRequirements.Node },
+                m_Piece = pieces[Numeric_Types_Draw02_Draw02ApproachLayout_g_cs.Values.I32[2]],
+                m_Offset = new float3(Numeric_Types_Draw02_Draw02ApproachLayout_g_cs.Values.F32[3], Numeric_Types_Draw02_Draw02ApproachLayout_g_cs.Values.F32[4], Numeric_Types_Draw02_Draw02ApproachLayout_g_cs.Values.F32[5]),
+                m_RequireAll = new[]
+                {
+                    NetPieceRequirements.Elevated,
+                    NetPieceRequirements.Node
+                },
                 m_RequireAny = Array.Empty<NetPieceRequirements>(),
                 m_RequireNone = Array.Empty<NetPieceRequirements>(),
             },
@@ -47,17 +56,27 @@ internal static class Draw02ApproachLayout
         {
             new NetPieceInfo
             {
-                m_Piece = pieces[2],
-                m_Offset = new float3(0f, 0f, 0f),
-                m_RequireAll = new[] { NetPieceRequirements.Elevated },
+                m_Piece = pieces[Numeric_Types_Draw02_Draw02ApproachLayout_g_cs.Values.I32[3]],
+                m_Offset = new float3(Numeric_Types_Draw02_Draw02ApproachLayout_g_cs.Values.F32[6], Numeric_Types_Draw02_Draw02ApproachLayout_g_cs.Values.F32[7], Numeric_Types_Draw02_Draw02ApproachLayout_g_cs.Values.F32[8]),
+                m_RequireAll = new[]
+                {
+                    NetPieceRequirements.Elevated
+                },
                 m_RequireAny = Array.Empty<NetPieceRequirements>(),
-                m_RequireNone = new[] { NetPieceRequirements.Node },
+                m_RequireNone = new[]
+                {
+                    NetPieceRequirements.Node
+                },
             },
             new NetPieceInfo
             {
-                m_Piece = pieces[3],
-                m_Offset = new float3(0f, 0f, 0f),
-                m_RequireAll = new[] { NetPieceRequirements.Elevated, NetPieceRequirements.Node },
+                m_Piece = pieces[Numeric_Types_Draw02_Draw02ApproachLayout_g_cs.Values.I32[4]],
+                m_Offset = new float3(Numeric_Types_Draw02_Draw02ApproachLayout_g_cs.Values.F32[9], Numeric_Types_Draw02_Draw02ApproachLayout_g_cs.Values.F32[10], Numeric_Types_Draw02_Draw02ApproachLayout_g_cs.Values.F32[11]),
+                m_RequireAll = new[]
+                {
+                    NetPieceRequirements.Elevated,
+                    NetPieceRequirements.Node
+                },
                 m_RequireAny = Array.Empty<NetPieceRequirements>(),
                 m_RequireNone = Array.Empty<NetPieceRequirements>(),
             },
@@ -70,10 +89,18 @@ internal static class Draw02ApproachLayout
         {
             new NetPieceInfo
             {
-                m_Piece = pieces[6],
-                m_Offset = new float3(0f, 0f, 0f),
-                m_RequireAll = new[] { NetPieceRequirements.Median, NetPieceRequirements.Elevated },
-                m_RequireAny = new[] { NetPieceRequirements.Intersection, NetPieceRequirements.MedianBreak },
+                m_Piece = pieces[Numeric_Types_Draw02_Draw02ApproachLayout_g_cs.Values.I32[5]],
+                m_Offset = new float3(Numeric_Types_Draw02_Draw02ApproachLayout_g_cs.Values.F32[12], Numeric_Types_Draw02_Draw02ApproachLayout_g_cs.Values.F32[13], Numeric_Types_Draw02_Draw02ApproachLayout_g_cs.Values.F32[14]),
+                m_RequireAll = new[]
+                {
+                    NetPieceRequirements.Median,
+                    NetPieceRequirements.Elevated
+                },
+                m_RequireAny = new[]
+                {
+                    NetPieceRequirements.Intersection,
+                    NetPieceRequirements.MedianBreak
+                },
                 m_RequireNone = Array.Empty<NetPieceRequirements>(),
             },
         };
@@ -85,17 +112,27 @@ internal static class Draw02ApproachLayout
         {
             new NetPieceInfo
             {
-                m_Piece = pieces[7],
-                m_Offset = new float3(0f, 0f, 0f),
-                m_RequireAll = new[] { NetPieceRequirements.Elevated },
+                m_Piece = pieces[Numeric_Types_Draw02_Draw02ApproachLayout_g_cs.Values.I32[6]],
+                m_Offset = new float3(Numeric_Types_Draw02_Draw02ApproachLayout_g_cs.Values.F32[15], Numeric_Types_Draw02_Draw02ApproachLayout_g_cs.Values.F32[16], Numeric_Types_Draw02_Draw02ApproachLayout_g_cs.Values.F32[17]),
+                m_RequireAll = new[]
+                {
+                    NetPieceRequirements.Elevated
+                },
                 m_RequireAny = Array.Empty<NetPieceRequirements>(),
-                m_RequireNone = new[] { NetPieceRequirements.Node },
+                m_RequireNone = new[]
+                {
+                    NetPieceRequirements.Node
+                },
             },
             new NetPieceInfo
             {
-                m_Piece = pieces[8],
-                m_Offset = new float3(0f, 0f, 0f),
-                m_RequireAll = new[] { NetPieceRequirements.Elevated, NetPieceRequirements.Node },
+                m_Piece = pieces[Numeric_Types_Draw02_Draw02ApproachLayout_g_cs.Values.I32[7]],
+                m_Offset = new float3(Numeric_Types_Draw02_Draw02ApproachLayout_g_cs.Values.F32[18], Numeric_Types_Draw02_Draw02ApproachLayout_g_cs.Values.F32[19], Numeric_Types_Draw02_Draw02ApproachLayout_g_cs.Values.F32[20]),
+                m_RequireAll = new[]
+                {
+                    NetPieceRequirements.Elevated,
+                    NetPieceRequirements.Node
+                },
                 m_RequireAny = Array.Empty<NetPieceRequirements>(),
                 m_RequireNone = Array.Empty<NetPieceRequirements>(),
             },
@@ -108,17 +145,27 @@ internal static class Draw02ApproachLayout
         {
             new NetPieceInfo
             {
-                m_Piece = pieces[4],
-                m_Offset = new float3(0f, 0f, 0f),
-                m_RequireAll = new[] { NetPieceRequirements.Elevated },
+                m_Piece = pieces[Numeric_Types_Draw02_Draw02ApproachLayout_g_cs.Values.I32[8]],
+                m_Offset = new float3(Numeric_Types_Draw02_Draw02ApproachLayout_g_cs.Values.F32[21], Numeric_Types_Draw02_Draw02ApproachLayout_g_cs.Values.F32[22], Numeric_Types_Draw02_Draw02ApproachLayout_g_cs.Values.F32[23]),
+                m_RequireAll = new[]
+                {
+                    NetPieceRequirements.Elevated
+                },
                 m_RequireAny = Array.Empty<NetPieceRequirements>(),
-                m_RequireNone = new[] { NetPieceRequirements.Node },
+                m_RequireNone = new[]
+                {
+                    NetPieceRequirements.Node
+                },
             },
             new NetPieceInfo
             {
-                m_Piece = pieces[5],
-                m_Offset = new float3(0f, 0f, 0f),
-                m_RequireAll = new[] { NetPieceRequirements.Elevated, NetPieceRequirements.Node },
+                m_Piece = pieces[Numeric_Types_Draw02_Draw02ApproachLayout_g_cs.Values.I32[9]],
+                m_Offset = new float3(Numeric_Types_Draw02_Draw02ApproachLayout_g_cs.Values.F32[24], Numeric_Types_Draw02_Draw02ApproachLayout_g_cs.Values.F32[25], Numeric_Types_Draw02_Draw02ApproachLayout_g_cs.Values.F32[26]),
+                m_RequireAll = new[]
+                {
+                    NetPieceRequirements.Elevated,
+                    NetPieceRequirements.Node
+                },
                 m_RequireAny = Array.Empty<NetPieceRequirements>(),
                 m_RequireNone = Array.Empty<NetPieceRequirements>(),
             },
@@ -129,355 +176,524 @@ internal static class Draw02ApproachLayout
             new NetSectionInfo
             {
                 m_Section = section3,
-                m_HiddenLayers = (NetPieceLayerMask)(0),
-                m_Offset = new float3(0f, 0f, 0f) + new float3(-1f * layoutRemainder, 0f, 0f),
+                m_HiddenLayers = (NetPieceLayerMask)(Numeric_Types_Draw02_Draw02ApproachLayout_g_cs.Values.I32[10]),
+                m_Offset = new float3(Numeric_Types_Draw02_Draw02ApproachLayout_g_cs.Values.F32[27], Numeric_Types_Draw02_Draw02ApproachLayout_g_cs.Values.F32[28], Numeric_Types_Draw02_Draw02ApproachLayout_g_cs.Values.F32[29]) + new float3(-Numeric_Types_Draw02_Draw02ApproachLayout_g_cs.Values.F32[30] * layoutRemainder, Numeric_Types_Draw02_Draw02ApproachLayout_g_cs.Values.F32[31], Numeric_Types_Draw02_Draw02ApproachLayout_g_cs.Values.F32[32]),
                 m_Invert = true,
                 m_Flip = false,
                 m_Median = false,
                 m_HalfLength = false,
-                m_RequireAll = new[] { NetPieceRequirements.Elevated },
+                m_RequireAll = new[]
+                {
+                    NetPieceRequirements.Elevated
+                },
                 m_RequireAny = Array.Empty<NetPieceRequirements>(),
-                m_RequireNone = new[] { NetPieceRequirements.FixedNodeSize },
+                m_RequireNone = new[]
+                {
+                    NetPieceRequirements.FixedNodeSize
+                },
             },
             new NetSectionInfo
             {
                 m_Section = section3,
-                m_HiddenLayers = (NetPieceLayerMask)(-1),
-                m_Offset = new float3(0f, 0f, 0f) + new float3(-1f * layoutRemainder, 0f, 0f),
+                m_HiddenLayers = (NetPieceLayerMask)(-Numeric_Types_Draw02_Draw02ApproachLayout_g_cs.Values.I32[11]),
+                m_Offset = new float3(Numeric_Types_Draw02_Draw02ApproachLayout_g_cs.Values.F32[33], Numeric_Types_Draw02_Draw02ApproachLayout_g_cs.Values.F32[34], Numeric_Types_Draw02_Draw02ApproachLayout_g_cs.Values.F32[35]) + new float3(-Numeric_Types_Draw02_Draw02ApproachLayout_g_cs.Values.F32[36] * layoutRemainder, Numeric_Types_Draw02_Draw02ApproachLayout_g_cs.Values.F32[37], Numeric_Types_Draw02_Draw02ApproachLayout_g_cs.Values.F32[38]),
                 m_Invert = true,
                 m_Flip = false,
                 m_Median = false,
                 m_HalfLength = false,
-                m_RequireAll = new[] { NetPieceRequirements.Node, NetPieceRequirements.FixedNodeSize, NetPieceRequirements.Elevated },
+                m_RequireAll = new[]
+                {
+                    NetPieceRequirements.Node,
+                    NetPieceRequirements.FixedNodeSize,
+                    NetPieceRequirements.Elevated
+                },
                 m_RequireAny = Array.Empty<NetPieceRequirements>(),
                 m_RequireNone = Array.Empty<NetPieceRequirements>(),
             },
             new NetSectionInfo
             {
                 m_Section = section3,
-                m_HiddenLayers = (NetPieceLayerMask)(0),
-                m_Offset = new float3(0f, 0f, 0f) + new float3(-1f * layoutRemainder, 0f, 0f),
+                m_HiddenLayers = (NetPieceLayerMask)(Numeric_Types_Draw02_Draw02ApproachLayout_g_cs.Values.I32[12]),
+                m_Offset = new float3(Numeric_Types_Draw02_Draw02ApproachLayout_g_cs.Values.F32[39], Numeric_Types_Draw02_Draw02ApproachLayout_g_cs.Values.F32[40], Numeric_Types_Draw02_Draw02ApproachLayout_g_cs.Values.F32[41]) + new float3(-Numeric_Types_Draw02_Draw02ApproachLayout_g_cs.Values.F32[42] * layoutRemainder, Numeric_Types_Draw02_Draw02ApproachLayout_g_cs.Values.F32[43], Numeric_Types_Draw02_Draw02ApproachLayout_g_cs.Values.F32[44]),
                 m_Invert = true,
                 m_Flip = false,
                 m_Median = false,
                 m_HalfLength = true,
-                m_RequireAll = new[] { NetPieceRequirements.FixedNodeSize, NetPieceRequirements.Elevated },
+                m_RequireAll = new[]
+                {
+                    NetPieceRequirements.FixedNodeSize,
+                    NetPieceRequirements.Elevated
+                },
                 m_RequireAny = Array.Empty<NetPieceRequirements>(),
-                m_RequireNone = new[] { NetPieceRequirements.Node },
+                m_RequireNone = new[]
+                {
+                    NetPieceRequirements.Node
+                },
             },
             new NetSectionInfo
             {
                 m_Section = section4,
-                m_HiddenLayers = (NetPieceLayerMask)(0),
-                m_Offset = new float3(0f, 0f, 0f) + new float3(-1f * layoutRemainder, 0f, 0f),
+                m_HiddenLayers = (NetPieceLayerMask)(Numeric_Types_Draw02_Draw02ApproachLayout_g_cs.Values.I32[13]),
+                m_Offset = new float3(Numeric_Types_Draw02_Draw02ApproachLayout_g_cs.Values.F32[45], Numeric_Types_Draw02_Draw02ApproachLayout_g_cs.Values.F32[46], Numeric_Types_Draw02_Draw02ApproachLayout_g_cs.Values.F32[47]) + new float3(-Numeric_Types_Draw02_Draw02ApproachLayout_g_cs.Values.F32[48] * layoutRemainder, Numeric_Types_Draw02_Draw02ApproachLayout_g_cs.Values.F32[49], Numeric_Types_Draw02_Draw02ApproachLayout_g_cs.Values.F32[50]),
                 m_Invert = true,
                 m_Flip = false,
                 m_Median = false,
                 m_HalfLength = false,
-                m_RequireAll = new[] { NetPieceRequirements.Elevated },
+                m_RequireAll = new[]
+                {
+                    NetPieceRequirements.Elevated
+                },
                 m_RequireAny = Array.Empty<NetPieceRequirements>(),
-                m_RequireNone = new[] { NetPieceRequirements.FixedNodeSize },
+                m_RequireNone = new[]
+                {
+                    NetPieceRequirements.FixedNodeSize
+                },
             },
             new NetSectionInfo
             {
                 m_Section = section4,
-                m_HiddenLayers = (NetPieceLayerMask)(-1),
-                m_Offset = new float3(0f, 0f, 0f) + new float3(-1f * layoutRemainder, 0f, 0f),
+                m_HiddenLayers = (NetPieceLayerMask)(-Numeric_Types_Draw02_Draw02ApproachLayout_g_cs.Values.I32[14]),
+                m_Offset = new float3(Numeric_Types_Draw02_Draw02ApproachLayout_g_cs.Values.F32[51], Numeric_Types_Draw02_Draw02ApproachLayout_g_cs.Values.F32[52], Numeric_Types_Draw02_Draw02ApproachLayout_g_cs.Values.F32[53]) + new float3(-Numeric_Types_Draw02_Draw02ApproachLayout_g_cs.Values.F32[54] * layoutRemainder, Numeric_Types_Draw02_Draw02ApproachLayout_g_cs.Values.F32[55], Numeric_Types_Draw02_Draw02ApproachLayout_g_cs.Values.F32[56]),
                 m_Invert = true,
                 m_Flip = false,
                 m_Median = false,
                 m_HalfLength = false,
-                m_RequireAll = new[] { NetPieceRequirements.Node, NetPieceRequirements.FixedNodeSize, NetPieceRequirements.Elevated },
+                m_RequireAll = new[]
+                {
+                    NetPieceRequirements.Node,
+                    NetPieceRequirements.FixedNodeSize,
+                    NetPieceRequirements.Elevated
+                },
                 m_RequireAny = Array.Empty<NetPieceRequirements>(),
                 m_RequireNone = Array.Empty<NetPieceRequirements>(),
             },
             new NetSectionInfo
             {
                 m_Section = section4,
-                m_HiddenLayers = (NetPieceLayerMask)(0),
-                m_Offset = new float3(0f, 0f, 0f) + new float3(-1f * layoutRemainder, 0f, 0f),
+                m_HiddenLayers = (NetPieceLayerMask)(Numeric_Types_Draw02_Draw02ApproachLayout_g_cs.Values.I32[15]),
+                m_Offset = new float3(Numeric_Types_Draw02_Draw02ApproachLayout_g_cs.Values.F32[57], Numeric_Types_Draw02_Draw02ApproachLayout_g_cs.Values.F32[58], Numeric_Types_Draw02_Draw02ApproachLayout_g_cs.Values.F32[59]) + new float3(-Numeric_Types_Draw02_Draw02ApproachLayout_g_cs.Values.F32[60] * layoutRemainder, Numeric_Types_Draw02_Draw02ApproachLayout_g_cs.Values.F32[61], Numeric_Types_Draw02_Draw02ApproachLayout_g_cs.Values.F32[62]),
                 m_Invert = true,
                 m_Flip = false,
                 m_Median = false,
                 m_HalfLength = true,
-                m_RequireAll = new[] { NetPieceRequirements.FixedNodeSize, NetPieceRequirements.Elevated },
+                m_RequireAll = new[]
+                {
+                    NetPieceRequirements.FixedNodeSize,
+                    NetPieceRequirements.Elevated
+                },
                 m_RequireAny = Array.Empty<NetPieceRequirements>(),
-                m_RequireNone = new[] { NetPieceRequirements.Node },
+                m_RequireNone = new[]
+                {
+                    NetPieceRequirements.Node
+                },
             },
             new NetSectionInfo
             {
                 m_Section = section1,
-                m_HiddenLayers = (NetPieceLayerMask)(0),
-                m_Offset = new float3(0f, 0f, 0f) + new float3(-1f * layoutRemainder, 0f, 0f),
+                m_HiddenLayers = (NetPieceLayerMask)(Numeric_Types_Draw02_Draw02ApproachLayout_g_cs.Values.I32[16]),
+                m_Offset = new float3(Numeric_Types_Draw02_Draw02ApproachLayout_g_cs.Values.F32[63], Numeric_Types_Draw02_Draw02ApproachLayout_g_cs.Values.F32[64], Numeric_Types_Draw02_Draw02ApproachLayout_g_cs.Values.F32[65]) + new float3(-Numeric_Types_Draw02_Draw02ApproachLayout_g_cs.Values.F32[66] * layoutRemainder, Numeric_Types_Draw02_Draw02ApproachLayout_g_cs.Values.F32[67], Numeric_Types_Draw02_Draw02ApproachLayout_g_cs.Values.F32[68]),
                 m_Invert = true,
                 m_Flip = false,
                 m_Median = false,
                 m_HalfLength = false,
-                m_RequireAll = new[] { NetPieceRequirements.Elevated },
+                m_RequireAll = new[]
+                {
+                    NetPieceRequirements.Elevated
+                },
                 m_RequireAny = Array.Empty<NetPieceRequirements>(),
-                m_RequireNone = new[] { NetPieceRequirements.FixedNodeSize },
+                m_RequireNone = new[]
+                {
+                    NetPieceRequirements.FixedNodeSize
+                },
             },
             new NetSectionInfo
             {
                 m_Section = section1,
-                m_HiddenLayers = (NetPieceLayerMask)(-1),
-                m_Offset = new float3(0f, 0f, 0f) + new float3(-1f * layoutRemainder, 0f, 0f),
+                m_HiddenLayers = (NetPieceLayerMask)(-Numeric_Types_Draw02_Draw02ApproachLayout_g_cs.Values.I32[17]),
+                m_Offset = new float3(Numeric_Types_Draw02_Draw02ApproachLayout_g_cs.Values.F32[69], Numeric_Types_Draw02_Draw02ApproachLayout_g_cs.Values.F32[70], Numeric_Types_Draw02_Draw02ApproachLayout_g_cs.Values.F32[71]) + new float3(-Numeric_Types_Draw02_Draw02ApproachLayout_g_cs.Values.F32[72] * layoutRemainder, Numeric_Types_Draw02_Draw02ApproachLayout_g_cs.Values.F32[73], Numeric_Types_Draw02_Draw02ApproachLayout_g_cs.Values.F32[74]),
                 m_Invert = true,
                 m_Flip = false,
                 m_Median = false,
                 m_HalfLength = false,
-                m_RequireAll = new[] { NetPieceRequirements.Node, NetPieceRequirements.FixedNodeSize, NetPieceRequirements.Elevated },
+                m_RequireAll = new[]
+                {
+                    NetPieceRequirements.Node,
+                    NetPieceRequirements.FixedNodeSize,
+                    NetPieceRequirements.Elevated
+                },
                 m_RequireAny = Array.Empty<NetPieceRequirements>(),
                 m_RequireNone = Array.Empty<NetPieceRequirements>(),
             },
             new NetSectionInfo
             {
                 m_Section = section1,
-                m_HiddenLayers = (NetPieceLayerMask)(0),
-                m_Offset = new float3(0f, 0f, 0f) + new float3(-1f * layoutRemainder, 0f, 0f),
+                m_HiddenLayers = (NetPieceLayerMask)(Numeric_Types_Draw02_Draw02ApproachLayout_g_cs.Values.I32[18]),
+                m_Offset = new float3(Numeric_Types_Draw02_Draw02ApproachLayout_g_cs.Values.F32[75], Numeric_Types_Draw02_Draw02ApproachLayout_g_cs.Values.F32[76], Numeric_Types_Draw02_Draw02ApproachLayout_g_cs.Values.F32[77]) + new float3(-Numeric_Types_Draw02_Draw02ApproachLayout_g_cs.Values.F32[78] * layoutRemainder, Numeric_Types_Draw02_Draw02ApproachLayout_g_cs.Values.F32[79], Numeric_Types_Draw02_Draw02ApproachLayout_g_cs.Values.F32[80]),
                 m_Invert = true,
                 m_Flip = false,
                 m_Median = false,
                 m_HalfLength = true,
-                m_RequireAll = new[] { NetPieceRequirements.FixedNodeSize, NetPieceRequirements.Elevated },
+                m_RequireAll = new[]
+                {
+                    NetPieceRequirements.FixedNodeSize,
+                    NetPieceRequirements.Elevated
+                },
                 m_RequireAny = Array.Empty<NetPieceRequirements>(),
-                m_RequireNone = new[] { NetPieceRequirements.Node },
+                m_RequireNone = new[]
+                {
+                    NetPieceRequirements.Node
+                },
             },
             new NetSectionInfo
             {
                 m_Section = section0,
-                m_HiddenLayers = (NetPieceLayerMask)(0),
-                m_Offset = new float3(0f, 0f, 0f) + new float3(-0.5f * layoutRemainder, 0f, 0f),
+                m_HiddenLayers = (NetPieceLayerMask)(Numeric_Types_Draw02_Draw02ApproachLayout_g_cs.Values.I32[19]),
+                m_Offset = new float3(Numeric_Types_Draw02_Draw02ApproachLayout_g_cs.Values.F32[81], Numeric_Types_Draw02_Draw02ApproachLayout_g_cs.Values.F32[82], Numeric_Types_Draw02_Draw02ApproachLayout_g_cs.Values.F32[83]) + new float3(-Numeric_Types_Draw02_Draw02ApproachLayout_g_cs.Values.F32[84] * layoutRemainder, Numeric_Types_Draw02_Draw02ApproachLayout_g_cs.Values.F32[85], Numeric_Types_Draw02_Draw02ApproachLayout_g_cs.Values.F32[86]),
                 m_Invert = true,
                 m_Flip = false,
                 m_Median = false,
                 m_HalfLength = false,
-                m_RequireAll = new[] { NetPieceRequirements.Elevated },
+                m_RequireAll = new[]
+                {
+                    NetPieceRequirements.Elevated
+                },
                 m_RequireAny = Array.Empty<NetPieceRequirements>(),
-                m_RequireNone = new[] { NetPieceRequirements.FixedNodeSize },
+                m_RequireNone = new[]
+                {
+                    NetPieceRequirements.FixedNodeSize
+                },
             },
             new NetSectionInfo
             {
                 m_Section = section0,
-                m_HiddenLayers = (NetPieceLayerMask)(-1),
-                m_Offset = new float3(0f, 0f, 0f) + new float3(-0.5f * layoutRemainder, 0f, 0f),
+                m_HiddenLayers = (NetPieceLayerMask)(-Numeric_Types_Draw02_Draw02ApproachLayout_g_cs.Values.I32[20]),
+                m_Offset = new float3(Numeric_Types_Draw02_Draw02ApproachLayout_g_cs.Values.F32[87], Numeric_Types_Draw02_Draw02ApproachLayout_g_cs.Values.F32[88], Numeric_Types_Draw02_Draw02ApproachLayout_g_cs.Values.F32[89]) + new float3(-Numeric_Types_Draw02_Draw02ApproachLayout_g_cs.Values.F32[90] * layoutRemainder, Numeric_Types_Draw02_Draw02ApproachLayout_g_cs.Values.F32[91], Numeric_Types_Draw02_Draw02ApproachLayout_g_cs.Values.F32[92]),
                 m_Invert = true,
                 m_Flip = false,
                 m_Median = false,
                 m_HalfLength = false,
-                m_RequireAll = new[] { NetPieceRequirements.Node, NetPieceRequirements.FixedNodeSize, NetPieceRequirements.Elevated },
+                m_RequireAll = new[]
+                {
+                    NetPieceRequirements.Node,
+                    NetPieceRequirements.FixedNodeSize,
+                    NetPieceRequirements.Elevated
+                },
                 m_RequireAny = Array.Empty<NetPieceRequirements>(),
                 m_RequireNone = Array.Empty<NetPieceRequirements>(),
             },
             new NetSectionInfo
             {
                 m_Section = section0,
-                m_HiddenLayers = (NetPieceLayerMask)(0),
-                m_Offset = new float3(0f, 0f, 0f) + new float3(-0.5f * layoutRemainder, 0f, 0f),
+                m_HiddenLayers = (NetPieceLayerMask)(Numeric_Types_Draw02_Draw02ApproachLayout_g_cs.Values.I32[21]),
+                m_Offset = new float3(Numeric_Types_Draw02_Draw02ApproachLayout_g_cs.Values.F32[93], Numeric_Types_Draw02_Draw02ApproachLayout_g_cs.Values.F32[94], Numeric_Types_Draw02_Draw02ApproachLayout_g_cs.Values.F32[95]) + new float3(-Numeric_Types_Draw02_Draw02ApproachLayout_g_cs.Values.F32[96] * layoutRemainder, Numeric_Types_Draw02_Draw02ApproachLayout_g_cs.Values.F32[97], Numeric_Types_Draw02_Draw02ApproachLayout_g_cs.Values.F32[98]),
                 m_Invert = true,
                 m_Flip = false,
                 m_Median = false,
                 m_HalfLength = true,
-                m_RequireAll = new[] { NetPieceRequirements.FixedNodeSize, NetPieceRequirements.Elevated },
+                m_RequireAll = new[]
+                {
+                    NetPieceRequirements.FixedNodeSize,
+                    NetPieceRequirements.Elevated
+                },
                 m_RequireAny = Array.Empty<NetPieceRequirements>(),
-                m_RequireNone = new[] { NetPieceRequirements.Node },
+                m_RequireNone = new[]
+                {
+                    NetPieceRequirements.Node
+                },
             },
             new NetSectionInfo
             {
                 m_Section = section2,
-                m_HiddenLayers = (NetPieceLayerMask)(0),
-                m_Offset = new float3(0f, 0f, 0f) + new float3(0f * layoutRemainder, 0f, 0f),
+                m_HiddenLayers = (NetPieceLayerMask)(Numeric_Types_Draw02_Draw02ApproachLayout_g_cs.Values.I32[22]),
+                m_Offset = new float3(Numeric_Types_Draw02_Draw02ApproachLayout_g_cs.Values.F32[99], Numeric_Types_Draw02_Draw02ApproachLayout_g_cs.Values.F32[100], Numeric_Types_Draw02_Draw02ApproachLayout_g_cs.Values.F32[101]) + new float3(Numeric_Types_Draw02_Draw02ApproachLayout_g_cs.Values.F32[102] * layoutRemainder, Numeric_Types_Draw02_Draw02ApproachLayout_g_cs.Values.F32[103], Numeric_Types_Draw02_Draw02ApproachLayout_g_cs.Values.F32[104]),
                 m_Invert = false,
                 m_Flip = false,
                 m_Median = true,
                 m_HalfLength = false,
-                m_RequireAll = new[] { NetPieceRequirements.Elevated },
+                m_RequireAll = new[]
+                {
+                    NetPieceRequirements.Elevated
+                },
                 m_RequireAny = Array.Empty<NetPieceRequirements>(),
-                m_RequireNone = new[] { NetPieceRequirements.FixedNodeSize },
+                m_RequireNone = new[]
+                {
+                    NetPieceRequirements.FixedNodeSize
+                },
             },
             new NetSectionInfo
             {
                 m_Section = section2,
-                m_HiddenLayers = (NetPieceLayerMask)(-1),
-                m_Offset = new float3(0f, 0f, 0f) + new float3(0f * layoutRemainder, 0f, 0f),
+                m_HiddenLayers = (NetPieceLayerMask)(-Numeric_Types_Draw02_Draw02ApproachLayout_g_cs.Values.I32[23]),
+                m_Offset = new float3(Numeric_Types_Draw02_Draw02ApproachLayout_g_cs.Values.F32[105], Numeric_Types_Draw02_Draw02ApproachLayout_g_cs.Values.F32[106], Numeric_Types_Draw02_Draw02ApproachLayout_g_cs.Values.F32[107]) + new float3(Numeric_Types_Draw02_Draw02ApproachLayout_g_cs.Values.F32[108] * layoutRemainder, Numeric_Types_Draw02_Draw02ApproachLayout_g_cs.Values.F32[109], Numeric_Types_Draw02_Draw02ApproachLayout_g_cs.Values.F32[110]),
                 m_Invert = false,
                 m_Flip = false,
                 m_Median = true,
                 m_HalfLength = false,
-                m_RequireAll = new[] { NetPieceRequirements.Node, NetPieceRequirements.FixedNodeSize, NetPieceRequirements.Elevated },
+                m_RequireAll = new[]
+                {
+                    NetPieceRequirements.Node,
+                    NetPieceRequirements.FixedNodeSize,
+                    NetPieceRequirements.Elevated
+                },
                 m_RequireAny = Array.Empty<NetPieceRequirements>(),
                 m_RequireNone = Array.Empty<NetPieceRequirements>(),
             },
             new NetSectionInfo
             {
                 m_Section = section2,
-                m_HiddenLayers = (NetPieceLayerMask)(0),
-                m_Offset = new float3(0f, 0f, 0f) + new float3(0f * layoutRemainder, 0f, 0f),
+                m_HiddenLayers = (NetPieceLayerMask)(Numeric_Types_Draw02_Draw02ApproachLayout_g_cs.Values.I32[24]),
+                m_Offset = new float3(Numeric_Types_Draw02_Draw02ApproachLayout_g_cs.Values.F32[111], Numeric_Types_Draw02_Draw02ApproachLayout_g_cs.Values.F32[112], Numeric_Types_Draw02_Draw02ApproachLayout_g_cs.Values.F32[113]) + new float3(Numeric_Types_Draw02_Draw02ApproachLayout_g_cs.Values.F32[114] * layoutRemainder, Numeric_Types_Draw02_Draw02ApproachLayout_g_cs.Values.F32[115], Numeric_Types_Draw02_Draw02ApproachLayout_g_cs.Values.F32[116]),
                 m_Invert = false,
                 m_Flip = false,
                 m_Median = true,
                 m_HalfLength = true,
-                m_RequireAll = new[] { NetPieceRequirements.FixedNodeSize, NetPieceRequirements.Elevated },
+                m_RequireAll = new[]
+                {
+                    NetPieceRequirements.FixedNodeSize,
+                    NetPieceRequirements.Elevated
+                },
                 m_RequireAny = Array.Empty<NetPieceRequirements>(),
-                m_RequireNone = new[] { NetPieceRequirements.Node },
+                m_RequireNone = new[]
+                {
+                    NetPieceRequirements.Node
+                },
             },
             new NetSectionInfo
             {
                 m_Section = section0,
-                m_HiddenLayers = (NetPieceLayerMask)(0),
-                m_Offset = new float3(0f, 0f, 0f) + new float3(0.5f * layoutRemainder, 0f, 0f),
+                m_HiddenLayers = (NetPieceLayerMask)(Numeric_Types_Draw02_Draw02ApproachLayout_g_cs.Values.I32[25]),
+                m_Offset = new float3(Numeric_Types_Draw02_Draw02ApproachLayout_g_cs.Values.F32[117], Numeric_Types_Draw02_Draw02ApproachLayout_g_cs.Values.F32[118], Numeric_Types_Draw02_Draw02ApproachLayout_g_cs.Values.F32[119]) + new float3(Numeric_Types_Draw02_Draw02ApproachLayout_g_cs.Values.F32[120] * layoutRemainder, Numeric_Types_Draw02_Draw02ApproachLayout_g_cs.Values.F32[121], Numeric_Types_Draw02_Draw02ApproachLayout_g_cs.Values.F32[122]),
                 m_Invert = false,
                 m_Flip = false,
                 m_Median = false,
                 m_HalfLength = false,
-                m_RequireAll = new[] { NetPieceRequirements.Elevated },
+                m_RequireAll = new[]
+                {
+                    NetPieceRequirements.Elevated
+                },
                 m_RequireAny = Array.Empty<NetPieceRequirements>(),
-                m_RequireNone = new[] { NetPieceRequirements.FixedNodeSize },
+                m_RequireNone = new[]
+                {
+                    NetPieceRequirements.FixedNodeSize
+                },
             },
             new NetSectionInfo
             {
                 m_Section = section0,
-                m_HiddenLayers = (NetPieceLayerMask)(-1),
-                m_Offset = new float3(0f, 0f, 0f) + new float3(0.5f * layoutRemainder, 0f, 0f),
+                m_HiddenLayers = (NetPieceLayerMask)(-Numeric_Types_Draw02_Draw02ApproachLayout_g_cs.Values.I32[26]),
+                m_Offset = new float3(Numeric_Types_Draw02_Draw02ApproachLayout_g_cs.Values.F32[123], Numeric_Types_Draw02_Draw02ApproachLayout_g_cs.Values.F32[124], Numeric_Types_Draw02_Draw02ApproachLayout_g_cs.Values.F32[125]) + new float3(Numeric_Types_Draw02_Draw02ApproachLayout_g_cs.Values.F32[126] * layoutRemainder, Numeric_Types_Draw02_Draw02ApproachLayout_g_cs.Values.F32[127], Numeric_Types_Draw02_Draw02ApproachLayout_g_cs.Values.F32[128]),
                 m_Invert = false,
                 m_Flip = false,
                 m_Median = false,
                 m_HalfLength = false,
-                m_RequireAll = new[] { NetPieceRequirements.Node, NetPieceRequirements.FixedNodeSize, NetPieceRequirements.Elevated },
+                m_RequireAll = new[]
+                {
+                    NetPieceRequirements.Node,
+                    NetPieceRequirements.FixedNodeSize,
+                    NetPieceRequirements.Elevated
+                },
                 m_RequireAny = Array.Empty<NetPieceRequirements>(),
                 m_RequireNone = Array.Empty<NetPieceRequirements>(),
             },
             new NetSectionInfo
             {
                 m_Section = section0,
-                m_HiddenLayers = (NetPieceLayerMask)(0),
-                m_Offset = new float3(0f, 0f, 0f) + new float3(0.5f * layoutRemainder, 0f, 0f),
+                m_HiddenLayers = (NetPieceLayerMask)(Numeric_Types_Draw02_Draw02ApproachLayout_g_cs.Values.I32[27]),
+                m_Offset = new float3(Numeric_Types_Draw02_Draw02ApproachLayout_g_cs.Values.F32[129], Numeric_Types_Draw02_Draw02ApproachLayout_g_cs.Values.F32[130], Numeric_Types_Draw02_Draw02ApproachLayout_g_cs.Values.F32[131]) + new float3(Numeric_Types_Draw02_Draw02ApproachLayout_g_cs.Values.F32[132] * layoutRemainder, Numeric_Types_Draw02_Draw02ApproachLayout_g_cs.Values.F32[133], Numeric_Types_Draw02_Draw02ApproachLayout_g_cs.Values.F32[134]),
                 m_Invert = false,
                 m_Flip = false,
                 m_Median = false,
                 m_HalfLength = true,
-                m_RequireAll = new[] { NetPieceRequirements.FixedNodeSize, NetPieceRequirements.Elevated },
+                m_RequireAll = new[]
+                {
+                    NetPieceRequirements.FixedNodeSize,
+                    NetPieceRequirements.Elevated
+                },
                 m_RequireAny = Array.Empty<NetPieceRequirements>(),
-                m_RequireNone = new[] { NetPieceRequirements.Node },
+                m_RequireNone = new[]
+                {
+                    NetPieceRequirements.Node
+                },
             },
             new NetSectionInfo
             {
                 m_Section = section1,
-                m_HiddenLayers = (NetPieceLayerMask)(0),
-                m_Offset = new float3(0f, 0f, 0f) + new float3(1f * layoutRemainder, 0f, 0f),
+                m_HiddenLayers = (NetPieceLayerMask)(Numeric_Types_Draw02_Draw02ApproachLayout_g_cs.Values.I32[28]),
+                m_Offset = new float3(Numeric_Types_Draw02_Draw02ApproachLayout_g_cs.Values.F32[135], Numeric_Types_Draw02_Draw02ApproachLayout_g_cs.Values.F32[136], Numeric_Types_Draw02_Draw02ApproachLayout_g_cs.Values.F32[137]) + new float3(Numeric_Types_Draw02_Draw02ApproachLayout_g_cs.Values.F32[138] * layoutRemainder, Numeric_Types_Draw02_Draw02ApproachLayout_g_cs.Values.F32[139], Numeric_Types_Draw02_Draw02ApproachLayout_g_cs.Values.F32[140]),
                 m_Invert = false,
                 m_Flip = false,
                 m_Median = false,
                 m_HalfLength = false,
-                m_RequireAll = new[] { NetPieceRequirements.Elevated },
+                m_RequireAll = new[]
+                {
+                    NetPieceRequirements.Elevated
+                },
                 m_RequireAny = Array.Empty<NetPieceRequirements>(),
-                m_RequireNone = new[] { NetPieceRequirements.FixedNodeSize },
+                m_RequireNone = new[]
+                {
+                    NetPieceRequirements.FixedNodeSize
+                },
             },
             new NetSectionInfo
             {
                 m_Section = section1,
-                m_HiddenLayers = (NetPieceLayerMask)(-1),
-                m_Offset = new float3(0f, 0f, 0f) + new float3(1f * layoutRemainder, 0f, 0f),
+                m_HiddenLayers = (NetPieceLayerMask)(-Numeric_Types_Draw02_Draw02ApproachLayout_g_cs.Values.I32[29]),
+                m_Offset = new float3(Numeric_Types_Draw02_Draw02ApproachLayout_g_cs.Values.F32[141], Numeric_Types_Draw02_Draw02ApproachLayout_g_cs.Values.F32[142], Numeric_Types_Draw02_Draw02ApproachLayout_g_cs.Values.F32[143]) + new float3(Numeric_Types_Draw02_Draw02ApproachLayout_g_cs.Values.F32[144] * layoutRemainder, Numeric_Types_Draw02_Draw02ApproachLayout_g_cs.Values.F32[145], Numeric_Types_Draw02_Draw02ApproachLayout_g_cs.Values.F32[146]),
                 m_Invert = false,
                 m_Flip = false,
                 m_Median = false,
                 m_HalfLength = false,
-                m_RequireAll = new[] { NetPieceRequirements.Node, NetPieceRequirements.FixedNodeSize, NetPieceRequirements.Elevated },
+                m_RequireAll = new[]
+                {
+                    NetPieceRequirements.Node,
+                    NetPieceRequirements.FixedNodeSize,
+                    NetPieceRequirements.Elevated
+                },
                 m_RequireAny = Array.Empty<NetPieceRequirements>(),
                 m_RequireNone = Array.Empty<NetPieceRequirements>(),
             },
             new NetSectionInfo
             {
                 m_Section = section1,
-                m_HiddenLayers = (NetPieceLayerMask)(0),
-                m_Offset = new float3(0f, 0f, 0f) + new float3(1f * layoutRemainder, 0f, 0f),
+                m_HiddenLayers = (NetPieceLayerMask)(Numeric_Types_Draw02_Draw02ApproachLayout_g_cs.Values.I32[30]),
+                m_Offset = new float3(Numeric_Types_Draw02_Draw02ApproachLayout_g_cs.Values.F32[147], Numeric_Types_Draw02_Draw02ApproachLayout_g_cs.Values.F32[148], Numeric_Types_Draw02_Draw02ApproachLayout_g_cs.Values.F32[149]) + new float3(Numeric_Types_Draw02_Draw02ApproachLayout_g_cs.Values.F32[150] * layoutRemainder, Numeric_Types_Draw02_Draw02ApproachLayout_g_cs.Values.F32[151], Numeric_Types_Draw02_Draw02ApproachLayout_g_cs.Values.F32[152]),
                 m_Invert = false,
                 m_Flip = false,
                 m_Median = false,
                 m_HalfLength = true,
-                m_RequireAll = new[] { NetPieceRequirements.FixedNodeSize, NetPieceRequirements.Elevated },
+                m_RequireAll = new[]
+                {
+                    NetPieceRequirements.FixedNodeSize,
+                    NetPieceRequirements.Elevated
+                },
                 m_RequireAny = Array.Empty<NetPieceRequirements>(),
-                m_RequireNone = new[] { NetPieceRequirements.Node },
+                m_RequireNone = new[]
+                {
+                    NetPieceRequirements.Node
+                },
             },
             new NetSectionInfo
             {
                 m_Section = section4,
-                m_HiddenLayers = (NetPieceLayerMask)(0),
-                m_Offset = new float3(0f, 0f, 0f) + new float3(1f * layoutRemainder, 0f, 0f),
+                m_HiddenLayers = (NetPieceLayerMask)(Numeric_Types_Draw02_Draw02ApproachLayout_g_cs.Values.I32[31]),
+                m_Offset = new float3(Numeric_Types_Draw02_Draw02ApproachLayout_g_cs.Values.F32[153], Numeric_Types_Draw02_Draw02ApproachLayout_g_cs.Values.F32[154], Numeric_Types_Draw02_Draw02ApproachLayout_g_cs.Values.F32[155]) + new float3(Numeric_Types_Draw02_Draw02ApproachLayout_g_cs.Values.F32[156] * layoutRemainder, Numeric_Types_Draw02_Draw02ApproachLayout_g_cs.Values.F32[157], Numeric_Types_Draw02_Draw02ApproachLayout_g_cs.Values.F32[158]),
                 m_Invert = false,
                 m_Flip = false,
                 m_Median = false,
                 m_HalfLength = false,
-                m_RequireAll = new[] { NetPieceRequirements.Elevated },
+                m_RequireAll = new[]
+                {
+                    NetPieceRequirements.Elevated
+                },
                 m_RequireAny = Array.Empty<NetPieceRequirements>(),
-                m_RequireNone = new[] { NetPieceRequirements.FixedNodeSize },
+                m_RequireNone = new[]
+                {
+                    NetPieceRequirements.FixedNodeSize
+                },
             },
             new NetSectionInfo
             {
                 m_Section = section4,
-                m_HiddenLayers = (NetPieceLayerMask)(-1),
-                m_Offset = new float3(0f, 0f, 0f) + new float3(1f * layoutRemainder, 0f, 0f),
+                m_HiddenLayers = (NetPieceLayerMask)(-Numeric_Types_Draw02_Draw02ApproachLayout_g_cs.Values.I32[32]),
+                m_Offset = new float3(Numeric_Types_Draw02_Draw02ApproachLayout_g_cs.Values.F32[159], Numeric_Types_Draw02_Draw02ApproachLayout_g_cs.Values.F32[160], Numeric_Types_Draw02_Draw02ApproachLayout_g_cs.Values.F32[161]) + new float3(Numeric_Types_Draw02_Draw02ApproachLayout_g_cs.Values.F32[162] * layoutRemainder, Numeric_Types_Draw02_Draw02ApproachLayout_g_cs.Values.F32[163], Numeric_Types_Draw02_Draw02ApproachLayout_g_cs.Values.F32[164]),
                 m_Invert = false,
                 m_Flip = false,
                 m_Median = false,
                 m_HalfLength = false,
-                m_RequireAll = new[] { NetPieceRequirements.Node, NetPieceRequirements.FixedNodeSize, NetPieceRequirements.Elevated },
+                m_RequireAll = new[]
+                {
+                    NetPieceRequirements.Node,
+                    NetPieceRequirements.FixedNodeSize,
+                    NetPieceRequirements.Elevated
+                },
                 m_RequireAny = Array.Empty<NetPieceRequirements>(),
                 m_RequireNone = Array.Empty<NetPieceRequirements>(),
             },
             new NetSectionInfo
             {
                 m_Section = section4,
-                m_HiddenLayers = (NetPieceLayerMask)(0),
-                m_Offset = new float3(0f, 0f, 0f) + new float3(1f * layoutRemainder, 0f, 0f),
+                m_HiddenLayers = (NetPieceLayerMask)(Numeric_Types_Draw02_Draw02ApproachLayout_g_cs.Values.I32[33]),
+                m_Offset = new float3(Numeric_Types_Draw02_Draw02ApproachLayout_g_cs.Values.F32[165], Numeric_Types_Draw02_Draw02ApproachLayout_g_cs.Values.F32[166], Numeric_Types_Draw02_Draw02ApproachLayout_g_cs.Values.F32[167]) + new float3(Numeric_Types_Draw02_Draw02ApproachLayout_g_cs.Values.F32[168] * layoutRemainder, Numeric_Types_Draw02_Draw02ApproachLayout_g_cs.Values.F32[169], Numeric_Types_Draw02_Draw02ApproachLayout_g_cs.Values.F32[170]),
                 m_Invert = false,
                 m_Flip = false,
                 m_Median = false,
                 m_HalfLength = true,
-                m_RequireAll = new[] { NetPieceRequirements.FixedNodeSize, NetPieceRequirements.Elevated },
+                m_RequireAll = new[]
+                {
+                    NetPieceRequirements.FixedNodeSize,
+                    NetPieceRequirements.Elevated
+                },
                 m_RequireAny = Array.Empty<NetPieceRequirements>(),
-                m_RequireNone = new[] { NetPieceRequirements.Node },
+                m_RequireNone = new[]
+                {
+                    NetPieceRequirements.Node
+                },
             },
             new NetSectionInfo
             {
                 m_Section = section3,
-                m_HiddenLayers = (NetPieceLayerMask)(0),
-                m_Offset = new float3(0f, 0f, 0f) + new float3(1f * layoutRemainder, 0f, 0f),
+                m_HiddenLayers = (NetPieceLayerMask)(Numeric_Types_Draw02_Draw02ApproachLayout_g_cs.Values.I32[34]),
+                m_Offset = new float3(Numeric_Types_Draw02_Draw02ApproachLayout_g_cs.Values.F32[171], Numeric_Types_Draw02_Draw02ApproachLayout_g_cs.Values.F32[172], Numeric_Types_Draw02_Draw02ApproachLayout_g_cs.Values.F32[173]) + new float3(Numeric_Types_Draw02_Draw02ApproachLayout_g_cs.Values.F32[174] * layoutRemainder, Numeric_Types_Draw02_Draw02ApproachLayout_g_cs.Values.F32[175], Numeric_Types_Draw02_Draw02ApproachLayout_g_cs.Values.F32[176]),
                 m_Invert = false,
                 m_Flip = false,
                 m_Median = false,
                 m_HalfLength = false,
-                m_RequireAll = new[] { NetPieceRequirements.Elevated },
+                m_RequireAll = new[]
+                {
+                    NetPieceRequirements.Elevated
+                },
                 m_RequireAny = Array.Empty<NetPieceRequirements>(),
-                m_RequireNone = new[] { NetPieceRequirements.FixedNodeSize },
+                m_RequireNone = new[]
+                {
+                    NetPieceRequirements.FixedNodeSize
+                },
             },
             new NetSectionInfo
             {
                 m_Section = section3,
-                m_HiddenLayers = (NetPieceLayerMask)(-1),
-                m_Offset = new float3(0f, 0f, 0f) + new float3(1f * layoutRemainder, 0f, 0f),
+                m_HiddenLayers = (NetPieceLayerMask)(-Numeric_Types_Draw02_Draw02ApproachLayout_g_cs.Values.I32[35]),
+                m_Offset = new float3(Numeric_Types_Draw02_Draw02ApproachLayout_g_cs.Values.F32[177], Numeric_Types_Draw02_Draw02ApproachLayout_g_cs.Values.F32[178], Numeric_Types_Draw02_Draw02ApproachLayout_g_cs.Values.F32[179]) + new float3(Numeric_Types_Draw02_Draw02ApproachLayout_g_cs.Values.F32[180] * layoutRemainder, Numeric_Types_Draw02_Draw02ApproachLayout_g_cs.Values.F32[181], Numeric_Types_Draw02_Draw02ApproachLayout_g_cs.Values.F32[182]),
                 m_Invert = false,
                 m_Flip = false,
                 m_Median = false,
                 m_HalfLength = false,
-                m_RequireAll = new[] { NetPieceRequirements.Node, NetPieceRequirements.FixedNodeSize, NetPieceRequirements.Elevated },
+                m_RequireAll = new[]
+                {
+                    NetPieceRequirements.Node,
+                    NetPieceRequirements.FixedNodeSize,
+                    NetPieceRequirements.Elevated
+                },
                 m_RequireAny = Array.Empty<NetPieceRequirements>(),
                 m_RequireNone = Array.Empty<NetPieceRequirements>(),
             },
             new NetSectionInfo
             {
                 m_Section = section3,
-                m_HiddenLayers = (NetPieceLayerMask)(0),
-                m_Offset = new float3(0f, 0f, 0f) + new float3(1f * layoutRemainder, 0f, 0f),
+                m_HiddenLayers = (NetPieceLayerMask)(Numeric_Types_Draw02_Draw02ApproachLayout_g_cs.Values.I32[36]),
+                m_Offset = new float3(Numeric_Types_Draw02_Draw02ApproachLayout_g_cs.Values.F32[183], Numeric_Types_Draw02_Draw02ApproachLayout_g_cs.Values.F32[184], Numeric_Types_Draw02_Draw02ApproachLayout_g_cs.Values.F32[185]) + new float3(Numeric_Types_Draw02_Draw02ApproachLayout_g_cs.Values.F32[186] * layoutRemainder, Numeric_Types_Draw02_Draw02ApproachLayout_g_cs.Values.F32[187], Numeric_Types_Draw02_Draw02ApproachLayout_g_cs.Values.F32[188]),
                 m_Invert = false,
                 m_Flip = false,
                 m_Median = false,
                 m_HalfLength = true,
-                m_RequireAll = new[] { NetPieceRequirements.FixedNodeSize, NetPieceRequirements.Elevated },
+                m_RequireAll = new[]
+                {
+                    NetPieceRequirements.FixedNodeSize,
+                    NetPieceRequirements.Elevated
+                },
                 m_RequireAny = Array.Empty<NetPieceRequirements>(),
-                m_RequireNone = new[] { NetPieceRequirements.Node },
+                m_RequireNone = new[]
+                {
+                    NetPieceRequirements.Node
+                },
             },
         };
         overhead.active = true;
     }
+}
+
+// Embedded numerical arrays: Types_Draw02_Draw02ApproachLayout_g_cs
+internal static class Numeric_Types_Draw02_Draw02ApproachLayout_g_cs
+{
+    static Numeric_Types_Draw02_Draw02ApproachLayout_g_cs() {}
+    internal static readonly HardcodedNumbers Values = HardcodedNumbers.Load("Types_Draw02_Draw02ApproachLayout_g_cs");
 }

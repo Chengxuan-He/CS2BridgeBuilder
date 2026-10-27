@@ -5,83 +5,107 @@ using System;
 using Game.Prefabs;
 
 namespace BridgeBuilder.Bridges;
-
 internal static class PedestrianDraw02RenderData
 {
-    internal enum Part { Mechanism, Column, Footing }
+    internal enum Part
+    {
+        Mechanism,
+        Column,
+        Footing
+    }
 
     // Apply once to fresh private renders. Every level is supplied in native LOD order.
-    internal static void Configure(Part part, RenderPrefab[] levels,
-        RenderPrefab nativeDefaultBase, ContentPrefab content)
+    internal static void Configure(Part part, RenderPrefab[] levels, RenderPrefab nativeDefaultBase, ContentPrefab content)
     {
         switch (part)
         {
             case Part.Mechanism:
             {
-                if (levels.Length != 2)
+                if (levels.Length != Numeric_Types_PedestrianDraw02_PedestrianDraw02RenderData_g_cs.Values.I32[0])
                     throw new ArgumentException("PedestrianDraw02 Mechanism requires 2 prepared render levels.");
-                var c0_LodProperties = levels[0].AddComponent<LodProperties>();
-                c0_LodProperties.m_Bias = 0f;
-                c0_LodProperties.m_ShadowBias = 0f;
-                c0_LodProperties.m_LodMeshes = new[] { levels[1] };
-                var c0_StackProperties = levels[0].AddComponent<StackProperties>();
-                c0_StackProperties.m_Direction = (StackDirection)2;
-                c0_StackProperties.m_Order = (StackOrder)2;
-                c0_StackProperties.m_StartOverlap = 0f;
-                c0_StackProperties.m_EndOverlap = 0f;
+                var c0_LodProperties = levels[Numeric_Types_PedestrianDraw02_PedestrianDraw02RenderData_g_cs.Values.I32[1]].AddComponent<LodProperties>();
+                c0_LodProperties.m_Bias = Numeric_Types_PedestrianDraw02_PedestrianDraw02RenderData_g_cs.Values.F32[0];
+                c0_LodProperties.m_ShadowBias = Numeric_Types_PedestrianDraw02_PedestrianDraw02RenderData_g_cs.Values.F32[1];
+                c0_LodProperties.m_LodMeshes = new[]
+                {
+                    levels[Numeric_Types_PedestrianDraw02_PedestrianDraw02RenderData_g_cs.Values.I32[2]]
+                };
+                var c0_StackProperties = levels[Numeric_Types_PedestrianDraw02_PedestrianDraw02RenderData_g_cs.Values.I32[3]].AddComponent<StackProperties>();
+                c0_StackProperties.m_Direction = (StackDirection)Numeric_Types_PedestrianDraw02_PedestrianDraw02RenderData_g_cs.Values.I32[4];
+                c0_StackProperties.m_Order = (StackOrder)Numeric_Types_PedestrianDraw02_PedestrianDraw02RenderData_g_cs.Values.I32[5];
+                c0_StackProperties.m_StartOverlap = Numeric_Types_PedestrianDraw02_PedestrianDraw02RenderData_g_cs.Values.F32[2];
+                c0_StackProperties.m_EndOverlap = Numeric_Types_PedestrianDraw02_PedestrianDraw02RenderData_g_cs.Values.F32[3];
                 c0_StackProperties.m_ForbidScaling = true;
-                var c0_ContentPrerequisite = levels[0].AddComponent<ContentPrerequisite>();
+                var c0_ContentPrerequisite = levels[Numeric_Types_PedestrianDraw02_PedestrianDraw02RenderData_g_cs.Values.I32[6]].AddComponent<ContentPrerequisite>();
                 c0_ContentPrerequisite.m_ContentPrerequisite = content;
-                var c1_ContentPrerequisite = levels[1].AddComponent<ContentPrerequisite>();
+                var c1_ContentPrerequisite = levels[Numeric_Types_PedestrianDraw02_PedestrianDraw02RenderData_g_cs.Values.I32[7]].AddComponent<ContentPrerequisite>();
                 c1_ContentPrerequisite.m_ContentPrerequisite = content;
                 break;
             }
+
             case Part.Column:
             {
-                if (levels.Length != 3)
+                if (levels.Length != Numeric_Types_PedestrianDraw02_PedestrianDraw02RenderData_g_cs.Values.I32[8])
                     throw new ArgumentException("PedestrianDraw02 Column requires 3 prepared render levels.");
-                var c0_LodProperties = levels[0].AddComponent<LodProperties>();
-                c0_LodProperties.m_Bias = 0f;
-                c0_LodProperties.m_ShadowBias = 0f;
-                c0_LodProperties.m_LodMeshes = new[] { levels[1], levels[2] };
-                var c0_StackProperties = levels[0].AddComponent<StackProperties>();
-                c0_StackProperties.m_Direction = (StackDirection)2;
-                c0_StackProperties.m_Order = (StackOrder)1;
-                c0_StackProperties.m_StartOverlap = 0f;
-                c0_StackProperties.m_EndOverlap = 0f;
+                var c0_LodProperties = levels[Numeric_Types_PedestrianDraw02_PedestrianDraw02RenderData_g_cs.Values.I32[9]].AddComponent<LodProperties>();
+                c0_LodProperties.m_Bias = Numeric_Types_PedestrianDraw02_PedestrianDraw02RenderData_g_cs.Values.F32[4];
+                c0_LodProperties.m_ShadowBias = Numeric_Types_PedestrianDraw02_PedestrianDraw02RenderData_g_cs.Values.F32[5];
+                c0_LodProperties.m_LodMeshes = new[]
+                {
+                    levels[Numeric_Types_PedestrianDraw02_PedestrianDraw02RenderData_g_cs.Values.I32[10]],
+                    levels[Numeric_Types_PedestrianDraw02_PedestrianDraw02RenderData_g_cs.Values.I32[11]]
+                };
+                var c0_StackProperties = levels[Numeric_Types_PedestrianDraw02_PedestrianDraw02RenderData_g_cs.Values.I32[12]].AddComponent<StackProperties>();
+                c0_StackProperties.m_Direction = (StackDirection)Numeric_Types_PedestrianDraw02_PedestrianDraw02RenderData_g_cs.Values.I32[13];
+                c0_StackProperties.m_Order = (StackOrder)Numeric_Types_PedestrianDraw02_PedestrianDraw02RenderData_g_cs.Values.I32[14];
+                c0_StackProperties.m_StartOverlap = Numeric_Types_PedestrianDraw02_PedestrianDraw02RenderData_g_cs.Values.F32[6];
+                c0_StackProperties.m_EndOverlap = Numeric_Types_PedestrianDraw02_PedestrianDraw02RenderData_g_cs.Values.F32[7];
                 c0_StackProperties.m_ForbidScaling = false;
-                var c0_ContentPrerequisite = levels[0].AddComponent<ContentPrerequisite>();
+                var c0_ContentPrerequisite = levels[Numeric_Types_PedestrianDraw02_PedestrianDraw02RenderData_g_cs.Values.I32[15]].AddComponent<ContentPrerequisite>();
                 c0_ContentPrerequisite.m_ContentPrerequisite = content;
-                var c1_ContentPrerequisite = levels[1].AddComponent<ContentPrerequisite>();
+                var c1_ContentPrerequisite = levels[Numeric_Types_PedestrianDraw02_PedestrianDraw02RenderData_g_cs.Values.I32[16]].AddComponent<ContentPrerequisite>();
                 c1_ContentPrerequisite.m_ContentPrerequisite = content;
-                var c2_ContentPrerequisite = levels[2].AddComponent<ContentPrerequisite>();
+                var c2_ContentPrerequisite = levels[Numeric_Types_PedestrianDraw02_PedestrianDraw02RenderData_g_cs.Values.I32[17]].AddComponent<ContentPrerequisite>();
                 c2_ContentPrerequisite.m_ContentPrerequisite = content;
                 break;
             }
+
             case Part.Footing:
             {
-                if (levels.Length != 2)
+                if (levels.Length != Numeric_Types_PedestrianDraw02_PedestrianDraw02RenderData_g_cs.Values.I32[18])
                     throw new ArgumentException("PedestrianDraw02 Footing requires 2 prepared render levels.");
-                var c0_LodProperties = levels[0].AddComponent<LodProperties>();
-                c0_LodProperties.m_Bias = 0f;
-                c0_LodProperties.m_ShadowBias = 0f;
-                c0_LodProperties.m_LodMeshes = new[] { levels[1] };
-                var c0_StackProperties = levels[0].AddComponent<StackProperties>();
-                c0_StackProperties.m_Direction = (StackDirection)2;
-                c0_StackProperties.m_Order = (StackOrder)0;
-                c0_StackProperties.m_StartOverlap = 0f;
-                c0_StackProperties.m_EndOverlap = 1.6000000238418579f;
+                var c0_LodProperties = levels[Numeric_Types_PedestrianDraw02_PedestrianDraw02RenderData_g_cs.Values.I32[19]].AddComponent<LodProperties>();
+                c0_LodProperties.m_Bias = Numeric_Types_PedestrianDraw02_PedestrianDraw02RenderData_g_cs.Values.F32[8];
+                c0_LodProperties.m_ShadowBias = Numeric_Types_PedestrianDraw02_PedestrianDraw02RenderData_g_cs.Values.F32[9];
+                c0_LodProperties.m_LodMeshes = new[]
+                {
+                    levels[Numeric_Types_PedestrianDraw02_PedestrianDraw02RenderData_g_cs.Values.I32[20]]
+                };
+                var c0_StackProperties = levels[Numeric_Types_PedestrianDraw02_PedestrianDraw02RenderData_g_cs.Values.I32[21]].AddComponent<StackProperties>();
+                c0_StackProperties.m_Direction = (StackDirection)Numeric_Types_PedestrianDraw02_PedestrianDraw02RenderData_g_cs.Values.I32[22];
+                c0_StackProperties.m_Order = (StackOrder)Numeric_Types_PedestrianDraw02_PedestrianDraw02RenderData_g_cs.Values.I32[23];
+                c0_StackProperties.m_StartOverlap = Numeric_Types_PedestrianDraw02_PedestrianDraw02RenderData_g_cs.Values.F32[10];
+                c0_StackProperties.m_EndOverlap = Numeric_Types_PedestrianDraw02_PedestrianDraw02RenderData_g_cs.Values.F32[11];
                 c0_StackProperties.m_ForbidScaling = true;
-                var c0_BaseProperties = levels[0].AddComponent<BaseProperties>();
+                var c0_BaseProperties = levels[Numeric_Types_PedestrianDraw02_PedestrianDraw02RenderData_g_cs.Values.I32[24]].AddComponent<BaseProperties>();
                 c0_BaseProperties.m_BaseType = nativeDefaultBase;
                 c0_BaseProperties.m_UseMinBounds = true;
-                var c0_ContentPrerequisite = levels[0].AddComponent<ContentPrerequisite>();
+                var c0_ContentPrerequisite = levels[Numeric_Types_PedestrianDraw02_PedestrianDraw02RenderData_g_cs.Values.I32[25]].AddComponent<ContentPrerequisite>();
                 c0_ContentPrerequisite.m_ContentPrerequisite = content;
-                var c1_ContentPrerequisite = levels[1].AddComponent<ContentPrerequisite>();
+                var c1_ContentPrerequisite = levels[Numeric_Types_PedestrianDraw02_PedestrianDraw02RenderData_g_cs.Values.I32[26]].AddComponent<ContentPrerequisite>();
                 c1_ContentPrerequisite.m_ContentPrerequisite = content;
                 break;
             }
-            default: throw new ArgumentOutOfRangeException(nameof(part));
+
+            default:
+                throw new ArgumentOutOfRangeException(nameof(part));
         }
     }
+}
+
+// Embedded numerical arrays: Types_PedestrianDraw02_PedestrianDraw02RenderData_g_cs
+internal static class Numeric_Types_PedestrianDraw02_PedestrianDraw02RenderData_g_cs
+{
+    static Numeric_Types_PedestrianDraw02_PedestrianDraw02RenderData_g_cs() {}
+    internal static readonly HardcodedNumbers Values = HardcodedNumbers.Load("Types_PedestrianDraw02_PedestrianDraw02RenderData_g_cs");
 }

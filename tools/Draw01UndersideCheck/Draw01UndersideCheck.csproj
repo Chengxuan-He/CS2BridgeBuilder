@@ -1,0 +1,7 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup><TargetFramework>net8.0</TargetFramework><OutputType>Exe</OutputType><ImplicitUsings>enable</ImplicitUsings><Nullable>enable</Nullable></PropertyGroup>
+  <ItemGroup>
+    <Compile Include="../../src/BridgeBuilder/Bridges/Types/Draw01/Draw01UndersideUv.cs" Link="Draw01UndersideUv.cs" />
+    <Compile Include="../../src/BridgeBuilder/Bridges/Types/Draw01/Draw01UndersideData.g.cs" Link="Draw01UndersideData.g.cs" />
+  </ItemGroup>
+</Project>

@@ -4,255 +4,100 @@ using System;
 using UnityEngine;
 
 namespace BridgeBuilder.Bridges;
-
 internal static class Lift01ApproachBases
 {
     internal static void Apply(int lod, Vector3[] source, Vector3[] positions, float delta)
     {
         var data = lod switch
         {
-            0 => (Count: 80210, Left: Left0, Centre: Centre0, Right: Right0),
-            1 => (Count: 38399, Left: Left1, Centre: Centre1, Right: Right1),
-            _ => throw new ArgumentOutOfRangeException(nameof(lod))
-        };
+            0 => (Count: Numeric_Types_Lift01_Lift01ApproachBases_g_cs.Values.I32[0], Left: Left0, Centre: Centre0, Right: Right0),
+            1 => (Count: Numeric_Types_Lift01_Lift01ApproachBases_g_cs.Values.I32[1], Left: Left1, Centre: Centre1, Right: Right1),
+            _ => throw new ArgumentOutOfRangeException(nameof(lod))};
         if (!float.IsFinite(delta) || source.Length != data.Count || positions.Length != data.Count)
             throw new InvalidOperationException("Lift01 bases require their recorded fixed-span mesh.");
         foreach (var range in data.Left)
-            for (var i = range.First; i <= range.Last; i++) positions[i].x = source[i].x - delta;
+            AffineGeometry.For(range.First, checked((range.Last) + 1), i =>
+            {
+                positions[i].x = AffineGeometry.Translate(source[i].x, -(delta));
+            });
         foreach (var range in data.Centre)
-            for (var i = range.First; i <= range.Last; i++) positions[i].x = source[i].x;
+            AffineGeometry.For(range.First, checked((range.Last) + 1), i =>
+            {
+                positions[i].x = source[i].x;
+            });
         foreach (var range in data.Right)
-            for (var i = range.First; i <= range.Last; i++) positions[i].x = source[i].x + delta;
+            AffineGeometry.For(range.First, checked((range.Last) + 1), i =>
+            {
+                positions[i].x = AffineGeometry.Translate(source[i].x, delta);
+            });
     }
 
     // Geometry SHA-256: 13872e5563f59223f541d1d2146d9cec7bfe7fac937c9d829c4a7474313621f3
-    private static readonly (int First, int Last)[] Left0 =
-    {
-        (38706, 38734),
-        (38737, 38765),
-        (38767, 38767),
-        (38769, 38798),
-        (38801, 38830),
-        (38833, 38862),
-        (38865, 38893),
-        (38895, 38895),
-        (38897, 38926),
-        (38929, 38957),
-        (38959, 38959),
-        (38961, 38961),
-        (40090, 40097),
-        (78808, 78836),
-        (78838, 78838),
-        (78840, 78868),
-        (78871, 78900),
-        (78902, 78902),
-        (78904, 78932),
-        (78934, 78934),
-        (78936, 78964),
-        (78966, 78966),
-        (78968, 78996),
-        (78999, 79028),
-        (79030, 79030),
-        (79032, 79060),
-        (79063, 79063),
-        (80192, 80199),
-    };
-
-    private static readonly (int First, int Last)[] Centre0 =
-    {
-        (38735, 38736),
-        (38766, 38766),
-        (38768, 38768),
-        (38799, 38800),
-        (38831, 38832),
-        (38863, 38864),
-        (38894, 38894),
-        (38896, 38896),
-        (38927, 38928),
-        (38958, 38958),
-        (38960, 38960),
-        (38991, 38992),
-        (39023, 39023),
-        (39025, 39025),
-        (39055, 39055),
-        (39057, 39057),
-        (39087, 39088),
-        (39119, 39120),
-        (39151, 39151),
-        (39153, 39153),
-        (39183, 39184),
-        (39215, 39215),
-        (39217, 39217),
-        (40098, 40099),
-        (78837, 78837),
-        (78839, 78839),
-        (78869, 78870),
-        (78901, 78901),
-        (78903, 78903),
-        (78933, 78933),
-        (78935, 78935),
-        (78965, 78965),
-        (78967, 78967),
-        (78997, 78998),
-        (79029, 79029),
-        (79031, 79031),
-        (79061, 79062),
-        (79092, 79092),
-        (79094, 79094),
-        (79125, 79126),
-        (79157, 79158),
-        (79188, 79188),
-        (79190, 79190),
-        (79220, 79220),
-        (79222, 79222),
-        (79253, 79254),
-        (79284, 79284),
-        (79286, 79286),
-        (79317, 79318),
-        (80200, 80201),
-    };
-
-    private static readonly (int First, int Last)[] Right0 =
-    {
-        (38962, 38990),
-        (38993, 39022),
-        (39024, 39024),
-        (39026, 39054),
-        (39056, 39056),
-        (39058, 39086),
-        (39089, 39118),
-        (39121, 39150),
-        (39152, 39152),
-        (39154, 39182),
-        (39185, 39214),
-        (39216, 39216),
-        (40100, 40107),
-        (79064, 79091),
-        (79093, 79093),
-        (79095, 79124),
-        (79127, 79156),
-        (79159, 79187),
-        (79189, 79189),
-        (79191, 79219),
-        (79221, 79221),
-        (79223, 79252),
-        (79255, 79283),
-        (79285, 79285),
-        (79287, 79316),
-        (79319, 79319),
-        (80202, 80209),
-    };
-
+    private static readonly (int First, int Last)[] Left0 = ReadPackedLeft0();
+    private static readonly (int First, int Last)[] Centre0 = ReadPackedCentre0();
+    private static readonly (int First, int Last)[] Right0 = ReadPackedRight0();
     // Geometry SHA-256: 7d859975ab9190b8881d6b93b38ada4a70db112f9a6b9eecc4c11880e7047992
-    private static readonly (int First, int Last)[] Left1 =
+    private static readonly (int First, int Last)[] Left1 = ReadPackedLeft1();
+    private static readonly (int First, int Last)[] Centre1 = ReadPackedCentre1();
+    private static readonly (int First, int Last)[] Right1 = ReadPackedRight1();
+    private static (int First, int Last)[] ReadPackedLeft0()
     {
-        (12468, 12496),
-        (12499, 12528),
-        (12531, 12560),
-        (12563, 12592),
-        (12595, 12624),
-        (12627, 12656),
-        (12659, 12688),
-        (12691, 12720),
-        (12723, 12723),
-        (13810, 13817),
-        (26587, 26615),
-        (26617, 26617),
-        (26619, 26647),
-        (26650, 26679),
-        (26682, 26711),
-        (26713, 26713),
-        (26715, 26743),
-        (26746, 26775),
-        (26778, 26807),
-        (26809, 26809),
-        (26811, 26839),
-        (26842, 26842),
-        (27929, 27936),
-    };
+        var d = Numeric_Types_Lift01_Lift01ApproachBases_g_cs.Values;
+        var values = new (int First, int Last)[28];
+        for (int i = 0; i < 28; i++)
+            values[0 + i] = (d.I32[2 + i * 2], d.I32[3 + i * 2]);
+        return values;
+    }
 
-    private static readonly (int First, int Last)[] Centre1 =
+    private static (int First, int Last)[] ReadPackedCentre0()
     {
-        (12497, 12498),
-        (12529, 12530),
-        (12561, 12562),
-        (12593, 12594),
-        (12625, 12626),
-        (12657, 12658),
-        (12689, 12690),
-        (12721, 12722),
-        (12753, 12753),
-        (12755, 12755),
-        (12785, 12785),
-        (12787, 12787),
-        (12817, 12817),
-        (12819, 12819),
-        (12849, 12849),
-        (12851, 12851),
-        (12881, 12882),
-        (12913, 12913),
-        (12915, 12915),
-        (12945, 12946),
-        (12977, 12977),
-        (12979, 12979),
-        (13818, 13819),
-        (26616, 26616),
-        (26618, 26618),
-        (26648, 26649),
-        (26680, 26681),
-        (26712, 26712),
-        (26714, 26714),
-        (26744, 26745),
-        (26776, 26777),
-        (26808, 26808),
-        (26810, 26810),
-        (26840, 26841),
-        (26872, 26873),
-        (26903, 26903),
-        (26905, 26905),
-        (26935, 26935),
-        (26937, 26937),
-        (26968, 26969),
-        (26999, 26999),
-        (27001, 27001),
-        (27032, 27033),
-        (27063, 27063),
-        (27065, 27065),
-        (27096, 27097),
-        (27937, 27938),
-    };
+        var d = Numeric_Types_Lift01_Lift01ApproachBases_g_cs.Values;
+        var values = new (int First, int Last)[50];
+        for (int i = 0; i < 50; i++)
+            values[0 + i] = (d.I32[58 + i * 2], d.I32[59 + i * 2]);
+        return values;
+    }
 
-    private static readonly (int First, int Last)[] Right1 =
+    private static (int First, int Last)[] ReadPackedRight0()
     {
-        (12724, 12752),
-        (12754, 12754),
-        (12756, 12784),
-        (12786, 12786),
-        (12788, 12816),
-        (12818, 12818),
-        (12820, 12848),
-        (12850, 12850),
-        (12852, 12880),
-        (12883, 12912),
-        (12914, 12914),
-        (12916, 12944),
-        (12947, 12976),
-        (12978, 12978),
-        (13820, 13827),
-        (26843, 26871),
-        (26874, 26902),
-        (26904, 26904),
-        (26906, 26934),
-        (26936, 26936),
-        (26938, 26967),
-        (26970, 26998),
-        (27000, 27000),
-        (27002, 27031),
-        (27034, 27062),
-        (27064, 27064),
-        (27066, 27095),
-        (27098, 27098),
-        (27939, 27946),
-    };
+        var d = Numeric_Types_Lift01_Lift01ApproachBases_g_cs.Values;
+        var values = new (int First, int Last)[27];
+        for (int i = 0; i < 27; i++)
+            values[0 + i] = (d.I32[158 + i * 2], d.I32[159 + i * 2]);
+        return values;
+    }
 
+    private static (int First, int Last)[] ReadPackedLeft1()
+    {
+        var d = Numeric_Types_Lift01_Lift01ApproachBases_g_cs.Values;
+        var values = new (int First, int Last)[23];
+        for (int i = 0; i < 23; i++)
+            values[0 + i] = (d.I32[212 + i * 2], d.I32[213 + i * 2]);
+        return values;
+    }
+
+    private static (int First, int Last)[] ReadPackedCentre1()
+    {
+        var d = Numeric_Types_Lift01_Lift01ApproachBases_g_cs.Values;
+        var values = new (int First, int Last)[47];
+        for (int i = 0; i < 47; i++)
+            values[0 + i] = (d.I32[258 + i * 2], d.I32[259 + i * 2]);
+        return values;
+    }
+
+    private static (int First, int Last)[] ReadPackedRight1()
+    {
+        var d = Numeric_Types_Lift01_Lift01ApproachBases_g_cs.Values;
+        var values = new (int First, int Last)[29];
+        for (int i = 0; i < 29; i++)
+            values[0 + i] = (d.I32[352 + i * 2], d.I32[353 + i * 2]);
+        return values;
+    }
+}
+
+// Embedded numerical arrays: Types_Lift01_Lift01ApproachBases_g_cs
+internal static class Numeric_Types_Lift01_Lift01ApproachBases_g_cs
+{
+    static Numeric_Types_Lift01_Lift01ApproachBases_g_cs() {}
+    internal static readonly HardcodedNumbers Values = HardcodedNumbers.Load("Types_Lift01_Lift01ApproachBases_g_cs");
 }

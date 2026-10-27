@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using Unity.Mathematics;
 
 namespace BridgeBuilder.Bridges;
-
 internal static partial class TowerWidening
 {
     /// <summary>
@@ -31,44 +30,19 @@ internal static partial class TowerWidening
     /// are measured from the returned vertices, not inferred from the requested extra, following the
     /// same rule as an external mesh validator: validate the built mesh rather than its input parameter.
     /// </summary>
-    internal static float3[] WidenOpenTruss(
-        float3[] source,
-        IReadOnlyList<int>? triangles,
-        float extra,
-        out TrussWideningFacts facts) =>
-        WidenOpenTruss(
-            source, triangles, extra, false,
-            Profile.Of(new[] { source }, new IReadOnlyList<int>?[] { triangles }),
-            out facts);
-
-    /// <param name="preserveOuterAssemblies">
+    internal static float3[] WidenOpenTruss(float3[] source, IReadOnlyList<int>? triangles, float extra, out TrussWideningFacts facts) => WidenOpenTruss(source, triangles, extra, false, Profile.Of(new[] { source }, new IReadOnlyList<int>? [] { triangles }), out facts);
+    /// <param name = "preserveOuterAssemblies">
     /// Carry a side-connected assembly rigidly as soon as it reaches the transverse structure's
     /// authored boundary. Used by the green through arch, whose inner railing and outer arch are one
     /// assembly and therefore must retain their source clearance.
     /// </param>
-    internal static float3[] WidenOpenTruss(
-        float3[] source,
-        IReadOnlyList<int>? triangles,
-        float extra,
-        bool preserveOuterAssemblies,
-        out TrussWideningFacts facts)
-        => WidenOpenTruss(
-            source, triangles, extra, preserveOuterAssemblies,
-            Profile.Of(new[] { source }, new IReadOnlyList<int>?[] { triangles }),
-            out facts);
-
+    internal static float3[] WidenOpenTruss(float3[] source, IReadOnlyList<int>? triangles, float extra, bool preserveOuterAssemblies, out TrussWideningFacts facts) => WidenOpenTruss(source, triangles, extra, preserveOuterAssemblies, Profile.Of(new[] { source }, new IReadOnlyList<int>? [] { triangles }), out facts);
     /// <summary>
     /// Widens an open truss using one classification measured from the full-detail archetype. The
     /// caller passes the same profile to every LOD, so a small centre fitting never invents its own
     /// bridge-wide scale and a coarse mesh never votes differently from the mesh it represents.
     /// </summary>
-    internal static float3[] WidenOpenTruss(
-        float3[] source,
-        IReadOnlyList<int>? triangles,
-        float extra,
-        bool preserveOuterAssemblies,
-        Profile profile,
-        out TrussWideningFacts facts)
+    internal static float3[] WidenOpenTruss(float3[] source, IReadOnlyList<int>? triangles, float extra, bool preserveOuterAssemblies, Profile profile, out TrussWideningFacts facts)
     {
         if (preserveOuterAssemblies)
         {
@@ -77,27 +51,19 @@ internal static partial class TowerWidening
 
         var moved = new float3[source.Length];
         Array.Copy(source, moved, source.Length);
-
         var components = PiecesOf(source, triangles, out var labels);
         var rigid = 0;
         var spanning = 0;
         var floating = 0;
         var shift = extra * 0.5f;
-
         // One reach for the complete transverse assembly, measured on the full-detail archetype and
         // reused by every LOD. The top beam is authored as many mesh islands (faces, joints, pivots),
         // but it is one part crossing x=0. Giving every island its own denominator is what enlarged a
         // small centre plate by the complete requested width and produced the broad sheets in game.
         var leftReach = profile.OpenTrussLeftReach;
         var rightReach = profile.OpenTrussRightReach;
-
-        var leftRatio = leftReach > CentreEpsilon
-            ? Math.Max(0f, (leftReach + shift) / leftReach)
-            : 1f;
-        var rightRatio = rightReach > CentreEpsilon
-            ? Math.Max(0f, (rightReach + shift) / rightReach)
-            : 1f;
-
+        var leftRatio = leftReach > CentreEpsilon ? Math.Max(0f, (leftReach + shift) / leftReach) : 1f;
+        var rightRatio = rightReach > CentreEpsilon ? Math.Max(0f, (rightReach + shift) / rightReach) : 1f;
         if (Math.Abs(extra) >= CentreEpsilon && components.Length > 0)
         {
             var translated = new bool[components.Length];
@@ -114,82 +80,54 @@ internal static partial class TowerWidening
                 if (crossesCentre)
                 {
                     spanning++;
-                    if (!component.CrossesCentre) floating++;
+                    if (!component.CrossesCentre)
+                        floating++;
                 }
-                else rigid++;
+                else
+                    rigid++;
             }
 
-            for (var index = 0; index < moved.Length; index++)
+            AffineGeometry.For(0, moved.Length, index =>
             {
                 var component = components[labels[index]];
                 var x = source[index].x;
                 if (translated[component.Id])
                 {
                     var centre = (component.Left + component.Right) * 0.5f;
-                    moved[index].x = x + (centre >= 0f ? shift : -shift);
+                    moved[index].x = AffineGeometry.Translate(x, (centre >= 0f ? shift : -shift));
                 }
                 else
                 {
-                    moved[index].x = Math.Abs(x) <= CentreEpsilon
-                        ? x
-                        : x < 0f
-                            ? x * leftRatio
-                            : x * rightRatio;
+                    moved[index].x = Math.Abs(x) <= CentreEpsilon ? x : x < 0f ? AffineGeometry.Scale(x, leftRatio) : AffineGeometry.Scale(x, rightRatio);
                 }
-            }
-
+            });
         }
 
-        var contractSatisfied = RequireCentrelineRule(
-            source, moved, components, labels, extra, leftReach, rightReach);
+        var contractSatisfied = RequireCentrelineRule(source, moved, components, labels, extra, leftReach, rightReach);
         if (!contractSatisfied)
             Array.Copy(source, moved, source.Length);
-
         var degenerateBefore = DegenerateTriangles(source, triangles);
         var degenerateAfter = DegenerateTriangles(moved, triangles);
         var flipped = FlippedTriangles(source, moved, triangles);
         var finite = true;
         foreach (var vertex in moved)
         {
-            if (!float.IsNaN(vertex.x) && !float.IsInfinity(vertex.x)
-                && !float.IsNaN(vertex.y) && !float.IsInfinity(vertex.y)
-                && !float.IsNaN(vertex.z) && !float.IsInfinity(vertex.z))
+            if (!float.IsNaN(vertex.x) && !float.IsInfinity(vertex.x) && !float.IsNaN(vertex.y) && !float.IsInfinity(vertex.y) && !float.IsNaN(vertex.z) && !float.IsInfinity(vertex.z))
                 continue;
-
             finite = false;
             break;
         }
 
-        facts = new TrussWideningFacts(
-            components.Length,
-            rigid,
-            spanning,
-            floating,
-            degenerateBefore,
-            degenerateAfter,
-            flipped,
-            leftReach,
-            rightReach,
-            leftRatio,
-            rightRatio,
-            WidthOf(moved) - WidthOf(source),
-            finite,
-            contractSatisfied);
+        facts = new TrussWideningFacts(components.Length, rigid, spanning, floating, degenerateBefore, degenerateAfter, flipped, leftReach, rightReach, leftRatio, rightRatio, WidthOf(moved) - WidthOf(source), finite, contractSatisfied);
         return moved;
     }
 
-    private static float3[] WidenProfiledOpenTruss(
-        float3[] source,
-        IReadOnlyList<int>? triangles,
-        float extra,
-        Profile profile,
-        out TrussWideningFacts facts)
+    private static float3[] WidenProfiledOpenTruss(float3[] source, IReadOnlyList<int>? triangles, float extra, Profile profile, out TrussWideningFacts facts)
     {
         var moved = new float3[source.Length];
         Array.Copy(source, moved, source.Length);
         var components = PiecesOf(source, triangles, out var labels);
-        if (Math.Abs(extra) >= CentreEpsilon && source.Length > 0
-            && (components.Length == 0 || labels.Length != source.Length))
+        if (Math.Abs(extra) >= CentreEpsilon && source.Length > 0 && (components.Length == 0 || labels.Length != source.Length))
         {
             facts = RejectedTrussFacts(source, triangles, components.Length, profile.OpenTrussBoundary);
             return moved;
@@ -203,17 +141,13 @@ internal static partial class TowerWidening
             return moved;
         }
 
-        var ratio = boundary > CentreEpsilon
-            ? Math.Max(0f, (boundary + shift) / boundary)
-            : 1f;
+        var ratio = boundary > CentreEpsilon ? Math.Max(0f, (boundary + shift) / boundary) : 1f;
         var rigid = 0;
         var spanning = 0;
         var mixed = 0;
-
         foreach (var component in components)
         {
-            if (component.Right <= -boundary + CentreEpsilon
-                || component.Left >= boundary - CentreEpsilon)
+            if (component.Right <= -boundary + CentreEpsilon || component.Left >= boundary - CentreEpsilon)
                 rigid++;
             else if (component.Left < -CentreEpsilon && component.Right > CentreEpsilon)
                 spanning++;
@@ -226,64 +160,44 @@ internal static partial class TowerWidening
         // the measured inner face of the side assembly receives an exact rigid translation. Both
         // formulae agree at the boundary, so a welded beam stays connected and no triangle can become
         // a fan merely because its vertices fell in different height bands.
-        for (var index = 0; index < source.Length; index++)
+        AffineGeometry.For(0, source.Length, index =>
         {
             var x = source[index].x;
             if (x <= -boundary)
-                moved[index].x = x - shift;
+                moved[index].x = AffineGeometry.Translate(x, -(shift));
             else if (x >= boundary)
-                moved[index].x = x + shift;
+                moved[index].x = AffineGeometry.Translate(x, shift);
             else
-                moved[index].x = x * ratio;
-        }
-
-        var contractSatisfied = RequireProfiledCentrelineRule(
-            source, moved, boundary, ratio, extra);
+                moved[index].x = AffineGeometry.Scale(x, ratio);
+        });
+        var contractSatisfied = RequireProfiledCentrelineRule(source, moved, boundary, ratio, extra);
         if (!contractSatisfied)
             Array.Copy(source, moved, source.Length);
-
         var degenerateBefore = DegenerateTriangles(source, triangles);
         var degenerateAfter = DegenerateTriangles(moved, triangles);
         var flipped = FlippedTriangles(source, moved, triangles);
         var finite = true;
         foreach (var vertex in moved)
         {
-            if (!float.IsNaN(vertex.x) && !float.IsInfinity(vertex.x)
-                && !float.IsNaN(vertex.y) && !float.IsInfinity(vertex.y)
-                && !float.IsNaN(vertex.z) && !float.IsInfinity(vertex.z))
+            if (!float.IsNaN(vertex.x) && !float.IsInfinity(vertex.x) && !float.IsNaN(vertex.y) && !float.IsInfinity(vertex.y) && !float.IsNaN(vertex.z) && !float.IsInfinity(vertex.z))
                 continue;
             finite = false;
             break;
         }
 
-        facts = new TrussWideningFacts(
-            components.Length, rigid, spanning, mixed,
-            degenerateBefore, degenerateAfter, flipped,
-            boundary, boundary, ratio, ratio,
-            WidthOf(moved) - WidthOf(source), finite, contractSatisfied);
+        facts = new TrussWideningFacts(components.Length, rigid, spanning, mixed, degenerateBefore, degenerateAfter, flipped, boundary, boundary, ratio, ratio, WidthOf(moved) - WidthOf(source), finite, contractSatisfied);
         return moved;
     }
 
-    private static bool RequireProfiledCentrelineRule(
-        float3[] source,
-        float3[] moved,
-        float boundary,
-        float ratio,
-        float extra)
+    private static bool RequireProfiledCentrelineRule(float3[] source, float3[] moved, float boundary, float ratio, float extra)
     {
         if (source.Length != moved.Length)
             return false;
-
         var shift = extra * 0.5f;
         for (var index = 0; index < source.Length; index++)
         {
             var x = source[index].x;
-            var expected = x <= -boundary
-                ? x - shift
-                : x >= boundary
-                    ? x + shift
-                    : x * ratio;
-
+            var expected = x <= -boundary ? x - shift : x >= boundary ? x + shift : x * ratio;
             if (Math.Abs(moved[index].x - expected) > CentreEpsilon)
                 return false;
         }
@@ -297,38 +211,23 @@ internal static partial class TowerWidening
     /// Kept internal so the regression suite can prove that a proposed override is rejected rather
     /// than merely producing a different-looking mesh.
     /// </summary>
-    internal static bool RequireCentrelineRule(
-        float3[] source,
-        float3[] moved,
-        IReadOnlyList<int>? triangles,
-        float extra)
+    internal static bool RequireCentrelineRule(float3[] source, float3[] moved, IReadOnlyList<int>? triangles, float extra)
     {
         var components = PiecesOf(source, triangles, out var labels);
-        var profile = Profile.Of(
-            new[] { source }, new IReadOnlyList<int>?[] { triangles });
-        return RequireCentrelineRule(
-            source, moved, components, labels, extra,
-            profile.OpenTrussLeftReach, profile.OpenTrussRightReach);
+        var profile = Profile.Of(new[] { source }, new IReadOnlyList<int>? [] { triangles });
+        return RequireCentrelineRule(source, moved, components, labels, extra, profile.OpenTrussLeftReach, profile.OpenTrussRightReach);
     }
 
-    private static bool RequireCentrelineRule(
-        float3[] source,
-        float3[] moved,
-        IReadOnlyList<Piece> components,
-        IReadOnlyList<int> labels,
-        float extra,
-        float leftReach,
-        float rightReach)
+    private static bool RequireCentrelineRule(float3[] source, float3[] moved, IReadOnlyList<Piece> components, IReadOnlyList<int> labels, float extra, float leftReach, float rightReach)
     {
         if (source.Length != moved.Length)
             return false;
-        if (Math.Abs(extra) < CentreEpsilon || source.Length == 0) return true;
+        if (Math.Abs(extra) < CentreEpsilon || source.Length == 0)
+            return true;
         if (components.Count == 0 || labels.Count != source.Length)
             return false;
-
         if (leftReach <= CentreEpsilon || rightReach <= CentreEpsilon)
             return false;
-
         var shift = extra * 0.5f;
         var leftRatio = Math.Max(0f, (leftReach + shift) / leftReach);
         var rightRatio = Math.Max(0f, (rightReach + shift) / rightReach);
@@ -342,12 +241,9 @@ internal static partial class TowerWidening
             var onRight = component.Left > CentreEpsilon;
             var reachesLeft = component.Left <= -leftReach + CentreEpsilon;
             var reachesRight = component.Right >= rightReach - CentreEpsilon;
-            var whollyInLeftSide = onLeft && reachesLeft
-                && component.Inner >= (leftReach * 0.5f) - CentreEpsilon;
-            var whollyInRightSide = onRight && reachesRight
-                && component.Inner >= (rightReach * 0.5f) - CentreEpsilon;
+            var whollyInLeftSide = onLeft && reachesLeft && component.Inner >= (leftReach * 0.5f) - CentreEpsilon;
+            var whollyInRightSide = onRight && reachesRight && component.Inner >= (rightReach * 0.5f) - CentreEpsilon;
             var translated = whollyInLeftSide || whollyInRightSide;
-
             var x = source[index].x;
             float expected;
             if (translated)
@@ -370,75 +266,63 @@ internal static partial class TowerWidening
         return true;
     }
 
-    private static TrussWideningFacts RejectedTrussFacts(
-        float3[] source,
-        IReadOnlyList<int>? triangles,
-        int pieces,
-        float structuralReach)
+    private static TrussWideningFacts RejectedTrussFacts(float3[] source, IReadOnlyList<int>? triangles, int pieces, float structuralReach)
     {
         var finite = true;
         foreach (var vertex in source)
         {
-            if (!float.IsNaN(vertex.x) && !float.IsInfinity(vertex.x)
-                && !float.IsNaN(vertex.y) && !float.IsInfinity(vertex.y)
-                && !float.IsNaN(vertex.z) && !float.IsInfinity(vertex.z))
+            if (!float.IsNaN(vertex.x) && !float.IsInfinity(vertex.x) && !float.IsNaN(vertex.y) && !float.IsInfinity(vertex.y) && !float.IsNaN(vertex.z) && !float.IsInfinity(vertex.z))
                 continue;
-
             finite = false;
             break;
         }
 
         var degenerate = DegenerateTriangles(source, triangles);
-        return new TrussWideningFacts(
-            pieces, 0, 0, 0,
-            degenerate, degenerate, 0,
-            structuralReach, structuralReach,
-            1f, 1f, 0f, finite, false);
+        return new TrussWideningFacts(pieces, 0, 0, 0, degenerate, degenerate, 0, structuralReach, structuralReach, 1f, 1f, 0f, finite, false);
     }
 
     private static int DegenerateTriangles(float3[] vertices, IReadOnlyList<int>? triangles)
     {
-        if (triangles == null) return 0;
-
+        if (triangles == null)
+            return 0;
         var count = 0;
         for (var corner = 0; corner + 2 < triangles.Count; corner += 3)
         {
             var a = triangles[corner];
             var b = triangles[corner + 1];
             var c = triangles[corner + 2];
-            if (a < 0 || b < 0 || c < 0
-                || a >= vertices.Length || b >= vertices.Length || c >= vertices.Length)
+            if (a < 0 || b < 0 || c < 0 || a >= vertices.Length || b >= vertices.Length || c >= vertices.Length)
             {
                 count++;
                 continue;
             }
 
             var normal = math.cross(vertices[b] - vertices[a], vertices[c] - vertices[a]);
-            if (math.lengthsq(normal) <= 1e-12f) count++;
+            if (math.lengthsq(normal) <= 1e-12f)
+                count++;
         }
 
         return count;
     }
 
-    private static int FlippedTriangles(
-        float3[] source, float3[] moved, IReadOnlyList<int>? triangles)
+    private static int FlippedTriangles(float3[] source, float3[] moved, IReadOnlyList<int>? triangles)
     {
-        if (triangles == null || source.Length != moved.Length) return 0;
-
+        if (triangles == null || source.Length != moved.Length)
+            return 0;
         var count = 0;
         for (var corner = 0; corner + 2 < triangles.Count; corner += 3)
         {
             var a = triangles[corner];
             var b = triangles[corner + 1];
             var c = triangles[corner + 2];
-            if (a < 0 || b < 0 || c < 0
-                || a >= source.Length || b >= source.Length || c >= source.Length)
+            if (a < 0 || b < 0 || c < 0 || a >= source.Length || b >= source.Length || c >= source.Length)
                 continue;
-
             var before = math.cross(source[b] - source[a], source[c] - source[a]);
             var after = math.cross(moved[b] - moved[a], moved[c] - moved[a]);
-            if (math.lengthsq(before) <= 1e-12f || math.lengthsq(after) <= 1e-12f) continue;
-            if (math.dot(before, after) < 0f) count++;
+            if (math.lengthsq(before) <= 1e-12f || math.lengthsq(after) <= 1e-12f)
+                continue;
+            if (math.dot(before, after) < 0f)
+                count++;
         }
 
         return count;
@@ -446,21 +330,7 @@ internal static partial class TowerWidening
 
     internal readonly struct TrussWideningFacts
     {
-        internal TrussWideningFacts(
-            int pieces,
-            int rigidPieces,
-            int spanningPieces,
-            int floatingPieces,
-            int degenerateBefore,
-            int degenerateAfter,
-            int flippedTriangles,
-            float leftStructuralReach,
-            float rightStructuralReach,
-            float leftScale,
-            float rightScale,
-            float measuredWidthChange,
-            bool finite,
-            bool contractSatisfied)
+        internal TrussWideningFacts(int pieces, int rigidPieces, int spanningPieces, int floatingPieces, int degenerateBefore, int degenerateAfter, int flippedTriangles, float leftStructuralReach, float rightStructuralReach, float leftScale, float rightScale, float measuredWidthChange, bool finite, bool contractSatisfied)
         {
             Pieces = pieces;
             RigidPieces = rigidPieces;
@@ -493,5 +363,4 @@ internal static partial class TowerWidening
         internal bool Finite { get; }
         internal bool ContractSatisfied { get; }
     }
-
 }

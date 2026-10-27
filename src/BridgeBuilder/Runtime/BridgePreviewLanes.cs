@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Reflection;
 
@@ -20,19 +20,8 @@ namespace BridgeBuilder.Runtime;
 /// Every entity, archetype, lookup and command buffer belongs to this world.
 /// The loaded city supplies read-only prefab data and theme/traffic handedness.
 /// </summary>
-internal sealed class BridgePreviewLanes : IDisposable
+internal sealed partial class BridgePreviewLanes : IDisposable
 {
-    internal readonly struct Lane
-    {
-        internal Lane(NetLaneGeometryPrefab prefab, Curve curve, EdgeLane? edge,
-            SubMeshFlags rejectedSubMeshes = 0)
-        { Prefab = prefab; Curve = curve; Edge = edge; RejectedSubMeshes = rejectedSubMeshes; }
-        internal NetLaneGeometryPrefab Prefab { get; }
-        internal Curve Curve { get; }
-        internal EdgeLane? Edge { get; }
-        internal SubMeshFlags RejectedSubMeshes { get; }
-    }
-
     private readonly World _world = new("BridgeBuilder preview lanes");
     private readonly EntityManager _source = World.DefaultGameObjectInjectionWorld.EntityManager;
     private readonly PrefabSystem _prefabs = World.DefaultGameObjectInjectionWorld.GetExistingSystemManaged<PrefabSystem>();
@@ -142,7 +131,10 @@ internal sealed class BridgePreviewLanes : IDisposable
                     }
                     output.Add(new Lane(prefab, manager.GetComponentData<Curve>(entity),
                         manager.HasComponent<EdgeLane>(entity) ? manager.GetComponentData<EdgeLane>(entity) : null,
-                        captureRenderState ? RejectedSubMeshes(manager, entity, LeftHandTraffic) : 0));
+                        captureRenderState ? RejectedSubMeshes(manager, entity, LeftHandTraffic) : 0,
+                        manager.HasComponent<NodeLane>(entity) ? manager.GetComponentData<NodeLane>(entity) : null,
+                        manager.GetComponentData<NetLaneData>(reference),
+                        manager.HasComponent<Game.Net.Elevation>(entity) ? manager.GetComponentData<Game.Net.Elevation>(entity) : null));
                 }
             result = output.ToArray();
             return true;

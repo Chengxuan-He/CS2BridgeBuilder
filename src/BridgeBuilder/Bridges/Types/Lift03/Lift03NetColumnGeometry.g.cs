@@ -3,194 +3,195 @@ using System;
 using UnityEngine;
 
 namespace BridgeBuilder.Bridges;
-
 internal static class Lift03NetColumnGeometry
 {
     internal static MovableStructureModel.Plan Create(int lod, Vector3[] source, int[] indices, float delta)
     {
         var data = lod switch
         {
-            0 => (Count: 152, Faces: 144, Motion: Motion10, Edges: Edges10, Fragments: Fragments10),
-            1 => (Count: 123, Faces: 115, Motion: Motion11, Edges: Edges11, Fragments: Fragments11),
-            2 => (Count: 178, Faces: 100, Motion: Motion12, Edges: Edges12, Fragments: Fragments12),
-            _ => throw new ArgumentOutOfRangeException(nameof(lod))
-        };
-        if (source.Length != data.Count || indices.Length != data.Faces * 3 || !float.IsFinite(delta))
+            0 => (Count: Numeric_Types_Lift03_Lift03NetColumnGeometry_g_cs.Values.I32[0], Faces: Numeric_Types_Lift03_Lift03NetColumnGeometry_g_cs.Values.I32[1], Motion: Motion10, Edges: Edges10, Fragments: Fragments10),
+            1 => (Count: Numeric_Types_Lift03_Lift03NetColumnGeometry_g_cs.Values.I32[2], Faces: Numeric_Types_Lift03_Lift03NetColumnGeometry_g_cs.Values.I32[3], Motion: Motion11, Edges: Edges11, Fragments: Fragments11),
+            2 => (Count: Numeric_Types_Lift03_Lift03NetColumnGeometry_g_cs.Values.I32[4], Faces: Numeric_Types_Lift03_Lift03NetColumnGeometry_g_cs.Values.I32[5], Motion: Motion12, Edges: Edges12, Fragments: Fragments12),
+            _ => throw new ArgumentOutOfRangeException(nameof(lod))};
+        if (source.Length != data.Count || indices.Length != data.Faces * Numeric_Types_Lift03_Lift03NetColumnGeometry_g_cs.Values.I32[6] || !float.IsFinite(delta))
             throw new InvalidOperationException("Lift03 ordinary pillar requires its measured native layout.");
         var positions = (Vector3[])source.Clone();
         foreach (var range in data.Motion)
-            for (var i = range.First; i <= range.Last; i++)
-                positions[i].x = source[i].x + range.Weight * delta;
+            AffineGeometry.For(range.First, checked((range.Last) + 1), i =>
+            {
+                positions[i].x = AffineGeometry.AddScaled(source[i].x, range.Weight, delta);
+            });
         var edges = new MovableStructureModel.EdgeVertex[data.Edges.Length];
         var x = new float[edges.Length];
-        for (var i = 0; i < edges.Length; i++)
+        for (var i = Numeric_Types_Lift03_Lift03NetColumnGeometry_g_cs.Values.I32[7]; i < edges.Length; i++)
         {
             var edge = data.Edges[i];
             edges[i] = new MovableStructureModel.EdgeVertex(edge.A, edge.B, edge.Fraction);
-            x[i] = Mathf.LerpUnclamped(source[edge.A].x, source[edge.B].x, edge.Fraction) + edge.Weight * delta;
+            x[i] = AffineGeometry.AddScaled(Mathf.LerpUnclamped(source[edge.A].x, source[edge.B].x, edge.Fraction), edge.Weight, delta);
         }
-        return new MovableStructureModel.Plan(source, positions, new[] { indices }, new[] { new bool[data.Faces] },
-            addedVertices: edges, fragments: data.Fragments, constructedX: x);
+
+        return new MovableStructureModel.Plan(source, positions, new[] { indices }, new[] { new bool[data.Faces] }, addedVertices: edges, fragments: data.Fragments, constructedX: x);
     }
 
     // Geometry SHA-256: d9b546ee261ff13ac92c677d42513089caa5123b004fd7ce5b04ff57eb5c1437
-    private static readonly (int First, int Last, float Weight)[] Motion10 =
-    {
-        (0, 27, -1f),
-        (28, 28, -0.9f),
-        (29, 29, -1f),
-        (30, 30, -0.9f),
-        (31, 32, 0f),
-        (33, 67, -1f),
-        (68, 68, -0.9f),
-        (69, 69, -1f),
-        (70, 70, -0.9f),
-        (71, 72, 0f),
-        (73, 75, -1f),
-        (76, 104, 1f),
-        (105, 105, 0.9f),
-        (106, 106, 1f),
-        (107, 107, 0.9f),
-        (108, 109, 0f),
-        (110, 141, 1f),
-        (142, 142, 0.9f),
-        (143, 143, 1f),
-        (144, 144, 0.9f),
-        (145, 146, 0f),
-        (147, 151, 1f),
-    };
+    private static readonly (int First, int Last, float Weight)[] Motion10 = ReadPackedMotion10();
     private static readonly (int A, int B, float Fraction, float Weight)[] Edges10 =
     {
     };
     private static readonly MovableStructureModel.Fragment[] Fragments10 =
     {
     };
-
     // Geometry SHA-256: aa898743a998bd166c9c30f623c5f196f2fd4d6efb8aac2d0a7070f115aea53a
-    private static readonly (int First, int Last, float Weight)[] Motion11 =
-    {
-        (0, 22, -1f),
-        (23, 24, 0f),
-        (25, 26, -1f),
-        (27, 28, 0f),
-        (29, 59, -1f),
-        (60, 61, 0f),
-        (62, 62, -1f),
-        (63, 66, 1f),
-        (67, 68, 0f),
-        (69, 122, 1f),
-    };
+    private static readonly (int First, int Last, float Weight)[] Motion11 = ReadPackedMotion11();
     private static readonly (int A, int B, float Fraction, float Weight)[] Edges11 =
     {
     };
     private static readonly MovableStructureModel.Fragment[] Fragments11 =
     {
     };
-
     // Geometry SHA-256: 783e1a086a7338f6bc45050451271d3a2df8a03f97989a03063411dc01aef6a3
-    private static readonly (int First, int Last, float Weight)[] Motion12 =
+    private static readonly (int First, int Last, float Weight)[] Motion12 = ReadPackedMotion12();
+    private static readonly (int A, int B, float Fraction, float Weight)[] Edges12 = ReadPackedEdges12();
+    private static readonly MovableStructureModel.Fragment[] Fragments12 = ReadPackedFragments12();
+    private static (int First, int Last, float Weight)[] ReadPackedMotion10()
     {
-        (0, 2, 1f),
-        (3, 5, -1f),
-        (6, 8, 1f),
-        (9, 11, -1f),
-        (12, 13, 1f),
-        (14, 14, -0.601836698f),
-        (15, 15, -0.30102746f),
-        (16, 33, -1f),
-        (34, 36, 1f),
-        (37, 40, -1f),
-        (41, 42, 1f),
-        (43, 43, -1f),
-        (44, 48, 1f),
-        (49, 59, -1f),
-        (60, 60, 1f),
-        (61, 64, -1f),
-        (65, 66, 1f),
-        (67, 68, -1f),
-        (69, 72, 1f),
-        (73, 74, -1f),
-        (75, 78, 1f),
-        (79, 79, -1f),
-        (80, 80, -0.30102746f),
-        (81, 81, 0.383060556f),
-        (82, 82, -0.601836698f),
-        (83, 83, -1f),
-        (84, 84, 0.0546963084f),
-        (85, 85, -0.109549464f),
-        (86, 86, -0.875304601f),
-        (87, 88, 1f),
-        (89, 90, -1f),
-        (91, 91, -0.109549464f),
-        (92, 94, 1f),
-        (95, 96, -1f),
-        (97, 97, -0.109549464f),
-        (98, 98, -0.875304601f),
-        (99, 99, -1f),
-        (100, 103, 1f),
-        (104, 104, 0.383060556f),
-        (105, 105, 0.847972359f),
-        (106, 107, 1f),
-        (108, 108, 0.0546963084f),
-        (109, 110, 1f),
-        (111, 111, 0.847972359f),
-        (112, 137, 1f),
-        (138, 159, -1f),
-        (160, 177, 1f),
-    };
-    private static readonly (int A, int B, float Fraction, float Weight)[] Edges12 =
-    {
-        (10, 14, 0.340849578f, -0.999999992f),
-        (10, 15, 0.227539018f, -0.999999996f),
-        (89, 82, 0.340849578f, -0.999999992f),
-        (82, 61, 0.658238888f, -1f),
-        (80, 94, 0.853074253f, 0.999999977f),
-        (81, 94, 0.73356396f, 0.999999986f),
-        (95, 14, 0.341761112f, -1f),
-        (10, 14, 0.340849578f, -0.999999992f),
-        (96, 97, 0.487750411f, -0.999999985f),
-        (90, 97, 0.192593485f, -0.999999992f),
-        (82, 89, 0.659150422f, -0.999999992f),
-        (89, 80, 0.227539018f, -0.999999996f),
-        (90, 97, 0.192593485f, -0.999999992f),
-        (90, 98, 0.63009119f, -0.999999993f),
-        (85, 99, 0.807406545f, -1f),
-        (86, 99, 0.369908839f, -1f),
-        (91, 23, 0.512249589f, -0.999999985f),
-        (91, 83, 0.807406545f, -1f),
-        (110, 81, 0.284928381f, 1f),
-        (81, 94, 0.73356396f, 0.999999986f),
-        (106, 108, 0.0905237868f, 0.999999997f),
-        (106, 105, 0.382296443f, 0.999999999f),
-        (114, 104, 0.266436011f, 1f),
-        (113, 104, 0.284928381f, 1f),
-        (111, 117, 0.617703557f, 0.999999999f),
-        (111, 107, 0.402619928f, 1f),
-        (104, 114, 0.73356396f, 0.999999986f),
-        (114, 15, 0.146925732f, 1f),
-        (106, 105, 0.382296443f, 0.999999999f),
-        (105, 124, 0.402619928f, 1f),
-        (117, 111, 0.382296443f, 0.999999999f),
-        (117, 84, 0.0905237868f, 0.999999997f),
-    };
-    private static readonly MovableStructureModel.Fragment[] Fragments12 =
-    {
-        new(0, 4, 10, 178, 179, 178, 14, 15, 178, 15, 179),
-        new(0, 39, 89, 180, 181, 89, 181, 61, 180, 82, 181),
-        new(0, 40, 81, 80, 182, 81, 182, 183, 182, 94, 183),
-        new(0, 41, 10, 95, 184, 10, 184, 185, 184, 14, 185),
-        new(0, 42, 90, 96, 186, 90, 186, 187, 186, 97, 187),
-        new(0, 43, 188, 89, 189, 82, 188, 189, 82, 189, 80),
-        new(0, 44, 90, 190, 191, 190, 97, 98, 190, 98, 191),
-        new(0, 45, 192, 99, 193, 86, 85, 192, 86, 192, 193),
-        new(0, 46, 194, 23, 83, 194, 83, 195, 91, 194, 195),
-        new(0, 54, 196, 81, 197, 110, 196, 197, 110, 197, 94),
-        new(0, 57, 198, 108, 105, 198, 105, 199, 106, 198, 199),
-        new(0, 58, 200, 104, 201, 113, 114, 200, 113, 200, 201),
-        new(0, 61, 111, 202, 203, 202, 117, 107, 202, 107, 203),
-        new(0, 63, 104, 204, 205, 104, 205, 15, 204, 114, 205),
-        new(0, 65, 206, 105, 207, 106, 206, 207, 106, 207, 124),
-        new(0, 66, 208, 111, 84, 208, 84, 209, 117, 208, 209),
-    };
+        var d = Numeric_Types_Lift03_Lift03NetColumnGeometry_g_cs.Values;
+        var values = new (int First, int Last, float Weight)[22];
+        for (int i = 0; i < 4; i++)
+            values[0 + i] = (d.I32[8 + i * 2], d.I32[9 + i * 2], -d.F32[0 + i * 1]);
+        for (int i = 0; i < 1; i++)
+            values[4 + i] = (d.I32[16 + i * 2], d.I32[17 + i * 2], d.F32[4 + i * 1]);
+        for (int i = 0; i < 4; i++)
+            values[5 + i] = (d.I32[18 + i * 2], d.I32[19 + i * 2], -d.F32[5 + i * 1]);
+        for (int i = 0; i < 1; i++)
+            values[9 + i] = (d.I32[26 + i * 2], d.I32[27 + i * 2], d.F32[9 + i * 1]);
+        for (int i = 0; i < 1; i++)
+            values[10 + i] = (d.I32[28 + i * 2], d.I32[29 + i * 2], -d.F32[10 + i * 1]);
+        for (int i = 0; i < 11; i++)
+            values[11 + i] = (d.I32[30 + i * 2], d.I32[31 + i * 2], d.F32[11 + i * 1]);
+        return values;
+    }
 
+    private static (int First, int Last, float Weight)[] ReadPackedMotion11()
+    {
+        var d = Numeric_Types_Lift03_Lift03NetColumnGeometry_g_cs.Values;
+        var values = new (int First, int Last, float Weight)[10];
+        for (int i = 0; i < 1; i++)
+            values[0 + i] = (d.I32[52 + i * 2], d.I32[53 + i * 2], -d.F32[22 + i * 1]);
+        for (int i = 0; i < 1; i++)
+            values[1 + i] = (d.I32[54 + i * 2], d.I32[55 + i * 2], d.F32[23 + i * 1]);
+        for (int i = 0; i < 1; i++)
+            values[2 + i] = (d.I32[56 + i * 2], d.I32[57 + i * 2], -d.F32[24 + i * 1]);
+        for (int i = 0; i < 1; i++)
+            values[3 + i] = (d.I32[58 + i * 2], d.I32[59 + i * 2], d.F32[25 + i * 1]);
+        for (int i = 0; i < 1; i++)
+            values[4 + i] = (d.I32[60 + i * 2], d.I32[61 + i * 2], -d.F32[26 + i * 1]);
+        for (int i = 0; i < 1; i++)
+            values[5 + i] = (d.I32[62 + i * 2], d.I32[63 + i * 2], d.F32[27 + i * 1]);
+        for (int i = 0; i < 1; i++)
+            values[6 + i] = (d.I32[64 + i * 2], d.I32[65 + i * 2], -d.F32[28 + i * 1]);
+        for (int i = 0; i < 3; i++)
+            values[7 + i] = (d.I32[66 + i * 2], d.I32[67 + i * 2], d.F32[29 + i * 1]);
+        return values;
+    }
+
+    private static (int First, int Last, float Weight)[] ReadPackedMotion12()
+    {
+        var d = Numeric_Types_Lift03_Lift03NetColumnGeometry_g_cs.Values;
+        var values = new (int First, int Last, float Weight)[47];
+        for (int i = 0; i < 1; i++)
+            values[0 + i] = (d.I32[72 + i * 2], d.I32[73 + i * 2], d.F32[32 + i * 1]);
+        for (int i = 0; i < 1; i++)
+            values[1 + i] = (d.I32[74 + i * 2], d.I32[75 + i * 2], -d.F32[33 + i * 1]);
+        for (int i = 0; i < 1; i++)
+            values[2 + i] = (d.I32[76 + i * 2], d.I32[77 + i * 2], d.F32[34 + i * 1]);
+        for (int i = 0; i < 1; i++)
+            values[3 + i] = (d.I32[78 + i * 2], d.I32[79 + i * 2], -d.F32[35 + i * 1]);
+        for (int i = 0; i < 1; i++)
+            values[4 + i] = (d.I32[80 + i * 2], d.I32[81 + i * 2], d.F32[36 + i * 1]);
+        for (int i = 0; i < 3; i++)
+            values[5 + i] = (d.I32[82 + i * 2], d.I32[83 + i * 2], -d.F32[37 + i * 1]);
+        for (int i = 0; i < 1; i++)
+            values[8 + i] = (d.I32[88 + i * 2], d.I32[89 + i * 2], d.F32[40 + i * 1]);
+        for (int i = 0; i < 1; i++)
+            values[9 + i] = (d.I32[90 + i * 2], d.I32[91 + i * 2], -d.F32[41 + i * 1]);
+        for (int i = 0; i < 1; i++)
+            values[10 + i] = (d.I32[92 + i * 2], d.I32[93 + i * 2], d.F32[42 + i * 1]);
+        for (int i = 0; i < 1; i++)
+            values[11 + i] = (d.I32[94 + i * 2], d.I32[95 + i * 2], -d.F32[43 + i * 1]);
+        for (int i = 0; i < 1; i++)
+            values[12 + i] = (d.I32[96 + i * 2], d.I32[97 + i * 2], d.F32[44 + i * 1]);
+        for (int i = 0; i < 1; i++)
+            values[13 + i] = (d.I32[98 + i * 2], d.I32[99 + i * 2], -d.F32[45 + i * 1]);
+        for (int i = 0; i < 1; i++)
+            values[14 + i] = (d.I32[100 + i * 2], d.I32[101 + i * 2], d.F32[46 + i * 1]);
+        for (int i = 0; i < 1; i++)
+            values[15 + i] = (d.I32[102 + i * 2], d.I32[103 + i * 2], -d.F32[47 + i * 1]);
+        for (int i = 0; i < 1; i++)
+            values[16 + i] = (d.I32[104 + i * 2], d.I32[105 + i * 2], d.F32[48 + i * 1]);
+        for (int i = 0; i < 1; i++)
+            values[17 + i] = (d.I32[106 + i * 2], d.I32[107 + i * 2], -d.F32[49 + i * 1]);
+        for (int i = 0; i < 1; i++)
+            values[18 + i] = (d.I32[108 + i * 2], d.I32[109 + i * 2], d.F32[50 + i * 1]);
+        for (int i = 0; i < 1; i++)
+            values[19 + i] = (d.I32[110 + i * 2], d.I32[111 + i * 2], -d.F32[51 + i * 1]);
+        for (int i = 0; i < 1; i++)
+            values[20 + i] = (d.I32[112 + i * 2], d.I32[113 + i * 2], d.F32[52 + i * 1]);
+        for (int i = 0; i < 2; i++)
+            values[21 + i] = (d.I32[114 + i * 2], d.I32[115 + i * 2], -d.F32[53 + i * 1]);
+        for (int i = 0; i < 1; i++)
+            values[23 + i] = (d.I32[118 + i * 2], d.I32[119 + i * 2], d.F32[55 + i * 1]);
+        for (int i = 0; i < 2; i++)
+            values[24 + i] = (d.I32[120 + i * 2], d.I32[121 + i * 2], -d.F32[56 + i * 1]);
+        for (int i = 0; i < 1; i++)
+            values[26 + i] = (d.I32[124 + i * 2], d.I32[125 + i * 2], d.F32[58 + i * 1]);
+        for (int i = 0; i < 2; i++)
+            values[27 + i] = (d.I32[126 + i * 2], d.I32[127 + i * 2], -d.F32[59 + i * 1]);
+        for (int i = 0; i < 1; i++)
+            values[29 + i] = (d.I32[130 + i * 2], d.I32[131 + i * 2], d.F32[61 + i * 1]);
+        for (int i = 0; i < 2; i++)
+            values[30 + i] = (d.I32[132 + i * 2], d.I32[133 + i * 2], -d.F32[62 + i * 1]);
+        for (int i = 0; i < 1; i++)
+            values[32 + i] = (d.I32[136 + i * 2], d.I32[137 + i * 2], d.F32[64 + i * 1]);
+        for (int i = 0; i < 4; i++)
+            values[33 + i] = (d.I32[138 + i * 2], d.I32[139 + i * 2], -d.F32[65 + i * 1]);
+        for (int i = 0; i < 8; i++)
+            values[37 + i] = (d.I32[146 + i * 2], d.I32[147 + i * 2], d.F32[69 + i * 1]);
+        for (int i = 0; i < 1; i++)
+            values[45 + i] = (d.I32[162 + i * 2], d.I32[163 + i * 2], -d.F32[77 + i * 1]);
+        for (int i = 0; i < 1; i++)
+            values[46 + i] = (d.I32[164 + i * 2], d.I32[165 + i * 2], d.F32[78 + i * 1]);
+        return values;
+    }
+
+    private static (int A, int B, float Fraction, float Weight)[] ReadPackedEdges12()
+    {
+        var d = Numeric_Types_Lift03_Lift03NetColumnGeometry_g_cs.Values;
+        var values = new (int A, int B, float Fraction, float Weight)[32];
+        for (int i = 0; i < 4; i++)
+            values[0 + i] = (d.I32[166 + i * 2], d.I32[167 + i * 2], d.F32[79 + i * 2], -d.F32[80 + i * 2]);
+        for (int i = 0; i < 2; i++)
+            values[4 + i] = (d.I32[174 + i * 2], d.I32[175 + i * 2], d.F32[87 + i * 2], d.F32[88 + i * 2]);
+        for (int i = 0; i < 12; i++)
+            values[6 + i] = (d.I32[178 + i * 2], d.I32[179 + i * 2], d.F32[91 + i * 2], -d.F32[92 + i * 2]);
+        for (int i = 0; i < 14; i++)
+            values[18 + i] = (d.I32[202 + i * 2], d.I32[203 + i * 2], d.F32[115 + i * 2], d.F32[116 + i * 2]);
+        return values;
+    }
+
+    private static MovableStructureModel.Fragment[] ReadPackedFragments12()
+    {
+        var d = Numeric_Types_Lift03_Lift03NetColumnGeometry_g_cs.Values;
+        var values = new MovableStructureModel.Fragment[16];
+        for (int i = 0; i < 16; i++)
+            values[0 + i] = new(d.I32[230 + i * 11], d.I32[231 + i * 11], d.I32[232 + i * 11], d.I32[233 + i * 11], d.I32[234 + i * 11], d.I32[235 + i * 11], d.I32[236 + i * 11], d.I32[237 + i * 11], d.I32[238 + i * 11], d.I32[239 + i * 11], d.I32[240 + i * 11]);
+        return values;
+    }
+}
+
+// Embedded numerical arrays: Types_Lift03_Lift03NetColumnGeometry_g_cs
+internal static class Numeric_Types_Lift03_Lift03NetColumnGeometry_g_cs
+{
+    static Numeric_Types_Lift03_Lift03NetColumnGeometry_g_cs() {}
+    internal static readonly HardcodedNumbers Values = HardcodedNumbers.Load("Types_Lift03_Lift03NetColumnGeometry_g_cs");
 }

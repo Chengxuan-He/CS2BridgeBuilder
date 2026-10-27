@@ -5,204 +5,152 @@ using System;
 using UnityEngine;
 
 namespace BridgeBuilder.Bridges;
-
 internal static class PedestrianDraw02FarColumn
 {
     internal static MovableStructureModel.Plan CreatePlan(Vector3[] source, int[] indices, float delta)
     {
-        if (!float.IsFinite(delta) || source.Length != 121 || indices.Length != 276)
+        if (!float.IsFinite(delta) || source.Length != Numeric_Types_PedestrianDraw02_PedestrianDraw02FarColumn_g_cs.Values.I32[0] || indices.Length != Numeric_Types_PedestrianDraw02_PedestrianDraw02FarColumn_g_cs.Values.I32[1])
             throw new InvalidOperationException("PedestrianDraw02 far column requires its recorded shell layout.");
         var positions = (Vector3[])source.Clone();
-        for (var i = 0; i < positions.Length; i++) positions[i].x += Weights[i] * delta;
+        AffineGeometry.For(Numeric_Types_PedestrianDraw02_PedestrianDraw02FarColumn_g_cs.Values.I32[2], positions.Length, i =>
+        {
+            positions[i].x = AffineGeometry.Translate(positions[i].x, Weights[i] * delta);
+        });
         var x = new float[Edges.Length];
-        for (var i = 0; i < x.Length; i++)
+        AffineGeometry.For(Numeric_Types_PedestrianDraw02_PedestrianDraw02FarColumn_g_cs.Values.I32[3], x.Length, i =>
         {
             var edge = Edges[i];
-            x[i] = Mathf.LerpUnclamped(source[edge.A].x, source[edge.B].x, edge.Fraction)
-                + Weights[source.Length + i] * delta;
-        }
-        return new MovableStructureModel.Plan(source, positions, new[] { indices },
-            new[] { new bool[92] }, addedVertices: Edges, fragments: Fragments, constructedX: x);
+            x[i] = AffineGeometry.AddScaled(Mathf.LerpUnclamped(source[edge.A].x, source[edge.B].x, edge.Fraction), Weights[source.Length + i], delta);
+        });
+        return new MovableStructureModel.Plan(source, positions, new[] { indices }, new[] { new bool[Numeric_Types_PedestrianDraw02_PedestrianDraw02FarColumn_g_cs.Values.I32[4]] }, addedVertices: Edges, fragments: Fragments, constructedX: x);
     }
 
-    private static readonly float[] Weights =
+    private static readonly float[] Weights = ReadPackedWeights();
+    private static readonly MovableStructureModel.EdgeVertex[] Edges = ReadPackedEdges();
+    private static readonly MovableStructureModel.Fragment[] Fragments = ReadPackedFragments();
+    private static float[] ReadPackedWeights()
     {
-        1f, 1f, 1f, 1f, 1f, 1f, 1f, 1f, 1f, 1f, 1f, 1f,
-        1.503782e-05f, -1f, 1f, 1.503782e-05f, 1f, 1f, -1f, 1.503782e-05f, 0.00965169631f, 0.00110110908f, 1.503782e-05f, -1f,
-        1.503782e-05f, 0.00965169631f, 0.00965169631f, 0.00965169631f, 0.00110110908f, 1.503782e-05f, 0.00965169631f, -1f, -0.00150839321f, 1.5044001e-05f, -1f, -1f,
-        -0.00150839321f, -0.00150839321f, -1f, -0.00150839321f, 1.5044001e-05f, -1f, -1f, 1.50319875e-05f, 1f, 1f, 1f, 1.50319875e-05f,
-        1f, -1f, -1f, -1f, -1f, -1f, -1f, -1f, -1f, -1f, -1f, -1f,
-        -1f, -1f, -1f, 0.000349504495f, -1f, 0.000349504495f, 0.000349504495f, -1f, 0.000349504495f, 1.50319875e-05f, -1f, 1.5044001e-05f,
-        -1f, -1f, 1.50319875e-05f, -1f, -1f, -0.000788589765f, -0.000788589765f, 1f, 1f, 1f, 1f, 1f,
-        1f, 1f, 1f, -1f, 1f, 1f, 1f, 1f, 1f, 1f, 1f, 1f,
-        1f, -0.0157455374f, 1.503782e-05f, -1f, -1f, -1f, -1f, -0.0157455374f, 1.503782e-05f, 1.503782e-05f, 1f, 1f,
-        1.503782e-05f, -1f, -1f, -1f, -1f, -1f, -1f, -1f, -1f, -1f, 1f, 1f,
-        1f, -1f, -1f, -1f, -1f, 1f, 1f, -1f, -1f, -1f, -1f, -1f,
-        -1f, -1f, -1f, -1f, -1f, 1f, 1f, 1f, 1f, 1f, 1f, -1f,
-        -1f, -1f, -1f, -1f, -1f, 1f, 1f, 1f, 1f, 1f, 1f, -1f,
-        -1f, -1f, -1f, -1f, -1f, 1f, 1f, 1f, 1f, 1f, 1f, 1f,
-        1f, 1f, 1f, 1f, 1f, -1f, -1f, -1f, -1f, -1f, -1f, 1f,
-        1f, 1f, 1f, -1f, -1f, -1f, -1f, -1f, -1f, 1f, 1f, 1f,
-        1f, 1f, 1f, -1f, -1f, -1f, -1f, -1f, -1f, -1f, -1f, -1f,
-        -1f, -1f, -1f, 1f, 1f, 1f, 1f, 1f, 1f, 1f, 1f, 1f,
-        1f, 1f, 1f, 1f, 1f,
-    };
+        var d = Numeric_Types_PedestrianDraw02_PedestrianDraw02FarColumn_g_cs.Values;
+        var values = new float[221];
+        for (int i = 0; i < 13; i++)
+            values[0 + i] = d.F32[0 + i * 1];
+        for (int i = 0; i < 1; i++)
+            values[13 + i] = -d.F32[13 + i * 1];
+        for (int i = 0; i < 4; i++)
+            values[14 + i] = d.F32[14 + i * 1];
+        for (int i = 0; i < 1; i++)
+            values[18 + i] = -d.F32[18 + i * 1];
+        for (int i = 0; i < 4; i++)
+            values[19 + i] = d.F32[19 + i * 1];
+        for (int i = 0; i < 1; i++)
+            values[23 + i] = -d.F32[23 + i * 1];
+        for (int i = 0; i < 7; i++)
+            values[24 + i] = d.F32[24 + i * 1];
+        for (int i = 0; i < 2; i++)
+            values[31 + i] = -d.F32[31 + i * 1];
+        for (int i = 0; i < 1; i++)
+            values[33 + i] = d.F32[33 + i * 1];
+        for (int i = 0; i < 6; i++)
+            values[34 + i] = -d.F32[34 + i * 1];
+        for (int i = 0; i < 1; i++)
+            values[40 + i] = d.F32[40 + i * 1];
+        for (int i = 0; i < 2; i++)
+            values[41 + i] = -d.F32[41 + i * 1];
+        for (int i = 0; i < 6; i++)
+            values[43 + i] = d.F32[43 + i * 1];
+        for (int i = 0; i < 14; i++)
+            values[49 + i] = -d.F32[49 + i * 1];
+        for (int i = 0; i < 1; i++)
+            values[63 + i] = d.F32[63 + i * 1];
+        for (int i = 0; i < 1; i++)
+            values[64 + i] = -d.F32[64 + i * 1];
+        for (int i = 0; i < 2; i++)
+            values[65 + i] = d.F32[65 + i * 1];
+        for (int i = 0; i < 1; i++)
+            values[67 + i] = -d.F32[67 + i * 1];
+        for (int i = 0; i < 2; i++)
+            values[68 + i] = d.F32[68 + i * 1];
+        for (int i = 0; i < 1; i++)
+            values[70 + i] = -d.F32[70 + i * 1];
+        for (int i = 0; i < 1; i++)
+            values[71 + i] = d.F32[71 + i * 1];
+        for (int i = 0; i < 2; i++)
+            values[72 + i] = -d.F32[72 + i * 1];
+        for (int i = 0; i < 1; i++)
+            values[74 + i] = d.F32[74 + i * 1];
+        for (int i = 0; i < 4; i++)
+            values[75 + i] = -d.F32[75 + i * 1];
+        for (int i = 0; i < 8; i++)
+            values[79 + i] = d.F32[79 + i * 1];
+        for (int i = 0; i < 1; i++)
+            values[87 + i] = -d.F32[87 + i * 1];
+        for (int i = 0; i < 9; i++)
+            values[88 + i] = d.F32[88 + i * 1];
+        for (int i = 0; i < 1; i++)
+            values[97 + i] = -d.F32[97 + i * 1];
+        for (int i = 0; i < 1; i++)
+            values[98 + i] = d.F32[98 + i * 1];
+        for (int i = 0; i < 5; i++)
+            values[99 + i] = -d.F32[99 + i * 1];
+        for (int i = 0; i < 5; i++)
+            values[104 + i] = d.F32[104 + i * 1];
+        for (int i = 0; i < 9; i++)
+            values[109 + i] = -d.F32[109 + i * 1];
+        for (int i = 0; i < 3; i++)
+            values[118 + i] = d.F32[118 + i * 1];
+        for (int i = 0; i < 4; i++)
+            values[121 + i] = -d.F32[121 + i * 1];
+        for (int i = 0; i < 2; i++)
+            values[125 + i] = d.F32[125 + i * 1];
+        for (int i = 0; i < 10; i++)
+            values[127 + i] = -d.F32[127 + i * 1];
+        for (int i = 0; i < 6; i++)
+            values[137 + i] = d.F32[137 + i * 1];
+        for (int i = 0; i < 6; i++)
+            values[143 + i] = -d.F32[143 + i * 1];
+        for (int i = 0; i < 6; i++)
+            values[149 + i] = d.F32[149 + i * 1];
+        for (int i = 0; i < 6; i++)
+            values[155 + i] = -d.F32[155 + i * 1];
+        for (int i = 0; i < 12; i++)
+            values[161 + i] = d.F32[161 + i * 1];
+        for (int i = 0; i < 6; i++)
+            values[173 + i] = -d.F32[173 + i * 1];
+        for (int i = 0; i < 4; i++)
+            values[179 + i] = d.F32[179 + i * 1];
+        for (int i = 0; i < 6; i++)
+            values[183 + i] = -d.F32[183 + i * 1];
+        for (int i = 0; i < 6; i++)
+            values[189 + i] = d.F32[189 + i * 1];
+        for (int i = 0; i < 12; i++)
+            values[195 + i] = -d.F32[195 + i * 1];
+        for (int i = 0; i < 14; i++)
+            values[207 + i] = d.F32[207 + i * 1];
+        return values;
+    }
 
-    private static readonly MovableStructureModel.EdgeVertex[] Edges =
+    private static MovableStructureModel.EdgeVertex[] ReadPackedEdges()
     {
-        new(12, 13, 0.686317027f),
-        new(12, 18, 0.689919889f),
-        new(12, 18, 0.689919889f),
-        new(18, 19, 0.310080081f),
-        new(21, 14, 0.549373925f),
-        new(20, 14, 0.547244787f),
-        new(13, 32, 0.314011306f),
-        new(31, 32, 0.309804231f),
-        new(32, 13, 0.685988724f),
-        new(13, 12, 0.313683003f),
-        new(22, 23, 0.689919889f),
-        new(33, 23, 0.689919889f),
-        new(35, 43, 0.309478313f),
-        new(34, 43, 0.306497037f),
-        new(43, 35, 0.690521657f),
-        new(35, 36, 0.309804231f),
-        new(44, 15, 0.313561946f),
-        new(44, 24, 0.313561946f),
-        new(44, 24, 0.313561946f),
-        new(24, 45, 0.690974474f),
-        new(46, 47, 0.309082985f),
-        new(46, 37, 0.308757991f),
-        new(50, 25, 0.312059313f),
-        new(49, 25, 0.307432592f),
-        new(20, 51, 0.687940657f),
-        new(51, 21, 0.313888043f),
-        new(21, 51, 0.686111927f),
-        new(21, 38, 0.693733633f),
-        new(15, 44, 0.686438024f),
-        new(39, 44, 0.686765611f),
-        new(45, 40, 0.309025556f),
-        new(40, 11, 0.69045788f),
-        new(11, 40, 0.30954212f),
-        new(11, 26, 0.311615527f),
-        new(33, 54, 0.690521657f),
-        new(27, 54, 0.692567408f),
-        new(54, 33, 0.309478313f),
-        new(33, 23, 0.689919889f),
-        new(28, 42, 0.693733633f),
-        new(42, 47, 0.306497037f),
-        new(47, 1, 0.690500915f),
-        new(28, 1, 0.690268636f),
-        new(1, 47, 0.309499085f),
-        new(47, 46, 0.690917015f),
-        new(45, 29, 0.309025526f),
-        new(45, 40, 0.309025556f),
-        new(48, 39, 0.308757991f),
-        new(39, 44, 0.686765611f),
-        new(30, 16, 0.547244787f),
-        new(30, 17, 0.688384473f),
-        new(14, 21, 0.450626075f),
-        new(6, 21, 0.309731364f),
-        new(63, 64, 0.690593123f),
-        new(64, 69, 0.309478313f),
-        new(69, 64, 0.690521657f),
-        new(69, 70, 0.70720607f),
-        new(71, 72, 0.689919889f),
-        new(72, 77, 0.3102521f),
-        new(78, 79, 0.549841762f),
-        new(78, 80, 0.690658212f),
-        new(82, 65, 0.45043987f),
-        new(81, 65, 0.29701224f),
-        new(78, 87, 0.686285615f),
-        new(87, 66, 0.313469321f),
-        new(66, 87, 0.68653065f),
-        new(66, 67, 0.690593123f),
-        new(87, 78, 0.313714355f),
-        new(78, 73, 0.68974787f),
-        new(88, 71, 0.310100853f),
-        new(71, 83, 0.69048655f),
-        new(83, 71, 0.30951342f),
-        new(83, 77, 0.309341758f),
-        new(84, 68, 0.29701224f),
-        new(84, 74, 0.296942413f),
-        new(98, 99, 0.549659431f),
-        new(97, 99, 0.545724154f),
-        new(103, 110, 0.687102199f),
-        new(110, 71, 0.309492648f),
-        new(71, 110, 0.690507352f),
-        new(71, 72, 0.689919889f),
-        new(69, 70, 0.70720607f),
-        new(104, 70, 0.70720607f),
-        new(100, 105, 0.450340539f),
-        new(75, 105, 0.29279393f),
-        new(97, 99, 0.545724154f),
-        new(97, 117, 0.687102199f),
-        new(66, 79, 0.54956013f),
-        new(78, 79, 0.549841762f),
-        new(118, 74, 0.309499085f),
-        new(118, 108, 0.309499085f),
-        new(74, 118, 0.690500915f),
-        new(74, 84, 0.703057587f),
-        new(88, 103, 0.306765258f),
-        new(88, 71, 0.310100853f),
-        new(97, 93, 0.693234742f),
-        new(97, 119, 0.689259171f),
-        new(120, 98, 0.309499085f),
-        new(119, 98, 0.314100057f),
-        new(119, 98, 0.314100057f),
-        new(119, 97, 0.310740829f),
-    };
+        var d = Numeric_Types_PedestrianDraw02_PedestrianDraw02FarColumn_g_cs.Values;
+        var values = new MovableStructureModel.EdgeVertex[100];
+        for (int i = 0; i < 100; i++)
+            values[0 + i] = new(d.I32[5 + i * 2], d.I32[6 + i * 2], d.F32[221 + i * 1]);
+        return values;
+    }
 
-    private static readonly MovableStructureModel.Fragment[] Fragments =
+    private static MovableStructureModel.Fragment[] ReadPackedFragments()
     {
-        new(0, 4, 121, 13, 18, 121, 18, 122, 12, 121, 122),
-        new(0, 5, 123, 18, 124, 12, 123, 124, 12, 124, 19),
-        new(0, 6, 20, 21, 125, 20, 125, 126, 125, 14, 126),
-        new(0, 7, 31, 13, 127, 31, 127, 128, 127, 32, 128),
-        new(0, 8, 129, 13, 130, 32, 129, 130, 32, 130, 12),
-        new(0, 9, 131, 23, 132, 33, 22, 131, 33, 131, 132),
-        new(0, 10, 34, 35, 133, 34, 133, 134, 133, 43, 134),
-        new(0, 11, 135, 35, 136, 43, 135, 136, 43, 136, 36),
-        new(0, 12, 137, 15, 24, 137, 24, 138, 44, 137, 138),
-        new(0, 13, 139, 24, 140, 44, 139, 140, 44, 140, 45),
-        new(0, 14, 141, 47, 37, 141, 37, 142, 46, 141, 142),
-        new(0, 15, 49, 50, 143, 49, 143, 144, 143, 25, 144),
-        new(0, 16, 145, 51, 146, 20, 145, 146, 20, 146, 21),
-        new(0, 17, 147, 51, 38, 147, 38, 148, 21, 147, 148),
-        new(0, 22, 39, 15, 149, 39, 149, 150, 149, 44, 150),
-        new(0, 26, 151, 40, 152, 45, 151, 152, 45, 152, 11),
-        new(0, 27, 153, 40, 26, 153, 26, 154, 11, 153, 154),
-        new(0, 37, 155, 54, 156, 27, 33, 155, 27, 155, 156),
-        new(0, 38, 54, 157, 158, 54, 158, 23, 157, 33, 158),
-        new(0, 39, 159, 42, 160, 28, 159, 160, 28, 160, 47),
-        new(0, 41, 28, 47, 161, 28, 161, 162, 161, 1, 162),
-        new(0, 42, 163, 47, 164, 1, 163, 164, 1, 164, 46),
-        new(0, 43, 165, 29, 40, 165, 40, 166, 45, 165, 166),
-        new(0, 45, 167, 39, 168, 48, 167, 168, 48, 168, 44),
-        new(0, 46, 30, 169, 170, 169, 16, 17, 169, 17, 170),
-        new(0, 47, 171, 21, 172, 6, 14, 171, 6, 171, 172),
-        new(0, 48, 173, 64, 174, 63, 173, 174, 63, 174, 69),
-        new(0, 49, 175, 64, 70, 175, 70, 176, 69, 175, 176),
-        new(0, 50, 177, 72, 178, 71, 177, 178, 71, 178, 77),
-        new(0, 51, 78, 179, 180, 179, 79, 80, 179, 80, 180),
-        new(0, 52, 181, 65, 182, 81, 82, 181, 81, 181, 182),
-        new(0, 53, 183, 87, 184, 78, 183, 184, 78, 184, 66),
-        new(0, 54, 185, 87, 67, 185, 67, 186, 66, 185, 186),
-        new(0, 55, 87, 187, 188, 87, 188, 73, 187, 78, 188),
-        new(0, 56, 189, 71, 190, 88, 189, 190, 88, 190, 83),
-        new(0, 57, 191, 71, 77, 191, 77, 192, 83, 191, 192),
-        new(0, 58, 193, 68, 74, 193, 74, 194, 84, 193, 194),
-        new(0, 63, 195, 99, 196, 97, 98, 195, 97, 195, 196),
-        new(0, 74, 197, 110, 198, 103, 197, 198, 103, 198, 71),
-        new(0, 75, 199, 110, 72, 199, 72, 200, 71, 199, 200),
-        new(0, 76, 201, 70, 202, 104, 69, 201, 104, 201, 202),
-        new(0, 77, 75, 100, 203, 75, 203, 204, 203, 105, 204),
-        new(0, 78, 205, 99, 117, 205, 117, 206, 97, 205, 206),
-        new(0, 80, 78, 66, 207, 78, 207, 208, 207, 79, 208),
-        new(0, 83, 209, 74, 108, 209, 108, 210, 118, 209, 210),
-        new(0, 84, 74, 211, 212, 211, 118, 84, 211, 84, 212),
-        new(0, 85, 213, 103, 71, 213, 71, 214, 88, 213, 214),
-        new(0, 86, 97, 215, 216, 215, 93, 119, 215, 119, 216),
-        new(0, 89, 217, 98, 218, 119, 120, 217, 119, 217, 218),
-        new(0, 90, 219, 98, 97, 219, 97, 220, 119, 219, 220),
-    };
+        var d = Numeric_Types_PedestrianDraw02_PedestrianDraw02FarColumn_g_cs.Values;
+        var values = new MovableStructureModel.Fragment[50];
+        for (int i = 0; i < 50; i++)
+            values[0 + i] = new(d.I32[205 + i * 11], d.I32[206 + i * 11], d.I32[207 + i * 11], d.I32[208 + i * 11], d.I32[209 + i * 11], d.I32[210 + i * 11], d.I32[211 + i * 11], d.I32[212 + i * 11], d.I32[213 + i * 11], d.I32[214 + i * 11], d.I32[215 + i * 11]);
+        return values;
+    }
+}
+
+// Embedded numerical arrays: Types_PedestrianDraw02_PedestrianDraw02FarColumn_g_cs
+internal static class Numeric_Types_PedestrianDraw02_PedestrianDraw02FarColumn_g_cs
+{
+    static Numeric_Types_PedestrianDraw02_PedestrianDraw02FarColumn_g_cs() {}
+    internal static readonly HardcodedNumbers Values = HardcodedNumbers.Load("Types_PedestrianDraw02_PedestrianDraw02FarColumn_g_cs");
 }

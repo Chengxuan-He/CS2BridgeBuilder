@@ -4,101 +4,176 @@ using System;
 using UnityEngine;
 
 namespace BridgeBuilder.Bridges;
-
 internal static class Lift05SupportGeometry
 {
     internal static MovableStructureModel.Plan Create(bool footing, int lod, Vector3[] source, int[] indices, float delta)
     {
         var data = (footing, lod) switch
         {
-            (false, 0) => (Count: 896, Indices: 2304, Parts: Parts00),
-            (false, 1) => (Count: 1097, Indices: 2070, Parts: Parts01),
-            (false, 2) => (Count: 256, Indices: 576, Parts: Parts02),
-            (true, 0) => (Count: 1792, Indices: 4608, Parts: Parts10),
-            (true, 1) => (Count: 1638, Indices: 4146, Parts: Parts11),
-            (true, 2) => (Count: 448, Indices: 1152, Parts: Parts12),
-            _ => throw new ArgumentOutOfRangeException(nameof(lod))
-        };
+            (false, 0) => (Count: Numeric_Types_Lift05_Lift05SupportGeometry_g_cs.Values.I32[0], Indices: Numeric_Types_Lift05_Lift05SupportGeometry_g_cs.Values.I32[1], Parts: Parts00),
+            (false, 1) => (Count: Numeric_Types_Lift05_Lift05SupportGeometry_g_cs.Values.I32[2], Indices: Numeric_Types_Lift05_Lift05SupportGeometry_g_cs.Values.I32[3], Parts: Parts01),
+            (false, 2) => (Count: Numeric_Types_Lift05_Lift05SupportGeometry_g_cs.Values.I32[4], Indices: Numeric_Types_Lift05_Lift05SupportGeometry_g_cs.Values.I32[5], Parts: Parts02),
+            (true, 0) => (Count: Numeric_Types_Lift05_Lift05SupportGeometry_g_cs.Values.I32[6], Indices: Numeric_Types_Lift05_Lift05SupportGeometry_g_cs.Values.I32[7], Parts: Parts10),
+            (true, 1) => (Count: Numeric_Types_Lift05_Lift05SupportGeometry_g_cs.Values.I32[8], Indices: Numeric_Types_Lift05_Lift05SupportGeometry_g_cs.Values.I32[9], Parts: Parts11),
+            (true, 2) => (Count: Numeric_Types_Lift05_Lift05SupportGeometry_g_cs.Values.I32[10], Indices: Numeric_Types_Lift05_Lift05SupportGeometry_g_cs.Values.I32[11], Parts: Parts12),
+            _ => throw new ArgumentOutOfRangeException(nameof(lod))};
         if (!float.IsFinite(delta) || source.Length != data.Count || indices.Length != data.Indices)
             throw new InvalidOperationException("Lift05 support requires its measured layout.");
         var positions = (Vector3[])source.Clone();
         foreach (var part in data.Parts)
-            for (var i = part.First; i <= part.Last; i++) positions[i].x += part.Sign * delta;
-        return new MovableStructureModel.Plan(source, positions, new[] { indices }, new[] { new bool[indices.Length / 3] });
+            AffineGeometry.For(part.First, checked((part.Last) + 1), i =>
+            {
+                positions[i].x = AffineGeometry.Translate(positions[i].x, part.Sign * delta);
+            });
+        return new MovableStructureModel.Plan(source, positions, new[] { indices }, new[] { new bool[indices.Length / Numeric_Types_Lift05_Lift05SupportGeometry_g_cs.Values.I32[12]] });
     }
 
     // Geometry SHA-256: 887e873cd753c5c1a6b661fc4f4e22796b764a99110d5751f24688a1235a6289
-    private static readonly (int First, int Last, int Sign)[] Parts00 =
-    {
-        (0, 223, -1),
-        (224, 671, 1),
-        (672, 895, -1),
-    };
-
+    private static readonly (int First, int Last, int Sign)[] Parts00 = ReadPackedParts00();
     // Geometry SHA-256: 28f7dcf6a584a25006233ce86c8ee0544ac96d2364ce5d41678fb47eeaeb76e8
-    private static readonly (int First, int Last, int Sign)[] Parts01 =
-    {
-        (0, 268, -1),
-        (269, 802, 1),
-        (803, 1096, -1),
-    };
-
+    private static readonly (int First, int Last, int Sign)[] Parts01 = ReadPackedParts01();
     // Geometry SHA-256: f476f9bc2c84c2291a09cfea33fc462edca75a85090e21f4c935294ec1efddfa
-    private static readonly (int First, int Last, int Sign)[] Parts02 =
-    {
-        (0, 31, -1),
-        (32, 39, 1),
-        (40, 71, -1),
-        (72, 135, 1),
-        (136, 143, -1),
-        (144, 199, 1),
-        (200, 255, -1),
-    };
-
+    private static readonly (int First, int Last, int Sign)[] Parts02 = ReadPackedParts02();
     // Geometry SHA-256: 62b1522905fce325960bdae23ea15eea47627f52b1ec5b6077acbe5fa17af44c
-    private static readonly (int First, int Last, int Sign)[] Parts10 =
-    {
-        (0, 223, -1),
-        (224, 447, 1),
-        (448, 671, -1),
-        (672, 1119, 1),
-        (1120, 1343, -1),
-        (1344, 1567, 1),
-        (1568, 1791, -1),
-    };
-
+    private static readonly (int First, int Last, int Sign)[] Parts10 = ReadPackedParts10();
     // Geometry SHA-256: 7628f84ea601e00b0406dc62d3c05d3c17921485ea02bbf8e07af5bc890706db
-    private static readonly (int First, int Last, int Sign)[] Parts11 =
-    {
-        (0, 250, -1),
-        (251, 264, 1),
-        (265, 273, -1),
-        (274, 455, 1),
-        (456, 503, -1),
-        (504, 559, 1),
-        (560, 664, -1),
-        (665, 1068, 1),
-        (1069, 1082, -1),
-        (1083, 1091, 1),
-        (1092, 1275, -1),
-        (1276, 1321, 1),
-        (1322, 1377, -1),
-        (1378, 1484, 1),
-        (1485, 1637, -1),
-    };
-
+    private static readonly (int First, int Last, int Sign)[] Parts11 = ReadPackedParts11();
     // Geometry SHA-256: 7a186b25b4662a85ad8b9eccf8cc80ac098bbad796fce6be732770e79cf2e350
-    private static readonly (int First, int Last, int Sign)[] Parts12 =
+    private static readonly (int First, int Last, int Sign)[] Parts12 = ReadPackedParts12();
+    private static (int First, int Last, int Sign)[] ReadPackedParts00()
     {
-        (0, 23, 1),
-        (24, 31, -1),
-        (32, 95, 1),
-        (96, 199, -1),
-        (200, 279, 1),
-        (280, 375, -1),
-        (376, 399, 1),
-        (400, 415, -1),
-        (416, 447, 1),
-    };
+        var d = Numeric_Types_Lift05_Lift05SupportGeometry_g_cs.Values;
+        var values = new (int First, int Last, int Sign)[3];
+        for (int i = 0; i < 1; i++)
+            values[0 + i] = (d.I32[13 + i * 3], d.I32[14 + i * 3], -d.I32[15 + i * 3]);
+        for (int i = 0; i < 1; i++)
+            values[1 + i] = (d.I32[16 + i * 3], d.I32[17 + i * 3], d.I32[18 + i * 3]);
+        for (int i = 0; i < 1; i++)
+            values[2 + i] = (d.I32[19 + i * 3], d.I32[20 + i * 3], -d.I32[21 + i * 3]);
+        return values;
+    }
 
+    private static (int First, int Last, int Sign)[] ReadPackedParts01()
+    {
+        var d = Numeric_Types_Lift05_Lift05SupportGeometry_g_cs.Values;
+        var values = new (int First, int Last, int Sign)[3];
+        for (int i = 0; i < 1; i++)
+            values[0 + i] = (d.I32[22 + i * 3], d.I32[23 + i * 3], -d.I32[24 + i * 3]);
+        for (int i = 0; i < 1; i++)
+            values[1 + i] = (d.I32[25 + i * 3], d.I32[26 + i * 3], d.I32[27 + i * 3]);
+        for (int i = 0; i < 1; i++)
+            values[2 + i] = (d.I32[28 + i * 3], d.I32[29 + i * 3], -d.I32[30 + i * 3]);
+        return values;
+    }
+
+    private static (int First, int Last, int Sign)[] ReadPackedParts02()
+    {
+        var d = Numeric_Types_Lift05_Lift05SupportGeometry_g_cs.Values;
+        var values = new (int First, int Last, int Sign)[7];
+        for (int i = 0; i < 1; i++)
+            values[0 + i] = (d.I32[31 + i * 3], d.I32[32 + i * 3], -d.I32[33 + i * 3]);
+        for (int i = 0; i < 1; i++)
+            values[1 + i] = (d.I32[34 + i * 3], d.I32[35 + i * 3], d.I32[36 + i * 3]);
+        for (int i = 0; i < 1; i++)
+            values[2 + i] = (d.I32[37 + i * 3], d.I32[38 + i * 3], -d.I32[39 + i * 3]);
+        for (int i = 0; i < 1; i++)
+            values[3 + i] = (d.I32[40 + i * 3], d.I32[41 + i * 3], d.I32[42 + i * 3]);
+        for (int i = 0; i < 1; i++)
+            values[4 + i] = (d.I32[43 + i * 3], d.I32[44 + i * 3], -d.I32[45 + i * 3]);
+        for (int i = 0; i < 1; i++)
+            values[5 + i] = (d.I32[46 + i * 3], d.I32[47 + i * 3], d.I32[48 + i * 3]);
+        for (int i = 0; i < 1; i++)
+            values[6 + i] = (d.I32[49 + i * 3], d.I32[50 + i * 3], -d.I32[51 + i * 3]);
+        return values;
+    }
+
+    private static (int First, int Last, int Sign)[] ReadPackedParts10()
+    {
+        var d = Numeric_Types_Lift05_Lift05SupportGeometry_g_cs.Values;
+        var values = new (int First, int Last, int Sign)[7];
+        for (int i = 0; i < 1; i++)
+            values[0 + i] = (d.I32[52 + i * 3], d.I32[53 + i * 3], -d.I32[54 + i * 3]);
+        for (int i = 0; i < 1; i++)
+            values[1 + i] = (d.I32[55 + i * 3], d.I32[56 + i * 3], d.I32[57 + i * 3]);
+        for (int i = 0; i < 1; i++)
+            values[2 + i] = (d.I32[58 + i * 3], d.I32[59 + i * 3], -d.I32[60 + i * 3]);
+        for (int i = 0; i < 1; i++)
+            values[3 + i] = (d.I32[61 + i * 3], d.I32[62 + i * 3], d.I32[63 + i * 3]);
+        for (int i = 0; i < 1; i++)
+            values[4 + i] = (d.I32[64 + i * 3], d.I32[65 + i * 3], -d.I32[66 + i * 3]);
+        for (int i = 0; i < 1; i++)
+            values[5 + i] = (d.I32[67 + i * 3], d.I32[68 + i * 3], d.I32[69 + i * 3]);
+        for (int i = 0; i < 1; i++)
+            values[6 + i] = (d.I32[70 + i * 3], d.I32[71 + i * 3], -d.I32[72 + i * 3]);
+        return values;
+    }
+
+    private static (int First, int Last, int Sign)[] ReadPackedParts11()
+    {
+        var d = Numeric_Types_Lift05_Lift05SupportGeometry_g_cs.Values;
+        var values = new (int First, int Last, int Sign)[15];
+        for (int i = 0; i < 1; i++)
+            values[0 + i] = (d.I32[73 + i * 3], d.I32[74 + i * 3], -d.I32[75 + i * 3]);
+        for (int i = 0; i < 1; i++)
+            values[1 + i] = (d.I32[76 + i * 3], d.I32[77 + i * 3], d.I32[78 + i * 3]);
+        for (int i = 0; i < 1; i++)
+            values[2 + i] = (d.I32[79 + i * 3], d.I32[80 + i * 3], -d.I32[81 + i * 3]);
+        for (int i = 0; i < 1; i++)
+            values[3 + i] = (d.I32[82 + i * 3], d.I32[83 + i * 3], d.I32[84 + i * 3]);
+        for (int i = 0; i < 1; i++)
+            values[4 + i] = (d.I32[85 + i * 3], d.I32[86 + i * 3], -d.I32[87 + i * 3]);
+        for (int i = 0; i < 1; i++)
+            values[5 + i] = (d.I32[88 + i * 3], d.I32[89 + i * 3], d.I32[90 + i * 3]);
+        for (int i = 0; i < 1; i++)
+            values[6 + i] = (d.I32[91 + i * 3], d.I32[92 + i * 3], -d.I32[93 + i * 3]);
+        for (int i = 0; i < 1; i++)
+            values[7 + i] = (d.I32[94 + i * 3], d.I32[95 + i * 3], d.I32[96 + i * 3]);
+        for (int i = 0; i < 1; i++)
+            values[8 + i] = (d.I32[97 + i * 3], d.I32[98 + i * 3], -d.I32[99 + i * 3]);
+        for (int i = 0; i < 1; i++)
+            values[9 + i] = (d.I32[100 + i * 3], d.I32[101 + i * 3], d.I32[102 + i * 3]);
+        for (int i = 0; i < 1; i++)
+            values[10 + i] = (d.I32[103 + i * 3], d.I32[104 + i * 3], -d.I32[105 + i * 3]);
+        for (int i = 0; i < 1; i++)
+            values[11 + i] = (d.I32[106 + i * 3], d.I32[107 + i * 3], d.I32[108 + i * 3]);
+        for (int i = 0; i < 1; i++)
+            values[12 + i] = (d.I32[109 + i * 3], d.I32[110 + i * 3], -d.I32[111 + i * 3]);
+        for (int i = 0; i < 1; i++)
+            values[13 + i] = (d.I32[112 + i * 3], d.I32[113 + i * 3], d.I32[114 + i * 3]);
+        for (int i = 0; i < 1; i++)
+            values[14 + i] = (d.I32[115 + i * 3], d.I32[116 + i * 3], -d.I32[117 + i * 3]);
+        return values;
+    }
+
+    private static (int First, int Last, int Sign)[] ReadPackedParts12()
+    {
+        var d = Numeric_Types_Lift05_Lift05SupportGeometry_g_cs.Values;
+        var values = new (int First, int Last, int Sign)[9];
+        for (int i = 0; i < 1; i++)
+            values[0 + i] = (d.I32[118 + i * 3], d.I32[119 + i * 3], d.I32[120 + i * 3]);
+        for (int i = 0; i < 1; i++)
+            values[1 + i] = (d.I32[121 + i * 3], d.I32[122 + i * 3], -d.I32[123 + i * 3]);
+        for (int i = 0; i < 1; i++)
+            values[2 + i] = (d.I32[124 + i * 3], d.I32[125 + i * 3], d.I32[126 + i * 3]);
+        for (int i = 0; i < 1; i++)
+            values[3 + i] = (d.I32[127 + i * 3], d.I32[128 + i * 3], -d.I32[129 + i * 3]);
+        for (int i = 0; i < 1; i++)
+            values[4 + i] = (d.I32[130 + i * 3], d.I32[131 + i * 3], d.I32[132 + i * 3]);
+        for (int i = 0; i < 1; i++)
+            values[5 + i] = (d.I32[133 + i * 3], d.I32[134 + i * 3], -d.I32[135 + i * 3]);
+        for (int i = 0; i < 1; i++)
+            values[6 + i] = (d.I32[136 + i * 3], d.I32[137 + i * 3], d.I32[138 + i * 3]);
+        for (int i = 0; i < 1; i++)
+            values[7 + i] = (d.I32[139 + i * 3], d.I32[140 + i * 3], -d.I32[141 + i * 3]);
+        for (int i = 0; i < 1; i++)
+            values[8 + i] = (d.I32[142 + i * 3], d.I32[143 + i * 3], d.I32[144 + i * 3]);
+        return values;
+    }
+}
+
+// Embedded numerical arrays: Types_Lift05_Lift05SupportGeometry_g_cs
+internal static class Numeric_Types_Lift05_Lift05SupportGeometry_g_cs
+{
+    static Numeric_Types_Lift05_Lift05SupportGeometry_g_cs() {}
+    internal static readonly HardcodedNumbers Values = HardcodedNumbers.Load("Types_Lift05_Lift05SupportGeometry_g_cs");
 }

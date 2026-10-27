@@ -1,0 +1,5826 @@
+[
+  {
+    "source": "src/BridgeBuilder/Bridges/BridgeCables.cs",
+    "resource": "Shared/BridgeCables_cs.bin",
+    "originalSha256": "E61B7D67DD22F806DA72FFEB496561A30E17F875D2BF6A114CF840B17DE86067",
+    "counts": [
+      12,
+      0,
+      0,
+      0,
+      36,
+      0
+    ],
+    "arrays": 2,
+    "verified": "Exact typed numerical bits and order against the unchunked original C# syntax",
+    "payloadBytes": 256
+  },
+  {
+    "source": "src/BridgeBuilder/Bridges/BridgeMeasurements.cs",
+    "resource": "Shared/BridgeMeasurements_cs.bin",
+    "originalSha256": "65325EE6B1E4696E06CFD5012940C871167D2A6E705A291AAAB4AEA2D8985CA6",
+    "counts": [
+      258,
+      0,
+      0,
+      0,
+      2,
+      0
+    ],
+    "arrays": 0,
+    "verified": "Exact typed numerical bits and order against the unchunked original C# syntax",
+    "payloadBytes": 1104
+  },
+  {
+    "source": "src/BridgeBuilder/Bridges/BridgeSpec.cs",
+    "resource": "Shared/BridgeSpec_cs.bin",
+    "originalSha256": "8A3E88348511001AB9D6CBDE4E6B9A6E6DC971264585485EF1A9200A9BC90503",
+    "counts": [
+      3,
+      0,
+      0,
+      0,
+      12,
+      0
+    ],
+    "arrays": 0,
+    "verified": "Exact typed numerical bits and order against the unchunked original C# syntax",
+    "payloadBytes": 124
+  },
+  {
+    "source": "src/BridgeBuilder/Bridges/BridgeStyleDefinitions.cs",
+    "resource": "Shared/BridgeStyleDefinitions_cs.bin",
+    "originalSha256": "9AA4B01413A5B982B3FFAEFE956936F05D1A8139E35DBAB3575CCD63FA375667",
+    "counts": [
+      34,
+      0,
+      0,
+      0,
+      11,
+      0
+    ],
+    "arrays": 0,
+    "verified": "Exact typed numerical bits and order against the unchunked original C# syntax",
+    "payloadBytes": 244
+  },
+  {
+    "source": "src/BridgeBuilder/Bridges/BridgeTowers.cs",
+    "resource": "Shared/BridgeTowers_cs.bin",
+    "originalSha256": "58DA163C4DF0D5A7BD97EC0CCE607DFEA0DDDEF649AF3155A7FB057213FF4DB9",
+    "counts": [
+      76,
+      0,
+      0,
+      0,
+      14,
+      0
+    ],
+    "arrays": 0,
+    "verified": "Exact typed numerical bits and order against the unchunked original C# syntax",
+    "payloadBytes": 424
+  },
+  {
+    "source": "src/BridgeBuilder/Bridges/BridgeTowerSpec.cs",
+    "resource": "Shared/BridgeTowerSpec_cs.bin",
+    "originalSha256": "972D006DB8072D71CD50B47B819D87ED5D3E279685623D308ED947BA42486822",
+    "counts": [
+      20,
+      0,
+      0,
+      0,
+      5,
+      0
+    ],
+    "arrays": 0,
+    "verified": "Exact typed numerical bits and order against the unchunked original C# syntax",
+    "payloadBytes": 164
+  },
+  {
+    "source": "src/BridgeBuilder/Bridges/GoldenBridgeRailings.cs",
+    "resource": "SuspensionGolden/GoldenBridgeRailings_cs.bin",
+    "originalSha256": "1AF839737744E621F995064856E9C0B743541F2785A5F3A93F1C489E4CC372BF",
+    "counts": [
+      9,
+      0,
+      0,
+      0,
+      11,
+      0
+    ],
+    "arrays": 0,
+    "verified": "Exact typed numerical bits and order against the unchunked original C# syntax",
+    "payloadBytes": 144
+  },
+  {
+    "source": "src/BridgeBuilder/Bridges/PrototypeBridgeSizing.cs",
+    "resource": "Shared/PrototypeBridgeSizing_cs.bin",
+    "originalSha256": "52FB32D6C4A8D73376D0B2015BBDF86329DA06CF2FFC3386DAC5A9CA64CD0D24",
+    "counts": [
+      0,
+      0,
+      0,
+      0,
+      2,
+      0
+    ],
+    "arrays": 0,
+    "verified": "Exact typed numerical bits and order against the unchunked original C# syntax",
+    "payloadBytes": 72
+  },
+  {
+    "source": "src/BridgeBuilder/Bridges/Types/CoveredWood/CoveredWoodColumnData.cs",
+    "resource": "CoveredWood/Types_CoveredWood_CoveredWoodColumnData_cs.bin",
+    "originalSha256": "83CD196937BD77B3FD8AA5383F59A41EAD359485F0AC1D72910858D0D188BA0F",
+    "counts": [
+      46,
+      0,
+      0,
+      0,
+      3,
+      0
+    ],
+    "arrays": 4,
+    "verified": "Exact typed numerical bits and order against the unchunked original C# syntax",
+    "payloadBytes": 260
+  },
+  {
+    "source": "src/BridgeBuilder/Bridges/Types/CoveredWood/CoveredWoodGeometry.cs",
+    "resource": "CoveredWood/Types_CoveredWood_CoveredWoodGeometry_cs.bin",
+    "originalSha256": "FB624A939F78A6BAAADC6EE5AD81E6039BA890AE0E20D0FC2726F21BCA8837D3",
+    "counts": [
+      12,
+      0,
+      0,
+      0,
+      1,
+      0
+    ],
+    "arrays": 0,
+    "verified": "Exact typed numerical bits and order against the unchunked original C# syntax",
+    "payloadBytes": 116
+  },
+  {
+    "source": "src/BridgeBuilder/Bridges/Types/Draw01/Draw01BridgeGenerator.cs",
+    "resource": "Draw01/Types_Draw01_Draw01BridgeGenerator_cs.bin",
+    "originalSha256": "A290A88402B8DB64F2D4CBD03726F6AEBBF29A0B2E7B9E76D42A84C0B09CABDE",
+    "counts": [
+      2,
+      0,
+      0,
+      0,
+      4,
+      0
+    ],
+    "arrays": 0,
+    "verified": "Exact typed numerical bits and order against the unchunked original C# syntax",
+    "payloadBytes": 88
+  },
+  {
+    "source": "src/BridgeBuilder/Bridges/Types/Draw01/Draw01ClosedRoad.cs",
+    "resource": "Draw01/Types_Draw01_Draw01ClosedRoad_cs.bin",
+    "originalSha256": "4BCB89E6ECFA8A595371E43DE35A3BD1802EF6030FEA110D78C5932099C98E34",
+    "counts": [
+      68,
+      0,
+      0,
+      0,
+      70,
+      0
+    ],
+    "arrays": 0,
+    "verified": "Exact typed numerical bits and order against the unchunked original C# syntax",
+    "payloadBytes": 616
+  },
+  {
+    "source": "src/BridgeBuilder/Bridges/Types/Draw01/Draw01ColumnWideningData.g.cs",
+    "resource": "Draw01/Types_Draw01_Draw01ColumnWideningData_g_cs.bin",
+    "originalSha256": "E59C5EB5CE0277938AB91D0061751D8754818F2FA9A74060FB53462762397124",
+    "counts": [
+      687,
+      0,
+      0,
+      0,
+      16,
+      0
+    ],
+    "arrays": 3,
+    "verified": "Exact typed numerical bits and order against the unchunked original C# syntax",
+    "payloadBytes": 2876
+  },
+  {
+    "source": "src/BridgeBuilder/Bridges/Types/Draw01/Draw01ControlBuildingData.g.cs",
+    "resource": "Draw01/Types_Draw01_Draw01ControlBuildingData_g_cs.bin",
+    "originalSha256": "5752AA34C4164911E35A68D72821A64DB0AF37ADC8D3F255B8673C35B2079870",
+    "counts": [
+      3372,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "arrays": 0,
+    "verified": "Exact typed numerical bits and order against the unchunked original C# syntax",
+    "payloadBytes": 13552
+  },
+  {
+    "source": "src/BridgeBuilder/Bridges/Types/Draw01/Draw01FixedBase.cs",
+    "resource": "Draw01/Types_Draw01_Draw01FixedBase_cs.bin",
+    "originalSha256": "B485ED0FFCB2513915C12530382D69B6AFE582E9FEF7F450030B32750998B59A",
+    "counts": [
+      18,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "arrays": 0,
+    "verified": "Exact typed numerical bits and order against the unchunked original C# syntax",
+    "payloadBytes": 136
+  },
+  {
+    "source": "src/BridgeBuilder/Bridges/Types/Draw01/Draw01FixedBaseData.g.cs",
+    "resource": "Draw01/Types_Draw01_Draw01FixedBaseData_g_cs.bin",
+    "originalSha256": "8C34D2187DA8C1959C6D869ED5AC9B42B2585D175A034AD1A44EBD9B7EE04D91",
+    "counts": [
+      780,
+      0,
+      0,
+      0,
+      1,
+      0
+    ],
+    "arrays": 21,
+    "verified": "Exact typed numerical bits and order against the unchunked original C# syntax",
+    "payloadBytes": 3188
+  },
+  {
+    "source": "src/BridgeBuilder/Bridges/Types/Draw01/Draw01FixedFrontFragmentData.g.cs",
+    "resource": "Draw01/Types_Draw01_Draw01FixedFrontFragmentData_g_cs.bin",
+    "originalSha256": "DAF1D0FA6B1D0E71FFBA3F6F7535CC86A2E2B572140D03AF343B8374A6F8E887",
+    "counts": [
+      84,
+      0,
+      0,
+      0,
+      16,
+      0
+    ],
+    "arrays": 0,
+    "verified": "Exact typed numerical bits and order against the unchunked original C# syntax",
+    "payloadBytes": 464
+  },
+  {
+    "source": "src/BridgeBuilder/Bridges/Types/Draw01/Draw01FixedInnerFragmentData.g.cs",
+    "resource": "Draw01/Types_Draw01_Draw01FixedInnerFragmentData_g_cs.bin",
+    "originalSha256": "727D66FF25E94145B81A1C5421583DA8AFE973CDF13C1CD40488DA64F3F0429A",
+    "counts": [
+      28,
+      0,
+      0,
+      0,
+      4,
+      0
+    ],
+    "arrays": 0,
+    "verified": "Exact typed numerical bits and order against the unchunked original C# syntax",
+    "payloadBytes": 192
+  },
+  {
+    "source": "src/BridgeBuilder/Bridges/Types/Draw01/Draw01FixedRearFragmentData.g.cs",
+    "resource": "Draw01/Types_Draw01_Draw01FixedRearFragmentData_g_cs.bin",
+    "originalSha256": "65564D97210FB19224D1C0CEAE5005A35E2F13C958035306552E34C1AA7276E7",
+    "counts": [
+      102,
+      0,
+      0,
+      0,
+      20,
+      0
+    ],
+    "arrays": 0,
+    "verified": "Exact typed numerical bits and order against the unchunked original C# syntax",
+    "payloadBytes": 552
+  },
+  {
+    "source": "src/BridgeBuilder/Bridges/Types/Draw01/Draw01FixedRearSlopeData.g.cs",
+    "resource": "Draw01/Types_Draw01_Draw01FixedRearSlopeData_g_cs.bin",
+    "originalSha256": "10EB8582AB9DF4D8BA1A92E2EBA92DF0424896F464318F338E3B00A7F765E749",
+    "counts": [
+      48,
+      0,
+      0,
+      0,
+      12,
+      0
+    ],
+    "arrays": 0,
+    "verified": "Exact typed numerical bits and order against the unchunked original C# syntax",
+    "payloadBytes": 304
+  },
+  {
+    "source": "src/BridgeBuilder/Bridges/Types/Draw01/Draw01FixedRoadData.g.cs",
+    "resource": "Draw01/Types_Draw01_Draw01FixedRoadData_g_cs.bin",
+    "originalSha256": "1DC7ADFC8404DADCD33EC7E2A237ABF2AE50B3C07E60AD262E4C9F3E2B0C0316",
+    "counts": [
+      262,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "arrays": 0,
+    "verified": "Exact typed numerical bits and order against the unchunked original C# syntax",
+    "payloadBytes": 1112
+  },
+  {
+    "source": "src/BridgeBuilder/Bridges/Types/Draw01/Draw01FixedWideningData.g.cs",
+    "resource": "Draw01/Types_Draw01_Draw01FixedWideningData_g_cs.bin",
+    "originalSha256": "355F9A9BF06309A7630A15614131A3AE1457DB799A9284C8D09B2CB4B1DE94D1",
+    "counts": [
+      10666,
+      0,
+      0,
+      0,
+      10,
+      0
+    ],
+    "arrays": 4,
+    "verified": "Exact typed numerical bits and order against the unchunked original C# syntax",
+    "payloadBytes": 42768
+  },
+  {
+    "source": "src/BridgeBuilder/Bridges/Types/Draw01/Draw01FootingWideningData.g.cs",
+    "resource": "Draw01/Types_Draw01_Draw01FootingWideningData_g_cs.bin",
+    "originalSha256": "7769B63F82FDC4C46632261887808E90732827656E12D518599579FC5D7A59FB",
+    "counts": [
+      4,
+      0,
+      0,
+      0,
+      4556,
+      0
+    ],
+    "arrays": 3,
+    "verified": "Exact typed numerical bits and order against the unchunked original C# syntax",
+    "payloadBytes": 18304
+  },
+  {
+    "source": "src/BridgeBuilder/Bridges/Types/Draw01/Draw01MechanismData.g.cs",
+    "resource": "Draw01/Types_Draw01_Draw01MechanismData_g_cs.bin",
+    "originalSha256": "9BACFED3EE2A8EBF47FCEF1CE5AA2597EFD8935A2632E1D7C88093637EA31A3E",
+    "counts": [
+      84,
+      0,
+      0,
+      0,
+      370,
+      0
+    ],
+    "arrays": 0,
+    "verified": "Exact typed numerical bits and order against the unchunked original C# syntax",
+    "payloadBytes": 1880
+  },
+  {
+    "source": "src/BridgeBuilder/Bridges/Types/Draw01/Draw01MovingRoadData.g.cs",
+    "resource": "Draw01/Types_Draw01_Draw01MovingRoadData_g_cs.bin",
+    "originalSha256": "098B9D5FCF4C2FCF6A08BBB731C678BD34C4344903B1BE4CF2A0D8A24DC0CBBF",
+    "counts": [
+      3479,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "arrays": 0,
+    "verified": "Exact typed numerical bits and order against the unchunked original C# syntax",
+    "payloadBytes": 13980
+  },
+  {
+    "source": "src/BridgeBuilder/Bridges/Types/Draw01/Draw01MovingWideningData.g.cs",
+    "resource": "Draw01/Types_Draw01_Draw01MovingWideningData_g_cs.bin",
+    "originalSha256": "7A9B83AA4EF32B0F9BF0352892055EBA5145A8D81C1C02D5B107CD0F95594615",
+    "counts": [
+      31377,
+      0,
+      0,
+      0,
+      31,
+      0
+    ],
+    "arrays": 3,
+    "verified": "Exact typed numerical bits and order against the unchunked original C# syntax",
+    "payloadBytes": 125696
+  },
+  {
+    "source": "src/BridgeBuilder/Bridges/Types/Draw01/Draw01NetFootingData.g.cs",
+    "resource": "Draw01/Types_Draw01_Draw01NetFootingData_g_cs.bin",
+    "originalSha256": "800EB0B5E9DF7D300D86FCDEA4E5CE620FBDF9BEADF97D3FDF71619CFA61A447",
+    "counts": [
+      5,
+      0,
+      0,
+      0,
+      537,
+      0
+    ],
+    "arrays": 0,
+    "verified": "Exact typed numerical bits and order against the unchunked original C# syntax",
+    "payloadBytes": 2232
+  },
+  {
+    "source": "src/BridgeBuilder/Bridges/Types/Draw01/Draw01NetPillarAssembly.cs",
+    "resource": "Draw01/Types_Draw01_Draw01NetPillarAssembly_cs.bin",
+    "originalSha256": "A41FF772D62190499581B9295BC49FA6AFB67B5B53347B289C37F324684401CB",
+    "counts": [
+      44,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "arrays": 0,
+    "verified": "Exact typed numerical bits and order against the unchunked original C# syntax",
+    "payloadBytes": 240
+  },
+  {
+    "source": "src/BridgeBuilder/Bridges/Types/Draw01/Draw01NetTopData.g.cs",
+    "resource": "Draw01/Types_Draw01_Draw01NetTopData_g_cs.bin",
+    "originalSha256": "1BBB0C9D117CA994D9C2FA1DCD2406A1C358E167021F4636928874D869B2ED23",
+    "counts": [
+      5,
+      0,
+      0,
+      0,
+      473,
+      0
+    ],
+    "arrays": 0,
+    "verified": "Exact typed numerical bits and order against the unchunked original C# syntax",
+    "payloadBytes": 1976
+  },
+  {
+    "source": "src/BridgeBuilder/Bridges/Types/Draw01/Draw01NetworkData.g.cs",
+    "resource": "Draw01/Types_Draw01_Draw01NetworkData_g_cs.bin",
+    "originalSha256": "B25B307FBD1B91BAA58782C0D7204D7FBDBDD6F00BE8EE0F090579B30BBF2337",
+    "counts": [
+      19,
+      0,
+      0,
+      0,
+      35,
+      0
+    ],
+    "arrays": 0,
+    "verified": "Exact typed numerical bits and order against the unchunked original C# syntax",
+    "payloadBytes": 280
+  },
+  {
+    "source": "src/BridgeBuilder/Bridges/Types/Draw01/Draw01ObjectAssembly.cs",
+    "resource": "Draw01/Types_Draw01_Draw01ObjectAssembly_cs.bin",
+    "originalSha256": "9F93294E2E0A8D3B2671CEE95C81B435F7D2782894AB377BCE42903289D07C97",
+    "counts": [
+      0,
+      0,
+      0,
+      0,
+      1,
+      0
+    ],
+    "arrays": 0,
+    "verified": "Exact typed numerical bits and order against the unchunked original C# syntax",
+    "payloadBytes": 68
+  },
+  {
+    "source": "src/BridgeBuilder/Bridges/Types/Draw01/Draw01PillarData.g.cs",
+    "resource": "Draw01/Types_Draw01_Draw01PillarData_g_cs.bin",
+    "originalSha256": "FDC0EEA7A3D23962C916503BECEE52BC49197350F7DD9AA7BD045E55E47E2C7F",
+    "counts": [
+      8,
+      0,
+      0,
+      0,
+      7,
+      0
+    ],
+    "arrays": 0,
+    "verified": "Exact typed numerical bits and order against the unchunked original C# syntax",
+    "payloadBytes": 124
+  },
+  {
+    "source": "src/BridgeBuilder/Bridges/Types/Draw01/Draw01RenderAssembly.cs",
+    "resource": "Draw01/Types_Draw01_Draw01RenderAssembly_cs.bin",
+    "originalSha256": "4C084FA7443901F0AFEC0E69EEED8DCE1C2C9672E599D6F3A3AFCDF2015623D7",
+    "counts": [
+      43,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "arrays": 0,
+    "verified": "Exact typed numerical bits and order against the unchunked original C# syntax",
+    "payloadBytes": 236
+  },
+  {
+    "source": "src/BridgeBuilder/Bridges/Types/Draw01/Draw01RenderData.g.cs",
+    "resource": "Draw01/Types_Draw01_Draw01RenderData_g_cs.bin",
+    "originalSha256": "FA8B4FBDAD26D3676F7CAEF15F27B39D65B73AA59FA91142E358A6D5D0B93EEA",
+    "counts": [
+      31,
+      0,
+      0,
+      0,
+      12,
+      0
+    ],
+    "arrays": 0,
+    "verified": "Exact typed numerical bits and order against the unchunked original C# syntax",
+    "payloadBytes": 236
+  },
+  {
+    "source": "src/BridgeBuilder/Bridges/Types/Draw01/Draw01RoadFragmentData.g.cs",
+    "resource": "Draw01/Types_Draw01_Draw01RoadFragmentData_g_cs.bin",
+    "originalSha256": "A8574E19955D2FED7EE2A926A539AFAFADCB04CC6DFE7A09C95DA76FA39359BD",
+    "counts": [
+      28,
+      0,
+      0,
+      0,
+      4,
+      0
+    ],
+    "arrays": 0,
+    "verified": "Exact typed numerical bits and order against the unchunked original C# syntax",
+    "payloadBytes": 192
+  },
+  {
+    "source": "src/BridgeBuilder/Bridges/Types/Draw01/Draw01RoadLights.cs",
+    "resource": "Draw01/Types_Draw01_Draw01RoadLights_cs.bin",
+    "originalSha256": "6AC3B8C7BAB14CB5A794B74A6438993047748D2B0ABAF784EBEB1C3DF71B7835",
+    "counts": [
+      1,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "arrays": 0,
+    "verified": "Exact typed numerical bits and order against the unchunked original C# syntax",
+    "payloadBytes": 68
+  },
+  {
+    "source": "src/BridgeBuilder/Bridges/Types/Draw01/Draw01RoadPartitions.cs",
+    "resource": "Draw01/Types_Draw01_Draw01RoadPartitions_cs.bin",
+    "originalSha256": "9C53F553CCC37BD1A9AC1719053119E14479F0A53F7794154C34CB97C24F1B82",
+    "counts": [
+      15,
+      0,
+      0,
+      0,
+      33,
+      0
+    ],
+    "arrays": 0,
+    "verified": "Exact typed numerical bits and order against the unchunked original C# syntax",
+    "payloadBytes": 256
+  },
+  {
+    "source": "src/BridgeBuilder/Bridges/Types/Draw01/Draw01RoadReplacement.cs",
+    "resource": "Draw01/Types_Draw01_Draw01RoadReplacement_cs.bin",
+    "originalSha256": "C0515E18C161CE7BB0C1B7C6D3BA3295BCEACFE4F5425ABBA8EB79FA68FBA513",
+    "counts": [
+      7,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "arrays": 0,
+    "verified": "Exact typed numerical bits and order against the unchunked original C# syntax",
+    "payloadBytes": 92
+  },
+  {
+    "source": "src/BridgeBuilder/Bridges/Types/Draw01/Draw01RoadSurfaceData.g.cs",
+    "resource": "Draw01/Types_Draw01_Draw01RoadSurfaceData_g_cs.bin",
+    "originalSha256": "5835525A046B474C263FD1E43896336A2FB56C18FDBA0E028C9D3D88AFE8A8A8",
+    "counts": [
+      853,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "arrays": 0,
+    "verified": "Exact typed numerical bits and order against the unchunked original C# syntax",
+    "payloadBytes": 3476
+  },
+  {
+    "source": "src/BridgeBuilder/Bridges/Types/Draw01/Draw01RoadTemplates.g.cs",
+    "resource": "Draw01/Types_Draw01_Draw01RoadTemplates_g_cs.bin",
+    "originalSha256": "A3DB19BE59289A9BAC26EBC31D11132B0022D6BC508101EDA24D1FCB5E386D8E",
+    "counts": [
+      2064,
+      0,
+      0,
+      0,
+      4128,
+      0
+    ],
+    "arrays": 4,
+    "verified": "Exact typed numerical bits and order against the unchunked original C# syntax",
+    "payloadBytes": 24832
+  },
+  {
+    "source": "src/BridgeBuilder/Bridges/Types/Draw01/Draw01SamplingMechanism.cs",
+    "resource": "Draw01/Types_Draw01_Draw01SamplingMechanism_cs.bin",
+    "originalSha256": "A5239F770E9543D18C1913FADC8E99A9B57E2C15CA49722FB013BA9540605046",
+    "counts": [
+      6,
+      0,
+      0,
+      0,
+      1,
+      0
+    ],
+    "arrays": 0,
+    "verified": "Exact typed numerical bits and order against the unchunked original C# syntax",
+    "payloadBytes": 92
+  },
+  {
+    "source": "src/BridgeBuilder/Bridges/Types/Draw01/Draw01SidewalkFrontFragmentData.g.cs",
+    "resource": "Draw01/Types_Draw01_Draw01SidewalkFrontFragmentData_g_cs.bin",
+    "originalSha256": "868AB51609907F8D5CA39B953C397EB72D54839B6AE52E2EBAE3382A9CD4550B",
+    "counts": [
+      132,
+      0,
+      0,
+      0,
+      32,
+      0
+    ],
+    "arrays": 0,
+    "verified": "Exact typed numerical bits and order against the unchunked original C# syntax",
+    "payloadBytes": 720
+  },
+  {
+    "source": "src/BridgeBuilder/Bridges/Types/Draw01/Draw01UndersideData.g.cs",
+    "resource": "Draw01/Types_Draw01_Draw01UndersideData_g_cs.bin",
+    "originalSha256": "82FCDC4900016F2FC5E01F2F0F8688A6466755E0A76A58DC0B32761676C47786",
+    "counts": [
+      3088,
+      0,
+      0,
+      0,
+      2058,
+      0
+    ],
+    "arrays": 2,
+    "verified": "Exact typed numerical bits and order against the unchunked original C# syntax",
+    "payloadBytes": 20648
+  },
+  {
+    "source": "src/BridgeBuilder/Bridges/Types/Draw01/Draw01UndersideLayout.cs",
+    "resource": "Draw01/Types_Draw01_Draw01UndersideLayout_cs.bin",
+    "originalSha256": "35C9BB2608D38C55A7E91E4D72FEA019C52B7F517F4833B2078DAB9DB4199D7E",
+    "counts": [
+      4,
+      0,
+      0,
+      0,
+      2,
+      0
+    ],
+    "arrays": 0,
+    "verified": "Exact typed numerical bits and order against the unchunked original C# syntax",
+    "payloadBytes": 88
+  },
+  {
+    "source": "src/BridgeBuilder/Bridges/Types/Draw01/Draw01UndersideUv.cs",
+    "resource": "Draw01/Types_Draw01_Draw01UndersideUv_cs.bin",
+    "originalSha256": "0B0F8ED023F5526B4B44DDB8523C7C1320A1B69E6757E8831ADA83211539215A",
+    "counts": [
+      336,
+      0,
+      0,
+      0,
+      668,
+      0
+    ],
+    "arrays": 2,
+    "verified": "Exact typed numerical bits and order against the unchunked original C# syntax",
+    "payloadBytes": 4080
+  },
+  {
+    "source": "src/BridgeBuilder/Bridges/Types/Draw02/Draw02ApproachAssembly.cs",
+    "resource": "Draw02/Types_Draw02_Draw02ApproachAssembly_cs.bin",
+    "originalSha256": "50B04E76AF0BC0B50024BE0CB13A09548F0C76F08609077C7A16879EF2DB9C2A",
+    "counts": [
+      9,
+      0,
+      0,
+      0,
+      2,
+      0
+    ],
+    "arrays": 0,
+    "verified": "Exact typed numerical bits and order against the unchunked original C# syntax",
+    "payloadBytes": 108
+  },
+  {
+    "source": "src/BridgeBuilder/Bridges/Types/Draw02/Draw02ApproachGeometry.g.cs",
+    "resource": "Draw02/Types_Draw02_Draw02ApproachGeometry_g_cs.bin",
+    "originalSha256": "D6ECEBF5F619558B7E19F7F406BC462E5FA844B1F208B1E62ED7DA4C0B9558FE",
+    "counts": [
+      2269,
+      0,
+      0,
+      0,
+      15,
+      0
+    ],
+    "arrays": 17,
+    "verified": "Exact typed numerical bits and order against the unchunked original C# syntax",
+    "payloadBytes": 9200
+  },
+  {
+    "source": "src/BridgeBuilder/Bridges/Types/Draw02/Draw02ApproachLayout.g.cs",
+    "resource": "Draw02/Types_Draw02_Draw02ApproachLayout_g_cs.bin",
+    "originalSha256": "45E3FDF1787475C67668297D175F8DD8A0907F593BD7939DF90756DA649620AB",
+    "counts": [
+      37,
+      0,
+      0,
+      0,
+      189,
+      0
+    ],
+    "arrays": 0,
+    "verified": "Exact typed numerical bits and order against the unchunked original C# syntax",
+    "payloadBytes": 968
+  },
+  {
+    "source": "src/BridgeBuilder/Bridges/Types/Draw02/Draw02ApproachSources.g.cs",
+    "resource": "Draw02/Types_Draw02_Draw02ApproachSources_g_cs.bin",
+    "originalSha256": "22D6E51684E00E8450C3742CC408B086C77FA393D6BBDE2B31921ACC5725AE97",
+    "counts": [
+      100,
+      0,
+      0,
+      0,
+      298,
+      0
+    ],
+    "arrays": 0,
+    "verified": "Exact typed numerical bits and order against the unchunked original C# syntax",
+    "payloadBytes": 1656
+  },
+  {
+    "source": "src/BridgeBuilder/Bridges/Types/Draw02/Draw02BridgeGenerator.cs",
+    "resource": "Draw02/Types_Draw02_Draw02BridgeGenerator_cs.bin",
+    "originalSha256": "93F2163DE59E8C23F97920577C7785F1E4036DCE13BC657C37BAD21D7101059D",
+    "counts": [
+      2,
+      0,
+      0,
+      0,
+      3,
+      0
+    ],
+    "arrays": 0,
+    "verified": "Exact typed numerical bits and order against the unchunked original C# syntax",
+    "payloadBytes": 84
+  },
+  {
+    "source": "src/BridgeBuilder/Bridges/Types/Draw02/Draw02FixedBodies.g.cs",
+    "resource": "Draw02/Types_Draw02_Draw02FixedBodies_g_cs.bin",
+    "originalSha256": "165B4EF660D6DDD0E23743F053F2E210EB13AFB1175D65DB6CD179723C233088",
+    "counts": [
+      6356,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "arrays": 9,
+    "verified": "Exact typed numerical bits and order against the unchunked original C# syntax",
+    "payloadBytes": 25488
+  },
+  {
+    "source": "src/BridgeBuilder/Bridges/Types/Draw02/Draw02FixedCurbs.g.cs",
+    "resource": "Draw02/Types_Draw02_Draw02FixedCurbs_g_cs.bin",
+    "originalSha256": "8DF5B609E819A59A4DC058671DD4A7A06CB9364021986D84B9EAEC5C78A32613",
+    "counts": [
+      427,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "arrays": 2,
+    "verified": "Exact typed numerical bits and order against the unchunked original C# syntax",
+    "payloadBytes": 1772
+  },
+  {
+    "source": "src/BridgeBuilder/Bridges/Types/Draw02/Draw02FixedSidewalks.g.cs",
+    "resource": "Draw02/Types_Draw02_Draw02FixedSidewalks_g_cs.bin",
+    "originalSha256": "476DE7F06686058278FE08540288232070734715FD181DCF362FFCCE72FBE61C",
+    "counts": [
+      251,
+      0,
+      0,
+      0,
+      169,
+      0
+    ],
+    "arrays": 2,
+    "verified": "Exact typed numerical bits and order against the unchunked original C# syntax",
+    "payloadBytes": 1744
+  },
+  {
+    "source": "src/BridgeBuilder/Bridges/Types/Draw02/Draw02MechanismData.g.cs",
+    "resource": "Draw02/Types_Draw02_Draw02MechanismData_g_cs.bin",
+    "originalSha256": "A1CD4BED84DFE096071AAF425585DE8E8BD8FAAF78B376F0D4C9F74217325312",
+    "counts": [
+      69,
+      0,
+      0,
+      0,
+      335,
+      0
+    ],
+    "arrays": 0,
+    "verified": "Exact typed numerical bits and order against the unchunked original C# syntax",
+    "payloadBytes": 1680
+  },
+  {
+    "source": "src/BridgeBuilder/Bridges/Types/Draw02/Draw02MovingShell.g.cs",
+    "resource": "Draw02/Types_Draw02_Draw02MovingShell_g_cs.bin",
+    "originalSha256": "547EEA9FCBA468C03B15007FE5BF50CB14D1656D423565CCFA4087FE782694D5",
+    "counts": [
+      55579,
+      0,
+      0,
+      0,
+      1780,
+      0
+    ],
+    "arrays": 18,
+    "verified": "Exact typed numerical bits and order against the unchunked original C# syntax",
+    "payloadBytes": 229500
+  },
+  {
+    "source": "src/BridgeBuilder/Bridges/Types/Draw02/Draw02NetPillarGeometry.g.cs",
+    "resource": "Draw02/Types_Draw02_Draw02NetPillarGeometry_g_cs.bin",
+    "originalSha256": "F9740B3809CBF56C1A13F4290E2C931FF743FA53735B53E269CC7F7BD842044B",
+    "counts": [
+      2404,
+      0,
+      0,
+      0,
+      78,
+      0
+    ],
+    "arrays": 9,
+    "verified": "Exact typed numerical bits and order against the unchunked original C# syntax",
+    "payloadBytes": 9992
+  },
+  {
+    "source": "src/BridgeBuilder/Bridges/Types/Draw02/Draw02NetworkData.g.cs",
+    "resource": "Draw02/Types_Draw02_Draw02NetworkData_g_cs.bin",
+    "originalSha256": "81B541168A53D87B54AAA52B015DA4D1743CDD55E0423936643B870CEB39C5D5",
+    "counts": [
+      19,
+      0,
+      0,
+      0,
+      31,
+      0
+    ],
+    "arrays": 0,
+    "verified": "Exact typed numerical bits and order against the unchunked original C# syntax",
+    "payloadBytes": 264
+  },
+  {
+    "source": "src/BridgeBuilder/Bridges/Types/Draw02/Draw02ObjectAssembly.cs",
+    "resource": "Draw02/Types_Draw02_Draw02ObjectAssembly_cs.bin",
+    "originalSha256": "9F02DB5516BEEEBDB937BEACAE39F325D73351BB90B164BA849FB30E8B5655A5",
+    "counts": [
+      0,
+      0,
+      0,
+      0,
+      1,
+      0
+    ],
+    "arrays": 0,
+    "verified": "Exact typed numerical bits and order against the unchunked original C# syntax",
+    "payloadBytes": 68
+  },
+  {
+    "source": "src/BridgeBuilder/Bridges/Types/Draw02/Draw02PillarAssembly.cs",
+    "resource": "Draw02/Types_Draw02_Draw02PillarAssembly_cs.bin",
+    "originalSha256": "33D38281A781832DE84AA54FA12DE0FA519910160E29B99E8B8452CB85F16622",
+    "counts": [
+      13,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "arrays": 0,
+    "verified": "Exact typed numerical bits and order against the unchunked original C# syntax",
+    "payloadBytes": 116
+  },
+  {
+    "source": "src/BridgeBuilder/Bridges/Types/Draw02/Draw02PillarSources.g.cs",
+    "resource": "Draw02/Types_Draw02_Draw02PillarSources_g_cs.bin",
+    "originalSha256": "12943EC05721B860AC9C75F174081B6766D1CB77EDE24D49FF8F3DEC1893A329",
+    "counts": [
+      62,
+      0,
+      0,
+      0,
+      78,
+      0
+    ],
+    "arrays": 0,
+    "verified": "Exact typed numerical bits and order against the unchunked original C# syntax",
+    "payloadBytes": 624
+  },
+  {
+    "source": "src/BridgeBuilder/Bridges/Types/Draw02/Draw02RenderAssembly.cs",
+    "resource": "Draw02/Types_Draw02_Draw02RenderAssembly_cs.bin",
+    "originalSha256": "6F94A1511CFF99CE9D3EC96C5A170E9DCAA8E1AB03E5B9633E8F3F217EEDA6DB",
+    "counts": [
+      6,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "arrays": 0,
+    "verified": "Exact typed numerical bits and order against the unchunked original C# syntax",
+    "payloadBytes": 88
+  },
+  {
+    "source": "src/BridgeBuilder/Bridges/Types/Draw02/Draw02RenderData.g.cs",
+    "resource": "Draw02/Types_Draw02_Draw02RenderData_g_cs.bin",
+    "originalSha256": "51C9387C93A0073481BFA9DEB4745BAC8D12D5337E20751A9503BAA21A8EEDE5",
+    "counts": [
+      31,
+      0,
+      0,
+      0,
+      12,
+      0
+    ],
+    "arrays": 0,
+    "verified": "Exact typed numerical bits and order against the unchunked original C# syntax",
+    "payloadBytes": 236
+  },
+  {
+    "source": "src/BridgeBuilder/Bridges/Types/Draw02/Draw02RepeatRegions.cs",
+    "resource": "Draw02/Types_Draw02_Draw02RepeatRegions_cs.bin",
+    "originalSha256": "634E3E96B15AA249E0CCAF1BCB6C634AFA59112AFFDFD25BFC901B2C7F040946",
+    "counts": [
+      12,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "arrays": 0,
+    "payloadBytes": 112,
+    "verified": "Exact typed numerical bits and order against the unchunked original C# syntax"
+  },
+  {
+    "source": "src/BridgeBuilder/Bridges/Types/Draw02/Draw02RigidParts.g.cs",
+    "resource": "Draw02/Types_Draw02_Draw02RigidParts_g_cs.bin",
+    "originalSha256": "B710EC02C07DC4AA34AE6012903114C713CF4D4EBCEB30F9F65D4F8138F969BA",
+    "counts": [
+      24101,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "arrays": 5,
+    "verified": "Exact typed numerical bits and order against the unchunked original C# syntax",
+    "payloadBytes": 96468
+  },
+  {
+    "source": "src/BridgeBuilder/Bridges/Types/Draw02/Draw02RoadAppearance.cs",
+    "resource": "Draw02/Types_Draw02_Draw02RoadAppearance_cs.bin",
+    "originalSha256": "5535E00885C9EF12696FDBAE218997671C67167453CBC126392C0EACB1DF8F88",
+    "counts": [
+      41,
+      0,
+      0,
+      0,
+      56,
+      0
+    ],
+    "arrays": 1,
+    "verified": "Exact typed numerical bits and order against the unchunked original C# syntax",
+    "payloadBytes": 452
+  },
+  {
+    "source": "src/BridgeBuilder/Bridges/Types/Draw02/Draw02RoadPartitions.cs",
+    "resource": "Draw02/Types_Draw02_Draw02RoadPartitions_cs.bin",
+    "originalSha256": "511A11A6F15B1DD05486033A168C386E049F1E75E7E5B3640032BC2D98444B59",
+    "counts": [
+      3,
+      0,
+      0,
+      0,
+      4,
+      0
+    ],
+    "arrays": 0,
+    "verified": "Exact typed numerical bits and order against the unchunked original C# syntax",
+    "payloadBytes": 92
+  },
+  {
+    "source": "src/BridgeBuilder/Bridges/Types/Draw02/Draw02RoadSampling.cs",
+    "resource": "Draw02/Types_Draw02_Draw02RoadSampling_cs.bin",
+    "originalSha256": "BBA2C0AB8E2316AEE1F541DA15995438E221D858B49BDFF36C75AA574856A8AE",
+    "counts": [
+      1,
+      0,
+      0,
+      0,
+      2,
+      0
+    ],
+    "arrays": 0,
+    "verified": "Exact typed numerical bits and order against the unchunked original C# syntax",
+    "payloadBytes": 76
+  },
+  {
+    "source": "src/BridgeBuilder/Bridges/Types/Draw02/Draw02RoadTops.g.cs",
+    "resource": "Draw02/Types_Draw02_Draw02RoadTops_g_cs.bin",
+    "originalSha256": "E2B9D6FCE27B7B1BF4DF70A923116131AD12E4D9EDE5040614EA092F36199D77",
+    "counts": [
+      12794,
+      0,
+      0,
+      0,
+      13,
+      0
+    ],
+    "arrays": 6,
+    "verified": "Exact typed numerical bits and order against the unchunked original C# syntax",
+    "payloadBytes": 51292
+  },
+  {
+    "source": "src/BridgeBuilder/Bridges/Types/Draw02/Draw02SourceRenders.cs",
+    "resource": "Draw02/Types_Draw02_Draw02SourceRenders_cs.bin",
+    "originalSha256": "71F80232C69529544F393ED13F6C746A5D92FECC4353D0F646DE8BA5232F3640",
+    "counts": [
+      31,
+      0,
+      0,
+      0,
+      63,
+      0
+    ],
+    "arrays": 0,
+    "verified": "Exact typed numerical bits and order against the unchunked original C# syntax",
+    "payloadBytes": 440
+  },
+  {
+    "source": "src/BridgeBuilder/Bridges/Types/Draw02/Draw02SupportAssembly.cs",
+    "resource": "Draw02/Types_Draw02_Draw02SupportAssembly_cs.bin",
+    "originalSha256": "B28ACA0640BABDBEB6A2FDDC53E81CF7663F0C17B50759FCC0832013E9C39963",
+    "counts": [
+      8,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "arrays": 0,
+    "verified": "Exact typed numerical bits and order against the unchunked original C# syntax",
+    "payloadBytes": 96
+  },
+  {
+    "source": "src/BridgeBuilder/Bridges/Types/Draw02/Draw02SupportWideningData.g.cs",
+    "resource": "Draw02/Types_Draw02_Draw02SupportWideningData_g_cs.bin",
+    "originalSha256": "4723B71DA72F7C40FD33791CE412E4580C9285BD14690B4916033B67716D26C9",
+    "counts": [
+      8,
+      0,
+      0,
+      0,
+      4435,
+      0
+    ],
+    "arrays": 6,
+    "verified": "Exact typed numerical bits and order against the unchunked original C# syntax",
+    "payloadBytes": 17836
+  },
+  {
+    "source": "src/BridgeBuilder/Bridges/Types/Draw02/Draw02TransverseMembers.g.cs",
+    "resource": "Draw02/Types_Draw02_Draw02TransverseMembers_g_cs.bin",
+    "originalSha256": "289F50730568232EC8C7D7FB9D2A608D81125A7AE42E9372EFD063E609998253",
+    "counts": [
+      11837,
+      0,
+      0,
+      0,
+      121,
+      0
+    ],
+    "arrays": 2,
+    "verified": "Exact typed numerical bits and order against the unchunked original C# syntax",
+    "payloadBytes": 47896
+  },
+  {
+    "source": "src/BridgeBuilder/Bridges/Types/Draw03/Draw03ApproachAssembly.cs",
+    "resource": "Draw03/Types_Draw03_Draw03ApproachAssembly_cs.bin",
+    "originalSha256": "77AB66B8D70C403035EC90A3F225658A52CA0ECC0817D5B0763E7540F97A927F",
+    "counts": [
+      9,
+      0,
+      0,
+      0,
+      2,
+      0
+    ],
+    "arrays": 0,
+    "verified": "Exact typed numerical bits and order against the unchunked original C# syntax",
+    "payloadBytes": 108
+  },
+  {
+    "source": "src/BridgeBuilder/Bridges/Types/Draw03/Draw03ApproachBraces.g.cs",
+    "resource": "Draw03/Types_Draw03_Draw03ApproachBraces_g_cs.bin",
+    "originalSha256": "3BE38D0DE2026C9E1A8C5A745DDC70034F9A3B30C24F0E5E02CDB0B10FD8207C",
+    "counts": [
+      117,
+      0,
+      0,
+      0,
+      5,
+      0
+    ],
+    "arrays": 2,
+    "verified": "Exact typed numerical bits and order against the unchunked original C# syntax",
+    "payloadBytes": 552
+  },
+  {
+    "source": "src/BridgeBuilder/Bridges/Types/Draw03/Draw03ApproachGeometry.g.cs",
+    "resource": "Draw03/Types_Draw03_Draw03ApproachGeometry_g_cs.bin",
+    "originalSha256": "9E6C92E945CA2BB0C47D37DE2B3356150F5EC5D1B879F20E41122606B8DC7016",
+    "counts": [
+      33,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "arrays": 6,
+    "verified": "Exact typed numerical bits and order against the unchunked original C# syntax",
+    "payloadBytes": 196
+  },
+  {
+    "source": "src/BridgeBuilder/Bridges/Types/Draw03/Draw03ApproachLayout.g.cs",
+    "resource": "Draw03/Types_Draw03_Draw03ApproachLayout_g_cs.bin",
+    "originalSha256": "DD3C341EB53502255989812DD870CC566BB620B685EDE9A0D29901901572738D",
+    "counts": [
+      39,
+      0,
+      0,
+      0,
+      216,
+      0
+    ],
+    "arrays": 0,
+    "verified": "Exact typed numerical bits and order against the unchunked original C# syntax",
+    "payloadBytes": 1084
+  },
+  {
+    "source": "src/BridgeBuilder/Bridges/Types/Draw03/Draw03ApproachSources.g.cs",
+    "resource": "Draw03/Types_Draw03_Draw03ApproachSources_g_cs.bin",
+    "originalSha256": "8C44659118016FEF18FE8547153C09628BED53A8E6E60B6ED85D643436F74E21",
+    "counts": [
+      60,
+      0,
+      0,
+      0,
+      175,
+      0
+    ],
+    "arrays": 0,
+    "verified": "Exact typed numerical bits and order against the unchunked original C# syntax",
+    "payloadBytes": 1004
+  },
+  {
+    "source": "src/BridgeBuilder/Bridges/Types/Draw03/Draw03Bases.g.cs",
+    "resource": "Draw03/Types_Draw03_Draw03Bases_g_cs.bin",
+    "originalSha256": "E29BDA2E1A9404DF4053C8CF8B3356C247FB19EB201AB4446B0D2BC6E8D08CC0",
+    "counts": [
+      1328,
+      0,
+      0,
+      0,
+      1,
+      0
+    ],
+    "arrays": 8,
+    "verified": "Exact typed numerical bits and order against the unchunked original C# syntax",
+    "payloadBytes": 5380
+  },
+  {
+    "source": "src/BridgeBuilder/Bridges/Types/Draw03/Draw03BridgeGenerator.cs",
+    "resource": "Draw03/Types_Draw03_Draw03BridgeGenerator_cs.bin",
+    "originalSha256": "234C5605B0E87C1EC2D0BDE09FE29AD60015F2029F41753A9D86B1C61C744E9C",
+    "counts": [
+      2,
+      0,
+      0,
+      0,
+      3,
+      0
+    ],
+    "arrays": 0,
+    "verified": "Exact typed numerical bits and order against the unchunked original C# syntax",
+    "payloadBytes": 84
+  },
+  {
+    "source": "src/BridgeBuilder/Bridges/Types/Draw03/Draw03CentreMembers.g.cs",
+    "resource": "Draw03/Types_Draw03_Draw03CentreMembers_g_cs.bin",
+    "originalSha256": "26ED822CD7CB508B24D09260407ED20E365D8B21636811D7A58BE6FAA7BE15B7",
+    "counts": [
+      1388,
+      0,
+      0,
+      0,
+      609,
+      0
+    ],
+    "arrays": 2,
+    "verified": "Exact typed numerical bits and order against the unchunked original C# syntax",
+    "payloadBytes": 8052
+  },
+  {
+    "source": "src/BridgeBuilder/Bridges/Types/Draw03/Draw03DetailedStructure.cs",
+    "resource": "Draw03/Types_Draw03_Draw03DetailedStructure_cs.bin",
+    "originalSha256": "57864322CE3192D10583A517BCB2E6D7E9EA7E7206056658065D35C4C817F509",
+    "counts": [
+      2,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "arrays": 0,
+    "verified": "Exact typed numerical bits and order against the unchunked original C# syntax",
+    "payloadBytes": 72
+  },
+  {
+    "source": "src/BridgeBuilder/Bridges/Types/Draw03/Draw03DetailedSupports.g.cs",
+    "resource": "Draw03/Types_Draw03_Draw03DetailedSupports_g_cs.bin",
+    "originalSha256": "F4B50C921511CCBFE3E5E582036053A5F5364F22EF05C1AC061DB165B44AC290",
+    "counts": [
+      1521,
+      0,
+      0,
+      0,
+      4,
+      0
+    ],
+    "arrays": 4,
+    "verified": "Exact typed numerical bits and order against the unchunked original C# syntax",
+    "payloadBytes": 6164
+  },
+  {
+    "source": "src/BridgeBuilder/Bridges/Types/Draw03/Draw03EndStrips.g.cs",
+    "resource": "Draw03/Types_Draw03_Draw03EndStrips_g_cs.bin",
+    "originalSha256": "E7D86FEBD028976D0910A7308C85E2717DD3AD7B01226E22FE4BADE0B1A0BA3A",
+    "counts": [
+      66,
+      0,
+      0,
+      0,
+      33,
+      0
+    ],
+    "arrays": 2,
+    "verified": "Exact typed numerical bits and order against the unchunked original C# syntax",
+    "payloadBytes": 460
+  },
+  {
+    "source": "src/BridgeBuilder/Bridges/Types/Draw03/Draw03FarNetPillars.g.cs",
+    "resource": "Draw03/Types_Draw03_Draw03FarNetPillars_g_cs.bin",
+    "originalSha256": "99F669677D9A07732298AD6AB1DA49C10F3238ECD9FC0BA92B934DFE5FBBA2BB",
+    "counts": [
+      750,
+      0,
+      0,
+      0,
+      1275,
+      0
+    ],
+    "arrays": 6,
+    "verified": "Exact typed numerical bits and order against the unchunked original C# syntax",
+    "payloadBytes": 8164
+  },
+  {
+    "source": "src/BridgeBuilder/Bridges/Types/Draw03/Draw03FarStructure.g.cs",
+    "resource": "Draw03/Types_Draw03_Draw03FarStructure_g_cs.bin",
+    "originalSha256": "D032E83E02E6C13A11D2CCF35A9D0850B7A8D4F54AF410FF48FE0A290D110131",
+    "counts": [
+      989,
+      0,
+      0,
+      0,
+      1004,
+      0
+    ],
+    "arrays": 4,
+    "verified": "Exact typed numerical bits and order against the unchunked original C# syntax",
+    "payloadBytes": 8036
+  },
+  {
+    "source": "src/BridgeBuilder/Bridges/Types/Draw03/Draw03FarSupports.g.cs",
+    "resource": "Draw03/Types_Draw03_Draw03FarSupports_g_cs.bin",
+    "originalSha256": "6750E6A23DEB162FC2F82041A21D3266375278C4482853FDDD971447556558B2",
+    "counts": [
+      2060,
+      0,
+      0,
+      0,
+      1610,
+      0
+    ],
+    "arrays": 6,
+    "verified": "Exact typed numerical bits and order against the unchunked original C# syntax",
+    "payloadBytes": 14744
+  },
+  {
+    "source": "src/BridgeBuilder/Bridges/Types/Draw03/Draw03FixedPlatforms.g.cs",
+    "resource": "Draw03/Types_Draw03_Draw03FixedPlatforms_g_cs.bin",
+    "originalSha256": "6E72791FC4A61D080199D199C411385B72DF86EBC93259D32C91CA6A92586127",
+    "counts": [
+      6443,
+      0,
+      0,
+      0,
+      6247,
+      0
+    ],
+    "arrays": 5,
+    "verified": "Exact typed numerical bits and order against the unchunked original C# syntax",
+    "payloadBytes": 50824
+  },
+  {
+    "source": "src/BridgeBuilder/Bridges/Types/Draw03/Draw03Glass.g.cs",
+    "resource": "Draw03/Types_Draw03_Draw03Glass_g_cs.bin",
+    "originalSha256": "183BC363247DC30B313861DBDE56E1B3F84DDBF4F2F283FD5299BBCBB7736857",
+    "counts": [
+      32,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "arrays": 2,
+    "verified": "Exact typed numerical bits and order against the unchunked original C# syntax",
+    "payloadBytes": 192
+  },
+  {
+    "source": "src/BridgeBuilder/Bridges/Types/Draw03/Draw03JointLayout.g.cs",
+    "resource": "Draw03/Types_Draw03_Draw03JointLayout_g_cs.bin",
+    "originalSha256": "9B507FFD143986852A92BF5743EE57C83BA7E3F664A3E8D6BF3C49C5B569ABDC",
+    "counts": [
+      1381,
+      0,
+      0,
+      0,
+      583,
+      0
+    ],
+    "arrays": 6,
+    "verified": "Exact typed numerical bits and order against the unchunked original C# syntax",
+    "payloadBytes": 7920
+  },
+  {
+    "source": "src/BridgeBuilder/Bridges/Types/Draw03/Draw03MechanismData.g.cs",
+    "resource": "Draw03/Types_Draw03_Draw03MechanismData_g_cs.bin",
+    "originalSha256": "4010167A4585393E8805A215FABAF7CA34684D6AC637F48E9553C6D0DBE7F1E4",
+    "counts": [
+      108,
+      0,
+      0,
+      0,
+      426,
+      0
+    ],
+    "arrays": 0,
+    "verified": "Exact typed numerical bits and order against the unchunked original C# syntax",
+    "payloadBytes": 2200
+  },
+  {
+    "source": "src/BridgeBuilder/Bridges/Types/Draw03/Draw03NetPillarParts.g.cs",
+    "resource": "Draw03/Types_Draw03_Draw03NetPillarParts_g_cs.bin",
+    "originalSha256": "0C3A03700CD416BD08ECD50C5D66953C64E2721749016EDA6F6E28F83FB6155C",
+    "counts": [
+      16,
+      0,
+      0,
+      0,
+      11988,
+      0
+    ],
+    "arrays": 7,
+    "verified": "Exact typed numerical bits and order against the unchunked original C# syntax",
+    "payloadBytes": 48080
+  },
+  {
+    "source": "src/BridgeBuilder/Bridges/Types/Draw03/Draw03NetworkData.g.cs",
+    "resource": "Draw03/Types_Draw03_Draw03NetworkData_g_cs.bin",
+    "originalSha256": "68B4735B1688A1F59CCE38A04AB66EC741FD697A58CD5858D155A3DD529BC9B8",
+    "counts": [
+      17,
+      0,
+      0,
+      0,
+      27,
+      0
+    ],
+    "arrays": 0,
+    "verified": "Exact typed numerical bits and order against the unchunked original C# syntax",
+    "payloadBytes": 240
+  },
+  {
+    "source": "src/BridgeBuilder/Bridges/Types/Draw03/Draw03ObjectAssembly.cs",
+    "resource": "Draw03/Types_Draw03_Draw03ObjectAssembly_cs.bin",
+    "originalSha256": "C9449A4AD116F12F7952DC6A554D54AE4B9E41CA39A7F3CA4137330AA8C7BA25",
+    "counts": [
+      0,
+      0,
+      0,
+      0,
+      1,
+      0
+    ],
+    "arrays": 0,
+    "verified": "Exact typed numerical bits and order against the unchunked original C# syntax",
+    "payloadBytes": 68
+  },
+  {
+    "source": "src/BridgeBuilder/Bridges/Types/Draw03/Draw03PillarAssembly.cs",
+    "resource": "Draw03/Types_Draw03_Draw03PillarAssembly_cs.bin",
+    "originalSha256": "8B168EEEB67877DCF3991C504D366EE48B8E4D309D9AF8CF2643989293B5954F",
+    "counts": [
+      16,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "arrays": 0,
+    "verified": "Exact typed numerical bits and order against the unchunked original C# syntax",
+    "payloadBytes": 128
+  },
+  {
+    "source": "src/BridgeBuilder/Bridges/Types/Draw03/Draw03PillarSources.g.cs",
+    "resource": "Draw03/Types_Draw03_Draw03PillarSources_g_cs.bin",
+    "originalSha256": "C0AC44AD69511C51E1559B6ED3D1923E8F44C8BD8F310FD4B5D90262307D4737",
+    "counts": [
+      62,
+      0,
+      0,
+      0,
+      78,
+      0
+    ],
+    "arrays": 0,
+    "verified": "Exact typed numerical bits and order against the unchunked original C# syntax",
+    "payloadBytes": 624
+  },
+  {
+    "source": "src/BridgeBuilder/Bridges/Types/Draw03/Draw03RenderAssembly.cs",
+    "resource": "Draw03/Types_Draw03_Draw03RenderAssembly_cs.bin",
+    "originalSha256": "667E083EC2D92A4077321E3F5628BA35E0CA42581DD60E7E580953861A97B966",
+    "counts": [
+      7,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "arrays": 0,
+    "verified": "Exact typed numerical bits and order against the unchunked original C# syntax",
+    "payloadBytes": 92
+  },
+  {
+    "source": "src/BridgeBuilder/Bridges/Types/Draw03/Draw03RenderData.g.cs",
+    "resource": "Draw03/Types_Draw03_Draw03RenderData_g_cs.bin",
+    "originalSha256": "4F4EA4A8784C56D1BAD0C6F0755F1E844751C995AAC3B86ABE790BFE2CED439C",
+    "counts": [
+      31,
+      0,
+      0,
+      0,
+      12,
+      0
+    ],
+    "arrays": 0,
+    "verified": "Exact typed numerical bits and order against the unchunked original C# syntax",
+    "payloadBytes": 236
+  },
+  {
+    "source": "src/BridgeBuilder/Bridges/Types/Draw03/Draw03RepeatRegions.cs",
+    "resource": "Draw03/Types_Draw03_Draw03RepeatRegions_cs.bin",
+    "originalSha256": "4881BF90C284C133713916B9F06EADBE5DA7EFB21BE4AA5A1DBB6906EB9D855B",
+    "counts": [
+      4,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "arrays": 0,
+    "payloadBytes": 80,
+    "verified": "Exact typed numerical bits and order against the unchunked original C# syntax"
+  },
+  {
+    "source": "src/BridgeBuilder/Bridges/Types/Draw03/Draw03RigidParts.g.cs",
+    "resource": "Draw03/Types_Draw03_Draw03RigidParts_g_cs.bin",
+    "originalSha256": "7504831DCD5162C9F760B488F4C19668F84CE9CB51333306540FF50C7CB80F79",
+    "counts": [
+      2124,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "arrays": 3,
+    "verified": "Exact typed numerical bits and order against the unchunked original C# syntax",
+    "payloadBytes": 8560
+  },
+  {
+    "source": "src/BridgeBuilder/Bridges/Types/Draw03/Draw03RoadAppearance.cs",
+    "resource": "Draw03/Types_Draw03_Draw03RoadAppearance_cs.bin",
+    "originalSha256": "D699888B4B980F56122E21216C26D9DA0A3CF22599901C6BEF33F298532DD62A",
+    "counts": [
+      38,
+      0,
+      0,
+      0,
+      35,
+      0
+    ],
+    "arrays": 0,
+    "verified": "Exact typed numerical bits and order against the unchunked original C# syntax",
+    "payloadBytes": 356
+  },
+  {
+    "source": "src/BridgeBuilder/Bridges/Types/Draw03/Draw03RoadPartitions.g.cs",
+    "resource": "Draw03/Types_Draw03_Draw03RoadPartitions_g_cs.bin",
+    "originalSha256": "309E9E1638DC95691D6C53E46DBF4B2FF669072A373C049868FA88D6631A9BE8",
+    "counts": [
+      3,
+      0,
+      0,
+      0,
+      4,
+      0
+    ],
+    "arrays": 0,
+    "verified": "Exact typed numerical bits and order against the unchunked original C# syntax",
+    "payloadBytes": 92
+  },
+  {
+    "source": "src/BridgeBuilder/Bridges/Types/Draw03/Draw03RoadPreparation.cs",
+    "resource": "Draw03/Types_Draw03_Draw03RoadPreparation_cs.bin",
+    "originalSha256": "C7DB1491D41FD3BA8136A7B2995046E362533908DE92006A3C7861B48F28BF50",
+    "counts": [
+      1,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "arrays": 0,
+    "verified": "Exact typed numerical bits and order against the unchunked original C# syntax",
+    "payloadBytes": 68
+  },
+  {
+    "source": "src/BridgeBuilder/Bridges/Types/Draw03/Draw03RoadReplacement.g.cs",
+    "resource": "Draw03/Types_Draw03_Draw03RoadReplacement_g_cs.bin",
+    "originalSha256": "F2D051561E53713B55F0BA33772B6FDD77856E5FEEDAB952B55A6BA685DBD752",
+    "counts": [
+      4104,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "arrays": 4,
+    "verified": "Exact typed numerical bits and order against the unchunked original C# syntax",
+    "payloadBytes": 16480
+  },
+  {
+    "source": "src/BridgeBuilder/Bridges/Types/Draw03/Draw03RoadSampling.cs",
+    "resource": "Draw03/Types_Draw03_Draw03RoadSampling_cs.bin",
+    "originalSha256": "3C811967B6406BDFBF6AA52FCDF929E7A609F40259BB584DD32C2F8DFEC10B64",
+    "counts": [
+      0,
+      0,
+      0,
+      0,
+      2,
+      0
+    ],
+    "arrays": 0,
+    "verified": "Exact typed numerical bits and order against the unchunked original C# syntax",
+    "payloadBytes": 72
+  },
+  {
+    "source": "src/BridgeBuilder/Bridges/Types/Draw03/Draw03RoadWear.cs",
+    "resource": "Draw03/Types_Draw03_Draw03RoadWear_cs.bin",
+    "originalSha256": "8597109812D72BD4650AAF8A05B24346FD990723944B18108C4ACFBE8C3D5F33",
+    "counts": [
+      13,
+      0,
+      0,
+      0,
+      18,
+      0
+    ],
+    "arrays": 0,
+    "verified": "Exact typed numerical bits and order against the unchunked original C# syntax",
+    "payloadBytes": 188
+  },
+  {
+    "source": "src/BridgeBuilder/Bridges/Types/Draw03/Draw03RoadWearDomains.cs",
+    "resource": "Draw03/Types_Draw03_Draw03RoadWearDomains_cs.bin",
+    "originalSha256": "A006C995F7AB692BC935D6447245A3C103FC3D7D748FA1BFC3AA53F302C98308",
+    "counts": [
+      10,
+      0,
+      0,
+      0,
+      3,
+      0
+    ],
+    "arrays": 0,
+    "payloadBytes": 116,
+    "verified": "Exact typed numerical bits and order against the unchunked original C# syntax"
+  },
+  {
+    "source": "src/BridgeBuilder/Bridges/Types/Draw03/Draw03RoadWearUnits.cs",
+    "resource": "Draw03/Types_Draw03_Draw03RoadWearUnits_cs.bin",
+    "originalSha256": "CBC5D70EBC90F8A244E9C8AAF4A6DD87946060022ADA0508DF385F9FF129D327",
+    "counts": [
+      11,
+      0,
+      0,
+      0,
+      3,
+      0
+    ],
+    "arrays": 0,
+    "payloadBytes": 120,
+    "verified": "Exact typed numerical bits and order against the unchunked original C# syntax"
+  },
+  {
+    "source": "src/BridgeBuilder/Bridges/Types/Draw03/Draw03Shafts.g.cs",
+    "resource": "Draw03/Types_Draw03_Draw03Shafts_g_cs.bin",
+    "originalSha256": "05638D5AC22D35AF0FC7C822B6D45F4D83870BF245B30D16F0A06D42F338764F",
+    "counts": [
+      226,
+      0,
+      0,
+      0,
+      25,
+      0
+    ],
+    "arrays": 2,
+    "verified": "Exact typed numerical bits and order against the unchunked original C# syntax",
+    "payloadBytes": 1068
+  },
+  {
+    "source": "src/BridgeBuilder/Bridges/Types/Draw03/Draw03SourceRenders.cs",
+    "resource": "Draw03/Types_Draw03_Draw03SourceRenders_cs.bin",
+    "originalSha256": "C8F0F5A442F1EE3841008B5CF9455A73A6B8A6038904C634AD47F170608C8A83",
+    "counts": [
+      31,
+      0,
+      0,
+      0,
+      63,
+      0
+    ],
+    "arrays": 0,
+    "verified": "Exact typed numerical bits and order against the unchunked original C# syntax",
+    "payloadBytes": 440
+  },
+  {
+    "source": "src/BridgeBuilder/Bridges/Types/Draw03/Draw03SupportAssembly.cs",
+    "resource": "Draw03/Types_Draw03_Draw03SupportAssembly_cs.bin",
+    "originalSha256": "37E7A8A4244ADB65DD789D9BFA9CA31058CA48FD9BDA6F08F282DC616A963FF7",
+    "counts": [
+      16,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "arrays": 0,
+    "verified": "Exact typed numerical bits and order against the unchunked original C# syntax",
+    "payloadBytes": 128
+  },
+  {
+    "source": "src/BridgeBuilder/Bridges/Types/Draw03/Draw03Truss.g.cs",
+    "resource": "Draw03/Types_Draw03_Draw03Truss_g_cs.bin",
+    "originalSha256": "4F7BB20ABE8359F3491CD63977E8332640EE43D5D28F344737E9DCF98DD8EB76",
+    "counts": [
+      68,
+      0,
+      0,
+      0,
+      3,
+      0
+    ],
+    "arrays": 2,
+    "verified": "Exact typed numerical bits and order against the unchunked original C# syntax",
+    "payloadBytes": 348
+  },
+  {
+    "source": "src/BridgeBuilder/Bridges/Types/Extradosed02/APylonCableData.g.cs",
+    "resource": "Extradosed02/Types_Extradosed02_APylonCableData_g_cs.bin",
+    "originalSha256": "8CD0357B8377260B797CAAEB0A75E596A168199E719CC7B277B4974B6D8FE0A8",
+    "counts": [
+      3,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "arrays": 0,
+    "verified": "Exact typed numerical bits and order against the unchunked original C# syntax",
+    "payloadBytes": 76
+  },
+  {
+    "source": "src/BridgeBuilder/Bridges/Types/Extradosed02/APylonCableGeometry.cs",
+    "resource": "Extradosed02/Types_Extradosed02_APylonCableGeometry_cs.bin",
+    "originalSha256": "9C27F16EADF566A3C6815CF9991713C0836A30EC21F68A6CF3B61EFE442DF270",
+    "counts": [
+      6,
+      0,
+      0,
+      0,
+      1,
+      0
+    ],
+    "arrays": 0,
+    "verified": "Exact typed numerical bits and order against the unchunked original C# syntax",
+    "payloadBytes": 92
+  },
+  {
+    "source": "src/BridgeBuilder/Bridges/Types/Lift01/Lift01ApproachAssembly.cs",
+    "resource": "Lift01/Types_Lift01_Lift01ApproachAssembly_cs.bin",
+    "originalSha256": "87FF708B1BFB23B262A6D882524F6FB410C668686B8D54FE7D858FED25D8EE73",
+    "counts": [
+      10,
+      0,
+      0,
+      0,
+      1,
+      0
+    ],
+    "arrays": 0,
+    "verified": "Exact typed numerical bits and order against the unchunked original C# syntax",
+    "payloadBytes": 108
+  },
+  {
+    "source": "src/BridgeBuilder/Bridges/Types/Lift01/Lift01ApproachBases.g.cs",
+    "resource": "Lift01/Types_Lift01_Lift01ApproachBases_g_cs.bin",
+    "originalSha256": "A9963CDD3FBEB8AC54A048850DE06CC8F9E243269719BC2CFD3A91441763DF1C",
+    "counts": [
+      410,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "arrays": 6,
+    "verified": "Exact typed numerical bits and order against the unchunked original C# syntax",
+    "payloadBytes": 1704
+  },
+  {
+    "source": "src/BridgeBuilder/Bridges/Types/Lift01/Lift01ApproachFarShell.g.cs",
+    "resource": "Lift01/Types_Lift01_Lift01ApproachFarShell_g_cs.bin",
+    "originalSha256": "329E320798EB5611EA078D07BAD378B0E9F360E0BF1464FFA841351932A7293B",
+    "counts": [
+      869,
+      0,
+      0,
+      0,
+      752,
+      0
+    ],
+    "arrays": 4,
+    "verified": "Exact typed numerical bits and order against the unchunked original C# syntax",
+    "payloadBytes": 6548
+  },
+  {
+    "source": "src/BridgeBuilder/Bridges/Types/Lift01/Lift01ApproachFrames.g.cs",
+    "resource": "Lift01/Types_Lift01_Lift01ApproachFrames_g_cs.bin",
+    "originalSha256": "6BA6607CC3CB2989B3E6BD875DBC890AE18752A6162DAC3DC3EA9A40549F879C",
+    "counts": [
+      24451,
+      0,
+      0,
+      0,
+      17193,
+      0
+    ],
+    "arrays": 8,
+    "verified": "Exact typed numerical bits and order against the unchunked original C# syntax",
+    "payloadBytes": 166640
+  },
+  {
+    "source": "src/BridgeBuilder/Bridges/Types/Lift01/Lift01ApproachLayout.g.cs",
+    "resource": "Lift01/Types_Lift01_Lift01ApproachLayout_g_cs.bin",
+    "originalSha256": "7B6E4AC577E834380DB66CCDBC38DA311EE780C2DFE90CD37C8DF85EB7D70DF0",
+    "counts": [
+      4,
+      0,
+      0,
+      0,
+      9,
+      0
+    ],
+    "arrays": 0,
+    "verified": "Exact typed numerical bits and order against the unchunked original C# syntax",
+    "payloadBytes": 116
+  },
+  {
+    "source": "src/BridgeBuilder/Bridges/Types/Lift01/Lift01ApproachParts.g.cs",
+    "resource": "Lift01/Types_Lift01_Lift01ApproachParts_g_cs.bin",
+    "originalSha256": "0B75D212F87CEB4841C9F23BA4B01047697703CEA81022BE930284C2A2B79380",
+    "counts": [
+      771,
+      0,
+      0,
+      0,
+      1,
+      0
+    ],
+    "arrays": 8,
+    "verified": "Exact typed numerical bits and order against the unchunked original C# syntax",
+    "payloadBytes": 3152
+  },
+  {
+    "source": "src/BridgeBuilder/Bridges/Types/Lift01/Lift01ApproachSources.g.cs",
+    "resource": "Lift01/Types_Lift01_Lift01ApproachSources_g_cs.bin",
+    "originalSha256": "C095E40097F78EC4F6B4C7C76B6F8C2C961EDDAAE653FF72DFCBBCF4054310DB",
+    "counts": [
+      10,
+      0,
+      0,
+      0,
+      34,
+      0
+    ],
+    "arrays": 0,
+    "verified": "Exact typed numerical bits and order against the unchunked original C# syntax",
+    "payloadBytes": 240
+  },
+  {
+    "source": "src/BridgeBuilder/Bridges/Types/Lift01/Lift01ApproachStructure.cs",
+    "resource": "Lift01/Types_Lift01_Lift01ApproachStructure_cs.bin",
+    "originalSha256": "17C5BD8017546B30F087B21D0CA42F073BA73467C05F002C1357504ADCB117E1",
+    "counts": [
+      1,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "arrays": 0,
+    "verified": "Exact typed numerical bits and order against the unchunked original C# syntax",
+    "payloadBytes": 68
+  },
+  {
+    "source": "src/BridgeBuilder/Bridges/Types/Lift01/Lift01Bases.g.cs",
+    "resource": "Lift01/Types_Lift01_Lift01Bases_g_cs.bin",
+    "originalSha256": "7BAB9DDF22D28A212250A4BEA708536341AA931369BADAD49C58980AD9FD4827",
+    "counts": [
+      2700,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "arrays": 6,
+    "verified": "Exact typed numerical bits and order against the unchunked original C# syntax",
+    "payloadBytes": 10864
+  },
+  {
+    "source": "src/BridgeBuilder/Bridges/Types/Lift01/Lift01BridgeGenerator.cs",
+    "resource": "Lift01/Types_Lift01_Lift01BridgeGenerator_cs.bin",
+    "originalSha256": "326944A059E2EDCCA5EF2D232CC192F2D3F2AD12E4D824101AEFA6811FD1A26A",
+    "counts": [
+      2,
+      0,
+      0,
+      0,
+      3,
+      0
+    ],
+    "arrays": 0,
+    "verified": "Exact typed numerical bits and order against the unchunked original C# syntax",
+    "payloadBytes": 84
+  },
+  {
+    "source": "src/BridgeBuilder/Bridges/Types/Lift01/Lift01CatenaryRemoval.g.cs",
+    "resource": "Lift01/Types_Lift01_Lift01CatenaryRemoval_g_cs.bin",
+    "originalSha256": "0E7A06826DE7A2EE2C848F7E6B4E8F7F8FA068F0477F56A7B2CF0DB1FA702041",
+    "counts": [
+      18,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "arrays": 2,
+    "verified": "Exact typed numerical bits and order against the unchunked original C# syntax",
+    "payloadBytes": 136
+  },
+  {
+    "source": "src/BridgeBuilder/Bridges/Types/Lift01/Lift01Connectors.g.cs",
+    "resource": "Lift01/Types_Lift01_Lift01Connectors_g_cs.bin",
+    "originalSha256": "3F199B682F539EE7E5B41F39F8654D7C2D3E6D405C7953977F38CE38119688BC",
+    "counts": [
+      25118,
+      0,
+      0,
+      0,
+      609,
+      0
+    ],
+    "arrays": 2,
+    "verified": "Exact typed numerical bits and order against the unchunked original C# syntax",
+    "payloadBytes": 102972
+  },
+  {
+    "source": "src/BridgeBuilder/Bridges/Types/Lift01/Lift01FarBaseProfile.g.cs",
+    "resource": "Lift01/Types_Lift01_Lift01FarBaseProfile_g_cs.bin",
+    "originalSha256": "1E86B0A98F174B68FA69FFA25A6419451F4563D7A28BBD10E4FDC406CEAAEC20",
+    "counts": [
+      310,
+      0,
+      0,
+      0,
+      456,
+      0
+    ],
+    "arrays": 1,
+    "verified": "Exact typed numerical bits and order against the unchunked original C# syntax",
+    "payloadBytes": 3128
+  },
+  {
+    "source": "src/BridgeBuilder/Bridges/Types/Lift01/Lift01FarBases.g.cs",
+    "resource": "Lift01/Types_Lift01_Lift01FarBases_g_cs.bin",
+    "originalSha256": "AA63B791FE6F1425FE4DDA16B2B6385CC7DB1A8EF01780A698C19FE7814BEFCF",
+    "counts": [
+      170,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "arrays": 1,
+    "verified": "Exact typed numerical bits and order against the unchunked original C# syntax",
+    "payloadBytes": 744
+  },
+  {
+    "source": "src/BridgeBuilder/Bridges/Types/Lift01/Lift01FarEndLips.g.cs",
+    "resource": "Lift01/Types_Lift01_Lift01FarEndLips_g_cs.bin",
+    "originalSha256": "F46D14D27BCD14F3E39A62A57DA90F21CE52461A2C054D2A6471E305E26258B7",
+    "counts": [
+      449,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "arrays": 2,
+    "verified": "Exact typed numerical bits and order against the unchunked original C# syntax",
+    "payloadBytes": 1860
+  },
+  {
+    "source": "src/BridgeBuilder/Bridges/Types/Lift01/Lift01FarFooting.g.cs",
+    "resource": "Lift01/Types_Lift01_Lift01FarFooting_g_cs.bin",
+    "originalSha256": "CEF21C7177A14B68E0064D40AC8A14AC30902932967285EB7C1E098E744EB211",
+    "counts": [
+      4,
+      0,
+      0,
+      0,
+      717,
+      0
+    ],
+    "arrays": 1,
+    "verified": "Exact typed numerical bits and order against the unchunked original C# syntax",
+    "payloadBytes": 2948
+  },
+  {
+    "source": "src/BridgeBuilder/Bridges/Types/Lift01/Lift01FarJoinedParts.g.cs",
+    "resource": "Lift01/Types_Lift01_Lift01FarJoinedParts_g_cs.bin",
+    "originalSha256": "4D07F2489DE8667D5E120DBD6D380D03474E1D3B2AD44CE83D8A629EA4764177",
+    "counts": [
+      754,
+      0,
+      0,
+      0,
+      1302,
+      0
+    ],
+    "arrays": 3,
+    "verified": "Exact typed numerical bits and order against the unchunked original C# syntax",
+    "payloadBytes": 8288
+  },
+  {
+    "source": "src/BridgeBuilder/Bridges/Types/Lift01/Lift01FarMovingParts.g.cs",
+    "resource": "Lift01/Types_Lift01_Lift01FarMovingParts_g_cs.bin",
+    "originalSha256": "F54DB8FD2AE31BF8AD1A92D0CEA115EFAD9B22CEFA80EB28347EAACAB74F2173",
+    "counts": [
+      101,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "arrays": 1,
+    "verified": "Exact typed numerical bits and order against the unchunked original C# syntax",
+    "payloadBytes": 468
+  },
+  {
+    "source": "src/BridgeBuilder/Bridges/Types/Lift01/Lift01FarSideParts.g.cs",
+    "resource": "Lift01/Types_Lift01_Lift01FarSideParts_g_cs.bin",
+    "originalSha256": "7AF0109B845038D55F4485A4F1A8A86562944F2479BD406B7F615D6FF99545E9",
+    "counts": [
+      80,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "arrays": 1,
+    "verified": "Exact typed numerical bits and order against the unchunked original C# syntax",
+    "payloadBytes": 384
+  },
+  {
+    "source": "src/BridgeBuilder/Bridges/Types/Lift01/Lift01FarStructure.cs",
+    "resource": "Lift01/Types_Lift01_Lift01FarStructure_cs.bin",
+    "originalSha256": "14226941668E2C2ECD292DC702F15318013D12B261F9F549EA5D4FDD68532C3A",
+    "counts": [
+      11,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "arrays": 0,
+    "verified": "Exact typed numerical bits and order against the unchunked original C# syntax",
+    "payloadBytes": 108
+  },
+  {
+    "source": "src/BridgeBuilder/Bridges/Types/Lift01/Lift01FarTowerCore.g.cs",
+    "resource": "Lift01/Types_Lift01_Lift01FarTowerCore_g_cs.bin",
+    "originalSha256": "8B5219CAB255609BBED08A55AA20E4519BA58BAFDEFC5F920945A5F3753DBE1D",
+    "counts": [
+      20620,
+      0,
+      0,
+      0,
+      9601,
+      0
+    ],
+    "arrays": 4,
+    "verified": "Exact typed numerical bits and order against the unchunked original C# syntax",
+    "payloadBytes": 120948
+  },
+  {
+    "source": "src/BridgeBuilder/Bridges/Types/Lift01/Lift01Footing.g.cs",
+    "resource": "Lift01/Types_Lift01_Lift01Footing_g_cs.bin",
+    "originalSha256": "33991B75ACC3DA9267E186D2439A597406EBE4F1D13C0FF1F93A870BFED7F60A",
+    "counts": [
+      2210,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "arrays": 2,
+    "verified": "Exact typed numerical bits and order against the unchunked original C# syntax",
+    "payloadBytes": 8904
+  },
+  {
+    "source": "src/BridgeBuilder/Bridges/Types/Lift01/Lift01Glass.g.cs",
+    "resource": "Lift01/Types_Lift01_Lift01Glass_g_cs.bin",
+    "originalSha256": "E40A9E1A021CAA1E1BF996C4B020ECA11A5CF0A3F0FF4DD735C0AF0F6CFB01C7",
+    "counts": [
+      9,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "arrays": 0,
+    "verified": "Exact typed numerical bits and order against the unchunked original C# syntax",
+    "payloadBytes": 100
+  },
+  {
+    "source": "src/BridgeBuilder/Bridges/Types/Lift01/Lift01JoinedFrames.g.cs",
+    "resource": "Lift01/Types_Lift01_Lift01JoinedFrames_g_cs.bin",
+    "originalSha256": "DFD8A2C2B2533CFCD2029550A2798A8EC4BB166C5F5F78AB073E097EA38D58FF",
+    "counts": [
+      72495,
+      0,
+      0,
+      0,
+      53479,
+      0
+    ],
+    "arrays": 8,
+    "verified": "Exact typed numerical bits and order against the unchunked original C# syntax",
+    "payloadBytes": 503960
+  },
+  {
+    "source": "src/BridgeBuilder/Bridges/Types/Lift01/Lift01MechanismData.g.cs",
+    "resource": "Lift01/Types_Lift01_Lift01MechanismData_g_cs.bin",
+    "originalSha256": "5EE9170E6FBA442B49CEC79996F3349E0CCB7177F486453332D2CD91C9D3976F",
+    "counts": [
+      78,
+      0,
+      0,
+      0,
+      468,
+      0
+    ],
+    "arrays": 0,
+    "verified": "Exact typed numerical bits and order against the unchunked original C# syntax",
+    "payloadBytes": 2248
+  },
+  {
+    "source": "src/BridgeBuilder/Bridges/Types/Lift01/Lift01NetPillarGeometry.g.cs",
+    "resource": "Lift01/Types_Lift01_Lift01NetPillarGeometry_g_cs.bin",
+    "originalSha256": "1ED7E148C683706ECC207D97903AE9033234B86605AA40AF978EB8E14D46EDB0",
+    "counts": [
+      847,
+      0,
+      0,
+      0,
+      42,
+      0
+    ],
+    "arrays": 6,
+    "verified": "Exact typed numerical bits and order against the unchunked original C# syntax",
+    "payloadBytes": 3620
+  },
+  {
+    "source": "src/BridgeBuilder/Bridges/Types/Lift01/Lift01NetworkData.g.cs",
+    "resource": "Lift01/Types_Lift01_Lift01NetworkData_g_cs.bin",
+    "originalSha256": "C6807217BEA771AE10C90DA5CB8B23C82BF3BEC75CD8577606420BBA174096AD",
+    "counts": [
+      15,
+      0,
+      0,
+      0,
+      31,
+      0
+    ],
+    "arrays": 0,
+    "verified": "Exact typed numerical bits and order against the unchunked original C# syntax",
+    "payloadBytes": 248
+  },
+  {
+    "source": "src/BridgeBuilder/Bridges/Types/Lift01/Lift01ObjectAssembly.cs",
+    "resource": "Lift01/Types_Lift01_Lift01ObjectAssembly_cs.bin",
+    "originalSha256": "9C4AF3B7FEAE245F885DE5096BA45B90ADE24F7291FC19EDB1D4F96D4744402A",
+    "counts": [
+      2,
+      0,
+      0,
+      0,
+      1,
+      0
+    ],
+    "arrays": 0,
+    "verified": "Exact typed numerical bits and order against the unchunked original C# syntax",
+    "payloadBytes": 76
+  },
+  {
+    "source": "src/BridgeBuilder/Bridges/Types/Lift01/Lift01PillarAssembly.cs",
+    "resource": "Lift01/Types_Lift01_Lift01PillarAssembly_cs.bin",
+    "originalSha256": "9E298B4FF63304121CA89573DA1826624AD5AE69410AAAF5CD4531AD21133968",
+    "counts": [
+      14,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "arrays": 0,
+    "verified": "Exact typed numerical bits and order against the unchunked original C# syntax",
+    "payloadBytes": 120
+  },
+  {
+    "source": "src/BridgeBuilder/Bridges/Types/Lift01/Lift01PillarSources.cs",
+    "resource": "Lift01/Types_Lift01_Lift01PillarSources_cs.bin",
+    "originalSha256": "5BB0718AF2992B5F5AC8D868C1D68B8B75C934D1F87250D9D797354CF6D4A8F8",
+    "counts": [
+      62,
+      0,
+      0,
+      0,
+      83,
+      0
+    ],
+    "arrays": 0,
+    "verified": "Exact typed numerical bits and order against the unchunked original C# syntax",
+    "payloadBytes": 644
+  },
+  {
+    "source": "src/BridgeBuilder/Bridges/Types/Lift01/Lift01RailRemoval.g.cs",
+    "resource": "Lift01/Types_Lift01_Lift01RailRemoval_g_cs.bin",
+    "originalSha256": "66DA6DC8B3229D0D500AE13A444607A861A3A8A2EABEEB9A7A2DADC87A9362FC",
+    "counts": [
+      398,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "arrays": 2,
+    "verified": "Exact typed numerical bits and order against the unchunked original C# syntax",
+    "payloadBytes": 1656
+  },
+  {
+    "source": "src/BridgeBuilder/Bridges/Types/Lift01/Lift01RenderAssembly.cs",
+    "resource": "Lift01/Types_Lift01_Lift01RenderAssembly_cs.bin",
+    "originalSha256": "A07D0BB843D8822925C66B726D48691E42DD7DA2AE5013E8B6A0A52E27643B7F",
+    "counts": [
+      21,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "arrays": 0,
+    "verified": "Exact typed numerical bits and order against the unchunked original C# syntax",
+    "payloadBytes": 148
+  },
+  {
+    "source": "src/BridgeBuilder/Bridges/Types/Lift01/Lift01RenderData.g.cs",
+    "resource": "Lift01/Types_Lift01_Lift01RenderData_g_cs.bin",
+    "originalSha256": "9C2048BC4B8A4A56A705B748035A5DB3622A4CADC5E8F8837454C4FA9EC39F6C",
+    "counts": [
+      31,
+      0,
+      0,
+      0,
+      12,
+      0
+    ],
+    "arrays": 0,
+    "verified": "Exact typed numerical bits and order against the unchunked original C# syntax",
+    "payloadBytes": 236
+  },
+  {
+    "source": "src/BridgeBuilder/Bridges/Types/Lift01/Lift01RigidParts.g.cs",
+    "resource": "Lift01/Types_Lift01_Lift01RigidParts_g_cs.bin",
+    "originalSha256": "C6875E25E61A2120A7A66B9F3A3A687FF45CDAE06CA6B79C62D6E5578D6A737C",
+    "counts": [
+      6382,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "arrays": 4,
+    "verified": "Exact typed numerical bits and order against the unchunked original C# syntax",
+    "payloadBytes": 25592
+  },
+  {
+    "source": "src/BridgeBuilder/Bridges/Types/Lift01/Lift01RoadAppearance.cs",
+    "resource": "Lift01/Types_Lift01_Lift01RoadAppearance_cs.bin",
+    "originalSha256": "B0DD225719F842C35BE86491C284FF14E0D26BDB5775BC0783A6EC27986C9903",
+    "counts": [
+      16,
+      0,
+      0,
+      0,
+      20,
+      0
+    ],
+    "arrays": 0,
+    "verified": "Exact typed numerical bits and order against the unchunked original C# syntax",
+    "payloadBytes": 208
+  },
+  {
+    "source": "src/BridgeBuilder/Bridges/Types/Lift01/Lift01RoadPartitions.cs",
+    "resource": "Lift01/Types_Lift01_Lift01RoadPartitions_cs.bin",
+    "originalSha256": "7846B92E7617E93A2721FAF854B95807D12B0B56976CBA7DB38B0D79C13ED683",
+    "counts": [
+      3,
+      0,
+      0,
+      0,
+      3,
+      0
+    ],
+    "arrays": 0,
+    "verified": "Exact typed numerical bits and order against the unchunked original C# syntax",
+    "payloadBytes": 88
+  },
+  {
+    "source": "src/BridgeBuilder/Bridges/Types/Lift01/Lift01RoadPreparation.cs",
+    "resource": "Lift01/Types_Lift01_Lift01RoadPreparation_cs.bin",
+    "originalSha256": "2DD6AD6459DC7697E1C462FEE8CEB5BBB37098DB8A4241B8E10C51B6B9C851AC",
+    "counts": [
+      1,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "arrays": 0,
+    "verified": "Exact typed numerical bits and order against the unchunked original C# syntax",
+    "payloadBytes": 68
+  },
+  {
+    "source": "src/BridgeBuilder/Bridges/Types/Lift01/Lift01RoadReplacement.cs",
+    "resource": "Lift01/Types_Lift01_Lift01RoadReplacement_cs.bin",
+    "originalSha256": "3838B1B74E76F97A61ABCDA3A905A091133E6A84DFC08CFAE424F9FE1DDD43B2",
+    "counts": [
+      16,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "arrays": 0,
+    "verified": "Exact typed numerical bits and order against the unchunked original C# syntax",
+    "payloadBytes": 128
+  },
+  {
+    "source": "src/BridgeBuilder/Bridges/Types/Lift01/Lift01RoadSampling.cs",
+    "resource": "Lift01/Types_Lift01_Lift01RoadSampling_cs.bin",
+    "originalSha256": "0046FA03D680A229B2D8471922669B0B859E1DC98D6436C5B2647FDA71E8FC50",
+    "counts": [
+      0,
+      0,
+      0,
+      0,
+      2,
+      0
+    ],
+    "arrays": 0,
+    "verified": "Exact typed numerical bits and order against the unchunked original C# syntax",
+    "payloadBytes": 72
+  },
+  {
+    "source": "src/BridgeBuilder/Bridges/Types/Lift01/Lift01RoadTops.g.cs",
+    "resource": "Lift01/Types_Lift01_Lift01RoadTops_g_cs.bin",
+    "originalSha256": "32592E39E4D57B11830A7054A79A35E1B42493FAEEE987540CB7B27D225F93E4",
+    "counts": [
+      2343,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "arrays": 0,
+    "verified": "Exact typed numerical bits and order against the unchunked original C# syntax",
+    "payloadBytes": 9436
+  },
+  {
+    "source": "src/BridgeBuilder/Bridges/Types/Lift01/Lift01SectionRoles.cs",
+    "resource": "Lift01/Types_Lift01_Lift01SectionRoles_cs.bin",
+    "originalSha256": "FBB738E1610B7398E343DB322B1F1B37752D31FA34033AEB8E773494705163B6",
+    "counts": [
+      1,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "arrays": 0,
+    "verified": "Exact typed numerical bits and order against the unchunked original C# syntax",
+    "payloadBytes": 68
+  },
+  {
+    "source": "src/BridgeBuilder/Bridges/Types/Lift01/Lift01SleeperRemoval.g.cs",
+    "resource": "Lift01/Types_Lift01_Lift01SleeperRemoval_g_cs.bin",
+    "originalSha256": "67364932337BBB44C6B3D81145B0D983C3C1A519A48850F3D46C06C283A37C3B",
+    "counts": [
+      386,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "arrays": 2,
+    "verified": "Exact typed numerical bits and order against the unchunked original C# syntax",
+    "payloadBytes": 1608
+  },
+  {
+    "source": "src/BridgeBuilder/Bridges/Types/Lift01/Lift01SourceRenders.cs",
+    "resource": "Lift01/Types_Lift01_Lift01SourceRenders_cs.bin",
+    "originalSha256": "11CD43031E9CE1EC43016325D7A8BF5A9C2357F4E6B51535D212ED25601B7D6A",
+    "counts": [
+      31,
+      0,
+      0,
+      0,
+      63,
+      0
+    ],
+    "arrays": 0,
+    "verified": "Exact typed numerical bits and order against the unchunked original C# syntax",
+    "payloadBytes": 440
+  },
+  {
+    "source": "src/BridgeBuilder/Bridges/Types/Lift01/Lift01SupportAssembly.cs",
+    "resource": "Lift01/Types_Lift01_Lift01SupportAssembly_cs.bin",
+    "originalSha256": "5D156D23A888FA20191FE7EC80AB8E29FD2C40108B72D9C6A7477D1471CEB121",
+    "counts": [
+      27,
+      0,
+      0,
+      0,
+      1,
+      0
+    ],
+    "arrays": 0,
+    "verified": "Exact typed numerical bits and order against the unchunked original C# syntax",
+    "payloadBytes": 176
+  },
+  {
+    "source": "src/BridgeBuilder/Bridges/Types/Lift01/Lift01TowerBodies.g.cs",
+    "resource": "Lift01/Types_Lift01_Lift01TowerBodies_g_cs.bin",
+    "originalSha256": "77E2D49286F832D2141893778B153BD2194E0FA3AF730AC1F54E3EA75A69E8A9",
+    "counts": [
+      3110,
+      0,
+      0,
+      0,
+      105,
+      0
+    ],
+    "arrays": 2,
+    "verified": "Exact typed numerical bits and order against the unchunked original C# syntax",
+    "payloadBytes": 12924
+  },
+  {
+    "source": "src/BridgeBuilder/Bridges/Types/Lift01/Lift01TowerFrames.g.cs",
+    "resource": "Lift01/Types_Lift01_Lift01TowerFrames_g_cs.bin",
+    "originalSha256": "577806DBD42E27F887413D457E393FF5D46E963B44B10BE0E029E62A8C9D3B0B",
+    "counts": [
+      5342,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "arrays": 2,
+    "verified": "Exact typed numerical bits and order against the unchunked original C# syntax",
+    "payloadBytes": 21432
+  },
+  {
+    "source": "src/BridgeBuilder/Bridges/Types/Lift01/Lift01TransverseParts.g.cs",
+    "resource": "Lift01/Types_Lift01_Lift01TransverseParts_g_cs.bin",
+    "originalSha256": "F72A50C3CFFFA6664335C44B51B93C45CACFDE60876F099C02042CD1D5CF14CC",
+    "counts": [
+      32476,
+      0,
+      0,
+      0,
+      529,
+      0
+    ],
+    "arrays": 2,
+    "verified": "Exact typed numerical bits and order against the unchunked original C# syntax",
+    "payloadBytes": 132084
+  },
+  {
+    "source": "src/BridgeBuilder/Bridges/Types/Lift02/Lift02BridgeGenerator.cs",
+    "resource": "Lift02/Types_Lift02_Lift02BridgeGenerator_cs.bin",
+    "originalSha256": "73FE27F9E65356926DFD698F7F498ADA39E189AF219B123C0983DCF4C3AE8DF4",
+    "counts": [
+      2,
+      0,
+      0,
+      0,
+      3,
+      0
+    ],
+    "arrays": 0,
+    "verified": "Exact typed numerical bits and order against the unchunked original C# syntax",
+    "payloadBytes": 84
+  },
+  {
+    "source": "src/BridgeBuilder/Bridges/Types/Lift02/Lift02CentralHardwareGeometry.g.cs",
+    "resource": "Lift02/Types_Lift02_Lift02CentralHardwareGeometry_g_cs.bin",
+    "originalSha256": "E0ECE6A37980E248A77D57B126D10507F326A86A9DD3F30734AE353C93D9143F",
+    "counts": [
+      643,
+      0,
+      0,
+      0,
+      640,
+      0
+    ],
+    "arrays": 2,
+    "verified": "Exact typed numerical bits and order against the unchunked original C# syntax",
+    "payloadBytes": 5196
+  },
+  {
+    "source": "src/BridgeBuilder/Bridges/Types/Lift02/Lift02ColumnAssembly.cs",
+    "resource": "Lift02/Types_Lift02_Lift02ColumnAssembly_cs.bin",
+    "originalSha256": "A56280EF5F469D4BF2D93DD11413FFD6AE762BF35FB914717F79EB23414721C1",
+    "counts": [
+      12,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "arrays": 0,
+    "verified": "Exact typed numerical bits and order against the unchunked original C# syntax",
+    "payloadBytes": 112
+  },
+  {
+    "source": "src/BridgeBuilder/Bridges/Types/Lift02/Lift02ColumnGeometry.g.cs",
+    "resource": "Lift02/Types_Lift02_Lift02ColumnGeometry_g_cs.bin",
+    "originalSha256": "145392D664CE07B1C4F3698D50FD0D480BCAF355910694CA522416416EB1208C",
+    "counts": [
+      286,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "arrays": 3,
+    "verified": "Exact typed numerical bits and order against the unchunked original C# syntax",
+    "payloadBytes": 1208
+  },
+  {
+    "source": "src/BridgeBuilder/Bridges/Types/Lift02/Lift02CounterweightGeometry.g.cs",
+    "resource": "Lift02/Types_Lift02_Lift02CounterweightGeometry_g_cs.bin",
+    "originalSha256": "8042E16AD4CF31BDA449EDAAEB545C3531E3615448C8BC6620940A157C19012A",
+    "counts": [
+      835,
+      0,
+      0,
+      0,
+      832,
+      0
+    ],
+    "arrays": 3,
+    "verified": "Exact typed numerical bits and order against the unchunked original C# syntax",
+    "payloadBytes": 6732
+  },
+  {
+    "source": "src/BridgeBuilder/Bridges/Types/Lift02/Lift02CrossMemberGeometry.g.cs",
+    "resource": "Lift02/Types_Lift02_Lift02CrossMemberGeometry_g_cs.bin",
+    "originalSha256": "33853F479E4EEF777F01EE781CCB891EA418189DD592C951ED5A0E95C2863E9B",
+    "counts": [
+      2603,
+      0,
+      0,
+      0,
+      2600,
+      0
+    ],
+    "arrays": 2,
+    "verified": "Exact typed numerical bits and order against the unchunked original C# syntax",
+    "payloadBytes": 20876
+  },
+  {
+    "source": "src/BridgeBuilder/Bridges/Types/Lift02/Lift02DeckCrossMemberGeometry.g.cs",
+    "resource": "Lift02/Types_Lift02_Lift02DeckCrossMemberGeometry_g_cs.bin",
+    "originalSha256": "145EFEF55D10F0D2E9E18E95E92F06A0F852E7DB8AADC99B03667EBB272C63EE",
+    "counts": [
+      3253,
+      0,
+      0,
+      0,
+      3250,
+      0
+    ],
+    "arrays": 2,
+    "verified": "Exact typed numerical bits and order against the unchunked original C# syntax",
+    "payloadBytes": 26076
+  },
+  {
+    "source": "src/BridgeBuilder/Bridges/Types/Lift02/Lift02EndFrameGeometry.g.cs",
+    "resource": "Lift02/Types_Lift02_Lift02EndFrameGeometry_g_cs.bin",
+    "originalSha256": "C6D5D3880BD45E4DEFF2F3DE5C814A98E56CA0103F111522B08E3D20C6545329",
+    "counts": [
+      843,
+      0,
+      0,
+      0,
+      840,
+      0
+    ],
+    "arrays": 3,
+    "verified": "Exact typed numerical bits and order against the unchunked original C# syntax",
+    "payloadBytes": 6796
+  },
+  {
+    "source": "src/BridgeBuilder/Bridges/Types/Lift02/Lift02FarRoadBoundary.g.cs",
+    "resource": "Lift02/Types_Lift02_Lift02FarRoadBoundary_g_cs.bin",
+    "originalSha256": "9FE6EA51573522C0C2E26383D64FE9B3142ADC43B9AAEEFF636080B31352E073",
+    "counts": [
+      76,
+      0,
+      0,
+      0,
+      288,
+      0
+    ],
+    "arrays": 1,
+    "verified": "Exact typed numerical bits and order against the unchunked original C# syntax",
+    "payloadBytes": 1520
+  },
+  {
+    "source": "src/BridgeBuilder/Bridges/Types/Lift02/Lift02FarRoadTops.g.cs",
+    "resource": "Lift02/Types_Lift02_Lift02FarRoadTops_g_cs.bin",
+    "originalSha256": "CCD5E1FD2BB6AABE5129C0BE32E6CCE12DB0CB23CA397772D289B1933EA8D3AD",
+    "counts": [
+      29,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "arrays": 1,
+    "verified": "Exact typed numerical bits and order against the unchunked original C# syntax",
+    "payloadBytes": 180
+  },
+  {
+    "source": "src/BridgeBuilder/Bridges/Types/Lift02/Lift02FixedBasesGeometry.g.cs",
+    "resource": "Lift02/Types_Lift02_Lift02FixedBasesGeometry_g_cs.bin",
+    "originalSha256": "C682EB75ACBD08516B43CB86B6A412346EC77531C42B7A6EF8411788B4A45F97",
+    "counts": [
+      4160,
+      0,
+      0,
+      0,
+      4157,
+      0
+    ],
+    "arrays": 3,
+    "verified": "Exact typed numerical bits and order against the unchunked original C# syntax",
+    "payloadBytes": 33332
+  },
+  {
+    "source": "src/BridgeBuilder/Bridges/Types/Lift02/Lift02FootingAssembly.cs",
+    "resource": "Lift02/Types_Lift02_Lift02FootingAssembly_cs.bin",
+    "originalSha256": "ADE6EBCF77852249359CA86A9CFEBA153C83644A2BC4DD3C59118B3C72D48C1D",
+    "counts": [
+      12,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "arrays": 0,
+    "verified": "Exact typed numerical bits and order against the unchunked original C# syntax",
+    "payloadBytes": 112
+  },
+  {
+    "source": "src/BridgeBuilder/Bridges/Types/Lift02/Lift02FootingGeometry.g.cs",
+    "resource": "Lift02/Types_Lift02_Lift02FootingGeometry_g_cs.bin",
+    "originalSha256": "DD055669B15E1A6D041FA1A2B543C06D5D10B9DD6A87310731C8E07CC4FC2815",
+    "counts": [
+      8,
+      0,
+      0,
+      0,
+      1548,
+      0
+    ],
+    "arrays": 3,
+    "verified": "Exact typed numerical bits and order against the unchunked original C# syntax",
+    "payloadBytes": 6288
+  },
+  {
+    "source": "src/BridgeBuilder/Bridges/Types/Lift02/Lift02Glass.g.cs",
+    "resource": "Lift02/Types_Lift02_Lift02Glass_g_cs.bin",
+    "originalSha256": "0BDBD20750F84925C2C391839CCC224B47E77F19A25A4EE867D59D6B49CE16E6",
+    "counts": [
+      7,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "arrays": 0,
+    "verified": "Exact typed numerical bits and order against the unchunked original C# syntax",
+    "payloadBytes": 92
+  },
+  {
+    "source": "src/BridgeBuilder/Bridges/Types/Lift02/Lift02HalfDiagonalGeometry.g.cs",
+    "resource": "Lift02/Types_Lift02_Lift02HalfDiagonalGeometry_g_cs.bin",
+    "originalSha256": "FCA39CE6784F4E7A27982654C793A411349954C86AF582B50530CC742F76AEDD",
+    "counts": [
+      947,
+      0,
+      0,
+      0,
+      944,
+      0
+    ],
+    "arrays": 2,
+    "verified": "Exact typed numerical bits and order against the unchunked original C# syntax",
+    "payloadBytes": 7628
+  },
+  {
+    "source": "src/BridgeBuilder/Bridges/Types/Lift02/Lift02JointPlateGeometry.g.cs",
+    "resource": "Lift02/Types_Lift02_Lift02JointPlateGeometry_g_cs.bin",
+    "originalSha256": "CB73BF6729079B68F18952C3385DFA50A251350B59C74A94B6DFE26B735AFDD9",
+    "counts": [
+      5700,
+      0,
+      0,
+      0,
+      5697,
+      0
+    ],
+    "arrays": 2,
+    "verified": "Exact typed numerical bits and order against the unchunked original C# syntax",
+    "payloadBytes": 45652
+  },
+  {
+    "source": "src/BridgeBuilder/Bridges/Types/Lift02/Lift02MachineryGeometry.g.cs",
+    "resource": "Lift02/Types_Lift02_Lift02MachineryGeometry_g_cs.bin",
+    "originalSha256": "4CE983BFA31ED386244DD2544E5D0548503ABBBFFE185EF735FAB2516EDC2658",
+    "counts": [
+      1541,
+      0,
+      0,
+      0,
+      1538,
+      0
+    ],
+    "arrays": 3,
+    "verified": "Exact typed numerical bits and order against the unchunked original C# syntax",
+    "payloadBytes": 12380
+  },
+  {
+    "source": "src/BridgeBuilder/Bridges/Types/Lift02/Lift02MechanismData.g.cs",
+    "resource": "Lift02/Types_Lift02_Lift02MechanismData_g_cs.bin",
+    "originalSha256": "A7DDED6B678E952EFC7036158EBE74FD0FEF37F3519509088FF44FD3F559AF82",
+    "counts": [
+      72,
+      0,
+      0,
+      0,
+      454,
+      0
+    ],
+    "arrays": 0,
+    "verified": "Exact typed numerical bits and order against the unchunked original C# syntax",
+    "payloadBytes": 2168
+  },
+  {
+    "source": "src/BridgeBuilder/Bridges/Types/Lift02/Lift02MovingBaseGeometry.g.cs",
+    "resource": "Lift02/Types_Lift02_Lift02MovingBaseGeometry_g_cs.bin",
+    "originalSha256": "5F98A413B174FB503E3FA59FA24D3865E9643173C38886397F80C2F1A08B7494",
+    "counts": [
+      8431,
+      0,
+      0,
+      0,
+      8428,
+      0
+    ],
+    "arrays": 3,
+    "verified": "Exact typed numerical bits and order against the unchunked original C# syntax",
+    "payloadBytes": 67500
+  },
+  {
+    "source": "src/BridgeBuilder/Bridges/Types/Lift02/Lift02MovingFrameGeometry.g.cs",
+    "resource": "Lift02/Types_Lift02_Lift02MovingFrameGeometry_g_cs.bin",
+    "originalSha256": "29E531FB8C35D108968D7106674DDCF611D9B67C28D726899F44BF482615516B",
+    "counts": [
+      2579,
+      0,
+      0,
+      0,
+      2576,
+      0
+    ],
+    "arrays": 2,
+    "verified": "Exact typed numerical bits and order against the unchunked original C# syntax",
+    "payloadBytes": 20684
+  },
+  {
+    "source": "src/BridgeBuilder/Bridges/Types/Lift02/Lift02NetPillarAssembly.cs",
+    "resource": "Lift02/Types_Lift02_Lift02NetPillarAssembly_cs.bin",
+    "originalSha256": "A067C034F189B72F7A5ADD7835631F84D03D2D21F3E47C255A420A124906EFBD",
+    "counts": [
+      17,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "arrays": 0,
+    "verified": "Exact typed numerical bits and order against the unchunked original C# syntax",
+    "payloadBytes": 132
+  },
+  {
+    "source": "src/BridgeBuilder/Bridges/Types/Lift02/Lift02NetPillarGeometry.g.cs",
+    "resource": "Lift02/Types_Lift02_Lift02NetPillarGeometry_g_cs.bin",
+    "originalSha256": "935E6D9440161EC57E6D2680415CB869FA5C881EC5FA2BBCC14549EB3BF0AFE3",
+    "counts": [
+      757,
+      0,
+      0,
+      0,
+      285,
+      0
+    ],
+    "arrays": 11,
+    "verified": "Exact typed numerical bits and order against the unchunked original C# syntax",
+    "payloadBytes": 4232
+  },
+  {
+    "source": "src/BridgeBuilder/Bridges/Types/Lift02/Lift02NetworkData.g.cs",
+    "resource": "Lift02/Types_Lift02_Lift02NetworkData_g_cs.bin",
+    "originalSha256": "13D8EFC675181F119D1252DF2DCDA7926DC75158D7F69B82B3B8C2EB5E9B94E7",
+    "counts": [
+      15,
+      0,
+      0,
+      0,
+      35,
+      0
+    ],
+    "arrays": 0,
+    "verified": "Exact typed numerical bits and order against the unchunked original C# syntax",
+    "payloadBytes": 264
+  },
+  {
+    "source": "src/BridgeBuilder/Bridges/Types/Lift02/Lift02ObjectAssembly.cs",
+    "resource": "Lift02/Types_Lift02_Lift02ObjectAssembly_cs.bin",
+    "originalSha256": "653EFEEF27D705467B9C37DB6999F0F44046EF6D16C351C4FB6143A605133879",
+    "counts": [
+      0,
+      0,
+      0,
+      0,
+      1,
+      0
+    ],
+    "arrays": 0,
+    "verified": "Exact typed numerical bits and order against the unchunked original C# syntax",
+    "payloadBytes": 68
+  },
+  {
+    "source": "src/BridgeBuilder/Bridges/Types/Lift02/Lift02PillarSources.cs",
+    "resource": "Lift02/Types_Lift02_Lift02PillarSources_cs.bin",
+    "originalSha256": "9D68B1EB3A803A31E83ACFE684EE416B226EA4176679C53DAFEF2368B3C9236E",
+    "counts": [
+      62,
+      0,
+      0,
+      0,
+      78,
+      0
+    ],
+    "arrays": 0,
+    "verified": "Exact typed numerical bits and order against the unchunked original C# syntax",
+    "payloadBytes": 624
+  },
+  {
+    "source": "src/BridgeBuilder/Bridges/Types/Lift02/Lift02PlatformDeckGeometry.g.cs",
+    "resource": "Lift02/Types_Lift02_Lift02PlatformDeckGeometry_g_cs.bin",
+    "originalSha256": "DE6E14F626596314339898473FEA4C85CFE30F9ED404EA82D6DC1C0BE74C1BD8",
+    "counts": [
+      3103,
+      0,
+      0,
+      0,
+      3100,
+      0
+    ],
+    "arrays": 2,
+    "verified": "Exact typed numerical bits and order against the unchunked original C# syntax",
+    "payloadBytes": 24876
+  },
+  {
+    "source": "src/BridgeBuilder/Bridges/Types/Lift02/Lift02PlatformFrameGeometry.g.cs",
+    "resource": "Lift02/Types_Lift02_Lift02PlatformFrameGeometry_g_cs.bin",
+    "originalSha256": "E4903C5D1A56B9E8F6915A1FCA7C1807928BDCBCE7DEA6A6C0F95226B817AB88",
+    "counts": [
+      1409,
+      0,
+      0,
+      0,
+      1406,
+      0
+    ],
+    "arrays": 2,
+    "verified": "Exact typed numerical bits and order against the unchunked original C# syntax",
+    "payloadBytes": 11324
+  },
+  {
+    "source": "src/BridgeBuilder/Bridges/Types/Lift02/Lift02PlatformSupportGeometry.g.cs",
+    "resource": "Lift02/Types_Lift02_Lift02PlatformSupportGeometry_g_cs.bin",
+    "originalSha256": "0DE913548B76B5B011EC9188E3CE6184D4521902E2024E67059E9054C21F2120",
+    "counts": [
+      675,
+      0,
+      0,
+      0,
+      672,
+      0
+    ],
+    "arrays": 2,
+    "verified": "Exact typed numerical bits and order against the unchunked original C# syntax",
+    "payloadBytes": 5452
+  },
+  {
+    "source": "src/BridgeBuilder/Bridges/Types/Lift02/Lift02RenderAssembly.cs",
+    "resource": "Lift02/Types_Lift02_Lift02RenderAssembly_cs.bin",
+    "originalSha256": "D132FC40106274A4051A24147A657EFBEA73256C0D5B4221F2D504F6EF31BA87",
+    "counts": [
+      5,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "arrays": 0,
+    "verified": "Exact typed numerical bits and order against the unchunked original C# syntax",
+    "payloadBytes": 84
+  },
+  {
+    "source": "src/BridgeBuilder/Bridges/Types/Lift02/Lift02RenderData.g.cs",
+    "resource": "Lift02/Types_Lift02_Lift02RenderData_g_cs.bin",
+    "originalSha256": "A321F6759924389A4B433D59266E326F8470EF14AC8DA53650F0DFDA531BA7CB",
+    "counts": [
+      31,
+      0,
+      0,
+      0,
+      12,
+      0
+    ],
+    "arrays": 0,
+    "verified": "Exact typed numerical bits and order against the unchunked original C# syntax",
+    "payloadBytes": 236
+  },
+  {
+    "source": "src/BridgeBuilder/Bridges/Types/Lift02/Lift02RigidParts.g.cs",
+    "resource": "Lift02/Types_Lift02_Lift02RigidParts_g_cs.bin",
+    "originalSha256": "73D2693340B3C1192C039399F52BFC25C6063209C60786F6E99A508CA2AAAF53",
+    "counts": [
+      15933,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "arrays": 3,
+    "verified": "Exact typed numerical bits and order against the unchunked original C# syntax",
+    "payloadBytes": 63796
+  },
+  {
+    "source": "src/BridgeBuilder/Bridges/Types/Lift02/Lift02RoadAppearance.cs",
+    "resource": "Lift02/Types_Lift02_Lift02RoadAppearance_cs.bin",
+    "originalSha256": "42605E32DBE9B15BA7C903D84CC3B58932D27D67AA3F0CBCA2F47F665148AF7B",
+    "counts": [
+      6,
+      0,
+      0,
+      0,
+      19,
+      0
+    ],
+    "arrays": 0,
+    "verified": "Exact typed numerical bits and order against the unchunked original C# syntax",
+    "payloadBytes": 164
+  },
+  {
+    "source": "src/BridgeBuilder/Bridges/Types/Lift02/Lift02RoadbedGeometry.g.cs",
+    "resource": "Lift02/Types_Lift02_Lift02RoadbedGeometry_g_cs.bin",
+    "originalSha256": "1C0F386E58A8BC4C402042DF5A717F457303914AC2D8DA15532299373D97E812",
+    "counts": [
+      10598,
+      0,
+      0,
+      0,
+      10595,
+      0
+    ],
+    "arrays": 3,
+    "verified": "Exact typed numerical bits and order against the unchunked original C# syntax",
+    "payloadBytes": 84836
+  },
+  {
+    "source": "src/BridgeBuilder/Bridges/Types/Lift02/Lift02RoadPartitions.cs",
+    "resource": "Lift02/Types_Lift02_Lift02RoadPartitions_cs.bin",
+    "originalSha256": "5082786B29ECAEFF862968A10B543EE3B072986CDA18E43036AF7FEC37218559",
+    "counts": [
+      3,
+      0,
+      0,
+      0,
+      2,
+      0
+    ],
+    "arrays": 0,
+    "verified": "Exact typed numerical bits and order against the unchunked original C# syntax",
+    "payloadBytes": 84
+  },
+  {
+    "source": "src/BridgeBuilder/Bridges/Types/Lift02/Lift02RoadPreparation.cs",
+    "resource": "Lift02/Types_Lift02_Lift02RoadPreparation_cs.bin",
+    "originalSha256": "525CA5EEAF29A7E7F09F1EAE899DD072FC5C4EBBB21928839673ECD5149CB487",
+    "counts": [
+      1,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "arrays": 0,
+    "verified": "Exact typed numerical bits and order against the unchunked original C# syntax",
+    "payloadBytes": 68
+  },
+  {
+    "source": "src/BridgeBuilder/Bridges/Types/Lift02/Lift02RoadSampling.cs",
+    "resource": "Lift02/Types_Lift02_Lift02RoadSampling_cs.bin",
+    "originalSha256": "9F8CDCD69A06F81A1DE44B28130E4DC5EC9EAF4BDCDE4AC68097B8A0BF6DFBAA",
+    "counts": [
+      0,
+      0,
+      0,
+      0,
+      2,
+      0
+    ],
+    "arrays": 0,
+    "verified": "Exact typed numerical bits and order against the unchunked original C# syntax",
+    "payloadBytes": 72
+  },
+  {
+    "source": "src/BridgeBuilder/Bridges/Types/Lift02/Lift02RoofBraceGeometry.g.cs",
+    "resource": "Lift02/Types_Lift02_Lift02RoofBraceGeometry_g_cs.bin",
+    "originalSha256": "0B1A22E09AE6ABD78DD8668D2F1C8536A15D83164F114FE12D94BF6C5736079D",
+    "counts": [
+      1653,
+      0,
+      0,
+      0,
+      1650,
+      0
+    ],
+    "arrays": 2,
+    "verified": "Exact typed numerical bits and order against the unchunked original C# syntax",
+    "payloadBytes": 13276
+  },
+  {
+    "source": "src/BridgeBuilder/Bridges/Types/Lift02/Lift02SectionRoles.cs",
+    "resource": "Lift02/Types_Lift02_Lift02SectionRoles_cs.bin",
+    "originalSha256": "C1EB6E06FA1317BDD6E34F8C74FFC658566CC0AD4F47C332C5BB71B23DE27629",
+    "counts": [
+      3,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "arrays": 0,
+    "verified": "Exact typed numerical bits and order against the unchunked original C# syntax",
+    "payloadBytes": 76
+  },
+  {
+    "source": "src/BridgeBuilder/Bridges/Types/Lift02/Lift02SourceRenders.cs",
+    "resource": "Lift02/Types_Lift02_Lift02SourceRenders_cs.bin",
+    "originalSha256": "0A662DC57D244C58D07DB59BBEE357AECF7A29B2ED6224CD9DC105A41CA185D7",
+    "counts": [
+      31,
+      0,
+      0,
+      0,
+      63,
+      0
+    ],
+    "arrays": 0,
+    "verified": "Exact typed numerical bits and order against the unchunked original C# syntax",
+    "payloadBytes": 440
+  },
+  {
+    "source": "src/BridgeBuilder/Bridges/Types/Lift02/Lift02StructurePlan.cs",
+    "resource": "Lift02/Types_Lift02_Lift02StructurePlan_cs.bin",
+    "originalSha256": "8AB6D5ABDF798C668026A1D6E30BFB9E02D7FB37262E12644A5FA1E61D1072F4",
+    "counts": [
+      3,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "arrays": 0,
+    "verified": "Exact typed numerical bits and order against the unchunked original C# syntax",
+    "payloadBytes": 76
+  },
+  {
+    "source": "src/BridgeBuilder/Bridges/Types/Lift02/Lift02StructureWidthPlan.cs",
+    "resource": "Lift02/Types_Lift02_Lift02StructureWidthPlan_cs.bin",
+    "originalSha256": "4A343B2105A341DE85FF2103307DC12C86A588A3CBCD9A2C16810DD462B335E1",
+    "counts": [
+      4,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "arrays": 0,
+    "verified": "Exact typed numerical bits and order against the unchunked original C# syntax",
+    "payloadBytes": 80
+  },
+  {
+    "source": "src/BridgeBuilder/Bridges/Types/Lift02/Lift02TowerBeamGeometry.g.cs",
+    "resource": "Lift02/Types_Lift02_Lift02TowerBeamGeometry_g_cs.bin",
+    "originalSha256": "174AE8F90A0A27100DEAE9E016577ED94A6E6DA875BCB5FE14496E5A5CBB5AFF",
+    "counts": [
+      939,
+      0,
+      0,
+      0,
+      936,
+      0
+    ],
+    "arrays": 3,
+    "verified": "Exact typed numerical bits and order against the unchunked original C# syntax",
+    "payloadBytes": 7564
+  },
+  {
+    "source": "src/BridgeBuilder/Bridges/Types/Lift02/Lift02TowerDiagonalGeometry.g.cs",
+    "resource": "Lift02/Types_Lift02_Lift02TowerDiagonalGeometry_g_cs.bin",
+    "originalSha256": "3A5369F348C849BB5F7225953345FD5CB131805C64F44E8203781B87A9B04CE2",
+    "counts": [
+      701,
+      0,
+      0,
+      0,
+      698,
+      0
+    ],
+    "arrays": 2,
+    "verified": "Exact typed numerical bits and order against the unchunked original C# syntax",
+    "payloadBytes": 5660
+  },
+  {
+    "source": "src/BridgeBuilder/Bridges/Types/Lift02/Lift02TowerShellGeometry.g.cs",
+    "resource": "Lift02/Types_Lift02_Lift02TowerShellGeometry_g_cs.bin",
+    "originalSha256": "FE40664CF99E7C62739A78063C0CBE71C6B2B10966C47D631349736FD90DE71A",
+    "counts": [
+      7553,
+      0,
+      0,
+      0,
+      7550,
+      0
+    ],
+    "arrays": 3,
+    "verified": "Exact typed numerical bits and order against the unchunked original C# syntax",
+    "payloadBytes": 60476
+  },
+  {
+    "source": "src/BridgeBuilder/Bridges/Types/Lift02/Lift02TrackRemoval.g.cs",
+    "resource": "Lift02/Types_Lift02_Lift02TrackRemoval_g_cs.bin",
+    "originalSha256": "FF65A40769F71BE45C84F8A032FC6EF7E6301602FA5099CBA5DB1CA3395EABAC",
+    "counts": [
+      238,
+      118,
+      0,
+      0,
+      0,
+      0
+    ],
+    "arrays": 2,
+    "verified": "Exact typed numerical bits and order against the unchunked original C# syntax",
+    "payloadBytes": 1488
+  },
+  {
+    "source": "src/BridgeBuilder/Bridges/Types/Lift02/Lift02TransverseWebGeometry.g.cs",
+    "resource": "Lift02/Types_Lift02_Lift02TransverseWebGeometry_g_cs.bin",
+    "originalSha256": "052DCC680EA267D3C5E5F75380AF25A758142ADFDCD59C1F381900ECE1F46690",
+    "counts": [
+      3083,
+      0,
+      0,
+      0,
+      3080,
+      0
+    ],
+    "arrays": 3,
+    "verified": "Exact typed numerical bits and order against the unchunked original C# syntax",
+    "payloadBytes": 24716
+  },
+  {
+    "source": "src/BridgeBuilder/Bridges/Types/Lift02/Lift02VerticalBraceGeometry.g.cs",
+    "resource": "Lift02/Types_Lift02_Lift02VerticalBraceGeometry_g_cs.bin",
+    "originalSha256": "A667986C0B4D02540CCE479254D9C6BEAEBE762E5CF50A95B896EE7698447BBE",
+    "counts": [
+      1123,
+      0,
+      0,
+      0,
+      1120,
+      0
+    ],
+    "arrays": 2,
+    "verified": "Exact typed numerical bits and order against the unchunked original C# syntax",
+    "payloadBytes": 9036
+  },
+  {
+    "source": "src/BridgeBuilder/Bridges/Types/Lift03/Lift03BridgeGenerator.cs",
+    "resource": "Lift03/Types_Lift03_Lift03BridgeGenerator_cs.bin",
+    "originalSha256": "B76FE6242E87253C4F86692E1FE56B36E51F15954E25DEA060CAC67EFDD4C56F",
+    "counts": [
+      2,
+      0,
+      0,
+      0,
+      5,
+      0
+    ],
+    "arrays": 0,
+    "verified": "Exact typed numerical bits and order against the unchunked original C# syntax",
+    "payloadBytes": 92
+  },
+  {
+    "source": "src/BridgeBuilder/Bridges/Types/Lift03/Lift03ColumnAssembly.cs",
+    "resource": "Lift03/Types_Lift03_Lift03ColumnAssembly_cs.bin",
+    "originalSha256": "97D31A6E3DEB21380E40E9DA5B0B19865673BF6A2725C9CBB59DC92F153A0F15",
+    "counts": [
+      12,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "arrays": 0,
+    "verified": "Exact typed numerical bits and order against the unchunked original C# syntax",
+    "payloadBytes": 112
+  },
+  {
+    "source": "src/BridgeBuilder/Bridges/Types/Lift03/Lift03ColumnGeometry.g.cs",
+    "resource": "Lift03/Types_Lift03_Lift03ColumnGeometry_g_cs.bin",
+    "originalSha256": "A6DBD1BFE49E36774DB0C1DBA24E0225782B42D10C69B5FFD5C8AE33914EF1B9",
+    "counts": [
+      1111,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "arrays": 3,
+    "verified": "Exact typed numerical bits and order against the unchunked original C# syntax",
+    "payloadBytes": 4508
+  },
+  {
+    "source": "src/BridgeBuilder/Bridges/Types/Lift03/Lift03CrossingMembers.g.cs",
+    "resource": "Lift03/Types_Lift03_Lift03CrossingMembers_g_cs.bin",
+    "originalSha256": "7DF5027F0464A0C1404945D62FF1419E01F0F11BF14C2AFACA95A48F8FDDF1CD",
+    "counts": [
+      585,
+      0,
+      0,
+      0,
+      194,
+      0
+    ],
+    "arrays": 2,
+    "verified": "Exact typed numerical bits and order against the unchunked original C# syntax",
+    "payloadBytes": 3180
+  },
+  {
+    "source": "src/BridgeBuilder/Bridges/Types/Lift03/Lift03DeckBases.g.cs",
+    "resource": "Lift03/Types_Lift03_Lift03DeckBases_g_cs.bin",
+    "originalSha256": "14A5791F26ADC74D588C07582A6B27E0F0FABB8F75A2407B420E332DD929D4EC",
+    "counts": [
+      3476,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "arrays": 2,
+    "verified": "Exact typed numerical bits and order against the unchunked original C# syntax",
+    "payloadBytes": 13968
+  },
+  {
+    "source": "src/BridgeBuilder/Bridges/Types/Lift03/Lift03DeckRailings.g.cs",
+    "resource": "Lift03/Types_Lift03_Lift03DeckRailings_g_cs.bin",
+    "originalSha256": "2DFBED113CF3E3C138DC64F4AC4AB631EADD6F61B7239DF01759FDDC41954228",
+    "counts": [
+      209,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "arrays": 2,
+    "verified": "Exact typed numerical bits and order against the unchunked original C# syntax",
+    "payloadBytes": 900
+  },
+  {
+    "source": "src/BridgeBuilder/Bridges/Types/Lift03/Lift03DetailedStructure.cs",
+    "resource": "Lift03/Types_Lift03_Lift03DetailedStructure_cs.bin",
+    "originalSha256": "668A7AE6E35506F91994C7F893BE537AF5B22D0F83EE5D2D32B8F77C379B95CC",
+    "counts": [
+      6,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "arrays": 0,
+    "verified": "Exact typed numerical bits and order against the unchunked original C# syntax",
+    "payloadBytes": 88
+  },
+  {
+    "source": "src/BridgeBuilder/Bridges/Types/Lift03/Lift03EndBeams.g.cs",
+    "resource": "Lift03/Types_Lift03_Lift03EndBeams_g_cs.bin",
+    "originalSha256": "E16DB3401F424F32F6A331F7AA7F06AE62D84C75B02CC31F223947DB24745C4F",
+    "counts": [
+      4981,
+      0,
+      0,
+      0,
+      3658,
+      0
+    ],
+    "arrays": 5,
+    "verified": "Exact typed numerical bits and order against the unchunked original C# syntax",
+    "payloadBytes": 34620
+  },
+  {
+    "source": "src/BridgeBuilder/Bridges/Types/Lift03/Lift03FarDeckBases.g.cs",
+    "resource": "Lift03/Types_Lift03_Lift03FarDeckBases_g_cs.bin",
+    "originalSha256": "622F891185DB66D584D423391F627876478CA51472C45F93F0B9A104AFF260BD",
+    "counts": [
+      7479,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "arrays": 1,
+    "verified": "Exact typed numerical bits and order against the unchunked original C# syntax",
+    "payloadBytes": 29980
+  },
+  {
+    "source": "src/BridgeBuilder/Bridges/Types/Lift03/Lift03FarRoadTops.g.cs",
+    "resource": "Lift03/Types_Lift03_Lift03FarRoadTops_g_cs.bin",
+    "originalSha256": "205EF20041038DC721250C1A36F6A36772A2FACF0542015B0E60F35E5E962F58",
+    "counts": [
+      70,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "arrays": 1,
+    "verified": "Exact typed numerical bits and order against the unchunked original C# syntax",
+    "payloadBytes": 344
+  },
+  {
+    "source": "src/BridgeBuilder/Bridges/Types/Lift03/Lift03FarStructure.g.cs",
+    "resource": "Lift03/Types_Lift03_Lift03FarStructure_g_cs.bin",
+    "originalSha256": "1D36AA9E8399C8298D4DE3B8E5A6BBAEC0CF7C9ECD5933BB474A7C043FDD9DBC",
+    "counts": [
+      15815,
+      0,
+      0,
+      0,
+      6644,
+      0
+    ],
+    "arrays": 5,
+    "verified": "Exact typed numerical bits and order against the unchunked original C# syntax",
+    "payloadBytes": 89900
+  },
+  {
+    "source": "src/BridgeBuilder/Bridges/Types/Lift03/Lift03FarSupports.cs",
+    "resource": "Lift03/Types_Lift03_Lift03FarSupports_cs.bin",
+    "originalSha256": "A963FFFA32EB9922B0796CCD14DA0D6CC1235B4D9DF0D5B8D24FAD62BF6364A6",
+    "counts": [
+      4,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "arrays": 0,
+    "verified": "Exact typed numerical bits and order against the unchunked original C# syntax",
+    "payloadBytes": 80
+  },
+  {
+    "source": "src/BridgeBuilder/Bridges/Types/Lift03/Lift03FootingAssembly.cs",
+    "resource": "Lift03/Types_Lift03_Lift03FootingAssembly_cs.bin",
+    "originalSha256": "92EAACF57752CBF95713EE857BD9CBBE92E462364F107B1EFBB1B7C090D7D8F4",
+    "counts": [
+      12,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "arrays": 0,
+    "verified": "Exact typed numerical bits and order against the unchunked original C# syntax",
+    "payloadBytes": 112
+  },
+  {
+    "source": "src/BridgeBuilder/Bridges/Types/Lift03/Lift03FootingGeometry.g.cs",
+    "resource": "Lift03/Types_Lift03_Lift03FootingGeometry_g_cs.bin",
+    "originalSha256": "9F0F0930A615BF254E63DDA8371AD861196246E114C85843FFE6ECD6C26F8D3A",
+    "counts": [
+      19,
+      0,
+      0,
+      0,
+      14,
+      0
+    ],
+    "arrays": 3,
+    "verified": "Exact typed numerical bits and order against the unchunked original C# syntax",
+    "payloadBytes": 196
+  },
+  {
+    "source": "src/BridgeBuilder/Bridges/Types/Lift03/Lift03Frames.g.cs",
+    "resource": "Lift03/Types_Lift03_Lift03Frames_g_cs.bin",
+    "originalSha256": "54F0D8E03A2394495CFA785FDE91C20B6E25FA4F312BC2B23B2DF1949E88E602",
+    "counts": [
+      12442,
+      0,
+      0,
+      0,
+      9503,
+      0
+    ],
+    "arrays": 8,
+    "verified": "Exact typed numerical bits and order against the unchunked original C# syntax",
+    "payloadBytes": 87844
+  },
+  {
+    "source": "src/BridgeBuilder/Bridges/Types/Lift03/Lift03Glass.g.cs",
+    "resource": "Lift03/Types_Lift03_Lift03Glass_g_cs.bin",
+    "originalSha256": "E6BA5CF5B5DEE907159B4167264F551E5B165608019FA96C8B6EE3D0089F7AE1",
+    "counts": [
+      17,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "arrays": 1,
+    "verified": "Exact typed numerical bits and order against the unchunked original C# syntax",
+    "payloadBytes": 132
+  },
+  {
+    "source": "src/BridgeBuilder/Bridges/Types/Lift03/Lift03JoinedShells.g.cs",
+    "resource": "Lift03/Types_Lift03_Lift03JoinedShells_g_cs.bin",
+    "originalSha256": "A4C2510247181A2B86EFCBFE5B106C01E96E9E6032BA317C57D455CC2CE597FA",
+    "counts": [
+      86634,
+      0,
+      0,
+      0,
+      58753,
+      0
+    ],
+    "arrays": 10,
+    "verified": "Exact typed numerical bits and order against the unchunked original C# syntax",
+    "payloadBytes": 581612
+  },
+  {
+    "source": "src/BridgeBuilder/Bridges/Types/Lift03/Lift03MechanismData.g.cs",
+    "resource": "Lift03/Types_Lift03_Lift03MechanismData_g_cs.bin",
+    "originalSha256": "D5CE830F438B273F432CD1562601022C3DAFEB910B18E569D7BCB664099ABE38",
+    "counts": [
+      132,
+      0,
+      0,
+      0,
+      538,
+      0
+    ],
+    "arrays": 0,
+    "verified": "Exact typed numerical bits and order against the unchunked original C# syntax",
+    "payloadBytes": 2744
+  },
+  {
+    "source": "src/BridgeBuilder/Bridges/Types/Lift03/Lift03NetColumnGeometry.g.cs",
+    "resource": "Lift03/Types_Lift03_Lift03NetColumnGeometry_g_cs.bin",
+    "originalSha256": "9C2ECE0021795620ECF477E3F4FDBB46E828D3E656A547A25CD3E2E3773236B0",
+    "counts": [
+      406,
+      0,
+      0,
+      0,
+      143,
+      0
+    ],
+    "arrays": 5,
+    "verified": "Exact typed numerical bits and order against the unchunked original C# syntax",
+    "payloadBytes": 2260
+  },
+  {
+    "source": "src/BridgeBuilder/Bridges/Types/Lift03/Lift03NetFootingGeometry.g.cs",
+    "resource": "Lift03/Types_Lift03_Lift03NetFootingGeometry_g_cs.bin",
+    "originalSha256": "B1B73666B9B0572C9CD4B7ACD0AA6566C5ED5418CBAB6D44EA46CD1611B5D927",
+    "counts": [
+      3338,
+      0,
+      0,
+      0,
+      944,
+      0
+    ],
+    "arrays": 9,
+    "verified": "Exact typed numerical bits and order against the unchunked original C# syntax",
+    "payloadBytes": 17192
+  },
+  {
+    "source": "src/BridgeBuilder/Bridges/Types/Lift03/Lift03NetPillarAssembly.cs",
+    "resource": "Lift03/Types_Lift03_Lift03NetPillarAssembly_cs.bin",
+    "originalSha256": "17C825DEE8AC3AB5C8EFA13F5F9F1F88B3D8FD194F6C274937AD8783ADC69AAD",
+    "counts": [
+      17,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "arrays": 0,
+    "verified": "Exact typed numerical bits and order against the unchunked original C# syntax",
+    "payloadBytes": 132
+  },
+  {
+    "source": "src/BridgeBuilder/Bridges/Types/Lift03/Lift03NetTopGeometry.g.cs",
+    "resource": "Lift03/Types_Lift03_Lift03NetTopGeometry_g_cs.bin",
+    "originalSha256": "1E52D0215FBC147B67B1B711B7AD08976DA6FE527A01061B802013C05F0FECF6",
+    "counts": [
+      19835,
+      0,
+      0,
+      0,
+      12893,
+      0
+    ],
+    "arrays": 15,
+    "verified": "Exact typed numerical bits and order against the unchunked original C# syntax",
+    "payloadBytes": 130976
+  },
+  {
+    "source": "src/BridgeBuilder/Bridges/Types/Lift03/Lift03NetworkAssembly.cs",
+    "resource": "Lift03/Types_Lift03_Lift03NetworkAssembly_cs.bin",
+    "originalSha256": "FA5B3E20D87CDBC0791C21A8E00865898D2E89B4A8A0307BA72BCD9F704EDA20",
+    "counts": [
+      1,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "arrays": 0,
+    "verified": "Exact typed numerical bits and order against the unchunked original C# syntax",
+    "payloadBytes": 68
+  },
+  {
+    "source": "src/BridgeBuilder/Bridges/Types/Lift03/Lift03NetworkData.g.cs",
+    "resource": "Lift03/Types_Lift03_Lift03NetworkData_g_cs.bin",
+    "originalSha256": "EFF2FE37B2DCF4A1E6A44830FD1782E945E0F71FE687123B8DC3E81B1AC65ABC",
+    "counts": [
+      32,
+      0,
+      0,
+      0,
+      43,
+      0
+    ],
+    "arrays": 0,
+    "verified": "Exact typed numerical bits and order against the unchunked original C# syntax",
+    "payloadBytes": 364
+  },
+  {
+    "source": "src/BridgeBuilder/Bridges/Types/Lift03/Lift03ObjectAssembly.cs",
+    "resource": "Lift03/Types_Lift03_Lift03ObjectAssembly_cs.bin",
+    "originalSha256": "EFA1DFDA3F54E373FAF9EF8847C11832727CBBF1D2A0C095E341EC5BC1712366",
+    "counts": [
+      25,
+      0,
+      0,
+      0,
+      1,
+      0
+    ],
+    "arrays": 1,
+    "verified": "Exact typed numerical bits and order against the unchunked original C# syntax",
+    "payloadBytes": 168
+  },
+  {
+    "source": "src/BridgeBuilder/Bridges/Types/Lift03/Lift03PillarSources.cs",
+    "resource": "Lift03/Types_Lift03_Lift03PillarSources_cs.bin",
+    "originalSha256": "2347E266409353DE29F81A3A807E514499AFC7E5B869F931A52545F71A5C1D8D",
+    "counts": [
+      63,
+      0,
+      0,
+      0,
+      78,
+      0
+    ],
+    "arrays": 0,
+    "verified": "Exact typed numerical bits and order against the unchunked original C# syntax",
+    "payloadBytes": 628
+  },
+  {
+    "source": "src/BridgeBuilder/Bridges/Types/Lift03/Lift03RenderAssembly.cs",
+    "resource": "Lift03/Types_Lift03_Lift03RenderAssembly_cs.bin",
+    "originalSha256": "9210CE80F36BB634DDB8C733AC25FEB803B9EB993FE5AF8F44840A67B29C543A",
+    "counts": [
+      21,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "arrays": 0,
+    "verified": "Exact typed numerical bits and order against the unchunked original C# syntax",
+    "payloadBytes": 148
+  },
+  {
+    "source": "src/BridgeBuilder/Bridges/Types/Lift03/Lift03RenderData.g.cs",
+    "resource": "Lift03/Types_Lift03_Lift03RenderData_g_cs.bin",
+    "originalSha256": "29AD6F19CF57E826782CDD1770C1EAEA36169A95B84CA2B40812C170CF630843",
+    "counts": [
+      32,
+      0,
+      0,
+      0,
+      12,
+      0
+    ],
+    "arrays": 0,
+    "verified": "Exact typed numerical bits and order against the unchunked original C# syntax",
+    "payloadBytes": 240
+  },
+  {
+    "source": "src/BridgeBuilder/Bridges/Types/Lift03/Lift03RigidParts.g.cs",
+    "resource": "Lift03/Types_Lift03_Lift03RigidParts_g_cs.bin",
+    "originalSha256": "13A8D6CEF826E9A73915B571C3D32AE75AC066CFF4822A5DCA34F841B133075E",
+    "counts": [
+      1485,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "arrays": 3,
+    "verified": "Exact typed numerical bits and order against the unchunked original C# syntax",
+    "payloadBytes": 6004
+  },
+  {
+    "source": "src/BridgeBuilder/Bridges/Types/Lift03/Lift03RoadAppearance.cs",
+    "resource": "Lift03/Types_Lift03_Lift03RoadAppearance_cs.bin",
+    "originalSha256": "702FFDA1287AA85B24832C7AA7D50482CA6DBCBCD8AB8ABB78552E2872326682",
+    "counts": [
+      4,
+      0,
+      0,
+      0,
+      37,
+      0
+    ],
+    "arrays": 0,
+    "verified": "Exact typed numerical bits and order against the unchunked original C# syntax",
+    "payloadBytes": 228
+  },
+  {
+    "source": "src/BridgeBuilder/Bridges/Types/Lift03/Lift03RoadLevels.cs",
+    "resource": "Lift03/Types_Lift03_Lift03RoadLevels_cs.bin",
+    "originalSha256": "6EBA052B2B6E2CD4CA1439936051AB77B49861A54531698B831BCBB8E44FA6CB",
+    "counts": [
+      9,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "arrays": 0,
+    "verified": "Exact typed numerical bits and order against the unchunked original C# syntax",
+    "payloadBytes": 100
+  },
+  {
+    "source": "src/BridgeBuilder/Bridges/Types/Lift03/Lift03RoadPartitions.g.cs",
+    "resource": "Lift03/Types_Lift03_Lift03RoadPartitions_g_cs.bin",
+    "originalSha256": "3168524880B498591CC7FE5B98ADBEAF65B0F7A489804DCE60A25C5E66EF85F3",
+    "counts": [
+      3,
+      0,
+      0,
+      0,
+      3,
+      0
+    ],
+    "arrays": 0,
+    "verified": "Exact typed numerical bits and order against the unchunked original C# syntax",
+    "payloadBytes": 88
+  },
+  {
+    "source": "src/BridgeBuilder/Bridges/Types/Lift03/Lift03RoadSampling.cs",
+    "resource": "Lift03/Types_Lift03_Lift03RoadSampling_cs.bin",
+    "originalSha256": "CD43363751EE54186655B1EAF4CFEF349D6C32C963C210547BA6C152C25F4E9E",
+    "counts": [
+      47,
+      0,
+      0,
+      0,
+      4,
+      0
+    ],
+    "arrays": 0,
+    "verified": "Exact typed numerical bits and order against the unchunked original C# syntax",
+    "payloadBytes": 268
+  },
+  {
+    "source": "src/BridgeBuilder/Bridges/Types/Lift03/Lift03RoadTops.g.cs",
+    "resource": "Lift03/Types_Lift03_Lift03RoadTops_g_cs.bin",
+    "originalSha256": "01EB9C7CA853EEEC947C4EF0EE95CC9C465226D858C0C5F56CF467706C9A51D4",
+    "counts": [
+      5582,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "arrays": 2,
+    "verified": "Exact typed numerical bits and order against the unchunked original C# syntax",
+    "payloadBytes": 22392
+  },
+  {
+    "source": "src/BridgeBuilder/Bridges/Types/Lift03/Lift03SectionRoles.cs",
+    "resource": "Lift03/Types_Lift03_Lift03SectionRoles_cs.bin",
+    "originalSha256": "72A17647B4F2171316DE5F0C414D29F0A3ABB8A0F18F85085EC74ACE20EA12D6",
+    "counts": [
+      3,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "arrays": 0,
+    "verified": "Exact typed numerical bits and order against the unchunked original C# syntax",
+    "payloadBytes": 76
+  },
+  {
+    "source": "src/BridgeBuilder/Bridges/Types/Lift03/Lift03SlopedSupports.g.cs",
+    "resource": "Lift03/Types_Lift03_Lift03SlopedSupports_g_cs.bin",
+    "originalSha256": "CC02A0EC0346EFC4EB217252D2B87DF6F93210BBF9B126D12C820A3DC35F24D4",
+    "counts": [
+      11405,
+      0,
+      0,
+      0,
+      6176,
+      0
+    ],
+    "arrays": 8,
+    "verified": "Exact typed numerical bits and order against the unchunked original C# syntax",
+    "payloadBytes": 70388
+  },
+  {
+    "source": "src/BridgeBuilder/Bridges/Types/Lift03/Lift03SourceRenders.cs",
+    "resource": "Lift03/Types_Lift03_Lift03SourceRenders_cs.bin",
+    "originalSha256": "E2B9A4900EEBE1DFCBA28E133C7995C034DEAED9C3993FFDDDD586BAFF24A58A",
+    "counts": [
+      31,
+      0,
+      0,
+      0,
+      63,
+      0
+    ],
+    "arrays": 0,
+    "verified": "Exact typed numerical bits and order against the unchunked original C# syntax",
+    "payloadBytes": 440
+  },
+  {
+    "source": "src/BridgeBuilder/Bridges/Types/Lift03/Lift03SupportFaces.g.cs",
+    "resource": "Lift03/Types_Lift03_Lift03SupportFaces_g_cs.bin",
+    "originalSha256": "6064A7EF5914124E3296B19BDB9FAA0770E524AF2AD4E0277BD4009079059715",
+    "counts": [
+      9764,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "arrays": 2,
+    "verified": "Exact typed numerical bits and order against the unchunked original C# syntax",
+    "payloadBytes": 39120
+  },
+  {
+    "source": "src/BridgeBuilder/Bridges/Types/Lift03/Lift03TallSupports.g.cs",
+    "resource": "Lift03/Types_Lift03_Lift03TallSupports_g_cs.bin",
+    "originalSha256": "3AE2BB5589B94A364661CC63EC3992EDCD86601244D5511E88FA439EA99329DB",
+    "counts": [
+      11739,
+      0,
+      0,
+      0,
+      7808,
+      0
+    ],
+    "arrays": 10,
+    "verified": "Exact typed numerical bits and order against the unchunked original C# syntax",
+    "payloadBytes": 78252
+  },
+  {
+    "source": "src/BridgeBuilder/Bridges/Types/Lift03/Lift03TrackRemoval.g.cs",
+    "resource": "Lift03/Types_Lift03_Lift03TrackRemoval_g_cs.bin",
+    "originalSha256": "63F855DC3A052E99752EB3E2A9246EE62DA588D80AACE4BDD28847B77AADFB76",
+    "counts": [
+      634,
+      316,
+      0,
+      0,
+      0,
+      0
+    ],
+    "arrays": 2,
+    "verified": "Exact typed numerical bits and order against the unchunked original C# syntax",
+    "payloadBytes": 3864
+  },
+  {
+    "source": "src/BridgeBuilder/Bridges/Types/Lift04/Lift04BridgeGenerator.cs",
+    "resource": "Lift04/Types_Lift04_Lift04BridgeGenerator_cs.bin",
+    "originalSha256": "7076B351D469B9CDF8BA39DEBDC660124C923F2877F80C7367219137A8324F98",
+    "counts": [
+      2,
+      0,
+      0,
+      0,
+      3,
+      0
+    ],
+    "arrays": 0,
+    "verified": "Exact typed numerical bits and order against the unchunked original C# syntax",
+    "payloadBytes": 84
+  },
+  {
+    "source": "src/BridgeBuilder/Bridges/Types/Lift04/Lift04ColumnCapitals.g.cs",
+    "resource": "Lift04/Types_Lift04_Lift04ColumnCapitals_g_cs.bin",
+    "originalSha256": "60DB8E57502EFD558895C9AC34DA0C2B1CAC89D4EFE84772954DF91C2B3BB078",
+    "counts": [
+      870,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "arrays": 3,
+    "verified": "Exact typed numerical bits and order against the unchunked original C# syntax",
+    "payloadBytes": 3544
+  },
+  {
+    "source": "src/BridgeBuilder/Bridges/Types/Lift04/Lift04Connectors.g.cs",
+    "resource": "Lift04/Types_Lift04_Lift04Connectors_g_cs.bin",
+    "originalSha256": "F3D5A17377625FB71921138EEB664E25F0F5A95758E203D50A4A50312698D18A",
+    "counts": [
+      347,
+      0,
+      0,
+      0,
+      172,
+      0
+    ],
+    "arrays": 3,
+    "verified": "Exact typed numerical bits and order against the unchunked original C# syntax",
+    "payloadBytes": 2140
+  },
+  {
+    "source": "src/BridgeBuilder/Bridges/Types/Lift04/Lift04Crossbeams.g.cs",
+    "resource": "Lift04/Types_Lift04_Lift04Crossbeams_g_cs.bin",
+    "originalSha256": "B41AE53B2EBD041AF021253AF2307BB1BE9F6604E111649ECA3595601BCECDBC",
+    "counts": [
+      361,
+      0,
+      0,
+      0,
+      179,
+      0
+    ],
+    "arrays": 3,
+    "verified": "Exact typed numerical bits and order against the unchunked original C# syntax",
+    "payloadBytes": 2224
+  },
+  {
+    "source": "src/BridgeBuilder/Bridges/Types/Lift04/Lift04DeckBase.g.cs",
+    "resource": "Lift04/Types_Lift04_Lift04DeckBase_g_cs.bin",
+    "originalSha256": "56DA2CEDEDC38CB0544BCF1B7BF676FD305E2B14D42781AE9CA8AAF157EA714B",
+    "counts": [
+      2409,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "arrays": 3,
+    "verified": "Exact typed numerical bits and order against the unchunked original C# syntax",
+    "payloadBytes": 9700
+  },
+  {
+    "source": "src/BridgeBuilder/Bridges/Types/Lift04/Lift04FarShoulders.g.cs",
+    "resource": "Lift04/Types_Lift04_Lift04FarShoulders_g_cs.bin",
+    "originalSha256": "61CF9F2F89BBBDC37C94E99C312CDB34B4271B216143F6307BE772BCD161395A",
+    "counts": [
+      334,
+      0,
+      0,
+      0,
+      112,
+      0
+    ],
+    "arrays": 4,
+    "verified": "Exact typed numerical bits and order against the unchunked original C# syntax",
+    "payloadBytes": 1848
+  },
+  {
+    "source": "src/BridgeBuilder/Bridges/Types/Lift04/Lift04FixedBodies.g.cs",
+    "resource": "Lift04/Types_Lift04_Lift04FixedBodies_g_cs.bin",
+    "originalSha256": "85AE697D2D321EE71D52B30B1DB3E98FFC532B9AB2795B02D1A725AB73E6039C",
+    "counts": [
+      1602,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "arrays": 3,
+    "verified": "Exact typed numerical bits and order against the unchunked original C# syntax",
+    "payloadBytes": 6472
+  },
+  {
+    "source": "src/BridgeBuilder/Bridges/Types/Lift04/Lift04Glass.g.cs",
+    "resource": "Lift04/Types_Lift04_Lift04Glass_g_cs.bin",
+    "originalSha256": "2840BBFBA1A191336DFC5D92357611B14DEE5CD351E0EF3ADF19D3B9CF112F84",
+    "counts": [
+      39,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "arrays": 2,
+    "verified": "Exact typed numerical bits and order against the unchunked original C# syntax",
+    "payloadBytes": 220
+  },
+  {
+    "source": "src/BridgeBuilder/Bridges/Types/Lift04/Lift04Machinery.g.cs",
+    "resource": "Lift04/Types_Lift04_Lift04Machinery_g_cs.bin",
+    "originalSha256": "2F314CEEB0A204E7A05DA3EDF63EC6D6EE9415055E63F7F0923704952E5BE310",
+    "counts": [
+      71,
+      0,
+      0,
+      0,
+      34,
+      0
+    ],
+    "arrays": 3,
+    "verified": "Exact typed numerical bits and order against the unchunked original C# syntax",
+    "payloadBytes": 484
+  },
+  {
+    "source": "src/BridgeBuilder/Bridges/Types/Lift04/Lift04MechanismData.g.cs",
+    "resource": "Lift04/Types_Lift04_Lift04MechanismData_g_cs.bin",
+    "originalSha256": "BF8F725DB112BC56C82CF3095D2914E4C35A936213292AE450D391EF6832A599",
+    "counts": [
+      180,
+      0,
+      0,
+      0,
+      594,
+      0
+    ],
+    "arrays": 0,
+    "verified": "Exact typed numerical bits and order against the unchunked original C# syntax",
+    "payloadBytes": 3160
+  },
+  {
+    "source": "src/BridgeBuilder/Bridges/Types/Lift04/Lift04MovingEndFrames.g.cs",
+    "resource": "Lift04/Types_Lift04_Lift04MovingEndFrames_g_cs.bin",
+    "originalSha256": "DC9D482A246CE0938B8DF51F8E22E43E37CAFC011F2D5CDFED352CAC04652932",
+    "counts": [
+      6104,
+      0,
+      0,
+      0,
+      4944,
+      0
+    ],
+    "arrays": 12,
+    "verified": "Exact typed numerical bits and order against the unchunked original C# syntax",
+    "payloadBytes": 44256
+  },
+  {
+    "source": "src/BridgeBuilder/Bridges/Types/Lift04/Lift04MovingSideFrames.g.cs",
+    "resource": "Lift04/Types_Lift04_Lift04MovingSideFrames_g_cs.bin",
+    "originalSha256": "1D511827532BA313B01BF676C6213A4EE7495C8FF8EAA30A0BD239E543B04680",
+    "counts": [
+      4067,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "arrays": 2,
+    "verified": "Exact typed numerical bits and order against the unchunked original C# syntax",
+    "payloadBytes": 16332
+  },
+  {
+    "source": "src/BridgeBuilder/Bridges/Types/Lift04/Lift04NetworkData.g.cs",
+    "resource": "Lift04/Types_Lift04_Lift04NetworkData_g_cs.bin",
+    "originalSha256": "C772E44061816C83CDD306C374E085675B7B9AE56878C3E029180163C314BC8E",
+    "counts": [
+      13,
+      0,
+      0,
+      0,
+      27,
+      0
+    ],
+    "arrays": 0,
+    "verified": "Exact typed numerical bits and order against the unchunked original C# syntax",
+    "payloadBytes": 224
+  },
+  {
+    "source": "src/BridgeBuilder/Bridges/Types/Lift04/Lift04ObjectAssembly.cs",
+    "resource": "Lift04/Types_Lift04_Lift04ObjectAssembly_cs.bin",
+    "originalSha256": "F9775E02F39B1F33B09E5FD1A0E0CED1EEB5D6753174F45591260301364C8AA3",
+    "counts": [
+      0,
+      0,
+      0,
+      0,
+      1,
+      0
+    ],
+    "arrays": 0,
+    "verified": "Exact typed numerical bits and order against the unchunked original C# syntax",
+    "payloadBytes": 68
+  },
+  {
+    "source": "src/BridgeBuilder/Bridges/Types/Lift04/Lift04RenderAssembly.cs",
+    "resource": "Lift04/Types_Lift04_Lift04RenderAssembly_cs.bin",
+    "originalSha256": "AC97168845DAF66436F5209EBD0C158868E926B2980387EA182A5CA630E30044",
+    "counts": [
+      5,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "arrays": 0,
+    "verified": "Exact typed numerical bits and order against the unchunked original C# syntax",
+    "payloadBytes": 84
+  },
+  {
+    "source": "src/BridgeBuilder/Bridges/Types/Lift04/Lift04RenderData.g.cs",
+    "resource": "Lift04/Types_Lift04_Lift04RenderData_g_cs.bin",
+    "originalSha256": "2977B809AF6128EF33E2A3BD245E8C0F7E3F8F92BD92BE53C9AC331679B1FD39",
+    "counts": [
+      31,
+      0,
+      0,
+      0,
+      12,
+      0
+    ],
+    "arrays": 0,
+    "verified": "Exact typed numerical bits and order against the unchunked original C# syntax",
+    "payloadBytes": 236
+  },
+  {
+    "source": "src/BridgeBuilder/Bridges/Types/Lift04/Lift04RigidParts.g.cs",
+    "resource": "Lift04/Types_Lift04_Lift04RigidParts_g_cs.bin",
+    "originalSha256": "CB9CA5EE47B1FF7C27149FB53142736802E6C8CFF8493D6B9BC47DCD5B68202F",
+    "counts": [
+      2793,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "arrays": 3,
+    "verified": "Exact typed numerical bits and order against the unchunked original C# syntax",
+    "payloadBytes": 11236
+  },
+  {
+    "source": "src/BridgeBuilder/Bridges/Types/Lift04/Lift04RoadAppearance.cs",
+    "resource": "Lift04/Types_Lift04_Lift04RoadAppearance_cs.bin",
+    "originalSha256": "0445EFF948D1F7790B37BFC3A00D619B58D6BFBC251382244193B6B13454A476",
+    "counts": [
+      4,
+      0,
+      0,
+      0,
+      24,
+      0
+    ],
+    "arrays": 0,
+    "verified": "Exact typed numerical bits and order against the unchunked original C# syntax",
+    "payloadBytes": 176
+  },
+  {
+    "source": "src/BridgeBuilder/Bridges/Types/Lift04/Lift04RoadPartitions.cs",
+    "resource": "Lift04/Types_Lift04_Lift04RoadPartitions_cs.bin",
+    "originalSha256": "303B09FB9FC77F5434C3B89CF5016BE509BA754781FC16210F2013A48D857644",
+    "counts": [
+      3,
+      0,
+      0,
+      0,
+      3,
+      0
+    ],
+    "arrays": 0,
+    "verified": "Exact typed numerical bits and order against the unchunked original C# syntax",
+    "payloadBytes": 88
+  },
+  {
+    "source": "src/BridgeBuilder/Bridges/Types/Lift04/Lift04RoadPreparation.cs",
+    "resource": "Lift04/Types_Lift04_Lift04RoadPreparation_cs.bin",
+    "originalSha256": "1CC910B3B9A02CF6D9F08D129DBE2053B39A2CB974A0A7831B268604AFCEDFD1",
+    "counts": [
+      1,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "arrays": 0,
+    "verified": "Exact typed numerical bits and order against the unchunked original C# syntax",
+    "payloadBytes": 68
+  },
+  {
+    "source": "src/BridgeBuilder/Bridges/Types/Lift04/Lift04RoadSampling.cs",
+    "resource": "Lift04/Types_Lift04_Lift04RoadSampling_cs.bin",
+    "originalSha256": "D14D80B2CB3E4940607A712960A94C6AB6E588A7D4444E23A44EAFA3619E2A73",
+    "counts": [
+      0,
+      0,
+      0,
+      0,
+      2,
+      0
+    ],
+    "arrays": 0,
+    "verified": "Exact typed numerical bits and order against the unchunked original C# syntax",
+    "payloadBytes": 72
+  },
+  {
+    "source": "src/BridgeBuilder/Bridges/Types/Lift04/Lift04RoadTops.g.cs",
+    "resource": "Lift04/Types_Lift04_Lift04RoadTops_g_cs.bin",
+    "originalSha256": "793CC2AFC18ADBBC7E826E6152EEFFBC42C17B98CAFC330379863122D38D9D61",
+    "counts": [
+      1606,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "arrays": 2,
+    "verified": "Exact typed numerical bits and order against the unchunked original C# syntax",
+    "payloadBytes": 6488
+  },
+  {
+    "source": "src/BridgeBuilder/Bridges/Types/Lift04/Lift04SectionRoles.cs",
+    "resource": "Lift04/Types_Lift04_Lift04SectionRoles_cs.bin",
+    "originalSha256": "CD3E802290CF15D056868840A65B547B3C2CC130E4BA49AD3659016CC9278E87",
+    "counts": [
+      3,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "arrays": 0,
+    "verified": "Exact typed numerical bits and order against the unchunked original C# syntax",
+    "payloadBytes": 76
+  },
+  {
+    "source": "src/BridgeBuilder/Bridges/Types/Lift04/Lift04SourceRenders.cs",
+    "resource": "Lift04/Types_Lift04_Lift04SourceRenders_cs.bin",
+    "originalSha256": "8FAE553412A4325B633F5BFA95911A8ADFFC18096651969800734B66E10BDDCF",
+    "counts": [
+      31,
+      0,
+      0,
+      0,
+      63,
+      0
+    ],
+    "arrays": 0,
+    "verified": "Exact typed numerical bits and order against the unchunked original C# syntax",
+    "payloadBytes": 440
+  },
+  {
+    "source": "src/BridgeBuilder/Bridges/Types/Lift04/Lift04StructurePlan.cs",
+    "resource": "Lift04/Types_Lift04_Lift04StructurePlan_cs.bin",
+    "originalSha256": "31997EAEE5A3FD7673B198D908E8740397DF1F7B8F0E4FAA74ADF7D730E39E13",
+    "counts": [
+      3,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "arrays": 0,
+    "verified": "Exact typed numerical bits and order against the unchunked original C# syntax",
+    "payloadBytes": 76
+  },
+  {
+    "source": "src/BridgeBuilder/Bridges/Types/Lift04/Lift04StructureWidthPlan.cs",
+    "resource": "Lift04/Types_Lift04_Lift04StructureWidthPlan_cs.bin",
+    "originalSha256": "9949291C9748A67040FDCF2EB8D793D00456AF8257541E1ABF222DD1250F4B78",
+    "counts": [
+      3,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "arrays": 0,
+    "verified": "Exact typed numerical bits and order against the unchunked original C# syntax",
+    "payloadBytes": 76
+  },
+  {
+    "source": "src/BridgeBuilder/Bridges/Types/Lift04/Lift04SupportAssembly.cs",
+    "resource": "Lift04/Types_Lift04_Lift04SupportAssembly_cs.bin",
+    "originalSha256": "DFB2A0AD494AE4F62890A03B84520B522B026F3C66A21D53F73A9E7ABD514F8A",
+    "counts": [
+      12,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "arrays": 0,
+    "verified": "Exact typed numerical bits and order against the unchunked original C# syntax",
+    "payloadBytes": 112
+  },
+  {
+    "source": "src/BridgeBuilder/Bridges/Types/Lift04/Lift04SupportGeometry.g.cs",
+    "resource": "Lift04/Types_Lift04_Lift04SupportGeometry_g_cs.bin",
+    "originalSha256": "4125248992DE360DE025CB1CC1103600222E8320EC2266166ACC25211CAD4FD6",
+    "counts": [
+      235,
+      0,
+      0,
+      0,
+      112,
+      0
+    ],
+    "arrays": 3,
+    "verified": "Exact typed numerical bits and order against the unchunked original C# syntax",
+    "payloadBytes": 1452
+  },
+  {
+    "source": "src/BridgeBuilder/Bridges/Types/Lift04/Lift04TowerFrames.g.cs",
+    "resource": "Lift04/Types_Lift04_Lift04TowerFrames_g_cs.bin",
+    "originalSha256": "248B0C5384AC85CC1F3170C5A37650BE1D923E22069367DBAE3AB73E30BEDED5",
+    "counts": [
+      1083,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "arrays": 3,
+    "verified": "Exact typed numerical bits and order against the unchunked original C# syntax",
+    "payloadBytes": 4396
+  },
+  {
+    "source": "src/BridgeBuilder/Bridges/Types/Lift04/Lift04TrackRemoval.g.cs",
+    "resource": "Lift04/Types_Lift04_Lift04TrackRemoval_g_cs.bin",
+    "originalSha256": "8FBC2C7F6730E58399BFD59BB8BAA445353FDE00910D6C0647F1B5248CBEAEA5",
+    "counts": [
+      142,
+      70,
+      0,
+      0,
+      0,
+      0
+    ],
+    "arrays": 2,
+    "verified": "Exact typed numerical bits and order against the unchunked original C# syntax",
+    "payloadBytes": 912
+  },
+  {
+    "source": "src/BridgeBuilder/Bridges/Types/Lift04/Lift04UpperDetails.g.cs",
+    "resource": "Lift04/Types_Lift04_Lift04UpperDetails_g_cs.bin",
+    "originalSha256": "FB663B5E7DE548C3F354F6AC5F381B446D4827D4B2A426F8C7C119675C9BEA97",
+    "counts": [
+      1214,
+      0,
+      0,
+      0,
+      856,
+      0
+    ],
+    "arrays": 8,
+    "verified": "Exact typed numerical bits and order against the unchunked original C# syntax",
+    "payloadBytes": 8344
+  },
+  {
+    "source": "src/BridgeBuilder/Bridges/Types/Lift04/Lift04UpperShells.g.cs",
+    "resource": "Lift04/Types_Lift04_Lift04UpperShells_g_cs.bin",
+    "originalSha256": "EFF9AB48213445F87C20E476100108651B89146768C98E062EC46952B296D979",
+    "counts": [
+      1743,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "arrays": 3,
+    "verified": "Exact typed numerical bits and order against the unchunked original C# syntax",
+    "payloadBytes": 7036
+  },
+  {
+    "source": "src/BridgeBuilder/Bridges/Types/Lift05/Lift05BridgeGenerator.cs",
+    "resource": "Lift05/Types_Lift05_Lift05BridgeGenerator_cs.bin",
+    "originalSha256": "207AE5399ECBA4E37E847C6EF47546C051096E766761EBDEAF89E0DE9FB112DA",
+    "counts": [
+      2,
+      0,
+      0,
+      0,
+      3,
+      0
+    ],
+    "arrays": 0,
+    "verified": "Exact typed numerical bits and order against the unchunked original C# syntax",
+    "payloadBytes": 84
+  },
+  {
+    "source": "src/BridgeBuilder/Bridges/Types/Lift05/Lift05CounterweightGeometry.g.cs",
+    "resource": "Lift05/Types_Lift05_Lift05CounterweightGeometry_g_cs.bin",
+    "originalSha256": "2B5EE631107F0F193B8294B07C21106E1BBD82E99DD824BC813C91F0DCF85BB0",
+    "counts": [
+      101,
+      0,
+      0,
+      0,
+      1,
+      0
+    ],
+    "arrays": 3,
+    "verified": "Exact typed numerical bits and order against the unchunked original C# syntax",
+    "payloadBytes": 472
+  },
+  {
+    "source": "src/BridgeBuilder/Bridges/Types/Lift05/Lift05FarRoadBoundary.g.cs",
+    "resource": "Lift05/Types_Lift05_Lift05FarRoadBoundary_g_cs.bin",
+    "originalSha256": "2FB89DC26DB06BEDD14158C535739B1F75B841777DE86905FEED1598A74900A6",
+    "counts": [
+      1168,
+      0,
+      0,
+      0,
+      704,
+      0
+    ],
+    "arrays": 3,
+    "verified": "Exact typed numerical bits and order against the unchunked original C# syntax",
+    "payloadBytes": 7552
+  },
+  {
+    "source": "src/BridgeBuilder/Bridges/Types/Lift05/Lift05Glass.g.cs",
+    "resource": "Lift05/Types_Lift05_Lift05Glass_g_cs.bin",
+    "originalSha256": "80B76DC4DE3187B43AD5654DE8D875EDEADDE2B28CCA0CEF9936B0012D5AAE4A",
+    "counts": [
+      166,
+      0,
+      0,
+      0,
+      1,
+      0
+    ],
+    "arrays": 2,
+    "verified": "Exact typed numerical bits and order against the unchunked original C# syntax",
+    "payloadBytes": 732
+  },
+  {
+    "source": "src/BridgeBuilder/Bridges/Types/Lift05/Lift05MechanismData.g.cs",
+    "resource": "Lift05/Types_Lift05_Lift05MechanismData_g_cs.bin",
+    "originalSha256": "2A2728F0857C12F1B1CEAAC785DCB1912BB01D4F44A940A9CDF3D1AA13F4A0BA",
+    "counts": [
+      132,
+      0,
+      0,
+      0,
+      482,
+      0
+    ],
+    "arrays": 0,
+    "verified": "Exact typed numerical bits and order against the unchunked original C# syntax",
+    "payloadBytes": 2520
+  },
+  {
+    "source": "src/BridgeBuilder/Bridges/Types/Lift05/Lift05MovingShell.g.cs",
+    "resource": "Lift05/Types_Lift05_Lift05MovingShell_g_cs.bin",
+    "originalSha256": "04EBD5F3CDC5966BCC734F1D1BCA5D451912B5B3D8ECE3A2EB3825DF10E73A6D",
+    "counts": [
+      1302,
+      0,
+      0,
+      0,
+      638,
+      0
+    ],
+    "arrays": 5,
+    "verified": "Exact typed numerical bits and order against the unchunked original C# syntax",
+    "payloadBytes": 7824
+  },
+  {
+    "source": "src/BridgeBuilder/Bridges/Types/Lift05/Lift05NetworkData.g.cs",
+    "resource": "Lift05/Types_Lift05_Lift05NetworkData_g_cs.bin",
+    "originalSha256": "1AF00F1243C54D9F6C470E26C3FD02FB42D29801B8BF78383199F2C85C263589",
+    "counts": [
+      13,
+      0,
+      0,
+      0,
+      27,
+      0
+    ],
+    "arrays": 0,
+    "verified": "Exact typed numerical bits and order against the unchunked original C# syntax",
+    "payloadBytes": 224
+  },
+  {
+    "source": "src/BridgeBuilder/Bridges/Types/Lift05/Lift05ObjectAssembly.cs",
+    "resource": "Lift05/Types_Lift05_Lift05ObjectAssembly_cs.bin",
+    "originalSha256": "088FFECB49EB67F842F30DA57BAA0A7236AFCE1A647A4C9394FBB0024DFE497E",
+    "counts": [
+      0,
+      0,
+      0,
+      0,
+      1,
+      0
+    ],
+    "arrays": 0,
+    "verified": "Exact typed numerical bits and order against the unchunked original C# syntax",
+    "payloadBytes": 68
+  },
+  {
+    "source": "src/BridgeBuilder/Bridges/Types/Lift05/Lift05RenderAssembly.cs",
+    "resource": "Lift05/Types_Lift05_Lift05RenderAssembly_cs.bin",
+    "originalSha256": "7AEBA281087F1F1C086A8246D61D1B737ADC92B64E59A7A71E9F5B7E3672180E",
+    "counts": [
+      5,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "arrays": 0,
+    "verified": "Exact typed numerical bits and order against the unchunked original C# syntax",
+    "payloadBytes": 84
+  },
+  {
+    "source": "src/BridgeBuilder/Bridges/Types/Lift05/Lift05RenderData.g.cs",
+    "resource": "Lift05/Types_Lift05_Lift05RenderData_g_cs.bin",
+    "originalSha256": "0BB2FC7324379B9459CB016C1988F1B63198A72B715AB13960CD7B2F40AD36A2",
+    "counts": [
+      31,
+      0,
+      0,
+      0,
+      12,
+      0
+    ],
+    "arrays": 0,
+    "verified": "Exact typed numerical bits and order against the unchunked original C# syntax",
+    "payloadBytes": 236
+  },
+  {
+    "source": "src/BridgeBuilder/Bridges/Types/Lift05/Lift05RepeatRegions.cs",
+    "resource": "Lift05/Types_Lift05_Lift05RepeatRegions_cs.bin",
+    "originalSha256": "90CEEC6CB0DC55C84960770ECAC7E2649AAD9EF6454A1EDD635F9B1E29E03A83",
+    "counts": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      8
+    ],
+    "arrays": 0,
+    "payloadBytes": 128,
+    "verified": "Exact typed numerical bits and order against the unchunked original C# syntax"
+  },
+  {
+    "source": "src/BridgeBuilder/Bridges/Types/Lift05/Lift05RigidParts.g.cs",
+    "resource": "Lift05/Types_Lift05_Lift05RigidParts_g_cs.bin",
+    "originalSha256": "BFCAB461FC2EFC20561D782CEAC373B367812EA6D11D597A6B975FDBACA126EE",
+    "counts": [
+      1536,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "arrays": 3,
+    "verified": "Exact typed numerical bits and order against the unchunked original C# syntax",
+    "payloadBytes": 6208
+  },
+  {
+    "source": "src/BridgeBuilder/Bridges/Types/Lift05/Lift05RoadAppearance.cs",
+    "resource": "Lift05/Types_Lift05_Lift05RoadAppearance_cs.bin",
+    "originalSha256": "30E0B19594E236D6517E3DF24A961A784A7307D792A06778265A6D1FDBD753DF",
+    "counts": [
+      22,
+      0,
+      0,
+      0,
+      32,
+      0
+    ],
+    "arrays": 0,
+    "verified": "Exact typed numerical bits and order against the unchunked original C# syntax",
+    "payloadBytes": 280
+  },
+  {
+    "source": "src/BridgeBuilder/Bridges/Types/Lift05/Lift05RoadPartitions.cs",
+    "resource": "Lift05/Types_Lift05_Lift05RoadPartitions_cs.bin",
+    "originalSha256": "877B70D16D4368DBC1CA32BCBC100DB530C60AA9BAA2966A7D6E454AC84CC810",
+    "counts": [
+      3,
+      0,
+      0,
+      0,
+      3,
+      0
+    ],
+    "arrays": 0,
+    "verified": "Exact typed numerical bits and order against the unchunked original C# syntax",
+    "payloadBytes": 88
+  },
+  {
+    "source": "src/BridgeBuilder/Bridges/Types/Lift05/Lift05RoadPreparation.cs",
+    "resource": "Lift05/Types_Lift05_Lift05RoadPreparation_cs.bin",
+    "originalSha256": "F30F1AADC2C85BF888ADC3A7D0D315FAEF5E3FCF66F73D5F37CDFCF93EC1B2C5",
+    "counts": [
+      1,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "arrays": 0,
+    "verified": "Exact typed numerical bits and order against the unchunked original C# syntax",
+    "payloadBytes": 68
+  },
+  {
+    "source": "src/BridgeBuilder/Bridges/Types/Lift05/Lift05RoadSampling.cs",
+    "resource": "Lift05/Types_Lift05_Lift05RoadSampling_cs.bin",
+    "originalSha256": "B1D4A82A4841E3C9D8790E023F54AA2833BC8A4F6F4218390E9132D063350DE4",
+    "counts": [
+      0,
+      0,
+      0,
+      0,
+      2,
+      0
+    ],
+    "arrays": 0,
+    "verified": "Exact typed numerical bits and order against the unchunked original C# syntax",
+    "payloadBytes": 72
+  },
+  {
+    "source": "src/BridgeBuilder/Bridges/Types/Lift05/Lift05RoadTops.g.cs",
+    "resource": "Lift05/Types_Lift05_Lift05RoadTops_g_cs.bin",
+    "originalSha256": "31791451BAB56FB6068E12F28AEE24155D5845E18C0478F005E7B1195BC7132C",
+    "counts": [
+      1815,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "arrays": 5,
+    "verified": "Exact typed numerical bits and order against the unchunked original C# syntax",
+    "payloadBytes": 7324
+  },
+  {
+    "source": "src/BridgeBuilder/Bridges/Types/Lift05/Lift05RoofRings.g.cs",
+    "resource": "Lift05/Types_Lift05_Lift05RoofRings_g_cs.bin",
+    "originalSha256": "F4ECBF41FEC7EC77F7CC080DFA32FE55619B3D2CA9757644945FEECBF9B95AD8",
+    "counts": [
+      7906,
+      0,
+      0,
+      0,
+      2108,
+      0
+    ],
+    "arrays": 9,
+    "verified": "Exact typed numerical bits and order against the unchunked original C# syntax",
+    "payloadBytes": 40120
+  },
+  {
+    "source": "src/BridgeBuilder/Bridges/Types/Lift05/Lift05SectionRoles.cs",
+    "resource": "Lift05/Types_Lift05_Lift05SectionRoles_cs.bin",
+    "originalSha256": "FA5B011341E6305E1379AF9D585BB50F059421845D63F2EA7DFDC1D018340E97",
+    "counts": [
+      3,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "arrays": 0,
+    "verified": "Exact typed numerical bits and order against the unchunked original C# syntax",
+    "payloadBytes": 76
+  },
+  {
+    "source": "src/BridgeBuilder/Bridges/Types/Lift05/Lift05SourceRenders.cs",
+    "resource": "Lift05/Types_Lift05_Lift05SourceRenders_cs.bin",
+    "originalSha256": "CE2EBF1F2A8471CC77ED8A1F0873F81F61E6BA7251DE784AE8FC63C6B07F2606",
+    "counts": [
+      31,
+      0,
+      0,
+      0,
+      63,
+      0
+    ],
+    "arrays": 0,
+    "verified": "Exact typed numerical bits and order against the unchunked original C# syntax",
+    "payloadBytes": 440
+  },
+  {
+    "source": "src/BridgeBuilder/Bridges/Types/Lift05/Lift05StructurePlan.cs",
+    "resource": "Lift05/Types_Lift05_Lift05StructurePlan_cs.bin",
+    "originalSha256": "BC8A3726B011193DDB89FACCDC42B0D4CBC73AD7D20856FC0A3A3333673FFF70",
+    "counts": [
+      3,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "arrays": 0,
+    "verified": "Exact typed numerical bits and order against the unchunked original C# syntax",
+    "payloadBytes": 76
+  },
+  {
+    "source": "src/BridgeBuilder/Bridges/Types/Lift05/Lift05StructureWidthPlan.cs",
+    "resource": "Lift05/Types_Lift05_Lift05StructureWidthPlan_cs.bin",
+    "originalSha256": "A95D2F85B325EFB55A66BB667FA8D98F33378C523314C4A088050EE85AB51EC9",
+    "counts": [
+      7,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "arrays": 0,
+    "verified": "Exact typed numerical bits and order against the unchunked original C# syntax",
+    "payloadBytes": 92
+  },
+  {
+    "source": "src/BridgeBuilder/Bridges/Types/Lift05/Lift05SupportAssembly.cs",
+    "resource": "Lift05/Types_Lift05_Lift05SupportAssembly_cs.bin",
+    "originalSha256": "0758B99D4476F4C7E271352703639C6F962856F6A7AB1E75B72E90AF461B8C02",
+    "counts": [
+      12,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "arrays": 0,
+    "verified": "Exact typed numerical bits and order against the unchunked original C# syntax",
+    "payloadBytes": 112
+  },
+  {
+    "source": "src/BridgeBuilder/Bridges/Types/Lift05/Lift05SupportGeometry.g.cs",
+    "resource": "Lift05/Types_Lift05_Lift05SupportGeometry_g_cs.bin",
+    "originalSha256": "4F1BA282C501BDB7D9BB7CC81136A31152FC73CFCEF4D3D8882D5DA17F10BCF5",
+    "counts": [
+      145,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "arrays": 6,
+    "verified": "Exact typed numerical bits and order against the unchunked original C# syntax",
+    "payloadBytes": 644
+  },
+  {
+    "source": "src/BridgeBuilder/Bridges/Types/Lift05/Lift05TowerShells.g.cs",
+    "resource": "Lift05/Types_Lift05_Lift05TowerShells_g_cs.bin",
+    "originalSha256": "063476919C976FEE647BDE4C5B927EC90C550B40C1DC7EB000DEF41BBAA52261",
+    "counts": [
+      3160,
+      0,
+      0,
+      0,
+      1282,
+      0
+    ],
+    "arrays": 5,
+    "verified": "Exact typed numerical bits and order against the unchunked original C# syntax",
+    "payloadBytes": 17832
+  },
+  {
+    "source": "src/BridgeBuilder/Bridges/Types/Lift05/Lift05TransverseParts.g.cs",
+    "resource": "Lift05/Types_Lift05_Lift05TransverseParts_g_cs.bin",
+    "originalSha256": "C0C8EF738E115EC3B70277A9A19B08E2218D540010AD51F676E0BB2BFB9240FD",
+    "counts": [
+      3541,
+      0,
+      0,
+      0,
+      115,
+      0
+    ],
+    "arrays": 3,
+    "verified": "Exact typed numerical bits and order against the unchunked original C# syntax",
+    "payloadBytes": 14688
+  },
+  {
+    "source": "src/BridgeBuilder/Bridges/Types/Lift05/Lift05VBraces.g.cs",
+    "resource": "Lift05/Types_Lift05_Lift05VBraces_g_cs.bin",
+    "originalSha256": "44E93569D852C2D88F118AD6127B30097D1FF9FA10D71BD6583E47D0E337BFA7",
+    "counts": [
+      622,
+      0,
+      0,
+      0,
+      97,
+      0
+    ],
+    "arrays": 2,
+    "verified": "Exact typed numerical bits and order against the unchunked original C# syntax",
+    "payloadBytes": 2940
+  },
+  {
+    "source": "src/BridgeBuilder/Bridges/Types/PedestrianDraw01/PedestrianDraw01BridgeGenerator.cs",
+    "resource": "PedestrianDraw01/Types_PedestrianDraw01_PedestrianDraw01BridgeGenerator_cs.bin",
+    "originalSha256": "32110A54261127A7C8F374F9360B475186449D5FA7529835458C4163A581E0F3",
+    "counts": [
+      2,
+      0,
+      0,
+      0,
+      3,
+      0
+    ],
+    "arrays": 0,
+    "verified": "Exact typed numerical bits and order against the unchunked original C# syntax",
+    "payloadBytes": 84
+  },
+  {
+    "source": "src/BridgeBuilder/Bridges/Types/PedestrianDraw01/PedestrianDraw01ControlHousing.g.cs",
+    "resource": "PedestrianDraw01/Types_PedestrianDraw01_PedestrianDraw01ControlHousing_g_cs.bin",
+    "originalSha256": "D03184F51136CC9246282A5FD29E21FB42D7EF29C0EF64CCA1AE0105299E81F9",
+    "counts": [
+      89,
+      0,
+      0,
+      0,
+      1,
+      0
+    ],
+    "arrays": 3,
+    "verified": "Exact typed numerical bits and order against the unchunked original C# syntax",
+    "payloadBytes": 424
+  },
+  {
+    "source": "src/BridgeBuilder/Bridges/Types/PedestrianDraw01/PedestrianDraw01CrossbeamGeometry.g.cs",
+    "resource": "PedestrianDraw01/Types_PedestrianDraw01_PedestrianDraw01CrossbeamGeometry_g_cs.bin",
+    "originalSha256": "ECF855A91AED65250B0F1ED0FEE184089510C0C6634A99EDB75BA01E98D0098D",
+    "counts": [
+      29,
+      0,
+      0,
+      0,
+      2,
+      0
+    ],
+    "arrays": 2,
+    "verified": "Exact typed numerical bits and order against the unchunked original C# syntax",
+    "payloadBytes": 188
+  },
+  {
+    "source": "src/BridgeBuilder/Bridges/Types/PedestrianDraw01/PedestrianDraw01DeckBases.g.cs",
+    "resource": "PedestrianDraw01/Types_PedestrianDraw01_PedestrianDraw01DeckBases_g_cs.bin",
+    "originalSha256": "EF0D4520D41B7C98B65E7DE06BCCF4B397C0EDD608D107BA52CCB12C46E3AA5A",
+    "counts": [
+      8118,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "arrays": 3,
+    "verified": "Exact typed numerical bits and order against the unchunked original C# syntax",
+    "payloadBytes": 32536
+  },
+  {
+    "source": "src/BridgeBuilder/Bridges/Types/PedestrianDraw01/PedestrianDraw01EndConnectorGeometry.g.cs",
+    "resource": "PedestrianDraw01/Types_PedestrianDraw01_PedestrianDraw01EndConnectorGeometry_g_cs.bin",
+    "originalSha256": "6C4075C8B533EDA08A0F5768F194C71F840975F4DD820ACEB08E31667E73004F",
+    "counts": [
+      115,
+      0,
+      0,
+      0,
+      57,
+      0
+    ],
+    "arrays": 2,
+    "verified": "Exact typed numerical bits and order against the unchunked original C# syntax",
+    "payloadBytes": 752
+  },
+  {
+    "source": "src/BridgeBuilder/Bridges/Types/PedestrianDraw01/PedestrianDraw01FarRoadBoundary.g.cs",
+    "resource": "PedestrianDraw01/Types_PedestrianDraw01_PedestrianDraw01FarRoadBoundary_g_cs.bin",
+    "originalSha256": "E38A711359226C615C5BDDD48391A1994BEEF5B8E967F855C05F1346F083056F",
+    "counts": [
+      45,
+      0,
+      0,
+      0,
+      160,
+      0
+    ],
+    "arrays": 1,
+    "verified": "Exact typed numerical bits and order against the unchunked original C# syntax",
+    "payloadBytes": 884
+  },
+  {
+    "source": "src/BridgeBuilder/Bridges/Types/PedestrianDraw01/PedestrianDraw01Frames.g.cs",
+    "resource": "PedestrianDraw01/Types_PedestrianDraw01_PedestrianDraw01Frames_g_cs.bin",
+    "originalSha256": "25C324C6C7D42727D585DF1B2AC5E3A2A6AAA639E4D618786E81CAD0F54D2BEF",
+    "counts": [
+      5617,
+      0,
+      0,
+      0,
+      2952,
+      0
+    ],
+    "arrays": 11,
+    "verified": "Exact typed numerical bits and order against the unchunked original C# syntax",
+    "payloadBytes": 34340
+  },
+  {
+    "source": "src/BridgeBuilder/Bridges/Types/PedestrianDraw01/PedestrianDraw01Glass.g.cs",
+    "resource": "PedestrianDraw01/Types_PedestrianDraw01_PedestrianDraw01Glass_g_cs.bin",
+    "originalSha256": "A66D95B9A9DA7EA9AB0E9B976120BBEC6F8226AF9F71FFA44F37DC34009DA6FB",
+    "counts": [
+      7,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "arrays": 0,
+    "verified": "Exact typed numerical bits and order against the unchunked original C# syntax",
+    "payloadBytes": 92
+  },
+  {
+    "source": "src/BridgeBuilder/Bridges/Types/PedestrianDraw01/PedestrianDraw01MachineryGeometry.g.cs",
+    "resource": "PedestrianDraw01/Types_PedestrianDraw01_PedestrianDraw01MachineryGeometry_g_cs.bin",
+    "originalSha256": "A0503A1049403CB9CBB9A8EB06A3CBF9598A0907AAF54C102174C3F9A3B1434B",
+    "counts": [
+      131,
+      0,
+      0,
+      0,
+      65,
+      0
+    ],
+    "arrays": 3,
+    "verified": "Exact typed numerical bits and order against the unchunked original C# syntax",
+    "payloadBytes": 848
+  },
+  {
+    "source": "src/BridgeBuilder/Bridges/Types/PedestrianDraw01/PedestrianDraw01MechanismData.g.cs",
+    "resource": "PedestrianDraw01/Types_PedestrianDraw01_PedestrianDraw01MechanismData_g_cs.bin",
+    "originalSha256": "5FDA9508DDA67EE735D92913A339A22A792B767FE0E45E21AFABF5E72EC0C7AC",
+    "counts": [
+      51,
+      0,
+      0,
+      0,
+      293,
+      0
+    ],
+    "arrays": 0,
+    "verified": "Exact typed numerical bits and order against the unchunked original C# syntax",
+    "payloadBytes": 1440
+  },
+  {
+    "source": "src/BridgeBuilder/Bridges/Types/PedestrianDraw01/PedestrianDraw01NetworkData.g.cs",
+    "resource": "PedestrianDraw01/Types_PedestrianDraw01_PedestrianDraw01NetworkData_g_cs.bin",
+    "originalSha256": "A13F820A6396F941A4737E832B11F3CEFE6ABA512ADD72BC1A0B1E2F1ED67E9D",
+    "counts": [
+      15,
+      0,
+      0,
+      0,
+      27,
+      0
+    ],
+    "arrays": 0,
+    "verified": "Exact typed numerical bits and order against the unchunked original C# syntax",
+    "payloadBytes": 232
+  },
+  {
+    "source": "src/BridgeBuilder/Bridges/Types/PedestrianDraw01/PedestrianDraw01ObjectAssembly.cs",
+    "resource": "PedestrianDraw01/Types_PedestrianDraw01_PedestrianDraw01ObjectAssembly_cs.bin",
+    "originalSha256": "9D06DB8D2212873B816D3E7931D8FD505476EFF8716613517EF7D75C24C07370",
+    "counts": [
+      0,
+      0,
+      0,
+      0,
+      4,
+      0
+    ],
+    "arrays": 0,
+    "verified": "Exact typed numerical bits and order against the unchunked original C# syntax",
+    "payloadBytes": 80
+  },
+  {
+    "source": "src/BridgeBuilder/Bridges/Types/PedestrianDraw01/PedestrianDraw01RenderAssembly.cs",
+    "resource": "PedestrianDraw01/Types_PedestrianDraw01_PedestrianDraw01RenderAssembly_cs.bin",
+    "originalSha256": "3FA04E97D57EECD8DE2AE97966E6074F09F27725616CF2AA5910471DB8952363",
+    "counts": [
+      5,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "arrays": 0,
+    "verified": "Exact typed numerical bits and order against the unchunked original C# syntax",
+    "payloadBytes": 84
+  },
+  {
+    "source": "src/BridgeBuilder/Bridges/Types/PedestrianDraw01/PedestrianDraw01RenderData.g.cs",
+    "resource": "PedestrianDraw01/Types_PedestrianDraw01_PedestrianDraw01RenderData_g_cs.bin",
+    "originalSha256": "40EB05034B2C4610CD901C2DAC5A21D32EDFB8273C5CED6DBBDC0C06F202FB52",
+    "counts": [
+      31,
+      0,
+      0,
+      0,
+      12,
+      0
+    ],
+    "arrays": 0,
+    "verified": "Exact typed numerical bits and order against the unchunked original C# syntax",
+    "payloadBytes": 236
+  },
+  {
+    "source": "src/BridgeBuilder/Bridges/Types/PedestrianDraw01/PedestrianDraw01RigidParts.g.cs",
+    "resource": "PedestrianDraw01/Types_PedestrianDraw01_PedestrianDraw01RigidParts_g_cs.bin",
+    "originalSha256": "F36D5B7CB0E713DE2C84B5C981F662225099F156E317A788C299F471623A2602",
+    "counts": [
+      1707,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "arrays": 3,
+    "verified": "Exact typed numerical bits and order against the unchunked original C# syntax",
+    "payloadBytes": 6892
+  },
+  {
+    "source": "src/BridgeBuilder/Bridges/Types/PedestrianDraw01/PedestrianDraw01RoadAppearance.cs",
+    "resource": "PedestrianDraw01/Types_PedestrianDraw01_PedestrianDraw01RoadAppearance_cs.bin",
+    "originalSha256": "9A89F7BBFA6CBCC6BEB09A222E1519BF60A13832F8D30725ED45E9EC1B2C3124",
+    "counts": [
+      4,
+      0,
+      0,
+      0,
+      31,
+      0
+    ],
+    "arrays": 0,
+    "verified": "Exact typed numerical bits and order against the unchunked original C# syntax",
+    "payloadBytes": 204
+  },
+  {
+    "source": "src/BridgeBuilder/Bridges/Types/PedestrianDraw01/PedestrianDraw01RoadPartitions.cs",
+    "resource": "PedestrianDraw01/Types_PedestrianDraw01_PedestrianDraw01RoadPartitions_cs.bin",
+    "originalSha256": "201BA1ADFF5EDC1661D18C082113DB3A28231D6A0B5035E0BE18ED18A31207AE",
+    "counts": [
+      4,
+      0,
+      0,
+      0,
+      4,
+      0
+    ],
+    "arrays": 0,
+    "verified": "Exact typed numerical bits and order against the unchunked original C# syntax",
+    "payloadBytes": 96
+  },
+  {
+    "source": "src/BridgeBuilder/Bridges/Types/PedestrianDraw01/PedestrianDraw01RoadPreparation.cs",
+    "resource": "PedestrianDraw01/Types_PedestrianDraw01_PedestrianDraw01RoadPreparation_cs.bin",
+    "originalSha256": "49C0BEF06CD4431A11FFF16C2DCA72D05579A39768683F6DF44B1C2C60620ABC",
+    "counts": [
+      1,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "arrays": 0,
+    "verified": "Exact typed numerical bits and order against the unchunked original C# syntax",
+    "payloadBytes": 68
+  },
+  {
+    "source": "src/BridgeBuilder/Bridges/Types/PedestrianDraw01/PedestrianDraw01RoadSampling.cs",
+    "resource": "PedestrianDraw01/Types_PedestrianDraw01_PedestrianDraw01RoadSampling_cs.bin",
+    "originalSha256": "0BABD683760DA018324F5B8D9F5605D616978DF5505C8CB442A43303AD32D936",
+    "counts": [
+      0,
+      0,
+      0,
+      0,
+      2,
+      0
+    ],
+    "arrays": 0,
+    "verified": "Exact typed numerical bits and order against the unchunked original C# syntax",
+    "payloadBytes": 72
+  },
+  {
+    "source": "src/BridgeBuilder/Bridges/Types/PedestrianDraw01/PedestrianDraw01RoadTops.g.cs",
+    "resource": "PedestrianDraw01/Types_PedestrianDraw01_PedestrianDraw01RoadTops_g_cs.bin",
+    "originalSha256": "7DFD2B15BD335B78DB52CF3FEA8DF4061F88A64E157A394D7C239D2D48B6EA43",
+    "counts": [
+      1147,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "arrays": 3,
+    "verified": "Exact typed numerical bits and order against the unchunked original C# syntax",
+    "payloadBytes": 4652
+  },
+  {
+    "source": "src/BridgeBuilder/Bridges/Types/PedestrianDraw01/PedestrianDraw01Ropes.g.cs",
+    "resource": "PedestrianDraw01/Types_PedestrianDraw01_PedestrianDraw01Ropes_g_cs.bin",
+    "originalSha256": "2C52516F5D0F1440AFBEC5D2DBE7CE3DEC075ADB795B9D6E3AF5D60C19CDC6B8",
+    "counts": [
+      16,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "arrays": 1,
+    "verified": "Exact typed numerical bits and order against the unchunked original C# syntax",
+    "payloadBytes": 128
+  },
+  {
+    "source": "src/BridgeBuilder/Bridges/Types/PedestrianDraw01/PedestrianDraw01SourceRenders.cs",
+    "resource": "PedestrianDraw01/Types_PedestrianDraw01_PedestrianDraw01SourceRenders_cs.bin",
+    "originalSha256": "4A63DE4A4393B0EA42FE6B39F2B601F2D5D9FDCE7C009E2D6669620A5DE9D1DC",
+    "counts": [
+      31,
+      0,
+      0,
+      0,
+      63,
+      0
+    ],
+    "arrays": 0,
+    "verified": "Exact typed numerical bits and order against the unchunked original C# syntax",
+    "payloadBytes": 440
+  },
+  {
+    "source": "src/BridgeBuilder/Bridges/Types/PedestrianDraw01/PedestrianDraw01StructurePlan.cs",
+    "resource": "PedestrianDraw01/Types_PedestrianDraw01_PedestrianDraw01StructurePlan_cs.bin",
+    "originalSha256": "13342B5DE9464175FD0AD60AB7E464013B6CB9D4574402CFA63ABCE489E7CC7B",
+    "counts": [
+      2,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "arrays": 0,
+    "verified": "Exact typed numerical bits and order against the unchunked original C# syntax",
+    "payloadBytes": 72
+  },
+  {
+    "source": "src/BridgeBuilder/Bridges/Types/PedestrianDraw01/PedestrianDraw01StructureWidthPlan.cs",
+    "resource": "PedestrianDraw01/Types_PedestrianDraw01_PedestrianDraw01StructureWidthPlan_cs.bin",
+    "originalSha256": "E6A4C2EA86D39C125672AFF148943B061C3B49E8BCAF921A44C27BDACE158F23",
+    "counts": [
+      1,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "arrays": 0,
+    "verified": "Exact typed numerical bits and order against the unchunked original C# syntax",
+    "payloadBytes": 68
+  },
+  {
+    "source": "src/BridgeBuilder/Bridges/Types/PedestrianDraw01/PedestrianDraw01SupportAssembly.cs",
+    "resource": "PedestrianDraw01/Types_PedestrianDraw01_PedestrianDraw01SupportAssembly_cs.bin",
+    "originalSha256": "E15900AABF8C501DCB190078AD03819ABFC9488E34C0F8742D360DE33E050A06",
+    "counts": [
+      12,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "arrays": 0,
+    "verified": "Exact typed numerical bits and order against the unchunked original C# syntax",
+    "payloadBytes": 112
+  },
+  {
+    "source": "src/BridgeBuilder/Bridges/Types/PedestrianDraw01/PedestrianDraw01SupportGeometry.g.cs",
+    "resource": "PedestrianDraw01/Types_PedestrianDraw01_PedestrianDraw01SupportGeometry_g_cs.bin",
+    "originalSha256": "5179C0B4E4EFF9E3FC8468D29D8FFCB74B44300BEBF15FE5C97490F07FD00DF9",
+    "counts": [
+      225,
+      0,
+      0,
+      0,
+      109,
+      0
+    ],
+    "arrays": 3,
+    "verified": "Exact typed numerical bits and order against the unchunked original C# syntax",
+    "payloadBytes": 1400
+  },
+  {
+    "source": "src/BridgeBuilder/Bridges/Types/PedestrianDraw02/PedestrianDraw02Bases.g.cs",
+    "resource": "PedestrianDraw02/Types_PedestrianDraw02_PedestrianDraw02Bases_g_cs.bin",
+    "originalSha256": "3FC43463B0505F11E181E45CE3C3C2597CDDF719275BE3B4768929F2F10FEC78",
+    "counts": [
+      2674,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "arrays": 6,
+    "verified": "Exact typed numerical bits and order against the unchunked original C# syntax",
+    "payloadBytes": 10760
+  },
+  {
+    "source": "src/BridgeBuilder/Bridges/Types/PedestrianDraw02/PedestrianDraw02BridgeGenerator.cs",
+    "resource": "PedestrianDraw02/Types_PedestrianDraw02_PedestrianDraw02BridgeGenerator_cs.bin",
+    "originalSha256": "B88EB90B0AD99A4E4C82505BA1EE51BB2DB304FA7A35B2D341C987E0AA3B0E5A",
+    "counts": [
+      2,
+      0,
+      0,
+      0,
+      3,
+      0
+    ],
+    "arrays": 0,
+    "verified": "Exact typed numerical bits and order against the unchunked original C# syntax",
+    "payloadBytes": 84
+  },
+  {
+    "source": "src/BridgeBuilder/Bridges/Types/PedestrianDraw02/PedestrianDraw02ClosedRoad.cs",
+    "resource": "PedestrianDraw02/Types_PedestrianDraw02_PedestrianDraw02ClosedRoad_cs.bin",
+    "originalSha256": "205D4A2322C8FF1E88034AAD090581D4845AF5ABD2C155D8398F2E5EE918A842",
+    "counts": [
+      14,
+      0,
+      0,
+      0,
+      6,
+      0
+    ],
+    "arrays": 0,
+    "verified": "Exact typed numerical bits and order against the unchunked original C# syntax",
+    "payloadBytes": 144
+  },
+  {
+    "source": "src/BridgeBuilder/Bridges/Types/PedestrianDraw02/PedestrianDraw02ColumnWideningData.g.cs",
+    "resource": "PedestrianDraw02/Types_PedestrianDraw02_PedestrianDraw02ColumnWideningData_g_cs.bin",
+    "originalSha256": "80A20B29B476DED91E4AF9EADC67248A46D57F5A97CE4DE8CF9EC2DCF1AB6FB0",
+    "counts": [
+      4,
+      0,
+      0,
+      0,
+      6408,
+      0
+    ],
+    "arrays": 2,
+    "verified": "Exact typed numerical bits and order against the unchunked original C# syntax",
+    "payloadBytes": 25712
+  },
+  {
+    "source": "src/BridgeBuilder/Bridges/Types/PedestrianDraw02/PedestrianDraw02FarColumn.g.cs",
+    "resource": "PedestrianDraw02/Types_PedestrianDraw02_PedestrianDraw02FarColumn_g_cs.bin",
+    "originalSha256": "3F7166971A7E647E8BF92D29F11B25E78DE9B78B3D6A0C0DBE699D1BDBECE039",
+    "counts": [
+      755,
+      0,
+      0,
+      0,
+      321,
+      0
+    ],
+    "arrays": 3,
+    "verified": "Exact typed numerical bits and order against the unchunked original C# syntax",
+    "payloadBytes": 4368
+  },
+  {
+    "source": "src/BridgeBuilder/Bridges/Types/PedestrianDraw02/PedestrianDraw02FootingWideningData.g.cs",
+    "resource": "PedestrianDraw02/Types_PedestrianDraw02_PedestrianDraw02FootingWideningData_g_cs.bin",
+    "originalSha256": "4C381B2430F296532C9F70C66B2C8E9C398D64487B53631D02B775D9652C8D22",
+    "counts": [
+      7,
+      0,
+      0,
+      0,
+      1616,
+      0
+    ],
+    "arrays": 2,
+    "verified": "Exact typed numerical bits and order against the unchunked original C# syntax",
+    "payloadBytes": 6556
+  },
+  {
+    "source": "src/BridgeBuilder/Bridges/Types/PedestrianDraw02/PedestrianDraw02JoinedSupports.g.cs",
+    "resource": "PedestrianDraw02/Types_PedestrianDraw02_PedestrianDraw02JoinedSupports_g_cs.bin",
+    "originalSha256": "BA2D81C661E425874E726A8D281656F3EFEE6481E7533CDC3064E6E7635B05AE",
+    "counts": [
+      3758,
+      0,
+      0,
+      0,
+      1800,
+      0
+    ],
+    "arrays": 8,
+    "verified": "Exact typed numerical bits and order against the unchunked original C# syntax",
+    "payloadBytes": 22296
+  },
+  {
+    "source": "src/BridgeBuilder/Bridges/Types/PedestrianDraw02/PedestrianDraw02MechanismData.g.cs",
+    "resource": "PedestrianDraw02/Types_PedestrianDraw02_PedestrianDraw02MechanismData_g_cs.bin",
+    "originalSha256": "22B82B32EDD6A143B124901A28A7087F48ECFF063A1E00F6CC442B744A0E9986",
+    "counts": [
+      58,
+      0,
+      0,
+      0,
+      328,
+      0
+    ],
+    "arrays": 0,
+    "verified": "Exact typed numerical bits and order against the unchunked original C# syntax",
+    "payloadBytes": 1608
+  },
+  {
+    "source": "src/BridgeBuilder/Bridges/Types/PedestrianDraw02/PedestrianDraw02NetworkData.g.cs",
+    "resource": "PedestrianDraw02/Types_PedestrianDraw02_PedestrianDraw02NetworkData_g_cs.bin",
+    "originalSha256": "D5AC72FF55129DC9C533A7ACF19C39EE4A95F7F2BCC8A3982DCA7DE1DCBC3374",
+    "counts": [
+      15,
+      0,
+      0,
+      0,
+      27,
+      0
+    ],
+    "arrays": 0,
+    "verified": "Exact typed numerical bits and order against the unchunked original C# syntax",
+    "payloadBytes": 232
+  },
+  {
+    "source": "src/BridgeBuilder/Bridges/Types/PedestrianDraw02/PedestrianDraw02ObjectAssembly.cs",
+    "resource": "PedestrianDraw02/Types_PedestrianDraw02_PedestrianDraw02ObjectAssembly_cs.bin",
+    "originalSha256": "7CC41C0AB84A5F3BD789F57481501DC7F7191A6A34E8855401D84844874B55BE",
+    "counts": [
+      0,
+      0,
+      0,
+      0,
+      4,
+      0
+    ],
+    "arrays": 0,
+    "verified": "Exact typed numerical bits and order against the unchunked original C# syntax",
+    "payloadBytes": 80
+  },
+  {
+    "source": "src/BridgeBuilder/Bridges/Types/PedestrianDraw02/PedestrianDraw02RenderAssembly.cs",
+    "resource": "PedestrianDraw02/Types_PedestrianDraw02_PedestrianDraw02RenderAssembly_cs.bin",
+    "originalSha256": "BDE033830B8982EBBBDBD2DB5743E0202BF8F47DCFE7346A3FD56569A75ECA16",
+    "counts": [
+      43,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "arrays": 0,
+    "verified": "Exact typed numerical bits and order against the unchunked original C# syntax",
+    "payloadBytes": 236
+  },
+  {
+    "source": "src/BridgeBuilder/Bridges/Types/PedestrianDraw02/PedestrianDraw02RenderData.g.cs",
+    "resource": "PedestrianDraw02/Types_PedestrianDraw02_PedestrianDraw02RenderData_g_cs.bin",
+    "originalSha256": "A30523FF59AF5F08C9112273531CBA0D793BA895B1455215DAAAD263372A4581",
+    "counts": [
+      27,
+      0,
+      0,
+      0,
+      12,
+      0
+    ],
+    "arrays": 0,
+    "verified": "Exact typed numerical bits and order against the unchunked original C# syntax",
+    "payloadBytes": 220
+  },
+  {
+    "source": "src/BridgeBuilder/Bridges/Types/PedestrianDraw02/PedestrianDraw02RigidParts.g.cs",
+    "resource": "PedestrianDraw02/Types_PedestrianDraw02_PedestrianDraw02RigidParts_g_cs.bin",
+    "originalSha256": "4299D85EA943C7178D922F3DD4714765E8F44A31ACC75289FC7A0523382914B4",
+    "counts": [
+      702,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "arrays": 4,
+    "verified": "Exact typed numerical bits and order against the unchunked original C# syntax",
+    "payloadBytes": 2872
+  },
+  {
+    "source": "src/BridgeBuilder/Bridges/Types/PedestrianDraw02/PedestrianDraw02RoadAppearance.cs",
+    "resource": "PedestrianDraw02/Types_PedestrianDraw02_PedestrianDraw02RoadAppearance_cs.bin",
+    "originalSha256": "BB874FEE6A69372C0CFDF7E327CF8BEEE3593CCEB19D7B2F6047D8536F3DA9BA",
+    "counts": [
+      4,
+      0,
+      0,
+      0,
+      31,
+      0
+    ],
+    "arrays": 0,
+    "verified": "Exact typed numerical bits and order against the unchunked original C# syntax",
+    "payloadBytes": 204
+  },
+  {
+    "source": "src/BridgeBuilder/Bridges/Types/PedestrianDraw02/PedestrianDraw02RoadPartitions.g.cs",
+    "resource": "PedestrianDraw02/Types_PedestrianDraw02_PedestrianDraw02RoadPartitions_g_cs.bin",
+    "originalSha256": "E721BF46F125772CFAC8E96025AF0C4A6E05B07E743F510ED3779CC456AC7730",
+    "counts": [
+      66,
+      0,
+      0,
+      0,
+      242,
+      0
+    ],
+    "arrays": 16,
+    "verified": "Exact typed numerical bits and order against the unchunked original C# syntax",
+    "payloadBytes": 1296
+  },
+  {
+    "source": "src/BridgeBuilder/Bridges/Types/PedestrianDraw02/PedestrianDraw02RoadPreparation.cs",
+    "resource": "PedestrianDraw02/Types_PedestrianDraw02_PedestrianDraw02RoadPreparation_cs.bin",
+    "originalSha256": "D43C13A4CEE97DCB5F2CC3EB9F60BFD609819EADD6F42DFE1ABBD9C9FBD764F8",
+    "counts": [
+      1,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "arrays": 0,
+    "verified": "Exact typed numerical bits and order against the unchunked original C# syntax",
+    "payloadBytes": 68
+  },
+  {
+    "source": "src/BridgeBuilder/Bridges/Types/PedestrianDraw02/PedestrianDraw02RoadReplacement.g.cs",
+    "resource": "PedestrianDraw02/Types_PedestrianDraw02_PedestrianDraw02RoadReplacement_g_cs.bin",
+    "originalSha256": "7080081C0DDE907318DB6D6EE73770EB88F9D57FDE4990C651E8D148172A4AF6",
+    "counts": [
+      2985,
+      0,
+      0,
+      0,
+      2280,
+      0
+    ],
+    "arrays": 0,
+    "verified": "Exact typed numerical bits and order against the unchunked original C# syntax",
+    "payloadBytes": 21124
+  },
+  {
+    "source": "src/BridgeBuilder/Bridges/Types/PedestrianDraw02/PedestrianDraw02RoadSampling.cs",
+    "resource": "PedestrianDraw02/Types_PedestrianDraw02_PedestrianDraw02RoadSampling_cs.bin",
+    "originalSha256": "B9A09A695C4E8D8884EE6CCC3E4FF1F648EE4E73C40E43925507E8F98DED5CAE",
+    "counts": [
+      0,
+      0,
+      0,
+      0,
+      2,
+      0
+    ],
+    "arrays": 0,
+    "verified": "Exact typed numerical bits and order against the unchunked original C# syntax",
+    "payloadBytes": 72
+  },
+  {
+    "source": "src/BridgeBuilder/Bridges/Types/PedestrianDraw02/PedestrianDraw02SourceRenders.cs",
+    "resource": "PedestrianDraw02/Types_PedestrianDraw02_PedestrianDraw02SourceRenders_cs.bin",
+    "originalSha256": "A1D67552FFF9E7D5551197D804A29859685D1F4222FBD9739B8D19BE3F287A8F",
+    "counts": [
+      25,
+      0,
+      0,
+      0,
+      49,
+      0
+    ],
+    "arrays": 0,
+    "verified": "Exact typed numerical bits and order against the unchunked original C# syntax",
+    "payloadBytes": 360
+  },
+  {
+    "source": "src/BridgeBuilder/Bridges/Types/PedestrianDraw02/PedestrianDraw02TransverseParts.g.cs",
+    "resource": "PedestrianDraw02/Types_PedestrianDraw02_PedestrianDraw02TransverseParts_g_cs.bin",
+    "originalSha256": "A84409E173F10BC124F36ABDD7BF9ECB5F10B7897AE777B00AA26E543611E0F6",
+    "counts": [
+      21121,
+      0,
+      0,
+      0,
+      625,
+      0
+    ],
+    "arrays": 2,
+    "verified": "Exact typed numerical bits and order against the unchunked original C# syntax",
+    "payloadBytes": 87048
+  },
+  {
+    "source": "src/BridgeBuilder/Bridges/Types/Suspension/SuspensionGeometry.cs",
+    "resource": "Suspension/Types_Suspension_SuspensionGeometry_cs.bin",
+    "originalSha256": "88C997272926D682EF81DCE27CE9E7F856E7332363CBDE7C5F63165A84F4DE05",
+    "counts": [
+      0,
+      0,
+      0,
+      0,
+      3,
+      0
+    ],
+    "arrays": 0,
+    "verified": "Exact typed numerical bits and order against the unchunked original C# syntax",
+    "payloadBytes": 76
+  },
+  {
+    "source": "src/BridgeBuilder/Bridges/Types/SuspensionGolden/GoldenOrnamentData.cs",
+    "resource": "SuspensionGolden/Types_SuspensionGolden_GoldenOrnamentData_cs.bin",
+    "originalSha256": "CBD215A3C590A33DB75E9E92CB6F6B96778CEEF827EB5A7F4130032177E50D0C",
+    "counts": [
+      3,
+      0,
+      0,
+      0,
+      2,
+      0
+    ],
+    "arrays": 0,
+    "verified": "Exact typed numerical bits and order against the unchunked original C# syntax",
+    "payloadBytes": 84
+  },
+  {
+    "source": "src/BridgeBuilder/Bridges/Types/SuspensionGolden/GoldenOrnamentGeometry.cs",
+    "resource": "SuspensionGolden/Types_SuspensionGolden_GoldenOrnamentGeometry_cs.bin",
+    "originalSha256": "76BE65CAE1C9855A71D8B985FB27641AE69CB3274D60E8AEEAC578E4E6B74258",
+    "counts": [
+      5,
+      0,
+      0,
+      0,
+      2,
+      0
+    ],
+    "arrays": 0,
+    "verified": "Exact typed numerical bits and order against the unchunked original C# syntax",
+    "payloadBytes": 92
+  },
+  {
+    "source": "src/BridgeBuilder/Bridges/Types/SuspensionGolden/GoldenSupportGeometry.cs",
+    "resource": "SuspensionGolden/Types_SuspensionGolden_GoldenSupportGeometry_cs.bin",
+    "originalSha256": "80B23E578AAD0AF324C7043CEB55856BF1DF353382C8CDAAFB1C198062E22459",
+    "counts": [
+      3,
+      0,
+      0,
+      0,
+      2,
+      0
+    ],
+    "arrays": 0,
+    "verified": "Exact typed numerical bits and order against the unchunked original C# syntax",
+    "payloadBytes": 84
+  },
+  {
+    "source": "src/BridgeBuilder/Bridges/Types/TrussArch01/TrussArch01Geometry.cs",
+    "resource": "TrussArch01/Types_TrussArch01_TrussArch01Geometry_cs.bin",
+    "originalSha256": "650E2B3211DE4888785519C3CF714B9D2D2B9FDBD348642897F1C1A3E5646B3F",
+    "counts": [
+      11,
+      0,
+      0,
+      0,
+      4,
+      0
+    ],
+    "arrays": 0,
+    "verified": "Exact typed numerical bits and order against the unchunked original C# syntax",
+    "payloadBytes": 124
+  },
+  {
+    "source": "src/BridgeBuilder/Bridges/Types/TrussArch01/TrussArch01PierData.g.cs",
+    "resource": "TrussArch01/Types_TrussArch01_TrussArch01PierData_g_cs.bin",
+    "originalSha256": "375AA533715FB223BD2AFD75941FE19E997CC8A7D79B5B0F554E75FD7EAF18EF",
+    "counts": [
+      3,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "arrays": 0,
+    "verified": "Exact typed numerical bits and order against the unchunked original C# syntax",
+    "payloadBytes": 76
+  },
+  {
+    "source": "src/BridgeBuilder/Bridges/Types/TrussArch01/TrussArch01SectionData.g.cs",
+    "resource": "TrussArch01/Types_TrussArch01_TrussArch01SectionData_g_cs.bin",
+    "originalSha256": "11C13BCE4AEE4718BB60477126C8EA5F20834A7B6636152D0490E137C20A741F",
+    "counts": [
+      3,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "arrays": 0,
+    "verified": "Exact typed numerical bits and order against the unchunked original C# syntax",
+    "payloadBytes": 76
+  },
+  {
+    "source": "src/BridgeBuilder/Bridges/Types/TrussArch02/TrussArch02Geometry.cs",
+    "resource": "TrussArch02/Types_TrussArch02_TrussArch02Geometry_cs.bin",
+    "originalSha256": "4BC14C83E67B83178F6EB02BCD9500FACC83AB944BA75E969D9B14AC5BD28FC0",
+    "counts": [
+      26,
+      0,
+      0,
+      0,
+      14,
+      0
+    ],
+    "arrays": 0,
+    "verified": "Exact typed numerical bits and order against the unchunked original C# syntax",
+    "payloadBytes": 224
+  },
+  {
+    "source": "src/BridgeBuilder/Bridges/Types/TrussArch02/TrussArch02GeometryData.g.cs",
+    "resource": "TrussArch02/Types_TrussArch02_TrussArch02GeometryData_g_cs.bin",
+    "originalSha256": "B5E5E6DDB292D73E1AE0832C9E6829BCA98E89A7057D1F3404B5DBF24A769787",
+    "counts": [
+      9,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "arrays": 0,
+    "verified": "Exact typed numerical bits and order against the unchunked original C# syntax",
+    "payloadBytes": 100
+  },
+  {
+    "source": "src/BridgeBuilder/Bridges/Types/TrussArch03/TrussArch03BaseGeometry.cs",
+    "resource": "TrussArch03/Types_TrussArch03_TrussArch03BaseGeometry_cs.bin",
+    "originalSha256": "42227218B92304FD7107DFD3334115DF239E043A73577A3BDE6165ABF57C4894",
+    "counts": [
+      19,
+      0,
+      0,
+      0,
+      5,
+      0
+    ],
+    "arrays": 0,
+    "verified": "Exact typed numerical bits and order against the unchunked original C# syntax",
+    "payloadBytes": 160
+  },
+  {
+    "source": "src/BridgeBuilder/Bridges/Types/TrussArch03/TrussArch03Geometry.cs",
+    "resource": "TrussArch03/Types_TrussArch03_TrussArch03Geometry_cs.bin",
+    "originalSha256": "D83FBD509FE3EF24E935315E6CDD83133A8BB8510B90EDED16E4F75D4F3484A2",
+    "counts": [
+      13,
+      0,
+      0,
+      0,
+      1,
+      0
+    ],
+    "arrays": 0,
+    "verified": "Exact typed numerical bits and order against the unchunked original C# syntax",
+    "payloadBytes": 120
+  },
+  {
+    "source": "src/BridgeBuilder/Bridges/Types/TrussArch03/TrussArch03SectionData.g.cs",
+    "resource": "TrussArch03/Types_TrussArch03_TrussArch03SectionData_g_cs.bin",
+    "originalSha256": "1041BCC2687D6ABB9EB0659477878FEBC72CFCF979AA4EE01D077123131BB64E",
+    "counts": [
+      3,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "arrays": 0,
+    "verified": "Exact typed numerical bits and order against the unchunked original C# syntax",
+    "payloadBytes": 76
+  }
+]

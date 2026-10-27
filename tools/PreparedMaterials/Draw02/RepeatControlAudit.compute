@@ -1,0 +1,8 @@
+#pragma kernel ReadMip
+Texture2D<float4> Input;
+RWStructuredBuffer<float4> Pixels;
+int Width, Height, Mip;
+[numthreads(8,8,1)] void ReadMip(uint3 id:SV_DispatchThreadID) {
+ if(id.x>=Width||id.y>=Height)return;
+ Pixels[id.y*Width+id.x]=Input.Load(int3(id.xy,Mip));
+}

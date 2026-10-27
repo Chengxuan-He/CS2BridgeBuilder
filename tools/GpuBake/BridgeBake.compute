@@ -5,9 +5,13 @@
 #pragma kernel ReuseMask
 #pragma kernel PreviewBounds
 #pragma kernel SurfaceAtlas
+#pragma kernel ClassifyAsphalt
+#pragma kernel ClassifyAsphaltTriangles
 #pragma kernel PaintAtlas
 #pragma kernel AtlasMip
 #pragma kernel CompressAtlas
+#pragma kernel CropNative
+#pragma kernel CropNativeAtlas
 // Generation-only kernels. Output assets use native game material templates.
 Texture2D<float4> _BaseColorMap, _NormalMap, _MaskMap, _WorldspaceAlbedo, _WorldspaceNormalMap, _WorldspaceMaskMap, _EmissiveColorMap, _ControlMask;
 SamplerState sampler_BaseColorMap, sampler_NormalMap, sampler_MaskMap, sampler_WorldspaceAlbedo, sampler_WorldspaceNormalMap, sampler_WorldspaceMaskMap, sampler_EmissiveColorMap, sampler_ControlMask;
@@ -19,7 +23,7 @@ int Channels, Size, Padding;
 RWTexture2D<float4> AtlasColor, AtlasNormal, AtlasMask, AtlasControl, AtlasPosition;
 float4 AtlasDomain, AtlasPixels, AtlasRect, PatchArea, PatchU, PatchV;
 float4 PaintCenter, PaintRight, PaintUp, PaintForward, PaintHalf, PaintColor;
-int AtlasTile;
+int AtlasTile, SkipAtlasControl;
 float3 srgb(float3 x) { return lerp(12.92*x,1.055*pow(max(x,0),1.0/2.4)-.055,step(.0031308,x)); }
 void store(uint index, Pixel p) {
  float4 values[5]={p.a,p.b,p.c,p.d,p.e};
@@ -208,6 +212,34 @@ float4x4 PreviewView;
 uint orderedFloat(float v) { uint b=asuint(v); return (b&0x80000000)?~b:(b^0x80000000); }
 // Appearance is rasterized, never tessellated at paint or repeat boundaries.
 Texture2D<float4> MipSource;
+SamplerState sampler_MipSource;
+float4 NativeCrop;
+int NativeCropSrgb;
+int NativeCropTriangle,NativeCropNormal;
+float4 NativeCropA,NativeCropB,NativeCropC;
+float4 NativeCropDestination,NativeCropOrigin,NativeCropStepX,NativeCropStepY;
+float4 nativeCropSample(float2 q) {
+ bool reverse=NativeCropTriangle!=0 && q.x+q.y>1;
+ if(reverse)q=1-q;
+ float2 uv=NativeCropTriangle!=0 ? NativeCropA.xy+q.x*(NativeCropB.xy-NativeCropA.xy)+q.y*(NativeCropC.xy-NativeCropA.xy)
+  : NativeCrop.xy+q*NativeCrop.zw;
+ float4 color=MipSource.SampleLevel(sampler_MipSource,uv,0);
+ // The second half is a 180-degree image rotation. Rotate the tangent-space
+ // normal too, decoding both native RG and AG normal-map representations.
+ if(reverse && NativeCropNormal!=0)color=float4(1-color.r*color.a,1-color.g,color.b,1);
+ if(NativeCropSrgb!=0)color.rgb=srgb(color.rgb);
+ return color;
+}
+[numthreads(8,8,1)] void CropNative(uint3 id:SV_DispatchThreadID) {
+ uint width,height;AtlasColor.GetDimensions(width,height);
+ if(any(id.xy>=uint2(width,height)))return;
+ AtlasColor[id.xy]=nativeCropSample((float2(id.xy)+.5)/float2(width,height));
+}
+[numthreads(8,8,1)] void CropNativeAtlas(uint3 id:SV_DispatchThreadID) {
+ if(any(id.xy>=uint2(NativeCropDestination.zw)))return;
+ float2 q=NativeCropOrigin.xy+(id.x+.5)*NativeCropStepX.xy+(id.y+.5)*NativeCropStepY.xy;
+ AtlasColor[uint2(NativeCropDestination.xy)+id.xy]=nativeCropSample(frac(q));
+}
 RWStructuredBuffer<uint4> CompressedAtlas;
 // BC7 mode 6: RGBA 7-bit endpoints, one p-bit per endpoint, 4-bit indices.
 // Native virtual-texture stacks use BC7; BC3 blocks are not interchangeable.
@@ -283,6 +315,80 @@ float3 linearColor(float3 x) {return lerp(x/12.92,pow((x+.055)/1.055,2.4),step(.
  MipTarget[id.xy]=sum;
 }
 float4 ChartOrigin, ChartU, ChartV, PaintRect;
+int OriginalRoad;
+StructuredBuffer<float4> AsphaltBounds;
+RWStructuredBuffer<uint> AsphaltOnly;
+groupshared uint NonAsphalt;
+[numthreads(64,1,1)] void ClassifyAsphalt(uint3 group:SV_GroupID,uint lane:SV_GroupIndex) {
+ if(lane==0)NonAsphalt=0;
+ GroupMemoryBarrierWithGroupSync();
+ uint w,h; _MaskMap.GetDimensions(w,h);
+ float4 bounds=AsphaltBounds[group.x];
+ // Include the complete bilinear footprint, not just triangle vertices or centres.
+ int2 first=int2(floor(bounds.xy*float2(w,h)-.5));
+ int2 last=int2(ceil(bounds.zw*float2(w,h)-.5));
+ uint2 extent=min(uint2(max(1,last-first+1)),uint2(w,h));
+ for(uint i=lane;i<extent.x*extent.y;i+=64) {
+  int2 p=first+int2(i%extent.x,i/extent.x);
+  p=(p%int2(w,h)+int2(w,h))%int2(w,h);
+  if(_MaskMap.Load(int3(p,0)).b<1.0)InterlockedOr(NonAsphalt,1);
+ }
+ GroupMemoryBarrierWithGroupSync();
+ if(lane==0)AsphaltOnly[group.x]=1-NonAsphalt;
+}
+int ReplaceRoad, RoadBandCount, RoadBandRows;
+StructuredBuffer<float4> AsphaltTriangles;
+int AsphaltWrapU, AsphaltWrapV;
+int addressAsphalt(int p,int size,int mode) {
+ if(mode==1)return clamp(p,0,size-1);
+ if(mode==3)return clamp(p<0?-1-p:p,0,size-1);
+ if(mode==2) {p=(p%(2*size)+2*size)%(2*size);return p<size?p:2*size-1-p;}
+ return (p%size+size)%size;
+}
+// A texel contributes through a bilinear tent of radius one texel. Test that
+// box against the actual UV triangle, not the empty corners of its bounds.
+bool asphaltFootprint(float2 a,float2 b,float2 c,float2 centre) {
+ a-=centre;b-=centre;c-=centre;
+ if(any(min(a,min(b,c))>1) || any(max(a,max(b,c))<-1))return false;
+ float2 edges[3]={b-a,c-b,a-c};
+ [unroll]for(int e=0;e<3;e++) {
+  float2 n=float2(-edges[e].y,edges[e].x);
+  float radius=abs(n.x)+abs(n.y);
+  float3 projection=float3(dot(a,n),dot(b,n),dot(c,n));
+  if(min(projection.x,min(projection.y,projection.z))>radius ||
+     max(projection.x,max(projection.y,projection.z))<-radius)return false;
+ }
+ return true;
+}
+[numthreads(64,1,1)] void ClassifyAsphaltTriangles(uint3 group:SV_GroupID,uint lane:SV_GroupIndex) {
+ if(lane==0)NonAsphalt=0;
+ GroupMemoryBarrierWithGroupSync();
+ uint w,h;_MaskMap.GetDimensions(w,h);
+ float2 dimensions=float2(w,h);
+ float2 a=AsphaltTriangles[group.x*3].xy*dimensions;
+ float2 b=AsphaltTriangles[group.x*3+1].xy*dimensions;
+ float2 c=AsphaltTriangles[group.x*3+2].xy*dimensions;
+ int2 first=int2(floor(min(a,min(b,c))-.5));
+ int2 last=int2(ceil(max(a,max(b,c))-.5));
+ // Excessive repeated UV ranges use a conservative whole-texture test instead
+ // of an unbounded dispatch. This can reject a tile, never erase a mixed layer.
+ bool whole=any(last-first>int2(w,h)*4);
+ if(whole){first=0;last=int2(w,h)-1;}
+ uint2 extent=uint2(max(1,last-first+1));
+ for(uint i=lane;i<extent.x*extent.y;i+=64) {
+  int2 p=first+int2(i%extent.x,i/extent.x);
+  if(!whole && !asphaltFootprint(a,b,c,float2(p)+.5))continue;
+  int2 sample=int2(addressAsphalt(p.x,w,AsphaltWrapU),addressAsphalt(p.y,h,AsphaltWrapV));
+  if(_MaskMap.Load(int3(sample,0)).b<1.0)InterlockedOr(NonAsphalt,1);
+ }
+ GroupMemoryBarrierWithGroupSync();
+ if(lane==0)AsphaltOnly[group.x]=1-NonAsphalt;
+}
+float4 RoadU, RoadV;
+StructuredBuffer<float4> RoadBands;
+Texture2D<float4> _Road_BaseColorMap, _Road_NormalMap, _Road_MaskMap;
+SamplerState sampler_Road_BaseColorMap, sampler_Road_NormalMap, sampler_Road_MaskMap;
+float4 NativeValues;
 float3 chartPosition(float2 pixel) {
  return ChartOrigin.xyz+ChartU.xyz*((pixel.x+.5-AtlasPixels.y)/AtlasPixels.x)+ChartV.xyz*((pixel.y+.5-AtlasPixels.y)/AtlasPixels.z);
 }
@@ -291,7 +397,7 @@ float3 chartPosition(float2 pixel) {
  uint2 pixel=id.xy+uint2(AtlasRect.xy);
  float3 position=chartPosition(id.xy);
  float2 uv=float2(dot(float4(position,1),PatchU),dot(float4(position,1),PatchV));
- uv=PatchArea.xy+frac(uv)*PatchArea.zw;
+ if(OriginalRoad==0)uv=PatchArea.xy+frac(uv)*PatchArea.zw;
  uint width,height;_BaseColorMap.GetDimensions(width,height);
  float2 dx=float2(dot(ChartU.xyz,PatchU.xyz),dot(ChartU.xyz,PatchV.xyz))*PatchArea.zw*float2(width,height)/AtlasPixels.x;
  float2 dy=float2(dot(ChartV.xyz,PatchU.xyz),dot(ChartV.xyz,PatchV.xyz))*PatchArea.zw*float2(width,height)/AtlasPixels.z;
@@ -307,10 +413,52 @@ float3 chartPosition(float2 pixel) {
   float3 world=tangent*n.x+bitangent*n.y+normal*n.z;
   n=float3(dot(world,ChartU.xyz),dot(world,ChartV.xyz),dot(world,normal));
  }
+ float4 mask=_MaskMap.SampleLevel(sampler_MaskMap,uv,mip);
+ if(OriginalRoad!=0) {
+  float2 world=mul(Frame,float4(position,1)).xz*WorldScale;
+  float blend=mask.b;
+  float4 wm=_WorldspaceMaskMap.SampleLevel(sampler_WorldspaceMaskMap,world,0);
+  c=lerp(c,_WorldspaceAlbedo.SampleLevel(sampler_WorldspaceAlbedo,world,0),blend)*BaseColor;
+  float3 wn=unpack(_WorldspaceNormalMap.SampleLevel(sampler_WorldspaceNormalMap,world,0));
+  // The native blue mask identifies the asphalt layer, including parking and
+  // empty lanes in mixed sections. Curbs and unsupported layers retain native UVs.
+  if(ReplaceRoad!=0) {
+   float2 q=frac(float2(dot(float4(position,1),RoadU),dot(float4(position,1),RoadV)));
+   float along=RoadBandRows!=0?q.y:q.x;
+   [loop]for(int band=0;band<RoadBandCount;band++) {
+    float4 range=RoadBands[band*2], area=RoadBands[band*2+1];
+    if(along<range.x || along>=range.y)continue;
+    float2 tile=q;
+    if(RoadBandRows!=0)tile.y=(along-range.x)/(range.y-range.x);
+    else tile.x=(along-range.x)/(range.y-range.x);
+    tile.y=frac(tile.y*range.z);
+    float2 roadUV=area.xy+tile*area.zw;
+    float4 roadColor=_Road_BaseColorMap.SampleLevel(sampler_Road_BaseColorMap,roadUV,0);
+    // Replace only the worldspace layer; retain source atlas detail outside it.
+    c=lerp(_BaseColorMap.SampleLevel(sampler_BaseColorMap,uv,mip)*BaseColor,roadColor,blend);
+    wm=_Road_MaskMap.SampleLevel(sampler_Road_MaskMap,roadUV,0);
+    float3 rn=unpack(_Road_NormalMap.SampleLevel(sampler_Road_NormalMap,roadUV,0));
+    float3 rt=normalize(cross(RoadV.xyz,normal)/dot(RoadU.xyz,cross(RoadV.xyz,normal)));
+    float3 rb=normalize(cross(normal,RoadU.xyz)/dot(RoadU.xyz,cross(RoadV.xyz,normal)));
+    float3 rnormal=rt*rn.x+rb*rn.y+normal*rn.z;
+    // Transform into the native worldspace normal frame used below.
+    float3 rw=normalize(mul((float3x3)Frame,rnormal));
+    wn=rw.xzy;
+    break;
+   }
+  }
+  float3 cu=normalize(mul((float3x3)Frame,ChartU.xyz));
+  float3 cv=normalize(mul((float3x3)Frame,ChartV.xyz));
+  float3 cn=normalize(mul((float3x3)Frame,normal));
+  float3 worldNormal=float3(wn.x,wn.z,wn.y);
+  n=normalize(lerp(n,float3(dot(worldNormal,cu),dot(worldNormal,cv),dot(worldNormal,cn)),blend));
+  mask=float4(lerp(mask.rg,wm.rg,blend),0,lerp(mask.a,wm.a,blend));
+  mask.r*=NativeValues.x; mask.a*=NativeValues.y;
+ }
  AtlasColor[pixel]=float4(srgb(c.rgb),c.a);
  AtlasNormal[pixel]=float4(n.xy*.5+.5,1,1);
- AtlasMask[pixel]=_MaskMap.SampleLevel(sampler_MaskMap,uv,mip);
- AtlasControl[pixel]=_ControlMask.SampleLevel(sampler_ControlMask,uv,mip);
+ AtlasMask[pixel]=mask;
+ if(SkipAtlasControl==0) AtlasControl[pixel]=_ControlMask.SampleLevel(sampler_ControlMask,uv,mip);
 }
 [numthreads(8,8,1)] void PaintAtlas(uint3 id:SV_DispatchThreadID) {
  if(any(id.xy>=uint2(PaintRect.zw)))return;

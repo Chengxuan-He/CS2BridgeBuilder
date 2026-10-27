@@ -83,7 +83,9 @@ internal static partial class MovableRoadObjects
         // native connection IDs, not indices into its ProceduralAnimationProperties array.
         var bones = mechanism.m_Meshes[0].m_Mesh
             .GetComponent<ProceduralAnimationProperties>().m_Bones;
-        var result = new ObjectSubObjectInfo[placements.Count];
+        AddEndSupports(ref placements, roadToObject, ref placementPartitions,
+            index => bones[index].m_ConnectionID != 0);
+        var result = new List<ObjectSubObjectInfo>(placements.Count);
         var q = roadToObject.rotation;
         if (!math.all(math.isfinite((float3)roadToObject.position)) ||
             !math.all(math.isfinite(new float4(q.x, q.y, q.z, q.w))) ||
@@ -98,6 +100,13 @@ internal static partial class MovableRoadObjects
                 math.lengthsq(source.m_Rotation.value) == 0f)
                 throw new InvalidOperationException($"Road attachment {i} has an invalid prefab or transform.");
             var position = q * (Vector3)source.m_Position + roadToObject.position;
+            // Remove unsupported overhead-wire supports at the original station.
+            // Evaluate both sides independently with the same measured partition;
+            // never choose a nearest station and introduce an asymmetric pole row.
+            var utility = source.m_Object.GetComponent<UtilityObject>();
+            if (utility != null &&
+                (utility.m_UtilityType & (Game.Net.UtilityTypes.Catenary | Game.Net.UtilityTypes.LowVoltageLine)) != 0 &&
+                !MovableAttachmentStations.Supported(position, placementPartitions[i])) continue;
             var region = placementPartitions[i];
             while (region.Bone < 0 && !region.IsGap)
             {
@@ -126,17 +135,18 @@ internal static partial class MovableRoadObjects
                         throw new InvalidOperationException($"Road attachment {i} targets a duplicate native connection ID {parent}.");
             }
             var rotation = q * (Quaternion)source.m_Rotation;
-            result[i] = new ObjectSubObjectInfo
+            result.Add(new ObjectSubObjectInfo
             {
                 m_Object = source.m_Object, m_Position = position,
                 m_Rotation = rotation, m_ParentMesh = parent,
                 m_GroupIndex = source.m_GroupIndex, m_Probability = source.m_Probability
-            };
+            });
         }
         // Positions remain closed-pose object-space values. Native FindBoneIndex performs the
         // inverse bind conversion itself; applying bindPose here would transform children twice.
-        MovableStreetLights.Bind(owner, mechanism, result, created);
-        return result;
+        var bound = result.ToArray();
+        MovableStreetLights.Bind(owner, mechanism, bound, created);
+        return bound;
     }
 
     internal readonly struct Rule

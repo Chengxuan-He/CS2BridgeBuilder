@@ -6,21 +6,51 @@ using System;
 using UnityEngine;
 
 namespace BridgeBuilder.Bridges;
-
 internal static class Lift04Glass
 {
-    private static readonly int[] NearSides = { 1, 1, 1, 1, 1, 1, 1, 1, -1, -1, -1, -1, -1, -1, -1, -1 };
-    private static readonly int[] MiddleSides = { 1, 1, 1, -1, -1, -1, -1, -1, -1, -1, -1, 1, 1, 1, 1, 1 };
-    internal static MovableStructureModel.Plan Create(int lod, Vector3[] source,
-        int[] indices, float delta)
+    private static readonly int[] NearSides = ReadPackedNearSides();
+    private static readonly int[] MiddleSides = ReadPackedMiddleSides();
+    internal static MovableStructureModel.Plan Create(int lod, Vector3[] source, int[] indices, float delta)
     {
-        if ((lod != 0 && lod != 1) || source.Length != 16 || indices.Length != 24 || !float.IsFinite(delta))
+        if ((lod != Numeric_Types_Lift04_Lift04Glass_g_cs.Values.I32[32] && lod != Numeric_Types_Lift04_Lift04Glass_g_cs.Values.I32[33]) || source.Length != Numeric_Types_Lift04_Lift04Glass_g_cs.Values.I32[34] || indices.Length != Numeric_Types_Lift04_Lift04Glass_g_cs.Values.I32[35] || !float.IsFinite(delta))
             throw new InvalidOperationException("Lift04 glass requires its recorded mesh-1 layout.");
         var positions = (Vector3[])source.Clone();
-        var sides = lod == 0 ? NearSides : MiddleSides;
-        for (var i = 0; i < sides.Length; i++) positions[i].x += sides[i] * delta;
-
-        return new MovableStructureModel.Plan(source, positions,
-            new[] { indices }, new[] { new bool[8] });
+        var sides = lod == Numeric_Types_Lift04_Lift04Glass_g_cs.Values.I32[36] ? NearSides : MiddleSides;
+        AffineGeometry.For(Numeric_Types_Lift04_Lift04Glass_g_cs.Values.I32[37], sides.Length, i =>
+        {
+            positions[i].x = AffineGeometry.Translate(positions[i].x, sides[i] * delta);
+        });
+        return new MovableStructureModel.Plan(source, positions, new[] { indices }, new[] { new bool[Numeric_Types_Lift04_Lift04Glass_g_cs.Values.I32[38]] });
     }
+
+    private static int[] ReadPackedNearSides()
+    {
+        var d = Numeric_Types_Lift04_Lift04Glass_g_cs.Values;
+        var values = new int[16];
+        for (int i = 0; i < 8; i++)
+            values[0 + i] = d.I32[0 + i * 1];
+        for (int i = 0; i < 8; i++)
+            values[8 + i] = -d.I32[8 + i * 1];
+        return values;
+    }
+
+    private static int[] ReadPackedMiddleSides()
+    {
+        var d = Numeric_Types_Lift04_Lift04Glass_g_cs.Values;
+        var values = new int[16];
+        for (int i = 0; i < 3; i++)
+            values[0 + i] = d.I32[16 + i * 1];
+        for (int i = 0; i < 8; i++)
+            values[3 + i] = -d.I32[19 + i * 1];
+        for (int i = 0; i < 5; i++)
+            values[11 + i] = d.I32[27 + i * 1];
+        return values;
+    }
+}
+
+// Embedded numerical arrays: Types_Lift04_Lift04Glass_g_cs
+internal static class Numeric_Types_Lift04_Lift04Glass_g_cs
+{
+    static Numeric_Types_Lift04_Lift04Glass_g_cs() {}
+    internal static readonly HardcodedNumbers Values = HardcodedNumbers.Load("Types_Lift04_Lift04Glass_g_cs");
 }

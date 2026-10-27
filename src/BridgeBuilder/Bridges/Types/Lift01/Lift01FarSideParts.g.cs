@@ -5,44 +5,77 @@ using System;
 using UnityEngine;
 
 namespace BridgeBuilder.Bridges;
-
 internal static class Lift01FarSideParts
 {
     internal static void Apply(Vector3[] source, Vector3[] positions, float delta)
     {
-        if (source.Length != 1110 || positions.Length != 1110 || !float.IsFinite(delta))
+        if (source.Length != Numeric_Types_Lift01_Lift01FarSideParts_g_cs.Values.I32[0] || positions.Length != Numeric_Types_Lift01_Lift01FarSideParts_g_cs.Values.I32[1] || !float.IsFinite(delta))
             throw new InvalidOperationException("Lift01 far side parts require their measured source layout.");
         foreach (var part in Parts)
-            for (var i = part.First; i <= part.Last; i++) positions[i].x = source[i].x + part.Direction * delta;
+            AffineGeometry.For(part.First, checked((part.Last) + 1), i =>
+            {
+                positions[i].x = AffineGeometry.AddScaled(source[i].x, part.Direction, delta);
+            });
     }
 
-    private static readonly (int First, int Last, int Direction)[] Parts =
+    private static readonly (int First, int Last, int Direction)[] Parts = ReadPackedParts();
+    private static (int First, int Last, int Direction)[] ReadPackedParts()
     {
-        (0, 3, 1),
-        (4, 7, -1),
-        (20, 23, 1),
-        (24, 27, -1),
-        (119, 156, -1),
-        (157, 216, 1),
-        (217, 257, -1),
-        (482, 503, -1),
-        (504, 511, 1),
-        (512, 519, -1),
-        (520, 531, 1),
-        (532, 539, -1),
-        (540, 561, 1),
-        (562, 565, -1),
-        (578, 581, 1),
-        (582, 585, -1),
-        (677, 714, -1),
-        (715, 752, 1),
-        (753, 772, -1),
-        (773, 813, 1),
-        (1038, 1057, -1),
-        (1058, 1065, 1),
-        (1066, 1073, -1),
-        (1074, 1087, 1),
-        (1088, 1095, -1),
-        (1096, 1109, 1),
-    };
+        var d = Numeric_Types_Lift01_Lift01FarSideParts_g_cs.Values;
+        var values = new (int First, int Last, int Direction)[26];
+        for (int i = 0; i < 1; i++)
+            values[0 + i] = (d.I32[2 + i * 3], d.I32[3 + i * 3], d.I32[4 + i * 3]);
+        for (int i = 0; i < 1; i++)
+            values[1 + i] = (d.I32[5 + i * 3], d.I32[6 + i * 3], -d.I32[7 + i * 3]);
+        for (int i = 0; i < 1; i++)
+            values[2 + i] = (d.I32[8 + i * 3], d.I32[9 + i * 3], d.I32[10 + i * 3]);
+        for (int i = 0; i < 2; i++)
+            values[3 + i] = (d.I32[11 + i * 3], d.I32[12 + i * 3], -d.I32[13 + i * 3]);
+        for (int i = 0; i < 1; i++)
+            values[5 + i] = (d.I32[17 + i * 3], d.I32[18 + i * 3], d.I32[19 + i * 3]);
+        for (int i = 0; i < 2; i++)
+            values[6 + i] = (d.I32[20 + i * 3], d.I32[21 + i * 3], -d.I32[22 + i * 3]);
+        for (int i = 0; i < 1; i++)
+            values[8 + i] = (d.I32[26 + i * 3], d.I32[27 + i * 3], d.I32[28 + i * 3]);
+        for (int i = 0; i < 1; i++)
+            values[9 + i] = (d.I32[29 + i * 3], d.I32[30 + i * 3], -d.I32[31 + i * 3]);
+        for (int i = 0; i < 1; i++)
+            values[10 + i] = (d.I32[32 + i * 3], d.I32[33 + i * 3], d.I32[34 + i * 3]);
+        for (int i = 0; i < 1; i++)
+            values[11 + i] = (d.I32[35 + i * 3], d.I32[36 + i * 3], -d.I32[37 + i * 3]);
+        for (int i = 0; i < 1; i++)
+            values[12 + i] = (d.I32[38 + i * 3], d.I32[39 + i * 3], d.I32[40 + i * 3]);
+        for (int i = 0; i < 1; i++)
+            values[13 + i] = (d.I32[41 + i * 3], d.I32[42 + i * 3], -d.I32[43 + i * 3]);
+        for (int i = 0; i < 1; i++)
+            values[14 + i] = (d.I32[44 + i * 3], d.I32[45 + i * 3], d.I32[46 + i * 3]);
+        for (int i = 0; i < 2; i++)
+            values[15 + i] = (d.I32[47 + i * 3], d.I32[48 + i * 3], -d.I32[49 + i * 3]);
+        for (int i = 0; i < 1; i++)
+            values[17 + i] = (d.I32[53 + i * 3], d.I32[54 + i * 3], d.I32[55 + i * 3]);
+        for (int i = 0; i < 1; i++)
+            values[18 + i] = (d.I32[56 + i * 3], d.I32[57 + i * 3], -d.I32[58 + i * 3]);
+        for (int i = 0; i < 1; i++)
+            values[19 + i] = (d.I32[59 + i * 3], d.I32[60 + i * 3], d.I32[61 + i * 3]);
+        for (int i = 0; i < 1; i++)
+            values[20 + i] = (d.I32[62 + i * 3], d.I32[63 + i * 3], -d.I32[64 + i * 3]);
+        for (int i = 0; i < 1; i++)
+            values[21 + i] = (d.I32[65 + i * 3], d.I32[66 + i * 3], d.I32[67 + i * 3]);
+        for (int i = 0; i < 1; i++)
+            values[22 + i] = (d.I32[68 + i * 3], d.I32[69 + i * 3], -d.I32[70 + i * 3]);
+        for (int i = 0; i < 1; i++)
+            values[23 + i] = (d.I32[71 + i * 3], d.I32[72 + i * 3], d.I32[73 + i * 3]);
+        for (int i = 0; i < 1; i++)
+            values[24 + i] = (d.I32[74 + i * 3], d.I32[75 + i * 3], -d.I32[76 + i * 3]);
+        for (int i = 0; i < 1; i++)
+            values[25 + i] = (d.I32[77 + i * 3], d.I32[78 + i * 3], d.I32[79 + i * 3]);
+        return values;
+    }
+}
+
+// Embedded numerical arrays: Types_Lift01_Lift01FarSideParts_g_cs
+internal static class Numeric_Types_Lift01_Lift01FarSideParts_g_cs
+{
+    static Numeric_Types_Lift01_Lift01FarSideParts_g_cs() {}
+    internal static readonly HardcodedNumbers Values = HardcodedNumbers.Load("Types_Lift01_Lift01FarSideParts_g_cs");
 }

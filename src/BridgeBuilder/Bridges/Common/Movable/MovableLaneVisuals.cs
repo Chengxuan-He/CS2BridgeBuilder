@@ -119,7 +119,10 @@ internal static class MovableLaneVisuals
                     }
                     lanes.Add(new BridgePreviewLanes.Lane(geometry, manager.GetComponentData<Curve>(entity),
                         manager.HasComponent<EdgeLane>(entity) ? manager.GetComponentData<EdgeLane>(entity) : null,
-                        BridgePreviewLanes.RejectedSubMeshes(manager, entity, leftHandTraffic)));
+                        BridgePreviewLanes.RejectedSubMeshes(manager, entity, leftHandTraffic),
+                        manager.HasComponent<NodeLane>(entity) ? manager.GetComponentData<NodeLane>(entity) : null,
+                        manager.GetComponentData<NetLaneData>(manager.GetComponentData<PrefabRef>(entity).m_Prefab),
+                        manager.HasComponent<Game.Net.Elevation>(entity) ? manager.GetComponentData<Game.Net.Elevation>(entity) : null));
                 }
             return TryExtract(lanes.ToArray(), origin, imported, out batches, out error);
         }
@@ -173,10 +176,8 @@ internal static class MovableLaneVisuals
                     var surfaces = source.surfaceAssets?.ToArray() ?? Array.Empty<SurfaceAsset>();
                     if (surfaces.Length == 0 || surfaces.Any(surface => surface == null))
                     { error = $"Lane visual '{source.name}' has unresolved surface references."; return false; }
-                    var scale = lane.Edge.HasValue ? BatchDataHelpers.BuildCurveScale(lane.Edge.Value)
-                        : BatchDataHelpers.BuildCurveScale();
-                    var parameters = lane.Edge.HasValue ? BatchDataHelpers.BuildCurveParams(size, lane.Edge.Value)
-                        : BatchDataHelpers.BuildCurveParams(size);
+                    var scale = lane.CurveScale();
+                    var parameters = lane.CurveParameters(size);
                     var count = BatchDataHelpers.GetTileCount(curve, size.z, meshData.m_TilingCount,
                         (meshData.m_State & MeshFlags.Tiling) != 0, out var clipCount);
                     for (var tile = 0; tile < count; tile++)

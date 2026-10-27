@@ -6,18 +6,24 @@ using System;
 using UnityEngine;
 
 namespace BridgeBuilder.Bridges;
-
 internal static class Lift02Glass
 {
-    internal static MovableStructureModel.Plan Create(int lod, Vector3[] source,
-        int[] indices, float delta)
+    internal static MovableStructureModel.Plan Create(int lod, Vector3[] source, int[] indices, float delta)
     {
-        if ((lod != 0 && lod != 1) || source.Length != 12 || indices.Length != 18 || !float.IsFinite(delta))
+        if ((lod != Numeric_Types_Lift02_Lift02Glass_g_cs.Values.I32[0] && lod != Numeric_Types_Lift02_Lift02Glass_g_cs.Values.I32[1]) || source.Length != Numeric_Types_Lift02_Lift02Glass_g_cs.Values.I32[2] || indices.Length != Numeric_Types_Lift02_Lift02Glass_g_cs.Values.I32[3] || !float.IsFinite(delta))
             throw new InvalidOperationException("Lift02 glass requires its recorded mesh-1 layout.");
         var positions = (Vector3[])source.Clone();
-        for (var i = 0; i < 12; i++) positions[i].x += delta;
-
-        return new MovableStructureModel.Plan(source, positions,
-            new[] { indices }, new[] { new bool[6] });
+        AffineGeometry.For(Numeric_Types_Lift02_Lift02Glass_g_cs.Values.I32[4], Numeric_Types_Lift02_Lift02Glass_g_cs.Values.I32[5], i =>
+        {
+            positions[i].x = AffineGeometry.Translate(positions[i].x, delta);
+        });
+        return new MovableStructureModel.Plan(source, positions, new[] { indices }, new[] { new bool[Numeric_Types_Lift02_Lift02Glass_g_cs.Values.I32[6]] });
     }
+}
+
+// Embedded numerical arrays: Types_Lift02_Lift02Glass_g_cs
+internal static class Numeric_Types_Lift02_Lift02Glass_g_cs
+{
+    static Numeric_Types_Lift02_Lift02Glass_g_cs() {}
+    internal static readonly HardcodedNumbers Values = HardcodedNumbers.Load("Types_Lift02_Lift02Glass_g_cs");
 }

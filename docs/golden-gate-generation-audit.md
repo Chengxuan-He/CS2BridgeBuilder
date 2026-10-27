@@ -1,7 +1,5 @@
 # Golden Gate generation audit — 2026-09-21
 
-Branch: `bridge/golden-gate`; baseline: `578bb62192d2c9291a568dfbb081c2f62045b0f2`.
-
 ## Evidence
 
 Prototype data: the real `asset-anatomy.txt` captured on 2026-09-19, retained in

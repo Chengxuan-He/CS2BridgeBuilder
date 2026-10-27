@@ -6,43 +6,51 @@ using Game.Prefabs;
 using Unity.Mathematics;
 
 namespace BridgeBuilder.Bridges;
-
 internal sealed class Lift01ApproachSources : MovableSourceRenders
 {
     internal Lift01ApproachSources(ContentPrefab content)
     {
         try
         {
-            var p0l0 = Create<NetPiecePrefab>("LiftBridge01Net Mesh", "f23e16353add56b87742c8f414d26802",
-                new[] { "368eb4e7fa7b81f6e28ee321c76dd9f2" },
-                new Bounds3(new float3(-3.9416792392730713f, 5.889556884765625f, -31.999994277954102f), new float3(3.9416792392730713f, 12.824935913085938f, 31.999994277954102f)),
-                80210, 215700, 1, 6682.4140625f);
-            p0l0.m_Layer = (NetPieceLayer)2;
-            p0l0.m_Width = 8f;
-            p0l0.m_Length = 64f;
-            p0l0.m_WidthOffset = 0f;
-            p0l0.m_NodeOffset = 0f;
-            p0l0.m_SideConnectionOffset = 0f;
-            p0l0.m_HeightRange = new Bounds1(5.8899998664855957f, 12.824999809265137f);
-            p0l0.m_SurfaceHeights = new float4(0f, 0f, 0f, 0f);
+            var p0l0 = Create<NetPiecePrefab>("LiftBridge01Net Mesh", "f23e16353add56b87742c8f414d26802", new[] { "368eb4e7fa7b81f6e28ee321c76dd9f2" }, new Bounds3(new float3(-Numeric_Types_Lift01_Lift01ApproachSources_g_cs.Values.F32[0], Numeric_Types_Lift01_Lift01ApproachSources_g_cs.Values.F32[1], -Numeric_Types_Lift01_Lift01ApproachSources_g_cs.Values.F32[2]), new float3(Numeric_Types_Lift01_Lift01ApproachSources_g_cs.Values.F32[3], Numeric_Types_Lift01_Lift01ApproachSources_g_cs.Values.F32[4], Numeric_Types_Lift01_Lift01ApproachSources_g_cs.Values.F32[5])), Numeric_Types_Lift01_Lift01ApproachSources_g_cs.Values.I32[0], Numeric_Types_Lift01_Lift01ApproachSources_g_cs.Values.I32[1], Numeric_Types_Lift01_Lift01ApproachSources_g_cs.Values.I32[2], Numeric_Types_Lift01_Lift01ApproachSources_g_cs.Values.F32[6]);
+            p0l0.m_Layer = (NetPieceLayer)Numeric_Types_Lift01_Lift01ApproachSources_g_cs.Values.I32[3];
+            p0l0.m_Width = Numeric_Types_Lift01_Lift01ApproachSources_g_cs.Values.F32[7];
+            p0l0.m_Length = Numeric_Types_Lift01_Lift01ApproachSources_g_cs.Values.F32[8];
+            p0l0.m_WidthOffset = Numeric_Types_Lift01_Lift01ApproachSources_g_cs.Values.F32[9];
+            p0l0.m_NodeOffset = Numeric_Types_Lift01_Lift01ApproachSources_g_cs.Values.F32[10];
+            p0l0.m_SideConnectionOffset = Numeric_Types_Lift01_Lift01ApproachSources_g_cs.Values.F32[11];
+            p0l0.m_HeightRange = new Bounds1(Numeric_Types_Lift01_Lift01ApproachSources_g_cs.Values.F32[12], Numeric_Types_Lift01_Lift01ApproachSources_g_cs.Values.F32[13]);
+            p0l0.m_SurfaceHeights = new float4(Numeric_Types_Lift01_Lift01ApproachSources_g_cs.Values.F32[14], Numeric_Types_Lift01_Lift01ApproachSources_g_cs.Values.F32[15], Numeric_Types_Lift01_Lift01ApproachSources_g_cs.Values.F32[16], Numeric_Types_Lift01_Lift01ApproachSources_g_cs.Values.F32[17]);
             p0l0.AddComponent<NetPieceTiling>().m_DisableTextureTiling = true;
             p0l0.AddComponent<ContentPrerequisite>().m_ContentPrerequisite = content;
-            var p0l1 = Create<RenderPrefab>("LiftBridge01Net_LOD1 Mesh", "358ac5ec4271bdad7edd742abed0cb53",
-                new[] { "879f0a8882e3069d3d8b890a5ec15140" },
-                new Bounds3(new float3(-3.9416790008544922f, 5.8895530700683594f, -31.999992370605469f), new float3(3.9416790008544922f, 12.824939727783203f, 31.999996185302734f)),
-                38399, 73620, 1, 6520.763671875f);
+            var p0l1 = Create<RenderPrefab>("LiftBridge01Net_LOD1 Mesh", "358ac5ec4271bdad7edd742abed0cb53", new[] { "879f0a8882e3069d3d8b890a5ec15140" }, new Bounds3(new float3(-Numeric_Types_Lift01_Lift01ApproachSources_g_cs.Values.F32[18], Numeric_Types_Lift01_Lift01ApproachSources_g_cs.Values.F32[19], -Numeric_Types_Lift01_Lift01ApproachSources_g_cs.Values.F32[20]), new float3(Numeric_Types_Lift01_Lift01ApproachSources_g_cs.Values.F32[21], Numeric_Types_Lift01_Lift01ApproachSources_g_cs.Values.F32[22], Numeric_Types_Lift01_Lift01ApproachSources_g_cs.Values.F32[23])), Numeric_Types_Lift01_Lift01ApproachSources_g_cs.Values.I32[4], Numeric_Types_Lift01_Lift01ApproachSources_g_cs.Values.I32[5], Numeric_Types_Lift01_Lift01ApproachSources_g_cs.Values.I32[6], Numeric_Types_Lift01_Lift01ApproachSources_g_cs.Values.F32[24]);
             p0l1.AddComponent<ContentPrerequisite>().m_ContentPrerequisite = content;
-            var p0l2 = Create<RenderPrefab>("LiftBridge01Net_LOD2 Mesh", "0728167176435f74dbff389818169e7f",
-                new[] { "0a9990f567fc079703b199f1fcb0c53c" },
-                new Bounds3(new float3(-3.9445650577545166f, 5.8625221252441406f, -31.999996185302734f), new float3(3.9445650577545166f, 12.830787658691406f, 31.999996185302734f)),
-                1484, 3060, 1, 1439.3861083984375f);
+            var p0l2 = Create<RenderPrefab>("LiftBridge01Net_LOD2 Mesh", "0728167176435f74dbff389818169e7f", new[] { "0a9990f567fc079703b199f1fcb0c53c" }, new Bounds3(new float3(-Numeric_Types_Lift01_Lift01ApproachSources_g_cs.Values.F32[25], Numeric_Types_Lift01_Lift01ApproachSources_g_cs.Values.F32[26], -Numeric_Types_Lift01_Lift01ApproachSources_g_cs.Values.F32[27]), new float3(Numeric_Types_Lift01_Lift01ApproachSources_g_cs.Values.F32[28], Numeric_Types_Lift01_Lift01ApproachSources_g_cs.Values.F32[29], Numeric_Types_Lift01_Lift01ApproachSources_g_cs.Values.F32[30])), Numeric_Types_Lift01_Lift01ApproachSources_g_cs.Values.I32[7], Numeric_Types_Lift01_Lift01ApproachSources_g_cs.Values.I32[8], Numeric_Types_Lift01_Lift01ApproachSources_g_cs.Values.I32[9], Numeric_Types_Lift01_Lift01ApproachSources_g_cs.Values.F32[31]);
             p0l2.AddComponent<ContentPrerequisite>().m_ContentPrerequisite = content;
             var lod0 = p0l0.AddComponent<LodProperties>();
-            lod0.m_Bias = 0f;
-            lod0.m_ShadowBias = 0f;
-            lod0.m_LodMeshes = new[] { p0l1, p0l2 };
-            Roots = new RenderPrefab[] { p0l0 };
+            lod0.m_Bias = Numeric_Types_Lift01_Lift01ApproachSources_g_cs.Values.F32[32];
+            lod0.m_ShadowBias = Numeric_Types_Lift01_Lift01ApproachSources_g_cs.Values.F32[33];
+            lod0.m_LodMeshes = new[]
+            {
+                p0l1,
+                p0l2
+            };
+            Roots = new RenderPrefab[]
+            {
+                p0l0
+            };
         }
-        catch { Dispose(); throw; }
+        catch
+        {
+            Dispose();
+            throw;
+        }
     }
+}
+
+// Embedded numerical arrays: Types_Lift01_Lift01ApproachSources_g_cs
+internal static class Numeric_Types_Lift01_Lift01ApproachSources_g_cs
+{
+    static Numeric_Types_Lift01_Lift01ApproachSources_g_cs() {}
+    internal static readonly HardcodedNumbers Values = HardcodedNumbers.Load("Types_Lift01_Lift01ApproachSources_g_cs");
 }

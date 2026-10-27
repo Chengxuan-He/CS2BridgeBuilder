@@ -14,43 +14,50 @@ namespace BridgeBuilder.Bridges;
 // supplies object procedural skinning without re-applying the network curve.
 internal static class MovableCableSurface
 {
-    internal const string SourceCid = "106cc56e9f15a135bb6ea7b99d675c2d";
-
-    internal static SurfaceAsset Create(string name, PreviewGeometry? preview, List<AssetData> assets)
+    internal static SurfaceAsset Create(SurfaceAsset source, string owner, string styleId,
+        PreviewGeometry? preview, List<AssetData> assets)
     {
+        source.LoadProperties(useVT: true);
+        Color color;
+        var scalars = new Dictionary<string, float>();
+        try
+        {
+            if (source.isVTMaterial || source.textures.Count != 0)
+                throw new NotSupportedException("Textured curved cable material is unsupported: " + source.name);
+            var template = AssetDatabase.global.resources.materialLibrary.GetMaterial(source.materialTemplateHash);
+            color = source.colors.TryGetValue("_BaseColor", out var value)
+                ? value : template.GetColor("_BaseColor");
+            foreach (var property in new[] { "_Metallic", "_Smoothness", "_Snow" })
+                scalars[property] = source.floats.TryGetValue(property, out var scalar)
+                    ? scalar : template.GetFloat(property);
+        }
+        finally { source.UnloadProperties(); }
+        var prepared = BridgePreparedMaterials.Cable(styleId);
+        bool matches = prepared.colors.TryGetValue("_BaseColor", out var preparedColor) && preparedColor.Equals(color);
+        foreach (var scalar in scalars)
+            matches &= prepared.floats.TryGetValue(scalar.Key, out var preparedValue) && preparedValue.Equals(scalar.Value);
+        // Compare the complete resolved recipe, not CID/name or approximate color.
+        // The immutable source catalogue owns this material and its properties.
+        if (matches) return prepared;
+        var name = owner + " Native Cable " + source.id;
         var database = preview?.NativeAssets ?? AssetDatabase.user;
-        using var data = new Surface(name + " Native Cable Surface", "Default");
+        using var data = new Surface(name + " Surface", "Default");
         var surface = database.AddAsset(BridgePrefabPersistence.ResourcePath(data.name, "Appearance"), data);
         assets.Add(surface);
 
-        // SG_Default's missing control map is white and would enable city palette
-        // tinting. The native curved cable has no palette regions. Store zero once
-        // alongside this owner-local descriptor, shared by every LOD in the graph.
-        var control = database.AddAsset<TextureAsset>(
-            BridgePrefabPersistence.ResourcePath(name + " Native Cable Control", "Appearance"));
-        assets.Add(control);
-        var zero = new Texture2D(1, 1, TextureFormat.RGBA32, false, true);
-        try
-        {
-            zero.SetPixel(0, 0, Color.clear);
-            control.SetData(zero);
-            control.Save(compress: true);
-            control.Unload();
-        }
-        finally { UnityEngine.Object.Destroy(zero); }
+        // Differing overrides still keep their own descriptor while that conversion
+        // coverage is migrated. The constant control payload is already prepared.
+        // Never add it to assets: deleting this bridge must not destroy the source.
+        var control = prepared.textures["_ControlMask"];
 
         surface.UpdateTextures(new Dictionary<string, TextureAsset> { ["_ControlMask"] = control });
         surface.UpdateColors(new Dictionary<string, Color>
         {
-            ["_BaseColor"] = new Color(0.018867909908294678f, 0.018867909908294678f,
-                0.018867909908294678f, 1f)
+            ["_BaseColor"] = color
         });
-        // Color is the source asset override; these scalars are the measured
-        // CurvedTransparent template defaults, not Default's metallic=1 defaults.
-        surface.UpdateFloats(new Dictionary<string, float>
-        {
-            ["_Metallic"] = 0f, ["_Smoothness"] = 0.5f, ["_Snow"] = 0f
-        });
+        // Retain source overrides and source-template defaults. Distinct cable
+        // descriptors must not inherit the first cable's appearance.
+        surface.UpdateFloats(scalars);
         surface.UpdateKeywords(new HashSet<string>(surface.keywords) { "_TANGENTSPACE_OCTO" });
         if (!surface.Save(mipBias: 0, force: true, saveTextures: false, vt: false))
             throw new InvalidOperationException("Could not persist native skinned cable material.");

@@ -1,10 +1,7 @@
 # Bridge width invariant audit
 
-## Baseline and evidence
+## Evidence
 
-- Pre-edit rollback baseline: branch `dev`, exact commit
-  `ef70c50a6580c8eadd332d9a620e8c0798c1d035`; durable local reference
-  `backup/dev-before-full-span-width-audit-20260910`.
 - The superseded one-sided audit is invalid and is not used by this pass.
 - Retained running-game evidence:
   `C:\Users\admin\AppData\LocalLow\Colossal Order\Cities Skylines II\ModsData\BridgeBuilder\asset-anatomy.txt`.

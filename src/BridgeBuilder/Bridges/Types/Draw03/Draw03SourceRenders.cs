@@ -6,7 +6,6 @@ using Game.Prefabs;
 using Unity.Mathematics;
 
 namespace BridgeBuilder.Bridges;
-
 internal sealed class Draw03SourceRenders : MovableSourceRenders
 {
     internal Draw03SourceRenders(RenderPrefab nativeDefaultBase, ContentPrefab content)
@@ -15,56 +14,45 @@ internal sealed class Draw03SourceRenders : MovableSourceRenders
         {
             var mechanism = new[]
             {
-                Create("DrawBridge03 Mesh", "9c94f97e5ecbdc7a530390b6fb5c27ab",
-                    new[] { "792a855e9d0c5c34d2c41d48b062139d", "56e7aa2e4da82b8989419135bc6e5496" },
-                    new Bounds3(new float3(-23.657955169677734f, -4.76837158203125e-06f, -96f), new float3(23.657955169677734f, 14.170442581176758f, 96f)),
-                    186782, 382524, 2, 59875.94140625f),
-                Create("DrawBridge03_LOD1 Mesh", "872d93a27cfb08b96a21a0b643716e03",
-                    new[] { "792a855e9d0c5c34d2c41d48b062139d", "56e7aa2e4da82b8989419135bc6e5496" },
-                    new Bounds3(new float3(-23.657955169677734f, -4.76837158203125e-06f, -96f), new float3(23.657955169677734f, 14.170442581176758f, 96f)),
-                    147148, 229416, 2, 59074.73828125f),
-                Create("DrawBridge03_LOD2 Mesh", "9761c21600dfad1b1b7c89a98c817b0e",
-                    new[] { "9212c7ed45a80abe105853ffe71bc8c4" },
-                    new Bounds3(new float3(-23.650819778442383f, 0f, -95.999755859375f), new float3(23.650823593139648f, 14.170442581176758f, 95.999755859375f)),
-                    684, 1344, 1, 16788.12109375f),
+                Create("DrawBridge03 Mesh", "9c94f97e5ecbdc7a530390b6fb5c27ab", new[] { "792a855e9d0c5c34d2c41d48b062139d", "56e7aa2e4da82b8989419135bc6e5496" }, new Bounds3(new float3(-Numeric_Types_Draw03_Draw03SourceRenders_cs.Values.F32[0], -Numeric_Types_Draw03_Draw03SourceRenders_cs.Values.F32[1], -Numeric_Types_Draw03_Draw03SourceRenders_cs.Values.F32[2]), new float3(Numeric_Types_Draw03_Draw03SourceRenders_cs.Values.F32[3], Numeric_Types_Draw03_Draw03SourceRenders_cs.Values.F32[4], Numeric_Types_Draw03_Draw03SourceRenders_cs.Values.F32[5])), Numeric_Types_Draw03_Draw03SourceRenders_cs.Values.I32[0], Numeric_Types_Draw03_Draw03SourceRenders_cs.Values.I32[1], Numeric_Types_Draw03_Draw03SourceRenders_cs.Values.I32[2], Numeric_Types_Draw03_Draw03SourceRenders_cs.Values.F32[6]),
+                Create("DrawBridge03_LOD1 Mesh", "872d93a27cfb08b96a21a0b643716e03", new[] { "792a855e9d0c5c34d2c41d48b062139d", "56e7aa2e4da82b8989419135bc6e5496" }, new Bounds3(new float3(-Numeric_Types_Draw03_Draw03SourceRenders_cs.Values.F32[7], -Numeric_Types_Draw03_Draw03SourceRenders_cs.Values.F32[8], -Numeric_Types_Draw03_Draw03SourceRenders_cs.Values.F32[9]), new float3(Numeric_Types_Draw03_Draw03SourceRenders_cs.Values.F32[10], Numeric_Types_Draw03_Draw03SourceRenders_cs.Values.F32[11], Numeric_Types_Draw03_Draw03SourceRenders_cs.Values.F32[12])), Numeric_Types_Draw03_Draw03SourceRenders_cs.Values.I32[3], Numeric_Types_Draw03_Draw03SourceRenders_cs.Values.I32[4], Numeric_Types_Draw03_Draw03SourceRenders_cs.Values.I32[5], Numeric_Types_Draw03_Draw03SourceRenders_cs.Values.F32[13]),
+                Create("DrawBridge03_LOD2 Mesh", "9761c21600dfad1b1b7c89a98c817b0e", new[] { "9212c7ed45a80abe105853ffe71bc8c4" }, new Bounds3(new float3(-Numeric_Types_Draw03_Draw03SourceRenders_cs.Values.F32[14], Numeric_Types_Draw03_Draw03SourceRenders_cs.Values.F32[15], -Numeric_Types_Draw03_Draw03SourceRenders_cs.Values.F32[16]), new float3(Numeric_Types_Draw03_Draw03SourceRenders_cs.Values.F32[17], Numeric_Types_Draw03_Draw03SourceRenders_cs.Values.F32[18], Numeric_Types_Draw03_Draw03SourceRenders_cs.Values.F32[19])), Numeric_Types_Draw03_Draw03SourceRenders_cs.Values.I32[6], Numeric_Types_Draw03_Draw03SourceRenders_cs.Values.I32[7], Numeric_Types_Draw03_Draw03SourceRenders_cs.Values.I32[8], Numeric_Types_Draw03_Draw03SourceRenders_cs.Values.F32[20]),
             };
             Draw03RenderData.Configure(Draw03RenderData.Part.Mechanism, mechanism, nativeDefaultBase, content);
-            for (var lod = 0; lod < mechanism.Length; lod++)
+            for (var lod = Numeric_Types_Draw03_Draw03SourceRenders_cs.Values.I32[9]; lod < mechanism.Length; lod++)
                 Draw03MechanismData.ApplySkeleton(mechanism[lod], lod);
             var column = new[]
             {
-                Create("DrawBridge03Pillar Mesh", "2f2b405cc148af682d7e55f0ba5388d8",
-                    new[] { "09d384bac9fa877358ef7791a879cf60" },
-                    new Bounds3(new float3(-22.976339340209961f, -5.0000019073486328f, -88.39141845703125f), new float3(22.976335525512695f, 5f, 88.391433715820312f)),
-                    3856, 12168, 1, 3552.17724609375f),
-                Create("DrawBridge03Pillar_LOD1 Mesh", "ac55a2d5ff823159ad40209fb625eb0d",
-                    new[] { "09d384bac9fa877358ef7791a879cf60" },
-                    new Bounds3(new float3(-22.976339340209961f, -5.0000019073486328f, -88.39141845703125f), new float3(22.976335525512695f, 5f, 88.391433715820312f)),
-                    4105, 7299, 1, 3472.7890625f),
-                Create("DrawBridge03Pillar_LOD2 Mesh", "1ba0e68ebf8b1512887cb85cd4aff782",
-                    new[] { "4d9fc727d7b33c6634c749f9366374af" },
-                    new Bounds3(new float3(-22.976339340209961f, -5.3162760734558105f, -88.391403198242188f), new float3(22.976339340209961f, 5.3162751197814941f, 88.391403198242188f)),
-                    854, 2400, 1, 4765.212890625f),
+                Create("DrawBridge03Pillar Mesh", "2f2b405cc148af682d7e55f0ba5388d8", new[] { "09d384bac9fa877358ef7791a879cf60" }, new Bounds3(new float3(-Numeric_Types_Draw03_Draw03SourceRenders_cs.Values.F32[21], -Numeric_Types_Draw03_Draw03SourceRenders_cs.Values.F32[22], -Numeric_Types_Draw03_Draw03SourceRenders_cs.Values.F32[23]), new float3(Numeric_Types_Draw03_Draw03SourceRenders_cs.Values.F32[24], Numeric_Types_Draw03_Draw03SourceRenders_cs.Values.F32[25], Numeric_Types_Draw03_Draw03SourceRenders_cs.Values.F32[26])), Numeric_Types_Draw03_Draw03SourceRenders_cs.Values.I32[10], Numeric_Types_Draw03_Draw03SourceRenders_cs.Values.I32[11], Numeric_Types_Draw03_Draw03SourceRenders_cs.Values.I32[12], Numeric_Types_Draw03_Draw03SourceRenders_cs.Values.F32[27]),
+                Create("DrawBridge03Pillar_LOD1 Mesh", "ac55a2d5ff823159ad40209fb625eb0d", new[] { "09d384bac9fa877358ef7791a879cf60" }, new Bounds3(new float3(-Numeric_Types_Draw03_Draw03SourceRenders_cs.Values.F32[28], -Numeric_Types_Draw03_Draw03SourceRenders_cs.Values.F32[29], -Numeric_Types_Draw03_Draw03SourceRenders_cs.Values.F32[30]), new float3(Numeric_Types_Draw03_Draw03SourceRenders_cs.Values.F32[31], Numeric_Types_Draw03_Draw03SourceRenders_cs.Values.F32[32], Numeric_Types_Draw03_Draw03SourceRenders_cs.Values.F32[33])), Numeric_Types_Draw03_Draw03SourceRenders_cs.Values.I32[13], Numeric_Types_Draw03_Draw03SourceRenders_cs.Values.I32[14], Numeric_Types_Draw03_Draw03SourceRenders_cs.Values.I32[15], Numeric_Types_Draw03_Draw03SourceRenders_cs.Values.F32[34]),
+                Create("DrawBridge03Pillar_LOD2 Mesh", "1ba0e68ebf8b1512887cb85cd4aff782", new[] { "4d9fc727d7b33c6634c749f9366374af" }, new Bounds3(new float3(-Numeric_Types_Draw03_Draw03SourceRenders_cs.Values.F32[35], -Numeric_Types_Draw03_Draw03SourceRenders_cs.Values.F32[36], -Numeric_Types_Draw03_Draw03SourceRenders_cs.Values.F32[37]), new float3(Numeric_Types_Draw03_Draw03SourceRenders_cs.Values.F32[38], Numeric_Types_Draw03_Draw03SourceRenders_cs.Values.F32[39], Numeric_Types_Draw03_Draw03SourceRenders_cs.Values.F32[40])), Numeric_Types_Draw03_Draw03SourceRenders_cs.Values.I32[16], Numeric_Types_Draw03_Draw03SourceRenders_cs.Values.I32[17], Numeric_Types_Draw03_Draw03SourceRenders_cs.Values.I32[18], Numeric_Types_Draw03_Draw03SourceRenders_cs.Values.F32[41]),
             };
             Draw03RenderData.Configure(Draw03RenderData.Part.Column, column, nativeDefaultBase, content);
             var footing = new[]
             {
-                Create("DrawBridge03PillarBase Mesh", "477e498748cdee6cec8a38c2c85fa96f",
-                    new[] { "4051f5abf32f10690118a132c9e9b5cb" },
-                    new Bounds3(new float3(-28.712869644165039f, -2.3275759220123291f, -89.57513427734375f), new float3(28.712869644165039f, 2.5677940845489502f, 89.575149536132812f)),
-                    1152, 4224, 1, 2512.95263671875f),
-                Create("DrawBridge03PillarBase_LOD1 Mesh", "32374d86e9ac6ed6fa7893a9cdcfe2f9",
-                    new[] { "4051f5abf32f10690118a132c9e9b5cb" },
-                    new Bounds3(new float3(-28.712869644165039f, -2.3275759220123291f, -89.57513427734375f), new float3(28.712869644165039f, 2.5677940845489502f, 89.575149536132812f)),
-                    1768, 2532, 1, 2496.219482421875f),
-                Create("DrawBridge03PillarBase_LOD2 Mesh", "a4e465604d199603424640387f060230",
-                    new[] { "bc8ade3c4aee9dddf394bba30387bbd4" },
-                    new Bounds3(new float3(-28.544170379638672f, -2.5871312618255615f, -89.521430969238281f), new float3(28.418468475341797f, 2.6263620853424072f, 89.552482604980469f)),
-                    158, 600, 1, 4491.16357421875f),
+                Create("DrawBridge03PillarBase Mesh", "477e498748cdee6cec8a38c2c85fa96f", new[] { "4051f5abf32f10690118a132c9e9b5cb" }, new Bounds3(new float3(-Numeric_Types_Draw03_Draw03SourceRenders_cs.Values.F32[42], -Numeric_Types_Draw03_Draw03SourceRenders_cs.Values.F32[43], -Numeric_Types_Draw03_Draw03SourceRenders_cs.Values.F32[44]), new float3(Numeric_Types_Draw03_Draw03SourceRenders_cs.Values.F32[45], Numeric_Types_Draw03_Draw03SourceRenders_cs.Values.F32[46], Numeric_Types_Draw03_Draw03SourceRenders_cs.Values.F32[47])), Numeric_Types_Draw03_Draw03SourceRenders_cs.Values.I32[19], Numeric_Types_Draw03_Draw03SourceRenders_cs.Values.I32[20], Numeric_Types_Draw03_Draw03SourceRenders_cs.Values.I32[21], Numeric_Types_Draw03_Draw03SourceRenders_cs.Values.F32[48]),
+                Create("DrawBridge03PillarBase_LOD1 Mesh", "32374d86e9ac6ed6fa7893a9cdcfe2f9", new[] { "4051f5abf32f10690118a132c9e9b5cb" }, new Bounds3(new float3(-Numeric_Types_Draw03_Draw03SourceRenders_cs.Values.F32[49], -Numeric_Types_Draw03_Draw03SourceRenders_cs.Values.F32[50], -Numeric_Types_Draw03_Draw03SourceRenders_cs.Values.F32[51]), new float3(Numeric_Types_Draw03_Draw03SourceRenders_cs.Values.F32[52], Numeric_Types_Draw03_Draw03SourceRenders_cs.Values.F32[53], Numeric_Types_Draw03_Draw03SourceRenders_cs.Values.F32[54])), Numeric_Types_Draw03_Draw03SourceRenders_cs.Values.I32[22], Numeric_Types_Draw03_Draw03SourceRenders_cs.Values.I32[23], Numeric_Types_Draw03_Draw03SourceRenders_cs.Values.I32[24], Numeric_Types_Draw03_Draw03SourceRenders_cs.Values.F32[55]),
+                Create("DrawBridge03PillarBase_LOD2 Mesh", "a4e465604d199603424640387f060230", new[] { "bc8ade3c4aee9dddf394bba30387bbd4" }, new Bounds3(new float3(-Numeric_Types_Draw03_Draw03SourceRenders_cs.Values.F32[56], -Numeric_Types_Draw03_Draw03SourceRenders_cs.Values.F32[57], -Numeric_Types_Draw03_Draw03SourceRenders_cs.Values.F32[58]), new float3(Numeric_Types_Draw03_Draw03SourceRenders_cs.Values.F32[59], Numeric_Types_Draw03_Draw03SourceRenders_cs.Values.F32[60], Numeric_Types_Draw03_Draw03SourceRenders_cs.Values.F32[61])), Numeric_Types_Draw03_Draw03SourceRenders_cs.Values.I32[25], Numeric_Types_Draw03_Draw03SourceRenders_cs.Values.I32[26], Numeric_Types_Draw03_Draw03SourceRenders_cs.Values.I32[27], Numeric_Types_Draw03_Draw03SourceRenders_cs.Values.F32[62]),
             };
             Draw03RenderData.Configure(Draw03RenderData.Part.Footing, footing, nativeDefaultBase, content);
-            Roots = new[] { mechanism[0], column[0], footing[0] };
+            Roots = new[]
+            {
+                mechanism[Numeric_Types_Draw03_Draw03SourceRenders_cs.Values.I32[28]],
+                column[Numeric_Types_Draw03_Draw03SourceRenders_cs.Values.I32[29]],
+                footing[Numeric_Types_Draw03_Draw03SourceRenders_cs.Values.I32[30]]
+            };
         }
-        catch { Dispose(); throw; }
+        catch
+        {
+            Dispose();
+            throw;
+        }
     }
+}
+
+// Embedded numerical arrays: Types_Draw03_Draw03SourceRenders_cs
+internal static class Numeric_Types_Draw03_Draw03SourceRenders_cs
+{
+    static Numeric_Types_Draw03_Draw03SourceRenders_cs() {}
+    internal static readonly HardcodedNumbers Values = HardcodedNumbers.Load("Types_Draw03_Draw03SourceRenders_cs");
 }

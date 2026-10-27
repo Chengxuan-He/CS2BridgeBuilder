@@ -209,12 +209,12 @@ internal sealed partial class TowerFactory
     {
         if (source.Length != moved.Length) return null;
 
-        bool[]? dropped = null;
-        for (var index = 0; index < source.Length; index++)
+        var dropMask = new bool[source.Length];
+        AffineGeometry.For(0, source.Length, index =>
         {
             // Offline archetype membership: railing x bands also overlap the truss below.
             // Never overwrite or remove those already-transformed structural vertices.
-            if (protectedSupport != null && protectedSupport[index]) continue;
+            if (protectedSupport != null && protectedSupport[index]) return;
             foreach (var plan in plans)
             {
                 if (!plan.Covers(source[index])) continue;
@@ -223,20 +223,19 @@ internal sealed partial class TowerFactory
                 {
                     // Marked, not moved. What is taken off the bridge is taken out of the index
                     // buffer when the mesh is written; moving it anywhere leaves it in the file.
-                    dropped ??= new bool[source.Length];
-                    dropped[index] = true;
+                    dropMask[index] = true;
                 }
                 else
                 {
                     moved[index] = new float3(
-                        source[index].x + plan.Shift, moved[index].y, moved[index].z);
+                        AffineGeometry.Translate(source[index].x, plan.Shift), moved[index].y, moved[index].z);
                 }
 
                 break;
             }
-        }
+        });
 
-        return dropped;
+        return Array.IndexOf(dropMask, true) < 0 ? null : dropMask;
     }
 
     /// <summary>How far below deck level a railing may start, and how high it may reach.</summary>

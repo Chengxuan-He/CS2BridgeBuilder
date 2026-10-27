@@ -32,6 +32,24 @@ Check(BridgeAssetInfo.IsOtherBridgePrefab(foreign.Metadata.path.Replace("Importe
 Check(BridgeAssetInfo.IsOtherBridgePrefab(Path.Combine(imported,"b"+Guid.NewGuid(),"Prefabs","Bridge.Prefab"),owner,imported),"short foreign prefab remains excluded by directory UUID");
 Check(BridgeAssetInfo.IsOtherBridgePrefab(Path.Combine(imported,"b"+Guid.NewGuid(),"Dependencies",a+".Prefab"),owner,imported),"new foreign dependency directory excluded");
 Check(BridgeDependencyCopies.Folder(UnityEngine.Application.persistentDataPath,owner)==Path.Combine(imported,owner,"Dependencies"),"dependency copies belong inside owner folder");
+AssetDatabase.global.Assets.Clear();
+AssetDatabase.global.Assets.Add(new AssetData(a,()=>throw new Exception("Deleted snapshot was read before packaged source")));
+BridgePreparedMaterials.Assets.Add(a,original); BridgePreparedMaterials.Assets.Add(b,second);
+Check(BridgeDependencyPersistence.Save(owner,new[]{a},out _,out error),"prepared source precedes deleted same-CID registration");
+BridgePreparedMaterials.Assets.Clear();
+foreach (var extension in new[]{".Prefab", ".Surface", ".Material", ".Texture", ".VTSurface", ".VTTexture", ".Geometry", ".MidMips"}) {
+ var isolatedOwner="b"+Guid.NewGuid();
+ var other=new AssetData(a,()=>throw new Exception("Foreign "+extension+" stream opened"));
+ other.Metadata.path=Path.Combine(imported,"b"+Guid.NewGuid(),"Dependencies",a+extension);
+ other.Metadata.extension=extension;
+ AssetDatabase.global.Assets.Clear();
+ AssetDatabase.global.Assets.AddRange(new[]{other,original,second});
+ Check(BridgeDependencyPersistence.Save(isolatedOwner,new[]{a},out _,out error),"exclude foreign first-match "+extension+": "+error);
+ AssetDatabase.global.Assets.Clear();AssetDatabase.global.Assets.AddRange(new[]{stale,other});
+ Check(!BridgeDependencyPersistence.Save(isolatedOwner,new[]{a},out _,out error)&&error.Contains("Dependency unavailable"),
+  "exclude foreign fallback "+extension+" before reading: "+error);
+}
+MaterialSnapshotCheck.Run(imported);
 foreach(var fixture in args) {
  var payload=File.ReadAllBytes(fixture);
  var refs=BridgeSurfaceReferences.Read(payload,(_,_)=>false);
@@ -56,7 +74,7 @@ namespace Colossal.IO.AssetDatabase {
  class AssetData {
   public sealed class Identifier{public Colossal.Hash128 guid=null!;}
   public sealed class Meta{public bool packaged=true;public string path="",subPath="",extension=".Prefab";}
-  public Identifier id=new();public bool isBuiltin=>false;readonly Func<Stream> open;
+  public Identifier id=new();public bool isBuiltin;readonly Func<Stream> open;
   public AssetData(string cid,Func<Stream> read){id.guid=Colossal.Hash128.Parse(cid);open=read;}
   public Meta Metadata=new(); public Meta GetMeta()=>Metadata;public Stream GetReadStream()=>open();
  }
@@ -71,3 +89,9 @@ namespace Colossal.IO.AssetDatabase {
  }
 }
 namespace BridgeBuilder {static class Mod{public static Logger Log=new();} class Logger{public void Info(string s){} public void Warn(string s){}}}
+namespace BridgeBuilder.Runtime {
+ static class BridgePreparedMaterials {
+  internal static readonly Dictionary<string,AssetData> Assets=new();
+  internal static bool TryGet(string cid,out AssetData asset)=>Assets.TryGetValue(cid,out asset!);
+ }
+}

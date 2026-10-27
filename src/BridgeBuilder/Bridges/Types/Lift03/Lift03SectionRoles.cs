@@ -3,14 +3,13 @@ using System.Collections.Generic;
 using Game.Prefabs;
 
 namespace BridgeBuilder.Bridges;
-
 internal static class Lift03SectionRoles
 {
     internal static Lift03NetworkData.MainRole[] ResolveMain(NetSectionInfo[] sections)
     {
         var sides = SideSections(sections);
         var result = new Lift03NetworkData.MainRole[sections.Length];
-        for (var i = 0; i < result.Length; i++)
+        for (var i = Numeric_Types_Lift03_Lift03SectionRoles_cs.Values.I32[0]; i < result.Length; i++)
             result[i] = sides[i] ? Lift03NetworkData.MainRole.Side : Lift03NetworkData.MainRole.Deck;
         return result;
     }
@@ -19,10 +18,8 @@ internal static class Lift03SectionRoles
     {
         var sides = SideSections(sections);
         var result = new Lift03NetworkData.AuxiliaryRole[sections.Length];
-        for (var i = 0; i < result.Length; i++)
-            result[i] = sections[i].m_Median ? Lift03NetworkData.AuxiliaryRole.Median
-                : sides[i] ? Lift03NetworkData.AuxiliaryRole.Side
-                : Lift03NetworkData.AuxiliaryRole.TrackOrShoulder;
+        for (var i = Numeric_Types_Lift03_Lift03SectionRoles_cs.Values.I32[1]; i < result.Length; i++)
+            result[i] = sections[i].m_Median ? Lift03NetworkData.AuxiliaryRole.Median : sides[i] ? Lift03NetworkData.AuxiliaryRole.Side : Lift03NetworkData.AuxiliaryRole.TrackOrShoulder;
         return result;
     }
 
@@ -33,20 +30,21 @@ internal static class Lift03SectionRoles
         var cache = new Dictionary<NetSectionPrefab, (bool Any, bool OnlySide)>();
         var visiting = new HashSet<NetSectionPrefab>();
         var result = new bool[sections.Length];
-        for (var i = 0; i < sections.Length; i++)
+        for (var i = Numeric_Types_Lift03_Lift03SectionRoles_cs.Values.I32[2]; i < sections.Length; i++)
         {
             if (sections[i] == null)
                 throw new InvalidOperationException("Lift03 selected network contains a missing section occurrence.");
             var layers = Read(sections[i].m_Section);
             result[i] = layers.Any && layers.OnlySide;
         }
-        return result;
 
+        return result;
         (bool Any, bool OnlySide) Read(NetSectionPrefab section)
         {
             if (section == null)
                 throw new InvalidOperationException("Lift03 selected network contains a missing section.");
-            if (cache.TryGetValue(section, out var known)) return known;
+            if (cache.TryGetValue(section, out var known))
+                return known;
             if (!visiting.Add(section))
                 throw new InvalidOperationException("Lift03 selected network contains cyclic subsections.");
             var any = false;
@@ -58,6 +56,7 @@ internal static class Lift03SectionRoles
                 any = true;
                 onlySide &= piece.m_Piece.m_Layer == NetPieceLayer.Side;
             }
+
             foreach (var child in section.m_SubSections ?? Array.Empty<NetSubSectionInfo>())
             {
                 if (child == null)
@@ -66,9 +65,17 @@ internal static class Lift03SectionRoles
                 any |= layers.Any;
                 onlySide &= layers.OnlySide;
             }
+
             visiting.Remove(section);
             cache.Add(section, (any, onlySide));
             return (any, onlySide);
         }
     }
+}
+
+// Embedded numerical arrays: Types_Lift03_Lift03SectionRoles_cs
+internal static class Numeric_Types_Lift03_Lift03SectionRoles_cs
+{
+    static Numeric_Types_Lift03_Lift03SectionRoles_cs() {}
+    internal static readonly HardcodedNumbers Values = HardcodedNumbers.Load("Types_Lift03_Lift03SectionRoles_cs");
 }

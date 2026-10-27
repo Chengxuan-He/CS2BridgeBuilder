@@ -1,6 +1,6 @@
 # Runtime UI localization
 
-The runtime create/manage panels use the same game locale as the existing settings and bridge-style translations. `Settings/RuntimeUiText.cs` contains 98 runtime UI keys in 12 languages: English, Simplified Chinese, Traditional Chinese, German, Spanish, French, Italian, Japanese, Korean, Polish, Brazilian Portuguese and Russian.
+The runtime create/manage panels use the same game locale as the existing settings and bridge-style translations. `Settings/RuntimeUiText.cs` supplies the runtime UI dictionary in 12 languages: English, Simplified Chinese, Traditional Chinese, German, Spanish, French, Italian, Japanese, Korean, Polish, Brazilian Portuguese and Russian.
 
 ## New style integration
 
@@ -34,11 +34,11 @@ Every double-deck style exposes the localized `LowerDeckOpposite` toggle. It def
 
 ## Checks
 
-Run `node tools/CheckRuntimeLocalization.mjs` and `dotnet run --project tools/LocalizationCheck/LocalizationCheck.csproj -c Release`, followed by `tools/Build.ps1`. These check translation coverage, format placeholders, the real C# locale resolver and status handling, UI labels and track selection. They do not launch the game or generate bridge geometry.
+For runtime UI or localization changes, run `node tools/CheckRuntimeLocalization.mjs` and `dotnet run --project tools/LocalizationCheck/LocalizationCheck.csproj -c Release`, followed by `tools/Build.ps1`. These check translation coverage, format placeholders, the real C# locale resolver and status handling, UI labels and track selection. They do not launch the game or generate bridge geometry. Documentation-only changes require a localization review but no build or deployment, as specified in AGENTS.md.
 
 Human verification: open the create and manage panels, switch the game language, and confirm that labels and existing status messages change, custom names/UUIDs stay intact, and longer labels fit with scrolling and close controls still usable. Cohtml layout and native dialog appearance have not been visually verified by the offline checks.
 
-## Search, filters and text-free preview (2026-09-19)
+## Search, filters and text-free preview
 
 - Each upper/lower network picker has independent name/ID search and a stable network-type filter. The backend classifies RoadPrefab by HighwayRules / PublicTransport, PathwayPrefab as pedestrian, and the existing track catalogue by train/subway/tram. It does not infer a network type from a localized name or confuse RoadBuilder provenance with a transport type.
 - Bridge-style search filters the currently selected single/double-deck catalogue by display name or ID. Management searches display names, UUIDs and style labels, combined with deck count, style and availability filters.
@@ -48,15 +48,16 @@ Human verification: open the create and manage panels, switch the game language,
 
 Release compilation, JavaScript syntax, and nonvisual localization/filter/selection-state checks passed. No geometry tests or game control were performed. In-game verification remains necessary for spinner animation, centred card labels, dropdown focus/scroll behavior, long translations and double-deck picker sizing.
 
-## Creation and placement actions (2026-09-19)
+## Creation and placement actions
 
 - `CreateBridge` creates and registers the formal bridge only; the panel and current tool remain unchanged. `CreateAndBuildBridge` carries explicit `BuildAfterCreate` intent through the queue and native publication callback. Both use the same selected networks, style and custom display name.
 - Create-and-build activates the formal prefab only after native initialization and display-name registration succeed. Successful native tool activation closes the panel idempotently and clears its preview. Validation, publication or tool activation failure does not dismiss the UI. Create-only retains the existing translated `CreatedManage` status.
-- Management has a fixed Build/Rename/Delete action row outside the details scroller. Build activates the selected existing UUID directly, without generating another bridge or temporary copy. Unavailable assets disable Build. Successful activation follows the same close/preview-cleanup path.
+- Management has a fixed Build/Export/Delete action row outside the details scroller. Rename
+  is submitted from the nonblank name field without a separate Rename button. Build activates the selected existing UUID directly, without generating another bridge or temporary copy. Unavailable assets disable Build. Successful activation follows the same close/preview-cleanup path.
 - Creation buttons occupy a separate row below the name field so longer translations do not squeeze the name input. The new Create label is translated into all 12 languages.
 - Offline checks exercise both UI handlers, missing selections, existing-UUID activation, fixed action placement and request intent. Native tool switching and panel layout still require human verification after restarting the game.
 
-## Native fields and vector icons (2026-09-19)
+## Native fields and vector icons
 
 Find It's installed UI module uses `game-ui/common/input/text/text-input.tsx` (`TextInput`), the
 `editor-item.module.scss` input class and `FOCUS_DISABLED`. All BridgeBuilder search/name fields
@@ -71,7 +72,6 @@ there is no Find It dependency or reference to its cache. Build output includes 
 Offline checks cover field properties, translations and icon order/presence. Actual native focus,
 typing, placeholder display and layout remain a human in-game check after restart.
 
-## Error footer removal (2026-10-16)
+## Error footer removal
 
 The create/manage error footer is removed from the UI rather than hidden with CSS. The panel no longer subscribes to the legacy operation-status binding or passes it to either view. The obsolete preview-failure reset callback is removed. Backend error dialogs and ERROR logging remain unchanged; preview status is retained solely to stop the preview spinner on failure. Existing bridge assets are unaffected. Deployment verification does not replace a human check after restarting the game.
-

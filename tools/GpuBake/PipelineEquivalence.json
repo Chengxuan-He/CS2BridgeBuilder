@@ -1,0 +1,65 @@
+[
+  {
+    "file": "RepeatBake.compute",
+    "current": "92C3D1CE965F81D9208F82559548DC306CC379E921736F065FAC83EA85FF6604",
+    "canonical": "0502DA78915F28030A10B2C8B3604055E378F40486F0C5666C06B3CF38C57CDB",
+    "equivalent": [
+      "0502DA78915F28030A10B2C8B3604055E378F40486F0C5666C06B3CF38C57CDB"
+    ],
+    "reason": "SkipAtlasControl defaults to zero and preserves SurfaceAtlas. Runtime complete zero-control pages and offline sources without authored control may set one. Draw02 ControlGate GPU probe verifies old/new default output byte equality, skipped output isolation and reset. All other kernels are unchanged. Authored control always uses zero. Missing control now borrows a separately verified prepared resource and never looks up the old generated control product."
+  },
+  {
+    "file": "StructureBake.compute",
+    "current": "92C3D1CE965F81D9208F82559548DC306CC379E921736F065FAC83EA85FF6604",
+    "canonical": "0502DA78915F28030A10B2C8B3604055E378F40486F0C5666C06B3CF38C57CDB",
+    "equivalent": [
+      "0502DA78915F28030A10B2C8B3604055E378F40486F0C5666C06B3CF38C57CDB"
+    ],
+    "reason": "Only SurfaceAtlas gained an optional runtime control-write gate. The structural producer uses unchanged CropNativeAtlas, AtlasMip and CompressAtlas kernels; the added uniform is unused by those kernels. No source, crop, normal, mip or encoding behavior changed."
+  },
+  {
+    "file": "PrepareStructure.cs",
+    "current": "C1A53B96AA84EB9A1EC1C824F01ADAF2E2CB49238DB94F2507223FA8F3F1229B",
+    "canonical": "FF4761076F7809189660C8172CCF950C2A9001939E906C2F3970A414CAAC7E28",
+    "equivalent": [
+      "FF4761076F7809189660C8172CCF950C2A9001939E906C2F3970A414CAAC7E28"
+    ],
+    "reason": "Product lookup now includes explicit read-only stores and rejects missing products in reuse-only mode before invoking the producer. Source keys, cropping, dimensions, channel processing, mip encoding and descriptor serialization are unchanged."
+  },
+  {
+    "file": "PrepareRepeat.cs",
+    "current": "E19ACB6549386E0FBB8E52F05C864A1C05B8AE2B30D1A60EDFBB38F883F51412",
+    "canonical": "84A44C0DBB24AB96FF6951D4F7DD0424F93031ACFD6AEED9D339F69A5AE3B3F8",
+    "equivalent": [
+      "53A6F2297B243BE8D7910D75612BEFC33147883652993F03A747FA24827AFC9D",
+      "84A44C0DBB24AB96FF6951D4F7DD0424F93031ACFD6AEED9D339F69A5AE3B3F8",
+      "9BF1FEB126E6E94C60C289054AB8A5AA13A4181918CE77352FA4181E3BE921B4",
+      "6FFDA22A9D5F007E97A285ED70D053B041AD0B7D99DC4A0DC8EF7311333E64CD",
+      "9BC8EEC1D55BA146A040E1FEF430B23DC095D6F1B537682684BF731C0969537C",
+      "A24D12A7E68C3044053618F98C7B5DFB6AFC11F6A5C4AEB9C2DF479B63D41DA0",
+      "D42974FD78C837817B12A3CD612941B26117D4DCA344F67C380433F9F63E30EF",
+      "217129E4C41F2ABA1B10BD11C6391104A07FD10FDEBEB4272C5F6E7625FE2AC6",
+      "6752B47EE0AEBB7CB509DC6F0C53593F3D62E503C30DF1E59FBA3D989D2BB925",
+      "966FC37557D70A7C6B60FC49D09C1AF31E473126807D208517C9B1ED18BB0400"
+    ],
+    "reason": "Reviewed per-style provenance and unchanged sampled-product keys. Missing control now copies the verified style-local Road zero resource directly, without asking the product store for its former page-sized output. All other channels retain exact source decoding, sampler keys, dimensions, mip processing and serialization. Optional skipped control writes do not change other channel bytes (ControlGate GPU probe); authored control is never skipped. Surface keys include changed control CIDs, so old descriptors cannot be adopted. Historical validation differences do not authorize unverified inputs or new source equivalence."
+  },
+  {
+    "file": "PreparedBakeStore.cs",
+    "current": "FDF593BF3F5163D6CA0C8EE59C6AD59985D57506C72AC6E8AFBCCBD018A52ED0",
+    "canonical": "FBF2826233C5BD63E5DF69AC09EA5031D94AAFE1A947D0BCBED8EB2B2D1300A6",
+    "equivalent": [
+      "FBF2826233C5BD63E5DF69AC09EA5031D94AAFE1A947D0BCBED8EB2B2D1300A6"
+    ],
+    "reason": "Added checksum-validated one-hop aliases and nullable annotations. Existing Get, recipe key serialization, payload encoding and CID calculation unchanged."
+  },
+  {
+    "file": "MovableStructurePacking.cs",
+    "current": "0189692AB56A3A69595A0F6A656FD011DB9BD2A0ABD2A20F2EBC542520FB8CE4",
+    "canonical": "98876B38230F60CA79EA7671ACEBE420520258450A7B76B8BF82F1266FB71EE8",
+    "equivalent": [
+      "98876B38230F60CA79EA7671ACEBE420520258450A7B76B8BF82F1266FB71EE8"
+    ],
+    "reason": "Only runtime original-Surface selection gained measured chart containment and exact fragment-phase restoration. Offline PrepareStructure calls Pack and reads sampler fields directly; neither it nor PrepareRepeat calls CanUseSource, SourceUv or MovableUvChart. Cell, Page and Pack implementations are byte-identical to the prior producer. Native crop coordinates, dimensions, normal handling, mip generation, texture encoding and product serialization are unchanged."
+  }
+]

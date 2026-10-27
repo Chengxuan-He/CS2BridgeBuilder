@@ -24,6 +24,7 @@ internal static class MovableClosedRoad
         // Global occurrence -> compiled pre-atlas triangle ordinal -> original mesh face.
         internal readonly BridgePreviewNetMesh.SourceFace[][]? SourceFaces;
         internal readonly MovableLaneVisuals.Batch[] LaneVisuals;
+        internal UnityEngine.Vector3[] CarLaneCenters = Array.Empty<UnityEngine.Vector3>();
         internal readonly MovableLaneGeometry.Result LaneGeometry;
         internal readonly MovableRoadObjects.Rule[][] ObjectRules;
         internal Result(MovableRoadGeometry.Triangle[] triangles, SurfaceAsset[] surfaces,

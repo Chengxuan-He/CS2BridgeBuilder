@@ -12,7 +12,6 @@
 - [8. UI and errors](#8-ui-and-errors)
 - [9. Verification and change scope](#9-verification-and-change-scope)
 - [10. Supporting records](#10-supporting-records)
-- [Organization revision record](#organization-revision-record)
 
 ## 1. Scope and authority
 
@@ -26,9 +25,6 @@ Follow the [project contract](agent-contract/PROJECT_CONTRACT.md) and
 [asset persistence policy](Bridge-Asset-Persistence.md). These contracts govern generation,
 source isolation, ownership, error handling and acceptance. This specification does not authorize
 new generation exceptions, custom shaders or changes to persisted bridge behavior.
-
-Documentation baseline: `dev`, HEAD `3b6363ada9f1f147b1a660e20c0d6246a54f82dd`, 2026-10-16.
-Existing working-tree changes are preserved. This addition requires no code change or deployment.
 
 ## 2. Preview identity and entry points
 
@@ -91,8 +87,11 @@ traffic signals, open placed bridges, or imply that shipping compatibility has b
 ## 5. Geometry and appearance fidelity
 
 Use the generated bridge's geometry and native material behavior. Preserve source vertex formats,
-material-slot ordering, UVs, normals, transparency and required LOD relationships. Follow the
-existing movable conversion approvals; preview must not introduce additional approximations.
+material-slot semantics, normals, transparency and required LOD relationships except for the
+conversions explicitly required by the generation contracts. Rigid geometry retains its original
+UVs; deformed geometry uses the same measured density-preserving UV remapping and original or
+prepared material as formal generation. Unchanged UV values must not be used to justify stretched
+textures. Preview must not introduce additional approximations.
 
 Perforated grating in an original bridge is not inherently damaged geometry. Distinguish it from
 missing triangles, stretching, overlapping surfaces and material errors using original and actual
@@ -108,11 +107,12 @@ persisted bridge. Conversely, diagnose preview-only failures independently from 
 
 Reuse compatible native assets. Geometry motion alone does not justify creating new textures,
 materials or shaders. Necessary native network-to-object conversions follow the persistence policy
-and must document the actual representation change. All moving markings use existing materials and the approved atlas-pattern approximation,
-without material descriptor creation or a pixel-baking fallback.
+and must document the actual representation change. Material reuse, native conversions and
+offline-prepared resources follow the material generation contract. Moving markings follow
+the separate skinned-paint rules in movable contract sections 18–19.
 
-Private Unity material instances are permitted when preview bindings, animation or rendering state
-must differ from shared game materials. Never mutate the game's shared instances. Such copies do
+Reuse original material instances when no state differs. Private Unity instances are permitted
+only when preview bindings, animation or rendering state must differ from shared game materials. Never mutate the game's shared instances. Such copies do
 not authorize new custom shaders or permanent asset export.
 
 Keep generated preview assets in their private temporary scope. Where serialized CID lookup cannot
@@ -125,8 +125,9 @@ closure. Borrowed game assets and existing bridges must survive preview disposal
 
 ### Existing material selection
 
-Preview and formal generation use the same existing-material selection. Do not create material
-descriptors or bake appearance textures. See [the current policy](Movable-Road-Material-Reuse.md).
+Preview and formal generation follow the same [material generation contract](agent-contract/MATERIAL_GENERATION_CONTRACT.md).
+Full reuse creates no new material; constant converted materials are copied from offline-prepared
+resources. No preview-only fallback may change appearance or texel density.
 
 ## 7. Rendering, framing and performance
 
@@ -139,14 +140,14 @@ descriptors or bake appearance textures. See [the current policy](Movable-Road-M
   Do not modify city lights, camera settings, global HDRP settings or engine shadow code.
 - Submit rendering and GPU readback in the proper engine-frame order. Do not capture before the
   relevant rendering work has completed or reuse stale pixels as a successful result.
-- Reuse valid results for unchanged inputs. Expensive repeated pixel/matrix work uses vendor-neutral
-  GPU facilities; overlap independent work where thread affinity and resource ownership permit.
+- Keep the current preview for unchanged inputs; do not cache generated bridge results for later
+  creation. Choose CPU/GPU execution from measured cost and native API affinity; overlap independent work where thread affinity and resource ownership permit.
   Record measured timings when investigating stalls. This specification introduces no invented
   latency threshold and does not equate faster generation with visual correctness.
 
 ### Posed camera bounds
 
-For procedural moving geometry, camera framing must use indexed vertices transformed by their own native bone indices. Applying every bone to the entire mesh bounds creates nonexistent space and is forbidden. Aggregate framing bounds in the fixed camera basis, including both approaches and mounted objects. Bulk skin transforms and bound reduction execute on the GPU. See [the framing correction](Movable-Preview-Framing-And-Material-Followup.md) for implementation and verification limits.
+For procedural moving geometry, camera framing must use indexed vertices transformed by their own native bone indices. Applying every bone to the entire mesh bounds creates nonexistent space and is forbidden. Aggregate framing bounds in the fixed camera basis, including both approaches and mounted objects. The existing bulk skin-transform and bound-reduction path uses the GPU; execution changes must follow measured cost and native API affinity. See [the framing correction](Movable-Preview-Framing-And-Material-Followup.md) for implementation and verification limits.
 
 ## 8. UI and errors
 
@@ -166,8 +167,8 @@ with a silent fallback, partial preview or false success.
 
 Inspect the relevant original and generated geometry, component graph, native behavior and logs.
 A successful build, an emitted image or valid indices alone does not establish visual acceptance.
-Do not run synthetic visual-generation unit tests or use computer-control tools for this project.
-Humans perform the in-game checks.
+Automated geometry, data and serialization checks are allowed; they do not establish visual
+acceptance. Do not use computer-control tools. Humans perform the in-game checks.
 
 | Area | Required human check |
 | --- | --- |
@@ -186,22 +187,14 @@ traffic clearance or cold-start persistence.
 
 Preview-only or documentation-only changes remove no existing bridges. Code changes require the
 project's build/deployment workflow; documentation-only updates require no shutdown or deployment.
-Generation changes remain subject to the exact affected-style cleanup rules.
+Generation changes require recovery only for demonstrably incompatible UUID-owned assets;
+a source change alone does not authorize deleting healthy bridges.
 
 ## 10. Supporting records
 
-- [Preview rendering implementation and diagnosis](Bridge-Preview-Render-Path.md): chronological
-  evidence; earlier implementation settings can be superseded by later entries.
+- [Preview rendering implementation and diagnosis](Bridge-Preview-Render-Path.md): version-specific
+  evidence, not an alternative to the requirements in this specification.
 - [Track preview ownership](Preview-Track-Ownership.md): source isolation and direction failure history.
 - [Preview shadow lifecycle](preview-shadow-lifecycle.md): historical native-rendering investigation,
   not proof that the current shadow implementation meets acceptance.
 - [Runtime UI and localization](Runtime-UI-Localization.md): selection, loading and dialog behavior.
-
-## Organization revision record
-
-Organization-only revision (2026-10-17): branch `dev`, HEAD
-`3b6363ada9f1f147b1a660e20c0d6246a54f82dd`; rollback reference
-`refs/rollback/contract-organization-20261017`. Existing working-tree changes are preserved.
-Original requirement text, examples, exceptions and revision records are retained. Existing
-numbered sections and heading anchors are preserved; headings, placement and navigation are
-organized without changing requirements or implementation acceptance.

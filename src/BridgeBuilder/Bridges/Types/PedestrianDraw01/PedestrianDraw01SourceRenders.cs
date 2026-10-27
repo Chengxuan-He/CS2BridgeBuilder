@@ -6,7 +6,6 @@ using Game.Prefabs;
 using Unity.Mathematics;
 
 namespace BridgeBuilder.Bridges;
-
 internal sealed class PedestrianDraw01SourceRenders : MovableSourceRenders
 {
     internal PedestrianDraw01SourceRenders(RenderPrefab nativeDefaultBase, ContentPrefab content)
@@ -15,56 +14,45 @@ internal sealed class PedestrianDraw01SourceRenders : MovableSourceRenders
         {
             var mechanism = new[]
             {
-                Create("PedestrianDrawBridge01 Mesh", "6377c07c263c6cae2604933a2f4ed0a6",
-                    new[] { "15c63410efe103a46b109b0dd6aa246d", "0ea17b6e3fd587ff3c53d6b38122244b" },
-                    new Bounds3(new float3(-5.031764030456543f, 0f, -76.000045776367188f), new float3(4.6751184463500977f, 28.900003433227539f, 76.000045776367188f)),
-                    34943, 83181, 2, 5896.06103515625f),
-                Create("PedestrianDrawBridge01_LOD1 Mesh", "09850976303df5f2881a92e654ecf7f3",
-                    new[] { "15c63410efe103a46b109b0dd6aa246d", "0ea17b6e3fd587ff3c53d6b38122244b" },
-                    new Bounds3(new float3(-5.031764030456543f, 0f, -76.000045776367188f), new float3(4.6751203536987305f, 28.900003433227539f, 76.000045776367188f)),
-                    33610, 49767, 2, 5810.62109375f),
-                Create("PedestrianDrawBridge01_LOD2 Mesh", "a20d77483599c0ee2c1591992193927d",
-                    new[] { "0f4e5a3c788ce4bbd5f18bfff2224ea1" },
-                    new Bounds3(new float3(-5.0351138114929199f, 0f, -76.000007629394531f), new float3(4.6545872688293457f, 28.796722412109375f, 76.000022888183594f)),
-                    1702, 3204, 1, 4593.3544921875f),
+                Create("PedestrianDrawBridge01 Mesh", "6377c07c263c6cae2604933a2f4ed0a6", new[] { "15c63410efe103a46b109b0dd6aa246d", "0ea17b6e3fd587ff3c53d6b38122244b" }, new Bounds3(new float3(-Numeric_Types_PedestrianDraw01_PedestrianDraw01SourceRenders_cs.Values.F32[0], Numeric_Types_PedestrianDraw01_PedestrianDraw01SourceRenders_cs.Values.F32[1], -Numeric_Types_PedestrianDraw01_PedestrianDraw01SourceRenders_cs.Values.F32[2]), new float3(Numeric_Types_PedestrianDraw01_PedestrianDraw01SourceRenders_cs.Values.F32[3], Numeric_Types_PedestrianDraw01_PedestrianDraw01SourceRenders_cs.Values.F32[4], Numeric_Types_PedestrianDraw01_PedestrianDraw01SourceRenders_cs.Values.F32[5])), Numeric_Types_PedestrianDraw01_PedestrianDraw01SourceRenders_cs.Values.I32[0], Numeric_Types_PedestrianDraw01_PedestrianDraw01SourceRenders_cs.Values.I32[1], Numeric_Types_PedestrianDraw01_PedestrianDraw01SourceRenders_cs.Values.I32[2], Numeric_Types_PedestrianDraw01_PedestrianDraw01SourceRenders_cs.Values.F32[6]),
+                Create("PedestrianDrawBridge01_LOD1 Mesh", "09850976303df5f2881a92e654ecf7f3", new[] { "15c63410efe103a46b109b0dd6aa246d", "0ea17b6e3fd587ff3c53d6b38122244b" }, new Bounds3(new float3(-Numeric_Types_PedestrianDraw01_PedestrianDraw01SourceRenders_cs.Values.F32[7], Numeric_Types_PedestrianDraw01_PedestrianDraw01SourceRenders_cs.Values.F32[8], -Numeric_Types_PedestrianDraw01_PedestrianDraw01SourceRenders_cs.Values.F32[9]), new float3(Numeric_Types_PedestrianDraw01_PedestrianDraw01SourceRenders_cs.Values.F32[10], Numeric_Types_PedestrianDraw01_PedestrianDraw01SourceRenders_cs.Values.F32[11], Numeric_Types_PedestrianDraw01_PedestrianDraw01SourceRenders_cs.Values.F32[12])), Numeric_Types_PedestrianDraw01_PedestrianDraw01SourceRenders_cs.Values.I32[3], Numeric_Types_PedestrianDraw01_PedestrianDraw01SourceRenders_cs.Values.I32[4], Numeric_Types_PedestrianDraw01_PedestrianDraw01SourceRenders_cs.Values.I32[5], Numeric_Types_PedestrianDraw01_PedestrianDraw01SourceRenders_cs.Values.F32[13]),
+                Create("PedestrianDrawBridge01_LOD2 Mesh", "a20d77483599c0ee2c1591992193927d", new[] { "0f4e5a3c788ce4bbd5f18bfff2224ea1" }, new Bounds3(new float3(-Numeric_Types_PedestrianDraw01_PedestrianDraw01SourceRenders_cs.Values.F32[14], Numeric_Types_PedestrianDraw01_PedestrianDraw01SourceRenders_cs.Values.F32[15], -Numeric_Types_PedestrianDraw01_PedestrianDraw01SourceRenders_cs.Values.F32[16]), new float3(Numeric_Types_PedestrianDraw01_PedestrianDraw01SourceRenders_cs.Values.F32[17], Numeric_Types_PedestrianDraw01_PedestrianDraw01SourceRenders_cs.Values.F32[18], Numeric_Types_PedestrianDraw01_PedestrianDraw01SourceRenders_cs.Values.F32[19])), Numeric_Types_PedestrianDraw01_PedestrianDraw01SourceRenders_cs.Values.I32[6], Numeric_Types_PedestrianDraw01_PedestrianDraw01SourceRenders_cs.Values.I32[7], Numeric_Types_PedestrianDraw01_PedestrianDraw01SourceRenders_cs.Values.I32[8], Numeric_Types_PedestrianDraw01_PedestrianDraw01SourceRenders_cs.Values.F32[20]),
             };
             PedestrianDraw01RenderData.Configure(PedestrianDraw01RenderData.Part.Mechanism, mechanism, nativeDefaultBase, content);
-            for (var lod = 0; lod < mechanism.Length; lod++)
+            for (var lod = Numeric_Types_PedestrianDraw01_PedestrianDraw01SourceRenders_cs.Values.I32[9]; lod < mechanism.Length; lod++)
                 PedestrianDraw01MechanismData.ApplySkeleton(mechanism[lod], lod);
             var column = new[]
             {
-                Create("PedestrianDrawBridge01Pillar Mesh", "e62ef34af7538b81eb3aec7afbdca481",
-                    new[] { "d9d755c39e3363767945923a277bc9c9" },
-                    new Bounds3(new float3(-3.9458580017089844f, -5f, -66.981048583984375f), new float3(3.9458580017089844f, 5f, 66.981048583984375f)),
-                    384, 576, 1, 564.6480712890625f),
-                Create("PedestrianDrawBridge01Pillar_LOD1 Mesh", "9a9678b9c46b52a3fa66327d5b971fb2",
-                    new[] { "201414a73a543e04052577ead2abb715" },
-                    new Bounds3(new float3(-3.9458580017089844f, -5f, -66.981048583984375f), new float3(3.9458580017089844f, 5f, 66.981048583984375f)),
-                    384, 576, 1, 564.6480712890625f),
-                Create("PedestrianDrawBridge01Pillar_LOD2 Mesh", "c19b7e0c3cf8126c7c3de2564cd5a98f",
-                    new[] { "356f66c6da45c75391d96421d0d6133c" },
-                    new Bounds3(new float3(-3.9458580017089844f, -5f, -66.981048583984375f), new float3(3.9458580017089844f, 5f, 66.981048583984375f)),
-                    128, 192, 1, 564.6484375f),
+                Create("PedestrianDrawBridge01Pillar Mesh", "e62ef34af7538b81eb3aec7afbdca481", new[] { "d9d755c39e3363767945923a277bc9c9" }, new Bounds3(new float3(-Numeric_Types_PedestrianDraw01_PedestrianDraw01SourceRenders_cs.Values.F32[21], -Numeric_Types_PedestrianDraw01_PedestrianDraw01SourceRenders_cs.Values.F32[22], -Numeric_Types_PedestrianDraw01_PedestrianDraw01SourceRenders_cs.Values.F32[23]), new float3(Numeric_Types_PedestrianDraw01_PedestrianDraw01SourceRenders_cs.Values.F32[24], Numeric_Types_PedestrianDraw01_PedestrianDraw01SourceRenders_cs.Values.F32[25], Numeric_Types_PedestrianDraw01_PedestrianDraw01SourceRenders_cs.Values.F32[26])), Numeric_Types_PedestrianDraw01_PedestrianDraw01SourceRenders_cs.Values.I32[10], Numeric_Types_PedestrianDraw01_PedestrianDraw01SourceRenders_cs.Values.I32[11], Numeric_Types_PedestrianDraw01_PedestrianDraw01SourceRenders_cs.Values.I32[12], Numeric_Types_PedestrianDraw01_PedestrianDraw01SourceRenders_cs.Values.F32[27]),
+                Create("PedestrianDrawBridge01Pillar_LOD1 Mesh", "9a9678b9c46b52a3fa66327d5b971fb2", new[] { "201414a73a543e04052577ead2abb715" }, new Bounds3(new float3(-Numeric_Types_PedestrianDraw01_PedestrianDraw01SourceRenders_cs.Values.F32[28], -Numeric_Types_PedestrianDraw01_PedestrianDraw01SourceRenders_cs.Values.F32[29], -Numeric_Types_PedestrianDraw01_PedestrianDraw01SourceRenders_cs.Values.F32[30]), new float3(Numeric_Types_PedestrianDraw01_PedestrianDraw01SourceRenders_cs.Values.F32[31], Numeric_Types_PedestrianDraw01_PedestrianDraw01SourceRenders_cs.Values.F32[32], Numeric_Types_PedestrianDraw01_PedestrianDraw01SourceRenders_cs.Values.F32[33])), Numeric_Types_PedestrianDraw01_PedestrianDraw01SourceRenders_cs.Values.I32[13], Numeric_Types_PedestrianDraw01_PedestrianDraw01SourceRenders_cs.Values.I32[14], Numeric_Types_PedestrianDraw01_PedestrianDraw01SourceRenders_cs.Values.I32[15], Numeric_Types_PedestrianDraw01_PedestrianDraw01SourceRenders_cs.Values.F32[34]),
+                Create("PedestrianDrawBridge01Pillar_LOD2 Mesh", "c19b7e0c3cf8126c7c3de2564cd5a98f", new[] { "356f66c6da45c75391d96421d0d6133c" }, new Bounds3(new float3(-Numeric_Types_PedestrianDraw01_PedestrianDraw01SourceRenders_cs.Values.F32[35], -Numeric_Types_PedestrianDraw01_PedestrianDraw01SourceRenders_cs.Values.F32[36], -Numeric_Types_PedestrianDraw01_PedestrianDraw01SourceRenders_cs.Values.F32[37]), new float3(Numeric_Types_PedestrianDraw01_PedestrianDraw01SourceRenders_cs.Values.F32[38], Numeric_Types_PedestrianDraw01_PedestrianDraw01SourceRenders_cs.Values.F32[39], Numeric_Types_PedestrianDraw01_PedestrianDraw01SourceRenders_cs.Values.F32[40])), Numeric_Types_PedestrianDraw01_PedestrianDraw01SourceRenders_cs.Values.I32[16], Numeric_Types_PedestrianDraw01_PedestrianDraw01SourceRenders_cs.Values.I32[17], Numeric_Types_PedestrianDraw01_PedestrianDraw01SourceRenders_cs.Values.I32[18], Numeric_Types_PedestrianDraw01_PedestrianDraw01SourceRenders_cs.Values.F32[41]),
             };
             PedestrianDraw01RenderData.Configure(PedestrianDraw01RenderData.Part.Column, column, nativeDefaultBase, content);
             var footing = new[]
             {
-                Create("PedestrianDrawBridge01PillarBase Mesh", "64f4084225bff00f917a7596f9085b66",
-                    new[] { "92c591e0ad4c88ea3308c67799de49e0" },
-                    new Bounds3(new float3(-4.082179069519043f, -3.599998950958252f, -67.117362976074219f), new float3(4.082179069519043f, 2f, 67.117347717285156f)),
-                    224, 336, 1, 491.98040771484375f),
-                Create("PedestrianDrawBridge01PillarBase_LOD1 Mesh", "48d02dcdcd7dff78e2a6a617235c1711",
-                    new[] { "92c591e0ad4c88ea3308c67799de49e0" },
-                    new Bounds3(new float3(-4.082179069519043f, -3.599998950958252f, -67.117362976074219f), new float3(4.082179069519043f, 2f, 67.117347717285156f)),
-                    208, 300, 1, 489.81414794921875f),
-                Create("PedestrianDrawBridge01PillarBase_LOD2 Mesh", "374725087c43f0fd0fa0eaa25c7691e7",
-                    new[] { "d2a87b16e379666a6f832cfa9c787a1e" },
-                    new Bounds3(new float3(-4.0821800231933594f, -3.599998950958252f, -67.117362976074219f), new float3(4.0821800231933594f, 2f, 67.117362976074219f)),
-                    40, 60, 1, 497.24627685546875f),
+                Create("PedestrianDrawBridge01PillarBase Mesh", "64f4084225bff00f917a7596f9085b66", new[] { "92c591e0ad4c88ea3308c67799de49e0" }, new Bounds3(new float3(-Numeric_Types_PedestrianDraw01_PedestrianDraw01SourceRenders_cs.Values.F32[42], -Numeric_Types_PedestrianDraw01_PedestrianDraw01SourceRenders_cs.Values.F32[43], -Numeric_Types_PedestrianDraw01_PedestrianDraw01SourceRenders_cs.Values.F32[44]), new float3(Numeric_Types_PedestrianDraw01_PedestrianDraw01SourceRenders_cs.Values.F32[45], Numeric_Types_PedestrianDraw01_PedestrianDraw01SourceRenders_cs.Values.F32[46], Numeric_Types_PedestrianDraw01_PedestrianDraw01SourceRenders_cs.Values.F32[47])), Numeric_Types_PedestrianDraw01_PedestrianDraw01SourceRenders_cs.Values.I32[19], Numeric_Types_PedestrianDraw01_PedestrianDraw01SourceRenders_cs.Values.I32[20], Numeric_Types_PedestrianDraw01_PedestrianDraw01SourceRenders_cs.Values.I32[21], Numeric_Types_PedestrianDraw01_PedestrianDraw01SourceRenders_cs.Values.F32[48]),
+                Create("PedestrianDrawBridge01PillarBase_LOD1 Mesh", "48d02dcdcd7dff78e2a6a617235c1711", new[] { "92c591e0ad4c88ea3308c67799de49e0" }, new Bounds3(new float3(-Numeric_Types_PedestrianDraw01_PedestrianDraw01SourceRenders_cs.Values.F32[49], -Numeric_Types_PedestrianDraw01_PedestrianDraw01SourceRenders_cs.Values.F32[50], -Numeric_Types_PedestrianDraw01_PedestrianDraw01SourceRenders_cs.Values.F32[51]), new float3(Numeric_Types_PedestrianDraw01_PedestrianDraw01SourceRenders_cs.Values.F32[52], Numeric_Types_PedestrianDraw01_PedestrianDraw01SourceRenders_cs.Values.F32[53], Numeric_Types_PedestrianDraw01_PedestrianDraw01SourceRenders_cs.Values.F32[54])), Numeric_Types_PedestrianDraw01_PedestrianDraw01SourceRenders_cs.Values.I32[22], Numeric_Types_PedestrianDraw01_PedestrianDraw01SourceRenders_cs.Values.I32[23], Numeric_Types_PedestrianDraw01_PedestrianDraw01SourceRenders_cs.Values.I32[24], Numeric_Types_PedestrianDraw01_PedestrianDraw01SourceRenders_cs.Values.F32[55]),
+                Create("PedestrianDrawBridge01PillarBase_LOD2 Mesh", "374725087c43f0fd0fa0eaa25c7691e7", new[] { "d2a87b16e379666a6f832cfa9c787a1e" }, new Bounds3(new float3(-Numeric_Types_PedestrianDraw01_PedestrianDraw01SourceRenders_cs.Values.F32[56], -Numeric_Types_PedestrianDraw01_PedestrianDraw01SourceRenders_cs.Values.F32[57], -Numeric_Types_PedestrianDraw01_PedestrianDraw01SourceRenders_cs.Values.F32[58]), new float3(Numeric_Types_PedestrianDraw01_PedestrianDraw01SourceRenders_cs.Values.F32[59], Numeric_Types_PedestrianDraw01_PedestrianDraw01SourceRenders_cs.Values.F32[60], Numeric_Types_PedestrianDraw01_PedestrianDraw01SourceRenders_cs.Values.F32[61])), Numeric_Types_PedestrianDraw01_PedestrianDraw01SourceRenders_cs.Values.I32[25], Numeric_Types_PedestrianDraw01_PedestrianDraw01SourceRenders_cs.Values.I32[26], Numeric_Types_PedestrianDraw01_PedestrianDraw01SourceRenders_cs.Values.I32[27], Numeric_Types_PedestrianDraw01_PedestrianDraw01SourceRenders_cs.Values.F32[62]),
             };
             PedestrianDraw01RenderData.Configure(PedestrianDraw01RenderData.Part.Footing, footing, nativeDefaultBase, content);
-            Roots = new[] { mechanism[0], column[0], footing[0] };
+            Roots = new[]
+            {
+                mechanism[Numeric_Types_PedestrianDraw01_PedestrianDraw01SourceRenders_cs.Values.I32[28]],
+                column[Numeric_Types_PedestrianDraw01_PedestrianDraw01SourceRenders_cs.Values.I32[29]],
+                footing[Numeric_Types_PedestrianDraw01_PedestrianDraw01SourceRenders_cs.Values.I32[30]]
+            };
         }
-        catch { Dispose(); throw; }
+        catch
+        {
+            Dispose();
+            throw;
+        }
     }
+}
+
+// Embedded numerical arrays: Types_PedestrianDraw01_PedestrianDraw01SourceRenders_cs
+internal static class Numeric_Types_PedestrianDraw01_PedestrianDraw01SourceRenders_cs
+{
+    static Numeric_Types_PedestrianDraw01_PedestrianDraw01SourceRenders_cs() {}
+    internal static readonly HardcodedNumbers Values = HardcodedNumbers.Load("Types_PedestrianDraw01_PedestrianDraw01SourceRenders_cs");
 }

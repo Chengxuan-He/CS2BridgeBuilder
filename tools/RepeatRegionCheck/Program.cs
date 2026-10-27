@@ -1,0 +1,51 @@
+using BridgeBuilder.Bridges;
+using UnityEngine;
+
+static void Require(bool value,string reason){if(!value)throw new Exception(reason);}
+var region=new MovableRepeatUnits.Region("structural-binding",.25,.25,.5,.5);
+var unit=new MovableStructurePacking.Unit{Triangle=true,A=new(.25f,.25f),B=new(.375f,.25f),C=new(.25f,.375f)};
+unit.Points.AddRange(new[]{new Vector2(0,0),new Vector2(4,0),new Vector2(0,2)});
+var mapped=MovableRepeatUnits.RegionMapping.Create(region,unit);
+Require(mapped!=null,"Valid true-unit receiver outside its source triangle was rejected.");
+Require(mapped!.Map(unit.Points[1])==new Vector2(2,0),"Source density changed on the extended edge.");
+Require(mapped.Map(unit.Points[2])==new Vector2(0,1),"Source density changed on the other edge.");
+// The domain's old integer phase corresponds to half a genuine unit, so merely
+// using conditioned coordinates would shift the visible pattern by half a tile.
+var exact=new[]{new[]{1.0,0.0},new[]{5.0,0.0},new[]{1.0,2.0}};
+var fragment=new MovableStructurePacking.Unit{Triangle=true,A=unit.A,B=unit.B,C=unit.C};
+var selection=new MovableParentUv.Result(unit.Points.ToArray(),exact,1,0);
+var selected=selection.Select(fragment);
+fragment.Points.AddRange(selected);
+var fragmentMap=MovableRepeatUnits.RegionMapping.Create(region,fragment);
+Require(fragment.RepeatOnly&&fragmentMap!=null,"Conditioned fragment could not select its true region.");
+Require(fragmentMap!.Map(selected[0])==new Vector2(.5f,0),"Original fractional unit phase was discarded.");
+Require(fragmentMap.Map(selected[1])==new Vector2(2.5f,0),"Unconditioned density/phase was not retained.");
+Require(fragment.Points.SequenceEqual(selected),"Material selection changed geometry-domain coordinates.");
+var outside=new MovableRepeatUnits.Region("wrong",.25,.25,.3125,.5);
+Require(MovableRepeatUnits.RegionMapping.Create(outside,unit)==null,"Partial domain overlap was mistaken for containment.");
+var shortPeriod=new MovableRepeatUnits.Region("evidenced-short-period",.25,.25,.3125,.3125,.25,.25,.5,.5);
+var shortMapped=MovableRepeatUnits.RegionMapping.Create(shortPeriod,unit);
+Require(shortMapped!=null&&shortMapped.Map(unit.Points[1])==new Vector2(8,0),"A measured multi-period source domain lost its independent physical period.");
+var foreign=new MovableStructurePacking.Unit{Triangle=true,A=new(.125f,.25f),B=unit.B,C=unit.C};
+foreign.Points.AddRange(unit.Points);
+Require(MovableRepeatUnits.RegionMapping.Create(shortPeriod,foreign)==null,"Independent coverage admitted an unrelated original atlas domain.");
+var triangleCoverage=MovableUvChart.Read(new[]{1,0,3},new[]{.25,.25,.5,.25,.25,.5},0);
+var chartRegion=new MovableRepeatUnits.Region("true-steel-period",.25,.25,.3125,.3125,triangleCoverage);
+Require(MovableRepeatUnits.RegionMapping.Create(chartRegion,unit)!=null,"Measured nonrectangular coverage failed.");
+var excluded=new MovableStructurePacking.Unit{Triangle=true,A=new(.4f,.4f),B=new(.49f,.4f),C=new(.4f,.49f)};
+excluded.Points.AddRange(unit.Points);
+Require(MovableRepeatUnits.RegionMapping.Create(chartRegion,excluded)==null,"Coverage bounding box admitted unrelated atlas texels.");
+var profile=new MovableRepeatUnits.Region("v-only-profile",.25,.25,.5,.3125,.3125,.25,.5,.5,repeatU:false);
+var profileUnit=new MovableStructurePacking.Unit{Triangle=true,A=new(.3125f,.25f),B=new(.5f,.25f),C=new(.3125f,.5f)};
+profileUnit.Points.AddRange(new[]{new Vector2(0,0),new Vector2(1,0),new Vector2(0,2)});
+var profileMap=MovableRepeatUnits.RegionMapping.Create(profile,profileUnit);
+Require(profileMap!=null&&profileMap.Map(profileUnit.Points[0])==new Vector2(.375f,0)&&profileMap.Map(profileUnit.Points[2])==new Vector2(.375f,8),"Independent narrow coverage or guarded nonperiodic profile mapping failed.");
+profileUnit.Points[1]=new Vector2(2,0);
+Require(MovableRepeatUnits.RegionMapping.Create(profile,profileUnit)==null,"Nonperiodic profile crossed its original U boundary.");
+var degenerate=new MovableStructurePacking.Unit{Bounds=new(.25f,.25f,.5f,.5f)};
+degenerate.Points.AddRange(new[]{new Vector2(0,0),new Vector2(1,0),new Vector2(2,0)});
+Require(MovableRepeatUnits.RegionMapping.Create(region,degenerate)!=null,"Finite degenerate line crashed/rejected without a density error.");
+degenerate.Points[1]=new(float.NaN,0);
+Require(MovableRepeatUnits.RegionMapping.Create(region,degenerate)==null,"Non-finite coordinates were admitted.");
+Require(MovableRepeatUnits.Regions("unregistered","source").Count==0,"Unknown material invented a semantic repeat unit.");
+Console.WriteLine("PASS source-linked genuine-region selection: density, conditioned fragment phase, containment, finite degenerate geometry, NaN rejection and unknown-source isolation.");

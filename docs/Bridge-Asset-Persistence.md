@@ -1,44 +1,39 @@
 # Bridge asset persistence and reference policy
 
-## Safe owned asset filename stems (2026-10-20)
+## Safe owned asset filename stems
 
 After removing one owner token, replace each Windows-invalid filename character
 (`<>:"/\|?*` and control characters U+0000 through U+001F), and every period in
 the filename stem, with `_`. Preserve other characters and append the real native
 extension separately. For example, `RB_Empty_Section_2.5` becomes
 `RB_Empty_Section_2_5.Prefab`. Internal Prefab names and CIDs remain unchanged.
-This supersedes earlier preservation of every non-owner character for disk stems.
 
 Creation, generated-resource relocation and backed-up file-only migration share
 `BridgeAssetInfo.FileStem`. Collision checks still apply: never overwrite a
-different payload or CID. External dependency snapshots remain byte-identical with
-their original paths. Native mid-mip tag filenames remain unchanged. Extensions
+different payload or CID. External dependency snapshots remain byte-identical and use the dependency layout
+in sections 3 and 7; stem sanitization does not rename their payloads. Native mid-mip tag filenames remain unchanged. Extensions
 and paired `.cid` suffixes are not part of the stem replacement.
 
 ## Contents
 
+- [Safe owned asset filename stems](#safe-owned-asset-filename-stems)
 - [1. Four distinct operations](#1-four-distinct-operations)
 - [2. Component and resource decisions](#2-component-and-resource-decisions)
 - [3. Evidence from the existing creation path](#3-evidence-from-the-existing-creation-path)
 - [4. Application to movable-road conversion](#4-application-to-movable-road-conversion)
 - [5. Review and acceptance](#5-review-and-acceptance)
+- [Movable bridge size acceptance](#movable-bridge-size-acceptance)
 - [6. Approved owner-directory layout](#6-approved-owner-directory-layout)
 - [7. Legacy-to-owner-directory migration](#7-legacy-to-owner-directory-migration)
-- [Movable bridge size acceptance](#movable-bridge-size-acceptance)
-- [Organization revision record](#organization-revision-record)
+- [Bridge ZIP export](#bridge-zip-export)
 
 This document is a normative supplement to bridge generation contract section 17. It defines persistence
 scope for existing bridge creation and for future movable-bridge generation. It does not establish
 that any unfinished movable generator has passed acceptance.
 
-Reviewed on 2026-10-16 against the local working tree on branch `dev`, committed baseline
-`0f4b10ae47c5dc264249e0d877aacc326e3e9525`. Rollback reference:
-`refs/rollback/asset-persistence-scope-20261016`. The reference records committed history, not the
-pre-existing uncommitted implementation or documentation changes.
-
-The owner-directory layout in sections 6–7 is implemented in creation and self-check migration
-(2026-10-19). It supersedes sibling `_Dependencies` and per-component LOD directories.
-Section 3 retains historical path evidence. VT and mid-mip caches are included in the owner
+The owner-directory layout in sections 6–7 applies to creation and self-check migration.
+Sibling `_Dependencies` and per-component LOD directories are legacy migration inputs.
+Section 3 documents the creation and dependency paths. VT and mid-mip caches are included in the owner
 folder; native cold loading and packaging without Bridge Builder still require game acceptance.
 
 ## 1. Four distinct operations
@@ -118,22 +113,19 @@ texture.
 asset. The derived render Prefab points to that geometry and retains the original surface references
 through `widened.surfaceAssets = surfaces`. Preview models take a temporary path.
 
-This existing behavior is the baseline: changing vertices does not by itself require a new material,
-surface or texture. It does not prove that every network shader can render an animated object;
-that separate compatibility question must be measured for movable-road conversion.
-
 ### External dependency snapshots
 
 `src/BridgeBuilder/Runtime/BridgeDependencyPersistence.cs` resolves source assets and stops at
-built-in provenance. It also excludes another bridge's private Prefab as a dependency source.
+built-in provenance. It excludes another bridge's private assets of every type before opening
+their streams, including materials and textures with identical CIDs.
 
 `src/BridgeBuilder/Runtime/BridgeDependencyCopies.cs` traverses CIDs, deduplicates within each owner,
 preflights destination conflicts, and copies unchanged external bytes with original CID sidecars.
-The current implementation uses the following legacy destination; section 6 moves it inside the UUID directory:
+Use the owner-local dependency destination shared by creation and migration:
 
 ```text
-ImportedData/<bridgeUUID>_Dependencies/<CID>.<original extension>
-ImportedData/<bridgeUUID>_Dependencies/<CID>.<original extension>.cid
+ImportedData/<bridgeUUID>/Dependencies/<CID>.<original extension>
+ImportedData/<bridgeUUID>/Dependencies/<CID>.<original extension>.cid
 ```
 
 Prefab references are extracted from UTF-8 and UTF-16 serialized text views. Native `.Surface`
@@ -161,6 +153,27 @@ traversed. Separate bridges retain separate physical snapshots of a shared exter
 source assets remain unchanged. Missing sources and byte conflicts are failures, not permission to
 substitute an unrelated asset.
 
+Other mods' materials and Bridge Builder's packaged materials both require these owner-local
+snapshots, together with their non-built-in dependencies. Startup/manual self-check runs the same
+traversal for every inspected bridge before validating live references, including healthy bridges
+whose installed source mod currently hides a missing local copy. Supplement missing payloads and
+CID sidecars without changing geometry, identities or live objects. Complete snapshots remain
+unchanged on repeated checks; new copies are reported as migration and require restart. The existing
+migration failure policy applies when permitted sources are unavailable or destination bytes conflict.
+Verify that copies remain readable without source-mod registrations; native cold-load acceptance
+is separate and cannot be inferred from file equality alone.
+
+The source-linked `tools/DependencySourceCheck` exercises the production resolver, surface parser
+and copy traversal with an owned root referencing an external material and texture. It verifies
+byte/CID preservation, missing-sidecar supplementation, no writes on repetition, resolution from
+current-owner snapshots with the source-mod registrations absent, and rejection of those snapshots
+for another owner. Foreign first-match and fallback streams are rejected for Prefab, Surface,
+Material, Texture, VTSurface, VTTexture, Geometry and MidMips assets. The `.Surface` case reproduced
+the former prefab-only source-filter defect before the generic asset guard was applied.
+`tools/SelfCheckLifecycleCheck` exercises the actual startup system with dependency-service doubles:
+healthy references still trigger supplementation, and the migration/restart notice survives a
+subsequent unchanged check. This lifecycle check does not itself verify native texture loading.
+
 ### Native presentation and manager independence
 
 `src/BridgeBuilder/Runtime/BridgeNativePresentation.cs` prepares native presentation, saves native
@@ -174,24 +187,21 @@ runtime class or an unsupported third-party behavior.
 
 ## 4. Application to movable-road conversion
 
-The selected-road baking route remains mandatory. Persist the resulting new object geometry,
+The selected-road geometry conversion route is mandatory. Persist the resulting new object geometry,
 required skinning channels, LODs, bounds, native network configuration and attachment relationships.
 Serialize native skeleton and animation configuration according to their actual containing assets.
 There is no blanket requirement to create new material, texture, marking or animation resource files.
 
-### Existing materials only (2026-10-17)
+### Native material resources
 
-The user requires movable-bridge surfaces and markings to use existing materials and explicitly
-accepts marking pattern-detail differences when using an existing game marking atlas. This
-supersedes earlier requirements to retain original marking textures when no compatible existing
-object material exists. Neither preview nor formal generation may bake appearance textures,
-clone surfaces or rewrite material templates. Retain compatible source materials; otherwise
-select an existing native object material and adapt generated geometry/UVs. Keep structural
-materials unchanged. Never modify source materials. Persist generated geometry and attachments;
-retain built-in references and snapshot unchanged external dependencies under existing rules.
-This does not change traffic behavior, structural width rules or human visual acceptance.
-
-Pre-edit baseline: `dev/3b6363ada9f1f147b1a660e20c0d6246a54f82dd`.
+Follow the [material generation contract](agent-contract/MATERIAL_GENERATION_CONTRACT.md). Fully compatible
+original materials remain direct references without new descriptors or texture payloads. Required
+native object-template conversions preserve source appearance and dependencies; constant derived
+materials are prepared offline and packaged per style. Runtime generation only copies and binds
+those finished resources. Repeatable units retain original per-axis texel density and pattern
+scale; never bake them into full-span images. Genuinely variable, nonperiodic content may use
+bounded native composition without reducing density. Do not modify original assets or introduce
+custom runtime shaders. Preserve independent per-owner external dependency snapshots.
 
 ### Resource decision procedure
 
@@ -229,9 +239,8 @@ conversion helpers already implement material conversion, marking export or nati
 - Use cold-start and save/load acceptance to establish native operation. A successful build, preview
   or file scan alone does not prove animation, road connectivity or shipping compatibility.
 
-The original clarification was documentation-only. The 2026-10-16 binary surface dependency update
-implements the traversal described above. Neither authorizes rewriting or removing healthy existing
-bridges. The affected-style cleanup policy continues to apply when generation code actually changes.
+Dependency traversal must not rewrite or remove healthy bridges. Deployment recovery requires
+a concrete incompatibility and remains owner-scoped under bridge generation contract section 13.
 
 ## Movable bridge size acceptance
 
@@ -243,87 +252,10 @@ constant textures within an owner is permitted; cross-owner snapshot deduplicati
 forbidden. See [the optimization record](Movable-Bridge-Performance.md) for implemented changes
 and the distinction between measured subtotals and outstanding full-size acceptance.
 
-## Organization revision record
-
-Organization-only revision (2026-10-17): branch `dev`, HEAD
-`3b6363ada9f1f147b1a660e20c0d6246a54f82dd`; rollback reference
-`refs/rollback/contract-organization-20261017`. Existing working-tree changes are preserved.
-Original requirement text, examples, exceptions and revision records are retained. Existing
-numbered sections and heading anchors are preserved; headings, placement and navigation are
-organized without changing requirements or implementation acceptance.
-
-
-## Approved native tiled road material descriptor (2026-10-17)
-
-The user explicitly permits a new native object-material descriptor that references existing
-tileable road textures to eliminate atlas-repeat geometry cuts. This is a scoped exception to
-the existing-material-only rule: do not create or bake textures, introduce custom shaders, modify
-source assets, or change structural and marking materials. Keep one descriptor per required
-appearance within each bridge owner and share it across LODs. Preview descriptors belong only to
-the preview's transient database. Persist formal descriptors with private identities and original
-texture references; native cold loading must not depend on Bridge Builder. Unchanged built-in
-textures remain references, and external dependencies retain the normal snapshot policy.
-
-Use continuous object-local UVs and the native sampler for whole-texture repetition; do not apply
-vertex-wise fractional UVs or cut triangles at repeat boundaries. This exception does not permit
-repeating a mixed atlas as though it were a tileable road texture. Other geometry, marking,
-sidewalk, LOD and acceptance requirements remain unchanged.
-
-Baseline: `dev/d21433ed2a9ee233c8525ce6a0fe2515f973dc7a`; rollback reference
-`refs/rollback/native-tiled-road-material-20261017`. This permission does not establish visual or
-cold-load acceptance.
-
-## Approved GPU composition from existing textures (2026-10-17)
-
-The user explicitly authorizes composing new textures from existing textures. For converted
-movable-road appearance, this supersedes the earlier existing-materials-only, no-new-texture,
-no-baking and no-new-descriptor restrictions, including the narrower tiled-asphalt exception.
-It does not authorize custom runtime shaders, independent marking objects, depth offsets,
-prototype mesh Boolean operations, or source-asset mutation.
-
-- Compose road appearance and paint using existing native texture inputs on a vendor-neutral GPU.
-  Save owner-local textures and native object-material descriptors; do not bake per marking or
-  create separate marking Prefabs. Preserve needed color, alpha, normal and mask channels.
-- Paint must not cut the receiving road. Texture repeat boundaries must not subdivide geometry.
-  Evaluate repetition and paint in pixels. Only physical boundaries, native motion seams and
-  required appearance-domain boundaries may partition the road.
-- Build each of the three LODs from its corresponding native mesh input and measured bridge
-  construction rules. Do not feed the painted/tiled near mesh into every level. Retain the last
-  authored road-piece LOD where the native piece supplies fewer levels. Share composed appearance
-  across levels; use mip filtering rather than replicating paint geometry.
-- Keep prototype structural meshes, skinning, thickness, sidewalk adaptation and LOD thresholds.
-  This appearance permission does not authorize deleting structure to meet a triangle budget.
-- Bound atlas dimensions and share resources within each owner. Generate mipmaps on the GPU,
-  respecting color space and tangent-space normals. Persist textures and descriptors under the
-  bridge's identity; preview resources belong to the transient preview database. Delete failed
-  generation resources. Preserve the existing external dependency snapshot rules.
-- Verify stage times, per-LOD triangles, total serialized size including dependencies, reload and
-  near/far visual appearance. Compilation alone does not establish acceptance or size parity.
-
-Instruction-edit baseline: `dev/d21433ed2a9ee233c8525ce6a0fe2515f973dc7a`.
-Rollback reference: `refs/rollback/gpu-road-composition-20261017`.
-
-### Grouped generated LOD directories (2026-10-18)
-
-Historical implemented layout. Sections 6–7 supersede this directory design; migration to the
-new target layout is implemented in the shared persistence and migration paths.
-
-Generated Prefabs with the terminal naming suffix ` LOD<number>` share the main component's
-ImportedData directory. For example, `Fixed Base 0 LOD1.Prefab` is stored alongside
-`Fixed Base 0.Prefab` in the latter's directory. Each remains a separate native asset with its
-own CID and unchanged LodProperties references. Geometry paths and material sharing are unchanged.
-`BridgePrefabPersistence` is the common creation and migration path authority; the shared native
-writer remains unchanged. Existing assets retain their identities; self-check layout migration
-backs up and moves Prefabs plus CID sidecars without rewriting payloads and requests restart.
-This is a storage-layout change, not geometry regeneration or a reason to remove healthy bridges.
-
-
 ## 6. Approved owner-directory layout
 
-Decision date: 2026-10-18. Documentation baseline: branch `dev`, HEAD
-`d21433ed2a9ee233c8525ce6a0fe2515f973dc7a`, with existing working-tree changes preserved.
-This specification applies to fixed and movable bridges. Do not infer implementation or cold-load
-acceptance from its approval. Original documents are backed up separately from active assets.
+This specification applies to fixed and movable bridges. Native cold-load acceptance
+requires in-game evidence.
 
 ```text
 ImportedData/<UUID>/
@@ -345,9 +277,10 @@ assets. Keep each Prefab/geometry/texture independently identified by its CID. D
 - For owned filenames, remove exactly one (the first) match of `-?b{uuid}[-_ ]?`, where
   `b{uuid}` is the escaped owning identity and comparison is case-insensitive. Both optional
   characters are greedy: consume a preceding hyphen and one following hyphen, underscore or ASCII space when present.
-  All characters outside this one match remain exactly unchanged, including spaces, hyphens,
-  underscores, further occurrences and the extension. Do not trim or normalize the result.
-  Names without a match remain unchanged. The explicitly named root Prefab exception below
+  Then replace invalid filename-stem characters and periods with `_` under the safe-stem rule.
+  Preserve all other characters, including spaces, hyphens, underscores and further owner tokens.
+  Do not trim the result. Append the native extension separately. Names without an owner match
+  still undergo stem sanitization. The explicitly named root Prefab exception below
   remains `Bridge.Prefab`; an empty name for another asset is an error, not an invented name.
   New creation and migration share this rule. Migration transforms the existing disk basename,
   never substitutes the serialized Prefab name for it.
@@ -366,7 +299,7 @@ Example (sidecars follow the same mapping):
 
 ```text
 ImportedData/<UUID> Fixed Base 0 LOD1/<UUID> Fixed Base 0 LOD1.Prefab
-  -> ImportedData/<UUID>/Prefabs/ Fixed Base 0 LOD1.Prefab
+  -> ImportedData/<UUID>/Prefabs/Fixed Base 0 LOD1.Prefab
 ImportedData/<UUID>/<UUID>.Prefab
   -> ImportedData/<UUID>/Prefabs/Bridge.Prefab
 ImportedData/<old component directory>/GoldenGateDouble-38_5-<UUID>.Prefab
@@ -468,7 +401,7 @@ unknown types, dependency Prefabs with unrelated internal names, and preservatio
 Then verify native cold loading and packaging without Bridge Builder. Keep documentation approval,
 implementation, deployment and game acceptance as separate statuses.
 
-### Implementation and verification record (2026-10-19)
+### Shared implementation responsibilities
 
 - `BridgePrefabPersistence` and `BridgeAssetInfo` share category/short-name rules across Prefabs,
   geometry, paint resources, locales, movable material finalization and file-only migration.
@@ -483,20 +416,20 @@ implementation, deployment and game acceptance as separate statuses.
   source isolation, legacy conversion and scoped cleanup. Native VT discovery/tag handling was
   inspected in the installed game code. This record does not assert in-game cold-load acceptance.
 
-### Filename rule revision (2026-10-19)
+### Filename mapping examples
 
-The latest user instruction supersedes the earlier global-removal/trim rule. Remove only one
-match of `-?b{uuid}[-_ ]?` and preserve every other character. For example, `Name-b{uuid}_LOD1`
+Remove only one match of `-?b{uuid}[-_ ]?`, sanitize the stem as above, and preserve
+other characters. For example, `Name-b{uuid}_LOD1`
 becomes `NameLOD1`, while `b{uuid}-en-US.loc` becomes `en-US.loc`.
 `b{uuid} Fixed Base 0 LOD1.Prefab` becomes `Fixed Base 0 LOD1.Prefab`.
-Only one following separator is consumed; additional spaces and tabs remain unchanged.
+Only one following separator is consumed. Additional spaces remain unchanged; tabs are
+control characters and become underscores under the safe-stem rule.
 Already-short names without an owner match are not trimmed retroactively.
 The native locale extension is `.loc`; migration recognizes it as well as legacy `.Locale`.
 Serialized names, resource contents and CID sidecars remain unchanged. Locale lookup accepts
 legacy UUID-bearing names, previous short locale IDs and the exact new filename.
-Baseline: `dev/d21433ed2a9ee233c8525ce6a0fe2515f973dc7a` plus preserved working changes.
 
-## Bridge ZIP export (2026-10-19)
+## Bridge ZIP export
 
 Export is an action button named **Export** inside **Manage bridges**, alongside Build
 and Delete. There is no separate export tab or page. Select a bridge and click Export,
@@ -525,8 +458,6 @@ the destination in a popup. File checks cover the archive root, unchanged file b
 CID sidecars, nested dependencies, collision protection and failed-export cleanup.
 In-game interaction remains subject to player acceptance.
 
-ZIP wrapper revision baseline: `dev/d21433ed2a9ee233c8525ce6a0fe2515f973dc7a`,
-preserving existing working changes. This supersedes the earlier wrapper-free ZIP rule.
 The wrapper name does not change internal bridge ownership or asset identities.
 
 Export interaction uses the native `cs2/ui.ConfirmationDialog`, native TextInput and

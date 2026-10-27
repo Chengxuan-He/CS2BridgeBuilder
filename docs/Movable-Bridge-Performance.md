@@ -1,5 +1,25 @@
 # Movable bridge performance and asset footprint
 
+## CPU affine geometry update (2026-10-21)
+
+The current coordinate path uses `AffineGeometry` for sparse affine parameter rows and
+general XYZ matrices. Embedded typed arrays retain their BBN1 layout and measured bits;
+this is CPU numerical work, separate from GPU texture composition. Independent movable
+LOD plans run after main-thread input snapshots and finish before native asset construction.
+Vertex batches contain up to 2,048 items; small batches and nested calls execute serially.
+Parallel groups are bounded to at most `max(1, processorCount - 1)` workers.
+These are implementation settings, not a requirement to parallelize dependent topology work.
+
+`MovableRenderAssembly` reports `snapshotMs`, `parallelPlanMs`, `levels` and `totalMs`.
+Its total ends before `CreateMovableRenderGraph`, so retain separate material, persistence
+and preview-render timings. Compare the same style, roads, LODs and cold/warm cache state.
+No measured end-to-end acceleration is established by the affine migration alone.
+
+See the [authoritative execution rules](agent-contract/BRIDGE_GENERATION_CONTRACT.md#cpu-affine-geometry-execution)
+and [contributor generation step](Adding-Bridge-Styles-With-Coding-Agents.md#affine-matrix-generation-step).
+The sections below record the 2026-10-16 optimization and its measurements; their paused-style
+status and historical material/paint pipeline are not the current implementation specification.
+
 ## Scope and requirement
 
 Implemented on shared branch `dev`; recorded baseline:

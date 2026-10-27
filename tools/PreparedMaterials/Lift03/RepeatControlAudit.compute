@@ -1,0 +1,9 @@
+#pragma kernel Verify
+Texture2D<float4> Source;
+RWStructuredBuffer<uint> Mismatch;
+int Mip, Width, Height;
+[numthreads(8,8,1)] void Verify(uint3 id:SV_DispatchThreadID) {
+ if(id.x>=Width || id.y>=Height)return;
+ float4 value=Source.Load(int3(id.xy,Mip));
+ if(any(value!=float4(0,0,0,0)))InterlockedAdd(Mismatch[0],1);
+}

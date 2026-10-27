@@ -9,6 +9,11 @@ var second="b22222222-2222-3333-4444-555555555555";
 var imported=Path.Combine(sandbox,"ImportedData");
 var ui=GameManager.instance.userInterface!.appBindings!;
 try {
+ foreach(var path in new string?[]{null,""," ",Path.Combine(imported,second,"Road.Surface"),Path.Combine(imported,owner+"-suffix","Road.Surface")})
+  Check(BridgeOwnedDirectoryRemoval.AssetPath(sandbox,owner,path)==null,"pathless and foreign assets excluded before normalization");
+ var ownedSurface=Path.Combine(imported,owner,"Appearance","Road.Surface");
+ Check(BridgeOwnedDirectoryRemoval.AssetPath(sandbox,owner,ownedSurface)==Path.GetFullPath(ownedSurface),"owned nested surface selected even before file exists");
+ Check(BridgeOwnedDirectoryRemoval.AssetPath(sandbox,owner,@"\\?\"+ownedSurface)==Path.GetFullPath(ownedSurface),"extended native path ownership preserved");
  foreach(var id in new[]{owner,second}) {var dir=Path.Combine(imported,id);Directory.CreateDirectory(dir);File.WriteAllText(Path.Combine(dir,"bad.Prefab"),"no metadata");}
  foreach (var name in new[]{"prefix-"+owner,owner+"_Dependencies",owner+"-suffix","nested"}) {
   var dir=Path.Combine(imported,name);Directory.CreateDirectory(dir);File.WriteAllText(Path.Combine(dir,"keep"),"keep");

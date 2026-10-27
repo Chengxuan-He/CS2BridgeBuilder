@@ -1,0 +1,105 @@
+{
+  "style": "Lift04",
+  "sources": [
+    {
+      "cid": "2dce56d010a63118e998032c00d15640",
+      "sha256": "ab2b09795bfa036e68938504786a9b2f3e62ae9b000fc60cbcb6e0f3b1a45a39",
+      "template": 0,
+      "mode": "original-builtin-reference",
+      "renderUses": [
+        {
+          "render": "LiftBridge04PillarBase Mesh",
+          "mesh": 0
+        },
+        {
+          "render": "LiftBridge04PillarBase_LOD1 Mesh",
+          "mesh": 0
+        }
+      ]
+    },
+    {
+      "cid": "3530c13c82fb42d7bd090005884e4956",
+      "sha256": "6544cd8e5d617f13c8ae74fd96ee31fd806f5b66273f77c3e94f5f0a98bfc48e",
+      "template": 0,
+      "mode": "original-builtin-reference",
+      "renderUses": [
+        {
+          "render": "LiftBridge04_LOD2 Mesh",
+          "mesh": 0
+        }
+      ]
+    },
+    {
+      "cid": "5a7696889d52714b56ac38b90d16c2de",
+      "sha256": "cf79e797ac5011943706240bc84200208345a80c3fe8ac72a75d2ec3ddd80c79",
+      "template": 2,
+      "mode": "original-builtin-reference",
+      "renderUses": [
+        {
+          "render": "LiftBridge04 Mesh",
+          "mesh": 1
+        },
+        {
+          "render": "LiftBridge04_LOD1 Mesh",
+          "mesh": 1
+        }
+      ]
+    },
+    {
+      "cid": "653f3d9b9f07b9bfcd6d9d67c98c1741",
+      "sha256": "ab2b09795bfa036e68938504786a9b2f3e62ae9b000fc60cbcb6e0f3b1a45a39",
+      "template": 0,
+      "mode": "original-builtin-reference",
+      "renderUses": [
+        {
+          "render": "LiftBridge04Pillar Mesh",
+          "mesh": 0
+        },
+        {
+          "render": "LiftBridge04Pillar_LOD1 Mesh",
+          "mesh": 0
+        }
+      ]
+    },
+    {
+      "cid": "6b973ac2133fa9bd8d897bc9eff3363f",
+      "sha256": "ab2b09795bfa036e68938504786a9b2f3e62ae9b000fc60cbcb6e0f3b1a45a39",
+      "template": 0,
+      "mode": "original-builtin-reference",
+      "renderUses": [
+        {
+          "render": "LiftBridge04 Mesh",
+          "mesh": 0
+        },
+        {
+          "render": "LiftBridge04_LOD1 Mesh",
+          "mesh": 0
+        }
+      ]
+    },
+    {
+      "cid": "7afa4205f9ca8c17c01ee8f5f76c9f45",
+      "sha256": "6544cd8e5d617f13c8ae74fd96ee31fd806f5b66273f77c3e94f5f0a98bfc48e",
+      "template": 0,
+      "mode": "original-builtin-reference",
+      "renderUses": [
+        {
+          "render": "LiftBridge04PillarBase_LOD2 Mesh",
+          "mesh": 0
+        }
+      ]
+    },
+    {
+      "cid": "c04384b8bed62165c903ac8a37e2feb5",
+      "sha256": "6544cd8e5d617f13c8ae74fd96ee31fd806f5b66273f77c3e94f5f0a98bfc48e",
+      "template": 0,
+      "mode": "original-builtin-reference",
+      "renderUses": [
+        {
+          "render": "LiftBridge04Pillar_LOD2 Mesh",
+          "mesh": 0
+        }
+      ]
+    }
+  ]
+}

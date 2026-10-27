@@ -3,38 +3,35 @@
 using System;
 
 namespace BridgeBuilder.Bridges;
-
 internal static class Lift03FarRoadTops
 {
     internal static void Remove(int[] indices, bool[] removed)
     {
-        if (indices.Length != 852 * 3 || removed.Length != 852)
+        if (indices.Length != Numeric_Types_Lift03_Lift03FarRoadTops_g_cs.Values.I32[0] * Numeric_Types_Lift03_Lift03FarRoadTops_g_cs.Values.I32[1] || removed.Length != Numeric_Types_Lift03_Lift03FarRoadTops_g_cs.Values.I32[2])
             throw new InvalidOperationException("Lift03 far road-top layout changed.");
         foreach (var face in Faces)
         {
-            var offset = face.Triangle * 3;
-            if (indices[offset] != face.A || indices[offset + 1] != face.B || indices[offset + 2] != face.C)
+            var offset = face.Triangle * Numeric_Types_Lift03_Lift03FarRoadTops_g_cs.Values.I32[3];
+            if (indices[offset] != face.A || indices[offset + Numeric_Types_Lift03_Lift03FarRoadTops_g_cs.Values.I32[4]] != face.B || indices[offset + Numeric_Types_Lift03_Lift03FarRoadTops_g_cs.Values.I32[5]] != face.C)
                 throw new InvalidOperationException("Lift03 far road-top topology changed.");
             removed[face.Triangle] = true;
         }
     }
-    private static readonly (int Triangle, int A, int B, int C)[] Faces =
+
+    private static readonly (int Triangle, int A, int B, int C)[] Faces = ReadPackedFaces();
+    private static (int Triangle, int A, int B, int C)[] ReadPackedFaces()
     {
-        (150, 176, 177, 178),
-        (151, 177, 176, 179),
-        (152, 177, 179, 180),
-        (153, 177, 180, 181),
-        (238, 272, 273, 274),
-        (239, 273, 272, 275),
-        (240, 273, 275, 276),
-        (241, 273, 276, 277),
-        (598, 696, 697, 698),
-        (599, 697, 696, 699),
-        (600, 698, 697, 700),
-        (601, 700, 697, 701),
-        (642, 748, 749, 750),
-        (643, 749, 748, 751),
-        (644, 750, 749, 752),
-        (645, 752, 749, 753),
-    };
+        var d = Numeric_Types_Lift03_Lift03FarRoadTops_g_cs.Values;
+        var values = new (int Triangle, int A, int B, int C)[16];
+        for (int i = 0; i < 16; i++)
+            values[0 + i] = (d.I32[6 + i * 4], d.I32[7 + i * 4], d.I32[8 + i * 4], d.I32[9 + i * 4]);
+        return values;
+    }
+}
+
+// Embedded numerical arrays: Types_Lift03_Lift03FarRoadTops_g_cs
+internal static class Numeric_Types_Lift03_Lift03FarRoadTops_g_cs
+{
+    static Numeric_Types_Lift03_Lift03FarRoadTops_g_cs() {}
+    internal static readonly HardcodedNumbers Values = HardcodedNumbers.Load("Types_Lift03_Lift03FarRoadTops_g_cs");
 }

@@ -110,8 +110,10 @@ foreach ($assembly in @(
     'Colossal.Localization.dll',
     'Colossal.Logging.dll',
     'Colossal.Mathematics.dll',
+    'Colossal.PSI.Common.dll',
     'Unity.Collections.dll',
     'Colossal.AssetPipeline.dll',
+    'Colossal.AssetPipeline.Native.dll',
     'Colossal.UI.dll',
     'Colossal.UI.Binding.dll',
     'UnityEngine.CoreModule.dll',
@@ -133,6 +135,8 @@ if (-not (Test-Path -LiteralPath $sharedRoot)) {
     throw "The pinned shared sources are missing: $sharedRoot. Restore vendor/CS2ModShared from this checkout."
 }
 & (Join-Path $PSScriptRoot 'CheckSharedSources.ps1')
+& $dotnet run --project (Join-Path $PSScriptRoot 'HardcodedDataPack\HardcodedDataPack.csproj') -- $projectRoot --check
+if ($LASTEXITCODE -ne 0) { throw 'Embedded numerical resource verification failed.' }
 $sources = @(
     (Join-Path $projectRoot 'src\BridgeBuilder'),
     $sharedRoot
@@ -153,7 +157,8 @@ $arguments = @(
     '/nullable:enable',
     '/langversion:latest',
     ('/out:' + (Join-Path $output 'BridgeBuilder.dll'))
-) + $references + $sources
+) + @(Get-ChildItem -LiteralPath (Join-Path $projectRoot 'assets\HardcodedNumbers') -Recurse -Filter '*.bin' |
+    Sort-Object Name | ForEach-Object { '/resource:' + $_.FullName + ',BridgeBuilder.Numbers.' + $_.Name }) + $references + $sources
 
 # Source paths grow as bridge implementations are split into individual directories.
 # Use a compiler response file instead of exceeding Windows' process command-line limit.
@@ -171,4 +176,5 @@ Copy-Item -LiteralPath (Join-Path $projectRoot 'assets\BridgeBuilderToolbar.svg'
 foreach ($fieldIcon in @('BridgeBuilderPack.svg', 'BridgeBuilderSearch.svg', 'BridgeBuilderFilter.svg', 'BridgeBuilderArrowDown.svg')) {
     Copy-Item -LiteralPath (Join-Path $projectRoot "assets\$fieldIcon") -Destination $output -Force
 }
+& (Join-Path $PSScriptRoot 'Copy-PreparedMaterials.ps1') -DestinationRoot $output
 Write-Host "Built: $(Join-Path $output 'BridgeBuilder.dll')"

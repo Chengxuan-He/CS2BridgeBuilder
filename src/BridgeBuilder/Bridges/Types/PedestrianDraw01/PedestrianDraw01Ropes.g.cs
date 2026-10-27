@@ -3,27 +3,49 @@ using System;
 using UnityEngine;
 
 namespace BridgeBuilder.Bridges;
-
 internal static class PedestrianDraw01Ropes
 {
     internal static void Apply(int lod, Vector3[] source, Vector3[] positions, float delta)
     {
-        var count = lod switch { 0 => 34931, 1 => 33598, 2 => 1702, _ => throw new ArgumentOutOfRangeException(nameof(lod)) };
+        var count = lod switch
+        {
+            0 => Numeric_Types_PedestrianDraw01_PedestrianDraw01Ropes_g_cs.Values.I32[0],
+            1 => Numeric_Types_PedestrianDraw01_PedestrianDraw01Ropes_g_cs.Values.I32[1],
+            2 => Numeric_Types_PedestrianDraw01_PedestrianDraw01Ropes_g_cs.Values.I32[2],
+            _ => throw new ArgumentOutOfRangeException(nameof(lod))};
         if (source.Length != count || positions.Length != count || !float.IsFinite(delta))
             throw new InvalidOperationException("PedestrianDraw01 rope source layout changed.");
         // Detailed ropes are covered by RigidParts. The far mesh omits ropes.
-        if (lod != 1) return;
+        if (lod != Numeric_Types_PedestrianDraw01_PedestrianDraw01Ropes_g_cs.Values.I32[3])
+            return;
         foreach (var part in Parts)
-            for (var i = part.First; i <= part.Last; i++)
-                positions[i].x = source[i].x + part.Side * delta;
+            AffineGeometry.For(part.First, checked((part.Last) + 1), i =>
+            {
+                positions[i].x = AffineGeometry.AddScaled(source[i].x, part.Side, delta);
+            });
     }
 
     // Geometry SHA-256: 0b0544aff8720327910927fda2f398ce78c8e3e3d2a1262de8204acdcac34053
-    private static readonly (int First, int Last, int Side)[] Parts =
+    private static readonly (int First, int Last, int Side)[] Parts = ReadPackedParts();
+    private static (int First, int Last, int Side)[] ReadPackedParts()
     {
-        (30954, 31148, -1),
-        (31149, 31346, 1),
-        (32916, 33114, -1),
-        (33115, 33299, 1),
-    };
+        var d = Numeric_Types_PedestrianDraw01_PedestrianDraw01Ropes_g_cs.Values;
+        var values = new (int First, int Last, int Side)[4];
+        for (int i = 0; i < 1; i++)
+            values[0 + i] = (d.I32[4 + i * 3], d.I32[5 + i * 3], -d.I32[6 + i * 3]);
+        for (int i = 0; i < 1; i++)
+            values[1 + i] = (d.I32[7 + i * 3], d.I32[8 + i * 3], d.I32[9 + i * 3]);
+        for (int i = 0; i < 1; i++)
+            values[2 + i] = (d.I32[10 + i * 3], d.I32[11 + i * 3], -d.I32[12 + i * 3]);
+        for (int i = 0; i < 1; i++)
+            values[3 + i] = (d.I32[13 + i * 3], d.I32[14 + i * 3], d.I32[15 + i * 3]);
+        return values;
+    }
+}
+
+// Embedded numerical arrays: Types_PedestrianDraw01_PedestrianDraw01Ropes_g_cs
+internal static class Numeric_Types_PedestrianDraw01_PedestrianDraw01Ropes_g_cs
+{
+    static Numeric_Types_PedestrianDraw01_PedestrianDraw01Ropes_g_cs() {}
+    internal static readonly HardcodedNumbers Values = HardcodedNumbers.Load("Types_PedestrianDraw01_PedestrianDraw01Ropes_g_cs");
 }

@@ -3,164 +3,282 @@ using System;
 using UnityEngine;
 
 namespace BridgeBuilder.Bridges;
-
 internal static class PedestrianDraw01SupportGeometry
 {
     internal static MovableStructureModel.Plan Create(bool footing, int lod, Vector3[] source, int[] indices, float delta)
     {
         var data = (footing, lod) switch
         {
-            (false, 0) => (Count: 384, IndexCount: 576, Parts: Parts00),
-            (false, 1) => (Count: 384, IndexCount: 576, Parts: Parts01),
-            (false, 2) => (Count: 128, IndexCount: 192, Parts: Parts02),
-            (true, 0) => (Count: 224, IndexCount: 336, Parts: Parts10),
-            (true, 1) => (Count: 208, IndexCount: 300, Parts: Parts11),
-            (true, 2) => (Count: 40, IndexCount: 60, Parts: Parts12),
-            _ => throw new ArgumentOutOfRangeException(nameof(lod))
-        };
-        if (source.Length != data.Count || indices.Length != data.IndexCount || !float.IsFinite(delta) || delta <= (footing ? -4.0821533203125f : -2.16925048828125f))
+            (false, 0) => (Count: Numeric_Types_PedestrianDraw01_PedestrianDraw01SupportGeometry_g_cs.Values.I32[0], IndexCount: Numeric_Types_PedestrianDraw01_PedestrianDraw01SupportGeometry_g_cs.Values.I32[1], Parts: Parts00),
+            (false, 1) => (Count: Numeric_Types_PedestrianDraw01_PedestrianDraw01SupportGeometry_g_cs.Values.I32[2], IndexCount: Numeric_Types_PedestrianDraw01_PedestrianDraw01SupportGeometry_g_cs.Values.I32[3], Parts: Parts01),
+            (false, 2) => (Count: Numeric_Types_PedestrianDraw01_PedestrianDraw01SupportGeometry_g_cs.Values.I32[4], IndexCount: Numeric_Types_PedestrianDraw01_PedestrianDraw01SupportGeometry_g_cs.Values.I32[5], Parts: Parts02),
+            (true, 0) => (Count: Numeric_Types_PedestrianDraw01_PedestrianDraw01SupportGeometry_g_cs.Values.I32[6], IndexCount: Numeric_Types_PedestrianDraw01_PedestrianDraw01SupportGeometry_g_cs.Values.I32[7], Parts: Parts10),
+            (true, 1) => (Count: Numeric_Types_PedestrianDraw01_PedestrianDraw01SupportGeometry_g_cs.Values.I32[8], IndexCount: Numeric_Types_PedestrianDraw01_PedestrianDraw01SupportGeometry_g_cs.Values.I32[9], Parts: Parts11),
+            (true, 2) => (Count: Numeric_Types_PedestrianDraw01_PedestrianDraw01SupportGeometry_g_cs.Values.I32[10], IndexCount: Numeric_Types_PedestrianDraw01_PedestrianDraw01SupportGeometry_g_cs.Values.I32[11], Parts: Parts12),
+            _ => throw new ArgumentOutOfRangeException(nameof(lod))};
+        if (source.Length != data.Count || indices.Length != data.IndexCount || !float.IsFinite(delta) || delta <= (footing ? -Numeric_Types_PedestrianDraw01_PedestrianDraw01SupportGeometry_g_cs.Values.F32[0] : -Numeric_Types_PedestrianDraw01_PedestrianDraw01SupportGeometry_g_cs.Values.F32[1]))
             throw new InvalidOperationException("PedestrianDraw01 support requires its native topology and positive span.");
         var positions = (Vector3[])source.Clone();
         foreach (var part in data.Parts)
-            for (var i = part.First; i <= part.Last; i++)
-                positions[i].x += (footing ? source[i].x / 4.0821533203125f : part.Sign) * delta;
-        return new MovableStructureModel.Plan(source, positions, new[] { indices }, new[] { new bool[indices.Length / 3] });
+            AffineGeometry.For(part.First, checked((part.Last) + 1), i =>
+            {
+                positions[i].x = AffineGeometry.Translate(positions[i].x, (footing ? source[i].x / Numeric_Types_PedestrianDraw01_PedestrianDraw01SupportGeometry_g_cs.Values.F32[2] : part.Sign) * delta);
+            });
+        return new MovableStructureModel.Plan(source, positions, new[] { indices }, new[] { new bool[indices.Length / Numeric_Types_PedestrianDraw01_PedestrianDraw01SupportGeometry_g_cs.Values.I32[12]] });
     }
 
     // Geometry SHA-256: 1944665003aec7a5992eaf3aeb2545d12d7e024130d11a329981582eed7b11d1
-    private static readonly (int First, int Last, float Sign)[] Parts00 =
-    {
-        (0, 7, 1f),
-        (8, 19, -1f),
-        (20, 27, 1f),
-        (28, 35, -1f),
-        (36, 39, 1f),
-        (40, 43, -1f),
-        (44, 51, 1f),
-        (52, 55, -1f),
-        (56, 63, 1f),
-        (64, 79, -1f),
-        (80, 91, 1f),
-        (92, 95, -1f),
-        (96, 99, 1f),
-        (100, 107, -1f),
-        (108, 119, 1f),
-        (120, 135, -1f),
-        (136, 151, 1f),
-        (152, 155, -1f),
-        (156, 159, 1f),
-        (160, 163, -1f),
-        (164, 171, 1f),
-        (172, 187, -1f),
-        (188, 199, 1f),
-        (200, 211, -1f),
-        (212, 219, 1f),
-        (220, 227, -1f),
-        (228, 231, 1f),
-        (232, 235, -1f),
-        (236, 243, 1f),
-        (244, 247, -1f),
-        (248, 255, 1f),
-        (256, 271, -1f),
-        (272, 283, 1f),
-        (284, 287, -1f),
-        (288, 291, 1f),
-        (292, 299, -1f),
-        (300, 311, 1f),
-        (312, 327, -1f),
-        (328, 343, 1f),
-        (344, 347, -1f),
-        (348, 351, 1f),
-        (352, 355, -1f),
-        (356, 363, 1f),
-        (364, 379, -1f),
-        (380, 383, 1f),
-    };
-
+    private static readonly (int First, int Last, float Sign)[] Parts00 = ReadPackedParts00();
     // Geometry SHA-256: 1944665003aec7a5992eaf3aeb2545d12d7e024130d11a329981582eed7b11d1
-    private static readonly (int First, int Last, float Sign)[] Parts01 =
-    {
-        (0, 7, 1f),
-        (8, 19, -1f),
-        (20, 27, 1f),
-        (28, 35, -1f),
-        (36, 39, 1f),
-        (40, 43, -1f),
-        (44, 51, 1f),
-        (52, 55, -1f),
-        (56, 63, 1f),
-        (64, 79, -1f),
-        (80, 91, 1f),
-        (92, 95, -1f),
-        (96, 99, 1f),
-        (100, 107, -1f),
-        (108, 119, 1f),
-        (120, 135, -1f),
-        (136, 151, 1f),
-        (152, 155, -1f),
-        (156, 159, 1f),
-        (160, 163, -1f),
-        (164, 171, 1f),
-        (172, 187, -1f),
-        (188, 199, 1f),
-        (200, 211, -1f),
-        (212, 219, 1f),
-        (220, 227, -1f),
-        (228, 231, 1f),
-        (232, 235, -1f),
-        (236, 243, 1f),
-        (244, 247, -1f),
-        (248, 255, 1f),
-        (256, 271, -1f),
-        (272, 283, 1f),
-        (284, 287, -1f),
-        (288, 291, 1f),
-        (292, 299, -1f),
-        (300, 311, 1f),
-        (312, 327, -1f),
-        (328, 343, 1f),
-        (344, 347, -1f),
-        (348, 351, 1f),
-        (352, 355, -1f),
-        (356, 363, 1f),
-        (364, 379, -1f),
-        (380, 383, 1f),
-    };
-
+    private static readonly (int First, int Last, float Sign)[] Parts01 = ReadPackedParts01();
     // Geometry SHA-256: 014551574ba090a6a542cf13432bc9451add8583b3658293f127a9721fc5d64a
-    private static readonly (int First, int Last, float Sign)[] Parts02 =
-    {
-        (0, 3, -1f),
-        (4, 11, 1f),
-        (12, 15, -1f),
-        (16, 27, 1f),
-        (28, 39, -1f),
-        (40, 51, 1f),
-        (52, 67, -1f),
-        (68, 75, 1f),
-        (76, 79, -1f),
-        (80, 91, 1f),
-        (92, 103, -1f),
-        (104, 115, 1f),
-        (116, 127, -1f),
-    };
-
+    private static readonly (int First, int Last, float Sign)[] Parts02 = ReadPackedParts02();
     // Geometry SHA-256: 7a9b99e4853b42284d7163f19e320025977c3c0068e59a5c8100745f36b4f051
     private static readonly (int First, int Last, float Sign)[] Parts10 =
     {
-        (0, 223, 0f),
+        (Numeric_Types_PedestrianDraw01_PedestrianDraw01SupportGeometry_g_cs.Values.I32[219], Numeric_Types_PedestrianDraw01_PedestrianDraw01SupportGeometry_g_cs.Values.I32[220], Numeric_Types_PedestrianDraw01_PedestrianDraw01SupportGeometry_g_cs.Values.F32[106]),
     };
-
     // Geometry SHA-256: e785b2ff5500195240a0858e1495492b82463293a5839ee00e8bf553d583f5c4
     private static readonly (int First, int Last, float Sign)[] Parts11 =
     {
-        (0, 207, 0f),
+        (Numeric_Types_PedestrianDraw01_PedestrianDraw01SupportGeometry_g_cs.Values.I32[221], Numeric_Types_PedestrianDraw01_PedestrianDraw01SupportGeometry_g_cs.Values.I32[222], Numeric_Types_PedestrianDraw01_PedestrianDraw01SupportGeometry_g_cs.Values.F32[107]),
     };
-
     // Geometry SHA-256: 17d598b912b94fd035f59221a9f88d08ebc05567ef2defe3e86e5977a17a0403
     private static readonly (int First, int Last, float Sign)[] Parts12 =
     {
-        (0, 39, 0f),
+        (Numeric_Types_PedestrianDraw01_PedestrianDraw01SupportGeometry_g_cs.Values.I32[223], Numeric_Types_PedestrianDraw01_PedestrianDraw01SupportGeometry_g_cs.Values.I32[224], Numeric_Types_PedestrianDraw01_PedestrianDraw01SupportGeometry_g_cs.Values.F32[108]),
     };
+    private static (int First, int Last, float Sign)[] ReadPackedParts00()
+    {
+        var d = Numeric_Types_PedestrianDraw01_PedestrianDraw01SupportGeometry_g_cs.Values;
+        var values = new (int First, int Last, float Sign)[45];
+        for (int i = 0; i < 1; i++)
+            values[0 + i] = (d.I32[13 + i * 2], d.I32[14 + i * 2], d.F32[3 + i * 1]);
+        for (int i = 0; i < 1; i++)
+            values[1 + i] = (d.I32[15 + i * 2], d.I32[16 + i * 2], -d.F32[4 + i * 1]);
+        for (int i = 0; i < 1; i++)
+            values[2 + i] = (d.I32[17 + i * 2], d.I32[18 + i * 2], d.F32[5 + i * 1]);
+        for (int i = 0; i < 1; i++)
+            values[3 + i] = (d.I32[19 + i * 2], d.I32[20 + i * 2], -d.F32[6 + i * 1]);
+        for (int i = 0; i < 1; i++)
+            values[4 + i] = (d.I32[21 + i * 2], d.I32[22 + i * 2], d.F32[7 + i * 1]);
+        for (int i = 0; i < 1; i++)
+            values[5 + i] = (d.I32[23 + i * 2], d.I32[24 + i * 2], -d.F32[8 + i * 1]);
+        for (int i = 0; i < 1; i++)
+            values[6 + i] = (d.I32[25 + i * 2], d.I32[26 + i * 2], d.F32[9 + i * 1]);
+        for (int i = 0; i < 1; i++)
+            values[7 + i] = (d.I32[27 + i * 2], d.I32[28 + i * 2], -d.F32[10 + i * 1]);
+        for (int i = 0; i < 1; i++)
+            values[8 + i] = (d.I32[29 + i * 2], d.I32[30 + i * 2], d.F32[11 + i * 1]);
+        for (int i = 0; i < 1; i++)
+            values[9 + i] = (d.I32[31 + i * 2], d.I32[32 + i * 2], -d.F32[12 + i * 1]);
+        for (int i = 0; i < 1; i++)
+            values[10 + i] = (d.I32[33 + i * 2], d.I32[34 + i * 2], d.F32[13 + i * 1]);
+        for (int i = 0; i < 1; i++)
+            values[11 + i] = (d.I32[35 + i * 2], d.I32[36 + i * 2], -d.F32[14 + i * 1]);
+        for (int i = 0; i < 1; i++)
+            values[12 + i] = (d.I32[37 + i * 2], d.I32[38 + i * 2], d.F32[15 + i * 1]);
+        for (int i = 0; i < 1; i++)
+            values[13 + i] = (d.I32[39 + i * 2], d.I32[40 + i * 2], -d.F32[16 + i * 1]);
+        for (int i = 0; i < 1; i++)
+            values[14 + i] = (d.I32[41 + i * 2], d.I32[42 + i * 2], d.F32[17 + i * 1]);
+        for (int i = 0; i < 1; i++)
+            values[15 + i] = (d.I32[43 + i * 2], d.I32[44 + i * 2], -d.F32[18 + i * 1]);
+        for (int i = 0; i < 1; i++)
+            values[16 + i] = (d.I32[45 + i * 2], d.I32[46 + i * 2], d.F32[19 + i * 1]);
+        for (int i = 0; i < 1; i++)
+            values[17 + i] = (d.I32[47 + i * 2], d.I32[48 + i * 2], -d.F32[20 + i * 1]);
+        for (int i = 0; i < 1; i++)
+            values[18 + i] = (d.I32[49 + i * 2], d.I32[50 + i * 2], d.F32[21 + i * 1]);
+        for (int i = 0; i < 1; i++)
+            values[19 + i] = (d.I32[51 + i * 2], d.I32[52 + i * 2], -d.F32[22 + i * 1]);
+        for (int i = 0; i < 1; i++)
+            values[20 + i] = (d.I32[53 + i * 2], d.I32[54 + i * 2], d.F32[23 + i * 1]);
+        for (int i = 0; i < 1; i++)
+            values[21 + i] = (d.I32[55 + i * 2], d.I32[56 + i * 2], -d.F32[24 + i * 1]);
+        for (int i = 0; i < 1; i++)
+            values[22 + i] = (d.I32[57 + i * 2], d.I32[58 + i * 2], d.F32[25 + i * 1]);
+        for (int i = 0; i < 1; i++)
+            values[23 + i] = (d.I32[59 + i * 2], d.I32[60 + i * 2], -d.F32[26 + i * 1]);
+        for (int i = 0; i < 1; i++)
+            values[24 + i] = (d.I32[61 + i * 2], d.I32[62 + i * 2], d.F32[27 + i * 1]);
+        for (int i = 0; i < 1; i++)
+            values[25 + i] = (d.I32[63 + i * 2], d.I32[64 + i * 2], -d.F32[28 + i * 1]);
+        for (int i = 0; i < 1; i++)
+            values[26 + i] = (d.I32[65 + i * 2], d.I32[66 + i * 2], d.F32[29 + i * 1]);
+        for (int i = 0; i < 1; i++)
+            values[27 + i] = (d.I32[67 + i * 2], d.I32[68 + i * 2], -d.F32[30 + i * 1]);
+        for (int i = 0; i < 1; i++)
+            values[28 + i] = (d.I32[69 + i * 2], d.I32[70 + i * 2], d.F32[31 + i * 1]);
+        for (int i = 0; i < 1; i++)
+            values[29 + i] = (d.I32[71 + i * 2], d.I32[72 + i * 2], -d.F32[32 + i * 1]);
+        for (int i = 0; i < 1; i++)
+            values[30 + i] = (d.I32[73 + i * 2], d.I32[74 + i * 2], d.F32[33 + i * 1]);
+        for (int i = 0; i < 1; i++)
+            values[31 + i] = (d.I32[75 + i * 2], d.I32[76 + i * 2], -d.F32[34 + i * 1]);
+        for (int i = 0; i < 1; i++)
+            values[32 + i] = (d.I32[77 + i * 2], d.I32[78 + i * 2], d.F32[35 + i * 1]);
+        for (int i = 0; i < 1; i++)
+            values[33 + i] = (d.I32[79 + i * 2], d.I32[80 + i * 2], -d.F32[36 + i * 1]);
+        for (int i = 0; i < 1; i++)
+            values[34 + i] = (d.I32[81 + i * 2], d.I32[82 + i * 2], d.F32[37 + i * 1]);
+        for (int i = 0; i < 1; i++)
+            values[35 + i] = (d.I32[83 + i * 2], d.I32[84 + i * 2], -d.F32[38 + i * 1]);
+        for (int i = 0; i < 1; i++)
+            values[36 + i] = (d.I32[85 + i * 2], d.I32[86 + i * 2], d.F32[39 + i * 1]);
+        for (int i = 0; i < 1; i++)
+            values[37 + i] = (d.I32[87 + i * 2], d.I32[88 + i * 2], -d.F32[40 + i * 1]);
+        for (int i = 0; i < 1; i++)
+            values[38 + i] = (d.I32[89 + i * 2], d.I32[90 + i * 2], d.F32[41 + i * 1]);
+        for (int i = 0; i < 1; i++)
+            values[39 + i] = (d.I32[91 + i * 2], d.I32[92 + i * 2], -d.F32[42 + i * 1]);
+        for (int i = 0; i < 1; i++)
+            values[40 + i] = (d.I32[93 + i * 2], d.I32[94 + i * 2], d.F32[43 + i * 1]);
+        for (int i = 0; i < 1; i++)
+            values[41 + i] = (d.I32[95 + i * 2], d.I32[96 + i * 2], -d.F32[44 + i * 1]);
+        for (int i = 0; i < 1; i++)
+            values[42 + i] = (d.I32[97 + i * 2], d.I32[98 + i * 2], d.F32[45 + i * 1]);
+        for (int i = 0; i < 1; i++)
+            values[43 + i] = (d.I32[99 + i * 2], d.I32[100 + i * 2], -d.F32[46 + i * 1]);
+        for (int i = 0; i < 1; i++)
+            values[44 + i] = (d.I32[101 + i * 2], d.I32[102 + i * 2], d.F32[47 + i * 1]);
+        return values;
+    }
 
+    private static (int First, int Last, float Sign)[] ReadPackedParts01()
+    {
+        var d = Numeric_Types_PedestrianDraw01_PedestrianDraw01SupportGeometry_g_cs.Values;
+        var values = new (int First, int Last, float Sign)[45];
+        for (int i = 0; i < 1; i++)
+            values[0 + i] = (d.I32[103 + i * 2], d.I32[104 + i * 2], d.F32[48 + i * 1]);
+        for (int i = 0; i < 1; i++)
+            values[1 + i] = (d.I32[105 + i * 2], d.I32[106 + i * 2], -d.F32[49 + i * 1]);
+        for (int i = 0; i < 1; i++)
+            values[2 + i] = (d.I32[107 + i * 2], d.I32[108 + i * 2], d.F32[50 + i * 1]);
+        for (int i = 0; i < 1; i++)
+            values[3 + i] = (d.I32[109 + i * 2], d.I32[110 + i * 2], -d.F32[51 + i * 1]);
+        for (int i = 0; i < 1; i++)
+            values[4 + i] = (d.I32[111 + i * 2], d.I32[112 + i * 2], d.F32[52 + i * 1]);
+        for (int i = 0; i < 1; i++)
+            values[5 + i] = (d.I32[113 + i * 2], d.I32[114 + i * 2], -d.F32[53 + i * 1]);
+        for (int i = 0; i < 1; i++)
+            values[6 + i] = (d.I32[115 + i * 2], d.I32[116 + i * 2], d.F32[54 + i * 1]);
+        for (int i = 0; i < 1; i++)
+            values[7 + i] = (d.I32[117 + i * 2], d.I32[118 + i * 2], -d.F32[55 + i * 1]);
+        for (int i = 0; i < 1; i++)
+            values[8 + i] = (d.I32[119 + i * 2], d.I32[120 + i * 2], d.F32[56 + i * 1]);
+        for (int i = 0; i < 1; i++)
+            values[9 + i] = (d.I32[121 + i * 2], d.I32[122 + i * 2], -d.F32[57 + i * 1]);
+        for (int i = 0; i < 1; i++)
+            values[10 + i] = (d.I32[123 + i * 2], d.I32[124 + i * 2], d.F32[58 + i * 1]);
+        for (int i = 0; i < 1; i++)
+            values[11 + i] = (d.I32[125 + i * 2], d.I32[126 + i * 2], -d.F32[59 + i * 1]);
+        for (int i = 0; i < 1; i++)
+            values[12 + i] = (d.I32[127 + i * 2], d.I32[128 + i * 2], d.F32[60 + i * 1]);
+        for (int i = 0; i < 1; i++)
+            values[13 + i] = (d.I32[129 + i * 2], d.I32[130 + i * 2], -d.F32[61 + i * 1]);
+        for (int i = 0; i < 1; i++)
+            values[14 + i] = (d.I32[131 + i * 2], d.I32[132 + i * 2], d.F32[62 + i * 1]);
+        for (int i = 0; i < 1; i++)
+            values[15 + i] = (d.I32[133 + i * 2], d.I32[134 + i * 2], -d.F32[63 + i * 1]);
+        for (int i = 0; i < 1; i++)
+            values[16 + i] = (d.I32[135 + i * 2], d.I32[136 + i * 2], d.F32[64 + i * 1]);
+        for (int i = 0; i < 1; i++)
+            values[17 + i] = (d.I32[137 + i * 2], d.I32[138 + i * 2], -d.F32[65 + i * 1]);
+        for (int i = 0; i < 1; i++)
+            values[18 + i] = (d.I32[139 + i * 2], d.I32[140 + i * 2], d.F32[66 + i * 1]);
+        for (int i = 0; i < 1; i++)
+            values[19 + i] = (d.I32[141 + i * 2], d.I32[142 + i * 2], -d.F32[67 + i * 1]);
+        for (int i = 0; i < 1; i++)
+            values[20 + i] = (d.I32[143 + i * 2], d.I32[144 + i * 2], d.F32[68 + i * 1]);
+        for (int i = 0; i < 1; i++)
+            values[21 + i] = (d.I32[145 + i * 2], d.I32[146 + i * 2], -d.F32[69 + i * 1]);
+        for (int i = 0; i < 1; i++)
+            values[22 + i] = (d.I32[147 + i * 2], d.I32[148 + i * 2], d.F32[70 + i * 1]);
+        for (int i = 0; i < 1; i++)
+            values[23 + i] = (d.I32[149 + i * 2], d.I32[150 + i * 2], -d.F32[71 + i * 1]);
+        for (int i = 0; i < 1; i++)
+            values[24 + i] = (d.I32[151 + i * 2], d.I32[152 + i * 2], d.F32[72 + i * 1]);
+        for (int i = 0; i < 1; i++)
+            values[25 + i] = (d.I32[153 + i * 2], d.I32[154 + i * 2], -d.F32[73 + i * 1]);
+        for (int i = 0; i < 1; i++)
+            values[26 + i] = (d.I32[155 + i * 2], d.I32[156 + i * 2], d.F32[74 + i * 1]);
+        for (int i = 0; i < 1; i++)
+            values[27 + i] = (d.I32[157 + i * 2], d.I32[158 + i * 2], -d.F32[75 + i * 1]);
+        for (int i = 0; i < 1; i++)
+            values[28 + i] = (d.I32[159 + i * 2], d.I32[160 + i * 2], d.F32[76 + i * 1]);
+        for (int i = 0; i < 1; i++)
+            values[29 + i] = (d.I32[161 + i * 2], d.I32[162 + i * 2], -d.F32[77 + i * 1]);
+        for (int i = 0; i < 1; i++)
+            values[30 + i] = (d.I32[163 + i * 2], d.I32[164 + i * 2], d.F32[78 + i * 1]);
+        for (int i = 0; i < 1; i++)
+            values[31 + i] = (d.I32[165 + i * 2], d.I32[166 + i * 2], -d.F32[79 + i * 1]);
+        for (int i = 0; i < 1; i++)
+            values[32 + i] = (d.I32[167 + i * 2], d.I32[168 + i * 2], d.F32[80 + i * 1]);
+        for (int i = 0; i < 1; i++)
+            values[33 + i] = (d.I32[169 + i * 2], d.I32[170 + i * 2], -d.F32[81 + i * 1]);
+        for (int i = 0; i < 1; i++)
+            values[34 + i] = (d.I32[171 + i * 2], d.I32[172 + i * 2], d.F32[82 + i * 1]);
+        for (int i = 0; i < 1; i++)
+            values[35 + i] = (d.I32[173 + i * 2], d.I32[174 + i * 2], -d.F32[83 + i * 1]);
+        for (int i = 0; i < 1; i++)
+            values[36 + i] = (d.I32[175 + i * 2], d.I32[176 + i * 2], d.F32[84 + i * 1]);
+        for (int i = 0; i < 1; i++)
+            values[37 + i] = (d.I32[177 + i * 2], d.I32[178 + i * 2], -d.F32[85 + i * 1]);
+        for (int i = 0; i < 1; i++)
+            values[38 + i] = (d.I32[179 + i * 2], d.I32[180 + i * 2], d.F32[86 + i * 1]);
+        for (int i = 0; i < 1; i++)
+            values[39 + i] = (d.I32[181 + i * 2], d.I32[182 + i * 2], -d.F32[87 + i * 1]);
+        for (int i = 0; i < 1; i++)
+            values[40 + i] = (d.I32[183 + i * 2], d.I32[184 + i * 2], d.F32[88 + i * 1]);
+        for (int i = 0; i < 1; i++)
+            values[41 + i] = (d.I32[185 + i * 2], d.I32[186 + i * 2], -d.F32[89 + i * 1]);
+        for (int i = 0; i < 1; i++)
+            values[42 + i] = (d.I32[187 + i * 2], d.I32[188 + i * 2], d.F32[90 + i * 1]);
+        for (int i = 0; i < 1; i++)
+            values[43 + i] = (d.I32[189 + i * 2], d.I32[190 + i * 2], -d.F32[91 + i * 1]);
+        for (int i = 0; i < 1; i++)
+            values[44 + i] = (d.I32[191 + i * 2], d.I32[192 + i * 2], d.F32[92 + i * 1]);
+        return values;
+    }
+
+    private static (int First, int Last, float Sign)[] ReadPackedParts02()
+    {
+        var d = Numeric_Types_PedestrianDraw01_PedestrianDraw01SupportGeometry_g_cs.Values;
+        var values = new (int First, int Last, float Sign)[13];
+        for (int i = 0; i < 1; i++)
+            values[0 + i] = (d.I32[193 + i * 2], d.I32[194 + i * 2], -d.F32[93 + i * 1]);
+        for (int i = 0; i < 1; i++)
+            values[1 + i] = (d.I32[195 + i * 2], d.I32[196 + i * 2], d.F32[94 + i * 1]);
+        for (int i = 0; i < 1; i++)
+            values[2 + i] = (d.I32[197 + i * 2], d.I32[198 + i * 2], -d.F32[95 + i * 1]);
+        for (int i = 0; i < 1; i++)
+            values[3 + i] = (d.I32[199 + i * 2], d.I32[200 + i * 2], d.F32[96 + i * 1]);
+        for (int i = 0; i < 1; i++)
+            values[4 + i] = (d.I32[201 + i * 2], d.I32[202 + i * 2], -d.F32[97 + i * 1]);
+        for (int i = 0; i < 1; i++)
+            values[5 + i] = (d.I32[203 + i * 2], d.I32[204 + i * 2], d.F32[98 + i * 1]);
+        for (int i = 0; i < 1; i++)
+            values[6 + i] = (d.I32[205 + i * 2], d.I32[206 + i * 2], -d.F32[99 + i * 1]);
+        for (int i = 0; i < 1; i++)
+            values[7 + i] = (d.I32[207 + i * 2], d.I32[208 + i * 2], d.F32[100 + i * 1]);
+        for (int i = 0; i < 1; i++)
+            values[8 + i] = (d.I32[209 + i * 2], d.I32[210 + i * 2], -d.F32[101 + i * 1]);
+        for (int i = 0; i < 1; i++)
+            values[9 + i] = (d.I32[211 + i * 2], d.I32[212 + i * 2], d.F32[102 + i * 1]);
+        for (int i = 0; i < 1; i++)
+            values[10 + i] = (d.I32[213 + i * 2], d.I32[214 + i * 2], -d.F32[103 + i * 1]);
+        for (int i = 0; i < 1; i++)
+            values[11 + i] = (d.I32[215 + i * 2], d.I32[216 + i * 2], d.F32[104 + i * 1]);
+        for (int i = 0; i < 1; i++)
+            values[12 + i] = (d.I32[217 + i * 2], d.I32[218 + i * 2], -d.F32[105 + i * 1]);
+        return values;
+    }
+}
+
+// Embedded numerical arrays: Types_PedestrianDraw01_PedestrianDraw01SupportGeometry_g_cs
+internal static class Numeric_Types_PedestrianDraw01_PedestrianDraw01SupportGeometry_g_cs
+{
+    static Numeric_Types_PedestrianDraw01_PedestrianDraw01SupportGeometry_g_cs() {}
+    internal static readonly HardcodedNumbers Values = HardcodedNumbers.Load("Types_PedestrianDraw01_PedestrianDraw01SupportGeometry_g_cs");
 }

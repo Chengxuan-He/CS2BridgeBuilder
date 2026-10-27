@@ -1,0 +1,20 @@
+#pragma kernel Probe
+Texture2D<float4> Source;
+SamplerState sampler_Source;
+StructuredBuffer<float2> Coordinates;
+RWStructuredBuffer<float4> Results;
+float4 A,B,C;
+int Count,Normal;
+[numthreads(8,1,1)] void Probe(uint3 id:SV_DispatchThreadID) {
+ if(id.x>=Count)return;
+ float2 q=Coordinates[id.x],p=frac(q);
+ bool reverse=p.x+p.y>1;
+ if(reverse)p=1-p;
+ float2 directUv=A.xy+q.x*(B.xy-A.xy)+q.y*(C.xy-A.xy);
+ float2 foldedUv=A.xy+p.x*(B.xy-A.xy)+p.y*(C.xy-A.xy);
+ float4 direct=Source.SampleLevel(sampler_Source,directUv,0);
+ float4 folded=Source.SampleLevel(sampler_Source,foldedUv,0);
+ if(reverse&&Normal!=0)folded=float4(1-folded.r*folded.a,1-folded.g,folded.b,1);
+ Results[id.x*2]=direct;
+ Results[id.x*2+1]=folded;
+}

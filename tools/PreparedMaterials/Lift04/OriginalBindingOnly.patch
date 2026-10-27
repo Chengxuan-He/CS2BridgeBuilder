@@ -1,0 +1,38 @@
+--- a/src/BridgeBuilder/Bridges/Common/Movable/MovableStructureTiles.cs
++++ b/src/BridgeBuilder/Bridges/Common/Movable/MovableStructureTiles.cs
+@@ -1,6 +1,5 @@
++using System;
+ using System.Collections.Generic;
+-using System.IO;
+-using BridgeBuilder.Runtime;
+ using Colossal.IO.AssetDatabase;
+ using UnityEngine;
+ 
+@@ -17,7 +16,6 @@
+     }
+ 
+     private readonly string _style;
+-    private readonly Dictionary<SurfaceAsset,string> _sourceDigests=new();
+ 
+     internal MovableStructureTiles(string style) => _style=style;
+ 
+@@ -34,15 +32,10 @@
+                 originals++;
+                 continue;
+             }
+-            if(!_sourceDigests.TryGetValue(source,out var digest))
+-            {
+-                using var stream=source.GetReadStream();
+-                using var bytes=new MemoryStream();
+-                stream.CopyTo(bytes);
+-                _sourceDigests.Add(source,digest=MovableStructureKey.Digest(bytes.ToArray()));
+-            }
+-            var key=MovableStructureKey.For(digest,unit.Triangle,unit.Bounds,unit.A,unit.B,unit.C);
+-            slots.Add(unit.Id,new Slot{Surface=BridgePreparedMaterials.Structure(_style,key)});
++            // The native original remains the source of pixels and mips. An
++            // out-of-domain mapping cannot silently become whole-atlas wrapping
++            // or an independently resampled texture under another identity.
++            throw new NotSupportedException($"Native structural sampling is not implemented for style={_style}, domain={unit.Id}, triangle={unit.Triangle}, repeatOnly={unit.RepeatOnly}.");
+         }
+         Mod.Log.Info($"Structural material reuse: style={_style}; original={originals}; prepared={slots.Count-originals}; runtime samplers=0.");
+         return slots;

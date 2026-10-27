@@ -1,0 +1,78 @@
+{
+  "recipe": "BridgeBuilder/RoadRepeat/1",
+  "sources": [
+    {
+      "cid": "6b973ac2133fa9bd8d897bc9eff3363f",
+      "template": 0,
+      "channels": [
+        {
+          "stack": 0,
+          "layer": 0,
+          "name": "_BaseColorMap"
+        },
+        {
+          "stack": 0,
+          "layer": 1,
+          "name": "_NormalMap"
+        },
+        {
+          "stack": 0,
+          "layer": 2,
+          "name": "_MaskMap"
+        },
+        {
+          "stack": 0,
+          "layer": 3,
+          "name": "_ControlMask"
+        },
+        {
+          "stack": 1,
+          "layer": 0,
+          "name": "_EmissiveColorMap"
+        }
+      ]
+    }
+  ],
+  "units": [
+    {
+      "style": "Lift04",
+      "sourceCid": "6b973ac2133fa9bd8d897bc9eff3363f",
+      "sourceDigest": "ab2b09795bfa036e68938504786a9b2f3e62ae9b000fc60cbcb6e0f3b1a45a39",
+      "key": "28dc86a8c640b80ac3c0ad59d935ab79c4fdf2ba1919b36f1bd6df07da896505",
+      "min": [
+        0.4697265625,
+        0.8251953125
+      ],
+      "max": [
+        0.62548828125,
+        0.9814453125
+      ],
+      "cutout": true,
+      "rows": false,
+      "bands": null,
+      "regions": [
+        0,
+        1,
+        2,
+        3
+      ]
+    }
+  ],
+  "evidence": {
+    "nativeAuditSHA256": "47ef0f1723e8643e74a17751aa480f97260bf6e549aa60ec9f14f8e003b12070",
+    "runtimeSourceSHA256": "5f4d296863b53dde2b71fe414acb138ed3ca78a9b0f7318ca95031c2ba62c8ec",
+    "numericalResourceSHA256": "62ef6f00905a3bb4f46e65a88dfced5126679ba677d361568e14dc3a598b4d66",
+    "boundsFloat32Bits": [
+      "0080f03e",
+      "0040533f",
+      "0020203f",
+      "00407b3f"
+    ],
+    "projectionLengths": [
+      4.0,
+      4.0,
+      3.806640625
+    ],
+    "lateralLength": 4.0
+  }
+}

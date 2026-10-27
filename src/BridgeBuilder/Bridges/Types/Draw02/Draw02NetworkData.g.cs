@@ -7,94 +7,58 @@ using Game.Prefabs;
 using Unity.Mathematics;
 
 namespace BridgeBuilder.Bridges;
-
 internal static class Draw02NetworkData
 {
     // Every one of the nine native lateral occurrences has these same three branches.
     // Selected-road conditions and lateral roles remain on the outer occurrence.
-    internal static NetSectionInfo[] ConvertSections(string owner, NetSectionInfo[] source,
-        out PrefabBase[] created)
+    internal static NetSectionInfo[] ConvertSections(string owner, NetSectionInfo[] source, out PrefabBase[] created)
     {
         var rules = new MovableSectionConversion.Branch[source.Length][];
-        for (var i = 0; i < source.Length; i++) rules[i] = Branches();
-        if (!MovableSectionConversion.TryConvert(owner, source, rules, out var sections,
-            out created, out _, out var error))
+        for (var i = Numeric_Types_Draw02_Draw02NetworkData_g_cs.Values.I32[0]; i < source.Length; i++)
+            rules[i] = Branches();
+        if (!MovableSectionConversion.TryConvert(owner, source, rules, out var sections, out created, out _, out var error))
             throw new InvalidOperationException(error);
         return sections;
     }
 
     private static MovableSectionConversion.Branch[] Branches() => new[]
     {
-        new MovableSectionConversion.Branch(Array.Empty<NetPieceRequirements>(), Array.Empty<NetPieceRequirements>(), new[] { NetPieceRequirements.FixedNodeSize }, (NetPieceLayerMask)(0), false),
-        new MovableSectionConversion.Branch(new[] { NetPieceRequirements.Node, NetPieceRequirements.FixedNodeSize }, Array.Empty<NetPieceRequirements>(), Array.Empty<NetPieceRequirements>(), (NetPieceLayerMask)(-1), false),
-        new MovableSectionConversion.Branch(new[] { NetPieceRequirements.FixedNodeSize }, Array.Empty<NetPieceRequirements>(), new[] { NetPieceRequirements.Node }, (NetPieceLayerMask)(0), true),
+        new MovableSectionConversion.Branch(Array.Empty<NetPieceRequirements>(), Array.Empty<NetPieceRequirements>(), new[] { NetPieceRequirements.FixedNodeSize }, (NetPieceLayerMask)(Numeric_Types_Draw02_Draw02NetworkData_g_cs.Values.I32[1]), false),
+        new MovableSectionConversion.Branch(new[] { NetPieceRequirements.Node, NetPieceRequirements.FixedNodeSize }, Array.Empty<NetPieceRequirements>(), Array.Empty<NetPieceRequirements>(), (NetPieceLayerMask)(-Numeric_Types_Draw02_Draw02NetworkData_g_cs.Values.I32[2]), false),
+        new MovableSectionConversion.Branch(new[] { NetPieceRequirements.FixedNodeSize }, Array.Empty<NetPieceRequirements>(), new[] { NetPieceRequirements.Node }, (NetPieceLayerMask)(Numeric_Types_Draw02_Draw02NetworkData_g_cs.Values.I32[3]), true),
     };
-
     internal static void ApplyBridge(Bridge bridge)
     {
-        bridge.m_SegmentLength = 144.0f;
-        bridge.m_Hanging = 0.0f;
-        bridge.m_ElevationOnWater = 10.0f;
+        bridge.m_SegmentLength = Numeric_Types_Draw02_Draw02NetworkData_g_cs.Values.F32[0];
+        bridge.m_Hanging = Numeric_Types_Draw02_Draw02NetworkData_g_cs.Values.F32[1];
+        bridge.m_ElevationOnWater = Numeric_Types_Draw02_Draw02NetworkData_g_cs.Values.F32[2];
         bridge.m_CanCurve = true;
         bridge.m_AllowMinimalLength = false;
-        bridge.m_WaterFlow = (BridgeWaterFlow)0;
-        bridge.m_BuildStyle = (BridgeBuildStyle)0;
+        bridge.m_WaterFlow = (BridgeWaterFlow)Numeric_Types_Draw02_Draw02NetworkData_g_cs.Values.I32[4];
+        bridge.m_BuildStyle = (BridgeBuildStyle)Numeric_Types_Draw02_Draw02NetworkData_g_cs.Values.I32[5];
         bridge.m_FixedSegments = Array.Empty<FixedNetSegmentInfo>();
     }
 
     // Apply once to a private selected-road clone, preserving its existing state rules.
     internal static void AddMechanismStates(NetGeometryPrefab target)
     {
-        target.m_EdgeStates = (target.m_EdgeStates ?? Array.Empty<NetEdgeStateInfo>()).Concat(new[]
-        {
-            new NetEdgeStateInfo
-            {
-                m_RequireAll = Array.Empty<NetPieceRequirements>(),
-                m_RequireAny = Array.Empty<NetPieceRequirements>(),
-                m_RequireNone = Array.Empty<NetPieceRequirements>(),
-                m_SetState = new[] { (NetPieceRequirements)51 },
-            },
-        }).ToArray();
-        target.m_NodeStates = (target.m_NodeStates ?? Array.Empty<NetNodeStateInfo>()).Concat(new[]
-        {
-            new NetNodeStateInfo
-            {
-                m_RequireAll = Array.Empty<NetPieceRequirements>(),
-                m_RequireAny = Array.Empty<NetPieceRequirements>(),
-                m_RequireNone = Array.Empty<NetPieceRequirements>(),
-                m_SetState = new[] { (NetPieceRequirements)24, (NetPieceRequirements)31, (NetPieceRequirements)51 },
-                m_MatchType = (NetEdgeMatchType)0,
-            },
-        }).ToArray();
+        target.m_EdgeStates = (target.m_EdgeStates ?? Array.Empty<NetEdgeStateInfo>()).Concat(new[] { new NetEdgeStateInfo { m_RequireAll = Array.Empty<NetPieceRequirements>(), m_RequireAny = Array.Empty<NetPieceRequirements>(), m_RequireNone = Array.Empty<NetPieceRequirements>(), m_SetState = new[] { (NetPieceRequirements)Numeric_Types_Draw02_Draw02NetworkData_g_cs.Values.I32[6] }, }, }).ToArray();
+        target.m_NodeStates = (target.m_NodeStates ?? Array.Empty<NetNodeStateInfo>()).Concat(new[] { new NetNodeStateInfo { m_RequireAll = Array.Empty<NetPieceRequirements>(), m_RequireAny = Array.Empty<NetPieceRequirements>(), m_RequireNone = Array.Empty<NetPieceRequirements>(), m_SetState = new[] { (NetPieceRequirements)Numeric_Types_Draw02_Draw02NetworkData_g_cs.Values.I32[7], (NetPieceRequirements)Numeric_Types_Draw02_Draw02NetworkData_g_cs.Values.I32[8], (NetPieceRequirements)Numeric_Types_Draw02_Draw02NetworkData_g_cs.Values.I32[9] }, m_MatchType = (NetEdgeMatchType)Numeric_Types_Draw02_Draw02NetworkData_g_cs.Values.I32[10], }, }).ToArray();
     }
 
     // The caller supplies private generated pillar/mechanism objects and the selected
     // road outside-connection object. Original native placement fields are preserved.
-    internal static NetSubObjectInfo[] Placements(ObjectPrefab pillar, ObjectPrefab mechanism,
-        ObjectPrefab outsideConnection) => StructurePlacements(pillar, mechanism).Concat(new[]
-        {
-            new NetSubObjectInfo
-            {
-                m_Object = outsideConnection,
-                m_Position = new float3(0f, 5f, 0f),
-                m_Rotation = quaternion.identity,
-                m_Placement = (NetObjectPlacement)0,
-                m_FixedIndex = 0, m_Spacing = 0f,
-                m_AnchorTop = false, m_AnchorCenter = false,
-                m_RequireElevated = false, m_RequireOutsideConnection = true,
-                m_RequireDeadEnd = false, m_RequireOrphan = false
-            }
-        }).ToArray();
-
+    internal static NetSubObjectInfo[] Placements(ObjectPrefab pillar, ObjectPrefab mechanism, ObjectPrefab outsideConnection) => StructurePlacements(pillar, mechanism).Concat(new[] { new NetSubObjectInfo { m_Object = outsideConnection, m_Position = new float3(Numeric_Types_Draw02_Draw02NetworkData_g_cs.Values.F32[3], Numeric_Types_Draw02_Draw02NetworkData_g_cs.Values.F32[4], Numeric_Types_Draw02_Draw02NetworkData_g_cs.Values.F32[5]), m_Rotation = quaternion.identity, m_Placement = (NetObjectPlacement)Numeric_Types_Draw02_Draw02NetworkData_g_cs.Values.I32[11], m_FixedIndex = Numeric_Types_Draw02_Draw02NetworkData_g_cs.Values.I32[12], m_Spacing = Numeric_Types_Draw02_Draw02NetworkData_g_cs.Values.F32[6], m_AnchorTop = false, m_AnchorCenter = false, m_RequireElevated = false, m_RequireOutsideConnection = true, m_RequireDeadEnd = false, m_RequireOrphan = false } }).ToArray();
     internal static NetSubObjectInfo[] StructurePlacements(ObjectPrefab pillar, ObjectPrefab mechanism) => new[]
     {
         new NetSubObjectInfo
         {
             m_Object = pillar,
-            m_Position = new float3(0.0f, -0.9449999928474426f, 2.5f),
-            m_Rotation = new quaternion(0.0f, 0.0f, 0.0f, 1.0f),
-            m_Placement = (NetObjectPlacement)19,
-            m_FixedIndex = 0, m_Spacing = 0.0f,
+            m_Position = new float3(Numeric_Types_Draw02_Draw02NetworkData_g_cs.Values.F32[7], -Numeric_Types_Draw02_Draw02NetworkData_g_cs.Values.F32[8], Numeric_Types_Draw02_Draw02NetworkData_g_cs.Values.F32[9]),
+            m_Rotation = new quaternion(Numeric_Types_Draw02_Draw02NetworkData_g_cs.Values.F32[10], Numeric_Types_Draw02_Draw02NetworkData_g_cs.Values.F32[11], Numeric_Types_Draw02_Draw02NetworkData_g_cs.Values.F32[12], Numeric_Types_Draw02_Draw02NetworkData_g_cs.Values.F32[13]),
+            m_Placement = (NetObjectPlacement)Numeric_Types_Draw02_Draw02NetworkData_g_cs.Values.I32[13],
+            m_FixedIndex = Numeric_Types_Draw02_Draw02NetworkData_g_cs.Values.I32[14],
+            m_Spacing = Numeric_Types_Draw02_Draw02NetworkData_g_cs.Values.F32[14],
             m_AnchorTop = false,
             m_AnchorCenter = false,
             m_RequireElevated = true,
@@ -105,10 +69,11 @@ internal static class Draw02NetworkData
         new NetSubObjectInfo
         {
             m_Object = pillar,
-            m_Position = new float3(0.0f, -0.9449999928474426f, 0.0f),
-            m_Rotation = new quaternion(0.0f, 0.0f, 0.0f, 1.0f),
-            m_Placement = (NetObjectPlacement)18,
-            m_FixedIndex = 0, m_Spacing = 0.0f,
+            m_Position = new float3(Numeric_Types_Draw02_Draw02NetworkData_g_cs.Values.F32[15], -Numeric_Types_Draw02_Draw02NetworkData_g_cs.Values.F32[16], Numeric_Types_Draw02_Draw02NetworkData_g_cs.Values.F32[17]),
+            m_Rotation = new quaternion(Numeric_Types_Draw02_Draw02NetworkData_g_cs.Values.F32[18], Numeric_Types_Draw02_Draw02NetworkData_g_cs.Values.F32[19], Numeric_Types_Draw02_Draw02NetworkData_g_cs.Values.F32[20], Numeric_Types_Draw02_Draw02NetworkData_g_cs.Values.F32[21]),
+            m_Placement = (NetObjectPlacement)Numeric_Types_Draw02_Draw02NetworkData_g_cs.Values.I32[15],
+            m_FixedIndex = Numeric_Types_Draw02_Draw02NetworkData_g_cs.Values.I32[16],
+            m_Spacing = Numeric_Types_Draw02_Draw02NetworkData_g_cs.Values.F32[22],
             m_AnchorTop = false,
             m_AnchorCenter = false,
             m_RequireElevated = true,
@@ -118,19 +83,26 @@ internal static class Draw02NetworkData
         },
         MechanismPlacement(mechanism),
     };
-    internal static NetSubObjectInfo MechanismPlacement(ObjectPrefab mechanism) =>
-        new NetSubObjectInfo
-        {
-            m_Object = mechanism,
-            m_Position = new float3(0.0f, 0.0f, 0.0f),
-            m_Rotation = new quaternion(0.0f, 0.0f, 0.0f, 1.0f),
-            m_Placement = (NetObjectPlacement)16,
-            m_FixedIndex = 0, m_Spacing = 0.0f,
-            m_AnchorTop = false,
-            m_AnchorCenter = false,
-            m_RequireElevated = false,
-            m_RequireOutsideConnection = false,
-            m_RequireDeadEnd = false,
-            m_RequireOrphan = false,
-        };
+    internal static NetSubObjectInfo MechanismPlacement(ObjectPrefab mechanism) => new NetSubObjectInfo
+    {
+        m_Object = mechanism,
+        m_Position = new float3(Numeric_Types_Draw02_Draw02NetworkData_g_cs.Values.F32[23], Numeric_Types_Draw02_Draw02NetworkData_g_cs.Values.F32[24], Numeric_Types_Draw02_Draw02NetworkData_g_cs.Values.F32[25]),
+        m_Rotation = new quaternion(Numeric_Types_Draw02_Draw02NetworkData_g_cs.Values.F32[26], Numeric_Types_Draw02_Draw02NetworkData_g_cs.Values.F32[27], Numeric_Types_Draw02_Draw02NetworkData_g_cs.Values.F32[28], Numeric_Types_Draw02_Draw02NetworkData_g_cs.Values.F32[29]),
+        m_Placement = (NetObjectPlacement)Numeric_Types_Draw02_Draw02NetworkData_g_cs.Values.I32[17],
+        m_FixedIndex = Numeric_Types_Draw02_Draw02NetworkData_g_cs.Values.I32[18],
+        m_Spacing = Numeric_Types_Draw02_Draw02NetworkData_g_cs.Values.F32[30],
+        m_AnchorTop = false,
+        m_AnchorCenter = false,
+        m_RequireElevated = false,
+        m_RequireOutsideConnection = false,
+        m_RequireDeadEnd = false,
+        m_RequireOrphan = false,
+    };
+}
+
+// Embedded numerical arrays: Types_Draw02_Draw02NetworkData_g_cs
+internal static class Numeric_Types_Draw02_Draw02NetworkData_g_cs
+{
+    static Numeric_Types_Draw02_Draw02NetworkData_g_cs() {}
+    internal static readonly HardcodedNumbers Values = HardcodedNumbers.Load("Types_Draw02_Draw02NetworkData_g_cs");
 }

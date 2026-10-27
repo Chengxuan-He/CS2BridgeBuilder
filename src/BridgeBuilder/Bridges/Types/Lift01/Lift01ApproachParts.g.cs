@@ -4,7 +4,6 @@ using System;
 using UnityEngine;
 
 namespace BridgeBuilder.Bridges;
-
 internal static class Lift01ApproachParts
 {
     // Joined frames and the road-adjacent base are handled separately.
@@ -12,305 +11,190 @@ internal static class Lift01ApproachParts
     {
         var count = lod switch
         {
-            0 => 80210, 1 => 38399, 2 => 1484,
-            _ => throw new ArgumentOutOfRangeException(nameof(lod))
-        };
+            0 => Numeric_Types_Lift01_Lift01ApproachParts_g_cs.Values.I32[0],
+            1 => Numeric_Types_Lift01_Lift01ApproachParts_g_cs.Values.I32[1],
+            2 => Numeric_Types_Lift01_Lift01ApproachParts_g_cs.Values.I32[2],
+            _ => throw new ArgumentOutOfRangeException(nameof(lod))};
         if (source.Length != count || positions.Length != count || !float.IsFinite(delta))
             throw new InvalidOperationException("Lift01 fixed-span parts require the recorded layout.");
         foreach (var part in Rigid[lod])
-            for (var i = part.First; i <= part.Last; i++)
-                positions[i].x = source[i].x + part.Direction * delta;
+            AffineGeometry.For(part.First, checked((part.Last) + 1), i =>
+            {
+                positions[i].x = AffineGeometry.AddScaled(source[i].x, part.Direction, delta);
+            });
         foreach (var part in Plates[lod])
-            for (var i = part.First; i <= part.Last; i++)
-                positions[i].x = source[i].x + source[i].x / 3.62957763671875f * delta;
+            AffineGeometry.For(part.First, checked((part.Last) + 1), i =>
+            {
+                positions[i].x = AffineGeometry.AddScaled(source[i].x, source[i].x / Numeric_Types_Lift01_Lift01ApproachParts_g_cs.Values.F32[0], delta);
+            });
     }
 
-    private static readonly (int First, int Last, int Direction)[][] Rigid =
+    private static readonly (int First, int Last, int Direction)[][] Rigid = ReadPackedRigid();
+    private static readonly (int First, int Last, int Direction)[][] Plates = ReadPackedPlates();
+    private static (int First, int Last, int Direction)[] ReadPackedRigid_0()
     {
-        // Geometry SHA-256: 13872e5563f59223f541d1d2146d9cec7bfe7fac937c9d829c4a7474313621f3
-        new (int, int, int)[]
-        {
-            (0, 67, -1),
-            (282, 353, -1),
-            (567, 798, -1),
-            (1019, 1090, -1),
-            (1235, 1494, -1),
-            (1709, 1780, -1),
-            (1990, 2221, -1),
-            (2440, 2511, -1),
-            (2664, 2923, -1),
-            (3138, 3209, -1),
-            (3419, 3650, -1),
-            (3871, 3942, -1),
-            (4095, 4354, -1),
-            (4569, 4640, -1),
-            (4852, 5083, -1),
-            (5302, 5373, -1),
-            (5522, 5709, -1),
-            (5710, 5775, 1),
-            (5994, 6065, 1),
-            (6268, 6503, 1),
-            (6720, 6791, 1),
-            (6952, 7207, 1),
-            (7426, 7497, 1),
-            (7694, 7933, 1),
-            (8150, 8221, 1),
-            (8394, 8649, 1),
-            (8868, 8939, 1),
-            (9137, 9376, 1),
-            (9591, 9662, 1),
-            (9831, 10090, 1),
-            (10311, 10382, 1),
-            (10586, 10817, 1),
-            (11032, 11103, 1),
-            (11260, 11447, 1),
-            (11448, 22199, -1),
-            (22200, 32951, 1),
-            (32952, 35831, -1),
-            (35832, 38705, 1),
-            (39218, 39569, -1),
-            (39570, 39925, 1),
-            (39926, 39933, -1),
-            (39934, 39941, 1),
-            (39942, 39956, -1),
-            (39977, 40017, -1),
-            (40025, 40038, 1),
-            (40053, 40082, 1),
-            (40108, 40175, -1),
-            (40394, 40465, -1),
-            (40671, 40902, -1),
-            (41117, 41188, -1),
-            (41341, 41600, -1),
-            (41821, 41892, -1),
-            (42092, 42323, -1),
-            (42538, 42609, -1),
-            (42774, 43033, -1),
-            (43252, 43323, -1),
-            (43525, 43756, -1),
-            (43971, 44042, -1),
-            (44203, 44462, -1),
-            (44683, 44754, -1),
-            (44960, 45191, -1),
-            (45406, 45477, -1),
-            (45630, 45817, -1),
-            (45818, 45883, 1),
-            (46098, 46169, 1),
-            (46380, 46615, 1),
-            (46834, 46905, 1),
-            (47062, 47317, 1),
-            (47532, 47603, 1),
-            (47808, 48047, 1),
-            (48266, 48337, 1),
-            (48506, 48763, 1),
-            (48978, 49049, 1),
-            (49255, 49490, 1),
-            (49711, 49782, 1),
-            (49943, 50202, 1),
-            (50417, 50488, 1),
-            (50700, 50931, 1),
-            (51150, 51221, 1),
-            (51370, 51557, 1),
-            (51558, 62309, -1),
-            (62310, 73061, 1),
-            (73062, 75941, -1),
-            (75942, 78807, 1),
-            (79320, 79671, -1),
-            (79672, 80027, 1),
-            (80028, 80035, -1),
-            (80036, 80043, 1),
-            (80044, 80058, -1),
-            (80077, 80117, -1),
-            (80125, 80140, 1),
-            (80161, 80184, 1),
-        },
-        // Geometry SHA-256: 7d859975ab9190b8881d6b93b38ada4a70db112f9a6b9eecc4c11880e7047992
-        new (int, int, int)[]
-        {
-            (0, 79, -1),
-            (270, 341, -1),
-            (518, 721, -1),
-            (908, 979, -1),
-            (1055, 1324, -1),
-            (1515, 1586, -1),
-            (1759, 1962, -1),
-            (2149, 2220, -1),
-            (2299, 2566, -1),
-            (2753, 2824, -1),
-            (2997, 3200, -1),
-            (3387, 3458, -1),
-            (3537, 3804, -1),
-            (3991, 4062, -1),
-            (4235, 4438, -1),
-            (4625, 4696, -1),
-            (4775, 4958, -1),
-            (4959, 5038, 1),
-            (5229, 5300, 1),
-            (5473, 5676, 1),
-            (5863, 5934, 1),
-            (6013, 6280, 1),
-            (6464, 6535, 1),
-            (6708, 6911, 1),
-            (7098, 7169, 1),
-            (7248, 7515, 1),
-            (7702, 7773, 1),
-            (7946, 8149, 1),
-            (8336, 8407, 1),
-            (8486, 8753, 1),
-            (8940, 9011, 1),
-            (9184, 9387, 1),
-            (9574, 9645, 1),
-            (9724, 9907, 1),
-            (9908, 11187, -1),
-            (11188, 12467, 1),
-            (12980, 13331, -1),
-            (13332, 13687, 1),
-            (13688, 13695, -1),
-            (13696, 13703, 1),
-            (13704, 13722, -1),
-            (13738, 13766, -1),
-            (13767, 13790, 1),
-            (13806, 13809, 1),
-            (13828, 13907, -1),
-            (14094, 14165, -1),
-            (14338, 14541, -1),
-            (14728, 14799, -1),
-            (14878, 15145, -1),
-            (15332, 15403, -1),
-            (15576, 15779, -1),
-            (15966, 16037, -1),
-            (16116, 16383, -1),
-            (16570, 16641, -1),
-            (16814, 17017, -1),
-            (17204, 17275, -1),
-            (17354, 17621, -1),
-            (17808, 17879, -1),
-            (18052, 18255, -1),
-            (18442, 18513, -1),
-            (18592, 18775, -1),
-            (18776, 18855, 1),
-            (19042, 19113, 1),
-            (19286, 19489, 1),
-            (19676, 19747, 1),
-            (19830, 20097, 1),
-            (20281, 20352, 1),
-            (20525, 20728, 1),
-            (20915, 20986, 1),
-            (21065, 21332, 1),
-            (21519, 21590, 1),
-            (21761, 21964, 1),
-            (22151, 22222, 1),
-            (22305, 22572, 1),
-            (22759, 22830, 1),
-            (23003, 23206, 1),
-            (23393, 23464, 1),
-            (23543, 23726, 1),
-            (23727, 25306, -1),
-            (25307, 26586, 1),
-            (27099, 27450, -1),
-            (27451, 27806, 1),
-            (27807, 27814, -1),
-            (27815, 27822, 1),
-            (27823, 27841, -1),
-            (27857, 27885, -1),
-            (27886, 27909, 1),
-            (27925, 27928, 1),
-            (27947, 33022, -1),
-            (33023, 38398, 1),
-        },
-        // Geometry SHA-256: 4c393e78ac9580d7a2ceda0f7417ebfdd1b2908af5f61347278ddc064ac567d6
-        new (int, int, int)[]
-        {
-            (346, 377, -1),
-            (394, 601, -1),
-            (716, 760, -1),
-            (766, 770, -1),
-            (776, 875, -1),
-            (954, 985, 1),
-            (1002, 1209, 1),
-            (1324, 1368, 1),
-            (1374, 1378, 1),
-            (1384, 1483, 1),
-        },
-    };
+        var d = Numeric_Types_Lift01_Lift01ApproachParts_g_cs.Values;
+        var values = new (int First, int Last, int Direction)[92];
+        for (int i = 0; i < 17; i++)
+            values[0 + i] = (d.I32[3 + i * 3], d.I32[4 + i * 3], -d.I32[5 + i * 3]);
+        for (int i = 0; i < 17; i++)
+            values[17 + i] = (d.I32[54 + i * 3], d.I32[55 + i * 3], d.I32[56 + i * 3]);
+        for (int i = 0; i < 1; i++)
+            values[34 + i] = (d.I32[105 + i * 3], d.I32[106 + i * 3], -d.I32[107 + i * 3]);
+        for (int i = 0; i < 1; i++)
+            values[35 + i] = (d.I32[108 + i * 3], d.I32[109 + i * 3], d.I32[110 + i * 3]);
+        for (int i = 0; i < 1; i++)
+            values[36 + i] = (d.I32[111 + i * 3], d.I32[112 + i * 3], -d.I32[113 + i * 3]);
+        for (int i = 0; i < 1; i++)
+            values[37 + i] = (d.I32[114 + i * 3], d.I32[115 + i * 3], d.I32[116 + i * 3]);
+        for (int i = 0; i < 1; i++)
+            values[38 + i] = (d.I32[117 + i * 3], d.I32[118 + i * 3], -d.I32[119 + i * 3]);
+        for (int i = 0; i < 1; i++)
+            values[39 + i] = (d.I32[120 + i * 3], d.I32[121 + i * 3], d.I32[122 + i * 3]);
+        for (int i = 0; i < 1; i++)
+            values[40 + i] = (d.I32[123 + i * 3], d.I32[124 + i * 3], -d.I32[125 + i * 3]);
+        for (int i = 0; i < 1; i++)
+            values[41 + i] = (d.I32[126 + i * 3], d.I32[127 + i * 3], d.I32[128 + i * 3]);
+        for (int i = 0; i < 2; i++)
+            values[42 + i] = (d.I32[129 + i * 3], d.I32[130 + i * 3], -d.I32[131 + i * 3]);
+        for (int i = 0; i < 2; i++)
+            values[44 + i] = (d.I32[135 + i * 3], d.I32[136 + i * 3], d.I32[137 + i * 3]);
+        for (int i = 0; i < 17; i++)
+            values[46 + i] = (d.I32[141 + i * 3], d.I32[142 + i * 3], -d.I32[143 + i * 3]);
+        for (int i = 0; i < 17; i++)
+            values[63 + i] = (d.I32[192 + i * 3], d.I32[193 + i * 3], d.I32[194 + i * 3]);
+        for (int i = 0; i < 1; i++)
+            values[80 + i] = (d.I32[243 + i * 3], d.I32[244 + i * 3], -d.I32[245 + i * 3]);
+        for (int i = 0; i < 1; i++)
+            values[81 + i] = (d.I32[246 + i * 3], d.I32[247 + i * 3], d.I32[248 + i * 3]);
+        for (int i = 0; i < 1; i++)
+            values[82 + i] = (d.I32[249 + i * 3], d.I32[250 + i * 3], -d.I32[251 + i * 3]);
+        for (int i = 0; i < 1; i++)
+            values[83 + i] = (d.I32[252 + i * 3], d.I32[253 + i * 3], d.I32[254 + i * 3]);
+        for (int i = 0; i < 1; i++)
+            values[84 + i] = (d.I32[255 + i * 3], d.I32[256 + i * 3], -d.I32[257 + i * 3]);
+        for (int i = 0; i < 1; i++)
+            values[85 + i] = (d.I32[258 + i * 3], d.I32[259 + i * 3], d.I32[260 + i * 3]);
+        for (int i = 0; i < 1; i++)
+            values[86 + i] = (d.I32[261 + i * 3], d.I32[262 + i * 3], -d.I32[263 + i * 3]);
+        for (int i = 0; i < 1; i++)
+            values[87 + i] = (d.I32[264 + i * 3], d.I32[265 + i * 3], d.I32[266 + i * 3]);
+        for (int i = 0; i < 2; i++)
+            values[88 + i] = (d.I32[267 + i * 3], d.I32[268 + i * 3], -d.I32[269 + i * 3]);
+        for (int i = 0; i < 2; i++)
+            values[90 + i] = (d.I32[273 + i * 3], d.I32[274 + i * 3], d.I32[275 + i * 3]);
+        return values;
+    }
 
-    private static readonly (int First, int Last, int Direction)[][] Plates =
+    private static (int First, int Last, int Direction)[] ReadPackedRigid_1()
     {
-        // Geometry SHA-256: 13872e5563f59223f541d1d2146d9cec7bfe7fac937c9d829c4a7474313621f3
-        new (int, int, int)[]
-        {
-            (121, 250, 0),
-            (856, 987, 0),
-            (1548, 1677, 0),
-            (2277, 2408, 0),
-            (2977, 3106, 0),
-            (3708, 3839, 0),
-            (4408, 4537, 0),
-            (5139, 5270, 0),
-            (5831, 5962, 0),
-            (6559, 6688, 0),
-            (7263, 7394, 0),
-            (7989, 8118, 0),
-            (8705, 8836, 0),
-            (9430, 9559, 0),
-            (10148, 10279, 0),
-            (10871, 11000, 0),
-            (40231, 40362, 0),
-            (40956, 41085, 0),
-            (41658, 41789, 0),
-            (42377, 42506, 0),
-            (43089, 43220, 0),
-            (43810, 43939, 0),
-            (44520, 44651, 0),
-            (45245, 45374, 0),
-            (45937, 46066, 0),
-            (46671, 46802, 0),
-            (47371, 47500, 0),
-            (48103, 48234, 0),
-            (48817, 48946, 0),
-            (49548, 49679, 0),
-            (50256, 50385, 0),
-            (50987, 51118, 0),
-        },
-        // Geometry SHA-256: 7d859975ab9190b8881d6b93b38ada4a70db112f9a6b9eecc4c11880e7047992
-        new (int, int, int)[]
-        {
-            (134, 257, 0),
-            (772, 895, 0),
-            (1379, 1502, 0),
-            (2013, 2136, 0),
-            (2617, 2740, 0),
-            (3251, 3374, 0),
-            (3855, 3978, 0),
-            (4489, 4612, 0),
-            (5093, 5216, 0),
-            (5727, 5850, 0),
-            (6328, 6451, 0),
-            (6962, 7085, 0),
-            (7566, 7689, 0),
-            (8200, 8323, 0),
-            (8804, 8927, 0),
-            (9438, 9561, 0),
-            (13958, 14081, 0),
-            (14592, 14715, 0),
-            (15196, 15319, 0),
-            (15830, 15953, 0),
-            (16434, 16557, 0),
-            (17068, 17191, 0),
-            (17672, 17795, 0),
-            (18306, 18429, 0),
-            (18906, 19029, 0),
-            (19540, 19663, 0),
-            (20145, 20268, 0),
-            (20779, 20902, 0),
-            (21383, 21506, 0),
-            (22015, 22138, 0),
-            (22623, 22746, 0),
-            (23257, 23380, 0),
-        },
-        // Geometry SHA-256: 4c393e78ac9580d7a2ceda0f7417ebfdd1b2908af5f61347278ddc064ac567d6
-        new (int, int, int)[]
-        {
-        },
-    };
+        var d = Numeric_Types_Lift01_Lift01ApproachParts_g_cs.Values;
+        var values = new (int First, int Last, int Direction)[90];
+        for (int i = 0; i < 17; i++)
+            values[0 + i] = (d.I32[279 + i * 3], d.I32[280 + i * 3], -d.I32[281 + i * 3]);
+        for (int i = 0; i < 17; i++)
+            values[17 + i] = (d.I32[330 + i * 3], d.I32[331 + i * 3], d.I32[332 + i * 3]);
+        for (int i = 0; i < 1; i++)
+            values[34 + i] = (d.I32[381 + i * 3], d.I32[382 + i * 3], -d.I32[383 + i * 3]);
+        for (int i = 0; i < 1; i++)
+            values[35 + i] = (d.I32[384 + i * 3], d.I32[385 + i * 3], d.I32[386 + i * 3]);
+        for (int i = 0; i < 1; i++)
+            values[36 + i] = (d.I32[387 + i * 3], d.I32[388 + i * 3], -d.I32[389 + i * 3]);
+        for (int i = 0; i < 1; i++)
+            values[37 + i] = (d.I32[390 + i * 3], d.I32[391 + i * 3], d.I32[392 + i * 3]);
+        for (int i = 0; i < 1; i++)
+            values[38 + i] = (d.I32[393 + i * 3], d.I32[394 + i * 3], -d.I32[395 + i * 3]);
+        for (int i = 0; i < 1; i++)
+            values[39 + i] = (d.I32[396 + i * 3], d.I32[397 + i * 3], d.I32[398 + i * 3]);
+        for (int i = 0; i < 2; i++)
+            values[40 + i] = (d.I32[399 + i * 3], d.I32[400 + i * 3], -d.I32[401 + i * 3]);
+        for (int i = 0; i < 2; i++)
+            values[42 + i] = (d.I32[405 + i * 3], d.I32[406 + i * 3], d.I32[407 + i * 3]);
+        for (int i = 0; i < 17; i++)
+            values[44 + i] = (d.I32[411 + i * 3], d.I32[412 + i * 3], -d.I32[413 + i * 3]);
+        for (int i = 0; i < 17; i++)
+            values[61 + i] = (d.I32[462 + i * 3], d.I32[463 + i * 3], d.I32[464 + i * 3]);
+        for (int i = 0; i < 1; i++)
+            values[78 + i] = (d.I32[513 + i * 3], d.I32[514 + i * 3], -d.I32[515 + i * 3]);
+        for (int i = 0; i < 1; i++)
+            values[79 + i] = (d.I32[516 + i * 3], d.I32[517 + i * 3], d.I32[518 + i * 3]);
+        for (int i = 0; i < 1; i++)
+            values[80 + i] = (d.I32[519 + i * 3], d.I32[520 + i * 3], -d.I32[521 + i * 3]);
+        for (int i = 0; i < 1; i++)
+            values[81 + i] = (d.I32[522 + i * 3], d.I32[523 + i * 3], d.I32[524 + i * 3]);
+        for (int i = 0; i < 1; i++)
+            values[82 + i] = (d.I32[525 + i * 3], d.I32[526 + i * 3], -d.I32[527 + i * 3]);
+        for (int i = 0; i < 1; i++)
+            values[83 + i] = (d.I32[528 + i * 3], d.I32[529 + i * 3], d.I32[530 + i * 3]);
+        for (int i = 0; i < 2; i++)
+            values[84 + i] = (d.I32[531 + i * 3], d.I32[532 + i * 3], -d.I32[533 + i * 3]);
+        for (int i = 0; i < 2; i++)
+            values[86 + i] = (d.I32[537 + i * 3], d.I32[538 + i * 3], d.I32[539 + i * 3]);
+        for (int i = 0; i < 1; i++)
+            values[88 + i] = (d.I32[543 + i * 3], d.I32[544 + i * 3], -d.I32[545 + i * 3]);
+        for (int i = 0; i < 1; i++)
+            values[89 + i] = (d.I32[546 + i * 3], d.I32[547 + i * 3], d.I32[548 + i * 3]);
+        return values;
+    }
 
+    private static (int First, int Last, int Direction)[] ReadPackedRigid_2()
+    {
+        var d = Numeric_Types_Lift01_Lift01ApproachParts_g_cs.Values;
+        var values = new (int First, int Last, int Direction)[10];
+        for (int i = 0; i < 5; i++)
+            values[0 + i] = (d.I32[549 + i * 3], d.I32[550 + i * 3], -d.I32[551 + i * 3]);
+        for (int i = 0; i < 5; i++)
+            values[5 + i] = (d.I32[564 + i * 3], d.I32[565 + i * 3], d.I32[566 + i * 3]);
+        return values;
+    }
+
+    private static (int First, int Last, int Direction)[][] ReadPackedRigid()
+    {
+        var values = new (int First, int Last, int Direction)[3][];
+        values[0] = ReadPackedRigid_0();
+        values[1] = ReadPackedRigid_1();
+        values[2] = ReadPackedRigid_2();
+        return values;
+    }
+
+    private static (int First, int Last, int Direction)[] ReadPackedPlates_0()
+    {
+        var d = Numeric_Types_Lift01_Lift01ApproachParts_g_cs.Values;
+        var values = new (int First, int Last, int Direction)[32];
+        for (int i = 0; i < 32; i++)
+            values[0 + i] = (d.I32[579 + i * 3], d.I32[580 + i * 3], d.I32[581 + i * 3]);
+        return values;
+    }
+
+    private static (int First, int Last, int Direction)[] ReadPackedPlates_1()
+    {
+        var d = Numeric_Types_Lift01_Lift01ApproachParts_g_cs.Values;
+        var values = new (int First, int Last, int Direction)[32];
+        for (int i = 0; i < 32; i++)
+            values[0 + i] = (d.I32[675 + i * 3], d.I32[676 + i * 3], d.I32[677 + i * 3]);
+        return values;
+    }
+
+    private static (int First, int Last, int Direction)[] ReadPackedPlates_2()
+    {
+        var d = Numeric_Types_Lift01_Lift01ApproachParts_g_cs.Values;
+        var values = new (int First, int Last, int Direction)[0];
+        return values;
+    }
+
+    private static (int First, int Last, int Direction)[][] ReadPackedPlates()
+    {
+        var values = new (int First, int Last, int Direction)[3][];
+        values[0] = ReadPackedPlates_0();
+        values[1] = ReadPackedPlates_1();
+        values[2] = ReadPackedPlates_2();
+        return values;
+    }
+}
+
+// Embedded numerical arrays: Types_Lift01_Lift01ApproachParts_g_cs
+internal static class Numeric_Types_Lift01_Lift01ApproachParts_g_cs
+{
+    static Numeric_Types_Lift01_Lift01ApproachParts_g_cs() {}
+    internal static readonly HardcodedNumbers Values = HardcodedNumbers.Load("Types_Lift01_Lift01ApproachParts_g_cs");
 }

@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using BridgeBuilder.Runtime;
 using Game.Prefabs;
 using UnityEngine;
@@ -8,8 +9,41 @@ namespace BridgeBuilder.Bridges;
 
 internal sealed partial class TowerFactory
 {
+    private readonly Dictionary<RenderPrefab, RenderPrefab[]> _movableAdditionalRenders = new();
+    private readonly HashSet<NetSectionPrefab> _expandedMovableSections = new();
+
+    // Native CalculateCompositionData takes the maximum width of pieces within
+    // one section. Additional appearance groups therefore occupy the same section,
+    // with identical dimensions, offsets and requirements; they never add a strip.
+    internal void ExpandMovableNetworkAppearance()
+    {
+        foreach(var section in _created.OfType<NetSectionPrefab>())
+        {
+            if(section.m_Pieces==null || _expandedMovableSections.Contains(section))continue;
+            var expanded=new List<NetPieceInfo>();
+            foreach(var info in section.m_Pieces)
+            {
+                expanded.Add(info);
+                if(!_movableAdditionalRenders.TryGetValue(info.m_Piece,out var renders))continue;
+                foreach(var render in renders)
+                {
+                    var piece=render as NetPiecePrefab ?? throw new InvalidOperationException("Network appearance group lost its native piece type.");
+                    var root=info.m_Piece;
+                    // Apply final style-authored widths, which are set after render
+                    // creation. Never recalculate them from an appearance subset.
+                    piece.m_Layer=root.m_Layer;piece.m_Width=root.m_Width;piece.m_Length=root.m_Length;
+                    piece.m_HeightRange=root.m_HeightRange;piece.m_WidthOffset=root.m_WidthOffset;
+                    piece.m_NodeOffset=root.m_NodeOffset;piece.m_SideConnectionOffset=root.m_SideConnectionOffset;
+                    piece.m_SurfaceHeights=root.m_SurfaceHeights;
+                    expanded.Add(new NetPieceInfo {m_Piece=piece,m_Offset=info.m_Offset,
+                        m_RequireAll=info.m_RequireAll,m_RequireAny=info.m_RequireAny,m_RequireNone=info.m_RequireNone});
+                }
+            }
+            section.m_Pieces=expanded.ToArray();_expandedMovableSections.Add(section);
+        }
+    }
     internal MovableRoadMaterial CreateMovableRoadMaterial(Colossal.IO.AssetDatabase.SurfaceAsset source)
-        => new(_bridgeName, source, _previewGeometry);
+        => new(_bridgeName, _styleId ?? throw new InvalidOperationException("Movable material requires a bridge style."), source, _previewGeometry);
 
     // Lighting conversion writes native root-owned effects. Bind only AFTER the
     // final mechanism exists, so these effects are not left on a staging object.
@@ -76,6 +110,15 @@ internal sealed partial class TowerFactory
                 };
             }
             applyRecordedComponents(result);
+            // Append after all authored meshes so their indices and child connection
+            // codes remain stable. Both render graphs animate on this same object.
+            var expanded = new List<ObjectMeshInfo>(result.m_Meshes);
+            foreach (var item in result.m_Meshes)
+                if (item.m_Mesh is RenderPrefab root && _movableAdditionalRenders.TryGetValue(root, out var additional))
+                    foreach (var render in additional)
+                        expanded.Add(new ObjectMeshInfo { m_Mesh = render, m_Position = item.m_Position,
+                            m_Rotation = item.m_Rotation, m_RequireState = item.m_RequireState });
+            result.m_Meshes = expanded.ToArray();
             if (attachments.Count != 0)
             {
                 var objects = result.GetComponent<ObjectSubObjects>() ?? result.AddComponent<ObjectSubObjects>();
@@ -128,13 +171,23 @@ internal sealed partial class TowerFactory
     /// </summary>
     internal RenderPrefab? CreateMovableRenderGraph(string name, IReadOnlyList<MovableRoadAssets.Level> levels)
     {
-        if (!MovableRoadAssets.TryCreate(_bridgeName, name, levels, _previewGeometry,
+        if (!MovableRoadAssets.TryCreate(_bridgeName, name,
+                _styleId ?? throw new InvalidOperationException("Movable render graph requires a bridge style."), levels, _previewGeometry,
                 out var created, out var error))
         {
             _report.Defect($"'{name}': {error}");
             return null;
         }
         _created.AddRange(created);
+        if (created.Length > levels.Count)
+        {
+            if (created.Length % levels.Count != 0)
+                throw new InvalidOperationException("Generated appearance groups require complete LOD graphs.");
+            var additional = new RenderPrefab[created.Length / levels.Count - 1];
+            for (var group = 1; group <= additional.Length; group++)
+                additional[group - 1] = created[group * levels.Count];
+            _movableAdditionalRenders.Add(created[0], additional);
+        }
         return created[0];
     }
 }

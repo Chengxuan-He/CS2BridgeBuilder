@@ -7,16 +7,15 @@ using Game.Prefabs;
 using Unity.Entities;
 
 namespace BridgeBuilder.Bridges;
-
 // Sampling input only; the style's all-LOD structure and road conversion follow separately.
 internal static class Draw03RoadSampling
 {
-    internal static MovableStraightSample Create(string owner, Entity selectedRoad,
-        RenderPrefab[] roots, ContentPrefab content, float halfWidthDelta,
-        RandomSeed seed, NetPieceLayerMask replacedLayers, Upgraded? upgrade = null) =>
-        MovableStraightSample.Create(owner, selectedRoad, roots, content, halfWidthDelta, seed,
-            new[] { "DrawBridge03 Mesh", "DrawBridge03Pillar Mesh", "DrawBridge03PillarBase Mesh" },
-            Draw03MechanismData.Meshes, Draw03MechanismData.ApplyComponents,
-            Draw03NetworkData.MechanismPlacement, 152f,
-            10f, replacedLayers, upgrade);
+    internal static MovableStraightSample Create(string owner, Entity selectedRoad, RenderPrefab[] roots, ContentPrefab content, float halfWidthDelta, RandomSeed seed, NetPieceLayerMask replacedLayers, Upgraded? upgrade = null) => MovableStraightSample.Create(owner, selectedRoad, roots, content, halfWidthDelta, seed, new[] { "DrawBridge03 Mesh", "DrawBridge03Pillar Mesh", "DrawBridge03PillarBase Mesh" }, Draw03MechanismData.Meshes, Draw03MechanismData.ApplyComponents, Draw03NetworkData.MechanismPlacement, Numeric_Types_Draw03_Draw03RoadSampling_cs.Values.F32[0], Numeric_Types_Draw03_Draw03RoadSampling_cs.Values.F32[1], replacedLayers, upgrade);
+}
+
+// Embedded numerical arrays: Types_Draw03_Draw03RoadSampling_cs
+internal static class Numeric_Types_Draw03_Draw03RoadSampling_cs
+{
+    static Numeric_Types_Draw03_Draw03RoadSampling_cs() {}
+    internal static readonly HardcodedNumbers Values = HardcodedNumbers.Load("Types_Draw03_Draw03RoadSampling_cs");
 }

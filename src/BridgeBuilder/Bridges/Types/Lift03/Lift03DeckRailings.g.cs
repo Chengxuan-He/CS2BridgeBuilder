@@ -3,101 +3,78 @@ using System;
 using UnityEngine;
 
 namespace BridgeBuilder.Bridges;
-
 internal static class Lift03DeckRailings
 {
     internal static void Apply(int lod, Vector3[] source, Vector3[] positions, float upperDelta, float lowerDelta)
     {
         var data = lod switch
         {
-            0 => (Count: 474534, Parts: Level0),
-            1 => (Count: 349267, Parts: Level1),
-            _ => throw new ArgumentOutOfRangeException(nameof(lod))
-        };
+            0 => (Count: Numeric_Types_Lift03_Lift03DeckRailings_g_cs.Values.I32[0], Parts: Level0),
+            1 => (Count: Numeric_Types_Lift03_Lift03DeckRailings_g_cs.Values.I32[1], Parts: Level1),
+            _ => throw new ArgumentOutOfRangeException(nameof(lod))};
         if (source.Length != data.Count || positions.Length != data.Count || !float.IsFinite(upperDelta) || !float.IsFinite(lowerDelta))
             throw new InvalidOperationException("Lift03 deck railings require their recorded native layout.");
         foreach (var part in data.Parts)
-            for (var i = part.First; i <= part.Last; i++)
-                positions[i].x = source[i].x + part.Sign * (part.Upper ? upperDelta : lowerDelta);
+            AffineGeometry.For(part.First, checked((part.Last) + 1), i =>
+            {
+                positions[i].x = AffineGeometry.AddScaled(source[i].x, part.Sign, (part.Upper ? upperDelta : lowerDelta));
+            });
     }
 
     // Geometry SHA-256: f8bc2882fcba043d1d57a17fd27a43631b492ab4292f8fc6b9c3beeb00af53cd
-    private static readonly (int First, int Last, int Sign, bool Upper)[] Level0 =
-    {
-        (29181, 29625, -1, true),
-        (58278, 58696, -1, true),
-        (88330, 88778, -1, true),
-        (117441, 117863, -1, true),
-        (147497, 147945, 1, true),
-        (176600, 177022, 1, true),
-        (206644, 207088, 1, true),
-        (235735, 236153, 1, true),
-        (237392, 238081, -1, true),
-        (279654, 280465, -1, true),
-        (288286, 288969, -1, true),
-        (330544, 331351, -1, true),
-        (339190, 339873, 1, true),
-        (381448, 382255, 1, true),
-        (390094, 390783, 1, true),
-        (432356, 433167, 1, true),
-        (26409, 28166, -1, false),
-        (58177, 58194, -1, false),
-        (85558, 87313, -1, false),
-        (117334, 117357, -1, false),
-        (144725, 146480, 1, false),
-        (176493, 176516, 1, false),
-        (203872, 205629, 1, false),
-        (235634, 235651, 1, false),
-        (238832, 242411, -1, false),
-        (287209, 287228, -1, false),
-        (289720, 293299, -1, false),
-        (338109, 338128, -1, false),
-        (340624, 344203, 1, false),
-        (389013, 389032, 1, false),
-        (391534, 395113, 1, false),
-        (439911, 439930, 1, false),
-    };
-
+    private static readonly (int First, int Last, int Sign, bool Upper)[] Level0 = ReadPackedLevel0();
     // Geometry SHA-256: 455d25f8ec83f91ea097551fb09a9f41abc79e9f15e836b19c0a527ad50ff9fa
-    private static readonly (int First, int Last, int Sign, bool Upper)[] Level1 =
+    private static readonly (int First, int Last, int Sign, bool Upper)[] Level1 = ReadPackedLevel1();
+    private static (int First, int Last, int Sign, bool Upper)[] ReadPackedLevel0()
     {
-        (19684, 20071, -1, true),
-        (31591, 31605, -1, true),
-        (45883, 46208, -1, true),
-        (66243, 66634, -1, true),
-        (92285, 92628, -1, true),
-        (112621, 113012, 1, true),
-        (128582, 128596, 1, true),
-        (138550, 138879, 1, true),
-        (158724, 159111, 1, true),
-        (184568, 184907, 1, true),
-        (185488, 186125, -1, true),
-        (215466, 216063, -1, true),
-        (222388, 223017, -1, true),
-        (252238, 252835, -1, true),
-        (258819, 259448, 1, true),
-        (288681, 289278, 1, true),
-        (295242, 295877, 1, true),
-        (324874, 325471, 1, true),
-        (17550, 19112, -1, false),
-        (31575, 31590, -1, false),
-        (64122, 65676, -1, false),
-        (92218, 92233, -1, false),
-        (110522, 112082, 1, false),
-        (128568, 128581, 1, false),
-        (156559, 158121, 1, false),
-        (158615, 158630, 1, false),
-        (186696, 189984, -1, false),
-        (192656, 192661, -1, false),
-        (221945, 221950, -1, false),
-        (223574, 226861, -1, false),
-        (247020, 247031, -1, false),
-        (259969, 263256, 1, false),
-        (273375, 273380, 1, false),
-        (294707, 294712, 1, false),
-        (296386, 299608, 1, false),
-        (299767, 299778, 1, false),
-        (299819, 299882, 1, false),
-    };
+        var d = Numeric_Types_Lift03_Lift03DeckRailings_g_cs.Values;
+        var values = new (int First, int Last, int Sign, bool Upper)[32];
+        for (int i = 0; i < 4; i++)
+            values[0 + i] = (d.I32[2 + i * 3], d.I32[3 + i * 3], -d.I32[4 + i * 3], true);
+        for (int i = 0; i < 4; i++)
+            values[4 + i] = (d.I32[14 + i * 3], d.I32[15 + i * 3], d.I32[16 + i * 3], true);
+        for (int i = 0; i < 4; i++)
+            values[8 + i] = (d.I32[26 + i * 3], d.I32[27 + i * 3], -d.I32[28 + i * 3], true);
+        for (int i = 0; i < 4; i++)
+            values[12 + i] = (d.I32[38 + i * 3], d.I32[39 + i * 3], d.I32[40 + i * 3], true);
+        for (int i = 0; i < 4; i++)
+            values[16 + i] = (d.I32[50 + i * 3], d.I32[51 + i * 3], -d.I32[52 + i * 3], false);
+        for (int i = 0; i < 4; i++)
+            values[20 + i] = (d.I32[62 + i * 3], d.I32[63 + i * 3], d.I32[64 + i * 3], false);
+        for (int i = 0; i < 4; i++)
+            values[24 + i] = (d.I32[74 + i * 3], d.I32[75 + i * 3], -d.I32[76 + i * 3], false);
+        for (int i = 0; i < 4; i++)
+            values[28 + i] = (d.I32[86 + i * 3], d.I32[87 + i * 3], d.I32[88 + i * 3], false);
+        return values;
+    }
 
+    private static (int First, int Last, int Sign, bool Upper)[] ReadPackedLevel1()
+    {
+        var d = Numeric_Types_Lift03_Lift03DeckRailings_g_cs.Values;
+        var values = new (int First, int Last, int Sign, bool Upper)[37];
+        for (int i = 0; i < 5; i++)
+            values[0 + i] = (d.I32[98 + i * 3], d.I32[99 + i * 3], -d.I32[100 + i * 3], true);
+        for (int i = 0; i < 5; i++)
+            values[5 + i] = (d.I32[113 + i * 3], d.I32[114 + i * 3], d.I32[115 + i * 3], true);
+        for (int i = 0; i < 4; i++)
+            values[10 + i] = (d.I32[128 + i * 3], d.I32[129 + i * 3], -d.I32[130 + i * 3], true);
+        for (int i = 0; i < 4; i++)
+            values[14 + i] = (d.I32[140 + i * 3], d.I32[141 + i * 3], d.I32[142 + i * 3], true);
+        for (int i = 0; i < 4; i++)
+            values[18 + i] = (d.I32[152 + i * 3], d.I32[153 + i * 3], -d.I32[154 + i * 3], false);
+        for (int i = 0; i < 4; i++)
+            values[22 + i] = (d.I32[164 + i * 3], d.I32[165 + i * 3], d.I32[166 + i * 3], false);
+        for (int i = 0; i < 5; i++)
+            values[26 + i] = (d.I32[176 + i * 3], d.I32[177 + i * 3], -d.I32[178 + i * 3], false);
+        for (int i = 0; i < 6; i++)
+            values[31 + i] = (d.I32[191 + i * 3], d.I32[192 + i * 3], d.I32[193 + i * 3], false);
+        return values;
+    }
+}
+
+// Embedded numerical arrays: Types_Lift03_Lift03DeckRailings_g_cs
+internal static class Numeric_Types_Lift03_Lift03DeckRailings_g_cs
+{
+    static Numeric_Types_Lift03_Lift03DeckRailings_g_cs() {}
+    internal static readonly HardcodedNumbers Values = HardcodedNumbers.Load("Types_Lift03_Lift03DeckRailings_g_cs");
 }

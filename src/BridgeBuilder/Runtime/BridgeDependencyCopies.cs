@@ -16,6 +16,7 @@ internal static class BridgeDependencyCopies
         internal bool Builtin;
         internal bool Owned;
         internal string Extension = "";
+        internal string PhysicalPath = "";
         internal byte[] Bytes = Array.Empty<byte>();
         internal string[]? SerializedReferences;
     }
@@ -47,7 +48,8 @@ internal static class BridgeDependencyCopies
     }
 
     internal static bool Save(string gameRoot, string owner, IEnumerable<string> seeds,
-        Func<string, Source?> resolve, out int count, out string error, out int writtenFiles)
+        Func<string, Source?> resolve, out int count, out string error, out int writtenFiles,
+        Action<string, Source>? observed = null)
     {
         writtenFiles = 0;
         count = 0;
@@ -66,6 +68,7 @@ internal static class BridgeDependencyCopies
                 if (!visited.Add(cid)) continue;
                 var source = resolve(cid);
                 if (source == null) { error = "Dependency unavailable: " + cid; return false; }
+                observed?.Invoke(cid, source);
                 if (source.Builtin) continue;
                 if (!Regex.IsMatch(source.Extension, @"\A\.[A-Za-z0-9]+\z"))
                 { error = "Unsupported dependency extension: " + source.Extension; return false; }

@@ -3,106 +3,55 @@
 using System;
 
 namespace BridgeBuilder.Bridges;
-
 internal static class Lift04TrackRemoval
 {
     internal static void RemoveDetailed(int lod, int[] indices, bool[] removed)
     {
         var data = lod switch
         {
-            0 => (Faces: 36710, Ranges: Ranges0),
-            1 => (Faces: 22015, Ranges: Ranges1),
-            _ => throw new ArgumentOutOfRangeException(nameof(lod))
-        };
-        if (indices.Length != data.Faces * 3 || removed.Length != data.Faces)
+            0 => (Faces: Numeric_Types_Lift04_Lift04TrackRemoval_g_cs.Values.I32[0], Ranges: Ranges0),
+            1 => (Faces: Numeric_Types_Lift04_Lift04TrackRemoval_g_cs.Values.I32[1], Ranges: Ranges1),
+            _ => throw new ArgumentOutOfRangeException(nameof(lod))};
+        if (indices.Length != data.Faces * Numeric_Types_Lift04_Lift04TrackRemoval_g_cs.Values.I32[2] || removed.Length != data.Faces)
             throw new InvalidOperationException("Lift04 native track source layout changed.");
         foreach (var range in data.Ranges)
         {
-            uint hash = 2166136261u;
-            for (var i = range.First * 3; i < (range.Last + 1) * 3; i++)
-                hash = unchecked((hash ^ (uint)indices[i]) * 16777619u);
+            uint hash = Numeric_Types_Lift04_Lift04TrackRemoval_g_cs.Values.U32[0];
+            for (var i = range.First * Numeric_Types_Lift04_Lift04TrackRemoval_g_cs.Values.I32[3]; i < (range.Last + Numeric_Types_Lift04_Lift04TrackRemoval_g_cs.Values.I32[4]) * Numeric_Types_Lift04_Lift04TrackRemoval_g_cs.Values.I32[5]; i++)
+                hash = unchecked((hash ^ (uint)indices[i]) * Numeric_Types_Lift04_Lift04TrackRemoval_g_cs.Values.U32[1]);
             if (hash != range.Hash)
                 throw new InvalidOperationException("Lift04 native track source topology changed.");
-            for (var face = range.First; face <= range.Last; face++) removed[face] = true;
+            for (var face = range.First; face <= range.Last; face++)
+                removed[face] = true;
         }
     }
 
     // Geometry SHA-256: 869158c6d06c9a9717851460adf922838d45c294c4b1e692b7b96e4585422980
-    private static readonly (int First, int Last, uint Hash)[] Ranges0 =
-    {
-        (3864, 3927, 1932620596u),
-        (4290, 5019, 2969684413u),
-        (5032, 5127, 1589249861u),
-        (7637, 8152, 2259305391u),
-        (8155, 8250, 1099529285u),
-        (8581, 9060, 2354212350u),
-        (9063, 9158, 3616970053u),
-        (9525, 10004, 3209066565u),
-        (10007, 10054, 3053793413u),
-        (10233, 10472, 4198616405u),
-        (10585, 11178, 3866602966u),
-        (11209, 11244, 1694182491u),
-        (11347, 11350, 1650307473u),
-        (12861, 13436, 1628783791u),
-        (13449, 13544, 3007739557u),
-        (13891, 14370, 1712277470u),
-        (14373, 14468, 3393467621u),
-        (14815, 15294, 2754218323u),
-        (15297, 15392, 4013897637u),
-        (15739, 16218, 108500211u),
-        (16221, 16268, 2396958741u),
-        (16447, 19638, 3399743328u),
-        (28518, 29113, 1499116054u),
-        (29126, 29173, 44445941u),
-        (29362, 29637, 1858899862u),
-        (29660, 29727, 4069961453u),
-        (29744, 30343, 3988055329u),
-        (31620, 31763, 2366069057u),
-        (31772, 31921, 148567913u),
-        (33156, 33219, 2786855830u),
-        (33332, 33925, 829862226u),
-        (33956, 33991, 2360637887u),
-        (34206, 34349, 3039254042u),
-        (34358, 34507, 2847980863u),
-    };
-
+    private static readonly (int First, int Last, uint Hash)[] Ranges0 = ReadPackedRanges0();
     // Geometry SHA-256: 4d57e1fe16365bf8702d310191fefbbbbbece9fcafb413b980052640e26d1b6f
-    private static readonly (int First, int Last, uint Hash)[] Ranges1 =
+    private static readonly (int First, int Last, uint Hash)[] Ranges1 = ReadPackedRanges1();
+    private static (int First, int Last, uint Hash)[] ReadPackedRanges0()
     {
-        (2689, 2703, 331913023u),
-        (2980, 3327, 2973808687u),
-        (3336, 3431, 130237221u),
-        (5284, 5505, 4015648564u),
-        (5508, 5603, 2353373349u),
-        (5846, 6082, 69270609u),
-        (6085, 6180, 1772353221u),
-        (6452, 6676, 1412090301u),
-        (6679, 6726, 99379925u),
-        (6857, 6975, 2197252450u),
-        (7063, 7339, 4017465595u),
-        (7364, 7367, 1682451385u),
-        (7445, 7447, 3986377134u),
-        (8620, 8944, 3052173347u),
-        (8953, 9048, 3675678321u),
-        (9308, 9547, 2437613870u),
-        (9550, 9645, 2939066341u),
-        (9900, 10138, 3056071611u),
-        (10141, 10236, 648531653u),
-        (10491, 10725, 3868835393u),
-        (10728, 10775, 4177557653u),
-        (10906, 11795, 1590436591u),
-        (17360, 17678, 1440552126u),
-        (17687, 17733, 1773965254u),
-        (17877, 17994, 536813787u),
-        (18012, 18063, 1607733981u),
-        (18080, 18244, 3351679199u),
-        (19239, 19321, 4228439603u),
-        (19328, 19367, 1328208105u),
-        (19969, 19990, 3883575438u),
-        (20078, 20359, 2368005660u),
-        (20384, 20387, 3575318813u),
-        (20534, 20616, 2861241537u),
-        (20623, 20662, 3826846793u),
-    };
+        var d = Numeric_Types_Lift04_Lift04TrackRemoval_g_cs.Values;
+        var values = new (int First, int Last, uint Hash)[34];
+        for (int i = 0; i < 34; i++)
+            values[0 + i] = (d.I32[6 + i * 2], d.I32[7 + i * 2], d.U32[2 + i * 1]);
+        return values;
+    }
 
+    private static (int First, int Last, uint Hash)[] ReadPackedRanges1()
+    {
+        var d = Numeric_Types_Lift04_Lift04TrackRemoval_g_cs.Values;
+        var values = new (int First, int Last, uint Hash)[34];
+        for (int i = 0; i < 34; i++)
+            values[0 + i] = (d.I32[74 + i * 2], d.I32[75 + i * 2], d.U32[36 + i * 1]);
+        return values;
+    }
+}
+
+// Embedded numerical arrays: Types_Lift04_Lift04TrackRemoval_g_cs
+internal static class Numeric_Types_Lift04_Lift04TrackRemoval_g_cs
+{
+    static Numeric_Types_Lift04_Lift04TrackRemoval_g_cs() {}
+    internal static readonly HardcodedNumbers Values = HardcodedNumbers.Load("Types_Lift04_Lift04TrackRemoval_g_cs");
 }

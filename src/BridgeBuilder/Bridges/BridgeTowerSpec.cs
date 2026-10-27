@@ -1,9 +1,8 @@
 namespace BridgeBuilder.Bridges;
-
 /// <summary>
 /// What a bridge tower prefab is, apart from its geometry - as numbers, read out of the game once.
 ///
-/// Separate from <see cref="BridgeTowerTemplate"/>, which applies these to a prefab and therefore needs
+/// Separate from <see cref = "BridgeTowerTemplate"/>, which applies these to a prefab and therefore needs
 /// the game. Nothing here does, so the archetype can be held to what was measured by a test that runs
 /// without one - which matters, because these values are the only description of a tower the generator
 /// has when the tower it imitates is not installed.
@@ -47,25 +46,17 @@ internal static class BridgeTowerSpec
     /// height nothing in the prefab explained. Every field matched the archetype except this one, and
     /// this one was a number the archetype was never asked for.
     /// </summary>
-    internal const int PillarTypeStandalone = 2;
-
+    internal static int PillarTypeStandalone => Numeric_BridgeTowerSpec_cs.Values.I32[0];
     /// <summary>The rest of the enum, recorded so the value above can be checked rather than trusted.</summary>
-    internal const int PillarTypeNone = -1;
-
-    internal const int PillarTypeVertical = 0;
-
-    internal const int PillarTypeHorizontal = 1;
-
-    internal const int PillarTypeBase = 3;
-
+    internal static int PillarTypeNone => -Numeric_BridgeTowerSpec_cs.Values.I32[1];
+    internal static int PillarTypeVertical => Numeric_BridgeTowerSpec_cs.Values.I32[2];
+    internal static int PillarTypeHorizontal => Numeric_BridgeTowerSpec_cs.Values.I32[3];
+    internal static int PillarTypeBase => Numeric_BridgeTowerSpec_cs.Values.I32[4];
     /// <summary>Where the deck meets the tower, measured from the tower's own origin.</summary>
-    internal const float AnchorOffset = 0f;
-
+    internal static float AnchorOffset => Numeric_BridgeTowerSpec_cs.Values.F32[0];
     /// <summary>A metre either way: the adjustment a pillar is allowed, not a distance it can stretch.</summary>
-    internal const float VerticalRangeMin = -1f;
-
-    internal const float VerticalRangeMax = 1f;
-
+    internal static float VerticalRangeMin => -Numeric_BridgeTowerSpec_cs.Values.F32[1];
+    internal static float VerticalRangeMax => Numeric_BridgeTowerSpec_cs.Values.F32[2];
     /// <summary>
     /// The replacement is the only object standing in for its placeholder, so it always wins.
     ///
@@ -73,20 +64,16 @@ internal static class BridgeTowerSpec
     /// left standing, and since a placeholder carries only the shaft the bridge ends up on a tower with
     /// no base and nothing below the deck.
     /// </summary>
-    internal const int SpawnProbability = 100;
-
+    internal static int SpawnProbability => Numeric_BridgeTowerSpec_cs.Values.I32[5];
     /// <summary>Shown in the editor's object list, below anything the player builds with.</summary>
-    internal const int UiPriority = 1;
+    internal static int UiPriority => Numeric_BridgeTowerSpec_cs.Values.I32[6];
 
     /// <summary>Meshes sit at the object's own origin; a tower's parts are modelled in place.</summary>
     internal const bool Circular = false;
-
     /// <summary>The placeholder holds the shaft alone - the part that shows before the swap.</summary>
-    internal const int PlaceholderParts = 1;
-
+    internal static int PlaceholderParts => Numeric_BridgeTowerSpec_cs.Values.I32[7];
     /// <summary>The replacement holds the whole tower: base, shaft and top.</summary>
-    internal const int ReplacementParts = 3;
-
+    internal static int ReplacementParts => Numeric_BridgeTowerSpec_cs.Values.I32[8];
     /// <summary>
     /// <c>StackDirection.Up</c> - the axis a tower's parts are stacked along.
     ///
@@ -94,51 +81,37 @@ internal static class BridgeTowerSpec
     ///
     ///     None = 0   Right = 1   Up = 2   Forward = 3
     /// </summary>
-    internal const int StackDirectionUp = 2;
-
-    internal const int StackDirectionNone = 0;
-
-    internal const int StackDirectionRight = 1;
-
-    internal const int StackDirectionForward = 3;
-
+    internal static int StackDirectionUp => Numeric_BridgeTowerSpec_cs.Values.I32[9];
+    internal static int StackDirectionNone => Numeric_BridgeTowerSpec_cs.Values.I32[10];
+    internal static int StackDirectionRight => Numeric_BridgeTowerSpec_cs.Values.I32[11];
+    internal static int StackDirectionForward => Numeric_BridgeTowerSpec_cs.Values.I32[12];
     /// <summary>
     /// <c>StackOrder</c>: which end of the stack a part is, or that it is the repeatable middle.
     ///
     ///     First = 0   Middle = 1   Last = 2
     /// </summary>
-    internal const int StackOrderFirst = 0;
-
-    internal const int StackOrderMiddle = 1;
-
-    internal const int StackOrderLast = 2;
-
+    internal static int StackOrderFirst => Numeric_BridgeTowerSpec_cs.Values.I32[13];
+    internal static int StackOrderMiddle => Numeric_BridgeTowerSpec_cs.Values.I32[14];
+    internal static int StackOrderLast => Numeric_BridgeTowerSpec_cs.Values.I32[15];
     /// <summary>
     /// How far consecutive parts are sunk into one another. The archetype butts them together.
     /// </summary>
-    internal const float StackStartOverlap = 0f;
-
-    internal const float StackEndOverlap = 0f;
+    internal static float StackStartOverlap => Numeric_BridgeTowerSpec_cs.Values.F32[3];
+    internal static float StackEndOverlap => Numeric_BridgeTowerSpec_cs.Values.F32[4];
 
     /// <summary>The repeatable part is repeated, never stretched, so a tall tower is not a smeared one.</summary>
     internal const bool StackForbidScaling = false;
-
     /// <summary>
-    /// Which part of a stack of <paramref name="count"/> the part at <paramref name="index"/> is.
+    /// Which part of a stack of <paramref name = "count"/> the part at <paramref name = "index"/> is.
     ///
     /// First at the bottom, last at the top, everything between repeatable - which is the pattern the
     /// archetype's three parts hold, and the only one the enum can express. A single part is not a
     /// stack at all: it would have to be first and last at once, and the archetype's placeholder,
-    /// which has exactly one, carries no stacking either. <see cref="Stacks"/> is that case.
+    /// which has exactly one, carries no stacking either. <see cref = "Stacks"/> is that case.
     /// </summary>
-    internal static int StackOrderOf(int index, int count) =>
-        index <= 0 ? StackOrderFirst
-        : index >= count - 1 ? StackOrderLast
-        : StackOrderMiddle;
-
+    internal static int StackOrderOf(int index, int count) => index <= Numeric_BridgeTowerSpec_cs.Values.I32[16] ? StackOrderFirst : index >= count - Numeric_BridgeTowerSpec_cs.Values.I32[17] ? StackOrderLast : StackOrderMiddle;
     /// <summary>Whether a prefab with this many parts is stacked. One part is nothing to stack.</summary>
-    internal static bool Stacks(int count) => count > 1;
-
+    internal static bool Stacks(int count) => count > Numeric_BridgeTowerSpec_cs.Values.I32[18];
     /// <summary>
     /// The mesh the game draws where a tower meets the ground, named rather than referenced.
     ///
@@ -148,10 +121,8 @@ internal static class BridgeTowerSpec
     /// fault and a tower that failed to generate is not.
     /// </summary>
     internal const string BaseMeshName = "Default_Base Mesh";
-
     /// <summary>The base is sized from the part's minimum bounds, not its drawn extent.</summary>
     internal const bool BaseUseMinBounds = true;
-
     /// <summary>
     /// Every part of a tower carries a UIObject, at the same priority as the tower.
     ///
@@ -159,5 +130,12 @@ internal static class BridgeTowerSpec
     /// because a dump that did not distinguish a mesh from the object owning it made three components
     /// on three meshes look like one component on their owner.
     /// </summary>
-    internal const int MeshUiPriority = 1;
+    internal static int MeshUiPriority => Numeric_BridgeTowerSpec_cs.Values.I32[19];
+}
+
+// Embedded numerical arrays: BridgeTowerSpec_cs
+internal static class Numeric_BridgeTowerSpec_cs
+{
+    static Numeric_BridgeTowerSpec_cs() {}
+    internal static readonly HardcodedNumbers Values = HardcodedNumbers.Load("BridgeTowerSpec_cs");
 }

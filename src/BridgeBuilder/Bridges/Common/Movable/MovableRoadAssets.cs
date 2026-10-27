@@ -8,6 +8,7 @@ using Colossal.IO.AssetDatabase;
 using Colossal.Mathematics;
 using Game.Prefabs;
 using Unity.Mathematics;
+using Unity.Collections;
 using UnityEngine;
 
 namespace BridgeBuilder.Bridges;
@@ -108,7 +109,7 @@ internal static class MovableRoadAssets
 
     // Levels contain the root first and every reachable native LOD exactly once. Output resources
     // stay in this call's rollback list until the entire graph succeeds; no partial LOD is published.
-    internal static bool TryCreate(string owner, string name, IReadOnlyList<Level> levels,
+    internal static bool TryCreate(string owner, string name, string styleId, IReadOnlyList<Level> levels,
         PreviewGeometry? preview, out RenderPrefab[] created, out string? error)
     {
         created = Array.Empty<RenderPrefab>(); error = null;
@@ -125,7 +126,10 @@ internal static class MovableRoadAssets
         var laneSlotStarts = new List<int>();
         var prefabs = new List<RenderPrefab>();
         var assets = new List<AssetData>();
+        var structureTiles = new MovableStructureTiles(styleId);
         var success = false;
+        // Validation is immutable during this graph build; no cross-owner cache.
+        var validatedRoadSurfaces = new HashSet<SurfaceAsset>();
         try
         {
             var indices = new Dictionary<RenderPrefab, int>();
@@ -159,13 +163,9 @@ internal static class MovableRoadAssets
                 {
                     foreach (var surface in roadSurfaces)
                     {
-                        if (surface == null) throw new InvalidOperationException($"Moving road LOD {i} has a null surface.");
-                        surface.LoadHeader();
-                    }
-                    foreach (var surface in roadSurfaces)
-                    {
                         if (surface == null)
                         { error = $"Moving road LOD {i} has an unresolved surface reference."; return false; }
+                        if (validatedRoadSurfaces.Contains(surface)) continue;
                         surface.LoadHeader();
                         // Measured native object templates in game 1.6.2f1 support procedural
                         // object skinning. This guard checks representation, not appearance equality.
@@ -173,6 +173,7 @@ internal static class MovableRoadAssets
                         var template = surface.materialTemplateHash;
                         if (!MovableSurfaceAssets.IsObjectSurface(surface))
                         { error = $"Moving road LOD {i} surface '{surface.name}' requires an unimplemented object conversion (template {template})."; return false; }
+                        validatedRoadSurfaces.Add(surface);
                     }
                     // Appearance is evaluated in the selected-road frame. Only evaluated geometry
                     // moves into the measured mechanism frame before partitioning and bone binding.
@@ -206,14 +207,17 @@ internal static class MovableRoadAssets
                         if (loaded == null || loaded.Length == 0 || loaded.Length != level.Structure.Length)
                         { error = $"Moving road LOD {i} requires a measured replacement plan for every source mesh."; return false; }
                         var originals = level.Source.surfaceAssets?.ToArray() ?? Array.Empty<SurfaceAsset>();
-                        if (loaded.Any(mesh => mesh == null) || originals.Any(surface => surface == null) ||
-                            originals.Length != loaded.Sum(mesh => mesh.subMeshCount))
+                        if (loaded.Any(mesh => mesh == null || mesh.subMeshCount != 1) || originals.Any(surface => surface == null) ||
+                            originals.Length != loaded.Length)
                         { error = $"Moving road LOD {i} has unresolved structural material slots."; return false; }
                         for (var part = 0; part < loaded.Length; part++)
                         {
                             if (!MovableStructureModel.TryBuild(levelName + " Structure " + part, loaded[part],
                                     level.Structure[part], boneCount, out var structureModel, out error)) return false;
-                            models.Add(structureModel!); batch.Add(structureModel!);
+                            models.Add(structureModel!);
+                            MovableStructureRetile.Append(levelName, level.Source.name, part,
+                                level.Structure[part], structureModel!, originals[part], structureTiles,
+                                models, batch, surfaces);
                             // A static support retains native authored stacking bounds. Native
                             // decoded vertices can slightly exceed those bounds through compression;
                             // the model builder computes accurate submesh bounds independently.
@@ -222,9 +226,8 @@ internal static class MovableRoadAssets
                                 foreach (var position in level.Structure[part].Positions)
                                     Include(ref bounds, position);
                         }
-                        // Preserve native structural surfaces and their VT resource identity.
-                        // Paint is a separate single-sided skinned mesh, not a projector.
-                        surfaces.AddRange(originals);
+                        // Rigid domains preserve original VT references; widened rectangular
+                        // domains use owner-local crops with the same native shader properties.
                     }
                     finally { PrivateGeometryReader.Release(loaded); }
                 }
@@ -240,11 +243,12 @@ internal static class MovableRoadAssets
                         if (extra.Mesh < 0 || extra.Mesh >= loaded.Length || loaded[extra.Mesh].subMeshCount != 1)
                             throw new InvalidOperationException("Supplemental structure requires its measured single-surface mesh.");
                         if (!MovableStructureModel.TryBuild(levelName + " Underside", loaded[extra.Mesh],
-                                extra.Plan, boneCount, out var model, out error, compact: true)) return false;
-                        models.Add(model!); batch.Add(model!);
+                                extra.Plan, boneCount, out var model, out error)) return false;
+                        models.Add(model!);
                         var slot = loaded.Take(extra.Mesh).Sum(mesh => mesh.subMeshCount);
                         var extraSurface = extra.Source.GetSurfaceAsset(slot);
-                        surfaces.Add(extraSurface);
+                        MovableStructureRetile.Append(levelName + " Underside", extra.Source.name, extra.Mesh,
+                            extra.Plan, model!, extraSurface, structureTiles, models, batch, surfaces);
                         for (var slotIndex = 0; slotIndex < extra.Plan.SourceIndices.Length; slotIndex++)
                             for (var face = 0; face < extra.Plan.RemoveTriangles[slotIndex].Length; face++)
                                 if (!extra.Plan.RemoveTriangles[slotIndex][face])
@@ -294,10 +298,9 @@ internal static class MovableRoadAssets
 
             // RequiredBatchesSystem creates at most 16 batches across the root and its LODs.
             // Publishing more silently drops all later surfaces in the native renderer.
-            var batchCount = levelModels.Sum(level => level.Length);
-            if (batchCount > 16)
-                throw new InvalidOperationException($"Moving bridge LOD group requires {batchCount} material batches; native maximum is 16.");
-            Mod.Log.Info($"Moving bridge native batches: {string.Join("/", levelModels.Select(level => level.Length))}; total={batchCount}/16.");
+            for (var i = 0; i < levels.Count; i++)
+                if (levelModels[i].Length != levelSurfaces[i].Length)
+                    throw new InvalidOperationException("Each native material batch must have exactly one model and Surface slot.");
 
             var visited = new HashSet<RenderPrefab>();
             if (!Visit(levels[0].Source, indices, visited, new HashSet<RenderPrefab>()) ||
@@ -308,7 +311,6 @@ internal static class MovableRoadAssets
             // It changes only curved-lane material slots; structural and prepared road slots keep
             // their exact references. Every geometry model is already validated before this write.
             var laneMaterials = new Dictionary<SurfaceAsset, SurfaceAsset>();
-            SurfaceAsset? cableSurface = null;
             for (var i = 0; i < levels.Count; i++)
                 for (var slot = laneSlotStarts[i]; slot < levelSurfaces[i].Length; slot++)
                 {
@@ -316,17 +318,42 @@ internal static class MovableRoadAssets
                     if (source == null) throw new InvalidOperationException($"Moving lane LOD {i} has an unresolved material slot {slot}.");
                     if (!laneMaterials.TryGetValue(source, out var converted))
                     {
-                        converted = source.id.ToString() == MovableCableSurface.SourceCid
-                            ? cableSurface ??= MovableCableSurface.Create(name, preview, assets)
-                            : MovableSurfaceAssets.ExistingObject(source, levels[0].Source.GetSurfaceAsset(0));
+                        converted = MovableLaneSurface.Create(source, name, styleId, preview, assets);
                         laneMaterials.Add(source, converted);
                     }
                     levelSurfaces[i][slot] = converted;
                 }
 
-            for (var i = 0; i < levels.Count; i++)
+            // Far LODs can have fewer material units than the number of groups
+            // needed by near geometry. Partition existing triangle streams, never
+            // texture-period cuts or duplicated/missing far faces.
+            if (BalanceAppearanceBatches(levelModels, levelSurfaces, models))
+                for (int i=0;i<laneSlotStarts.Count;i++) laneSlotStarts[i]=0;
+            var batchCount = levelModels.Sum(level => level.Length);
+            var renderGroups = MovableMaterialSlots.RenderGroups(
+                levelModels.Select(level => level.Length).ToArray(), laneSlotStarts);
+
+            // Every extra object mesh has an independent native LOD budget. Each
+            // group keeps the complete original LOD links, skeleton and bounds.
+            var originalModels = levelModels.ToArray();
+            var originalSurfaces = levelSurfaces.ToArray();
+            var originalNames = levelNames.ToArray();
+            var originalBounds = renderBounds.ToArray();
+            levelModels.Clear(); levelSurfaces.Clear(); levelNames.Clear(); renderBounds.Clear();
+            for (var group = 0; group < renderGroups.Length; group++)
+                for (var i = 0; i < levels.Count; i++)
+                {
+                    var slots = renderGroups[group][i];
+                    levelModels.Add(slots.Select(slot => originalModels[i][slot]).ToArray());
+                    levelSurfaces.Add(slots.Select(slot => originalSurfaces[i][slot]).ToArray());
+                    levelNames.Add(originalNames[i] + (group == 0 ? "" : " Appearance Group " + group));
+                    renderBounds.Add(originalBounds[i]);
+                }
+            Mod.Log.Info($"Moving bridge native batches: total={batchCount}; groups={renderGroups.Length}; batches/group={string.Join(",", renderGroups.Select(group => group.Sum(slots => slots.Length)))}; limit/group=16; textures unchanged.");
+
+            for (var i = 0; i < levelModels.Count; i++)
             {
-                var level = levels[i];
+                var level = levels[i % levels.Count];
                 // Network structure must retain NetPiece fields as well as render data.
                 // LOD-only render sources stay RenderPrefab; the root keeps native network semantics.
                 RenderPrefab prefab;
@@ -347,7 +374,8 @@ internal static class MovableRoadAssets
                 prefabs.Add(prefab);
                 prefab.name = levelNames[i];
                 foreach (var component in level.Source.components)
-                    if (component != null && component is not ProceduralAnimationProperties) prefab.AddComponentFrom(component);
+                    if (component != null && component is not ProceduralAnimationProperties &&
+                        !(i>=levels.Count && component is PlaceableNetPiece)) prefab.AddComponentFrom(component);
                 if (level.Skeleton != null) prefab.AddComponentFrom(level.Skeleton);
                 prefab.surfaceAssets = levelSurfaces[i];
                 // Generated atlas receivers need full native VT requests. Otherwise
@@ -365,14 +393,14 @@ internal static class MovableRoadAssets
                 if (!math.isfinite(prefab.surfaceArea))
                 { error = $"Moving road LOD {i} has non-finite surface area."; return false; }
             }
-            for (var i = 0; i < levels.Count; i++)
+            for (var i = 0; i < levelModels.Count; i++)
             {
                 var lods = prefabs[i].GetComponent<LodProperties>();
                 if (lods?.m_LodMeshes != null)
-                    lods.m_LodMeshes = lods.m_LodMeshes.Select(source => prefabs[indices[source]]).ToArray();
+                    lods.m_LodMeshes = lods.m_LodMeshes.Select(source => prefabs[indices[source] + (i / levels.Count) * levels.Count]).ToArray();
             }
 
-            for (var i = 0; i < levels.Count; i++)
+            for (var i = 0; i < levelModels.Count; i++)
             {
                 if (preview != null)
                 {
@@ -462,6 +490,45 @@ internal static class MovableRoadAssets
             if (!Visit(lod, levels, visited, active)) return false;
         active.Remove(source);
         return true;
+    }
+
+    private static bool BalanceAppearanceBatches(List<ModelImporter.Model[]> levels,
+        List<SurfaceAsset[]> materials, List<ModelImporter.Model> owned)
+    {
+        var target=MovableMaterialSlots.MinimumLodSlots(levels.Select(level=>level.Length).ToArray());
+        bool changed=false;
+        for(int lod=0;lod<levels.Count;lod++)
+        {
+            if(levels[lod].Length>=target)continue;
+            var models=levels[lod].ToList();var surfaces=materials[lod].ToList();
+            while(models.Count<target)
+            {
+                int slot=Enumerable.Range(0,models.Count).OrderByDescending(i=>models[i].indexCount).First();
+                var source=models[slot];
+                if(source.subMeshCount!=1 || source.indexCount<6 || source.indexCount%3!=0)
+                    throw new InvalidOperationException("Native appearance groups require more far triangles than this LOD supplies.");
+                int split=(source.indexCount/6)*3;
+                ModelImporter.Model Slice(int start,int count)
+                {
+                    var attributes=new List<ModelImporter.Model.VertexData>();NativeArray<int> indices=default;
+                    try
+                    {
+                        foreach(var a in source)attributes.Add(new ModelImporter.Model.VertexData(a.attribute,a.format,a.dimension,
+                            new NativeArray<byte>(a.data,Allocator.Persistent),a.isPacked));
+                        indices=new NativeArray<int>(source.indices.GetSubArray(start,count),Allocator.Persistent);
+                        var submesh=source.subMeshes[0];submesh.indexStart=0;submesh.indexCount=count;
+                        var result=new ModelImporter.Model(source.name+" Batch "+owned.Count,source.transform,source.vertexCount,
+                            indices,attributes.ToArray(),new[]{submesh},source.rootBoneIndex,source.bones);
+                        owned.Add(result);return result;
+                    }
+                    catch {if(indices.IsCreated)indices.Dispose();foreach(var a in attributes)a.Dispose();throw;}
+                }
+                models[slot]=Slice(0,split);models.Insert(slot+1,Slice(split,source.indexCount-split));
+                surfaces.Insert(slot+1,surfaces[slot]);changed=true;
+            }
+            levels[lod]=models.ToArray();materials[lod]=surfaces.ToArray();
+        }
+        return changed;
     }
 
     private static bool ValidSkeleton(ProceduralAnimationProperties? skeleton)

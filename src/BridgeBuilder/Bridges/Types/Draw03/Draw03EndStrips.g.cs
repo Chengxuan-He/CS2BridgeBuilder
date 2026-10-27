@@ -3,52 +3,54 @@ using System;
 using UnityEngine;
 
 namespace BridgeBuilder.Bridges;
-
 internal static class Draw03EndStrips
 {
     internal static void Apply(int lod, Vector3[] source, Vector3[] positions, float delta)
     {
         var data = lod switch
         {
-            0 => (Count: 186078, Parts: Near),
-            1 => (Count: 146988, Parts: Middle),
-            _ => throw new ArgumentOutOfRangeException(nameof(lod))
-        };
+            0 => (Count: Numeric_Types_Draw03_Draw03EndStrips_g_cs.Values.I32[0], Parts: Near),
+            1 => (Count: Numeric_Types_Draw03_Draw03EndStrips_g_cs.Values.I32[1], Parts: Middle),
+            _ => throw new ArgumentOutOfRangeException(nameof(lod))};
         if (source.Length != data.Count || positions.Length != data.Count || !float.IsFinite(delta))
             throw new InvalidOperationException("Draw03 end strips require their recorded main mesh.");
         foreach (var part in data.Parts)
         {
             var span = part.Max - part.Min;
             foreach (var range in part.Ranges)
-                for (var i = range.First; i <= range.Last; i++)
-                    positions[i].x = source[i].x + (2f * source[i].x - part.Min - part.Max) / span * delta;
+                AffineGeometry.For(range.First, checked((range.Last) + 1), i =>
+                {
+                    positions[i].x = AffineGeometry.AddScaled(source[i].x, (Numeric_Types_Draw03_Draw03EndStrips_g_cs.Values.F32[0] * source[i].x - part.Min - part.Max) / span, delta);
+                });
         }
     }
 
     // Geometry SHA-256: f7ecc824ad55745e791e40b18fd12f5def20657ed8ea56d373429d5a1337588f
-    private static readonly (float Min, float Max, (int First, int Last)[] Ranges)[] Near =
-    {
-        (-12.5f, 12.5f, new (int, int)[] { (58261, 58296), (58333, 58368) }),
-        (-12.7106934f, 12.7106934f, new (int, int)[] { (58297, 58332), (58369, 58404) }),
-        (-12.5f, 12.5f, new (int, int)[] { (90946, 90981), (91008, 91045) }),
-        (-12.7148438f, 12.7148438f, new (int, int)[] { (90982, 91007), (91046, 91071) }),
-        (-12.5f, 12.5f, new (int, int)[] { (150349, 150384), (150421, 150456) }),
-        (-12.7106934f, 12.7106934f, new (int, int)[] { (150385, 150420), (150457, 150492) }),
-        (-12.5f, 12.5f, new (int, int)[] { (183034, 183069), (183096, 183133) }),
-        (-12.7148438f, 12.7148438f, new (int, int)[] { (183070, 183095), (183134, 183159) }),
-    };
-
+    private static readonly (float Min, float Max, (int First, int Last)[] Ranges)[] Near = ReadPackedNear();
     // Geometry SHA-256: 15b8419da13d6e99e1dc0591f12f4019f0be09c3b220a481d24720daf7b57e12
-    private static readonly (float Min, float Max, (int First, int Last)[] Ranges)[] Middle =
+    private static readonly (float Min, float Max, (int First, int Last)[] Ranges)[] Middle = ReadPackedMiddle();
+    private static (float Min, float Max, (int First, int Last)[] Ranges)[] ReadPackedNear()
     {
-        (-12.5f, 12.5f, new (int, int)[] { (43182, 43216), (43252, 43286) }),
-        (-12.7106934f, 12.7106934f, new (int, int)[] { (43217, 43251), (43287, 43321) }),
-        (-12.5f, 12.5f, new (int, int)[] { (72073, 72107), (72130, 72166) }),
-        (-12.7148438f, 12.7148438f, new (int, int)[] { (72108, 72129), (72167, 72188) }),
-        (-12.5f, 12.5f, new (int, int)[] { (116717, 116751), (116787, 116821) }),
-        (-12.7106934f, 12.7106934f, new (int, int)[] { (116752, 116786), (116822, 116856) }),
-        (-12.5f, 12.5f, new (int, int)[] { (145622, 145656), (145679, 145715) }),
-        (-12.7148438f, 12.7148438f, new (int, int)[] { (145657, 145678), (145716, 145737) }),
-    };
+        var d = Numeric_Types_Draw03_Draw03EndStrips_g_cs.Values;
+        var values = new (float Min, float Max, (int First, int Last)[] Ranges)[8];
+        for (int i = 0; i < 8; i++)
+            values[0 + i] = (-d.F32[1 + i * 2], d.F32[2 + i * 2], new (int, int)[] { (d.I32[2 + i * 4], d.I32[3 + i * 4]), (d.I32[4 + i * 4], d.I32[5 + i * 4]) });
+        return values;
+    }
 
+    private static (float Min, float Max, (int First, int Last)[] Ranges)[] ReadPackedMiddle()
+    {
+        var d = Numeric_Types_Draw03_Draw03EndStrips_g_cs.Values;
+        var values = new (float Min, float Max, (int First, int Last)[] Ranges)[8];
+        for (int i = 0; i < 8; i++)
+            values[0 + i] = (-d.F32[17 + i * 2], d.F32[18 + i * 2], new (int, int)[] { (d.I32[34 + i * 4], d.I32[35 + i * 4]), (d.I32[36 + i * 4], d.I32[37 + i * 4]) });
+        return values;
+    }
+}
+
+// Embedded numerical arrays: Types_Draw03_Draw03EndStrips_g_cs
+internal static class Numeric_Types_Draw03_Draw03EndStrips_g_cs
+{
+    static Numeric_Types_Draw03_Draw03EndStrips_g_cs() {}
+    internal static readonly HardcodedNumbers Values = HardcodedNumbers.Load("Types_Draw03_Draw03EndStrips_g_cs");
 }

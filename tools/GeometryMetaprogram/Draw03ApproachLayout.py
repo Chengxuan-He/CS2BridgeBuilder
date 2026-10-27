@@ -63,27 +63,22 @@ for branch in range(3):
     widths = [(.5 if x['m_Section']['m_PathID'] == sections[5] else
                3.5 if x['m_Section']['m_PathID'] == sections[4] else
                0 if x['m_Median'] else 3.) for x in active]
-    for delta in (-12., -8., -4., -3., -2., 0., 2., 8.):
-        signed = [w + delta if x['m_Section']['m_PathID'] == sections[0] else w
-                  for x,w in zip(active,widths)]
-        physical = [max(0.,w) for w in signed]
-        remainder = min(0.,3.+delta)
-        def centres(values):
-            cursor = -sum(values)/2
-            result = []
-            for w in values:
-                result.append(cursor+w/2)
-                cursor += w
-            return result
-        expected = centres(signed)
-        actual = centres(physical)
-        for i,x in enumerate(active):
-            factor = (0 if x['m_Median'] else
-                      .5 if x['m_Section']['m_PathID'] == sections[0] else 1)
-            actual[i] += (-1 if x['m_Invert'] else 1)*factor*remainder
-        assert all(abs(a-b)<1e-10 for a,b in zip(actual,expected))
-        assert min(physical)>=0
-print('PASS 24 native overhead-layout cases: signed origins preserved with nonnegative sizes.')
+    for delta in (-8., -4., -2., 0., 2., 8.):
+        # Complete fixed structure shares the full 25 m deck span. The 0.5 m
+        # outer railing strip remains rigid; the median is zero-width.
+        scale = 1 + delta / 12.5
+        structural = [x['m_Section']['m_PathID'] not in (sections[3], sections[5]) for x in active]
+        physical = [w * scale if stretch else w for w, stretch in zip(widths, structural)]
+        cursor = -sum(physical) / 2
+        actual = []
+        for w in physical:
+            actual.append(cursor + w/2)
+            cursor += w
+        assert abs(sum(physical) - (sum(widths) + 2*delta)) < 1e-10
+        assert min(physical) >= 0
+print('PASS 18 native overhead-layout cases: distributed structural scale, rigid outer railing.')
+# layoutRemainder is retained for source compatibility and is always zero in the
+# current assembly. The historical signed-first-strip path is no longer called.
 for p in occurrences:
     lines += ['            new NetSectionInfo', '            {',
               f'                m_Section = section{sections.index(p["m_Section"]["m_PathID"])},',

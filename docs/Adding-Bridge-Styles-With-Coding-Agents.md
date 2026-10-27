@@ -10,7 +10,7 @@ GitHub publication is optional and does not require upstream write access when u
 
 ```mermaid
 flowchart TD
-    A[Prepare a local checkout] --> B[Create bridge/bridge-name branch]
+    A[Prepare a local checkout] --> B[Choose a suitable working branch]
     B --> C[Tell your agent the bridge source and desired design]
     C --> F[Test the resulting build in game]
     F --> G{Acceptance checks pass?}
@@ -25,8 +25,8 @@ flowchart TD
 Use a local checkout with the game and its required DLC or source asset installed, a working .NET
 build environment, and a disposable test city. Back up saves and existing bridge assets.
 You do not need to read AGENTS.md or the internal contracts; ask your coding agent to read and follow them.
-The workflow requires forced game shutdown before code edits and before deployment, so save your
-work first. Computer-use automation and agent-driven bridge placement are prohibited in this project.
+The workflow requires game shutdown before replacing loaded binaries during deployment;
+save your work before that step. Intermediate source edits do not require shutdown. Computer-use automation and agent-driven bridge placement are prohibited in this project.
 
 Give the agent these inputs:
 
@@ -43,9 +43,9 @@ When evidence is missing, it should identify the missing data and complete indep
 
 Use a local copy of [CS2BridgeBuilder](https://github.com/Chengxuan-He/CS2BridgeBuilder).
 A GitHub account or fork is not required; create a fork only if you choose to contribute through GitHub.
-Create a contribution branch named `bridge/<bridge-name>`, for example `bridge/stone-arch`.
-Replace `<bridge-name>` with the name of the bridge you are adding. Keep the change focused on that
-bridge and leave unrelated local changes out of the contribution.
+Use a suitable working branch. A per-style `bridge/<bridge-name>` branch, such as
+`bridge/stone-arch`, is optional. Shared multi-style work may use one branch while keeping
+style data distinct. Preserve unrelated local changes. Optional branch creation:
 
 ```powershell
 git switch -c bridge/stone-arch
@@ -69,7 +69,7 @@ say so rather than guessing. Include any additional required DLC or mods separat
 
 ```text
 Add support for <style ID> using <exact prototype Prefab> from <source and version>.
-Support <single deck / double deck>; use contribution branch bridge/<bridge-name>.
+Support <single deck / double deck>; use a suitable working branch (a style branch is optional).
 Evidence is available at <paths to anatomy, mesh/LOD exports and screenshots>.
 
 Read AGENTS.md, the complete project contract and applicable nested instructions.
@@ -79,7 +79,7 @@ do not copy another style's constants or infer part identity in runtime code.
 Keep generated bridges independent of Bridge Builder and preserve native pricing/unlocks.
 Do not use other bridges' ImportedData Prefabs as creation or copy sources.
 
-Use the bridge/<style-slug> branch required by contract section 12; keep the style ID stable.
+Follow contract section 12's optional branch policy and keep the style ID stable.
 Implement the style, build and install it locally according to the repository workflow,
 and report exact changes, evidence, checks and outstanding manual acceptance steps.
 Deliver the changes locally with a review summary. Do not push to GitHub, publish to Paradox Mods
@@ -123,14 +123,49 @@ preview, both creation actions and management labels. Verify all supported local
 changes; the existing Chinese-name admission check alone does not establish translation coverage.
 A working generator without its working UI entry is not a completed contribution.
 
+### Affine matrix generation step
+
+Use the [CPU affine execution contract](agent-contract/BRIDGE_GENERATION_CONTRACT.md#cpu-affine-geometry-execution)
+for every style's coordinate stage:
+
+1. Extract measured origins, coefficient rows, parameter domains and part membership offline.
+   Each of X, Y and Z may depend on width; a constant axis has zero coefficients.
+2. Store numerical values in DLL-embedded, uncompressed BBN1 typed-array resources under
+   `assets/HardcodedNumbers/<BridgeType>/`. Sparse vertex weights and part ranges remain valid
+   matrix representations. Validate and read only demanded embedded streams into static arrays,
+   without extraction files. The complete Paradox Mods package provides transport compression.
+   Preserve float bits, anchors
+   and evaluation order; never initialize unused numerical holders eagerly.
+3. Snapshot native mesh inputs on the main thread. Evaluate independent coordinate ranges with
+   `AffineGeometry.For`, source-only sparse assignments with `Scatter`, and repeated additive
+   index recipes with `Indices`. Use `Row`/`Matrix` for general XYZ parameter mappings and the
+   specialized scalar kernels where appropriate. Retain dependent stage ordering.
+4. Shared movable assembly schedules independent LOD plans with `Groups`, waits for completion,
+   then creates native render assets on the main thread. Do not put Mesh, Prefab, material or
+   persistence API calls into numerical workers. Small batches and nested work stay serial.
+5. After regenerating recipes, review the [offline lowering pass](../tools/AffineGeometryMigration/README.md)
+   and preserve manual coefficient caches and snapshot boundaries. Run `AffineGeometryCheck`,
+   resource integrity checks, affected geometry/LOD regressions and localization checks.
+   Compare actual cold/warm preview and creation timings before claiming an acceleration.
+
+The implementation entry points are [AffineGeometry.cs](../src/BridgeBuilder/Bridges/AffineGeometry.cs),
+[HardcodedNumbers.cs](../src/BridgeBuilder/Bridges/HardcodedNumbers.cs) and
+[MovableRenderAssembly.cs](../src/BridgeBuilder/Bridges/Common/Movable/MovableRenderAssembly.cs).
+This stage changes computation only: preserve topology, native bone ownership, material/UV
+semantics and independent asset persistence.
+
 ## 4. Measure geometry before implementing transforms
 
 Identify authored parts offline using the highest-detail prototype. Record exact mesh/LOD identity
 and part membership as immutable data; runtime code consumes this data without rediscovering parts
 from bounds, topology, thresholds or name resemblance.
 
-- A part reaching or crossing `x = 0` stretches against its own span. A side part translates rigidly.
-- Preserve tower height and depth, side-part thickness, vertex formats, indices, materials and behavior.
+- Apply contract section 8's explicit base, centred-post and Draw03 truss rules and section 5's
+  measured Golden mappings; otherwise a part
+  reaching or crossing `x = 0` stretches against its own span and a side part translates rigidly.
+- Preserve tower height/depth outside the measured Golden ornament exception, side-part thickness
+  and native behavior. Apply only the contracts' scoped topology, native representation and
+  density-preserving UV/material conversions.
 - Carry the highest-detail classification to all LODs. Repoint derived LOD references to derived meshes.
 - Preserve prototype placement, stacking, tiling, lights and their parent relationships.
 - Apply the contract's separate base and pier rules using structural evidence, not names.
@@ -176,10 +211,9 @@ From the repository root, the build entry point is:
 ```
 
 Use `-GameDir` if automatic game discovery does not find the installation. Follow contract section 13
-for shutdown, backup, cleanup and installation. A bridge-generation change removes all mod-created
-bridges only for its affected style IDs, including their UUID-owned dependencies. Preserve all other
-styles. For example, a `GoldenGate`-only change removes `GoldenGate` bridges, not `GoldenGateDouble`
-or other suspension bridges. Trace the affected styles when shared generation code changes.
+for shutdown, backup, recovery and installation. Preserve healthy bridges when generation code
+changes. Only a demonstrated incompatibility permits recovery of the affected style/UUID-owned
+assets; preserve unrelated bridges and dependencies. Trace shared-code impacts before recovery.
 
 If bridge-generation code did not change, remove no existing bridges. Documentation-only edits
 require no shutdown, cleanup, build or deployment. Preserve diagnostic evidence before scoped cleanup
@@ -193,10 +227,10 @@ implementation or claim a build proves appearance.
 
 Test the following in your local game and give the results to your agent:
 
-1. The intended style is discoverable only with its required prototype available; unsupported modes
-   and unavailable sources report clear errors.
-2. Creation and placement work at prototype, wider and narrower road widths, including supported
-   asymmetric roads and both deck directions where relevant.
+1. The intended style is discoverable with required native content and packaged resources available.
+   Players need not own identical original prototype files; missing required resources fail explicitly.
+2. Creation and placement work at prototype and wider widths, including supported asymmetric
+   roads and both deck directions. Movable bridges have no special narrow-road adaptation gate.
 3. Towers, deck, cables, railings, lights and materials remain correct up close and through LOD changes.
 4. Native unlock conditions, construction cost, labels, descriptions and icons are correct.
 5. Saving, exiting and cold-start loading preserve geometry and references; healthy self-check is inert.
@@ -215,7 +249,7 @@ Attach a screenshot of the prototype and a comparable screenshot of the generate
 LOD issue, include both near and far views. Provide the selected road or track, deck mode, width,
 elevation, bridge UUID if known, and whether the problem occurs immediately or only after reloading.
 Include the relevant log and export report if available; a visual defect can occur without a logged
-error. Save your city before requesting another code change, because the agent's workflow stops the game.
+error. Save your city before requesting another code change, because deployment stops the game before replacing loaded binaries.
 
 Use this follow-up prompt:
 

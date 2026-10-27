@@ -1,18 +1,16 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using Unity.Mathematics;
 
 namespace BridgeBuilder.Bridges;
-
 internal static partial class TowerWidening
 {
     /// <summary>How many height bands a shape is sliced into to find its clear span.</summary>
     internal const int SpanBands = 64;
-
     /// <summary>
     /// Widens a mesh by the one criterion: whether a part crosses the bridge's centre.
     ///
-    /// The boundary between the two answers is measured, not guessed. <see cref="ClearSpanOf"/> slices
+    /// The boundary between the two answers is measured, not guessed. <see cref = "ClearSpanOf"/> slices
     /// the shape across its height and finds the widest gap it leaves open across the centre line -
     /// which is where a portal's legs begin, whatever their thickness, whatever road the tower was
     /// drawn for. Outside that gap nothing crosses the centre, so it is carried out rigidly by half the
@@ -37,9 +35,7 @@ internal static partial class TowerWidening
     ///
     /// At zero extra nothing moves and the result is the mesh it came from, vertex for vertex.
     /// </summary>
-    internal static float3[] WidenParts(float3[] vertices, IReadOnlyList<int> triangles, float extra) =>
-        WidenParts(vertices, extra, Profile.Of(new[] { vertices }, new[] { triangles }));
-
+    internal static float3[] WidenParts(float3[] vertices, IReadOnlyList<int> triangles, float extra) => WidenParts(vertices, extra, Profile.Of(new[] { vertices }, new[] { triangles }));
     /// <summary>
     /// A shape widened against a profile, with its own material told apart by its triangles.
     ///
@@ -52,40 +48,35 @@ internal static partial class TowerWidening
     {
         var result = new float3[vertices.Length];
         Array.Copy(vertices, result, vertices.Length);
-        if (Math.Abs(extra) < CentreEpsilon || vertices.Length == 0) return result;
-        if (profile.Outer <= CentreEpsilon) return result;
-
+        if (Math.Abs(extra) < CentreEpsilon || vertices.Length == 0)
+            return result;
+        if (profile.Outer <= CentreEpsilon)
+            return result;
         var shift = extra * 0.5f;
-
-        for (var index = 0; index < result.Length; index++)
+        AffineGeometry.For(0, result.Length, index =>
         {
             var x = result[index].x;
-
             // Material that stands clear of the centre over its whole extent is carried entire,
             // whatever height any part of it happens to sit at. Asked of the profile, which a part
             // shares with its levels of detail, and not of this mesh - see Profile.CarriedAt.
             if (profile.CarriedAt(result[index].y, Math.Abs(x)))
             {
-                result[index].x = x + (x > 0f ? shift : -shift);
-                continue;
+                result[index].x = AffineGeometry.Translate(x, (x > 0f ? shift : -shift));
+                return;
             }
 
             var span = profile.SpanAt(result[index].y);
-
             if (span <= CentreEpsilon || Math.Abs(x) > span)
             {
-                result[index].x = x + (x > 0f ? shift : -shift);
-                continue;
+                result[index].x = AffineGeometry.Translate(x, (x > 0f ? shift : -shift));
+                return;
             }
 
-            result[index].x = x * Math.Max(0f, (span + shift) / span);
-        }
-
+            result[index].x = AffineGeometry.Scale(x, Math.Max(0f, (span + shift) / span));
+        });
         return result;
     }
 
     /// <summary>A shape widened against its own profile.</summary>
-    internal static float3[] WidenParts(float3[] vertices, float extra) =>
-        WidenParts(vertices, extra, Profile.Of(vertices));
-
+    internal static float3[] WidenParts(float3[] vertices, float extra) => WidenParts(vertices, extra, Profile.Of(vertices));
 }

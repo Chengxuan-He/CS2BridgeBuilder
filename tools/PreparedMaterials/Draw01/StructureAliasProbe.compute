@@ -1,0 +1,15 @@
+#pragma kernel Compare
+Texture2D<float4> Old, Kept;
+SamplerState sampler_linear_repeat;
+StructuredBuffer<float2> Points;
+RWStructuredBuffer<float4> Values;
+float4 RowU, RowV;
+float OldMip, KeptMip;
+int Count;
+[numthreads(64,1,1)] void Compare(uint3 id:SV_DispatchThreadID) {
+    if(id.x>=Count)return;
+    float2 q=Points[id.x];
+    float2 mapped=float2(dot(float3(q,1),RowU.xyz),dot(float3(q,1),RowV.xyz));
+    Values[id.x*2]=Old.SampleLevel(sampler_linear_repeat,q,OldMip);
+    Values[id.x*2+1]=Kept.SampleLevel(sampler_linear_repeat,mapped,KeptMip);
+}

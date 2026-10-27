@@ -91,6 +91,7 @@ public sealed class Mod : IMod
         BridgeBuilder.Runtime.BridgeStartupRecovery.Stop();
         BridgeBuilder.Runtime.BridgeRailSeamPatch.Stop();
         BridgeBuilder.Runtime.BridgeSessionState.Stop();
+        BridgeBuilder.Runtime.BridgePreparedMaterials.Stop();
         try
         {
             RoadBuilderIconExporter.UnregisterHost();
@@ -239,6 +240,7 @@ public sealed class Mod : IMod
                 Log.Error("BridgeBuilder executable directory is empty");
                 return;
             }
+            Runtime.BridgePreparedMaterials.Initialize(directory);
             UIManager.defaultUISystem.AddHostLocation("bridgebuilderui", directory, false, 0);
         }
         catch (Exception exception)

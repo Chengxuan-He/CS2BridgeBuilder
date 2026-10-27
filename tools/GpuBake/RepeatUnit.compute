@@ -1,0 +1,30 @@
+#pragma kernel Extract
+Texture2D<float4> Source;
+SamplerState sampler_Source;
+RWTexture2D<float4> Result;
+float4 Region;
+int2 Extent;
+int2 RepeatAxes;
+int SourceMip;
+int EncodeSrgb;
+float2 Periods;
+StructuredBuffer<float4> Bands;
+int BandCount;
+float3 Srgb(float3 c) { return lerp(12.92*c,1.055*pow(max(c,0),1.0/2.4)-0.055,step(0.0031308,c)); }
+[numthreads(8,8,1)] void Extract(uint3 p:SV_DispatchThreadID)
+{
+    if(any(p.xy>=Extent))return;
+    float2 q=frac(((p.xy+0.5)/Extent)*Periods);
+    if(RepeatAxes.x==0)q.x=saturate(2*q.x-.5);
+    if(RepeatAxes.y==0)q.y=saturate(2*q.y-.5);
+    float2 uv=Region.xy+q*Region.zw;
+    for(int i=0;i<BandCount;i++)
+    {
+        float4 b=Bands[i*2],r=Bands[i*2+1];
+        if(q.x>=b.x&&q.x<b.y)
+        {uv=r.xy+float2((q.x-b.x)/(b.y-b.x),frac(q.y*b.z))*r.zw;break;}
+    }
+    float4 c=Source.SampleLevel(sampler_Source,uv,SourceMip);
+    if(EncodeSrgb!=0)c.rgb=Srgb(c.rgb);
+    Result[p.xy]=c;
+}

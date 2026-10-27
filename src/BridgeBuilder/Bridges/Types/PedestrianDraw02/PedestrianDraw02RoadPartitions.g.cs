@@ -8,172 +8,258 @@ using UnityEngine;
 using Partition = BridgeBuilder.Bridges.MovableRoadGeometry.Partition;
 
 namespace BridgeBuilder.Bridges;
-
 internal static class PedestrianDraw02RoadPartitions
 {
     internal static Partition Create(float halfWidthDelta)
     {
-        if (!float.IsFinite(halfWidthDelta)) throw new ArgumentOutOfRangeException(nameof(halfWidthDelta));
+        if (!float.IsFinite(halfWidthDelta))
+            throw new ArgumentOutOfRangeException(nameof(halfWidthDelta));
         var x = new float[Stations.Length];
-        for (var i = 0; i < x.Length; i++)
+        for (var i = Numeric_Types_PedestrianDraw02_PedestrianDraw02RoadPartitions_g_cs.Values.I32[0]; i < x.Length; i++)
         {
-            x[i] = Stations[i].X + Stations[i].Weight * halfWidthDelta;
-            if (i > 0 && x[i] <= x[i - 1])
+            x[i] = AffineGeometry.AddScaled(Stations[i].X, Stations[i].Weight, halfWidthDelta);
+            if (i > Numeric_Types_PedestrianDraw02_PedestrianDraw02RoadPartitions_g_cs.Values.I32[1] && x[i] <= x[i - Numeric_Types_PedestrianDraw02_PedestrianDraw02RoadPartitions_g_cs.Values.I32[2]])
                 throw new ArgumentOutOfRangeException(nameof(halfWidthDelta), "PedestrianDraw02 hinge stations overlap at this width.");
         }
+
         Partition Slab(int index)
         {
             var result = Partition.Gap;
             var entries = Cells[index];
-            for (var i = entries.Length - 1; i >= 0; i--)
+            for (var i = entries.Length - Numeric_Types_PedestrianDraw02_PedestrianDraw02RoadPartitions_g_cs.Values.I32[3]; i >= Numeric_Types_PedestrianDraw02_PedestrianDraw02RoadPartitions_g_cs.Values.I32[4]; i--)
             {
                 var cell = entries[i];
-                var upper = Line(x[index], x[index + 1], cell.UpperLeft, cell.UpperRight,
-                    new Partition(cell.Bone), result);
-                result = Line(x[index], x[index + 1], cell.LowerLeft, cell.LowerRight, Partition.Gap, upper);
+                var upper = Line(x[index], x[index + Numeric_Types_PedestrianDraw02_PedestrianDraw02RoadPartitions_g_cs.Values.I32[5]], cell.UpperLeft, cell.UpperRight, new Partition(cell.Bone), result);
+                result = Line(x[index], x[index + Numeric_Types_PedestrianDraw02_PedestrianDraw02RoadPartitions_g_cs.Values.I32[6]], cell.LowerLeft, cell.LowerRight, Partition.Gap, upper);
             }
+
             return result;
         }
+
         Partition Range(int first, int last)
         {
-            if (first == last) return Slab(first);
-            var middle = (first + last) / 2;
-            return X(x[middle + 1], Range(first, middle), Range(middle + 1, last));
+            if (first == last)
+                return Slab(first);
+            var middle = (first + last) / Numeric_Types_PedestrianDraw02_PedestrianDraw02RoadPartitions_g_cs.Values.I32[7];
+            return X(x[middle + Numeric_Types_PedestrianDraw02_PedestrianDraw02RoadPartitions_g_cs.Values.I32[8]], Range(first, middle), Range(middle + Numeric_Types_PedestrianDraw02_PedestrianDraw02RoadPartitions_g_cs.Values.I32[9], last));
         }
-        return X(x[0], Partition.Gap, X(x[x.Length - 1], Range(0, Cells.Length - 1), Partition.Gap));
+
+        return X(x[Numeric_Types_PedestrianDraw02_PedestrianDraw02RoadPartitions_g_cs.Values.I32[10]], Partition.Gap, X(x[x.Length - Numeric_Types_PedestrianDraw02_PedestrianDraw02RoadPartitions_g_cs.Values.I32[11]], Range(Numeric_Types_PedestrianDraw02_PedestrianDraw02RoadPartitions_g_cs.Values.I32[12], Cells.Length - Numeric_Types_PedestrianDraw02_PedestrianDraw02RoadPartitions_g_cs.Values.I32[13]), Partition.Gap));
     }
 
     private static Partition X(float station, Partition negative, Partition positive)
     {
         var frame = Matrix4x4.identity;
-        frame.m00 = 0f; frame.m02 = -1f;
-        frame.m20 = 1f; frame.m22 = 0f; frame.m23 = -station;
+        frame.m00 = Numeric_Types_PedestrianDraw02_PedestrianDraw02RoadPartitions_g_cs.Values.F32[0];
+        frame.m02 = -Numeric_Types_PedestrianDraw02_PedestrianDraw02RoadPartitions_g_cs.Values.F32[1];
+        frame.m20 = Numeric_Types_PedestrianDraw02_PedestrianDraw02RoadPartitions_g_cs.Values.F32[2];
+        frame.m22 = Numeric_Types_PedestrianDraw02_PedestrianDraw02RoadPartitions_g_cs.Values.F32[3];
+        frame.m23 = -station;
         return new Partition(frame, negative, positive);
     }
 
-    private static Partition Line(float left, float right, float zLeft, float zRight,
-        Partition negative, Partition positive)
+    private static Partition Line(float left, float right, float zLeft, float zRight, Partition negative, Partition positive)
     {
         var slope = (zRight - zLeft) / (right - left);
         var frame = Matrix4x4.identity;
-        frame.m20 = -slope; frame.m23 = slope * left - zLeft;
+        frame.m20 = -slope;
+        frame.m23 = slope * left - zLeft;
         return new Partition(frame, negative, positive);
     }
 
-    private static readonly (float X, float Weight)[] Stations =
+    private static readonly (float X, float Weight)[] Stations = ReadPackedStations();
+    private static readonly (int Bone, float LowerLeft, float LowerRight, float UpperLeft, float UpperRight)[][] Cells = ReadPackedCells();
+    private static (float X, float Weight)[] ReadPackedStations()
     {
-        (-4f, -1f),
-        (-3.6864624f, -1f),
-        (-2.6348877f, -1f),
-        (-1.91687012f, -1f),
-        (-1.91149902f, -1f),
-        (-7.0000533e-06f, 0f),
-        (-5.00003807e-06f, 0f),
-        (-4.00003046e-06f, 0f),
-        (-1.00000761e-06f, 0f),
-        (0f, 0f),
-        (1.91149902f, 1f),
-        (1.91687012f, 1f),
-        (2.6348877f, 1f),
-        (3.6864624f, 1f),
-        (4f, 1f),
-    };
+        var d = Numeric_Types_PedestrianDraw02_PedestrianDraw02RoadPartitions_g_cs.Values;
+        var values = new (float X, float Weight)[15];
+        for (int i = 0; i < 5; i++)
+            values[0 + i] = (-d.F32[4 + i * 2], -d.F32[5 + i * 2]);
+        for (int i = 0; i < 4; i++)
+            values[5 + i] = (-d.F32[14 + i * 2], d.F32[15 + i * 2]);
+        for (int i = 0; i < 6; i++)
+            values[9 + i] = (d.F32[22 + i * 2], d.F32[23 + i * 2]);
+        return values;
+    }
 
-    private static readonly (int Bone, float LowerLeft, float LowerRight, float UpperLeft, float UpperRight)[][] Cells =
+    private static (int Bone, float LowerLeft, float LowerRight, float UpperLeft, float UpperRight)[] ReadPackedCells_0()
     {
-        new (int, float, float, float, float)[]
-        {
-            (0, -76f, -76f, -59.984375f, -59.984375f),
-            (0, 59.984375f, 59.984375f, 76f, 76f),
-        },
-        new (int, float, float, float, float)[]
-        {
-            (0, -76f, -76f, -65.125f, -65.125f),
-            (2, -64.4707031f, -64.4707031f, -0.0299887657f, -0.0299896132f),
-            (1, 0.0300021172f, 0.0300032478f, 64.4707031f, 64.4707031f),
-            (0, 65.125f, 65.125f, 76f, 76f),
-        },
-        new (int, float, float, float, float)[]
-        {
-            (0, -76f, -76f, -65.125f, -65.125f),
-            (2, -64.4707031f, -64.4707031f, -0.0299896132f, -0.0299901925f),
-            (1, 0.0300032478f, 0.0300040189f, 64.4707031f, 64.4707031f),
-            (0, 65.125f, 65.125f, 76f, 76f),
-        },
-        new (int, float, float, float, float)[]
-        {
-            (0, -76f, -76f, -65.125f, -65.125f),
-            (2, -59.3564453f, -59.3564453f, -0.0299901925f, -0.0299901962f),
-            (1, 0.0300040189f, 0.0300040245f, 59.3564453f, 59.3564453f),
-            (0, 65.125f, 65.125f, 76f, 76f),
-        },
-        new (int, float, float, float, float)[]
-        {
-            (0, -76f, -76f, -59.3623047f, -59.3623047f),
-            (2, -59.3564453f, -59.3564453f, -0.0299901962f, -0.0300111771f),
-            (1, 0.0300040245f, 0.0300140381f, 59.3564453f, 59.3564453f),
-            (0, 59.3623047f, 59.3623047f, 76f, 76f),
-        },
-        new (int, float, float, float, float)[]
-        {
-            (0, -76f, -76f, -59.3623047f, -59.3623047f),
-            (2, -59.3564453f, -59.3564453f, -0.0300111771f, -0.0300111771f),
-            (1, 0.0300140381f, 0.0300140381f, 59.3564453f, 59.3564453f),
-            (0, 59.3623047f, 59.3623047f, 76f, 76f),
-        },
-        new (int, float, float, float, float)[]
-        {
-            (0, -76f, -76f, -59.3623047f, -59.3623047f),
-            (2, -59.3564453f, -59.3564453f, -0.0300111771f, -0.0300111771f),
-            (1, 0.0300140381f, 0.0300140381f, 59.3564453f, 59.3564453f),
-            (0, 59.3623047f, 59.3623047f, 76f, 76f),
-        },
-        new (int, float, float, float, float)[]
-        {
-            (0, -76f, -76f, -59.3623047f, -59.3623047f),
-            (2, -59.3564453f, -59.3564453f, -0.0300111771f, -0.0300111771f),
-            (1, 0.0300140381f, 0.0300140381f, 59.3564453f, 59.3564453f),
-            (0, 59.3623047f, 59.3623047f, 76f, 76f),
-        },
-        new (int, float, float, float, float)[]
-        {
-            (0, -76f, -76f, -59.3623047f, -59.3623047f),
-            (2, -59.3564453f, -59.3564453f, -0.0300111771f, -0.0300111771f),
-            (1, 0.0300140381f, 0.0300140381f, 59.3564453f, 59.3564453f),
-            (0, 59.3623047f, 59.3623047f, 76f, 76f),
-        },
-        new (int, float, float, float, float)[]
-        {
-            (0, -76f, -76f, -59.3623047f, -59.3623047f),
-            (2, -59.3564453f, -59.3564453f, -0.0300111771f, -0.0300011635f),
-            (1, 0.0300140381f, 0.0299940109f, 59.3564453f, 59.3564453f),
-            (0, 59.3623047f, 59.3623047f, 76f, 76f),
-        },
-        new (int, float, float, float, float)[]
-        {
-            (0, -76f, -76f, -65.125f, -65.125f),
-            (2, -59.3564453f, -59.3564453f, -0.0300011635f, -0.030001156f),
-            (1, 0.0299940109f, 0.0299940053f, 59.3564453f, 59.3564453f),
-            (0, 65.125f, 65.125f, 76f, 76f),
-        },
-        new (int, float, float, float, float)[]
-        {
-            (0, -76f, -76f, -65.125f, -65.125f),
-            (2, -64.4707031f, -64.4707031f, -0.030001156f, -0.0300001912f),
-            (1, 0.0299940053f, 0.0299932342f, 64.4707031f, 64.4707031f),
-            (0, 65.125f, 65.125f, 76f, 76f),
-        },
-        new (int, float, float, float, float)[]
-        {
-            (0, -76f, -76f, -65.125f, -65.125f),
-            (2, -64.4707031f, -64.4707031f, -0.0300001912f, -0.0299987793f),
-            (1, 0.0299932342f, 0.0299921036f, 64.4707031f, 64.4707031f),
-            (0, 65.125f, 65.125f, 76f, 76f),
-        },
-        new (int, float, float, float, float)[]
-        {
-            (0, -76f, -76f, -59.984375f, -59.984375f),
-            (0, 59.984375f, 59.984375f, 76f, 76f),
-        },
-    };
+        var d = Numeric_Types_PedestrianDraw02_PedestrianDraw02RoadPartitions_g_cs.Values;
+        var values = new (int Bone, float LowerLeft, float LowerRight, float UpperLeft, float UpperRight)[2];
+        for (int i = 0; i < 1; i++)
+            values[0 + i] = (d.I32[14 + i * 1], -d.F32[34 + i * 4], -d.F32[35 + i * 4], -d.F32[36 + i * 4], -d.F32[37 + i * 4]);
+        for (int i = 0; i < 1; i++)
+            values[1 + i] = (d.I32[15 + i * 1], d.F32[38 + i * 4], d.F32[39 + i * 4], d.F32[40 + i * 4], d.F32[41 + i * 4]);
+        return values;
+    }
+
+    private static (int Bone, float LowerLeft, float LowerRight, float UpperLeft, float UpperRight)[] ReadPackedCells_1()
+    {
+        var d = Numeric_Types_PedestrianDraw02_PedestrianDraw02RoadPartitions_g_cs.Values;
+        var values = new (int Bone, float LowerLeft, float LowerRight, float UpperLeft, float UpperRight)[4];
+        for (int i = 0; i < 2; i++)
+            values[0 + i] = (d.I32[16 + i * 1], -d.F32[42 + i * 4], -d.F32[43 + i * 4], -d.F32[44 + i * 4], -d.F32[45 + i * 4]);
+        for (int i = 0; i < 2; i++)
+            values[2 + i] = (d.I32[18 + i * 1], d.F32[50 + i * 4], d.F32[51 + i * 4], d.F32[52 + i * 4], d.F32[53 + i * 4]);
+        return values;
+    }
+
+    private static (int Bone, float LowerLeft, float LowerRight, float UpperLeft, float UpperRight)[] ReadPackedCells_2()
+    {
+        var d = Numeric_Types_PedestrianDraw02_PedestrianDraw02RoadPartitions_g_cs.Values;
+        var values = new (int Bone, float LowerLeft, float LowerRight, float UpperLeft, float UpperRight)[4];
+        for (int i = 0; i < 2; i++)
+            values[0 + i] = (d.I32[20 + i * 1], -d.F32[58 + i * 4], -d.F32[59 + i * 4], -d.F32[60 + i * 4], -d.F32[61 + i * 4]);
+        for (int i = 0; i < 2; i++)
+            values[2 + i] = (d.I32[22 + i * 1], d.F32[66 + i * 4], d.F32[67 + i * 4], d.F32[68 + i * 4], d.F32[69 + i * 4]);
+        return values;
+    }
+
+    private static (int Bone, float LowerLeft, float LowerRight, float UpperLeft, float UpperRight)[] ReadPackedCells_3()
+    {
+        var d = Numeric_Types_PedestrianDraw02_PedestrianDraw02RoadPartitions_g_cs.Values;
+        var values = new (int Bone, float LowerLeft, float LowerRight, float UpperLeft, float UpperRight)[4];
+        for (int i = 0; i < 2; i++)
+            values[0 + i] = (d.I32[24 + i * 1], -d.F32[74 + i * 4], -d.F32[75 + i * 4], -d.F32[76 + i * 4], -d.F32[77 + i * 4]);
+        for (int i = 0; i < 2; i++)
+            values[2 + i] = (d.I32[26 + i * 1], d.F32[82 + i * 4], d.F32[83 + i * 4], d.F32[84 + i * 4], d.F32[85 + i * 4]);
+        return values;
+    }
+
+    private static (int Bone, float LowerLeft, float LowerRight, float UpperLeft, float UpperRight)[] ReadPackedCells_4()
+    {
+        var d = Numeric_Types_PedestrianDraw02_PedestrianDraw02RoadPartitions_g_cs.Values;
+        var values = new (int Bone, float LowerLeft, float LowerRight, float UpperLeft, float UpperRight)[4];
+        for (int i = 0; i < 2; i++)
+            values[0 + i] = (d.I32[28 + i * 1], -d.F32[90 + i * 4], -d.F32[91 + i * 4], -d.F32[92 + i * 4], -d.F32[93 + i * 4]);
+        for (int i = 0; i < 2; i++)
+            values[2 + i] = (d.I32[30 + i * 1], d.F32[98 + i * 4], d.F32[99 + i * 4], d.F32[100 + i * 4], d.F32[101 + i * 4]);
+        return values;
+    }
+
+    private static (int Bone, float LowerLeft, float LowerRight, float UpperLeft, float UpperRight)[] ReadPackedCells_5()
+    {
+        var d = Numeric_Types_PedestrianDraw02_PedestrianDraw02RoadPartitions_g_cs.Values;
+        var values = new (int Bone, float LowerLeft, float LowerRight, float UpperLeft, float UpperRight)[4];
+        for (int i = 0; i < 2; i++)
+            values[0 + i] = (d.I32[32 + i * 1], -d.F32[106 + i * 4], -d.F32[107 + i * 4], -d.F32[108 + i * 4], -d.F32[109 + i * 4]);
+        for (int i = 0; i < 2; i++)
+            values[2 + i] = (d.I32[34 + i * 1], d.F32[114 + i * 4], d.F32[115 + i * 4], d.F32[116 + i * 4], d.F32[117 + i * 4]);
+        return values;
+    }
+
+    private static (int Bone, float LowerLeft, float LowerRight, float UpperLeft, float UpperRight)[] ReadPackedCells_6()
+    {
+        var d = Numeric_Types_PedestrianDraw02_PedestrianDraw02RoadPartitions_g_cs.Values;
+        var values = new (int Bone, float LowerLeft, float LowerRight, float UpperLeft, float UpperRight)[4];
+        for (int i = 0; i < 2; i++)
+            values[0 + i] = (d.I32[36 + i * 1], -d.F32[122 + i * 4], -d.F32[123 + i * 4], -d.F32[124 + i * 4], -d.F32[125 + i * 4]);
+        for (int i = 0; i < 2; i++)
+            values[2 + i] = (d.I32[38 + i * 1], d.F32[130 + i * 4], d.F32[131 + i * 4], d.F32[132 + i * 4], d.F32[133 + i * 4]);
+        return values;
+    }
+
+    private static (int Bone, float LowerLeft, float LowerRight, float UpperLeft, float UpperRight)[] ReadPackedCells_7()
+    {
+        var d = Numeric_Types_PedestrianDraw02_PedestrianDraw02RoadPartitions_g_cs.Values;
+        var values = new (int Bone, float LowerLeft, float LowerRight, float UpperLeft, float UpperRight)[4];
+        for (int i = 0; i < 2; i++)
+            values[0 + i] = (d.I32[40 + i * 1], -d.F32[138 + i * 4], -d.F32[139 + i * 4], -d.F32[140 + i * 4], -d.F32[141 + i * 4]);
+        for (int i = 0; i < 2; i++)
+            values[2 + i] = (d.I32[42 + i * 1], d.F32[146 + i * 4], d.F32[147 + i * 4], d.F32[148 + i * 4], d.F32[149 + i * 4]);
+        return values;
+    }
+
+    private static (int Bone, float LowerLeft, float LowerRight, float UpperLeft, float UpperRight)[] ReadPackedCells_8()
+    {
+        var d = Numeric_Types_PedestrianDraw02_PedestrianDraw02RoadPartitions_g_cs.Values;
+        var values = new (int Bone, float LowerLeft, float LowerRight, float UpperLeft, float UpperRight)[4];
+        for (int i = 0; i < 2; i++)
+            values[0 + i] = (d.I32[44 + i * 1], -d.F32[154 + i * 4], -d.F32[155 + i * 4], -d.F32[156 + i * 4], -d.F32[157 + i * 4]);
+        for (int i = 0; i < 2; i++)
+            values[2 + i] = (d.I32[46 + i * 1], d.F32[162 + i * 4], d.F32[163 + i * 4], d.F32[164 + i * 4], d.F32[165 + i * 4]);
+        return values;
+    }
+
+    private static (int Bone, float LowerLeft, float LowerRight, float UpperLeft, float UpperRight)[] ReadPackedCells_9()
+    {
+        var d = Numeric_Types_PedestrianDraw02_PedestrianDraw02RoadPartitions_g_cs.Values;
+        var values = new (int Bone, float LowerLeft, float LowerRight, float UpperLeft, float UpperRight)[4];
+        for (int i = 0; i < 2; i++)
+            values[0 + i] = (d.I32[48 + i * 1], -d.F32[170 + i * 4], -d.F32[171 + i * 4], -d.F32[172 + i * 4], -d.F32[173 + i * 4]);
+        for (int i = 0; i < 2; i++)
+            values[2 + i] = (d.I32[50 + i * 1], d.F32[178 + i * 4], d.F32[179 + i * 4], d.F32[180 + i * 4], d.F32[181 + i * 4]);
+        return values;
+    }
+
+    private static (int Bone, float LowerLeft, float LowerRight, float UpperLeft, float UpperRight)[] ReadPackedCells_10()
+    {
+        var d = Numeric_Types_PedestrianDraw02_PedestrianDraw02RoadPartitions_g_cs.Values;
+        var values = new (int Bone, float LowerLeft, float LowerRight, float UpperLeft, float UpperRight)[4];
+        for (int i = 0; i < 2; i++)
+            values[0 + i] = (d.I32[52 + i * 1], -d.F32[186 + i * 4], -d.F32[187 + i * 4], -d.F32[188 + i * 4], -d.F32[189 + i * 4]);
+        for (int i = 0; i < 2; i++)
+            values[2 + i] = (d.I32[54 + i * 1], d.F32[194 + i * 4], d.F32[195 + i * 4], d.F32[196 + i * 4], d.F32[197 + i * 4]);
+        return values;
+    }
+
+    private static (int Bone, float LowerLeft, float LowerRight, float UpperLeft, float UpperRight)[] ReadPackedCells_11()
+    {
+        var d = Numeric_Types_PedestrianDraw02_PedestrianDraw02RoadPartitions_g_cs.Values;
+        var values = new (int Bone, float LowerLeft, float LowerRight, float UpperLeft, float UpperRight)[4];
+        for (int i = 0; i < 2; i++)
+            values[0 + i] = (d.I32[56 + i * 1], -d.F32[202 + i * 4], -d.F32[203 + i * 4], -d.F32[204 + i * 4], -d.F32[205 + i * 4]);
+        for (int i = 0; i < 2; i++)
+            values[2 + i] = (d.I32[58 + i * 1], d.F32[210 + i * 4], d.F32[211 + i * 4], d.F32[212 + i * 4], d.F32[213 + i * 4]);
+        return values;
+    }
+
+    private static (int Bone, float LowerLeft, float LowerRight, float UpperLeft, float UpperRight)[] ReadPackedCells_12()
+    {
+        var d = Numeric_Types_PedestrianDraw02_PedestrianDraw02RoadPartitions_g_cs.Values;
+        var values = new (int Bone, float LowerLeft, float LowerRight, float UpperLeft, float UpperRight)[4];
+        for (int i = 0; i < 2; i++)
+            values[0 + i] = (d.I32[60 + i * 1], -d.F32[218 + i * 4], -d.F32[219 + i * 4], -d.F32[220 + i * 4], -d.F32[221 + i * 4]);
+        for (int i = 0; i < 2; i++)
+            values[2 + i] = (d.I32[62 + i * 1], d.F32[226 + i * 4], d.F32[227 + i * 4], d.F32[228 + i * 4], d.F32[229 + i * 4]);
+        return values;
+    }
+
+    private static (int Bone, float LowerLeft, float LowerRight, float UpperLeft, float UpperRight)[] ReadPackedCells_13()
+    {
+        var d = Numeric_Types_PedestrianDraw02_PedestrianDraw02RoadPartitions_g_cs.Values;
+        var values = new (int Bone, float LowerLeft, float LowerRight, float UpperLeft, float UpperRight)[2];
+        for (int i = 0; i < 1; i++)
+            values[0 + i] = (d.I32[64 + i * 1], -d.F32[234 + i * 4], -d.F32[235 + i * 4], -d.F32[236 + i * 4], -d.F32[237 + i * 4]);
+        for (int i = 0; i < 1; i++)
+            values[1 + i] = (d.I32[65 + i * 1], d.F32[238 + i * 4], d.F32[239 + i * 4], d.F32[240 + i * 4], d.F32[241 + i * 4]);
+        return values;
+    }
+
+    private static (int Bone, float LowerLeft, float LowerRight, float UpperLeft, float UpperRight)[][] ReadPackedCells()
+    {
+        var values = new (int Bone, float LowerLeft, float LowerRight, float UpperLeft, float UpperRight)[14][];
+        values[0] = ReadPackedCells_0();
+        values[1] = ReadPackedCells_1();
+        values[2] = ReadPackedCells_2();
+        values[3] = ReadPackedCells_3();
+        values[4] = ReadPackedCells_4();
+        values[5] = ReadPackedCells_5();
+        values[6] = ReadPackedCells_6();
+        values[7] = ReadPackedCells_7();
+        values[8] = ReadPackedCells_8();
+        values[9] = ReadPackedCells_9();
+        values[10] = ReadPackedCells_10();
+        values[11] = ReadPackedCells_11();
+        values[12] = ReadPackedCells_12();
+        values[13] = ReadPackedCells_13();
+        return values;
+    }
+}
+
+// Embedded numerical arrays: Types_PedestrianDraw02_PedestrianDraw02RoadPartitions_g_cs
+internal static class Numeric_Types_PedestrianDraw02_PedestrianDraw02RoadPartitions_g_cs
+{
+    static Numeric_Types_PedestrianDraw02_PedestrianDraw02RoadPartitions_g_cs() {}
+    internal static readonly HardcodedNumbers Values = HardcodedNumbers.Load("Types_PedestrianDraw02_PedestrianDraw02RoadPartitions_g_cs");
 }

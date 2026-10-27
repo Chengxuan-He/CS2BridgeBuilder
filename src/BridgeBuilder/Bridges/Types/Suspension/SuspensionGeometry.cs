@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 
 namespace BridgeBuilder.Bridges;
-
 /// <summary>
 /// Immutable metaprogram output for the two numbered suspension prototypes.
 ///
@@ -16,23 +15,21 @@ internal static class SuspensionGeometry
 {
     // Exact left-to-right bounds recorded from the full-detail prototype prefabs. The public piece
     // widths are rounded to 21.5/22.6 m; geometry uses these retained float coordinates instead.
-    private const float Suspension01NetSpan = 21.49888f;
-    private const float Suspension02NetSpan = 22.52912f;
+    private static float Suspension01NetSpan => Numeric_Types_Suspension_SuspensionGeometry_cs.Values.F32[0];
+    private static float Suspension02NetSpan => Numeric_Types_Suspension_SuspensionGeometry_cs.Values.F32[1];
 
-    private static readonly IReadOnlyDictionary<string, float> ContinuousSheets =
-        new Dictionary<string, float>(StringComparer.Ordinal)
-        {
-            ["SuspensionBridge01EndNet Mesh"] = Suspension01NetSpan,
-            ["SuspensionBridge01EndNet_LOD1 Mesh"] = Suspension01NetSpan,
-            ["SuspensionBridge01EndNet_LOD2 Mesh"] = Suspension01NetSpan,
-            ["SuspensionBridge01MiddleNet Mesh"] = Suspension01NetSpan,
-            ["SuspensionBridge01MiddleNet_LOD1 Mesh"] = Suspension01NetSpan,
-            ["SuspensionBridge01MiddleNet_LOD2 Mesh"] = Suspension01NetSpan,
-            ["SuspensionBridge02Net Mesh"] = Suspension02NetSpan,
-            ["SuspensionBridge02Net_LOD1 Mesh"] = Suspension02NetSpan,
-            ["SuspensionBridge02Net_LOD2 Mesh"] = Suspension02NetSpan,
-        };
-
+    private static readonly IReadOnlyDictionary<string, float> ContinuousSheets = new Dictionary<string, float>(StringComparer.Ordinal)
+    {
+        ["SuspensionBridge01EndNet Mesh"] = Suspension01NetSpan,
+        ["SuspensionBridge01EndNet_LOD1 Mesh"] = Suspension01NetSpan,
+        ["SuspensionBridge01EndNet_LOD2 Mesh"] = Suspension01NetSpan,
+        ["SuspensionBridge01MiddleNet Mesh"] = Suspension01NetSpan,
+        ["SuspensionBridge01MiddleNet_LOD1 Mesh"] = Suspension01NetSpan,
+        ["SuspensionBridge01MiddleNet_LOD2 Mesh"] = Suspension01NetSpan,
+        ["SuspensionBridge02Net Mesh"] = Suspension02NetSpan,
+        ["SuspensionBridge02Net_LOD1 Mesh"] = Suspension02NetSpan,
+        ["SuspensionBridge02Net_LOD2 Mesh"] = Suspension02NetSpan,
+    };
     private static readonly HashSet<string> RigidSideParts = new(StringComparer.Ordinal)
     {
         "SuspensionBridge01NetPillar Mesh",
@@ -60,18 +57,20 @@ internal static class SuspensionGeometry
         "SuspensionBridge02NetPylonBase_LOD1 Mesh",
         "SuspensionBridge02NetPylonBase_LOD2 Mesh",
     };
-
     internal static bool TryGetContinuousSpan(string? styleId, string? meshName, out float span)
     {
-        span = 0f;
+        span = Numeric_Types_Suspension_SuspensionGeometry_cs.Values.F32[2];
         if (styleId is not ("Suspension01" or "Suspension02") || string.IsNullOrEmpty(meshName))
             return false;
-
         return ContinuousSheets.TryGetValue(meshName!, out span);
     }
 
-    internal static bool IsRigidSidePart(string? styleId, string? meshName) =>
-        styleId is "Suspension01" or "Suspension02"
-        && !string.IsNullOrEmpty(meshName)
-        && RigidSideParts.Contains(meshName!);
+    internal static bool IsRigidSidePart(string? styleId, string? meshName) => styleId is "Suspension01" or "Suspension02" && !string.IsNullOrEmpty(meshName) && RigidSideParts.Contains(meshName!);
+}
+
+// Embedded numerical arrays: Types_Suspension_SuspensionGeometry_cs
+internal static class Numeric_Types_Suspension_SuspensionGeometry_cs
+{
+    static Numeric_Types_Suspension_SuspensionGeometry_cs() {}
+    internal static readonly HardcodedNumbers Values = HardcodedNumbers.Load("Types_Suspension_SuspensionGeometry_cs");
 }

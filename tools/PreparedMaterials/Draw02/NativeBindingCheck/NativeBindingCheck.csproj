@@ -1,0 +1,9 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup><OutputType>Exe</OutputType><TargetFramework>net8.0</TargetFramework><ImplicitUsings>enable</ImplicitUsings><Nullable>enable</Nullable></PropertyGroup>
+  <ItemGroup>
+    <Compile Remove="NativeApiStubs.cs" />
+    <Compile Remove="obj-native/**/*.cs" />
+    <Compile Include="../../../../src/BridgeBuilder/Bridges/Types/Draw02/Draw02NativeSourceBindings.cs" Link="Draw02NativeSourceBindings.cs" />
+    <Compile Include="../../../../src/BridgeBuilder/Bridges/Types/Draw02/Draw02NativeSourceCatalog.g.cs" Link="Draw02NativeSourceCatalog.g.cs" />
+  </ItemGroup>
+</Project>

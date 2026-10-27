@@ -3,29 +3,35 @@
 using System;
 
 namespace BridgeBuilder.Bridges;
-
 internal static class Lift02FarRoadTops
 {
     internal static void Remove(int[] indices, bool[] removed)
     {
-        if (indices.Length != 7800 || removed.Length != 2600)
+        if (indices.Length != Numeric_Types_Lift02_Lift02FarRoadTops_g_cs.Values.I32[0] || removed.Length != Numeric_Types_Lift02_Lift02FarRoadTops_g_cs.Values.I32[1])
             throw new InvalidOperationException("Lift02 far road-top source layout changed.");
         foreach (var face in Faces)
         {
-            var offset = face.Triangle * 3;
-            if (indices[offset] != face.A || indices[offset + 1] != face.B || indices[offset + 2] != face.C)
+            var offset = face.Triangle * Numeric_Types_Lift02_Lift02FarRoadTops_g_cs.Values.I32[2];
+            if (indices[offset] != face.A || indices[offset + Numeric_Types_Lift02_Lift02FarRoadTops_g_cs.Values.I32[3]] != face.B || indices[offset + Numeric_Types_Lift02_Lift02FarRoadTops_g_cs.Values.I32[4]] != face.C)
                 throw new InvalidOperationException("Lift02 far road-top topology changed.");
             removed[face.Triangle] = true;
         }
     }
 
-    private static readonly (int Triangle, int A, int B, int C)[] Faces =
+    private static readonly (int Triangle, int A, int B, int C)[] Faces = ReadPackedFaces();
+    private static (int Triangle, int A, int B, int C)[] ReadPackedFaces()
     {
-        (410, 634, 635, 636),
-        (411, 635, 634, 637),
-        (1178, 1838, 1839, 1840),
-        (1179, 1839, 1838, 1841),
-        (1618, 2516, 2517, 2518),
-        (1619, 2517, 2516, 2519),
-    };
+        var d = Numeric_Types_Lift02_Lift02FarRoadTops_g_cs.Values;
+        var values = new (int Triangle, int A, int B, int C)[6];
+        for (int i = 0; i < 6; i++)
+            values[0 + i] = (d.I32[5 + i * 4], d.I32[6 + i * 4], d.I32[7 + i * 4], d.I32[8 + i * 4]);
+        return values;
+    }
+}
+
+// Embedded numerical arrays: Types_Lift02_Lift02FarRoadTops_g_cs
+internal static class Numeric_Types_Lift02_Lift02FarRoadTops_g_cs
+{
+    static Numeric_Types_Lift02_Lift02FarRoadTops_g_cs() {}
+    internal static readonly HardcodedNumbers Values = HardcodedNumbers.Load("Types_Lift02_Lift02FarRoadTops_g_cs");
 }

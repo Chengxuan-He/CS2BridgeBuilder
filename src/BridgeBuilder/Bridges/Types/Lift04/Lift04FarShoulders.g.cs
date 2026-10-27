@@ -4,127 +4,137 @@ using System.Linq;
 using UnityEngine;
 
 namespace BridgeBuilder.Bridges;
-
 internal static class Lift04FarShoulders
 {
     internal static MovableStructureModel.Plan Apply(MovableStructureModel.Plan plan, float delta)
     {
-        const int count = 3212;
-        if (plan.SourcePositions.Length != count || plan.SourceIndices.Length != 1 || plan.SourceIndices[0].Length != 5208 || plan.InteriorVertices.Length != 0)
+        int count = Numeric_Types_Lift04_Lift04FarShoulders_g_cs.Values.I32[0];
+        if (plan.SourcePositions.Length != count || plan.SourceIndices.Length != Numeric_Types_Lift04_Lift04FarShoulders_g_cs.Values.I32[1] || plan.SourceIndices[Numeric_Types_Lift04_Lift04FarShoulders_g_cs.Values.I32[2]].Length != Numeric_Types_Lift04_Lift04FarShoulders_g_cs.Values.I32[3] || plan.InteriorVertices.Length != Numeric_Types_Lift04_Lift04FarShoulders_g_cs.Values.I32[4])
             throw new InvalidOperationException("Lift04 far shoulders require the recorded edge-only structure plan.");
         var positions = new Vector3[count];
         Array.Copy(plan.Positions, positions, count);
         var offset = plan.AddedVertices.Length;
         var x = new float[offset + Edges.Length];
-        for (var i = 0; i < offset; i++) x[i] = plan.Positions[count + i].x;
-        for (var i = 0; i < Edges.Length; i++)
+        AffineGeometry.For(Numeric_Types_Lift04_Lift04FarShoulders_g_cs.Values.I32[5], offset, i =>
+        {
+            x[i] = plan.Positions[count + i].x;
+        });
+        for (var i = Numeric_Types_Lift04_Lift04FarShoulders_g_cs.Values.I32[6]; i < Edges.Length; i++)
         {
             var edge = Edges[i];
-            x[offset + i] = Mathf.LerpUnclamped(plan.SourcePositions[edge.A].x, plan.SourcePositions[edge.B].x, edge.Fraction) + Signs[i] * delta;
+            x[offset + i] = AffineGeometry.AddScaled(Mathf.LerpUnclamped(plan.SourcePositions[edge.A].x, plan.SourcePositions[edge.B].x, edge.Fraction), Signs[i], delta);
         }
+
         foreach (var face in SourceFaces)
         {
-            var indices = plan.SourceIndices[0]; var i = face.Triangle * 3;
-            if (indices[i] != face.A || indices[i+1] != face.B || indices[i+2] != face.C)
+            var indices = plan.SourceIndices[Numeric_Types_Lift04_Lift04FarShoulders_g_cs.Values.I32[7]];
+            var i = face.Triangle * Numeric_Types_Lift04_Lift04FarShoulders_g_cs.Values.I32[8];
+            if (indices[i] != face.A || indices[i + Numeric_Types_Lift04_Lift04FarShoulders_g_cs.Values.I32[9]] != face.B || indices[i + Numeric_Types_Lift04_Lift04FarShoulders_g_cs.Values.I32[10]] != face.C)
                 throw new InvalidOperationException("Lift04 far road source topology changed.");
         }
-        var fragments = Fragments.Select(f => new MovableStructureModel.Fragment(0, f.Triangle,
-            f.Indices.Select(i => i < count ? i : i + offset).ToArray())).ToArray();
-        return new MovableStructureModel.Plan(plan.SourcePositions, positions, plan.SourceIndices,
-            plan.RemoveTriangles, plan.AddedVertices.Concat(Edges).ToArray(), plan.Fragments.Concat(fragments).ToArray(), constructedX: x);
+
+        var fragments = Fragments.Select(f => new MovableStructureModel.Fragment(Numeric_Types_Lift04_Lift04FarShoulders_g_cs.Values.I32[11], f.Triangle, f.Indices.Select(i => i < count ? i : i + offset).ToArray())).ToArray();
+        return new MovableStructureModel.Plan(plan.SourcePositions, positions, plan.SourceIndices, plan.RemoveTriangles, plan.AddedVertices.Concat(Edges).ToArray(), plan.Fragments.Concat(fragments).ToArray(), constructedX: x);
     }
-    private static readonly (int Triangle, int A, int B, int C)[] SourceFaces =
+
+    private static readonly (int Triangle, int A, int B, int C)[] SourceFaces = ReadPackedSourceFaces();
+    private static readonly MovableStructureModel.EdgeVertex[] Edges = ReadPackedEdges();
+    private static readonly float[] Signs = ReadPackedSigns();
+    private static readonly MovableStructureModel.Fragment[] Fragments = ReadPackedFragments();
+    private static (int Triangle, int A, int B, int C)[] ReadPackedSourceFaces()
     {
-        (846, 1604, 1605, 1606),
-        (847, 1605, 1604, 1607),
-        (868, 1648, 1649, 1650),
-        (869, 1649, 1648, 1651),
-        (1156, 2152, 2153, 2154),
-        (1157, 2153, 2152, 2155),
-        (1158, 2156, 2157, 2158),
-        (1159, 2157, 2156, 2159),
-        (1160, 2160, 2161, 2162),
-        (1161, 2161, 2160, 2163),
-        (1568, 2882, 2883, 2884),
-        (1569, 2883, 2882, 2885),
-        (1570, 2886, 2887, 2888),
-        (1571, 2887, 2886, 2889),
-    };
-    private static readonly MovableStructureModel.EdgeVertex[] Edges =
+        var d = Numeric_Types_Lift04_Lift04FarShoulders_g_cs.Values;
+        var values = new (int Triangle, int A, int B, int C)[14];
+        for (int i = 0; i < 14; i++)
+            values[0 + i] = (d.I32[12 + i * 4], d.I32[13 + i * 4], d.I32[14 + i * 4], d.I32[15 + i * 4]);
+        return values;
+    }
+
+    private static MovableStructureModel.EdgeVertex[] ReadPackedEdges()
     {
-        new(1604, 1605, 0.100000001f),
-        new(1604, 1606, 0.100000001f),
-        new(1604, 1605, 0.899999976f),
-        new(1604, 1606, 0.899999976f),
-        new(1605, 1604, 0.899999976f),
-        new(1605, 1607, 0.899999976f),
-        new(1605, 1604, 0.100000001f),
-        new(1605, 1607, 0.100000001f),
-        new(1648, 1649, 0.100000001f),
-        new(1648, 1650, 0.100000001f),
-        new(1648, 1649, 0.899999976f),
-        new(1648, 1650, 0.899999976f),
-        new(1649, 1648, 0.899999976f),
-        new(1649, 1651, 0.899999976f),
-        new(1649, 1648, 0.100000001f),
-        new(1649, 1651, 0.100000001f),
-        new(2152, 2153, 0.100000001f),
-        new(2152, 2154, 0.100000001f),
-        new(2152, 2153, 0.899999976f),
-        new(2152, 2154, 0.899999976f),
-        new(2153, 2152, 0.899999976f),
-        new(2153, 2155, 0.899999976f),
-        new(2153, 2152, 0.100000001f),
-        new(2153, 2155, 0.100000001f),
-        new(2156, 2157, 0.100000001f),
-        new(2156, 2158, 0.100000001f),
-        new(2156, 2157, 0.899999976f),
-        new(2156, 2158, 0.899999976f),
-        new(2157, 2156, 0.899999976f),
-        new(2157, 2159, 0.899999976f),
-        new(2157, 2156, 0.100000001f),
-        new(2157, 2159, 0.100000001f),
-        new(2160, 2161, 0.100000001f),
-        new(2160, 2162, 0.100000001f),
-        new(2160, 2161, 0.899999976f),
-        new(2160, 2162, 0.899999976f),
-        new(2161, 2160, 0.899999976f),
-        new(2161, 2163, 0.899999976f),
-        new(2161, 2160, 0.100000001f),
-        new(2161, 2163, 0.100000001f),
-        new(2882, 2883, 0.899999976f),
-        new(2882, 2884, 0.899999976f),
-        new(2882, 2883, 0.100000001f),
-        new(2882, 2884, 0.100000001f),
-        new(2883, 2882, 0.100000001f),
-        new(2883, 2885, 0.100000001f),
-        new(2883, 2882, 0.899999976f),
-        new(2883, 2885, 0.899999976f),
-        new(2886, 2887, 0.899999976f),
-        new(2886, 2888, 0.899999976f),
-        new(2886, 2887, 0.100000001f),
-        new(2886, 2888, 0.100000001f),
-        new(2887, 2886, 0.100000001f),
-        new(2887, 2889, 0.100000001f),
-        new(2887, 2886, 0.899999976f),
-        new(2887, 2889, 0.899999976f),
-    };
-    private static readonly float[] Signs = { -1f, -1f, 1f, 1f, -1f, -1f, 1f, 1f, -1f, -1f, 1f, 1f, -1f, -1f, 1f, 1f, -1f, -1f, 1f, 1f, -1f, -1f, 1f, 1f, -1f, -1f, 1f, 1f, -1f, -1f, 1f, 1f, -1f, -1f, 1f, 1f, -1f, -1f, 1f, 1f, -1f, -1f, 1f, 1f, -1f, -1f, 1f, 1f, -1f, -1f, 1f, 1f, -1f, -1f, 1f, 1f };
-    private static readonly MovableStructureModel.Fragment[] Fragments =
+        var d = Numeric_Types_Lift04_Lift04FarShoulders_g_cs.Values;
+        var values = new MovableStructureModel.EdgeVertex[56];
+        for (int i = 0; i < 56; i++)
+            values[0 + i] = new(d.I32[68 + i * 2], d.I32[69 + i * 2], d.F32[0 + i * 1]);
+        return values;
+    }
+
+    private static float[] ReadPackedSigns()
     {
-        new(0, 846, 1604, 3212, 3213, 3214, 1605, 1606, 3214, 1606, 3215),
-        new(0, 847, 3216, 1604, 1607, 3216, 1607, 3217, 1605, 3218, 3219),
-        new(0, 868, 1648, 3220, 3221, 3222, 1649, 1650, 3222, 1650, 3223),
-        new(0, 869, 3224, 1648, 1651, 3224, 1651, 3225, 1649, 3226, 3227),
-        new(0, 1156, 2152, 3228, 3229, 3230, 2153, 2154, 3230, 2154, 3231),
-        new(0, 1157, 3232, 2152, 2155, 3232, 2155, 3233, 2153, 3234, 3235),
-        new(0, 1158, 2156, 3236, 3237, 3238, 2157, 2158, 3238, 2158, 3239),
-        new(0, 1159, 3240, 2156, 2159, 3240, 2159, 3241, 2157, 3242, 3243),
-        new(0, 1160, 2160, 3244, 3245, 3246, 2161, 2162, 3246, 2162, 3247),
-        new(0, 1161, 3248, 2160, 2163, 3248, 2163, 3249, 2161, 3250, 3251),
-        new(0, 1568, 3252, 2883, 2884, 3252, 2884, 3253, 2882, 3254, 3255),
-        new(0, 1569, 2883, 3256, 3257, 3258, 2882, 2885, 3258, 2885, 3259),
-        new(0, 1570, 3260, 2887, 2888, 3260, 2888, 3261, 2886, 3262, 3263),
-        new(0, 1571, 2887, 3264, 3265, 3266, 2886, 2889, 3266, 2889, 3267),
-    };
+        var d = Numeric_Types_Lift04_Lift04FarShoulders_g_cs.Values;
+        var values = new float[56];
+        for (int i = 0; i < 2; i++)
+            values[0 + i] = -d.F32[56 + i * 1];
+        for (int i = 0; i < 2; i++)
+            values[2 + i] = d.F32[58 + i * 1];
+        for (int i = 0; i < 2; i++)
+            values[4 + i] = -d.F32[60 + i * 1];
+        for (int i = 0; i < 2; i++)
+            values[6 + i] = d.F32[62 + i * 1];
+        for (int i = 0; i < 2; i++)
+            values[8 + i] = -d.F32[64 + i * 1];
+        for (int i = 0; i < 2; i++)
+            values[10 + i] = d.F32[66 + i * 1];
+        for (int i = 0; i < 2; i++)
+            values[12 + i] = -d.F32[68 + i * 1];
+        for (int i = 0; i < 2; i++)
+            values[14 + i] = d.F32[70 + i * 1];
+        for (int i = 0; i < 2; i++)
+            values[16 + i] = -d.F32[72 + i * 1];
+        for (int i = 0; i < 2; i++)
+            values[18 + i] = d.F32[74 + i * 1];
+        for (int i = 0; i < 2; i++)
+            values[20 + i] = -d.F32[76 + i * 1];
+        for (int i = 0; i < 2; i++)
+            values[22 + i] = d.F32[78 + i * 1];
+        for (int i = 0; i < 2; i++)
+            values[24 + i] = -d.F32[80 + i * 1];
+        for (int i = 0; i < 2; i++)
+            values[26 + i] = d.F32[82 + i * 1];
+        for (int i = 0; i < 2; i++)
+            values[28 + i] = -d.F32[84 + i * 1];
+        for (int i = 0; i < 2; i++)
+            values[30 + i] = d.F32[86 + i * 1];
+        for (int i = 0; i < 2; i++)
+            values[32 + i] = -d.F32[88 + i * 1];
+        for (int i = 0; i < 2; i++)
+            values[34 + i] = d.F32[90 + i * 1];
+        for (int i = 0; i < 2; i++)
+            values[36 + i] = -d.F32[92 + i * 1];
+        for (int i = 0; i < 2; i++)
+            values[38 + i] = d.F32[94 + i * 1];
+        for (int i = 0; i < 2; i++)
+            values[40 + i] = -d.F32[96 + i * 1];
+        for (int i = 0; i < 2; i++)
+            values[42 + i] = d.F32[98 + i * 1];
+        for (int i = 0; i < 2; i++)
+            values[44 + i] = -d.F32[100 + i * 1];
+        for (int i = 0; i < 2; i++)
+            values[46 + i] = d.F32[102 + i * 1];
+        for (int i = 0; i < 2; i++)
+            values[48 + i] = -d.F32[104 + i * 1];
+        for (int i = 0; i < 2; i++)
+            values[50 + i] = d.F32[106 + i * 1];
+        for (int i = 0; i < 2; i++)
+            values[52 + i] = -d.F32[108 + i * 1];
+        for (int i = 0; i < 2; i++)
+            values[54 + i] = d.F32[110 + i * 1];
+        return values;
+    }
+
+    private static MovableStructureModel.Fragment[] ReadPackedFragments()
+    {
+        var d = Numeric_Types_Lift04_Lift04FarShoulders_g_cs.Values;
+        var values = new MovableStructureModel.Fragment[14];
+        for (int i = 0; i < 14; i++)
+            values[0 + i] = new(d.I32[180 + i * 11], d.I32[181 + i * 11], d.I32[182 + i * 11], d.I32[183 + i * 11], d.I32[184 + i * 11], d.I32[185 + i * 11], d.I32[186 + i * 11], d.I32[187 + i * 11], d.I32[188 + i * 11], d.I32[189 + i * 11], d.I32[190 + i * 11]);
+        return values;
+    }
+}
+
+// Embedded numerical arrays: Types_Lift04_Lift04FarShoulders_g_cs
+internal static class Numeric_Types_Lift04_Lift04FarShoulders_g_cs
+{
+    static Numeric_Types_Lift04_Lift04FarShoulders_g_cs() {}
+    internal static readonly HardcodedNumbers Values = HardcodedNumbers.Load("Types_Lift04_Lift04FarShoulders_g_cs");
 }
