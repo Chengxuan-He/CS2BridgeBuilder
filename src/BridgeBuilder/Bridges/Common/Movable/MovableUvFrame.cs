@@ -48,6 +48,34 @@ internal readonly struct MovableUvFrame
         _targetY * D3.Dot(direction, _sourceY) +
         D3.Cross(_targetX, _targetY) * D3.Dot(direction, D3.Cross(_sourceX, _sourceY)));
 
+    // A mixed sampler changes the UV Jacobian independently of the geometric
+    // polar rotation. Rotate the authored tangent's residual relative to dP/dU
+    // into the final sampler basis, preserving its smooth-normal convention.
+    internal static Vector4 MixedTangent(MovableUvFrame frame,Vector3 tangent,Vector3 normal,float handedness,
+        Vector3[] source,Vector2[] sourceUv,Vector3[] target,Vector2[] targetUv)
+    {
+        Vector3 Derivative(Vector3[] p,Vector2[] uv,out double determinant)
+        {
+            double ux=(double)uv[1].x-uv[0].x,uy=(double)uv[1].y-uv[0].y;
+            double vx=(double)uv[2].x-uv[0].x,vy=(double)uv[2].y-uv[0].y;
+            determinant=ux*vy-uy*vx;
+            if(!double.IsFinite(determinant)||determinant==0)
+                throw new InvalidOperationException("Independent UV axes require a nonsingular final tangent basis.");
+            return (Vector3)(((D3)p[1]-p[0])*(vy/determinant)-((D3)p[2]-p[0])*(uy/determinant));
+        }
+        var oldDirection=frame.Rotate(Derivative(source,sourceUv,out var oldDet));
+        var newDirection=Derivative(target,targetUv,out var newDet);
+        oldDirection=(oldDirection-normal*Vector3.Dot(normal,oldDirection)).normalized;
+        newDirection=(newDirection-normal*Vector3.Dot(normal,newDirection)).normalized;
+        if(oldDirection.sqrMagnitude==0||newDirection.sqrMagnitude==0)
+            throw new InvalidOperationException("Independent UV tangent is parallel to its native normal.");
+        float cosine=Vector3.Dot(oldDirection,newDirection);
+        float sine=Vector3.Dot(normal,Vector3.Cross(oldDirection,newDirection));
+        var result=(tangent*cosine+Vector3.Cross(normal,tangent)*sine+
+            normal*Vector3.Dot(normal,tangent)*(1-cosine)).normalized;
+        return new Vector4(result.x,result.y,result.z,oldDet*newDet<0?-handedness:handedness);
+    }
+
     // Unit coordinates of the source physical triangle, evaluated in the target
     // orthonormal frame. No UV inverse is needed: rank-one source UVs remain valid.
     internal Vector2 TriangleUnit(Vector3 target)

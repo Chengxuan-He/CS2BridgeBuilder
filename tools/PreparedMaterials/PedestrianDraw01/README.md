@@ -1,5 +1,45 @@
 # PedestrianDraw01 source-level material preparation
 
+## Current continuous mapping candidate
+
+Production `PedestrianDraw01RoadPreparation` now binds three offline half-width
+units through `PedestrianDraw01PreparedRoadMapping` for near/middle LODs. The
+original x=0 and physical appearance boundaries remain; no longitudinal period
+cuts are generated. Each unit uses finite U with the producer's reported content
+guard and continuous repeat V. The measured native tangent is explicitly retained.
+Far LOD keeps its eight original finite charts and original Surface.
+
+The candidate is packaged for integration testing, not deployment or acceptance.
+`continuous-v5` contains the stable producer manifest, native resources and full
+99-row GPU filtering results. Maximum channel error is 0.136126 and maximum
+normal difference is 16.716 degrees. A private pre-BC7 export still measures
+0.135363 and 16.560 degrees, respectively: reconstruction/filtering is the main
+unresolved issue, not simply BC7 compression. No tolerance was relaxed.
+
+The isolated continuous consumer ran 54 cases through the actual common
+`TryBind` and `Compose`: 1,368 triangles total, 22¨C24 per near/middle fixture,
+30 per far fixture, no reversed or zero-area faces, preserved receiver attributes
+and no extra composition cuts. The initial mapping was fixture-supplied. A subsequent 54-case replay against
+DLL `3186193D1D06E8ABE8A712A4AF6E6A2635056701945F4875EE556C69B034EA39`
+consumed the production mapping class, embedded BBN and installed asset keys.
+It passed actual TryBind/Compose and native Unity mesh upload/readback; complete
+Prepare sample extraction/type classification and the persisted geometry writer
+remain outside that fixture. See `continuous-v5/production05.json`. Game-world type dispatch,
+motion and independent saved-owner cold loading remain unverified.
+
+The three-unit native graph is 9,180,961 bytes. That is not the complete generated
+owner graph or official package measurement. The previous 56-cell native-atlas
+implementation and its candidate-06/07 reports are retained as historical evidence
+under `artifacts/material-remap/PedestrianDraw01`; they are no longer production
+code because pure period cuts are forbidden by the current contract.
+
+Fixed source UV has additional quantized non-affine interpolation: the existing
+canonical-unit approximation has not eliminated the previously measured maximum
+1.39453125 U and 0.34448242 V source-texel residual. Exact-gradient and half-value
+feasibility audits are retained separately; they do not justify receiver cuts or
+claim pixel equivalence. `AuditPathwayLayers.py` establishes Pathway support for
+the exact measured input Surface, not arbitrary pathway materials.
+
 ## Fresh source input and current rebuild
 
 Use `PrepareSourceInputs.py` to prepare a new private authoring directory directly
@@ -214,7 +254,7 @@ native rendering. Old per-triangle reflection is not an authored requirement.
 Merely binding the original atlas with an unchecked affine map is insufficient.
 Public sampler/loader/baker changes
 belong to the coordinator; this style's inventory is ready for that interface.
-Do not remove existing resources, alias unequal CIDs or report the 50 MB package
+Do not remove existing resources, alias unequal CIDs or report the 55 MB package
 gate passed before the replacement path and full package have been verified.
 
 `ExportSharedSampling.py` also produces `native-bindings.json`, an executable
@@ -411,6 +451,7 @@ bytes; the full generated-bridge material dependency size and complete generatio
 coverage are not established by this inventory. No formal resource is identified
 as unreferenced by this check, and none is deleted. No UI text or localization
 behavior changes.
+
 ## Current continuation evidence
 
 The current durable material handoff is

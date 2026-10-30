@@ -33,6 +33,7 @@ Next investigation must establish a native representation that supplies both mov
 ## Scope and validation
 
 No runtime code changed in this audit. No build, shutdown, deployment or bridge deletion was needed. Existing movable implementation remains unfinished; human visual, traffic and cold-start acceptance has not occurred.
+
 ## ObjectSubLanes do not inherit animated curve updates
 
 Further native source inspection shows CreateObjectLane constructs world-space Bezier points

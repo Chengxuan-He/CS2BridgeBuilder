@@ -128,6 +128,12 @@ ImportedData/<bridgeUUID>/Dependencies/<CID>.<original extension>
 ImportedData/<bridgeUUID>/Dependencies/<CID>.<original extension>.cid
 ```
 
+For native `.MidMips` only, retain the tag-bearing original `TS*_MB*.MidMips` basename
+under `Dependencies/<CID>/`, with the unchanged payload and original CID sidecar. The native
+cache records implicit Surface dependencies through primary and duplicate Surface CID memberships;
+traverse these alongside serialized references. Current-owner caches remain discoverable without
+the installed prepared-material map; other owners' files are never dependency sources.
+
 Prefab references are extracted from UTF-8 and UTF-16 serialized text views. Native `.Surface`
 and `.Material` resources use `BridgeSurfaceReferences`, which reads binary texture references,
 virtual-texture headers and the native Hash128 representation without loading or rewriting a
@@ -194,14 +200,20 @@ There is no blanket requirement to create new material, texture, marking or anim
 
 ### Native material resources
 
-Follow the [material generation contract](agent-contract/MATERIAL_GENERATION_CONTRACT.md). Fully compatible
-original materials remain direct references without new descriptors or texture payloads. Required
-native object-template conversions preserve source appearance and dependencies; constant derived
-materials are prepared offline and packaged per style. Runtime generation only copies and binds
-those finished resources. Repeatable units retain original per-axis texel density and pattern
-scale; never bake them into full-span images. Genuinely variable, nonperiodic content may use
-bounded native composition without reducing density. Do not modify original assets or introduce
-custom runtime shaders. Preserve independent per-owner external dependency snapshots.
+Follow the [material generation contract](agent-contract/MATERIAL_GENERATION_CONTRACT.md).
+Movable non-road materials retain original identities and dependencies. Only prototype-supported
+road appearance types enter composition/precomposition (offline material baking outside the game); all other road types retain original
+materials. Asphalt, sidewalks and wheel-track/rut effects are independent support decisions.
+The [general source-mapping rule](agent-contract/BRIDGE_GENERATION_CONTRACT.md#preserve-original-uv-projection-and-mapping-mode)
+applies to fixed and movable bridges alike. Persist the required mapping and dependencies;
+ownership copies do not justify replacement materials or texture baking.
+
+Known eligible road compositions are prepared offline. Bounded runtime exceptions do not widen
+the supported-type gate or authorize full-road rasterization. Custom shaders and manager-dependent
+rebinding remain prohibited. Preserve complete texture/VT/mip dependencies and unchanged source bytes.
+Only native MidMips sources may share `Materials/Shared/MidMips/<cacheCID>/` across styles.
+Each owner independently snapshots its required cache dependencies with original CIDs and native
+filenames. The owner material limit is 10,000,000 bytes; the complete SDK ZIP limit is 55,000,000 bytes.
 
 ### Resource decision procedure
 
@@ -292,7 +304,8 @@ assets. Keep each Prefab/geometry/texture independently identified by its CID. D
 - Flattening or UUID removal can produce a filename collision. Reuse only byte-identical
   payload/CID pairs; otherwise report the conflict without overwriting or inventing a suffix.
   Unknown types are handled under section 7.
-- Dependency snapshots keep their CID-based filenames and original contents. Never apply owned-file
+- Dependency snapshots keep their CID-based filenames and original contents; native `.MidMips`
+  keeps its original tag-bearing basename inside a CID subdirectory as specified above. Never apply owned-file
   renaming or type-category routing inside `Dependencies`. Built-in assets remain references.
 
 Example (sidecars follow the same mapping):
@@ -359,7 +372,7 @@ Apply rules in this order:
 | 6 | Owned `.loc` (native) or legacy `.Locale` | `<UUID>/Locales/<short name>.<original extension>` |
 | 7 | `.cid` sidecar | Follow its corresponding payload; never map it independently |
 | 8 | Owned `.VTSurface`, `.VTTexture`, including old `StreamingData~/VT/` files | `<UUID>/Appearance/VT/<short name>.<extension>` |
-| 9 | Owned `.MidMips`, including old `BridgeBuilder/<UUID> Road Surface/` caches | `<UUID>/Appearance/MidMips/<original filename>` |
+| 9 | Owned `.MidMips`, including old flat or `BridgeBuilder/<UUID> Road Surface/` caches | `<UUID>/Appearance/MidMips/<unchanged cache CID>/<original filename>`; preserve the native tag basename and payload/CID pair, with backed-up migration and conflict protection |
 | 10 | Unrecognized types | Retain in place for explicit review; never delete unknown payloads |
 
 `<short name>` follows section 6's owner-UUID removal rule. Resolve ownership using existing approved

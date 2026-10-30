@@ -185,6 +185,11 @@ and code; sub-agents must not communicate directly with one another. Requests to
 shared bridge logic, code or resources must go to the main agent, rather than being edited
 directly or coordinated with another sub-agent. A separate shared-logic sub-agent implements
 shared changes, integration and common verification under the main agent's direction.
+Prioritize reusing already-created sub-agents to reduce context overhead. Shared work resumes
+the existing shared-logic sub-agent; work on a bridge resumes the existing sub-agent assigned
+to that same bridge. Completion of a previous assignment does not require a replacement agent.
+Create a new sub-agent only when no suitable existing agent is available, and do not reassign
+another bridge's agent merely because it is idle.
 The main agent only manages sub-agents: task assignment, request routing, progress tracking
 and result coordination; it does not implement shared or bridge-specific changes itself.
 The shared-logic sub-agent reports every shared change, affected interface, behavior and

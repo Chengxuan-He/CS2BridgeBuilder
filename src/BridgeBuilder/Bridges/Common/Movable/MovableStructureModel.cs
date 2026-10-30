@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Colossal.AssetPipeline.Importers;
+using Colossal.IO.AssetDatabase;
 using Unity.Collections;
 using Unity.Mathematics;
 using UnityEngine;
@@ -44,6 +45,28 @@ internal static class MovableStructureModel
         { Slot = slot; Triangle = triangle; Indices = (int[])indices.Clone(); }
     }
 
+    // Final UVs address one finished offline unit. Domain membership and connected
+    // phase are measured by the style; this record adds no vertices or triangles.
+    internal sealed class PreparedDomain
+    {
+        internal readonly int Domain;
+        internal readonly SurfaceAsset Surface;
+        internal readonly IReadOnlyDictionary<int, Vector2> Uvs;
+        internal PreparedDomain(int domain, SurfaceAsset surface, KeyValuePair<int, Vector2>[] uvs)
+        {
+            if (domain < 0 || surface == null) throw new ArgumentException("Invalid prepared structural domain.");
+            Domain = domain; Surface = surface;
+            var values = new Dictionary<int, Vector2>();
+            foreach (var pair in uvs)
+            {
+                if (pair.Key < 0 || !float.IsFinite(pair.Value.x) || !float.IsFinite(pair.Value.y))
+                    throw new ArgumentException("Invalid prepared structural UV.");
+                values.Add(pair.Key, pair.Value);
+            }
+            Uvs = values;
+        }
+    }
+
     internal sealed class Plan
     {
         internal readonly Vector3[] SourcePositions, Positions;
@@ -53,6 +76,7 @@ internal static class MovableStructureModel
         internal readonly TriangleVertex[] InteriorVertices;
         internal readonly Fragment[] Fragments;
         internal readonly KeyValuePair<int, Vector2>[] UvCorrections;
+        internal readonly PreparedDomain[] PreparedDomains;
         // Only measured LOD reconstruction opts in; ordinary width plans preserve Y/Z.
         internal readonly bool ReconstructsAuthoredPositions;
         internal int ConstructedCount => AddedVertices.Length + InteriorVertices.Length;
@@ -67,8 +91,12 @@ internal static class MovableStructureModel
         internal Plan(Vector3[] sourcePositions, Vector3[] positions, int[][] sourceIndices,
             bool[][] removeTriangles, EdgeVertex[]? addedVertices = null, Fragment[]? fragments = null,
             TriangleVertex[]? interiorVertices = null, float[]? constructedX = null,
-            bool reconstructsAuthoredPositions = false, KeyValuePair<int, Vector2>[]? uvCorrections = null)
+            bool reconstructsAuthoredPositions = false, KeyValuePair<int, Vector2>[]? uvCorrections = null,
+            PreparedDomain[]? preparedDomains = null)
         {
+            PreparedDomains = preparedDomains == null ? Array.Empty<PreparedDomain>() : (PreparedDomain[])preparedDomains.Clone();
+            if (PreparedDomains.Select(d => d.Domain).Distinct().Count() != PreparedDomains.Length)
+                throw new ArgumentException("Duplicate prepared structural domain.");
             UvCorrections = uvCorrections == null ? Array.Empty<KeyValuePair<int, Vector2>>() : (KeyValuePair<int, Vector2>[])uvCorrections.Clone();
             foreach (var correction in UvCorrections)
                 if (correction.Key < 0 || correction.Key >= sourcePositions.Length ||
@@ -298,7 +326,7 @@ internal static class MovableStructureModel
                         if (attribute.dimension < 2 || (attribute.format != VertexAttributeFormat.Float32 && attribute.format != VertexAttributeFormat.Float16))
                             throw new InvalidOperationException("Measured UV correction requires a floating-point UV0 channel.");
                         var width = Size(attribute.format);
-                        foreach (var correction in plan.UvCorrections)
+                        foreach (var correction in plan.UvCorrections.Where(c => c.Key < positions.Length))
                             for (var axis = 0; axis < 2; axis++)
                             {
                                 var value = axis == 0 ? correction.Value.x : correction.Value.y;
@@ -311,6 +339,10 @@ internal static class MovableStructureModel
                         var vertex = plan.Construction(i);
                         var a = vertex.A * size; var b = vertex.B * size; var c = vertex.C * size;
                         var destination = (positions.Length + i) * size;
+                        if (vertex.WeightB == 0f && vertex.WeightC == 0f)
+                        { Buffer.BlockCopy(bytes, a, bytes, destination, size); continue; }
+                        if (vertex.WeightB == 1f && vertex.WeightC == 0f)
+                        { Buffer.BlockCopy(bytes, b, bytes, destination, size); continue; }
                         var identical = true;
                         for (var k = 0; k < size; k++)
                             identical &= bytes[a + k] == bytes[b + k] && bytes[a + k] == bytes[c + k];
@@ -344,6 +376,20 @@ internal static class MovableStructureModel
                         }
                     }
                 }
+                // Seam twins share interpolated raw attributes, but have independent UV0.
+                if (attribute.attribute == VertexAttribute.TexCoord0)
+                    foreach (var correction in plan.UvCorrections.Where(c => c.Key >= positions.Length))
+                    {
+                        if (attribute.dimension < 2 || attribute.format is not (VertexAttributeFormat.Float32 or VertexAttributeFormat.Float16))
+                            throw new InvalidOperationException("Lift05 seam UV requires floating-point UV0.");
+                        int width = Size(attribute.format);
+                        for (int axis = 0; axis < 2; axis++)
+                        {
+                            float value = correction.Value[axis];
+                            var encoded = width == 4 ? BitConverter.GetBytes(value) : BitConverter.GetBytes(new half(value).value);
+                            Buffer.BlockCopy(encoded, 0, bytes, correction.Key * size + axis * width, width);
+                        }
+                    }
                 if (attribute.attribute == VertexAttribute.BlendIndices)
                     for (var i = 0; i < outputCount; i++)
                         if (BitConverter.ToUInt32(bytes, i * 4) >= boneCount)

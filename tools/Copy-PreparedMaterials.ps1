@@ -33,6 +33,12 @@ foreach ($payload in $payloads) {
         [IO.File]::ReadAllText($cid).Trim() -notmatch '^[a-fA-F0-9]{32}$') {
         throw "Prepared native payload requires its original CID sidecar: $relative"
     }
+    if ($relative -match '^Shared[\\/]') {
+        if ($relative -notmatch '^Shared[\\/]MidMips[\\/]([a-f0-9]{32})[\\/]TS[0-9]+_MB[0-9]+\.MidMips$' -or
+            [IO.File]::ReadAllText($cid).Trim() -ne $Matches[1]) {
+            throw "Only CID-scoped native MidMips are permitted in the common material root: $relative"
+        }
+    }
     $copies.Add([pscustomobject]@{ Source = $payload.FullName; Relative = $relative })
     $copies.Add([pscustomobject]@{ Source = $cid; Relative = $relative + '.cid' })
 }

@@ -338,7 +338,7 @@ groupshared uint NonAsphalt;
 }
 int ReplaceRoad, RoadBandCount, RoadBandRows;
 StructuredBuffer<float4> AsphaltTriangles;
-int AsphaltWrapU, AsphaltWrapV;
+int AsphaltWrapU, AsphaltWrapV, AsphaltAnisotropy;
 int addressAsphalt(int p,int size,int mode) {
  if(mode==1)return clamp(p,0,size-1);
  if(mode==3)return clamp(p<0?-1-p:p,0,size-1);
@@ -349,11 +349,12 @@ int addressAsphalt(int p,int size,int mode) {
 // box against the actual UV triangle, not the empty corners of its bounds.
 bool asphaltFootprint(float2 a,float2 b,float2 c,float2 centre) {
  a-=centre;b-=centre;c-=centre;
- if(any(min(a,min(b,c))>1) || any(max(a,max(b,c))<-1))return false;
+ float filterRadius=max(1,AsphaltAnisotropy);
+ if(any(min(a,min(b,c))>filterRadius) || any(max(a,max(b,c))<-filterRadius))return false;
  float2 edges[3]={b-a,c-b,a-c};
  [unroll]for(int e=0;e<3;e++) {
   float2 n=float2(-edges[e].y,edges[e].x);
-  float radius=abs(n.x)+abs(n.y);
+  float radius=(abs(n.x)+abs(n.y))*filterRadius;
   float3 projection=float3(dot(a,n),dot(b,n),dot(c,n));
   if(min(projection.x,min(projection.y,projection.z))>radius ||
      max(projection.x,max(projection.y,projection.z))<-radius)return false;
@@ -363,13 +364,18 @@ bool asphaltFootprint(float2 a,float2 b,float2 c,float2 centre) {
 [numthreads(64,1,1)] void ClassifyAsphaltTriangles(uint3 group:SV_GroupID,uint lane:SV_GroupIndex) {
  if(lane==0)NonAsphalt=0;
  GroupMemoryBarrierWithGroupSync();
- uint w,h;_MaskMap.GetDimensions(w,h);
+ uint w,h,mips;_MaskMap.GetDimensions(0,w,h,mips);
+ // Purity must hold in every authored mip, not only in the mip-zero centre.
+ // Conservative anisotropic guards may reject a replacement, never erase a layer.
+ for(uint mip=0;mip<mips;mip++) {
+ _MaskMap.GetDimensions(mip,w,h,mips);
  float2 dimensions=float2(w,h);
  float2 a=AsphaltTriangles[group.x*3].xy*dimensions;
  float2 b=AsphaltTriangles[group.x*3+1].xy*dimensions;
  float2 c=AsphaltTriangles[group.x*3+2].xy*dimensions;
- int2 first=int2(floor(min(a,min(b,c))-.5));
- int2 last=int2(ceil(max(a,max(b,c))-.5));
+ float filterRadius=max(1,AsphaltAnisotropy);
+ int2 first=int2(floor(min(a,min(b,c))-.5-filterRadius));
+ int2 last=int2(ceil(max(a,max(b,c))-.5+filterRadius));
  // Excessive repeated UV ranges use a conservative whole-texture test instead
  // of an unbounded dispatch. This can reject a tile, never erase a mixed layer.
  bool whole=any(last-first>int2(w,h)*4);
@@ -379,7 +385,8 @@ bool asphaltFootprint(float2 a,float2 b,float2 c,float2 centre) {
   int2 p=first+int2(i%extent.x,i/extent.x);
   if(!whole && !asphaltFootprint(a,b,c,float2(p)+.5))continue;
   int2 sample=int2(addressAsphalt(p.x,w,AsphaltWrapU),addressAsphalt(p.y,h,AsphaltWrapV));
-  if(_MaskMap.Load(int3(sample,0)).b<1.0)InterlockedOr(NonAsphalt,1);
+  if(_MaskMap.Load(int3(sample,mip)).b<1.0)InterlockedOr(NonAsphalt,1);
+ }
  }
  GroupMemoryBarrierWithGroupSync();
  if(lane==0)AsphaltOnly[group.x]=1-NonAsphalt;

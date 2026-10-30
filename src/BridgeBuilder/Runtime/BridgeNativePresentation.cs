@@ -18,6 +18,7 @@ internal static class BridgeNativePresentation
         {
             var pending = new Stack<string>();
             ILookup<string, AssetData>? alternatives = null;
+            BridgeDependencyPersistence.MidMipIndex? midMips = null;
             foreach (var root in roots)
             {
                 if (root.asset == null || !BridgeAssetInfo.MatchesOwner(root.asset.path, owner))
@@ -29,7 +30,7 @@ internal static class BridgeNativePresentation
             {
                 var id = pending.Pop();
                 if (!visited.Add(id)) continue;
-                var source = BridgeDependencyPersistence.Resolve(id, owner, ref alternatives);
+                var source = BridgeDependencyPersistence.Resolve(id, owner, ref alternatives, ref midMips);
                 if (source == null) { error = "Saved dependency missing or disallowed: " + id; return false; }
                 if (source.Builtin) continue;
                 var extension = source.Extension;

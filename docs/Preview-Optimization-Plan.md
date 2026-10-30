@@ -45,12 +45,15 @@ nonfinite inputs and transparent masks. One local Release CPU run measured 75.1 
 
 ## Remaining variable-material work
 
-Only genuinely variable nonperiodic content may need generation-time native composition. The
-following optimizations apply to that work, not to constant resources that must already be prepared:
+Only prototype-supported road appearance types enter composition/precomposition (offline material baking outside the game). Unsupported
+road types and non-road structure retain original materials. Within that supported-type route,
+only genuinely variable local content or the permitted unknown input can require runtime pixel
+work. The following optimizations do not permit full-road rasterization, even across many pages:
 
 1. Reuse unchanged native materials directly. Bind prepared constant resources without texture work.
 2. Keep repeatable bases separate from variable content. Do not bake repetition across a bridge.
-3. Bound necessary nonperiodic pages without downsampling. Crop unused allocation while preserving
+3. Bound necessary local content by its actual extent, never the whole road or receiver length.
+   Cropping unused allocation is not a remedy for prohibited full-span baking. Preserve
    chart positions, padding, density and final UV normalization at every LOD. Preserve the native
    VT tile/mip constraints of the actual format; a page-size target cannot override source quality.
 4. For newly produced temporary preview intermediates only, native TextureAsset.Save(compress:false)

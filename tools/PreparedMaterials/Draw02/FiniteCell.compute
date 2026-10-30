@@ -1,0 +1,44 @@
+#pragma kernel Extract
+Texture2D<float4> Source;
+SamplerState sampler_Source;
+RWTexture2D<float4> Result;
+StructuredBuffer<float4> Triangles;
+int TriangleCount,SourceMip,EncodeSrgb,PaintRepair,AtlasOnly;
+int2 Extent;
+RWStructuredBuffer<uint> Modified;
+int Track;
+float4 Physical;
+float4 PaintRectA,PaintRectB;
+float2 DonorU;
+float3 Srgb(float3 c) { return lerp(12.92*c,1.055*pow(max(c,0),1.0/2.4)-0.055,step(0.0031308,c)); }
+[numthreads(8,8,1)] void Extract(uint3 id:SV_DispatchThreadID)
+{
+    if(any(id.xy>=Extent))return;
+    float2 uv=(id.xy+.5)/Extent;
+    if(AtlasOnly==0)
+    {
+        float2 q=float2(saturate(2*uv.x-.5),uv.y);
+        float2 p=Physical.xy+q*Physical.zw;
+        bool found=false;
+        for(int i=0;i<TriangleCount;i++)
+        {
+            float4 a=Triangles[i*3],b=Triangles[i*3+1],c=Triangles[i*3+2];
+            float2 e=b.xy-a.xy,f=c.xy-a.xy,v=p-a.xy;
+            float det=e.x*f.y-e.y*f.x;
+            float s=(v.x*f.y-v.y*f.x)/det,t=(e.x*v.y-e.y*v.x)/det;
+            if(s>=-1e-6 && t>=-1e-6 && s+t<=1.000001)
+            {uv=a.zw+s*(b.zw-a.zw)+t*(c.zw-a.zw);found=true;}
+        }
+        if(!found){Result[id.xy]=float4(1,0,1,1);return;}
+    }
+    bool repaired=false;
+    if(PaintRepair!=0)
+    {
+        if(all(uv>=PaintRectA.xy)&&all(uv<=PaintRectA.zw)){uv.x=DonorU.x;repaired=true;}
+        if(all(uv>=PaintRectB.xy)&&all(uv<=PaintRectB.zw)){uv.x=DonorU.y;repaired=true;}
+    }
+    if(Track!=0)Modified[id.y*Extent.x+id.x]=repaired?1:0;
+    float4 value=Source.SampleLevel(sampler_Source,uv,SourceMip);
+    if(EncodeSrgb!=0)value.rgb=Srgb(value.rgb);
+    Result[id.xy]=value;
+}

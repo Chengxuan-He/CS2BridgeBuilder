@@ -1,0 +1,30 @@
+#pragma kernel Compare
+Texture2D<float4> Source;
+Texture2D<float4> Derived;
+Texture2D<float4> SourceColor;
+Texture2D<float4> DerivedColor;
+SamplerState sampler_Source;
+SamplerState sampler_Derived;
+RWStructuredBuffer<float4> Errors;
+float4 SourceBounds, ContentBounds;
+float Lod, Anisotropy;
+int Count, IsNormal;
+float3 Decode(float4 c) {
+    float2 xy=float2(c.r*c.a,c.g)*2-1;
+    return normalize(float3(xy,sqrt(1-saturate(dot(xy,xy)))));
+}
+[numthreads(8,8,1)] void Compare(uint3 id:SV_DispatchThreadID) {
+    if(any(id.xy>=Count))return;
+    float2 q=float2(id.xy)/(Count-1);
+    float2 ss=SourceBounds.zw-SourceBounds.xy, cs=ContentBounds.zw-ContentBounds.xy;
+    float2 src=SourceBounds.xy+q*ss, dst=ContentBounds.xy+q*cs;
+    float2 dx=float2(exp2(Lod)/4096,0),dy=float2(0,exp2(Lod)/4096/Anisotropy);
+    float4 a=Source.SampleGrad(sampler_Source,src,dx,dy);
+    float4 b=Derived.SampleGrad(sampler_Derived,dst,dx/ss*cs,dy/ss*cs);
+    float4 d=abs(a-b);
+    float n=IsNormal!=0?length(Decode(a)-Decode(b)):0;
+    float sa=SourceColor.SampleGrad(sampler_Source,src,dx,dy).a;
+    float da=DerivedColor.SampleGrad(sampler_Derived,dst,dx/ss*cs,dy/ss*cs).a;
+    Errors[id.y*Count+id.x]=float4(max(max(d.r,d.g),d.b),d.a,n,
+        IsNormal!=0?(sa>=.5&&da>=.5?n:0):((a.a>=.5)!=(b.a>=.5)?1:0));
+}

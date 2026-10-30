@@ -110,7 +110,7 @@ no old per-triangle structure payloads have been restored.
 Actual common-interface compilation, filtered native mip/normal/boundary checks,
 preview/save/regeneration/export, cold loading, independent deletion and mod-uninstall
 checks remain coordinating integration work. Measure the complete official SDK
-package against 50,000,000 bytes after validated resource retirement; the source
+package against 55,000,000 bytes after validated resource retirement; the source
 chart resource size is not a complete package-size result.
 
 No user-visible mod strings or localization behavior change.

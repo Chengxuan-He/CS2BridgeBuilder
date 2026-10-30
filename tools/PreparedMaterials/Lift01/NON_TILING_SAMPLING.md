@@ -47,8 +47,12 @@ The signed-V instructions multiply nonnegative V by evaluated network length;
 negative V uses its fractional part. All three Lift01 network streams have
 strictly positive authored V. Their 65,019 / 20,578 / 892 domains therefore remain
 false. Original texture scale/offset alone does not bypass this vertex mapping.
-The existing native network-to-object descriptor conversion remains required;
-its worldspace-layer equivalence is not established by a retention flag.
+These source flags remain false: a network rate is not finite object UV retention.
+The fixed approach graph instead retains its native network context and Surface,
+as described in [native network sampling](NATIVE_NETWORK_SAMPLING.md). Its renderer
+still evaluates longitudinal distance and phase; generic Retile must not reinterpret
+the encoded V as an atlas coordinate. The object-only descriptor route remains
+separate, and its worldspace-layer equivalence is not established by a retention flag.
 
 The 33,292 domains referencing conservative chart fragments still have exact
 authored source triangles and physical-part membership. Their polygon-union

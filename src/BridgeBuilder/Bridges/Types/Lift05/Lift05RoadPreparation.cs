@@ -8,7 +8,8 @@ internal static class Lift05RoadPreparation
     {
         var layout = new MovableSelectedRoadLayout(sample.Road, sample.RoadToObject, "Lift05");
         var appearance = Lift05RoadAppearance.Regions(sample.RoadToObject);
-        return MovableRoadPreparation.Prepare(sample, nativeLevels, halfWidthDelta, closedWorld, material, Lift05RoadPartitions.Carriageway, Lift05RoadPartitions.Carriageway, appearance, appearance, Lift05RoadAppearance.Patches(sample.RoadToObject), Numeric_Types_Lift05_Lift05RoadPreparation_cs.Values.I32[0], layout);
+        return MovableRoadPreparation.Prepare(sample, nativeLevels, halfWidthDelta, closedWorld, material, Lift05RoadPartitions.Carriageway, Lift05RoadPartitions.Carriageway, appearance, appearance, Lift05RoadAppearance.Patches(sample.RoadToObject), Numeric_Types_Lift05_Lift05RoadPreparation_cs.Values.I32[0], layout,
+            appearanceForLod: lod => Lift05NativeRoadAppearance.ForLod(lod, nativeLevels[lod], sample.RoadToObject, halfWidthDelta));
     }
 }
 

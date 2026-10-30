@@ -1,74 +1,76 @@
-# Draw02 prepared repeating road materials
+# Draw02 material authoring and verification
 
-`ExportRecipes.py` reads the actual Draw02 BBN1 array, the measured native prefab
-audit and original game Surface bytes. It writes four distinct pixel recipes and
-five descriptors using `BridgeBuilder/RoadRepeat/1`. No new runtime numerical
-constants, geometry, material slots or language strings are introduced.
+## Current production route
 
-The moving carriageway uses the original three transverse bands and exact binary32
-division. Its opaque and cutout descriptors must reference identical textures.
-The opaque descriptor is required by homogeneous selected-road asphalt promotion;
-ordinary prototype-patch routing uses the cutout descriptor. Moving sidewalk,
-fixed road and fixed sidewalk use three further cutout units. The four measured
-projections have sixteen half/side aliases; receiver orientation and size do not
-change a prepared unit's pixels.
+`Draw02RoadSampling` starts with an unsupported (`None`) domain, then supplies measured
+per-LOD moving carriageway, fixed carriageway and sidewalk appearance levels. Far LOD
+uses its own measured finite mapping. Unsupported input types preserve their original
+material. Physical motion partitions remain separate from appearance partitions.
 
-`VerifyRecipes.py` compares both physical UV axes with eleven identified native
-DrawBridge02 faces. The maximum relative two-dimensional texel metric discrepancy
-is 0.000080217764, from the source's half-precision strip coordinate asymmetry.
-The check records that discrepancy and does not modify it. It also checks the
-actual Draw02 sampling route through the shared composer and recipe-key parity.
-This source check is not verification of output texture pixels or game appearance.
+Finite cap/ramp and other fully reusable domains bind their original Surface and atlas
+UVs. Evidenced repeating domains use offline prepared materials with continuous UVs;
+no new texture-period seams or complete-span texture baking is performed. Three existing
+raw units serve moving carriageway, moving sidewalk and fixed sidewalk. One painted
+fixed-carriageway unit is shared between finite short terminals and the complete 4 m
+repeating domain, with different per-use V sampling. U stays finite.
 
-## Authoring and verification
+## Offline preparation
 
-Run the exporter with repository, game-data directory, native audit, structural
-source inventory and output JSON paths. Run the verifier with repository, native
-mesh NPZ, that inventory and report paths. Use the shared `tools/Prepare-Repeats.ps1`
-with an independent Unity project, output, log and writable product store.
+Use only the assigned Draw02 private Unity project, baker, writable caches, output and
+log directories. Never run two Unity processes against that project concurrently.
 
-The authored output root contains `Draw02/Repeat/<key>/Repeat.Surface` and its
-dependencies. Validate it with the native Repeat reader before copying files into
-`assets/Materials/Draw02/`. Do not publish an empty Repeat directory. Preserve
-existing Paint, Cable, Lane and Road payloads.
+- `ExtractFixedCarMapping.py` emits the 64 measured cap/ramp/short/repeat mappings and
+  their typed BBN data, preserving per-LOD source identities and native tangents.
+- `ExportFixedCarPaintRecipe.py` records exact source channels and all 13 source-mip
+  paint masks/donor rules. Control remains unchanged. This is local composition,
+  not recovery of an unknown original surface beneath painted pixels.
+- `BuildFixedCarPaintTrial.py` prepares paired unpainted/painted manifests for the
+  reviewed shared producer. `CheckFixedCarPaintTrial.py` verifies mask isolation and
+  unchanged Control using all output mip readbacks.
+- `StageFixedCarPaintCandidate.py` stages the one painted unit and helper BBN data.
+  `StageOfflineAtlasCandidate.py` stages the separate three raw units.
 
-Source evidence is stored in `artifacts/prepared-materials/Draw02/repeat-inventory.json`
-and `source-density.json`. Actual preparation and native-reader evidence are in
-`artifacts/agent-material-env/Draw02/reports/` and `logs/`. The isolated Unity
-2022.3.62f2 execution passed five Surface descriptors and sixteen native textures,
-including the shared opaque/cutout texture identities and all 8,670,272 decoded mip
-bytes uploaded unchanged. The four unit sizes are 312 by 828, 600 by 828, 604 by 752
-and 548 by 752 pixels, measured against 4096 by 4096 source channels. A second
-execution created zero products and reused all twenty-five requested products.
+The fixed unit preserves the complete original 4 m cycle with a cyclic phase shift;
+short finite sampling lies inside the same unit. Phase rearrangement and generated mips
+are not claimed to preserve all source texels or filtering exactly.
 
-The forty-two validated files in `assets/Materials/Draw02/Repeat/` and `Shared/`
-total 3,757,870 bytes, including identity sidecars. Every copied file was checked
-against its authored SHA256; no empty material directory remains. Existing
-Paint/Cable/Road/Lanes also passed the game's native readers: twenty-six lane
-descriptors and 22,369,632 uploaded mip bytes, recorded in
-`artifacts/prepared-materials/Draw02/existing-native.log`.
+## Verification and acceptance limits
 
-The isolated baker normalizes JsonUtility's empty representation of null bands
-before hashing and excludes the Surface descriptor digest from per-channel pixel
-keys, where decoded channel content already identifies the source. These changes
-belong to the coordinating agent's shared integration. `Prepare.ps1` expresses the
-shared-tool workflow; the isolated environment's `Run.ps1` records the tested copy.
-Neither wrapper publishes artifacts or touches another style's files.
+`SourceCoverageProbe.Editor.cs` exercises the frozen production mappers on all measured
+road source triangles, retaining the old fallback as a negative coverage detector.
+Candidate 12 passed 38,448 source-face uses without legacy/unsupported leakage.
+`FixedCarCandidateProbe.Editor.cs` exercises actual mapper binding, composition and native
+model upload for all four fixed-carriageway roles. Candidate 12 completed 576 cases.
+`AuditFixedCarQuantization.py <geometry-folder> 192` checks exact Float32 rounding cells,
+topology and an independently derived absolute area bound for that four-role matrix.
+The older two-role matrix uses 96. Historical relative-area diagnostics remain recorded.
 
-## Structural material preparation
+Reports live under `artifacts/material-remap/Draw02/`. Automated mapping, native upload
+and paint-isolation checks do not establish PBR/filtering quality, native registration,
+independent cold load, human motion/near/far acceptance or the complete owner/package budgets.
+Existing boundary and internal-mip quality counterexamples remain unresolved. These are
+reviewable development resources, not accepted release assets.
 
-The coordinating agent supplied fifteen missing structural units in the isolated
-Draw02 inventory. Their bake and native-reader checks passed. The resulting 130
-files total 3,319,929 bytes and are retained outside the disposable environment at
-`artifacts/prepared-materials/Draw02/structures/Structure/<key>/`. Each retained
-file matches its authored SHA256. They have not been published to the mod assets;
-the coordinating agent owns final integration and any shared payload consolidation.
+## Retired road aliases
 
-`structure-inventory.json`, `structure-bake.json`, `structure-bake.log` and
-`structure-native.log` beside that output preserve evidence. The native check read
-all fifteen structural descriptors and the existing twenty-six lane descriptors;
-37,057,616 total mip bytes uploaded unchanged. It did not create a game scene.
+The five old `RoadRepeat` band-composition aliases are unreachable from the current route.
+`Draw02RepeatUnits` deliberately returns no old alias. `RetireLegacyRoadAliases.py`
+checks measured source coverage and every surviving Draw02 Surface reverse reference
+before moving only unused originals. Eighteen files (792,348 bytes) were retained under
+`artifacts/retired/material-remap/Draw02/legacy-road-aliases/`; twelve texture payloads
+still referenced by structural Regions remain packaged. The retirement report lives
+outside that backup at `artifacts/material-remap/Draw02/legacy-alias-retirement.json`.
 
-The shared baker and runtime integration are maintained by the coordinating agent.
-Full bridge near/far, motion and cold-load human acceptance remain separate from
-these offline preparation and native format checks.
+`Prepare.ps1`, `ExportRecipes.py`, `IntegrateCompositeUnit.py` and
+`RestoreRepeatDescriptorSemantics.py` require an explicit legacy-evidence flag. They
+reproduce historical evidence only and must not restore retired production road bindings.
+Older delivery notes and recipe checks describe their original captured candidates,
+not the current generation route. `RepeatBindingsCheck` now verifies that all five
+historical sampler keys remain unmapped.
+
+## Structure and localization
+
+Structural Regions retain their independent bindings and shared texture dependencies.
+`IntegrateStructures.py` handles only the structural inventory. Do not remove a texture
+because a road alias was retired: its surviving CID consumers govern retention.
+No runtime UI strings or localization keys change in this material mapping work.

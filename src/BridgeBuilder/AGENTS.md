@@ -25,10 +25,31 @@ persistence.
 
 ## Performance and iteration
 
+The [general source-mapping rule](../../docs/agent-contract/BRIDGE_GENERATION_CONTRACT.md#preserve-original-uv-projection-and-mapping-mode) applies to **all fixed/non-movable and movable bridges**: preserve source projection and tiling/stretch mode per part, LOD, layer and axis.
+
+For movable bridges, reuse original non-road materials by default. Only evidenced repeating
+domains that would otherwise require new period-wrap seams may use the source-atlas offline
+derivation defined in the material contract section 3; do not add those seams. Road composition/precomposition (offline material baking outside the game) has
+one entry condition: the prototype supports the actual appearance type and that type must use
+prototype appearance. Test asphalt, sidewalk surfacing and wheel-track/rut effects independently
+per prototype and physical domain. Other road types retain their original input materials and
+bypass composition. Preserve each source's projection and tiling/stretch mode per part, LOD,
+layer and axis. This is a generation rule, not a reverse-engineering finding or proof that the
+current implementation complies. Road processing must not mutate a shared structural Surface.
+
 Apply the [material generation contract](../../docs/agent-contract/MATERIAL_GENERATION_CONTRACT.md)
-to every material path: full original-material reuse must create no new material;
-tile genuine repeats at source density; section 2 permits verified prototype non-tiling UVs
-to stretch with geometry while retaining source UVs, native textures and material identity.
+to every material path. Section 3 prohibits expanding any pattern across the complete road/span
+into texture pixels, including mixed and non-repeating appearances. Failed repeat detection,
+runtime composition exceptions and splitting the bake into pages or VT tiles do not authorize
+full-length rasterization. Decouple layer coordinates and periods while preserving authored
+channel alignment. Replace the universal 0.01-pixel phase cutoff with an evidenced per-layer
+tolerance under section 3; the new numeric value is pending validation.
+Full original-material reuse must create no new material;
+the general bridge source-mapping rule preserves the actual chosen appearance source's projection and tiling/stretch mode
+per part, LOD and axis. Tile evidenced repeats at source density; retain authored UVs for evidenced
+finite/stretch mappings, native textures and compatible identity. Selected-road appearance uses
+its own evidence, not another prototype's classification. Geometry UV resets differ from whole-texture
+wrap; changing width or failing a repeat test never authorizes switching mapping mode.
 Missing repeat evidence is not proof. Copy prepared constants without runtime rebaking. Keep their sources independent of
 generated bridge ownership and deletion. Section 4 permits bounded variable-content composition
 and necessary conversion of selected third-party road/track inputs unavailable before runtime,
@@ -39,7 +60,11 @@ source files are read-only and must be copied into independent bridge dependency
 Material directories exist only for actual payloads; do not require empty or placeholder-only folders.
 Variants may share byte-identical textures through their own style's `Shared/<CID>.Texture`
 directory. Preflight all dependencies before registration; do not resolve missing packaged
-resources through another style or a generated bridge.
+resources through another style or a generated bridge. The sole cross-style source exception is
+`Materials/Shared/MidMips/<cacheCID>/TS512_MB3.MidMips` plus its CID sidecar under material
+contract section 5. Preflight implicit native Surface memberships and matching mip levels;
+copy only required cache dependencies independently into each owner. This does not expand
+runtime baking permissions or the 10,000,000-byte owner material limit.
 
 Apply [CPU affine geometry execution](../../docs/agent-contract/BRIDGE_GENERATION_CONTRACT.md#cpu-affine-geometry-execution)
 through `AffineGeometry`: each XYZ axis may have independent width coefficients or remain
@@ -81,6 +106,13 @@ Keep unfinished native motion, near/far and cold-load checks explicit and contin
 
 ## Post-load self-check
 
+Follow [self-check result reporting](../../docs/agent-contract/BRIDGE_GENERATION_CONTRACT.md#self-check-result-summary): count each UUID once per run
+as migrated to the latest format, removed with complete backup, removed without complete backup,
+or unfinished. Show only nonzero categories with counts and one final restart reminder in a native
+dialog, localized in all twelve languages. Successful no-action runs stay silent, including manual
+checks. Reset reporting each run while retaining session stale-read protections; never invent an
+owner count for a global exception. Backup failure still falls through to deletion.
+
 Contract section 19 defines migration-first self-check and its backup/removal fallback. Wait for
 native loading, mod initialization, PDX caching and active asset batches; observe both current
 readiness and completion events so late mod loading is covered. Include cached user PrefabAssets
@@ -112,7 +144,7 @@ Follow bridge generation contract section 24: a generated movable bridge's total
 its dependencies, must be comparable to its original counterpart. Measure the complete graph,
 not only its root or textures; preserve required content and report unresolved measurements.
 Separately enforce material generation contract sections 2 and 5: at most 10,000,000 bytes for
-one generated owner's complete persisted material dependencies and 50,000,000 bytes for the
+one generated owner's complete persisted material dependencies and 55,000,000 bytes for the
 complete official SDK content ZIP. A style's prepared-directory size proves neither limit.
 
 ## Movable generation requirements
@@ -135,3 +167,15 @@ Follow Bridge-Asset-Persistence.md sections 6–7 for owner-local short filename
 placement and backed-up file-only migration. Legacy sibling dependency directories remain valid
 migration inputs. Layout conflicts preserve healthy bridges and report incomplete migration;
 they do not authorize damaged-asset retirement. Native cold-load acceptance remains separate.
+
+## Offline source-atlas repeat materials
+
+Follow [the source-atlas offline derivation rule](../../docs/agent-contract/MATERIAL_GENERATION_CONTRACT.md#offline-source-atlas-repeat-materials).
+Do not add road or structural cuts solely for texture-period wraps, including Lift05 profile parts.
+Bake eligible independent tiling materials outside the game only where needed to avoid such cuts;
+fully reusable domains remain original. Preserve existing native seams and necessary shape, motion
+and actual material-domain boundaries, source density, independent axes/layers and finite terminals.
+Keep source assets unchanged; derived assets have independent identities and complete native
+dependencies. Full PBR/filter/mip and independent-load validation, 10 MB owner / 55 MB package
+limits and the ban on full-span pixels remain mandatory. This does not certify feasibility or
+authorize general structural rebaking, arbitrary crops or relaxed error thresholds.

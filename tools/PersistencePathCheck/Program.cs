@@ -35,7 +35,7 @@ try {
         var source=Path.Combine(sandbox,"BridgeBuilder",name+".Surface");
         Directory.CreateDirectory(Path.GetDirectoryName(source)!);
         File.WriteAllBytes(source,new byte[]{2,4,6}); File.WriteAllText(source+".cid",name);
-        var a=new AssetData { database=db,id=Guid.NewGuid().ToString("N") };
+        var a=new AssetData { database=db,id=new Identifier(Guid.NewGuid().ToString("N")) };
         db.dataSource.Entries[a.id]=source; return a;
     }
     var asset=Make(owner+" Road Surface"); var id=asset.id; var old=asset.GetMeta().path;
@@ -55,6 +55,32 @@ try {
     try { BridgePrefabPersistence.RelocateGenerated(collision,owner,"Appearance"); throw new Exception("collision expected"); }
     catch(IOException) { }
     Check(File.Exists(collision.GetMeta().path)&&File.ReadAllBytes(final).SequenceEqual(new byte[]{2,4,6}),"generation collision never replaces existing file");
+    AssetData Cache(string cacheOwner, string cid, byte value)
+    {
+        var source=Path.Combine(sandbox,"ImportedData",cacheOwner,"Appearance","MidMips",Guid.NewGuid().ToString("N"),"TS512_MB3.MidMips");
+        Directory.CreateDirectory(Path.GetDirectoryName(source)!);
+        File.WriteAllBytes(source,new[]{value});File.WriteAllText(source+".cid",cid);
+        var result=new MidMipsAsset{database=db,id=new Identifier(cid)};
+        db.dataSource.Entries[result.id]=source;return result;
+    }
+    var cacheA=Cache(owner,new string('a',32),1);var cacheB=Cache(owner,new string('b',32),2);
+    foreach(var cache in new[]{cacheA,cacheB})BridgePrefabPersistence.RelocateGenerated(cache,owner,"Appearance/MidMips");
+    var cacheAPath=Path.Combine(sandbox,"ImportedData",owner,"Appearance","MidMips",new string('a',32),"TS512_MB3.MidMips");
+    var cacheBPath=Path.Combine(sandbox,"ImportedData",owner,"Appearance","MidMips",new string('b',32),"TS512_MB3.MidMips");
+    Check(cacheA.GetMeta().path==cacheAPath && cacheB.GetMeta().path==cacheBPath
+        && File.ReadAllBytes(cacheAPath).SequenceEqual(new byte[]{1}) && File.ReadAllBytes(cacheBPath).SequenceEqual(new byte[]{2})
+        && File.ReadAllText(cacheAPath+".cid")==new string('a',32),"same-tag caches retain separate identities, payloads and native names");
+    BridgePrefabPersistence.RelocateGenerated(cacheA,owner,"Appearance/MidMips");
+    Check(cacheA.GetMeta().path==cacheAPath,"cache relocation is idempotent");
+    var regenerated=Cache(owner,new string('c',32),3);
+    BridgePrefabPersistence.RelocateGenerated(regenerated,owner,"Appearance/MidMips");
+    Check(File.Exists(cacheAPath)&&File.Exists(cacheBPath)&&File.ReadAllBytes(regenerated.GetMeta().path)[0]==3,
+        "regenerated cache identity does not overwrite retained caches");
+    const string secondOwner="b66666666-7777-8888-9999-aaaaaaaaaaaa";
+    var separate=Cache(secondOwner,new string('d',32),4);
+    BridgePrefabPersistence.RelocateGenerated(separate,secondOwner,"Appearance/MidMips");
+    Check(separate.GetMeta().path.Contains(secondOwner)&&File.ReadAllBytes(cacheAPath)[0]==1,
+        "cache relocation stays inside selected owner");
 }
 finally { Directory.Delete(sandbox,true); }
 namespace Colossal.IO.AssetDatabase {
@@ -71,8 +97,10 @@ namespace Colossal.IO.AssetDatabase {
   public string subPath=>Path.GetDirectoryName(path)!;public string fileName=>Path.GetFileNameWithoutExtension(path);
   public DateTime creationTime,lastAccessTime,lastWriteTime;
  }
+ record Identifier(string guid);
+ class MidMipsAsset : AssetData {}
  class AssetData {
-  public FakeDatabase database=null!;public string id="";
+  public FakeDatabase database=null!;public Identifier id=new("");
   public string name=>Path.GetFileNameWithoutExtension(GetMeta().path);
   public Meta GetMeta()=>new(){path=database.dataSource.Entries[id]};
  }
@@ -81,15 +109,15 @@ namespace Colossal.IO.AssetDatabase {
   public FakeDatabase(string root){rootPath=root;dataSource=new(root);}
  }
  class Source {
-  readonly string root; public Dictionary<string,string> Entries=new();public bool FailNextAdd;
+  readonly string root; public Dictionary<Identifier,string> Entries=new();public bool FailNextAdd;
   public Source(string r){root=r;}
-  public void DeleteEntryFromDatabase(string id){var p=Entries[id];Entries.Remove(id);File.Delete(p);File.Delete(p+".cid");}
-  public bool Contains(string id)=>Entries.ContainsKey(id);
-  public string AddEntryFromDatabase(AssetDataPath p,Type t,string id) {
+  public void DeleteEntryFromDatabase(Identifier id){var p=Entries[id];Entries.Remove(id);File.Delete(p);File.Delete(p+".cid");}
+  public bool Contains(Identifier id)=>Entries.ContainsKey(id);
+  public Identifier AddEntryFromDatabase(AssetDataPath p,Type t,Identifier id) {
    if(FailNextAdd){FailNextAdd=false;throw new IOException("injected registration failure");}
-   Entries[id]=Path.GetFullPath(Path.Combine(root,p.ToPath(new()))+".Surface"); return id;
+   Entries[id]=Path.GetFullPath(Path.Combine(root,p.ToPath(new()))+(t==typeof(MidMipsAsset)?".MidMips":".Surface")); return id;
   }
-  public void SetTimestamp(string id,DateTime a,DateTime b,DateTime c){}
+  public void SetTimestamp(Identifier id,DateTime a,DateTime b,DateTime c){}
  }
  static class AssetDatabase { public static FakeDatabase user=new(Path.GetTempPath()); }
  static class PrefabAssetExtensions { public static void AddAsset(FakeDatabase d,AssetDataPath p,CS2Mods.Shared.Conversion.Target t){} }

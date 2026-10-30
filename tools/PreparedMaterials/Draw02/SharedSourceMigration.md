@@ -19,7 +19,7 @@ a supported native per-use sampler implementation.
 No production assets were changed or deleted. No source texels were rebaked,
 resampled into a new payload, encoded, or placed into a container of independent
 copies. New material/texture payload count: zero. Proven package saving: zero.
-The ten-style 50,000,000-byte official SDK ZIP gate remains a main-agent
+The ten-style 55,000,000-byte official SDK ZIP gate remains a main-agent
 measurement and has not been satisfied by this partial migration.
 
 ## Representative verification

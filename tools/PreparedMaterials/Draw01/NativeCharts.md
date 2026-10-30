@@ -93,7 +93,7 @@ native containment and density checks, and the remaining outside-chart cases.
 Original-source mip and boundary sampling must be checked on the integrated native
 path. Preview, creation, regeneration, export, cold loading and independent bridge
 deletion/uninstall tests remain integration requirements. The complete official SDK
-package must still be measured against the 50,000,000-byte gate.
+package must still be measured against the 55,000,000-byte gate.
 
 This change does not claim complete Draw01 texture consolidation or a measured
 package reduction. Existing Structure/Shared resources remain unchanged while

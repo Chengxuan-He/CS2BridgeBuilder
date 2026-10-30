@@ -107,6 +107,10 @@ internal static class MovableRoadAssets
         }
     }
 
+    internal static bool NativeNetworkGraph(IReadOnlyList<Level> levels)
+        =>levels.Count!=0 && levels[0]?.Source is NetPiecePrefab &&
+            levels.All(level=>level!=null && !level.HasRoad && level.Skeleton==null);
+
     // Levels contain the root first and every reachable native LOD exactly once. Output resources
     // stay in this call's rollback list until the entire graph succeeds; no partial LOD is published.
     internal static bool TryCreate(string owner, string name, string styleId, IReadOnlyList<Level> levels,
@@ -126,7 +130,8 @@ internal static class MovableRoadAssets
         var laneSlotStarts = new List<int>();
         var prefabs = new List<RenderPrefab>();
         var assets = new List<AssetData>();
-        var structureTiles = new MovableStructureTiles(styleId);
+        var nativeNetworkGraph = NativeNetworkGraph(levels);
+        var structureTiles = new MovableStructureTiles(styleId,nativeNetworkGraph);
         var success = false;
         // Validation is immutable during this graph build; no cross-owner cache.
         var validatedRoadSurfaces = new HashSet<SurfaceAsset>();
@@ -425,7 +430,10 @@ internal static class MovableRoadAssets
             return true;
         }
         catch (Exception exception)
-        { error = "Moving road asset construction failed: " + exception.Message; return false; }
+        {
+            Mod.Log.Error(exception, $"Moving road asset construction failed: style={styleId}; graph={name}; nativeNetwork={nativeNetworkGraph}.");
+            error = "Moving road asset construction failed: " + exception.Message; return false;
+        }
         finally
         {
             foreach (var model in models) model.Dispose();

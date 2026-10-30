@@ -1,0 +1,63 @@
+#pragma kernel Check
+Texture2D<float4> Source,Product,Unencoded;
+SamplerState sampler_Source,sampler_Product,sampler_Unencoded,sampler_linear_clamp;
+RWStructuredBuffer<float4> Results;
+float4 Region,GridRegion,Content;
+float2 Periods,BaseExtent;
+int2 Extent;
+int Mip,Mode,NormalChannel;
+float SourceLod;
+float3 Normal(float4 c) {float2 xy=float2(c.r*c.a,c.g)*2-1;return normalize(float3(xy,sqrt(max(0,1-dot(xy,xy)))));}
+[numthreads(8,8,1)]
+void Check(uint3 p:SV_DispatchThreadID)
+{
+ if(any(p.xy>=Extent))return;
+ float2 q=(p.xy+.5)/Extent;
+ float4 a,b;
+ if(Mode==0) {
+  a=Source.SampleLevel(sampler_Source,GridRegion.xy+q*GridRegion.zw,SourceLod);
+  b=Product.SampleLevel(sampler_Product,q,Mip);
+ } else if(Mode==1) {
+  a=Product.SampleLevel(sampler_Product,q,Mip);
+  b=Product.SampleLevel(sampler_Product,q+float2(1,0),Mip);
+ } else if(Mode==3) {
+  q.y=lerp(Content.y,Content.w,q.y);q.x=.5;
+  if(p.y==0)q.y=Content.y;
+  if(p.y==Extent.y-1)q.y=Content.w;
+  a=Product.SampleLevel(sampler_Product,q,Mip);
+  b=Product.SampleLevel(sampler_linear_clamp,q,Mip);
+ } else if(Mode==7) {
+  a=Unencoded.SampleLevel(sampler_Unencoded,q,Mip);
+  b=Product.SampleLevel(sampler_Product,q,Mip);
+ } else if(Mode>=4) {
+  q=frac(q+float2(.371,.193)/Extent);
+  if(Mode==15||Mode==16)q.x=.1+.8*q.x;
+  q.y=lerp(Content.y,Content.w,q.y);
+  bool seam=Mode==5||Mode==12||Mode==13;
+  if(seam)q.x=(p.x%2==0?-.125:.125)/BaseExtent.x;
+  float2 dx=float2(exp2(Mip)*((seam||Mode==18)?16:4)/BaseExtent.x,0);
+  float2 dy=float2(0,exp2(Mip)/BaseExtent.y);
+  float2 sourceUv=GridRegion.xy+float2(frac(q.x),q.y)*GridRegion.zw;
+  a=Source.SampleGrad(sampler_Source,sourceUv,dx*GridRegion.zw,dy*GridRegion.zw);
+  b=Product.SampleGrad(sampler_Product,q,dx,dy);
+  float4 unencoded=Unencoded.SampleGrad(sampler_Unencoded,q,dx,dy);
+  if(Mode==8||Mode==10||Mode==12||Mode==15||Mode==16)b=unencoded;
+  if(Mode==9||Mode==11||Mode==13)a=unencoded;
+  if(Mode==14) {
+   Results[p.y*Extent.x+p.x]=float4(a.a,b.a,(a.a<.5)!=(b.a<.5)?1:0,0);return;
+  }
+  if(Mode==6||Mode==10||Mode==11||Mode==16) {
+   float angle=NormalChannel!=0?degrees(acos(clamp(dot(Normal(a),Normal(b)),-1,1))):0;
+   Results[p.y*Extent.x+p.x]=angle.xxxx;return;
+  }
+ } else {
+  if(p.x==0)q.x=0;
+  if(p.x==Extent.x-1)q.x=1;
+  if(p.y==0)q.y=0;
+  if(p.y==Extent.y-1)q.y=1;
+  a=Source.SampleLevel(sampler_Source,Region.xy+q*Region.zw,SourceLod);
+  b=Product.SampleLevel(sampler_Product,float2(q.x,lerp(Content.y,Content.w,q.y)),Mip);
+  if(p.x!=0&&p.x!=Extent.x-1&&p.y!=0&&p.y!=Extent.y-1)a=b;
+ }
+ Results[p.y*Extent.x+p.x]=abs(a-b);
+}

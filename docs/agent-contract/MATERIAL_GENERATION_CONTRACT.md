@@ -2,311 +2,308 @@
 
 ## Scope and authority
 
-These requirements apply to all bridge material generation: fixed and movable bridges, every
-part and LOD, preview, creation, regeneration and export. They supplement the
-[bridge generation contract](BRIDGE_GENERATION_CONTRACT.md) and the
-[movable bridge contract](MOVABLE_BRIDGES_CONTRACT.md). Material reuse, density, tiling and
-offline preparation and the bounded runtime conversion exceptions in section 4 are governed here;
-geometry, native rendering, ownership and persistence
-remain governed by their corresponding contracts.
+This contract governs materials for fixed and movable bridges, every part and LOD, and
+preview, creation, regeneration and export. Geometry and native behavior remain governed by
+[bridge generation](BRIDGE_GENERATION_CONTRACT.md); movable appearance roles are defined in
+[movable generation sections 17 and 24](MOVABLE_BRIDGES_CONTRACT.md#17-material-families-uv-density-and-texture-ownership).
+Persistence follows the [asset persistence policy](../Bridge-Asset-Persistence.md).
 
-Apply sections 2 and 5 together: the generated-owner material limit and the complete mod-package
-limit measure different graphs and neither replaces the other. Apply section 4's bounded runtime
-exceptions together with the offline rule; they do not relax the prohibition on rebaking known,
-preparable constants. Routing summaries and movable-specific material rules must preserve both
-distinctions. Historical implementation or handoff records do not authorize superseded material
-pipelines or establish compliance of the current output.
+For movable bridges, the generation design is: **reuse original non-road materials by default, with only the narrow offline repeat-material
+derivation in section 3 to avoid new period-wrap seams; compose
+or precompose only prototype-supported road appearance types; reuse original materials for
+all other road types; preserve each source's original UV projection and
+mapping mode**. This is a generation requirement, not a finding about how the original game
+converts roads. [Native repetition research](../Native-Movable-Material-Repetition.md) supplies
+source evidence only. Current code and prepared resources are not proof of compliance.
+
+The sole road-composition entry condition is: the corresponding prototype supports the actual
+road appearance type, so that type must use prototype appearance. Otherwise retain the original
+input material without composition. Resolve this per type and domain, never for the whole road.
+Examples of independently supported types include asphalt, sidewalks and wheel-track/rut effects.
+One prototype may support only some of these; no universal support list is implied. Establish
+support from that prototype's measured data. A supported layer does not authorize replacing or
+composing unrelated unsupported layers. Preserve required masks and original domain boundaries.
 
 ## 1. Full reuse of original materials must create no new materials
 
-When an original material can be reused in full, reference that existing material directly.
-Do not create any new material: no cloned SurfaceAsset, replacement descriptor, new material
-identity, baked equivalent or duplicate texture payload. This rule takes precedence over the
-offline preparation and per-style storage rules below; neither requires creating a replacement
-for an unchanged original material.
+### Non-road materials and road composition are separate
 
-Full reuse preserves the original shader/template, parameters, keywords, texture bindings and
-sampling behavior. Sharing only textures while changing the material is not full material reuse.
-Changes to bridge geometry or ownership alone do not justify creating an otherwise identical
-material. Apply this rule to every LOD, preview, creation and export path.
+Retain original prototype materials for carried structure, towers, trusses, underside,
+railings, mechanisms and other non-road components, at their corresponding LODs. Retain
+original shader/template, parameters, keywords, texture bindings, channels and dependencies.
+Do not recolor, clone, rebake, extract replacement structure textures or assign a new Surface
+merely because geometry dimensions or the generated owner changed. The sole structural
+texture-derivation permission is section 3's evidenced offline repeat material needed to avoid
+new period-wrap seams. Fix unrelated mapping and native render-context problems separately;
+a failed UV eligibility test alone does not authorize a replacement. Report unresolved
+representation or failed validation explicitly, without a substitute or tolerance relaxation.
 
-Keep built-in materials as native references. Materials supplied by Bridge Builder or any other
-mod must have byte-identical copies with their original CIDs under the current bridge owner,
-including all required non-built-in texture and VT dependencies. A reference to the source mod
-alone is insufficient. Such copies preserve the existing material identity; they must not create
-a new material or modify the source. Reuse existing current-owner copies, never resources owned
-by another generated bridge, even of the same style. Never read deleted bridge files.
+Classify road appearance by actual source type and physical domain. Only a prototype-supported
+type requiring prototype appearance enters composition/precomposition. All other road types use
+their original input materials. Asphalt, sidewalk surfacing and wheel-track/rut effects are
+independent examples, not names for one blanket road category. Fixed structural platforms remain
+structure; recorded running-surface caps retain their physical-domain rules. Selected rails,
+sleepers, lane graphics, wires and attachments retain their separately specified original sources.
 
-During bridge self-check, supplement missing external material copies even when the source mod
-is installed and the bridge's live references are valid. Traverse the serialized dependency graph
-using the same persistence path as creation. Preserve bridge geometry, UUIDs, CIDs and live
-references; repeat checks must not rewrite complete copies. Report supplementation as migration
-and require restart. Missing sources and conflicting bytes follow the existing migration failure
-policy. Copying files does not supply a third-party runtime class or shader implementation.
+A shared Surface or atlas may serve both road and structure. Keep it unchanged for structural
+faces except those independently eligible for section 3's narrow offline repeat derivation,
+and bind a supported type's road composite only to its road faces. Unsupported road
+types keep their original input materials. Never edit the shared atlas,
+change its global parameters or clear embedded markings on behalf of the road. Use measured
+part/material-domain membership, original bones and all LODs. Material separation grants no
+additional geometric cuts or topology changes. Keep markings separate under movable section 18.
+
+### Identity and independent ownership
+
+Whenever a required material can be reused in full, reference it directly. Do not create a
+clone, replacement identity, baked equivalent or duplicate texture. A supported-type composition plan
+may resolve an unchanged region to an original material without baking. Unsupported types bypass
+composition and retain their original input material. Sharing textures while changing a descriptor is a
+conversion, not full reuse.
+
+Keep built-in resources as original native references. Snapshot external resources, including
+Bridge Builder resources, byte-for-byte with their original CIDs under each current bridge owner.
+Copy all required non-built-in texture, VT and mip dependencies. Reuse complete current-owner
+copies; never borrow another generated bridge's files or read deleted resources. Copies for
+ownership are not newly authored materials and must not modify the source.
+
+During self-check, supplement missing external dependency copies even when live references
+resolve through an installed mod. Use the creation dependency traversal, preserve geometry,
+UUIDs and CIDs, and do not rewrite complete copies. Report supplementation as migration requiring
+restart. Missing sources/conflicting bytes follow the persistence migration policy. Copying
+assets does not supply a missing third-party shader or runtime class.
 
 ## 2. Preserve source resolution and pattern scale
 
-Keep the generated bridge's material footprint as small as possible without compromising
-material resolution. The complete material dependency graph persisted for one generated bridge
-must not exceed **10,000,000 bytes**. The working budget is 5–10 MB; an output below 5 MB must
-not be padded. The distributed mod has the separate total-package limit in section 5.
-Reduce storage through original-resource reuse, shared identical resources and
-source-density tiling and verified non-tiling reuse below; never reduce texture resolution.
-A size target alone never authorizes pattern distortion.
+Follow the general bridge contract's [original UV projection and mapping rule](BRIDGE_GENERATION_CONTRACT.md#preserve-original-uv-projection-and-mapping-mode).
+That rule applies to fixed/non-movable and movable bridges, every part, material domain, LOD,
+layer and axis. This section specifies material quality and size requirements in addition to
+that common rule; it does not define a separate movable-only mapping policy.
 
-Material generation must not reduce texture resolution. Preserve physical texel density and
-pattern dimensions for genuinely tiling prototype mappings and selected-road materials
-required by the surface-selection rules. The sole stretching exception is a mapping verified
-as non-tiling in the applicable bridge prototype: retain its authored source UVs as geometry
-changes, interpolating those UVs for permitted construction fragments. Its pattern may stretch
-with that geometry; unchanged physical density is not an acceptance gate for that evidenced use.
+Preserve native texture resolution, color space, normal encoding, channel correspondence, filtering,
+anisotropy and complete mip/VT dependencies. Check density on tiling axes. On evidenced stretching
+axes, report the expected density change from retaining the original UVs rather than calling it
+a density-preserving result. A smaller page, different LOD or size limit never permits additional
+resolution loss. Reuse original far-LOD resources; do not fabricate low-resolution replacements.
 
-Establish non-tiling status offline from the actual prototype mapping, not merely the texture's
-wrap setting or apparent content. Record source identity/version, Surface and texture identities,
-part/mesh/material slot, every affected LOD, authored UV domain, native sampling semantics and
-the non-tiling axes. A mixed mapping retains original physical density on its tiling axes;
-apply the exception only to its evidenced non-tiling axes. A failed mapping, missing repeat-unit
-evidence, unsupported sampler or arbitrary nonperiodic chart does not prove non-tiling status.
-Unknown cases remain unresolved and must not silently enter this exception. Selected-road/track
-appearance and marking layout do not inherit this prototype-only permission.
-
-Preserve original native textures, resolution, channels, color/normal semantics, complete mip
-and VT dependencies and compatible material identity. This permission creates no new bottom
-materials, arbitrary crops, per-sampler bakes, geometry transforms, topology or bone changes.
-It changes only whether the verified non-tiling mapping must compensate for already-authorized
-geometry deformation. Full reuse, independent persistence and both byte limits remain in force.
-
-Outside that verified non-tiling exception, changing bridge dimensions, atlas layout, page count
-or LOD must not lower this density or distort the pattern. Smaller texture pages are permitted only when they preserve the same
-sampling density and appearance. Preserve the appropriate source detail for each LOD and all
-required texture channels, color spaces, normal encoding and mip behavior. Native texture/file
-encoding does not authorize resolution loss or any further pattern distortion.
+The complete persisted material graph of one generated bridge must not exceed **10,000,000 bytes**.
+The working budget is 5–10 MB; smaller output must not be padded. Section 5 defines the separate
+**55,000,000-byte** package limit. Meet these limits by reuse and sharing, not omitted dependencies,
+downsampling or unauthorized pattern changes.
 
 ## 3. Tile repeatable materials at their original density
 
-Genuinely tiling prototype mappings and repeatable selected-road materials must use a repeat
-unit tiled at original source density; section 2 governs verified non-tiling prototype uses. Do not bake
-repeated copies into a very large image covering the bridge's full length or width. Texture
-storage for a repeat unit must not grow merely because the generated bridge becomes larger.
+### Reuse source mapping before producing pixels
 
-When necessary offline extraction encounters a fractional source-texel span, keep the exact
-measured source region and physical period. A single unit may be reconstructed on the next
-whole-texel sampling grid, rounded upward independently in each direction so source resolution
-is not reduced. When a supported native block format requires aligned dimensions, round that
-single-period sampling grid upward to its block boundary; do not append padding to the sampled
-repeat interval. Native lossy encoding must be identified and checked for channel, alpha and
-normal errors, rather than described as lossless. This sampling conversion must not round the region itself, change the physical
-pattern size, or expand into many repeated copies merely to make the source and output grids
-commensurate. Preserve the authored mip inputs and channel interpretation; report reconstruction
-and seam differences rather than claiming pixel-identical filtering.
+Keep the original atlas and native material where they express the required mapping. Original
+mesh panels may reuse an internal region through duplicated seam vertices and finite UV traversals.
+This does not require a new texture. Do not infer a global period from repeated UV triangles,
+rounded dimensions, a chart rectangle or source wrap flags. Do not replace a large triangle's
+UVs with vertex-only modulo and claim it repeats internally.
 
-Use an existing independent repeatable source texture where possible. Each genuine repeat
-unit from a known bridge prototype or another preparable constant source that requires conversion
-must be baked only once offline, and all sampling uses of that
-unit must share the finished resource. Different genuine units, including units in the same
-source atlas, may each receive their own necessary offline conversion. Do not extract or bake
-separate pixel copies per triangle, receiver or sampling variation. An otherwise qualifying
-unit from an unavailable-before-runtime selected third-party road is subject only to the
-bounded unknown-input exception in section 4; its sampling uses must still share one result
-within the current bridge owner.
+For road composition that requires a separate repeat unit, establish the real source pattern,
+region, physical period, orientation and boundary behavior for all channels and mips. A receiver,
+triangle or sampling variant is not a new repeat-unit identity. Native repetition of a region is
+not by itself proof that an extracted rectangle filters seamlessly. Partial cells, mirrored
+traversals and atlas gutters require their own source evidence.
 
-A genuine repeat unit is an independently evidenced repeating pattern in the applicable real
-prototype or selected-road source. Record its authoritative source identity/version, measured
-region, physical period and scale, channel semantics, and tileable-boundary evidence covering
-filtering and the complete mip chain. Its identity must be independent of receivers, triangles,
-roads, LODs and per-use UVs. An arbitrary crop, a UV chart or a different sampling rectangle is
-not by itself evidence of a distinct unit. Do not rename triangles, sampling variants or arbitrary
-crops as new units to evade consolidation.
+Only where necessary for an eligible road path or the narrow structural rule below, prepare each
+known genuine unit once offline. Reuse the finished unit for every applicable road, part and LOD. Preserve exact measured source bounds and
+period. Fractional source-texel extents may use an upward-rounded sampling grid and required native
+block alignment for one unit, without padding the physical repeat interval. The bounded
+two-period exception below is the only exception to the ban on multiple-period storage.
+Preserve source resolution and authored mip inputs; report reconstruction and lossy encoding errors
+honestly. Unknown selected inputs follow section 4. Structural derivation is limited to the rule below.
 
-Retain the original atlas payload when its unchanged texels and supported native sampling can
-serve the required uses correctly. Where a genuine atlas repeat unit needs extraction for native
-repetition, prepare that unit once under section 4; retain its source-region provenance separately
-from per-use sampling. Use a verified native representation that does not sample neighboring
-parts. Preserve original resolution, pattern scale, orientation, phase, edges and mip behavior.
+### Integer-grid mip resampling and bounded two-period storage
 
-Non-repeating markings or local overlays must not force a repeatable base material into a
-full-span bake. Preserve the repeating base and handle genuinely variable content through
-compatible native material composition. Any necessary pages for non-repeating content must
-remain bounded while preserving source density. This rule does not prescribe a universal
-4096-pixel limit or permit downsampling to meet a page limit.
+For fractional lower-mip extents (for example 827 / 2 = 413.5), offline preparation
+may resample original mip signals onto the legal integer grid of a native texture.
+Preserve physical period, phase, source bounds, channel correspondence and independent
+axes. Record per-level density ratios and reconstruction errors; physical-scale
+preservation does not imply identical rounded samples. This is a narrow exception
+to exact mip-grid preservation under section 2, not arbitrary downsampling.
+Dimensions must follow the complete native chain, not independent per-level choices.
+The current Texture2D path uses integer halving: 827, 413, 206, 103, 51, 25, 12, 6, 3, 1.
+
+Alternatively, where necessary for this fractional-grid problem, exactly two copies
+of one evidenced unit may be stored along the affected repeat axis. Keep the whole
+chain consistent: base 1654 followed by 827 stores two physical periods at both
+levels. Do not place an isolated 827-wide second level below a one-period 827 base.
+Compensate UV and phase so one physical period advances half a texture interval;
+verify derivatives, trilinear transitions and all PBR channels. Deeper levels can
+still have fractional per-period extents: use necessary integer-grid resampling,
+not recursive doubling. Storage must not grow with receiver length or sampler count.
+
+This authorization permits necessary rounding/resampling and bounded two-unit storage
+only. It does not permit deliberate boundary blending, unrelated mip-signal replacement,
+arbitrary resolution reduction, changed source bounds, omitted channels, full-span baking,
+new period cuts or increased budgets. Original assets remain unchanged; changed derivatives
+receive independent CIDs. All normal-frame, alpha, filter/aniso, every-mip, native-load,
+10 MB owner and 55 MB package checks remain mandatory. No global error threshold or
+automatic quality acceptance is implied.
+
+### Offline source-atlas repeat materials
+
+Do not cut movable road or structural triangles, or add seam vertices, solely to reset a repeated
+atlas coordinate. Where such new seams would otherwise be necessary, bake an independent tiling
+material from the original atlas outside the game. This includes evidenced Lift05 repeating
+structural profile domains. It is a narrow permission for verified repeating domains, not permission
+to remake arbitrary structure or to bake every domain. Keep fully reusable original materials.
+
+Retain existing native seams and necessary cuts at actual shape, motion and distinct material-domain
+boundaries. Preserve selected-road shape, lane layout, original attributes and bone ownership.
+Road eligibility still requires the prototype-supported actual type/domain gate; this rule does not
+admit unsupported input types or omit their worldspace layers. For non-road components, record why
+this particular evidenced repeat domain needs an offline derivative to avoid new period-wrap seams.
+
+Establish original source identity/version, all applicable LODs, complete repeat bounds and physical
+period from prototype evidence. Preserve density, orientation and phase across neighboring uses,
+independent sampling axes/layers, finite axes, mirrors and terminal regions. A crop or UV domain is
+not automatically a repeat unit. Do not force a common layer period or turn finite content into repeat.
+Bake each necessary content unit once, shared across uses rather than per triangle or sampler.
+
+Validate all PBR channels and masks, alpha/cutout, normal encoding and tangent-frame semantics,
+source resolution, filtering/aniso behavior, seams and every mip against the original sampling.
+Record reconstruction/compression and per-layer error; existing tolerance requirements remain in
+force. Mip-zero, interior-only or file-format checks do not establish equivalence. Failed filtering,
+phase, native representation or budget checks remain unresolved; they do not authorize new cuts,
+arbitrary crops, lower resolution, full-span baking or a global error-threshold increase.
+
+Leave original atlas, Surface and dependency files unchanged. Derived Surface/texture/VT resources
+receive independent identities, never the original source CID for changed bytes. Unchanged shared
+dependencies and byte-identical owner copies retain their own CIDs. Package the complete finished
+native resource graph once; runtime only copies/binds it, without baking or a custom shader/controller.
+Verify independent native loading and all affected LODs, and count the complete dependency graph
+against the 10,000,000-byte owner and 55,000,000-byte package limits. This rule specifies the required
+route; it does not assert current feasibility, implementation or acceptance.
+
+### No full-road pattern expansion
+
+Never rasterize a pattern along the complete road/span into generated texture pixels. This covers
+repeating, finite, non-repeating and mixed appearances, all channels, masks, worldspace layers,
+markings and every LOD. Splitting the same expansion across charts, strips, pages or VT tiles is
+also prohibited. Failure to find a period, Clamp addressing or an unsupported conversion is not a
+fallback permission. The GPU maximum texture size is not a material budget; 4096 is not a universal
+permitted size either. Smaller full-span images still violate the rule.
+
+Express length through geometry and supported source mapping, with immutable texture content.
+Evidenced stretching retains original UVs without producing a new length-dependent image. A
+necessary local non-repeating result must be bounded by the actual local content, not the receiver
+length. Do not hide failure through downsampling, omitted layers, arbitrary repeated crops or
+excessive subdivision. Existing geometry and topology constraints remain in force.
+
+### Independent material-layer sampling
+
+Road composition/precomposition must preserve each distinct layer's coordinates, scale, phase,
+period, wrap and mip behavior. Do not force prototype road samples, selected-road inputs,
+worldspace detail and blend masks to share one common period. Constant sampling is a valid
+separate case. A finite mask does not force repeating layers into a finite full-span bake.
+
+Within a layer, keep color/normal/mask/control correspondence and source channel-specific
+transforms. These channels are not automatically independent layers. Preserve original blend
+weights, normal frames and material parameters; blending separately lit meshes is not proof of
+equivalent material blending. Keep marking geometry/layout separate from road-base pixels.
+
+Apply the mapping and blend through a verified native, persistable rendering path. Metadata alone,
+a shader keyword, a diagnostic shader or network-template support does not prove skinned-object
+capability. Custom shaders and manager-dependent runtime rebinding remain prohibited. An unresolved
+native layer representation is incomplete work, not permission to flatten the road into pixels.
+
+### Period-detection error tolerance
+
+Replace the universal 0.01-source-pixel cumulative phase cutoff with measured per-layer tolerances.
+No replacement numeric threshold is established yet. Derive it from source-coordinate precision,
+local boundary error and cumulative drift over supported extents, covering relevant dimensions,
+channels, mip/filter behavior and mask transitions. Do not increase it merely until a case passes
+or use tolerance to invent repetition, change scale or reinterpret source mapping.
+
+Diagnostics distinguish constant sampling, nonperiodic addressing, no bounded candidate and
+phase rejection. Record source/layer/channel, frequency, wrap, candidate period, threshold and
+measured errors. A rejected layer must not trigger full-road baking or invalidate another layer's
+valid mapping. Preserve independently measured source quantization rather than forcing one ideal lattice.
 
 ## 4. Persist constant reusable materials before runtime
 
-### Identical resources must be reused, never baked repeatedly
+### Meaning of precomposition
 
-Repeated baking of the same known, preparable texture or material resource is prohibited.
-Reuse an existing compatible original resource directly. If a required conversion produces a
-known shared constant resource, prepare it once offline and reuse that finished resource for every use of the same
-source texture or genuine repeat unit with that required conversion. Different bridge styles,
-roads, parts, triangles, LODs, previews,
-creation requests or export destinations do not justify baking identical resources again.
+**Precomposition means material baking outside the game.** Bake the eligible road composite
+or section 3's narrowly permitted structural repeat derivative
+with offline authoring/baking tools before distribution, save the finished native material,
+texture and complete mip/VT dependencies, and include them in the mod package. The game loads,
+copies when ownership requires it, and binds those finished resources without rebaking,
+resampling or recompressing their texture payloads.
 
-Separate texture payload identity from material and sampling identity. Establish texture
-equivalence from authoritative source content, channel semantics, color space, normal encoding
-and mip data. Material descriptors retain their own shader parameters and texture bindings;
-sampling records retain their own source regions and mappings. A necessary extracted repeat
-unit also retains the genuine-unit evidence required by section 3; its derived payload identity
-is not a new identity for the original atlas. Names, receiver identities,
-output paths and different sampling coordinates do not establish a distinct source texture.
-Do not rebake merely to discover that finished bytes are identical; resolve known equivalent
-inputs before baking.
+Baking at game startup, asset loading, first use, preview, bridge creation or export is runtime
+work, not precomposition. An in-memory or disk cache of an in-game bake is not a precomposed
+material. The separate bounded runtime-composition exceptions below do not change this meaning.
+Road precomposition remains subject to the prototype-supported-type gate; structural repeat
+derivation follows section 3's separate narrow eligibility. Both preserve original mapping and
+resolution, no full-road pattern expansion, independent persistence and both byte limits.
+
+### Road composition and precomposition
+
+First dispatch each appearance type/domain by the prototype's measured support. If the type is
+not supported, bind its original input material and bypass composition/precomposition. Keep its
+source UV projection and dependencies. Incompatibility with native rendering is an explicit
+representation problem, not permission to compose or substitute another appearance. The existing
+measured descriptor-only track conversion is a native representation rule, not this composition
+entry condition; it preserves source pixels and appearance and must not become a general fallback.
+
+Only supported types that must use prototype appearance enter the following plan:
+
+1. Resolve the measured prototype appearance, source masks, required input layers and physical
+   domains. Keep unsupported neighboring types on their original materials.
+2. Reuse an identical resolved native result where available, or use descriptor-only handling
+   where sufficient without baking pixels.
+3. Bind a once-prepared composite or genuine repeat unit for known constant inputs.
+4. Compose genuinely variable local content only where the supported-type combination needs it,
+   subject to section 3's prohibition on full-road rasterization.
+5. If an actual selected third-party input required by that supported-type composition was
+   unavailable before runtime, perform only the necessary bounded conversion. Unknown input
+   alone does not admit an unsupported type into composition.
+
+Known constant road resources and descriptor conversions must be prepared offline and packaged.
+Runtime copies and binds them; no first-use bake, resampling or recompression. A missing prepared
+key, incomplete library or deleted file is not an unknown-input exception. Do not convert an entire
+known prototype at runtime. These exceptions do not authorize remaking non-road prototype materials.
+
+Both runtime exceptions preserve section 2's mapping-specific scale, original channels/resolution,
+normal and blend semantics, all mips and native persistence. Record the actual source and why
+reuse/descriptor conversion is insufficient. Share equivalent results within the current owner,
+never through a cross-bridge generated-result cache. Preview and saved creation apply the same rules.
 
 ### Texture content and sampling parameters must be separate
 
-Store texture content independently of how a particular mesh or material samples it.
-The shared texture record identifies native resource CIDs, verified source content, format,
-dimensions, channel or VT stack/layer, color space, normal encoding and the complete mip
-dependency graph. For a necessarily extracted genuine unit, also record the source-to-unit
-mapping and evidence, and share the unit's finished payload across its uses. The per-use
-sampling record identifies the original shared texture or prepared unit and retains
-the required source region, UV mapping, orientation, phase, wrapping, filtering, anisotropy
-and mip/derivative behavior. Keep actual native texture-global settings on their native
-resource; recording a different per-use value does not prove the renderer can override it.
+Identify texture payloads by authoritative source content, format, channel semantics, color space,
+normal encoding and mip data. Store per-use source region, UV transform, orientation, phase and
+sampling separately. Different receivers, rotations, reflections, roads or LODs do not create new
+texture identities. Keep native global sampler settings on the resource; metadata cannot grant
+unsupported per-use sampler overrides.
 
-Mesh UVs and native Surface parameters/bindings carry the supported sampling differences.
-Different triangles, sampling regions or repeat configurations must not become different
-texture content identities merely because their sampling records differ. Distinct genuine
-repeat units may have separate necessary conversions under section 3; a region difference
-alone does not qualify. Preserve exact measured
-numeric values and channel semantics. A metadata file alone is not an implementation:
-the actual native rendering and saved-asset path must apply each required sampling operation.
-
-### One texture file for the same texture under different sampling methods
-
-The same original texture, or the same offline-prepared genuine repeat unit, used with different
-sampling methods must use **one shared texture payload file within each bridge style's resource
-graph**. Different UV transforms, rotations, reflections, phases, triangular parameterizations,
-repeat settings or sampling regions within that texture/unit must be represented by the applicable
-per-use geometry UVs, native material settings or sampling metadata, rather than separate
-resampled texture files. Distinct genuine units extracted as required from one atlas may have
-separate shared payloads; each unit is prepared once, not once per sampling method. Preserve
-sharing of unchanged source texels wherever one compatible payload serves the uses without
-conversion. Compatible built-in textures remain
-direct references and require no packaged copy. Apply this rule to all parts and LODs,
-previews, creation, regeneration and export.
-
-Consolidation must share the actual source texels. Putting many independently baked copies
-inside one archive or container does not satisfy this rule. Do not merely alias unequal
-existing texture files to one CID. Distinct channels or source contents must not be conflated,
-and differing sampling records must not be discarded. Preserve section 2's mapping-specific
-density/scale requirements, orientation, phase, region boundaries, normal interpretation and filtered mip behavior.
-Implement the sampling through supported native rendering; this requirement does not authorize
-custom runtime shaders, excessive geometry subdivision or runtime baking of known, preparable
-constant resources. The bounded runtime exceptions below do not relax sampling consolidation.
-
-Resource keys and authoring inventories must identify the shared texture separately from its
-sampling records. Convert a required known immutable source texture or evidenced genuine repeat unit
-once offline, when necessary, then reference that finished payload from every applicable sampler.
-For a permitted unknown-input conversion, all applicable samplers within the current owner
-must instead share that operation's single necessary conversion.
-All roads, parts, triangles and LODs using that same unit share its preparation. Do not use a per-triangle
-or per-sampler bake as a fallback to evade consolidation. An unsupported native sampling case
-must be identified explicitly and resolved before claiming implementation completion.
-
-The per-style packaging rule below may require physical copies of one prepared resource.
-Create those copies byte-for-byte with the same CID; do not bake them again or assign replacement
-identities. Likewise, per-bridge dependency snapshots remain byte-identical ownership copies,
-not new baking operations. Preserve complete style-local dependency graphs and independent
-bridge lifetimes. This reuse concerns original and immutable offline-prepared source assets;
-it does not authorize caching generated bridge results.
-
-Persist reusable constant materials and their required texture/dependency resources as durable
-assets. A constant material is invariant within its explicitly identified source and recipe;
-different roads or prototypes must not be treated as identical merely because their names or
-surface categories match. Preserve source version, sampling, shader parameters and channel
-semantics when identifying reusable assets.
-
-If a known, preparable constant reusable material requires baking, bake it offline before runtime and include the
-completed resource in the distributed asset package. Bridge creation must only copy the finished
-material and its required resources, then bind them; it must not rebake, resample or recompress
-their texture payloads. Preview, regeneration and export must use the same prepared resources.
-First-use baking during loading, preview or bridge creation does not satisfy this requirement
-for known constant resources. Missing or stale prepared resources do not qualify for a runtime
-conversion exception.
-
-### Bounded runtime composition and unknown selected-road inputs
-
-Apply material preparation in this order to the actual selected road or track and its resolved
-surface layout:
-
-1. Reuse a fully compatible original material directly, without a new material or texture.
-   Keep built-in references and persist byte-identical current-owner copies of non-built-in
-   dependencies under section 1.
-2. If only a native descriptor/template conversion is necessary, convert the descriptor and
-   retain compatible original texture and complete VT/mip references. Do not bake pixels.
-   Prepare descriptors for known inputs offline; a previously unknown selected input may
-   receive its necessary descriptor conversion during the current operation.
-3. Prepare known bridge-prototype constant materials and evidenced genuine repeat units
-   offline once. All roads, parts, triangles, LODs and sampling uses of the same resource
-   share the finished preparation; bridge generation only copies and binds it.
-4. When the current selected layout or mixing masks produce a genuinely variable combination,
-   necessary bounded runtime composition is permitted. Compose only the variable content
-   actually needed by the selected road. Keep repeatable bases separate where native
-   composition permits; do not bake repeated copies across the bridge merely to include an
-   overlay or mask.
-5. When a third-party road or track input is unknown before runtime, cannot be fully reused
-   or handled solely through descriptor conversion, and cannot be prepared in advance,
-   necessary bounded runtime texture conversion is permitted for that selected input.
-   This exception concerns the actual required source and conversion, not every material
-   supplied by that mod or every potential road combination.
-
-Both runtime exceptions preserve source resolution, physical texel density, pattern dimensions,
-all required channels, color spaces, normal interpretation and complete mip behavior under
-sections 2 and 3. Produce supported native assets and persist their complete dependency graph
-under the current bridge owner so the bridge remains usable without Bridge Builder. Share
-identical conversion results within that owner and preserve current-owner resource reuse;
-do not borrow or cache generated results across bridges. An independently created bridge may
-perform its own necessary unknown-input conversion when no permitted prepared original resource
-exists; do not introduce a cross-bridge generated-result cache to avoid that work. Preview, creation and export must
-apply the same source-selection and conversion rules.
-
-These are limited input-dependent conversion paths, not a general fallback for known constant
-bridge materials, absent prepared keys, deleted files or an incomplete offline library. Do not
-convert an entire known prototype at runtime, bake once per triangle or sampler, downsample,
-or substitute a different pattern. Keep required offline preparations packaged and immutable.
-
-Keep prepared source assets independent of generated bridge lifetimes. Follow the
-[asset persistence policy](../Bridge-Asset-Persistence.md) for byte-identical dependency copies,
-original CIDs and built-in references. Never source a reusable material from another generated
-or deleted bridge, and never delete the prepared source when deleting a bridge. Prepared assets
-must remain available without the player's original prototype files. This is a packaged source
-asset workflow, not a cache of previously generated bridge results.
+Use one shared payload per identical source texture or necessary eligible prepared unit within each
+style and each owner. Different source units may need distinct payloads, but each is converted once.
+Do not resample per triangle/sampler, rebake to discover equal bytes, alias unequal data to one CID,
+or pack duplicate baked images into a container and call that sharing. Built-in references require
+no copied payload. Per-style and per-owner copies retain identical bytes/CIDs and are not rebakes.
 
 ### Native resource implementation
 
-Resolve the original native Surface and its Texture/VTTexture/VTSurface/MidMips dependency
-graph by verified identities. Keep compatible original Surfaces and built-in texture graphs
-as direct references, including their original channel bindings and mip chains. Multiple
-parts may share the same texture while retaining distinct UVs and genuinely different native
-material parameters. Do not infer source identity or equivalence from names or file counts.
+Resolve the complete Surface/Texture/VTTexture/VTSurface/MidMips graph by verified identities.
+Preserve ordered stacks, channel bindings, implicit Surface-to-MidMips membership and matching
+preprocessed mip counts. Provenance texture IDs are not necessarily loadable payload references.
+A mip-zero decoder cannot establish full-chain preservation. Do not force mip counts to zero to
+hide inconsistent resources. Complete dependencies before registration/publication.
 
-If only a native material-template conversion is required, prepare the necessary descriptor
-offline for known inputs, or during the current operation for a previously unknown selected-road
-input under the bounded rules above, while preserving compatible original texture references; do not decode and rebake
-the referenced images. Byte-identical non-built-in dependencies must be persisted per style
-and per generated bridge owner under sections 1 and 5. Their snapshots retain the original
-CIDs and complete dependency closure. The generated bridge must work after Bridge Builder
-is uninstalled, without another generated bridge supplying its files.
+Retain native network context for non-road NetPieces; do not convert them merely because an object
+mesh writer is shared. Validate any required road conversion in its actual procedural-bone and
+vertex-layout path. Native VT allocation transforms describe the registered texture, not arbitrary
+atlas-island views. Full-texture wrap, region-local wrap and triangle reflection are not interchangeable.
+Do not modify global compression settings or use runtime patches to repair persisted sampling.
 
-For a texture conversion that is actually necessary, resolve a single shared conversion for the
-source texture or genuine repeat unit, independent of per-use sampling records. An atlas may
-contain multiple evidenced units; convert each only when native use requires it, and reuse each
-finished result for all its samplers. Preserve all required original mip data and semantics;
-a decoder returning only mip zero cannot prove preservation of the full mip chain. Metadata,
-an offline diagnostic shader or a successful texture upload does not prove that the game's
-persisted native material supports a sampling operation.
-
-Verify native capability before replacing local-region repetition or triangle reflection
-with original-atlas references. Whole-texture Repeat, vertex-only modulo and ordinary affine
-UV scale/offset are not interchangeable with region-local repetition, per-fragment triangle
-reflection, reflected-normal handling and region-edge filtering. Where the original atlas lacks
-a compatible native local-repeat representation, use a genuine unit's necessary once-only offline
-extraction if it satisfies sections 3 and 6. A previously unknown selected third-party road may
-use the bounded conversion exception above for its required genuine unit. This permission does not establish periodicity for an
-arbitrary structural chart. Verified non-tiling prototype uses retain authored UVs under section 2.
-Other cases without an evidenced unit or supported native representation remain explicitly
-unimplemented until resolved; do not silently substitute a different pattern
-or restore per-triangle or per-sampler baked copies.
+Prepared assets remain immutable and independent of generated owners. Resolve installed sources
+relative to the loaded mod, never a developer directory or another generated bridge. Deleting a
+bridge must not delete prepared sources. Follow section 5 for packaging and source independence.
 
 ## 5. Per-bridge material directory and mod packaging
 
@@ -319,7 +316,7 @@ fits its 10,000,000-byte material limit. Include selected-road dependencies and 
 outputs in the owner measurement. If a complete bridge graph has not been generated, report that
 measurement as unavailable rather than substituting the prepared-directory size.
 
-The complete compressed Paradox Mods deliverable must not exceed **50,000,000 bytes (50 MB)**.
+The complete compressed Paradox Mods deliverable must not exceed **55,000,000 bytes (55 MB)**.
 Measure the actual official SDK content ZIP, including all included bridge styles, DLLs,
 materials, dependencies, symbols, UI, licenses and archive overhead. The limit is not a
 per-style or texture-only allowance. Splitting the same required payload into additional
@@ -340,7 +337,8 @@ Do not create or retain empty material directories in the repository, build outp
 or distributed mod package. Create a style or variant directory only when it contains actual
 material/dependency payloads. Do not use `.gitkeep`, documentation or dummy files to preserve an
 otherwise empty material directory. A style that only references built-in original materials
-and has no prepared external payloads must have no material directory. If no style has payloads,
+and has no prepared external payloads must have no material directory. If neither a style nor
+the shared MidMips source has required payloads,
 omit the packaged `Materials/` root as well.
 
 The distributed mod must carry these assets beside `BridgeBuilder.dll` under
@@ -360,8 +358,9 @@ identities; the prepared-material directory layout must not require recomposing 
 known constant materials at runtime. Results allowed by section 4's bounded runtime exceptions
 belong to the current generated bridge's native asset/dependency graph; do not write them into
 the installed prepared-material source directory or share them with other generated bridges.
-Even when two styles use identical resources, each style's prepared directory must contain its
-required non-built-in resources rather than depending on another style's folder.
+Except for the shared immutable MidMips source cache below, even when two styles use identical
+resources, each style's prepared directory must contain its required non-built-in resources
+rather than depending on another style's folder.
 Variants within one style may reference a shared texture stored as
 `Shared/<payloadCID>.Texture` with its CID sidecar, retaining the original CID for unchanged
 resources or the prepared identity for a necessary conversion. Sampler variants of the same
@@ -370,8 +369,35 @@ baked texture copies.
 Store one byte-identical shared payload per CID within that style. The same one-payload rule
 applies within each generated bridge's dependency snapshot; different bridge owners still
 retain independent byte-identical snapshots. Validate the complete variant dependency graph before native
-registration; shared lookup must stay within the selected style and must not fall through
-to another style or generated bridge. Sharing storage must not resample or rebake the texture.
+registration; shared lookup must stay within the selected style, except for the explicit
+shared MidMips source below, and must not fall through to another style or generated bridge.
+Sharing storage must not resample or rebake the texture.
+
+### Shared immutable MidMips source cache
+
+The sole cross-style prepared-resource exception is
+`assets/Materials/Shared/MidMips/<cacheCID>/TS512_MB3.MidMips` and its `.cid` sidecar,
+shipped as `Materials/Shared/MidMips/<cacheCID>/TS512_MB3.MidMips` beside the mod DLL.
+This reserved root contains only offline-prepared native MidMips dependencies, not shared
+Surface, Material or Texture payloads. Preserve native cache bytes, CID, tag-bearing filename,
+texture stacks and primary/duplicate Surface CID membership. The style's complete dependency
+graph may reference this common source; other per-style resource rules remain unchanged.
+
+Treat the installed common cache as read-only. Before native registration, verify each
+Surface's required cache membership and matching preprocessed mip count. Include these implicit
+Surface-to-MidMips edges in dependency traversal and package validation. Missing membership or
+inconsistent cache/texture levels must fail explicitly; do not force a zero mip count or rebuild
+known prepared resources at runtime.
+
+Each generated bridge copies only the cache dependencies required by its own graph into its
+independent owner-local snapshot, retaining original bytes and CIDs under the persistence
+contract's native MidMips filename exception. Do not copy the whole source catalogue, share
+generated-owner files, or depend on the installed cache after persistence. Count those copies
+in the unchanged 10,000,000-byte generated-owner material limit; count each common source file
+once in the complete 55,000,000-byte official SDK ZIP limit. This source-storage exception
+grants no additional runtime baking permission or cross-bridge generated-result caching.
+
+### Packaging and source resolution
 
 Both the project build and `tools/Build.ps1`, and subsequent installation/publication packaging,
 must recursively include the prepared payloads without changing their bytes or flattening the
@@ -390,65 +416,43 @@ Implementation status and packaging guidance are maintained in
 
 ## 6. Verification
 
-Verify source and output texel density, pattern scale, repeat seams and mip behavior across
-affected dimensions and LODs under section 2. For verified non-tiling prototype uses, audit the
-source/part/LOD/axis evidence, retained or interpolated authored UVs, unchanged texture resolution,
-channels, material identity and mip dependencies. Report expected physical-density changes from
-geometry stretching separately; do not record these uses as density-preserving passes.
-Verify that known, preparable constant resources are prepared before runtime and
-copied without baking, and that bridge deletion cannot invalidate another bridge's materials.
-For each runtime conversion, distinguish a genuinely variable layout/mask combination from an
-unknown-before-runtime third-party selected-road input. Record the actual selected sources,
-why direct reuse and descriptor-only conversion are insufficient, the necessary converted
-content and its complete current-owner dependency closure. Check source density, channels,
-color/normal semantics and every mip; no runtime conversion may conceal a missing known
-prepared resource or read another bridge's generated results.
-For full original-material reuse, verify that the original material identity is retained and
-no new material or texture assets are generated.
-For sampling consolidation, enumerate every source texture, each necessarily extracted genuine
-repeat unit and their uses. Verify unit provenance and tileable boundaries independently of
-receiver geometry, and verify that all sampling variants of each source texture/unit resolve
-to one physical texture payload per style and per generated owner,
-and test each retained mapping against the applicable original source at region boundaries
-and across mip levels. Verify all required channels and independently persisted bridges.
-Count actual texture payloads and total SDK package bytes; a smaller file count alone does
-not prove content sharing or compliance with the 50 MB total-package limit.
+Compare the actual original and generated material assignments by part, road/structure role,
+LOD and axis. Do not certify the entire output from one preview, a material name, a reused
+texture count or an eligibility flag. Required evidence includes:
 
-The consolidation acceptance evidence must include:
+1. **Non-road reuse:** original Surface identities, templates, parameters, textures and complete
+   dependencies retained, except for separately justified section 3 offline repeat derivatives.
+   For each derivative record its evidenced domain, avoided period cuts, new identity and complete
+   sampling/quality/dependency validation. No unrelated non-road material remaking is allowed. Record
+   byte-identical external ownership copies separately from conversions. Confirm changing road
+   composition leaves structural bindings and source assets unchanged.
+2. **Road dispatch and composition:** prove support per prototype/type/domain; unsupported types
+   retain original materials and never enter composition. For supported types, record source layers,
+   prototype/selected-input roles, masks, source frames,
+   separate markings and whether the result uses direct binding, descriptor conversion,
+   precomposition or bounded runtime composition. Do not label complete selected-road appearance
+   preservation as a universal requirement. Verify the specified composite rather than a substitute.
+3. **Mapping:** source tiling remains tiling, source stretching remains stretching, mixed axes,
+   mirrors, folds, terminal domains and each LOD follow their own evidence. Verify final uploaded
+   UVs and source-to-output sampling, not only intermediate formulas. Test both directional density
+   on tiling axes; report expected density changes on stretching axes separately.
+4. **Layers and filtering:** test independent periods, finite/constant masks, differing resolutions,
+   blend transitions, normals, alpha/cutout, source edges and all mip levels. Record unresolved
+   per-layer tolerance validation; mip-zero/interior-only checks are insufficient.
+5. **No span rasterization:** compare different bridge lengths and verify that base-pattern pixel
+   storage does not expand with the receiver, even across multiple resources. Rejected period
+   tests must not enter a full-road bake. Record every necessary local raster's content extent,
+   dimensions and reason; hardware limits or small pages are not acceptance evidence.
+6. **Reuse and lifetime:** known resources are prepared once offline; identical sampling uses share
+   payloads. All preview/create/regenerate/export paths use the same representations. Verify cold
+   loading without Bridge Builder, complete current-owner dependency closure, and independence
+   from other generated bridges or deleted sources. Preserve healthy existing assets.
+7. **Budgets:** measure prepared bytes separately, the complete persisted owner material graph at
+   or below 10,000,000 bytes, and the actual official SDK package at or below 55,000,000 bytes.
+   List built-in references separately. Missing owner measurements are not a pass. Keep the
+   general contract's whole-Prefab measurement separate and reject empty material directories.
 
-1. Complete source-to-unit-to-use coverage for every affected style, part and LOD, distinguishing
-   original textures, evidenced genuine repeat units, Surface count, physical texture resources,
-   VT channel views and per-use sampling records. Record the real-source measurements and
-   tileable-boundary evidence for each unit; arbitrary crops and receiver-derived identities fail.
-2. One physical payload per identical non-built-in source texture or necessarily prepared genuine
-   unit in each style/owner graph, or direct built-in references with no new texture file.
-   Distinct genuine units may have separate necessary payloads, but all sampling methods of the
-   same unit share one. Different sampling methods create no extra pixel copies. A container of
-   per-triangle or per-sampler resampled copies fails this check.
-3. Actual native sampling checks against the applicable prototype or selected-road source:
-   both directional texel densities and pattern scale under section 2's verified non-tiling
-   exception, phase, orientation, region/repeat seams,
-   normals and all required mip levels. Interior-only or mip-zero-only tests are incomplete.
-4. Preview, saved creation, regeneration and export bind the same verified source/sampling
-   representation. Native cold loading and independent dependency persistence are verified;
-   deleting another bridge or uninstalling Bridge Builder must not invalidate the result.
-5. No runtime baking of known, preparable constant sources; required offline conversions are
-   reused rather than repeated. Runtime composition and unknown-input conversion are limited
-   to the section 4 exceptions and the actual selected road, with identical outputs shared
-   only within the current owner. Verify descriptor-only paths do not bake texture pixels.
-   Preserve geometry, bones, original-compatible material identity and
-   supported localization. Retire old resources only after their replacement and references
-   are verified; do not delete healthy generated bridge assets to make a test pass.
-6. Report both the prepared material bytes for each style and the complete generated-owner
-   material dependency bytes, with original built-in references listed separately. Verify each
-   generated owner's complete persisted material dependency graph remains at or below
-   10,000,000 bytes; an unavailable complete-owner material graph is not a pass. This ceiling
-   applies to material dependencies, not geometry or the entire generated Prefab; retain the
-   separate complete-Prefab measurement and prototype comparison required by the bridge contract.
-   Measure the complete official SDK content package at or below 50,000,000 bytes and verify
-   that source, build and delivery material directories contain no empty placeholders.
-   Report native checks separately from game visual acceptance; game near/far appearance,
-   motion and actual gameplay confirmation belong to human acceptance.
-
-Record implementation and measured performance separately; adding this contract is not evidence
-that existing generators already comply.
+Record generation, decoding, composition, readback, VT/mip writing and persistence timing without
+double counting. Native file checks and code review do not establish game appearance, animation,
+traffic or performance acceptance. Human near/far, motion and cold-load checks remain explicit.
+Changing this specification does not change installed code or certify current generators.

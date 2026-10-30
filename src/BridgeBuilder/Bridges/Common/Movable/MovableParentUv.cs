@@ -48,7 +48,7 @@ internal static class MovableParentUv
     }
 
     internal static Result Map(Vector3[] source, Vector2[] uv, Vector3[] target,
-        Vector3[] parent, Vector2[] parentUv, bool triangle, Vector4 bounds)
+        Vector3[] parent, Vector2[] parentUv, bool triangle, Vector4 bounds,int retainedAxes=0)
     {
         int pivot=MovableUvFrame.TrianglePivot(source[0],source[1],source[2]);
         var order=new[]{pivot,(pivot+1)%3,(pivot+2)%3};
@@ -74,12 +74,12 @@ internal static class MovableParentUv
         var sampleX=targetX.Zip(targetY,(x,y)=>x*cosine+y*sine).ToArray();
         var sampleY=targetY.Zip(targetX,(y,x)=>y*cosine-x*sine).ToArray();
         var n=Cross(e,f);double determinant=Dot(n,n);
-        var mapped=target.Select(p=>
+        var mapped=target.Select((p,index)=>
         {
             var offset=Difference(p,target[order[0]]);
             double qy=Dot(offset,sampleY)/sourceCy;
             double qx=(Dot(offset,sampleX)-qy*sourceCx)/sourceLength;
-            double U(int axis)=>uv[order[0]][axis]+((double)uv[order[1]][axis]-uv[order[0]][axis])*qx+
+            double U(int axis)=>(retainedAxes&(1<<axis))!=0?uv[index][axis]:uv[order[0]][axis]+((double)uv[order[1]][axis]-uv[order[0]][axis])*qx+
                 ((double)uv[order[2]][axis]-uv[order[0]][axis])*qy;
             if(!triangle)
             {
@@ -91,6 +91,7 @@ internal static class MovableParentUv
             double dx=U(0)-parentUv[0].x,dy=U(1)-parentUv[0].y,uvDeterminant=ux*vy-uy*vx;
             if(uvDeterminant!=0)
                 return new[]{(dx*vy-dy*vx)/uvDeterminant,(ux*dy-uy*dx)/uvDeterminant};
+            if(retainedAxes!=0)throw new InvalidOperationException("Independent sampling axes require a measured nonsingular UV mapping.");
             var r=Enumerable.Range(0,3).Select(i=>(double)source[order[0]][i]-parent[0][i]+
                 ((double)source[order[1]][i]-source[order[0]][i])*qx+
                 ((double)source[order[2]][i]-source[order[0]][i])*qy).ToArray();

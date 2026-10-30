@@ -33,6 +33,11 @@ internal static partial class MovableRepeatUnits
             profiles[8], profiles[9], profiles[10], profiles[11], profiles[12], profiles[13], profiles[14], profiles[15], repeatU: false, repeatV: true));
         regions.Add(new Region("0cfb7f02cf0395308cd5f8034908a3263eb8415c39866bd76321f969df01e06e",
             profiles[16], profiles[17], profiles[18], profiles[19], profiles[20], profiles[21], profiles[22], profiles[23], repeatU: false, repeatV: true));
+        // Native physical continuation regions.
+        regions.Add(new Region("f443914a8812fa50dda65930e5046391736fc0c5a1bca024561c108f99fcd96f",
+            profiles[24], profiles[25], profiles[26], profiles[27], profiles[28], profiles[29], profiles[30], profiles[31], repeatU: false, repeatV: true));
+        regions.Add(new Region("f443914a8812fa50dda65930e5046391736fc0c5a1bca024561c108f99fcd96f",
+            profiles[32], profiles[33], profiles[34], profiles[35], profiles[36], profiles[37], profiles[38], profiles[39], repeatU: false, repeatV: true));
         // End single-axis profiles.
     }
 

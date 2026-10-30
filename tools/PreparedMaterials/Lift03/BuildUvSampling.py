@@ -260,8 +260,6 @@ def main():
                 reason = 'non-tiling-native-window-local-map' if domain['domain'] in window_local else 'unknown-window-local-domain'
             elif np.any(invalid[members]):
                 reason = 'unknown-nonfinite-source-uv'
-            elif np.any(road_overlap[members]):
-                reason = 'density-known-road-repeat-region-overlap'
             elif np.any(outside[members]):
                 reason = 'unknown-source-uv-outside-atlas'
             elif np.any(repeated[members]):

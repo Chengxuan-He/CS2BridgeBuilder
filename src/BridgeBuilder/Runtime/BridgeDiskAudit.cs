@@ -99,6 +99,8 @@ internal sealed class BridgeDiskAudit
         return errors.Count == 0;
     }
 
+    // True means every selected source was removed. On true, a nonempty error means
+    // the backup is incomplete; false means removal itself did not complete.
     internal bool RetireFiles(ISet<string> owners, string backup, out string error)
     {
         error = "";

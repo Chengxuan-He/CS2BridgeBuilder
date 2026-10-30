@@ -16,7 +16,7 @@ internal static class MovableSurfaceAssets
     {
         source.LoadHeader();
         if (IsObjectSurface(source)) return source;
-        var cid = source.id.ToString() switch
+        var cid = source.id.guid.ToString() switch
         {
             "3fd47dc01126f4121ed6c363f854e9cb" => "652dd064690d2eab0f150ad10b93e50d",
             "2ac33e421296c2093127e5636a6f0c2a" => "40b82be441c0ee29b9912d64df01dddf",

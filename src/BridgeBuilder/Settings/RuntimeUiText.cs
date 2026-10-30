@@ -212,85 +212,95 @@ internal static class RuntimeUiText
             "Verifica os recursos de pontes deste mod e recupera os danificados. Disponível no menu principal; saia da cidade primeiro.",
             "Проверяет мосты этого мода и восстанавливает повреждённые ресурсы. Доступно в главном меню; сначала выйдите из города."
         },
-        ["BridgeSelfCheckSuccess"] = new[]
+        ["BridgeSelfCheckMigrated"] = new[]
         {
-            "Self-check passed.", "自检成功", "自檢成功", "Prüfung erfolgreich.", "Comprobación correcta.", "Vérification réussie.",
-            "Controllo riuscito.", "自己診断に成功しました。", "자가 진단 성공", "Kontrola zakończona pomyślnie.", "Verificação concluída com sucesso.", "Проверка пройдена."
+            "Migrated {0} bridges to the latest format.",
+            "已迁移 {0} 座桥梁至最新格式。",
+            "已遷移 {0} 座橋梁至最新格式。",
+            "{0} Brücken wurden in das neueste Format migriert.",
+            "Se han migrado {0} puentes al formato más reciente.",
+            "{0} ponts ont été migrés vers le format le plus récent.",
+            "{0} ponti sono stati migrati al formato più recente.",
+            "{0} 基の橋を最新形式に移行しました。",
+            "교량 {0}개를 최신 형식으로 마이그레이션했습니다.",
+            "Liczba mostów przeniesionych do najnowszego formatu: {0}.",
+            "{0} pontes foram migradas para o formato mais recente.",
+            "Мосты переведены в новейший формат: {0}."
         },
         ["BridgeSelfCheckRemoved"] = new[]
         {
-            "Bridge assets that could not be migrated or loaded have been moved to the backup directory. Restart the game to apply the changes.",
-            "无法迁移或加载的桥梁资产已移至备份目录。请重启游戏使更改生效。",
-            "無法遷移或載入的橋梁資產已移至備份目錄。請重新啟動遊戲使變更生效。",
-            "Brücken-Assets, die nicht migriert oder geladen werden konnten, wurden in den Sicherungsordner verschoben. Starte das Spiel neu, um die Änderungen anzuwenden.",
-            "Los recursos de puentes que no se pudieron migrar o cargar se han movido a la carpeta de respaldo. Reinicia el juego para aplicar los cambios.",
-            "Les ressources de ponts impossibles à migrer ou à charger ont été déplacées vers le dossier de sauvegarde des ressources. Redémarrez le jeu pour appliquer les changements.",
-            "Le risorse dei ponti che non è stato possibile migrare o caricare sono state spostate nella cartella di backup. Riavvia il gioco per applicare le modifiche.",
-            "移行または読み込みができなかった橋アセットをバックアップ先に移動しました。変更を適用するにはゲームを再起動してください。",
-            "마이그레이션하거나 불러올 수 없는 교량 에셋을 백업 폴더로 이동했습니다. 변경 사항을 적용하려면 게임을 다시 시작하세요.",
-            "Zasoby mostów, których nie udało się przenieść do nowego formatu lub wczytać, przeniesiono do katalogu kopii zapasowych. Uruchom grę ponownie, aby zastosować zmiany.",
-            "Os recursos de pontes que não puderam ser migrados ou carregados foram movidos para o diretório de backup. Reinicie o jogo para aplicar as alterações.",
-            "Ресурсы мостов, которые не удалось перевести в новый формат или загрузить, перемещены в папку резервных копий. Перезапустите игру, чтобы применить изменения."
+            "Removed {0} bridges with complete backups.",
+            "已移除 {0} 座桥梁，且已完整备份。",
+            "已移除 {0} 座橋梁，且已完整備份。",
+            "{0} Brücken wurden mit vollständiger Sicherung entfernt.",
+            "Se han eliminado {0} puentes con copias de seguridad completas.",
+            "{0} ponts ont été supprimés avec des sauvegardes complètes.",
+            "{0} ponti sono stati rimossi con backup completi.",
+            "{0} 基の橋を完全にバックアップして削除しました。",
+            "교량 {0}개를 완전히 백업한 후 제거했습니다.",
+            "Liczba usuniętych mostów z pełną kopią zapasową: {0}.",
+            "{0} pontes foram removidas com backups completos.",
+            "Удалено мостов с полными резервными копиями: {0}."
         },
-        ["BridgeSelfCheckMigrated"] = new[]
+        ["BridgeSelfCheckRemovedWithoutBackup"] = new[]
         {
-            "Legacy bridge assets have been migrated to the current format. Restart the game to apply the changes.",
-            "旧版桥梁资产已迁移为当前格式。请重启游戏使更改生效。",
-            "舊版橋梁資產已遷移為目前格式。請重新啟動遊戲使變更生效。",
-            "Ältere Brücken-Assets wurden in das aktuelle Format migriert. Starte das Spiel neu, um die Änderungen anzuwenden.",
-            "Los recursos de puentes antiguos se han migrado al formato actual. Reinicia el juego para aplicar los cambios.",
-            "Les anciennes ressources de ponts ont été migrées vers le format actuel. Redémarrez le jeu pour appliquer les changements.",
-            "Le risorse dei ponti precedenti sono state migrate al formato attuale. Riavvia il gioco per applicare le modifiche.",
-            "旧形式の橋アセットを現在の形式に移行しました。変更を適用するにはゲームを再起動してください。",
-            "이전 버전의 교량 에셋을 현재 형식으로 마이그레이션했습니다. 변경 사항을 적용하려면 게임을 다시 시작하세요.",
-            "Starsze zasoby mostów zostały przeniesione do aktualnego formatu. Uruchom grę ponownie, aby zastosować zmiany.",
-            "Os recursos de pontes antigos foram migrados para o formato atual. Reinicie o jogo para aplicar as alterações.",
-            "Ресурсы мостов старого формата переведены в текущий формат. Перезапустите игру, чтобы применить изменения."
-        },
-        ["BridgeSelfCheckMigratedAndRemoved"] = new[]
-        {
-            "Legacy bridge assets have been migrated. Other bridge assets that could not be migrated or loaded have been moved to the backup directory. Restart the game to apply the changes.",
-            "已迁移旧版桥梁资产；其他无法迁移或加载的桥梁资产已移至备份目录。请重启游戏使更改生效。",
-            "已遷移舊版橋梁資產；其他無法遷移或載入的橋梁資產已移至備份目錄。請重新啟動遊戲使變更生效。",
-            "Ältere Brücken-Assets wurden migriert. Andere Brücken-Assets, die nicht migriert oder geladen werden konnten, wurden in den Sicherungsordner verschoben. Starte das Spiel neu, um die Änderungen anzuwenden.",
-            "Se han migrado los recursos de puentes antiguos. Otros recursos que no se pudieron migrar o cargar se han movido a la carpeta de respaldo. Reinicia el juego para aplicar los cambios.",
-            "Les anciennes ressources de ponts ont été migrées. Les autres ressources impossibles à migrer ou à charger ont été déplacées vers le dossier de sauvegarde des ressources. Redémarrez le jeu pour appliquer les changements.",
-            "Le risorse dei ponti precedenti sono state migrate. Le altre risorse impossibili da migrare o caricare sono state spostate nella cartella di backup. Riavvia il gioco per applicare le modifiche.",
-            "旧形式の橋アセットを移行しました。移行または読み込みができなかった他の橋アセットはバックアップ先に移動しました。変更を適用するにはゲームを再起動してください。",
-            "이전 버전의 교량 에셋을 마이그레이션했습니다. 마이그레이션하거나 불러올 수 없는 다른 교량 에셋은 백업 폴더로 이동했습니다. 변경 사항을 적용하려면 게임을 다시 시작하세요.",
-            "Starsze zasoby mostów przeniesiono do nowego formatu. Pozostałe zasoby, których nie udało się przenieść lub wczytać, przeniesiono do katalogu kopii zapasowych. Uruchom grę ponownie, aby zastosować zmiany.",
-            "Os recursos de pontes antigos foram migrados. Outros recursos que não puderam ser migrados ou carregados foram movidos para o diretório de backup. Reinicie o jogo para aplicar as alterações.",
-            "Ресурсы мостов старого формата перенесены в новый формат. Остальные ресурсы, которые не удалось перенести или загрузить, перемещены в папку резервных копий. Перезапустите игру, чтобы применить изменения."
-        },
-        ["BridgeSelfCheckMigrationIncomplete"] = new[]
-        {
-            "Some legacy bridge assets could not be migrated. See the Bridge Builder log for details. Restart the game before continuing.",
-            "部分旧版桥梁资产未能完成迁移。详情请查看 Bridge Builder 日志。请重启游戏后再继续。",
-            "部分舊版橋梁資產未能完成遷移。詳情請查看 Bridge Builder 日誌。請重新啟動遊戲後再繼續。",
-            "Einige ältere Brücken-Assets konnten nicht migriert werden. Details stehen im Bridge-Builder-Protokoll. Starte das Spiel neu, bevor du fortfährst.",
-            "No se pudieron migrar algunos recursos de puentes antiguos. Consulta el registro de Bridge Builder. Reinicia el juego antes de continuar.",
-            "Certaines anciennes ressources de ponts n’ont pas pu être migrées. Consultez le journal de Bridge Builder. Redémarrez le jeu avant de continuer.",
-            "Non è stato possibile migrare alcune risorse dei ponti precedenti. Consulta il registro di Bridge Builder. Riavvia il gioco prima di continuare.",
-            "一部の旧形式の橋アセットを移行できませんでした。詳細は Bridge Builder のログを確認してください。続行する前にゲームを再起動してください。",
-            "일부 이전 버전 교량 에셋의 마이그레이션을 완료하지 못했습니다. 자세한 내용은 Bridge Builder 로그를 확인하세요. 계속하기 전에 게임을 다시 시작하세요.",
-            "Nie udało się przenieść niektórych starszych zasobów mostów. Szczegóły znajdują się w dzienniku Bridge Builder. Przed kontynuowaniem uruchom grę ponownie.",
-            "Não foi possível migrar alguns recursos de pontes antigos. Consulte o registro do Bridge Builder. Reinicie o jogo antes de continuar.",
-            "Не удалось перевести некоторые старые ресурсы мостов в текущий формат. Подробности — в журнале Bridge Builder. Перезапустите игру перед продолжением."
+            "Removed {0} bridges, but their backups failed or are incomplete.",
+            "已移除 {0} 座桥梁，但备份失败或不完整。",
+            "已移除 {0} 座橋梁，但備份失敗或不完整。",
+            "{0} Brücken wurden entfernt, aber ihre Sicherungen sind fehlgeschlagen oder unvollständig.",
+            "Se han eliminado {0} puentes, pero sus copias de seguridad fallaron o están incompletas.",
+            "{0} ponts ont été supprimés, mais leurs sauvegardes ont échoué ou sont incomplètes.",
+            "{0} ponti sono stati rimossi, ma i backup non sono riusciti o sono incompleti.",
+            "{0} 基の橋を削除しましたが、バックアップに失敗したか、不完全です。",
+            "교량 {0}개를 제거했지만 백업에 실패했거나 백업이 불완전합니다.",
+            "Liczba usuniętych mostów z nieudaną lub niepełną kopią zapasową: {0}.",
+            "{0} pontes foram removidas, mas seus backups falharam ou estão incompletos.",
+            "Удалено мостов с неудачной или неполной резервной копией: {0}."
         },
         ["BridgeSelfCheckIncomplete"] = new[]
         {
-            "Self-check could not finish removing faulty bridge assets because a file operation failed. See the Bridge Builder log for details.",
-            "自检移除故障桥梁资产时，文件操作失败，未能完成清理。详情请查看 Bridge Builder 日志。",
-            "自檢移除故障橋梁資產時，檔案操作失敗，未能完成清理。詳情請查看 Bridge Builder 日誌。",
-            "Fehlerhafte Brücken konnten wegen eines Dateifehlers nicht vollständig entfernt werden. Details stehen im Bridge-Builder-Protokoll.",
-            "Un error de archivo impidió completar la eliminación de los puentes defectuosos. Consulta el registro de Bridge Builder.",
-            "Une erreur de fichier a empêché la suppression complète des ponts défectueux. Consultez le journal de Bridge Builder.",
-            "Un errore nei file ha impedito di completare la rimozione dei ponti difettosi. Consulta il registro di Bridge Builder.",
-            "ファイル操作に失敗したため、問題のある橋アセットの削除を完了できませんでした。Bridge Builder のログを確認してください。",
-            "파일 작업 실패로 문제가 있는 교량 에셋을 모두 제거하지 못했습니다. Bridge Builder 로그를 확인하세요.",
-            "Błąd operacji na plikach uniemożliwił usunięcie wszystkich wadliwych mostów. Szczegóły w dzienniku Bridge Builder.",
-            "Uma falha na operação de arquivos impediu a remoção completa das pontes com problemas. Consulte o log do Bridge Builder.",
-            "Ошибка операции с файлами помешала завершить удаление неисправных мостов. Подробности в журнале Bridge Builder."
+            "Processing remains unfinished for {0} bridges. See the Bridge Builder log for details.",
+            "{0} 座桥梁尚未完成处理。详情请查看 Bridge Builder 日志。",
+            "{0} 座橋梁尚未完成處理。詳情請查看 Bridge Builder 日誌。",
+            "Die Verarbeitung von {0} Brücken ist nicht abgeschlossen. Details stehen im Bridge Builder-Protokoll.",
+            "El procesamiento de {0} puentes sigue sin completarse. Consulta el registro de Bridge Builder.",
+            "Le traitement de {0} ponts reste inachevé. Consultez le journal de Bridge Builder.",
+            "L’elaborazione di {0} ponti è ancora incompleta. Consulta il registro di Bridge Builder.",
+            "{0} 基の橋の処理が未完了です。詳細は Bridge Builder のログを確認してください。",
+            "교량 {0}개의 처리가 완료되지 않았습니다. 자세한 내용은 Bridge Builder 로그를 확인하세요.",
+            "Przetwarzanie mostów pozostaje nieukończone: {0}. Szczegóły w dzienniku Bridge Builder.",
+            "O processamento de {0} pontes permanece incompleto. Consulte o registro do Bridge Builder.",
+            "Обработка мостов не завершена: {0}. Подробности в журнале Bridge Builder."
+        },
+        ["BridgeSelfCheckInterrupted"] = new[]
+        {
+            "Self-check was interrupted. Additional results could not be determined; see the Bridge Builder log.",
+            "自检已中断，无法确定其余结果。请查看 Bridge Builder 日志。",
+            "自檢已中斷，無法確定其餘結果。請查看 Bridge Builder 日誌。",
+            "Die Selbstprüfung wurde unterbrochen. Weitere Ergebnisse konnten nicht ermittelt werden; siehe Bridge Builder-Protokoll.",
+            "La comprobación se interrumpió. No se pudieron determinar los demás resultados; consulta el registro de Bridge Builder.",
+            "La vérification a été interrompue. Les autres résultats sont indéterminés ; consultez le journal de Bridge Builder.",
+            "Il controllo è stato interrotto. Non è stato possibile determinare gli altri risultati; consulta il registro di Bridge Builder.",
+            "自己診断が中断され、残りの結果を確認できませんでした。Bridge Builder のログを確認してください。",
+            "자가 진단이 중단되어 나머지 결과를 확인할 수 없습니다. Bridge Builder 로그를 확인하세요.",
+            "Kontrola została przerwana. Nie można ustalić pozostałych wyników; sprawdź dziennik Bridge Builder.",
+            "A verificação foi interrompida. Não foi possível determinar os demais resultados; consulte o registro do Bridge Builder.",
+            "Проверка прервана. Остальные результаты не определены; см. журнал Bridge Builder."
+        },
+        ["BridgeSelfCheckRestart"] = new[]
+        {
+            "Restart the game before continuing. Restarting alone does not resolve unfinished operations.",
+            "请重启游戏后再继续。重启本身不会解决未完成的处理。",
+            "請重新啟動遊戲後再繼續。重新啟動本身不會解決未完成的處理。",
+            "Starte das Spiel neu, bevor du fortfährst. Ein Neustart allein behebt unvollständige Vorgänge nicht.",
+            "Reinicia el juego antes de continuar. Reiniciar por sí solo no resuelve las operaciones pendientes.",
+            "Redémarrez le jeu avant de continuer. Un redémarrage seul ne résout pas les opérations inachevées.",
+            "Riavvia il gioco prima di continuare. Il solo riavvio non risolve le operazioni incomplete.",
+            "続行する前にゲームを再起動してください。再起動だけでは未完了の処理は解決しません。",
+            "계속하기 전에 게임을 다시 시작하세요. 다시 시작하는 것만으로는 미완료 작업이 해결되지 않습니다.",
+            "Przed kontynuowaniem uruchom grę ponownie. Sam restart nie rozwiązuje nieukończonych operacji.",
+            "Reinicie o jogo antes de continuar. Reiniciar por si só não resolve as operações incompletas.",
+            "Перезапустите игру перед продолжением. Сам по себе перезапуск не завершает незаконченные операции."
         },
         ["RecoveryLocationLabel"] = new[]
         {

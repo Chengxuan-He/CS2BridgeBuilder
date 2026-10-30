@@ -1,0 +1,13 @@
+#pragma kernel Probe
+Texture2D<float4> Source;
+SamplerState sampler_Source;
+RWTexture2D<float4> Result;
+int2 Size;
+float4 Bounds;
+float4 Gradient;
+[numthreads(8,8,1)] void Probe(uint3 p:SV_DispatchThreadID)
+{
+    if(any(p.xy>=Size))return;
+    float2 uv=Bounds.xy+(p.xy+.5)/Size*Bounds.zw;
+    Result[p.xy]=Source.SampleGrad(sampler_Source,uv,Gradient.xy,Gradient.zw);
+}

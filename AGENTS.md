@@ -59,14 +59,39 @@ containers and preserve native focus, input and modal behavior. Follow
 
 ## Performance and deployment
 
+The [general source-mapping rule](docs/agent-contract/BRIDGE_GENERATION_CONTRACT.md#preserve-original-uv-projection-and-mapping-mode) applies to **all fixed/non-movable and movable bridges**: preserve source projection and tiling/stretch mode per part, LOD, layer and axis.
+
+For movable bridges, reuse original non-road materials by default. Only evidenced repeating
+domains that would otherwise require new period-wrap seams may use the source-atlas offline
+derivation defined in the material contract section 3; do not add those seams. Road composition/precomposition (offline material baking outside the game) has
+one entry condition: the prototype supports the actual appearance type and that type must use
+prototype appearance. Test asphalt, sidewalk surfacing and wheel-track/rut effects independently
+per prototype and physical domain. Other road types retain their original input materials and
+bypass composition. Preserve each source's projection and tiling/stretch mode per part, LOD,
+layer and axis. This is a generation rule, not a reverse-engineering finding or proof that the
+current implementation complies. Road processing must not mutate a shared structural Surface.
+
 All material work must follow the [material generation contract](docs/agent-contract/MATERIAL_GENERATION_CONTRACT.md):
+section 3 prohibits expanding any pattern along the complete road/span into texture pixels,
+including mixed and non-repeating appearances. Failed repeat detection, runtime composition
+exceptions, smaller pages and VT tiling do not authorize full-length rasterization.
+Decouple material layers' sampling and periods while preserving authored channel alignment.
+Replace the universal 0.01-pixel phase cutoff with an evidenced per-layer tolerance under
+material contract section 3; the replacement numeric value is pending validation.
+Necessary native integer-grid mip resampling and bounded two-period storage follow
+[the narrow material rule](docs/agent-contract/MATERIAL_GENERATION_CONTRACT.md#integer-grid-mip-resampling-and-bounded-two-period-storage).
+This is not permission for boundary blending, arbitrary downsampling or budget increases.
 full reuse of an original material must create no new material;
-preserve native texture resolution; tile genuine repeats at original density. Section 2 permits
-verified prototype non-tiling UVs to stretch with geometry, retaining authored UVs and identity.
+preserve native texture resolution. The general bridge source-mapping rule preserves the actual chosen appearance source's
+UV projection and tiling/stretch mode per part, LOD and axis: tile evidenced repeats at original
+density; retain authored UVs for evidenced finite/stretch mappings. Selected-road appearance uses
+its own source evidence, never another prototype's stretch classification. Geometry UV resets
+are distinct from texture-global wrap modes; width changes or failed tests do not change the mode.
 Missing repeat evidence is not proof. Prepare known constant conversions once offline; copy and
 bind finished assets for every bridge, part, LOD, preview and export.
 Texture content and per-use sampling parameters must be stored separately. Preserve native
-Surface/texture/VT identities and complete mip dependencies; sampling metadata must be applied
+Surface/texture/VT identities for unchanged resources and complete mip dependencies;
+eligible offline derivatives receive their own identities. All sampling metadata must be applied
 by a verified native rendering path, not merely recorded. The same texture under different sampling methods must use one shared texture payload file
 per style; retain sampling differences in UVs/native material settings or sampling metadata.
 An archive containing separate resampled copies does not satisfy consolidation. Follow material
@@ -78,12 +103,16 @@ Preserve section 2 sampling, channels, mips and current-owner dependencies, with
 generated-result cache or per-sampler baking.
 The complete persisted material dependency graph of one generated bridge must not exceed
 10,000,000 bytes (working budget 5–10 MB; do not pad smaller outputs). The complete
-compressed Paradox Mods deliverable for all included styles must not exceed 50,000,000 bytes
-(50 MB), including code, materials and archive overhead. This is a package acceptance gate,
+compressed Paradox Mods deliverable for all included styles must not exceed 55,000,000 bytes
+(55 MB), including code, materials and archive overhead. This is a package acceptance gate,
 separate from the generated-owner material limit. Prepared-directory bytes do not prove either
 limit. Continue measuring the complete bridge footprint, including non-material assets.
 Prepared materials belong in `assets/Materials/<BridgeStyleId>/`, separately for each bridge
 style, and must ship as `Materials/<BridgeStyleId>/` beside the mod DLL with all dependencies.
+The sole cross-style exception is the read-only native MidMips source at
+`assets/Materials/Shared/MidMips/<cacheCID>/TS512_MB3.MidMips`, shipped under the same
+`Materials/Shared/MidMips/` path with its CID sidecar. Follow material contract section 5;
+each generated bridge still copies only its required dependencies independently within its 10 MB limit.
 Keep only payload-bearing material directories; empty folders and placeholder-only folders are prohibited.
 
 Bridge geometry uses the [CPU affine execution contract](docs/agent-contract/BRIDGE_GENERATION_CONTRACT.md#cpu-affine-geometry-execution).
@@ -103,6 +132,11 @@ Documentation-only changes require no build, game shutdown or deployment.
 
 For multi-bridge work, assign one independent sub-agent per bridge, batching when slots are full.
 A separate shared-logic sub-agent owns shared implementation, integration and common verification.
+Prioritize reusing already-created sub-agents to reduce context overhead: resume the existing
+shared-logic sub-agent for shared work, and resume the existing sub-agent assigned to the same
+bridge for that bridge's work. Completion of a previous assignment is not a reason to create
+a replacement. Create a new sub-agent only when no suitable existing agent is available;
+do not substitute another bridge's agent merely because it is idle.
 The main agent manages assignments, requests, progress and reports only; it does not implement
 bridge-specific or shared changes. Sub-agents communicate only through the main agent, which
 relays every shared interface/behavior change and required consumer adjustment to affected agents.
@@ -270,6 +304,13 @@ heuristics and silent internal-error fallbacks remain prohibited.
 
 ## Post-load self-check
 
+Follow [self-check result reporting](docs/agent-contract/BRIDGE_GENERATION_CONTRACT.md#self-check-result-summary): count each UUID once per run
+as migrated to the latest format, removed with complete backup, removed without complete backup,
+or unfinished. Show only nonzero categories with counts and one final restart reminder in a native
+dialog, localized in all twelve languages. Successful no-action runs stay silent, including manual
+checks. Reset reporting each run while retaining session stale-read protections; never invent an
+owner count for a global exception. Backup failure still falls through to deletion.
+
 Follow bridge generation contract sections 17–19 and the runtime AGENTS.md for readiness, migration,
 recovery/removal, source isolation and restart behavior, including its post-load self-check requirements.
 Self-check must supplement missing copies of other mods' materials and their non-built-in dependencies,
@@ -278,7 +319,9 @@ complete copies, and report supplementation as migration requiring restart.
 
 Prepared material variants may share unchanged texture payloads inside their own bridge style's
 `Shared/` directory under the material generation contract. Keep every style's packaged dependency
-graph complete and preflight it before native registration.
+graph complete and preflight it before native registration, including implicit Surface-to-MidMips
+membership through the narrowly permitted shared read-only source cache. This does not permit
+cross-style Texture storage or sharing generated-owner files.
 
 ## Documentation language and format
 
@@ -308,3 +351,16 @@ Follow Bridge-Asset-Persistence.md sections 6–7 for owner-local short filename
 placement and backed-up file-only migration. Legacy sibling dependency directories remain valid
 migration inputs. Layout conflicts preserve healthy bridges and report incomplete migration;
 they do not authorize damaged-asset retirement. Native cold-load acceptance remains separate.
+
+
+## Offline source-atlas repeat materials
+
+Follow [the source-atlas offline derivation rule](docs/agent-contract/MATERIAL_GENERATION_CONTRACT.md#offline-source-atlas-repeat-materials).
+Do not add road or structural cuts solely for texture-period wraps, including Lift05 profile parts.
+Bake eligible independent tiling materials outside the game only where needed to avoid such cuts;
+fully reusable domains remain original. Preserve existing native seams and necessary shape, motion
+and actual material-domain boundaries, source density, independent axes/layers and finite terminals.
+Keep source assets unchanged; derived assets have independent identities and complete native
+dependencies. Full PBR/filter/mip and independent-load validation, 10 MB owner / 55 MB package
+limits and the ban on full-span pixels remain mandatory. This does not certify feasibility or
+authorize general structural rebaking, arbitrary crops or relaxed error thresholds.

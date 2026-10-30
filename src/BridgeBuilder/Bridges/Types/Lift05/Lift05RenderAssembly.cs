@@ -22,7 +22,12 @@ internal static class Lift05RenderAssembly
                 throw new InvalidOperationException($"Lift05 LOD {lod} requires its reconstructed native source.");
         }
 
-        return MovableRenderAssembly.CreateMechanism(factory, name, roadLevels, new[] { Numeric_Types_Lift05_Lift05RenderAssembly_cs.Values.I32[1], Numeric_Types_Lift05_Lift05RenderAssembly_cs.Values.I32[2], Numeric_Types_Lift05_Lift05RenderAssembly_cs.Values.I32[3] }, (lod, mesh, source, indices) => mesh == Numeric_Types_Lift05_Lift05RenderAssembly_cs.Values.I32[4] ? Lift05Glass.Create(lod, source, indices, halfWidthDelta) : Lift05StructurePlan.Create(lod, source, indices, halfWidthDelta));
+        // Resolve native dependencies on the main thread before affine workers.
+        // Original width retains its original materials without loading the unit.
+        var structuralSurface = halfWidthDelta == 0f ? null : Lift05StructuralMaterial.Resolve();
+        var contentMin = Lift05StructuralMaterial.ContentMin;
+        var contentMax = Lift05StructuralMaterial.ContentMax;
+        return MovableRenderAssembly.CreateMechanism(factory, name, roadLevels, new[] { Numeric_Types_Lift05_Lift05RenderAssembly_cs.Values.I32[1], Numeric_Types_Lift05_Lift05RenderAssembly_cs.Values.I32[2], Numeric_Types_Lift05_Lift05RenderAssembly_cs.Values.I32[3] }, (lod, mesh, source, indices) => mesh == Numeric_Types_Lift05_Lift05RenderAssembly_cs.Values.I32[4] ? Lift05Glass.Create(lod, source, indices, halfWidthDelta) : Lift05StructurePlan.Create(lod, source, indices, halfWidthDelta, structuralSurface, contentMin, contentMax));
     }
 }
 

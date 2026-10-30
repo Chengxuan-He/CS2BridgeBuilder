@@ -1,0 +1,47 @@
+#pragma kernel Check
+Texture2D<float4> Source;
+SamplerState sampler_Source;
+Texture2D<float4> Product;
+SamplerState sampler_Product;
+SamplerState sampler_linear_clamp;
+RWStructuredBuffer<float4> Results;
+float4 Region;
+float2 Periods;
+int2 Extent;
+int Mip;
+int Mode;
+[numthreads(8,8,1)]
+void Check(uint3 p:SV_DispatchThreadID)
+{
+ if(any(p.xy >= Extent)) return;
+ float2 q=(float2(p.xy)+0.5)/Extent;
+ float4 a,b;
+ if(Mode==0) {
+  a=Source.SampleLevel(sampler_Source,Region.xy+float2(frac(q.x),saturate(2*q.y-.5))*Region.zw,Mip);
+  b=Product.SampleLevel(sampler_Product,q,Mip);
+ } else if(Mode==1) {
+  // Diagnostic only. Repeat-to-itself equality never establishes source fidelity.
+  q=float2((float(p.x)-2.0)/float(Extent.x), (float(p.y)-2.0)/float(Extent.y));
+  a=Product.SampleLevel(sampler_Product,q,Mip);
+  b=Product.SampleLevel(sampler_Product,q+float2(1,-1),Mip);
+ } else if(Mode==3) {
+  q.y=.25+.5*q.y;
+  if(p.y==0)q.y=.25;
+  if(p.y==Extent.y-1)q.y=.75;
+  // Keep U away from its intentional repeat seam; only finite V is compared.
+  q.x=.5;
+  a=Product.SampleLevel(sampler_Product,q,Mip);
+  b=Product.SampleLevel(sampler_linear_clamp,q,Mip);
+ } else {
+  // Independent original atlas edge samples, not isolated-unit self comparison.
+  // One authored unit corresponds to 1/Periods of the prepared texture.
+  if(p.x==0) q.x=0;
+  if(p.x==Extent.x-1) q.x=1;
+  if(p.y==0) q.y=0;
+  if(p.y==Extent.y-1) q.y=1;
+  a=Source.SampleLevel(sampler_Source,Region.xy+q*Region.zw,Mip);
+  b=Product.SampleLevel(sampler_Product,float2(q.x,.25+.5*q.y),Mip);
+  if(p.x!=0&&p.x!=Extent.x-1&&p.y!=0&&p.y!=Extent.y-1) a=b;
+ }
+ Results[p.y*Extent.x+p.x]=abs(a-b);
+}

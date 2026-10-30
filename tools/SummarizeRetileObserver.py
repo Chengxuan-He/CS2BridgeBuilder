@@ -30,6 +30,7 @@ finally:
     for stream in streams.values():
         stream.close()
 retained = defaultdict(lambda: {"plans": 0, "domainOccurrences": 0, "sourceFaceOccurrences": 0})
+native = defaultdict(lambda: {"plans": 0, "domainOccurrences": 0})
 if args.source_uv:
     with args.source_uv.open() as source:
         for line in source:
@@ -39,6 +40,9 @@ if args.source_uv:
             retained[style]["plans"] += 1
             retained[style]["domainOccurrences"] += len(row["sourceUvDomains"])
             retained[style]["sourceFaceOccurrences"] += row["sourceFaces"]
+            if row.get("nativeNetwork", False):
+                native[style]["plans"] += 1
+                native[style]["domainOccurrences"] += len(row["nativeNetworkDomains"])
     for style in counts:
         if style not in streams:
             with gzip.open(args.output / (style + ".units.ndjson.gz"), "wb"):
@@ -46,6 +50,7 @@ if args.source_uv:
 (args.output / "summary.json").write_text(json.dumps({
     "input": str(args.input.resolve()), "styles": dict(sorted(counts.items())),
     "retainedSourceUv": dict(sorted(retained.items())),
+    "nativeNetworkSampling": dict(sorted(native.items())),
     "scope": "Emitted changed Units only; unchanged source faces omitted by production. CanUseSource is original chart/gradient capability, not total prepared repeat-region coverage or human acceptance."
 }, indent=2) + "\n", encoding="utf-8")
 print(json.dumps(counts, indent=2))

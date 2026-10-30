@@ -6,6 +6,8 @@ A Cities: Skylines II mod that builds a **bridge prefab** from parts you choose:
 deck, a bridge style to wear, and optionally something hung underneath.
 
 The rules generation is held to are in [AGENTS.md](AGENTS.md).
+Use the [documentation index](docs/README.md) to distinguish current contracts, native research
+and recorded implementation evidence.
 
 Contributors can follow [Adding a bridge style with a coding agent](#adding-a-bridge-style-with-a-coding-agent)
 for the evidence, implementation and acceptance workflow.

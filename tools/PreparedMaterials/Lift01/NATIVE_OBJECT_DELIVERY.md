@@ -4,7 +4,7 @@ Production inputs are rebuilt by `PrepareRebuild.py` from the real game COK arch
 
 ## Native network-to-object conversion
 
-Three network Surface inputs require template 33 to object template 0 conversion. The producer explicitly writes 137 applicable source-template float defaults, retaining original texture CIDs, integer/vector/color overrides and `_TANGENTSPACE_OCTO`. It does not decode or bake images.
+The three network Surface inputs have prepared template 33 to object template 0 descriptors for an object rendering context. The fixed `LiftBridge01Net` approach remains a native NetPiece graph and must retain its original network Surfaces instead; see [native network sampling](NATIVE_NETWORK_SAMPLING.md). Object descriptor availability does not prove equivalence of native distance mapping or worldspace layers. The producer explicitly writes 137 applicable source-template float defaults, retaining original texture CIDs, integer/vector/color overrides and `_TANGENTSPACE_OCTO`. It does not decode or bake images.
 
 | Original Surface CID | Output descriptor CID |
 | --- | --- |

@@ -1,5 +1,6 @@
 """Record native finite atlas uses; do not infer non-tiling from failed Retile output."""
 import collections
+import argparse
 import hashlib
 import io
 import json
@@ -80,6 +81,11 @@ def network_evidence(base, sources):
 
 
 def main():
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument('--output', type=Path)
+    args = parser.parse_args()
+    from FiniteTerminalEvidence import evidence
+    terminal = evidence()
     base = ROOT / 'artifacts/prepared-materials/Draw01'
     numbers = ROOT / 'assets/HardcodedNumbers/Draw01'
     sources = json.loads((base / 'rebuild-native-v1/sources.json').read_text())['sources']
@@ -235,6 +241,11 @@ def main():
                     reason = 'unresolved-network-mixed-axes'
             elif (np.any(tri < 0) or np.any(tri > 1)) and not (src['nativeVT'] and atlas_is_primary):
                 reason = 'unresolved-outside-native-atlas'
+            elif render == terminal['render'] and mesh == terminal['mesh'] and domain['index'] in terminal['domains']:
+                assert src['cid'] == terminal['sourceSurface'] and src['template'] == terminal['template'] and src['nativeVT']
+                # Independently inspected original finite VT terminal faces. Their
+                # original negative V is an atlas-clamped edge, not a repeat rate.
+                reason = 'non-tiling-native-vt-terminal'
             elif atlas_is_primary and any(
                     (Polygon(t).intersection(region).area > 0 if Polygon(t).area > 0
                      else MultiPoint(t).convex_hull.intersects(region))
@@ -310,14 +321,15 @@ internal static class Draw01UvSampling
 }
 '''
     (ROOT / 'src/BridgeBuilder/Bridges/Types/Draw01/Draw01UvSampling.cs').write_text(code)
-    out = base / 'non-tiling'
-    out.mkdir(exist_ok=True)
+    out = args.output or base / 'non-tiling'
+    out.mkdir(parents=True, exist_ok=True)
     totals = collections.Counter()
     for record in records:
         totals.update({key: len(ids) for key, ids in record['classifications'].items()})
     report = dict(style='Draw01', schema=1, resourceSha256=sha(resource), resourceBytes=len(raw),
                   nativeTemplateEvidence='source-sharing/report.json#nativeTemplateMappingProperties',
                   nativeNetworkEvidence=network,
+                  nativeTerminalEvidence=terminal,
                   repeatRegionsSha256=sha(repeat_path), repeatRegions=repeat_values.tolist(),
                   roadRegionEvidenceSha256=sha(road_manifest), roadRegions=road_regions,
                   undersideCorrectionSha256=sha(correction_path), totals=dict(totals),

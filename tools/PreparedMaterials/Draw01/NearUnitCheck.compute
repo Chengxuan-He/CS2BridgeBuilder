@@ -1,0 +1,18 @@
+#pragma kernel Check
+Texture2D<float4> Original;
+Texture2D<float4> Prepared;
+SamplerState sampler_Original;
+SamplerState sampler_Prepared;
+StructuredBuffer<float2> Points;
+RWStructuredBuffer<float4> Samples;
+int Count;
+int Mip;
+int NativeGrad;
+float FootprintRatio;
+float4 Region;
+float4 PreparedRegion;
+[numthreads(64,1,1)] void Check(uint3 id:SV_DispatchThreadID){
+ if(id.x>=Count)return;float2 p=Points[id.x];float2 uv=Region.xy+p*Region.zw;float2 unit=PreparedRegion.xy+p*PreparedRegion.zw;
+ if(NativeGrad!=0){uint w,h;Original.GetDimensions(w,h);float2 dx=float2(exp2(Mip)*FootprintRatio/w,0),dy=float2(0,exp2(Mip)/h);float2 scale=PreparedRegion.zw/Region.zw;Samples[id.x*2]=Original.SampleGrad(sampler_Original,uv,dx,dy);Samples[id.x*2+1]=Prepared.SampleGrad(sampler_Prepared,unit,dx*scale,dy*scale);}
+ else{Samples[id.x*2]=Original.SampleLevel(sampler_Original,uv,Mip);Samples[id.x*2+1]=Prepared.SampleLevel(sampler_Prepared,unit,Mip);}
+}

@@ -1,0 +1,3 @@
+#pragma kernel Probe
+Texture2D<float4> _Source;SamplerState sampler_Source;StructuredBuffer<float3> _Queries;RWStructuredBuffer<float4> _Result;int _Count;
+[numthreads(32,1,1)]void Probe(uint id:SV_DispatchThreadID){if(id<(uint)_Count)_Result[id]=_Source.SampleLevel(sampler_Source,_Queries[id].xy,_Queries[id].z);}

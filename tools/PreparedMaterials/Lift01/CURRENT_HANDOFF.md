@@ -1,19 +1,24 @@
-# Lift01 material continuation
+# Lift01 material continuation evidence
 
-## Current boundary
+This file records a specific continuation and its fixtures. For current shared delivery evidence
+use [SharedCurrent.md](../SharedCurrent.md); for requirements use the
+[material contract](../../../docs/agent-contract/MATERIAL_GENERATION_CONTRACT.md). Older payload
+counts and DLL hashes below are not the current installed-state claim.
+
+## Recorded continuation boundary
 
 Lift01 is not ready for human acceptance. This continuation changed no production
 source, material payload, or BBN resource and performed no texture baking or deployment.
-The authoritative prepared directory remains 74 files, 2,282,822 bytes. This is not
+The directory measured for that continuation contained 74 files, 2,282,822 bytes. This is not
 a generated-owner dependency measurement; the complete persisted owner graph remains
 unmeasured and must satisfy the separate 10,000,000-byte material limit.
 
-The coordinated current runtime DLL is
+The runtime DLL recorded by that continuation is
 `4BEFD3C8E992168AC076D22A42342807C49E0F0BF058960D4169E34B11677C05`.
 The shared schema-3 numeric migration preserves decoded arrays and scenario plans.
 The common decoder is now used by `BuildUvCharts.py`; the shared agent owns that
 consumer adaptation. The shared official SDK package measurement is 47,521,306
-bytes, below 50,000,000 bytes. See `../SharedCurrent.md` and
+bytes, below 55,000,000 bytes. See `../SharedCurrent.md` and
 `artifacts/prepared-materials/shared-numeric-recipe/` for authoritative shared
 verification. Package compliance does not establish Lift01 material coverage.
 

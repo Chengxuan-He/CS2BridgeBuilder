@@ -4,7 +4,8 @@ using System;
 namespace BridgeBuilder.Bridges;
 internal static class Lift02UvSampling
 {
-    internal static bool For(string render, int mesh, int domain)
+    internal static bool For(string render, int mesh, int domain) => Axes(render, mesh, domain) == 3;
+    internal static int Axes(string render, int mesh, int domain)
     {
         int route = (render, mesh) switch
         {
@@ -30,31 +31,31 @@ internal static class Lift02UvSampling
             ("LiftBridge02PillarBase Mesh", 0) => 19,
             _ => -1
         };
-        if (route < 0) return false;
+        if (route < 0) return 0;
         var values = Data.Items[route];
         if ((uint)domain >= (uint)values.Length)
             throw new ArgumentOutOfRangeException(nameof(domain), "Unrecorded Lift02 UV domain.");
         return values[domain];
     }
-    private static bool[][] Read()
+    private static int[][] Read()
     {
         var values = HardcodedNumbers.Load("Types_Lift02_Lift02UvSampling_cs").I32;
-        if (values.Length < 2 || values[0] != 1 || values[1] != 20)
+        if (values.Length < 2 || values[0] != 2 || values[1] != 20)
             throw new InvalidOperationException("Invalid Lift02 UV sampling resource.");
-        var result = new bool[values[1]][];
+        var result = new int[values[1]][];
         int offset = 2;
         for (int route = 0; route < result.Length; route++)
         {
             int count = values[offset++];
             if (count < 0 || count > values.Length - offset)
                 throw new InvalidOperationException("Invalid Lift02 UV sampling count.");
-            var flags = new bool[count];
+            var flags = new int[count];
             for (int domain = 0; domain < count; domain++)
             {
                 int value = values[offset++];
-                if (value != 0 && value != 1)
+                if (value < 0 || value > 3)
                     throw new InvalidOperationException("Invalid Lift02 UV sampling flag.");
-                flags[domain] = value == 1;
+                flags[domain] = value;
             }
             result[route] = flags;
         }
@@ -65,6 +66,6 @@ internal static class Lift02UvSampling
     private static class Data
     {
         static Data() { }
-        internal static readonly bool[][] Items = Read();
+        internal static readonly int[][] Items = Read();
     }
 }

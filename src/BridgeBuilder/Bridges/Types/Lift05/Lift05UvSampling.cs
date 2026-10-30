@@ -4,7 +4,9 @@ using System;
 namespace BridgeBuilder.Bridges;
 internal static class Lift05UvSampling
 {
-    internal static bool For(string render, int mesh, int domain)
+    internal static bool For(string render, int mesh, int domain) => Axes(render, mesh, domain) == 3;
+
+    internal static int Axes(string render, int mesh, int domain)
     {
         int index = (render, mesh) switch
         {
@@ -21,7 +23,7 @@ internal static class Lift05UvSampling
             ("LiftBridge05PillarBase_LOD2 Mesh", 0) => 10,
             _ => -1
         };
-        if (index < 0) return false;
+        if (index < 0) return 0;
         var flags = Data.Items[index];
         if ((uint)domain >= (uint)flags.Length)
             throw new InvalidOperationException("Lift05 UV sampling domain mismatch.");
@@ -30,24 +32,24 @@ internal static class Lift05UvSampling
     private static class Data
     {
         static Data() { }
-        internal static readonly bool[][] Items = Read();
-        private static bool[][] Read()
+        internal static readonly int[][] Items = Read();
+        private static int[][] Read()
         {
             var values = HardcodedNumbers.Load("Lift05UvSampling").I32;
-            if (values.Length < 2 || values[0] != 1 || values[1] != 11)
+            if (values.Length < 2 || values[0] != 2 || values[1] != 11)
                 throw new InvalidOperationException("Invalid Lift05 UV sampling schema.");
-            var result = new bool[values[1]][];
+            var result = new int[values[1]][];
             int at = 2;
             for (int mesh = 0; mesh < result.Length; mesh++)
             {
                 int count = values[at++];
-                var flags = result[mesh] = new bool[count];
+                var flags = result[mesh] = new int[count];
                 for (int d = 0; d < count; d++)
                 {
                     int flag = values[at++];
-                    if (flag != 0 && flag != 1)
+                    if (flag < 0 || flag > 3)
                         throw new InvalidOperationException("Invalid Lift05 UV sampling flag.");
-                    flags[d] = flag == 1;
+                    flags[d] = flag;
                 }
             }
             if (at != values.Length)

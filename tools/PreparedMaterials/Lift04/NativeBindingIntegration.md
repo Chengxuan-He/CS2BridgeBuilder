@@ -50,5 +50,5 @@ The binding catalog verifies source identities and physical dependencies without
 rebaking or copying built-in resources. The existing native original-identity test
 for shared code can exercise the retained compatible branch. All-region density
 extension, native full-mip appearance, independent persisted cold loading, and
-the complete 50,000,000-byte SDK package remain unverified. No production material,
+the complete 55,000,000-byte SDK package remain unverified. No production material,
 installed file, UI text or localization key is changed by this handoff.

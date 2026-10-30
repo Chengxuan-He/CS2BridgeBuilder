@@ -13,7 +13,7 @@ using BridgeBuilder.Bridges;
 // Read-only checks of persisted native resources. No texture encoding or mip generation.
 public static class Lift05RepeatUnitCheck
 {
- [Serializable] public sealed class Level { public string channel;public int mip,width,height,pixels;public float maxLinearError,maxRepeatSeamError,maxOriginalAtlasBoundaryDifference; }
+ [Serializable] public sealed class Level { public string channel;public int mip,width,height,pixels;public float maxLinearError,maxRepeatSeamError,maxOriginalAtlasBoundaryDifference,maxOldNearTransformError; }
  [Serializable] public sealed class Report { public string sourceCid,unitKey;public int textures,mips;public bool nativeHeaders,completeGraph,gameVisualAcceptance;public Level[] levels; }
  static void Need(bool yes,string why){if(!yes)throw new InvalidDataException(why);}
  public static void Run()
@@ -82,6 +82,7 @@ public static class Lift05RepeatUnitCheck
      Need(output.wrapMode==TextureWrapMode.Repeat&&output.filterMode==FilterMode.Trilinear&&output.anisoLevel==source.anisoLevel,"Native repeat sampling settings");
      Need(GraphicsFormatUtility.IsSRGBFormat(source.graphicsFormat)==GraphicsFormatUtility.IsSRGBFormat(output.graphicsFormat),"Channel color space");
      source.filterMode=FilterMode.Bilinear;source.wrapMode=TextureWrapMode.Clamp;
+     program.SetInts("RepeatAxes",unit.RepeatU?1:0,unit.RepeatV?1:0);
      program.SetTexture(kernel,"Source",source);program.SetTexture(kernel,"Product",output);
      program.SetVector("Region",new Vector4((float)unit.min[0],(float)unit.min[1],(float)(unit.max[0]-unit.min[0]),(float)(unit.max[1]-unit.min[1])));
      for(int mip=0;mip<output.mipmapCount;mip++)
@@ -89,7 +90,7 @@ public static class Lift05RepeatUnitCheck
       int w=Math.Max(1,output.width>>mip),h=Math.Max(1,output.height>>mip);var data=new Vector4[w*h];
       using var buffer=new ComputeBuffer(w*h,16);program.SetBuffer(kernel,"Results",buffer);program.SetInts("Extent",w,h);program.SetInt("Mip",mip);
       float Check(int mode){program.SetInt("Mode",mode);program.Dispatch(kernel,(w+7)/8,(h+7)/8,1);buffer.GetData(data);return data.Max(v=>Mathf.Max(Mathf.Max(v.x,v.y),Mathf.Max(v.z,v.w)));}
-      var level=new Level{channel=channel.name,mip=mip,width=w,height=h,pixels=w*h,maxLinearError=Check(0),maxRepeatSeamError=Check(1),maxOriginalAtlasBoundaryDifference=Check(2)};
+      var level=new Level{channel=channel.name,mip=mip,width=w,height=h,pixels=w*h,maxLinearError=Check(0),maxRepeatSeamError=Check(1),maxOriginalAtlasBoundaryDifference=Check(2),maxOldNearTransformError=Check(3)};
       levels.Add(level);
      }
     }
@@ -98,6 +99,7 @@ public static class Lift05RepeatUnitCheck
    var report=new Report{sourceCid=unit.sourceCid,unitKey=result.key,textures=maps.Count,mips=levels.Count,nativeHeaders=true,completeGraph=true,gameVisualAcceptance=false,levels=levels.ToArray()};
    File.WriteAllText(Path.Combine(root,unit.id+"-native-check.json"),JsonUtility.ToJson(report,true));
    Need(levels.All(l=>l.maxLinearError<=0.005f),"Converted pixel error exceeds RGBA8 quantization tolerance; see native-check.json");
+   Need(levels.All(l=>l.maxOldNearTransformError<=0.0001f),"Old near subrange mapping differs");
    Need(levels.All(l=>l.maxRepeatSeamError<=0.0001f),"Native Repeat periodicity differs; see native-check.json");
    Debug.Log("PASS Lift05 repeat candidate " + unit.id + ": original density; " + levels.Count + " channel/mip levels; native headers; pixel centers and repeat seams. Original atlas boundary difference remains a separate acceptance gate.");
    }

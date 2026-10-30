@@ -137,7 +137,8 @@ internal sealed class Lift03RoadSampling : IDisposable
         var road = index == Numeric_Types_Lift03_Lift03RoadSampling_cs.Values.I32[42] ? MainRoad : AuxiliaryRoad;
         var pose = index == Numeric_Types_Lift03_Lift03RoadSampling_cs.Values.I32[43] ? MainToObject : AuxiliaryToObject;
         var layout = new MovableSelectedRoadLayout(road, pose, deck == Deck.Main ? "Lift03 Main" : "Lift03 Auxiliary");
-        return MovableRoadPreparation.Prepare(road, pose, lod => CompileLod(deck, lod), sources, halfDelta, closedWorld, material, Lift03RoadPartitions.Carriageway, sidewalk, carriagewayAppearance, sidewalkAppearance, patches, Numeric_Types_Lift03_Lift03RoadSampling_cs.Values.I32[44], layout);
+        return MovableRoadPreparation.Prepare(road, pose, lod => CompileLod(deck, lod), sources, halfDelta, closedWorld, material, Lift03RoadPartitions.Carriageway, sidewalk, carriagewayAppearance, sidewalkAppearance, patches, Numeric_Types_Lift03_Lift03RoadSampling_cs.Values.I32[44], layout,
+            lod => Lift03RoadAppearance.ForLevel(deck, lod, sources[lod], pose, halfDelta));
     }
 
     private static int DeckIndex(Deck deck) => deck switch

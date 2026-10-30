@@ -25,7 +25,7 @@ internal static class BridgePortableMigration
         var swap = typeof(PrefabAsset).GetMethod("SetUninitializedInstance", BindingFlags.Instance | BindingFlags.NonPublic)!;
         try
         {
-            var assets = BridgeInspectionAssets.Read().Where(a => a.Owner == owner && a.Prefab != null).ToArray();
+            var assets = BridgeInspectionAssets.Read(candidate => candidate == owner).Where(a => a.Prefab != null).ToArray();
             var root = assets.Select(a => a.Prefab).OfType<NetGeometryPrefab>().FirstOrDefault(p => p.name == owner);
             if (root == null) { error = "Canonical bridge unavailable for independent migration"; return false; }
             var metadata = BridgeAssetCatalog.Find(owner) ?? new BridgeAssetInfo(owner, owner, "", null, "", "");

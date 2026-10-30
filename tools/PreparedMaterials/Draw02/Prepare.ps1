@@ -4,13 +4,15 @@ param(
     [Parameter(Mandatory)][string]$GameData,
     [Parameter(Mandatory)][string]$NativeAudit,
     [Parameter(Mandatory)][string]$Python,
-    [string[]]$ReadOnlyProductStores = @()
+    [string[]]$ReadOnlyProductStores = @(),
+    [switch]$LegacyEvidenceOnly
 )
 $ErrorActionPreference='Stop'
+if(!$LegacyEvidenceOnly){throw 'Legacy Draw02 RoadRepeat authoring is retired. Use the source-atlas and fixed-car phase/paint authoring tools described in README.md. -LegacyEvidenceOnly is for historical artifact reproduction only.'}
 $repo=[IO.Path]::GetFullPath((Join-Path $PSScriptRoot '../../..'))
 $work=Join-Path $repo 'artifacts/prepared-materials/Draw02'
 $inventory=Join-Path $work 'repeat-inventory.json'
-& $Python "$PSScriptRoot/ExportRecipes.py" $repo $GameData $NativeAudit "$repo/artifacts/uv-density/structure-seam-sources.json" $inventory
+& $Python "$PSScriptRoot/ExportRecipes.py" $repo $GameData $NativeAudit "$repo/artifacts/uv-density/structure-seam-sources.json" $inventory --legacy-evidence-only
 if($LASTEXITCODE -ne 0){throw 'Draw02 repeat extraction failed.'}
 & $Python "$PSScriptRoot/VerifyRecipes.py" $repo "$repo/artifacts/uv-density/native/DrawBridge02 Mesh.npz" $inventory "$work/source-density.json"
 if($LASTEXITCODE -ne 0){throw 'Draw02 source-density verification failed.'}

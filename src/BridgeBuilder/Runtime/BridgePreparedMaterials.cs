@@ -32,6 +32,10 @@ internal static class BridgePreparedMaterials
     private static readonly Dictionary<string, (AssetData Asset, string Digest)> Assets = new(StringComparer.OrdinalIgnoreCase);
     private static readonly Dictionary<string, SurfaceAsset> Surfaces = new(StringComparer.Ordinal);
     private static readonly HashSet<SurfaceAsset> RetainedSurfaces = new();
+    private static readonly Dictionary<string, string[]> MidMipEdges = new(StringComparer.OrdinalIgnoreCase);
+
+    internal static string[] MidMipDependencies(string surfaceCid)
+        => MidMipEdges.TryGetValue(surfaceCid, out var caches) ? caches : Array.Empty<string>();
 
     internal static void Initialize(string installationDirectory)
         => _root = Path.GetFullPath(Path.Combine(installationDirectory, "Materials"));
@@ -100,18 +104,27 @@ internal static class BridgePreparedMaterials
         var inputs = BridgePreparedMaterialFiles.Read(Path.Combine(_root, styleId), variant, name,
             bytes => BridgeSurfaceReferences.Read(bytes, (template, property) =>
                 AssetDatabase.global.resources.materialLibrary.GetMaterialDescription(template).GetStackConfigIndex(property) != -1),
-            cid => RequireBuiltin(cid, key));
+            cid => RequireBuiltin(cid, key), cid =>
+            {
+                var asset = RequireBuiltin(cid, key);
+                if (asset is not VTTextureAsset && asset is not VTSurfaceAsset) return 0;
+                using var stream = asset.GetReadStream();
+                return BridgeMidMipReferences.RequiredLevels(stream, asset is VTSurfaceAsset);
+            });
         foreach (var input in inputs)
         {
             if (Assets.TryGetValue(input.Cid, out var registered) && registered.Digest != input.Digest)
                 throw new InvalidDataException("Prepared material CID has different payloads: " + input.Cid);
         }
         var surfaceInput = inputs.Single(i => Path.GetFileName(i.Path) == name);
+        var cacheInputs = inputs.Where(i => Path.GetExtension(i.Path) == ".MidMips").ToArray();
+        MidMipEdges[surfaceInput.Cid] = cacheInputs.Select(i => i.Cid).Distinct().ToArray();
         if (_database == null)
         {
             _database = AssetDatabase<Descriptor>.GetInstance(new Descriptor(_root));
             AssetDatabase.global.RegisterDatabase(_database).GetAwaiter().GetResult();
         }
+        bool newCache = false;
         foreach (var input in inputs)
         {
             if (Assets.ContainsKey(input.Cid)) continue;
@@ -120,6 +133,15 @@ internal static class BridgePreparedMaterials
             // serialize, compress, copy, or save the file (native API verified).
             var asset = (AssetData)_database.AddAsset(path, Hash128.Parse(input.Cid));
             Assets.Add(input.Cid, (asset, input.Digest));
+            newCache |= asset is MidMipCacheAsset;
+        }
+        if (newCache)
+        {
+            var world = Unity.Entities.World.DefaultGameObjectInjectionWorld;
+            var streaming = world?.GetExistingSystemManaged<Colossal.IO.AssetDatabase.VirtualTexturing.TextureStreamingSystem>();
+            if (streaming == null) throw new InvalidOperationException("Native VT streaming is unavailable for prepared mid-mip registration.");
+            streaming.MarkVTAssetsDirty();
+            streaming.RefreshVT(_database);
         }
         var surface = (SurfaceAsset)Assets[surfaceInput.Cid].Asset;
         // Keep the immutable source descriptor's direct texture references alive.
@@ -140,7 +162,14 @@ internal static class BridgePreparedMaterials
                 {
                     // VT stack bindings are original authoring identities, not
                     // runtime Texture payload dependencies (some no longer exist).
-                    if (surface.isVTMaterial && description.GetStackConfigIndex(texture.Key) != -1) continue;
+                    if (surface.isVTMaterial && description.GetStackConfigIndex(texture.Key) != -1)
+                    {
+                        // Preserve authoring/provenance bindings even when no original
+                        // Texture payload exists. Lane compatibility compares these CIDs;
+                        // clearing them incorrectly falls back to a new runtime descriptor.
+                        textures.Add(texture.Key, texture.Value);
+                        continue;
+                    }
                     if (texture.Value == null)
                         throw new InvalidDataException("Prepared material texture is missing: " + key + "/" + texture.Key);
                     var cid = texture.Value.id.guid.ToString();
@@ -175,7 +204,8 @@ internal static class BridgePreparedMaterials
     {
         foreach (var surface in RetainedSurfaces) surface.UnloadProperties();
         RetainedSurfaces.Clear();
-        Surfaces.Clear(); Assets.Clear(); _root = null;
+        Surfaces.Clear(); Assets.Clear(); MidMipEdges.Clear(); _root = null;
+        BridgePreparedMaterialFiles.Clear();
         if (_database == null) return;
         AssetDatabase.global.UnregisterDatabase(_database).GetAwaiter().GetResult();
         _database.Dispose(); // Never MarkForDeletion: these are installed source assets.

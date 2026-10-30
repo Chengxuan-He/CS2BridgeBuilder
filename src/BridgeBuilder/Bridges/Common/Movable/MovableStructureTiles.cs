@@ -19,17 +19,45 @@ internal sealed class MovableStructureTiles
     }
 
     private readonly string _style;
+    private readonly bool _nativeNetworkGraph;
     private readonly Dictionary<SurfaceAsset,string> _sourceDigests=new();
     private readonly Dictionary<SurfaceAsset,SurfaceAsset> _nativeSurfaces=new();
     private readonly Dictionary<string,IReadOnlyList<MovableRepeatUnits.Region>> _regions=new();
 
-    internal MovableStructureTiles(string style) => _style=style;
+    internal MovableStructureTiles(string style):this(style,false) { }
+    internal MovableStructureTiles(string style, bool nativeNetworkGraph)
+    { _style=style; _nativeNetworkGraph=nativeNetworkGraph; }
+
+    // This capability belongs to a complete fixed NetPiece graph, including its
+    // plain RenderPrefab LOD children. Identity alone never grants that context.
+    internal bool PreserveNativeNetwork(string render,int mesh,SurfaceAsset source)
+    {
+        var cid=source.id.guid.ToString();
+        if(!NativeNetworkIdentity(render,mesh,cid))return false;
+        source.LoadHeader();
+        if(!source.isBuiltin || source.materialTemplateHash is not (17 or 33))
+            throw new System.InvalidOperationException("Measured native network surface changed: "+cid);
+        return true;
+    }
+
+    internal bool NativeNetworkIdentity(string render,int mesh,string cid)
+        =>_nativeNetworkGraph && (_style switch
+        {
+            "Draw01"=>Draw01NativeMaterials.IsNativeNetwork(render,mesh,cid),
+            "Draw02"=>Draw02NativeMaterials.IsNativeNetwork(render,mesh,cid),
+            "Draw03"=>Draw03NativeMaterials.IsNativeNetwork(render,mesh,cid),
+            "Lift01"=>Lift01NativeMaterials.IsNativeNetwork(render,mesh,cid),
+            _=>false
+        });
 
     internal MovableUvChart[] Charts(string render,int mesh,int parentDomain)
         => MovableUvCharts.For(_style,render,mesh,parentDomain);
 
     internal bool PreserveSourceUv(string render,int mesh,int parentDomain)
         => MovableUvSampling.For(_style,render,mesh,parentDomain);
+
+    internal int RetainedAxes(string render,int mesh,int parentDomain)
+        => MovableUvSampling.Axes(_style,render,mesh,parentDomain);
 
     internal SurfaceAsset NativeSurface(SurfaceAsset source)
     {

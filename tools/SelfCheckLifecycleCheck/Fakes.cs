@@ -62,8 +62,8 @@ namespace CS2Mods.Shared.Infrastructure
 namespace UnityEngine { public static class Application { public static string persistentDataPath = "unused"; } }
 namespace Colossal.IO.AssetDatabase
 {
-    public class PrefabAsset { public string path = ""; public AssetId id = new(); public Game.Prefabs.PrefabBase? Instance;
-        public T? GetInstance<T>() where T : class => Instance as T; }
+    public class PrefabAsset { public static int Reads; public string path = ""; public AssetId id = new(); public Game.Prefabs.PrefabBase? Instance;
+        public T? GetInstance<T>() where T : class { Reads++; return Instance as T; } }
     public class AssetId { public string guid = "01234567890123456789012345678901"; }
     public class ParadoxMods { }
     public class AssetDatabase<T> { public static AssetDatabase<T> instance = new(); public object dataSource = new ParadoxModsDataSource(); }
@@ -96,7 +96,7 @@ namespace BridgeBuilder
 }
 namespace BridgeBuilder.Settings
 {
-    public static class RuntimeUiText { public static string Get(string k, params object[] a) => k; }
+    public static class RuntimeUiText { public static string Get(string k, params object[] a) => a.Length == 0 ? k : k + "(" + string.Join(",", a) + ")"; }
     public class UiStringCatalog { public static UiStringCatalog Current = new(); public string Title = "Bridge Builder"; }
     public static class BridgeRecoveryLocation { public static string Path => "backup"; }
 }
@@ -114,11 +114,12 @@ namespace BridgeBuilder.Runtime
         { Calls++; if (Raise) throw new InvalidOperationException("fixture"); r = "null required reference"; return Invalid; }
     }
     public static class BridgeFileAccess { public static string Logical(string p) => p; }
-    public static class BridgeAssetInfo { public static bool TryFileOwner(string n, out string owner) { owner = "bridge"; return n.Contains("bridge"); } public static bool IsPrefabName(string? n) => n?.StartsWith("b") == true; }
+    public static class BridgeAssetInfo { public static bool TryFileOwner(string n, out string owner) { owner = n.Split(System.IO.Path.DirectorySeparatorChar, System.IO.Path.AltDirectorySeparatorChar).FirstOrDefault(part => part == "bridge" || part.StartsWith("bridge-")) ?? ""; return owner.Length != 0; } public static bool IsPrefabName(string? n) => n?.StartsWith("b") == true; }
     public class BridgeDiskAudit
     {
-        public static int Calls; public static bool Incomplete, Raise;
-        public bool RetireFiles(ISet<string> owners, string backup, out string error) { error = ""; return true; }
+        public static int Calls; public static bool Incomplete, Raise, BackupFailed, DeleteFailed;
+        public static Func<string, (bool Removed, bool Backup)>? Retirement;
+        public bool RetireFiles(ISet<string> owners, string backup, out string error) { var result = Retirement?.Invoke(owners.Single()) ?? (!DeleteFailed, !BackupFailed && !DeleteFailed); error = result.Item2 ? "" : "fixture file failure"; return result.Item1; }
         public bool Complete => !Incomplete; public string Error => "fixture failure";
         public Dictionary<string, string> Failures = new();
         public static BridgeDiskAudit ForMemoryFailures(string p, IDictionary<string,string> failures)

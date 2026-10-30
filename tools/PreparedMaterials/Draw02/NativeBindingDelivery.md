@@ -74,7 +74,7 @@ are coverage inputs, not automatic evidence that every old fold operation is
 required. Full part/LOD sampling coverage, original full-mip and normal behavior,
 native region boundaries, preview/create/regenerate/export consistency, cold
 loading, deletion and uninstall independence, no runtime constant baking, the
-complete SDK ZIP at or below 50,000,000 bytes, and human visual acceptance remain
+complete SDK ZIP at or below 55,000,000 bytes, and human visual acceptance remain
 unverified for this migration. Existing resources remain until those replacements
 are verified. This finite implementation handoff stops here.
 

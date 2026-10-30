@@ -6,15 +6,32 @@ for source independence, geometry, native rendering and per-owner persistence.
 
 ## Runtime invariants
 
+The [general source-mapping rule](BRIDGE_GENERATION_CONTRACT.md#preserve-original-uv-projection-and-mapping-mode) applies to **all fixed/non-movable and movable bridges**: preserve source projection and tiling/stretch mode per part, LOD, layer and axis.
+
+For movable bridges, reuse original non-road materials by default. Only evidenced repeat
+domains that would otherwise require new period-wrap seams may use the narrow offline
+source-atlas derivative in material contract section 3; do not add those seams. Keep source
+assets unchanged and give derived resources independent identities. Road composition/precomposition (offline material baking outside the game) has
+one entry condition: the prototype supports the actual appearance type and that type must use
+prototype appearance. Test asphalt, sidewalk surfacing and wheel-track/rut effects independently
+per prototype and physical domain. Other road types retain their original input materials and
+bypass composition. Preserve each source's projection and tiling/stretch mode per part, LOD,
+layer and axis. This is a generation rule, not a reverse-engineering finding or proof that the
+current implementation complies. Road processing must not mutate a shared structural Surface.
+
 Bridge generation contract section 2 prohibits all Boolean operations with prototype geometry,
 including hardcoded copies of prototype faces. Apply immutable measured construction coordinates
 and rules directly; offline prototype inspection does not authorize runtime mesh intersection.
 
-Material contract section 2 permits stretching only for verified prototype non-tiling UV mappings.
-Retain authored UVs, interpolating permitted construction fragments, native textures/resolution,
-channels, mips and compatible material identity. Record source/part/LOD/axis evidence; tiling axes
-retain original physical density. Failed mappings or missing repeat evidence do not qualify.
-This changes no geometry/bones, selected-road/track appearance, marking layout or byte limits.
+The general bridge source-mapping rule requires preserving the actual appearance source's authored UV behavior
+per part, LOD and axis: tiling remains tiling and evidenced stretching remains stretching, including
+mixed mappings. Existing appearance-selection rules determine the source; selected-road/track inputs
+may retain their own evidenced stretching behavior, never inherit it from a different bridge prototype.
+Retain authored UVs for stretching axes, interpolating permitted construction fragments, and preserve
+native textures/resolution, channels, mips and compatible material identity. Record source/part/LOD/axis
+evidence; tiling axes retain original physical density. Unknown mappings, failed conversion or missing
+repeat evidence do not authorize stretching. Full-road pattern baking remains prohibited, including
+multi-page output. This changes no geometry/bones, appearance-selection rules, marking layout or byte limits.
 
 - Meshes must use the prototype bridge's corresponding LOD meshes as their shape and complexity
   reference; derived geometry must not retain an unchanged prototype geometry reference. Excessive subdivision

@@ -2,6 +2,10 @@
 import hashlib, json, math, struct, sys
 from pathlib import Path
 
+if '--legacy-evidence-only' not in sys.argv:
+    raise SystemExit('Retired RoadRepeat aliases are historical only; pass --legacy-evidence-only to reproduce artifacts, never to stage production resources.')
+sys.argv.remove('--legacy-evidence-only')
+
 r=Path(sys.argv[1]).resolve()
 shared=r/'artifacts/shared-material-pipeline/composite-unit-check'
 out=r/'artifacts/prepared-materials/Draw02/repeat-units-v2/composite'

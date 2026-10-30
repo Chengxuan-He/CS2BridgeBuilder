@@ -1,0 +1,24 @@
+#pragma kernel Compare
+Texture2D<float4> Source, Candidate;
+SamplerState sampler_Source, sampler_Candidate;
+StructuredBuffer<float4> Samples;
+RWStructuredBuffer<float4> Differences;
+RWStructuredBuffer<float> Angles;
+float4 Region;
+float4 Content;
+float SourceLod;
+int Count, NormalChannel;
+float3 Decode(float4 value)
+{
+    float2 xy=float2(value.r*value.a,value.g)*2-1;
+    return normalize(float3(xy,sqrt(max(0,1-dot(xy,xy)))));
+}
+[numthreads(64,1,1)] void Compare(uint3 id:SV_DispatchThreadID)
+{
+    if(id.x>=Count)return;
+    float4 s=Samples[id.x];
+    float4 reference=Source.SampleLevel(sampler_Source,Region.xy+s.xy*Region.zw,SourceLod);
+    float4 actual=Candidate.SampleLevel(sampler_Candidate,Content.xy+s.xy*Content.zw,s.z);
+    Differences[id.x]=abs(reference-actual);
+    Angles[id.x]=NormalChannel==0?0:degrees(acos(clamp(dot(Decode(reference),Decode(actual)),-1,1)));
+}

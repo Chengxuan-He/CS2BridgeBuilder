@@ -25,14 +25,16 @@ internal static class Draw03RoadPreparation
             foreach (var triangle in roads[lod].Triangles)
             { Include(triangle.A.Position); Include(triangle.B.Position); Include(triangle.C.Position); }
         }
-        var carriageway = Draw03RoadAppearance.Regions(false, sample.RoadToObject);
-        var sidewalk = Draw03RoadAppearance.Regions(true, sample.RoadToObject);
-        var patches = Draw03RoadWearDomains.Apply(Draw03RoadAppearance.Patches(layout, sample.RoadToObject, span),
-            ref carriageway, ref sidewalk);
+        var appearances = new MovableRoadAppearance.Level[nativeLevels.Length];
+        for (int lod = 0; lod < appearances.Length; lod++)
+            appearances[lod] = lod < 2
+                ? Draw03PreparedRoad.Near(nativeLevels[lod].GetSurfaceAsset(0), layout, sample.RoadToObject, span)
+                : Draw03PreparedRoad.Far(nativeLevels[lod].GetSurfaceAsset(0), layout, sample.RoadToObject, span);
+        var near = appearances[0];
         return MovableRoadPreparation.Prepare(sample.Road, sample.RoadToObject, lod => roads[lod],
             nativeLevels, halfWidthDelta, closedWorld, material,
-            Draw03RoadPartitions.Carriageway, Draw03RoadPartitions.Sidewalk, carriageway, sidewalk,
-            patches, Numeric_Types_Draw03_Draw03RoadPreparation_cs.Values.I32[0], layout);
+            Draw03RoadPartitions.Carriageway, Draw03RoadPartitions.Sidewalk, near.Carriageway!, near.Sidewalk!,
+            near.Patches, Numeric_Types_Draw03_Draw03RoadPreparation_cs.Values.I32[0], layout, lod => appearances[lod]);
     }
 }
 

@@ -5,6 +5,7 @@
     <Compile Include="../../../../src/BridgeBuilder/Bridges/Common/Movable/MovableStructureKey.cs" />
     <Compile Include="../../../../src/BridgeBuilder/Bridges/Common/Movable/MovableExistingRoadSurface.cs" />
     <Compile Include="../../../../src/BridgeBuilder/Runtime/BridgePreparedMaterialFiles.cs" />
+    <Compile Include="../../../../src/BridgeBuilder/Runtime/BridgeMidMipReferences.cs" Link="BridgeMidMipReferences.cs" />
     <Compile Include="../../../../src/BridgeBuilder/Runtime/BridgeSurfaceReferences.cs" />
     <Reference Include="UnityEngine.CoreModule"><HintPath>$(GameManagedDir)/UnityEngine.CoreModule.dll</HintPath></Reference>
     <Reference Include="Colossal.IO.AssetDatabase"><HintPath>$(GameManagedDir)/Colossal.IO.AssetDatabase.dll</HintPath></Reference>

@@ -68,6 +68,7 @@ object Restore(JsonElement r,string style,string render,int mesh)
     var u=Activator.CreateInstance(unitType,true)!;
     void Set(string name,object? value)=>fields[name].SetValue(u,value);
     Set("Id",r.GetProperty("id").GetInt32());Set("Triangle",r.GetProperty("triangle").GetBoolean());Set("RepeatOnly",r.GetProperty("repeatOnly").GetBoolean());
+    if(fields.ContainsKey("RetainedAxes"))Set("RetainedAxes",r.TryGetProperty("retainedAxes",out var axes)?axes.GetInt32():0);
     Set("A",V(r.GetProperty("a")));Set("B",V(r.GetProperty("b")));Set("C",V(r.GetProperty("c")));
     var b=r.GetProperty("bounds");Set("Bounds",new Vector4(b[0].GetSingle(),b[1].GetSingle(),b[2].GetSingle(),b[3].GetSingle()));
     var points=(List<Vector2>)fields["Points"].GetValue(u)!;foreach(var p in r.GetProperty("points").EnumerateArray())points.Add(V(p));

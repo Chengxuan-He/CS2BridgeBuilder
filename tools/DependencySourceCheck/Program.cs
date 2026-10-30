@@ -50,6 +50,7 @@ foreach (var extension in new[]{".Prefab", ".Surface", ".Material", ".Texture", 
   "exclude foreign fallback "+extension+" before reading: "+error);
 }
 MaterialSnapshotCheck.Run(imported);
+MidMipSnapshotCheck.Run(imported);
 foreach(var fixture in args) {
  var payload=File.ReadAllBytes(fixture);
  var refs=BridgeSurfaceReferences.Read(payload,(_,_)=>false);
@@ -92,6 +93,8 @@ namespace BridgeBuilder {static class Mod{public static Logger Log=new();} class
 namespace BridgeBuilder.Runtime {
  static class BridgePreparedMaterials {
   internal static readonly Dictionary<string,AssetData> Assets=new();
+  internal static readonly Dictionary<string,string[]> MidMips=new();
+  internal static string[] MidMipDependencies(string cid)=>MidMips.TryGetValue(cid,out var found)?found:Array.Empty<string>();
   internal static bool TryGet(string cid,out AssetData asset)=>Assets.TryGetValue(cid,out asset!);
  }
 }

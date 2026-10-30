@@ -1,4 +1,10 @@
 # Lift04 network integration data
+This report retains source measurements and stage-specific implementation evidence. Early
+statements about missing callers, private branches or unfinished routing describe their recorded
+stage, not the current ten-style router. Use the [documentation index](README.md),
+[current contracts](agent-contract/README.md) and [shared handoff](../tools/PreparedMaterials/SharedCurrent.md)
+for current requirements and delivery evidence. Recorded tests do not certify the new material scheme.
+
 
 The independently measured LiftBridge04 network contains nineteen section entries: six span occurrences with three conditional branches each and one intersection-only median. Every occurrence was checked before emission; this is not an unverified application of another bridge's mapping.
 

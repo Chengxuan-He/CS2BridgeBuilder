@@ -101,7 +101,16 @@ def main():
             proof_path=BASE/'structure-inventory'/(unit['id'][7:]+'-evidence.json')
             if proof_path.exists():
                 proof=json.loads(proof_path.read_text()); unit['min']=proof['coverageBounds'][:2];unit['max']=proof['coverageBounds'][2:]
-    encoded=[1,len(mapping)]; records=[]; totals=collections.Counter()
+    profile_path=NUMBERS/'Types_Lift04_StructuralProfileRegions.bin'
+    profile_raw=profile_path.read_bytes()
+    assert hashlib.sha256(profile_raw[:-32]).digest()==profile_raw[-32:]
+    profile_counts=struct.unpack_from('<6i',profile_raw,8)
+    assert profile_counts==(0,0,0,0,0,40)
+    profile_regions=np.frombuffer(profile_raw,dtype='<f8',count=24,offset=32).reshape(-1,8)
+    continuation_path=Path(__file__).parent/'profile-continuations.json'
+    continuation=json.loads(continuation_path.read_text())
+    continuation_records={(r['render'],r['mesh'],r['domain']):r for r in continuation['records']}
+    encoded=[2,len(mapping)]; records=[]; totals=collections.Counter()
     for source in mapping:
         name,mi=source['render'],source['mesh']
         native_path=ROOT/'artifacts/uv-density/native'/(name+'.npz')
@@ -139,16 +148,28 @@ def main():
         flags=[];groups=collections.defaultdict(list)
         for index,fs in enumerate(read_domains(domain_path)):
             ids=list(fs)
+            points=triangles[ids]
+            # Source coverage is measured independently of generated width or
+            # rejection status. Preserve established both-axis beam/floor units.
+            in_both_axis=any(u['sourceDigest']==source['sourceDigest'] and u['id'] in ('beam','Lift04RoadUnit') and np.all(points>=u['min']) and np.all(points<=u['max']) for u in units)
+            mixed=source['sourceDigest']==beam['sourceDigest'] and not in_both_axis and any(np.all(points>=p[4:6]) and np.all(points<=p[6:8]) for p in profile_regions)
+            extra=continuation_records.get((name,mi,index))
+            if extra:
+                assert source['sourceDigest']==continuation['sourceDigest'] and source['sourceCid']==continuation['sourceCid']
+                assert extra['nativeSha256']==sha(native_path) and extra['faces']==ids
+                mixed=extra['role']=='mixed-beam-profile-continuation'
             if index in window_domains:
                 assert all(f in window_proof['sourceLocalFaces'] for f in ids)
                 reason='non-tiling-native-windows-local-yz'
+            elif extra and extra['role']=='finite-end-fascia':reason='non-tiling-finite-end-fascia'
             elif sources[source['sourceCid']]['semantics'] is None: reason='unknown-native-semantics'
+            elif mixed: reason='mixed-retain-u-density-v'
             elif repeat[ids].any(): reason='density-known-repeat-or-overlap'
             elif not valid[ids].all(): reason='unknown-atlas-boundary-traversal'
             else: reason='non-tiling-native-uv0-traversal'
-            flags.append(int(reason in ('non-tiling-native-uv0-traversal','non-tiling-native-windows-local-yz')));groups[reason].append(index)
+            flags.append(3 if reason in ('non-tiling-native-uv0-traversal','non-tiling-native-windows-local-yz','non-tiling-finite-end-fascia') else 1 if mixed else 0);groups[reason].append(index)
         if name=='LiftBridge04 Mesh' and mi==0:
-            assert flags[3]==0 and flags[28]==0, 'Known mixed/overlapping profiles must retain density handling'
+            assert flags[3]==flags[28]==1 and flags[8007]==3, 'Measured profile and finite fascia must remain distinct'
         encoded.extend([len(flags),*flags]);totals.update({k:len(v) for k,v in groups.items()})
         records.append(dict(**source,lod=2 if '_LOD2' in name else 1 if '_LOD1' in name else 0,materialSlot=mi,nativeSha256=sha(native_path),domainSha256=sha(domain_path),domainCount=len(flags),classifications=dict(groups),physicalOccurrences=traversals,nonTilingAxes=['U','V']))
         if window_proof:
@@ -162,7 +183,7 @@ def main():
     if '--write' not in sys.argv: return
     resource=NUMBERS/'Lift04UvSampling.bin'; resource.write_bytes(write_bbn(encoded,[]))
     assert read_bbn(resource.read_bytes())[0].tolist()==encoded
-    code=(ROOT/'src/BridgeBuilder/Bridges/Types/Draw01/Draw01UvSampling.cs').read_text().replace('Draw01','Lift04')
+    code=(Path(__file__).parent/'UvSampling.cs.template').read_text()
     start=code.index('        int index =');end=code.index('        if (index < 0)',start)
     code=code[:start]+'        int index = (render, mesh) switch\n        {\n'+''.join(f'            ("{r["render"]}", {r["mesh"]}) => {i},\n' for i,r in enumerate(records))+'            _ => -1\n        };\n'+code[end:]
     code=code.replace('values[1] != 25',f'values[1] != {len(records)}')
@@ -170,6 +191,9 @@ def main():
         code=code.replace('using System;','// Embedded numerical arrays: Lift04UvSampling\nusing System;',1)
     (ROOT/'src/BridgeBuilder/Bridges/Types/Lift04/Lift04UvSampling.cs').write_text(code)
     report['resourceSha256']=sha(resource);report['resourceBytes']=resource.stat().st_size
+    report['schema']=2;report['axisMasks']={'0':'density','1':'retain authored U, density V','2':'density U, retain authored V','3':'retain both'}
+    report['profileResourceSha256']=sha(profile_path)
+    report['continuationEvidenceSha256']=sha(continuation_path)
     report['topologySha256']=sha(topology_path)
     (out/'classification.json').write_text(json.dumps(report,separators=(',',':'))+'\n')
     print(json.dumps(dict(resourceBytes=resource.stat().st_size,resourceSha256=sha(resource))))

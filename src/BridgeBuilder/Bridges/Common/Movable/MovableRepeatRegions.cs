@@ -58,6 +58,13 @@ internal static partial class MovableRepeatUnits
                 :unit.Bounds.x+((double)unit.Bounds.z-unit.Bounds.x)*x;
             double v=unit.Triangle?unit.A.y+((double)unit.B.y-unit.A.y)*x+((double)unit.C.y-unit.A.y)*y
                 :unit.Bounds.y+((double)unit.Bounds.w-unit.Bounds.y)*y;
+            // Finite components are authored samples, not reconstructed repeat
+            // coordinates. Preserve them across an ill-conditioned UV inverse.
+            if(unit.RetainedAxes!=0 && unit.ExactSourceUvs!=null && unit.ExactSourceUvs.TryGetValue(uv,out var authored))
+            {
+                if((unit.RetainedAxes&1)!=0)u=authored.x;
+                if((unit.RetainedAxes&2)!=0)v=authored.y;
+            }
             return new[]{(u-MinU)/(MaxU-MinU),(v-MinV)/(MaxV-MinV)};
         }
     }

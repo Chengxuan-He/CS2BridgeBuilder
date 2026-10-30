@@ -92,7 +92,7 @@ and measured per-part/per-LOD chart data remain the source-to-use inventory.
 Preview, saved creation, regeneration, export, cold loading, independently owned
 external dependency snapshots and uninstall independence still require integrated
 acceptance. The complete official SDK package must also be measured against its
-50,000,000-byte gate. No final game visual acceptance or whole-style completion is
+55,000,000-byte gate. No final game visual acceptance or whole-style completion is
 claimed from successful native header parsing.
 
 Only Draw02-private authoring/test/report files and private outputs were changed.

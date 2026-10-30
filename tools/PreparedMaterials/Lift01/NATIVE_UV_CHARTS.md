@@ -67,7 +67,7 @@ bridge change neither expands the region nor clamps the UV to conceal the issue.
 Wide receivers outside their actual source charts remain unsupported by direct
 binding alone. Prepared Structure resources remain intact. Native material appearance,
 normal orientation, mip seams, preview/create/regenerate/export, independent cold
-loading and the complete 50 MB SDK package still require integration validation.
+loading and the complete 55 MB SDK package still require integration validation.
 
 Evidence is saved outside the private environment at
 `artifacts/prepared-materials/Lift01/native-charts/`: `report.json`, `charts.json`,

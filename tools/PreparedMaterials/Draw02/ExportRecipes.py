@@ -87,9 +87,13 @@ def extract(repo, game, audit_path, sources_path):
 
 def main():
     p = argparse.ArgumentParser(description=__doc__)
+    p.add_argument('--legacy-evidence-only', action='store_true', help='Reproduce retired historical artifacts; not production resources.')
     for name in ('repository','game_data','native_audit','structural_inventory','output'):
         p.add_argument(name, type=Path)
-    a = p.parse_args(); result = extract(a.repository,a.game_data,a.native_audit,a.structural_inventory)
+    a = p.parse_args()
+    if not a.legacy_evidence_only:
+        p.error('RoadRepeat recipes are retired; use the source-atlas and fixed-car phase/paint authoring path. Historical reproduction requires --legacy-evidence-only.')
+    result = extract(a.repository,a.game_data,a.native_audit,a.structural_inventory)
     a.output.parent.mkdir(parents=True, exist_ok=True)
     a.output.write_text(json.dumps(result, indent=2) + '\n', encoding='utf-8')
     print('PASS Draw02 repeat inventory: 4 pixel recipes, 5 descriptors, 16 projection aliases; exact Float32 bands and native source digest.')

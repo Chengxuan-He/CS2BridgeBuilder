@@ -1,4 +1,7 @@
-"""Check Lift04 recipe reachability and native source density without Unity."""
+"""Check the Lift04 near repeat recipe and measured anchor density without Unity.
+
+This does not certify all near/mid domains or the separate finite far mapping.
+"""
 import argparse
 import hashlib
 import json
@@ -48,10 +51,7 @@ def main():
     unit = recipes['units'][0]
     assert repeat_key(unit['sourceDigest'], units[0]) == unit['key']
     preparation = (args.repository / 'src/BridgeBuilder/Bridges/Common/Movable/MovableRoadPreparation.cs').read_text(encoding='utf-8-sig')
-    prototype_set = re.search(r'PrototypeRoad = layout.Prototype is ([^;]*?),', preparation)
-    if prototype_set is None or 'Lift04' in prototype_set[1]:
-        raise ValueError('Review changed Lift04 moving surface-type routing')
-    if 'Native = sources[0].GetSurfaceAsset(0)' not in preparation or 'lod < sources.Count' not in preparation:
+    if 'appearanceForLod?.Invoke(lod)' not in preparation or 'lod < sources.Count' not in preparation:
         raise ValueError('Review changed source material/LOD routing')
     renders = (args.repository / 'src/BridgeBuilder/Bridges/Types/Lift04/Lift04SourceRenders.cs').read_text(encoding='utf-8-sig')
     lods = re.findall(r'Create\("LiftBridge04(?:_LOD\d+)? Mesh",', renders)
@@ -104,12 +104,12 @@ def main():
                   channels=channels, missingControl='Opaque native blackTexture, supplied by the shared offline recipe',
                   sourceUnitPixels=source_pixels.tolist(), preparedUnitPixels=prepared_pixels.tolist(),
                   alignmentDensityRatio=(prepared_pixels / source_pixels).tolist(), checks=checks,
-                  reachability='Only cutout=true is reachable for the prototype repeat recipe; no bands. Moving original-surface path does not promote prototype asphalt for Lift04.',
+                  reachability='Historical repeat-recipe anchors only. Active near/mid Ballast mapping uses one hundred complete original-atlas cells; far uses seven finite native charts. This check does not certify active wrap seams.',
                   sourceMeshSHA256=hashlib.sha256(args.native_mesh.read_bytes()).hexdigest(),
                   scope='Native source and recipe verification only; actual prepared GPU payload and game rendering remain unverified.')
     args.output.parent.mkdir(parents=True, exist_ok=True)
     args.output.write_text(json.dumps(report, indent=2) + '\n', encoding='utf-8')
-    print('PASS Lift04: 3 native channels, 4 regions / 8 source faces, 1 reachable repeat variant; density preserved before block alignment.')
+    print('PASS Lift04 near recipe: 3 native channels, 4 anchors / 8 source faces; density preserved before block alignment. Full-domain acceptance remains separate.')
 
 
 if __name__ == '__main__':

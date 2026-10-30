@@ -17,12 +17,25 @@ internal static class BridgeDependencyCopies
         internal bool Owned;
         internal string Extension = "";
         internal string PhysicalPath = "";
+        internal string NativeFileName = "";
         internal byte[] Bytes = Array.Empty<byte>();
         internal string[]? SerializedReferences;
     }
 
     internal static string Folder(string gameRoot, string owner) =>
         Path.Combine(gameRoot, "ImportedData", owner, "Dependencies");
+
+    // MidMipCacheAsset.PostCreate derives its streaming tag from the basename.
+    // Scope that native name by CID; ordinary snapshots retain CID.ext filenames.
+    internal static string Destination(string gameRoot, string owner, string cid, Source source)
+    {
+        var folder = Folder(gameRoot, owner);
+        if (!source.Extension.Equals(".MidMips", StringComparison.OrdinalIgnoreCase))
+            return Path.Combine(folder, cid + source.Extension);
+        if (!Regex.IsMatch(source.NativeFileName, @"\ATS[0-9]+_MB[0-9]+\.MidMips\z"))
+            throw new InvalidDataException("Missing native MidMips tag filename: " + cid);
+        return Path.Combine(folder, cid, source.NativeFileName);
+    }
 
     internal static IEnumerable<string> References(Source source) => source.SerializedReferences
         ?? (source.Extension.Equals(".Prefab", StringComparison.OrdinalIgnoreCase)
@@ -81,7 +94,7 @@ internal static class BridgeDependencyCopies
             var verifiedExisting = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
             foreach (var copy in copies)
             {
-                var path = Path.Combine(folder, copy.Key + copy.Value.Extension);
+                var path = Destination(gameRoot, owner, copy.Key, copy.Value);
                 var payloadExists = BridgeFileAccess.Exists(path);
                 var sidecarExists = BridgeFileAccess.Exists(path + ".cid");
                 if (payloadExists && !Matches(path, copy.Value.Bytes))
@@ -96,7 +109,8 @@ internal static class BridgeDependencyCopies
             {
                 // Preflight already verified these immutable destinations; no writes or second read.
                 if (verifiedExisting.Contains(copy.Key)) { count++; continue; }
-                var path = Path.Combine(folder, copy.Key + copy.Value.Extension);
+                var path = Destination(gameRoot, owner, copy.Key, copy.Value);
+                Directory.CreateDirectory(BridgeFileAccess.Native(Path.GetDirectoryName(path)!));
                 if (!BridgeFileAccess.Exists(path))
                 {
                     using var stream = new FileStream(BridgeFileAccess.Native(path), FileMode.CreateNew, FileAccess.Write, FileShare.None);

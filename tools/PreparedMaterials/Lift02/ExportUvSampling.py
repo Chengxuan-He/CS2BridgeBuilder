@@ -1,4 +1,4 @@
-"""Measure finite native Lift02 UV traversals and emit the authored-UV allowlist.
+"""Measure native Lift02 UV traversals and emit independent retained-axis flags.
 
 No receiver failure, repeat-registry absence or texture pixel similarity is input.
 The exact native indexed chart, Surface and schema-aware domain records are inputs.
@@ -17,7 +17,7 @@ from ExportSharedSampling import read_string, count
 from PrepareRecipes import numbers, recipes
 
 ROOT = Path(__file__).resolve().parents[3]
-OUT = ROOT / 'artifacts/prepared-materials/Lift02/non-tiling'
+OUT = ROOT / 'artifacts/material-remap/Lift02/source-mapping'
 NUM = ROOT / 'assets/HardcodedNumbers/Lift02'
 RESOURCE = 'Types_Lift02_Lift02UvSampling_cs'
 RESEARCH = Path('C:/Users/admin/Documents/Codex/2026-10-15/c-users-admin-documents-codex-cs2bridgebuilder/work/bridge-research')
@@ -164,7 +164,7 @@ def main():
                                         and np.all(hi <= 1) and np.all(hi > lo)), lo, hi)
         return chart_bounds[offset]
 
-    payload = [1, len(meta['routes'])]
+    payload = [2, len(meta['routes'])]
     records = []
     totals = Counter()
     routes = []
@@ -180,6 +180,7 @@ def main():
         assert sha(native) == native_evidence['nativeSha256']
         data = np.load(native)
         faces = data[f'mesh{mesh}_faces']
+        positions = data[f'mesh{mesh}_positions'].astype(np.float64)
         uv = data[f'mesh{mesh}_uv0'][:, :2].astype(np.float64)
         triangles = uv[faces]
         edge1, edge2 = triangles[:, 1] - triangles[:, 0], triangles[:, 2] - triangles[:, 0]
@@ -190,13 +191,26 @@ def main():
             chartset = ints[route['offset'] + domain]
             charts = ints[chartset + 1:chartset + 1 + ints[chartset]]
             points = triangles[fs].reshape(-1, 2)
-            # Explicit repeat exclusions have priority, even though these also
-            # occupy bounded atlas rectangles. Selected-road routes are separate.
+            # Source sampling, not the existence of an old extracted repeat,
+            # decides the axes. Separate crossbeams reuse a complete finite island;
+            # that does not make one beam tile across its width.
             is_road = source['sourceCid'] == 'ea923855f34e05d7a517992fe064ddb7' and np.all(points >= road_lo) and np.all(points <= road_hi)
             if domain in repeat_domains[key]:
-                kind = 'density-repeat-crossbeam'
+                assert charts and all(finite_chart(c)[0] for c in charts)
+                assert np.all(points >= 0) and np.all(points <= 1)
+                kind = 'finite-authored-crossbeam-island-uv0'
             elif is_road:
-                kind = 'density-repeat-fixed-road'
+                # Every original face in this domain has U proportional only to
+                # longitudinal Z (or constant U on terminal faces). Its finite V
+                # cross section must not be repeated when width changes. Check
+                # every face in both detailed LODs, including top, bottom and ends.
+                p = positions[faces[fs]]
+                q = triangles[fs]
+                dz = p[:, 1:, 2] - p[:, :1, 2]
+                du = q[:, 1:, 0] - q[:, :1, 0]
+                assert np.all(dz[:, 0] * du[:, 1] == dz[:, 1] * du[:, 0])
+                assert np.all(du[dz == 0] == 0)
+                kind = 'longitudinal-u-finite-v-roadbed'
             elif not np.isfinite(points).all():
                 raise ValueError('Nonfinite native UV: ' + str((key, domain)))
             elif params[source['sourceCid']]['template'] == 2:
@@ -209,7 +223,8 @@ def main():
                 kind = 'finite-authored-clamped-island-uv0' if params[source['sourceCid']]['virtualTexturing'] else 'unresolved-atlas-boundary-traversal'
             else:
                 kind = 'finite-authored-island-uv0'
-            flags.append(int(kind.startswith('finite-authored-')))
+            flags.append(3 if kind.startswith('finite-authored-') else
+                         2 if kind == 'longitudinal-u-finite-v-roadbed' else 0)
             groups[kind].append(domain)
             totals[kind] += 1
         assert len(flags) == route['domains']
@@ -234,38 +249,39 @@ using System;
 namespace BridgeBuilder.Bridges;
 internal static class Lift02UvSampling
 {
-    internal static bool For(string render, int mesh, int domain)
+    internal static bool For(string render, int mesh, int domain) => Axes(render, mesh, domain) == 3;
+    internal static int Axes(string render, int mesh, int domain)
     {
         int route = (render, mesh) switch
         {
 SWITCHES
             _ => -1
         };
-        if (route < 0) return false;
+        if (route < 0) return 0;
         var values = Data.Items[route];
         if ((uint)domain >= (uint)values.Length)
             throw new ArgumentOutOfRangeException(nameof(domain), "Unrecorded Lift02 UV domain.");
         return values[domain];
     }
-    private static bool[][] Read()
+    private static int[][] Read()
     {
         var values = HardcodedNumbers.Load("Types_Lift02_Lift02UvSampling_cs").I32;
-        if (values.Length < 2 || values[0] != 1 || values[1] != ROUTECOUNT)
+        if (values.Length < 2 || values[0] != 2 || values[1] != ROUTECOUNT)
             throw new InvalidOperationException("Invalid Lift02 UV sampling resource.");
-        var result = new bool[values[1]][];
+        var result = new int[values[1]][];
         int offset = 2;
         for (int route = 0; route < result.Length; route++)
         {
             int count = values[offset++];
             if (count < 0 || count > values.Length - offset)
                 throw new InvalidOperationException("Invalid Lift02 UV sampling count.");
-            var flags = new bool[count];
+            var flags = new int[count];
             for (int domain = 0; domain < count; domain++)
             {
                 int value = values[offset++];
-                if (value != 0 && value != 1)
+                if (value < 0 || value > 3)
                     throw new InvalidOperationException("Invalid Lift02 UV sampling flag.");
-                flags[domain] = value == 1;
+                flags[domain] = value;
             }
             result[route] = flags;
         }
@@ -276,17 +292,17 @@ SWITCHES
     private static class Data
     {
         static Data() { }
-        internal static readonly bool[][] Items = Read();
+        internal static readonly int[][] Items = Read();
     }
 }
 '''.replace('SWITCHES', switches).replace('ROUTECOUNT', str(len(routes)))
     (ROOT / 'src/BridgeBuilder/Bridges/Types/Lift02/Lift02UvSampling.cs').write_text(code, encoding='utf-8')
-    report = dict(schema='BridgeBuilder/Lift02AuthoredUvSampling/1',
+    report = dict(schema='BridgeBuilder/Lift02AuthoredUvSampling/2',
                   sourceInventorySha256=sha(source_path), indexedChartsSha256=sha(chart_path),
                   nativeShaderEvidence=shader_evidence,
                   nativeWindowEvidence=window_evidence,
                   resourceSha256=sha(resource_path), resourceBytes=len(raw), totals=dict(totals), routes=records,
-                  evidenceRule='Actual source-indexed UV0 islands are finite authored traversals, with native descriptor transforms unchanged. Native SurfaceAsset VT registration preserves default Clamp, including finite out-of-range edge samples. Disconnected members sharing an island are distinct finite authored uses. Registered genuine repeats and the fixed-road unit are explicitly excluded.',
+                  evidenceRule='Actual source-indexed UV islands retain their original material and finite traversal. Reuse across separate crossbeams is not transverse tiling. Every roadbed-domain source face has longitudinal-only or constant U; V is a finite cross section. Retained-axis bits are U=1 and V=2. Existing longitudinal UV resets remain on original geometry, without new texture-period cuts.',
                   limits=['UV-degenerate domains preserve original point/line mappings; this is not a positive-density pass.', 'Windows retains complete UV0 and COLOR channels; its local YZ mapping is separate from ordinary UV0.XY density.', 'No density claim for allowed stretching; no selected-road or track mapping permission.', 'Native visual, motion and cold-load acceptance remain separate.'])
     (OUT / 'classification.json').write_text(json.dumps(report, indent=2) + '\n', encoding='utf-8')
     print(json.dumps(dict(totals=totals, resourceBytes=len(raw))))

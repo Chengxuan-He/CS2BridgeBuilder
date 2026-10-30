@@ -11,6 +11,7 @@ from BuildUvCharts import ROOT, domains, inputs
 from ExportRecipes import numbers
 from MovableUvDomainFormat import write_bbn
 from shapely.geometry import MultiPoint, box
+from Lift05FiniteParts import tower_caps, terminal_strips, repeated_profiles, narrow_profile_parts
 
 BASE = ROOT / 'artifacts/prepared-materials/Lift05'
 NUMBERS = ROOT / 'assets/HardcodedNumbers/Lift05'
@@ -127,7 +128,7 @@ def main():
     road_regions = source_data['roadPatches']
     repeats += [box(*r['min'], *r['max']) for r in road_regions]
     bindings = {(b['render'], b['materialSlot']): b for b in source_data['bindings']}
-    encoded, records = [1, len(bindings)], []
+    encoded, records = [2, len(bindings)], []
     for render, mesh, positions, uv, faces in inputs():
         binding = bindings[(render, mesh)]
         source = sources[binding['surfaceCid']]
@@ -162,6 +163,14 @@ def main():
                 geometrySha256=window['geometrySha256'], sourceLocalDomains=sorted(window_ids),
                 uvComponents='Full UV0 XYZW and COLOR retained; source-local mapping axes are UV0 YZ.')
         components = occurrences(positions, uv, faces)
+        cap_faces, cap_evidence = tower_caps(render, mesh, native_path, positions, uv, faces, components)
+        terminal_faces, terminal_evidence = terminal_strips(render, mesh, native_path, positions, uv, faces, components)
+        profile_faces, profile_evidence = repeated_profiles(render, mesh, native_path, positions, uv, faces, components)
+        narrow_faces, narrow_evidence, end_faces, end_evidence = narrow_profile_parts(render, mesh, native_path, positions, uv, faces, components)
+        terminal_faces.update(end_faces)
+        terminal_evidence.extend(end_evidence)
+        profile_faces.update(narrow_faces)
+        profile_evidence.extend(narrow_evidence)
         face_part = {}
         parts = []
         for part, membership in enumerate(components):
@@ -184,6 +193,15 @@ def main():
                 degenerate.append(d)
             if d in window_ids:
                 reason = 'non-tiling-native-window-local-yz'
+            elif cap_faces and set(membership) <= cap_faces:
+                assert source['nativeUv0Identity']
+                reason = 'non-tiling-native-upper-tower-cap'
+            elif terminal_faces and set(membership) <= terminal_faces:
+                assert source['nativeUv0Identity']
+                reason = 'non-tiling-native-terminal-panel'
+            elif profile_faces and set(membership) <= profile_faces:
+                assert source['nativeUv0Identity']
+                reason = 'repeat-u-finite-v-native-merged-profile'
             elif not source['nativeUv0Identity']:
                 reason = 'unresolved-native-window-semantics'
             elif not all(parts[p]['finiteAtlasTraversal'] for p in part_ids):
@@ -193,7 +211,8 @@ def main():
                 reason = 'density-existing-repeat-or-road-overlap'
             else:
                 reason = 'non-tiling-native-uv0-atlas'
-            flags.append(int(reason in ('non-tiling-native-uv0-atlas', 'non-tiling-native-window-local-yz')))
+            flags.append(2 if reason == 'repeat-u-finite-v-native-merged-profile' else
+                         3 if reason.startswith('non-tiling-') else 0)
             groups[reason].append(d)
         encoded.extend([len(flags), *flags])
         records.append(dict(render=render, mesh=mesh, materialSlot=mesh,
@@ -202,6 +221,9 @@ def main():
             nativeSha256=sha(native_path), domainSha256=sha(domain_path), domainCount=len(flags),
             nonTilingAxes=['UV0.Y', 'UV0.Z'] if window_evidence else ['U', 'V'],
             windowEvidence=window_evidence, classifications=dict(groups), degenerateDomains=degenerate,
+            finitePartEvidence=cap_evidence,
+            terminalPartEvidence=terminal_evidence,
+            mixedProfileEvidence=profile_evidence,
             domainParts=domain_parts, parts=parts))
     assert len(records) == len(bindings)
     resource = NUMBERS / 'Lift05UvSampling.bin'
@@ -216,7 +238,7 @@ def main():
         totals.update({k: len(v) for k, v in record['classifications'].items()})
     out = BASE / 'non-tiling'
     out.mkdir(exist_ok=True)
-    report = dict(style='Lift05', schema=1, totals=dict(totals), sources=list(sources.values()), meshes=records,
+    report = dict(style='Lift05', schema=2, axisMask='1 retain U; 2 retain V; 3 retain both; 0 density', totals=dict(totals), sources=list(sources.values()), meshes=records,
         resourceSha256=sha(resource), resourceBytes=resource.stat().st_size,
         nativeInputSha256=sha(source_path), nativeTemplateSha256=sha(template_path), currentTemplateCheckSha256=sha(template_check),
         windowTemplateSha256=sha(window_template_path),
@@ -236,13 +258,15 @@ using System;
 namespace BridgeBuilder.Bridges;
 internal static class Lift05UvSampling
 {
-    internal static bool For(string render, int mesh, int domain)
+    internal static bool For(string render, int mesh, int domain) => Axes(render, mesh, domain) == 3;
+
+    internal static int Axes(string render, int mesh, int domain)
     {
         int index = (render, mesh) switch
         {
 STREAMS            _ => -1
         };
-        if (index < 0) return false;
+        if (index < 0) return 0;
         var flags = Data.Items[index];
         if ((uint)domain >= (uint)flags.Length)
             throw new InvalidOperationException("Lift05 UV sampling domain mismatch.");
@@ -251,24 +275,24 @@ STREAMS            _ => -1
     private static class Data
     {
         static Data() { }
-        internal static readonly bool[][] Items = Read();
-        private static bool[][] Read()
+        internal static readonly int[][] Items = Read();
+        private static int[][] Read()
         {
             var values = HardcodedNumbers.Load("Lift05UvSampling").I32;
-            if (values.Length < 2 || values[0] != 1 || values[1] != STREAM_COUNT)
+            if (values.Length < 2 || values[0] != 2 || values[1] != STREAM_COUNT)
                 throw new InvalidOperationException("Invalid Lift05 UV sampling schema.");
-            var result = new bool[values[1]][];
+            var result = new int[values[1]][];
             int at = 2;
             for (int mesh = 0; mesh < result.Length; mesh++)
             {
                 int count = values[at++];
-                var flags = result[mesh] = new bool[count];
+                var flags = result[mesh] = new int[count];
                 for (int d = 0; d < count; d++)
                 {
                     int flag = values[at++];
-                    if (flag != 0 && flag != 1)
+                    if (flag < 0 || flag > 3)
                         throw new InvalidOperationException("Invalid Lift05 UV sampling flag.");
-                    flags[d] = flag == 1;
+                    flags[d] = flag;
                 }
             }
             if (at != values.Length)

@@ -1,0 +1,13 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType><TargetFramework>net8.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings><Nullable>enable</Nullable>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="../../src/BridgeBuilder/Bridges/Common/Movable/MovableMidMipSubset.cs" Link="MovableMidMipSubset.cs" />
+    <Compile Include="../../src/BridgeBuilder/Runtime/BridgeMidMipReferences.cs" Link="BridgeMidMipReferences.cs" />
+    <Compile Include="../../src/BridgeBuilder/Runtime/BridgeAssetInfo.cs" Link="BridgeAssetInfo.cs" />
+    <Compile Include="../../src/BridgeBuilder/Bridges/Common/Movable/MovableLaneMidMips.cs" Link="MovableLaneMidMips.cs" />
+    <Compile Include="../../src/BridgeBuilder/Bridges/Common/Movable/MovableAssetOwnership.cs" Link="MovableAssetOwnership.cs" />
+  </ItemGroup>
+</Project>

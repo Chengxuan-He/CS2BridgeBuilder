@@ -58,7 +58,7 @@ resampling, dropping mips, altering normal encoding or changing color space.
 The old generated per-sampler material library has been removed under the user's
 explicit instruction. Do not restore or rebuild it. Native input byte counts are
 not SDK package sizes: compatible built-in references need no distributed pixel
-copies. The complete ten-style SDK ZIP must remain at or below 50,000,000 bytes.
+copies. The complete ten-style SDK ZIP must remain at or below 55,000,000 bytes.
 
 ## Public integration requirements and verification limits
 

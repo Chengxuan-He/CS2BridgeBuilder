@@ -1,0 +1,27 @@
+#pragma kernel Check
+Texture2D<float4> Source, Product;
+SamplerState sampler_Source, sampler_Product;
+RWStructuredBuffer<float4> Results;
+StructuredBuffer<float4> Bands;
+int BandCount;
+float4 Region, Content;
+int2 Extent, RepeatAxes;
+int Mip, Mode, NormalChannel, SourceGuard;
+float3 Normal(float4 c){float2 xy=float2(c.r*c.a,c.g)*2-1;return normalize(float3(xy,sqrt(1-min(1,dot(xy,xy)))));}
+float2 Original(float2 q) {
+ float2 uv=Region.xy+q*Region.zw;
+ for(int i=0;i<BandCount;i++) {float4 b=Bands[2*i],r=Bands[2*i+1];if((i==0||q.x>=b.x)&&(q.x<b.y||i==BandCount-1)){uv=r.xy+float2((q.x-b.x)/(b.y-b.x),q.y)*r.zw;break;}}
+ return uv;
+}
+[numthreads(8,8,1)] void Check(uint3 p:SV_DispatchThreadID) {
+ if(any(p.xy>=Extent))return;
+ float2 q=(p.xy+.5)/Extent;float4 a,b;
+ if(Mode==0||Mode==6) {float2 source=q;if(RepeatAxes.x==0)source.x=SourceGuard!=0?(q.x-Content.x)/Content.z:saturate((q.x-Content.x)/Content.z);if(RepeatAxes.y==0)source.y=saturate((q.y-Content.y)/Content.w);a=Source.SampleLevel(sampler_Source,Original(source),Mip);b=Product.SampleLevel(sampler_Product,q,Mip);}
+ else if(Mode==1){q=(float2(p.xy)-2)/Extent;a=Product.SampleLevel(sampler_Product,q,Mip);b=Product.SampleLevel(sampler_Product,q+float2(RepeatAxes.x,-RepeatAxes.y),Mip);}
+ else {if(p.x==0)q.x=0;if(p.x==Extent.x-1)q.x=1;if(p.y==0)q.y=0;if(p.y==Extent.y-1)q.y=1;a=Source.SampleLevel(sampler_Source,Original(q),Mip);if(RepeatAxes.x==0)q.x=q.x*Content.z+Content.x;if(RepeatAxes.y==0)q.y=q.y*Content.w+Content.y;b=Product.SampleLevel(sampler_Product,q,Mip);if(p.x!=0&&p.x!=Extent.x-1&&p.y!=0&&p.y!=Extent.y-1)a=b;}
+ float4 difference=abs(a-b);
+ if(Mode==4&&(p.x!=0&&p.x!=Extent.x-1))difference=0;
+ if(Mode==5&&(p.y!=0&&p.y!=Extent.y-1))difference=0;
+ if(Mode==6)difference=NormalChannel&&q.x>=Content.x&&q.x<=Content.x+Content.z?acos(clamp(dot(Normal(a),Normal(b)),-1,1))*57.295779513:0;
+ Results[p.y*Extent.x+p.x]=difference;
+}

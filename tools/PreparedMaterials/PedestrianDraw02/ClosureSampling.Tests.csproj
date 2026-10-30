@@ -1,0 +1,15 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net8.0</TargetFramework>
+    <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
+    <ImportDirectoryBuildTargets>false</ImportDirectoryBuildTargets>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="ClosureSampling.Tests.cs" />
+    <Compile Include="../../../src/BridgeBuilder/Bridges/HardcodedNumbers.cs" />
+    <Compile Include="../../../src/BridgeBuilder/Bridges/Types/PedestrianDraw02/PedestrianDraw02UvSampling.cs" />
+    <EmbeddedResource Include="../../../assets/HardcodedNumbers/PedestrianDraw02/PedestrianDraw02UvSampling.bin" LogicalName="BridgeBuilder.Numbers.PedestrianDraw02UvSampling.bin" />
+  </ItemGroup>
+</Project>

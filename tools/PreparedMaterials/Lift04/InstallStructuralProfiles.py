@@ -4,6 +4,7 @@ import json
 from pathlib import Path
 import shutil
 import struct
+import runpy
 
 ROOT = Path(__file__).resolve().parents[3]
 candidate = ROOT/'artifacts/agent-material-env/Lift04/structural-profiles/guarded'
@@ -64,6 +65,7 @@ if 'private static class Lift04StructuralProfileData' not in code:
 }
 '''
 path.write_text(code)
+runpy.run_path(str(Path(__file__).with_name('InstallProfileContinuations.py')))
 shutil.copytree(candidate, retained/'candidate', dirs_exist_ok=True)
 shutil.copyfile(candidate.parent/'inputs/manifest.json', retained/'manifest.json')
 files = [dict(path=p.relative_to(target).as_posix(), bytes=p.stat().st_size) for p in target.rglob('*') if p.is_file()]

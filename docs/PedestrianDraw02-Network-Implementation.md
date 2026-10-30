@@ -1,4 +1,10 @@
 # PedestrianDraw02 network integration data
+This report retains source measurements and stage-specific implementation evidence. Early
+statements about missing callers, private branches or unfinished routing describe their recorded
+stage, not the current ten-style router. Use the [documentation index](README.md),
+[current contracts](agent-contract/README.md) and [shared handoff](../tools/PreparedMaterials/SharedCurrent.md)
+for current requirements and delivery evidence. Recorded tests do not certify the new material scheme.
+
 
 The independently audited PedestrianDrawBridge02 network has nine section entries in three lateral groups. Every group has the same measured three conditional branches, checked before emission. The selected pathway's own sections and occurrence conditions remain independent through the shared subsection converter.
 

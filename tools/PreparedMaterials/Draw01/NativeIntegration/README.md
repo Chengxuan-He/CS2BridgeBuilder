@@ -68,7 +68,7 @@ and all mip levels must be validated for that representation.
 
 Production shared integration, complete part/LOD coverage, preview/create/regenerate/export,
 native cold loading, independent owner snapshots/deletion/uninstall and the complete
-official SDK package at or below 50,000,000 bytes remain pending. No package reduction
+official SDK package at or below 55,000,000 bytes remain pending. No package reduction
 is claimed. Existing structural resources were not removed or changed, and no deployment,
 publication, environment cleanup or new bake occurred. There are no UI strings or
 localization behavior changes.

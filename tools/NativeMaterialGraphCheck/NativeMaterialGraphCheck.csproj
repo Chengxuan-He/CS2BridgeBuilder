@@ -4,5 +4,6 @@
     <Compile Include="../../src/BridgeBuilder/Runtime/BridgeSurfaceReferences.cs" Link="BridgeSurfaceReferences.cs" />
     <Compile Include="../../src/BridgeBuilder/Runtime/BridgeDependencyCopies.cs" Link="BridgeDependencyCopies.cs" />
     <Compile Include="../../src/BridgeBuilder/Runtime/BridgeFileAccess.cs" Link="BridgeFileAccess.cs" />
+    <Compile Include="../../src/BridgeBuilder/Runtime/BridgeMidMipReferences.cs" Link="BridgeMidMipReferences.cs" />
   </ItemGroup>
 </Project>

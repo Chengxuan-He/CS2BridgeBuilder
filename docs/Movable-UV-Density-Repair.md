@@ -1,4 +1,4 @@
-# Movable UV density repair status
+# Movable UV density repair evidence
 
 ## Scope
 
@@ -6,7 +6,7 @@ Draw01, Draw02, Draw03, Lift01–Lift05 and PedestrianDraw01–02; every compone
 The local research inventory contains 97 native Geometry files across these ten styles.
 An inventory is not a completed generated-output audit.
 
-## Confirmed defects
+## Defects recorded in the initial audit
 
 - Shared road composition chooses the smaller of two directional source densities.
 - Each non-repeating chart is fitted into a single page before packing.
@@ -15,27 +15,29 @@ An inventory is not a completed generated-output audit.
 - Structural generation ordinarily copies UV0 while applying width-dependent geometry.
 - Draw01's repaired UV seams still do not compensate texture density for widened panels.
 
-Latest available Draw01 generation log (2026-10-23 23:57:48): 7/40 asphalt domains tiled;
+Draw01 generation log retained from the initial audit (2026-10-23 23:57:48): 7/40 asphalt domains tiled;
 37 packed charts; page size 4096; packing scale 0.34867835; logged minimum native-density
 scale 0.0415762626. The logging expression already multiplies the chart-fit and packing
 scales: it must not be multiplied again. For the limiting chart this is approximately
 4.16 percent of the requested linear density before integer pixel rounding.
 This is evidence of a resolution defect, not an acceptable quality/performance tradeoff.
 
-## Required implementation
+## Current implementation requirements
 
-1. Establish prototype/source texture dimensions and per-triangle texel metrics across
-   all LODs, including sparse native channels and atlas seams.
-2. Replace full-span mixed-surface bakes with bounded native-density appearance units,
-   retaining surface masks and original non-asphalt layers.
-3. Retile deformed structural panels within their measured islands; do not scale UVs
-   into adjacent atlas content or stretch a fixed-resolution cropped tile across a wider panel.
-4. Keep native batch/texture limits through valid grouping and bounded units, rather than
-   silent quality reduction or dropping geometry.
-5. Check actual generated Geometry/Surface/Texture resources, mip chains, persistence,
-   previews and city rendering. Record each style/component/LOD result separately.
+Use the [general bridge UV rule](agent-contract/BRIDGE_GENERATION_CONTRACT.md#preserve-original-uv-projection-and-mapping-mode)
+and [material contract](agent-contract/MATERIAL_GENERATION_CONTRACT.md) as the current requirements.
+Non-road materials remain original. Only prototype-supported road types enter composition or
+precomposition (offline material baking outside the game); other road types use their original materials. Preserve original tiling/stretch
+behavior per part, LOD, layer and axis. Do not force finite mappings into density-preserving repeats.
 
-## Current result
+Independent layers must not share one mandatory common period. The old universal 0.01-pixel
+phase cutoff is not the accepted policy; its replacement per-layer tolerance remains unvalidated.
+Full-road rasterization is prohibited for periodic and nonperiodic patterns, even when split
+across pages or existing faces. GPU capacity is not an acceptance criterion. Original geometry
+UV repetition does not authorize arbitrary triangle crops, structural replacement materials or
+new period cuts. Generated-output sampling, persistence, budgets and human acceptance remain pending.
+
+## Recorded implementation increments
 
 ### Triangle-level asphalt routing increment (2026-10-24)
 
@@ -243,7 +245,8 @@ sampled channel, instead of using only the base-color dimensions.
 Mixed road receivers use a bounded longitudinal repeating unit when all sampled
 projections have a common period. Repeat and mirror samplers are considered explicitly;
 clamped coordinates cannot be treated as periodic. The accumulated phase error over
-the entire receiver must remain below 0.01 source pixels. One-pixel constant channels
+the entire receiver was required by that implementation to remain below 0.01 source pixels.
+This common-period cutoff is recorded behavior, not the current independent-layer requirement. One-pixel constant channels
 and unbound control defaults do not impose a spurious period. Distinct native surface
 layers and original phase are preserved. Only exactly equal source recipes share a
 unit within the current generation; there is no generated-result cache.
@@ -251,12 +254,14 @@ unit within the current generation; there is no generated-result cache.
 The native `TextureAsset` writer stores one wrap mode, not independent U/V modes.
 Periodic composites therefore retain source-sampled transverse guard bands and use
 the full texture extent only along the periodic axis. Their geometry is not cut at
-texture periods. Nonperiodic charts retain their full pixel footprint on additional
-native pages. A nonperiodic chart larger than the GPU limit now fails explicitly;
+texture periods. That implementation retained nonperiodic charts' full pixel footprint on additional
+native pages; this is not an allowed full-road representation under the current contract. A nonperiodic chart larger than the GPU limit now fails explicitly;
 providing bounded coverage for every such supported input remains implementation
 work, rather than permission to downsample or report completion.
 
-Nonrectangular structural regions now use existing source triangles as repeat units.
+That implementation used existing source triangles as structural repeat units. This historical
+representation is not authorization to treat arbitrary triangles as genuine units or replace
+non-road materials under the current contract.
 The second half of a parallelogram samples a 180-degree rotation of the same source
 triangle; it never substitutes an adjacent atlas island. Normal XY directions rotate
 with that half. Source physical frames also support rank-one UVs without an inverse
@@ -608,10 +613,11 @@ The generation sampler explicitly reads mip zero; generated output mip chains ar
 still created by the existing production mip/BC7 pipeline. This does not rewrite
 original resources or change generated assets to a custom runtime shader.
 
-For nonperiodic roads, an oversized union of coplanar receivers is now partitioned
+In that recorded implementation, an oversized union of nonperiodic coplanar receivers was partitioned
 at existing face boundaries by `MovableChartPartition`. Each resulting chart retains
 the source frame, phase and density. No triangle is cut, removed or duplicated.
-A single original face that exceeds the GPU limit at its original density still
+Splitting full-road rasterization at existing faces does not satisfy the current material contract.
+In that implementation, a single original face exceeding the GPU limit at its original density still
 fails explicitly. The latest recorded game log did not demonstrate such a single
 face; handling that case remains an implementation limitation, not a reported
 observed failure.

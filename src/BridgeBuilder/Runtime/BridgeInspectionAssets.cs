@@ -15,7 +15,7 @@ internal static class BridgeInspectionAssets
         internal PrefabBase? Prefab;
     }
 
-    internal static IEnumerable<Entry> Read()
+    internal static IEnumerable<Entry> Read(Func<string, bool>? includeOwner = null)
     {
         var root = Path.GetFullPath(BridgeAssetCatalog.Root).TrimEnd(Path.DirectorySeparatorChar);
         foreach (var asset in AssetDatabase.user.GetAssets<PrefabAsset>())
@@ -24,7 +24,8 @@ internal static class BridgeInspectionAssets
             if (!path.StartsWith(root + Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase)) continue;
             var relative = path.Substring(root.Length + 1);
             if (!BridgeAssetInfo.TryFileOwner(relative, out var owner)
-                || BridgeStartupRecovery.Retired.Contains(owner)) continue;
+                || BridgeStartupRecovery.Retired.Contains(owner)
+                || (includeOwner != null && !includeOwner(owner))) continue;
             yield return new Entry { Owner = owner, Path = path, Cid = asset.id.guid.ToString(),
                 Prefab = asset.GetInstance<PrefabBase>() };
         }

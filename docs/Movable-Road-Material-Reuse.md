@@ -5,15 +5,19 @@
 Follow the [material generation contract](agent-contract/MATERIAL_GENERATION_CONTRACT.md)
 and [movable surface selection](agent-contract/MOVABLE_BRIDGES_CONTRACT.md#243-material-selection-order).
 Choose by actual surface type and physical motion domain, not by the containing section's name.
-All asphalt, including empty lanes and parking areas, is road surface. Unsupported moving surface
+All asphalt, including empty lanes and parking areas, is road surface. Only prototype-supported
+appearance types enter composition/precomposition (offline material baking outside the game) to use prototype appearance; other types bind
+their original input materials. Asphalt, sidewalks and wheel-track/rut effects are independent
+per-prototype support decisions. Unsupported moving surface
 types and rails/sleepers preserve the selected source appearance; stationary edge abutments keep
 their separate rules. Never substitute a visually similar prototype material for missing conversion.
 
 | Content | Required appearance and representation |
 | --- | --- |
 | Compatible original object material | Direct original reference and compatible UVs; no new material or texture |
-| Carried prototype structure | Original material semantics; measured repeat/remapping when width deformation changes density |
-| Repeating road or grating | Original compatible texture/material, or an offline-prepared repeat unit at native density |
+| Carried prototype structure | Original material and texture identities; preserve original per-axis tiling/stretch mapping without structural material replacement |
+| Prototype-supported repeating road type | Compose/precompose its prototype appearance; reuse a resolved result or necessary prepared genuine unit at native density |
+| Unsupported road appearance type | Original input material and mapping; no composition |
 | Fixed platforms and caps | Separate measured appearance domains, preserved structure and per-side sidewalk layout |
 | Rails and sleepers | Selected track's original appearance and UVs; measured native object conversion only when necessary |
 | Overhead wires | Selected native cable appearance and measured object conversion; no invented transparent fallback |

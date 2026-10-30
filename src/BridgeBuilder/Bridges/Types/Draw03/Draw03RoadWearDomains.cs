@@ -9,7 +9,7 @@ namespace BridgeBuilder.Bridges;
 // common road clipper preserves attributes; original physical trees own bones.
 internal static class Draw03RoadWearDomains
 {
-    internal static Patch[] Apply(Patch[] source, ref Partition carriageway, ref Partition sidewalk)
+    internal static Patch[] Apply(Patch[] source, ref Partition carriageway, ref Partition sidewalk, bool prepared = false)
     {
         var patches = new List<Patch>(source);
         var domains = new Dictionary<int, Partition>();
@@ -31,7 +31,7 @@ internal static class Draw03RoadWearDomains
             {
                 if (bands[i].Start != previous || bands[i].End <= previous)
                     throw new InvalidOperationException("Draw03 appearance bands must be contiguous.");
-                patches.Add(Draw03RoadWearUnits.ForBand(patch, i));
+                patches.Add(prepared ? Draw03PreparedRoad.Band(patch, i) : Draw03RoadWearUnits.ForBand(patch, i));
                 previous = bands[i].End;
             }
 

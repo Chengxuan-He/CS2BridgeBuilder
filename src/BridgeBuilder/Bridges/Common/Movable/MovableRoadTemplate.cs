@@ -25,14 +25,12 @@ internal static class MovableRoadTemplate
     // measured prototype triangles (including copies stored in source tables).
     internal static Triangle[] Prepare(Bound[] input, bool[] converted)
     {
-        Vertex Receiver(Vertex v) => new(v.Position, v.Normal, v.Tangent, Vector4.zero, Color.white);
-        var receivers = input.Select(b =>
-        {
-            var t = b.Geometry;
-            return !converted[t.Material] ? b : new Bound(new Triangle(
-                Receiver(t.A), Receiver(t.B), Receiver(t.C), t.Material, t.Occurrence, t.SourceTriangle), b.Bone);
-        }).ToArray();
-        var prepared = receivers.Select(b => b.Geometry).ToArray();
+        // Appearance selection happens after physical partitioning. Even network
+        // receivers must retain evaluated source UVs and vertex colors here:
+        // unsupported types reuse that mapping, and supported composites still
+        // need the original mask coordinates. A prototype projection must never
+        // erase those inputs before the per-layer decision has been made.
+        var prepared = input.Select(b => b.Geometry).ToArray();
         Mod.Log.Info($"Hardcoded road domains: selectedFaces={input.Length}; preparedFaces={prepared.Length}; prototype intersections=0.");
         return prepared;
     }

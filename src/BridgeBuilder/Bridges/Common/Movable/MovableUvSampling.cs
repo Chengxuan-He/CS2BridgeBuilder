@@ -5,6 +5,14 @@ namespace BridgeBuilder.Bridges;
 // measured domains opt in; selected-road projection does not use this catalogue.
 internal static class MovableUvSampling
 {
+    internal static int Axes(string style,string render,int mesh,int domain)
+        =>style switch
+        {
+            "Lift02"=>Lift02UvSampling.Axes(render,mesh,domain),
+            "Lift04"=>Lift04UvSampling.Axes(render,mesh,domain),
+            "Lift05"=>Lift05UvSampling.Axes(render,mesh,domain),
+            _=>For(style,render,mesh,domain)?3:0
+        };
     internal static bool For(string style,string render,int mesh,int domain)=>style switch
     {
         "Draw01"=>Draw01UvSampling.For(render,mesh,domain),

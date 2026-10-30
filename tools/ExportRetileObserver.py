@@ -48,17 +48,20 @@ if args.cpu:
     first = body.index("        if(recipe==null")
     uv = body.index("        Vector2 Uv2(int index)")
     body = body[:first] + """        if(recipe==null || recipe.Items.Length==0)return Array.Empty<object>();
-        var tiles=new MovableStructureTiles(style);
+        var tiles=new MovableStructureTiles(style,nativeNetwork);
+        if(tiles.NativeNetworkIdentity(renderName,meshIndex,sourceCid))
+            return new object[]{new Dictionary<int,MovableStructurePacking.Unit>(),new Dictionary<int,int>(),
+                new Dictionary<int,List<(int Face,int FragmentTriangle)>>(),new List<int>(),true};
         float Uv(int index,int axis) => !uvHalf
             ? BitConverter.ToSingle(uvBytes,index*uvStride+axis*4)
             : (float)new half {value=BitConverter.ToUInt16(uvBytes,index*uvStride+axis*2)};
 """ + body[uv:]
     body = body.replace("if(frames.Count==0){models.Add(original);surfaces.Add(tiles.NativeSurface(surface));return;}",
-                        "if(frames.Count==0)return new object[]{new Dictionary<int,MovableStructurePacking.Unit>(),observerParents,observerFaces,observerRetained};")
+                        "if(frames.Count==0)return new object[]{new Dictionary<int,MovableStructurePacking.Unit>(),observerParents,observerFaces,observerRetained,false};")
     code = code[:code.index("    internal static void Append(")] + """    internal static object[] Observe(string renderName,int meshIndex,
-        MovableStructureModel.Plan plan,byte[] uvBytes,int uvStride,bool uvHalf,string style)
+        MovableStructureModel.Plan plan,byte[] uvBytes,int uvStride,bool uvHalf,string style,bool nativeNetwork,string sourceCid)
     {
-""" + body + "        return new object[]{units,observerParents,observerFaces,observerRetained};\n    }\n}\n"
+""" + body + "        return new object[]{units,observerParents,observerFaces,observerRetained,false};\n    }\n}\n"
     code = code.replace("internal static class MovableStructureRetile", "internal static class CpuRetileObserver")
 target = args.output / source.name
 target.write_text(code, encoding="utf-8", newline="\n")
@@ -98,6 +101,13 @@ if args.cpu:
     program = program[:program.index('        var positions=Field<Vector3[]>(plan,"Positions");')]
     program = program.replace('bool probeParentSamplers=', 'bool fingerprints=args.Contains("--plan-fingerprints");\nargs=args.Where(a=>a!="--plan-fingerprints").ToArray();\nbool probeParentSamplers=')
     program = program.replace('bool fingerprints=', 'var stylesArgument=args.SingleOrDefault(a=>a.StartsWith("--styles="));\nvar selectedStyles=stylesArgument?.Substring(9).Split(\',\').ToHashSet(StringComparer.Ordinal);\nargs=args.Where(a=>!a.StartsWith("--styles=")).ToArray();\nbool fingerprints=')
+    program = program.replace('bool fingerprints=', '''var networkArgument=args.Single(a=>a.StartsWith("--network-evidence="));
+var networkPath=networkArgument.Substring("--network-evidence=".Length);
+var networkEvidence=JsonDocument.Parse(File.ReadAllText(networkPath)).RootElement.EnumerateArray()
+    .ToDictionary(e=>(e.GetProperty("style").GetString()!,e.GetProperty("render").GetString()!,e.GetProperty("mesh").GetInt32()),
+        e=>e.GetProperty("sourceCid").GetString()!);
+args=args.Where(a=>!a.StartsWith("--network-evidence=")).ToArray();
+bool fingerprints=''')
     program = program.replace('    evaluatedInputs++;', '    if(selectedStyles!=null)\n    {\n        var styleMatch=System.Text.RegularExpressions.Regex.Match(name,@"^(PedestrianDraw|Draw|Lift)Bridge(\\d{2})");\n        if(!styleMatch.Success || !selectedStyles.Contains(styleMatch.Groups[1].Value+styleMatch.Groups[2].Value))continue;\n    }\n    evaluatedInputs++;')
     program = program.replace('var nativeCodec=new NativeUvCodec(Path.Combine(managed,"../Plugins/x86_64/PipelinePlugin.dll"));', '')
     program = program.replace('var preparationUnits = new Dictionary<string, object>();',
@@ -116,7 +126,8 @@ if args.cpu:
         if(!match.Success)throw new Exception("Unknown style: "+name);
         string style=match.Groups[1].Value+match.Groups[2].Value;
         var observe=mod.GetType("BridgeBuilder.Bridges.CpuRetileObserver")!.GetMethod("Observe",BindingFlags.Static|BindingFlags.NonPublic)!;
-        var result=(object[])observe.Invoke(null,new object[]{name,mesh,plan,rawUv,8,false,style})!;
+        bool nativeNetwork=networkEvidence.TryGetValue((style,name,mesh),out var sourceCid);
+        var result=(object[])observe.Invoke(null,new object[]{name,mesh,plan,rawUv,8,false,style,nativeNetwork,sourceCid??""})!;
         if(result.Length==0)continue;
         var emitted=(System.Collections.IDictionary)result[0];
         var parents=(System.Collections.IDictionary)result[1];
@@ -126,6 +137,8 @@ if args.cpu:
         sourceReport.WriteLine(JsonSerializer.Serialize(new{name,implementation,family,lod,mesh,delta,scenario=scenario.Label,
             upper=scenario.Upper,lower=scenario.Lower,left=scenario.Left,right=scenario.Right,style,
             sourceUvDomains=retained,sourceFaces=retained.Sum(d=>domains.Items[d].Faces.Length),
+            nativeNetwork=(bool)result[4],nativeNetworkDomains=(bool)result[4]?Enumerable.Range(0,domains.Items.Length).ToArray():Array.Empty<int>(),
+            sourceCid=nativeNetwork?sourceCid:null,
             policy="Verified prototype non-tiling mapping; retain corrected/interpolated source UV. Expected density change is not a density pass."}));
         float[] V(Vector2 v)=>new[]{v.x,v.y};
         object? Exact(object unit,string field)
@@ -144,7 +157,7 @@ if args.cpu:
             output.WriteLine(JsonSerializer.Serialize(new{name,implementation,family,lod,mesh,delta,scenario=scenario.Label,
                 upper=scenario.Upper,lower=scenario.Lower,left=scenario.Left,right=scenario.Right,style,
                 id=entry.Key,originalDomain=parents[entry.Key],sourceFaces=((System.Collections.IEnumerable)faces[entry.Key]!).Cast<object>().Select(p=>new[]{Field<int>(p,"Item1"),Field<int>(p,"Item2")}),
-                triangle=Field<bool>(u,"Triangle"),repeatOnly=Field<bool>(u,"RepeatOnly"),
+                triangle=Field<bool>(u,"Triangle"),repeatOnly=Field<bool>(u,"RepeatOnly"),retainedAxes=Field<int>(u,"RetainedAxes"),
                 a=V(Field<Vector2>(u,"A")),b=V(Field<Vector2>(u,"B")),c=V(Field<Vector2>(u,"C")),bounds=new[]{b.x,b.y,b.z,b.w},
                 points=Field<List<Vector2>>(u,"Points").Select(V),exactCoordinates=Exact(u,"ExactCoordinates"),exactSourceUvs=Exact(u,"ExactSourceUvs"),
                 exactPoints=u.GetType().GetField("ExactPoints",members)!.GetValue(u),charts,
@@ -156,6 +169,7 @@ if args.cpu:
 File.WriteAllText(args[3],JsonSerializer.Serialize(new{observedPlans,observedUnits,retainedDomains,
     assemblySha256=Convert.ToHexString(System.Security.Cryptography.SHA256.HashData(File.ReadAllBytes(args[0]))),
     fixtureSha256=Convert.ToHexString(System.Security.Cryptography.SHA256.HashData(File.ReadAllBytes(args[2]))),
+    networkEvidenceSha256=Convert.ToHexString(System.Security.Cryptography.SHA256.HashData(File.ReadAllBytes(networkPath))),
     input="Fixture v2 Float32 UV with actual plan corrections; raw native Float16 fixture fidelity not claimed.",
     scope="Production Retile pre-material body; emitted Unit objects and exact original provenance."},new JsonSerializerOptions{WriteIndented=true}));
 Console.WriteLine($"Observed {observedPlans} actual plans and {observedUnits} production units.");

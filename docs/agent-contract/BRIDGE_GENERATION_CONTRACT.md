@@ -19,6 +19,8 @@ Existing saved assets are not rewritten merely because generation code changes.
 
 - [Movable bridges: no special road-width adaptation](#movable-bridges-no-special-road-width-adaptation)
 - [Contract routing](#contract-routing)
+- [Preserve original UV projection and mapping mode](#preserve-original-uv-projection-and-mapping-mode)
+- [Offline source-atlas repeat materials](#offline-source-atlas-repeat-materials)
 - [Current implementation policy](#current-implementation-policy)
 - [1. Every generated bridge follows its archetype](#1-every-generated-bridge-follows-its-archetype)
 - [2. The archetype is hardcoded, never copied](#2-the-archetype-is-hardcoded-never-copied)
@@ -67,6 +69,62 @@ are owned here; they are not optional appendices of the movable-bridge contract.
 Existing section numbers are retained for audit continuity. Section 20 remains in the project
 contract because it defines project metadata, not bridge generation. Unqualified numbered contract
 references in bridge instructions refer here except section 20.
+
+## Preserve original UV projection and mapping mode
+
+This is a mandatory rule for **all bridge generators, fixed/non-movable and movable alike**.
+It covers every component and every LOD in preview, creation, regeneration and export.
+Material-specific requirements supplement this rule; they cannot restrict it to movable bridges.
+
+Preserve the original UV projection and tiling/stretch mode **per source part, material domain,
+LOD, layer and axis**. Use the actual source selected by the applicable bridge and material
+rules. Each component or composed layer follows its own source evidence; this rule does not
+change appearance selection, road composition or marking layout.
+
+| Original mapping | Required generated mapping |
+| --- | --- |
+| Tiling | Keep tiling, original physical density, orientation, phase and repeat boundaries. |
+| Evidenced finite/stretch mapping | Retain authored UVs while authorized geometry changes; interpolate UVs for permitted construction fragments. The pattern stretches with that geometry. |
+| One axis tiling, another stretching | Preserve each axis independently. |
+| Mirrored, folded or partial traversal | Preserve the measured orientation, bounds, phase and terminal behavior. |
+| Different mapping at another LOD | Use that LOD's own source mapping and resources. |
+
+A width change, failed period test or inconvenient renderer must not switch tiling to stretching
+or stretching to tiling. Unknown/nonperiodic coordinates are not evidence of authored stretching.
+A selected source uses its own mapping evidence; it cannot inherit another source's classification.
+Marking layout and source-selection rules remain separate from this mapping requirement.
+
+Record source/version, Surface and texture identities, mesh/material slot, face/domain membership,
+LOD, UV range and native sampling semantics. Inspect original geometry and actual sampler behavior:
+mesh UV resets can repeat an atlas region even when its texture uses Clamp; whole-texture Repeat
+alone does not prove an internal island repeats. Preserve measured adjacent resets and mirrors
+where retained geometry supports them. Do not add cuts or seam vertices solely for texture-period
+wraps. For movable roads and the narrowly eligible repeating structural domains, use
+[offline source-atlas repeat materials](#offline-source-atlas-repeat-materials). This does not
+authorize unrelated topology or bone changes.
+### Offline source-atlas repeat materials
+
+Where a movable road or structural domain would otherwise require new texture-period wrap seams,
+bake a qualifying independent tiling material from its original atlas outside the game, under
+[material contract section 3](MATERIAL_GENERATION_CONTRACT.md#offline-source-atlas-repeat-materials).
+Use only evidenced repeat units, preserving original density, independent axes/layers, phase,
+finite axes and terminal domains. This applies to the evidenced Lift05 repeating profile parts
+as well as eligible road domains; it grants no period-driven topology exception.
+
+Preserve existing authored seams and necessary boundaries for actual shape, motion and distinct
+material domains. Do not add boundaries solely to reset UVs, intersect with prototype triangles,
+or force independent layers into a common period. Preserve selected-road shape, lanes, original
+attributes and bones. Reuse original materials wherever they already express the required mapping.
+Structural offline derivation is permitted only to avoid the otherwise necessary new period-wrap
+seams in an evidenced repeating domain, never as general structure remaking or a failed-test fallback.
+
+Original source assets remain unchanged. Derived resources receive their own identities and complete
+native dependencies; byte-identical ownership copies retain the identity of the resource copied.
+Validate the complete PBR channels, normal frames, filtering and every mip, all affected LODs,
+independent native loading and the 10 MB owner / 55 MB package limits. No complete-span pixel
+expansion or global tolerance relaxation is authorized. This is a required design, not evidence
+that any current baked unit or native rendering path has passed those checks.
+
 
 ## Current implementation policy
 
@@ -326,10 +384,16 @@ widened vertices it indexes.
 
 For carried structural meshes, preserve raw channels, formats, indices, submeshes and material
 semantics by default. The explicit movable LOD and selected-road conversion rules permit their
-scoped changes. Density-preserving UV remapping and prepared repeat resources are required where
-geometry deformation would stretch a tiling source pattern. Verified prototype non-tiling mappings
-may retain authored UVs and stretch with geometry under material contract section 2, including
-interpolation for permitted construction fragments; missing repeat evidence is not proof.
+scoped changes. Preserve tiling density through evidenced UV mapping where geometry deformation changes a
+tiling source. For movable non-road parts retain original material/texture identities by default; only the
+[offline source-atlas repeat rule](#offline-source-atlas-repeat-materials) permits a narrowly
+scoped derived material to avoid new period-wrap seams. Road composition is limited
+to prototype-supported appearance types under movable section 17; other types use original materials. Preserve the actual appearance source's
+authored UV behavior under [the general source-mapping rule](#preserve-original-uv-projection-and-mapping-mode): tiling remains tiling,
+and evidenced stretching remains stretching, including mixed-axis mappings and interpolation for
+permitted construction fragments. Existing appearance-selection rules determine that source; a
+selected road may retain its own evidenced stretching behavior, never inherit it from a different
+bridge prototype. Unknown mappings, failed conversion or missing repeat evidence do not authorize stretching.
 Neither path permits unrelated
 channel re-encoding, topology changes or appearance substitution.
 
@@ -476,15 +540,28 @@ runtime detection or changes to other structures. Their evidence does not imply 
 
 ### Native materials and prepared resources
 
+For movable bridges, reuse original non-road materials by default. Only evidenced repeating
+domains that would otherwise require new period-wrap seams may use the source-atlas offline
+derivation defined in the material contract section 3; do not add those seams. Road composition/precomposition (offline material baking outside the game) has
+one entry condition: the prototype supports the actual appearance type and that type must use
+prototype appearance. Test asphalt, sidewalk surfacing and wheel-track/rut effects independently
+per prototype and physical domain. Other road types retain their original input materials and
+bypass composition. Preserve each source's projection and tiling/stretch mode per part, LOD,
+layer and axis. This is a generation rule, not a reverse-engineering finding or proof that the
+current implementation complies. Road processing must not mutate a shared structural Surface.
+
 Follow the [material generation contract](MATERIAL_GENERATION_CONTRACT.md). Fully compatible
 original materials remain direct references without new descriptors or texture payloads. Required
 native object-template conversions preserve source appearance and dependencies; known, preparable constant derived
 materials are prepared offline and packaged per style. Runtime generation only copies and binds
 those finished resources. Repeatable units retain original per-axis texel density and pattern
-scale; never bake them into full-span images. Verified prototype non-tiling mappings may stretch
-with geometry while retaining authored UVs, native textures and material identity under material
-contract section 2; record source/part/LOD/axis evidence. Genuinely variable, nonperiodic content may use
-bounded native composition without reducing density. Selected third-party road/track inputs that
+scale. Preserve evidenced source stretching with authored UVs, native textures and material identity
+under [the general source-mapping rule](#preserve-original-uv-projection-and-mapping-mode); record the actual selected appearance source and its part/LOD/axis
+evidence, including mixed mappings. Selected-road/track inputs follow their own source mapping,
+not a different prototype's stretching permission. Unknown or failed mappings do not qualify.
+Never expand any road pattern into full-span texture pixels, including nonperiodic or mixed content
+and multiple pages. Genuinely variable local content may use bounded native composition under
+material contract sections 3–4 while preserving its source mapping. Selected third-party road/track inputs that
 are unavailable before runtime may receive necessary descriptor or bounded texture conversion
 under material contract section 4, after direct reuse and descriptor-only options are considered.
 Missing known prepared resources do not qualify; no per-sampler bake or cross-bridge generated-result
@@ -496,7 +573,7 @@ custom runtime shaders. Preserve independent per-owner external dependency snaps
 Use a compact single-sided native skinned paint mesh on the same mechanism object, with
 0.001 m upper-normal clearance and the original road bones, transforms and stacking metadata.
 Preserve selected-road layout and color. Marking polygons may split at motion seams; receiver
-triangles must not be cut for paint or texture periods. No child projectors or per-dash objects.
+triangles must not be cut for paint. Cuts solely for texture-period wraps are prohibited; use qualifying offline source-atlas repeat materials. No child projectors or per-dash objects.
 See movable contract sections 18–19 for material, binding, visibility and persistence requirements.
 
 ### Approved native marking approximation
@@ -1194,6 +1271,20 @@ ImportedData/<bridgeUUID>/Dependencies/<CID>.<original extension>
 ImportedData/<bridgeUUID>/Dependencies/<CID>.<original extension>.cid
 ```
 
+Native `.MidMips` snapshots are the narrow filename exception: use
+`Dependencies/<CID>/<original TS*_MB*.MidMips basename>` and its `.cid` sidecar.
+Native streaming derives the tile-size/mip-count tag from that basename. Preserve the
+original cache bytes and CID; do not rename the cache to `<CID>.MidMips` or fabricate empty data.
+Traverse Surface-to-MidMips dependencies through the cache's native primary and duplicate Surface
+CID memberships, including current-owner snapshots when the source package is absent. The same
+other-owner exclusion and conflict checks apply before reading or copying these caches.
+
+Material contract section 5 permits a read-only packaged source at
+`Materials/Shared/MidMips/<cacheCID>/TS512_MB3.MidMips` with its CID sidecar. This is the sole
+cross-style prepared-resource exception. Each owner still copies only its required native cache
+dependencies independently; the source exception does not permit shared generated-owner files,
+general cross-style texture storage or additional runtime baking.
+
 Use a visited-CID set for each bridge traversal. Multiple references to the same CID within one bridge
 produce one copy, including when a dependency is reachable through several paths. Traversal must
 terminate even if a future dependency graph contains a cycle; do not assume every source graph is a
@@ -1437,10 +1528,30 @@ for owner-local Prefabs, Geometry, Appearance, VT/mid-mips, Locales and Dependen
 dependency directories remain migration inputs. Preserve healthy bridges on layout collisions;
 native cold-load acceptance remains separate.
 
-Startup self-check must distinguish healthy legacy migration from damaged-asset repair/removal.
-Report migration as migration, never as repaired damage. When both occur, explicitly report both;
-when migration fails, report that failure without calling a healthy bridge damaged. Localize all
-new messages in every supported language and request restart after persistent changes.
+### Self-check result summary
+
+Automatic and manual self-checks report only this run's final result per bridge UUID, exactly once
+in one mutually exclusive category: migrated to the latest format; removed with a complete backup;
+removed with a failed or incomplete backup; or unfinished. Migration is complete only after all
+required dependency, native-format, naming and layout work succeeds. A layout conflict or partial
+migration is unfinished, even if earlier phases wrote files. Removal supersedes earlier migration;
+backup failure followed by verified deletion belongs to removed without complete backup, not
+unfinished. Remaining or inaccessible selected files, incomplete enumeration and owner-scoped
+exceptions are unfinished. Continue the established deletion fallback after backup failure.
+
+Show one native localized dialog containing only nonzero categories, each with its count, in the
+order above, followed by one shared restart reminder. Migration text must explicitly say migrated
+to the latest format (Simplified Chinese: `已迁移 {0} 座桥梁至最新格式。`). Provide all twelve supported
+languages with identical count placeholders. Do not claim incomplete backups are complete or that
+restarting alone repairs unfinished operations. A successful run with no processing results shows
+no dialog, whether automatic or manual. An unattributable global exception may have an uncounted
+failure explanation and explicit log, but must not invent an owner or count.
+
+Create fresh reporting state per run; never repeat old migration/removal/incomplete totals. Retain
+session-level protection against reading copied, moved or retired resources through stale cached
+references. Skipped session-protected owners are not new results. Preserve completed outcomes when
+another owner fails, and report partial-file failures honestly. Human native-dialog interaction
+remains separate from automated lifecycle and localization checks.
 
 ## 21. Movable bridges use generated selected-road surfaces and native mechanisms
 
@@ -1545,7 +1656,7 @@ out of source publication and compiled output, and do not describe their size as
 Keep the generated bridge's material footprint as small as possible without compromising
 material resolution. Material generation contract sections 2 and 5 impose two separate limits:
 10,000,000 bytes for one generated owner's complete persisted material dependency graph, and
-50,000,000 bytes for the complete compressed official SDK content package. The working material
+55,000,000 bytes for the complete compressed official SDK content package. The working material
 budget is 5–10 MB; smaller outputs must not be padded. A prepared style-directory subtotal proves
 neither limit, and an unavailable complete-owner measurement must remain explicitly unverified.
 These limits do not define a byte ceiling for geometry or the entire generated Prefab graph;

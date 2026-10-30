@@ -16,6 +16,7 @@ internal static class MovableStructurePacking
         // A numerically conditioned integer phase is valid for the repeat
         // texture, not for direct atlas lookup. Preserve that distinction.
         internal bool RepeatOnly;
+        internal int RetainedAxes;
         internal MovableUvChart[] Charts=Array.Empty<MovableUvChart>();
         // Constructed faces retain their unconditioned double-precision parent
         // coordinates. A phase chosen for a Repeat page is never an atlas phase.

@@ -5,12 +5,42 @@ RWTexture2D<float4> Result;
 float4 Region;
 int2 Extent;
 int2 RepeatAxes;
-int SourceMip;
-int EncodeSrgb;
+float SourceMip, OutputMip;
+int EncodeSrgb, SourceGradientSampling;
 float2 Periods;
 StructuredBuffer<float4> Bands;
+StructuredBuffer<float4> BandFrames, BandOptions;
+StructuredBuffer<float4> Panels, PanelFrames;
+RWStructuredBuffer<uint> MissingSamples;
+int PanelCount;
+StructuredBuffer<float4> PaintMasks;
+int PaintMaskCount, SourceMipCount;
+float2 PaintUv(float2 uv,int mip,out bool changed)
+{
+    float2 result=uv;changed=false;
+    for(int i=0;i<PaintMaskCount;i++)
+    {
+        float4 rect=PaintMasks[i*2],donor=PaintMasks[i*2+1];
+        if((int)donor.x==mip&&all(uv>=rect.xy)&&all(uv<rect.zw))
+        { result.x=donor.y;changed=true; }
+    }
+    return result;
+}
+float4 PaintSample(float2 uv,float lod)
+{
+    float level=clamp(lod,0,SourceMipCount-1);
+    int lo=(int)floor(level),hi=min(lo+1,SourceMipCount-1);
+    bool a,b;float2 ua=PaintUv(uv,lo,a),ub=PaintUv(uv,hi,b);
+    // Preserve the exact old filtered call outside both contributing masks.
+    if(!a&&!b)return Source.SampleLevel(sampler_Source,uv,max(0,lod));
+    return lerp(Source.SampleLevel(sampler_Source,ua,lo),Source.SampleLevel(sampler_Source,ub,hi),frac(level));
+}
+int2 SourceSize;
 int BandCount;
+int TransformNormal, NormalChannel;
+float4 NormalRow0, NormalRow1, NormalRow2;
 float3 Srgb(float3 c) { return lerp(12.92*c,1.055*pow(max(c,0),1.0/2.4)-0.055,step(0.0031308,c)); }
+float Edge(float2 a,float2 b,float2 q) { return (b.x-a.x)*(q.y-a.y)-(b.y-a.y)*(q.x-a.x); }
 [numthreads(8,8,1)] void Extract(uint3 p:SV_DispatchThreadID)
 {
     if(any(p.xy>=Extent))return;
@@ -18,13 +48,54 @@ float3 Srgb(float3 c) { return lerp(12.92*c,1.055*pow(max(c,0),1.0/2.4)-0.055,st
     if(RepeatAxes.x==0)q.x=saturate(2*q.x-.5);
     if(RepeatAxes.y==0)q.y=saturate(2*q.y-.5);
     float2 uv=Region.xy+q*Region.zw;
+    float lod=SourceMip;
+    float2 stepUV=Periods/Extent*float2(RepeatAxes.x!=0?1:2,RepeatAxes.y!=0?1:2);
+    float2 dx=float2(Region.z*stepUV.x,0),dy=float2(0,Region.w*stepUV.y);
+    float3 row0=NormalRow0.xyz,row1=NormalRow1.xyz,row2=NormalRow2.xyz;
+    bool transformNormal=TransformNormal!=0;
     for(int i=0;i<BandCount;i++)
     {
         float4 b=Bands[i*2],r=Bands[i*2+1];
-        if(q.x>=b.x&&q.x<b.y)
-        {uv=r.xy+float2((q.x-b.x)/(b.y-b.x),frac(q.y*b.z))*r.zw;break;}
+        if(q.x>=b.x&&(q.x<b.y||(i==BandCount-1&&q.x==b.y)))
+        {
+            float4 options=BandOptions[i];
+            float2 local=float2((q.x-b.x)/(b.y-b.x),RepeatAxes.y!=0?frac(q.y*b.z):q.y*b.z);
+            if(options.x!=0)local.x=1-local.x;
+            if(options.y!=0)local.y=1-local.y;
+            uv=r.xy+local*r.zw;lod=OutputMip+options.z;
+            dx=float2(r.z*stepUV.x/(b.y-b.x)*(options.x!=0?-1:1),0);
+            dy=float2(0,r.w*stepUV.y*b.z*(options.y!=0?-1:1));
+            row0=BandFrames[i*3].xyz;row1=BandFrames[i*3+1].xyz;row2=BandFrames[i*3+2].xyz;
+            transformNormal=NormalChannel!=0&&options.w!=0;break;
+        }
     }
-    float4 c=Source.SampleLevel(sampler_Source,uv,SourceMip);
+    if(PanelCount>0)
+    {
+        bool found=false;
+        for(int i=0;i<PanelCount;i++)
+        {
+            float4 ab=Panels[i*4],c=Panels[i*4+1],m=Panels[i*4+2],n=Panels[i*4+3];
+            float sign=Edge(ab.xy,ab.zw,c.xy)>0?1:-1;
+            if(sign*Edge(ab.xy,ab.zw,q)<0||sign*Edge(ab.zw,c.xy,q)<0||sign*Edge(c.xy,ab.xy,q)<0)continue;
+            uv=m.xy+m.zw*q.x+n.xy*q.y;
+            dx=m.zw*stepUV.x;dy=n.xy*stepUV.y;
+            lod=log2(max(length(dx*SourceSize),length(dy*SourceSize)));
+            row0=PanelFrames[i*3].xyz;row1=PanelFrames[i*3+1].xyz;row2=PanelFrames[i*3+2].xyz;
+            transformNormal=c.z!=0;found=true;break;
+        }
+        if(!found){InterlockedAdd(MissingSamples[0],1);InterlockedMin(MissingSamples[1],p.y*Extent.x+p.x);Result[p.xy]=0;return;}
+    }
+    float4 c;
+    if(SourceGradientSampling!=0)c=Source.SampleGrad(sampler_Source,uv,dx,dy);
+    else if(PaintMaskCount!=0)c=PaintSample(uv,lod);
+    else c=Source.SampleLevel(sampler_Source,uv,max(0,lod));
+    if(transformNormal)
+    {
+        float2 xy=float2(c.r*c.a,c.g)*2-1;
+        float3 n=float3(xy,sqrt(max(0,1-dot(xy,xy))));
+        n=normalize(float3(dot(row0,n),dot(row1,n),dot(row2,n)));
+        c=float4(n.xy*.5+.5,1,1);
+    }
     if(EncodeSrgb!=0)c.rgb=Srgb(c.rgb);
     Result[p.xy]=c;
 }

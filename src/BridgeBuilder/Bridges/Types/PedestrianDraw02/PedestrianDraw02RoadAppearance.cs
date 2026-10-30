@@ -7,18 +7,30 @@ namespace BridgeBuilder.Bridges;
 // Geometry SHA-256: 55b8fb530c4f5d80a211feecb2e82b6deb12cc8af5d76bdc3abef78b192494be.
 // Fixed unit: faces 6708/6709, X=2.6348876953125..3.68646240234375, Z=68..72.
 // Moving unit: faces 8556/8557, X=1.9114990234375..3.68646240234375,
-// Z=2.2608642578125..9.05517578125. Rectangles are inside the authored asphalt island.
-// Repetition preserves each measured UV gradient instead of stretching an atlas crop.
+// Z=2.2608642578125..9.05517578125. These legacy pathway crop projections
+// are not the complete original finite-half mapping: fixed 4 m repetition is
+// unproved and the moving transverse axis must be finite. The native-panel
+// authoring work replaces these only after its filtered-mip checks pass.
 internal static class PedestrianDraw02RoadAppearance
 {
     internal static Patch[] Patches(Pose roadToObject)
     {
         var frame = Matrix4x4.TRS(roadToObject.position, roadToObject.rotation, Vector3.one).transpose;
+        // Original packed MeshTangent frames for the measured source patches:
+        // +Z fixed = +X, +Z moving = -X, both with handedness -1.
+        // The opposite leaf rotates both directions. UV mirrors do not define
+        // these frames; use the original native attributes, transformed to road space.
+        Vector4 Tangent(float direction)
+        {
+            var axis = Quaternion.Inverse(roadToObject.rotation) * (Vector3.right * direction);
+            return new Vector4(axis.x, axis.y, axis.z,
+                -Numeric_Types_PedestrianDraw02_PedestrianDraw02RoadAppearance_cs.Values.F32[27]);
+        }
         float fixedWidth = Numeric_Types_PedestrianDraw02_PedestrianDraw02RoadAppearance_cs.Values.F32[0] - Numeric_Types_PedestrianDraw02_PedestrianDraw02RoadAppearance_cs.Values.F32[1];
         float movingWidth = Numeric_Types_PedestrianDraw02_PedestrianDraw02RoadAppearance_cs.Values.F32[2] - Numeric_Types_PedestrianDraw02_PedestrianDraw02RoadAppearance_cs.Values.F32[3];
         float movingLength = Numeric_Types_PedestrianDraw02_PedestrianDraw02RoadAppearance_cs.Values.F32[4] - Numeric_Types_PedestrianDraw02_PedestrianDraw02RoadAppearance_cs.Values.F32[5];
-        Patch Fixed(float direction) => new(new Vector2(Numeric_Types_PedestrianDraw02_PedestrianDraw02RoadAppearance_cs.Values.F32[6], Numeric_Types_PedestrianDraw02_PedestrianDraw02RoadAppearance_cs.Values.F32[7]), new Vector2(Numeric_Types_PedestrianDraw02_PedestrianDraw02RoadAppearance_cs.Values.F32[8], Numeric_Types_PedestrianDraw02_PedestrianDraw02RoadAppearance_cs.Values.F32[9]), frame * new Vector4(direction / fixedWidth, Numeric_Types_PedestrianDraw02_PedestrianDraw02RoadAppearance_cs.Values.F32[10], Numeric_Types_PedestrianDraw02_PedestrianDraw02RoadAppearance_cs.Values.F32[11], -Numeric_Types_PedestrianDraw02_PedestrianDraw02RoadAppearance_cs.Values.F32[12] / fixedWidth), frame * new Vector4(Numeric_Types_PedestrianDraw02_PedestrianDraw02RoadAppearance_cs.Values.F32[13], Numeric_Types_PedestrianDraw02_PedestrianDraw02RoadAppearance_cs.Values.F32[14], direction / Numeric_Types_PedestrianDraw02_PedestrianDraw02RoadAppearance_cs.Values.F32[15], -Numeric_Types_PedestrianDraw02_PedestrianDraw02RoadAppearance_cs.Values.F32[16]), repeat: true);
-        Patch Moving(float direction) => new(new Vector2(Numeric_Types_PedestrianDraw02_PedestrianDraw02RoadAppearance_cs.Values.F32[17], Numeric_Types_PedestrianDraw02_PedestrianDraw02RoadAppearance_cs.Values.F32[18]), new Vector2(Numeric_Types_PedestrianDraw02_PedestrianDraw02RoadAppearance_cs.Values.F32[19], Numeric_Types_PedestrianDraw02_PedestrianDraw02RoadAppearance_cs.Values.F32[20]), frame * new Vector4(-direction / movingWidth, Numeric_Types_PedestrianDraw02_PedestrianDraw02RoadAppearance_cs.Values.F32[21], Numeric_Types_PedestrianDraw02_PedestrianDraw02RoadAppearance_cs.Values.F32[22], Numeric_Types_PedestrianDraw02_PedestrianDraw02RoadAppearance_cs.Values.F32[23] / movingWidth), frame * new Vector4(Numeric_Types_PedestrianDraw02_PedestrianDraw02RoadAppearance_cs.Values.F32[24], Numeric_Types_PedestrianDraw02_PedestrianDraw02RoadAppearance_cs.Values.F32[25], -direction / movingLength, Numeric_Types_PedestrianDraw02_PedestrianDraw02RoadAppearance_cs.Values.F32[26] / movingLength), repeat: true);
+        Patch Fixed(float direction) => new(new Vector2(Numeric_Types_PedestrianDraw02_PedestrianDraw02RoadAppearance_cs.Values.F32[6], Numeric_Types_PedestrianDraw02_PedestrianDraw02RoadAppearance_cs.Values.F32[7]), new Vector2(Numeric_Types_PedestrianDraw02_PedestrianDraw02RoadAppearance_cs.Values.F32[8], Numeric_Types_PedestrianDraw02_PedestrianDraw02RoadAppearance_cs.Values.F32[9]), frame * new Vector4(direction / fixedWidth, Numeric_Types_PedestrianDraw02_PedestrianDraw02RoadAppearance_cs.Values.F32[10], Numeric_Types_PedestrianDraw02_PedestrianDraw02RoadAppearance_cs.Values.F32[11], -Numeric_Types_PedestrianDraw02_PedestrianDraw02RoadAppearance_cs.Values.F32[12] / fixedWidth), frame * new Vector4(Numeric_Types_PedestrianDraw02_PedestrianDraw02RoadAppearance_cs.Values.F32[13], Numeric_Types_PedestrianDraw02_PedestrianDraw02RoadAppearance_cs.Values.F32[14], direction / Numeric_Types_PedestrianDraw02_PedestrianDraw02RoadAppearance_cs.Values.F32[15], -Numeric_Types_PedestrianDraw02_PedestrianDraw02RoadAppearance_cs.Values.F32[16]), repeat: true, tangent: Tangent(direction));
+        Patch Moving(float direction) => new(new Vector2(Numeric_Types_PedestrianDraw02_PedestrianDraw02RoadAppearance_cs.Values.F32[17], Numeric_Types_PedestrianDraw02_PedestrianDraw02RoadAppearance_cs.Values.F32[18]), new Vector2(Numeric_Types_PedestrianDraw02_PedestrianDraw02RoadAppearance_cs.Values.F32[19], Numeric_Types_PedestrianDraw02_PedestrianDraw02RoadAppearance_cs.Values.F32[20]), frame * new Vector4(-direction / movingWidth, Numeric_Types_PedestrianDraw02_PedestrianDraw02RoadAppearance_cs.Values.F32[21], Numeric_Types_PedestrianDraw02_PedestrianDraw02RoadAppearance_cs.Values.F32[22], Numeric_Types_PedestrianDraw02_PedestrianDraw02RoadAppearance_cs.Values.F32[23] / movingWidth), frame * new Vector4(Numeric_Types_PedestrianDraw02_PedestrianDraw02RoadAppearance_cs.Values.F32[24], Numeric_Types_PedestrianDraw02_PedestrianDraw02RoadAppearance_cs.Values.F32[25], -direction / movingLength, Numeric_Types_PedestrianDraw02_PedestrianDraw02RoadAppearance_cs.Values.F32[26] / movingLength), repeat: true, tangent: Tangent(-direction));
         return new[]
         {
             Fixed(Numeric_Types_PedestrianDraw02_PedestrianDraw02RoadAppearance_cs.Values.F32[27]),

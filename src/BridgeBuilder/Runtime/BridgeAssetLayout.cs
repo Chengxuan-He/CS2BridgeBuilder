@@ -53,7 +53,15 @@ internal static class BridgeAssetLayout
                     var shortName = category == "Prefabs" && stem.Equals(owner, StringComparison.OrdinalIgnoreCase)
                         ? "Bridge" : category == "Appearance/MidMips" ? stem : BridgeAssetInfo.FileStem(stem, owner);
                     if (shortName.Length == 0) throw new IOException("Empty filename after UUID removal: " + source);
-                    destination = Path.Combine(gameRoot, BridgeAssetInfo.OwnedDirectory(owner, category), shortName + extension);
+                    var folder = BridgeAssetInfo.OwnedDirectory(owner, category);
+                    if (category == "Appearance/MidMips")
+                    {
+                        var cid = BridgeFileAccess.ReadText(source + ".cid").Trim();
+                        if (!System.Text.RegularExpressions.Regex.IsMatch(cid, @"\A[a-fA-F0-9]{32}\z"))
+                            throw new IOException("Invalid MidMips CID sidecar: " + source);
+                        folder = Path.Combine(folder, cid.ToLowerInvariant());
+                    }
+                    destination = Path.Combine(gameRoot, folder, shortName + extension);
                 }
                 destination = Path.GetFullPath(destination);
                 if (!destination.StartsWith(gameRoot + Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase)

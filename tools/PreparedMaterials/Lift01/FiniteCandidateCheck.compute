@@ -1,0 +1,22 @@
+#pragma kernel Inspect
+Texture2D<float4> Source;
+SamplerState sampler_Source;
+Texture2D<float4> Product;
+SamplerState sampler_Product;
+int2 Extent, DispatchExtent;
+int OutputMip, Mode;
+float4 ContentBounds;
+RWStructuredBuffer<float4> Result;
+#include "Lift01FiniteTrapezoid.hlsl"
+[numthreads(8,8,1)] void Inspect(uint3 p:SV_DispatchThreadID)
+{
+    if(any(p.xy>=DispatchExtent))return;
+    float2 tex=(p.xy+.5)/DispatchExtent;
+    float2 q=saturate(2*tex-.5);
+    if(Mode!=0) { q=float2(p.xy)/(DispatchExtent-1);tex=lerp(ContentBounds.xy,ContentBounds.zw,q); }
+    float2 uv;float lod;
+    Lift01FiniteWarp(q,uv,lod);
+    float4 original=Source.SampleLevel(sampler_Source,uv,max(lod,0));
+    float4 actual=Mode==0?Product.Load(int3(p.xy,OutputMip)):Product.SampleLevel(sampler_Product,tex,OutputMip);
+    Result[p.y*DispatchExtent.x+p.x]=abs(original-actual);
+}

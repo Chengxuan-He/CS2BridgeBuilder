@@ -1,0 +1,13 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup><OutputType>Exe</OutputType><TargetFramework>net8.0</TargetFramework><ImplicitUsings>enable</ImplicitUsings><Nullable>enable</Nullable><ImportDirectoryBuildTargets>false</ImportDirectoryBuildTargets></PropertyGroup>
+  <ItemGroup>
+    <Reference Include="UnityEngine.CoreModule"><HintPath>$(GameManagedDir)/UnityEngine.CoreModule.dll</HintPath></Reference>
+    <Compile Include="../../src/BridgeBuilder/Bridges/Common/Movable/MovableRoadGeometry.cs" Link="MovableRoadGeometry.cs" />
+    <Compile Include="../../src/BridgeBuilder/Bridges/Common/Movable/MovableRoadTemplate.cs" Link="MovableRoadTemplate.cs" />
+    <Compile Include="../../src/BridgeBuilder/Bridges/Common/Movable/MovableExistingRoadSurface.cs" Link="MovableExistingRoadSurface.cs" />
+    <Compile Include="../../src/BridgeBuilder/Bridges/Common/Movable/MovableRoadAppearance.cs" Link="MovableRoadAppearance.cs" />
+    <Compile Include="../../src/BridgeBuilder/Bridges/Common/Movable/MovableRoadLayerIdentity.cs" Link="MovableRoadLayerIdentity.cs" />
+    <Compile Include="../../src/BridgeBuilder/Bridges/Common/Movable/MovableRoadAtlasWrap.cs" Link="MovableRoadAtlasWrap.cs" />
+    <Compile Include="../../src/BridgeBuilder/Bridges/Common/Movable/MovableRoadProjection.cs" Link="MovableRoadProjection.cs" />
+  </ItemGroup>
+</Project>

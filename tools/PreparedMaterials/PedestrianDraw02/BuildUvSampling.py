@@ -69,6 +69,12 @@ def main():
     chart_path=BASE/'source-consolidation/native-charts.json'
     native=np.load(native_path)
     chart_report=json.loads(chart_path.read_text())
+    closure_path=Path(__file__).with_name('ClosureUvParts.json')
+    closures=json.loads(closure_path.read_text())
+    assert closures['schema']==1 and closures['nativeChartsSha256']==sha(native_path)
+    additional_path=Path(__file__).with_name('AdditionalClosureUv.json')
+    additional=json.loads(additional_path.read_text())
+    assert additional['schema']==1 and additional['nativeChartsSha256']==sha(native_path)
     mapping=json.loads((BASE/'current-source-map.json').read_text())
     manifest=json.loads((ROOT/'artifacts/agent-material-env/PedestrianDraw02/source-input/source-inputs.json').read_text())
     semantics=ROOT/'artifacts/prepared-materials/shared-nontiling/native-semantics'
@@ -121,6 +127,28 @@ def main():
         assert src['sha256']==binding['sourceDigest'] and record['sourceSurfaceCid']==src['cid']
         prefix=record['arrayPrefix']
         positions,uv,faces,face_chart=[native[prefix+'_'+k] for k in ('positions','uv','faces','face_chart')]
+        closure_record=next((r for r in closures['meshes'] if (r['render'],r['mesh'])==(binding['render'],binding['mesh'])),None)
+        closure_faces=set()
+        if closure_record is not None:
+            assert src['template']==0 and closure_record['sourceSurfaceCid']==src['cid']
+            for part in closure_record['parts']:
+                for quad in part['quads']:
+                    ids=quad['sourceFaces']
+                    assert quad['singleTraversal'] and len(ids)==2
+                    assert np.array_equal(positions[faces[ids]],quad['nativePositions'])
+                    assert np.array_equal(uv[faces[ids]],quad['nativeUvs'])
+                    closure_faces.update(ids)
+            assert not closure_faces.intersection(closure_record['roadFaces'])
+        extra=next((r for r in additional['meshes'] if (r['render'],r['mesh'])==(binding['render'],binding['mesh'])),None)
+        if extra is not None:
+            assert src['template']==0 and extra['sourceSurfaceCid']==src['cid']
+            for sample in extra['samples']:
+                face=sample['face']; xyz=positions[faces[face]]; tex=uv[faces[face]]
+                assert np.array_equal(xyz,sample['positions']) and np.array_equal(tex,sample['uv'])
+                normal=np.cross(xyz[1]-xyz[0],xyz[2]-xyz[0])
+                assert np.linalg.norm(normal)>0 and normal[1]<=0
+                assert face not in extra['roadFaces']
+                closure_faces.add(face)
         chart_reasons={};proof=[]
         for chart in record['charts']:
             ci=chart['id'];tri=uv[faces[chart['faces']]].astype(float)
@@ -157,10 +185,13 @@ def main():
             reasons={chart_reasons[int(face_chart[f])] for f in members}
             # Repeat membership belongs to this original domain's source faces.
             # A neighboring face in the same authored chart cannot veto retention.
-            if src['sha256']==repeat_digest and any(overlaps(t,region) for t in uv[faces[members]].astype(float)):
+            authored_closure=bool(closure_faces) and all(int(f) in closure_faces for f in members)
+            if src['sha256']==repeat_digest and not authored_closure and any(overlaps(t,region) for t in uv[faces[members]].astype(float)):
                 reasons.add('density-existing-road-repeat-overlap')
             flag=reasons=={'native-uv0-finite-authored-mapping'}
             reason='native-uv0-finite-authored-mapping' if flag else ';'.join(sorted(reasons-{'native-uv0-finite-authored-mapping'}))
+            if flag and authored_closure:
+                reason='native-uv0-finite-authored-closure'
             if window is not None:
                 eligible=all(int(f) in local_faces for f in members)
                 assert eligible==(di in local_domains)
@@ -170,7 +201,7 @@ def main():
             groups[reason].append(di)
         assert at==len(raw)
         encoded.extend([len(flags),*flags]);totals.update({k:len(v) for k,v in groups.items()})
-        records.append(dict(**binding,lod=record['lod'],part=record['implementation'],domainCount=len(flags),domainSha256=sha(path),classifications=dict(groups),nativeIslands=proof,
+        records.append(dict(**binding,lod=record['lod'],part=record['implementation'],domainCount=len(flags),domainSha256=sha(path),classifications=dict(groups),nativeIslands=proof,authoredClosureFaces=sorted(closure_faces),
             windowEvidence=None if window is None else dict(report=str(window_path.relative_to(ROOT)),sha256=sha(window_path),
                 geometrySha256=window['geometrySha256'],sourceLocalDomains=admitted_windows,localAxes='UV0.YZ',
                 preservedChannels=['UV0.XYZW','COLOR'],nativeTemplateSha256=sha(window_template_path),shader=550)))
@@ -237,11 +268,11 @@ SWITCH
     (ROOT/'src/BridgeBuilder/Bridges/Types/PedestrianDraw02/PedestrianDraw02UvSampling.cs').write_text(code)
     output=BASE/'non-tiling';output.mkdir(exist_ok=True)
     report=dict(style=STYLE,resourceBytes=resource.stat().st_size,resourceSha256=sha(resource),totals=dict(totals),
-        sources=list(sources.values()),currentTemplateSource=verified,nativeTemplate=template,templateSha256=sha(templates_path),
+        authoredClosureEvidenceSha256=sha(closure_path),additionalClosureEvidenceSha256=sha(additional_path),sources=list(sources.values()),currentTemplateSource=verified,nativeTemplate=template,templateSha256=sha(templates_path),
         nativeSha256=sha(native_path),nativeChartSha256=sha(chart_path),topologyValidatorSha256=sha(source),
         genuineRepeatRegion=region,repeatResourceSha256=sha(road_path),nonTilingAxes=['U','V'],meshes=records,
         nativeSemanticsHashes={p.name:sha(p) for p in [semantics/'templates-current.json',semantics/'summary.json',semantics/'shader-571-parsed.json',semantics/'shader-550-parsed.json',semantics/'550-184.asm',semantics/'VTAtlassingInfo.cs',semantics/'VTDatabase.cs',semantics/'SurfaceAsset.cs']},
-        rule='Identity native UV0 samples finite authored source mappings with no procedural tiling. UV reuse and polygon clipping ambiguity do not imply repeated sampling; exact original-domain road repeat overlaps and unknown shaders remain density mappings. Pixel periodicity is not used.',
+        rule='Identity native UV0 samples finite authored source mappings with no procedural tiling. UV reuse and polygon clipping ambiguity do not imply repeated sampling; source-proven non-road closure mappings may alias road atlas pixels; other exact original-domain road repeat overlaps and unknown shaders remain density mappings. Pixel periodicity is not used.',
         localization='No user-visible text or localization behavior changed; new strings are internal invariant diagnostics.',
         acceptance='Offline evidence only. Native rendering, complete owner footprint and package remain integration gates.')
     (output/'classification.json').write_text(json.dumps(report,indent=2)+'\n')

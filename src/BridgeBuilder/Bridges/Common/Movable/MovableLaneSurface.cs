@@ -85,6 +85,7 @@ internal static class MovableLaneSurface
             result.UpdateKeywords(new HashSet<string>(result.keywords) { "_TANGENTSPACE_OCTO" });
             // SaveData preserves VT. Save(vt:false) rebuilds/clears the backing header.
             result.SaveData(force: true);
+            MovableLaneMidMips.Complete(source, result, owner, preview, assets);
             preview?.RetainSurfaceProperties(result);
         }
         finally { result.UnloadProperties(); }

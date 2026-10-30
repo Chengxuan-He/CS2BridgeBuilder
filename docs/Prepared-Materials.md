@@ -1,12 +1,33 @@
 # Prepared Bridge Materials
 
+## Current requirements and evidence scope
+
+Use the [material contract](agent-contract/MATERIAL_GENERATION_CONTRACT.md) for current requirements:
+reuse original non-road materials; compose/precompose outside the game only road appearance types supported by the
+corresponding prototype; retain original input materials for unsupported types. Apply the
+[general UV mapping rule](agent-contract/BRIDGE_GENERATION_CONTRACT.md#preserve-original-uv-projection-and-mapping-mode)
+to all fixed and movable bridges, per part, LOD, layer and axis. Source tiling stays tiling;
+source stretching stays stretching. No full-road pixel expansion, even across multiple pages.
+
+The package limit is 55,000,000 bytes; the complete persisted owner material limit is 10,000,000
+bytes. The sole cross-style source exception is read-only native MidMips under
+`Materials/Shared/MidMips/<cacheCID>/`; every bridge retains its independent dependency snapshot.
+
+Producer commands, fixtures, counts and conversion recipes below describe retained implementation
+stages and tools. They are not a current complete-library inventory or permission to remake
+non-road materials. A prepared structural conversion or generic road converter can remain a
+recorded implementation gap under the current scheme. See the [code-path assessment](Movable-Nonroad-Material-Reuse-Assessment.md)
+and [shared integration handoff](../tools/PreparedMaterials/SharedCurrent.md) before using those tools.
+No new runtime integration or acceptance is established by this documentation.
+
 ## Directory layout
 
 Prepared material payloads belong in `assets/Materials/<BridgeStyleId>/`. Follow the
 [material generation contract](agent-contract/MATERIAL_GENERATION_CONTRACT.md#5-per-bridge-material-directory-and-mod-packaging).
 
 Each immediate subdirectory uses a stable `BridgeStyleDefinition` ID. Keep every style's
-materials and non-built-in dependency payloads inside its own directory. Additional source
+materials and non-built-in dependency payloads inside its own directory, except the explicitly
+shared read-only MidMips source. Additional source
 variants may use subdirectories within that style. Do not use localized names or generated
 bridge UUIDs here.
 
@@ -30,12 +51,12 @@ Treat installed sources as read-only. Runtime generation copies prepared resourc
 bridge's independent dependency snapshot; it must not rebake constant materials or use a
 previously generated bridge as the source.
 
-## Source-level rebuild
+## Recorded source-level rebuild
 
-Generated material libraries are being rebuilt from the installed game's original source
+The retained source-level rebuild used the installed game's original source
 archives. The removed per-sampler material library is not a production fallback. A successful
 code build without the complete rebuilt material graph is not a deliverable bridge package.
-The current source-level producer emits compatible native references or converted descriptors;
+The producer described in this stage emits compatible native references or converted descriptors;
 it does not yet complete cross-chart structural repetition or all road-repeat mappings.
 
 Use `tools/Rebuild-NativeMaterials.ps1` in each style's independent output directory:
@@ -97,7 +118,7 @@ and Hash128 readers. It checks complete consumption and object-template compatib
 The Draw01 source-level output passes 30 native descriptors, including 27 VT descriptors.
 This validates file format, not shader rendering or in-game visual acceptance.
 
-The integrated source library contains 618 files (180,345 bytes), including 299 Surface
+The recorded source-level library contains 618 files (180,345 bytes), including 299 Surface
 descriptors and ten style-local copies of one constant-control Texture, each with a CID
 sidecar. Built-in texture references are not packaged texture bytes. Native dependency closure
 and source-linked independent-owner snapshot checks pass for all ten styles and 38 distinct
@@ -109,11 +130,11 @@ source UVs where density is preserved. Remaining receivers need a verified regio
 representation. A full atlas reference outside its actual chart, a bounding-box-only test,
 vertex-only modulo, and an old per-triangle folded bake are not accepted replacements.
 Neither a small incomplete private output nor a build without prepared resources establishes
-the 50,000,000-byte complete Paradox Mods package gate.
+the 55,000,000-byte complete Paradox Mods package gate.
 
 ## Genuine repeat-unit preparation
 
-The material contract permits each evidenced genuine repeat unit to receive one necessary
+For prototype-supported road composition, the material contract permits each evidenced genuine repeat unit to receive one necessary
 offline conversion. All sampling uses share that result. Different genuine units in one
 atlas may have distinct payloads; arbitrary charts, triangles and sampling variants are
 not additional units. A native full-atlas Repeat sampler cannot express local repetition
@@ -186,7 +207,7 @@ filtering differences, including repeat seams, remain part of native and manual 
 Reports include original fractional spans, output dimensions and both density ratios. All output
 levels sample their corresponding authored source mips, not a mip-zero-generated chain. Every
 complete generated owner must meet its 10 MB material ceiling, and the complete deliverable must
-meet the 50 MB package gate. Prepared-directory size is reported separately.
+meet the 55 MB package gate. Prepared-directory size is reported separately.
 An evidenced composite unit may provide `bands`, each with `start`, `end`, `min`, `max` and
 integer `repeatY`. Bands cover the horizontal unit interval continuously from zero to one;
 their original proportions and source regions are retained. The output grid meets the highest
@@ -368,8 +389,9 @@ the template-evidence digest, recipe `BridgeBuilder/SkinnedLane/1` and output by
 
 The shared native Road source uses network worldspace template 17. Its object conversion binds
 the same albedo, normal and mask textures in template 0, with a zero control mask and native
-octahedral tangents. Prepare that constant descriptor and control mask in every style's `Road/`
-directory. Preserve the source worldspace UV scale separately in geometry; do not bake a
+octahedral tangents. This is a recorded conversion recipe, not an instruction to convert every road. Prepare it
+only when required by a prototype-supported road composition; unsupported road types retain
+their original materials. Preserve the source worldspace UV scale separately in geometry; do not bake a
 bridge-sized asphalt texture. Match all three native texture identities before reusing the
 prepared descriptor. A changed source must retain its own texture bindings.
 
@@ -429,4 +451,4 @@ checks. No successful legacy fixture authorizes restoring the removed material l
 
 Only a complete native material graph bound by every required preview/create/regenerate/export
 branch can qualify for final package acceptance. An official SDK archive of the partial
-integration is a diagnostic measurement, even when its byte length is below 50,000,000.
+integration is a diagnostic measurement, even when its byte length is below 55,000,000.

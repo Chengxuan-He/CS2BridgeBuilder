@@ -30,6 +30,7 @@ support for every narrow input. Non-movable bridge behavior is outside this chan
 - [15. Observed failures and mandatory prevention](#15-observed-failures-and-mandatory-prevention)
 - [16. Generation pipeline and source map](#16-generation-pipeline-and-source-map)
 - [17. Material families, UV density and texture ownership](#17-material-families-uv-density-and-texture-ownership)
+- [Offline repeat materials instead of period seams](#offline-repeat-materials-instead-of-period-seams)
 - [18. Marking layout, mesh and native material](#18-marking-layout-mesh-and-native-material)
 - [19. Common motion, stacking, visibility and underside](#19-common-motion-stacking-visibility-and-underside)
 - [20. LOD, topology and prototype-specific extension](#20-lod-topology-and-prototype-specific-extension)
@@ -52,7 +53,7 @@ working implementations incrementally and record remaining acceptance work hones
 appearance, skeleton, persistence and localization outcomes remain mandatory.
 
 Sections 16–24 define the generation, material, marking and track requirements.
-The material generation contract governs original reuse, density, verified prototype non-tiling
+The material generation contract governs original reuse, density, verified source finite/stretch
 stretching, tiling, offline preparation,
 bounded runtime conversion and the separate generated-owner material and total-package limits.
 Implementation evidence and human acceptance remain specific to the tested style and input.
@@ -108,7 +109,7 @@ remains a native prerequisite. Manager independence does not imply DLC independe
 | Resolve | Selected road and supported native state to sections, pieces, lanes and evaluated closed geometry | Preserve conditional alternatives and selected layout; no prototype-section whitelist. |
 | Prepare mechanism | Immutable prototype parts, motion domains, skeleton, materials and LOD data to width-adjusted structure | Preserve authored transforms, fixed platforms and native behavior. |
 | Convert surfaces | Evaluated road to object-local triangles clipped by motion and appearance domains | One native bone per triangle; fixed and moving regions remain distinct. |
-| Assign appearance | Native structural references, measured repeating road units, bounded local composites and separate skinned paint | Follow sections 17–19; no road cuts for paint or texture repetition, no custom shaders. |
+| Assign appearance | Native structural references, measured repeating road units, bounded local composites and separate skinned paint | Follow sections 17–19; no paint-driven road cuts or custom shaders; cuts solely for texture-period wraps are prohibited; use section 17's offline repeat materials. |
 | Assemble | Structure, converted road, native attachments and per-material models to the prototype's mechanism hierarchy | Correct material batch counts, bones, bounds and all LODs. |
 | Build network graph | Native crossing conditions plus selected-road sections to minimal changed Section/Piece nodes | Preserve lanes, signals, fees, upgrade logic and unlock AND/OR groups. |
 | Preview or save | Same generated graph to a temporary open-pose assembly or registered native assets | Preview writes no formal assets; saving preserves owned identity and original dependency references. |
@@ -347,9 +348,12 @@ subsurface semantics, not a blanket assumption that every face has the same role
 
 Select the required appearance by surface type under section 24. Reuse the corresponding
 original material directly when its vertex layout and native animated-object path are compatible.
-Otherwise preserve that exact appearance through the native conversion in section 17; do not
-substitute a merely similar material. Carried structural materials remain original unless a
-measured density-preserving conversion is required. Prepare known, preparable constant derived
+For a prototype-supported road type, preserve the required composite through section 17's
+native path. Other road types retain original materials; an incompatible path is unresolved,
+not permission for composition or a visually similar substitute. Existing explicit track
+descriptor conversions remain separate native representation rules. Carried non-road materials remain original by default; only section 17's narrow offline
+repeat derivation may replace an evidenced repeating domain to avoid new period-wrap seams. Only prototype-supported road types enter section 17's composition/precomposition plan;
+other road types retain original materials. Prepare known, preparable constant derived
 resources offline. Genuinely variable composition and necessary conversion of selected third-party
 road/track inputs unavailable before runtime follow the bounded exceptions in material contract
 section 4, with direct reuse and descriptor-only conversion considered first. Custom shaders and structural receiver-only descriptor rewrites
@@ -376,8 +380,8 @@ Do not claim exact authored UV-island or LOD-atlas reproduction without verifyin
 Preserve fixed platform/curb structural faces and original material appearance. Retain original
 UVs for rigid transforms only where the actual native mapping preserves both UV gradients,
 chart coverage, phase and normal semantics; rigid position displacement alone is not proof.
-Use measured density-preserving remapping when tiling geometry stretches. Verified prototype
-non-tiling mappings instead retain authored UVs under material contract section 2. Exclude their
+Use measured density-preserving remapping when tiling geometry stretches. Verified source
+finite/stretch mappings instead retain authored UVs under material contract section 2. Exclude their
 occupied domain from replacement road geometry. A fixed carriageway cap is a separate appearance
 domain: retain selected-road layout and use the measured native cap material/projection there.
 Do not mistake a missing rendered face for missing vertices or add an overlapping white patch.
@@ -549,7 +553,7 @@ appearance must remain intact. Record a complete, same-basis dependency comparis
 texture-only and incomplete reference graphs are insufficient evidence.
 Material generation contract sections 2 and 5 additionally limit the complete persisted material
 dependency graph of one generated owner to 10,000,000 bytes and the complete official SDK content
-ZIP to 50,000,000 bytes. Neither a prepared-directory subtotal nor an incomplete graph proves
+ZIP to 55,000,000 bytes. Neither a prepared-directory subtotal nor an incomplete graph proves
 compliance; report unavailable generated-owner measurements explicitly.
 
 ## 12. Integration and update scope
@@ -637,6 +641,12 @@ Readiness for human acceptance is a distinct delivery milestone: complete the au
 applicable automated checks and deployment, then list the in-game checks that humans must perform.
 When the user defines that milestone as the task's completion boundary, pending human checks do
 not keep the implementation task open; they still prevent claims of completed in-game acceptance.
+At that boundary, resolve known implementation gaps, pass applicable automated/native checks,
+verify the complete official package and install the coherent candidate. Actual human-created
+owner-footprint measurements may be handed off with the human visual/motion/cold-load checks;
+report them as unmeasured, never substitute prepared-directory totals or claim their byte gate
+passed. Entering the agreed manual-acceptance stage completes the implementation objective,
+not the still-pending human acceptance or generated-owner audit.
 Attach the actual evidence and list remaining checks. A missing sample or untested native cycle
 keeps the relevant support claim incomplete. There is no family-wide deferred status. Implementation and verification status are recorded per
 variant; missing human acceptance does not block coding or routing the remaining variants.
@@ -695,6 +705,10 @@ other bridge has passed acceptance.
 | Preview omitted ends, remained closed or was off-centre | Complete open-pose assembly and transformed bounds are required | Assemble fixed ends plus moving centre and fit the camera to all transformed bounds; inspect actual panel output. |
 | Persisted mechanism was scheduled for removal | The helper parser rejected valid typed anonymous Odin values | Support the native format in the shared reader, replay real Prefabs/layout migration without identity changes, then check native cold loading. |
 | Section/Piece and unlock counts exceeded the prototype | Some copies change producers/upgrade references; other wrappers and equal gates are redundant | Copy only changed nodes, share equivalent conversions within the owner, preserve condition semantics, inline the outer unlock gate and deduplicate equal nested groups. |
+| Native network structure lost a worldspace layer or used object-atlas density rules | A network Surface was converted despite remaining in a compatible native NetPiece render context | Preserve the measured native network Surface, encoded channels and composition context under section 17; test the complete preview/saved path rather than globally bypassing object conversion. |
+| Width changes remapped a positive-V network's transverse atlas coordinate | Longitudinal native distance mapping was mistaken for a two-dimensional repeating atlas | Preserve the authored transverse mapping and evaluate longitudinal density through the evidenced native mapping context; do not apply the generic polar-frame V as an unproven substitute. |
+| A finite profile axis was forced to repeat with its other axis | A whole-domain boolean could not express mixed finite/repeating sampling | Retain the evidenced finite axis and independently preserve density and phase on the repeating axis, including constructed fragments and every LOD. |
+| A finite source domain was excluded merely because a neighboring chart crossed a repeat rectangle | Atlas overlap was used as physical source-part evidence | Classify the domain's actual source faces and sampling footprint; preserve distinct closure/terminal faces and do not expand an arbitrary crop to hide a true crossing. |
 
 For each future repair, record the input, native evidence, root cause, changed generation rule and
 verification limits. Update the corresponding normative section and this table together. Keep
@@ -714,8 +728,11 @@ Follow this dependency order for a new mechanism:
    frames. Preserve actual asymmetric sidewalks and fixed cap domains.
 4. Prepare each road LOD from its appropriate native road input. Convert network attributes to
    object attributes and bind road regions to the original mechanism skeleton. Physical seams
-   may require clipping; texture periods and paint edges must not drive road subdivision.
-5. Bind the original or offline-prepared appearance resources in section 17. Apply only material
+   may require clipping. Paint edges must not drive road subdivision; texture-period wrap planes must not drive road subdivision.
+5. Bind original non-road materials, or narrowly eligible offline repeat derivatives under
+   material section 3 to avoid new period-wrap seams. Under section 17, compose/precompose supported road types
+   and bind original input materials for unsupported road types.
+   Apply only material
    contract section 4's bounded variable-content or unknown-selected-input conversions when needed,
    and preserve structural surface-slot semantics.
 6. Produce the separate marking mesh in section 18 and append it to the same mechanism object
@@ -740,38 +757,135 @@ and the generator code contract.
 
 ## 17. Material families, UV density and texture ownership
 
-Follow the [material generation contract](MATERIAL_GENERATION_CONTRACT.md). Fully compatible
-original materials remain direct references without new descriptors or texture payloads. Required
-native object-template conversions preserve source appearance and dependencies; known, preparable constant derived
-materials are prepared offline and packaged per style. Runtime generation only copies and binds
-those finished resources. Each known, preparable genuine repeat unit requiring conversion is prepared only once
-offline and shared by all sampling uses. Distinct evidenced units in one source atlas may each
-receive a necessary conversion; triangles, arbitrary crops and sampling differences do not define
-new units. Repeatable units retain original per-axis texel density and pattern
-scale; never bake them into full-span images. Verified prototype non-tiling mappings may stretch
-with geometry under material contract section 2, retaining authored UVs (interpolated for permitted
-construction fragments), native textures/resolution, channels, mips and compatible material identity.
-Record source/part/LOD/axis evidence; tiling axes in mixed mappings retain physical density.
-Missing repeat evidence or failed mapping does not establish non-tiling status. This grants no new
-bottom materials, geometry/bone changes, arbitrary crops or per-sampler bakes, and does not extend
-to selected-road/track appearance or marking layout. Genuinely variable, nonperiodic content may use
-bounded native composition without reducing density. A selected third-party road/track input
-unavailable before runtime may receive necessary descriptor or bounded texture conversion under
-material contract section 4. Prefer direct reuse, then descriptor-only conversion; an absent known
-prepared key never qualifies. Share identical results within the current owner, without a
-cross-bridge generated-result cache or per-sampler baking. Do not modify original assets or introduce
-custom runtime shaders. Preserve independent per-owner external dependency snapshots.
+### Non-road reuse and road composition
 
-Material selection must also follow [section 24](#24-track-geometry-overhead-supply-and-material-selection).
-The selected-track and absent-surface-type rules take precedence over blanket use of
-prototype appearance on moving receivers; stationary abutments retain their existing rules.
+Here, **precomposition means baking the material outside the game**, saving its complete native
+resources and packaging them before distribution. Game loading, preview, creation and export
+only load/copy/bind that finished result; startup or first-use baking is not precomposition.
+See the [material definition](MATERIAL_GENERATION_CONTRACT.md#meaning-of-precomposition).
 
-Keep these four material paths distinct. A global switch to VT or a global material replacement
-cannot implement them correctly.
+The required generation scheme is **original non-road material reuse, composition/precomposition only for
+prototype-supported road appearance types, and original materials for every other road type**. This is a generation requirement, not a reverse-engineering
+finding. Follow the [material generation contract](MATERIAL_GENERATION_CONTRACT.md) for the
+complete source, sampling, preparation, ownership and verification rules.
+
+Retain original prototype Surface identities, shaders, parameters, texture bindings and native
+dependencies on structure, towers, trusses, underside, railings and mechanisms, including each
+LOD's corresponding material. Geometry adaptation alone must not trigger structural rebaking.
+Only the [offline source-atlas repeat rule](MATERIAL_GENERATION_CONTRACT.md#offline-source-atlas-repeat-materials)
+permits derived structural materials for evidenced repeat domains to avoid new period-wrap seams.
+Preserve compatible native context; failed mapping alone is not eligibility for that rule.
+
+The sole road-composition entry condition is that the prototype supports the actual road
+appearance type and that type must use prototype appearance. Determine support separately for
+each type and physical domain from immutable prototype evidence. Asphalt, sidewalk surfacing
+and wheel-track/rut effects are examples: a prototype may support one, several or none of them.
+Do not assume all prototypes share a support list, or turn one supported type into whole-road
+composition. Unsupported types retain their original input materials and bypass composition.
+
+For a supported type, resolve its measured prototype sample, masks and required source layers
+under section 24. Precompose constant combinations offline; use only verified bounded native
+composition for genuinely variable combinations. Preserve unrelated unsupported layers and
+markings. This is neither blanket preservation of the selected road's complete appearance nor
+blanket replacement with prototype asphalt. Native representation failures do not change the
+support classification or authorize a substitute material.
+
+Original road and structural faces may share one Surface or atlas. Keep that source unchanged
+for structure except independently eligible offline repeat derivatives, and assign a supported
+type's road composite only to its measured road faces/material batches.
+Unsupported road types keep their original material bindings.
+Do not edit source pixels or global parameters, remove structural details, or change bones to
+separate materials. Physical location and a material-slot name alone do not identify road faces.
+Fixed structural platforms remain distinct from road-cap appearance domains. Selected track and
+attachment rules remain in section 24; marking layout and native skinned paint remain separate
+under section 18. This scheme grants no new texture-period cuts; preserve necessary physical and actual material-domain boundaries.
+
+### Preserve original UV projection and mapping mode
+
+Apply the general bridge contract's [original UV projection and mapping rule](BRIDGE_GENERATION_CONTRACT.md#preserve-original-uv-projection-and-mapping-mode).
+It governs fixed/non-movable bridges as well as movable bridges. The following source-role
+clarifications apply to movable generation without redefining or narrowing that common rule.
+
+For non-road parts, the source is the corresponding prototype material/mapping. For road
+composition, retain each contributing source layer's own mapping and the specified blend.
+No layer inherits a different source's stretching classification. Measure original geometry,
+UV seams and native sampling; texture Repeat/Clamp flags alone do not classify atlas regions.
+Retain original texture resolution, channel alignment, normals and complete mip dependencies.
+UV adaptation and material-content modification are separate operations.
+
+Known compositions/conversions for prototype-supported road types and their genuinely required
+road repeat units are prepared once
+offline and shared across all sampling uses. A fully identical resolved region may bind its
+original material without baking. Descriptor-only conversions retain compatible pixels. Only
+material contract section 4's genuinely variable or unknown-selected-input cases permit bounded
+runtime composition/conversion. These runtime exceptions permit neither full-road rasterization nor structural rebaking;
+section 3's eligible structural repeat derivatives are prepared outside the game only.
+Preserve independent owner snapshots, native loading and no custom shaders/runtime rebinding.
+
+### Native network context and independent sampling axes
+
+Decouple distinct material layers under material generation contract section 3: retain independent
+coordinates, periods and phases for road, asphalt, worldspace detail and blend masks, while
+preserving each layer's authored channel alignment. Do not impose a common period on all layers.
+Replace the universal 0.01-pixel phase cutoff with a measured, explicitly documented per-layer
+tolerance; its new numeric value remains pending validation. Verify the native skinned-object
+and persistence paths rather than inferring capability from network rendering.
+
+Material generation contract section 3 prohibits expanding any pattern across the complete
+road/span into texture pixels, including mixed and non-repeating appearances. A failed repeat
+test must not fall back to receiver-length baking. Splitting the same bake into smaller pages
+or VT tiles does not comply. Runtime composition exceptions remain subject to this prohibition;
+retain source content through a verified native representation and preserve its resolution.
+
+Apply the following source-evidenced routes without changing geometry, topology, bones,
+native texture pixels, mip chains or independent persistence:
+
+- **Draw03 native network structures:** when an approach remains a native `NetPiecePrefab`
+  through `CreateMovableRenderGraph`, retain its compatible original network Surface and
+  network vertex encoding. Preserve the actual composition/curve context, signed-V mapping,
+  transverse mapping, worldspace layers and native layout. Verify each affected render and
+  LOD and both preview and persisted assembly. Do not force template 17/33 into template 0
+  merely because the common mesh writer is also used for objects. Conversely, a NetPiece
+  capability must not leak into a skinned-object path or justify a global conversion bypass.
+- **Positive-V native network mappings:** preserve the authored transverse coordinate and
+  original longitudinal texel density. Use the source's actual signed-V rate and resolved
+  native longitudinal distance/phase, or retain the native renderer that evaluates them.
+  Distinguish encoded vertex rates from evaluated fragment UVs; do not multiply a rate twice,
+  normalize positive V as a finite chart, or substitute a two-dimensional polar-frame mapping
+  without proof. A required object conversion must establish an equivalent longitudinal
+  mapping and all material layers before it is accepted.
+- **Lift04 finite U with repeating V:** express the two axes independently from measured
+  source/domain data. Retain original corrected U, interpolated on permitted construction
+  fragments, while preserving V's original physical density, phase and verified repeat
+  boundaries. A whole-domain non-tiling flag cannot authorize stretching V. Keep the original
+  Surface where it expresses the measured mixed axes without new period cuts. An eligible
+  structural repeat domain may instead use the narrow offline derivative in material section 3.
+  A separately identified prototype-supported road
+  composition may use its evidenced genuine unit under material contract sections 3 and 4.
+- **Domains touching repeat coverage:** classify the actual original source faces, authored
+  part and full sampling footprint. A chart neighbor or bounding-rectangle overlap alone
+  does not establish that a closure, terminal strip or other finite surface repeats. Apply
+  finite retention only to the proven source faces/domains. A face genuinely crossing finite
+  and repeating semantics needs an evidenced native representation or the already permitted
+  measured construction; do not hide the crossing with an expanded arbitrary crop, a blanket
+  allow flag or new per-receiver pixels. New cuts solely for atlas-period wraps are prohibited; use eligible offline source-atlas repeat materials.
+
+Store immutable axis and native-mapping decisions separately from texture identities. Keep
+whole-source retention compatible with the existing finite-domain path; unknown or unchanged
+classifications do not silently gain permissions. The retained component of a mixed mapping
+must come from the corrected/interpolated source UV, never from an already density-remapped
+coordinate. Verify both axes after final native mesh upload, not only eligibility predicates.
+Native network checks additionally cover material identity, vertex-stage semantics, worldspace
+mask/layer behavior and the actual render-context binding. Keep exact original face/domain
+provenance in the observer so retained, density-mapped and unresolved output remain distinct.
+
+Apply the supported-type gate before the conversion families below. Unsupported road types
+retain original materials; none of these conversion rows admits them. Keep the following paths
+distinct; a global switch to VT or a global material replacement cannot implement them correctly.
 
 | Family | Current generation/persistence treatment | Required invariant |
 | --- | --- | --- |
-| Carried prototype structure, underside, towers and supplements | Reuse original native Surface assets wherever compatible; use prepared repeat resources only when required to preserve tiling density | Preserve material-slot semantics and original appearance; no receiver-only descriptor copies. Remap tiling UVs for density; verified non-tiling UVs may stretch under material contract section 2 |
+| Carried prototype structure, underside, towers and supplements | Retain original Surface and texture identities by default; only evidenced repeat domains needing avoidance of new period-wrap seams may use material section 3's offline derivative | Preserve per-LOD source projection: tiling stays tiling, stretching stays stretching, including mixed axes. Record narrow derivative eligibility and validate its sampling; no general structural material replacement |
 | Converted repeating asphalt | Reuse a compatible original material, or copy the once-prepared genuine unpainted repeat unit and native non-VT object Surface shared by all its uses | Continuous UV repetition preserves measured prototype gradients and physical scale |
 | Converted repeating metal grating | Reuse the original where compatible; otherwise copy the once-prepared genuine grating unit and `DefaultCutoutDoubleSided` non-VT Repeat material shared by all its uses | Preserve alpha/cutout holes and two-sided behavior; never turn the sidewalk into opaque asphalt |
 | Other converted local road appearances | Copy known prepared constants; apply material contract section 4's bounded variable-content or unknown-selected-input conversion only when necessary | Preserve fixed-cap/material domains, channel semantics, padding, mips and per-LOD UV assignment |
@@ -811,12 +925,34 @@ packed octahedral normals/tangents, so the saved material must carry `_TANGENTSP
 Preview-only keyword injection is insufficient. Native object skinning support must be verified
 in the selected template; toggling a keyword cannot add missing shader functionality.
 
-Keep Repeat units non-VT in the current native object loading path: its VT sampler uses Clamp.
+Prepared road units that require whole-texture Repeat use the verified non-VT object path.
+This does not require converting original VT structure: its mesh-authored atlas repetition can
+remain valid with Clamp. Do not infer region-local repetition from a VT allocation transform.
 For remaining VT composites use native configuration, BC7 formats and native ZSTD compression
 setting; never modify global compression configuration to speed one generation. Complete the
 matching mid-mip cache (currently three levels), register/refresh VT resources and preserve the
 whole dependency chain before publishing the render. A mismatch between requested and stored
 mid mips is a generation failure, not a reason to suppress the error.
+
+Known converted VT surfaces use offline-prepared MidMips dependencies. Material contract section 5
+permits only these immutable cache sources to share the read-only packaged
+`Materials/Shared/MidMips/<cacheCID>/TS512_MB3.MidMips` path and CID sidecar. Preflight primary
+and duplicate Surface membership plus matching native mip levels before registration. Each bridge
+copies only its required cache dependencies into its own independent snapshot, retaining bytes,
+CIDs and native tag-bearing filenames. Other per-style resource rules and runtime baking limits
+remain unchanged; the owner material limit still includes these dependencies.
+
+### Offline repeat materials instead of period seams
+
+Apply [material section 3](MATERIAL_GENERATION_CONTRACT.md#offline-source-atlas-repeat-materials)
+to road and narrowly eligible structural repeat domains. Bake independent tiling materials from
+the original atlas outside the game instead of adding cuts solely for period wraps. Preserve
+existing native seams and necessary motion, shape and actual material boundaries. Keep independent
+axes/layers, phase, original density, finite terminals, original attributes and bones. Fully reusable
+original materials remain unchanged; this is not general structural rebaking. Derived assets have
+new identities while source assets stay unchanged. Complete all PBR/filter/mip, native persistence
+and 10 MB owner / 55 MB package checks; no full-span bake or relaxed global tolerance is allowed.
+Current feasibility and implementation must be verified separately from this specification.
 
 ## 18. Marking layout, mesh and native material
 
@@ -873,7 +1009,7 @@ loop, Harmony synchronization patch or custom shader may be required after gener
 
 Keep paint single-sided and above its upper receiver under the same transform. Do not disable
 decal reception by cloning every structural Surface. Preserve the original structural references
-and apply only the material contract's required density/native-representation conversions. The
+and their source projection under material contract sections 1 and 2; road composition must not rewrite them. The
 observed copying defect does not establish a universal engine defect or authorize built-in edits.
 
 The current compact paint mesh remains present across road LOD transitions rather than being
@@ -895,7 +1031,7 @@ Maintain these distinctions when reporting face counts:
 - Additional single-sided paint triangles, generated from marking footprints only.
 
 Do not claim that generation adds no triangles: paint does add them. Do not introduce road
-subdivision to encode paint outlines or texture periods. Any LOD supplement needs source geometry,
+subdivision to encode paint outlines. Cuts solely for texture-period wraps are prohibited; use qualifying offline repeat materials. Any LOD supplement needs source geometry,
 material and part provenance and a stated purpose; never automatically copy a mid-distance bottom
 plate into every far LOD. Retain native simplified underside where present and test underside
 appearance at transitions. The paint exception does not authorize arbitrary structure replacement.
@@ -968,7 +1104,7 @@ Before declaring a newly added mechanism complete:
 - Check paint placement, backface absence, 1 mm clearance, distance visibility and no deck slicing.
   Confirm grating holes, caps, towers and structural materials retain prototype appearance.
 - Measure native versus generated UV density in both axes and verify material slots at every LOD.
-  Audit verified prototype non-tiling uses under material contract section 2 separately, reporting
+  Audit verified source finite/stretch uses under material contract section 2 separately, reporting
   their allowed density change and retained source UVs rather than a density-preserving pass.
 - Exercise preview and newly placed output separately, then save/restart with the manager absent
   and required DLC present. Verify all owned references and VT mip dependencies.
@@ -1042,17 +1178,22 @@ of inventing a mirror across the road width. Do not add poles to a track without
 ### 24.3 Material selection order
 
 Apply these rules by surface type and physical motion domain, independently of the
-section containing the surface. Record prototype appearance from real source data;
+section containing the surface. These rows select road-composition inputs and non-road reuse;
+they do not impose preservation of the selected road's complete final appearance.
+Only prototype-supported appearance types enter composition/precomposition; other types keep
+their original input materials. Asphalt, sidewalks and wheel-track/rut effects are classified
+separately, using each prototype's own measured support. Record prototype appearance from real source data;
 players need not possess the original files. Compare each deck separately.
 
 | Geometry and location | Required material appearance |
 | --- | --- |
 | Selected rails and sleepers | Original selected-track materials and UVs. |
-| Moving surface type absent from the prototype | Original selected surface appearance. |
-| Moving surface type supported by the prototype | Measured prototype appearance; fixed physical scale for tiling mappings, verified non-tiling UVs under material contract section 2. |
-| Asphalt, including empty lanes and sidewalk parking areas | Road surface; preserve physical texture scale except for a verified prototype non-tiling use under material contract section 2. |
+| Road appearance type absent from the applicable prototype domain | Original input material and mapping; bypass composition/precomposition. |
+| Road appearance type supported by the applicable prototype domain | Use measured prototype appearance through composition/precomposition; retain each contributing source's tiling/stretch mapping. |
+| Asphalt, including empty lanes and sidewalk parking areas | Classify as asphalt, then apply the supported/unsupported rule above; asphalt is not automatically supported. |
+| Sidewalk surfacing and wheel-track/rut effects | Test each type independently; support for asphalt does not imply support for either of these. |
 | Stationary edge abutments/platforms | Existing stationary appearance rules. |
-| Other bridge structure | Applicable prototype structural materials. |
+| Other bridge structure | Reuse corresponding original prototype materials by default; only material section 3's evidenced offline repeat derivative may avoid new period-wrap seams. |
 
 A stationary abutment does not become a moving surface merely because both are stored
 in the same mechanism. Determine the boundary from recorded physical partitions and
@@ -1102,7 +1243,9 @@ All user-visible implementation text must support every UI language under AGENTS
 
 ### 24.5 Surface-material implementation
 
-Retain evaluated native UVs on moving receivers. Evaluate native worldspace-layer
+Dispatch road types by measured prototype support: supported types enter composition/precomposition;
+others retain original materials. Keep non-road material bindings unchanged except eligible
+offline repeat derivatives under material section 3. Retain evaluated native UVs on moving receivers. Evaluate native worldspace-layer
 masks before substituting a measured prototype road sample: a section may contain
 both asphalt and other surface types. Keep unsupported layers original. Physical
 bone connections exclude stationary edge platforms from this path.
@@ -1128,8 +1271,11 @@ the two-dimensional texel metric before and after transformation on each non-deg
 surface. Include final texture dimensions, both UV gradients, filtering/mip behavior,
 normal/mask/control maps and atlas packing. Translation/rotation may retain original
 UVs; stretching tiling geometry requires a measured density-preserving repeat/remapping path.
-Verified prototype non-tiling uses retain authored UVs, interpolated for permitted construction
+Verified source finite/stretch uses retain authored UVs, interpolated for permitted construction
 fragments; audit source/part/LOD/axis evidence and their expected physical-density changes separately.
+Use section 17's native network and independent-axis routes for signed-V longitudinal mappings,
+mixed finite/repeating axes and source-face boundaries. Do not apply ordinary two-dimensional
+atlas density rules to encoded native network coordinates before their renderer semantics are resolved.
 Do not sample across atlas-island seams. Degenerate authored UVs must be identified
 separately rather than reported as passing a density comparison.
 
@@ -1142,7 +1288,7 @@ yellow-pixel absence and UV continuity are not texel-density acceptance.
 Do not fit mixed charts by reducing their packing scale.
 Mixed receivers with a verified common period use the same once-prepared genuine repeating unit
 at native density; changing a receiver or its sampling does not create another unit.
-Verified prototype non-tiling receivers retain their original native texture/channel footprint
+Verified source finite/stretch receivers retain their original native texture/channel footprint
 and authored UVs under material contract section 2; geometry stretching needs no full-span bake.
 Other nonperiodic receivers retain their full channel footprint and are never silently reduced
 to fit a page. Oversized cases without a verified non-tiling mapping remain unresolved and fail

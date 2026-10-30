@@ -1,0 +1,21 @@
+#pragma kernel Check
+Texture2D<float4> Source;
+SamplerState sampler_Source;
+RWStructuredBuffer<float4> Results;
+float4 Region;
+float2 GridScale,BaseExtent;
+float Epsilon;
+int Mip,Aniso,Mode;
+[numthreads(64,1,1)]
+void Check(uint3 id:SV_DispatchThreadID)
+{
+ if(id.x>=1024)return;
+ float v=(id.x+.371)/1024;
+ float2 dx=float2(exp2(Mip)*Aniso/BaseExtent.x,0)*GridScale;
+ float2 dy=float2(0,exp2(Mip)/BaseExtent.y)*GridScale;
+ float y=Region.y+v*Region.w;
+ float4 a=Source.SampleGrad(sampler_Source,float2(Region.x+Epsilon*Region.z,y),dx,dy);
+ float4 b=Source.SampleGrad(sampler_Source,float2(Region.x+(1-Epsilon)*Region.z,y),dx,dy);
+ if(Mode==1)Results[id.x]=float4(a.a,b.a,(a.a<.5)!=(b.a<.5)?1:0,0);
+ else Results[id.x]=abs(a-b);
+}

@@ -1,4 +1,10 @@
 # Draw02 network integration data
+This report retains source measurements and stage-specific implementation evidence. Early
+statements about missing callers, private branches or unfinished routing describe their recorded
+stage, not the current ten-style router. Use the [documentation index](README.md),
+[current contracts](agent-contract/README.md) and [shared handoff](../tools/PreparedMaterials/SharedCurrent.md)
+for current requirements and delivery evidence. Recorded tests do not certify the new material scheme.
+
 
 ## Catalogue and generator road-width agreement
 
@@ -24,7 +30,11 @@ The DrawBridge02 network record from the installed game 1.6.2f1 is implemented i
 
 Unlike Draw01, the two Draw02 pillar placements use native Y=-0.9449999928474426, with Z=2.5 and Z=0 respectively. No Draw01 dimensions are substituted. All rotations, placement modes, flags and state-match values come from the Draw02 record.
 
-The component does not yet have a generator caller. Structure generation, selected-road moving appearance/markings, complete route integration, persistence acceptance and human motion/traffic checks remain outstanding. Existing outputs are not changed by this uncalled addition, so no bridge cleanup is required.
+The original network-data increment was uncalled at that stage. The current source has
+`Draw02BridgeGenerator` and `Draw02NetworkAssembly`, which calls `Draw02NetworkData` for section
+conversion and mechanism states. That routing does not establish compliance with the current
+material scheme, persistence acceptance or human motion/traffic checks. Measurements and branch
+details below describe their recorded increments, not a requirement to recreate those branches.
 
 Development is isolated on `bridge/draw-02`. The existing shared `MovableSectionConversion` file is supplied unchanged from the dev worktree for branch compilation; it is not a Draw02-owned implementation and is not included in the style commit. No unrelated working-tree edits are moved or committed.
 

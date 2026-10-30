@@ -31,7 +31,7 @@ for (const match of uiSource.matchAll(/\bt\("(\w+)"\)/g)) known(match[1]);
 const consumers = [
     "UI/BridgeBuilderUISystem.cs", "UI/BridgeBuilderUISystem.Export.cs", "Systems/BridgeGenerationSystem.cs",
     "Runtime/BridgePreviewRenderer.cs", "Runtime/BridgePreviewState.cs", "Bridges/BridgePrototypeSource.cs",
-    "Systems/BridgeStartupAssetSystem.cs", "Mod.cs"
+    "Systems/BridgeStartupAssetSystem.cs", "Runtime/BridgeSelfCheckReport.cs", "Mod.cs"
 ].map(path => path === "Systems/BridgeGenerationSystem.cs" ? readGenerationSource() : read(`src/BridgeBuilder/${path}`));
 for (const source of [uiSource, ...consumers.slice(0, 4)])
     assert(!/\p{Script=Han}/u.test(source), "Hardcoded Chinese remains in runtime UI");
@@ -40,6 +40,23 @@ for (const source of consumers) {
     for (const match of source.matchAll(/BridgePreviewState\.Publish\([^\n]*, "(\w+)"\)/g)) known(match[1]);
     for (const match of source.matchAll(/Notice\("(\w+)"/g)) known(match[1]);
 }
+const outcomeKeys = ["BridgeSelfCheckMigrated", "BridgeSelfCheckRemoved", "BridgeSelfCheckRemovedWithoutBackup", "BridgeSelfCheckIncomplete"];
+assert.equal(locales.length, 12);
+assert.equal(entries.get("BridgeSelfCheckMigrated")[1], "已迁移 {0} 座桥梁至最新格式。");
+for (let locale = 0; locale < locales.length; locale++) {
+    for (let mask = 0; mask < 16; mask++) {
+        const lines = outcomeKeys.filter((key, index) => mask & (1 << index)).map(key => {
+            known(key);
+            assert.equal((entries.get(key)[locale].match(/\{0\}/g) || []).length, 1);
+            return entries.get(key)[locale].replace("{0}", "7");
+        });
+        if (lines.length) lines.push(entries.get("BridgeSelfCheckRestart")[locale]);
+        assert.equal(lines.length, mask.toString(2).replaceAll("0", "").length + (mask ? 1 : 0));
+        assert(!/[{}]/.test(lines.join("\n\n")), "Unresolved count placeholder");
+    }
+}
+for (const obsolete of ["BridgeSelfCheckSuccess", "BridgeSelfCheckMigratedAndRemoved", "BridgeSelfCheckMigrationIncomplete"])
+    assert(!entries.has(obsolete), `Obsolete self-check notice: ${obsolete}`);
 known("OK");
 assert(read("src/BridgeBuilder/Mod.cs").includes('LocalizedString.Value(RuntimeUiText.Get("OK"))'));
 

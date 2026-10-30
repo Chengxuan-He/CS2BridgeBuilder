@@ -36,6 +36,16 @@ This is a general contract routing requirement, not a movable-bridge-only rule.
 
 ## Specialist contracts
 
+The [general source-mapping rule](BRIDGE_GENERATION_CONTRACT.md#preserve-original-uv-projection-and-mapping-mode) applies to **all fixed/non-movable and movable bridges**: preserve source projection and tiling/stretch mode per part, LOD, layer and axis.
+
+For movable bridges, reuse original non-road materials. Road composition/precomposition (offline material baking outside the game) has
+one entry condition: the prototype supports the actual appearance type and that type must use
+prototype appearance. Test asphalt, sidewalk surfacing and wheel-track/rut effects independently
+per prototype and physical domain. Other road types retain their original input materials and
+bypass composition. Preserve each source's projection and tiling/stretch mode per part, LOD,
+layer and axis. This is a generation rule, not a reverse-engineering finding or proof that the
+current implementation complies. Road processing must not mutate a shared structural Surface.
+
 [Material generation](MATERIAL_GENERATION_CONTRACT.md) governs every bridge material path,
 including preview, creation, export and all LODs. Its first rule prohibits creating new materials
 when reusing an original material in full. It also requires original resolution and pattern
@@ -45,7 +55,7 @@ Section 4 separately permits bounded variable-content composition and necessary 
 selected third-party road/track inputs unavailable before runtime, prioritizing direct reuse and
 descriptor-only conversion. These exceptions never cover missing known prepared assets.
 Sections 2 and 5 require at most 10,000,000 bytes of persisted material dependencies per generated
-bridge and at most 50,000,000 bytes for the complete official SDK content ZIP. Prepared-directory
+bridge and at most 55,000,000 bytes for the complete official SDK content ZIP. Prepared-directory
 size, complete bridge size and package size are separate measurements. Native rendering
 and persistence remain governed by their corresponding contracts.
 
@@ -101,6 +111,13 @@ implementation increment.
 mechanisms, their stable style identities, implementation evidence and remaining work.
 Update this record with implementation and verification evidence; keep admission requirements
 in the contracts.
+
+[Native movable material repetition](../Native-Movable-Material-Repetition.md) records measured
+original atlas reuse, mesh UV resets, native shader sampling and per-LOD limits.
+The separate [non-road material reuse assessment](../Movable-Nonroad-Material-Reuse-Assessment.md)
+describes the adopted generation scheme and the remaining source/prepared code paths. The
+normative rules live in the general, movable and material contracts; neither the research nor
+the implementation assessment establishes generated-output acceptance.
 
 ## Documentation language and evidence labels
 

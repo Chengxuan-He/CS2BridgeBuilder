@@ -5,6 +5,10 @@ from pathlib import Path
 import struct
 import sys
 
+if '--legacy-evidence-only' not in sys.argv:
+    raise SystemExit('Retired RoadRepeat aliases are historical only; pass --legacy-evidence-only to reproduce artifacts, never to stage production resources.')
+sys.argv.remove('--legacy-evidence-only')
+
 repo = Path(sys.argv[1]).resolve()
 retained = repo / 'artifacts/prepared-materials/Draw02/repeat-units-v2'
 source = retained / 'trial-result-corrected'

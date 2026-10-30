@@ -34,7 +34,11 @@ internal static class Draw03RoadWear
             var crop = Numeric_Types_Draw03_Draw03RoadWear_cs.Values.F32[9] / Numeric_Types_Draw03_Draw03RoadWear_cs.Values.F32[10];
             var repeats = (end-cursor)*(max.y-min.y)/(period*crop);
             var bottom = min.y-crop*Numeric_Types_Draw03_Draw03RoadWear_cs.Values.F32[11];
-            bands.Add(new Band((cursor-left)/width,(end-left)/width,new Vector2(min.x,bottom),
+            // The final domain ends at the exact normalized boundary. Dividing
+            // independently rounded world coordinates can otherwise produce
+            // 0.9999999 and leave a false uncovered strip at an asymmetric edge.
+            var normalizedEnd = end == right ? Numeric_Types_Draw03_Draw03RoadWear_cs.Values.F32[17] : (end-left)/width;
+            bands.Add(new Band((cursor-left)/width,normalizedEnd,new Vector2(min.x,bottom),
                 new Vector2(max.x,bottom+crop),repeatY:repeats));
             cursor = end;
         }

@@ -36,8 +36,12 @@ internal static class BridgePrefabPersistence
         var database = asset.database;
         var original = asset.GetMeta();
         var oldId = asset.id;
-        var path = AssetDataPath.Create(BridgeAssetInfo.OwnedDirectory(owner, category),
-            BridgeAssetInfo.FileStem(asset.name, owner), EscapeStrategy.None);
+        bool midMips = original.extension.Equals(".MidMips", StringComparison.OrdinalIgnoreCase);
+        var folder = BridgeAssetInfo.OwnedDirectory(owner, category);
+        // Native caches share a tag basename; distinguish them by unchanged asset identity.
+        if (midMips) folder = Path.Combine(folder, oldId.guid.ToString());
+        var path = AssetDataPath.Create(folder,
+            midMips ? Path.GetFileNameWithoutExtension(original.path) : BridgeAssetInfo.FileStem(asset.name, owner), EscapeStrategy.None);
         var target = Path.Combine(database.rootPath,
             path.ToPath(new FileSystemDataSource.PathEscapePolicy()) + original.extension);
         if (Path.GetFullPath(original.path).Equals(Path.GetFullPath(target), StringComparison.OrdinalIgnoreCase)) return;

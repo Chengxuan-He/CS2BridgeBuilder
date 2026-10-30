@@ -24,28 +24,49 @@ classification and resource hash are recorded in
 
 ## 2. Coverage and runtime consumption
 
-| Render family / LOD | Retain authored UV0 | Density-controlled overlap | Unknown |
-| --- | ---: | ---: | ---: |
-| Moving structure LOD0, slot 0 | 24,749 | 2,633 | 0 |
-| Moving structure LOD1, slot 0 | 15,088 | 2,675 | 0 |
-| Moving structure LOD2 | 1,153 | 0 | 0 |
-| Glass LOD0 and LOD1 | 8 | 0 | 0 |
-| Pillar LOD0 / LOD1 / LOD2 | 504 / 452 / 120 | 0 | 0 |
-| Pillar base LOD0 / LOD1 / LOD2 | 794 / 712 / 116 | 0 | 0 |
-| Total | 43,696 | 5,308 | 0 |
+| Source domain classification, all LODs | Count |
+| --- | ---: |
+| Retain both authored axes | 43,700 |
+| Retain authored U, density-repeat V | 4,618 |
+| Existing density route | 686 |
+| Total | 49,004 |
 
-`Lift04UvSampling.For(render, mesh, domain)` reads the independent lazy BBN1 resource
+`Lift04UvSampling.Axes(render, mesh, domain)` reads the independent lazy BBN1 resource
 `Lift04UvSampling.bin`, containing 49,004 flags across eleven mesh/material branches.
-The 196,132-byte resource uses schema 1. Only flag 1 authorizes full authored-UV retention.
-Flags 0 retain the shared density route; they do not assert that every overlapping domain is itself
-a repeat unit. Domain 3's confirmed mixed outer-flange mapping and domain 28's overlapping profile
-remain flag 0. This boolean route does not implement mixed-axis retention.
+The 196,132-byte resource uses schema 2: bit 1 retains U and bit 2 retains V.
+`For` remains compatible and returns `Axes == 3`. Mask 0 keeps the existing density route.
+Domain 3 and domain 28 use mask 1. Shared code must combine authored/interpolated U and density V
+in original atlas coordinates before eligibility and parent-unit normalization.
+
+`profile-continuations.json` records exact native face membership for 28 beam-side domains and
+four finite end fascias across detailed and middle LODs. The beam sides share exact longitudinal
+XYZ edges and V endpoint phase with measured profile faces. Their U coordinates are unchanged
+subsets of the existing wide-profile unit [1910,2176] in the original 4096 atlas; two exact source
+rectangles extend coverage without altering the unit or any texture. The four fascias instead join
+finite end-cap charts across their short edges and retain their complete authored traversal under
+native Clamp. Low LOD source mappings remain fully retained.
+
+The historical 249 unresolved output units partition into 153 existing mixed mappings, 84 measured
+beam continuation mappings and 12 full-retained fascia mappings. This source classification is
+distinct from successful shared runtime replay. Negative controls preserve density for 33 beam
+domains and 609 floor domains.
 
 Regenerate with the repository Python runtime:
 
 ```text
+python tools/GeometryMetaprogram/Lift04ProfileContinuations.py --write
+python tools/PreparedMaterials/Lift04/InstallProfileContinuations.py
 python tools/PreparedMaterials/Lift04/BuildUvSampling.py --write
+python tools/GeometryMetaprogram/Lift04MixedProfiles.py
 ```
+
+`InstallStructuralProfiles.py` also reapplies the continuation recipe after regenerating its three
+original profiles. The independent source audit retains 117 channel/mip/rectangle comparisons in
+`artifacts/material-resume/Lift04/outputs/mixed-axis-source-evidence.json`. Native reports preserve
+both actual-coordinate phase error (about 0.000198) and the zero-error dyadic sampler isolation.
+The latter does not prove actual-coordinate seam equivalence. Original source-grain differences
+and finite-edge differences remain explicit; physical membership and the existing accepted repeat
+unit semantics justify the two continuation mappings, not a new pixel-error tolerance.
 
 The producer supports current schema-3 source domains through the shared exact decoder. Resource
 checksum/readback and exact integer comparison are checked during generation. No geometry, bones,

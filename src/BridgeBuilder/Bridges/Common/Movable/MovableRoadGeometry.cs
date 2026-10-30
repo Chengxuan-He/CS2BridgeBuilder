@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -108,6 +108,37 @@ internal static class MovableRoadGeometry
         return result;
     }
 
+    // Compose measured trees before clipping. Intermediate physical polygons are
+    // not triangulated and therefore cannot seed artificial appearance diagonals.
+    // Labels [0,count) are fixed; [count,2*count) retain the moving-domain marker.
+    internal static Partition CombinePartitions(Partition physical,Partition appearance,
+        Matrix4x4 sourceToPhysical,IReadOnlyList<bool> movingBones,int appearanceCount)
+    {
+        if(appearanceCount<=0||appearanceCount>int.MaxValue/2||movingBones.Count==0||
+            !Validate(physical,movingBones.Count,new HashSet<Partition>())||
+            !Validate(appearance,appearanceCount,new HashSet<Partition>()))
+            throw new ArgumentException("Combined binding requires complete measured physical and appearance trees.");
+        var clones=new Dictionary<(Partition,bool),Partition>();
+        Partition Appearance(Partition node,bool moving)
+        {
+            if(node.IsGap)return Partition.Gap;
+            if(clones.TryGetValue((node,moving),out var known))return known;
+            var result=node.Bone>=0?new Partition(node.Bone+(moving?appearanceCount:0)):
+                new Partition(node.ObjectToSeam,Appearance(node.Negative!,moving),Appearance(node.Positive!,moving));
+            clones.Add((node,moving),result);return result;
+        }
+        Partition Physical(Partition node)
+        {
+            if(node.IsGap)return Partition.Gap;
+            if(node.Bone>=0)return Appearance(appearance,movingBones[node.Bone]);
+            return new Partition(node.ObjectToSeam*sourceToPhysical,Physical(node.Negative!),Physical(node.Positive!));
+        }
+        var combined=Physical(physical);
+        if(!Validate(combined,checked(appearanceCount*2),new HashSet<Partition>()))
+            throw new ArgumentException("Combined source-to-physical partition frame is invalid.");
+        return combined;
+    }
+
     internal static bool TryBind(IReadOnlyList<Triangle> source, Partition partition, int boneCount,
         int materialCount, out BoundTriangle[] result, out string? error, bool allowEmpty = false,
         IReadOnlyList<Partition>? occurrencePartitions = null,
@@ -157,7 +188,7 @@ internal static class MovableRoadGeometry
                     throw new InvalidOperationException($"Road triangle {i} has no measured partition for occurrence {triangle.Occurrence}.");
                 selected = occurrencePartitions[triangle.Occurrence];
             }
-            if (!Split(new List<Vertex> { triangle.A, triangle.B, triangle.C }, selected, triangle, output))
+            if (!Split(new List<ClipVertex> { new(triangle.A), new(triangle.B), new(triangle.C) }, selected, triangle, output))
             { error = $"Road triangle {i} could not be transformed into its recorded seam frame."; return false; }
         }
         if (output.Count == 0 && !allowEmpty)
@@ -168,7 +199,22 @@ internal static class MovableRoadGeometry
         result = output.ToArray(); return true;
     }
 
-    private static bool Split(List<Vertex> polygon, Partition partition, Triangle source,
+    // Keep construction positions in double precision through every partition node.
+    // Native Float32 rounding belongs at the final leaf, not on an intermediate edge
+    // which a later plane will intersect again. Attribute interpolation is unchanged.
+    private readonly struct ClipVertex
+    {
+        internal readonly Vertex Attributes;
+        internal readonly double X, Y, Z;
+        internal ClipVertex(Vertex value) : this(value, value.Position.x, value.Position.y, value.Position.z) { }
+        internal ClipVertex(Vertex value, double x, double y, double z)
+        { Attributes = value; X = x; Y = y; Z = z; }
+        internal double Coordinate(int axis) => axis == 0 ? X : axis == 1 ? Y : Z;
+        internal Vertex Finish() => new(new Vector3((float)X, (float)Y, (float)Z),
+            Attributes.Normal, Attributes.Tangent, Attributes.UV, Attributes.Color);
+    }
+
+    private static bool Split(List<ClipVertex> polygon, Partition partition, Triangle source,
         List<BoundTriangle> output)
     {
         if (polygon.Count < 3 || partition.IsGap) return true;
@@ -176,7 +222,7 @@ internal static class MovableRoadGeometry
         {
             for (var i = 1; i + 1 < polygon.Count; i++)
             {
-                var a = polygon[0]; var b = polygon[i]; var c = polygon[i + 1];
+                var a = polygon[0].Finish(); var b = polygon[i].Finish(); var c = polygon[i + 1].Finish();
                 if (Vector3.Cross(b.Position - a.Position, c.Position - a.Position).sqrMagnitude == 0f) continue;
                 output.Add(new BoundTriangle(new Triangle(a, b, c, source.Material,
                     source.Occurrence, source.SourceTriangle), (uint)partition.Bone));
@@ -184,20 +230,33 @@ internal static class MovableRoadGeometry
             return true;
         }
 
-        var negative = new List<Vertex>(); var positive = new List<Vertex>();
+        var negative = new List<ClipVertex>(); var positive = new List<ClipVertex>();
         var hasNegative = false; var hasPositive = false;
+        var distances=SeamDistances(partition.ObjectToSeam,polygon);
         for (var i = 0; i < polygon.Count; i++)
         {
             var a = polygon[i]; var b = polygon[(i + 1) % polygon.Count];
-            var da = partition.ObjectToSeam.MultiplyPoint3x4(a.Position).z;
-            var db = partition.ObjectToSeam.MultiplyPoint3x4(b.Position).z;
-            if (!Finite(da) || !Finite(db)) return false;
+            var da = distances[i];
+            var db = distances[(i+1)%polygon.Count];
+            if (!double.IsFinite(da) || !double.IsFinite(db)) return false;
             if (da <= 0f) negative.Add(a);
             if (da >= 0f) positive.Add(a);
             hasNegative |= da < 0f; hasPositive |= da > 0f;
             if ((da < 0f && db > 0f) || (da > 0f && db < 0f))
             {
-                var vertex = Vertex.Interpolate(a, b, (float)((double)da / ((double)da - db)));
+                // Opposite triangle edge directions must create the same Float32 point.
+                var start=a;var end=b;double ds=da,de=db;
+                for(int axis=0;axis<3;axis++)
+                {
+                    int order=a.Coordinate(axis).CompareTo(b.Coordinate(axis));
+                    if(order==0)continue;
+                    if(order>0){start=b;end=a;ds=db;de=da;}
+                    break;
+                }
+                double t=ds/(ds-de);
+                var value=Vertex.Interpolate(start.Attributes,end.Attributes,(float)t);
+                var vertex=new ClipVertex(value, start.X+(end.X-start.X)*t,
+                    start.Y+(end.Y-start.Y)*t, start.Z+(end.Z-start.Z)*t);
                 negative.Add(vertex); positive.Add(vertex);
             }
         }
@@ -206,6 +265,59 @@ internal static class MovableRoadGeometry
         if (!hasNegative && !hasPositive) return Split(polygon, partition.Positive!, source, output);
         return (!hasNegative || Split(negative, partition.Negative!, source, output)) &&
             (!hasPositive || Split(positive, partition.Positive!, source, output));
+    }
+
+    private static double[] SeamDistances(Matrix4x4 frame,IReadOnlyList<ClipVertex> polygon)
+    {
+        var values=new double[polygon.Count];var errors=new double[polygon.Count];
+        bool reliable=false;
+        for(int i=0;i<values.Length;i++)
+        {
+            var p=polygon[i];
+            values[i]=PlaneValue(frame,p.X,p.Y,p.Z,out errors[i]);
+            reliable|=Math.Abs(values[i])>errors[i];
+        }
+        if(reliable)
+            for(int i=0;i<values.Length;i++)
+                if(Math.Abs(values[i])<=errors[i])values[i]=0;
+        return values;
+    }
+
+    private static double PlaneValue(Matrix4x4 frame,Vector3 position,out double error)
+        => PlaneValue(frame,position.x,position.y,position.z,out error);
+
+    private static double PlaneValue(Matrix4x4 frame,double px,double py,double pz,out double error)
+    {
+        double x=(double)frame[2,0]*px,y=(double)frame[2,1]*py,
+            z=(double)frame[2,2]*pz,w=frame[2,3];
+        const double unitRoundoff=1.0/16777216.0;
+        const double gamma6=6*unitRoundoff/(1-6*unitRoundoff);
+        error=gamma6*(Math.Abs(x)+Math.Abs(y)+Math.Abs(z)+Math.Abs(w));
+        return x+y+z+w;
+    }
+
+    internal static double SeamDistance(Matrix4x4 frame,Vector3 position)
+    {
+        double value=PlaneValue(frame,position,out var error);
+        return Math.Abs(value)<=error?0:value;
+    }
+
+    internal static double[] SeamDistances(Matrix4x4 frame,IReadOnlyList<Vertex> polygon)
+    {
+        var values=new double[polygon.Count];var errors=new double[polygon.Count];
+        bool reliable=false;
+        for(int i=0;i<values.Length;i++)
+        {
+            values[i]=PlaneValue(frame,polygon[i].Position,out errors[i]);
+            reliable|=Math.Abs(values[i])>errors[i];
+        }
+        // Rounding uncertainty alone does not prove that a complete thin polygon
+        // is coplanar. Preserve its exact double-side classification, especially
+        // at a gap boundary; otherwise a genuine narrow wrap cell can disappear.
+        if(reliable)
+            for(int i=0;i<values.Length;i++)
+                if(Math.Abs(values[i])<=errors[i])values[i]=0;
+        return values;
     }
 
     private static bool Validate(Partition? node, int boneCount, HashSet<Partition> path)

@@ -47,9 +47,9 @@ The caller must provide source identity, complete structural plans and correct b
 shared builder cannot infer authored part membership or identify a bridge style by geometry.
 
 Repository search found no external caller of the old method, so no active fixed bridge route
-changes. No final movable generator uses the new method yet. It is a construction capability,
-not evidence that all movable bridges can now be created. The measured Draw01 column plan can
-enter this path once its style assembly resolves the native sources and bounds.
+changes. The current shared `MovableRenderAssembly` calls `CreateMovableRenderGraph`; the earlier
+uncalled-stage statement no longer describes current routing. Construction capability and
+active callers do not establish all-style material or game acceptance.
 
 ## Verification and remaining work
 
@@ -58,6 +58,6 @@ conversion, raw-channel export, surface ordering, LOD remapping, preview capture
 collection, geometry save and failure cleanup. No visual-generation unit tests were executed.
 Runtime creation, saved-asset reload and human near/far inspection remain unverified.
 
-The final generators still require complete structural plans, selected-road appearance and
-markings, attachment placement, network/mechanism assembly and native traffic/shipping/cold-start
-acceptance. This change does not weaken those requirements or publish partial bridges.
+The current generators must be validated against the complete structural, supported-type road
+composition, marking, attachment, network and persistence requirements. The tests recorded here
+do not establish current native traffic/shipping/cold-start acceptance.

@@ -19,14 +19,22 @@ source-UV retention. This is a mapping classification, not a claim that the
 texture contains no repeated painted motif. Disconnected members may reuse an
 atlas island without becoming a tiling mapping along either member.
 
-The two existing road repeat regions remain excluded wherever an original
-structural face intersects them. A source-native repeat is also evidenced when
+Overlap with a road repeat region does not establish structural repetition.
+Only the original physical traversal determines the classification. A source-native repeat is evidenced when
 adjacent, consistently oriented coplanar faces reset UVs by a complete extent of
 the same chart. The evidence records exact source triangles, UVs, gradients and
 reset edges. Exclusion propagates only through the same physical UV-continuous
 component, never to a disconnected member merely sharing an interned chart ID.
 Large but inexact resets remain unresolved. Small atlas seam offsets are not
 classified as repeats; notably, NetPillarTop LOD1's one-step U seam is retained.
+
+The corrected overlap audit restores 104 near and 105 middle finite domains.
+All original faces overlapping the two historical road repeat regions are
+removed by `Lift03RoadTops.RemoveDetailed`: 640 near and 554 middle faces.
+None belongs to any of the five structural fragment families, verified against
+the current embedded resource bytes. Those two structural Region registrations
+are retired; no replacement structural material is introduced. Evidence is in
+`artifacts/material-remap/Lift03/structural-region-unreachability.json`.
 
 Windows use the independently verified original template 2 / shader 550,
 without overrides. The shared native-window audit's complete UV0 and COLOR

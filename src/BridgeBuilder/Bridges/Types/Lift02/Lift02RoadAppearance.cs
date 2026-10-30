@@ -1,4 +1,5 @@
 using UnityEngine;
+using Game.Prefabs;
 using Patch = BridgeBuilder.Bridges.MovableExistingRoadSurface.Patch;
 using Partition = BridgeBuilder.Bridges.MovableRoadGeometry.Partition;
 
@@ -7,6 +8,20 @@ namespace BridgeBuilder.Bridges;
 // Original 4096px atlas, 4m longitudinal unit and 0.42156982421875m lateral strip.
 internal static class Lift02RoadAppearance
 {
+    // The native TrainTrack deck has rails/sleepers and two narrow structural
+    // roadbed strips, not an asphalt, sidewalk or wheel-track appearance. A
+    // roadbed atlas rectangle is not permission to replace a selected road type.
+    // Verified TrainSubwayTrack bed receivers use Ballast in both input layers;
+    // the prototype supplies its own bed appearance. Rails/sleepers are separate.
+    internal static MovableRoadAppearance.Level ForLod(int lod, RenderPrefab source, Pose roadToObject, float halfDelta)
+    {
+        if (lod == 2)
+            return Lift02BedAppearance.Far(source, roadToObject, halfDelta);
+        return Lift02BedAppearance.Detailed(source,roadToObject,halfDelta);
+    }
+
+    // Retained measured legacy recipe; the explicit support map above does not
+    // authorize its transverse repeat for selected-road composition.
     internal static Patch[] Patches(Pose roadToObject)
     {
         var frame = Matrix4x4.TRS(roadToObject.position, roadToObject.rotation, Vector3.one).transpose;

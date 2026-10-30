@@ -33,6 +33,9 @@ try
     var deck = Save(Path.Combine("ImportedData", "old-" + owner, "nested", deckName + ".Prefab"), Doc(deckName));
     var geometry = Save(Path.Combine("ImportedData", "old-" + owner, owner + " Mesh.Geometry"), new byte[] { 0, 255, 17, 42 });
     var external = Save(Path.Combine("ImportedData", owner + "_Dependencies", new string('f', 32) + ".Prefab"), Doc("External original"));
+    var cacheRelative = Path.Combine(new string('e', 32), "TS512_MB3.MidMips");
+    var dependencyCache = Save(Path.Combine("ImportedData", owner + "_Dependencies", cacheRelative), new byte[]{1,2,3,4});
+    var cacheSidecar = File.ReadAllBytes(dependencyCache + ".cid");
     var other = Save(Path.Combine("ImportedData", "Other", "Other.Prefab"), Doc("Other"));
     var before = File.ReadAllBytes(source); var cid = File.ReadAllBytes(source + ".cid");
     var target = Path.Combine(game, PrefabPath(owner));
@@ -42,6 +45,10 @@ try
     Check(File.Exists(Path.Combine(game, PrefabPath(deckName))) && !File.Exists(deck), "nested deck uses the same layout");
     Check(File.ReadAllBytes(Path.Combine(game, "ImportedData", owner, "Geometry", "Mesh.Geometry")).SequenceEqual(new byte[] {0,255,17,42}) && !File.Exists(geometry), "geometry moved without data changes");
     Check(File.Exists(Path.Combine(game,"ImportedData",owner,"Dependencies",Path.GetFileName(external))) && !File.Exists(external) && File.Exists(other), "CID snapshots moved unchanged; unrelated assets untouched");
+    var migratedCache = Path.Combine(game,"ImportedData",owner,"Dependencies",cacheRelative);
+    Check(File.ReadAllBytes(migratedCache).SequenceEqual(new byte[]{1,2,3,4})
+        && File.ReadAllBytes(migratedCache+".cid").SequenceEqual(cacheSidecar) && !File.Exists(dependencyCache),
+        "native cache CID directory and tag-bearing filename migrate unchanged");
     Check(File.ReadAllBytes(Path.Combine(backup, "Layout", "ImportedData", "old-" + owner, owner + ".Prefab")).SequenceEqual(before), "original bytes backed up outside active asset tree");
     Check(BridgeAssetLayout.Run(game, new[] { owner }, backup, PrefabPath, out changed, out error) && changed.Count == 0, "second pass is read-only and idempotent");
     var lodName = owner + " Fixed Base 0 LOD1";
@@ -67,13 +74,29 @@ try
     var unknown = Save(Path.Combine("BridgeBuilder",owner + " Unknown.data"),new byte[]{5});
     Check(BridgeAssetLayout.Run(game,new[]{owner},Path.Combine(sandbox,"vt"),PrefabPath,out changed,out error),error);
     Check(File.Exists(Path.Combine(game,"ImportedData",owner,"Appearance","VT","Road Surface.VTSurface"))
-        && File.Exists(Path.Combine(game,"ImportedData",owner,"Appearance","MidMips","MidMipMapCache_128_3.MidMips"))
+        && File.Exists(Path.Combine(game,"ImportedData",owner,"Appearance","MidMips",new string('a',32),"MidMipMapCache_128_3.MidMips"))
         && File.Exists(Path.Combine(game,"ImportedData",owner,"Appearance","Road Surface.Surface"))
         && File.Exists(Path.Combine(game,"ImportedData",owner,"Appearance","Road Surface.Texture"))
         && File.Exists(Path.Combine(game,"ImportedData",owner,"Locales","en-US.loc"))
         && File.Exists(unknown), "VT, mid-mip tag filename, appearance and locales migrate; unknown files retained");
     Check(BridgeAssetLayout.Run(game,new[]{owner},Path.Combine(sandbox,"vt"),PrefabPath,out changed,out error) && changed.Count==0,
         "all categories idempotent");
+    var nativeA=Save(Path.Combine("ImportedData",owner,"Appearance","MidMips",new string('1',32),"TS512_MB3.MidMips"),new byte[]{1});
+    var nativeB=Save(Path.Combine("ImportedData",owner,"Appearance","MidMips",new string('2',32),"TS512_MB3.MidMips"),new byte[]{2});
+    File.WriteAllText(nativeA+".cid",new string('b',32));File.WriteAllText(nativeB+".cid",new string('c',32));
+    Check(BridgeAssetLayout.Run(game,new[]{owner},Path.Combine(sandbox,"native-caches"),PrefabPath,out changed,out error),error);
+    Check(File.ReadAllBytes(Path.Combine(game,"ImportedData",owner,"Appearance","MidMips",new string('b',32),"TS512_MB3.MidMips"))[0]==1
+        && File.ReadAllBytes(Path.Combine(game,"ImportedData",owner,"Appearance","MidMips",new string('c',32),"TS512_MB3.MidMips"))[0]==2,
+        "migration preserves separate same-tag caches under original cache CIDs");
+    Check(BridgeAssetLayout.Run(game,new[]{owner},Path.Combine(sandbox,"native-caches"),PrefabPath,out changed,out error)&&changed.Count==0,
+        "CID-scoped owned cache migration is idempotent");
+    var conflictingCache=Save(Path.Combine("BridgeBuilder",owner+" Runtime Cache","TS512_MB3.MidMips"),new byte[]{9});
+    File.WriteAllText(conflictingCache+".cid",new string('b',32));
+    Check(!BridgeAssetLayout.Run(game,new[]{owner},Path.Combine(sandbox,"native-cache-conflict"),PrefabPath,out changed,out error)
+        && File.ReadAllBytes(conflictingCache)[0]==9
+        && File.ReadAllBytes(Path.Combine(game,"ImportedData",owner,"Appearance","MidMips",new string('b',32),"TS512_MB3.MidMips"))[0]==1,
+        "same-CID cache conflict preserves both original payloads");
+    File.Delete(conflictingCache);File.Delete(conflictingCache+".cid");
     Check(BridgeAssetInfo.IsDependencyPath(Path.Combine("ImportedData",owner,"Dependencies","x.Prefab"),owner)
         && BridgeAssetInfo.IsDependencyPath(Path.Combine("ImportedData",owner+"_Dependencies","x.Prefab"),owner),
         "old and new dependency provenance recognized");

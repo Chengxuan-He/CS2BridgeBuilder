@@ -13,13 +13,13 @@ internal sealed class BridgeMaterialFootprint
     private sealed class Node
     {
         internal bool Builtin,Owned;
-        internal string Extension="",Path="";
+        internal string Extension="",Path="",NativeFileName="";
         internal string[] References=Array.Empty<string>();
     }
     private readonly Dictionary<string,Node> _nodes=new(StringComparer.OrdinalIgnoreCase);
     internal void Observe(string cid,BridgeDependencyCopies.Source source)
         =>_nodes.Add(cid,new Node{Builtin=source.Builtin,Owned=source.Owned,
-            Extension=source.Extension,Path=source.PhysicalPath,
+            Extension=source.Extension,Path=source.PhysicalPath,NativeFileName=source.NativeFileName,
             References=source.Builtin?Array.Empty<string>():BridgeDependencyCopies.References(source).ToArray()});
 
     internal string Write(string gameRoot,string owner,string generatorBuild)
@@ -33,7 +33,8 @@ internal sealed class BridgeMaterialFootprint
             string cid=pending.Pop();if(!visited.Add(cid))continue;
             if(!_nodes.TryGetValue(cid,out var node)){issues.Add("Unobserved dependency: "+cid);continue;}
             if(node.Builtin){builtins.Add(cid+"\t"+node.Extension);continue;}
-            string path=node.Owned?node.Path:Path.Combine(BridgeDependencyCopies.Folder(gameRoot,owner),cid+node.Extension);
+            string path=node.Owned?node.Path:BridgeDependencyCopies.Destination(gameRoot,owner,cid,
+                new BridgeDependencyCopies.Source{Extension=node.Extension,NativeFileName=node.NativeFileName});
             if(string.IsNullOrEmpty(path)){issues.Add("Missing owned physical path: "+cid);continue;}
             path=Path.GetFullPath(path);
             if(!BridgeAssetInfo.MatchesOwner(path,owner)){issues.Add("Material outside current owner: "+cid);continue;}

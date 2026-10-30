@@ -11,7 +11,10 @@ internal static class Lift01RoadPreparation
         // Lift01 translates the whole selected deck on TrainTracks (bone 4).
         // Pedestrian occurrences do not belong to a separately rotating leaf.
         // Fixed ends and the two physical gaps remain identical for all roles.
-        return MovableRoadPreparation.Prepare(sample, nativeLevels, halfWidthDelta, closedWorld, material, Lift01RoadPartitions.Carriageway, Lift01RoadPartitions.Carriageway, appearance, appearance, Lift01RoadAppearance.Patches(sample.RoadToObject), Numeric_Types_Lift01_Lift01RoadPreparation_cs.Values.I32[0], layout);
+        return MovableRoadPreparation.Prepare(sample, nativeLevels, halfWidthDelta, closedWorld, material, Lift01RoadPartitions.Carriageway, Lift01RoadPartitions.Carriageway, appearance, appearance, Lift01RoadAppearance.Patches(sample.RoadToObject), Numeric_Types_Lift01_Lift01RoadPreparation_cs.Values.I32[0], layout,
+            lod => lod < 2
+                ? Lift01HalfFloorAppearance.Create(lod, nativeLevels[lod].GetSurfaceAsset(0), sample.RoadToObject, halfWidthDelta)
+                : Lift01FarAppearance.Create(nativeLevels[lod].GetSurfaceAsset(0), sample.RoadToObject, halfWidthDelta));
     }
 }
 

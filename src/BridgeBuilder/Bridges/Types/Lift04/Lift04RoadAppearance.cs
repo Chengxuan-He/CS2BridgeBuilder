@@ -1,3 +1,4 @@
+using Game.Prefabs;
 using UnityEngine;
 using Patch = BridgeBuilder.Bridges.MovableExistingRoadSurface.Patch;
 using Partition = BridgeBuilder.Bridges.MovableRoadGeometry.Partition;
@@ -9,6 +10,13 @@ namespace BridgeBuilder.Bridges;
 // 10581/10582 and 33328/33329. Preserve the prototype bed's own appearance.
 internal static class Lift04RoadAppearance
 {
+    internal static MovableRoadAppearance.Level ForLod(int lod, RenderPrefab nativeLevel, Pose roadToObject, float halfDelta)
+    {
+        if (lod == 2)
+            return Lift04FarAppearance.Create(nativeLevel, roadToObject, halfDelta);
+        return Lift04NearAppearance.Create(lod, nativeLevel, roadToObject);
+    }
+
     internal static Patch[] Patches(Pose roadToObject)
     {
         var frame = Matrix4x4.TRS(roadToObject.position, roadToObject.rotation, Vector3.one).transpose;

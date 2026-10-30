@@ -1,0 +1,18 @@
+using System;using System.IO;using System.Reflection;using System.Linq;using System.Collections.Generic;using UnityEditor;using UnityEngine;
+public static class Draw01EdgeTangentCodecCheck{
+static string Arg(string k){var a=Environment.GetCommandLineArgs();return a[Array.IndexOf(a,k)+1];}
+static double[] Decode(uint bits){int x=(int)(bits&32767),y=(int)((bits>>16)&32767);if(x>=16384)x-=32768;if(y>=16384)y-=32768;double a=x/16383d,b=y/16383d,c=1-Math.Abs(a)-Math.Abs(b);if(c<0){double old=a;a=(1-Math.Abs(b))*Math.Sign(old);b=(1-Math.Abs(old))*(b>=0?1:-1);}double n=Math.Sqrt(a*a+b*b+c*c);return new[]{a/n,b/n,c/n};}
+static double Norm(double[] a)=>Math.Sqrt(a.Sum(x=>x*x));
+static double[] Sub(double[]a,double[]b)=>a.Zip(b,(x,y)=>x-y).ToArray();
+static double[] Mix(double[][] a,double[]w)=>Enumerable.Range(0,3).Select(k=>a.Select((v,i)=>v[k]*w[i]).Sum()).ToArray();
+static double Angle(double[]a,double[]b){var cross=new[]{a[1]*b[2]-a[2]*b[1],a[2]*b[0]-a[0]*b[2],a[0]*b[1]-a[1]*b[0]};return Math.Atan2(Norm(cross),a.Zip(b,(x,y)=>x*y).Sum());}
+public static void Run(){try{string managed=Arg("-gameManaged");AppDomain.CurrentDomain.AssemblyResolve+=(s,e)=>{string p=Path.Combine(managed,new AssemblyName(e.Name).Name+".dll");return File.Exists(p)?Assembly.LoadFrom(p):null;};var method=Assembly.LoadFrom(Path.Combine(managed,"Colossal.Mathematics.dll")).GetType("Colossal.Mathematics.MathUtils").GetMethod("TangentToOctahedral");var ft=method.GetParameters()[0].ParameterType;
+uint Pack(double[]a)=>(uint)method.Invoke(null,new[]{Activator.CreateInstance(ft,new object[]{(float)a[0],(float)a[1],(float)a[2],1f})});
+var start=Decode(81919);var end=Decode(16383);double[] Field(double z)=>Mix(new[]{start,end},new[]{(90-z)/4,(z-86)/4});
+var rows=new List<string>();double maximum=0;int checks=0;
+foreach(var zs in new[]{new[]{86d,88d,90d},new[]{86.3,87.9,89.1},new[]{86d,86d,90d},new[]{87.25,88.5,89.75}}){var source=zs.Select(Field).ToArray();var packed=source.Select(Pack).ToArray();var target=packed.Select(Decode).ToArray();var errors=target.Select((v,i)=>Norm(Sub(v,source[i]))).ToArray();
+for(int i=0;i<=20;i++)for(int j=0;j<=20-i;j++){var w=new[]{i/20d,j/20d,(20-i-j)/20d};var native=Mix(source,w);var recoded=Mix(target,w);double error=Angle(native,recoded),bound=errors.Zip(w,(e,v)=>e*v).Sum();double angularBound=Math.Asin(Math.Min(1,bound/Norm(native)));if(error>angularBound+1e-12)throw new Exception("Interior error exceeded actual codec vector bound.");maximum=Math.Max(maximum,error);checks++;}
+rows.Add("{\"z\":["+string.Join(",",zs.Select(x=>x.ToString("R",System.Globalization.CultureInfo.InvariantCulture)))+"],\"packedNativeResults\":["+string.Join(",",packed)+"],\"vertexVectorErrors\":["+string.Join(",",errors.Select(x=>x.ToString("R",System.Globalization.CultureInfo.InvariantCulture)))+"]}");}
+File.WriteAllText(Arg("-report"),"{\"status\":\"PASS_CODEC_BOUND_NOT_PIXEL_EQUIVALENCE\",\"sourceFaces\":[0,1],\"sourceT86\":81919,\"sourceT90\":16383,\"sourceField\":\"Identical affine Z field on both original triangles; fixed +1 handedness.\",\"actualNativeEncoder\":true,\"interiorChecks\":"+checks+",\"maxDirectionErrorRadians\":"+maximum.ToString("R",System.Globalization.CultureInfo.InvariantCulture)+",\"roundoffComparisonAllowance\":1e-12,\"rows\":["+string.Join(",",rows)+"],\"limitations\":\"Interior interpolation uses double arithmetic to isolate native codec loss; GPU floating point and rendered pixels are not certified. 1e-12 is bound-comparison roundoff, not an angular quality acceptance threshold.\"}");EditorApplication.Exit(0);
+}catch(Exception e){Debug.LogException(e);EditorApplication.Exit(1);}}
+}
