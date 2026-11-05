@@ -14,7 +14,7 @@ internal static class Draw03RoadAppearance
     private static float FixedUnitEnd => Numeric_Types_Draw03_Draw03RoadAppearance_cs.Values.F32[0];
     private static float OuterEnd => Numeric_Types_Draw03_Draw03RoadAppearance_cs.Values.F32[1];
 
-    internal static Patch[] Patches(MovableSelectedRoadLayout layout, Pose roadToObject, Vector2? surfaceSpan = null)
+    internal static Patch[] Patches(MovableSelectedRoadLayout layout, Pose roadToObject, Vector2? surfaceSpan = null, bool laneBands = true)
     {
         var frame = Matrix4x4.TRS(roadToObject.position, roadToObject.rotation, Vector3.one).transpose;
         var result = new Patch[Numeric_Types_Draw03_Draw03RoadAppearance_cs.Values.I32[0]];
@@ -56,7 +56,7 @@ internal static class Draw03RoadAppearance
                         result[zone * Numeric_Types_Draw03_Draw03RoadAppearance_cs.Values.I32[18] + half * Numeric_Types_Draw03_Draw03RoadAppearance_cs.Values.I32[19] + walk * Numeric_Types_Draw03_Draw03RoadAppearance_cs.Values.I32[20] + side] = new Patch(min, max, u, v, repeat: true);
                     }
 
-        return Draw03RoadWear.Apply(result, layout.CarLaneCenters, frame, surfaceSpan ?? layout.SurfaceSpan);
+        return laneBands ? Draw03RoadWear.Apply(result, layout.CarLaneCenters, frame, surfaceSpan ?? layout.SurfaceSpan) : result;
     }
 
     internal static Partition Regions(bool sidewalk, Pose roadToObject)

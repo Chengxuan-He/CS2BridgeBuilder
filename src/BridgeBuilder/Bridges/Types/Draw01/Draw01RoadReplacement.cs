@@ -30,6 +30,7 @@ internal static class Draw01RoadReplacement
         foreach (var face in Draw01FixedRoadData.PlatformFaces(lod))
             removed[face] = true;
         Draw01UndersideData.Apply(lod, underside, widenedPositions, removed);
+        Draw01OuterFrameData.Apply(lod, halfWidthDelta, sourcePositions, widenedPositions, removed);
         var edges = new List<MovableStructureModel.EdgeVertex>();
         var moving = vertexCount + edges.Count;
         edges.AddRange(Draw01RoadFragmentData.MovingVertices(lod));

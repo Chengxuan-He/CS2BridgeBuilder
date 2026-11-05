@@ -86,6 +86,8 @@ public partial class BridgeGenerationSystem
 
         try
         {
+            using var roadContext = new BridgeRoadGeneration(_prefabSystem, upper.Prefab,
+                options.DoubleDeck ? chosen?.Prefab : null);
             // Which of the two decks the bridge is built on.
             //
             // An archetype states where its second net runs, and the two arrangements both exist in
@@ -109,7 +111,7 @@ public partial class BridgeGenerationSystem
             // pylon hangs its second net above and its subway, train and tram variants hang theirs
             // below, so the question is about the variant and never about the style.
             var chosenWidth = BridgeGeneratorBase.WidthOf(upper.Prefab, upper.Width);
-            if (!(chosenWidth > 0f) || float.IsInfinity(chosenWidth))
+            if (!float.IsFinite(chosenWidth))
             {
                 report.Failed(exportName, new InvalidOperationException(
                     "The selected road's initialized width is unavailable. Generation was stopped before cloning."));
@@ -166,7 +168,15 @@ public partial class BridgeGenerationSystem
             if (!BridgeStyleDefinitions.IsMovable(style.Id))
                 ApplyPrototypeIcon(clone, variant, report);
             if (composer.BuildsAuxiliaryDeck)
-                composer.VerifyAuxiliaryDeck(clone);
+            {
+                var carried = composer.VerifyAuxiliaryDeck(clone);
+                // The coordinated path owns this clone before generation. Apply the
+                // same native aggregate policy as the separately attached deck;
+                // asset names and selected/shared networks are not renamed.
+                if (BridgeStyleDefinitions.CarriedDeckUsesBridgeAggregate(style.Id, carried is RoadPrefab)
+                    && clone.m_AggregateType != null)
+                    carried.m_AggregateType = clone.m_AggregateType;
+            }
             else
                 AttachSecondDeck(
                     clone, auxiliary, secondNetAbove, exportName, cloner, doubleDeck, options,
@@ -208,7 +218,7 @@ public partial class BridgeGenerationSystem
                 // Preview and permanent generation share composition, not identity
                 // or publication. A later Create request always runs this method anew.
                 if (report.FailedRoads != failuresBefore) return false;
-                preview.SetResult(clone, variant);
+                preview.SetResult(clone, variant, roadContext.Capture());
                 return true;
             }
             if (report.FailedRoads != failuresBefore) return false;
@@ -246,17 +256,16 @@ public partial class BridgeGenerationSystem
             Mod.Log.Info($"{exportName}: prefab serialization count={report.SavedDependencies}; elapsedMs={generationClock.ElapsedMilliseconds-saveStart}; preSaveMs={saveStart}.");
             if (!BridgeDependencyPersistence.Save(clone.name,
                 nodes.Where(node => node.NeedsSave && node.Target.asset != null)
-                    .Select(node => node.Target.asset.id.guid.ToString()), out var copied, out var copyError))
+                    .Select(node => roadContext.Dependencies.Record(node.Target.asset)), roadContext.Dependencies,
+                out var copied, out var copyError, out _))
             {
                 report.Failed(exportName, new IOException("External dependency persistence failed: " + copyError));
                 return false;
             }
             report.SavedDependencies += copied;
-            if (!BridgeNativePresentation.Validate(clone.name, nodes.Where(n => n.NeedsSave).Select(n => n.Target), out var independenceError))
-            {
-                report.Failed(exportName, new InvalidOperationException(independenceError));
-                return false;
-            }
+            // This call's successful persistence is the dependency guarantee for
+            // the newly generated native graph. Do not resolve/index it a second
+            // time here; existing-asset migration/self-check validation is separate.
             Mod.Log.Info($"Bridge '{clone.name}' persisted {copied} external dependency copies with original CIDs.");
             return World.GetOrCreateSystemManaged<BridgePublicationSystem>().Publish(nodes, report, ready =>
             {
@@ -291,13 +300,16 @@ public partial class BridgeGenerationSystem
             var road = cloner.CloneRoad(roadSource, exportName, string.Empty);
             if (!IsPrivateDeck(roadSource, road, report)) return null;
             if (deck.Road != null) SpeedLimitFix.Apply(road, deck.Road, report);
+            BridgeRoadGeneration.RegisterClone(roadSource, road);
             return road;
         }
 
         if (deck.Prefab is NetPrefab netSource)
         {
             var clone = (NetGeometryPrefab)cloner.CloneNet(netSource, exportName);
-            return IsPrivateDeck(netSource, clone, report) ? clone : null;
+            if (!IsPrivateDeck(netSource, clone, report)) return null;
+            BridgeRoadGeneration.RegisterClone(deck.Prefab, clone);
+            return clone;
         }
 
         report.Defect(

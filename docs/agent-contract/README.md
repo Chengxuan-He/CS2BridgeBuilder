@@ -17,7 +17,7 @@ bridges alike, then follow its links to the applicable specialist contracts.
 Apply the latest explicit user requirements within their stated scope and keep overlapping
 normative paragraphs and AGENTS.md summaries synchronized. File modification time alone does
 not establish a new requirement. The material contract governs material reuse, preparation,
-bounded runtime conversion and material/package byte limits; the general bridge contract retains
+bounded runtime conversion and owner size reporting and the package byte limit; the general bridge contract retains
 geometry, ownership and complete-Prefab comparison requirements. Implementation reports, handoffs,
 candidate inventories and old acceptance records are evidence for their recorded build/input only;
 they do not override these contracts or establish acceptance of a later material migration.
@@ -36,15 +36,37 @@ This is a general contract routing requirement, not a movable-bridge-only rule.
 
 ## Specialist contracts
 
-The [general source-mapping rule](BRIDGE_GENERATION_CONTRACT.md#preserve-original-uv-projection-and-mapping-mode) applies to **all fixed/non-movable and movable bridges**: preserve source projection and tiling/stretch mode per part, LOD, layer and axis.
+Road appearance processing (prototype composition, source-density tiling, embedded-marking
+removal and derived wear/background placement) applies only to movable bridges whose roads need
+that processing. Fixed/non-movable bridges retain the selected native road materials, UVs and
+markings; they require no prototype road-support table, road-material replacement or marking
+cleanup under these rules. Structural source-UV/density rules still apply to every bridge.
+A fixed running cap within a movable bridge remains part of that movable road-processing scope.
+
+The [general source-mapping rule](BRIDGE_GENERATION_CONTRACT.md#preserve-original-uv-projection-and-mapping-mode) preserves non-road source modes for all bridges. Movable roads requiring processing use
+prototype-supported appearances tiled at original resolution/physical density without stretching
+in every LOD. Fixed bridges retain selected native road materials and markings.
 
 For movable bridges, reuse original non-road materials. Road composition/precomposition (offline material baking outside the game) has
-one entry condition: the prototype supports the actual appearance type and that type must use
-prototype appearance. Test asphalt, sidewalk surfacing and wheel-track/rut effects independently
-per prototype and physical domain. Other road types retain their original input materials and
-bypass composition. Preserve each source's projection and tiling/stretch mode per part, LOD,
-layer and axis. This is a generation rule, not a reverse-engineering finding or proof that the
+two necessary correspondence conditions: verified actual receiver appearance and matching measured
+prototype material at the target physical part. Follow [physical part correspondence](MATERIAL_GENERATION_CONTRACT.md#physical-prototype-part-correspondence). Test asphalt, sidewalk surfacing and wheel-track/rut effects independently
+per prototype and physical domain. Other road types use compatible originals or corresponding native object road materials under
+material section 4, with its accepted network-layer/worldspace differences. Supported road types instead require fixed-density tiling and all-LOD marking removal;
+non-road source modes remain unchanged. This is a generation rule, not a reverse-engineering finding or proof that the
 current implementation complies. Road processing must not mutate a shared structural Surface.
+
+Prototype-supported road appearances must tile at original resolution and physical texel density,
+never stretch, including fixed running caps, finite terminals and every LOD. Remove embedded road
+markings from every road-material channel and mip; preserve intended selected-road paint through
+the applicable native path (the separate skinned paint mesh for movable mechanisms). Necessary
+bounded offline repeats may be authored from pure original road content with aligned PBR donor
+coordinates and complete periodic mip chains; do not claim new periods as original evidence.
+Domains sharing the same evidenced prototype appearance require coherent source/PBR, density, orientation and phase; intentionally different physical-part materials remain distinct. Wear uses the
+same complete measured source and matching same-source background; translate the whole pattern's
+measured visual center to actual native lane centers while preserving physical width, internal
+relationships and longitudinal density. No vehicle lane means no wear. Non-road finite/stretch
+modes retain their own source evidence. No full-span pixels, period cuts, arbitrary downsampling,
+custom shaders or a relaxed package byte limit are permitted.
 
 [Material generation](MATERIAL_GENERATION_CONTRACT.md) governs every bridge material path,
 including preview, creation, export and all LODs. Its first rule prohibits creating new materials
@@ -54,8 +76,8 @@ known, preparable constant materials prepared once offline and copied during bri
 Section 4 separately permits bounded variable-content composition and necessary conversion of
 selected third-party road/track inputs unavailable before runtime, prioritizing direct reuse and
 descriptor-only conversion. These exceptions never cover missing known prepared assets.
-Sections 2 and 5 require at most 10,000,000 bytes of persisted material dependencies per generated
-bridge and at most 55,000,000 bytes for the complete official SDK content ZIP. Prepared-directory
+Sections 2 and 5 require informational complete-owner material measurements without a per-bridge
+ceiling and at most 55,000,000 bytes for the complete official SDK content ZIP. Prepared-directory
 size, complete bridge size and package size are separate measurements. Native rendering
 and persistence remain governed by their corresponding contracts.
 

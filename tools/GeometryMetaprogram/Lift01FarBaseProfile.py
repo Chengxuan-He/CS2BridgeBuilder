@@ -105,7 +105,7 @@ internal static class Lift01FarBaseProfile
             positions[point.Index] = new Vector3(point.X + point.Direction * delta, point.Y, point.Z);
         return new MovableStructureModel.Plan(plan.SourcePositions, positions, plan.SourceIndices,
             plan.RemoveTriangles, plan.AddedVertices, plan.Fragments, plan.InteriorVertices,
-            plan.Positions.Skip(1110).Select(p => p.x).ToArray(), reconstructsAuthoredPositions: true);
+            plan.Positions.Skip(1110).Select(p => p.x).ToArray(), reconstructsAuthoredPositions: true, uvCorrections: plan.UvCorrections, preparedDomains: plan.PreparedDomains, frameTransforms: plan.FrameTransforms, sourceCopies: plan.SourceCopies);
     }
 
     private static readonly (int Index, float X, float Y, float Z, int Direction)[] Profile =

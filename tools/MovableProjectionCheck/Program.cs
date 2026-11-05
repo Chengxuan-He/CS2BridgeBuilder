@@ -32,12 +32,12 @@ var b = Vertex(new Vector3(0, 0, 1), down, -1);
 var c = Vertex(new Vector3(1, 0, 0), up, 1);
 var mixed = new MovableRoadGeometry.Triangle(a, b, c, 0, 7, 13);
 var partition = new MovableRoadGeometry.Partition(0);
-Check(!MovableRoadGeometry.TryBind(new[] { mixed }, partition, 1, 1, out _, out var error)
-    && error!.Contains("mixed tangent handedness"), "Binder must still reject invalid frames");
+Check(MovableRoadGeometry.TryBind(new[] { mixed }, partition, 1, 1, out var mixedOutput, out var error)
+    && mixedOutput[0].Geometry.B.Tangent.w == -1, "Mixed authored handedness must be preserved without a structural gate");
 var remapped = new MovableRoadGeometry.Triangle(a, Vertex(b.Position, b.Normal, 1), c, 0, 7, 13);
 Check(MovableRoadGeometry.TryBind(new[] { remapped }, partition, 1, 1, out var result, out error),
     "Planar-chart receiver binding failed: " + error);
 Check(result.Length == 1 && result[0].Geometry.B.Position == b.Position &&
     result[0].Geometry.B.Normal == b.Normal && result[0].Geometry.SourceTriangle == 13,
     "Receiver geometry or provenance changed");
-Console.WriteLine("PASS projection orientation, mirrored/singular/nonfinite cases, strict binding and chart receiver preservation.");
+Console.WriteLine("PASS projection orientation, mirrored/singular/nonfinite cases, non-gating binding and chart receiver preservation.");

@@ -25,7 +25,7 @@ internal static class PedestrianDraw02RenderAssembly
             PedestrianDraw02TransverseParts.Apply(lod, source, positions, delta);
             PedestrianDraw02Bases.Apply(lod, source, positions, delta);
             var structure = PedestrianDraw02JoinedSupports.Complete(lod, source, positions, indices, delta);
-            return PedestrianDraw02RoadReplacement.WithTopRemoved(lod, structure);
+            return PedestrianDraw02TrussMapping.Apply(lod, PedestrianDraw02RoadReplacement.WithTopRemoved(lod, structure), delta);
         }
 
         // Mesh 1 is the six authored control-room glass quads. Native LOD1

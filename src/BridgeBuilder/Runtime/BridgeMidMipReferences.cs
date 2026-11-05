@@ -50,14 +50,22 @@ internal static class BridgeMidMipReferences
 
     internal static string[] Read(byte[] bytes)
     {
-        using var reader = new BinaryReader(new MemoryStream(bytes, false));
+        using var stream = new MemoryStream(bytes, false);
+        return Read(stream);
+    }
+
+    // Native tiled cache pixels follow the header. Membership checks need only
+    // the selected cache metadata and the bounded stream length.
+    internal static string[] Read(Stream stream)
+    {
+        using var reader = new BinaryReader(stream, System.Text.Encoding.UTF8, leaveOpen: true);
         int tile = reader.ReadInt32(), levels = reader.ReadInt32(), group = reader.ReadInt32();
         int stacks = reader.ReadInt32(), groups = reader.ReadInt32(), entries = reader.ReadInt32();
         if (tile < 16 || tile > 16384 || (tile & (tile - 1)) != 0 || levels < 1 || levels > 8 ||
             group != 1 << (2 * levels) || stacks < 1 || stacks > 16 || groups < 0 || entries < 0)
             throw new InvalidDataException("Invalid native MidMips header.");
         var categories = new List<(int Count, int First, int Tiles, bool Disabled)>();
-        int Count() { int n = reader.ReadInt32(); if (n < 0 || n > bytes.Length / 4) throw new InvalidDataException("Invalid MidMips count."); return n; }
+        int Count() { int n = reader.ReadInt32(); if (n < 0 || n > stream.Length / 4) throw new InvalidDataException("Invalid MidMips count."); return n; }
         for (int stack = 0; stack < stacks; stack++)
         {
             int count = Count();
@@ -102,7 +110,7 @@ internal static class BridgeMidMipReferences
             categories.Any(c => !c.Disabled && (long)c.First + c.Tiles > tileCount))
             throw new InvalidDataException("Invalid MidMips tile offsets.");
         long tileBytes = checked((long)(tile + 16) * (tile + 16) * 5 / 4);
-        if (reader.BaseStream.Position + tileBytes * tileCount != bytes.LongLength)
+        if (reader.BaseStream.Position + tileBytes * tileCount != stream.Length)
             throw new InvalidDataException("Incomplete native MidMips payload.");
         return identities.OrderBy(x => x, StringComparer.Ordinal).ToArray();
     }

@@ -25,7 +25,13 @@ internal sealed class BridgeSelfCheckReport
         Add(Outcome.RemovedWithoutBackup, "BridgeSelfCheckRemovedWithoutBackup");
         Add(Outcome.Unfinished, "BridgeSelfCheckIncomplete");
         if (Interrupted) lines.Add(RuntimeUiText.Get("BridgeSelfCheckInterrupted"));
-        if (lines.Count != 0) lines.Add(RuntimeUiText.Get("BridgeSelfCheckRestart"));
+        if (lines.Count != 0)
+        {
+            var restart = RuntimeUiText.Get("BridgeSelfCheckRestart");
+            if (Count(Outcome.Unfinished) > 0)
+                restart += " " + RuntimeUiText.Get("BridgeSelfCheckUnfinishedWarning");
+            lines.Add(restart);
+        }
         return string.Join("\n\n", lines);
 
         void Add(Outcome outcome, string key)

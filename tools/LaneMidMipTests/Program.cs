@@ -4,6 +4,24 @@ using System.Text.Json.Nodes;
 using BridgeBuilder.Bridges;
 using BridgeBuilder.Runtime;
 
+if (args.Length==2 && args[0]=="--cok-cases")
+{
+    var tested = new HashSet<string>();
+    foreach (string line in File.ReadLines(args[1]))
+    {
+        var row=line.Split('\t');
+        using var input=new BoundedInput(row[0],long.Parse(row[1]),long.Parse(row[2]));
+        if (!BridgeMidMipReferences.Read(input).Contains(row[3])) throw new Exception("Native package membership missing: "+row[3]);
+        long headerBytes=input.ReadBytes;
+        input.Position=0;
+        var copy=MovableMidMipSubset.Copy(input,row[3],row[4],512,3);
+        if(copy==null || !copy.SequenceEqual(File.ReadAllBytes(row[5])))throw new Exception("Native cache subset differs: "+row[3]);
+        Console.WriteLine($"PASS exact native package member {row[3]}, cache header bytes={headerBytes}, package cache bytes={input.Length}, subset={copy.Length}");
+        if(tested.Add(row[0])) RuntimeBoundaryTests.Run(copy,row[4]);
+    }
+    return;
+}
+
 if (args.Length == 3 && args[0] == "--original")
 {
     var manifest = JsonNode.Parse(File.ReadAllText(args[1]))!.AsArray();

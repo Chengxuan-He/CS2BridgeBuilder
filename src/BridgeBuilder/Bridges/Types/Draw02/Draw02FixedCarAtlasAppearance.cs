@@ -16,8 +16,6 @@ internal static class Draw02FixedCarAtlasAppearance
         if (lod < 0 || lod > 1) throw new ArgumentOutOfRangeException(nameof(lod));
         var values = Numeric_Types_Draw02_Draw02FixedCarAtlasAppearance_cs.Values.F32;
         var width = values[values.Length - 3];
-        if (!float.IsFinite(halfDelta) || width + halfDelta <= 0f)
-            throw new InvalidOperationException("Draw02 fixed carriageway width is invalid.");
         var scale = width / (width + halfDelta);
         var transform = Matrix4x4.TRS(pose.position, pose.rotation, Vector3.one);
         var projection = transform.transpose;

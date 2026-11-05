@@ -69,7 +69,14 @@ public partial class BridgeGenerationSystem : GameSystemBase
 
     protected override void OnGameLoadingComplete(Purpose purpose, GameMode mode)
     {
+        CancelMaterialPreparation();
         base.OnGameLoadingComplete(purpose, mode);
+        _motionSnapshots.Clear();
+        _lift03Snapshots.Clear();
+        _lift03Reports.Clear();
+        _nextLift03Inspection = 0;
+        _motionReports = 0;
+        _nextMotionInspection = 0;
         _settings = ExportSettings.Load();
         _gameMode = mode;
         _waitFrames = 0;
@@ -97,6 +104,7 @@ public partial class BridgeGenerationSystem : GameSystemBase
 
     protected override void OnDestroy()
     {
+        CancelMaterialPreparation();
         ReleaseRoadBufferDiagnostics();
         ClearPreview();
         BridgePreviewState.Clear();
@@ -106,6 +114,7 @@ public partial class BridgeGenerationSystem : GameSystemBase
 
     protected override void OnStopRunning()
     {
+        CancelMaterialPreparation();
         BridgeRuntimeRequests.BeginCatalogLoad();
         _pendingRemoval = null;
         _removingAsset = null;
@@ -117,6 +126,7 @@ public partial class BridgeGenerationSystem : GameSystemBase
     protected override void OnUpdate()
     {
         InspectPlacedRoadMaterials();
+        InspectPlacedMotion();
         // A queued update may need the next outer PrefabSystem pass. Do not process another
         // create/delete request until its scheduled publication callback has finished.
         if (World.GetOrCreateSystemManaged<BridgePublicationSystem>().IsPending) return;
@@ -137,6 +147,32 @@ public partial class BridgeGenerationSystem : GameSystemBase
             return;
         }
         if (_previewReleasePending) ClearPreview();
+        if (UpdateMaterialPreparation()) return;
+        if (!_settling)
+        {
+            if (BridgeRuntimeRequests.TryTake(out var runtimeRequest) && runtimeRequest != null)
+            {
+                HandleRuntimeRequest(runtimeRequest);
+                return;
+            }
+
+            switch (RoadSelectionModel.TakeRequest())
+            {
+                case ExporterRequest.Refresh:
+                    _pageRefreshCooldown = PageRefreshCooldownFrames;
+                    Refresh();
+                    return;
+                case ExporterRequest.ExportSelected:
+                    _pageRefreshCooldown = PageRefreshCooldownFrames;
+                    ExportOne();
+                    return;
+                case ExporterRequest.RemoveSelected:
+                    _pageRefreshCooldown = PageRefreshCooldownFrames;
+                    RemoveOne();
+                    return;
+            }
+        }
+
         if (_previewRevision != BridgePreviewState.Revision)
         {
             ClearPreview();
@@ -146,6 +182,7 @@ public partial class BridgeGenerationSystem : GameSystemBase
                 if (BridgePreviewState.Selection != null) BuildPreview(BridgePreviewState.Selection, _previewRevision);
             }
         }
+        if (_materialRead != null) return;
         try
         {
             _previewRenderer?.Tick();
@@ -162,28 +199,6 @@ public partial class BridgeGenerationSystem : GameSystemBase
         }
 
         if (_pageRefreshCooldown > 0) _pageRefreshCooldown--;
-
-        if (BridgeRuntimeRequests.TryTake(out var runtimeRequest) && runtimeRequest != null)
-        {
-            HandleRuntimeRequest(runtimeRequest);
-            return;
-        }
-
-        switch (RoadSelectionModel.TakeRequest())
-        {
-            case ExporterRequest.Refresh:
-                _pageRefreshCooldown = PageRefreshCooldownFrames;
-                Refresh();
-                return;
-            case ExporterRequest.ExportSelected:
-                _pageRefreshCooldown = PageRefreshCooldownFrames;
-                ExportOne();
-                return;
-            case ExporterRequest.RemoveSelected:
-                _pageRefreshCooldown = PageRefreshCooldownFrames;
-                RemoveOne();
-                return;
-        }
 
         var viewed = RoadSelectionModel.TakePageViewed();
         if (viewed) _framesSincePageView = 0;

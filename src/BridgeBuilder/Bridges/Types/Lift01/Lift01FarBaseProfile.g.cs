@@ -20,7 +20,7 @@ internal static class Lift01FarBaseProfile
             matrix.Evaluate(delta, 0f, 0f, out float x, out float y, out float z);
             positions[point.Index] = new Vector3(x, y, z);
         });
-        return new MovableStructureModel.Plan(plan.SourcePositions, positions, plan.SourceIndices, plan.RemoveTriangles, plan.AddedVertices, plan.Fragments, plan.InteriorVertices, plan.Positions.Skip(Numeric_Types_Lift01_Lift01FarBaseProfile_g_cs.Values.I32[5]).Select(p => p.x).ToArray(), reconstructsAuthoredPositions: true);
+        return new MovableStructureModel.Plan(plan.SourcePositions, positions, plan.SourceIndices, plan.RemoveTriangles, plan.AddedVertices, plan.Fragments, plan.InteriorVertices, plan.Positions.Skip(Numeric_Types_Lift01_Lift01FarBaseProfile_g_cs.Values.I32[5]).Select(p => p.x).ToArray(), reconstructsAuthoredPositions: true, uvCorrections: plan.UvCorrections, preparedDomains: plan.PreparedDomains, frameTransforms: plan.FrameTransforms, sourceCopies: plan.SourceCopies);
     }
 
     private static readonly (int Index, float X, float Y, float Z, int Direction)[] Profile = ReadPackedProfile();

@@ -12,6 +12,8 @@ using UnityEngine;
 // isolated catalogue; no scene, prefab registration or bridge construction.
 public static class Draw03RoadMappingCheck
 {
+    [Serializable] sealed class SavedLayout
+    { public string owner; public float[] CarLaneCenters,SurfaceSpan,LeftSidewalk,RightSidewalk; }
     const BindingFlags I=BindingFlags.Instance|BindingFlags.NonPublic|BindingFlags.Public;
     const BindingFlags S=BindingFlags.Static|BindingFlags.NonPublic|BindingFlags.Public;
     static object Get(object o,string n)=>o.GetType().GetField(n,I)?.GetValue(o)??o.GetType().GetProperty(n,I)?.GetValue(o);
@@ -26,6 +28,43 @@ public static class Draw03RoadMappingCheck
         var frame=(Matrix4x4)Get(partition,"ObjectToSeam");
         return Domain(frame.MultiplyPoint3x4(point).z<0?negative:positive,point);
     }
+    static void CheckJoints(Assembly mod,string input)
+    {
+        Type T(string n)=>mod.GetType("BridgeBuilder.Bridges."+n,true);
+        using var reader=new BinaryReader(File.OpenRead(input));int cases=0;
+        int[] Integers(){int n=reader.ReadInt32();var a=new int[n];for(int i=0;i<n;i++)a[i]=reader.ReadInt32();return a;}
+        for(int lod=0;lod<2;lod++)
+        {
+            int count=reader.ReadInt32(),indexCount=reader.ReadInt32();var source=new Vector3[count];
+            for(int i=0;i<count;i++)source[i]=new Vector3(reader.ReadSingle(),reader.ReadSingle(),reader.ReadSingle());
+            var indices=new int[indexCount];for(int i=0;i<indexCount;i++)indices[i]=reader.ReadInt32();
+            var left=Integers();var right=Integers();var car=Integers();var changed=new HashSet<int>(Integers());
+            foreach(var pair in new[]{(new Vector2(-12.5f,-9),new Vector2(9,12.5f),0f),
+                (Vector2.zero,Vector2.zero,6.75f),(new Vector2(-12.5f,-9),Vector2.zero,0f),
+                (Vector2.zero,new Vector2(9,12.5f),0f),(new Vector2(-19.25f,-17.75f),new Vector2(15.25f,19.25f),6.75f)})
+            {
+                var plan=T("Draw03DetailedStructure").GetMethod("Create",S).Invoke(null,new object[]{lod,source,indices,pair.Item3});
+                var layout=FormatterServices.GetUninitializedObject(T("MovableSelectedRoadLayout"));
+                Set(layout,"LeftSidewalk",pair.Item1);Set(layout,"RightSidewalk",pair.Item2);
+                var result=T("Draw03JointLayout").GetMethod("Apply",S).Invoke(null,new object[]{lod,plan,layout,pair.Item3});
+                var before=(Vector3[])Get(plan,"Positions");var after=(Vector3[])Get(result,"Positions");
+                Need(before.Length==after.Length,"Joint fix must preserve vertex count");
+                for(int i=0;i<count;i++)
+                {
+                    Need(before[i].y==after[i].y&&before[i].z==after[i].z,"Joint fix preserves YZ");
+                    if(!changed.Contains(i))Need(before[i]==after[i],"Unrelated structure changed");
+                }
+                var mask=((bool[][])Get(result,"RemoveTriangles"))[0];
+                foreach(int face in car)Need(!mask[face],"Carriageway joint face was removed");
+                if(pair.Item1==Vector2.zero)foreach(int face in left)Need(mask[face],"Raised left joint survives absent sidewalk");
+                if(pair.Item2==Vector2.zero)foreach(int face in right)Need(mask[face],"Raised right joint survives absent sidewalk");
+                if(pair.Item1==Vector2.zero&&pair.Item2==Vector2.zero)
+                    foreach(int face in car)for(int k=0;k<3;k++)Need(after[indices[face*3+k]].y<=10.009033203125f,"Stepped joint remains above native thin steel surface");
+                cases++;
+            }
+        }
+        Debug.Log($"PASS actual Draw03 DetailedStructure -> JointLayout: {cases} native LOD/layout plans, all eight joints covered; carriageway faces retained, raised no-sidewalk faces removed, unrelated positions and all YZ unchanged.");
+    }
     public static void Run()
     {
         try
@@ -34,17 +73,22 @@ public static class Draw03RoadMappingCheck
             string managed=Arg("-gameManaged"),materials=Arg("-materials");
             AppDomain.CurrentDomain.AssemblyResolve+=(_,e)=>{string p=Path.Combine(managed,new AssemblyName(e.Name).Name+".dll");return File.Exists(p)?Assembly.LoadFrom(p):null;};
             var mod=Assembly.LoadFrom(Arg("-modAssembly"));Type T(string n)=>mod.GetType("BridgeBuilder.Bridges."+n,true);
+            CheckJoints(mod,Arg("-jointInputs"));
             var database=Assembly.LoadFrom(Path.Combine(managed,"Colossal.IO.AssetDatabase.dll"));
             var st=database.GetType("Colossal.IO.AssetDatabase.SurfaceAsset",true);
             var prepared=mod.GetType("BridgeBuilder.Runtime.BridgePreparedMaterials",true);
             prepared.GetMethod("Initialize",S).Invoke(null,new[]{Directory.GetParent(Directory.GetParent(materials).FullName).FullName});
             var catalogue=(IDictionary)prepared.GetField("Surfaces",S).GetValue(null);
-            foreach(var name in new[]{"FullPeriodLaneWear","FullPeriodLaneGap","FullPeriodCleanAsphalt","FullPeriodGrating","FarRoadAtlas"})
+            foreach(var name in new[]{"FullPeriodRoadCrossSection","FullPeriodGrating","FarRoadAtlas"})
             {
                 var surface=FormatterServices.GetUninitializedObject(st);
                 using(var reader=new BinaryReader(File.OpenRead(Path.Combine(materials,"RepeatUnits",name,"Repeat.Surface"))))st.GetMethod("ReadHeader",I).Invoke(surface,new object[]{reader});
                 catalogue.Add("Draw03/RepeatUnits/"+name+"/Repeat.Surface",surface);
             }
+            var backgroundSurface=FormatterServices.GetUninitializedObject(st);
+            using(var reader=new BinaryReader(File.OpenRead(Path.Combine(materials,"RepeatUnits","DerivedRoadBackground","Repeat.Surface"))))
+                st.GetMethod("ReadHeader",I).Invoke(backgroundSurface,new object[]{reader});
+            catalogue.Add("Draw03/RepeatUnits/DerivedRoadBackground/Repeat.Surface",backgroundSurface);
             var native=FormatterServices.GetUninitializedObject(st);int checks=0,variants=0;
             var vertexType=T("MovableRoadGeometry+Vertex");
             var prepare=T("MovableRoadProjection").GetMethod("Prepared",S);
@@ -55,19 +99,30 @@ public static class Draw03RoadMappingCheck
             var triangleType=T("MovableRoadGeometry+Triangle");var boundType=T("MovableRoadGeometry+BoundTriangle");var inputType=T("MovableSurfaceAtlas+Input");
             var owner=FormatterServices.GetUninitializedObject(T("MovableRoadMaterial"));
             var paint=Array.CreateInstance(T("MovableNativeDecals+Region"),0);
-            foreach(var span in new[]{new Vector2(-12.5f,12.5f),new Vector2(-10,14),new Vector2(-7,8)})
+            var layouts=new List<(Vector2 span,float[] centers,Vector2 left,Vector2 right)>();
+            foreach(var span in new[]{new Vector2(-13.5f,13.5f),new Vector2(-10,14),new Vector2(-7,8)})
             foreach(var centers in new[]{Array.Empty<float>(),new[]{-4.5f,-1.5f,1.5f,4.5f}})
+                layouts.Add((span,centers,new Vector2(span.x,span.x+3),new Vector2(span.y-2,span.y)));
+            var saved=JsonUtility.FromJson<SavedLayout>(File.ReadAllText(Arg("-ownerLayout")));
+            layouts.Add((new Vector2(saved.SurfaceSpan[0],saved.SurfaceSpan[1]),saved.CarLaneCenters,
+                new Vector2(saved.LeftSidewalk[0],saved.LeftSidewalk[1]),new Vector2(saved.RightSidewalk[0],saved.RightSidewalk[1])));
+            Debug.Log("Draw03 saved owner fixture: "+saved.owner);
+            foreach(var centers in new[]{new[]{0f},new[]{2f},new[]{-3f,2f,7f},new[]{-100f,-4f,0f,4f,100f}})
+                layouts.Add((new Vector2(-9,11),centers,Vector2.zero,Vector2.zero));
+            foreach(float spacing in new[]{3f,4f,5f})
+                layouts.Add((new Vector2(-14,14),new[]{-spacing*1.5f,-spacing*.5f,spacing*.5f,spacing*1.5f},Vector2.zero,Vector2.zero));
+            foreach(var spec in layouts)
             foreach(var pose in new[]{new Pose(Vector3.zero,Quaternion.identity),new Pose(new Vector3(2,0,5),Quaternion.Euler(0,90,0))})
             {
+                var span=spec.span;var centers=spec.centers;var left=spec.left;var right=spec.right;
                 var layout=FormatterServices.GetUninitializedObject(T("MovableSelectedRoadLayout"));
-                Vector2 left=new Vector2(span.x,span.x+3),right=new Vector2(span.y-2,span.y);
                 Set(layout,"Prototype","Draw03");Set(layout,"CarLaneCenters",centers);Set(layout,"SurfaceSpan",span);Set(layout,"LeftSidewalk",left);Set(layout,"RightSidewalk",right);
                 foreach(string mode in new[]{"Near","Far"})
                 {
                     Debug.Log($"Draw03 mapping variant {mode}: span={span}, lanes={centers.Length}");
                     if(mode=="Near")
                     {
-                        var raw=(Array)T("Draw03RoadAppearance").GetMethod("Patches",S).Invoke(null,new[]{layout,(object)pose,span});
+                        var raw=(Array)T("Draw03RoadAppearance").GetMethod("Patches",S).Invoke(null,new[]{layout,(object)pose,span,false});
                         foreach(var patch in raw)
                         {
                             var bands=(Array)Get(patch,"Bands");if(bands==null)continue;
@@ -77,12 +132,21 @@ public static class Draw03RoadMappingCheck
                     var level=T("Draw03PreparedRoad").GetMethod(mode,S).Invoke(null,new[]{native,layout,(object)pose,span});
                     Need(ReferenceEquals(Get(level,"Native"),native),"Original LOD Native identity");
                     var patches=(Array)Get(level,"Patches");var types=(Array)Get(level,"SupportedTypes");Need(patches.Length==types.Length,"One explicit type set per patch");
+                    foreach(float center in centers.Where(c=>c>=span.x&&c<=span.y))
+                    {
+                        var p=Quaternion.Inverse(pose.rotation)*(new Vector3(center,0,20)-pose.position);
+                        int domain=Domain(Get(level,"Carriageway"),p);if(domain<0)continue;
+                        if((Convert.ToInt32(types.GetValue(domain))&4)==0)continue;
+                        float sourcePixel=Sample(patches.GetValue(domain),"V",p)*4096-1479+443;
+                        Need(Mathf.Abs(sourcePixel-1013.5f)<.001f,"Measured complete wear visual center aligns actual lane on both sides/LODs");
+                    }
                     foreach(bool walk in new[]{false,true})
                     foreach(float z in new[]{-95f,-90,-85,-75,-60,-40,-20,20,40,60,75,85,90,95})
                     foreach(bool side in new[]{false,true})
                     for(int step=0;step<=8;step++)
                     {
-                        var interval=walk?(side?right:left):(side?new Vector2(0,right.x):new Vector2(left.y,0));
+                        if(walk&&(side?right:left).y<=(side?right:left).x)continue;
+                        var interval=walk?(side?right:left):(side?new Vector2(0,right.y>right.x?right.x:span.y):new Vector2(left.y>left.x?left.y:span.x,0));
                         float x=Mathf.Lerp(interval.x,interval.y,step/8f);if(x==0)x=side?.0001f:-.0001f;
                         var inverse=Quaternion.Inverse(pose.rotation);
                         var point=inverse*(new Vector3(x,0,z)-pose.position);int domain=Domain(Get(level,walk?"Sidewalk":"Carriageway"),point);if(domain<0)continue;
@@ -90,8 +154,16 @@ public static class Draw03RoadMappingCheck
                         Need((supported&(walk?2:1))!=0,"Per-domain appearance type");Need(Get(patch,"Bands")==null,"No unreduced old bands reach rendering");
                         Need(Get(patch,"Surface")!=null,"Prepared native road Surface");
                         float u=Sample(patch,"U",point),v=Sample(patch,"V",point);Need(float.IsFinite(u)&&float.IsFinite(v),"Finite affine mapping");
-                        Need(v>=-0.00001f&&v<=1.00001f,"Finite V escaped source atlas");
-                        if(mode=="Near")
+                        if(mode=="Far"&&!walk)
+                        {
+                            var near=T("Draw03PreparedRoad").GetMethod("Near",S).Invoke(null,new[]{native,layout,(object)pose,span});
+                            int nearDomain=Domain(Get(near,"Carriageway"),point);
+                            var nearPatch=((Array)Get(near,"Patches")).GetValue(nearDomain);
+                            Need(ReferenceEquals(Get(patch,"Surface"),Get(nearPatch,"Surface"))&&u==Sample(nearPatch,"U",point)&&v==Sample(nearPatch,"V",point),"Near/far share exact carriageway source, phase and density");
+                        }
+                        bool background=ReferenceEquals(Get(patch,"Surface"),backgroundSurface);
+                        if(!background)Need(v>=-0.00001f&&v<=1.00001f,"Finite V escaped source atlas");
+                        if(mode=="Near"||!walk)
                         {
                             float period=1;
                             Need((bool)Get(patch,"PreparedUnit") && !(bool)Get(patch,"SourceAtlasRepeat") && !(bool)Get(patch,"SourceUv"),"Offline unit uses continuous UV without atlas seam cuts");
@@ -134,8 +206,13 @@ public static class Draw03RoadMappingCheck
                                 Need(mesh.vertexCount==3&&mesh.triangles.Length==3&&readback.SequenceEqual(uvs),"Unity mesh retains continuous UV and original triangle count");
                                 UnityEngine.Object.DestroyImmediate(mesh);composeChecks++;
                             }
-                            Need((bool)Get(patch,"RepeatU")&&!(bool)Get(patch,"RepeatV"),"Original independent near axes");
-                            if(Mathf.Abs(z)<75)Need(Mathf.Abs(Mathf.Abs(Sample(patch,"U",point+inverse*Vector3.forward*8)-u)-period)<.00001f,"Original 8m period");
+                            Need((bool)Get(patch,"RepeatU")&&(bool)Get(patch,"RepeatV")==background,"Original independent axes");
+                            if(background)
+                            {
+                                Need(Mathf.Abs(Sample(patch,"V",point+inverse*Vector3.right*(128f/120.98527526855469f))-v-1)<.00001f,"Derived background original grain X density");
+                                if(Mathf.Abs(z)<75)Need(Mathf.Abs(Mathf.Abs(Sample(patch,"U",point+inverse*Vector3.forward*8)-u)-period)<.00001f,"Background original 8m U period");
+                            }
+                            else if(Mathf.Abs(z)<75)Need(Mathf.Abs(Mathf.Abs(Sample(patch,"U",point+inverse*Vector3.forward*8)-u)-period)<.00001f,"Original 8m period");
                         }
                         else Need((bool)Get(patch,"SourceUv")&&!(bool)Get(patch,"Repeat"),"Far finite atlas mapping");
                         checks++;

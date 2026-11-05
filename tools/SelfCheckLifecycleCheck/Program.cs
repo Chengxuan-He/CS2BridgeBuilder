@@ -169,16 +169,19 @@ foreach (var mask in Enumerable.Range(0, 16))
     }
     Check(report.Total == System.Numerics.BitOperations.PopCount((uint)mask), "UUID results are mutually exclusive");
     Check(report.HasNotice == (mask != 0), "Empty run stays silent");
+    Check(report.Message().Contains("BridgeSelfCheckUnfinishedWarning") == ((mask & 8) != 0), "Only actual unfinished outcomes receive the warning");
     Check(report.Message().Split("BridgeSelfCheckRestart").Length - 1 == (mask == 0 ? 0 : 1), "One shared restart reminder");
     for (var i = 0; i < 4; i++) Check(report.Count((BridgeSelfCheckReport.Outcome)i) == ((mask >> i) & 1), "Only selected nonzero outcomes");
 }
+var interruptedOnly = new BridgeSelfCheckReport { Interrupted = true };
+Check(interruptedOnly.Message() == "BridgeSelfCheckInterrupted\n\nBridgeSelfCheckRestart", "Unknown interrupted results do not invent unfinished processing");
 p = Fresh(); BridgeNetworkValidation.Invalid = true; BridgeDiskAudit.BackupFailed = true;
 p.ScheduleInspectionAfterLoad(); Menu(p);
 Check(BridgeStartupRecovery.Retired.Contains("bridge") && BridgeBuilder.Mod.Messages.Single() == "BridgeSelfCheckRemovedWithoutBackup(1)\n\nBridgeSelfCheckRestart", "Backup failure with completed deletion has its own final category");
 p.RequestManualCheck(); p.Tick(); Check(BridgeBuilder.Mod.Messages.Count == 1, "Removed result does not accumulate or repeat");
 p = Fresh(); BridgeNetworkValidation.Invalid = true; BridgeDiskAudit.BackupFailed = true; BridgeDiskAudit.DeleteFailed = true;
 p.ScheduleInspectionAfterLoad(); Menu(p);
-Check(BridgeStartupRecovery.Retired.Count == 0 && BridgeBuilder.Mod.Messages.Single() == "BridgeSelfCheckIncomplete(1)\n\nBridgeSelfCheckRestart", "Deletion failure is unfinished, not removed");
+Check(BridgeStartupRecovery.Retired.Count == 0 && BridgeBuilder.Mod.Messages.Single() == "BridgeSelfCheckIncomplete(1)\n\nBridgeSelfCheckRestart BridgeSelfCheckUnfinishedWarning", "Deletion failure is unfinished, not removed");
 BridgeDiskAudit.DeleteFailed = false; p.RequestManualCheck(); p.Tick();
 Check(BridgeBuilder.Mod.Messages.Count == 1 && BridgeDiskAudit.Calls == 1 && Colossal.IO.AssetDatabase.PrefabAsset.Reads == 1 && BridgeStartupRecovery.Retired.Count == 0, "Partial removal failure protects stale assets without claiming retired or repeating notices");
 p = Fresh(); BridgeNetworkValidation.Raise = true; p.ScheduleInspectionAfterLoad();
@@ -205,7 +208,7 @@ foreach (var i in Enumerable.Range(0, 4))
 }
 BridgeDiskAudit.Retirement = owner => owner == "bridge-1" ? (true, true) : owner == "bridge-2" ? (true, false) : (false, false);
 p.ScheduleInspectionAfterLoad(); Menu(p);
-Check(BridgeBuilder.Mod.Messages.Single() == "BridgeSelfCheckMigrated(1)\n\nBridgeSelfCheckRemoved(1)\n\nBridgeSelfCheckRemovedWithoutBackup(1)\n\nBridgeSelfCheckIncomplete(1)\n\nBridgeSelfCheckRestart", "Actual lifecycle combines all four mutually exclusive final categories");
+Check(BridgeBuilder.Mod.Messages.Single() == "BridgeSelfCheckMigrated(1)\n\nBridgeSelfCheckRemoved(1)\n\nBridgeSelfCheckRemovedWithoutBackup(1)\n\nBridgeSelfCheckIncomplete(1)\n\nBridgeSelfCheckRestart BridgeSelfCheckUnfinishedWarning", "Actual lifecycle combines all four mutually exclusive final categories");
 p.RequestManualCheck(); p.Tick();
 Check(BridgeBuilder.Mod.Messages.Count == 1, "Next run skips all session-protected owners without repeating old outcomes");
 p = Fresh(); BridgeNetworkValidation.Invalid = true; BridgeDiskAudit.Incomplete = true;

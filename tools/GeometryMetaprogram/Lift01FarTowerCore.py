@@ -264,8 +264,8 @@ lines = ['// Native LiftBridge01_LOD1 Mesh, fixed tower core only.',
     '            edges[i] = new MovableStructureModel.EdgeVertex(edge.A, edge.B, edge.Fraction);',
     '            x[i] = Mathf.LerpUnclamped(source[edge.A].x, source[edge.B].x, edge.Fraction) + edge.Weight * delta;',
     '        }',
-    '        return new MovableStructureModel.Plan(source, positions, new[] { indices }, new[] { remove },',
-    '            addedVertices: edges, fragments: Fragments, constructedX: x);',
+    '        return Lift01TowerTrusses.Complete(new MovableStructureModel.Plan(source, positions, new[] { indices }, new[] { remove },',
+    '            addedVertices: edges, fragments: Fragments, constructedX: x), 1, delta);',
     '    }', '',
     '    private static readonly (int First, int Last)[] Faces =', '    {']
 lines += [f'        ({a}, {b}),' for a, b in ranges(kept)]

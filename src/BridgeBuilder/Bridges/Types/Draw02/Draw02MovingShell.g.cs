@@ -9,8 +9,8 @@ internal static class Draw02MovingShell
 {
     internal static MovableStructureModel.Plan Create(int lod, Vector3[] source, Vector3[] positions, int[] indices, float delta)
     {
-        if (!float.IsFinite(delta) || delta <= Draw02TransverseMembers.MinimumHalfWidthDelta)
-            throw new InvalidOperationException("Draw02 selected width collapses or reverses its recorded central linkage span.");
+        if (!float.IsFinite(delta))
+            throw new InvalidOperationException("Draw02 selected width is non-finite.");
         var data = lod switch
         {
             0 => (Vertices: Numeric_Types_Draw02_Draw02MovingShell_g_cs.Values.I32[0], Faces: Numeric_Types_Draw02_Draw02MovingShell_g_cs.Values.I32[1], Removed: Removed0, Edges: Edges0, Interior: Interior0, Fragments: Fragments0, Weights: BoundaryWeights0, Left: Left0, Right: Right0),
@@ -24,10 +24,12 @@ internal static class Draw02MovingShell
         Draw02FixedBodies.Apply(lod, source, positions, delta);
         if (lod < Numeric_Types_Draw02_Draw02MovingShell_g_cs.Values.I32[7])
             Draw02TransverseMembers.Apply(lod, source, positions, delta);
+        Draw02MovingBase.Apply(lod, source, positions, delta);
         foreach (var index in data.Left)
             positions[index].x = AffineGeometry.Translate(source[index].x, -(delta));
         foreach (var index in data.Right)
             positions[index].x = AffineGeometry.Translate(source[index].x, delta);
+        Draw02LongitudinalRibs.Apply(lod, source, positions, delta);
         var mask = new bool[data.Faces];
         foreach (var face in data.Removed)
             mask[face] = true;

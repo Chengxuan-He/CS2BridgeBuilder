@@ -19,7 +19,8 @@ internal static class BridgeLegacyNames
     }
 
     internal static bool Run(string gameRoot, IEnumerable<string> owners, string backup,
-        out HashSet<string> changed, out string error, Func<string, string> prefabPath)
+        out HashSet<string> changed, out string error, Func<string, string> prefabPath,
+        IEnumerable<string>? roots = null, Func<string, string?>? exactPath = null, ISet<string>? paths = null)
     {
         changed = new(StringComparer.Ordinal);
         error = "";
@@ -31,12 +32,16 @@ internal static class BridgeLegacyNames
             if (selected.Length == 0) return true;
             var imported = Path.Combine(gameRoot, "ImportedData");
             var geometry = Path.Combine(gameRoot, "BridgeBuilder");
-            var files = BridgeFileAccess.EnumerateFiles(imported).Concat(BridgeFileAccess.EnumerateFiles(geometry))
+            var files = (roots ?? BridgeFileAccess.EnumerateFiles(imported).Concat(BridgeFileAccess.EnumerateFiles(geometry)))
                 .Where(p => p.EndsWith(".Prefab", StringComparison.OrdinalIgnoreCase)
                     || p.EndsWith(".Geometry", StringComparison.OrdinalIgnoreCase)).ToArray();
             var assets = new List<Asset>();
-            foreach (var path in files)
+            var pendingFiles = new Queue<string>(files);
+            var readPaths = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            while (pendingFiles.Count != 0)
             {
+                string path = pendingFiles.Dequeue();
+                if (!readPaths.Add(path) || !BridgeFileAccess.Exists(path)) continue;
                 if (!BridgeFileAccess.Exists(path + ".cid")) continue;
                 var cid = BridgeFileAccess.ReadText(path + ".cid").Trim();
                 if (!Regex.IsMatch(cid, @"\A[a-fA-F0-9]{32}\z")) continue;
@@ -49,6 +54,17 @@ internal static class BridgeLegacyNames
                     { asset.Name = doc.Name; asset.Type = doc.TypeName; }
                 }
                 assets.Add(asset);
+                if (exactPath != null && asset.Text.Length != 0)
+                    foreach (string reference in BridgeDependencyCopies.References(asset.Bytes))
+                    {
+                        string? target = exactPath(reference);
+                        if (target == null || (!target.EndsWith(".Prefab", StringComparison.OrdinalIgnoreCase)
+                            && !target.EndsWith(".Geometry", StringComparison.OrdinalIgnoreCase))) continue;
+                        string full = Path.GetFullPath(target);
+                        if (!full.StartsWith(Path.GetFullPath(imported) + Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase)
+                            && !full.StartsWith(Path.GetFullPath(geometry) + Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase)) continue;
+                        pendingFiles.Enqueue(full);
+                    }
             }
             var writes = new Dictionary<string, byte[]>(StringComparer.OrdinalIgnoreCase);
             var destinations = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
@@ -124,7 +140,8 @@ internal static class BridgeLegacyNames
                     destinations.Add(path);
                     destinations.Add(path + ".cid");
                     foreach (var duplicate in assets.Where(a => a.Cid.Equals(asset.Cid, StringComparison.OrdinalIgnoreCase)))
-                        retire.Add(duplicate.Path);
+                        if (exactPath == null || BridgeAssetInfo.MatchesOwner(duplicate.Path, owner))
+                            retire.Add(duplicate.Path);
                 }
                 foreach (var asset in owned.Where(a => a.Text.Length != 0 && !mapping.ContainsKey(a.Cid)))
                 {
@@ -177,6 +194,11 @@ internal static class BridgeLegacyNames
             }
             foreach (var path in retiredFiles)
                 if (BridgeFileAccess.Exists(path)) File.Delete(BridgeFileAccess.Native(path)); // Original is backed up above.
+            if (paths != null)
+            {
+                foreach (string path in retiredFiles) paths.Remove(path);
+                foreach (string path in writes.Keys) paths.Add(path);
+            }
             foreach (var directory in retire.Select(Path.GetDirectoryName).Distinct())
                 if (directory != null && directory != imported && directory != geometry
                     && !Directory.EnumerateFileSystemEntries(BridgeFileAccess.Native(directory)).Any())

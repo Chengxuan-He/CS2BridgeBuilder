@@ -22,7 +22,7 @@ internal static class Lift01FarEndLips
         foreach (var range in Faces)
             for (var i = range.First; i <= range.Last; i++)
                 remove[i] = false;
-        return new MovableStructureModel.Plan(plan.SourcePositions, positions, plan.SourceIndices, new[] { remove }, plan.AddedVertices, plan.Fragments, plan.InteriorVertices, plan.Positions.Skip(positions.Length).Select(p => p.x).ToArray());
+        return new MovableStructureModel.Plan(plan.SourcePositions, positions, plan.SourceIndices, new[] { remove }, plan.AddedVertices, plan.Fragments, plan.InteriorVertices, plan.Positions.Skip(positions.Length).Select(p => p.x).ToArray(), plan.ReconstructsAuthoredPositions, plan.UvCorrections, plan.PreparedDomains, plan.FrameTransforms, plan.SourceCopies);
     }
 
     private static readonly (int First, int Last)[] Faces = ReadPackedFaces();

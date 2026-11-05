@@ -73,30 +73,17 @@ internal static class TrussArch03BaseGeometry
             return false;
         }
 
-        var reachesLeft = false;
-        var reachesRight = false;
         for (var index = Numeric_Types_TrussArch03_TrussArch03BaseGeometry_cs.Values.I32[9]; index < source.Length; index++)
         {
             if ((membership[index >> Numeric_Types_TrussArch03_TrussArch03BaseGeometry_cs.Values.I32[10]] & (Numeric_Types_TrussArch03_TrussArch03BaseGeometry_cs.Values.I32[11] << (index & Numeric_Types_TrussArch03_TrussArch03BaseGeometry_cs.Values.I32[12]))) == Numeric_Types_TrussArch03_TrussArch03BaseGeometry_cs.Values.I32[13])
                 continue;
             baseVertices++;
-            if (source[index].x < Numeric_Types_TrussArch03_TrussArch03BaseGeometry_cs.Values.F32[0])
-                reachesLeft = true;
-            if (source[index].x > Numeric_Types_TrussArch03_TrussArch03BaseGeometry_cs.Values.F32[1])
-                reachesRight = true;
+
         }
 
         if (baseVertices != map.BaseVertices)
         {
             error = string.Format(System.Globalization.CultureInfo.InvariantCulture, "recorded {0} base vertices but decoded {1}", map.BaseVertices, baseVertices);
-            return false;
-        }
-
-        // A deck base must cross x=0. If the recorded vertices do not occupy both sides of the origin,
-        // this mesh is rejected as a base and no base transform is written.
-        if (!reachesLeft || !reachesRight)
-        {
-            error = "the recorded component does not cross x=0 and therefore is not a deck base";
             return false;
         }
 

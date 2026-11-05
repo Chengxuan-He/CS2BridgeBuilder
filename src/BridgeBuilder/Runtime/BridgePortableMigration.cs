@@ -14,7 +14,8 @@ namespace BridgeBuilder.Runtime;
 
 internal static class BridgePortableMigration
 {
-    internal static bool Run(string owner, PrefabSystem system, string backup, out bool changed, out string error)
+    internal static bool Run(string owner, PrefabSystem system, string backup, out bool changed, out string error,
+        BridgeInspectionAssets.Entry[] knownAssets, BridgeCreationDependencies dependencies, ISet<string> paths)
     {
         changed = false; error = "";
         var originals = new Dictionary<string, byte[]>();
@@ -25,10 +26,12 @@ internal static class BridgePortableMigration
         var swap = typeof(PrefabAsset).GetMethod("SetUninitializedInstance", BindingFlags.Instance | BindingFlags.NonPublic)!;
         try
         {
-            var assets = BridgeInspectionAssets.Read(candidate => candidate == owner).Where(a => a.Prefab != null).ToArray();
+            var assets = knownAssets.Where(a => a.Prefab != null).ToArray();
             var root = assets.Select(a => a.Prefab).OfType<NetGeometryPrefab>().FirstOrDefault(p => p.name == owner);
             if (root == null) { error = "Canonical bridge unavailable for independent migration"; return false; }
-            var metadata = BridgeAssetCatalog.Find(owner) ?? new BridgeAssetInfo(owner, owner, "", null, "", "");
+            var rootPath = assets.First(a => ReferenceEquals(a.Prefab, root)).Path;
+            var metadata = BridgeAssetMetadata.TryRead(BridgeFileAccess.ReadText(rootPath), out var stored) && stored.PrefabName == owner
+                ? stored : new BridgeAssetInfo(owner, owner, "", null, "", "");
             // Dependency snapshots are byte-identical external assets, not conversion targets.
             var privateAssets = assets.Where(a => !BridgeAssetInfo.IsDependencyPath(a.Path, owner)).ToArray();
             var networks = privateAssets.Select(a => a.Prefab).OfType<NetGeometryPrefab>().Distinct().ToArray();
@@ -102,8 +105,8 @@ internal static class BridgePortableMigration
             // Complete every independent check before taking a no-Prefab-write path.
             if (nodes.Count == 0)
             {
-                if (!BridgeNativePresentation.Validate(owner, assets.Select(a => a.Prefab!), out error)) return false;
-                return BridgeNativePresentation.EnsureDescriptions(metadata, out changed, out error);
+                if (!BridgeNativePresentation.Validate(owner, assets.Select(a => a.Prefab!), out error, dependencies)) return false;
+                return BridgeNativePresentation.EnsureDescriptions(metadata, out changed, out error, assets.Select(a => a.Prefab!), paths);
             }
             // Back up every existing file that this transaction may replace, including CID sidecars.
             foreach (var node in nodes)
@@ -143,9 +146,15 @@ internal static class BridgePortableMigration
                     || BridgeFileAccess.ReadText(path).Contains(", BridgeBuilder\""))
                 { error = "Persisted bridge still contains a Bridge Builder component"; return false; }
             }
-            if (!BridgeDependencyPersistence.Save(owner, nodes.Select(n => n.Target.asset.id.guid.ToString()), out _, out error)
-                || !BridgeNativePresentation.Validate(owner, assets.Select(a => a.Prefab!).Concat(nodes.Select(n => n.Target)), out error)
-                || !BridgeNativePresentation.EnsureDescriptions(metadata, out _, out error)) return false;
+            foreach (var node in nodes)
+            {
+                dependencies.Record(node.Target.asset);
+                paths.Add(node.Target.asset.path);
+                paths.Add(node.Target.asset.path + ".cid");
+            }
+            if (!BridgeDependencyPersistence.Save(owner, nodes.Select(n => n.Target.asset.id.guid.ToString()), dependencies, out _, out error, out _)
+                || !BridgeNativePresentation.Validate(owner, assets.Select(a => a.Prefab!).Concat(nodes.Select(n => n.Target)), out error, dependencies)
+                || !BridgeNativePresentation.EnsureDescriptions(metadata, out _, out error, assets.Select(a => a.Prefab!).Concat(nodes.Select(n => n.Target)), paths)) return false;
             changed = true;
             return true;
         }

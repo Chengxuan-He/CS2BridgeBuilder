@@ -137,8 +137,20 @@ internal sealed class Lift03RoadSampling : IDisposable
         var road = index == Numeric_Types_Lift03_Lift03RoadSampling_cs.Values.I32[42] ? MainRoad : AuxiliaryRoad;
         var pose = index == Numeric_Types_Lift03_Lift03RoadSampling_cs.Values.I32[43] ? MainToObject : AuxiliaryToObject;
         var layout = new MovableSelectedRoadLayout(road, pose, deck == Deck.Main ? "Lift03 Main" : "Lift03 Auxiliary");
+        var families = new Dictionary<(int, MovableRoadAppearance.Type), MovableRoadAppearance.Level?>();
+        MovableRoadAppearance.Level? Appearance(int lod, MovableRoadAppearance.Type receiver)
+        {
+            var key = (lod, receiver);
+            if (!families.TryGetValue(key, out var family))
+            {
+                family = Lift03RoadAppearance.ForReceiver(lod, sources[lod], pose, layout, receiver);
+                families.Add(key, family);
+            }
+            return family;
+        }
         return MovableRoadPreparation.Prepare(road, pose, lod => CompileLod(deck, lod), sources, halfDelta, closedWorld, material, Lift03RoadPartitions.Carriageway, sidewalk, carriagewayAppearance, sidewalkAppearance, patches, Numeric_Types_Lift03_Lift03RoadSampling_cs.Values.I32[44], layout,
-            lod => Lift03RoadAppearance.ForLevel(deck, lod, sources[lod], pose, halfDelta));
+            lod => Lift03RoadAppearance.ForLevel(deck, lod, sources[lod], pose, halfDelta, layout),
+            appearanceForReceiver: Appearance);
     }
 
     private static int DeckIndex(Deck deck) => deck switch

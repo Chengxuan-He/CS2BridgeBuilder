@@ -28,6 +28,55 @@ internal sealed class MovableRoadMaterial : IDisposable
     private ILocalAssetDatabase Database => _preview?.NativeAssets ?? AssetDatabase.user;
     private readonly List<AssetData> _composed = new();
 
+    private readonly Dictionary<SurfaceAsset, SurfaceAsset?> _originalBase = new();
+
+    internal SurfaceAsset? OriginalBase(SurfaceAsset source)
+    {
+        if (_originalBase.TryGetValue(source,out var cached)) return cached;
+        source.LoadProperties(true);
+        try
+        {
+            // The measured RoadEU descriptor has no numeric/colour overrides.
+            // A changed descriptor needs new evidence, not guessed template values.
+            if (source.materialTemplateHash!=17 || source.isVTMaterial || source.floats.Count!=0 ||
+                source.ints.Count!=0 || source.vectors.Count!=0 || source.colors.Count!=0)
+            { _originalBase.Add(source,null); return null; }
+            // Identifier.ToString includes the source URI and its .Material suffix. Native
+            // registration accepts that extension, but relocation by SurfaceAsset uses .Surface.
+            // Use only the CID so the native writer and later readers agree on the type.
+            using var data = new Surface(_name + " Original Base " + source.id.guid, "Default");
+            var asset=Database.AddAsset(AssetDataPath.Create("BridgeBuilder",data.name,EscapeStrategy.None),data);
+            _composed.Add(asset);
+            var textures=new Dictionary<string,TextureAsset>();
+            foreach(var property in new[]{"_BaseColorMap","_NormalMap","_MaskMap"})
+            {
+                if(!source.TryGetTexture(property,out var texture)||texture==null)
+                    throw new InvalidOperationException("Original network base has a missing " + property + ".");
+                textures.Add(property,texture);
+            }
+            var zero=BridgeBuilder.Runtime.BridgePreparedMaterials.ZeroControl(StyleId);
+            textures.Add("_ControlMask",zero); textures.Add("_EmissiveColorMap",zero);
+            asset.UpdateTextures(textures);
+            asset.UpdateKeywords(new HashSet<string>{"_TANGENTSPACE_OCTO"});
+            asset.UpdateFloats(new Dictionary<string,float>{["_Snow"]=0f,
+                ["_EmissiveIntensity"]=1f,["_EmissiveExposureWeight"]=1f});
+            if(!asset.Save(mipBias:0,force:true,saveTextures:false,vt:false))
+                throw new InvalidOperationException("Could not persist original network base object descriptor.");
+            // Save is synchronous and closes its writer. Do not publish, unload or read
+            // a merely registered asset before both native payload and identity exist.
+            var written = asset.GetMeta();
+            if (!string.Equals(written.extension, ".Surface", StringComparison.OrdinalIgnoreCase) ||
+                !BridgeBuilder.Runtime.BridgeFileAccess.Exists(written.path) ||
+                !BridgeBuilder.Runtime.BridgeFileAccess.Exists(written.path + ".cid"))
+                throw new IOException("Original base Surface was not completely written: " + written.path);
+            _preview?.RetainSurfaceProperties(asset);
+            asset.UnloadProperties();
+            _originalBase.Add(source,asset);
+            return asset;
+        }
+        finally { source.UnloadProperties(); }
+    }
+
     internal TextureAsset SaveTexture(UnityEngine.Texture2D texture, int channel, int page)
     {
         var asset = Database.AddAsset<TextureAsset>(AssetDataPath.Create("BridgeBuilder",
@@ -147,6 +196,8 @@ internal sealed class MovableRoadMaterial : IDisposable
                 AtlasMaterialsGrouper.GetAssetName(config.tileSize, RequestedMidMipLevels), EscapeStrategy.None));
             _composed.Add(cache);
             using (var writer = new BinaryWriter(cache.GetWriteStream())) grouper.Write(writer);
+            foreach (var surface in surfaces)
+                BridgeRoadGeneration.CurrentDependencies?.Material(surface, new[] { cache });
             var streaming = World.DefaultGameObjectInjectionWorld.GetExistingSystemManaged<TextureStreamingSystem>();
             // Use native cache discovery/reservation before any generated render is published.
             streaming.MarkVTAssetsDirty();

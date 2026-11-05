@@ -106,6 +106,7 @@ Get-ChildItem -LiteralPath $frameworkRefs -Filter '*.dll' | ForEach-Object {
 foreach ($assembly in @(
     'Game.dll',
     'Colossal.Core.dll',
+    'Colossal.Collections.dll',
     'Colossal.IO.AssetDatabase.dll',
     'Colossal.Localization.dll',
     'Colossal.Logging.dll',

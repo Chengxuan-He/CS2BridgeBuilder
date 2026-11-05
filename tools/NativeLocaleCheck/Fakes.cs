@@ -27,7 +27,7 @@ namespace Game.SceneFlow
 }
 namespace Colossal
 {
-    public struct Hash128 { public static Hash128 Parse(string _) => new(); }
+    public struct Hash128 { public string Value; public static Hash128 Parse(string value) => new(){Value=value}; public override string ToString()=>Value; }
 }
 namespace Colossal.IO.AssetDatabase
 {
@@ -75,9 +75,9 @@ namespace Colossal.IO.AssetDatabase
     public class Database
     {
         public List<AssetData> Items = new();
-        public IEnumerable<T> GetAssets<T>(SearchFilter<T> filter) => Items.OfType<T>().Where(filter.Predicate);
+        public bool ForbidEnumeration; public IEnumerable<T> GetAssets<T>(SearchFilter<T> filter) { if(ForbidEnumeration)throw new Exception("All-assets enumeration forbidden");return Items.OfType<T>().Where(filter.Predicate); }
         public T AddAsset<T>(AssetDataPath path) where T : AssetData, new() { var a = new T { name = path.Name, path = path.Path }; Items.Add(a); return a; }
-        public bool TryGetAsset(Colossal.Hash128 id, out AssetData asset) { asset = null!; return false; }
+        public bool TryGetAsset<T>(Colossal.Hash128 id, out T asset) where T:AssetData { asset=Items.OfType<T>().FirstOrDefault(a=>a.id.guid.Value==id.Value)!;return asset!=null; }
     }
     public static class AssetDatabase { public static Database user = new(), global = new(); }
 }
@@ -110,6 +110,7 @@ namespace BridgeBuilder.Runtime
     {
         internal string PrefabName = id, DisplayName = name;
         internal static bool IsPrefabName(string name) => name.Length == 37 && name[0] == 'b' && Guid.TryParse(name[1..], out _);
+        internal static string FileStem(string name,string owner)=>name.Replace(owner+"-", "");
         internal static bool MatchesOwner(string path, string owner) => path.Contains(owner);
     }
     internal static class BridgeDependencyCopies { internal sealed class Source { internal bool Builtin; internal string Extension=".Prefab"; internal byte[] Bytes=[]; } internal static IEnumerable<string> References(Source source) => Array.Empty<string>(); }
@@ -117,6 +118,12 @@ namespace BridgeBuilder.Runtime
 namespace CS2Mods.Shared.Conversion { public static class PrefabGraphCloner { public static bool ShouldStripComponent(Game.Prefabs.ComponentBase c, bool root) => false; } }
 namespace BridgeBuilder.Runtime {
  internal static class BridgeDependencyPersistence {
-  internal static BridgeDependencyCopies.Source? Resolve(string id,string owner,ref ILookup<string,Colossal.IO.AssetDatabase.AssetData>? alternatives) => null;
  }
+}
+
+namespace BridgeBuilder.Runtime {
+ internal sealed class DependencySaveTimings {}
+ internal sealed class BridgeCreationDependencies { internal BridgeDependencyCopies.Source? Resolve(string id,string owner,DependencySaveTimings t)=>null; }
+ internal static class BridgeFileAccess {internal static bool Exists(string p)=>File.Exists(p);internal static string ReadText(string p)=>File.ReadAllText(p);}
+ internal static class BridgePrefabPersistence {internal static Colossal.IO.AssetDatabase.AssetDataPath ResourcePath(string name,string category)=>Colossal.IO.AssetDatabase.AssetDataPath.Create(name,name);}
 }

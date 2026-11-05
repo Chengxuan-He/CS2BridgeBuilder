@@ -4,7 +4,7 @@ using Colossal.IO.AssetDatabase;
 namespace BridgeBuilder.Bridges;
 
 // Native object equivalents measured from the installed game's material reference sets.
-// Unmatched curved appearances use the prototype object's material, never a new descriptor.
+// Unmatched appearances retain their source; representation is checked by the caller.
 internal static class MovableSurfaceAssets
 {
     // Both native shader families support the procedural skeleton and packed tangents.
@@ -111,7 +111,7 @@ internal static class MovableSurfaceAssets
             "f8109685ff0fd47a631d13108e24ba98" => "b2315eacf830d5865dcd366fbbdc246a",
             _ => null
         };
-        if (cid == null) return prototype;
+        if (cid == null) return source;
         if (!AssetDatabase.global.TryGetAsset(Colossal.Hash128.Parse(cid), out SurfaceAsset surface))
             throw new InvalidOperationException("Missing native object material: " + cid);
         return surface;

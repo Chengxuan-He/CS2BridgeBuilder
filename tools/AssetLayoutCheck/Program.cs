@@ -1,6 +1,11 @@
 using BridgeBuilder.Runtime;
 using System.Text;
 
+if (args.Length == 3 && args[0] == "--saved-owners")
+{
+    SavedOwnerLayoutCheck.Run(args[1], args[2]); return;
+}
+
 var sandbox = Path.Combine(Path.GetTempPath(), "BBLayout-" + Guid.NewGuid().ToString("N"));
 var game = Path.Combine(sandbox, "game");
 var backup = Path.Combine(sandbox, "backup");
@@ -108,6 +113,16 @@ try
     Check(!File.Exists(embedded)&&File.ReadAllBytes(embeddedTarget).SequenceEqual(embeddedBytes)
         &&File.ReadAllBytes(embeddedTarget+".cid").SequenceEqual(embeddedCid),"UUID suffix removed in existing new-layout folder; serialized name and CID preserved");
     Check(BridgeAssetLayout.Run(game,new[]{owner},Path.Combine(sandbox,"embedded"),PrefabPath,out changed,out error)&&changed.Count==0,"suffix migration is idempotent");
+    var normal = BridgeFileAccess.EnumerateFiles(Path.Combine(game,"ImportedData",owner)).ToArray();
+    var aliases = new HashSet<string>(normal,StringComparer.OrdinalIgnoreCase);
+    foreach(string path in normal)
+    {
+        aliases.Add(path.Replace('\\','/')); aliases.Add(path.ToUpperInvariant()); aliases.Add(BridgeFileAccess.Native(path));
+        aliases.Add(Path.Combine(Path.GetDirectoryName(path)!,".",Path.GetFileName(path)));
+    }
+    Check(BridgeAssetLayout.Run(BridgeFileAccess.Native(game),new[]{owner},Path.Combine(sandbox,"aliases"),PrefabPath,
+        out changed,out error,aliases)&&changed.Count==0&&aliases.Count==normal.Length
+        &&!Directory.Exists(Path.Combine(sandbox,"aliases")),"slash, case, dot and long-prefix aliases are one physical no-op; path inventory normalized");
     var competing=Save(Path.Combine("ImportedData","old-"+owner,"GoldenGateDouble-38_5"+owner+".Prefab"),Doc("GoldenGateDouble-38_5"+owner));
     Check(!BridgeAssetLayout.Run(game,new[]{owner},Path.Combine(sandbox,"embedded-conflict"),PrefabPath,out changed,out error)
         &&error.Contains("already exists")&&File.Exists(competing)&&File.ReadAllBytes(embeddedTarget).SequenceEqual(embeddedBytes),"UUID removal collision preserves both differing payloads");

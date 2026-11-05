@@ -23,7 +23,7 @@ internal static class MovableCableSurface
         try
         {
             if (source.isVTMaterial || source.textures.Count != 0)
-                throw new NotSupportedException("Textured curved cable material is unsupported: " + source.name);
+                return source; // No corresponding conversion: retain the native material.
             var template = AssetDatabase.global.resources.materialLibrary.GetMaterial(source.materialTemplateHash);
             color = source.colors.TryGetValue("_BaseColor", out var value)
                 ? value : template.GetColor("_BaseColor");

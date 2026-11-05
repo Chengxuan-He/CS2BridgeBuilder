@@ -11,26 +11,25 @@ namespace BridgeBuilder.Runtime;
 
 internal static class BridgeNativePresentation
 {
-    internal static bool Validate(string owner, IEnumerable<PrefabBase> roots, out string error)
+    internal static bool Validate(string owner, IEnumerable<PrefabBase> roots, out string error, BridgeCreationDependencies dependencies)
     {
         error = "";
         try
         {
             var pending = new Stack<string>();
-            ILookup<string, AssetData>? alternatives = null;
-            BridgeDependencyPersistence.MidMipIndex? midMips = null;
             foreach (var root in roots)
             {
                 if (root.asset == null || !BridgeAssetInfo.MatchesOwner(root.asset.path, owner))
                 { error = "Unowned persisted root"; return false; }
                 pending.Push(root.asset.id.guid.ToString());
             }
+            var timing = new DependencySaveTimings();
             var visited = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
             while (pending.Count != 0)
             {
                 var id = pending.Pop();
                 if (!visited.Add(id)) continue;
-                var source = BridgeDependencyPersistence.Resolve(id, owner, ref alternatives, ref midMips);
+                var source = dependencies.Resolve(id, owner, timing);
                 if (source == null) { error = "Saved dependency missing or disallowed: " + id; return false; }
                 if (source.Builtin) continue;
                 var extension = source.Extension;
@@ -54,10 +53,12 @@ internal static class BridgeNativePresentation
     internal static bool Save(BridgeAssetInfo entry, out string error)
         => Save(entry, false, out _, out error);
 
-    internal static bool EnsureDescriptions(BridgeAssetInfo entry, out bool changed, out string error)
-        => Save(entry, true, out changed, out error);
+    internal static bool EnsureDescriptions(BridgeAssetInfo entry, out bool changed, out string error,
+        IEnumerable<PrefabBase>? knownPrefabs = null, ISet<string>? paths = null)
+        => Save(entry, true, out changed, out error, knownPrefabs, paths);
 
-    private static bool Save(BridgeAssetInfo entry, bool missingOnly, out bool changed, out string error)
+    private static bool Save(BridgeAssetInfo entry, bool missingOnly, out bool changed, out string error,
+        IEnumerable<PrefabBase>? knownPrefabs = null, ISet<string>? paths = null)
     {
         changed = false;
         error = "";
@@ -73,14 +74,15 @@ internal static class BridgeNativePresentation
                 Name: localization.GetLocalizedName(locale))).ToArray();
             if (locales.Any(locale => locale.Language == SystemLanguage.Unknown))
             { error = "Native language mapping unavailable for bridge locales"; return false; }
-            var prefabs = AssetDatabase.user.GetAssets(SearchFilter<PrefabAsset>.ByCondition(a =>
+            var prefabs = (knownPrefabs ?? AssetDatabase.user.GetAssets(SearchFilter<PrefabAsset>.ByCondition(a =>
                 BridgeAssetInfo.MatchesOwner(a.path, entry.PrefabName)))
-                .Select(a => a.GetInstance<PrefabBase>()).Where(p => p is NetGeometryPrefab).ToArray();
+                .Select(a => a.GetInstance<PrefabBase>())).Where(p => p is NetGeometryPrefab).ToArray();
             foreach (var locale in locales)
             {
                 var name = entry.PrefabName + "-" + locale.Id;
                 var shortName = BridgeAssetInfo.FileStem(name, entry.PrefabName);
-                var asset = AssetDatabase.user.GetAssets(SearchFilter<LocaleAsset>.ByCondition(a => (a.name == name || a.name == shortName || a.name == locale.Id || a.name == "-" + locale.Id)
+                var asset = paths != null ? FindLocale(paths, entry.PrefabName, name, shortName, locale.Id)
+                    : AssetDatabase.user.GetAssets(SearchFilter<LocaleAsset>.ByCondition(a => (a.name == name || a.name == shortName || a.name == locale.Id || a.name == "-" + locale.Id)
                     && BridgeAssetInfo.MatchesOwner(a.path, entry.PrefabName))).FirstOrDefault();
                 var existing = asset?.data;
                 var entries = existing == null ? new Dictionary<string, string>() : new Dictionary<string, string>(existing.entries);
@@ -101,12 +103,26 @@ internal static class BridgeNativePresentation
                 asset.SetData(new LocaleData(locale.Id, entries, existing == null
                     ? new Dictionary<string, int>() : new Dictionary<string, int>(existing.indexCounts)), locale.Language, locale.Name);
                 asset.Save(true);
+                paths?.Add(asset.path); paths?.Add(asset.path + ".cid");
                 changed = true;
                 // Native asset change notifications register this source; startup discovers it globally.
             }
             return true;
         }
         catch (Exception exception) { error = exception.Message; return false; }
+    }
+
+    private static LocaleAsset? FindLocale(IEnumerable<string> paths, string owner, params string[] names)
+    {
+        foreach (string path in paths)
+        {
+            if ((!path.EndsWith(".Locale", StringComparison.OrdinalIgnoreCase) && !path.EndsWith(".loc", StringComparison.OrdinalIgnoreCase))
+                || !names.Contains(Path.GetFileNameWithoutExtension(path).TrimStart('-')) || !BridgeFileAccess.Exists(path + ".cid")) continue;
+            string cid = BridgeFileAccess.ReadText(path + ".cid").Trim();
+            if (AssetDatabase.user.TryGetAsset(Colossal.Hash128.Parse(cid), out LocaleAsset asset)
+                && BridgeAssetInfo.MatchesOwner(asset.path, owner)) return asset;
+        }
+        return null;
     }
 
     internal static void Prepare(PrefabBase prefab)

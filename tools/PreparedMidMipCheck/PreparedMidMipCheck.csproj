@@ -3,6 +3,7 @@
   <ItemGroup>
     <Compile Include="../../src/BridgeBuilder/Runtime/BridgeMidMipReferences.cs" Link="BridgeMidMipReferences.cs" />
     <Compile Include="../../src/BridgeBuilder/Runtime/BridgePreparedMaterialFiles.cs" Link="BridgePreparedMaterialFiles.cs" />
+    <Compile Include="../../src/BridgeBuilder/Runtime/BridgeMaterialFileSnapshot.cs" />
     <Compile Include="../../src/BridgeBuilder/Runtime/BridgeSurfaceReferences.cs" Link="BridgeSurfaceReferences.cs" />
   </ItemGroup>
 </Project>

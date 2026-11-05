@@ -12,8 +12,8 @@ internal static class MovableAttachmentStations
     // This consumes authored motion domains; it does not infer seams from meshes.
     internal static float[] Ends(Vector3 row, Partition partition, Func<int, bool> moving, float clearance)
     {
-        if (!float.IsFinite(clearance) || clearance <= 0f)
-            throw new ArgumentException("Support clearance must be finite and positive.");
+        if (!float.IsFinite(clearance))
+            throw new ArgumentException("Support clearance must be finite.");
         var ranges = new List<(float Min, float Max)>();
         void Visit(Partition region, float min, float max)
         {
@@ -44,9 +44,8 @@ internal static class MovableAttachmentStations
         var last = ranges[ranges.Count - 1];
         var start = first.Min + clearance;
         var end = last.Max - clearance;
-        if (!float.IsFinite(start) || !float.IsFinite(end) || start >= first.Max ||
-            end <= last.Min || start >= end)
-            throw new InvalidOperationException("Recorded moving span cannot contain end supports.");
+        if (!float.IsFinite(start) || !float.IsFinite(end))
+            throw new InvalidOperationException("Recorded support positions are non-finite.");
         return new[] { start, end };
     }
 

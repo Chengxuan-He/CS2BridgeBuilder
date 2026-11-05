@@ -143,6 +143,71 @@ def patch_donors(mask, full_base, bottom):
     return yy, xx, rows
 
 
+def horizontal_donors(mask, full_base, bottom):
+    """Use only unpainted source patches at the identical transverse rows.
+
+    The authored paint is wider than either adjacent unpainted interval. Split
+    its influence mask into two donor searches, never turn a short strip into
+    a repeated road unit. These are replacement samples, not recovered pixels.
+    """
+    yy, xx = np.indices(mask.shape)
+    yy += bottom
+    xx += 3084
+    rows = []
+    other_y = yy.copy()
+    blend = np.zeros(mask.shape, dtype=np.float32)
+    # Search compact mask blocks; horizontal translations retain wear position.
+    for y0 in range(0, mask.shape[0], 1):
+        for x0 in range(0, mask.shape[1], 32):
+            local = mask[y0:y0+1, x0:x0+32]
+            if not local.any():
+                continue
+            ys, xs = np.where(local)
+            ys, xs = ys+y0, xs+x0
+            best = None
+            for distance in range(36, 969):
+                for sign in (-1, 1):
+                    target = xs + sign*distance
+                    if target.min()<0 or target.max()>=968:
+                        continue
+                    if mask[ys,target].any():
+                        continue
+                    sample = full_base[bottom+ys,3084+target,:3]
+                    if np.any(np.all(sample>175,axis=1)):
+                        continue
+                    best = sign*distance
+                    break
+                if best is not None:
+                    break
+            if best is None:
+                gy=bottom+y0
+                if not 1552<=gy<=1570:
+                    if np.any(np.all(full_base[gy,3084+xs,:3]>175,axis=1)):
+                        raise ValueError(f'Unexpected paint outside measured solid-line rows: {gy}')
+                    rows.append(dict(maskBounds=[x0,y0,x0+local.shape[1],y0+1],donorTranslation=[0,0],unchangedContext=True))
+                    continue
+                limits=[]
+                for direction in (-1,1):
+                    for distance in range(1,65):
+                        donor_y=y0+direction*distance
+                        if donor_y<0 or donor_y>=mask.shape[0]:continue
+                        if mask[donor_y,xs].any():continue
+                        if np.any(np.all(full_base[bottom+donor_y,3084+xs,:3]>175,axis=1)):continue
+                        limits.append(bottom+donor_y);break
+                if len(limits)!=2:raise ValueError('Missing measured line background on both sides')
+                # A complete neighboring asphalt strip preserves actual grain;
+                # interpolating two constant boundary rows creates visible lines.
+                source_y=gy-24
+                if mask[source_y-bottom,xs].any():raise ValueError('Line donor overlaps paint')
+                yy[ys,xs]=source_y
+                rows.append(dict(maskBounds=[x0,y0,x0+local.shape[1],y0+1],sourceRows=[source_y],donorTranslation=[0,-24],sameU=True))
+                continue
+            xx[ys,xs] += best
+            rows.append(dict(maskBounds=[x0,y0,x0+local.shape[1],y0+local.shape[0]],
+                donorTranslation=[best,0]))
+    return yy,xx,rows,other_y,blend
+
+
 class Writer:
     def __init__(self, game, output):
         self.output = output
@@ -200,6 +265,7 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--game-data', type=Path, required=True)
     parser.add_argument('--output', type=Path, required=True)
+    parser.add_argument('--complete-cross-section', action='store_true')
     args = parser.parse_args()
     scan = json.loads((PROOF / 'authoring-texture-scan.json').read_text())
     sources, source_records = [], []
@@ -214,9 +280,12 @@ def main():
     writer = Writer(args.game_data, args.output / 'Materials/Draw03')
     zero, _ = writer.texture([np.zeros((1, 1, 4), dtype=np.uint8)], False)
     reports = []
-    for name, bottom, top, remove_paint in (
+    units = (
             ('FullPeriodLaneWear', 818, 1194, True), ('FullPeriodLaneGap', 802, 834, True),
-            ('FullPeriodCleanAsphalt', 1312, 1476, False), ('FullPeriodGrating', 44, 420, False)):
+            ('FullPeriodCleanAsphalt', 1312, 1476, False), ('FullPeriodGrating', 44, 420, False))
+    if args.complete_cross_section:
+        units = (('FullPeriodRoadCrossSection',443,1581,True),)
+    for name, bottom, top, remove_paint in units:
         width, height = 968, top - bottom
         # This is an observed white-paint seed restricted to the road source
         # domain. No texture-global threshold can alter structural content.
@@ -224,7 +293,9 @@ def main():
         roi_bottom, roi_top = bottom - 16, top + 16
         roi = sources[0][0][roi_bottom:roi_top, 3084:4052]
         seeds = np.all(roi[:, :, :3] > 180, axis=2) if remove_paint else np.zeros(roi.shape[:2], dtype=bool)
-        assert not remove_paint or (seeds.any() and not seeds[:, :296].any())
+        assert not remove_paint or seeds.any()
+        if remove_paint and not args.complete_cross_section:
+            assert not seeds[:, :296].any()
         # Include the native BC7 block footprint and one adjacent block for its
         # filtered edge. A seed-only mask leaves grey antialiasing from paint as
         # a replacement donor. This bounded influence mask is reported explicitly.
@@ -232,12 +303,44 @@ def main():
         for y, x in zip(*np.where(seeds)):
             by, bx = (roi_bottom + y) // 4 * 4 - roi_bottom, (3084 + x) // 4 * 4 - 3084
             mask0[max(0, by - 4):min(len(roi), by + 8), max(0, bx - 4):min(width, bx + 8)] = True
-        donor_y, donor_x, donor_records = patch_donors(mask0, sources[0][0], roi_bottom)
+        donor_result = (horizontal_donors if args.complete_cross_section else patch_donors)(mask0, sources[0][0], roi_bottom)
+        donor_y, donor_x, donor_records = donor_result[:3]
+        if args.complete_cross_section:
+            # The native outer road begins at V443.75, inside a pale atlas
+            # border (443..450), not the asphalt starting at row451. Its RGB
+            # is only ~117, so the white-paint seed cannot detect it. Replace
+            # this road-only border and its immediately adjacent filter context
+            # with same-U neighboring asphalt; never alter the source Surface.
+            # The 435..442 portion is outside the active finite road domain.
+            edge=(np.arange(roi_bottom,roi_top)[:,None]>=435)&(np.arange(roi_bottom,roi_top)[:,None]<451)
+            edge=np.broadcast_to(edge,mask0.shape)
+            yy,xx=np.indices(mask0.shape)
+            mask0|=edge
+            donor_y[edge]=(yy+roi_bottom+16)[edge]
+            donor_x[edge]=(xx+3084)[edge]
+            donor_records.append(dict(kind='outer-atlas-border',sourceRows=[435,451],
+                activeRows=[443.75,451],donorRows=[451,467],sameU=True,
+                reason='Remove reported pale finite-edge strip; preserve wear coordinates and grain scale'))
         deltas = []
         for channel in range(3):
             original = sources[channel][0][roi_bottom:roi_top, 3084:4052]
             composed = original.copy()
             composed[mask0] = sources[channel][0][donor_y[mask0], donor_x[mask0]]
+            if args.complete_cross_section:
+                other_y,weight=donor_result[3:]
+                mixed=mask0&(weight>0)
+                a=linear(composed[mixed],channel==0)
+                b=linear(sources[channel][0][other_y[mixed],donor_x[mixed]],channel==0)
+                t=weight[mixed,None]
+                if channel==1:
+                    def normal(p):
+                        xy=np.column_stack((p[:,0]*p[:,3],p[:,1]))*2-1
+                        return np.column_stack((xy,np.sqrt(np.maximum(0,1-(xy*xy).sum(1)))))
+                    n=normal(a)*(1-t)+normal(b)*t
+                    n/=np.maximum(np.linalg.norm(n,axis=1,keepdims=True),1e-20)
+                    value=np.column_stack((np.ones(len(n)),(n[:,1]+1)/2,(n[:,1]+1)/2,(n[:,0]+1)/2))
+                else:value=a*(1-t)+b*t
+                composed[mixed]=encoded(value,channel==0)
             deltas.append(linear(composed, channel == 0) - linear(original, channel == 0))
         outputs = [[], [], []]
         mip_reports = []
@@ -300,7 +403,7 @@ def main():
                             textureSize=[width, guarded_height], finiteAxis='V',
                             finiteUvOffset=guard / guarded_height,
                             finiteUvScale=height / guarded_height,
-                            authoredActiveRows=[44.53125, 419.5] if name == 'FullPeriodGrating' else [bottom, top],
+                            authoredActiveRows=[443.75,1581] if args.complete_cross_section else [44.53125, 419.5] if name == 'FullPeriodGrating' else [bottom, top],
                             maskRule='Native BC7 seed blocks plus one adjacent block for paint edge influence',
                             mips=mip_reports))
     report = dict(recipe=RECIPE, sources=source_records, units=reports,

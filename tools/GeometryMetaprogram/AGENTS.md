@@ -2,6 +2,17 @@
 
 ## Scope
 
+Lift01 and Lift02 central-truss memberships follow the explicit complete-assembly rule in
+bridge generation contract section 8, overriding default own-span stretching,
+side-part translation and base mapping for those measured members. Internal
+braces and narrow connectors share their complete assembly's `x -> k*x`; only the outermost
+edge trusses retain their original mapping. Record assembly spans and connection
+residuals offline, apply the rule at every LOD including far supplements, and
+preserve bones/material modes with the corresponding affine normal/tangent frame.
+Measure each style's complete source and target assembly spans; never use a small
+connector's thickness or another style's span as its scale denominator.
+
+
 These instructions apply to `tools/GeometryMetaprogram/**`. They add metaprogram-specific requirements
 to the repository root [`AGENTS.md`](../../AGENTS.md). Before editing this directory, read sections 1–9
 and 13 of [`BRIDGE_GENERATION_CONTRACT.md`](../../docs/agent-contract/BRIDGE_GENERATION_CONTRACT.md).
@@ -16,9 +27,10 @@ and 13 of [`BRIDGE_GENERATION_CONTRACT.md`](../../docs/agent-contract/BRIDGE_GEN
   connector, side structure, centre-crossing member, base, bridge-pier column and decoration required
   by the contract.
 - Decide stretch versus rigid translation only from whether the complete authored part reaches or
-  crosses `x = 0`, subject to contract section 8's explicit base, centred-post and Draw03
-  complete-truss rules and section 5's measured Golden mappings. Metaprogramming records
-  membership; it may not invent exceptions.
+  crosses `x = 0`, subject to contract section 8's explicit base, centred-post, Lift01/Lift02 complete-assembly and Draw03
+  complete-truss rules, the measured Draw02 central hinge plates and central longitudinal girder's original-section
+  exception and internal rib distribution, and section 5's measured Golden mappings. Metaprogramming records membership;
+  it may not invent exceptions.
 - The base is the complete structure immediately adjacent to and directly below the road deck.
   Identify the assembly offline; its individual side blocks need not cross `x = 0`.
   Do not substitute a pier, footing, foundation or similarly named prefab.
@@ -51,10 +63,28 @@ does not prove a loop is safe to parallelize or replace geometric equivalence ch
   guessing.
 - Derive every LOD from the highest-detail part classification. Coarse welding must not change a
   side part into a centre-crossing part or vice versa.
-- A base adjustment emits `x -> x + sign(x) * delta`, except the user-approved Draw03
-  complete moving and fixed truss stretch in the bridge contract's deck-adjacent base section.
-- Preserve side-part shape under translation and preserve each crossing member's own span under
-  stretching. Keep bridge-pier columns translational.
+- A base adjustment emits `x -> x + sign(x) * delta`, except the user-approved Lift01/Lift02 complete-assembly mapping and Draw03
+  complete moving and fixed truss stretch in the bridge contract's deck-adjacent base section
+  and the measured Draw02 central-girder/panel-join rule in section 8. Record the adjoining
+  panel boundary separately: its fixed inner edge must remain connected to the original
+  girder while its outer edge follows the rigid longitudinal rib. Verify final shared edges,
+  not merely each part's face presence or bounding box.
+  Draw02's measured transverse supports directly below the moving deck are base members:
+  use signed displacement, not their previous own-span scale. Keep their exact source
+  membership separate from the central girder, horizontal closure panels and hinge axles.
+  Identify the two central hinge plates separately from the axle and central girder.
+  Their original sections and central positions remain unchanged, corresponding to
+  the matching rigid lateral plates. Do not use plate thickness as an assembly span.
+  Identify Draw02's six thin longitudinal ribs separately: preserve their sections,
+  apply the recorded quarter-width translations, and carry adjoining original panel
+  endpoints with the same rib. Retain the central anchor and original outer offsets.
+  Its downward outer deck slab and vertical closures are structural even without a
+  Sidewalk section; do not include the replaced upward road surface in that membership.
+  Record its original high-rail contact edges separately. General section 8 permits
+  their necessary original base-top subdivision and lower-domain frame transform;
+  preserve the lower beam anchor and verify rail contact plus car-space clearance.
+- Outside the explicit complete-assembly exceptions, preserve side-part shape under translation
+  and preserve each crossing member's own span under stretching. Keep bridge-pier columns translational.
 - Inspect both near and far generated geometry. Automated checks may verify geometry invariants; they do not establish visual acceptance.
 
 ## Iteration and deployment

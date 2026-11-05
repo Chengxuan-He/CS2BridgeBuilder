@@ -13,6 +13,7 @@ internal static class BridgeInspectionAssets
     {
         internal string Owner = "", Path = "", Cid = "";
         internal PrefabBase? Prefab;
+        internal PrefabAsset Asset = null!;
     }
 
     internal static IEnumerable<Entry> Read(Func<string, bool>? includeOwner = null)
@@ -27,7 +28,7 @@ internal static class BridgeInspectionAssets
                 || BridgeStartupRecovery.Retired.Contains(owner)
                 || (includeOwner != null && !includeOwner(owner))) continue;
             yield return new Entry { Owner = owner, Path = path, Cid = asset.id.guid.ToString(),
-                Prefab = asset.GetInstance<PrefabBase>() };
+                Asset = asset, Prefab = asset.GetInstance<PrefabBase>() };
         }
     }
 }

@@ -50,9 +50,7 @@ internal static class MovableRoadModel
                 {
                     uv[index * 4 + k] = vertex.UV[k];
                     // Colors describe a baked surface, not composition-matrix selectors.
-                    if (vertex.Color[k] < 0f || vertex.Color[k] > 1f)
-                    { error = $"Road triangle {i} has colors outside the native UNorm8 range."; return false; }
-                    colors[index * 4 + k] = (byte)Mathf.RoundToInt(vertex.Color[k] * 255f);
+                    colors[index * 4 + k] = (byte)Mathf.RoundToInt(Mathf.Clamp01(vertex.Color[k]) * 255f);
                 }
                 bones[index] = triangle.Bone;
                 slots[geometry.Material].Add(index);

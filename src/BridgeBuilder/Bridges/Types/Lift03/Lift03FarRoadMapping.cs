@@ -13,11 +13,11 @@ internal static class Lift03FarRoadMapping
     {
         var values = Data.Values.F32;
         var frame = Matrix4x4.TRS(roadToObject.position, roadToObject.rotation, Vector3.one).transpose;
-        var result = new Patch[Data.Values.I32[1]];
+        var result = new Patch[Data.Values.I32[1] + 1];
         // Original native oct15 frame is +X/-1 on all sixteen far road faces.
         var axis = Quaternion.Inverse(roadToObject.rotation) * Vector3.right;
         var tangent = new Vector4(axis.x, axis.y, axis.z, -1);
-        for (int i = 0; i < result.Length; i++)
+        for (int i = 0; i < result.Length - 1; i++)
         {
             int at = i * 11;
             // Retain the original transverse traversal as its geometry widens.
@@ -27,24 +27,33 @@ internal static class Lift03FarRoadMapping
             result[i] = new Patch(new Vector2(values[at + 3], values[at + 4]),
                 new Vector2(values[at + 5], values[at + 6]), u, v, sourceUv: true, tangent: tangent);
         }
+        result[result.Length - 1] = new Patch(Vector2.zero, Vector2.one);
         return result;
     }
 
-    internal static Partition Regions(Pose roadToObject)
+    internal static Partition Regions(Pose roadToObject, float halfDelta)
     {
         var pose = Matrix4x4.TRS(roadToObject.position, roadToObject.rotation, Vector3.one);
-        Partition Cut(float station, Partition negative, Partition positive)
+        var outside = new Partition(Data.Values.I32[1]);
+        Partition Cut(int axis, float station, Partition negative, Partition positive)
         {
             var frame = Matrix4x4.identity;
+            if (axis == 0) { frame.m00 = 0; frame.m02 = -1; frame.m20 = 1; frame.m22 = 0; }
             frame.m23 = -station;
             return new Partition(frame * pose, negative, positive);
         }
-        // These are existing physical motion seams, not texture-period cuts.
-        return Cut(-Lift03RoadPartitions.FixedStart, new Partition(0),
-            Cut(0, new Partition(1),
-                Cut(Lift03RoadPartitions.FixedStart, new Partition(2), new Partition(3))));
+        Partition result = outside;
+        for (int i = Data.Values.I32[1] - 1; i >= 0; i--)
+        {
+            int at = i * 11;
+            float width = Data.Values.F32[at] + halfDelta;
+            var domain = Cut(0, -width, result,
+                Cut(0, width, new Partition(i), result));
+            result = Cut(2, Data.Values.F32[at + 1], result,
+                Cut(2, Data.Values.F32[at + 2], domain, result));
+        }
+        return result;
     }
-
     private static class Data
     {
         internal static readonly HardcodedNumbers Values = HardcodedNumbers.Load("Types_Lift03_Lift03FarRoadMapping_cs");

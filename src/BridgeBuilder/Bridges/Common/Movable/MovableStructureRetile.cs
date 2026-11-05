@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using Colossal.AssetPipeline.Importers;
@@ -251,6 +251,7 @@ internal static class MovableStructureRetile
         if(emitted!=original.indexCount)throw new InvalidOperationException("Structural UV retile changed the physical triangle count.");
         var originalNormals=original.FirstOrDefault(a=>a.attribute==VertexAttribute.Normal);
         var originalTangents=original.FirstOrDefault(a=>a.attribute==VertexAttribute.Tangent);
+        var correctedFrames=new HashSet<int>(plan.FrameTransforms.Select(p=>p.Key));
         using var normals=new NativeArray<MeshNormal>(originalNormals==null?0:original.vertexCount,Allocator.Temp);
         using var tangents=new NativeArray<MeshTangent>(originalTangents==null?0:original.vertexCount,Allocator.Temp);
         if(originalNormals!=null)MeshNormal.Unpack(new NativeSlice<byte>(originalNormals.data),normals,original.vertexCount,originalNormals.format,originalNormals.dimension);
@@ -288,7 +289,32 @@ internal static class MovableStructureRetile
                         else
                         {
                             NativeArray<byte>.Copy(attribute.data,entry.Vertex*size,bytes,i*size,size);
-                            if(entry.Domain<0 || prepared.ContainsKey(entry.Domain) || (!normal && !tangent))continue;
+                            if(entry.Domain>=0 && prepared.TryGetValue(entry.Domain,out var preparedFrame))
+                            {
+                                if(tangent && preparedFrame.TangentProjections.TryGetValue(entry.Vertex,out var projection))
+                                {
+                                    if(originalNormals==null)
+                                        throw new InvalidOperationException("Prepared tangent projection requires native normals.");
+                                    var authored=tangents[entry.Vertex].m_Tangent;
+                                    var value=MovableRoadProjection.Tangent((Vector3)normals[entry.Vertex].m_Normal,
+                                        projection.U,projection.V,(Vector4)authored);
+                                    // A collapsed projection keeps the original packed frame,
+                                    // including its exact bits, rather than introducing a gate.
+                                    if(!value.Equals((Vector4)authored))
+                                    {
+                                        if(format==VertexAttributeFormat.Float32 && attribute.dimension==1)
+                                            Buffer.BlockCopy(BitConverter.GetBytes(MathUtils.TangentToOctahedral((float4)value)),0,bytes,i*size,4);
+                                        else if(format==VertexAttributeFormat.Float32 && attribute.dimension==4)
+                                            for(int axis=0;axis<4;axis++)
+                                                Buffer.BlockCopy(BitConverter.GetBytes(value[axis]),0,bytes,i*size+axis*4,4);
+                                        else throw new InvalidOperationException("Unsupported native tangent encoding for prepared projection.");
+                                    }
+                                }
+                                continue;
+                            }
+                            if(entry.Domain<0 || (!normal && !tangent))continue;
+                            if(correctedFrames.Contains(entry.Vertex))
+                                throw new InvalidOperationException("An explicitly corrected structural frame cannot also undergo UV-frame rotation.");
                             var frame=frames[entry.Domain];
                             if(normal && format==VertexAttributeFormat.SNorm16 && attribute.dimension==2)
                             {

@@ -49,7 +49,7 @@ internal abstract class MovableBridgeGeneratorBase<TSample> : BridgeGeneratorBas
             ?? throw new InvalidOperationException($"{StyleId} native content source is unavailable.");
         var selected = measure ?? target;
         var width = WidthOf(selected, roadWidth);
-        if (!(width > 0f) || !float.IsFinite(width))
+        if (!float.IsFinite(width))
             throw new InvalidOperationException($"{StyleId} selected road has no initialized surface width.");
         var halfDelta = (width - NativeRoadWidth) * 0.5f;
         factory.BeginBridge(StyleId, bridgeName: target.name);

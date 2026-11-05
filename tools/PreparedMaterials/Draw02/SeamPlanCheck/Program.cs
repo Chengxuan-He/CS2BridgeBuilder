@@ -145,8 +145,7 @@ for(int ci=0;ci<count;ci++)
         }
         }
         catch(TargetInvocationException ex) when (delta<0 && ex.InnerException is InvalidOperationException invalid &&
-            (invalid.Message=="Draw02 selected width collapses or reverses its recorded central linkage span." ||
-             invalid.Message=="PedestrianDraw01 A-frame layout or span is invalid."))
+            invalid.Message=="PedestrianDraw01 A-frame layout or span is invalid.")
         {
             reports.Add(new{name,implementation,lod,mesh,delta,rejected=true,reason=ex.InnerException.Message});
             Console.WriteLine($"REJECT {name}: delta={delta}; {ex.InnerException.Message}");

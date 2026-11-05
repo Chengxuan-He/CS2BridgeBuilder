@@ -24,7 +24,7 @@ internal static class Draw02RenderAssembly
                 throw new InvalidOperationException($"Draw02 LOD {lod} requires its reconstructed native source.");
         }
 
-        return MovableRenderAssembly.CreateMechanism(factory, name, roadLevels, new[] { Numeric_Types_Draw02_Draw02RenderAssembly_cs.Values.I32[2], Numeric_Types_Draw02_Draw02RenderAssembly_cs.Values.I32[3], Numeric_Types_Draw02_Draw02RenderAssembly_cs.Values.I32[4] }, (lod, mesh, source, indices) => mesh == Numeric_Types_Draw02_Draw02RenderAssembly_cs.Values.I32[5] ? Draw02FixedSidewalks.Apply(lod, Draw02FixedCurbs.Remove(lod, Draw02MovingShell.Create(lod, source, source, indices, halfWidthDelta)), layout) : Draw02RigidParts.Glass(lod, source, indices, halfWidthDelta));
+        return MovableRenderAssembly.CreateMechanism(factory, name, Draw02LaneRailAssembly.Apply(roadLevels, layout), new[] { Numeric_Types_Draw02_Draw02RenderAssembly_cs.Values.I32[2], Numeric_Types_Draw02_Draw02RenderAssembly_cs.Values.I32[3], Numeric_Types_Draw02_Draw02RenderAssembly_cs.Values.I32[4] }, (lod, mesh, source, indices) => mesh == Numeric_Types_Draw02_Draw02RenderAssembly_cs.Values.I32[5] ? Draw02FixedSidewalks.Apply(lod, Draw02FixedCurbs.Remove(lod, Draw02WalkEndClosure.Apply(lod, Draw02EndClosure.Apply(lod, Draw02Underside.Apply(lod, Draw02MovingShell.Create(lod, source, source, indices, halfWidthDelta), layout), layout), layout)), layout) : Draw02RigidParts.Glass(lod, source, indices, halfWidthDelta));
     }
 }
 

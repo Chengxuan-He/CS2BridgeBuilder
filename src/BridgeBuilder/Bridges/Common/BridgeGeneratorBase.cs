@@ -63,13 +63,14 @@ internal abstract partial class BridgeGeneratorBase
 
     // The common caller verifies the exact clone before publishing. A second clone
     // or a shared selected network must never replace the coordinated sampling input.
-    internal void VerifyAuxiliaryDeck(NetGeometryPrefab main)
+    internal NetGeometryPrefab VerifyAuxiliaryDeck(NetGeometryPrefab main)
     {
         var input = AuxiliaryDeck ?? throw new InvalidOperationException("Coordinated auxiliary input is missing.");
         var entries = main.GetComponent<AuxiliaryNets>()?.m_AuxiliaryNets;
         if (entries == null || entries.Length != 1 ||
             !ReferenceEquals(entries[0]?.m_Prefab, input.Target))
             throw new InvalidOperationException("Coordinated generation did not attach its owned auxiliary network.");
+        return input.Target;
     }
     protected virtual bool AllTowersUseReferenceDeck => false;
     protected virtual bool WidthFollowsSidewalks => false;
@@ -111,7 +112,7 @@ internal abstract partial class BridgeGeneratorBase
         var targetWidth = measuredDeck != null
             ? WidthOf(measuredDeck, roadWidth, breakdown)
             : roadWidth;
-        if (!(targetWidth > 0f) || float.IsInfinity(targetWidth))
+        if (!float.IsFinite(targetWidth))
         {
             _report.Failed(target.name, new InvalidOperationException(
                 "The selected road has no valid initialized width; cached widths must not size a bridge."));
@@ -237,24 +238,6 @@ internal abstract partial class BridgeGeneratorBase
         // mod exists for - the game has no suspension tower for a 64 m deck, and building one is the
         // point rather than a degradation of it. A widened tower is the same tower with its legs
         // further apart at any width, so there is no threshold past which it stops being one.
-
-        // A deck too narrow for this style's structure. Refused rather than fitted, because a part
-        // cannot lose more width than it has: at 16 m the golden bridge's 33.8 m stiffening truss was
-        // asked to lose 34 and came out, as the report put it, "0 m across".
-        var floor = chosen.HasValue
-            ? BridgeCables.NarrowestDeckFor(chosen.Value.Name, chosen.Value.Road)
-            : 0f;
-        if (floor > 0f && targetWidth < floor)
-        {
-            _report.Failed(target.name, new InvalidOperationException(string.Format(
-                CultureInfo.InvariantCulture,
-                "'{0}' carries a structure {1:0.#} m across drawn for a {2:0.#} m road, so it cannot be "
-                + "fitted to a {3:0.#} m deck - it would have to lose more width than it has. The "
-                + "narrowest deck this style can be built on is {4:0.#} m.",
-                style.DisplayName, chosen!.Value.Road - floor + 1f, chosen.Value.Road, targetWidth,
-                floor)));
-            return null;
-        }
 
         CopyBridge(target, style, variant, options);
         CopyPlacement(target, style);

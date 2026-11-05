@@ -18,15 +18,23 @@ internal static class Lift03SourceRoadMapping
         if ((uint)lod >= 2u) throw new ArgumentOutOfRangeException(nameof(lod));
         var values = Data.Values;
         int caseBase = (lod * 2 + (deck == Lift03RoadSampling.Deck.Main ? 0 : 1)) * 4;
-        var patches = new List<Patch>();
+        var patches = new List<Patch> { new Patch(Vector2.zero, Vector2.one) };
+        var outside = new Partition(0);
+        if (!float.IsFinite(halfDelta)) throw new ArgumentOutOfRangeException(nameof(halfDelta));
+        float width = -values.F32[values.I32[values.I32[2 + caseBase * 2]] * 35 + 2];
+        // A collapsed transverse span has no inverse appearance projection.
+        // Keep the receiver and its original material instead of dividing by zero.
+        if (width + halfDelta == 0f)
+            return new MovableRoadAppearance.Level(source, patches.ToArray(),
+                new[] { MovableRoadAppearance.Type.None }, outside, outside);
         var prepared = preparedSurface ?? BridgePreparedMaterials.RepeatUnit("Lift03", deck == Lift03RoadSampling.Deck.Main
             ? "9c5ba0c317f4d9ae207c5509a5e191a8c31c224c2305a43e1507bbf726488523"
             : "32247dd719ab358e466505dd8f3fd0702a8f0db566be3e870bf3a7a523489e2c");
         var pose = Matrix4x4.TRS(roadToObject.position, roadToObject.rotation, Vector3.one);
         var projection = pose.transpose;
-        float width = -values.F32[values.I32[values.I32[2 + caseBase * 2]] * 35 + 2];
+
         float scale = width / (width + halfDelta);
-        if (!(scale > 0f) || !float.IsFinite(scale)) throw new InvalidOperationException("Invalid Lift03 finite road width.");
+        if (!float.IsFinite(scale)) throw new InvalidOperationException("Invalid Lift03 finite road width.");
         Partition Plane(float a, float b, float c, Partition negative, Partition positive)
         {
             var frame = Matrix4x4.identity;
@@ -102,13 +110,14 @@ internal static class Lift03SourceRoadMapping
             var result = Side(at, domains - 1, xSign, zSign);
             for (int i = domains - 2; i >= 0; i--)
                 result = Boundary(at, i + 1, xSign, zSign, Side(at, i, xSign, zSign), result);
-            return result;
+            int finalRecord = values.I32[at + (domains - 1) * 3] * 35;
+            return Plane(0, zSign, -values.F32[finalRecord + 1], result, outside);
         }
         var regions = Plane(0, 1, 0,
             Plane(1, 0, 0, Quadrant(1, -1), Quadrant(-1, -1)),
             Plane(1, 0, 0, Quadrant(1, 1), Quadrant(-1, 1)));
         var supported = new MovableRoadAppearance.Type[patches.Count];
-        for (int i = 0; i < supported.Length; i++) supported[i] = deck == Lift03RoadSampling.Deck.Main
+        for (int i = 1; i < supported.Length; i++) supported[i] = deck == Lift03RoadSampling.Deck.Main
             ? MovableRoadAppearance.Type.Asphalt : MovableRoadAppearance.Type.Ballast;
         return new MovableRoadAppearance.Level(source, patches.ToArray(), supported, regions, regions);
     }

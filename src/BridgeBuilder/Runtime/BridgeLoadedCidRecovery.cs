@@ -1,4 +1,4 @@
-﻿using Colossal.IO.AssetDatabase;
+using Colossal.IO.AssetDatabase;
 using Game.Prefabs;
 using System;
 using System.Collections.Generic;
@@ -82,27 +82,20 @@ internal static class BridgeLoadedCidRecovery
         }
     }
 
-    // Per-inspection lazy index: O(all assets + missing references), not a full scan per null.
+    // Exact CID lookups inspect only already-cached instances; never load or snapshot the database.
     internal sealed class LoadedIndex
     {
-        private Dictionary<string, List<PrefabBase>>? _loaded;
         internal PrefabBase? Find(string cid, Type expected, string owner)
         {
-            if (_loaded == null)
+            foreach (var database in AssetDatabase.global.databases)
             {
-                _loaded = new(StringComparer.OrdinalIgnoreCase);
-                foreach (var asset in AssetDatabase.global.GetAssets<PrefabAsset>())
-                {
-                    var instance = asset.GetInstance<PrefabBase>();
-                    if (instance == null) continue;
-                    var id = asset.id.guid.ToString();
-                    if (!_loaded.TryGetValue(id, out var instances)) _loaded[id] = instances = new();
-                    instances.Add(instance);
-                }
+                if (!database.TryGetAsset(Colossal.Hash128.Parse(cid), out PrefabAsset asset)
+                    || BridgeAssetInfo.IsOtherBridgePrefab(asset.path, owner,
+                        Path.Combine(UnityEngine.Application.persistentDataPath, "ImportedData"))) continue;
+                var instance = asset.GetInstance<PrefabBase>();
+                if (instance != null && expected.IsInstanceOfType(instance)) return instance;
             }
-            return _loaded.TryGetValue(cid, out var matches) ? matches.FirstOrDefault(p => expected.IsInstanceOfType(p)
-                && !BridgeAssetInfo.IsOtherBridgePrefab(p.asset?.path, owner,
-                    Path.Combine(UnityEngine.Application.persistentDataPath, "ImportedData"))) : null;
+            return null;
         }
     }
 

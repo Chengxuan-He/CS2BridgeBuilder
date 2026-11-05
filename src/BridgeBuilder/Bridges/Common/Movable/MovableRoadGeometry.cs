@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -145,7 +145,8 @@ internal static class MovableRoadGeometry
         IReadOnlyDictionary<(int Occurrence, int SourceTriangle), Partition>? trianglePartitions = null)
     {
         result = Array.Empty<BoundTriangle>(); error = null;
-        if (source == null || source.Count == 0 || boneCount <= 0 || materialCount <= 0 ||
+        if (source != null && source.Count == 0) return true;
+        if (source == null || boneCount <= 0 || materialCount <= 0 ||
             !Validate(partition, boneCount, new HashSet<Partition>()))
         { error = "Road binding requires triangles, materials and a complete measured bone partition."; return false; }
         if (occurrencePartitions != null)
@@ -171,11 +172,6 @@ internal static class MovableRoadGeometry
                 error = $"Road triangle {i} has invalid attributes: valid A/B/C={Valid(triangle.A)}/{Valid(triangle.B)}/{Valid(triangle.C)}; source={triangle.Occurrence}/{triangle.SourceTriangle}; material={triangle.Material}.";
                 return false;
             }
-            if (triangle.A.Tangent.w != triangle.B.Tangent.w || triangle.A.Tangent.w != triangle.C.Tangent.w)
-            {
-                error = $"Road triangle {i} has mixed tangent handedness {triangle.A.Tangent.w}/{triangle.B.Tangent.w}/{triangle.C.Tangent.w}; source={triangle.Occurrence}/{triangle.SourceTriangle}; material={triangle.Material}.";
-                return false;
-            }
             var selected = partition;
             if (trianglePartitions != null)
             {
@@ -191,8 +187,6 @@ internal static class MovableRoadGeometry
             if (!Split(new List<ClipVertex> { new(triangle.A), new(triangle.B), new(triangle.C) }, selected, triangle, output))
             { error = $"Road triangle {i} could not be transformed into its recorded seam frame."; return false; }
         }
-        if (output.Count == 0 && !allowEmpty)
-        { error = "The road surface contains no nondegenerate triangles after seam clipping."; return false; }
         foreach (var triangle in output)
             if (!Valid(triangle.Geometry.A) || !Valid(triangle.Geometry.B) || !Valid(triangle.Geometry.C))
             { error = "Seam clipping produced invalid road attributes."; return false; }
@@ -223,7 +217,6 @@ internal static class MovableRoadGeometry
             for (var i = 1; i + 1 < polygon.Count; i++)
             {
                 var a = polygon[0].Finish(); var b = polygon[i].Finish(); var c = polygon[i + 1].Finish();
-                if (Vector3.Cross(b.Position - a.Position, c.Position - a.Position).sqrMagnitude == 0f) continue;
                 output.Add(new BoundTriangle(new Triangle(a, b, c, source.Material,
                     source.Occurrence, source.SourceTriangle), (uint)partition.Bone));
             }

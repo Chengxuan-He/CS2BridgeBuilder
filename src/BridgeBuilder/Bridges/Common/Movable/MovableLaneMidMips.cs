@@ -11,6 +11,31 @@ namespace BridgeBuilder.Bridges;
 
 internal static class MovableLaneMidMips
 {
+    internal static void CompletePrepared(SurfaceAsset source, SurfaceAsset target)
+    {
+        // Prepared positive-level surfaces are registered by their native cache.
+        // A zero-level lane has no such cache and must not skip initialization.
+        if (!target.isVTMaterial || RequiredLevels(source) != 0) return;
+        var streaming = World.DefaultGameObjectInjectionWorld.GetExistingSystemManaged<TextureStreamingSystem>();
+        InitializeZeroMid(target, streaming);
+    }
+
+    private static void InitializeZeroMid(SurfaceAsset target, TextureStreamingSystem streaming)
+    {
+        // Repeated prepared uses and LODs share this native reservation. Do not
+        // allocate another region or queue duplicate reads for an existing one.
+        if (target.VTAtlassingInfos == null && target.PreReservedAtlassingInfos == null)
+        {
+            target.RegisterToVT(streaming);
+            target.LoadVTAsync(streaming, streaming.mipBias, streaming.tileSize, 0);
+        }
+        // Native last-ref property unload clears VTAtlassingInfos; property
+        // reload does not restore it. This native cache API preserves the same
+        // reservation for ManagedBatchSystem without retaining property leases.
+        if (target.VTAtlassingInfos != null)
+            target.PreRegisterToVT(target.VTAtlassingInfos);
+    }
+
     // Descriptor conversion assigns a new Surface CID. Native caches index the old
     // CID implicitly, so retaining its VT header alone cannot retain its mip chain.
     internal static void Complete(SurfaceAsset source, SurfaceAsset target, string owner,
@@ -28,12 +53,21 @@ internal static class MovableLaneMidMips
             throw new ArgumentException("Native lane MidMips require an owned generation identity.");
         if (!Permitted(source)) throw new InvalidDataException("Native lane source belongs to a generated bridge.");
         int levels = RequiredLevels(source);
-        if (levels == 0) return; // Empty/zero-level native sources do not require a cache.
         var streaming = World.DefaultGameObjectInjectionWorld.GetExistingSystemManaged<TextureStreamingSystem>();
+        if (levels == 0)
+        {
+            // No MidMips cache is needed, but the new Surface CID still needs its
+            // own native VT reservation and parameter blocks before publication.
+            // The descriptor has already been written by MovableLaneSurface.
+            InitializeZeroMid(target, streaming);
+            BridgeRoadGeneration.CurrentDependencies?.Material(target, Array.Empty<AssetData>());
+            Mod.Log.Info($"Native lane VT initialized: source={source.id}; target={target.id}; levels=0.");
+            return;
+        }
         int tile = streaming.tileSize;
         string tag = AtlasMaterialsGrouper.GetAssetName(tile, levels);
         byte[]? payload = null;
-        foreach (var cache in AssetDatabase.global.GetAssets<MidMipCacheAsset>())
+        foreach (var cache in NativeSurfaceCaches.Find(source, streaming, levels))
         {
             // Ownership is checked before any stream is opened, including stale registrations.
             if (!Permitted(cache) || cache.tags.Count != 1 || cache.tags[0] != tag) continue;
@@ -50,12 +84,49 @@ internal static class MovableLaneMidMips
             BridgeAssetInfo.OwnedDirectory(owner, "Appearance/MidMips/" + target.id.guid), tag, EscapeStrategy.None));
         assets.Add(result);
         using (var output = result.GetWriteStream()) output.Write(payload, 0, payload.Length);
+        BridgeRoadGeneration.CurrentDependencies?.Material(target, new[] { result });
         streaming.MarkVTAssetsDirty();
         streaming.RefreshVT(database);
         Mod.Log.Info($"Native lane MidMips retained: source={source.id}; target={target.id}; levels={levels}; bytes={payload.Length}.");
     }
 
-    private static int RequiredLevels(SurfaceAsset source)
+    internal static IEnumerable<AssetData> RequiredCaches(AssetData asset) => RequiredCaches(asset, "");
+
+    internal static IEnumerable<AssetData> RequiredCaches(AssetData asset, string owner)
+    {
+        if (asset is not SurfaceAsset surface) throw new InvalidDataException("Unsupported native material asset: " + asset.id);
+        surface.LoadHeader();
+        if (!surface.isVTMaterial) return Array.Empty<AssetData>();
+        int levels = RequiredLevels(surface, owner);
+        if (levels == 0) return Array.Empty<AssetData>();
+        var streaming = World.DefaultGameObjectInjectionWorld.GetExistingSystemManaged<TextureStreamingSystem>();
+        return NativeSurfaceCaches.Find(surface, streaming, levels, owner);
+    }
+
+    internal static string? OwnedCachePath(AssetData asset, string owner)
+    {
+        if (asset is not SurfaceAsset surface) return null;
+        surface.LoadHeader();
+        if (!surface.isVTMaterial) return null;
+        int levels = RequiredLevels(surface, owner);
+        if (levels == 0) return null;
+        var streaming = World.DefaultGameObjectInjectionWorld.GetExistingSystemManaged<TextureStreamingSystem>();
+        string tag = AtlasMaterialsGrouper.GetAssetName(streaming.tileSize, levels) + ".MidMips";
+        string root = UnityEngine.Application.persistentDataPath;
+        // Original generated layout recorded the target Surface CID in its folder.
+        // These are exact historical paths, not a search through other caches.
+        foreach (string folder in new[] { BridgeAssetInfo.OwnedDirectory(owner, "Appearance/MidMips/" + surface.id.guid),
+            BridgeAssetInfo.OwnedDirectory(owner, "Appearance/MidMips"), "BridgeBuilder/" + owner + " Road Surface" })
+        {
+            string path = Path.Combine(root, folder, tag);
+            if (!BridgeFileAccess.Exists(path) || !BridgeFileAccess.Exists(path + ".cid")) continue;
+            using var input = BridgeFileAccess.OpenRead(path);
+            if (BridgeMidMipReferences.Read(input).Contains(surface.id.guid.ToString(), StringComparer.OrdinalIgnoreCase)) return path;
+        }
+        return null;
+    }
+
+    private static int RequiredLevels(SurfaceAsset source, string owner = "")
     {
         byte[]? header = null;
         int? required = null;
@@ -67,7 +138,7 @@ internal static class MovableLaneMidMips
         }
         if (source.hasVTSurfaceAsset)
         {
-            var backing = Resolve(source, source.vtSurfaceAsset.id.guid);
+            var backing = Resolve(source, source.vtSurfaceAsset.id.guid, owner);
             using var input = backing.GetReadStream();
             using var reader = new BinaryReader(input);
             header = reader.ReadBytes(498);
@@ -89,7 +160,7 @@ internal static class MovableLaneMidMips
             if (header != null && stack < BitConverter.ToInt32(header, 490) &&
                 layer < BitConverter.ToInt32(header, 26 + stack * 40 + 24) && header[106 + (stack * 4 + layer) * 48] != 0) continue;
             if (!cid.isValid) continue;
-            using var input = Resolve(source, cid).GetReadStream();
+            using var input = Resolve(source, cid, owner).GetReadStream();
             int levels = BridgeMidMipReferences.RequiredLevels(input, false);
             // RequiredLevels returns zero both for an empty tail and for a real
             // zero-level tail. Only the latter participates in native agreement.
@@ -100,22 +171,22 @@ internal static class MovableLaneMidMips
         return required ?? 0;
     }
 
-    private static AssetData Resolve(SurfaceAsset source, Colossal.Hash128 cid)
+    private static AssetData Resolve(SurfaceAsset source, Colossal.Hash128 cid, string owner)
     {
-        if (source.database.TryGetAsset(cid, out AssetData asset) && Permitted(asset)) return asset;
-        if (AssetDatabase.global.TryGetAsset(cid, out asset) && Permitted(asset)) return asset;
-        foreach (var candidate in AssetDatabase.global.GetAssets<AssetData>())
-            if (candidate.id.guid == cid && Permitted(candidate)) return candidate;
+        if (source.database.TryGetAsset(cid, out AssetData asset) && Permitted(asset, owner)) return asset;
+        if (AssetDatabase.global.TryGetAsset(cid, out asset) && Permitted(asset, owner)) return asset;
+        foreach (var database in AssetDatabase.global.databases)
+            if (database.TryGetAsset(cid, out AssetData candidate) && Permitted(candidate, owner)) return candidate;
         throw new InvalidDataException("Missing original native lane texture dependency: " + cid);
     }
 
-    private static bool Permitted(AssetData asset)
+    internal static bool Permitted(AssetData asset, string owner = "")
     {
         if (asset.isBuiltin) return true;
         var meta = asset.GetMeta();
         // An empty owner deliberately excludes every generated bridge UUID. Only
         // original game/mod resources may feed this conversion, never saved results.
-        return !BridgeAssetInfo.IsOtherBridgeAsset(meta.path, "",
+        return !BridgeAssetInfo.IsOtherBridgeAsset(meta.path, owner,
             Path.Combine(UnityEngine.Application.persistentDataPath, "ImportedData"));
     }
 }

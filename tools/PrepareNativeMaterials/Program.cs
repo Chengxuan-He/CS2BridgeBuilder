@@ -4,7 +4,7 @@ using System.Text;
 using System.Text.Json;
 using BridgeBuilder.Runtime;
 
-if(args.Length<5)throw new ArgumentException("PrepareNativeMaterials <style> <manifest> <output root> <report> <GameData> [--defaults directory] [--common style directory]");
+if(args.Length<5)throw new ArgumentException("PrepareNativeMaterials <style> <manifest> <output root> <report> <GameData> [--defaults directory] [--common style directory] [--paint complete paint directory]");
 var style=args[0];if(!System.Text.RegularExpressions.Regex.IsMatch(style,"^(Draw0[1-3]|Lift0[1-5]|PedestrianDraw0[12])$"))throw new ArgumentException("Unknown style.");
 string? Option(string name){int i=Array.IndexOf(args,name);return i<0?null:args[i+1];}
 using var input=JsonDocument.Parse(File.ReadAllBytes(args[1]));
@@ -45,20 +45,24 @@ try {
   var dependencies=References(bytes);foreach(var dep in dependencies)if(!index.ContainsKey(dep))throw new InvalidDataException("Missing complete builtin source: "+dep);
   roots.Add(new{sourceCid=cid,sourceTemplate=template,targetTemplate=target,operation,cid=resultCid,path,builtinDependencies=dependencies});
  }
- // Paint uses the original native VTTexture, including its authored mip pyramid.
- // Never bind its deleted original authoring Texture CID to a non-VT descriptor.
- const string paintCid="4b5500b1b5c270890d99149f7f62e51a";
- var paintBytes=Read(paintCid);if(Digest(paintBytes)!="6bb8e926e34c3b39f8ad0cff6d8a893b5c8e305c0ace1370438d2614f799895f")throw new InvalidDataException("Paint source changed.");
- var paintSource=Descriptor.Read(paintBytes);var vt=paintSource.VtHeader;
- if(vt.Length<277)throw new InvalidDataException("Paint VT header is absent.");
- string paintBacking=Hash(vt,76);if(paintBacking==new string('0',32)||!index.ContainsKey(paintBacking))throw new InvalidDataException("Paint needs complete combined-VT layer extraction; no standalone source VTTexture.");
- var header=new byte[277];BitConverter.GetBytes(1).CopyTo(header,0);Array.Copy(vt,4,header,4,8);Array.Copy(vt,12,header,12,16);Array.Copy(vt,76,header,76,16);
- var paint=new Descriptor{Template=0,VtHeader=header};
- foreach(var pair in new Dictionary<string,float>{{"_SupportDecals",0},{"_Snow",0},{"_Metallic",0},{"_Smoothness",.35f},{"_DoubleSidedEnable",0},{"_CullMode",2},{"_CullModeForward",2}})paint.Floats.Add(pair.Key,pair.Value);
- paint.Keywords.UnionWith(new[]{"_TANGENTSPACE_OCTO","_DISABLE_DECALS"});
- // Source original authoring IDs stay in the native header only. Active VT CID is the dependency.
- var paintOutput=paint.Write();var paintRefs=References(paintOutput);if(!paintRefs.SequenceEqual(new[]{paintBacking}))throw new InvalidDataException("Paint backing reference mismatch.");
- var preparedPaint=Surface("Paint/SkinnedPaint.Surface",paintOutput);roots.Add(new{sourceCid=paintCid,operation="native-vt-paint-descriptor",cid=preparedPaint,path="Paint/SkinnedPaint.Surface",builtinDependencies=paintRefs});
+ // The object shader needs explicit normal/mask/control as well as the unchanged
+ // authored paint color mip pyramid. PrepareCompletePaint.py supplies this graph.
+ var paintFolder=Option("--paint")??(Option("--common") is string paintCommon?Path.Combine(paintCommon,"Paint"):throw new InvalidDataException("Complete paint graph required: --paint <directory>."));
+ var paintOutput=File.ReadAllBytes(Path.Combine(paintFolder,"SkinnedPaint.Surface"));
+ var paint=Descriptor.Read(paintOutput);
+ var paintChannels=new[]{"_BaseColorMap","_NormalMap","_MaskMap","_ControlMask"};
+ if(paint.Template!=0||paint.VtHeader.Length!=0||paint.Textures.Count!=4||paintChannels.Any(k=>!paint.Textures.TryGetValue(k,out var v)||v==null))throw new InvalidDataException("Paint requires four explicit native object channels.");
+ var preparedPaint=File.ReadAllText(Path.Combine(paintFolder,"SkinnedPaint.Surface.cid")).Trim();
+ var paintRefs=References(paintOutput);
+ Add("Paint/SkinnedPaint.Surface",paintOutput);Add("Paint/SkinnedPaint.Surface.cid",Encoding.UTF8.GetBytes(preparedPaint));
+ foreach(var cid in paintRefs){
+  var name=cid+".Texture";var bytes=File.ReadAllBytes(Path.Combine(paintFolder,name));
+  var declared=File.ReadAllText(Path.Combine(paintFolder,name+".cid")).Trim();
+  if(declared!=cid||Hash(SHA256.HashData(bytes),0)!=cid)throw new InvalidDataException("Paint texture identity mismatch: "+cid);
+  Add("Paint/"+name,bytes);Add("Paint/"+name+".cid",Encoding.UTF8.GetBytes(cid));
+ }
+ if(Hash(SHA256.HashData(paintOutput),0)!=preparedPaint)throw new InvalidDataException("Paint Surface identity mismatch.");
+ roots.Add(new{sourceCid="4b5500b1b5c270890d99149f7f62e51a",operation="complete-native-object-paint",cid=preparedPaint,path="Paint/SkinnedPaint.Surface",dependencies=paintRefs});
  if(Option("--common") is string common){
   foreach(var category in new[]{"Cable","Road","Lanes","Shared"}){
    var folder=Path.Combine(common,category);if(!Directory.Exists(folder))continue;
@@ -72,7 +76,7 @@ try {
  foreach(var pair in files){var path=Path.Combine(output,pair.Key);Directory.CreateDirectory(Path.GetDirectoryName(path)!);File.WriteAllBytes(path,pair.Value);}
  var report=new{schema="bridgebuilder.native-material-output/1",style,completeStyle=false,texturePayloadsCreated=0,nativeMipBytesReencoded=0,roots,
   files=files.OrderBy(x=>x.Key).Select(x=>new{path=x.Key,bytes=x.Value.Length,sha256=Digest(x.Value)}),fileCount=files.Count,bytes=files.Values.Sum(x=>(long)x.Length),
-  remaining=new[]{"Native reader and renderer validation of the new paint VT descriptor","Cross-chart structural repeat mapping and production integration"}};
+  remaining=new[]{"Live renderer validation of the complete native paint descriptor","Cross-chart structural repeat mapping and production integration"}};
  Directory.CreateDirectory(Path.GetDirectoryName(Path.GetFullPath(args[3]))!);File.WriteAllText(args[3],JsonSerializer.Serialize(report,new JsonSerializerOptions{WriteIndented=true}));
  Console.WriteLine($"PASS source-level preparation: {style}; {files.Count} files; {files.Values.Sum(x=>(long)x.Length)} bytes; no texture re-encoding. Full style acceptance pending.");
  JsonElement Defaults(int template){if(library.TryGetValue(template,out var value))return value.GetProperty("material");var dir=Option("--defaults")??throw new InvalidDataException("Template defaults required: "+template);using var doc=JsonDocument.Parse(File.ReadAllBytes(Path.Combine(dir,"template-"+template+".json")));return doc.RootElement.Clone();}

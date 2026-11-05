@@ -28,9 +28,6 @@ internal static class Draw02RoadTops
             mask[face] = top[face] = true;
         }
 
-        foreach (var fragment in structure.Fragments)
-            if (fragment.Slot == Numeric_Types_Draw02_Draw02RoadTops_g_cs.Values.I32[19] && top[fragment.Triangle])
-                throw new InvalidOperationException("Draw02 structural fragment restores a removed road top.");
         // Recorded Draw02 shell fragments use edge vertices only. Appending edges
         // therefore leaves every existing fragment index unchanged.
         if (structure.InteriorVertices.Length != Numeric_Types_Draw02_Draw02RoadTops_g_cs.Values.I32[20])

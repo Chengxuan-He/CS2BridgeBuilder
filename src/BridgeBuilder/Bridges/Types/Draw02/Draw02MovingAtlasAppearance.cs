@@ -25,8 +25,6 @@ internal static class Draw02MovingAtlasAppearance
         var df = ints[header + 6]; var sf = ints[header + 7]; var inf = ints[header + 8];
         var constants = values.Length - 4;
         var width = values[constants];
-        if (!float.IsFinite(halfDelta) || width + halfDelta <= 0f)
-            throw new InvalidOperationException("Draw02 moving atlas width is invalid.");
         var xScale = width / (width + halfDelta);
         var transform = Matrix4x4.TRS(pose.position, pose.rotation, Vector3.one);
         var projection = transform.transpose;

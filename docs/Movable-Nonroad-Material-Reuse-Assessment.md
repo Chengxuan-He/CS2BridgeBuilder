@@ -71,7 +71,7 @@ A future implementation must compare actual source/output assignments and UVs by
 this code review does not certify all non-road output as identical to the prototype.
 
 The design assessment itself supplies no additional permission beyond the current contracts. The 55,000,000-byte official package limit and
-10,000,000-byte generated-owner material limit remain separate. Native independent persistence,
+informational generated-owner material measurements remain separate; no per-owner ceiling applies. Native independent persistence,
 original resolution, permitted topology, no custom shaders or manager-dependent rebinding,
 and no full-span pattern rasterization remain required. The independent-layer implementation
 and its measured per-layer error tolerance are still unresolved work.

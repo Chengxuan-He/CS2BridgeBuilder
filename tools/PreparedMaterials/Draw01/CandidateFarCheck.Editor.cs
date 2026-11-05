@@ -15,11 +15,18 @@ public static class Draw01CandidateFarCheck
  static string Arg(string key){var a=Environment.GetCommandLineArgs();return a[Array.IndexOf(a,key)+1];}
  public static void Run(){try{
   string dll=Arg("-candidate"),managed=Arg("-gameManaged");using var sha=SHA256.Create();string digest=string.Concat(sha.ComputeHash(File.ReadAllBytes(dll)).Select(b=>b.ToString("X2")));
-  if(digest!="31EA53D5347CFE9A2DF5D9607395425A4BA1DDD18C10746E028527A811889253")throw new Exception("Candidate hash differs.");
+  if(digest!=Arg("-candidateHash"))throw new Exception("Candidate hash differs.");
   AppDomain.CurrentDomain.AssemblyResolve+=(sender,e)=>{string name=new AssemblyName(e.Name).Name+".dll";foreach(var dir in new[]{Path.GetDirectoryName(dll),managed}){string path=Path.Combine(dir,name);if(File.Exists(path))return Assembly.LoadFrom(path);}return null;};
+  var dbType=Assembly.LoadFrom(Path.Combine(managed,"Colossal.IO.AssetDatabase.dll")).GetType("Colossal.IO.AssetDatabase.AssetDatabase",true);var db=FormatterServices.GetUninitializedObject(dbType);var databases=dbType.GetField("m_Databases",Fields);databases.SetValue(db,Activator.CreateInstance(databases.FieldType));dbType.GetField("s_Instance",Fields).SetValue(null,db);
   var assembly=Assembly.LoadFrom(dll);var geometry=assembly.GetType("BridgeBuilder.Bridges.MovableRoadGeometry",true);var vertex=geometry.GetNestedType("Vertex",Fields);var triangle=geometry.GetNestedType("Triangle",Fields);var partition=geometry.GetNestedType("Partition",Fields);
   var roadType=assembly.GetType("BridgeBuilder.Bridges.MovableClosedRoad",true).GetNestedType("Result",Fields);var piece=roadType.GetField("Occurrences",Fields).FieldType.GetElementType();var sectionType=piece.GetProperty("RootSection",Fields).PropertyType;var surfaceType=roadType.GetField("Surfaces",Fields).FieldType.GetElementType();
   var source=FormatterServices.GetUninitializedObject(surfaceType);var surfaces=Array.CreateInstance(surfaceType,1);surfaces.SetValue(source,0);
+  var clean=FormatterServices.GetUninitializedObject(surfaceType);
+  using(var reader=new BinaryReader(File.OpenRead(Path.Combine(Arg("-assetRoot"),"Materials/Draw01/RepeatUnits/878ec0cc338a26b59009d60bcef5a8afde03e1150b35ab32eed34e62da55d4c9/Repeat.Surface"))))surfaceType.GetMethod("ReadHeader",Fields).Invoke(clean,new object[]{reader});
+  var catalogue=assembly.GetType("BridgeBuilder.Runtime.BridgePreparedMaterials",true);
+  catalogue.GetMethod("Initialize",Fields).Invoke(null,new object[]{Arg("-assetRoot")});
+  var cache=(System.Collections.IDictionary)catalogue.GetField("Surfaces",Fields).GetValue(null);
+  cache["Draw01/RepeatUnits/878ec0cc338a26b59009d60bcef5a8afde03e1150b35ab32eed34e62da55d4c9/Repeat.Surface"]=clean;
   var create=assembly.GetType("BridgeBuilder.Bridges.Draw01FarAppearance",true).GetMethod("Create",Fields);
   var motion=assembly.GetType("BridgeBuilder.Bridges.Draw01RoadPartitions",true);var roadSurface=motion.GetMethod("RoadSurface",Fields);var carriageway=motion.GetField("Carriageway",Fields).GetValue(null);var gap=partition.GetField("Gap",Fields).GetValue(null);
   var inFrame=geometry.GetMethods(Fields).Single(m=>m.Name=="InFrame"&&m.ReturnType==triangle.MakeArrayType());var bind=geometry.GetMethod("TryBind",Fields);
@@ -39,7 +46,10 @@ public static class Draw01CandidateFarCheck
     var mapped=create.Invoke(null,new[]{road,(object)pose,source});var patches=(Array)F(mapped,"Patches");var types=(Array)F(mapped,"SupportedTypes");var domains=(Array)F(mapped,"Occurrences");
     var physical=AsArray(partition,Enumerable.Range(0,4).Select(i=>roadSurface.Invoke(null,new object[]{i==1||i==2})));var receivers=Bind(Frame(selected,pose),carriageway,3,physical);var actual=Bind(Frame(AsArray(triangle,receivers.Cast<object>().Select(f=>F(f,"Geometry"))),inverse),gap,patches.Length,domains);
     if(actual.Length==0)throw new Exception("Empty output.");
-    foreach(var face in actual){var t=F(face,"Geometry");int occurrence=(int)F(t,"Occurrence");var p=patches.GetValue((uint)F(face,"Bone"));int supported=Convert.ToInt32(types.GetValue((uint)F(face,"Bone")));if(!(bool)F(p,"SourceUv")||(bool)F(p,"Repeat")||!ReferenceEquals(F(p,"Surface"),source)||supported!=((occurrence==0||occurrence==3)?1:2))throw new Exception("Native binding/type differs.");
+    foreach(var face in actual){var t=F(face,"Geometry");int occurrence=(int)F(t,"Occurrence");var p=patches.GetValue((uint)F(face,"Bone"));int supported=Convert.ToInt32(types.GetValue((uint)F(face,"Bone")));
+     var center=Vector3.zero;foreach(string n in new[]{"A","B","C"})center+=pose.position+pose.rotation*(Vector3)F(F(t,n),"Position");center/=3;
+     bool carriagewayPatch=occurrence==0||occurrence==3;
+     if(!(bool)F(p,"SourceUv")||(bool)F(p,"Repeat")||!ReferenceEquals(F(p,"Surface"),carriagewayPatch?clean:source)||supported!=((occurrence==0||occurrence==3)?1:2))throw new Exception("Native binding/type differs.");
      var min=(Vector2)F(p,"Min");var max=(Vector2)F(p,"Max");var u=(Vector4)F(p,"U");var v=(Vector4)F(p,"V");
      if(occurrence==3&&!actual.Cast<object>().Where(f=>(int)F(F(f,"Geometry"),"Occurrence")==0).Any(f=>{var q=patches.GetValue((uint)F(f,"Bone"));return min.Equals(F(q,"Min"))&&max.Equals(F(q,"Max"))&&u.Equals(F(q,"U"))&&v.Equals(F(q,"V"));}))throw new Exception("Piece occurrence resets finite mapping.");
      foreach(string n in new[]{"A","B","C"}){var pos=(Vector3)F(F(t,n),"Position");var q=new Vector4(pos.x,pos.y,pos.z,1);var uv=new Vector2(Vector4.Dot(u,q),Vector4.Dot(v,q));for(int axis=0;axis<2;axis++){float margin=Mathf.Pow(2,Mathf.Floor(Mathf.Log(Mathf.Max(Mathf.Abs(min[axis]),Mathf.Abs(max[axis])),2))-11);if(!float.IsFinite(uv[axis])||uv[axis]<min[axis]-margin||uv[axis]>max[axis]+margin)throw new Exception("Finite projection escaped source chart.");}checks++;}

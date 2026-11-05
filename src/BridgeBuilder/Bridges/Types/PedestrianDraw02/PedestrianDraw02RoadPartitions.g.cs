@@ -18,8 +18,6 @@ internal static class PedestrianDraw02RoadPartitions
         for (var i = Numeric_Types_PedestrianDraw02_PedestrianDraw02RoadPartitions_g_cs.Values.I32[0]; i < x.Length; i++)
         {
             x[i] = AffineGeometry.AddScaled(Stations[i].X, Stations[i].Weight, halfWidthDelta);
-            if (i > Numeric_Types_PedestrianDraw02_PedestrianDraw02RoadPartitions_g_cs.Values.I32[1] && x[i] <= x[i - Numeric_Types_PedestrianDraw02_PedestrianDraw02RoadPartitions_g_cs.Values.I32[2]])
-                throw new ArgumentOutOfRangeException(nameof(halfWidthDelta), "PedestrianDraw02 hinge stations overlap at this width.");
         }
 
         Partition Slab(int index)
@@ -60,7 +58,7 @@ internal static class PedestrianDraw02RoadPartitions
 
     private static Partition Line(float left, float right, float zLeft, float zRight, Partition negative, Partition positive)
     {
-        var slope = (zRight - zLeft) / (right - left);
+        var slope = right == left ? 0f : (zRight - zLeft) / (right - left);
         var frame = Matrix4x4.identity;
         frame.m20 = -slope;
         frame.m23 = slope * left - zLeft;

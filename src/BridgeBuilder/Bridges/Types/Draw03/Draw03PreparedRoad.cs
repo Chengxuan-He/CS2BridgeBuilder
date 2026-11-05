@@ -25,20 +25,6 @@ internal static class Draw03PreparedRoad
             preparedUnit: true, repeatU: true, repeatV: false, projectTangent: true);
     }
 
-    internal static Patch Band(Patch source, int index)
-    {
-        var reduced = Draw03RoadWearUnits.ForBand(source, index);
-        var band = source.Bands![index];
-        var numbers = Numeric_Types_Draw03_Draw03RoadWear_cs.Values.F32;
-        bool gap = band.Min.y < numbers[3] / numbers[4];
-        var v = reduced.V;
-        // The gap's original transverse region is finite. Its old repeatY
-        // multiplier must not survive in the prepared finite-axis mapping.
-        if (gap) v /= band.RepeatY;
-        return Prepared(reduced, gap ? "FullPeriodLaneGap" : "FullPeriodLaneWear",
-            reduced.U * Data[Units + 8], v, gap ? 2 : 0);
-    }
-
     private static Vector2 Span(MovableSelectedRoadLayout layout, Vector2 span, bool walk, bool right)
     {
         var sidewalk = right ? layout.RightSidewalk : layout.LeftSidewalk;
@@ -53,8 +39,9 @@ internal static class Draw03PreparedRoad
     {
         var carriageway = Draw03RoadAppearance.Regions(false, pose);
         var sidewalk = Draw03RoadAppearance.Regions(true, pose);
-        var patches = Draw03RoadWearDomains.Apply(Draw03RoadAppearance.Patches(layout, pose, span),
-            ref carriageway, ref sidewalk, prepared: true);
+        // Sidewalk retains its finite mapping. Asphalt is partitioned below by
+        // actual lane appearance, with fixed-scale wear and derived atlas background.
+        var patches = Draw03RoadAppearance.Patches(layout, pose, span, laneBands: false);
         var types = new Appearance.Type[patches.Length];
         var frame = Matrix4x4.TRS(pose.position, pose.rotation, Vector3.one).transpose;
         for (int i = 0; i < patches.Length; i++)
@@ -71,9 +58,17 @@ internal static class Draw03PreparedRoad
             // One offline native source period; continuous U never adds a
             // geometry wrap seam. Filtering differences remain recorded in the
             // preparation report and are not accepted by this mapping choice.
-            patches[i] = Prepared(patches[i], walk ? "FullPeriodGrating" : "FullPeriodCleanAsphalt",
-                patches[i].U, v, walk ? 6 : 4);
+            patches[i] = Prepared(patches[i], walk ? "FullPeriodGrating" : "FullPeriodRoadCrossSection",
+                patches[i].U, v, walk ? 6 : 0);
         }
+        var original=patches;
+        patches=Draw03LaneAppearance.Apply(original,ref carriageway,layout,pose,span,
+            (index,band)=>!band.Wear?Draw03LaneAppearance.Background(frame,original[index].U):Prepared(original[index],"FullPeriodRoadCrossSection",original[index].U,
+                Draw03LaneAppearance.NearV(band,index%2!=0,frame),0),
+            index=>index%2!=0,out var wear);
+        Array.Resize(ref types,patches.Length);
+        for(int i=original.Length;i<patches.Length;i++)
+            types[i]=Appearance.Type.Asphalt | (wear[i]?Appearance.Type.WheelTrack:Appearance.Type.None);
         return new Appearance.Level(native, patches, types, carriageway, sidewalk);
     }
 
@@ -117,7 +112,18 @@ internal static class Draw03PreparedRoad
             var cut = Matrix4x4.identity; cut.m23 = -boundary;
             return new Partition(cut * objectFrame, Tree(start, middle, offset), Tree(middle, end, offset));
         }
-        return new Appearance.Level(native, patches, types, Tree(0, NativeRows / 2, 0), Tree(0, NativeRows / 2, NativeRows));
+        // Keep the authored far sidewalk atlas. Carriageway uses the same approved
+        // middle-lane source, phase, width and background at every LOD.
+        var road=Near(native,layout,pose,span);
+        int roadCount=road.Patches.Length;
+        var combined=new Patch[roadCount+patches.Length];
+        Array.Copy(road.Patches,combined,roadCount);
+        Array.Copy(patches,0,combined,roadCount,patches.Length);
+        var combinedTypes=new Appearance.Type[combined.Length];
+        Array.Copy(road.SupportedTypes,combinedTypes,roadCount);
+        Array.Copy(types,0,combinedTypes,roadCount,types.Length);
+        return new Appearance.Level(native,combined,combinedTypes,road.Carriageway,
+            Tree(0,NativeRows/2,roadCount+NativeRows));
     }
 }
 

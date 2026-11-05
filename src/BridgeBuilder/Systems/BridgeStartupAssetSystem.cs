@@ -114,14 +114,26 @@ public partial class BridgeStartupAssetSystem : GameSystemBase
             if (assets.Length != 0 && BridgeAssetPack.Ensure(system) == null)
                 Mod.Log.Error("Bridge pack icon could not be updated; existing bridge assets retained.");
             var owners = new HashSet<string>(assets.Select(a => a.Owner), StringComparer.Ordinal);
-            foreach (var owner in owners) report.Set(owner, BridgeSelfCheckReport.Outcome.Unfinished);
+            var byOwner = assets.GroupBy(a => a.Owner).ToDictionary(g => g.Key, g => g.ToArray(), StringComparer.Ordinal);
+            var scope = new BridgeInspectionScope(UnityEngine.Application.persistentDataPath, owners);
+            var dependencies = new Dictionary<string, BridgeCreationDependencies>(StringComparer.Ordinal);
+            foreach (var owner in owners)
+            {
+                report.Set(owner, BridgeSelfCheckReport.Outcome.Unfinished);
+                foreach (var asset in byOwner[owner]) { scope.Paths(owner).Add(asset.Path); scope.Paths(owner).Add(asset.Path + ".cid"); }
+                try { dependencies.Add(owner, scope.Dependencies(owner, byOwner[owner])); }
+                catch (Exception exception) { failures[owner] = "Cache relation read failed: " + exception.Message; }
+            }
+            var discoveryMs = timer.ElapsedMilliseconds;
+            var stageStart = timer.ElapsedMilliseconds;
             var migrationCandidates = new HashSet<string>(StringComparer.Ordinal);
             var migrationErrors = 0;
             // Missing material snapshots can be hidden by a currently installed source mod.
             // Traverse every owner's disk graph, even when its live references are healthy.
             foreach (var owner in owners)
             {
-                if (!BridgeDependencyPersistence.Save(owner, assets.Where(a => a.Owner == owner).Select(a => a.Cid),
+                if (failures.ContainsKey(owner)) continue;
+                if (!BridgeDependencyPersistence.Save(owner, byOwner[owner].Select(a => a.Cid), dependencies[owner],
                     out _, out var migrationError, out var writtenFiles))
                 {
                     migrationErrors++;
@@ -134,6 +146,9 @@ public partial class BridgeStartupAssetSystem : GameSystemBase
                     Mod.Log.Info($"Bridge dependency snapshots supplemented UUID={owner}; writtenFiles={writtenFiles}; external material dependencies included; restart required; live references unchanged.");
                 }
             }
+            foreach (var pair in dependencies) scope.Paths(pair.Key).UnionWith(pair.Value.Files);
+            var dependencyMs = timer.ElapsedMilliseconds - stageStart;
+            stageStart = timer.ElapsedMilliseconds;
             foreach (var asset in assets)
             {
                 if (failures.ContainsKey(asset.Owner)) continue;
@@ -162,23 +177,26 @@ public partial class BridgeStartupAssetSystem : GameSystemBase
                 Mod.Log.Warn($"Bridge self-check invalid UUID={asset.Owner}, prefab={prefab.name}: {reason}");
                 failures[asset.Owner] = reason;
             }
-            var validationMs = timer.ElapsedMilliseconds;
+            var validationMs = timer.ElapsedMilliseconds - stageStart;
+            stageStart = timer.ElapsedMilliseconds;
             var backup = Path.Combine(BridgeRecoveryLocation.Path,
                 DateTime.UtcNow.ToString("yyyyMMdd-HHmmss-fffffff", System.Globalization.CultureInfo.InvariantCulture));
             foreach (var recovery in recoveries.Where(p => !failures.ContainsKey(p.Key)))
             {
-                var seeds = assets.Where(a => a.Owner == recovery.Key).Select(a => a.Cid).Concat(recovery.Value);
-                if (!BridgeDependencyPersistence.Save(recovery.Key, seeds, out var count, out var copyError))
+                var seeds = byOwner[recovery.Key].Select(a => a.Cid).Concat(recovery.Value);
+                if (!BridgeDependencyPersistence.Save(recovery.Key, seeds, dependencies[recovery.Key], out var count, out var copyError, out _))
                 { failures[recovery.Key] = "Dependency recovery copy failed: " + copyError; Mod.Log.Warn($"Bridge dependency recovery failed UUID={recovery.Key}; scheduling removal: {copyError}"); continue; }
                 _copiedOwners.Add(recovery.Key);
                 migrationCandidates.Add(recovery.Key);
                 Mod.Log.Info($"Bridge CID recovery copied UUID={recovery.Key}, dependencies={count}, recoveredCIDs={string.Join(",", recovery.Value)}; restart required; live references unchanged.");
             }
-            var persistenceMs = timer.ElapsedMilliseconds - validationMs;
+            var persistenceMs = timer.ElapsedMilliseconds - stageStart;
+            stageStart = timer.ElapsedMilliseconds;
+            foreach (var pair in dependencies) scope.Paths(pair.Key).UnionWith(pair.Value.Files);
             // Recovered disk references are still null in memory until restart; never serialize them back.
             foreach (var owner in owners.Where(o => !failures.ContainsKey(o) && !_copiedOwners.Contains(o)))
             {
-                if (!BridgePortableMigration.Run(owner, system, backup, out var converted, out var conversionError))
+                if (!BridgePortableMigration.Run(owner, system, backup, out var converted, out var conversionError, byOwner[owner], dependencies[owner], scope.Paths(owner)))
                 {
                     migrationErrors++;
                     failures[owner] = "Independent migration failed: " + conversionError;
@@ -192,30 +210,42 @@ public partial class BridgeStartupAssetSystem : GameSystemBase
                     Mod.Log.Info($"Independent bridge migration completed UUID={owner}; native unlocks and presentation persisted; original native fees retained; restart required.");
                 }
             }
+            var portableMs = timer.ElapsedMilliseconds - stageStart;
+            long namesMs = 0, layoutMs = 0;
             // Conversion writes the current disk graph. Normalize that graph in this SAME pass,
             // including previously converted assets, before any next-session validation.
             foreach (var owner in owners.Where(o => !failures.ContainsKey(o)).ToArray())
             {
                 var selected = new[] { owner };
+                scope.Paths(owner).UnionWith(dependencies[owner].Files);
+                stageStart = timer.ElapsedMilliseconds;
                 if (!BridgeLegacyNames.Run(UnityEngine.Application.persistentDataPath,
-                    selected, backup, out var renamed, out var renameError, BridgePrefabPersistence.RelativePathFor))
+                    selected, backup, out var renamed, out var renameError, BridgePrefabPersistence.RelativePathFor,
+                    byOwner[owner].Where(a => a.Prefab?.name == owner && !BridgeAssetInfo.IsDependencyPath(a.Path, owner)).Select(a => a.Path),
+                    cid => scope.Find(cid, owner), scope.Paths(owner)))
                 {
                     migrationErrors++;
+                    namesMs += timer.ElapsedMilliseconds - stageStart;
                     failures[owner] = "Legacy component migration failed: " + renameError;
                     Mod.Log.Error($"Legacy bridge component migration failed UUID={owner}; scheduling removal: {renameError}");
                     continue;
                 }
+                namesMs += timer.ElapsedMilliseconds - stageStart;
+                stageStart = timer.ElapsedMilliseconds;
                 _copiedOwners.UnionWith(renamed);
                 migrationCandidates.UnionWith(renamed);
                 if (!BridgeAssetLayout.Run(UnityEngine.Application.persistentDataPath, selected, backup,
-                    BridgePrefabPersistence.RelativePathFor, out var relocated, out var layoutError))
+                    BridgePrefabPersistence.RelativePathFor, out var relocated, out var layoutError, scope.Paths(owner), dependencies[owner].Relocate))
                 {
                     migrationErrors++;
+                    layoutMs += timer.ElapsedMilliseconds - stageStart;
                     // Earlier writes do not make an incomplete layout a completed migration.
                     _copiedOwners.Add(owner);
                     Mod.Log.Error($"Bridge file layout migration failed UUID={owner}; preserving assets for retry after restart: {layoutError}");
                     continue;
                 }
+                dependencies[owner].SaveRelations(owner);
+                layoutMs += timer.ElapsedMilliseconds - stageStart;
                 _copiedOwners.UnionWith(relocated);
                 migrationCandidates.UnionWith(relocated);
                 if (migrationCandidates.Contains(owner))
@@ -225,6 +255,7 @@ public partial class BridgeStartupAssetSystem : GameSystemBase
                 }
                 else report.Healthy(owner);
             }
+            stageStart = timer.ElapsedMilliseconds;
             var removed = 0;
             var removalErrors = 0;
             // One failed filesystem operation must not prevent retiring other damaged bridges.
@@ -233,7 +264,7 @@ public partial class BridgeStartupAssetSystem : GameSystemBase
                 try
                 {
                     var verdict = new Dictionary<string, string>(StringComparer.Ordinal) { [failure.Key] = failure.Value };
-                    var audit = BridgeDiskAudit.ForMemoryFailures(UnityEngine.Application.persistentDataPath, verdict);
+                    var audit = BridgeDiskAudit.ForMemoryFailures(UnityEngine.Application.persistentDataPath, verdict, scope.Paths(failure.Key));
                     if (!audit.Complete)
                     {
                         removalErrors++;
@@ -264,7 +295,10 @@ public partial class BridgeStartupAssetSystem : GameSystemBase
                 }
             }
             completed = true;
-            Mod.Log.Info($"Bridge self-check result: elapsedMs={timer.ElapsedMilliseconds}, validationMs={validationMs}, persistenceMs={persistenceMs}, retirementMs={timer.ElapsedMilliseconds - validationMs - persistenceMs}, owners={owners.Count}, removed={removed}, migrated={report.Count(BridgeSelfCheckReport.Outcome.Migrated)}, copiedAwaitingRestart={_copiedOwners.Count}, removalErrors={removalErrors}, migrationErrors={migrationErrors}; cached assets include registration failures; live-reference mutation disabled.");
+            var retirementMs = timer.ElapsedMilliseconds - stageStart;
+            var elapsedMs = timer.ElapsedMilliseconds;
+            var otherMs = elapsedMs - discoveryMs - dependencyMs - validationMs - persistenceMs - portableMs - namesMs - layoutMs - retirementMs;
+            Mod.Log.Info($"Bridge self-check result: elapsedMs={elapsedMs}, validationMs={validationMs}, persistenceMs={persistenceMs}, retirementMs={retirementMs}, discoveryMs={discoveryMs}, dependencyMs={dependencyMs}, portableMs={portableMs}, namesMs={namesMs}, layoutMs={layoutMs}, otherMs={otherMs}, owners={owners.Count}, removed={removed}, migrated={report.Count(BridgeSelfCheckReport.Outcome.Migrated)}, copiedAwaitingRestart={_copiedOwners.Count}, removalErrors={removalErrors}, migrationErrors={migrationErrors}; cached assets include registration failures; live-reference mutation disabled.");
         }
         finally
         {

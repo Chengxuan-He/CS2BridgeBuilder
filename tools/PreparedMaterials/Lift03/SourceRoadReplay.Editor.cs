@@ -13,7 +13,7 @@ public static class Lift03SourceRoadReplay
     [Serializable] public sealed class Sample { public float[] position, uv; public double[] lower,upper; }
     [Serializable] public sealed class Case { public int lod; public string deck; public Sample[] samples; }
     [Serializable] public sealed class Fixture { public Case[] cases; }
-    [Serializable] public sealed class Result { public int lod, samples, patches, partitionTriangles, wrapTriangles, reversedTriangles, degenerateTriangles; public string deck; public float halfDelta, maxSourcePixelError,maxUPixelError,maxVPixelError; public double maxUIntervalExcessPixels,maxVIntervalExcessPixels; public float[] worstPosition,worstSourceUv,worstMappedUv; public bool worstPrepared; public double inputArea, outputArea; public bool transformed; }
+    [Serializable] public sealed class Result { public int outsideWitnesses, lod, samples, patches, partitionTriangles, wrapTriangles, reversedTriangles, degenerateTriangles; public string deck; public float halfDelta, maxSourcePixelError,maxUPixelError,maxVPixelError; public double maxUIntervalExcessPixels,maxVIntervalExcessPixels; public float[] worstPosition,worstSourceUv,worstMappedUv; public bool worstPrepared; public double inputArea, outputArea; public bool transformed; }
     [Serializable] public sealed class Report { public string dllSha256, scope; public Result[] results; }
     const BindingFlags Flags = BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic;
     static object Field(object o, string name) => o.GetType().GetField(name, Flags).GetValue(o);
@@ -51,6 +51,18 @@ public static class Lift03SourceRoadReplay
             var patches = (Array)Field(level, "Patches");
             var regions = Field(level, "Carriageway");
             var result = new Result { lod = item.lod, deck = item.deck, halfDelta = delta, transformed = transformed, patches = patches.Length };
+            foreach(float zOutside in new[]{-128f,128f})
+            {
+                var outsidePoint=matrix.inverse.MultiplyPoint3x4(new Vector3(0,0,zOutside));
+                var cursor=regions;
+                while(Field(cursor,"Negative")!=null)
+                    cursor=Field(cursor,((Matrix4x4)Field(cursor,"ObjectToSeam")).MultiplyPoint3x4(outsidePoint).z<0?"Negative":"Positive");
+                if((bool)Field(cursor,"IsGap"))throw new InvalidDataException("Outside must not delete geometry.");
+                int index=(int)Field(cursor,"Bone");
+                if(Convert.ToInt32(((Array)Field(level,"SupportedTypes")).GetValue(index))!=0)
+                    throw new InvalidDataException("Outside inherited prototype support.");
+                result.outsideWitnesses++;
+            }
             foreach (var sample in item.samples)
             {
                 float width = item.deck == "Main" ? 8f : 5f;
@@ -93,7 +105,7 @@ public static class Lift03SourceRoadReplay
                 return Activator.CreateInstance(vertexType, Flags, null, new object[] { position, normal, new Vector4(t.x,t.y,t.z,1), new Vector4(0,0,.25f,.75f), Color.white }, null);
             }
             float w = (item.deck == "Main" ? 8 : 5) + delta;
-            object a = MakeVertex(-w,-127), b = MakeVertex(w,-127), c = MakeVertex(w,127), d = MakeVertex(-w,127);
+            object a = MakeVertex(-w,-129), b = MakeVertex(w,-129), c = MakeVertex(w,129), d = MakeVertex(-w,129);
             object MakeTriangle(object x,object y,object z,int id) => Activator.CreateInstance(triangleType,Flags,null,new object[]{x,y,z,0,7,id},null);
             var input = Array.CreateInstance(triangleType,2); input.SetValue(MakeTriangle(a,b,c,0),0);input.SetValue(MakeTriangle(a,c,d,1),1);
             object[] bindArgs = { input, regions, patches.Length, 1, null, null, false, null, null };
@@ -141,8 +153,31 @@ public static class Lift03SourceRoadReplay
             }
             results.Add(result);
         }
+        // Far Main uses the actual built finite physical-domain consumer.
+        var far=assembly.GetType("BridgeBuilder.Bridges.Lift03FarRoadMapping",true);
+        foreach(float delta in new[]{0f,2f})
+        foreach(bool transformed in new[]{false,true})
+        {
+            var pose=transformed?new Pose(new Vector3(3,1,-7),Quaternion.Euler(0,31,0)):Pose.identity;
+            var matrix=Matrix4x4.TRS(pose.position,pose.rotation,Vector3.one);
+            var patches=(Array)far.GetMethod("Patches",Flags).Invoke(null,new object[]{pose,delta});
+            var regions=far.GetMethod("Regions",Flags).Invoke(null,new object[]{pose,delta});
+            var result=new Result{deck="Main",lod=2,halfDelta=delta,transformed=transformed,patches=patches.Length};
+            foreach(float x in new[]{0f,-11f-delta,11f+delta})
+            foreach(float z in new[]{-129f,-100f,-40f,40f,100f,129f})
+            {
+                var point=matrix.inverse.MultiplyPoint3x4(new Vector3(x,0,z));var cursor=regions;
+                while(Field(cursor,"Negative")!=null)
+                    cursor=Field(cursor,((Matrix4x4)Field(cursor,"ObjectToSeam")).MultiplyPoint3x4(point).z<0?"Negative":"Positive");
+                if((bool)Field(cursor,"IsGap"))throw new InvalidDataException("Far outside geometry lost.");
+                int index=(int)Field(cursor,"Bone");bool expectedOutside=x!=0||Mathf.Abs(z)>128;
+                if((index==patches.Length-1)!=expectedOutside)throw new InvalidDataException("Far part correspondence mismatch.");
+                if(expectedOutside)result.outsideWitnesses++;else result.samples++;
+            }
+            results.Add(result);
+        }
         using var sha = System.Security.Cryptography.SHA256.Create();
-        var report = new Report { dllSha256 = BitConverter.ToString(sha.ComputeHash(File.ReadAllBytes(dll))).Replace("-", ""), results = results.ToArray(), scope = "Actual candidate C# domain tree, original source interiors, finite width changes and rigid pose; records float32 UV error. Synthetic two-triangle receiver also exercises actual TryBind and atlas wrap; reports area and complexity without asserting geometric acceptance. Surface identity stub only: no texture/native load/render or real selected-road bone/lane acceptance." };
+        var report = new Report { dllSha256 = BitConverter.ToString(sha.ComputeHash(File.ReadAllBytes(dll))).Replace("-", ""), results = results.ToArray(), scope = "Actual candidate C# domain tree, original source interiors, finite width changes and rigid pose; records float32 UV error. Synthetic two-triangle receiver also exercises actual TryBind and prepared projection; reports area and complexity without asserting geometric acceptance. Surface identity stub only: no texture/native load/render or real selected-road bone/lane acceptance." };
         File.WriteAllText(Arg("-report"), JsonUtility.ToJson(report, true));
         Debug.Log("Lift03 source-road C# replay completed.");
     }

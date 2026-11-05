@@ -26,7 +26,7 @@ internal static class MaterialSnapshotCheck
         var builtin = new AssetData(builtinCid, () => throw new Exception("Built-in bytes must not be copied")) { isBuiltin = true };
         AssetDatabase.global.Assets.Clear();
         AssetDatabase.global.Assets.AddRange(new[] { root, material, texture, builtin });
-        Check(BridgeDependencyPersistence.Save(owner, new[] { rootCid }, out var count, out var error, out var written)
+        Check(FixturePersistence.Save(owner, new[] { rootCid }, out var count, out var error, out var written)
             && count == 2 && written == 4, "healthy bridge supplements external material + texture: " + error);
         var folder = BridgeDependencyCopies.Folder(UnityEngine.Application.persistentDataPath, owner);
         var materialPath = Path.Combine(folder, materialCid + ".Surface");
@@ -35,12 +35,19 @@ internal static class MaterialSnapshotCheck
             && File.ReadAllBytes(texturePath).SequenceEqual(textureBytes)
             && File.ReadAllText(materialPath + ".cid") == materialCid
             && File.ReadAllText(texturePath + ".cid") == textureCid, "original material/texture bytes and CIDs retained");
+        var external = new BridgeCreationDependencies(asset => ReferenceEquals(asset, material)
+            ? Array.Empty<AssetData>() : throw new Exception("Unexpected native source"));
+        int scans = AssetDatabase.global.Scans;
+        Check(FixturePersistence.Save(owner,new[]{external.Record(root)},external,out count,out error,out written)
+            && count==2 && written==0 && scans==AssetDatabase.global.Scans,
+            "unprepared external material follows its own forward texture and builtin CIDs: "+error);
+        TimingCheck.CheckSummary(true, resolves:4, globalBuilds:0, mipBuilds:0, preflight:2, verify:0, payloadBytes:0);
         var stamp = File.GetLastWriteTimeUtc(materialPath);
-        Check(BridgeDependencyPersistence.Save(owner, new[] { rootCid }, out count, out error, out written)
+        Check(FixturePersistence.Save(owner, new[] { rootCid }, out count, out error, out written)
             && count == 2 && written == 0 && File.GetLastWriteTimeUtc(materialPath) == stamp,
             "repeated self-check leaves complete copies untouched");
         File.Delete(texturePath + ".cid");
-        Check(BridgeDependencyPersistence.Save(owner, new[] { rootCid }, out _, out error, out written) && written == 1,
+        Check(FixturePersistence.Save(owner, new[] { rootCid }, out _, out error, out written) && written == 1,
             "missing texture sidecar supplemented without rewriting payload");
         // Simulate the next native index after removing the source mod: only owner snapshots remain.
         AssetDatabase.global.Assets.Clear();
@@ -49,9 +56,9 @@ internal static class MaterialSnapshotCheck
         var localTexture = new AssetData(textureCid, () => File.OpenRead(texturePath));
         localTexture.Metadata.path = texturePath; localTexture.Metadata.extension = ".Texture"; localTexture.Metadata.packaged = false;
         AssetDatabase.global.Assets.AddRange(new[] { root, localMaterial, localTexture, builtin });
-        Check(BridgeDependencyPersistence.Save(owner, new[] { rootCid }, out count, out error, out written)
+        Check(FixturePersistence.Save(owner, new[] { rootCid }, out count, out error, out written)
             && count == 2 && written == 0, "current-owner snapshots resolve with source mod absent: " + error);
-        Check(!BridgeDependencyPersistence.Save("b" + Guid.NewGuid(), new[] { materialCid }, out _, out error)
+        Check(!FixturePersistence.Save("b" + Guid.NewGuid(), new[] { materialCid }, out _, out error)
             && error.Contains(materialCid), "another bridge cannot borrow these snapshots");
         Check(File.ReadAllBytes(rootPath).SequenceEqual(rootBytes) && File.ReadAllText(rootPath + ".cid") == rootCid,
             "root serialized references and identity remain unchanged");

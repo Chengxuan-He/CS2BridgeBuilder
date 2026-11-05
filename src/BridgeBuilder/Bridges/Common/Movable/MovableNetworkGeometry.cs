@@ -25,6 +25,7 @@ internal sealed partial class MovableNetworkGeometry : SystemBase
         if (!terrain.isCreated)
             throw new ArgumentException("Movable geometry requires initialized terrain height data.", nameof(terrain));
         EntityManager.CompleteAllTrackedJobs();
+        using var fixedNodeOffsets = new MovableFixedNodeOffsets(EntityManager);
         using var edgesQuery = EntityManager.CreateEntityQuery(ComponentType.ReadWrite<EdgeGeometry>());
         using var nodesQuery = EntityManager.CreateEntityQuery(ComponentType.ReadWrite<NodeGeometry>());
         using var edgeArray = edgesQuery.ToEntityArray(Allocator.TempJob);
@@ -49,6 +50,7 @@ internal sealed partial class MovableNetworkGeometry : SystemBase
             Run("CalculateIntersectionGeometryJob", 2);
             Run("CopyNodeGeometryJob", 2);
             Run("UpdateNodeGeometryJob", 1);
+            fixedNodeOffsets.Report(EntityManager);
         }
         finally { ((IDisposable)buffer).Dispose(); }
 

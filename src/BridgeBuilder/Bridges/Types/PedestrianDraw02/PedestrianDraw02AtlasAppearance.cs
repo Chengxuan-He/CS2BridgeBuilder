@@ -37,8 +37,6 @@ internal static class PedestrianDraw02AtlasAppearance
         for (int i = 0; i < stations; i++)
         {
             x[i] = AffineGeometry.AddScaled(values[stationOffset + i * 2], values[stationOffset + i * 2 + 1], halfWidthDelta);
-            if (i > 0 && x[i] <= x[i - 1])
-                throw new InvalidOperationException(nameof(PedestrianDraw02AtlasAppearance));
         }
         var pose = Matrix4x4.TRS(roadToObject.position, roadToObject.rotation, Vector3.one);
         var patches = new Patch[count];
@@ -49,7 +47,8 @@ internal static class PedestrianDraw02AtlasAppearance
             int at = domain * 20, interval = cellOffset + cell * 4;
             float originalLeft = values[stationOffset + slab * 2];
             float originalRight = values[stationOffset + (slab + 1) * 2];
-            float scale = (originalRight - originalLeft) / (x[slab + 1] - x[slab]);
+            float span = x[slab + 1] - x[slab];
+            float scale = span == 0f ? 0f : (originalRight - originalLeft) / span;
             float offset = originalLeft - scale * x[slab];
             Vector4 Projection(int index) => pose.transpose * new Vector4(values[index] * scale, 0,
                 values[index + 1], values[index + 2] + values[index] * offset);

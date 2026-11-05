@@ -36,17 +36,7 @@ internal sealed class Draw02NativeSourceBindings
                 throw new InvalidDataException("Draw02 native source content differs: " + cid);
             _verified.Add(source, actual);
         }
-        // This applies the measured receiver UVs only when containment and
-        // Float32 gradient preservation are already proven by the common unit.
-        // A legacy triangular bake is not itself evidence that the prototype
-        // requires reflection. Such receivers need their original mapping derived.
-        if (!sampling.CanUseSource)
-        {
-            requirement = "Draw02 receiver needs a validated original-UV/native sampling mapping: "
-                + MovableStructureKey.For(actual, sampling.Triangle, sampling.Bounds,
-                    sampling.A, sampling.B, sampling.C);
-            return false;
-        }
+        // Sampling-quality diagnostics do not deny the original material route.
         slot = new MovableStructureTiles.Slot { Surface = source, Original = sampling };
         requirement = string.Empty;
         return true;

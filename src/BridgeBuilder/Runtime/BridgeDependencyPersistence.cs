@@ -3,24 +3,28 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using Stage = BridgeBuilder.Runtime.DependencySaveTimings.Stage;
 
 namespace BridgeBuilder.Runtime;
 
 internal static class BridgeDependencyPersistence
 {
-    internal static bool Save(string owner, IEnumerable<string> seeds, out int count, out string error)
-        => Save(owner, seeds, out count, out error, out _);
-
-    internal static bool Save(string owner, IEnumerable<string> seeds, out int count, out string error, out int writtenFiles)
+    internal static bool Save(string owner, IEnumerable<string> seeds, BridgeCreationDependencies creation,
+        out int count, out string error, out int writtenFiles)
     {
-        var timer = System.Diagnostics.Stopwatch.StartNew();
-        ILookup<string, AssetData>? alternatives = null;
-        MidMipIndex? midMips = null;
+        var timing = new DependencySaveTimings();
         var footprint = new BridgeMaterialFootprint();
         var result = BridgeDependencyCopies.Save(UnityEngine.Application.persistentDataPath, owner, seeds,
-            cid => Resolve(cid, owner, ref alternatives, ref midMips), out count, out error, out writtenFiles, footprint.Observe);
+            cid => creation.Resolve(cid, owner, timing), out count, out error, out writtenFiles,
+            (cid, source) => { footprint.Observe(cid, source); creation.ObservePath(owner, cid, source); }, exception => Mod.Log.Error(exception), timing);
         if(result)
         {
+            try { creation.SaveRelations(owner); }
+            catch (Exception exception) { result = false; error = "Cache relation persistence failed: " + exception.Message; }
+        }
+        if(result)
+        {
+            using var measure = timing.Measure(Stage.Footprint);
             try
             {
                 var report=footprint.Write(UnityEngine.Application.persistentDataPath,owner,
@@ -29,130 +33,45 @@ internal static class BridgeDependencyPersistence
             }
             catch(Exception exception){Mod.Log.Warn("Saved-owner material measurement unavailable: "+exception.Message);}
         }
-        Mod.Log.Info($"Bridge dependency persistence UUID={owner}: elapsedMs={timer.ElapsedMilliseconds}, copies={count}, writtenFiles={writtenFiles}, success={result}");
+        string stages = timing.Summary(out long elapsedMs);
+        Mod.Log.Info($"Bridge dependency persistence UUID={owner}: elapsedMs={elapsedMs}, copies={count}, writtenFiles={writtenFiles}, success={result}, {stages}");
         return result;
     }
 
-    internal static BridgeDependencyCopies.Source? Resolve(string cid, string owner, ref ILookup<string, AssetData>? alternatives)
+    internal static string CacheFileName(string fileName, string extension, string physicalPath)
+        => !string.IsNullOrEmpty(fileName) ? Path.GetFileName(fileName + extension) : Path.GetFileName(physicalPath);
+
+    internal static void ValidateCacheName(string cid, BridgeDependencyCopies.Source source)
     {
-        MidMipIndex? midMips = null;
-        return Resolve(cid, owner, ref alternatives, ref midMips);
+        BridgeDependencyCopies.Destination(".", "unused", cid, source);
+        if (source.Bytes.Length < 8 || source.NativeFileName !=
+            $"TS{BitConverter.ToInt32(source.Bytes, 0)}_MB{BitConverter.ToInt32(source.Bytes, 4)}.MidMips")
+            throw new InvalidDataException("Native MidMips filename/header mismatch: " + cid);
     }
 
-    internal static BridgeDependencyCopies.Source? Resolve(string cid, string owner,
-        ref ILookup<string, AssetData>? alternatives, ref MidMipIndex? midMips)
+    internal static BridgeDependencyCopies.Source? Read(AssetData asset, string owner, DependencySaveTimings? timing = null)
     {
-        // Packaged source bytes take precedence over identical-CID snapshots in
-        // other bridges, including stale registrations after those bridges delete.
-        if (BridgePreparedMaterials.TryGet(cid, out var prepared))
-            return IncludeMidMips(cid, Read(prepared, owner), owner, ref alternatives, ref midMips);
-        if (midMips != null && midMips.Sources.TryGetValue(cid, out var cache)) return cache;
-        AssetDatabase.global.TryGetAsset(Colossal.Hash128.Parse(cid), out AssetData asset);
-        if (asset != null)
+        using var measure = timing?.Measure(Stage.SourceRead);
+        try
         {
-            var source = Read(asset, owner);
-            if (source != null) return IncludeMidMips(cid, source, owner, ref alternatives, ref midMips);
+            var source = ReadSource(asset, owner);
+            if (timing != null && source != null) timing.SourceBytesRead += source.Bytes.LongLength;
+            return source;
         }
-        // Deleted bridge snapshots can remain the first global CID match. Enumerate all
-        // registered sources only on a miss, once per save; never force-load a prefab.
-        alternatives ??= AssetDatabase.global.GetAssets<AssetData>()
-            .ToLookup(a => a.id.guid.ToString(), StringComparer.OrdinalIgnoreCase);
-        foreach (var candidate in alternatives[cid])
-        {
-            if (ReferenceEquals(candidate, asset)) continue;
-            var source = Read(candidate, owner);
-            if (source == null) continue;
-            Mod.Log.Info($"Bridge dependency alternate source CID={cid}; owner={owner}");
-            return IncludeMidMips(cid, source, owner, ref alternatives, ref midMips);
-        }
-        return null;
-    }
-
-    private static BridgeDependencyCopies.Source? IncludeMidMips(string cid, BridgeDependencyCopies.Source? source,
-        string owner, ref ILookup<string, AssetData>? alternatives, ref MidMipIndex? midMips)
-    {
-        if (source == null || source.Builtin ||
-            !(source.Extension.Equals(".Surface", StringComparison.OrdinalIgnoreCase)
-            || source.Extension.Equals(".Material", StringComparison.OrdinalIgnoreCase))) return source;
-        // MidMips records the reverse Surface CID relation, outside Surface's serialized fields.
-        // Index permitted native caches once per traversal, not only the installed prepared map.
-        if (midMips == null)
-        {
-            alternatives ??= AssetDatabase.global.GetAssets<AssetData>()
-                .ToLookup(a => a.id.guid.ToString(), StringComparer.OrdinalIgnoreCase);
-            midMips = new MidMipIndex();
-            foreach (var asset in alternatives.SelectMany(group => group))
-            {
-                if (asset.isBuiltin || !asset.GetMeta().extension.Equals(".MidMips", StringComparison.OrdinalIgnoreCase)) continue;
-                var candidate = Read(asset, owner); // Reject another owner's path before opening it.
-                if (candidate != null) midMips.Add(asset.id.guid.ToString(), candidate);
-            }
-            // Native registration may not yet include an existing owner snapshot during self-check.
-            // Enumerate only the current owner's files; never open another owner's same-CID cache.
-            string root = UnityEngine.Application.persistentDataPath;
-            string imported = Path.Combine(root, "ImportedData");
-            foreach (string path in BridgeFileAccess.EnumerateFiles(imported)
-                .Concat(BridgeFileAccess.EnumerateFiles(Path.Combine(root, "BridgeBuilder"))))
-            {
-                if (!path.EndsWith(".MidMips", StringComparison.OrdinalIgnoreCase)
-                    || !BridgeAssetInfo.MatchesOwner(path, owner)
-                    || BridgeAssetInfo.IsOtherBridgeAsset(path, owner, imported)) continue;
-                if (!BridgeFileAccess.Exists(path + ".cid") && midMips.Sources.Any(entry =>
-                    string.Equals(BridgeDependencyCopies.Destination(root, owner, entry.Key, entry.Value),
-                        path, StringComparison.OrdinalIgnoreCase))) continue;
-                string cacheCid = BridgeFileAccess.ReadText(path + ".cid").Trim();
-                using var stream = BridgeFileAccess.OpenRead(path);
-                using var bytes = new MemoryStream(); stream.CopyTo(bytes);
-                midMips.Add(cacheCid, new BridgeDependencyCopies.Source
-                {
-                    Owned = !BridgeAssetInfo.IsDependencyPath(path, owner), Extension = ".MidMips",
-                    PhysicalPath = path, NativeFileName = Path.GetFileName(path), Bytes = bytes.ToArray()
-                });
-            }
-        }
-        source.SerializedReferences = BridgeDependencyCopies.References(source)
-            .Concat(BridgePreparedMaterials.MidMipDependencies(cid))
-            .Concat(midMips.BySurface.TryGetValue(cid, out var caches) ? caches : Enumerable.Empty<string>())
-            .Distinct(StringComparer.OrdinalIgnoreCase).ToArray();
-        return source;
-    }
-
-    internal sealed class MidMipIndex
-    {
-        internal readonly Dictionary<string, BridgeDependencyCopies.Source> Sources = new(StringComparer.OrdinalIgnoreCase);
-        internal readonly Dictionary<string, HashSet<string>> BySurface = new(StringComparer.OrdinalIgnoreCase);
-        internal void Add(string cid, BridgeDependencyCopies.Source source)
-        {
-            if (!System.Text.RegularExpressions.Regex.IsMatch(cid, @"\A[a-fA-F0-9]{32}\z"))
-                throw new InvalidDataException("Invalid MidMips cache CID.");
-            if (Sources.TryGetValue(cid, out var prior))
-            {
-                if (!prior.Bytes.SequenceEqual(source.Bytes) || prior.NativeFileName != source.NativeFileName)
-                    throw new InvalidDataException("Conflicting MidMips cache CID: " + cid);
-                return;
-            }
-            // Also validate the native tag-bearing basename before accepting an implicit edge.
-            BridgeDependencyCopies.Destination(".", "unused", cid, source);
-            foreach (string surface in BridgeMidMipReferences.Read(source.Bytes))
-            {
-                if (!BySurface.TryGetValue(surface, out var entries)) BySurface.Add(surface, entries = new(StringComparer.OrdinalIgnoreCase));
-                entries.Add(cid);
-            }
-            Sources.Add(cid, source);
-        }
-    }
-
-    private static BridgeDependencyCopies.Source? Read(AssetData asset, string owner)
-    {
-        try { return ReadSource(asset, owner); }
         catch (FileNotFoundException exception) { Mod.Log.Warn($"Bridge dependency source missing: {exception.Message}"); return null; }
         catch (DirectoryNotFoundException exception) { Mod.Log.Warn($"Bridge dependency source missing: {exception.Message}"); return null; }
+        catch (Exception exception)
+        {
+            throw new IOException($"Dependency source read failed: owner={owner}; CID={asset.id.guid}; assetType={asset.GetType().FullName}; {exception.Message}", exception);
+        }
     }
 
     private static BridgeDependencyCopies.Source? ReadSource(AssetData asset, string owner)
     {
-        if (asset.isBuiltin) return new BridgeDependencyCopies.Source { Builtin = true, Extension = asset.GetMeta().extension };
+        if (asset.isBuiltin) return new BridgeDependencyCopies.Source { Builtin = true, Extension = asset.GetMeta().extension ?? "" };
         var meta = asset.GetMeta();
+        if (string.IsNullOrEmpty(meta.extension))
+            throw new InvalidDataException("Required dependency has no native file metadata: " + asset.id.guid);
         if (BridgeAssetInfo.IsOtherBridgeAsset(meta.path, owner,
             Path.Combine(UnityEngine.Application.persistentDataPath, "ImportedData"))) return null;
         var owned = !meta.packaged && !BridgeAssetInfo.IsDependencyPath(meta.path, owner)
@@ -173,12 +92,220 @@ internal static class BridgeDependencyPersistence
             Owned = owned,
             PhysicalPath = meta.path,
             NativeFileName = meta.extension.Equals(".MidMips", StringComparison.OrdinalIgnoreCase)
-                ? Path.GetFileName(meta.path) : "",
+                ? CacheFileName(meta.fileName, meta.extension, meta.path) : "",
             Bytes = payload,
             SerializedReferences = surface ? BridgeSurfaceReferences.Read(payload, (template, property) =>
                 (AssetDatabase.global.resources.materialLibrary.GetMaterialDescription(template)
                     ?? throw new InvalidDataException("Unknown native surface material template " + template))
                     .GetStackConfigIndex(property) != -1) : null,
         };
+    }
+}
+
+// A single generation owns these handles. Native cache edges can point backwards
+// on disk, so their producers declare them in the forward direction here.
+internal sealed class BridgeCreationDependencies
+{
+    private readonly Dictionary<string, AssetData> _sources = new(StringComparer.OrdinalIgnoreCase);
+    private readonly Dictionary<string, string[]> _cacheEdges = new(StringComparer.OrdinalIgnoreCase);
+    private readonly Func<AssetData, IEnumerable<AssetData>> _nativeCaches;
+    private readonly Func<string, string?>? _preparedCache;
+    private readonly Func<AssetData, string?>? _localCache;
+    internal readonly HashSet<string> Files = new(StringComparer.OrdinalIgnoreCase);
+    internal void ObservePath(string owner, string cid, BridgeDependencyCopies.Source source)
+    {
+        if (source.Builtin) return;
+        string path = source.Owned ? source.PhysicalPath
+            : BridgeDependencyCopies.Destination(UnityEngine.Application.persistentDataPath, owner, cid, source);
+        if (string.IsNullOrEmpty(path)) return;
+        Files.Add(path); Files.Add(path + ".cid");
+    }
+    private readonly Dictionary<string, string> _cachePaths = new(StringComparer.OrdinalIgnoreCase);
+    private readonly HashSet<string> _visitedSurfaces = new(StringComparer.OrdinalIgnoreCase);
+    private readonly Dictionary<string, HashSet<string>> _checkedMembership = new(StringComparer.OrdinalIgnoreCase);
+
+    private static string RelationsPath(string owner) => Path.Combine(UnityEngine.Application.persistentDataPath,
+        "ImportedData", owner, "BridgeCacheEdges.txt");
+
+    internal void ReadRelations(string owner)
+    {
+        string path = RelationsPath(owner);
+        if (!BridgeFileAccess.Exists(path)) return;
+        var lines = BridgeFileAccess.ReadText(path).Split(new[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries);
+        if (lines.Length == 0 || lines[0] != "BridgeCacheEdges/1") throw new InvalidDataException("Unsupported bridge cache relations.");
+        foreach (string line in lines.Skip(1))
+        {
+            var fields = line.Split('\t');
+            if (fields.Length < 2 || !ValidCid(fields[1])) throw new InvalidDataException("Invalid bridge cache relation.");
+            if (fields[0] == "E")
+            {
+                var edges = fields.Skip(2).ToArray();
+                if (edges.Any(id => !ValidCid(id)) || _cacheEdges.ContainsKey(fields[1]))
+                    throw new InvalidDataException("Invalid or duplicate bridge cache edge.");
+                _cacheEdges.Add(fields[1], edges);
+            }
+            else if (fields[0] == "P" && fields.Length == 3)
+            {
+                string local = LocalPath(owner, fields[2]);
+                if (_cachePaths.ContainsKey(fields[1])) throw new InvalidDataException("Duplicate bridge cache path.");
+                _cachePaths.Add(fields[1], local);
+            }
+            else throw new InvalidDataException("Invalid bridge cache relation record.");
+        }
+    }
+
+    private static bool ValidCid(string cid) => System.Text.RegularExpressions.Regex.IsMatch(cid, @"\A[a-fA-F0-9]{32}\z");
+    private static string LocalPath(string owner, string relative)
+    {
+        string root = Path.GetFullPath(UnityEngine.Application.persistentDataPath).TrimEnd('\\', '/') + Path.DirectorySeparatorChar;
+        string path = Path.GetFullPath(Path.Combine(root, relative));
+        if (Path.IsPathRooted(relative) || !path.StartsWith(root, StringComparison.OrdinalIgnoreCase)
+            || !BridgeAssetInfo.MatchesOwner(path.Substring(root.Length), owner)
+            || BridgeAssetInfo.IsOtherBridgeAsset(path, owner, Path.Combine(root, "ImportedData"))
+            || !path.EndsWith(".MidMips", StringComparison.OrdinalIgnoreCase))
+            throw new InvalidDataException("Cache relation path is outside its bridge owner.");
+        return path;
+    }
+
+    internal void SaveRelations(string owner)
+    {
+        string root = Path.GetFullPath(UnityEngine.Application.persistentDataPath).TrimEnd('\\', '/') + Path.DirectorySeparatorChar;
+        var lines = new List<string> { "BridgeCacheEdges/1" };
+        var caches = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        foreach (string surface in _visitedSurfaces.OrderBy(id => id, StringComparer.OrdinalIgnoreCase))
+        {
+            var edges = _cacheEdges[surface]; caches.UnionWith(edges);
+            lines.Add("E\t" + surface + (edges.Length == 0 ? "" : "\t" + string.Join("\t", edges)));
+        }
+        foreach (string cid in caches.OrderBy(id => id, StringComparer.OrdinalIgnoreCase))
+        {
+            if (!_cachePaths.TryGetValue(cid, out var path)) throw new InvalidDataException("Missing persisted cache path: " + cid);
+            string relative = Path.GetFullPath(path).Substring(root.Length);
+            LocalPath(owner, relative);
+            lines.Add("P\t" + cid + "\t" + relative);
+        }
+        string destination = RelationsPath(owner), text = string.Join("\n", lines) + "\n";
+        Files.Add(destination);
+        if (BridgeFileAccess.Exists(destination) && BridgeFileAccess.ReadText(destination) == text) return;
+        Directory.CreateDirectory(BridgeFileAccess.Native(Path.GetDirectoryName(destination)!));
+        string pending = destination + ".pending";
+        Files.Add(pending);
+        File.WriteAllText(BridgeFileAccess.Native(pending), text);
+        if (BridgeFileAccess.Exists(destination)) File.Replace(BridgeFileAccess.Native(pending), BridgeFileAccess.Native(destination), null);
+        else File.Move(BridgeFileAccess.Native(pending), BridgeFileAccess.Native(destination));
+    }
+
+    private BridgeDependencyCopies.Source? LocalCache(string cid, string owner, DependencySaveTimings timing)
+    {
+        if (!_cachePaths.TryGetValue(cid, out var path) || !BridgeFileAccess.Exists(path) || !BridgeFileAccess.Exists(path + ".cid")) return null;
+        if (!BridgeFileAccess.ReadText(path + ".cid").Trim().Equals(cid, StringComparison.OrdinalIgnoreCase))
+            throw new InvalidDataException("Cache relation CID sidecar mismatch: " + cid);
+        using var measure = timing.Measure(Stage.SourceRead);
+        var bytes = File.ReadAllBytes(BridgeFileAccess.Native(path)); timing.SourceBytesRead += bytes.LongLength;
+        var source = new BridgeDependencyCopies.Source { Bytes = bytes, Extension = ".MidMips", PhysicalPath = path,
+            Owned = !BridgeAssetInfo.IsDependencyPath(path, owner), NativeFileName = Path.GetFileName(path) };
+        BridgeDependencyPersistence.ValidateCacheName(cid, source);
+        ValidateMembership(cid, source);
+        return source;
+    }
+
+    private void ValidateMembership(string cid, BridgeDependencyCopies.Source source)
+    {
+        var membership = new HashSet<string>(BridgeMidMipReferences.Read(source.Bytes), StringComparer.OrdinalIgnoreCase);
+        _checkedMembership[cid] = membership;
+        foreach (string surface in _visitedSurfaces)
+            if (_cacheEdges[surface].Contains(cid, StringComparer.OrdinalIgnoreCase) && !membership.Contains(surface))
+                throw new InvalidDataException("Recorded cache lacks required Surface membership: " + surface);
+    }
+
+    internal BridgeCreationDependencies(Func<AssetData, IEnumerable<AssetData>> nativeCaches, Func<string, string?>? preparedCache = null,
+        Func<AssetData, string?>? localCache = null)
+    { _nativeCaches = nativeCaches; _preparedCache = preparedCache; _localCache = localCache; }
+
+    internal void Relocate(string before, string after)
+    {
+        foreach (string cid in _cachePaths.Where(p => Path.GetFullPath(BridgeFileAccess.Logical(p.Value))
+            .Equals(Path.GetFullPath(BridgeFileAccess.Logical(before)), StringComparison.OrdinalIgnoreCase)).Select(p => p.Key).ToArray())
+            _cachePaths[cid] = after;
+    }
+
+    internal string Record(AssetData asset)
+    {
+        string cid = asset.id.guid.ToString();
+        _sources[cid] = asset;
+        return cid;
+    }
+
+    internal void Material(AssetData surface, IEnumerable<AssetData> caches)
+    {
+        string cid = Record(surface);
+        string[] edges = caches.Select(Record).Distinct(StringComparer.OrdinalIgnoreCase)
+            .OrderBy(id => id, StringComparer.OrdinalIgnoreCase).ToArray();
+        if (_cacheEdges.TryGetValue(cid, out var previous) && !previous.SequenceEqual(edges))
+            throw new InvalidDataException("Conflicting generated Surface cache declarations: " + cid);
+        _cacheEdges[cid] = edges;
+    }
+
+    internal BridgeDependencyCopies.Source? Resolve(string cid, string owner, DependencySaveTimings timing)
+    {
+        var attempted = new List<AssetData>();
+        IEnumerable<AssetData> Candidates()
+        {
+            if (_sources.TryGetValue(cid, out var recorded)) yield return recorded;
+            if (BridgePreparedMaterials.TryGet(cid, out var prepared)) yield return prepared;
+            var hash = Colossal.Hash128.Parse(cid);
+            foreach (var database in AssetDatabase.global.databases)
+                if (database.TryGetAsset(hash, out AssetData candidate)) yield return candidate;
+        }
+        foreach (var asset in Candidates())
+        {
+            if (attempted.Any(previous => ReferenceEquals(previous, asset))) continue;
+            attempted.Add(asset);
+            var source = BridgeDependencyPersistence.Read(asset, owner, timing);
+            if (source == null) continue;
+            if (source.Builtin) return source;
+            if (source.Extension.Equals(".MidMips", StringComparison.OrdinalIgnoreCase))
+                {
+                BridgeDependencyPersistence.ValidateCacheName(cid, source);
+                ValidateMembership(cid, source);
+                _cachePaths[cid] = source.Owned ? source.PhysicalPath
+                    : BridgeDependencyCopies.Destination(UnityEngine.Application.persistentDataPath, owner, cid, source);
+            }
+            if (!source.Extension.Equals(".Surface", StringComparison.OrdinalIgnoreCase) &&
+                !source.Extension.Equals(".Material", StringComparison.OrdinalIgnoreCase)) return source;
+
+            if (!_cacheEdges.TryGetValue(cid, out var caches))
+            {
+                if (BridgePreparedMaterials.TryMidMipDependencies(cid, out var preparedCaches))
+                    caches = _cacheEdges[cid] = preparedCaches;
+                else if (_preparedCache?.Invoke(cid) is string knownCache)
+                {
+                    caches = _cacheEdges[cid] = new[] { knownCache };
+                    _cachePaths[knownCache] = Path.Combine(BridgeDependencyCopies.Folder(UnityEngine.Application.persistentDataPath, owner),
+                        knownCache, "TS512_MB3.MidMips");
+                }
+                else
+                {
+                    string? path = _localCache?.Invoke(asset);
+                    if (path != null)
+                    {
+                        string cacheCid = BridgeFileAccess.ReadText(path + ".cid").Trim();
+                        if (!ValidCid(cacheCid)) throw new InvalidDataException("Invalid historical cache CID.");
+                        _cachePaths[cacheCid] = path;
+                        _cacheEdges[cid] = new[] { cacheCid };
+                    }
+                    else Material(asset, _nativeCaches(asset));
+                    caches = _cacheEdges[cid];
+                }
+            }
+            _visitedSurfaces.Add(cid);
+            foreach (string cache in caches)
+                if (_checkedMembership.TryGetValue(cache, out var membership) && !membership.Contains(cid))
+                    throw new InvalidDataException("Recorded cache lacks required Surface membership: " + cid);
+            source.SerializedReferences = BridgeDependencyCopies.References(source).Concat(caches)
+                .Distinct(StringComparer.OrdinalIgnoreCase).ToArray();
+            return source;
+        }
+        return LocalCache(cid, owner, timing);
     }
 }

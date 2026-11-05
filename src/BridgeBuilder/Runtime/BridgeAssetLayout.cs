@@ -9,7 +9,8 @@ namespace BridgeBuilder.Runtime;
 internal static class BridgeAssetLayout
 {
     internal static bool Run(string gameRoot, IEnumerable<string> owners, string backup,
-        Func<string, string> prefabPath, out HashSet<string> changed, out string error)
+        Func<string, string> prefabPath, out HashSet<string> changed, out string error,
+        ISet<string>? knownPaths = null, Action<string, string>? relocated = null)
     {
         changed = new(StringComparer.Ordinal); error = "";
         var saved = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
@@ -17,7 +18,7 @@ internal static class BridgeAssetLayout
         var removed = new List<string>();
         try
         {
-            gameRoot = Path.GetFullPath(gameRoot).TrimEnd(Path.DirectorySeparatorChar);
+            gameRoot = Path.GetFullPath(BridgeFileAccess.Logical(gameRoot)).TrimEnd(Path.DirectorySeparatorChar);
             var backupRoot = Path.GetFullPath(Path.Combine(backup, "Layout"));
             if (backupRoot.Equals(gameRoot, StringComparison.OrdinalIgnoreCase)
                 || backupRoot.StartsWith(gameRoot + Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase))
@@ -25,11 +26,19 @@ internal static class BridgeAssetLayout
             var selected = new HashSet<string>(owners, StringComparer.OrdinalIgnoreCase);
             var plan = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
             var targets = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
-            var files = BridgeFileAccess.EnumerateFiles(Path.Combine(gameRoot, "ImportedData"))
+            var files = (knownPaths ?? BridgeFileAccess.EnumerateFiles(Path.Combine(gameRoot, "ImportedData"))
                 .Concat(BridgeFileAccess.EnumerateFiles(Path.Combine(gameRoot, "BridgeBuilder")))
-                .Concat(BridgeFileAccess.EnumerateFiles(Path.Combine(gameRoot, "StreamingData~", "VT"))).ToArray();
+                .Concat(BridgeFileAccess.EnumerateFiles(Path.Combine(gameRoot, "StreamingData~", "VT"))))
+                .Select(path => Path.GetFullPath(BridgeFileAccess.Logical(path)))
+                .Distinct(StringComparer.OrdinalIgnoreCase).Where(BridgeFileAccess.Exists).ToArray();
+            // Native asset paths and filesystem paths may spell the same file with different separators.
+            // Compare and plan physical paths once; deleting a supposed duplicate must never delete its target.
+            knownPaths?.Clear();
+            foreach (string path in files) knownPaths?.Add(path);
             foreach (var source in files)
             {
+                if (!source.StartsWith(gameRoot + Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase))
+                    throw new IOException("Layout source is outside game data: " + source);
                 var relative = source.Substring(gameRoot.Length + 1);
                 if (source.EndsWith(".cid", StringComparison.OrdinalIgnoreCase)
                     || !BridgeAssetInfo.TryFileOwner(relative, out var owner) || !selected.Contains(owner)) continue;
@@ -117,6 +126,11 @@ internal static class BridgeAssetLayout
                     Directory.Delete(BridgeFileAccess.Native(directory));
                     directory = Path.GetDirectoryName(directory);
                 }
+            }
+            foreach (var pair in plan)
+            {
+                knownPaths?.Remove(pair.Key); knownPaths?.Add(pair.Value);
+                relocated?.Invoke(pair.Key, pair.Value);
             }
             return true;
         }

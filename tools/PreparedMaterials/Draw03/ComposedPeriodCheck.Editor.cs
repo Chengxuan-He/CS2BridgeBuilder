@@ -64,7 +64,7 @@ public static class Draw03ComposedPeriodCheck
                 }
                 var keywords=((IEnumerable)binary.GetMethod("ReadStringHashSet").Invoke(null,new object[]{reader})).Cast<string>();Need(keywords.Contains("_TANGENTSPACE_OCTO"),"Packed normal interpretation");Need(reader.BaseStream.Position==reader.BaseStream.Length,"Complete Surface consumed");surfaces++;
             }
-            Need(surfaces==5&&textures==16,"Expected four near units and finite far atlas");
+            Need(surfaces==4&&textures==13,"Expected cross-section, grating, finite far sidewalk and derived background");
             Debug.Log($"PASS Draw03 composed periods: {surfaces} native Surface descriptors; {textures} native Texture headers and uploads; {mips} complete mip levels; {bytes} raw RGBA bytes; exact 968 texel U; finite V guards; complete native graph. Shader filtering and game acceptance remain separate.");
             EditorApplication.Exit(0);
         }

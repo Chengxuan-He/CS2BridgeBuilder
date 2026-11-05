@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Globalization;
 
@@ -289,18 +289,33 @@ internal static class RuntimeUiText
         },
         ["BridgeSelfCheckRestart"] = new[]
         {
-            "Restart the game before continuing. Restarting alone does not resolve unfinished operations.",
-            "请重启游戏后再继续。重启本身不会解决未完成的处理。",
-            "請重新啟動遊戲後再繼續。重新啟動本身不會解決未完成的處理。",
-            "Starte das Spiel neu, bevor du fortfährst. Ein Neustart allein behebt unvollständige Vorgänge nicht.",
-            "Reinicia el juego antes de continuar. Reiniciar por sí solo no resuelve las operaciones pendientes.",
-            "Redémarrez le jeu avant de continuer. Un redémarrage seul ne résout pas les opérations inachevées.",
-            "Riavvia il gioco prima di continuare. Il solo riavvio non risolve le operazioni incomplete.",
-            "続行する前にゲームを再起動してください。再起動だけでは未完了の処理は解決しません。",
-            "계속하기 전에 게임을 다시 시작하세요. 다시 시작하는 것만으로는 미완료 작업이 해결되지 않습니다.",
-            "Przed kontynuowaniem uruchom grę ponownie. Sam restart nie rozwiązuje nieukończonych operacji.",
-            "Reinicie o jogo antes de continuar. Reiniciar por si só não resolve as operações incompletas.",
-            "Перезапустите игру перед продолжением. Сам по себе перезапуск не завершает незаконченные операции."
+            "Restart the game before continuing.",
+            "请重启游戏后再继续。",
+            "請重新啟動遊戲後再繼續。",
+            "Starte das Spiel neu, bevor du fortfährst.",
+            "Reinicia el juego antes de continuar.",
+            "Redémarrez le jeu avant de continuer.",
+            "Riavvia il gioco prima di continuare.",
+            "続行する前にゲームを再起動してください。",
+            "계속하기 전에 게임을 다시 시작하세요.",
+            "Przed kontynuowaniem uruchom grę ponownie.",
+            "Reinicie o jogo antes de continuar.",
+            "Перезапустите игру перед продолжением."
+        },
+        ["BridgeSelfCheckUnfinishedWarning"] = new[]
+        {
+            "Restarting alone does not resolve unfinished operations.",
+            "重启本身不会解决未完成的处理。",
+            "重新啟動本身不會解決未完成的處理。",
+            "Ein Neustart allein behebt unvollständige Vorgänge nicht.",
+            "Reiniciar por sí solo no resuelve las operaciones pendientes.",
+            "Un redémarrage seul ne résout pas les opérations inachevées.",
+            "Il solo riavvio non risolve le operazioni incomplete.",
+            "再起動だけでは未完了の処理は解決しません。",
+            "다시 시작하는 것만으로는 미완료 작업이 해결되지 않습니다.",
+            "Sam restart nie rozwiązuje nieukończonych operacji.",
+            "Reiniciar por si só não resolve as operações incompletas.",
+            "Сам по себе перезапуск не завершает незаконченные операции."
         },
         ["RecoveryLocationLabel"] = new[]
         {

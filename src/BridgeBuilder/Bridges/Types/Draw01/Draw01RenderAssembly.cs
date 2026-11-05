@@ -52,6 +52,7 @@ internal static class Draw01RenderAssembly
             var removed = new bool[indices.Length / 3];
             Array.Fill(removed, true);
             Draw01UndersideData.Apply(1, underside, mapped, removed);
+            Draw01OuterFrameData.Apply(1, halfWidthDelta, positions, mapped, removed);
             var supplement = new MovableRoadAssets.Supplement(source, 0,
                 new MovableStructureModel.Plan(positions, mapped, new[] { indices }, new[] { removed }, uvCorrections: Draw01UndersideUv.ForLod(1)));
             var far = roadLevels[2];

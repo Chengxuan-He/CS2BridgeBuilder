@@ -6,9 +6,18 @@ namespace BridgeBuilder.Bridges;
 // WholeReceiver additionally requires the measured base channels and UV footprint.
 internal static class MovableRoadLayerIdentity
 {
+    internal const float SidewalkMinU = .32763671875f, SidewalkMaxU = .6650390625f;
     internal static MovableRoadAppearance.Type WholeReceiver(string surface, bool builtin,
         string baseColor, string normal, string mask, MovableRoadAppearance.Type worldspace, float minU, float maxU)
     {
+        // The measured corresponding object Surface contains only the original
+        // RoadEU asphalt PBR, over the whole repeating texture. Its object shader
+        // does not remove the need to select the matching prototype physical part.
+        if (surface == "88df662f6bc8058d3ecf8f7a5d7f2239" &&
+            baseColor == "b00176216b0ce36579bce6fc675cfb77" &&
+            normal == "9f446790360787756b0e5909db12e200" && mask == "375b871b66aaf675dacef141eb2a9810" &&
+            float.IsFinite(minU) && float.IsFinite(maxU) && minU <= maxU)
+            return MovableRoadAppearance.Type.Asphalt;
         if (!builtin) return MovableRoadAppearance.Type.None;
         if (surface == "a3522ead5e61e02569f0884fb4607eec" && worldspace == MovableRoadAppearance.Type.Ballast &&
             baseColor == "6bc6397af4c4779558d46a66beaf6f64" &&
@@ -24,6 +33,23 @@ internal static class MovableRoadLayerIdentity
             normal == "a142c18b42577de52815d1afd054660b" && mask == "37ceea0e8c2bd24599e237236e6ae338" &&
             minU >= 0f && maxU <= .249755859375f)
             return MovableRoadAppearance.Type.Asphalt;
+        // Measured RoadEU curb strip, independently classified from paving.
+        // This does not grant a target correspondence: a median using the same
+        // source remains Original unless its actual target part supports Curb.
+        if (surface == "1d7dad9f64c9fe55a809f1080c39fb92" && worldspace == MovableRoadAppearance.Type.Asphalt &&
+            baseColor == "9a6506aaede935752b5c4c0362c95f6e" &&
+            normal == "a142c18b42577de52815d1afd054660b" && mask == "37ceea0e8c2bd24599e237236e6ae338" &&
+            minU >= .28173828125f && maxU <= .29638671875f && minU <= maxU)
+            return MovableRoadAppearance.Type.Curb;
+        // RoadEU's sidewalk top is a separate base-atlas band despite its asphalt
+        // worldspace layer. Actual native Sidewalk3.5/4.5/6 and parking-sidewalk
+        // meshes place paving here; curb faces use .281738..296387 outside it.
+        // Full PBR/all-row evidence: shared/draw01-head42/sidewalk-source-pbr.json.
+        if (surface == "1d7dad9f64c9fe55a809f1080c39fb92" && worldspace == MovableRoadAppearance.Type.Asphalt &&
+            baseColor == "9a6506aaede935752b5c4c0362c95f6e" &&
+            normal == "a142c18b42577de52815d1afd054660b" && mask == "37ceea0e8c2bd24599e237236e6ae338" &&
+            minU >= SidewalkMinU && maxU <= SidewalkMaxU && minU <= maxU)
+            return MovableRoadAppearance.Type.Sidewalk;
         return MovableRoadAppearance.Type.None;
     }
 

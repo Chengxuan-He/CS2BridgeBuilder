@@ -13,6 +13,7 @@ def main():
     parser.add_argument('--output', type=Path, required=True)
     parser.add_argument('--report', type=Path, required=True)
     parser.add_argument('--composition', type=Path, required=True)
+    parser.add_argument('--cross-section', type=Path)
     args = parser.parse_args()
     records = json.loads(args.mapping.read_text())['roadTriangles']
     rows, maximum = [], 0.0
@@ -33,6 +34,8 @@ def main():
         values.extend([low, high, *coefficients[:, 0], *coefficients[:, 1]])
     # Unit V guards: original finite source rows stay in the active interior.
     composed = {u['name']: u for u in json.loads(args.composition.read_text())['units']}
+    if args.cross_section:
+        composed['FullPeriodLaneWear']=json.loads(args.cross_section.read_text())['units'][0]
     for name in ('FullPeriodLaneWear', 'FullPeriodLaneGap', 'FullPeriodCleanAsphalt', 'FullPeriodGrating'):
         unit = composed[name]
         low, high = unit['authoredActiveRows']

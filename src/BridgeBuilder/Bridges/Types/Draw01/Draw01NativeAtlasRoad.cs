@@ -101,7 +101,9 @@ internal static class Draw01NativeAtlasRoad
                         var v = new Vector4(Data[at + Numeric_Types_Draw01_Draw01NativeAtlasRoad_cs.Values.I32[43]] * scale, Numeric_Types_Draw01_Draw01NativeAtlasRoad_cs.Values.I32[44], Data[at + Numeric_Types_Draw01_Draw01NativeAtlasRoad_cs.Values.I32[45]], Data[at + Numeric_Types_Draw01_Draw01NativeAtlasRoad_cs.Values.I32[46]] * offset + Data[at + Numeric_Types_Draw01_Draw01NativeAtlasRoad_cs.Values.I32[47]]);
                         // Native codec proves this projection frame matches every near cell.
                         int index = patches.Count;
-                        if (domains[cell].Prepared)
+                        // The first cap cell is a partial traversal of the same measured
+                        // four-metre unit. It must not bypass the paint-free cap material.
+                        if (domains[cell].Prepared || domain == 3)
                             patches.Add(Draw01PreparedRoadUnit.Create(domain,u,v,frame,Data[at+7],Data[at+9]));
                         else if (domain == 0)
                             patches.Add(Draw01FiniteAsphalt.Create(u,v,frame,new Vector2(Data[at+7],Data[at+8]),new Vector2(Data[at+9],Data[at+10])));

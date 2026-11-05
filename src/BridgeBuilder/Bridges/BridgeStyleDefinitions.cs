@@ -202,11 +202,11 @@ internal static class BridgeStyleDefinitions
     internal static bool PreservesOpenTrussSideAssembly(string? styleId) => styleId == "TrussArch03";
     /// <summary>
     /// Whether the carried deck must use the bridge aggregate rather than the selected network's
-    /// ordinary road or track aggregate. ExtradosedBridge01's lower network is structurally part of
+    /// ordinary road or track aggregate. ExtradosedBridge01 and Lift03's lower networks are part of
     /// the same named bridge, so leaving its original aggregate in place gives it an unrelated street,
     /// road or track name.
     /// </summary>
-    internal static bool CarriedDeckUsesBridgeAggregate(string? styleId, bool carriedIsRoad) => styleId == "Extradosed01" || (styleId == "GoldenGateDouble" && carriedIsRoad);
+    internal static bool CarriedDeckUsesBridgeAggregate(string? styleId, bool carriedIsRoad) => styleId is "Extradosed01" or "Lift03" || (styleId == "GoldenGateDouble" && carriedIsRoad);
     /// <summary>
     /// Order matters: the first matching entry wins, so the narrower patterns come first. Without
     /// that, "PedestrianDrawBridge01" would be filed under the road-carrying bascule bridges.

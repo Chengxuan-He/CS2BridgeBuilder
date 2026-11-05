@@ -13,8 +13,8 @@ internal static class PedestrianDraw01Frames
             1 => (Count: Numeric_Types_PedestrianDraw01_PedestrianDraw01Frames_g_cs.Values.I32[2], Faces: Numeric_Types_PedestrianDraw01_PedestrianDraw01Frames_g_cs.Values.I32[3], Motion: Motion1, Edges: Edges1, Interior: Interior1, Fragments: Fragments1),
             2 => (Count: Numeric_Types_PedestrianDraw01_PedestrianDraw01Frames_g_cs.Values.I32[4], Faces: Numeric_Types_PedestrianDraw01_PedestrianDraw01Frames_g_cs.Values.I32[5], Motion: Motion2, Edges: Edges2, Interior: Interior2, Fragments: Fragments2),
             _ => throw new ArgumentOutOfRangeException(nameof(lod))};
-        if (source.Length != data.Count || indices.Length != data.Faces * Numeric_Types_PedestrianDraw01_PedestrianDraw01Frames_g_cs.Values.I32[6] || !float.IsFinite(delta) || delta <= -Numeric_Types_PedestrianDraw01_PedestrianDraw01Frames_g_cs.Values.F32[0])
-            throw new InvalidOperationException("PedestrianDraw01 A-frame layout or span is invalid.");
+        if (source.Length != data.Count || indices.Length != data.Faces * Numeric_Types_PedestrianDraw01_PedestrianDraw01Frames_g_cs.Values.I32[6] || !float.IsFinite(delta))
+            throw new InvalidOperationException("PedestrianDraw01 A-frame layout or finite delta is invalid.");
         var positions = (Vector3[])source.Clone();
         AffineGeometry.Scatter(data.Motion, item => item.Index, item =>
         {

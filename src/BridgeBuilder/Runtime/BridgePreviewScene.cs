@@ -129,7 +129,8 @@ internal static class BridgePreviewScene
             var deckWidth = 0f;
             foreach (var span in spans)
             {
-                var pieces = composition.Compose(deck, span.Flags, out var data);
+                var pieces = composition.Compose(deck, span.Flags, out var data,
+                    selectedRoad: session.RoadContext(deck));
                 deckWidth = data.m_Width;
                 if (pieces.Length == 0)
                     return false;
@@ -160,6 +161,7 @@ internal static class BridgePreviewScene
                     if (item?.m_Object is not ObjectGeometryPrefab geometry) continue;
                     if (item.m_RequireOutsideConnection || item.m_RequireOrphan) continue;
                     if (crossingEnds != null && geometry.Has<MoveableBridge>()) continue;
+                    if (IsNodeMetadataOnly(geometry)) continue;
                     var replacements = Resolve(geometry, session, draws, deckWidth, elevation + item.m_Position.y);
                     if (replacements.Count == 0)
                         return false;
@@ -220,6 +222,21 @@ internal static class BridgePreviewScene
             return true;
         }
         finally { path.Remove(deck); }
+    }
+
+    private static bool IsNodeMetadataOnly(ObjectGeometryPrefab prefab)
+    {
+        // A native node-offset carrier has no visual payload. Do not ask for
+        // renderer bounds, but keep broken mesh slots and visible children on
+        // the ordinary assembly/error path.
+        return prefab.m_Meshes != null && prefab.m_Meshes.Length == 0 &&
+            !prefab.Has<PlaceholderObject>() && !prefab.Has<MoveableBridge>() &&
+            !prefab.Has<PillarObject>() &&
+            (!prefab.TryGet<ObjectSubObjects>(out var children) ||
+                children.m_SubObjects != null && children.m_SubObjects.Length == 0) &&
+            prefab.TryGet<NetObject>(out var net) && net.active &&
+            net.m_SetCompositionState != null && net.m_SetCompositionState.Length == 1 &&
+            net.m_SetCompositionState[0] == NetPieceRequirements.Node;
     }
 
     private static List<(ObjectGeometryPrefab Prefab, float Offset)> Resolve(ObjectGeometryPrefab prefab,

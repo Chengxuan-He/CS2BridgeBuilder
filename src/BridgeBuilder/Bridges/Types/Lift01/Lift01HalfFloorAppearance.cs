@@ -22,8 +22,13 @@ internal static class Lift01HalfFloorAppearance
             throw new ArgumentOutOfRangeException(nameof(lod));
         var f = Data.F32;
         var halfWidth = f[Numeric_Types_Lift01_Lift01HalfFloorAppearance_cs.Values.I32[2]] + halfDelta;
-        if (!(halfWidth > Numeric_Types_Lift01_Lift01HalfFloorAppearance_cs.Values.I32[3]))
-            throw new InvalidOperationException("Lift01 finite floor width is invalid.");
+        if (!float.IsFinite(halfWidth))
+            throw new ArgumentOutOfRangeException(nameof(halfDelta));
+        // A collapsed projection has no inverse; retain the selected material.
+        if (halfWidth == 0f)
+            return new MovableRoadAppearance.Level(native,
+                new[] { new Patch(Vector2.zero, Vector2.one) },
+                new[] { MovableRoadAppearance.Type.None }, new Partition(0), new Partition(0));
         var panels = lod == Numeric_Types_Lift01_Lift01HalfFloorAppearance_cs.Values.I32[4] ? Numeric_Types_Lift01_Lift01HalfFloorAppearance_cs.Values.I32[5] : Numeric_Types_Lift01_Lift01HalfFloorAppearance_cs.Values.I32[6];
         var pose = Matrix4x4.TRS(roadToObject.position, roadToObject.rotation, Vector3.one);
         var sourceScale = f[Numeric_Types_Lift01_Lift01HalfFloorAppearance_cs.Values.I32[7]] / halfWidth;
@@ -124,7 +129,15 @@ internal static class Lift01HalfFloorAppearance
             return new Partition(pose, Half(moving, Numeric_Types_Lift01_Lift01HalfFloorAppearance_cs.Values.I32[116]), Half(moving, Numeric_Types_Lift01_Lift01HalfFloorAppearance_cs.Values.I32[117]));
         }
 
-        var regions = Convert(Lift01RoadPartitions.Carriageway);
+        // A source category alone does not extend the measured floor sideways.
+        // Keep unmatched receivers in the physical mesh with their original route.
+        var originalDomain = patches.Length;
+        Array.Resize(ref patches, originalDomain + 1);
+        Array.Resize(ref types, patches.Length);
+        patches[originalDomain] = new Patch(Vector2.zero, Vector2.one);
+        var original = new Partition(originalDomain);
+        var regions = Lateral(-halfWidth, original,
+            Lateral(halfWidth, Convert(Lift01RoadPartitions.Carriageway), original));
         return new MovableRoadAppearance.Level(native, patches, types, regions, regions);
     }
 }

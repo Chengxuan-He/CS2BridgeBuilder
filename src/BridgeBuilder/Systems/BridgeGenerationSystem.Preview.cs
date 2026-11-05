@@ -28,6 +28,7 @@ public partial class BridgeGenerationSystem
 {
     private void ClearPreview()
     {
+        if (_materialPreviewRevision.HasValue) CancelMaterialPreparation();
         _previewReleasePending = false;
         _previewRenderer?.Dispose();
         _previewRenderer = null;
@@ -41,6 +42,16 @@ public partial class BridgeGenerationSystem
     {
         try
         {
+            if (string.IsNullOrEmpty(request.PrefabName) && BridgePreparedMaterials.RequestFiles == null &&
+                BridgeStyleCatalog.Find(request.StyleId) != null)
+            {
+                PrepareMaterialFiles(request.StyleId, () => BuildPreview(request, revision), exception =>
+                {
+                    Mod.Log.Error(exception, "Bridge preview material preparation failed.");
+                    FailPreview(revision, "PreviewFailed");
+                }, revision);
+                return;
+            }
             if (!string.IsNullOrEmpty(request.PrefabName))
             {
                 var assetInfo = BridgeAssetCatalog.Find(request.PrefabName);

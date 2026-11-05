@@ -15,7 +15,7 @@ internal static class Lift02StructurePlan
         }
         else
             Lift02TrackRemoval.RemoveDetailed(lod, indices, plan.RemoveTriangles[Numeric_Types_Lift02_Lift02StructurePlan_cs.Values.I32[2]]);
-        return plan;
+        return Lift02CentralTrusses.Complete(plan, lod, delta);
     }
 }
 

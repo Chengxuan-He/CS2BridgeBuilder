@@ -89,6 +89,17 @@ try
         && !File.ReadAllText(good).Contains(badCid) && !File.Exists(bad), "correctly named parent keeps name/CID while unnamed child migrates");
     Check(leafBefore.SequenceEqual(File.ReadAllBytes(leaf)) && File.ReadAllText(leaf + ".cid") == leafCid,
         "correctly named leaf remains byte-identical");
+    // Production startup route: start at one bridge, resolve only its exact forward CIDs.
+    var ownerE="b55555555-5555-5555-5555-555555555555";
+    var ecid=new string('5',32); var legacyCid=new string('6',32);
+    var eroot=Save(ownerE,ecid,Doc(ownerE,"RoadPrefab",legacyCid));
+    var esource=Save("Shared legacy exact",legacyCid,Doc("Shared legacy exact","NetSectionPrefab"));
+    var paths=new HashSet<string>{eroot,eroot+".cid"}; int lookups=0;
+    Check(BridgeLegacyNames.Run(game,new[]{ownerE},Path.Combine(sandbox,"exact"),out changed,out error,
+        name=>Path.Combine("ImportedData",name,name+".Prefab"),new[]{eroot},cid=>{lookups++;return cid==legacyCid?esource:null;},paths),error);
+    Check(changed.Contains(ownerE)&&lookups==1&&!File.ReadAllText(eroot).Contains(legacyCid)
+        &&File.Exists(esource)&&File.Exists(esource+".cid"),"exact closure migrated; shared unowned source retained without reverse consumer scan");
+    Check(paths.Any(p=>p.Contains("Shared-"+ownerE)),"migration reports newly written owner paths for same-pass layout");
     // Destination collision must fail before touching the bridge or legacy source.
     File.WriteAllText(a, Doc(ownerA, "RoadPrefab", sectionCid));
     old = Save(section, sectionCid, Doc(section, "NetSectionPrefab"));

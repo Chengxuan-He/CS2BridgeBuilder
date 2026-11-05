@@ -14,9 +14,20 @@ different payload or CID. External dependency snapshots remain byte-identical an
 in sections 3 and 7; stem sanitization does not rename their payloads. Native mid-mip tag filenames remain unchanged. Extensions
 and paired `.cid` suffixes are not part of the stem replacement.
 
+## Write completion before reads
+
+Generated native resources must finish content initialization and synchronous native writing,
+including closing the payload stream and writing the CID sidecar, before property reload,
+relocation consumers or dependency traversal can read them. Asset registration alone does not
+prove that a file exists. Verify the completed native path and type extension; never embed a
+source URI or its extension into the generated filename stem. A failed write must stop that
+owner transaction before readers/publication proceed. Do not hide ordering failures with sleeps
+or retries. Tests must exercise actual native filesystem save, unload, relocation and reload,
+not only an in-memory material binding.
 ## Contents
 
 - [Safe owned asset filename stems](#safe-owned-asset-filename-stems)
+- [Write completion before reads](#write-completion-before-reads)
 - [1. Four distinct operations](#1-four-distinct-operations)
 - [2. Component and resource decisions](#2-component-and-resource-decisions)
 - [3. Evidence from the existing creation path](#3-evidence-from-the-existing-creation-path)
@@ -97,8 +108,11 @@ construction, not an export of every asset reachable from the selected road.
 `src/BridgeBuilder/Systems/BridgeGenerationSystem.Composition.cs`, `TryBuildBridge`, combines the
 cloner's nodes, additional native assets and created structure Prefabs into the save plan. Its
 preview branch returns before permanent persistence. The permanent path applies native metadata
-and presentation preparation, saves the owned nodes, saves dependencies and validates the saved
-representation before publication.
+and presentation preparation, saves the owned nodes and completes dependency persistence before
+publication. Successful persistence of this newly generated graph is the dependency guarantee;
+do not repeat the same graph resolution, global cache indexing or independence traversal before
+publishing it. Preserve save failures, write completion and required native initialization checks.
+This trust is local to the successful creation call, not a cached exemption for old or other-owner assets.
 
 `vendor/CS2ModShared/src/Export/PrefabAssetWriter.cs`, `Save`, filters by `NeedsSave`, registers the
 planned nodes first and then saves each Prefab. Its save call deliberately avoids recursive native
@@ -114,6 +128,13 @@ asset. The derived render Prefab points to that geometry and retains the origina
 through `widened.surfaceAssets = surfaces`. Preview models take a temporary path.
 
 ### External dependency snapshots
+
+#### Forward dependency handoff for new bridges
+
+During permanent creation the generator supplies the saver with the bridge roots and the actual sources and implicit dependency edges established while building that bridge. Traverse serialized forward CIDs recursively. Follow each prepared Surface's declared MidMips CIDs and each generated Surface's explicitly created owner cache. An explicitly empty cache set represents a Surface with no cache requirement. For an external material, follow its serialized texture and VT references and resolve required native cache membership using the selected material's exact provenance. Missing required sources, positive-level cache memberships or conflicting bytes are persistence errors.
+
+Resolve a requested CID through the recorded asset or an exact database lookup. Exclude foreign bridge snapshots before opening a stream. Normal creation, including lane conversion, must not enumerate all registered assets or MidMips caches, probe unrelated cache payloads, or scan owner directories to discover dependency edges. Keep the handoff scoped to the current generation. Startup self-check and historical migration also follow each bridge's serialized dependency chain and recorded explicit cache edges. Use current-owner direct paths, exact CID lookups and the selected native material's indexed cache provenance. A once-per-inspection discovery of registered bridge prefab identities and historical owner-file locations may establish roots and migration candidates. Reuse those candidates throughout the pass. Do not build a global asset/CID or MidMips reverse index, reread every Prefab per owner, or repeatedly scan all owner directories. Retain unowned shared legacy sources when their other consumers cannot be proven without a global reverse scan; migrate only the selected bridge closure. Preserve the separate discovery and handling of orphaned legacy components and the existing migration-first recovery and retirement semantics. Persist required generation cache relations in owner-local metadata when native serialized fields cannot represent them. Include dependency, validation, portable migration, name/layout migration and retirement costs in the self-check timings.
+
 
 `src/BridgeBuilder/Runtime/BridgeDependencyPersistence.cs` resolves source assets and stops at
 built-in provenance. It excludes another bridge's private assets of every type before opening
@@ -137,7 +158,8 @@ the installed prepared-material map; other owners' files are never dependency so
 Prefab references are extracted from UTF-8 and UTF-16 serialized text views. Native `.Surface`
 and `.Material` resources use `BridgeSurfaceReferences`, which reads binary texture references,
 virtual-texture headers and the native Hash128 representation without loading or rewriting a
-material. Saved-asset independence validation uses the same dependency results as copying.
+material. Normal creation consumes the successful dependency-save result without a second traversal.
+Existing-asset migration and post-load self-check retain their separate validation responsibilities.
 
 In VT mode, traverse the VTSurface and preprocessed VTTexture payloads and ordinary texture bindings
 outside the material template's VT stacks. Original texture IDs inside those stacks are provenance
@@ -183,7 +205,9 @@ subsequent unchanged check. This lifecycle check does not itself verify native t
 ### Native presentation and manager independence
 
 `src/BridgeBuilder/Runtime/BridgeNativePresentation.cs` prepares native presentation, saves native
-locale data and validates serialized references for manager-dependent types and UI paths.
+locale data and validates existing/migrated serialized references for manager-dependent types and UI paths.
+Normal creation prepares native presentation before saving and does not call that additional
+existing-asset validator after successful dependency persistence.
 `src/BridgeBuilder/Runtime/BridgeAssetCatalog.cs` invokes the native presentation save path when
 writing catalog metadata. These responsibilities are separate from material export.
 
@@ -200,10 +224,20 @@ There is no blanket requirement to create new material, texture, marking or anim
 
 ### Native material resources
 
+Road appearance processing (prototype composition, source-density tiling, embedded-marking
+removal and derived wear/background placement) applies only to movable bridges whose roads need
+that processing. Fixed/non-movable bridges retain the selected native road materials, UVs and
+markings; they require no prototype road-support table, road-material replacement or marking
+cleanup under these rules. Structural source-UV/density rules still apply to every bridge.
+A fixed running cap within a movable bridge remains part of that movable road-processing scope.
+
 Follow the [material generation contract](agent-contract/MATERIAL_GENERATION_CONTRACT.md).
 Movable non-road materials retain original identities and dependencies. Only prototype-supported
-road appearance types enter composition/precomposition (offline material baking outside the game); all other road types retain original
-materials. Asphalt, sidewalks and wheel-track/rut effects are independent support decisions.
+road appearance types enter composition/precomposition outside the game, with source-density
+tiling and all-LOD embedded-marking removal. Other road types use compatible originals or the
+corresponding native object road replacement under material section 4. Asphalt, sidewalks and
+wheel-track/rut effects are independent support decisions. Persist eligible authored road repeats
+with new identities and complete native periodic mip dependencies, without modifying shared originals.
 The [general source-mapping rule](agent-contract/BRIDGE_GENERATION_CONTRACT.md#preserve-original-uv-projection-and-mapping-mode)
 applies to fixed and movable bridges alike. Persist the required mapping and dependencies;
 ownership copies do not justify replacement materials or texture baking.
@@ -213,7 +247,7 @@ the supported-type gate or authorize full-road rasterization. Custom shaders and
 rebinding remain prohibited. Preserve complete texture/VT/mip dependencies and unchanged source bytes.
 Only native MidMips sources may share `Materials/Shared/MidMips/<cacheCID>/` across styles.
 Each owner independently snapshots its required cache dependencies with original CIDs and native
-filenames. The owner material limit is 10,000,000 bytes; the complete SDK ZIP limit is 55,000,000 bytes.
+filenames. Owner material bytes are informational, with no hard ceiling; the complete SDK ZIP limit is 55,000,000 bytes.
 
 ### Resource decision procedure
 

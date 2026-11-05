@@ -20,7 +20,7 @@ internal static class PedestrianDraw01FarRoadMapping
         {
             var at = index * 16;
             var halfSpan = values[at + 1];
-            var widthScale = halfSpan / (halfSpan + halfWidthDelta);
+            var widthScale = halfSpan + halfWidthDelta == 0 ? 0 : halfSpan / (halfSpan + halfWidthDelta);
             var u = new Vector4(values[at + 8] * widthScale, values[at + 9], values[at + 10], values[at + 11]);
             var v = new Vector4(values[at + 12] * widthScale, values[at + 13], values[at + 14], values[at + 15]);
             result[index] = new Patch(new Vector2(values[at + 4], values[at + 5]),

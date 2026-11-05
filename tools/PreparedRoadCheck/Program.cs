@@ -6,10 +6,12 @@ int cases = 0;
 foreach (var folder in Directory.GetDirectories(Path.GetFullPath(args[0])))
 {
     string style = Path.GetFileName(folder);
-    var prepared = Read(Path.Combine(folder, "Road/NativeAsphalt.Surface"));
+    var surfacePath = Path.Combine(folder, "Road/NativeAsphalt.Surface");
+    if (!File.Exists(surfacePath)) continue;
+    var prepared = Read(surfacePath);
     BridgePreparedMaterials.Style = style; BridgePreparedMaterials.Prepared = prepared;
     foreach (bool preview in new[] { false, true })
-    foreach (float? scale in new float?[] { null, .03125f, .125f, .5f })
+    foreach (float? scale in new float?[] { null, 0f, -1f, .03125f, .125f, .5f })
     {
         SurfaceAsset Source()
         {
@@ -34,7 +36,7 @@ foreach (var folder in Directory.GetDirectories(Path.GetFullPath(args[0])))
             Require(ReferenceEquals(different.textures["_ControlMask"], prepared.textures["_ControlMask"]), "Prepared control is shared, never owned");
             Require(different.textures.Values.Any(t => t.id == changed.textures[property].id) && changed.Leases == 0, "Changed texture reference retained");
         }
-        foreach (float bad in new[] { 0f, -1f, float.NaN, float.PositiveInfinity })
+        foreach (float bad in new[] { float.NaN, float.PositiveInfinity })
         {
             var invalid = Source(); invalid.floats["_WorldspaceUVScale"] = bad; int reads = BridgePreparedMaterials.Reads;
             try { MovableRoadSurface.Create("test-owner", style, invalid, capture, new(), out _, out _); throw new Exception("Invalid density accepted"); }

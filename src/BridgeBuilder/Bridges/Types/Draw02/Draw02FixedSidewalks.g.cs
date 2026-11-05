@@ -39,7 +39,8 @@ internal static class Draw02FixedSidewalks
         var constructedX = new float[plan.ConstructedCount];
         for (var i = Numeric_Types_Draw02_Draw02FixedSidewalks_g_cs.Values.I32[2]; i < constructedX.Length; i++)
             constructedX[i] = plan.Positions[positions.Length + i].x;
-        return new MovableStructureModel.Plan(plan.SourcePositions, positions, plan.SourceIndices, new[] { removed }, plan.AddedVertices, plan.Fragments, plan.InteriorVertices, constructedX);
+        return new MovableStructureModel.Plan(plan.SourcePositions, positions, plan.SourceIndices, new[] { removed }, plan.AddedVertices, plan.Fragments, plan.InteriorVertices, constructedX,
+            uvCorrections: plan.UvCorrections, preparedDomains: plan.PreparedDomains, frameTransforms: plan.FrameTransforms);
     }
 
     private readonly struct Group

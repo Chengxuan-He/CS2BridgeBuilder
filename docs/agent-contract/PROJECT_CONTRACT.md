@@ -260,8 +260,8 @@ the direct implementation is sufficient.
 Excessive defensive programming is prohibited. Defend boundaries involving external logic or data
 outside the mod's control, including generated bridge Prefabs that can subsequently be damaged.
 Validate such input and contain external failures where necessary. Internal mod logic should not
-fail during correct operation: when an internal invariant is violated, raise an explicit ERROR
-and preserve its diagnostic context. Throw an exception when appropriate; do not add special cases,
+fail during correct operation: actual data/API operation failures raise an explicit ERROR
+and preserve diagnostic context. Structural/appearance quality cannot gate generation under the bridge contract. Throw an exception for actual failed operations when appropriate; do not add special cases,
 silent returns, fallback values or exception swallowing merely to prevent an internal error from
 surfacing. Fix the underlying defect rather than hiding it.
 

@@ -26,8 +26,13 @@ internal static class Lift01FarAppearance
             var offset = i * Data.I32[Numeric_Types_Lift01_Lift01FarAppearance_cs.Values.I32[2]];
             float F(int field) => f[offset + field];
             var width = F(Numeric_Types_Lift01_Lift01FarAppearance_cs.Values.I32[3]) + halfDelta;
-            if (!(width > Numeric_Types_Lift01_Lift01FarAppearance_cs.Values.I32[4]))
-                throw new InvalidOperationException("Lift01 finite far width is invalid.");
+            if (!float.IsFinite(width))
+                throw new ArgumentOutOfRangeException(nameof(halfDelta));
+            // A collapsed projection has no inverse; retain the selected material.
+            if (width == 0f)
+                return new MovableRoadAppearance.Level(native,
+                    new[] { new Patch(Vector2.zero, Vector2.one) },
+                    new[] { MovableRoadAppearance.Type.None }, new Partition(0), new Partition(0));
             var scale = F(Numeric_Types_Lift01_Lift01FarAppearance_cs.Values.I32[5]) / width;
             var u = pose.transpose * new Vector4(F(Numeric_Types_Lift01_Lift01FarAppearance_cs.Values.I32[6]) * scale, Numeric_Types_Lift01_Lift01FarAppearance_cs.Values.I32[7], F(Numeric_Types_Lift01_Lift01FarAppearance_cs.Values.I32[8]), F(Numeric_Types_Lift01_Lift01FarAppearance_cs.Values.I32[9]));
             var v = pose.transpose * new Vector4(F(Numeric_Types_Lift01_Lift01FarAppearance_cs.Values.I32[10]) * scale, Numeric_Types_Lift01_Lift01FarAppearance_cs.Values.I32[11], F(Numeric_Types_Lift01_Lift01FarAppearance_cs.Values.I32[12]), F(Numeric_Types_Lift01_Lift01FarAppearance_cs.Values.I32[13]));
@@ -55,7 +60,22 @@ internal static class Lift01FarAppearance
                 _ => throw new InvalidOperationException("Lift01 far appearance requires fixed or road bone ownership.")};
         }
 
-        var domains = Convert(Lift01RoadPartitions.Carriageway);
+        // The measured far floor cannot authorize a material outside its envelope.
+        // This adds an appearance boundary only; physical ownership is unchanged.
+        var originalDomain = patches.Length;
+        Array.Resize(ref patches, originalDomain + 1);
+        Array.Resize(ref supported, patches.Length);
+        patches[originalDomain] = new Patch(Vector2.zero, Vector2.one);
+        Partition Lateral(float station, Partition negative, Partition positive)
+        {
+            var boundary = Matrix4x4.identity;
+            boundary.SetRow(0, new Vector4(0, 0, -1, 0));
+            boundary.SetRow(2, new Vector4(1, 0, 0, -station));
+            return new Partition(boundary * pose, negative, positive);
+        }
+        var original = new Partition(originalDomain);
+        var domains = Lateral(-halfWidth - halfDelta, original,
+            Lateral(halfWidth + halfDelta, Convert(Lift01RoadPartitions.Carriageway), original));
         return new MovableRoadAppearance.Level(native, patches, supported, domains, domains);
     }
 }

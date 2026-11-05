@@ -54,6 +54,7 @@ bounds=[(c['contentMin'],c['contentMax']) for c in prepared['channels']]
 assert all(b==bounds[0] for b in bounds)
 assert bounds[0][0][0]==0 and bounds[0][1][0]==1
 near_values.extend([bounds[0][0][1],bounds[0][1][1]])
+near_values.append(float(near['mesh0_positions'][near['mesh0_faces'][83248],0].max()-near['mesh0_positions'][near['mesh0_faces'][83248],0].min()))
 values=np.array(rows+near_values,dtype='<f4'); ints=np.array([3,13,39],dtype='<i4')
 raw=struct.pack('<II6i',0x314e4242,1,len(ints),0,0,0,len(values),0)+ints.tobytes()+values.tobytes()
 dest=ROOT/'assets/HardcodedNumbers/Lift02/Types_Lift02_BedAppearance.bin';dest.write_bytes(raw+hashlib.sha256(raw).digest())

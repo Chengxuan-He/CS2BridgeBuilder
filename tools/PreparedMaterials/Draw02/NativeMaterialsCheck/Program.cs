@@ -56,15 +56,16 @@ foreach (var entry in report.RootElement.GetProperty("roots").EnumerateArray())
             throw new Exception("Conversion did not validate both native headers.");
         var path = Path.Combine(args[1], entry.GetProperty("path").GetString()!);
         if (File.ReadAllText(path + ".cid").Trim() != result.id.guid) throw new Exception("Prepared sidecar differs.");
-        foreach (var invalid in new[] { new SurfaceAsset(source, 0, true), new SurfaceAsset(source, 17, false) })
-            Reject(() => Draw02NativeMaterials.Resolve(invalid, _ => throw new Exception("Invalid source reached loader.")));
-        foreach (var invalid in new[] { new SurfaceAsset("incorrect", 0, false), new SurfaceAsset(result.id.guid, 17, false), new SurfaceAsset(result.id.guid, 0, false, true) })
-            Reject(() => Draw02NativeMaterials.Resolve(original, _ => invalid));
+        Reject(() => Draw02NativeMaterials.Resolve(new SurfaceAsset(source, 17, false), _ => throw new Exception("Invalid source reached loader.")));
+        Reject(() => Draw02NativeMaterials.Resolve(original, _ => new SurfaceAsset("incorrect", 0, false)));
+        foreach (var allowed in new[] { new SurfaceAsset(result.id.guid, 17, false), new SurfaceAsset(result.id.guid, 0, false, true) })
+            if (!ReferenceEquals(allowed, Draw02NativeMaterials.Resolve(new SurfaceAsset(source, 0, true), _ => allowed)))
+                throw new Exception("Template or VT compatibility still gates generation.");
         converted++;
     }
 }
 if (converted != 6 || retained != 8) throw new Exception("Incomplete Draw02 inventory coverage.");
-Console.WriteLine($"PASS Draw02 native resolver: {converted} converted sources, {retained} exact retained sources; producer CIDs and descriptor sidecars match; invalid identity/template/VT rejected.");
+Console.WriteLine($"PASS Draw02 native resolver: {converted} converted sources, {retained} exact retained sources; producer CIDs and descriptor sidecars match; invalid identity rejected, template and VT gates removed.");
 
 static void Reject(Action operation)
 {

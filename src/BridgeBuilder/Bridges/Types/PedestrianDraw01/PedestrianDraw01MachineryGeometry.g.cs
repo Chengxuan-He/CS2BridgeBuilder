@@ -13,8 +13,8 @@ internal static class PedestrianDraw01MachineryGeometry
             1 => (Count: Numeric_Types_PedestrianDraw01_PedestrianDraw01MachineryGeometry_g_cs.Values.I32[1], Parts: Parts1),
             2 => (Count: Numeric_Types_PedestrianDraw01_PedestrianDraw01MachineryGeometry_g_cs.Values.I32[2], Parts: Parts2),
             _ => throw new ArgumentOutOfRangeException(nameof(lod))};
-        if (source.Length != data.Count || positions.Length != data.Count || !float.IsFinite(delta) || delta <= -Numeric_Types_PedestrianDraw01_PedestrianDraw01MachineryGeometry_g_cs.Values.F32[0])
-            throw new InvalidOperationException("PedestrianDraw01 machinery requires its recorded layout and positive member spans.");
+        if (source.Length != data.Count || positions.Length != data.Count || !float.IsFinite(delta))
+            throw new InvalidOperationException("PedestrianDraw01 machinery requires its recorded layout and finite delta.");
         foreach (var part in data.Parts)
             AffineGeometry.For(part.First, checked((part.Last) + 1), i =>
             {

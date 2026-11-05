@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using Colossal.IO.AssetDatabase;
+using BridgeBuilder.Runtime;
 using UnityEngine;
 using Partition = BridgeBuilder.Bridges.MovableRoadGeometry.Partition;
 using Type = BridgeBuilder.Bridges.MovableRoadAppearance.Type;
@@ -72,6 +73,13 @@ internal static class Draw01FarAppearance
 
         var patches = new List<MovableExistingRoadSurface.Patch>();
         var types = new List<Type>();
+        int Original()
+        {
+            int index = patches.Count;
+            patches.Add(new MovableExistingRoadSurface.Patch(Vector2.zero, Vector2.one));
+            types.Add(Type.None);
+            return index;
+        }
         var partitions = new Partition[road.Occurrences.Length];
         var frame = Matrix4x4.TRS(roadToObject.position, roadToObject.rotation, Vector3.one);
         Partition Cut(Vector4 plane, Partition negative, Partition positive)
@@ -91,8 +99,10 @@ internal static class Draw01FarAppearance
                 if (!bounds.TryGetValue(((object)section, right, positive), out var b))
                     return Partition.Gap;
                 var extent = new Extent(b.Min.x, b.Max.x, positive ? b.Max.z : -b.Min.z);
+                if (!float.IsFinite(extent.MinX) || !float.IsFinite(extent.MaxX) || !float.IsFinite(extent.EndZ))
+                    throw new InvalidOperationException("Draw01 finite mapping coordinates are not representable.");
                 if (!(extent.MaxX > extent.MinX) || !(extent.EndZ > Numeric_Types_Draw01_Draw01FarAppearance_cs.Values.I32[25]))
-                    return Partition.Gap;
+                    return new Partition(Original());
                 int quarter = (positive ? Numeric_Types_Draw01_Draw01FarAppearance_cs.Values.I32[26] : Numeric_Types_Draw01_Draw01FarAppearance_cs.Values.I32[27]) + (right ? Numeric_Types_Draw01_Draw01FarAppearance_cs.Values.I32[28] : Numeric_Types_Draw01_Draw01FarAppearance_cs.Values.I32[29]);
                 float sign = positive ? Numeric_Types_Draw01_Draw01FarAppearance_cs.Values.I32[30] : -Numeric_Types_Draw01_Draw01FarAppearance_cs.Values.I32[31];
                 float inner = Math.Max(Math.Abs(Data[(Numeric_Types_Draw01_Draw01FarAppearance_cs.Values.I32[32] + quarter) * Stride + Numeric_Types_Draw01_Draw01FarAppearance_cs.Values.I32[33]]), Math.Abs(Data[(Numeric_Types_Draw01_Draw01FarAppearance_cs.Values.I32[34] + quarter) * Stride + Numeric_Types_Draw01_Draw01FarAppearance_cs.Values.I32[35]]));
@@ -102,15 +112,16 @@ internal static class Draw01FarAppearance
                 var xOffset = sourceX0 - xScale * extent.MinX;
                 int Add(int chart, float targetStart, float targetEnd, float sourceStart, float sourceEnd, float scaleX, float offsetX)
                 {
-                    if (!(targetEnd > targetStart))
-                        throw new InvalidOperationException("Draw01 finite appearance domain collapsed.");
+                    if (targetEnd == targetStart)
+                        return Original();
                     int at = chart * Stride;
                     float zs = (sourceEnd - sourceStart) / (targetEnd - targetStart);
                     float zo = sign * (sourceStart - zs * targetStart);
                     var u = new Vector4(Data[at] * scaleX, Numeric_Types_Draw01_Draw01FarAppearance_cs.Values.I32[40], Data[at + Numeric_Types_Draw01_Draw01FarAppearance_cs.Values.I32[41]] * zs, Data[at] * offsetX + Data[at + Numeric_Types_Draw01_Draw01FarAppearance_cs.Values.I32[42]] * zo + Data[at + Numeric_Types_Draw01_Draw01FarAppearance_cs.Values.I32[43]]);
                     var v = new Vector4(Data[at + Numeric_Types_Draw01_Draw01FarAppearance_cs.Values.I32[44]] * scaleX, Numeric_Types_Draw01_Draw01FarAppearance_cs.Values.I32[45], Data[at + Numeric_Types_Draw01_Draw01FarAppearance_cs.Values.I32[46]] * zs, Data[at + Numeric_Types_Draw01_Draw01FarAppearance_cs.Values.I32[47]] * offsetX + Data[at + Numeric_Types_Draw01_Draw01FarAppearance_cs.Values.I32[48]] * zo + Data[at + Numeric_Types_Draw01_Draw01FarAppearance_cs.Values.I32[49]]);
                     int index = patches.Count;
-                    patches.Add(new MovableExistingRoadSurface.Patch(new Vector2(Data[at + Numeric_Types_Draw01_Draw01FarAppearance_cs.Values.I32[50]], Data[at + Numeric_Types_Draw01_Draw01FarAppearance_cs.Values.I32[51]]), new Vector2(Data[at + Numeric_Types_Draw01_Draw01FarAppearance_cs.Values.I32[52]], Data[at + Numeric_Types_Draw01_Draw01FarAppearance_cs.Values.I32[53]]), frame.transpose * u, frame.transpose * v, native, sourceUv: true));
+                    var surface = !sidewalk ? BridgePreparedMaterials.RepeatUnit("Draw01", "878ec0cc338a26b59009d60bcef5a8afde03e1150b35ab32eed34e62da55d4c9") : native;
+                    patches.Add(new MovableExistingRoadSurface.Patch(new Vector2(Data[at + Numeric_Types_Draw01_Draw01FarAppearance_cs.Values.I32[50]], Data[at + Numeric_Types_Draw01_Draw01FarAppearance_cs.Values.I32[51]]), new Vector2(Data[at + Numeric_Types_Draw01_Draw01FarAppearance_cs.Values.I32[52]], Data[at + Numeric_Types_Draw01_Draw01FarAppearance_cs.Values.I32[53]]), frame.transpose * u, frame.transpose * v, surface, sourceUv: true));
                     types.Add(sidewalk ? Type.Sidewalk : Type.Asphalt);
                     return index;
                 }

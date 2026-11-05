@@ -40,10 +40,13 @@ internal sealed class BridgePreviewComposition : IDisposable
     internal BridgePreviewComposition(bool trackOccurrences = false) => _trackOccurrences = trackOccurrences;
 
     internal Piece[] Compose(NetGeometryPrefab prefab, CompositionFlags flags, out NetCompositionData data,
-        bool priceComposition = false, bool includeOverhead = true)
+        bool priceComposition = false, bool includeOverhead = true,
+        BridgeBuilder.Bridges.BridgeRoadContext? selectedRoad = null)
     {
         data = default;
         if (_disposed || prefab == null || _invalidGraph) return Array.Empty<Piece>();
+        selectedRoad ??= BridgeBuilder.Bridges.BridgeRoadGeneration.Find(prefab);
+        if (selectedRoad != null) flags = selectedRoad.ApplyLevel(flags);
         // Auxiliary decks use the same edge composition path as the main deck.
         // A fixed segment's custom states must not turn it into a node preview.
         if (!priceComposition) flags.m_General |= CompositionFlags.General.Edge;
@@ -60,6 +63,7 @@ internal sealed class BridgePreviewComposition : IDisposable
             if (NetCompositionHelpers.TestEdgeFlags(state, flags)) setStates |= state.m_State;
         }
         flags |= setStates;
+        if (selectedRoad != null) flags = selectedRoad.ApplyLevel(flags);
         var geometry = new List<NetGeometrySection>();
         AddSections(geometry, prefab.m_Sections, 0, "sections");
         if (includeOverhead && prefab.TryGet<OverheadNetSections>(out var overhead))

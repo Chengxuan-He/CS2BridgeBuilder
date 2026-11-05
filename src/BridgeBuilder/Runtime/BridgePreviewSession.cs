@@ -21,6 +21,7 @@ internal sealed class BridgePreviewSession : IDisposable
     private readonly HashSet<PrefabBase> _owned = new();
     private bool _disposed;
     private ObjectGeometryPrefab[]? _objectCandidates;
+    private readonly Dictionary<NetGeometryPrefab, BridgeRoadContext> _roadContexts = new();
 
     internal BridgePreviewSession() => Name = "tmp" + Guid.NewGuid().ToString("D");
 
@@ -43,11 +44,18 @@ internal sealed class BridgePreviewSession : IDisposable
         .Concat(PrefabCatalog.GetAll(World.DefaultGameObjectInjectionWorld.GetExistingSystemManaged<PrefabSystem>()))
         .OfType<ObjectGeometryPrefab>().Distinct().ToArray();
 
-    internal void SetResult(NetGeometryPrefab root, BridgeStyleVariant variant)
+    internal BridgeRoadContext? RoadContext(NetGeometryPrefab deck)
+        => _roadContexts.TryGetValue(deck, out var context) ? context : null;
+
+    internal void SetResult(NetGeometryPrefab root, BridgeStyleVariant variant,
+        IReadOnlyDictionary<NetGeometryPrefab, BridgeRoadContext>? roadContexts = null)
     {
         if (IsBorrowed) return;
         Root = root;
         Variant = variant;
+        _roadContexts.Clear();
+        if (roadContexts != null)
+            foreach (var entry in roadContexts) _roadContexts.Add(entry.Key, entry.Value);
     }
 
     internal void Adopt(IEnumerable<PrefabCloneNode> nodes, IEnumerable<PrefabBase> geometryPrefabs)
@@ -73,6 +81,7 @@ internal sealed class BridgePreviewSession : IDisposable
         Root = null;
         Variant = null;
         _objectCandidates = null;
+        _roadContexts.Clear();
         Geometry.Dispose();
         foreach (var prefab in _owned)
             if (prefab != null) UnityEngine.Object.DestroyImmediate(prefab);

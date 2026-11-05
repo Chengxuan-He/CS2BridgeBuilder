@@ -25,6 +25,8 @@ internal static class MovableClosedRoad
         internal readonly BridgePreviewNetMesh.SourceFace[][]? SourceFaces;
         internal readonly MovableLaneVisuals.Batch[] LaneVisuals;
         internal UnityEngine.Vector3[] CarLaneCenters = Array.Empty<UnityEngine.Vector3>();
+        internal MovableNetworkContext.RoadLane[] RoadLanes = Array.Empty<MovableNetworkContext.RoadLane>();
+        internal string LaneContext = string.Empty;
         internal readonly MovableLaneGeometry.Result LaneGeometry;
         internal readonly MovableRoadObjects.Rule[][] ObjectRules;
         internal Result(MovableRoadGeometry.Triangle[] triangles, SurfaceAsset[] surfaces,

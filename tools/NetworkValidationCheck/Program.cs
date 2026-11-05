@@ -130,10 +130,12 @@ database.Enumerations = 0;
 var sharedLookup = new BridgeLoadedCidRecovery.LoadedIndex();
 BridgeLoadedCidRecovery.Inspect(net,out cids,out detail, sharedLookup);
 BridgeLoadedCidRecovery.Inspect(net,out cids,out detail, sharedLookup);
-Assert("shared inspection lookup enumerates assets only once", database.Enumerations == 1);
+Assert("shared inspection lookup never enumerates all assets", database.Enumerations == 0);
 Colossal.IO.AssetDatabase.AssetDatabase.global.Assets[cid].Instance = null;
 Assert("registered CID without loaded instance is broken", BridgeLoadedCidRecovery.Inspect(net,out cids,out detail) == BridgeLoadedCidRecovery.Result.Broken);
-Colossal.IO.AssetDatabase.AssetDatabase.global.Assets["duplicate"] = new() { id = new() { guid = cid }, Instance = loaded };
+var alternateDatabase = new Colossal.IO.AssetDatabase.AssetDatabase();
+alternateDatabase.Assets[cid] = new() { id = new() { guid = cid }, Instance = loaded };
+database.ExtraDatabases.Add(alternateDatabase);
 Assert("loaded identical CID copy recognized despite unloaded first entry", BridgeLoadedCidRecovery.Inspect(net,out cids,out detail) == BridgeLoadedCidRecovery.Result.Recoverable);
 net.asset.Text = "{\"name\":\"test\",\"m_Sections\":{\"$rcontent\":[{\"m_Section\":null}]}}";
 Assert("explicit null without CID cannot be recovered", BridgeLoadedCidRecovery.Inspect(net,out cids,out detail) == BridgeLoadedCidRecovery.Result.Broken);
@@ -226,7 +228,7 @@ namespace Colossal.IO.AssetDatabase
     {
         public static AssetDatabase global = new(); public static object user = new();
         public Dictionary<string, PrefabAsset> Assets = new();
-        public int Enumerations;
+        public int Enumerations; public List<AssetDatabase> ExtraDatabases = new(); public IEnumerable<AssetDatabase> databases => new[]{this}.Concat(ExtraDatabases);
         public IEnumerable<T> GetAssets<T>() { Enumerations++; return Assets.Values.Cast<T>(); }
         public Resources resources = new();
         public bool TryGetAsset(string id, out PrefabAsset asset) => Assets.TryGetValue(id, out asset);

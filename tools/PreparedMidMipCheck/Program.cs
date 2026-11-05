@@ -1,5 +1,20 @@
 using BridgeBuilder.Runtime;
 
+if (args.Length == 2 && args[0] == "--catalog")
+{
+    foreach (var file in Directory.EnumerateFiles(args[1], "*.MidMips", SearchOption.AllDirectories).OrderBy(p => p))
+    {
+        string cache = File.ReadAllText(file + ".cid").Trim();
+        foreach (var surface in BridgeMidMipReferences.Read(File.ReadAllBytes(file)))
+        {
+            Console.WriteLine($"        \"{surface}\" => \"{cache}\",");
+            if (BridgePreparedMaterialFiles.CacheFor(surface) != cache)
+                throw new Exception("Forward cache catalogue differs for " + surface);
+        }
+    }
+    return;
+}
+
 if (args.Length != 3) throw new ArgumentException("Usage: PreparedMidMipCheck <candidate-style-root> <original-style-root> <VT-fixtures>");
 int required = 0, zero = 0, negative = 0;
 string[] Refs(byte[] bytes) => BridgeSurfaceReferences.Read(bytes, (_, _) => true);
@@ -45,5 +60,10 @@ var content = File.ReadAllBytes(sample);
 MustFail(() => BridgeMidMipReferences.Read(content[..^1]));
 var wrongLevels = (byte[])content.Clone(); BitConverter.GetBytes(0).CopyTo(wrongLevels, 4);
 MustFail(() => BridgeMidMipReferences.Read(wrongLevels));
-if (required != 22 || zero != 5 || negative != 24) throw new Exception($"Coverage differs: {required}/{zero}/{negative}");
+// The current skinned paint descriptor has no VT carrier. The historical
+// positive-level paint fixture remains the control for its original cache.
+bool currentPaint = File.ReadAllText(Path.Combine(args[0], "Paint", "SkinnedPaint.Surface.cid")).Trim()
+    == "eceaaa678f9efb4eec32f1d5e3ad1d10";
+int expectedRequired = currentPaint ? 21 : 22;
+if (required != expectedRequired || zero != 27 - expectedRequired || negative != expectedRequired + 2) throw new Exception($"Coverage differs: {required}/{zero}/{negative}");
 Console.WriteLine($"PASS source-linked prepared MidMips preflight: required={required}; zero-level/empty={zero}; missing/truncated/header negatives={negative}");

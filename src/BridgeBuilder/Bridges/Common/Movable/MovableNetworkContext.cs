@@ -84,6 +84,7 @@ internal sealed partial class MovableNetworkContext : IDisposable
     internal readonly MovableNetworkPrefabs Prefabs;
     internal readonly Entity[] Nodes, Edges, Mechanisms;
     private readonly bool _leftHandTraffic;
+    private readonly string _generationOwner;
     private bool _disposed;
 
     // Terrain belongs to the caller, which must complete its producer before this synchronous call.
@@ -95,6 +96,7 @@ internal sealed partial class MovableNetworkContext : IDisposable
         RandomSeed randomSeed, BuildingConfigurationData buildingConfiguration)
     {
         World = new World("BridgeBuilder movable closed network");
+        _generationOwner = owner;
         Prefabs = new MovableNetworkPrefabs(World, owner);
         Nodes = new Entity[nodes.Count];
         Edges = new Entity[edges.Count];
@@ -106,13 +108,18 @@ internal sealed partial class MovableNetworkContext : IDisposable
             for (var i = 0; i < nodes.Count; i++)
             {
                 var input = nodes[i];
-                Nodes[i] = lanes.CreateNode(Prefabs.Import(input.SourcePrefab), input.Node,
+                var prefab = Prefabs.Import(input.SourcePrefab);
+                var selectedRoad = BridgeRoadGeneration.ForSampling(input.SourcePrefab);
+                if (selectedRoad != null) lanes.UseRoadContext(prefab, selectedRoad);
+                Nodes[i] = lanes.CreateNode(prefab, input.Node,
                     input.Seed, input.Elevation);
             }
             for (var i = 0; i < edges.Count; i++)
             {
                 var input = edges[i];
                 var prefab = Prefabs.Import(input.SourcePrefab);
+                var selectedRoad = BridgeRoadGeneration.ForSampling(input.SourcePrefab);
+                if (selectedRoad != null) lanes.UseRoadContext(prefab, selectedRoad);
                 Edges[i] = lanes.CreateEdge(prefab, Nodes[input.Start], Nodes[input.End], input.Curve,
                     default, input.Seed, input.Elevation);
                 if (input.Upgrade.HasValue)

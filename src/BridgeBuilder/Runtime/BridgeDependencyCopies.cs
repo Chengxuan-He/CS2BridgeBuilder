@@ -1,6 +1,9 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Diagnostics;
+using System.Globalization;
+using Stage = BridgeBuilder.Runtime.DependencySaveTimings.Stage;
 
 using System.Text;
 using System.Text.RegularExpressions;
@@ -62,53 +65,72 @@ internal static class BridgeDependencyCopies
 
     internal static bool Save(string gameRoot, string owner, IEnumerable<string> seeds,
         Func<string, Source?> resolve, out int count, out string error, out int writtenFiles,
-        Action<string, Source>? observed = null)
+        Action<string, Source>? observed = null, Action<Exception>? failed = null, DependencySaveTimings? timing = null)
     {
         writtenFiles = 0;
         count = 0;
         error = "";
         if (!BridgeAssetInfo.IsPrefabName(owner)) { error = "Invalid bridge owner"; return false; }
+        string activeCid = "", phase = "initialize graph";
         try
         {
-            var visited = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-            var pending = new Stack<string>(seeds);
             var copies = new Dictionary<string, Source>(StringComparer.OrdinalIgnoreCase);
-            while (pending.Count != 0)
+            using (timing?.Measure(Stage.Traversal))
             {
-                var cid = pending.Pop().ToLowerInvariant();
-                if (cid == EmptyCid || !Regex.IsMatch(cid, @"\A[a-f0-9]{32}\z"))
-                { error = "Invalid dependency CID"; return false; }
-                if (!visited.Add(cid)) continue;
-                var source = resolve(cid);
-                if (source == null) { error = "Dependency unavailable: " + cid; return false; }
-                observed?.Invoke(cid, source);
-                if (source.Builtin) continue;
-                if (!Regex.IsMatch(source.Extension, @"\A\.[A-Za-z0-9]+\z"))
-                { error = "Unsupported dependency extension: " + source.Extension; return false; }
-                if (!source.Owned) copies.Add(cid, source);
-                foreach (var dependency in References(source)) pending.Push(dependency);
+                var visited = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+                var pending = new Stack<string>(seeds);
+                while (pending.Count != 0)
+                {
+                    var cid = pending.Pop().ToLowerInvariant();
+                    if (cid == EmptyCid || !Regex.IsMatch(cid, @"\A[a-f0-9]{32}\z"))
+                    { error = "Invalid dependency CID"; return false; }
+                    if (!visited.Add(cid)) continue;
+                    activeCid = cid; phase = "resolve source";
+                    Source? source;
+                    using (timing?.Measure(Stage.Resolve))
+                    {
+                        if (timing != null) timing.ResolveCalls++;
+                        source = resolve(cid);
+                    }
+                    if (source == null) { error = "Dependency unavailable: " + cid; return false; }
+                    phase = "observe references";
+                    observed?.Invoke(cid, source);
+                    if (source.Builtin) continue;
+                    if (!Regex.IsMatch(source.Extension, @"\A\.[A-Za-z0-9]+\z"))
+                    { error = "Unsupported dependency extension: " + source.Extension; return false; }
+                    if (!source.Owned) copies.Add(cid, source);
+                    phase = "traverse references";
+                    foreach (var dependency in References(source)) pending.Push(dependency);
+                }
             }
             var folder = Folder(gameRoot, owner);
             // Preflight every destination before publishing any file. A changed same-CID asset
             // must not silently replace a snapshot on which this bridge already depends.
             var verifiedExisting = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-            foreach (var copy in copies)
+            using (timing?.Measure(Stage.Preflight))
             {
-                var path = Destination(gameRoot, owner, copy.Key, copy.Value);
-                var payloadExists = BridgeFileAccess.Exists(path);
-                var sidecarExists = BridgeFileAccess.Exists(path + ".cid");
-                if (payloadExists && !Matches(path, copy.Value.Bytes))
-                { error = "Different contents for dependency CID " + copy.Key; return false; }
-                if (sidecarExists && BridgeFileAccess.ReadText(path + ".cid").Trim() != copy.Key)
-                { error = "Dependency sidecar mismatch: " + copy.Key; return false; }
-                if (payloadExists && sidecarExists) verifiedExisting.Add(copy.Key);
+                foreach (var copy in copies)
+                {
+                    activeCid = copy.Key; phase = "verify/copy destination";
+                    var path = Destination(gameRoot, owner, copy.Key, copy.Value);
+                    if (timing != null) timing.PreflightCopies++;
+                    var payloadExists = BridgeFileAccess.Exists(path);
+                    var sidecarExists = BridgeFileAccess.Exists(path + ".cid");
+                    if (payloadExists && !Matches(path, copy.Value.Bytes))
+                    { error = "Different contents for dependency CID " + copy.Key; return false; }
+                    if (sidecarExists && BridgeFileAccess.ReadText(path + ".cid").Trim() != copy.Key)
+                    { error = "Dependency sidecar mismatch: " + copy.Key; return false; }
+                    if (payloadExists && sidecarExists) verifiedExisting.Add(copy.Key);
+                }
             }
             if (copies.Count == 0) return true;
+            using var write = timing?.Measure(Stage.Write);
             Directory.CreateDirectory(BridgeFileAccess.Native(folder));
             foreach (var copy in copies)
             {
                 // Preflight already verified these immutable destinations; no writes or second read.
                 if (verifiedExisting.Contains(copy.Key)) { count++; continue; }
+                activeCid = copy.Key; phase = "verify/copy destination";
                 var path = Destination(gameRoot, owner, copy.Key, copy.Value);
                 Directory.CreateDirectory(BridgeFileAccess.Native(Path.GetDirectoryName(path)!));
                 if (!BridgeFileAccess.Exists(path))
@@ -116,19 +138,29 @@ internal static class BridgeDependencyCopies
                     using var stream = new FileStream(BridgeFileAccess.Native(path), FileMode.CreateNew, FileAccess.Write, FileShare.None);
                     stream.Write(copy.Value.Bytes, 0, copy.Value.Bytes.Length);
                     writtenFiles++;
+                    if (timing != null) timing.PayloadBytesWritten += copy.Value.Bytes.LongLength;
                 }
                 if (!BridgeFileAccess.Exists(path + ".cid"))
                 {
                     File.WriteAllText(BridgeFileAccess.Native(path + ".cid"), copy.Key, new UTF8Encoding(false));
                     writtenFiles++;
                 }
-                if (!Matches(path, copy.Value.Bytes))
-                { error = "Dependency copy verification failed: " + copy.Key; return false; }
+                using (timing?.Measure(Stage.Verify))
+                {
+                    if (timing != null) timing.PostWriteChecks++;
+                    if (!Matches(path, copy.Value.Bytes))
+                    { error = "Dependency copy verification failed: " + copy.Key; return false; }
+                }
                 count++;
             }
             return true;
         }
-        catch (Exception exception) { error = exception.Message; return false; }
+        catch (Exception exception)
+        {
+            error = $"Dependency persistence failed: owner={owner}; CID={activeCid}; phase={phase}; {exception.Message}";
+            failed?.Invoke(new IOException(error, exception));
+            return false;
+        }
     }
     private static bool Matches(string path, byte[] expected)
     {
@@ -145,4 +177,60 @@ internal static class BridgeDependencyCopies
         return offset == expected.Length;
     }
 
+}
+
+// Per-save wall time. A nested operation pauses its parent, including on early returns
+// and exceptions. The hot path uses a value-type scope and never logs individual assets.
+internal sealed class DependencySaveTimings
+{
+    internal enum Stage { Other, Traversal, Resolve, SourceRead, GlobalIndex, MidMipIndex, Preflight, Write, Verify, Footprint }
+    private readonly long[] _ticks = new long[(int)Stage.Footprint + 1];
+    private readonly long _start = Stopwatch.GetTimestamp();
+    private long _last;
+    private Stage _current;
+    internal int ResolveCalls, PreflightCopies, PostWriteChecks;
+    internal long SourceBytesRead, PayloadBytesWritten;
+    // Retained diagnostic fields for log consumers; dependency lookup no longer builds indices.
+    internal const int GlobalIndexBuilds = 0, MidMipIndexBuilds = 0, MidMipCacheReads = 0;
+    internal const long MidMipBytesRead = 0;
+
+    internal DependencySaveTimings() => _last = _start;
+
+    private Stage Switch(Stage next, long now)
+    {
+        var previous = _current;
+        _ticks[(int)previous] += now - _last;
+        _last = now;
+        _current = next;
+        return previous;
+    }
+
+    internal readonly struct Scope : IDisposable
+    {
+        private readonly DependencySaveTimings _timing;
+        private readonly Stage _previous;
+        internal Scope(DependencySaveTimings timing, Stage next)
+        {
+            _timing = timing;
+            _previous = timing.Switch(next, Stopwatch.GetTimestamp());
+        }
+        public void Dispose() => _timing.Switch(_previous, Stopwatch.GetTimestamp());
+    }
+
+    internal Scope Measure(Stage stage) => new Scope(this, stage);
+
+    internal string Summary(out long elapsedMs)
+    {
+        long end = Stopwatch.GetTimestamp();
+        Switch(Stage.Other, end);
+        elapsedMs = (long)((end - _start) * 1000d / Stopwatch.Frequency);
+        string Milliseconds(Stage stage) => (_ticks[(int)stage] * 1000d / Stopwatch.Frequency)
+            .ToString("F3", CultureInfo.InvariantCulture);
+        return $"traversalMs={Milliseconds(Stage.Traversal)}, resolveMs={Milliseconds(Stage.Resolve)}, sourceReadMs={Milliseconds(Stage.SourceRead)}, " +
+            $"globalIndexMs={Milliseconds(Stage.GlobalIndex)}, midMipIndexMs={Milliseconds(Stage.MidMipIndex)}, preflightMs={Milliseconds(Stage.Preflight)}, " +
+            $"writeMs={Milliseconds(Stage.Write)}, verifyMs={Milliseconds(Stage.Verify)}, footprintMs={Milliseconds(Stage.Footprint)}, otherMs={Milliseconds(Stage.Other)}, " +
+            $"resolveCalls={ResolveCalls}, globalIndexBuilds={GlobalIndexBuilds}, midMipIndexBuilds={MidMipIndexBuilds}, " +
+            $"sourceBytesRead={SourceBytesRead}, midMipCacheReads={MidMipCacheReads}, midMipBytesRead={MidMipBytesRead}, " +
+            $"preflightCopies={PreflightCopies}, postWriteChecks={PostWriteChecks}, payloadBytesWritten={PayloadBytesWritten}";
+    }
 }

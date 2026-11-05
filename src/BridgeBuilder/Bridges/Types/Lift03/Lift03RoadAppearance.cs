@@ -11,29 +11,50 @@ namespace BridgeBuilder.Bridges;
 internal static class Lift03RoadAppearance
 {
     internal static MovableRoadAppearance.Level ForLevel(Lift03RoadSampling.Deck deck,
-        int lod, RenderPrefab source, Pose roadToObject, float halfDelta)
+        int lod, RenderPrefab source, Pose roadToObject, float halfDelta, MovableSelectedRoadLayout layout)
     {
         if ((uint)lod >= 3u)
             throw new ArgumentOutOfRangeException(nameof(lod));
         if (deck != Lift03RoadSampling.Deck.Main && deck != Lift03RoadSampling.Deck.Auxiliary)
             throw new ArgumentOutOfRangeException(nameof(deck));
-        if (lod < 2) return Lift03SourceRoadMapping.Create(deck, lod, source.GetSurfaceAsset(0), roadToObject, halfDelta);
-        var patches = lod == 2 && deck == Lift03RoadSampling.Deck.Main
-            ? Lift03FarRoadMapping.Patches(roadToObject, halfDelta)
-            : Patches(deck, roadToObject);
-        var regions = lod == 2 && deck == Lift03RoadSampling.Deck.Main
-            ? Lift03FarRoadMapping.Regions(roadToObject)
-            : Regions(roadToObject);
-        // Independent deck evidence: the upper road carries asphalt, the lower
-        // detailed road carries ballast. The original far lower mesh has only
-        // shell/underside faces, not a moving road-top appearance to substitute.
-        // Do not authorize sidewalk or rut composition from an asphalt patch.
-        var type = deck == Lift03RoadSampling.Deck.Main ? MovableRoadAppearance.Type.Asphalt
-            : lod < 2 ? MovableRoadAppearance.Type.Ballast : MovableRoadAppearance.Type.None;
-        var supported = new MovableRoadAppearance.Type[patches.Length];
-        for (int i = 0; i < supported.Length; i++) supported[i] = type;
-        return new MovableRoadAppearance.Level(source.GetSurfaceAsset(0), patches,
-            supported, regions, regions);
+        // Unknown source categories retain Original. Material correspondence is
+        // selected per actual receiver by ForReceiver, independently of deck.
+        return new MovableRoadAppearance.Level(source.GetSurfaceAsset(0),
+            new[] { new Patch(Vector2.zero, Vector2.one) },
+            new[] { MovableRoadAppearance.Type.None }, new Partition(0), new Partition(0));
+    }
+
+    internal static MovableRoadAppearance.Level? ForReceiver(int lod, RenderPrefab source,
+        Pose roadToObject, MovableSelectedRoadLayout layout, MovableRoadAppearance.Type receiver)
+    {
+        if ((uint)lod >= 3u) throw new ArgumentOutOfRangeException(nameof(lod));
+        // Mixed/unknown categories are not silently converted to one family.
+        if (receiver == MovableRoadAppearance.Type.Asphalt ||
+            receiver == (MovableRoadAppearance.Type.Asphalt | MovableRoadAppearance.Type.WheelTrack))
+        {
+            var domain = new Partition(0);
+            var clean = new MovableRoadAppearance.Level(source.GetSurfaceAsset(0),
+                new[] { new Patch(Vector2.zero, Vector2.one) },
+                new[] { MovableRoadAppearance.Type.Asphalt }, domain, domain);
+            return Lift03CleanRoadAppearance.Apply(clean, layout, roadToObject);
+        }
+        if (receiver != MovableRoadAppearance.Type.Ballast) return null;
+        var surface = BridgeBuilder.Runtime.BridgePreparedMaterials.RepeatUnit("Lift03",
+            "906eeb04251378f9e20b74cc9dc1a3d0f689e383892d58517a3853e6b803adff");
+        var original = Patches(Lift03RoadSampling.Deck.Auxiliary, roadToObject);
+        var patches = new Patch[original.Length];
+        var types = new MovableRoadAppearance.Type[patches.Length];
+        for (int i = 0; i < patches.Length; i++)
+        {
+            // The already prepared pure ballast period retains measured 249 px/m
+            // and all PBR/mips. U/V address its complete 1240 x 992 texture.
+            patches[i] = new Patch(Vector2.zero, Vector2.one, original[i].U, original[i].V,
+                surface, repeat: true, preparedUnit: true, repeatU: true, repeatV: true,
+                projectTangent: true);
+            types[i] = MovableRoadAppearance.Type.Ballast;
+        }
+        var regions = Regions(roadToObject);
+        return new MovableRoadAppearance.Level(surface, patches, types, regions, regions);
     }
 
     internal static Patch[] Patches(Lift03RoadSampling.Deck deck, Pose roadToObject)

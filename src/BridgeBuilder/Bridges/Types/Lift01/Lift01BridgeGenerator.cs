@@ -40,7 +40,8 @@ internal sealed class Lift01BridgeGenerator : MovableBridgeGeneratorBase<Movable
         var mechanism = Lift01ObjectAssembly.Create(factory, target.name, target.name + " Moving Object", moving, column, footing, content, halfDelta, road, Lift01RoadPartitions.Carriageway);
         var pillar = Lift01PillarAssembly.Create(factory, target.name + " Pillar", factory.ResolveOriginal<RenderPrefab>("Default_Base Mesh"), content, halfDelta) ?? throw new InvalidOperationException("Lift01 ordinary pillar creation failed.");
         Lift01ApproachAssembly.Apply(target, factory, content, halfDelta);
-        Lift01NetworkAssembly.Apply(target, factory, Lift01SectionRoles.Resolve(target.m_Sections), pillar, mechanism);
+        Lift01NetworkAssembly.Apply(target, factory, Lift01SectionRoles.Resolve(target.m_Sections, BridgeRoadGeneration.Find(target)
+            ?? throw new InvalidOperationException("Lift01 section roles require the resolved road context.")), pillar, mechanism);
     }
 }
 

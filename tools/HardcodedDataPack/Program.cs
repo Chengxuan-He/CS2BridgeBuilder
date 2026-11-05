@@ -42,6 +42,16 @@ if (args.Contains("--check"))
         // not an excuse to retain arbitrary unreferenced files in the resource tree.
         if(text.Contains("HardcodedNumbers.Load(resource)"))
             names.AddRange(Regex.Matches(text,"=>\\s*\"(NativeUvCharts_[^\"]+)\"").Select(m=>m.Groups[1].Value));
+        // Recipe constructors may pass explicit resource keys through a local
+        // parameter to Load(key). Inspect syntax literals, not comments, so these
+        // measured resources remain checked and embedded alongside direct loads.
+        if (Regex.IsMatch(text, @"HardcodedNumbers\.Load\(\s*[A-Za-z_]\w*\s*\)"))
+            names.AddRange(CSharpSyntaxTree.ParseText(text).GetRoot().DescendantNodes()
+                .OfType<LiteralExpressionSyntax>()
+                .Where(l => l.IsKind(SyntaxKind.StringLiteralExpression))
+                .Select(l => l.Token.ValueText)
+                .Where(n => n.StartsWith("Types_", StringComparison.Ordinal) ||
+                    n.StartsWith("NativeUvCharts_", StringComparison.Ordinal)));
         foreach (string name in names.Distinct())
         {
             var path = ResourceFiles.PathFor(output, name);

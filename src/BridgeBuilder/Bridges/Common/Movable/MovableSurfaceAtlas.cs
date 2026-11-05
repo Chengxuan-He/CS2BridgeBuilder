@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -32,6 +32,7 @@ internal sealed class MovableSurfaceAtlas
         internal SurfaceAsset[] Materials = Array.Empty<SurfaceAsset>();
         internal MovableExistingRoadSurface.Patch[] Patches = Array.Empty<MovableExistingRoadSurface.Patch>();
         internal SurfaceAsset Native = null!;
+        internal SurfaceAsset[]? DomainNatives;
         internal Matrix4x4 SourceFrame = Matrix4x4.identity;
     }
     private sealed class Chart
@@ -43,6 +44,7 @@ internal sealed class MovableSurfaceAtlas
         internal MovableExistingRoadSurface.Patch Patch;
         internal SurfaceAsset Source = null!;
         internal SurfaceAsset? Prepared;
+        internal bool PreserveInput;
         internal bool Repeat;
         internal bool RepeatCutout;
         internal bool NativeRoad;
@@ -51,6 +53,7 @@ internal sealed class MovableSurfaceAtlas
         internal SurfaceAsset? RoadSource;
         internal MovableExistingRoadSurface.Patch RoadPatch;
         internal Matrix4x4 Frame;
+        internal MovableCompatibleRoad.Binding? CompatibleRoad;
         internal Chart Copy() => (Chart)MemberwiseClone();
         internal object NativePeriodicKey(int padding)
         {
@@ -79,11 +82,15 @@ internal sealed class MovableSurfaceAtlas
             !authoredControls.Contains(c.Source);
     }
     internal static Triangle[][] Compose(Input[] inputs, MovableRoadMaterial owner,
-        IReadOnlyList<MovableNativeDecals.Region> paint, out SurfaceAsset[][] materials)
+        IReadOnlyList<MovableNativeDecals.Region> paint, out SurfaceAsset[][] materials,
+        Action<int, IReadOnlyList<MovableRoadAppearanceBinding>>? captureAppearance = null)
     {
         var clock = System.Diagnostics.Stopwatch.StartNew();
         var charts = new List<Chart>();
-        var panels = new List<(Triangle Source, Vertex[] Vertices, Chart? Chart)>[inputs.Length];
+        var compatibleRoads=new Dictionary<SurfaceAsset,MovableCompatibleRoad.Binding?>();
+        var routeSources=new Dictionary<SurfaceAsset,MovableRoadRoute.Source>();
+        int correspondingFaces=0;
+        var panels = new List<(Triangle Source, Vertex[] Vertices, Chart? Chart, uint Domain, MovableRoadRoute.Kind Route, MovableRoadAppearance.Type Receiver, bool MeasuredBase)>[inputs.Length];
         for (var level = 0; level < inputs.Length; level++)
         {
             var input = inputs[level]; panels[level] = new();
@@ -94,18 +101,101 @@ internal sealed class MovableSurfaceAtlas
                 var original = input.Materials[t.Material]; original.LoadHeader();
                 var nativeRoad = input.SelectedInput;
                 var domain = panel.Source.Bone & ~MovingSurface;
-                // Fixed prototype domains still require their measured LOD projection,
-                // even when the borrowed receiver already uses an object material.
-                // An original selected object surface remains an unchanged input.
-                if (MovableSurfaceAssets.IsObjectSurface(original) &&
-                    (nativeRoad || !(input.Patches[domain].SourceUv || input.Patches[domain].PreparedUnit)))
-                { panels[level].Add((t, panel.Vertices, null)); continue; }
-                var roadPatch = nativeRoad ? input.Patches[domain] : default;
-                var supported = input.SupportedTypes.Length == 0 ? MovableRoadAppearance.Type.None
+                var native = input.DomainNatives != null && domain < input.DomainNatives.Length
+                    ? input.DomainNatives[domain] : input.Native;
+                var selectedRoute = MovableRoadRoute.Kind.Original;
+                var receiver = MovableRoadAppearance.Type.None;
+                bool measuredBase = false;
+                void AddPanel(Chart? chart) => panels[level].Add((t, panel.Vertices, chart,
+                    face.Bone, selectedRoute, receiver, measuredBase));
+                bool hasPatch=domain<input.Patches.Length;
+                if (!nativeRoad && !hasPatch)
+                { AddPanel(null); continue; }
+                // Object rendering compatibility is not a material correspondence.
+                // Selected inputs still pass the actual source/target-part route below.
+                // Non-selected prototype domains retain their existing projection rules.
+                bool originalObject = MovableSurfaceAssets.IsObjectSurface(original);
+                if (!nativeRoad && originalObject &&
+                    !(input.Patches[domain].SourceUv || input.Patches[domain].PreparedUnit))
+                { AddPanel(null); continue; }
+                var roadPatch = nativeRoad && hasPatch ? input.Patches[domain] : default;
+                var supported = domain >= input.SupportedTypes.Length ? MovableRoadAppearance.Type.None
                     : input.SupportedTypes[domain];
+                if(nativeRoad)
+                {
+                    if(!compatibleRoads.TryGetValue(original,out var compatible))
+                        compatibleRoads.Add(original,compatible=MovableCompatibleRoad.Read(original,owner));
+                    if(!routeSources.TryGetValue(original,out var routeSource))
+                        routeSources.Add(original,routeSource=MovableRoadRoute.Read(original));
+                    var route=MovableRoadRoute.Select(routeSource,t,supported,hasPatch && native!=null,
+                        compatible!=null && compatible.Accepts(t,MovableRoadAppearance.Type.None));
+                    selectedRoute = route;
+                    if (captureAppearance != null)
+                    {
+                        receiver = routeSource.Receiver(t);
+                        measuredBase = routeSource.IsMeasuredBase(t);
+                    }
+                    if(route==MovableRoadRoute.Kind.Original)
+                    {
+                        // A missing correspondence is an ordinary unchanged source route.
+                        // Do not create a chart, detect a period or bake the receiver extent.
+                        Chart? retained=null;
+                        if(!originalObject && routeSource.IsMeasuredBase(t))
+                        {
+                            var represented=owner.OriginalBase(original);
+                            if(represented!=null)
+                            {
+                                retained=charts.FirstOrDefault(c=>c.PreserveInput && c.Prepared==represented);
+                                if(retained==null)
+                                {
+                                    retained=new Chart{PreserveInput=true,Prepared=represented,Source=original};
+                                    charts.Add(retained);
+                                }
+                            }
+                        }
+                        AddPanel(retained);continue;
+                    }
+                    if(route==MovableRoadRoute.Kind.Corresponding && compatible!=null)
+                    {
+                        var direct=charts.FirstOrDefault(c=>ReferenceEquals(c.CompatibleRoad,compatible)&&c.Frame.Equals(input.SourceFrame));
+                        if(direct==null)
+                        {
+                            direct=new Chart {CompatibleRoad=compatible,Prepared=compatible.Surface,
+                                Source=compatible.Surface,Frame=input.SourceFrame,Repeat=true};
+                            charts.Add(direct);
+                        }
+                        AddPanel(direct);correspondingFaces++;continue;
+                    }
+                }
                 // The exact source family is identified independently below; support
                 // belongs to this LOD domain and never grants a whole-deck override.
-                var roadSource = nativeRoad && supported != MovableRoadAppearance.Type.None ? input.Native : null;
+                // A measured prepared projection does not require a geometric plane.
+                // Retain its already-selected material even when this receiver collapses;
+                // otherwise an object road silently regains an incompatible network slot.
+                var geometricCross = Vector3.Cross(t.B.Position-t.A.Position,t.C.Position-t.A.Position);
+                if(geometricCross.x==0f && geometricCross.y==0f && geometricCross.z==0f)
+                {
+                    var directPatch = nativeRoad ? roadPatch : input.Patches[domain];
+                    var directSource = directPatch.Surface ?? native;
+                    if ((directPatch.PreparedUnit || directPatch.SourceUv) && directSource != null)
+                    {
+                        directSource.LoadHeader();
+                        if (!MovableSurfaceAssets.IsObjectSurface(directSource) || directPatch.Bands != null)
+                            throw new InvalidOperationException("Original-atlas projection requires an unchanged native object surface without repeat bands.");
+                        var direct = charts.FirstOrDefault(c => c.Prepared == directSource &&
+                            c.Repeat && c.Patch.Equals(directPatch));
+                        if (direct == null)
+                        {
+                            direct = new Chart { Source=directSource, Prepared=directSource,
+                                Patch=directPatch, Repeat=true, RepeatCutout=directPatch.Repeat };
+                            charts.Add(direct);
+                        }
+                        AddPanel(direct);
+                    }
+                    else AddPanel(null);
+                    continue;
+                }
+                var roadSource = nativeRoad && supported != MovableRoadAppearance.Type.None ? native : null;
                 var patch = nativeRoad ? OriginalProjection(t) : input.Patches[domain];
                 // A complete existing face inside one Draw03 wear band can use
                 // that immutable unit directly. Keep the selected-road mask's
@@ -119,7 +209,7 @@ internal sealed class MovableSurfaceAtlas
                         patch, t.A.Position, t.B.Position, t.C.Position, out var unit))
                         patch = unit;
                 }
-                var normal = Vector3.Cross(t.B.Position-t.A.Position,t.C.Position-t.A.Position).normalized;
+                var normal = PlaneNormal(t);
                 // A triangle edge is not a texture coordinate system: its arbitrary
                 // diagonal duplicates charts across pieces/LODs and wastes huge rectangles.
                 // Use one deterministic frame per plane; appearance remains in Patch U/V.
@@ -136,7 +226,7 @@ internal sealed class MovableSurfaceAtlas
                     var q = new Vector2(Vector3.Dot(d,u),Vector3.Dot(d,v));
                     min=Vector2.Min(min,q); max=Vector2.Max(max,q);
                 }
-                var source = nativeRoad ? original : patch.Surface ?? input.Native;
+                var source = nativeRoad ? original : patch.Surface ?? native;
                 // The material's tangent frame uses authored vertex normals, which may
                 // differ from the geometric plane normal at curbs and smooth edges.
                 // Decide the complete receiver representation before composing alpha.
@@ -146,7 +236,7 @@ internal sealed class MovableSurfaceAtlas
                 // mixed selected-road layers still require mask-aware composition.
                 bool repeat=!nativeRoad && (patch.SourceUv || patch.PreparedUnit ||
                     MovableRoadGeometry.CanRepeatProjection(patch.U,patch.V,normal,t.A.Normal,t.B.Normal,t.C.Normal));
-                var repeatSource=source==owner.Asset ? input.Native : source;
+                var repeatSource=source==owner.Asset ? native : source;
                 var repeatCutout=patch.Repeat || source!=owner.Asset;
                 var chart = charts.FirstOrDefault(c => c.NativeRoad==nativeRoad && c.Supported==supported && c.RoadSource==roadSource && c.RoadPatch.Equals(roadPatch) && c.Frame==input.SourceFrame && c.Source==(repeat ? repeatSource : source) && c.Origin==origin && c.U==u && c.V==v &&
                     c.Repeat==repeat && c.RepeatCutout==repeatCutout &&
@@ -179,15 +269,27 @@ internal sealed class MovableSurfaceAtlas
                         chart.Min=Vector2.Min(chart.Min,q); chart.Max=Vector2.Max(chart.Max,q);
                     }
                 }
-                panels[level].Add((t,panel.Vertices,chart));
+                AddPanel(chart);
             }
         }
         // Compatible object surfaces already carry their complete native appearance.
+        if(correspondingFaces!=0)Mod.Log.Info($"Corresponding native object road: style={owner.StyleId}; faces={correspondingFaces}; complete receiver category verified; original PBR density; network blend replaced; world projection attached to bridge; texture baking=0.");
         // Empty LODs and all-original inputs need neither a GPU program nor an atlas.
         if (charts.Count == 0)
         {
             materials = inputs.Select(input => input.Materials).ToArray();
-            return inputs.Select(input => input.Faces.Select(face => face.Geometry).ToArray()).ToArray();
+            var originals = inputs.Select(input => input.Faces.Select(face => face.Geometry).ToArray()).ToArray();
+            if (captureAppearance != null)
+                for (int level = 0; level < inputs.Length; level++)
+                    captureAppearance(level, Array.AsReadOnly(panels[level].Select(panel =>
+                        new MovableRoadAppearanceBinding(panel.Source, panel.Source,
+                            inputs[level].Materials[panel.Source.Material], inputs[level].Materials[panel.Source.Material],
+                            panel.Route, panel.Receiver, panel.MeasuredBase, inputs[level].SelectedInput,
+                            panel.Domain, MovableRoadAppearanceBinding.Projection.Original, default,
+                            inputs[level].SourceFrame, 0,
+                            routeSources.TryGetValue(inputs[level].Materials[panel.Source.Material], out var identity)
+                                ? identity : (MovableRoadRoute.Source?)null)).ToArray()));
+            return originals;
         }
         const int padding=8;
         ComputeShader? program=null;
@@ -266,9 +368,10 @@ internal sealed class MovableSurfaceAtlas
             {
                 Inspect(group.Key);
                 var sourceType=worldspaceTypes[group.Key];
-                foreach(var chart in group)
-                    if((chart.Supported & sourceType)==0)chart.RoadSource=null;
-                if(sourceType==MovableRoadAppearance.Type.None)continue;
+                // Route.Select already established complete receiver correspondence.
+                // A base-atlas sidewalk may coexist with an asphalt worldspace layer;
+                // the layer kind must not veto the whole-receiver classification below.
+
                 var domains=new HashSet<Chart>(group.Where(c=>c.RoadSource!=null));
                 var candidates=panels.SelectMany((level,li)=>level.Select((p,pi)=>(Panel:p,Level:li,Index:pi)))
                     .Where(item=>item.Panel.Chart!=null && domains.Contains(item.Panel.Chart) &&
@@ -343,7 +446,8 @@ internal sealed class MovableSurfaceAtlas
                         }
                         repeating.Add(c,tile);charts.Add(tile);
                     }
-                    panels[item.Level][item.Index]=(item.Panel.Source,item.Panel.Vertices,tile);tiled++;
+                    panels[item.Level][item.Index]=(item.Panel.Source,item.Panel.Vertices,tile,
+                        item.Panel.Domain,item.Panel.Route,item.Panel.Receiver,item.Panel.MeasuredBase);tiled++;
                 }
                 Mod.Log.Info($"Prototype-supported appearance: source={group.Key.name}; tiled triangles={tiled}/{candidates.Length}; unique footprints={unique.Count}; sampler={mask?.wrapModeU}/{mask?.wrapModeV}; complete supported receivers={complete.Count(value=>value)}; homogeneous surfaces bypass atlas downscaling.");
             }
@@ -385,13 +489,16 @@ internal sealed class MovableSurfaceAtlas
             var pageSize=charts.SelectMany(c=>SampledChannels.Select(p=>Load(c.Source).GetTexture(p)))
                 .Where(t=>t!=null).Select(t=>Math.Max(t.width,t.height)).DefaultIfEmpty(32).Max();
             if(charts.Count != 0 && pageSize>SystemInfo.maxTextureSize)
-                throw new InvalidOperationException("Native appearance page exceeds GPU texture dimensions.");
+            {
+                foreach(var c in charts) { c.Prepared=c.Source;c.PreserveInput=true;c.Repeat=true; }
+                charts.Clear();
+            }
             var aliases=new Dictionary<Chart,Chart>();
             var desired=new Dictionary<Chart,Vector2>();
             foreach(var c in charts.Where(c=>!c.Repeat).ToArray())
             {
                 if (c.RoadSource!=null && c.RoadPatch.SourceUv)
-                    throw new InvalidOperationException("A finite original-atlas road layer requires native independent mask composition; it must not be interpreted as a repeating crop: "+c.Source.id);
+                { c.Prepared=c.Source;c.PreserveInput=true;c.Repeat=true;continue; }
                 var span=c.Max-c.Min;
                 var footprint=new MovableTextureFootprint();
                 var cycles=new List<MovableTextureFootprint.Cycle>();
@@ -444,17 +551,21 @@ internal sealed class MovableSurfaceAtlas
                     c.Width=c.W;c.Height=c.H;c.X=c.Y=0;
                     c.Density=new Vector2((c.W-2*padding)/span.x,c.H/period);
                     if(c.W>SystemInfo.maxTextureSize || c.H>SystemInfo.maxTextureSize)
-                        throw new InvalidOperationException("Native periodic road unit exceeds GPU texture dimensions.");
+                    { c.Periodic=false;c.Prepared=c.Source;c.PreserveInput=true;c.Repeat=true;continue; }
                     Mod.Log.Info($"Native periodic composite: source={c.Source.name}; period={period:R}; pixels={c.W}x{c.H}; density={c.Density}; receiver span={span}; no downsampling.");
                     continue;
                 }
                 // These bounds were measured from receiver vertices, not from an
                 // authored finite content domain. Neither a small receiver nor
                 // partitioning its faces makes a whole-road bake a bounded unit.
-                throw new InvalidOperationException(
-                    $"Unresolved native road appearance: style={owner.StyleId}; source={c.Source.id}; receiverSpan={span}; " +
-                    "no independent prepared material or native equivalent is available. Receiver-extent texture baking is prohibited.");
+                // No supported native repeat representation: retain the original
+                // source and its actual attributes instead of rejecting the choice.
+                c.Prepared=c.Source;
+                c.PreserveInput=true;
+                c.Repeat=true;
+
             }
+            charts.RemoveAll(c=>c.Prepared!=null);
             var pages=new List<List<Chart>>();
             var packingClock=System.Diagnostics.Stopwatch.StartNew();
             {
@@ -797,12 +908,33 @@ internal sealed class MovableSurfaceAtlas
             {
                 var slots=new List<SurfaceAsset>(composites);var output=new List<Triangle>();int wrapAdded=0;
 
+                var bindings = captureAppearance == null ? null : new List<MovableRoadAppearanceBinding>();
                 foreach(var panel in panels[level])
                 {
                     var c=panel.Chart;var t=panel.Source;
                     var material=c?.Page ?? 0;
                     if(c?.Prepared!=null){material=slots.IndexOf(c.Prepared);if(material<0){material=slots.Count;slots.Add(c.Prepared);}}
                     if(c==null){var original=inputs[level].Materials[t.Material];material=slots.IndexOf(original);if(material<0){material=slots.Count;slots.Add(original);}}
+                    void AddOutput(Triangle triangle)
+                    {
+                        output.Add(triangle);
+                        if (bindings == null) return;
+                        var projection = c == null || c.PreserveInput ? MovableRoadAppearanceBinding.Projection.Original
+                            : c.CompatibleRoad != null ? MovableRoadAppearanceBinding.Projection.Corresponding
+                            : c.Patch.SourceAtlasRepeat ? MovableRoadAppearanceBinding.Projection.SourceAtlasRepeat
+                            : c.Patch.PreparedUnit ? MovableRoadAppearanceBinding.Projection.Prepared
+                            : c.Patch.SourceUv ? MovableRoadAppearanceBinding.Projection.SourceUv
+                            : MovableRoadAppearanceBinding.Projection.Atlas;
+                        bindings.Add(new MovableRoadAppearanceBinding(triangle,
+                            new Triangle(panel.Vertices[0], panel.Vertices[1], panel.Vertices[2], t.Material, t.Occurrence, t.SourceTriangle),
+                            inputs[level].Materials[t.Material], slots[material],
+                            c == null || c.PreserveInput ? MovableRoadRoute.Kind.Original : panel.Route, panel.Receiver,
+                            panel.MeasuredBase, inputs[level].SelectedInput, panel.Domain, projection,
+                            c?.Patch ?? default, c?.CompatibleRoad != null ? c.Frame : inputs[level].SourceFrame,
+                            c?.CompatibleRoad?.Scale ?? 0,
+                            routeSources.TryGetValue(inputs[level].Materials[t.Material], out var identity)
+                                ? identity : (MovableRoadRoute.Source?)null));
+                    }
                     Vertex Remap(Vertex vertex)
                     {
                         if(c==null)return vertex;
@@ -814,11 +946,22 @@ internal sealed class MovableSurfaceAtlas
                         return new Vertex(vertex.Position,vertex.Normal,new Vector4(c.U.x,c.U.y,c.U.z,1),uv,Color.white);
                     }
                     var v=panel.Vertices;
+                    if(c?.PreserveInput==true)
+                    {
+                        AddOutput(new Triangle(v[0],v[1],v[2],material,t.Occurrence,t.SourceTriangle));
+                        continue;
+                    }
+                    if(c?.CompatibleRoad!=null)
+                    {
+                        Vertex Project(Vertex vertex)=>MovableCompatibleRoad.Project(vertex,c.Frame,c.CompatibleRoad.Scale);
+                        AddOutput(new Triangle(Project(v[0]),Project(v[1]),Project(v[2]),material,t.Occurrence,t.SourceTriangle));
+                        continue;
+                    }
                     if(c?.Patch.SourceAtlasRepeat==true)
                     {
                         if(c.Prepared==null)throw new InvalidOperationException("Original-atlas wrap seams require an unchanged native Surface.");
                         var wrapped=MovableRoadAtlasWrap.Apply(new Triangle(v[0],v[1],v[2],material,t.Occurrence,t.SourceTriangle),c.Patch);
-                        output.AddRange(wrapped);wrapAdded+=wrapped.Length-1;
+                        foreach(var triangle in wrapped) AddOutput(triangle);wrapAdded+=wrapped.Length-1;
                         continue;
                     }
                     if(c?.Repeat==true)
@@ -827,43 +970,40 @@ internal sealed class MovableSurfaceAtlas
                         {
                             if(c.Patch.PreparedUnit)return MovableRoadProjection.Prepared(vertex,c.Patch);
                             var p=new Vector4(vertex.Position.x,vertex.Position.y,vertex.Position.z,1);
-                            var uv=new Vector4(Vector4.Dot(p,c.Patch.U),Vector4.Dot(p,c.Patch.V),c.Patch.SourceUv?vertex.UV.z:0,c.Patch.SourceUv?vertex.UV.w:0);                            if(c.Patch.PreparedUnit &&
-                                ((!c.Patch.RepeatU && !(uv.x>0f && uv.x<1f)) ||
-                                 (!c.Patch.RepeatV && !(uv.y>0f && uv.y<1f))))
-                                throw new InvalidOperationException("Offline unit finite axis escaped its guarded native sampling range.");
+                            var uv=new Vector4(Vector4.Dot(p,c.Patch.U),Vector4.Dot(p,c.Patch.V),c.Patch.SourceUv?vertex.UV.z:0,c.Patch.SourceUv?vertex.UV.w:0);
                             if(c.Patch.SourceTangent.HasValue)
                             {
                                 var sourceTangent=c.Patch.SourceTangent.Value*p;
-                                if(!float.IsFinite(sourceTangent.x)||!float.IsFinite(sourceTangent.y)||!float.IsFinite(sourceTangent.z)||
-                                    (sourceTangent.x==0f&&sourceTangent.y==0f&&sourceTangent.z==0f))
+                                if(!float.IsFinite(sourceTangent.x)||!float.IsFinite(sourceTangent.y)||!float.IsFinite(sourceTangent.z))
                                     throw new InvalidOperationException("Source tangent field produced an invalid direction.");
+                                if(sourceTangent.x==0f&&sourceTangent.y==0f&&sourceTangent.z==0f)
+                                    sourceTangent=vertex.Tangent;
                                 return new Vertex(vertex.Position,vertex.Normal,sourceTangent,uv,vertex.Color);
                             }
                             if(c.Patch.Tangent.HasValue)
                                 return new Vertex(vertex.Position,vertex.Normal,c.Patch.Tangent.Value,uv,c.Patch.SourceUv?vertex.Color:Color.white);
                             if(c.Patch.ProjectTangent)
                                 return new Vertex(vertex.Position,vertex.Normal,
-                                    MovableRoadProjection.Tangent(vertex.Normal,c.Patch.U,c.Patch.V),uv,c.Patch.SourceUv?vertex.Color:Color.white);
+                                    MovableRoadProjection.Tangent(vertex.Normal,c.Patch.U,c.Patch.V,vertex.Tangent),uv,c.Patch.SourceUv?vertex.Color:Color.white);
                             var normal=vertex.Normal;
                             var tangent=Vector3.Cross((Vector3)c.Patch.V,normal);
                             var determinant=ProjectionDeterminant(c.Patch,normal);
                             if(Mathf.Abs(determinant)<1e-10f)
                             {
-                                if(c.Patch.SourceUv)
-                                    return new Vertex(vertex.Position,normal,vertex.Tangent,uv,c.Patch.SourceUv?vertex.Color:Color.white);
-                                throw new InvalidOperationException("Native asphalt projection has a singular tangent frame.");
+                                return new Vertex(vertex.Position,normal,vertex.Tangent,uv,c.Patch.SourceUv?vertex.Color:Color.white);
                             }
                             tangent=(tangent/determinant).normalized;
                             return new Vertex(vertex.Position,normal,
                                 new Vector4(tangent.x,tangent.y,tangent.z,determinant>0?1:-1),uv,c.Patch.SourceUv?vertex.Color:Color.white);
                         }
-                        output.Add(new Triangle(Asphalt(v[0]),Asphalt(v[1]),Asphalt(v[2]),
+                        AddOutput(new Triangle(Asphalt(v[0]),Asphalt(v[1]),Asphalt(v[2]),
                             material,t.Occurrence,t.SourceTriangle));
                         continue;
                     }
-                    output.Add(new Triangle(Remap(v[0]),Remap(v[1]),Remap(v[2]),material,t.Occurrence,t.SourceTriangle));
+                    AddOutput(new Triangle(Remap(v[0]),Remap(v[1]),Remap(v[2]),material,t.Occurrence,t.SourceTriangle));
                 }
                 result[level]=output.ToArray();materials[level]=slots.ToArray();
+                if (bindings != null) captureAppearance!(level, bindings.AsReadOnly());
                 Mod.Log.Info($"Moving-road atlas LOD{level+1}: input={inputs[level].Faces.Length}; output={output.Count}; skinned paint is separate; coalescing=0; atlas-wrap added triangles={wrapAdded}; prototype asphalt UV gradients retained.");
             }
             Mod.Log.Info($"Moving-road GPU appearance units: charts={charts.Count}; packed pages={pages.Count}; native-sized atlas pages; textures={savedTextures} shared across LODs; preparedControls={sharedControls}; ms={clock.ElapsedMilliseconds}.");
@@ -877,12 +1017,44 @@ internal sealed class MovableSurfaceAtlas
         }
     }
 
-    private static MovableExistingRoadSurface.Patch OriginalProjection(Triangle triangle)
+    internal static Vector3 PlaneNormal(Triangle triangle)
+    {
+        var a=triangle.A.Position; var b=triangle.B.Position; var c=triangle.C.Position;
+        var normal=Vector3.Cross(b-a,c-a).normalized;
+        if(float.IsFinite(normal.x)&&float.IsFinite(normal.y)&&float.IsFinite(normal.z)&&normal != Vector3.zero)return normal;
+        // Unity Normalize deliberately returns zero below its magnitude cutoff.
+        // A construction fragment can be smaller while retaining nonzero area.
+        // Normalize its actual plane, without deleting it or relaxing UV tests.
+        double ex=(double)b.x-a.x, ey=(double)b.y-a.y, ez=(double)b.z-a.z;
+        double fx=(double)c.x-a.x, fy=(double)c.y-a.y, fz=(double)c.z-a.z;
+        double x=ey*fz-ez*fy, y=ez*fx-ex*fz, z=ex*fy-ey*fx;
+        double length=Math.Sqrt(x*x+y*y+z*z);
+        if(!(length>0d) || double.IsInfinity(length))
+            throw new InvalidOperationException("Native road chart has no finite geometric plane.");
+        return new Vector3((float)(x/length),(float)(y/length),(float)(z/length));
+    }
+
+    // Affine source UV on the supplied Position frame; collapsed axes retain a finite phase.
+    internal static MovableExistingRoadSurface.Patch OriginalProjection(Triangle triangle)
     {
         var a=triangle.A; var e=triangle.B.Position-a.Position; var f=triangle.C.Position-a.Position;
         var cross=Vector3.Cross(e,f);
         var det=cross.sqrMagnitude;
-        if(det<=0f)throw new InvalidOperationException("Native road UV plane is degenerate.");
+        if(det==0f)
+        {
+            // A one-dimensional receiver only has one recoverable spatial gradient.
+            // Choose its longest authored edge; a point retains the source UV phase.
+            bool useE=e.sqrMagnitude>=f.sqrMagnitude;
+            var edge=useE?e:f; var endpoint=useE?triangle.B:triangle.C;
+            float length=edge.sqrMagnitude;
+            Vector4 Collapsed(float av,float bv)
+            {
+                var gradient=length==0f?Vector3.zero:edge*((bv-av)/length);
+                return new Vector4(gradient.x,gradient.y,gradient.z,av-Vector3.Dot(gradient,a.Position));
+            }
+            return new MovableExistingRoadSurface.Patch(Vector2.zero,Vector2.one,
+                Collapsed(a.UV.x,endpoint.UV.x),Collapsed(a.UV.y,endpoint.UV.y));
+        }
         Vector4 Gradient(float av,float bv,float cv)
         {
             var gradient=(Vector3.Cross(f,cross)*(bv-av)+Vector3.Cross(cross,e)*(cv-av))/det;

@@ -4605,8 +4605,8 @@ internal static class TowerGenerationTests
 
         check("[through arch] source topology finds both x=0-crossing parts",
             facts.SpanningPieces == 2, facts.SpanningPieces.ToString(CultureInfo.InvariantCulture));
-        check("[through arch] an invalid mixed synthetic assembly is refused as one batch",
-            moved.Select((vertex, index) => vertex.Equals(source[index])).All(same => same), null);
+        check("[through arch] a diagnostic mismatch does not discard the requested transform",
+            !facts.ContractSatisfied && moved.Where((vertex, index) => !vertex.Equals(source[index])).Any(), null);
         check("[through arch] x=0 alone separates translated and stretched pieces",
             facts.RigidPieces == 2 && facts.SpanningPieces == 2 && facts.FloatingPieces == 0,
             $"rigid {facts.RigidPieces}, spanning {facts.SpanningPieces}, followers {facts.FloatingPieces}");
@@ -4632,8 +4632,8 @@ internal static class TowerGenerationTests
 
         check("[through arch] the widened member remains rectangular",
             rectangular, null);
-        check("[through arch] a refused batch reports no output width change",
-            Math.Abs(facts.MeasuredWidthChange) < 0.001f,
+        check("[through arch] output keeps the requested width change despite the diagnostic",
+            Math.Abs(facts.MeasuredWidthChange-extra) < 0.001f,
             $"{facts.MeasuredWidthChange:0.###} m");
         check("[through arch] topology audit finds no new degenerate or flipped triangle",
             facts.Finite

@@ -178,8 +178,8 @@ lines=['// DrawBridge02 moving-shell fragments, game 1.6.2f1.',
        'internal static class Draw02MovingShell', '{',
        '    internal static MovableStructureModel.Plan Create(int lod, Vector3[] source, Vector3[] positions, int[] indices, float delta)',
        '    {',
-       '        if (!float.IsFinite(delta) || delta <= Draw02TransverseMembers.MinimumHalfWidthDelta)',
-       '            throw new InvalidOperationException("Draw02 selected width collapses or reverses its recorded central linkage span.");',
+       '        if (!float.IsFinite(delta))',
+       '            throw new InvalidOperationException("Draw02 selected width is non-finite.");',
        '        var data = lod switch', '        {']
 for lod,(nv,nf,*_) in enumerate(records):
     lines += [f'            {lod} => (Vertices: {nv}, Faces: {nf}, Removed: Removed{lod}, Edges: Edges{lod}, Interior: Interior{lod}, Fragments: Fragments{lod}, Weights: BoundaryWeights{lod}, Left: Left{lod}, Right: Right{lod}),']
@@ -190,8 +190,10 @@ lines+=['            _ => throw new ArgumentOutOfRangeException(nameof(lod))', '
         '        Draw02RigidParts.Apply(lod, source, positions, delta);',
         '        Draw02FixedBodies.Apply(lod, source, positions, delta);',
         '        if (lod < 2) Draw02TransverseMembers.Apply(lod, source, positions, delta);',
+        '        Draw02MovingBase.Apply(lod, source, positions, delta);',
         '        foreach (var index in data.Left) positions[index].x = source[index].x - delta;',
         '        foreach (var index in data.Right) positions[index].x = source[index].x + delta;',
+        '        Draw02LongitudinalRibs.Apply(lod, source, positions, delta);',
         '        var mask = new bool[data.Faces];',
         '        foreach (var face in data.Removed) mask[face] = true;',
         '        var constructedX = new float[data.Weights.Length];',

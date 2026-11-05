@@ -1,4 +1,5 @@
 using Game.Prefabs;
+using System.Collections.Generic;
 using UnityEngine;
 
 namespace BridgeBuilder.Bridges;
@@ -8,8 +9,12 @@ internal static class Lift02RoadPreparation
     {
         var layout = new MovableSelectedRoadLayout(sample.Road, sample.RoadToObject, "Lift02");
         var appearance = Lift02RoadAppearance.Regions(sample.RoadToObject);
-        return MovableRoadPreparation.Prepare(sample, nativeLevels, halfWidthDelta, closedWorld, material, Lift02RoadPartitions.Carriageway, Lift02RoadPartitions.Carriageway, appearance, appearance, Lift02RoadAppearance.Patches(sample.RoadToObject), Numeric_Types_Lift02_Lift02RoadPreparation_cs.Values.I32[0], layout,
-            appearanceForLod: lod => Lift02RoadAppearance.ForLod(lod, nativeLevels[lod], sample.RoadToObject, halfWidthDelta));
+        var bindings = new IReadOnlyList<MovableRoadAppearanceBinding>[nativeLevels.Length];
+        var levels = MovableRoadPreparation.Prepare(sample, nativeLevels, halfWidthDelta, closedWorld, material, Lift02RoadPartitions.Carriageway, Lift02RoadPartitions.Carriageway, appearance, appearance, Lift02RoadAppearance.Patches(sample.RoadToObject), Numeric_Types_Lift02_Lift02RoadPreparation_cs.Values.I32[0], layout,
+            appearanceForLod: lod => Lift02RoadAppearance.ForLod(lod, nativeLevels[lod], sample.RoadToObject, halfWidthDelta),
+            captureAppearance: (lod, captured) => bindings[lod] = captured);
+        Lift02RoadUnderlay.Append(levels, nativeLevels, halfWidthDelta, bindings);
+        return levels;
     }
 }
 

@@ -86,11 +86,20 @@ traffic signals, open placed bridges, or imply that shipping compatibility has b
 
 ## 5. Geometry and appearance fidelity
 
+Road appearance processing (prototype composition, source-density tiling, embedded-marking
+removal and derived wear/background placement) applies only to movable bridges whose roads need
+that processing. Fixed/non-movable bridges retain the selected native road materials, UVs and
+markings; they require no prototype road-support table, road-material replacement or marking
+cleanup under these rules. Structural source-UV/density rules still apply to every bridge.
+A fixed running cap within a movable bridge remains part of that movable road-processing scope.
+
 Use the generated bridge's geometry and native material behavior. Preserve source vertex formats,
 material-slot semantics, normals, transparency and required LOD relationships except for the
 conversions explicitly required by the generation contracts. Rigid geometry retains its original
-UVs; deformed geometry uses the same measured density-preserving UV remapping and original or
-prepared material as formal generation. Unchanged UV values must not be used to justify stretched
+UVs where permitted by the material contract; processed movable-road surfaces use the same
+source-density tiled, unpainted materials as formal generation at every LOD. Deformed geometry
+uses the same applicable measured mapping and original or prepared material as formal generation.
+Preserve normal selected-road paint and lane-aligned fixed-width wear. Unchanged UV values must not be used to justify stretched
 textures. Preview must not introduce additional approximations.
 
 Perforated grating in an original bridge is not inherently damaged geometry. Distinguish it from

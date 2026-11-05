@@ -3,6 +3,8 @@ param(
     [Parameter(Mandatory)][string]$ModAssembly,
     [Parameter(Mandatory)][string]$Materials,
     [Parameter(Mandatory)][string]$LogName,
+    [string]$OwnerLayout="$PSScriptRoot/../../../artifacts/material-remap/shared/owner26-layout/layout.json",
+    [string]$JointInputs="$PSScriptRoot/../../../artifacts/material-remap/Draw03/joint-coverage/native-joints.bin",
     [string]$GameManaged='D:/Program Files (x86)/Steam/steamapps/common/Cities Skylines II/Cities2_Data/Managed'
 )
 $ErrorActionPreference='Stop'
@@ -18,6 +20,6 @@ try {
     $env:TEMP=Join-Path $root 'cache/temp';$env:TMP=$env:TEMP;$env:UPM_CACHE_ROOT=Join-Path $root 'cache/upm'
     $arguments=@('-batchmode','-nographics','-projectPath',('"'+$project+'"'),'-executeMethod','Draw03RoadMappingCheck.Run',
         '-gameManaged',('"'+[IO.Path]::GetFullPath($GameManaged)+'"'),'-modAssembly',('"'+[IO.Path]::GetFullPath($ModAssembly)+'"'),
-        '-materials',('"'+[IO.Path]::GetFullPath($Materials)+'"'),'-quit','-logFile',('"'+(Join-Path $root "logs/$LogName")+'"'))
+        '-materials',('"'+[IO.Path]::GetFullPath($Materials)+'"'),'-ownerLayout',('"'+[IO.Path]::GetFullPath($OwnerLayout)+'"'),'-jointInputs',('"'+[IO.Path]::GetFullPath($JointInputs)+'"'),'-quit','-logFile',('"'+(Join-Path $root "logs/$LogName")+'"'))
     Start-Process -FilePath 'C:/Program Files/Unity 2022.3.62f2/Editor/Unity.exe' -ArgumentList $arguments -WindowStyle Hidden -PassThru | Select-Object Id
 } finally {foreach($key in $prior.Keys){[Environment]::SetEnvironmentVariable($key,$prior[$key],'Process')}}

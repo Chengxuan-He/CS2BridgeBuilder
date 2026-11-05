@@ -62,6 +62,21 @@ Check(BridgeNativePresentation.EnsureDescriptions(new(id, "Recovered name"), out
 Check(first.Data.entries["Assets.NAME[" + id + "]"] == "Recovered name", "Blank name not filled");
 Check(BridgeNativePresentation.EnsureDescriptions(new(id, "Do not rename"), out changed, out error) && !changed, "Name completion not idempotent");
 
+// Startup uses the owner path list and exact CID lookup; no all-Prefab or locale filter query.
+var temp=Path.Combine(Path.GetTempPath(), "BBLocale85-"+Guid.NewGuid()); Directory.CreateDirectory(temp);
+var paths=new HashSet<string>();
+foreach(var asset in assets) {
+ asset.id=(Colossal.Hash128.Parse(Guid.NewGuid().ToString("N")),0);
+ asset.path=Path.Combine(temp,id,"Locales",asset.Data.localeId+".loc");
+ Directory.CreateDirectory(Path.GetDirectoryName(asset.path)!);File.WriteAllText(asset.path+".cid",asset.id.guid.ToString()); paths.Add(asset.path);
+}
+bridge.uiTag=id; AssetDatabase.user.ForbidEnumeration=true;
+Check(BridgeNativePresentation.EnsureDescriptions(new(id,"Unchanged"),out changed,out error,new[]{bridge},paths)&&!changed,error);
+first.Data.entries.Remove("Assets.DESCRIPTION["+id+"]");
+Check(BridgeNativePresentation.EnsureDescriptions(new(id,"Unchanged"),out changed,out error,new[]{bridge},paths)&&changed,error);
+AssetDatabase.user.ForbidEnumeration=false;
+Console.WriteLine("PASS owner-local locale path/CID lookup with all-assets enumeration tripwire.");
+
 // Missing native metadata must fail before creating or saving even the first file.
 var bytes = assets.Select(a => Convert.ToHexString(a.Bytes)).ToArray();
 GameManager.instance!.localizationManager.Missing = "zh-HANT";

@@ -18,6 +18,7 @@ internal static class Lift04StructureWidthPlan
         Lift04FixedBodies.Apply(lod, source, positions, delta);
         if (lod < Numeric_Types_Lift04_Lift04StructureWidthPlan_cs.Values.I32[0])
             Lift04MovingSideFrames.ApplyDetailed(lod, source, positions, delta);
+        Lift04LongitudinalRibs.Apply(lod, source, positions, delta);
         var endFrames = Lift04MovingEndFrames.Complete(lod, source, positions, indices, delta);
         if (lod == Numeric_Types_Lift04_Lift04StructureWidthPlan_cs.Values.I32[1])
             return endFrames;

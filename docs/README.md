@@ -18,13 +18,21 @@ replace them. Documentation updates do not establish runtime implementation or g
 The movable material scheme is original non-road reuse plus composition/precomposition (offline material baking outside the game) only
 for prototype-supported road appearance types. Other road types use original materials.
 Asphalt, sidewalks and wheel-track/rut effects are classified separately per prototype/domain.
-The original source mapping rule applies to non-movable bridges too. Package and owner material
-limits are 55,000,000 and 10,000,000 bytes respectively, with different measurement scopes.
+The original source mapping rule applies to non-movable bridges too. The package limit is 55,000,000 bytes. Complete owner material bytes are measured separately
+for information, without a per-owner ceiling.
+
+## Workflow design
+
+[Bridge generation workflow](Bridge-Generation-Workflow.md) explains request scheduling, fixed
+and movable generation, double-deck branches, offline inputs, preview, persistence and cleanup
+with workflow diagrams. It describes execution; the contracts above remain authoritative.
 
 ## Research and implementation evidence
 
 | Document | What it establishes |
 | --- | --- |
+| [Dependency persistence and self-check](Dependency-Persistence-Implementation.md) | Forward dependency traversal, migration boundaries and observed candidate86 self-check |
+| [Historical material checkpoints](Development-Material-Checkpoint.md) | Archived candidate-specific measurements; not current installation claims |
 | [Native movable material repetition](Native-Movable-Material-Repetition.md) | Original meshes, UV seams, shaders and per-LOD measurements; not generated-output acceptance |
 | [Material reuse assessment](Movable-Nonroad-Material-Reuse-Assessment.md) | Adopted scheme and current code paths that still need integration; not a new reverse-engineering claim |
 | [Prepared materials](Prepared-Materials.md) | Packaging guidance and retained producer/fixture stages; historical counts are not a live inventory |

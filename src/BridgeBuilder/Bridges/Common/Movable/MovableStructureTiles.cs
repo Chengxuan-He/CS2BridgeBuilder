@@ -47,6 +47,7 @@ internal sealed class MovableStructureTiles
             "Draw02"=>Draw02NativeMaterials.IsNativeNetwork(render,mesh,cid),
             "Draw03"=>Draw03NativeMaterials.IsNativeNetwork(render,mesh,cid),
             "Lift01"=>Lift01NativeMaterials.IsNativeNetwork(render,mesh,cid),
+            "Lift03"=>Lift03NativeMaterials.IsNativeNetwork(render,mesh,cid),
             _=>false
         });
 

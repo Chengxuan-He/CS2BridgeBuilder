@@ -93,6 +93,22 @@ var generationSource = string.Join("\n", Directory.GetFiles(Path.Combine(root, "
 Check(modSource.Contains("UpdateBefore<BridgeGenerationSystem>(SystemUpdatePhase.PrefabUpdate)")
     && modSource.Contains("UpdateAfter<BridgePublicationSystem>(SystemUpdatePhase.PrefabUpdate)"), "native scheduler owns initialization");
 Check(!generationSource.Contains("WorldRegistration.Publish("), "do not re-enter synchronous shared publisher");
+var composition = File.ReadAllText(Path.Combine(root, "src/BridgeBuilder/Systems/BridgeGenerationSystem.Composition.cs"));
+Check(!composition.Contains("BridgeNativePresentation.Validate("), "normal creation must not repeat dependency validation");
+var dependencySave = composition.IndexOf("if (!BridgeDependencyPersistence.Save(", StringComparison.Ordinal);
+var publication = composition.IndexOf("return World.GetOrCreateSystemManaged<BridgePublicationSystem>().Publish(", StringComparison.Ordinal);
+Check(dependencySave >= 0 && publication > dependencySave, "persistence completes before publication");
+var saveGate = composition.Substring(dependencySave, publication - dependencySave);
+Check(saveGate.Contains("report.Failed(exportName, new IOException(") && saveGate.Contains("return false;"),
+    "failed dependency save cannot reach publication");
+Check(composition.IndexOf("preview.SetResult(", StringComparison.Ordinal) < dependencySave &&
+    composition.Substring(composition.IndexOf("preview.SetResult(", StringComparison.Ordinal),
+        dependencySave-composition.IndexOf("preview.SetResult(", StringComparison.Ordinal)).Contains("return true;"),
+    "private preview returns before permanent persistence");
+var migration = File.ReadAllText(Path.Combine(root, "src/BridgeBuilder/Runtime/BridgePortableMigration.cs"));
+Check(migration.Split("BridgeNativePresentation.Validate(").Length == 3,
+    "both existing-asset migration validation paths remain independent");
+Console.WriteLine("PASS creation source boundaries: save failure returns before publish, success has no second dependency traversal, preview remains private, both migration checks retained. Runtime publication tests use source-linked native API stand-ins.");
 Console.WriteLine("PASS: publication ordering, one-time menu membership, consecutive creates, deferred updates and failure gating.");
 
 NetPrefab Road(string name) => new()

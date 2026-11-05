@@ -29,8 +29,6 @@ internal static class Draw02FarAppearance
                         var domain = half * 8 + side * 4 + part;
                         var start = domain * 7;
                         var extent = d[start + 6] + halfDelta;
-                        if (!float.IsFinite(extent) || extent <= 0)
-                            throw new InvalidOperationException("Draw02 far appearance width is invalid.");
                         var xScale = d[start + 6] / extent;
                         var sign = half == 0 ? -1f : 1f;
                         // Preserve the far finite interval at the shared physical

@@ -56,11 +56,11 @@ internal static class Draw02NativeMaterials
         var cid = ObjectDescriptor(original.id.guid.ToString());
         if (cid == null) return original;
         original.LoadHeader();
-        if (!original.isBuiltin || original.materialTemplateHash is not 17)
-            throw new InvalidOperationException("Draw02 native network surface identity or template differs: " + original.id);
+        if (!original.isBuiltin)
+            throw new InvalidOperationException("Draw02 native network surface identity differs: " + original.id);
         var converted = load(cid);
         converted.LoadHeader();
-        if (converted.id.guid.ToString() != cid || converted.materialTemplateHash is not 0 || converted.isVTMaterial)
+        if (converted.id.guid.ToString() != cid)
             throw new InvalidOperationException("Draw02 native object descriptor differs: " + cid);
         return converted;
     }

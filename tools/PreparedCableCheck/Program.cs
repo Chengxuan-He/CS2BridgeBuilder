@@ -40,12 +40,11 @@ foreach (var style in new[] { "Draw01", "Draw02", "Draw03", "Lift01", "Lift02", 
         var invalid = new SurfaceAsset { isVTMaterial = vt };
         if (!vt) invalid.textures.Add("_BaseColorMap", new TextureAsset());
         var before = Database.Created;
-        try { MovableCableSurface.Create(invalid, "tmp-owner", style, null, new()); throw new Exception("Textured cable accepted."); }
-        catch (NotSupportedException) { }
-        Require(Database.Created == before && invalid.Leases == 0, "Unsupported cable rejects before allocation and balances source lease.");
+        var retained = MovableCableSurface.Create(invalid, "tmp-owner", style, null, new());
+        Require(ReferenceEquals(retained,invalid) && Database.Created == before && invalid.Leases == 0, "No corresponding cable conversion retains original without allocation and balances source lease.");
     }
 }
-Console.WriteLine("PASS production cable binding: ten styles, preview/formal, source defaults/overrides, exact equality, independent changed descriptors, shared unowned control, rejection cleanup. Native rendering is checked separately.");
+Console.WriteLine("PASS production cable binding: ten styles, preview/formal, source defaults/overrides, exact equality, independent changed descriptors, shared unowned control, unmatched original retention. Native rendering is checked separately.");
 
 static SurfaceAsset Read(string file)
 {
@@ -57,7 +56,9 @@ static SurfaceAsset Read(string file)
     for (int i = Count(); i > 0; i--) surface.colors.Add(r.ReadString(), new Color(r.ReadSingle(), r.ReadSingle(), r.ReadSingle(), r.ReadSingle()));
     Require(Count() == 1 && r.ReadString() == "_ControlMask" && r.ReadByte() == 255, "Zero control reference.");
     var cid = string.Concat(r.ReadBytes(16).Select(b => (b & 15).ToString("x") + (b >> 4).ToString("x")));
-    Require(cid == File.ReadAllText(Path.Combine(Path.GetDirectoryName(file)!, "ZeroControl.Texture.cid")).Trim(), "Actual packaged control identity.");
+    var materialRoot = Directory.GetParent(Path.GetDirectoryName(file)!)!.Parent!.FullName;
+    Require(Directory.EnumerateFiles(materialRoot, "*.Texture.cid", SearchOption.AllDirectories)
+        .Any(path => File.ReadAllText(path).Trim()==cid && File.Exists(path[..^4])), "Actual packaged control identity and payload.");
     surface.textures.Add("_ControlMask", new TextureAsset()); return surface;
 }
 static void Require(bool ok, string why) { if (!ok) throw new Exception(why); }

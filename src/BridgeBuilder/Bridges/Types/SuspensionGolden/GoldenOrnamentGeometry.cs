@@ -30,7 +30,7 @@ internal static class GoldenOrnamentGeometry
 
     internal static bool TryApply(string mesh, float3[] source, float3[] moved, float extra)
     {
-        if (!GoldenOrnamentData.Maps.TryGetValue(mesh, out var data) || source.Length != data.Count || moved.Length != data.Count || !float.IsFinite(extra) || GoldenOrnamentData.Span + extra <= Numeric_Types_SuspensionGolden_GoldenOrnamentGeometry_cs.Values.F32[1])
+        if (!GoldenOrnamentData.Maps.TryGetValue(mesh, out var data) || source.Length != data.Count || moved.Length != data.Count || !float.IsFinite(extra))
             return false;
         var mask = Masks[mesh];
         // Explicit user-requested exception (2026-09-22): treat the complete fan and

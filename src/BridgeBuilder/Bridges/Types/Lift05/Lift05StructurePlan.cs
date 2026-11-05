@@ -13,6 +13,7 @@ internal static class Lift05StructurePlan
         else
             Lift05RoadTops.RemoveDetailedFixed(lod, indices, plan.RemoveTriangles[Numeric_Types_Lift05_Lift05StructurePlan_cs.Values.I32[1]]);
         Lift05RoadTops.RemoveMoving(lod, indices, plan.RemoveTriangles[Numeric_Types_Lift05_Lift05StructurePlan_cs.Values.I32[2]]);
+        Lift05Catenary.Remove(lod, plan);
         return Lift05StructuralRepeat.Apply(lod, plan, finishedSurface, contentMin, contentMax);
     }
 }

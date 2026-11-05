@@ -1,6 +1,25 @@
 # Runtime Bridge Generation Instructions
 
+Follow [player-controlled generation](../../docs/agent-contract/BRIDGE_GENERATION_CONTRACT.md#player-controlled-generation-without-structural-rejection-gates): do not reject a generation request
+because of structural shape, width, signed scale, degeneracy, overlap, clearance or appearance
+quality. Such checks belong to offline verification or non-blocking diagnostics. Material
+no-match selects Original. Preserve actual file/schema/index, nonrepresentable arithmetic,
+write and native API errors; never fabricate successful output. This applies to all bridge
+families and LODs without changing historical dependency recovery.
+
+
 ## Scope
+
+Lift01 and Lift02 central-truss memberships follow the explicit complete-assembly rule in
+bridge generation contract section 8, overriding default own-span stretching,
+side-part translation and base mapping for those measured members. Internal
+braces and narrow connectors share their complete assembly's `x -> k*x`; only the outermost
+edge trusses retain their original mapping. Record assembly spans and connection
+residuals offline, apply the rule at every LOD including far supplements, and
+preserve bones/material modes with the corresponding affine normal/tangent frame.
+Measure each style's complete source and target assembly spans; never use a small
+connector's thickness or another style's span as its scale denominator.
+
 
 These instructions apply to `src/BridgeBuilder/**`. They add runtime-specific requirements to
 the repository root [`AGENTS.md`](../../AGENTS.md). Before editing this directory, read the complete
@@ -9,6 +28,12 @@ the repository root [`AGENTS.md`](../../AGENTS.md). Before editing this director
 This file replaces neither. Numbered bridge rules refer to the bridge generation contract.
 
 ## Runtime invariants
+
+Apply general contract section 8's pedestrian truss rules at every LOD:
+PedestrianDraw02's complete central assembly scales in X; both pedestrian
+movable styles keep underside longitudinal truss sections rigid, distribute
+their centres evenly across X and retain the central longitudinal width.
+Membership and coefficients are measured offline, never inferred at runtime.
 
 Recorded numeric data uses versioned, checksum-validated, uncompressed BBN1 typed-array resources,
 organized by bridge type and embedded in the DLL. Validate and read only a demanded resource
@@ -19,52 +44,84 @@ or installed-prototype dependency, giant initializer, or change to independently
 Read the [runtime invariants](../../docs/agent-contract/MOVABLE_RUNTIME_INVARIANTS.md#runtime-invariants)
 in full before code changes. Apply the current implementation policy.
 Prototype parameters and part maps remain hardcoded and independent of the original prototype file.
+The measured Draw02 central longitudinal girder retains its original transverse section under
+general section 8; apply that exact offline membership. Its central hinge plates
+retain their original section and zero transverse displacement; their thin section
+is not an axle assembly span. Lateral plates remain rigid and the transverse axle
+keeps its separate mapping. Draw02's measured transverse
+moving-base supports use signed half-width translation; unrelated crossbeams and axles
+retain their recorded mappings. Preserve the central girder's adjoining closure panels.
+Draw02's internal longitudinal ribs use measured quarter-width translations to keep
+their centres evenly spaced without stretching their profiles. Its outer deck bottom
+and closure faces remain with non-Sidewalk edges; only genuine sidewalk surfaces
+depend on sidewalk presence. Preserve the far native simplified representation.
 The movable and material contracts define appearance requirements. Preserve native asset
 ownership, API thread affinity, source provenance, skeletons, structure channels and independent
 persistence.
 
 ## Performance and iteration
 
-The [general source-mapping rule](../../docs/agent-contract/BRIDGE_GENERATION_CONTRACT.md#preserve-original-uv-projection-and-mapping-mode) applies to **all fixed/non-movable and movable bridges**: preserve source projection and tiling/stretch mode per part, LOD, layer and axis.
+Follow the [all-bridge mapping rule](../../docs/agent-contract/BRIDGE_GENERATION_CONTRACT.md#preserve-original-uv-projection-and-mapping-mode)
+and the complete [material contract](../../docs/agent-contract/MATERIAL_GENERATION_CONTRACT.md):
 
-For movable bridges, reuse original non-road materials by default. Only evidenced repeating
-domains that would otherwise require new period-wrap seams may use the source-atlas offline
-derivation defined in the material contract section 3; do not add those seams. Road composition/precomposition (offline material baking outside the game) has
-one entry condition: the prototype supports the actual appearance type and that type must use
-prototype appearance. Test asphalt, sidewalk surfacing and wheel-track/rut effects independently
-per prototype and physical domain. Other road types retain their original input materials and
-bypass composition. Preserve each source's projection and tiling/stretch mode per part, LOD,
-layer and axis. This is a generation rule, not a reverse-engineering finding or proof that the
-current implementation complies. Road processing must not mutate a shared structural Surface.
 
-Apply the [material generation contract](../../docs/agent-contract/MATERIAL_GENERATION_CONTRACT.md)
-to every material path. Section 3 prohibits expanding any pattern across the complete road/span
-into texture pixels, including mixed and non-repeating appearances. Failed repeat detection,
-runtime composition exceptions and splitting the bake into pages or VT tiles do not authorize
-full-length rasterization. Decouple layer coordinates and periods while preserving authored
-channel alignment. Replace the universal 0.01-pixel phase cutoff with an evidenced per-layer
-tolerance under section 3; the new numeric value is pending validation.
-Full original-material reuse must create no new material;
-the general bridge source-mapping rule preserves the actual chosen appearance source's projection and tiling/stretch mode
-per part, LOD and axis. Tile evidenced repeats at source density; retain authored UVs for evidenced
-finite/stretch mappings, native textures and compatible identity. Selected-road appearance uses
-its own evidence, not another prototype's classification. Geometry UV resets differ from whole-texture
-wrap; changing width or failing a repeat test never authorizes switching mapping mode.
-Missing repeat evidence is not proof. Copy prepared constants without runtime rebaking. Keep their sources independent of
-generated bridge ownership and deletion. Section 4 permits bounded variable-content composition
-and necessary conversion of selected third-party road/track inputs unavailable before runtime,
-after direct reuse and descriptor-only conversion have been considered. These exceptions do not
-permit runtime rebuilding of known prepared resources, per-sampler baking or cross-bridge caches.
-Use the packaged `Materials/<BridgeStyleId>/` directory relative to the mod installation;
-source files are read-only and must be copied into independent bridge dependency snapshots.
-Material directories exist only for actual payloads; do not require empty or placeholder-only folders.
-Variants may share byte-identical textures through their own style's `Shared/<CID>.Texture`
-directory. Preflight all dependencies before registration; do not resolve missing packaged
-resources through another style or a generated bridge. The sole cross-style source exception is
-`Materials/Shared/MidMips/<cacheCID>/TS512_MB3.MidMips` plus its CID sidecar under material
-contract section 5. Preflight implicit native Surface memberships and matching mip levels;
-copy only required cache dependencies independently into each owner. This does not expand
-runtime baking permissions or the 10,000,000-byte owner material limit.
+Road appearance processing (prototype composition, source-density tiling, embedded-marking
+removal and derived wear/background placement) applies only to movable bridges whose roads need
+that processing. Fixed/non-movable bridges retain the selected native road materials, UVs and
+markings; they require no prototype road-support table, road-material replacement or marking
+cleanup under these rules. Structural source-UV/density rules still apply to every bridge.
+A fixed running cap within a movable bridge remains part of that movable road-processing scope.
+
+Resolve the elevated road-level branch once at the common generation entry, before width
+measurement, cloning or style construction. Every fixed and movable bridge uses that elevated
+context for geometry, bridgeheads, decks, materials and every LOD. Do not enumerate, rank or
+fall back to ground/other road-level branches; no downstream re-selection.
+Keep all physical contributions and section-local branches within the selected road branch.
+Material matching within it is noexcept: a corresponding match selects that route; no match
+selects the original source-material route, without selecting a different road branch.
+Branch mechanism decks and native network bridgeheads
+by their own source/domain and render context; do not classify a mixed piece from a section name.
+Require both actual receiver classification and matching measured prototype material at the target
+physical part. Moving deck, fixed cap, moving sidewalk, fixed platform and external approach do
+not inherit a bridge-wide material override; unmatched external approaches retain Original.
+Keep deliberate part-specific appearances and all-LOD PBR/alpha, density and paint handling.
+Cover each replaced component's measured edge/sidewall/cap material domains as well as its top;
+do not omit matching sidewalk or median edges or blanket-replace unmatched edges.
+Resource corruption and native realization failures remain separate explicit errors. Follow
+[the material routing rule](../../docs/agent-contract/MATERIAL_GENERATION_CONTRACT.md#total-material-routing-by-part-and-actual-source).
+
+
+- Processed movable-road appearances supported by the prototype use prototype content tiled at original resolution and
+  physical texel density, never stretched, at every LOD and in fixed caps/finite terminals.
+  Remove embedded road markings from every road-material channel/mip; retain intended selected-road
+  paint through its native path (separate skinned paint for movable mechanisms).
+- Test asphalt, sidewalk and wear support independently. Wear uses the same complete measured
+  source and matching same-source background. Align its measured visual center to actual native
+  lane centers; preserve physical width, internal relationships and longitudinal density.
+  Do not infer lanes from paint or place wear outside applicable vehicle lanes.
+- Section 3 permits bounded offline authored road repeats from pure original road content, with
+  aligned PBR donor coordinates and complete periodic mips. Record new periods as authored, not
+  original evidence. Keep source/PBR, density and phase coherent across domains sharing the same evidenced prototype appearance.
+- Non-road materials retain original identity/modes by default; only evidenced repeat domains
+  needing avoidance of new period cuts may use section 3's narrow structural derivative.
+  Unsupported road types use compatible originals or corresponding native object road materials
+  under section 4, including its accepted network-layer/worldspace differences, never another category.
+- No full-span pixels, new period cuts, arbitrary downsampling, custom shaders or changed original
+  assets. Changed derivatives receive new CIDs. Preserve complete PBR, frames, filtering and mips;
+  no global tolerance relaxation or acceptance from metadata alone. Integer-grid resampling and
+  bounded two-period storage follow section 3, not an unrestricted boundary-blending permission.
+- Prepare known constants outside the game; runtime copies/binds them. Section 4's bounded variable
+  or unknown-selected-input conversions do not excuse missing known assets or cross-owner caches.
+  Separate texture content from sampling; one identical payload per style/current owner, not per use.
+- Measure complete persisted owner material dependencies for information, without a per-owner ceiling; complete official
+  SDK package ZIP at most 55,000,000 bytes. Prepared-directory bytes prove neither. Preserve independent
+  native cold loading and healthy saved owners; report remaining quality/budget gates honestly.
+- Package complete immutable resources in `assets/Materials/<BridgeStyleId>/` and ship beside the
+  DLL as `Materials/<BridgeStyleId>/`. Resolve sources relative to the loaded mod, not developer or
+  other-owner paths. Keep no empty/placeholder material directories. Preflight full native dependency
+  graphs before registration; byte-identical shared payloads stay within each style. Section 5's sole
+  cross-style exception is read-only `Materials/Shared/MidMips/<cacheCID>/TS512_MB3.MidMips` plus CID;
+  each generated owner still snapshots only its required dependencies independently.
 
 Apply [CPU affine geometry execution](../../docs/agent-contract/BRIDGE_GENERATION_CONTRACT.md#cpu-affine-geometry-execution)
 through `AffineGeometry`: each XYZ axis may have independent width coefficients or remain
@@ -143,8 +200,8 @@ Preserve literal identifiers, paths and diagnostic evidence; explain them in Eng
 Follow bridge generation contract section 24: a generated movable bridge's total Prefab size, including
 its dependencies, must be comparable to its original counterpart. Measure the complete graph,
 not only its root or textures; preserve required content and report unresolved measurements.
-Separately enforce material generation contract sections 2 and 5: at most 10,000,000 bytes for
-one generated owner's complete persisted material dependencies and 55,000,000 bytes for the
+Separately follow material generation contract sections 2 and 5: report each generated owner's
+complete persisted material bytes without a hard ceiling, and enforce 55,000,000 bytes for the
 complete official SDK content ZIP. A style's prepared-directory size proves neither limit.
 
 ## Movable generation requirements
@@ -170,12 +227,11 @@ they do not authorize damaged-asset retirement. Native cold-load acceptance rema
 
 ## Offline source-atlas repeat materials
 
-Follow [the source-atlas offline derivation rule](../../docs/agent-contract/MATERIAL_GENERATION_CONTRACT.md#offline-source-atlas-repeat-materials).
-Do not add road or structural cuts solely for texture-period wraps, including Lift05 profile parts.
-Bake eligible independent tiling materials outside the game only where needed to avoid such cuts;
-fully reusable domains remain original. Preserve existing native seams and necessary shape, motion
-and actual material-domain boundaries, source density, independent axes/layers and finite terminals.
-Keep source assets unchanged; derived assets have independent identities and complete native
-dependencies. Full PBR/filter/mip and independent-load validation, 10 MB owner / 55 MB package
-limits and the ban on full-span pixels remain mandatory. This does not certify feasibility or
-authorize general structural rebaking, arbitrary crops or relaxed error thresholds.
+Follow [supported-road tiling](../../docs/agent-contract/MATERIAL_GENERATION_CONTRACT.md#prototype-supported-road-surfaces-must-tile),
+[all-LOD marking removal](../../docs/agent-contract/MATERIAL_GENERATION_CONTRACT.md#remove-embedded-road-markings-at-every-lod)
+and [offline source-atlas derivation](../../docs/agent-contract/MATERIAL_GENERATION_CONTRACT.md#offline-source-atlas-repeat-materials).
+Road repeats may be authored from pure prototype road content at original texel density;
+structural derivatives remain restricted to evidenced repeats needing avoidance of period cuts.
+Preserve actual shape/motion/material boundaries, native loading, complete PBR/mips, informational owner measurements and the package byte limit.
+Keep original assets unchanged and assign new identities to changed derivatives. This specification
+does not certify implementation, quality or acceptance. No runtime strings change with these rules.

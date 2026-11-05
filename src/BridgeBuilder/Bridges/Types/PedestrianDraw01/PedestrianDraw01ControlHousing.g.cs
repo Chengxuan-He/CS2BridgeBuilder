@@ -14,8 +14,8 @@ internal static class PedestrianDraw01ControlHousing
             2 => (Count: Numeric_Types_PedestrianDraw01_PedestrianDraw01ControlHousing_g_cs.Values.I32[2], Parts: Parts2),
             _ => throw new ArgumentOutOfRangeException(nameof(lod))};
         float halfSpan = Numeric_Types_PedestrianDraw01_PedestrianDraw01ControlHousing_g_cs.Values.F32[0];
-        if (source.Length != data.Count || positions.Length != data.Count || !float.IsFinite(delta) || delta <= -halfSpan)
-            throw new InvalidOperationException("PedestrianDraw01 control enclosure requires its native layout and positive span.");
+        if (source.Length != data.Count || positions.Length != data.Count || !float.IsFinite(delta))
+            throw new InvalidOperationException("PedestrianDraw01 control enclosure requires its native layout and finite delta.");
         foreach (var part in data.Parts)
             AffineGeometry.For(part.First, checked((part.Last) + 1), i =>
             {

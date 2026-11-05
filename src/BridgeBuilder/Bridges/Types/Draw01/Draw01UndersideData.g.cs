@@ -15,7 +15,7 @@ internal static class Draw01UndersideData
         foreach (var group in groups)
         {
             var span = layout.Spans[group.Role];
-            if (!(span.y > span.x))
+            if (group.Role != 0 && span == Vector2.zero)
                 continue;
             foreach (var face in group.Faces)
                 removed[face] = false;

@@ -55,6 +55,24 @@ Kind Tram(float maxU)=>MovableRoadLayerIdentity.WholeReceiver("1d7dad9f64c9fe55a
     "9a6506aaede935752b5c4c0362c95f6e","a142c18b42577de52815d1afd054660b","37ceea0e8c2bd24599e237236e6ae338",tram,0,maxU);
 if(tram!=Kind.Asphalt || Tram(.249755859375f)!=Kind.Asphalt || Tram(.5f)!=Kind.None)
     throw new Exception("Tram receiver source type was guessed from lane role or extended beyond its observed footprint.");
+// Actual RoadEU sidewalk tops are distinct from the curb in the same source Surface.
+Kind Sidewalk(float lo, float hi, bool builtin=true, string normal="a142c18b42577de52815d1afd054660b") =>
+    MovableRoadLayerIdentity.WholeReceiver("1d7dad9f64c9fe55a809f1080c39fb92",builtin,
+        "9a6506aaede935752b5c4c0362c95f6e",normal,"37ceea0e8c2bd24599e237236e6ae338",tram,lo,hi);
+foreach(var widthEnd in new[]{.5087890625f,.5869140625f,.6650390625f})
+    if(Sidewalk(.32763671875f,widthEnd)!=Kind.Sidewalk) throw new Exception("Measured sidewalk top was vetoed by its asphalt worldspace layer.");
+if(Sidewalk(.28173828125f,.29638671875f)!=Kind.Curb || Sidewalk(.28173828125f,.282519f)!=Kind.Curb)
+    throw new Exception("Measured source curb strip not independently classified.");
+foreach(var range in new[]{(.2817f,.29638671875f),(.28173828125f,.2964f),(0f,.5f),(.32f,.5f),(.4f,.67f),(float.NaN,.5f),(.6f,.5f)})
+    if(Sidewalk(range.Item1,range.Item2)!=Kind.None) throw new Exception("Curb, mixed or unmeasured footprint became sidewalk.");
+if(Sidewalk(.4f,.5f,false)!=Kind.None || Sidewalk(.4f,.5f,normal:"unknown")!=Kind.None)
+    throw new Exception("Foreign sidewalk identity accepted.");
+Console.WriteLine("PASS exact RoadEU paving and independent curb bands; mixed footprint, foreign PBR and invalid intervals rejected.");
+Kind ObjectAsphalt(string cid="88df662f6bc8058d3ecf8f7a5d7f2239",string normal="9f446790360787756b0e5909db12e200") =>
+    MovableRoadLayerIdentity.WholeReceiver(cid,false,"b00176216b0ce36579bce6fc675cfb77",normal,
+        "375b871b66aaf675dacef141eb2a9810",Kind.None,-8,12);
+if(ObjectAsphalt()!=Kind.Asphalt || ObjectAsphalt(cid:"unknown")!=Kind.None || ObjectAsphalt(normal:"unknown")!=Kind.None)
+    throw new Exception("Measured object asphalt identity or original-source negative control failed.");
 Kind WholePath(bool builtin=true,float maxU=.5f,string normal="1e09bb5978cb13953988206f636cc6f5") =>
     MovableRoadLayerIdentity.WholeReceiver("16be9bdc3ead50651a57c398efa6ed2e",builtin,
         "ecdec3f86d6792856b92044582832fb9",normal,"1c50af8d69f824751a0e29d32c2ea92c",Kind.Pathway,0,maxU);
@@ -83,10 +101,9 @@ try {
        preparedUnit:true,repeatU:true,projectTangent:true,tangent:Vector4.one);
     throw new Exception("Conflicting prepared tangent modes accepted.");
 } catch(ArgumentException) { }
-try {
-    _=MovableRoadProjection.Prepared(new G.Vertex(new Vector3(0,0,20),Vector3.up,Vector4.one,Vector4.zero,Color.white),unit);
-    throw new Exception("Finite prepared axis escaped its guard.");
-} catch(InvalidOperationException) { }
+var beyond = new G.Vertex(new Vector3(0,0,20),Vector3.up,Vector4.one,Vector4.zero,Color.white);
+var beyondMapped=MovableRoadProjection.Prepared(beyond,unit);
+if(beyondMapped.Position!=beyond.Position)throw new Exception("Finite UV range changed geometry.");
 foreach(float bad in new[]{float.NaN,float.PositiveInfinity})
 {
     try {
@@ -100,11 +117,8 @@ foreach(float bad in new[]{float.NaN,float.PositiveInfinity})
         throw new Exception("Non-finite explicit frame accepted.");
     } catch(InvalidOperationException) { }
 }
-try {
-    var guarded=new MovableExistingRoadSurface.Patch(new(0,.4f),new(1,.6f),new(1,0,0,0),new(0,0,0,.7f),far,preparedUnit:true,repeatU:true);
-    _=MovableRoadProjection.Prepared(preparedVertex,guarded);
-    throw new Exception("Finite coordinate inside texture but outside measured content accepted.");
-} catch(InvalidOperationException) { }
+var guarded=new MovableExistingRoadSurface.Patch(new(0,.4f),new(1,.6f),new(1,0,0,0),new(0,0,0,.7f),far,preparedUnit:true,repeatU:true);
+if(MovableRoadProjection.Prepared(preparedVertex,guarded).UV.y!=.7f)throw new Exception("Finite coordinate was clamped.");
 Console.WriteLine("PASS prepared projection: continuous repeated UV, guarded finite axis, raw receiver attributes and explicit tangent modes.");
 Console.WriteLine("PASS source appearance: exact six-channel identity and Pathway footprint; Ballast is independent of bridge role; original B=254 residual belongs to the same supported whole appearance; offline unit axes retained.");
 if(args.Length>=1)
@@ -242,12 +256,10 @@ var guardPoint=Vertex(0);
 var inGuard=MovableRoadProjection.Prepared(guardPoint,declaredGuard);
 if(inGuard.UV.x!=.2499992f||inGuard.Color!=guardPoint.Color||inGuard.UV.z!=guardPoint.UV.z)
     throw new Exception("Explicit finite guard altered the original coordinate or attributes.");
-try{MovableRoadProjection.Prepared(guardPoint,contentOnly);throw new Exception("Undeclared guard accepted.");}
-catch(InvalidOperationException){}
+if(MovableRoadProjection.Prepared(guardPoint,contentOnly).UV.x!=.2499992f)throw new Exception("Finite coordinate changed.");
 var outsideGuard=new MovableExistingRoadSurface.Patch(new(.25f,0),new(.75f,1),
     new(0,0,0,.1f),new(0,0,1,0),far,preparedUnit:true,repeatV:true).WithFiniteSampling(new(.125f,0),new(.875f,1));
-try{MovableRoadProjection.Prepared(guardPoint,outsideGuard);throw new Exception("Outside authored sampling domain accepted.");}
-catch(InvalidOperationException){}
+if(MovableRoadProjection.Prepared(guardPoint,outsideGuard).UV.x!=.1f)throw new Exception("Outside coordinate changed.");
 foreach(var invalidBounds in new[]{(new Vector2(-.1f,0),Vector2.one),(new Vector2(.3f,0),Vector2.one),(Vector2.zero,new Vector2(float.NaN,1))})
 {
     try{contentOnly.WithFiniteSampling(invalidBounds.Item1,invalidBounds.Item2);throw new Exception("Invalid guard declaration accepted.");}

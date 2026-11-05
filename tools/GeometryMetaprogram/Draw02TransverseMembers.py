@@ -8,16 +8,26 @@ import json
 import sys
 import numpy as np
 
-research, output = map(Path, sys.argv[1:])
-planes = json.loads((research / 'draw02-road-plane-candidates.json').read_text())
+repo = Path(__file__).resolve().parents[2]
+research, output = (tuple(map(Path, sys.argv[1:])) if len(sys.argv) > 1 else
+    (repo / 'artifacts/layer-decoupling/Draw02/outputs/native-repeat-mechanism',
+     repo / 'src/BridgeBuilder/Bridges/Types/Draw02/Draw02TransverseMembers.g.cs'))
+native = (research / 'lod0-native.npz').exists()
+planes = None if native else json.loads((research / 'draw02-road-plane-candidates.json').read_text())
 reference_spans = {}
 tables = []
 for lod in range(2):
-    data = np.load(research / f'draw02-main-lod{lod}-uv.npz')
-    v = data['positions'].astype(np.float32)
-    triangles = data['indices'].reshape(-1, 3)
-    removed = [face for p in planes[lod]['candidates'] if p['y'] in (9.800049, 10.0)
-               for face in p['triangle_ordinals']]
+    source_path = research / (f'lod{lod}-native.npz' if native else f'draw02-main-lod{lod}-uv.npz')
+    data = np.load(source_path)
+    v = data['mesh0_positions' if native else 'positions'].astype(np.float32)
+    triangles = data['mesh0_indices' if native else 'indices'].reshape(-1, 3)
+    if native:
+        y = v[triangles, 1]
+        removed = np.flatnonzero((y.min(1) == y.max(1)) &
+            ((y[:, 0] == np.float32(9.800048828125)) | (y[:, 0] == np.float32(10))))
+    else:
+        removed = [face for p in planes[lod]['candidates'] if p['y'] in (9.800049, 10.0)
+                   for face in p['triangle_ordinals']]
     faces = np.delete(triangles, removed, axis=0)
     parent = list(range(len(v)))
     def root(a):
@@ -81,7 +91,9 @@ for lod in range(2):
             reference_spans[key] = float(hi[0])
         # The middle LOD sometimes loses a 5 cm outer cap. Keep the near member's
         # measured span rather than normalizing a simplified remnant to another width.
-        weights = np.sign(p[:, 0]) if base else p[:, 0] / reference_spans[key]
+        # The central plate repeats the two lateral hinge plates. Its 0.4 m
+        # thickness is a section, not a width-spanning mechanism reach.
+        weights = np.zeros(len(ids), dtype=np.float32) if linkage else np.sign(p[:, 0]) if base else p[:, 0] / reference_spans[key]
         members[key] = (ids, weights.astype(np.float32))
     assert len(members) == 44
     assert set(members) == ({(role, sign * station) for role in ('base', 'brace')
@@ -95,7 +107,7 @@ for lod in range(2):
         seen.update(ids)
         for i, weight in zip(ids, weights):
             coefficients.setdefault(float(weight), []).append(i)
-        for delta in ((-.1, 0, 2, 8) if key[0] == 'linkage' else (-.5, 0, 2, 8)):
+        for delta in (-4.5, -3.5, -.1, 0, 2, 8):
             moved = v[ids].copy()
             moved[:, 0] += weights * np.float32(delta)
             assert np.array_equal(moved[:, 1:], v[ids, 1:])
@@ -103,14 +115,13 @@ for lod in range(2):
             if delta == 0:
                 assert np.array_equal(moved, v[ids])
             if key[0] == 'linkage':
-                assert np.allclose(moved[:,0],v[ids,0]*(1+delta/reference_spans[key]),atol=2e-6)
-                assert reference_spans[key]+delta > 0
+                assert np.array_equal(moved, v[ids])
             if key[0] in ('base','transition'):
                 for sign in (-1, 1):
                     mask = np.sign(v[ids, 0]) == sign
                     assert np.allclose(moved[mask, 0] - v[ids, 0][mask], sign * delta, atol=1e-6)
     name = 'DrawBridge02' + ('_LOD1' if lod else '') + ' Mesh.Geometry'
-    digest = hashlib.sha256((research / 'movable-skin' / name).read_bytes()).hexdigest()
+    digest = hashlib.sha256((source_path if native else research / 'movable-skin' / name).read_bytes()).hexdigest()
     tables.append((len(v), coefficients, digest))
     print(f'LOD{lod}: 44 measured members including both central linkages; {len(seen)} source vertices; movement invariants passed')
 
@@ -119,8 +130,6 @@ lines = ['// DrawBridge02 measured transverse members, game 1.6.2f1.',
          '// This partial mapping covers isolated braces/base strips, not the complete mechanism.',
          'using System;', 'using UnityEngine;', '', 'namespace BridgeBuilder.Bridges;', '',
          'internal static class Draw02TransverseMembers', '{',
-         '    // Native central linkage half-span; the mandatory own-span transform degenerates at this delta.',
-         '    internal const float MinimumHalfWidthDelta = -0.200000762939453125f;', '',
          '    internal static void Apply(int lod, Vector3[] source, Vector3[] positions, float delta)',
          '    {', '        var expected = lod switch', '        {',
          '            0 => 44370, 1 => 31007,',
@@ -128,10 +137,12 @@ lines = ['// DrawBridge02 measured transverse members, game 1.6.2f1.',
          '        if (source.Length != expected || positions.Length != expected)',
          '            throw new InvalidOperationException("Draw02 transverse mapping requires its recorded main mesh.");',
          '        foreach (var group in lod == 0 ? Near : Middle)',
-         '            foreach (var index in group.Vertices)',
-         '                positions[index].x = source[index].x + group.Weight * delta;', '    }', '']
+         '            AffineGeometry.Indices(group.Vertices, index =>',
+         '            {',
+         '                positions[index].x = AffineGeometry.AddScaled(source[index].x, group.Weight, delta);',
+         '            });', '    }', '']
 for (count, table, digest), name in zip(tables, ('Near', 'Middle')):
-    lines += ['    // Geometry SHA-256: ' + digest,
+    lines += ['    // Native source data SHA-256: ' + digest,
               f'    private static readonly (float Weight, int[] Vertices)[] {name} =', '    {']
     for weight, ids in sorted(table.items()):
         lines += [f'        ({weight:.9g}f, new[]', '        {']

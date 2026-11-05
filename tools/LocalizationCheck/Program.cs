@@ -125,6 +125,8 @@ internal static class Program
             Game.SceneFlow.GameManager.instance.localizationManager.activeLocaleId = locale;
             var text = UiStringCatalog.Current;
             Check(text.LocaleId == locale, "Active locale not followed");
+            Check(!RuntimeUiText.Get("BridgeSelfCheckRestart").Contains(RuntimeUiText.Get("BridgeSelfCheckUnfinishedWarning")),
+                "Completed self-check reminder contains unfinished warning in " + locale);
             Check(RuntimeUiText.ForLocale(locale).Keys.OrderBy(x => x).SequenceEqual(englishKeys), "Incomplete table");
             foreach (var entry in RuntimeUiText.ForLocale(locale))
             {

@@ -32,9 +32,9 @@ KEYS
         {
             var at = index * 9;
             var halfWidth = values[at] + halfWidthDelta;
-            if (!(halfWidth > 0))
+            if (!float.IsFinite(halfWidth))
                 throw new InvalidOperationException("PedestrianDraw01 walking unit has invalid finite width.");
-            var u = new Vector4(values[at + 1] / halfWidth, 0, 0, values[at + 2]);
+            var u = new Vector4((halfWidth == 0 ? 0 : values[at + 1] / halfWidth), 0, 0, values[at + 2]);
             var v = new Vector4(0, 0, values[at + 3], values[at + 4]);
             var tangent = Quaternion.Inverse(roadToObject.rotation) * new Vector3(values[at + 5], values[at + 6], values[at + 7]);
             result[index] = new Patch(Vector2.zero, Vector2.one, frame * u, frame * v,

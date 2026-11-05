@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using Colossal.AssetPipeline.Importers;
@@ -45,14 +45,24 @@ internal static class MovableStructureModel
         { Slot = slot; Triangle = triangle; Indices = (int[])indices.Clone(); }
     }
 
-    // Final UVs address one finished offline unit. Domain membership and connected
-    // phase are measured by the style; this record adds no vertices or triangles.
+    internal readonly struct ProjectedUvFrame
+    {
+        // Gradient rows in final Plan.Positions coordinates. The offset components
+        // do not affect tangent direction; source geometry and normals stay intact.
+        internal readonly Vector4 U, V;
+        internal ProjectedUvFrame(Vector4 u, Vector4 v) { U = u; V = v; }
+    }
+
+    // Final UVs address a resolved native material. Measured domain membership
+    // and phase are supplied by the style; this record adds no geometry.
     internal sealed class PreparedDomain
     {
         internal readonly int Domain;
         internal readonly SurfaceAsset Surface;
         internal readonly IReadOnlyDictionary<int, Vector2> Uvs;
-        internal PreparedDomain(int domain, SurfaceAsset surface, KeyValuePair<int, Vector2>[] uvs)
+        internal readonly IReadOnlyDictionary<int, ProjectedUvFrame> TangentProjections;
+        internal PreparedDomain(int domain, SurfaceAsset surface, KeyValuePair<int, Vector2>[] uvs,
+            KeyValuePair<int, ProjectedUvFrame>[]? tangentProjections = null)
         {
             if (domain < 0 || surface == null) throw new ArgumentException("Invalid prepared structural domain.");
             Domain = domain; Surface = surface;
@@ -64,6 +74,18 @@ internal static class MovableStructureModel
                 values.Add(pair.Key, pair.Value);
             }
             Uvs = values;
+            var projections = new Dictionary<int, ProjectedUvFrame>();
+            if (tangentProjections != null)
+                foreach (var pair in tangentProjections)
+                {
+                    if (!values.ContainsKey(pair.Key))
+                        throw new ArgumentException("Prepared tangent projection requires its vertex UV.");
+                    for (int axis = 0; axis < 4; axis++)
+                        if (!float.IsFinite(pair.Value.U[axis]) || !float.IsFinite(pair.Value.V[axis]))
+                            throw new ArgumentException("Prepared tangent projection is non-finite.");
+                    projections.Add(pair.Key, pair.Value);
+                }
+            TangentProjections = projections;
         }
     }
 
@@ -74,15 +96,26 @@ internal static class MovableStructureModel
         internal readonly bool[][] RemoveTriangles;
         internal readonly EdgeVertex[] AddedVertices;
         internal readonly TriangleVertex[] InteriorVertices;
+        // Explicit exact source-attribute duplicates, appended after edge/interior vertices.
+        internal readonly int[] SourceCopies;
         internal readonly Fragment[] Fragments;
         internal readonly KeyValuePair<int, Vector2>[] UvCorrections;
+        // Measured, orientation-preserving direction Jacobians in the same coordinates
+        // as SourcePositions/Positions. Indices address final Plan.Positions, including
+        // explicitly constructed vertices; their raw source attributes interpolate first.
+        internal readonly KeyValuePair<int, Matrix4x4>[] FrameTransforms;
         internal readonly PreparedDomain[] PreparedDomains;
         // Only measured LOD reconstruction opts in; ordinary width plans preserve Y/Z.
         internal readonly bool ReconstructsAuthoredPositions;
-        internal int ConstructedCount => AddedVertices.Length + InteriorVertices.Length;
+        internal int ConstructedCount => AddedVertices.Length + InteriorVertices.Length + SourceCopies.Length;
 
         internal TriangleVertex Construction(int index)
         {
+            if (index >= AddedVertices.Length + InteriorVertices.Length)
+            {
+                int source = SourceCopies[index - AddedVertices.Length - InteriorVertices.Length];
+                return new TriangleVertex(source, source, source, 0f, 0f);
+            }
             if (index >= AddedVertices.Length) return InteriorVertices[index - AddedVertices.Length];
             var edge = AddedVertices[index];
             return new TriangleVertex(edge.A, edge.B, edge.A, edge.Fraction, 0f);
@@ -92,8 +125,17 @@ internal static class MovableStructureModel
             bool[][] removeTriangles, EdgeVertex[]? addedVertices = null, Fragment[]? fragments = null,
             TriangleVertex[]? interiorVertices = null, float[]? constructedX = null,
             bool reconstructsAuthoredPositions = false, KeyValuePair<int, Vector2>[]? uvCorrections = null,
-            PreparedDomain[]? preparedDomains = null)
+            PreparedDomain[]? preparedDomains = null,
+            KeyValuePair<int, Matrix4x4>[]? frameTransforms = null, int[]? sourceCopies = null)
         {
+            SourceCopies = sourceCopies == null ? Array.Empty<int>() : (int[])sourceCopies.Clone();
+            foreach (int source in SourceCopies)
+                if (source < 0 || source >= sourcePositions.Length)
+                    throw new ArgumentException("Structural source copy must reference an original source vertex.");
+            FrameTransforms = frameTransforms == null ? Array.Empty<KeyValuePair<int, Matrix4x4>>() :
+                (KeyValuePair<int, Matrix4x4>[])frameTransforms.Clone();
+            MovableStructureFrames.Validate(FrameTransforms, checked(sourcePositions.Length +
+                (addedVertices?.Length ?? 0) + (interiorVertices?.Length ?? 0) + SourceCopies.Length));
             PreparedDomains = preparedDomains == null ? Array.Empty<PreparedDomain>() : (PreparedDomain[])preparedDomains.Clone();
             if (PreparedDomains.Select(d => d.Domain).Distinct().Count() != PreparedDomains.Length)
                 throw new ArgumentException("Duplicate prepared structural domain.");
@@ -108,7 +150,9 @@ internal static class MovableStructureModel
             RemoveTriangles = removeTriangles.Select(mask => (bool[])mask.Clone()).ToArray();
             AddedVertices = addedVertices == null ? Array.Empty<EdgeVertex>() : (EdgeVertex[])addedVertices.Clone();
             InteriorVertices = interiorVertices == null ? Array.Empty<TriangleVertex>() : (TriangleVertex[])interiorVertices.Clone();
-            Fragments = fragments?.Select(f => new Fragment(f.Slot, f.Triangle, f.Indices)).ToArray()
+            Fragments = fragments?.GroupBy(f => (f.Slot, f.Triangle))
+                .Select(group => new Fragment(group.Key.Slot, group.Key.Triangle,
+                    group.SelectMany(f => f.Indices).ToArray())).ToArray()
                 ?? Array.Empty<Fragment>();
             if (positions.Length != sourcePositions.Length)
                 throw new ArgumentException("A structural plan must preserve every original vertex.");
@@ -134,7 +178,8 @@ internal static class MovableStructureModel
                 Positions[positions.Length + AddedVertices.Length + i] = a +
                     (positions[vertex.B] - a) * vertex.WeightB + (positions[vertex.C] - a) * vertex.WeightC;
             }
-            var replaced = new HashSet<(int, int)>();
+            for (int i = 0; i < SourceCopies.Length; i++)
+                Positions[positions.Length + AddedVertices.Length + InteriorVertices.Length + i] = positions[SourceCopies[i]];
             // A merged LOD face may contain independently transformed authored parts.
             // Their new boundary X values come from offline part data, not interpolation
             // of the old face's widened corners. Original vertices and new Y/Z stay intact.
@@ -154,9 +199,8 @@ internal static class MovableStructureModel
                 if (fragment.Slot < 0 || fragment.Slot >= SourceIndices.Length || fragment.Slot >= RemoveTriangles.Length ||
                     fragment.Triangle < 0 || fragment.Triangle >= RemoveTriangles[fragment.Slot].Length ||
                     fragment.Triangle >= SourceIndices[fragment.Slot].Length / 3 ||
-                    fragment.Indices.Length == 0 || fragment.Indices.Length % 3 != 0 ||
-                    !replaced.Add((fragment.Slot, fragment.Triangle)))
-                    throw new ArgumentException("A measured road fragment has an invalid or duplicate source triangle.");
+                    fragment.Indices.Length % 3 != 0)
+                    throw new ArgumentException("A measured road fragment has an invalid source triangle or incomplete index stream.");
                 var original = SourceIndices[fragment.Slot];
                 bool OnTriangle(int index) => index == original[fragment.Triangle * 3] ||
                     index == original[fragment.Triangle * 3 + 1] || index == original[fragment.Triangle * 3 + 2];
@@ -206,9 +250,6 @@ internal static class MovableStructureModel
                 for (var axis = 0; axis < 3; axis++)
                     if (positions[i][axis] != plan.SourcePositions[i][axis] || !float.IsFinite(plan.Positions[i][axis]))
                     { error = $"Structural vertex {i} does not match its measured source or has invalid output."; return false; }
-                if (!plan.ReconstructsAuthoredPositions &&
-                    (plan.Positions[i].y != positions[i].y || plan.Positions[i].z != positions[i].z))
-                { error = $"Structural vertex {i} changes an authored Y/Z coordinate."; return false; }
             }
             for (var i = positions.Length; i < outputCount; i++)
                 if (!float.IsFinite(plan.Positions[i].x) || !float.IsFinite(plan.Positions[i].y) ||
@@ -286,7 +327,7 @@ internal static class MovableStructureModel
                 // Constructed UVs need sub-texel interpolation; quantizing them
                 // back to Half can erase the gradient on narrow authored fragments.
                 var attribute=declaration;
-                bool promote=plan.ConstructedCount>0 && attribute.attribute==VertexAttribute.TexCoord0 &&
+                bool promote=(plan.AddedVertices.Length + plan.InteriorVertices.Length)>0 && attribute.attribute==VertexAttribute.TexCoord0 &&
                     attribute.format==VertexAttributeFormat.Float16;
                 if(promote)attribute=new VertexAttributeDescriptor(attribute.attribute,VertexAttributeFormat.Float32,attribute.dimension,attribute.stream);
                 var size = Size(attribute.format) * attribute.dimension;
@@ -404,6 +445,7 @@ internal static class MovableStructureModel
                 attributes.Add(new ModelImporter.Model.VertexData(attribute.attribute, attribute.format,
                     attribute.dimension, new NativeArray<byte>(bytes, Allocator.Persistent), false));
             }
+            MovableStructureFrames.Apply(attributes, plan.FrameTransforms, used, used?.Length ?? outputCount);
             nativeIndices = new NativeArray<int>(indices.ToArray(), Allocator.Persistent);
             model = new ModelImporter.Model(name, Matrix4x4.identity, used?.Length ?? outputCount, nativeIndices,
                 attributes.ToArray(), submeshes, -1, Array.Empty<ModelImporter.Model.BoneInfo>());

@@ -28,14 +28,17 @@ internal static class BridgePreparedMaterials
     }
 
     private static string? _root;
+    // Set and consumed on the game thread only, for the duration of one request.
+    internal static BridgeMaterialFileSnapshot? RequestFiles { get; set; }
+    internal static string SourceRoot => _root ?? throw new InvalidOperationException("Prepared material installation directory is unavailable.");
     private static ILocalAssetDatabase? _database;
     private static readonly Dictionary<string, (AssetData Asset, string Digest)> Assets = new(StringComparer.OrdinalIgnoreCase);
     private static readonly Dictionary<string, SurfaceAsset> Surfaces = new(StringComparer.Ordinal);
     private static readonly HashSet<SurfaceAsset> RetainedSurfaces = new();
     private static readonly Dictionary<string, string[]> MidMipEdges = new(StringComparer.OrdinalIgnoreCase);
 
-    internal static string[] MidMipDependencies(string surfaceCid)
-        => MidMipEdges.TryGetValue(surfaceCid, out var caches) ? caches : Array.Empty<string>();
+    internal static bool TryMidMipDependencies(string surfaceCid, out string[] caches)
+        => MidMipEdges.TryGetValue(surfaceCid, out caches!);
 
     internal static void Initialize(string installationDirectory)
         => _root = Path.GetFullPath(Path.Combine(installationDirectory, "Materials"));
@@ -98,7 +101,7 @@ internal static class BridgePreparedMaterials
         if (string.IsNullOrEmpty(styleId) || styleId.Any(c => !char.IsLetterOrDigit(c)))
             throw new ArgumentException("Prepared material requires a stable style ID.", nameof(styleId));
         string key = styleId + "/" + variant + "/" + name;
-        if (Surfaces.TryGetValue(key, out var existing)) return existing;
+        if (Surfaces.TryGetValue(key, out var existing)) return Record(existing);
         // Preflight the complete variant before native registration. Sidecars retain
         // the prepared identity; a shared CID must always describe identical bytes.
         var inputs = BridgePreparedMaterialFiles.Read(Path.Combine(_root, styleId), variant, name,
@@ -110,7 +113,7 @@ internal static class BridgePreparedMaterials
                 if (asset is not VTTextureAsset && asset is not VTSurfaceAsset) return 0;
                 using var stream = asset.GetReadStream();
                 return BridgeMidMipReferences.RequiredLevels(stream, asset is VTSurfaceAsset);
-            });
+            }, RequestFiles);
         foreach (var input in inputs)
         {
             if (Assets.TryGetValue(input.Cid, out var registered) && registered.Digest != input.Digest)
@@ -118,7 +121,8 @@ internal static class BridgePreparedMaterials
         }
         var surfaceInput = inputs.Single(i => Path.GetFileName(i.Path) == name);
         var cacheInputs = inputs.Where(i => Path.GetExtension(i.Path) == ".MidMips").ToArray();
-        MidMipEdges[surfaceInput.Cid] = cacheInputs.Select(i => i.Cid).Distinct().ToArray();
+        MidMipEdges[surfaceInput.Cid] = cacheInputs.Where(i => i.Cid == BridgePreparedMaterialFiles.CacheFor(surfaceInput.Cid))
+            .Select(i => i.Cid).Distinct().ToArray();
         if (_database == null)
         {
             _database = AssetDatabase<Descriptor>.GetInstance(new Descriptor(_root));
@@ -184,6 +188,17 @@ internal static class BridgePreparedMaterials
             catch { surface.UnloadProperties(); throw; }
         }
         Surfaces.Add(key, surface);
+        return Record(surface);
+    }
+
+    private static SurfaceAsset Record(SurfaceAsset surface)
+    {
+        var dependencies = Bridges.BridgeRoadGeneration.CurrentDependencies;
+        if (dependencies != null)
+        {
+            string cid = surface.id.guid.ToString();
+            dependencies.Material(surface, MidMipEdges[cid].Select(cache => Assets[cache].Asset));
+        }
         return surface;
     }
 
@@ -205,7 +220,6 @@ internal static class BridgePreparedMaterials
         foreach (var surface in RetainedSurfaces) surface.UnloadProperties();
         RetainedSurfaces.Clear();
         Surfaces.Clear(); Assets.Clear(); MidMipEdges.Clear(); _root = null;
-        BridgePreparedMaterialFiles.Clear();
         if (_database == null) return;
         AssetDatabase.global.UnregisterDatabase(_database).GetAwaiter().GetResult();
         _database.Dispose(); // Never MarkForDeletion: these are installed source assets.

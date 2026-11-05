@@ -46,8 +46,9 @@ internal static class PedestrianDraw02LocalAppearance
             float bx=AffineGeometry.AddScaled(f[offset+3],f[offset+5],delta),bz=f[offset+4];
             float nx=az-bz,nz=bx-ax;
             float length=MathF.Sqrt(nx*nx+nz*nz);
-            if(!(length>0))throw new InvalidOperationException(nameof(PedestrianDraw02LocalAppearance));
-            nx/=length;nz/=length;
+            if(!float.IsFinite(length))throw new InvalidOperationException(nameof(PedestrianDraw02LocalAppearance));
+            if(length==0f){nx=f[offset+6];nz=f[offset+7];}
+            else {nx/=length;nz/=length;}
             if(nx*f[offset+6]+nz*f[offset+7]<0){nx=-nx;nz=-nz;}
             return Plane(nx,nz,-nx*ax-nz*az,low,high);
         }

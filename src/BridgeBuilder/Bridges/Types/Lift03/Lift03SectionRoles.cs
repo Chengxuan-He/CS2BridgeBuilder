@@ -5,18 +5,18 @@ using Game.Prefabs;
 namespace BridgeBuilder.Bridges;
 internal static class Lift03SectionRoles
 {
-    internal static Lift03NetworkData.MainRole[] ResolveMain(NetSectionInfo[] sections)
+    internal static Lift03NetworkData.MainRole[] ResolveMain(NetSectionInfo[] sections, BridgeRoadContext context)
     {
-        var sides = SideSections(sections);
+        var sides = SideSections(sections, context);
         var result = new Lift03NetworkData.MainRole[sections.Length];
         for (var i = Numeric_Types_Lift03_Lift03SectionRoles_cs.Values.I32[0]; i < result.Length; i++)
             result[i] = sides[i] ? Lift03NetworkData.MainRole.Side : Lift03NetworkData.MainRole.Deck;
         return result;
     }
 
-    internal static Lift03NetworkData.AuxiliaryRole[] ResolveAuxiliary(NetSectionInfo[] sections)
+    internal static Lift03NetworkData.AuxiliaryRole[] ResolveAuxiliary(NetSectionInfo[] sections, BridgeRoadContext context)
     {
-        var sides = SideSections(sections);
+        var sides = SideSections(sections, context);
         var result = new Lift03NetworkData.AuxiliaryRole[sections.Length];
         for (var i = Numeric_Types_Lift03_Lift03SectionRoles_cs.Values.I32[1]; i < result.Length; i++)
             result[i] = sections[i].m_Median ? Lift03NetworkData.AuxiliaryRole.Median : sides[i] ? Lift03NetworkData.AuxiliaryRole.Side : Lift03NetworkData.AuxiliaryRole.TrackOrShoulder;
@@ -25,7 +25,7 @@ internal static class Lift03SectionRoles
 
     // Both recorded Side sections contain only native Side-layer pieces. Shoulders,
     // lanes and medians also contain Surface/Bottom/Top. Names and widths are irrelevant.
-    private static bool[] SideSections(NetSectionInfo[] sections)
+    private static bool[] SideSections(NetSectionInfo[] sections, BridgeRoadContext context)
     {
         var cache = new Dictionary<NetSectionPrefab, (bool Any, bool OnlySide)>();
         var visiting = new HashSet<NetSectionPrefab>();
@@ -34,6 +34,8 @@ internal static class Lift03SectionRoles
         {
             if (sections[i] == null)
                 throw new InvalidOperationException("Lift03 selected network contains a missing section occurrence.");
+            if (!context.AllowsLevel(sections[i].m_RequireAll, sections[i].m_RequireAny, sections[i].m_RequireNone))
+                continue;
             var layers = Read(sections[i].m_Section);
             result[i] = layers.Any && layers.OnlySide;
         }
@@ -53,6 +55,8 @@ internal static class Lift03SectionRoles
             {
                 if (piece?.m_Piece == null)
                     throw new InvalidOperationException("Lift03 selected section contains a missing piece.");
+                if (!context.AllowsLevel(piece.m_RequireAll, piece.m_RequireAny, piece.m_RequireNone))
+                    continue;
                 any = true;
                 onlySide &= piece.m_Piece.m_Layer == NetPieceLayer.Side;
             }
@@ -61,6 +65,8 @@ internal static class Lift03SectionRoles
             {
                 if (child == null)
                     throw new InvalidOperationException("Lift03 selected section contains a missing subsection.");
+                if (!context.AllowsLevel(child.m_RequireAll, child.m_RequireAny, child.m_RequireNone))
+                    continue;
                 var layers = Read(child.m_Section);
                 any |= layers.Any;
                 onlySide &= layers.OnlySide;

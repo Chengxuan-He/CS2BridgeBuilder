@@ -62,8 +62,8 @@ internal static partial class TowerWidening
         // small centre plate by the complete requested width and produced the broad sheets in game.
         var leftReach = profile.OpenTrussLeftReach;
         var rightReach = profile.OpenTrussRightReach;
-        var leftRatio = leftReach > CentreEpsilon ? Math.Max(0f, (leftReach + shift) / leftReach) : 1f;
-        var rightRatio = rightReach > CentreEpsilon ? Math.Max(0f, (rightReach + shift) / rightReach) : 1f;
+        var leftRatio = leftReach > CentreEpsilon ? (leftReach + shift) / leftReach : 1f;
+        var rightRatio = rightReach > CentreEpsilon ? (rightReach + shift) / rightReach : 1f;
         if (Math.Abs(extra) >= CentreEpsilon && components.Length > 0)
         {
             var translated = new bool[components.Length];
@@ -104,8 +104,6 @@ internal static partial class TowerWidening
         }
 
         var contractSatisfied = RequireCentrelineRule(source, moved, components, labels, extra, leftReach, rightReach);
-        if (!contractSatisfied)
-            Array.Copy(source, moved, source.Length);
         var degenerateBefore = DegenerateTriangles(source, triangles);
         var degenerateAfter = DegenerateTriangles(moved, triangles);
         var flipped = FlippedTriangles(source, moved, triangles);
@@ -141,7 +139,7 @@ internal static partial class TowerWidening
             return moved;
         }
 
-        var ratio = boundary > CentreEpsilon ? Math.Max(0f, (boundary + shift) / boundary) : 1f;
+        var ratio = boundary > CentreEpsilon ? (boundary + shift) / boundary : 1f;
         var rigid = 0;
         var spanning = 0;
         var mixed = 0;
@@ -171,8 +169,6 @@ internal static partial class TowerWidening
                 moved[index].x = AffineGeometry.Scale(x, ratio);
         });
         var contractSatisfied = RequireProfiledCentrelineRule(source, moved, boundary, ratio, extra);
-        if (!contractSatisfied)
-            Array.Copy(source, moved, source.Length);
         var degenerateBefore = DegenerateTriangles(source, triangles);
         var degenerateAfter = DegenerateTriangles(moved, triangles);
         var flipped = FlippedTriangles(source, moved, triangles);
@@ -229,8 +225,8 @@ internal static partial class TowerWidening
         if (leftReach <= CentreEpsilon || rightReach <= CentreEpsilon)
             return false;
         var shift = extra * 0.5f;
-        var leftRatio = Math.Max(0f, (leftReach + shift) / leftReach);
-        var rightRatio = Math.Max(0f, (rightReach + shift) / rightReach);
+        var leftRatio = (leftReach + shift) / leftReach;
+        var rightRatio = (rightReach + shift) / rightReach;
         for (var index = 0; index < source.Length; index++)
         {
             var componentId = labels[index];

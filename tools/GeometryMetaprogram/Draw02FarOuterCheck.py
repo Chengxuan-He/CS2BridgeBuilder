@@ -1,0 +1,6 @@
+from pathlib import Path
+import numpy as np,json
+R=Path('D:/CS2BridgeBuilder');O=R/'artifacts/material-remap/Draw02/closure53';d=np.load(R/'artifacts/layer-decoupling/Draw02/outputs/native-repeat-mechanism/lod2-native.npz');v=d['mesh0_positions'];u=d['mesh0_uv'];bones=d['mesh0_bones'].reshape(-1);f=d['mesh0_indices'].reshape(-1,3);a=json.loads((R/'artifacts/material-remap/shared/draw02-structure52/attributes/d8ef11a742ab332ffb7e583befeb21dd.attributes.json').read_text())['meshes'][0];p=np.array(a['positions'],dtype=np.float32);q=np.array(a['uv0'],dtype=np.float32);t=np.array(a['faces']);print(a.keys());print('uvshapes',u.shape,q.shape);lookup={tuple(sorted(tuple(x) for x in p[tri])):tri for tri in t};rows=[]
+for face in json.loads((O/'lod2-outer-members.json').read_text())['faces']:
+ tri=f[face];pos=v[tri].copy();pos[:,0]+=np.sign(pos[:,0])*np.float32(4);actual=lookup[tuple(sorted(tuple(x) for x in pos))];order=[next(int(j) for j in actual if np.array_equal(p[j],point)) for point in pos];rows.append(dict(face=face,uvExact=bool(np.array_equal(q[order,:2],u[tri,:2])),maxUvDiff=float(np.abs(q[order,:2]-u[tri,:2]).max())))
+print('far full sourceUV',sum(r['uvExact'] for r in rows),len(rows),'max',max(r['maxUvDiff'] for r in rows));(O/'actual52-far-outer-uv.json').write_text(json.dumps(rows,indent=2))

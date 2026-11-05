@@ -16,8 +16,8 @@ internal static class PedestrianDraw01SupportGeometry
             (true, 1) => (Count: Numeric_Types_PedestrianDraw01_PedestrianDraw01SupportGeometry_g_cs.Values.I32[8], IndexCount: Numeric_Types_PedestrianDraw01_PedestrianDraw01SupportGeometry_g_cs.Values.I32[9], Parts: Parts11),
             (true, 2) => (Count: Numeric_Types_PedestrianDraw01_PedestrianDraw01SupportGeometry_g_cs.Values.I32[10], IndexCount: Numeric_Types_PedestrianDraw01_PedestrianDraw01SupportGeometry_g_cs.Values.I32[11], Parts: Parts12),
             _ => throw new ArgumentOutOfRangeException(nameof(lod))};
-        if (source.Length != data.Count || indices.Length != data.IndexCount || !float.IsFinite(delta) || delta <= (footing ? -Numeric_Types_PedestrianDraw01_PedestrianDraw01SupportGeometry_g_cs.Values.F32[0] : -Numeric_Types_PedestrianDraw01_PedestrianDraw01SupportGeometry_g_cs.Values.F32[1]))
-            throw new InvalidOperationException("PedestrianDraw01 support requires its native topology and positive span.");
+        if (source.Length != data.Count || indices.Length != data.IndexCount || !float.IsFinite(delta))
+            throw new InvalidOperationException("PedestrianDraw01 support requires its native topology and finite delta.");
         var positions = (Vector3[])source.Clone();
         foreach (var part in data.Parts)
             AffineGeometry.For(part.First, checked((part.Last) + 1), i =>

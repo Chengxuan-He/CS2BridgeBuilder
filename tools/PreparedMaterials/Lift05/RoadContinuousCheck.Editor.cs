@@ -88,6 +88,9 @@ public static class Lift05RoadContinuousCheck
                 Surface(Path.Combine(Arg("-preparedRoot"),"RepeatUnits","18d35ed1e221c7a1a1cad597b22896ce5146eb6050095b2b86fd3da7605cbd82","Repeat.Surface"),"bb218fc2b3c073924e369256371898e9"),
                 Surface(Path.Combine(Arg("-preparedRoot"),"RepeatUnits","bc6c38c2c3b14e5bb5743dec2c2ccd05d02dfd30501dc5f08118b70412ccf2d7","Repeat.Surface"),"fb6dc888789e8df3d8da5bd518ce1b0b"),
                 Surface(Path.Combine(Arg("-preparedRoot"),"RepeatUnits","40d7c50979f1502da28972cacf93d06805317986a0d1b1cc6b1faba7ada71284","Repeat.Surface"),"7f60749d006f1da7687effb9f60e56e8"),
+                Surface(Path.Combine(Arg("-preparedRoot"),"RepeatUnits","3061b3f27e2581a706363c6b7c7b86b5fe6fb0aba3e69c87a1b1f6318967ebec","Repeat.Surface"),"e4d91db61aaf481c811cfab769900338"),
+                Surface(Path.Combine(Arg("-preparedRoot"),"RepeatUnits","7a355e468b816e195c561191ac1c5931847c874f2d0cbec74482c662ca3fe6f9","Repeat.Surface"),"f2de4a0ded42bfe8c2c3b9d227ed764d"),
+                Surface(Path.Combine(Arg("-preparedRoot"),"RepeatUnits","240850aa002f85d71ce250f44328a8ab275e0542717942cee71af30bb82f5042","Repeat.Surface"),"fe13c74092caebea5b93902eef542e4b"),
             });
             var callback=T("Lift05NativeRoadAppearance").GetMethod("ForLod",S);var renderType=callback.GetParameters()[1].ParameterType;
             object Render(object s){var r=ScriptableObject.CreateInstance(renderType);var field=renderType.GetField("m_SurfaceAssets",I);var element=field.FieldType.GetElementType();var id=surfaceType.GetProperty("id").GetValue(s);field.SetValue(r,ArrayOf(element,new[]{New(element,id.GetType().GetField("guid").GetValue(id))}));return r;}
@@ -133,7 +136,7 @@ public static class Lift05RoadContinuousCheck
                     }
                     if(escaped>0)Debug.Log($"FINITE_ESCAPE_TOTAL lod={lod} delta={delta} pose={poseId} count={escaped} max={maxEscape:R}");
                     var input=New(inputType,false);Set(input,"Faces",bound);Set(input,"Materials",ArrayOf(surfaceType,new[]{near}));Set(input,"Native",lod==2?far:near);Set(input,"Patches",patches);Set(input,"SupportedTypes",Get(level,"SupportedTypes"));
-                    var call=new object[]{ArrayOf(inputType,new[]{input}),owner,paint,null};var generated=(Array)((Array)T("MovableSurfaceAtlas").GetMethod("Compose",S).Invoke(null,call)).GetValue(0);var surfaces=(Array)((Array)call[3]).GetValue(0);
+                    var call=new object[]{ArrayOf(inputType,new[]{input}),owner,paint,null,null};var generated=(Array)((Array)T("MovableSurfaceAtlas").GetMethod("Compose",S).Invoke(null,call)).GetValue(0);var surfaces=(Array)((Array)call[3]).GetValue(0);
                     row.outputFaces=generated.Length;row.outputArea=generated.Cast<object>().Sum(Area);Require(row.outputFaces==row.boundFaces,"Continuous projection changed topology.");
                     using(var writer=new BinaryWriter(File.Create(Path.Combine(inputs,$"road-capture-{lod}-{delta}-{poseId}.bin"))))
                     {

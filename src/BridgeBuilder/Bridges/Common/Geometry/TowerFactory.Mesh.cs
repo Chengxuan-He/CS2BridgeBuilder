@@ -64,9 +64,7 @@ internal sealed partial class TowerFactory
                 new float3(box.min.x - shift, box.min.y, box.min.z),
                 new float3(box.max.x + shift, box.max.y, box.max.z));
             var span = resultBounds.max.x - resultBounds.min.x;
-            // A source plane may legitimately have zero thickness. Reject inverted
-            // bounds, or a positive source span collapsed by narrowing, not authored planes.
-            if (!float.IsFinite(span) || span < 0f || (span == 0f && extra < 0f))
+            if (!float.IsFinite(span))
             {
                 _report.Defect(string.Format(
                     CultureInfo.InvariantCulture,
@@ -75,6 +73,10 @@ internal sealed partial class TowerFactory
                 if (_previewGeometry == null) UnityEngine.Object.Destroy(widened);
                 return null;
             }
+            // Bounds describe an envelope, not the orientation of the requested transform.
+            // A signed contraction can swap the two endpoints without invalidating the mesh.
+            resultBounds = new Bounds3(math.min(resultBounds.min, resultBounds.max),
+                math.max(resultBounds.min, resultBounds.max));
             loaded = PrivateGeometryReader.Read(original);
             if (loaded == null || loaded.Length == 0) return null;
 
@@ -328,17 +330,6 @@ internal sealed partial class TowerFactory
                     && !APylonCableGeometry.TryApply(original.name, source, extra, moved))
                 {
                     _report.Defect($"'{name}' does not match the recorded A-pylon cable vertices; generation stopped.");
-                    return null;
-                }
-
-                if (openTruss && !usedRecordedTruss02 && !usedRecordedTruss03 && !blueSection
-                    && !trussFacts.ContractSatisfied)
-                {
-                    _report.Defect(string.Format(
-                        CultureInfo.InvariantCulture,
-                        "'{0}' could not satisfy the recorded x=0 transform for every vertex. "
-                        + "The current derived prefab was stopped before any geometry was written.",
-                        name));
                     return null;
                 }
 

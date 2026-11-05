@@ -31,8 +31,8 @@ internal static class MovableStraightRoadEvaluation
     {
         triangles = Array.Empty<MovableRoadGeometry.Triangle>(); error = null;
         if (mesh == null || mesh.vertexCount == 0 || occurrence < 0 ||
-            (deformation == null && (!Finite(width) || !Finite(length) || width <= 0f || length <= 0f)))
-        { error = "Straight road evaluation requires a native mesh, positive finite span and source occurrence."; return false; }
+            (deformation == null && (!Finite(width) || !Finite(length))))
+        { error = "Straight road evaluation requires a native mesh, finite span and source occurrence."; return false; }
         if (!Layout(mesh, VertexAttribute.Position, VertexAttributeFormat.Float32, 3) ||
             !Layout(mesh, VertexAttribute.Normal, VertexAttributeFormat.SNorm16, 2) ||
             !Layout(mesh, VertexAttribute.Tangent, VertexAttributeFormat.Float32, 1) ||
@@ -77,7 +77,7 @@ internal static class MovableStraightRoadEvaluation
                 if (!((selector.r == 0 && selector.g == 2) || (selector.r == 1 && selector.g == 3)) ||
                     selector.b != 0 || selector.a != 0)
                 { error = $"Road vertex {i} requires a node, divider or terrain-dependent deformation path."; return false; }
-                if (!Finite(p.x) || !Finite(p.y) || !Finite(p.z) || p.x < 0f || p.x > 1f || p.z < 0f || p.z > 1f)
+                if (!Finite(p.x) || !Finite(p.y) || !Finite(p.z))
                 { error = $"Road vertex {i} has invalid packed composition coordinates."; return false; }
                 var distance = (p.z + selector.r) * (length * .5f);
                 p = new Vector3((p.x - .5f) * width, p.y, distance - length * .5f);
@@ -107,7 +107,6 @@ internal static class MovableStraightRoadEvaluation
                     result.Add(new MovableRoadGeometry.Triangle(vertices[indices[i]], vertices[indices[i + 1]],
                         vertices[indices[i + 2]], slot, occurrence, sourceTriangle++));
             }
-            if (result.Count == 0) { error = "The evaluated road contains no triangles."; return false; }
             triangles = result.ToArray(); return true;
         }
         catch (Exception exception)

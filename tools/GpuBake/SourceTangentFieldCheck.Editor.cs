@@ -32,11 +32,36 @@ public static class SourceTangentFieldCheck
             var mod=Assembly.LoadFrom(Arg("-modAssembly"));
             Type T(string name)=>mod.GetType("BridgeBuilder.Bridges."+name,true);
             var surfaceType=T("MovableStructureTiles").GetMethod("NativeSurface",Fields).ReturnType;
+            var db=Assembly.LoadFrom(Path.Combine(managed,"Colossal.IO.AssetDatabase.dll"));
+            var core=Assembly.LoadFrom(Path.Combine(managed,"Colossal.Core.dll"));
+            var io=Assembly.LoadFrom(Path.Combine(managed,"Colossal.IO.dll"));
+            var binary=io.GetType("Colossal.IO.BinaryReaderExtensions",true);
+            var readHash=core.GetType("Colossal.IO.BinaryReaderExtensions",true).GetMethod("ReadHash");
+            var textureType=db.GetType("Colossal.IO.AssetDatabase.TextureAsset",true);
+            var identifierType=db.GetType("Colossal.IO.AssetDatabase.Identifier",true);
             object Surface()
             {
                 var result=FormatterServices.GetUninitializedObject(surfaceType);
                 using(var reader=new BinaryReader(File.OpenRead(Arg("-surfaceFile"))))
+                {
                     surfaceType.GetMethod("ReadHeader",Fields).Invoke(result,new object[]{reader});
+                    foreach(var pair in new[]{("m_Floats","ReadStringFloatDictionary"),("m_Ints","ReadStringIntDictionary"),("m_Vectors","ReadStringVectorDictionary"),("m_Colors","ReadStringColorDictionary")})
+                        Set(result,pair.Item1,binary.GetMethod(pair.Item2).Invoke(null,new object[]{reader}));
+                    Require(reader.ReadByte()==255,"Missing native texture dictionary");
+                    var textures=(System.Collections.IDictionary)Activator.CreateInstance(typeof(System.Collections.Generic.Dictionary<,>).MakeGenericType(typeof(string),textureType));
+                    for(int n=reader.ReadInt32();n>0;n--)
+                    {
+                        string key=reader.ReadString();byte present=reader.ReadByte();object texture=null;
+                        if(present==255){texture=FormatterServices.GetUninitializedObject(textureType);textureType.GetProperty("id").SetValue(texture,New(identifierType,readHash.Invoke(null,new object[]{reader})));}
+                        else Require(present==0,"Invalid native texture marker");
+                        textures.Add(key,texture);
+                    }
+                    Set(result,"m_Textures",textures);Set(result,"m_Keywords",binary.GetMethod("ReadStringHashSet").Invoke(null,new object[]{reader}));
+                    Require(reader.BaseStream.Position==reader.BaseStream.Length,"Native descriptor trailing bytes");
+                }
+                // Keep the real decoded descriptor resident; texture handles are identities only.
+                // This is not a game database/rendering test.
+                Set(result,"m_InstanceRefCount",1);
                 return result;
             }
             var original=Surface(); var prototype=Surface();
@@ -45,6 +70,26 @@ public static class SourceTangentFieldCheck
             var input=T("MovableSurfaceAtlas+Input");
             object V(float x,float z)=>New(vertex,new Vector3(x,0,z),new Vector3(0,1,1).normalized,new Vector4(1,0,0,-1),new Vector4(3+x,7+z,7,9),new Color(.2f,.3f,.4f,.7f));
             var face=New(triangle,V(0,0),V(1,0),V(0,1),0,5,23);
+            // Reproduce Unity's magnitude cutoff without changing the projection
+            // determinant threshold or dropping a small, nonzero-area triangle.
+            var planeMethod=T("MovableSurfaceAtlas").GetMethod("PlaneNormal",Static);
+            var eligibility=T("MovableRoadGeometry").GetMethod("CanRepeatProjection",Static);
+            foreach(float height in new[]{1f,1e-6f,1e-8f})
+            {
+                var thin=New(triangle,V(0,0),V(0,height),V(1.5f,0),0,5,23);
+                var old=Vector3.Cross(new Vector3(0,0,height),new Vector3(1.5f,0,0)).normalized;
+                var actual=(Vector3)planeMethod.Invoke(null,new[]{thin});
+                Require(actual==Vector3.up,"Nonzero triangle lost its actual plane");
+                bool Can(Vector3 n,Vector3 vertexNormal)=>(bool)eligibility.Invoke(null,new object[]{new Vector4(1,0,0,0),new Vector4(0,0,1,0),n,vertexNormal,vertexNormal,vertexNormal});
+                Require(Can(actual,Vector3.up),"Valid thin receiver was rejected");
+                Require(!Can(actual,Vector3.down),"Opposite authored normal was admitted");
+                Require(!Can(actual,Vector3.right),"Singular authored normal was admitted");
+                if(height<1e-5f)Require(old==Vector3.zero&&!Can(old,Vector3.up),"Fixture did not reproduce old gate failure");
+            }
+            bool degenerateRejected=false;
+            try{planeMethod.Invoke(null,new[]{New(triangle,V(0,0),V(1,0),V(2,0),0,5,23)});}
+            catch(TargetInvocationException e)when(e.InnerException is InvalidOperationException){degenerateRejected=true;}
+            Require(degenerateRejected,"Truly degenerate chart was admitted");
             var finite=New(patch,new Vector2(.2f,.3f),new Vector2(.4f,.5f),new Vector4(.01f,0,0,.2f),
                 new Vector4(0,0,.02f,.3f),prototype,false,null,false,true,false,false,false,null,false,true);
 
@@ -122,10 +167,14 @@ public static class SourceTangentFieldCheck
                 Require(rejected,"Nonfinite coefficient or invalid handedness accepted");
             }
             var zero=keepMethod.Invoke(plain,new object[]{Vector4.zero,Vector4.zero,Vector4.zero,1f});
-            bool zeroRejected=false;
-            try{T("MovableSurfaceAtlas").GetMethod("Compose",Static).Invoke(null,new object[]{ArrayOf(input,Input(zero,face)),owner,paint,null});}
-            catch(TargetInvocationException e)when(e.InnerException is InvalidOperationException){zeroRejected=true;}
-            Require(zeroRejected,"Zero field direction accepted");
+            object[] zeroCall={ArrayOf(input,Input(zero,face)),owner,paint,null};
+            var zeroResult=(Array)((Array)T("MovableSurfaceAtlas").GetMethod("Compose",Static).Invoke(null,zeroCall)).GetValue(0);
+            foreach(string corner in new[]{"A","B","C"})
+                Require(Get(Get(zeroResult.GetValue(0),corner),"Tangent").Equals(Get(Get(face,corner),"Tangent")),"Collapsed tangent field changed source frame");
+            var collapsed=New(triangle,V(0,0),V(1,0),V(2,0),0,5,23);
+            object[] collapsedCall={ArrayOf(input,Input(plain,collapsed)),owner,paint,null};
+            var collapsedResult=(Array)((Array)T("MovableSurfaceAtlas").GetMethod("Compose",Static).Invoke(null,collapsedCall)).GetValue(0);
+            Require(collapsedResult.Length==1&&collapsedResult.GetValue(0).Equals(collapsed),"Collapsed receiver was rejected or rewritten");
             Debug.Log($"PASS source tangent opt-in: {checks} real Compose/native codec vertices; default/projected controls; five invalid modes; Surface/UV/attributes/topology retained. No varying-field equivalence claim.");
             EditorApplication.Exit(0);
         }

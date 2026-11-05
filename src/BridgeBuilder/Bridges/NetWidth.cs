@@ -20,6 +20,8 @@ internal static class NetWidth
     /// </summary>
     internal static float Of(NetGeometryPrefab? prefab)
     {
+        var selected = prefab == null ? null : BridgeRoadGeneration.Find(prefab);
+        if (selected != null) return selected.Width;
         if (IsSourceRoad(prefab)) return SourceRoadWidth(prefab!, null);
         if (prefab?.m_Sections == null) return 0f;
 
@@ -64,6 +66,8 @@ internal static class NetWidth
     /// </summary>
     internal static float RoadSurfaceOf(NetGeometryPrefab? prefab, ICollection<string>? breakdown)
     {
+        var selected = prefab == null ? null : BridgeRoadGeneration.Find(prefab);
+        if (selected != null) return selected.Width;
         if (IsSourceRoad(prefab)) return SourceRoadWidth(prefab!, breakdown);
         if (prefab?.m_Sections == null) return 0f;
 
@@ -113,6 +117,12 @@ internal static class NetWidth
 
     private static float SourceRoadWidth(NetGeometryPrefab road, ICollection<string>? breakdown)
     {
+        var selected = BridgeRoadGeneration.Find(road);
+        if (selected != null)
+        {
+            breakdown?.Add("Resolved elevated source width=" + selected.Width.ToString("R", CultureInfo.InvariantCulture));
+            return selected.Width;
+        }
         try
         {
             // Select the game's default road variants and read initialized NetPieceData.
@@ -138,6 +148,8 @@ internal static class NetWidth
 
     internal static List<(string Name, float Width)> SourceSections(NetGeometryPrefab road)
     {
+        var selected = BridgeRoadGeneration.Find(road);
+        if (selected != null) return new List<(string Name, float Width)>(selected.Sections);
         var result = new List<(string Name, float Width)>();
         var world = World.DefaultGameObjectInjectionWorld;
         if (world != null && world.IsCreated)
@@ -155,6 +167,8 @@ internal static class NetWidth
     /// </summary>
     internal static float OutwardExtensionOf(NetGeometryPrefab? prefab)
     {
+        var selected = prefab == null ? null : BridgeRoadGeneration.Find(prefab);
+        if (selected != null) return selected.ExtensionWidth;
         if (IsSourceRoad(prefab))
         {
             var world = World.DefaultGameObjectInjectionWorld;

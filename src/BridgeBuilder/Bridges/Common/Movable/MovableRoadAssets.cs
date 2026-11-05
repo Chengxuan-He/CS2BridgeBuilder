@@ -28,8 +28,9 @@ internal static class MovableRoadAssets
         internal readonly RenderPrefab Source;
         internal readonly int Mesh;
         internal readonly MovableStructureModel.Plan Plan;
-        internal Supplement(RenderPrefab source, int mesh, MovableStructureModel.Plan plan)
-        { Source = source; Mesh = mesh; Plan = plan; }
+        internal readonly string? SemanticKey;
+        internal Supplement(RenderPrefab source, int mesh, MovableStructureModel.Plan plan, string? semanticKey = null)
+        { Source = source; Mesh = mesh; Plan = plan; SemanticKey = semanticKey; }
     }
 
     internal sealed class Level
@@ -54,6 +55,41 @@ internal static class MovableRoadAssets
         internal readonly int AppearancePageSize;
         internal readonly float TexelsPerMeter;
         internal readonly Supplement? ExtraStructure;
+        internal readonly Supplement[] AdditionalStructures = Array.Empty<Supplement>();
+        internal IEnumerable<Supplement> StructuralSupplements
+        {
+            get
+            {
+                if (ExtraStructure != null) yield return ExtraStructure;
+                foreach (var supplement in AdditionalStructures) yield return supplement;
+            }
+        }
+        internal readonly MovableNetworkRoadMapping? NetworkRoad;
+        internal readonly bool PreserveNativeOriginal;
+
+        // A no-match is local to this LOD. It preserves every native material slot
+        // and raw channel without entering structure retile or road composition.
+        internal static Level NativeOriginal(RenderPrefab source, Bounds3 bounds)
+            => new Level(source, bounds);
+
+        private Level(RenderPrefab source, Bounds3 bounds)
+        {
+            Source = source; RenderBounds = bounds; PreserveNativeOriginal = true;
+            Skeleton = source.GetComponent<ProceduralAnimationProperties>();
+            Triangles = Array.Empty<MovableRoadGeometry.Triangle>();
+            Surfaces = Array.Empty<SurfaceAsset>();
+            ClosedWorld = Matrix4x4.identity;
+            RoadToObject = new Pose(Vector3.zero, Quaternion.identity);
+        }
+
+        internal Level(RenderPrefab source, Bounds3 bounds, MovableNetworkRoadMapping mapping)
+        {
+            Source = source; RenderBounds = bounds; NetworkRoad = mapping;
+            Triangles = Array.Empty<MovableRoadGeometry.Triangle>();
+            Surfaces = Array.Empty<SurfaceAsset>();
+            ClosedWorld = Matrix4x4.identity;
+            RoadToObject = new Pose(Vector3.zero, Quaternion.identity);
+        }
 
         // Carries the same compiled receivers and lane result into the existing appearance,
         // partition, skinning and owned-asset path. Decals remain subject to that path's checks.
@@ -64,10 +100,10 @@ internal static class MovableRoadAssets
             IReadOnlyList<MovableRoadGeometry.Partition>? roadPartitions = null,
             IReadOnlyList<MovableRoadGeometry.Partition>? lanePartitions = null,
             IReadOnlyDictionary<(int Occurrence, int SourceTriangle), MovableRoadGeometry.Partition>? roadTrianglePartitions = null,
-            Supplement? extraStructure = null)
+            Supplement? extraStructure = null, IReadOnlyList<Supplement>? additionalStructures = null)
             : this(source, road.Triangles, road.Surfaces, partition, renderBounds, roadToObject,
                 structure, skeleton, road.LaneGeometry, closedWorld, appearancePageSize, texelsPerMeter,
-                roadPartitions, lanePartitions, roadTrianglePartitions, extraStructure) { }
+                roadPartitions, lanePartitions, roadTrianglePartitions, extraStructure, additionalStructures) { }
 
         internal Level(RenderPrefab source, IReadOnlyList<MovableRoadGeometry.Triangle> triangles,
             SurfaceAsset[] surfaces, MovableRoadGeometry.Partition partition, Bounds3 renderBounds, Pose roadToObject,
@@ -77,7 +113,7 @@ internal static class MovableRoadAssets
             IReadOnlyList<MovableRoadGeometry.Partition>? roadPartitions = null,
             IReadOnlyList<MovableRoadGeometry.Partition>? lanePartitions = null,
             IReadOnlyDictionary<(int Occurrence, int SourceTriangle), MovableRoadGeometry.Partition>? roadTrianglePartitions = null,
-            Supplement? extraStructure = null)
+            Supplement? extraStructure = null, IReadOnlyList<Supplement>? additionalStructures = null)
         {
             HasRoad = true;
             Source = source; Triangles = triangles; Surfaces = (SurfaceAsset[])surfaces.Clone();
@@ -91,6 +127,7 @@ internal static class MovableRoadAssets
             RoadToObject = roadToObject;
             AppearancePageSize = appearancePageSize; TexelsPerMeter = texelsPerMeter;
             ExtraStructure = extraStructure;
+            AdditionalStructures = additionalStructures?.ToArray() ?? Array.Empty<Supplement>();
         }
 
         // Fixed support renders share geometry ownership, LOD remapping and rollback with
@@ -126,7 +163,11 @@ internal static class MovableRoadAssets
         var levelModels = new List<ModelImporter.Model[]>();
         var levelSurfaces = new List<SurfaceAsset[]>();
         var levelNames = new List<string>();
+        var levelRoles = new List<int[]>();
+        var semanticRoles = new Dictionary<string, int>(StringComparer.Ordinal);
+        bool completeSemanticRoles = true;
         var renderBounds = new List<Bounds3>();
+        var roadSlotStarts = new List<int>();
         var laneSlotStarts = new List<int>();
         var prefabs = new List<RenderPrefab>();
         var assets = new List<AssetData>();
@@ -166,8 +207,13 @@ internal static class MovableRoadAssets
                 var roadModels = Array.Empty<ModelImporter.Model>();
                 if (level.HasRoad)
                 {
-                    foreach (var surface in roadSurfaces)
+                    // Surface tables may retain unused source slots. Only actual faces
+                    // require an object representation; validate their indices first.
+                    foreach (var slot in roadTriangles.Select(t => t.Material).Distinct())
                     {
+                        if ((uint)slot >= (uint)roadSurfaces.Length)
+                        { error = $"Moving road LOD {i} references missing surface slot {slot}."; return false; }
+                        var surface = roadSurfaces[slot];
                         if (surface == null)
                         { error = $"Moving road LOD {i} has an unresolved surface reference."; return false; }
                         if (validatedRoadSurfaces.Contains(surface)) continue;
@@ -177,7 +223,14 @@ internal static class MovableRoadAssets
                         // Network inputs must have been assigned existing object materials by the caller.
                         var template = surface.materialTemplateHash;
                         if (!MovableSurfaceAssets.IsObjectSurface(surface))
-                        { error = $"Moving road LOD {i} surface '{surface.name}' requires an unimplemented object conversion (template {template})."; return false; }
+                        {
+                            var referenced = roadTriangles.Where(t => t.Material == slot).ToArray();
+                            string Corner(MovableRoadGeometry.Vertex v) => $"P={v.Position.ToString("R")},UV={v.UV.ToString("R")}";
+                            var evidence = string.Join("; ", referenced.Take(8).Select(t =>
+                                $"source={t.Occurrence}/{t.SourceTriangle},cross={Vector3.Cross(t.B.Position-t.A.Position,t.C.Position-t.A.Position).ToString("R")},A[{Corner(t.A)}],B[{Corner(t.B)}],C[{Corner(t.C)}]"));
+                            error = $"Moving road LOD {i} surface '{surface.name}' requires an unimplemented object conversion (template {template}); slot={slot}; activeFaces={referenced.Length}; {evidence}";
+                            return false;
+                        }
                         validatedRoadSurfaces.Add(surface);
                     }
                     // Appearance is evaluated in the selected-road frame. Only evaluated geometry
@@ -203,6 +256,18 @@ internal static class MovableRoadAssets
                 }
                 var batch = new List<ModelImporter.Model>();
                 var surfaces = new List<SurfaceAsset>();
+                if (level.PreserveNativeOriginal)
+                {
+                    if (!nativeNetworkGraph)
+                        throw new InvalidOperationException("Original native road LOD requires its native network graph.");
+                    MovableNativeRoadOriginal.Append(levelName, level.Source, models, batch, surfaces);
+                }
+                if (level.NetworkRoad != null)
+                {
+                    if (!nativeNetworkGraph || level.HasRoad || level.Structure != null)
+                        throw new InvalidOperationException("Native road mapping cannot enter an object or structural retile graph.");
+                    level.NetworkRoad.Append(levelName, level.Source, models, batch, surfaces);
+                }
                 if (level.Structure != null)
                 {
                     Mesh[]? loaded = null;
@@ -236,8 +301,16 @@ internal static class MovableRoadAssets
                     }
                     finally { PrivateGeometryReader.Release(loaded); }
                 }
-                if (level.ExtraStructure is { } extra)
+                var roles = Enumerable.Repeat(0, batch.Count).ToList();
+                var seenSupplementRoles = new HashSet<string>(StringComparer.Ordinal);
+                foreach (var extra in level.StructuralSupplements)
                 {
+                    int firstSupplementSlot = batch.Count;
+                    int supplementRole = -1;
+                    if (string.IsNullOrEmpty(extra.SemanticKey) || !seenSupplementRoles.Add(extra.SemanticKey!))
+                        completeSemanticRoles = false;
+                    else if (!semanticRoles.TryGetValue(extra.SemanticKey!, out supplementRole))
+                        semanticRoles.Add(extra.SemanticKey!, supplementRole = semanticRoles.Count + 1);
                     if (BridgeAssetInfo.IsOtherBridgePrefab(extra.Source.asset?.path, owner,
                             System.IO.Path.Combine(Application.persistentDataPath, "ImportedData")))
                         throw new InvalidOperationException("Supplemental structure belongs to another bridge.");
@@ -261,11 +334,14 @@ internal static class MovableRoadAssets
                                         Include(ref bounds, extra.Plan.Positions[extra.Plan.SourceIndices[slotIndex][face * 3 + corner]]);
                     }
                     finally { PrivateGeometryReader.Release(loaded); }
+                    roles.AddRange(Enumerable.Repeat(supplementRole, batch.Count - firstSupplementSlot));
                 }
                 // Original slots retain their order across every structural mesh; converted road
                 // slots follow them. Native structural descriptors, textures and UVs
                 // remain unchanged across preview and persisted geometry.
+                roadSlotStarts.Add(surfaces.Count);
                 if (roadModels.Length != 0) { batch.AddRange(roadModels); surfaces.AddRange(roadSurfaces); }
+                roles.AddRange(Enumerable.Repeat(int.MaxValue - 1, batch.Count - roles.Count));
                 laneSlotStarts.Add(surfaces.Count);
                 var lanes = level.Lanes;
                 if (lanes != null)
@@ -297,6 +373,8 @@ internal static class MovableRoadAssets
                         }
                     }
                 }
+                roles.AddRange(Enumerable.Repeat(int.MaxValue, batch.Count - roles.Count));
+                levelRoles.Add(roles.ToArray());
                 levelModels.Add(batch.ToArray()); levelSurfaces.Add(surfaces.ToArray()); levelNames.Add(levelName);
                 renderBounds.Add(bounds);
             }
@@ -332,11 +410,32 @@ internal static class MovableRoadAssets
             // Far LODs can have fewer material units than the number of groups
             // needed by near geometry. Partition existing triangle streams, never
             // texture-period cuts or duplicated/missing far faces.
-            if (BalanceAppearanceBatches(levelModels, levelSurfaces, models))
-                for (int i=0;i<laneSlotStarts.Count;i++) laneSlotStarts[i]=0;
+            // Choose semantic groups before balancing can insert slots and erase
+            // their boundaries. Native area/count-based LOD thresholds need not
+            // agree between groups: each complete road stays in one renderer.
+            var renderGroups = MovableMaterialSlots.RoadRenderGroups(
+                levelModels.Select(level => level.Length).ToArray(), roadSlotStarts);
+            if (renderGroups == null)
+            {
+                var identities = new Dictionary<SurfaceAsset, int>();
+                var surfaceKeys = levelSurfaces.Select(level => level.Select(surface =>
+                {
+                    if (!identities.TryGetValue(surface, out var key))
+                        identities.Add(surface, key = identities.Count);
+                    return key;
+                }).ToArray()).ToArray();
+                renderGroups = MovableMaterialSlots.StructureRoadRenderGroups(surfaceKeys, roadSlotStarts);
+                if (renderGroups == null && completeSemanticRoles && semanticRoles.Count != 0)
+                    renderGroups = MovableMaterialSlots.StableRoleGroups(levelRoles.ToArray(), surfaceKeys);
+            }
+            if (renderGroups == null)
+            {
+                if (BalanceAppearanceBatches(levelModels, levelSurfaces, models))
+                    for (int i=0;i<laneSlotStarts.Count;i++) laneSlotStarts[i]=0;
+                renderGroups = MovableMaterialSlots.RenderGroups(
+                    levelModels.Select(level => level.Length).ToArray(), laneSlotStarts);
+            }
             var batchCount = levelModels.Sum(level => level.Length);
-            var renderGroups = MovableMaterialSlots.RenderGroups(
-                levelModels.Select(level => level.Length).ToArray(), laneSlotStarts);
 
             // Every extra object mesh has an independent native LOD budget. Each
             // group keeps the complete original LOD links, skeleton and bounds.
@@ -471,7 +570,7 @@ internal static class MovableRoadAssets
     {
         var meshes = new List<ModelImporter.Model>();
         var materials = new List<SurfaceAsset>();
-        var canonical = MovableMaterialSlots.Canonical(surfaces);
+        var canonical = MovableMaterialSlots.Canonical(surfaces, triangles.Select(t => t.Geometry.Material));
         foreach (var group in triangles.GroupBy(t => canonical[t.Geometry.Material]).OrderBy(g => g.Key))
         {
             var selected = group.Select(t => new MovableRoadGeometry.BoundTriangle(

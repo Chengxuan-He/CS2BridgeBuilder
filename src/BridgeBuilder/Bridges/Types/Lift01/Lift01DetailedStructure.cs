@@ -16,6 +16,8 @@ internal static class Lift01DetailedStructure
         Lift01TowerFrames.Apply(lod, source, positions, delta);
         Lift01TowerBodies.Apply(lod, source, positions, delta);
         var plan = Lift01JoinedFrames.Complete(lod, source, positions, indices, delta);
+        plan = Lift01TowerTrusses.Complete(plan, lod, delta);
+        plan = Lift01DeckTrusses.Complete(plan, lod, delta);
         Lift01RoadReplacement.RemoveNativeRoad(lod, plan);
         return plan;
     }

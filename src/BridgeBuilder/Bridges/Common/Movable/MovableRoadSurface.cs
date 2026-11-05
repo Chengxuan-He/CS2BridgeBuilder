@@ -31,7 +31,7 @@ internal static class MovableRoadSurface
             asphalt = textures["_BaseColorMap"];
             uvScale = source.TryGetFloatProperty("_WorldspaceUVScale", out var value) ? value :
                 AssetDatabase.global.resources.materialLibrary.GetMaterial(17).GetFloat("_WorldspaceUVScale");
-            if (!float.IsFinite(uvScale) || uvScale <= 0f)
+            if (!float.IsFinite(uvScale))
                 throw new InvalidOperationException($"Invalid native road UV scale: {uvScale}.");
         }
         finally { source.UnloadProperties(); }

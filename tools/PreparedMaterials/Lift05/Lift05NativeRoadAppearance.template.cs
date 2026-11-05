@@ -44,27 +44,36 @@ internal static class Lift05NativeRoadAppearance
         1=>"18d35ed1e221c7a1a1cad597b22896ce5146eb6050095b2b86fd3da7605cbd82",
         2=>"bc6c38c2c3b14e5bb5743dec2c2ccd05d02dfd30501dc5f08118b70412ccf2d7",
         3=>"40d7c50979f1502da28972cacf93d06805317986a0d1b1cc6b1faba7ada71284",
+        4=>"3061b3f27e2581a706363c6b7c7b86b5fe6fb0aba3e69c87a1b1f6318967ebec",
+        5=>"7a355e468b816e195c561191ac1c5931847c874f2d0cbec74482c662ca3fe6f9",
+        6=>"240850aa002f85d71ce250f44328a8ab275e0542717942cee71af30bb82f5042",
         _=>throw new InvalidOperationException("Unknown Lift05 prepared road unit.")
     });
     // Optional finished assets permit isolated native fixture injection; normal creation
     // resolves the identical packaged graph on this existing main-thread native path.
     internal static MovableRoadAppearance.Level ForLod(int lod,RenderPrefab native,Pose roadToObject,float halfDelta,SurfaceAsset[]? finishedUnits=null)
     {
-        if(lod<0 || lod>=Data.Levels.Length || !(3+halfDelta>0))throw new InvalidOperationException("Invalid Lift05 road width or LOD.");
+        if(lod<0 || lod>=Data.Levels.Length || !float.IsFinite(halfDelta))throw new InvalidOperationException("Invalid Lift05 road arithmetic or LOD.");
         var data=Data.Levels[lod];var surface=native.GetSurfaceAsset(0);var pose=Matrix4x4.TRS(roadToObject.position,roadToObject.rotation,Vector3.one);
+        // No inverse exists at zero span; keep geometry with Original appearance.
+        if(3.0+halfDelta==0)return new MovableRoadAppearance.Level(surface,new[]{new Patch(Vector2.zero,Vector2.one)},new[]{MovableRoadAppearance.Type.None},new Partition(0),new Partition(0));
         var patches=new Patch[data.Patches.Length+1];var supported=new MovableRoadAppearance.Type[patches.Length];patches[0]=new Patch(Vector2.zero,Vector2.one);
-        var finished=new SurfaceAsset[4];
-        if(lod<2)for(int unit=0;unit<finished.Length;unit++)finished[unit]=finishedUnits==null?Resolve(unit):finishedUnits[unit];
+        var finished=new SurfaceAsset[7];
+        foreach(int unit in data.Units)
+            if(unit>=0 && finished[unit]==null)finished[unit]=finishedUnits==null?Resolve(unit):finishedUnits[unit];
         double Scale(int band)=>band==1?3.0/(3.0+halfDelta):1.0;
         double Offset(int band)=>band==0?halfDelta:band==2?-halfDelta:0.0;
         for(int p=0;p<data.Patches.Length;p++)
         {
-            var v=data.Patches[p];int band=data.Bands[p],unit=data.Units[p];double scale=Scale(band),offset=Offset(band);
+            var v=data.Patches[p];int band=data.Bands[p],unit=data.Units[p];
+            // Offline pure road periods keep their measured physical gradient
+            // and shared object-origin phase; width changes only their domain.
+            double scale=unit>=4?1:Scale(band),offset=unit>=4?0:Offset(band);
             var u=pose.transpose*new Vector4((float)(v[0]*scale),0,(float)v[2],(float)(v[4]+v[0]*offset));
             var w=pose.transpose*new Vector4((float)(v[1]*scale),0,(float)v[3],(float)(v[5]+v[1]*offset));
             var min=new Vector2((float)v[6],(float)v[7]);var max=new Vector2((float)v[8],(float)v[9]);
             patches[p+1]=unit<0?new Patch(min,max,u,w,surface,sourceUv:true,projectTangent:true):
-                new Patch(min,max,u,w,finished[unit],preparedUnit:true,repeatU:unit==0,repeatV:true,projectTangent:true).WithFiniteSampling(Vector2.zero,Vector2.one);
+                new Patch(min,max,u,w,finished[unit],preparedUnit:true,repeatU:unit==0||unit>=4,repeatV:true,projectTangent:true).WithFiniteSampling(Vector2.zero,Vector2.one);
             supported[p+1]=MovableRoadAppearance.Type.Asphalt;
         }
         Partition Plane(double x,double z,double constant,Partition negative,Partition positive)

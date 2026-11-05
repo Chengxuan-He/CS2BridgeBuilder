@@ -50,7 +50,10 @@ internal static class MovableLaneSurface
                     && new HashSet<string>(source.keywords) { "_TANGENTSPACE_OCTO" }.SetEquals(prepared.keywords)
                     && source.textures.Count == prepared.textures.Count
                     && source.textures.All(p => prepared.textures.TryGetValue(p.Key, out var value) && Equals(p.Value?.id, value?.id)))
+                {
+                    MovableLaneMidMips.CompletePrepared(source, prepared);
                     return prepared;
+                }
             }
             finally { source.UnloadProperties(); }
         }

@@ -92,7 +92,7 @@ namespace BridgeBuilder
         public static void ShowMessage(string title, string message) => Messages.Add(message);
         public static void ShowRecoveryMessage(string message) => Messages.Add(message);
     }
-    public class Logger { public void Info(string s) { } public void Warn(string s) { } public void Warn(Exception e, string s) { } public void Error(string s) { } }
+    public class Logger { public void Info(string s) { if(!s.StartsWith("Bridge self-check result:"))return; var fields=System.Text.RegularExpressions.Regex.Matches(s,@"(\w+Ms)=(\d+)").ToDictionary(m=>m.Groups[1].Value,m=>long.Parse(m.Groups[2].Value)); if(fields.Count!=10 || fields.Where(p=>p.Key!="elapsedMs").Sum(p=>p.Value)!=fields["elapsedMs"])throw new Exception("Self-check stages do not partition total: "+s); } public void Warn(string s) { } public void Warn(Exception e, string s) { } public void Error(string s) { } }
 }
 namespace BridgeBuilder.Settings
 {
@@ -114,7 +114,7 @@ namespace BridgeBuilder.Runtime
         { Calls++; if (Raise) throw new InvalidOperationException("fixture"); r = "null required reference"; return Invalid; }
     }
     public static class BridgeFileAccess { public static string Logical(string p) => p; }
-    public static class BridgeAssetInfo { public static bool TryFileOwner(string n, out string owner) { owner = n.Split(System.IO.Path.DirectorySeparatorChar, System.IO.Path.AltDirectorySeparatorChar).FirstOrDefault(part => part == "bridge" || part.StartsWith("bridge-")) ?? ""; return owner.Length != 0; } public static bool IsPrefabName(string? n) => n?.StartsWith("b") == true; }
+    public static class BridgeAssetInfo { public static bool IsDependencyPath(string p,string o)=>false; public static bool TryFileOwner(string n, out string owner) { owner = n.Split(System.IO.Path.DirectorySeparatorChar, System.IO.Path.AltDirectorySeparatorChar).FirstOrDefault(part => part == "bridge" || part.StartsWith("bridge-")) ?? ""; return owner.Length != 0; } public static bool IsPrefabName(string? n) => n?.StartsWith("b") == true; }
     public class BridgeDiskAudit
     {
         public static int Calls; public static bool Incomplete, Raise, BackupFailed, DeleteFailed;
@@ -122,7 +122,7 @@ namespace BridgeBuilder.Runtime
         public bool RetireFiles(ISet<string> owners, string backup, out string error) { var result = Retirement?.Invoke(owners.Single()) ?? (!DeleteFailed, !BackupFailed && !DeleteFailed); error = result.Item2 ? "" : "fixture file failure"; return result.Item1; }
         public bool Complete => !Incomplete; public string Error => "fixture failure";
         public Dictionary<string, string> Failures = new();
-        public static BridgeDiskAudit ForMemoryFailures(string p, IDictionary<string,string> failures)
+        public static BridgeDiskAudit ForMemoryFailures(string p, IDictionary<string,string> failures, IEnumerable<string>? paths=null)
         { Calls++; if (Raise) throw new InvalidOperationException("fixture"); return new BridgeDiskAudit { Failures = new(failures) }; }
 
     }
@@ -131,20 +131,20 @@ namespace BridgeBuilder.Runtime
 {
     public static class BridgePortableMigration {
         public static bool Fail, Changed;
-        public static bool Run(string owner, Game.Prefabs.PrefabSystem system, string backup, out bool changed, out string error) {
+        internal static bool Run(string owner, Game.Prefabs.PrefabSystem system, string backup, out bool changed, out string error, BridgeInspectionAssets.Entry[]? assets=null, BridgeCreationDependencies? deps=null, ISet<string>? paths=null) {
             changed = Changed; error = "fixture"; return !Fail;
         }
     }
     public static class BridgeLegacyNames {
         public static bool Fail, Changed;
-        public static bool Run(string root, IEnumerable<string> owners, string backup, out HashSet<string> changed, out string error, Func<string,string>? prefabPath = null) {
+        public static bool Run(string root, IEnumerable<string> owners, string backup, out HashSet<string> changed, out string error, Func<string,string>? prefabPath = null, IEnumerable<string>? roots=null, Func<string,string?>? find=null, ISet<string>? paths=null) {
             changed = Changed ? new(owners) : new(); error = "fixture"; return !Fail;
         }
     }
     public static class BridgeAssetLayout {
         public static bool Fail, Changed; public static int Owners;
         public static bool Run(string root, IEnumerable<string> owners, string backup, Func<string,string> path,
-            out HashSet<string> changed, out string error) {
+            out HashSet<string> changed, out string error, ISet<string>? paths=null, Action<string,string>? moved=null) {
             Owners += owners.Count(); changed = Changed ? new(owners) : new(); error = "fixture"; return !Fail;
         }
     }
@@ -161,12 +161,28 @@ namespace BridgeBuilder.Runtime {
   public static Result Outcome;
   public sealed class LoadedIndex { }
   public static Result Inspect(Game.Prefabs.PrefabBase p, out HashSet<string> copies, out string reason, LoadedIndex? lookup = null) {
-   copies = new() { "01234567890123456789012345678901" }; reason = "test CID"; return Outcome;
+   copies = new() { "11111111111111111111111111111111" }; reason = "test CID"; return Outcome;
   }
  }
  public static class BridgeDependencyPersistence {
+  internal static bool Save(string owner,IEnumerable<string> seeds,BridgeCreationDependencies deps,out int count,out string error,out int writtenFiles) {
+    if(seeds.Contains("11111111111111111111111111111111")) { writtenFiles=0; return Save(owner,seeds,out count,out error); }
+    return Save(owner,seeds,out count,out error,out writtenFiles);
+  }
   public static int Calls, MigrationCalls; public static bool Fail, MigrationFail, MigrationChanged;
   public static bool Save(string owner,IEnumerable<string> seeds,out int count,out string error,out int writtenFiles) { MigrationCalls++;count=1;writtenFiles=MigrationChanged ? 1 : 0;error="copy failed";return !MigrationFail; }
   public static bool Save(string owner,IEnumerable<string> seeds,out int count,out string error) { Calls++;count=1;error="copy failed";return !Fail; }
+ }
+}
+
+namespace BridgeBuilder.Runtime {
+ internal sealed class BridgeCreationDependencies {
+  internal readonly HashSet<string> Files=new(); internal void SaveRelations(string owner) {} internal void Relocate(string a,string b) {}
+ }
+ internal sealed class BridgeInspectionScope {
+  private readonly Dictionary<string,HashSet<string>> paths=new();
+  internal BridgeInspectionScope(string root,IEnumerable<string> owners) {foreach(var owner in owners) paths[owner]=new();}
+  internal HashSet<string> Paths(string owner)=>paths[owner]; internal string? Find(string cid,string owner)=>null;
+  internal BridgeCreationDependencies Dependencies(string owner,IEnumerable<BridgeInspectionAssets.Entry> assets)=>new();
  }
 }

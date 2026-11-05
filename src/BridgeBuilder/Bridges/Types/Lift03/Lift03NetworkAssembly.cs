@@ -15,8 +15,10 @@ internal static class Lift03NetworkAssembly
             throw new InvalidOperationException("Lift03 requires distinct main and auxiliary networks.");
         if (!factory.Created.Contains(pillar) || !factory.Created.Contains(mechanism))
             throw new InvalidOperationException("Lift03 network assembly requires owned pillar and mechanism objects.");
-        var mainRoles = Lift03SectionRoles.ResolveMain(main.m_Sections);
-        var auxiliaryRoles = Lift03SectionRoles.ResolveAuxiliary(auxiliary.m_Sections);
+        var mainRoles = Lift03SectionRoles.ResolveMain(main.m_Sections, BridgeRoadGeneration.Find(main)
+            ?? throw new InvalidOperationException("Lift03 main network has no elevated road context."));
+        var auxiliaryRoles = Lift03SectionRoles.ResolveAuxiliary(auxiliary.m_Sections, BridgeRoadGeneration.Find(auxiliary)
+            ?? throw new InvalidOperationException("Lift03 auxiliary network has no elevated road context."));
         var mainSections = Lift03NetworkData.ConvertMainSections(main.name, main.m_Sections, mainRoles, out var mainCreated);
         factory.AdoptMovableSections(mainCreated);
         var auxiliarySections = Lift03NetworkData.ConvertAuxiliarySections(auxiliary.name, auxiliary.m_Sections, auxiliaryRoles, out var auxiliaryCreated);
@@ -34,12 +36,39 @@ internal static class Lift03NetworkAssembly
         mainObjects.m_SubObjects = RetainedObjects(mainObjects).Concat(Lift03NetworkData.StructurePlacements(pillar, mechanism)).ToArray();
         mainObjects.active = true;
         var auxiliaryObjects = auxiliary.AddOrGetComponent<NetSubObjects>();
-        auxiliaryObjects.m_SubObjects = RetainedObjects(auxiliaryObjects).ToArray();
+        auxiliaryObjects.m_SubObjects = AuxiliaryObjects(auxiliaryObjects, factory, mechanism, auxiliary.name, auxiliaryOpposite);
         auxiliaryObjects.active = true;
         var link = main.AddOrGetComponent<AuxiliaryNets>();
         Lift03NetworkData.ApplyAuxiliary(link, auxiliary);
         link.m_AuxiliaryNets[Numeric_Types_Lift03_Lift03NetworkAssembly_cs.Values.I32[0]].m_InvertWhen = auxiliaryOpposite ? NetInvertMode.Always : NetInvertMode.Never;
         link.active = true;
+    }
+
+    private static NetSubObjectInfo[] AuxiliaryObjects(NetSubObjects objects, TowerFactory factory, StaticObjectPrefab mechanism, string name, bool opposite)
+    {
+        var retained = RetainedObjects(objects).ToArray();
+        if (!opposite) return retained;
+
+        // Native fixed-offset calculation follows the parent's endpoint without
+        // reversing it. Let the opposite child read its own node offset instead.
+        // Node alone creates RoadNode data; only the already-fixed centre applies
+        // that offset. Do not mark ordinary outer nodes as FixedNodeSize.
+        var source = mechanism.GetComponent<NetObject>();
+        var carrier = factory.CreateMovableObject(name + " Auxiliary Node Offset", false,
+            Array.Empty<ObjectMeshInfo>(), Array.Empty<ObjectSubObjectInfo>(), target =>
+            {
+                var net = target.AddComponent<NetObject>();
+                net.m_SetCompositionState = new[] { NetPieceRequirements.Node };
+                net.m_RequireRoad = source.m_RequireRoad;
+                net.m_RoadPassThrough = source.m_RoadPassThrough;
+                net.m_TrackPassThrough = source.m_TrackPassThrough;
+                net.m_NodeOffset = source.m_NodeOffset;
+                net.m_Attached = false;
+                net.m_RequirePedestrian = source.m_RequirePedestrian;
+            });
+        var placement = Lift03NetworkData.MechanismPlacement(carrier);
+        placement.m_Placement = NetObjectPlacement.Node;
+        return retained.Concat(new[] { placement }).ToArray();
     }
 
     // Outside connections and ground objects belong to each selected network. Preserve

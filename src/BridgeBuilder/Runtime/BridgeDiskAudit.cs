@@ -23,8 +23,24 @@ internal sealed class BridgeDiskAudit
         _virtual = Path.GetFullPath(Path.Combine(Path.GetDirectoryName(_imported)!, "StreamingData~/VT"));
     }
 
-    internal static BridgeDiskAudit ForMemoryFailures(string gameRoot, IDictionary<string, string> failures)
-        => SelectPaths(gameRoot, failures);
+    internal static BridgeDiskAudit ForMemoryFailures(string gameRoot, IDictionary<string, string> failures,
+        IEnumerable<string>? knownPaths = null)
+    {
+        if (knownPaths == null) return SelectPaths(gameRoot, failures);
+        var audit = new BridgeDiskAudit(Path.Combine(gameRoot, "ImportedData"));
+        foreach (var failure in failures)
+        {
+            if (!BridgeAssetInfo.IsPrefabName(failure.Key)) { audit.Error = "Invalid bridge owner"; return audit; }
+            audit.Failures.Add(failure.Key, failure.Value);
+        }
+        foreach (string path in knownPaths)
+            foreach (string owner in failures.Keys)
+                if (BridgeAssetInfo.MatchesOwner(path, owner) && BridgeFileAccess.Exists(path)) audit.FileOwners[path] = owner;
+        foreach (string owner in failures.Keys)
+            if (!audit.FileOwners.ContainsValue(owner)) { audit.Error = "No matching local paths for bridge: " + owner; return audit; }
+        audit.Complete = true;
+        return audit;
+    }
 
     internal static BridgeDiskAudit ForAllBridges(string gameRoot) => SelectPaths(gameRoot, null);
 

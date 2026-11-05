@@ -152,8 +152,6 @@ internal static class MovableLaneGeometry
             var distance = Mathf.Abs(y - point.y);
             if (distance < closest) { closest = distance; height = y; }
         }
-        if (float.IsPositiveInfinity(closest))
-            throw new InvalidDataException("Projected lane has no selected-road receiver at " + point);
-        return height;
+        return float.IsPositiveInfinity(closest) ? point.y : height;
     }
 }

@@ -1,5 +1,13 @@
 # Material Generation Contract
 
+Follow [player-controlled generation](BRIDGE_GENERATION_CONTRACT.md#player-controlled-generation-without-structural-rejection-gates): do not reject a generation request
+because of structural shape, width, signed scale, degeneracy, overlap, clearance or appearance
+quality. Such checks belong to offline verification or non-blocking diagnostics. Material
+no-match selects Original. Preserve actual file/schema/index, nonrepresentable arithmetic,
+write and native API errors; never fabricate successful output. This applies to all bridge
+families and LODs without changing historical dependency recovery.
+
+
 ## Scope and authority
 
 This contract governs materials for fixed and movable bridges, every part and LOD, and
@@ -8,21 +16,148 @@ preview, creation, regeneration and export. Geometry and native behavior remain 
 [movable generation sections 17 and 24](MOVABLE_BRIDGES_CONTRACT.md#17-material-families-uv-density-and-texture-ownership).
 Persistence follows the [asset persistence policy](../Bridge-Asset-Persistence.md).
 
+
+Road appearance processing (prototype composition, source-density tiling, embedded-marking
+removal and derived wear/background placement) applies only to movable bridges whose roads need
+that processing. Fixed/non-movable bridges retain the selected native road materials, UVs and
+markings; they require no prototype road-support table, road-material replacement or marking
+cleanup under these rules. Structural source-UV/density rules still apply to every bridge.
+A fixed running cap within a movable bridge remains part of that movable road-processing scope.
+
 For movable bridges, the generation design is: **reuse original non-road materials by default, with only the narrow offline repeat-material
 derivation in section 3 to avoid new period-wrap seams; compose
-or precompose only prototype-supported road appearance types; reuse original materials for
-all other road types; preserve each source's original UV projection and
-mapping mode**. This is a generation requirement, not a finding about how the original game
+or precompose prototype-supported road appearance types; use compatible original or
+corresponding native object road materials for other types under section 4; preserve source density, tile prototype-supported road appearances without stretching, and
+retain evidenced mapping modes for non-road materials**. This is a generation requirement, not a finding about how the original game
 converts roads. [Native repetition research](../Native-Movable-Material-Repetition.md) supplies
 source evidence only. Current code and prepared resources are not proof of compliance.
 
-The sole road-composition entry condition is: the corresponding prototype supports the actual
-road appearance type, so that type must use prototype appearance. Otherwise retain the original
-input material without composition. Resolve this per type and domain, never for the whole road.
+Road composition requires both a verified actual receiver appearance type and its corresponding
+measured prototype material at the target physical part. That matching part uses prototype appearance. Otherwise use the compatible
+input or corresponding native object road material under section 4. Resolve this per type and domain, never for the whole road.
 Examples of independently supported types include asphalt, sidewalks and wheel-track/rut effects.
 One prototype may support only some of these; no universal support list is implied. Establish
-support from that prototype's measured data. A supported layer does not authorize replacing or
-composing unrelated unsupported layers. Preserve required masks and original domain boundaries.
+support from that prototype's measured data. A supported layer does not authorize
+replacing unrelated appearance categories. Preserve required masks and original domain boundaries,
+except the expressly accepted network-layer differences of section 4's compatible road replacement.
+
+### Physical prototype-part correspondence
+
+Within the single selected elevated-road context, resolve the target's actual prototype part
+before selecting its material. Both conditions are required: the selected receiver's complete
+source appearance is identified, and a measured corresponding prototype material exists at that
+physical position/part. A type label or bridge-wide support flag alone satisfies neither condition.
+Apply this at every LOD to moving decks, fixed running caps, moving sidewalks, fixed sidewalk
+platforms and external connecting approaches separately. Motion/bone assignment and material-part
+assignment are distinct: a fixed cap inside a mechanism is not the moving deck's material domain.
+
+Preserve different prototype materials in different parts even when they accept the same selected
+input category. Same-category source/density/phase coordination applies to domains that share the
+same evidenced prototype appearance; it must not erase intentionally different fixed paving,
+concrete, grating or moving-road content. The Draw01 correspondence is moving carriageway asphalt,
+moving sidewalk grating, fixed sidewalk paving and fixed running-cap concrete. This is an example
+of measured part correspondence, not a universal appearance list for other bridges.
+
+External approaches with no corresponding prototype road part retain their original selected-road
+route. They must not inherit a material merely from proximity to the mechanism, its road type,
+a shared section or renderer. Native network and skinned-object realizations remain distinct.
+A no-match returns Original without throwing; required matched-resource failures remain explicit.
+
+#### Lift03 shared deck appearance
+
+For Lift03, the user's shared-deck rule supersedes the default requirement to retain
+different appearances solely because the same road category occupies different decks.
+Classify each actual receiver domain, including mixed road/track inputs, independently
+of Main/Auxiliary identity. Both decks use Lift03's same prepared clean upper-road
+paving and complete same-source wear for matching road receivers; both use Lift03's
+same measured lower-road ballast for ballast receivers. Apply this at every LOD,
+including the generated far road, even when the original far shell has no road top.
+Preserve the shared family's source PBR, physical density, orientation and phase.
+Centre wear on each deck's actual vehicle lanes with unchanged physical width; no
+vehicle lane means no wear. Embedded prototype markings remain removed and selected
+road paint remains separate. This material sharing changes neither deck height/pose,
+motion partitions/bones nor structural and unrelated sidewalk/approach appearances.
+
+### Complete material coverage of a replaced component
+
+Evaluate the whole corresponding component, not only its upward-facing running surface.
+Sidewalks, medians, fixed platforms and road caps may contain separate top, curb/edge,
+vertical sidewall, bevel and end-cap material domains. Identify each actual source domain
+and its measured prototype counterpart at that physical part; bind every matched domain
+at every LOD. Do not leave an identified matching edge on selected-road brick/paving merely
+because the top was replaced, nor treat a completed top-material route as complete component
+coverage. Record original and generated face/submesh membership and actual visible bindings.
+
+This is not a blanket instruction to give all edges the top material. Preserve the prototype's
+distinct edge, closure and structural appearances. A median edge does not inherit a sidewalk
+edge route from a shared atlas region, and an external approach does not inherit the mechanism's
+materials. Where a domain has no measured corresponding prototype material, retain its compatible
+Original route under section 4. Do not broaden source classification or invent correspondence
+to hide a material mismatch.
+
+Material routing must not omit or delete the corresponding geometry. Preserve required bottom,
+sidewall, cap and supporting faces under the source-face coverage contract, including all LODs
+and their stable renderer ownership. Verify shape/indices separately from PBR/alpha/mip behavior;
+do not close an apparent material hole with duplicate geometry. Density, normal frames, bones,
+embedded-marking cleanup and separate intended native paint retain their existing rules.
+
+Identify target parts from immutable prototype evidence and construction coordinates, not runtime
+names, height guesses or texture resemblance. Keep original shape, bone ownership, physical
+boundaries and conditional visibility. Use the same part correspondence in every LOD, including
+simplified meshes, without adding period-driven cuts. Matched road appearances preserve original
+physical density, complete PBR/alpha/cutout and valid mip/filter behavior; remove embedded markings
+while retaining the selected road's separate intended native paint. A successful classification or
+bound resource count does not prove the intended visible part actually uses that material.
+
+### Total material routing by part and actual source
+
+Material matching/classification is a **noexcept decision**: when a measured corresponding
+material route matches the actual source type, complete receiver domain and target part, select
+that route; otherwise return the original source-material route. A missing correspondence,
+unknown category, unmatched atlas region, absent optional mapping or mixed receiver not covered
+by a whole-domain rule is an ordinary no-match, not a generation exception. Never infer complete
+coverage from a root section named Sidewalk, one worldspace layer or a Surface family alone.
+Prototype-supported appearances take priority only on their evidenced matching domains.
+
+The common generation entry resolves the **elevated road-level branch once**, before width,
+cloning and style processing, under [the all-bridge rule](BRIDGE_GENERATION_CONTRACT.md#select-one-road-level-branch-before-generation).
+All geometry, bridgeheads, decks, materials and LODs consume that immutable context. No material
+consumer may enumerate/rank alternative levels, fall back to ground or combine another branch's
+fields. Missing correspondence selects Original within the elevated context, not a new branch.
+
+Keep all physical edge/node contributions and native local requirements, upgrades and directional
+states. They are not road-level alternatives. Head/mechanism flags do not permit reselection;
+measured physical height and pose remain independent of road-level choice. Mechanism and native
+head material realization still use their distinct renderers.
+
+Keep routing separate from material realization. `Original` records the actual input Surface,
+channels, evaluated source coordinates and provenance; it is not a generic asphalt substitute.
+Reuse that material directly in a compatible native render context. A moving object may require
+a source-based native descriptor conversion or section 4's evidenced corresponding object
+material. The accepted network-blend/world-projection differences still apply, but do not change
+an unrelated category or substitute a prototype patch merely to avoid a no-match. Preserve
+unknown or mixed source decisions as Original; do not send them to a full-span bake or a
+"missing material route" exception. If the selected source cannot actually be represented by a
+persistable native renderer, report that separate representation failure with its source/context;
+a successful routing decision is not proof that unsupported rendering works.
+
+Branch by physical/rendering part before selecting the representation:
+
+| Part | Material routing and realization |
+| --- | --- |
+| Moving deck and stationary running-surface regions inside its mechanism | Match the actual source/domain per LOD; realize a matching prototype route or the original-source route using the native skinned-object layout and existing bone assignment. |
+| Native connecting bridgeheads and approach road pieces | Match their own actual composed occurrences and source faces per LOD. Keep network materials, network vertex encoding and native curve context; a matched replacement requires a compatible network descriptor and measured sampling. Do not bind an object Surface merely because the deck uses one. |
+| Structure and unrelated external road | Retain their separate structural/original rules; neither a deck match nor a bridgehead match changes these bindings. |
+
+The same evidenced prototype appearance on the two road branches must retain coherent category, PBR, physical density
+and evidenced phase; do not copy one branch's UV encoding or assume their native mapping origins
+are identical. Preserve all other source faces and conditional alternatives.
+
+Noexcept applies to match selection, not to all generation. Do not catch every exception, return
+success after a corrupt/missing required payload, suppress native IO/registration failures or
+hide invalid geometry. Required resource loading, native realization and persistence remain
+explicit failure boundaries with complete diagnostics. Absence of a match is not such corruption.
+Preview, generation and export use this same routing policy at every LOD.
 
 ## 1. Full reuse of original materials must create no new materials
 
@@ -35,12 +170,13 @@ Do not recolor, clone, rebake, extract replacement structure textures or assign 
 merely because geometry dimensions or the generated owner changed. The sole structural
 texture-derivation permission is section 3's evidenced offline repeat material needed to avoid
 new period-wrap seams. Fix unrelated mapping and native render-context problems separately;
-a failed UV eligibility test alone does not authorize a replacement. Report unresolved
-representation or failed validation explicitly, without a substitute or tolerance relaxation.
+a failed UV eligibility test alone does not authorize a replacement. Retain the source material
+and attributes when no corresponding representation is available. Record appearance limitations
+without blocking generation; actual resource or native API failures remain errors.
 
-Classify road appearance by actual source type and physical domain. Only a prototype-supported
-type requiring prototype appearance enters composition/precomposition. All other road types use
-their original input materials. Asphalt, sidewalk surfacing and wheel-track/rut effects are
+Classify road appearance by actual source type and measured target physical part. Only their
+verified correspondence enters prototype composition/precomposition. All other road types use
+compatible input or corresponding native object road materials under section 4. Asphalt, sidewalk surfacing and wheel-track/rut effects are
 independent examples, not names for one blanket road category. Fixed structural platforms remain
 structure; recorded running-surface caps retain their physical-domain rules. Selected rails,
 sleepers, lane graphics, wires and attachments retain their separately specified original sources.
@@ -48,7 +184,7 @@ sleepers, lane graphics, wires and attachments retain their separately specified
 A shared Surface or atlas may serve both road and structure. Keep it unchanged for structural
 faces except those independently eligible for section 3's narrow offline repeat derivation,
 and bind a supported type's road composite only to its road faces. Unsupported road
-types keep their original input materials. Never edit the shared atlas,
+types follow section 4's compatible road replacement rule. Never edit the shared atlas,
 change its global parameters or clear embedded markings on behalf of the road. Use measured
 part/material-domain membership, original bones and all LODs. Material separation grants no
 additional geometric cuts or topology changes. Keep markings separate under movable section 18.
@@ -57,8 +193,9 @@ additional geometric cuts or topology changes. Keep markings separate under mova
 
 Whenever a required material can be reused in full, reference it directly. Do not create a
 clone, replacement identity, baked equivalent or duplicate texture. A supported-type composition plan
-may resolve an unchanged region to an original material without baking. Unsupported types bypass
-composition and retain their original input material. Sharing textures while changing a descriptor is a
+may resolve an unchanged region to an original material without baking only when its mapping
+and all-LOD marking content satisfy sections 2–3. Unsupported types bypass
+prototype composition and use compatible originals or section 4's corresponding road replacement. Sharing textures while changing a descriptor is a
 conversion, not full reuse.
 
 Keep built-in resources as original native references. Snapshot external resources, including
@@ -73,6 +210,26 @@ UUIDs and CIDs, and do not rewrite complete copies. Report supplementation as mi
 restart. Missing sources/conflicting bytes follow the persistence migration policy. Copying
 assets does not supply a missing third-party shader or runtime class.
 
+### Lane-aligned wheel-track appearance
+
+Follow the general [wheel-track placement rule](BRIDGE_GENERATION_CONTRACT.md#wheel-track-placement-follows-actual-selected-lanes)
+for movable roads requiring material processing. Test asphalt, sidewalk and wear support independently.
+For a supported wear appearance, reuse the same complete measured wear source across lane uses,
+with a matching background derived from the same road source. Keep BaseColor, Normal and Mask
+source coordinates aligned, including any additional required channels. Preserve original physical
+wear width, internal dark/light relationships and longitudinal density. Translate the whole
+pattern so its measured visual wear center aligns with each actual selected native vehicle lane
+center; do not retain an obsolete prototype lane-reference offset or center individual dark bands.
+A dark band is not automatically an independent tire trace. Measure the complete pattern first.
+
+Do not scale wear with lane/road width, infer lane positions from paint or distribute wear across
+a stretched complete road cross-section. Do not place wear on shoulders, medians, curbs or other
+regions without a corresponding vehicle lane. Those regions use the matching tiled background.
+Apply the same placement and source-selection principles at every LOD, with that LOD's required
+source resolution and native frames. No bridge-specific numerical width, center or source crop is
+a universal constant. Keep selected geometry, bones and independent markings unchanged.
+No full-span baking, period cuts or arbitrary structural derivatives are authorized.
+
 ## 2. Preserve source resolution and pattern scale
 
 Follow the general bridge contract's [original UV projection and mapping rule](BRIDGE_GENERATION_CONTRACT.md#preserve-original-uv-projection-and-mapping-mode).
@@ -81,15 +238,28 @@ layer and axis. This section specifies material quality and size requirements in
 that common rule; it does not define a separate movable-only mapping policy.
 
 Preserve native texture resolution, color space, normal encoding, channel correspondence, filtering,
-anisotropy and complete mip/VT dependencies. Check density on tiling axes. On evidenced stretching
-axes, report the expected density change from retaining the original UVs rather than calling it
-a density-preserving result. A smaller page, different LOD or size limit never permits additional
-resolution loss. Reuse original far-LOD resources; do not fabricate low-resolution replacements.
+anisotropy and complete mip/VT dependencies. Prototype-supported road appearances must tile
+at original physical density, never stretch. For non-road or unsupported input appearances with
+evidenced stretching axes, report the expected density change from retaining authored UVs;
+do not call that density-preserving. A smaller page, different LOD or size limit never permits additional
+resolution loss. Reuse original far-LOD resources only when they satisfy road tiling and marking-removal rules;
+otherwise prepare a compliant road-only derivative at that LOD's source resolution. Do not
+fabricate low-resolution replacements.
 
-The complete persisted material graph of one generated bridge must not exceed **10,000,000 bytes**.
-The working budget is 5–10 MB; smaller output must not be padded. Section 5 defines the separate
-**55,000,000-byte** package limit. Meet these limits by reuse and sharing, not omitted dependencies,
-downsampling or unauthorized pattern changes.
+A newly converted VT Surface needs its own native reservation and texture parameter blocks
+before publication, even when its source requires zero MidMips levels. Zero levels means no
+intermediate cache file, not no virtual-texture initialization. Finish writing and closing the
+descriptor before native registration/loading; keep original VT payloads unchanged. Initialization
+must use the native streaming lifecycle, not a persistent mod-dependent rendering callback.
+The native reservation must remain available when property references are released and later
+reloaded for render-batch creation. Preserve it through the native pre-reservation API; a completed
+tail read or a retained parameter-block field alone does not prove that the renderer can bind it.
+Verify last-reference unload/reload and native batch reservation selection as well as source bytes.
+
+Measure and report the complete persisted material graph of each generated bridge for information.
+There is no per-bridge material byte ceiling or target range; do not reduce quality to meet one.
+Section 5 retains the **55,000,000-byte** package limit. Meet that limit through valid reuse and
+sharing, never omitted dependencies, downsampling or unauthorized pattern changes.
 
 ## 3. Tile repeatable materials at their original density
 
@@ -101,19 +271,71 @@ This does not require a new texture. Do not infer a global period from repeated 
 rounded dimensions, a chart rectangle or source wrap flags. Do not replace a large triangle's
 UVs with vertex-only modulo and claim it repeats internally.
 
-For road composition that requires a separate repeat unit, establish the real source pattern,
-region, physical period, orientation and boundary behavior for all channels and mips. A receiver,
-triangle or sampling variant is not a new repeat-unit identity. Native repetition of a region is
-not by itself proof that an extracted rectangle filters seamlessly. Partial cells, mirrored
-traversals and atlas gutters require their own source evidence.
+For extracted original repeats, establish the actual source pattern, region, physical period,
+orientation and boundary behavior across all channels and mips. Repeated UV triangles, a crop,
+source wrap flags or a receiver rectangle alone do not prove a filterable repeat. The road rule
+below separately permits authored repeats from original road content; structural derivatives
+still require evidenced original repetition. A sampling variant is not a new content identity.
 
-Only where necessary for an eligible road path or the narrow structural rule below, prepare each
-known genuine unit once offline. Reuse the finished unit for every applicable road, part and LOD. Preserve exact measured source bounds and
-period. Fractional source-texel extents may use an upward-rounded sampling grid and required native
-block alignment for one unit, without padding the physical repeat interval. The bounded
-two-period exception below is the only exception to the ban on multiple-period storage.
-Preserve source resolution and authored mip inputs; report reconstruction and lossy encoding errors
-honestly. Unknown selected inputs follow section 4. Structural derivation is limited to the rule below.
+Prepare each necessary known content unit once offline and share it across uses. Preserve measured
+bounds and physical scale. Fractional source extents may use upward-rounded sampling grids and
+required native block alignment without padding the physical repeat interval. The bounded two-period
+rule below is the only multiple-period storage exception. Record reconstruction/encoding errors.
+
+### Prototype-supported road surfaces must tile
+
+For a movable bridge requiring road-material processing, a road appearance type supported by the corresponding
+prototype must use that prototype's appearance through composition/precomposition, with tiling
+at its original physical texel density and resolution. This includes asphalt, sidewalk paving
+and other evidenced road-surface types, at every LOD and on moving and stationary road domains.
+Do not stretch a finite source region to fit road width, lane width, length, caps or terminals.
+A finite geometric domain limits where the material is drawn; it does not authorize stretching
+its grain. Preserve selected geometry, lane layout, bones and independent markings. A Repeat
+flag without continuous coordinates and the correct physical period/density does not satisfy this rule.
+Non-road structure retains its own evidenced finite/stretch or repeating mapping; this road rule
+does not authorize general structural remaking. Unsupported road categories follow section 4.
+
+Reuse a compliant native material where possible. Otherwise prepare a bounded independent repeat
+outside the game from the prototype's pure corresponding road content. Original nonperiodic
+road grain may be assembled into an authored repeat, with the same donor coordinates in BaseColor,
+Normal and Mask and corresponding handling of every other required channel. Record donor regions,
+physical scale, new period, phase and operations explicitly; an authored period is not evidence
+of an original prototype period. Do not include gray curbs, concrete caps or other categories in
+an asphalt region simply because its descriptor is labelled Asphalt. Domains of the same actual
+appearance must have coherent source/PBR parameters, density, orientation and phase across
+moving/fixed seams and LOD transitions. Preserve genuine category boundaries.
+
+Preserve base-level source texel density in both directions, including the complete Jacobian
+for oblique projections; keep the original grain scale. Do not downsample to meet a byte limit.
+Generate a complete legal native mip chain for the new periodic content. Use periodic filtering,
+linear-light BaseColor RGB filtering, correctly decoded/filtered/normalized/re-encoded normals,
+and the actual semantics of mask, alpha and control channels. Unchanged resources retain their
+original mip bytes; a newly authored road repeat need not copy old finite-atlas coarse mips that
+contain unrelated edges, markings or nonperiodic neighborhoods. Record source inputs, reconstruction,
+compression and per-channel/mip errors. This permission is limited to preparing the required road
+repeat, not arbitrary replacement of other original mip signals or a global tolerance increase.
+Validate both seams, all mip/filter/aniso behavior, native frames/loading and complete dependencies.
+Report owner measurements without a ceiling and retain the 55 MB package limit. No full-span pixels, per-receiver
+texture copies or period-driven geometry cuts are permitted.
+
+### Remove embedded road markings at every LOD
+
+Draw02 moving-leaf exception: remove embedded markings, but do not add selected-road paint on moving leaves. Keep intended paint on fixed running caps and external approaches. This paint-only exception preserves receivers, bones and other styles. See the movable integrated-paint section.
+
+Processed movable-road materials, whether reused, prototype-derived or composed, must contain no embedded road
+markings at any LOD, including
+caps, transitions, terminal regions and distant merged atlases. Remove their contribution from
+all affected PBR channels and every mip, not only BaseColor mip zero. Use an evidenced same-category
+donor or explicit offline composition recipe; preserve grain scale, normals and unrelated content.
+Do not modify a shared source atlas used by structure. Bind a new road-only derivative where needed,
+with its own CID and complete dependency graph. A finite original-road binding is not an exception.
+
+Continue generating the selected road's intended markings from its actual layout through that
+bridge's native paint path. Movable bridges use the specified independent single-sided native
+skinned paint mesh on the original mechanism bones.
+Do not delete this paint, change its layout or duplicate it with texture markings. Check near,
+middle and far output: removing a line from one LOD or one cap is not completion.
+
 
 ### Integer-grid mip resampling and bounded two-period storage
 
@@ -136,11 +358,12 @@ still have fractional per-period extents: use necessary integer-grid resampling,
 not recursive doubling. Storage must not grow with receiver length or sampler count.
 
 This authorization permits necessary rounding/resampling and bounded two-unit storage
-only. It does not permit deliberate boundary blending, unrelated mip-signal replacement,
-arbitrary resolution reduction, changed source bounds, omitted channels, full-span baking,
+only. It does not itself permit deliberate boundary blending or unrelated mip-signal replacement;
+the separate prototype-supported road rule above governs filtering of newly authored road repeats.
+Neither rule permits arbitrary resolution reduction, omitted channels, full-span baking,
 new period cuts or increased budgets. Original assets remain unchanged; changed derivatives
 receive independent CIDs. All normal-frame, alpha, filter/aniso, every-mip, native-load,
-10 MB owner and 55 MB package checks remain mandatory. No global error threshold or
+informational owner measurements and 55 MB package checks remain mandatory. No global error threshold or
 automatic quality acceptance is implied.
 
 ### Offline source-atlas repeat materials
@@ -154,13 +377,17 @@ to remake arbitrary structure or to bake every domain. Keep fully reusable origi
 Retain existing native seams and necessary cuts at actual shape, motion and distinct material-domain
 boundaries. Preserve selected-road shape, lane layout, original attributes and bone ownership.
 Road eligibility still requires the prototype-supported actual type/domain gate; this rule does not
-admit unsupported input types or omit their worldspace layers. For non-road components, record why
+admit unrelated appearance categories. Section 4 separately permits corresponding road replacement
+without exact network-layer/worldspace reproduction. For non-road components, record why
 this particular evidenced repeat domain needs an offline derivative to avoid new period-wrap seams.
 
 Establish original source identity/version, all applicable LODs, complete repeat bounds and physical
-period from prototype evidence. Preserve density, orientation and phase across neighboring uses,
-independent sampling axes/layers, finite axes, mirrors and terminal regions. A crop or UV domain is
-not automatically a repeat unit. Do not force a common layer period or turn finite content into repeat.
+period from prototype evidence for extracted repeats. Authored road repeats follow
+[the supported-road rule](#prototype-supported-road-surfaces-must-tile) instead. Preserve density,
+orientation and phase across neighboring uses and independent sampling axes/layers. Retain physical
+terminal domains without stretching road patterns. Non-road finite axes retain their own evidence.
+A crop is not automatically a repeat unit. Do not force a common layer period or turn unrelated
+finite structural content into repetition.
 Bake each necessary content unit once, shared across uses rather than per triangle or sampler.
 
 Validate all PBR channels and masks, alpha/cutout, normal encoding and tangent-frame semantics,
@@ -175,7 +402,7 @@ receive independent identities, never the original source CID for changed bytes.
 dependencies and byte-identical owner copies retain their own CIDs. Package the complete finished
 native resource graph once; runtime only copies/binds it, without baking or a custom shader/controller.
 Verify independent native loading and all affected LODs, and count the complete dependency graph
-against the 10,000,000-byte owner and 55,000,000-byte package limits. This rule specifies the required
+as an informational owner measurement and against the 55,000,000-byte package limit. This rule specifies the required
 route; it does not assert current feasibility, implementation or acceptance.
 
 ### No full-road pattern expansion
@@ -188,15 +415,21 @@ fallback permission. The GPU maximum texture size is not a material budget; 4096
 permitted size either. Smaller full-span images still violate the rule.
 
 Express length through geometry and supported source mapping, with immutable texture content.
-Evidenced stretching retains original UVs without producing a new length-dependent image. A
+Evidenced non-road or unsupported-input stretching retains original UVs without a new
+length-dependent image; prototype-supported road surfaces tile even within finite terminals. A
 necessary local non-repeating result must be bounded by the actual local content, not the receiver
 length. Do not hide failure through downsampling, omitted layers, arbitrary repeated crops or
 excessive subdivision. Existing geometry and topology constraints remain in force.
 
 ### Independent material-layer sampling
 
-Road composition/precomposition must preserve each distinct layer's coordinates, scale, phase,
-period, wrap and mip behavior. Do not force prototype road samples, selected-road inputs,
+These exact layer-composition requirements govern retained/composed source layers.
+Section 4 governs accepted differences for corresponding native object road replacement.
+Section 3's supported-road rule governs newly authored repeats and their periodic mip chains.
+Neither permission authorizes unrelated material categories or structural changes.
+
+Retained layers preserve their own coordinates, scale, phase, period, wrap and mip behavior;
+eligible authored road repeats use their explicitly recorded new mapping and periodic mips. Do not force prototype road samples, selected-road inputs,
 worldspace detail and blend masks to share one common period. Constant sampling is a valid
 separate case. A finite mask does not force repeating layers into a finite full-span bake.
 
@@ -238,30 +471,65 @@ Baking at game startup, asset loading, first use, preview, bridge creation or ex
 work, not precomposition. An in-memory or disk cache of an in-game bake is not a precomposed
 material. The separate bounded runtime-composition exceptions below do not change this meaning.
 Road precomposition remains subject to the prototype-supported-type gate; structural repeat
-derivation follows section 3's separate narrow eligibility. Both preserve original mapping and
-resolution, no full-road pattern expansion, independent persistence and both byte limits.
+derivation follows section 3's separate narrow eligibility. Both preserve their applicable mapping rules and original
+resolution, no full-road pattern expansion, independent persistence, owner size reporting and the package byte limit.
 
-### Road composition and precomposition
+### Corresponding native road materials for movable objects
 
-First dispatch each appearance type/domain by the prototype's measured support. If the type is
-not supported, bind its original input material and bypass composition/precomposition. Keep its
-source UV projection and dependencies. Incompatibility with native rendering is an explicit
-representation problem, not permission to compose or substitute another appearance. The existing
+When an actual road appearance type is absent from the prototype domain, reuse a
+compatible original material or replace the incompatible network material with the
+corresponding native animated-object road material. This replacement is required
+where it enables the movable road: asphalt remains asphalt, pathway/sidewalk paving
+remains its evidenced paving category, and ballast remains ballast. Establish the
+actual category from source texture identities and receiver coverage; a template
+number, road name or a single supported layer is not a whole-receiver classification.
+Unknown third-party sources without an evidenced corresponding material select the original-source
+route under the noexcept routing rule above, never a generic asphalt fallback. Prototype-supported types still use prototype appearance.
+
+The compatible replacement need not reproduce the original network's base/world
+two-layer blend or dynamic worldspace projection exactly. A suitable original road
+PBR family may supply the corresponding object appearance without that network
+blend, and its projection may remain attached to the bridge during movement. Record
+the selected family, omitted network blend and changed anchoring explicitly; do not
+describe it as exact original-material reuse. This narrow exception overrides exact
+network-layer/projection equivalence elsewhere in this contract for this road route.
+It does not permit changing the appearance category, dropping markings/rails/sleepers,
+replacing non-road structure, or erasing unrelated domains in a mixed receiver.
+
+Preserve the chosen corresponding material's original physical density, orientation,
+finite/stretch versus tiling behavior per axis, normal encoding/frame, alpha and
+complete PBR/mip dependencies. Derive continuous coordinates in the actual receiver
+frame; do not reuse a zero/default prototype patch or unevaluated network-packed UVs.
+The world projection may be frozen in that frame, with no exact world anchoring
+requirement. Preserve original road geometry, attributes not required by the mapping,
+bones, all LODs, native animation and independent loading. Use native templates only,
+with existing offline resources or necessary descriptor-only conversion; no full-span
+texture baking, new period cuts, custom shader or runtime animation dependency.
+Source assets remain unchanged; native descriptor changes receive their own identity.
+Informational owner measurements, the 55 MB package limit and other quality requirements remain required.
+
+### Prototype appearance composition
+
+First dispatch each appearance type/domain by the prototype's measured support and actual source
+coverage. A no-match returns the original-source route without throwing. Realize that route by
+compatible original reuse or an evidenced corresponding native object conversion above.
+Do not extend prototype support to admit it into prototype composition. The existing
 measured descriptor-only track conversion is a native representation rule, not this composition
 entry condition; it preserves source pixels and appearance and must not become a general fallback.
 
 Only supported types that must use prototype appearance enter the following plan:
 
 1. Resolve the measured prototype appearance, source masks, required input layers and physical
-   domains. Keep unsupported neighboring types on their original materials.
+   domains. Keep unsupported neighboring types on their corresponding compatible road materials.
 2. Reuse an identical resolved native result where available, or use descriptor-only handling
    where sufficient without baking pixels.
-3. Bind a once-prepared composite or genuine repeat unit for known constant inputs.
+3. Bind a once-prepared composite, evidenced original repeat or eligible authored road repeat
+   for known constant inputs; all supported road paving tiles at source density without embedded markings.
 4. Compose genuinely variable local content only where the supported-type combination needs it,
    subject to section 3's prohibition on full-road rasterization.
 5. If an actual selected third-party input required by that supported-type composition was
    unavailable before runtime, perform only the necessary bounded conversion. Unknown input
-   alone does not admit an unsupported type into composition.
+   alone does not admit an unsupported type into prototype composition or permit an unrelated replacement.
 
 Known constant road resources and descriptor conversions must be prepared offline and packaged.
 Runtime copies and binds them; no first-use bake, resampling or recompression. A missing prepared
@@ -307,12 +575,12 @@ bridge must not delete prepared sources. Follow section 5 for packaging and sour
 
 ## 5. Per-bridge material directory and mod packaging
 
-Measure the generated-owner material limit over the complete saved bridge's material dependency
+Measure the informational generated-owner material footprint over the complete saved bridge's material dependency
 closure, including descriptors, non-built-in texture/VT payloads, required mip dependencies and
 their persistence metadata. Count each shared file once within that owner. Built-in dependencies
 that remain original references require no copied payload bytes; list these references separately.
-The prepared files for a style are a separate measurement, not proof that every generated bridge
-fits its 10,000,000-byte material limit. Include selected-road dependencies and permitted runtime
+The prepared files for a style are a separate measurement, not a substitute for each generated bridge's
+complete informational material measurement. Include selected-road dependencies and permitted runtime
 outputs in the owner measurement. If a complete bridge graph has not been generated, report that
 measurement as unavailable rather than substituting the prepared-directory size.
 
@@ -393,7 +661,7 @@ Each generated bridge copies only the cache dependencies required by its own gra
 independent owner-local snapshot, retaining original bytes and CIDs under the persistence
 contract's native MidMips filename exception. Do not copy the whole source catalogue, share
 generated-owner files, or depend on the installed cache after persistence. Count those copies
-in the unchanged 10,000,000-byte generated-owner material limit; count each common source file
+in the informational generated-owner material measurement; count each common source file
 once in the complete 55,000,000-byte official SDK ZIP limit. This source-storage exception
 grants no additional runtime baking permission or cross-bridge generated-result caching.
 
@@ -426,19 +694,36 @@ texture count or an eligibility flag. Required evidence includes:
    sampling/quality/dependency validation. No unrelated non-road material remaking is allowed. Record
    byte-identical external ownership copies separately from conversions. Confirm changing road
    composition leaves structural bindings and source assets unchanged.
-2. **Road dispatch and composition:** prove support per prototype/type/domain; unsupported types
-   retain original materials and never enter composition. For supported types, record source layers,
+2. **Road dispatch and composition:** verify noexcept matching and Original for unknown types,
+   unmatched regions and mixed coverage; test deck and network-head branches separately at every LOD.
+   Verify receiver classification and target-part correspondence independently, with same-type/different-part
+   negative controls, external no-match approaches and actual visible bindings. Do not certify grating
+   from a name or resource identity without full PBR/alpha evidence.
+   Include each replaced component's top, edges/curbs, sidewalls, bevels and caps; test distinct
+   sidewalk/median/approach counterparts and unmatched edges instead of accepting top-only coverage.
+   Verify one common elevated context shared by geometry and materials, no alternative-level
+   enumeration/fallback or downstream reselection, and all physical contributions retained.
+   Missing material matches still select Original within that context.
+   Distinguish routing no-match from resource/realization failure. Prove support per prototype/type/domain; unsupported types
+   use compatible originals or section 4's corresponding native object road replacement, never an
+   invented prototype support flag. Record accepted layer/projection differences. For supported types, record source layers,
    prototype/selected-input roles, masks, source frames,
    separate markings and whether the result uses direct binding, descriptor conversion,
    precomposition or bounded runtime composition. Do not label complete selected-road appearance
    preservation as a universal requirement. Verify the specified composite rather than a substitute.
-3. **Mapping:** source tiling remains tiling, source stretching remains stretching, mixed axes,
-   mirrors, folds, terminal domains and each LOD follow their own evidence. Verify final uploaded
-   UVs and source-to-output sampling, not only intermediate formulas. Test both directional density
-   on tiling axes; report expected density changes on stretching axes separately.
+3. **Mapping and road cleanliness:** prototype-supported road appearances tile at original
+   resolution/physical density in every LOD; no width/length-dependent stretching, including caps.
+   Verify complete projection Jacobians, actual uploaded UVs, shared phase/PBR across domains of the same evidenced prototype appearance, and independent layers. Non-road and unsupported-input mappings retain their own
+   evidenced modes, including finite/stretch axes. Audit removal of embedded markings in all road
+   domains/channels/mips while preserving independent selected-road paint. Verify complete wear
+   source, matched background, measured visual-center lane alignment and fixed physical wear width.
 4. **Layers and filtering:** test independent periods, finite/constant masks, differing resolutions,
    blend transitions, normals, alpha/cutout, source edges and all mip levels. Record unresolved
    per-layer tolerance validation; mip-zero/interior-only checks are insufficient.
+   Verify semantic part ownership across independently selected native render-group LODs.
+   Identical material payloads at near/middle levels do not rule out a missing-part window
+   when the far version moves to another renderer; follow the movable contract's
+   [material-batch rules](MOVABLE_BRIDGES_CONTRACT.md#material-selection-projection-and-render-batches).
 5. **No span rasterization:** compare different bridge lengths and verify that base-pattern pixel
    storage does not expand with the receiver, even across multiple resources. Rejected period
    tests must not enter a full-road bake. Record every necessary local raster's content extent,
@@ -447,9 +732,9 @@ texture count or an eligibility flag. Required evidence includes:
    payloads. All preview/create/regenerate/export paths use the same representations. Verify cold
    loading without Bridge Builder, complete current-owner dependency closure, and independence
    from other generated bridges or deleted sources. Preserve healthy existing assets.
-7. **Budgets:** measure prepared bytes separately, the complete persisted owner material graph at
-   or below 10,000,000 bytes, and the actual official SDK package at or below 55,000,000 bytes.
-   List built-in references separately. Missing owner measurements are not a pass. Keep the
+7. **Size reporting and package budget:** report prepared bytes and the complete persisted owner
+   material graph separately, with no per-owner ceiling. The actual official SDK package must be
+   at or below 55,000,000 bytes. List built-in references separately. Mark missing owner measurements unavailable. Keep the
    general contract's whole-Prefab measurement separate and reject empty material directories.
 
 Record generation, decoding, composition, readback, VT/mip writing and persistence timing without

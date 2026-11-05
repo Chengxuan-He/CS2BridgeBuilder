@@ -38,16 +38,14 @@ lines=['// Measured DrawBridge02 fixed-platform curb sides, game 1.6.2f1.',
        '            var face = records[i];', '            for (var corner = 0; corner < 3; corner++)',
        '                if (plan.SourceIndices[0][face * 3 + corner] != records[i + corner + 1])',
        '                    throw new InvalidOperationException("Draw02 fixed curb topology differs from the measured source.");',
-       '            foreach (var fragment in plan.Fragments)',
-       '                if (fragment.Slot == 0 && fragment.Triangle == face)',
-       '                    throw new InvalidOperationException("Draw02 fixed curb removal overlaps a structural fragment.");',
        '            mask[face] = true;', '        }',
        '        var positions = new Vector3[plan.SourcePositions.Length];',
        '        Array.Copy(plan.Positions, positions, positions.Length);',
        '        var constructedX = new float[plan.ConstructedCount];',
        '        for (var i = 0; i < constructedX.Length; i++) constructedX[i] = plan.Positions[positions.Length + i].x;',
        '        return new MovableStructureModel.Plan(plan.SourcePositions, positions, plan.SourceIndices,',
-       '            new[] { mask }, plan.AddedVertices, plan.Fragments, plan.InteriorVertices, constructedX);',
+       '            new[] { mask }, plan.AddedVertices, plan.Fragments, plan.InteriorVertices, constructedX,',
+       '            uvCorrections: plan.UvCorrections, preparedDomains: plan.PreparedDomains, frameTransforms: plan.FrameTransforms);',
        '    }','']
 for name,(faces,f,digest) in zip(('Near','Middle'),tables):
     lines+=['    // Geometry SHA-256: '+digest,f'    private static readonly int[] {name} =', '    {']

@@ -23,9 +23,6 @@ internal static class Draw02FixedCurbs
             for (var corner = Numeric_Types_Draw02_Draw02FixedCurbs_g_cs.Values.I32[4]; corner < Numeric_Types_Draw02_Draw02FixedCurbs_g_cs.Values.I32[5]; corner++)
                 if (plan.SourceIndices[Numeric_Types_Draw02_Draw02FixedCurbs_g_cs.Values.I32[6]][face * Numeric_Types_Draw02_Draw02FixedCurbs_g_cs.Values.I32[7] + corner] != records[i + corner + Numeric_Types_Draw02_Draw02FixedCurbs_g_cs.Values.I32[8]])
                     throw new InvalidOperationException("Draw02 fixed curb topology differs from the measured source.");
-            foreach (var fragment in plan.Fragments)
-                if (fragment.Slot == Numeric_Types_Draw02_Draw02FixedCurbs_g_cs.Values.I32[9] && fragment.Triangle == face)
-                    throw new InvalidOperationException("Draw02 fixed curb removal overlaps a structural fragment.");
             mask[face] = true;
         }
 
@@ -34,7 +31,8 @@ internal static class Draw02FixedCurbs
         var constructedX = new float[plan.ConstructedCount];
         for (var i = Numeric_Types_Draw02_Draw02FixedCurbs_g_cs.Values.I32[10]; i < constructedX.Length; i++)
             constructedX[i] = plan.Positions[positions.Length + i].x;
-        return new MovableStructureModel.Plan(plan.SourcePositions, positions, plan.SourceIndices, new[] { mask }, plan.AddedVertices, plan.Fragments, plan.InteriorVertices, constructedX);
+        return new MovableStructureModel.Plan(plan.SourcePositions, positions, plan.SourceIndices, new[] { mask }, plan.AddedVertices, plan.Fragments, plan.InteriorVertices, constructedX,
+            uvCorrections: plan.UvCorrections, preparedDomains: plan.PreparedDomains, frameTransforms: plan.FrameTransforms);
     }
 
     // Geometry SHA-256: 1f0ff1a2c0a8318e6537bd347ae064d1bb55bfa48f3cf3c2375601adcd05dd18

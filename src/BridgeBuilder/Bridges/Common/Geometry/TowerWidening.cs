@@ -111,11 +111,8 @@ internal static partial class TowerWidening
                 return;
             }
 
-            // Carried outward, and never past the centre. A leg brought in by more than it stands out
-            // lands on the far side and the two legs swap - the same inversion the ratio guard catches
-            // on the other branch, arrived at by the other arithmetic. Both stop at zero.
-            var moved = x + (x > 0f ? shift : -shift);
-            result[index].x = x > 0f ? Math.Max(0f, moved) : Math.Min(0f, moved);
+            // Preserve the requested signed displacement, including a crossing of the centre.
+            result[index].x = x + (x > 0f ? shift : -shift);
         });
         return result;
     }

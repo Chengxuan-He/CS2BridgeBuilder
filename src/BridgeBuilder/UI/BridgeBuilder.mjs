@@ -22,6 +22,7 @@ const inputTheme = modding.getModule("game-ui/editor/widgets/item/editor-item.mo
 const textInputProps = { multiline: 1, type: "text", focusKey: window["cs2/input"].FOCUS_DISABLED,
     className: `${inputTheme.input} bb-text-input` };
 const MOD = "BridgeBuilder";
+const scrollSensitivityBinding = api.bindValue("input", "scrollSensitivity", 1);
 const exportSuccessPathBinding = api.bindValue(MOD, "ExportSuccessPath", "");
 const exportBrowserBinding = api.bindValue("BridgeBuilderExportBrowser", "children", []);
 const exportBrowserOpenBinding = api.bindValue(MOD, "ExportBrowserOpen", false);
@@ -120,8 +121,19 @@ const fallbackIcon = "coui://bridgebuilderui/BridgeBuilder.svg";
 
 // Cohtml needs the game's scrollbar, not only browser overflow styling.
 function ScrollArea({ className = "", children }) {
+    const viewport = React.useRef(null);
+    const sensitivity = api.useValue(scrollSensitivityBinding);
+    React.useEffect(() => {
+        const element = viewport.current;
+        if (!element) return;
+        // Native Scrollable applies one delta * sensitivity and refreshes its thumb.
+        // Add one identical delta before that handler, only inside our own lists.
+        const extraWheelStep = event => { element.scrollTop += event.deltaY * sensitivity; };
+        element.addEventListener("wheel", extraWheelStep, true);
+        return () => element.removeEventListener("wheel", extraWheelStep, true);
+    }, [sensitivity]);
     return h("div", { className: `bb-scroll-slot ${className}` },
-        h(ui.Scrollable, { className: "bb-scroll", vertical: true,
+        h(ui.Scrollable, { ref: viewport, className: "bb-scroll", vertical: true,
             horizontal: false, trackVisibility: "always" }, children));
 }
 

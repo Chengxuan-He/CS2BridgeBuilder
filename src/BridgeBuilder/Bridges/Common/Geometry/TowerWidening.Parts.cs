@@ -72,7 +72,7 @@ internal static partial class TowerWidening
                 return;
             }
 
-            result[index].x = AffineGeometry.Scale(x, Math.Max(0f, (span + shift) / span));
+            result[index].x = AffineGeometry.Scale(x, (span + shift) / span);
         });
         return result;
     }

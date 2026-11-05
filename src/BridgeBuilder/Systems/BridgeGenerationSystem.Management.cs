@@ -35,6 +35,11 @@ public partial class BridgeGenerationSystem
             BridgeRuntimeRequests.Complete("BridgeRestartRequired", request.UpperDeckId, request.StyleId);
             return;
         }
+        if (BridgePreparedMaterials.RequestFiles == null && BridgeStyleCatalog.Find(request.StyleId) != null)
+        {
+            PrepareMaterialFiles(request.StyleId, () => CreateRuntimeBridge(request, exportOptions), FailMaterialCreation);
+            return;
+        }
         var state = ExportStateStore.Load();
         var report = new ExportReport(logIssues: false);
         var upper = DeckCatalog.Find(request.UpperDeckId);

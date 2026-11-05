@@ -16,7 +16,8 @@ internal static class MovableRoadAppearance
         WheelTrack = 4,
         Pathway = 8,
         Ballast = 16,
-        TrackBed = 32
+        TrackBed = 32,
+        Curb = 64
     }
 
     internal sealed class Level
@@ -24,6 +25,9 @@ internal static class MovableRoadAppearance
         internal readonly SurfaceAsset Native;
         internal readonly MovableExistingRoadSurface.Patch[] Patches;
         internal readonly Type[] SupportedTypes;
+        // Null inherits the caller's partition; it does not mean no correspondence.
+        // Retained unmatched geometry uses an explicit valid leaf with Type.None.
+        // Partition.Gap removes geometry and must not represent a material no-match.
         internal readonly MovableRoadGeometry.Partition? Carriageway;
         internal readonly MovableRoadGeometry.Partition? Sidewalk;
 

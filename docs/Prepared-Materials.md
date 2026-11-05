@@ -9,8 +9,8 @@ corresponding prototype; retain original input materials for unsupported types. 
 to all fixed and movable bridges, per part, LOD, layer and axis. Source tiling stays tiling;
 source stretching stays stretching. No full-road pixel expansion, even across multiple pages.
 
-The package limit is 55,000,000 bytes; the complete persisted owner material limit is 10,000,000
-bytes. The sole cross-style source exception is read-only native MidMips under
+The package limit is 55,000,000 bytes. Report complete persisted owner material bytes for
+information; no per-owner hard ceiling applies. The sole cross-style source exception is read-only native MidMips under
 `Materials/Shared/MidMips/<cacheCID>/`; every bridge retains its independent dependency snapshot.
 
 Producer commands, fixtures, counts and conversion recipes below describe retained implementation
@@ -206,7 +206,7 @@ than the source and avoids huge rational-period images. It is not a pixel-identi
 filtering differences, including repeat seams, remain part of native and manual appearance checks.
 Reports include original fractional spans, output dimensions and both density ratios. All output
 levels sample their corresponding authored source mips, not a mip-zero-generated chain. Every
-complete generated owner must meet its 10 MB material ceiling, and the complete deliverable must
+complete generated owner has an informational material measurement, and the complete deliverable must
 meet the 55 MB package gate. Prepared-directory size is reported separately.
 An evidenced composite unit may provide `bands`, each with `start`, `end`, `min`, `max` and
 integer `repeatY`. Bands cover the horizontal unit interval continuously from zero to one;

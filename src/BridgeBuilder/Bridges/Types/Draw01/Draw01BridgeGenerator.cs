@@ -36,7 +36,7 @@ internal sealed class Draw01BridgeGenerator : MovableBridgeGeneratorBase<Draw01C
         var mechanism = Draw01ObjectAssembly.Create(factory, target.name, target.name + " Moving Object", moving, support, foundation, content, factory.ResolveOriginal<ObjectPrefab>, halfDelta, road);
         var pillar = Draw01NetPillarAssembly.Create(factory, target.name, target.name + " Pillar", factory.ResolveOriginal<RenderPrefab>("DrawBridge01NetPillarTop Mesh"), factory.ResolveOriginal<RenderPrefab>("DrawBridge01NetPillar Mesh"), factory.ResolveOriginal<RenderPrefab>("DrawBridge01NetPillarBase Mesh"), content, halfDelta);
         Draw01FixedBase.Apply(target, factory, halfDelta);
-        Draw01NetworkAssembly.Apply(target, factory, pillar, mechanism);
+        Draw01NetworkAssembly.Apply(target, factory, pillar, mechanism, road);
     }
 }
 

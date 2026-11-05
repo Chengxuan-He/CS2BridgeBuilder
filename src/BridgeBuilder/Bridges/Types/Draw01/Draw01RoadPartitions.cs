@@ -17,8 +17,8 @@ internal static class Draw01RoadPartitions
     internal static Partition Surface(float halfWidthDelta, bool retainNativePlatforms = false)
     {
         var innerCurb = Numeric_Types_Draw01_Draw01RoadPartitions_cs.Values.F32[0] + halfWidthDelta;
-        if (!float.IsFinite(innerCurb) || innerCurb <= Numeric_Types_Draw01_Draw01RoadPartitions_cs.Values.F32[1])
-            throw new InvalidOperationException("The selected width collapses the native moving carriageway domain.");
+        if (!float.IsFinite(innerCurb))
+            throw new InvalidOperationException("Draw01 carriageway coordinate is not representable.");
         var sidewalk = retainNativePlatforms ? Cut(-Numeric_Types_Draw01_Draw01RoadPartitions_cs.Values.F32[2], Partition.Gap, Cut(Numeric_Types_Draw01_Draw01RoadPartitions_cs.Values.F32[3], Sidewalk, Partition.Gap)) : Sidewalk;
         return Across(-innerCurb, sidewalk, Across(innerCurb, Carriageway, sidewalk));
     }

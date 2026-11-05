@@ -198,30 +198,9 @@ internal sealed class Draw01ClosedRoad : IDisposable
                 levelAppearancePartitions[occurrence] = sidewalk ? sidewalkAppearance : carriagewayAppearance;
             }
             var levelCarriagewayAppearance = carriagewayAppearance;
-            if (i == sources.Count - 1)
-            {
-                levelNative = sources[i].GetSurfaceAsset(0);
-                var finite = Draw01FarAppearance.Create(levelRoad, RoadToObject, levelNative);
-                levelPatches = finite.Patches;
-                levelSupportedTypes = finite.SupportedTypes;
-                levelAppearancePartitions = finite.Occurrences;
-                // Occurrence partitions are exhaustive; the default is used only
-                // for empty input, never as a guessed far chart.
-                levelCarriagewayAppearance = MovableRoadGeometry.Partition.Gap;
-            }
-            else
-            {
-                // Near domains, middle grating and byte-identical middle fixed
-                // carriageway use continuous prepared interiors and finite endpoints.
-                // Other middle projections remain unresolved; do not substitute near.
-                var previous = new Draw01FarAppearance.Result(levelPatches, levelSupportedTypes, levelAppearancePartitions);
-                var nativeAtlas = Draw01NativeAtlasRoad.Create(levelRoad, RoadToObject, levelNative,
-                    fallback: previous, middleLod: i != 0);
-                levelPatches = nativeAtlas.Patches;
-                levelSupportedTypes = nativeAtlas.SupportedTypes;
-                levelAppearancePartitions = nativeAtlas.Occurrences;
-                levelCarriagewayAppearance = MovableRoadGeometry.Partition.Gap;
-            }
+            // Physical part roles are shared by all LODs; material changes never
+            // replace fixed concrete or platform paving with carriageway asphalt.
+            levelPatches = Draw01PartRepeats.Apply(levelPatches, RoadToObject);
             laneLevels[i] = new MovableLaneGeometry.Result(levelRoad.LaneGeometry.Triangles.ToList(), levelRoad.LaneGeometry.Surfaces.ToList(), new List<MovableLaneVisuals.Batch>());
             var levelGeometry = MovableRoadGeometry.InFrame(levelRoad.Triangles, RoadToObject);
             if (!MovableRoadGeometry.TryBind(levelGeometry, partition, Numeric_Types_Draw01_Draw01ClosedRoad_cs.Values.I32[62], levelRoad.Surfaces.Length, out var receivers, out var error, occurrencePartitions: levelMotionPartitions[i]))
@@ -249,6 +228,7 @@ internal sealed class Draw01ClosedRoad : IDisposable
             else if (moving.Length != 0)
                 assigned = assigned.Concat(movingAppearance.Select(face => new MovableRoadGeometry.BoundTriangle(
                     face.Geometry, face.Bone | MovableSurfaceAtlas.MovingSurface))).ToArray();
+            Draw01CurbAppearance.Apply(levelRoad, RoadToObject, ref assigned, ref levelPatches, ref levelSupportedTypes);
             inputs[i] = new MovableSurfaceAtlas.Input(selectedInput: true)
             {
                 Faces = assigned,

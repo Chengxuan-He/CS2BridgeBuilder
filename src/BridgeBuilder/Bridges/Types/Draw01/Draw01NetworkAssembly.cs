@@ -1,5 +1,6 @@
 using System;
 using System.Linq;
+using System.Collections.Generic;
 using Game.Prefabs;
 
 namespace BridgeBuilder.Bridges;
@@ -8,7 +9,7 @@ internal static class Draw01NetworkAssembly
 {
     // Run after sampling the visible selected road, on its private generation clone.
     internal static void Apply(NetGeometryPrefab target, TowerFactory factory,
-        StaticObjectPrefab pillar, StaticObjectPrefab mechanism)
+        StaticObjectPrefab pillar, StaticObjectPrefab mechanism, Draw01ClosedRoad road)
     {
         if (!factory.Created.Contains(pillar) || !factory.Created.Contains(mechanism))
             throw new InvalidOperationException("Draw01 network assembly requires its owned pillar and mechanism objects.");
@@ -16,6 +17,8 @@ internal static class Draw01NetworkAssembly
         var sections = Draw01NetworkData.ConvertSections(target.name, target.m_Sections, out var created);
         MovableBarrierRules.Apply(target.name, sections, ref created,
             factory.ResolveOriginal<ObjectPrefab>("BasculeBridgeBarrier01 Placeholder"));
+        // The prototype running cap is inside the mechanism physical partitions.
+        // Outside native connection pieces retain their selected-road appearance.
         factory.AdoptMovableSections(created);
         target.m_Sections = sections;
 

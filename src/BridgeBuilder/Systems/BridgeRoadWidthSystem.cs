@@ -15,7 +15,8 @@ internal sealed partial class BridgeRoadWidthSystem : SystemBase
     protected override void OnUpdate() { }
 
     internal float Read(NetGeometryPrefab road, ICollection<string>? breakdown,
-        List<(string Name, float Width)>? allocations = null, bool extensions = false)
+        List<(string Name, float Width)>? allocations = null, bool extensions = false,
+        CompositionFlags? selectedFlags = null)
     {
         var prefabs = World.GetExistingSystemManaged<PrefabSystem>();
         if (prefabs == null || !prefabs.TryGetEntity(road, out var entity)
@@ -29,24 +30,7 @@ internal sealed partial class BridgeRoadWidthSystem : SystemBase
         {
             $"RoadWidth road='{road.name}', entity={entity}, extensions={extensions}",
         };
-        // Size the structure for the road it will actually carry: an elevated
-        // edge, not the ground-level asset thumbnail/default width. In native
-        // roads the same sidewalk section can select a narrower elevated piece.
-        // Resolve authored conditions; never rewrite or widen any road piece.
-        NetCompositionHelpers.GetRequirementFlags(
-            new[] { NetPieceRequirements.Edge, NetPieceRequirements.Elevated }, out var flags, out _);
-        var setStates = default(CompositionFlags);
-        foreach (var source in road.m_EdgeStates ?? System.Array.Empty<NetEdgeStateInfo>())
-        {
-            if (source == null) continue;
-            var state = new NetGeometryEdgeState();
-            NetCompositionHelpers.GetRequirementFlags(source.m_RequireAll, out state.m_CompositionAll, out _);
-            NetCompositionHelpers.GetRequirementFlags(source.m_RequireAny, out state.m_CompositionAny, out _);
-            NetCompositionHelpers.GetRequirementFlags(source.m_RequireNone, out state.m_CompositionNone, out _);
-            NetCompositionHelpers.GetRequirementFlags(source.m_SetState, out state.m_State, out _);
-            if (NetCompositionHelpers.TestEdgeFlags(state, flags)) setStates |= state.m_State;
-        }
-        flags |= setStates;
+        var flags = selectedFlags ?? ElevatedFlags(road);
 
         using var sections = new NativeList<NetGeometrySection>(Allocator.Temp);
         var widths = GetComponentLookup<NetPieceData>(true);
@@ -164,6 +148,26 @@ internal sealed partial class BridgeRoadWidthSystem : SystemBase
             _lastDiagnostics[key] = snapshot;
             Mod.Log.Info(snapshot);
         }
+    }
+
+    internal static CompositionFlags ElevatedFlags(NetGeometryPrefab road)
+    {
+        NetCompositionHelpers.GetRequirementFlags(
+            new[] { NetPieceRequirements.Edge, NetPieceRequirements.Elevated }, out var flags, out _);
+        var setStates = default(CompositionFlags);
+        foreach (var source in road.m_EdgeStates ?? System.Array.Empty<NetEdgeStateInfo>())
+        {
+            if (source == null) continue;
+            var state = new NetGeometryEdgeState();
+            NetCompositionHelpers.GetRequirementFlags(source.m_RequireAll, out state.m_CompositionAll, out _);
+            NetCompositionHelpers.GetRequirementFlags(source.m_RequireAny, out state.m_CompositionAny, out _);
+            NetCompositionHelpers.GetRequirementFlags(source.m_RequireNone, out state.m_CompositionNone, out _);
+            NetCompositionHelpers.GetRequirementFlags(source.m_SetState, out state.m_State, out _);
+            if (NetCompositionHelpers.TestEdgeFlags(state, flags)) setStates |= state.m_State;
+        }
+        flags |= setStates;
+        return flags;
+
     }
 
     private static string FlagText(CompositionFlags flags) =>

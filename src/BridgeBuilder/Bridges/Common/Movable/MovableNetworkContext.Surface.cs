@@ -125,21 +125,45 @@ internal sealed partial class MovableNetworkContext
         var result = new MovableClosedRoad.Result(triangles.ToArray(), materials.ToArray(), occurrences.ToArray(),
             compositions, occurrenceStarts, LaneVisuals(laneOwners, origin), rules, sourceFaces.ToArray(), lod);
         var centers = new List<UnityEngine.Vector3>();
+        var roadLanes = new List<RoadLane>();
+        var laneSources = new HashSet<string>();
         var visited = new HashSet<Entity>();
         foreach (var owner in laneOwners)
         foreach (var entry in World.EntityManager.GetBuffer<Game.Net.SubLane>(Owner(owner), true))
         {
+            laneSources.Add(Prefabs.Original(World.EntityManager.GetComponentData<PrefabRef>(Owner(owner)).m_Prefab).name);
             var lane = entry.m_SubLane;
-            if (!visited.Add(lane) || !World.EntityManager.HasComponent<Game.Net.CarLane>(lane) ||
+            if (!visited.Add(lane) ||
                 World.EntityManager.HasComponent<Game.Net.MasterLane>(lane) ||
                 World.EntityManager.HasComponent<Game.Common.Deleted>(lane) ||
                 World.EntityManager.HasComponent<Game.Tools.Hidden>(lane)) continue;
             var curve = World.EntityManager.GetComponentData<Curve>(lane).m_Bezier;
             // This appearance recipe is for straight longitudinal road lanes only.
             if (math.abs(curve.a.x-curve.d.x) > .01f || math.abs(curve.a.z-curve.d.z) < .01f) continue;
-            centers.Add((UnityEngine.Vector3)((curve.a+curve.d)*.5f-origin));
+            if (World.EntityManager.HasComponent<Game.Net.CarLane>(lane))
+                centers.Add((UnityEngine.Vector3)((curve.a+curve.d)*.5f-origin));
+            var prefab = World.EntityManager.GetComponentData<PrefabRef>(lane).m_Prefab;
+            var data = World.EntityManager.GetComponentData<NetLaneData>(prefab);
+            // Lane borders are native prefab width about the evaluated lane, never midpoint
+            // guesses between adjacent car lanes. Curved/transverse node connectors are not
+            // a constant cross-section and must not produce longitudinal rail boundaries.
+            if (!(data.m_Width > 0f) || !math.isfinite(data.m_Width) ||
+                (data.m_Flags & (LaneFlags.Virtual | LaneFlags.Master | LaneFlags.Utility)) != 0) continue;
+            var widthScale = World.EntityManager.HasComponent<NodeLane>(lane)
+                ? BatchDataHelpers.BuildCurveScale(World.EntityManager.GetComponentData<NodeLane>(lane), data)
+                : new float4(1,0,1,1);
+            // Native BuildCurveScale(NodeLane, NetLaneData) uses 1 + offset / width.
+            // Preserve both endpoint widths; never replace a varying node width by its mean.
+            roadLanes.Add(new RoadLane((UnityEngine.Vector3)(curve.a-origin),
+                (UnityEngine.Vector3)(curve.b-origin), (UnityEngine.Vector3)(curve.c-origin),
+                (UnityEngine.Vector3)(curve.d-origin), data.m_Width,
+                data.m_Width * widthScale.x, data.m_Width * widthScale.z, data.m_Flags,
+                curve.a.x == curve.b.x && curve.a.x == curve.c.x && curve.a.x == curve.d.x,
+                Prefabs.Original(prefab).name));
         }
         result.CarLaneCenters = centers.ToArray();
+        result.RoadLanes = roadLanes.ToArray();
+        result.LaneContext = "owner="+_generationOwner+"; sources="+string.Join("|",laneSources);
         return result;
     }
 

@@ -5,59 +5,9 @@
 A Cities: Skylines II mod that builds a **bridge prefab** from parts you choose: a road for the upper
 deck, a bridge style to wear, and optionally something hung underneath.
 
-The rules generation is held to are in [AGENTS.md](AGENTS.md).
-Use the [documentation index](docs/README.md) to distinguish current contracts, native research
-and recorded implementation evidence.
-
-Contributors can follow [Adding a bridge style with a coding agent](#adding-a-bridge-style-with-a-coding-agent)
-for the evidence, implementation and acceptance workflow.
-
-## License
-
-This project's original code is available under the [MIT License](LICENSE).
-Game assets and third-party dependencies retain their respective licenses.
-
-## Geometry calculation
-
-Bridge geometry uses measured affine coefficients for X, Y and Z, stored in DLL-embedded
-typed arrays and compact part recipes. Independent numerical batches and movable LOD plans
-run on the CPU through `AffineGeometry`; native mesh access, materials and asset persistence
-remain on the main thread. Small batches execute serially to avoid scheduling overhead.
-This changes generation-time computation, not the runtime requirements of saved bridges.
-See the [affine execution contract](docs/agent-contract/BRIDGE_GENERATION_CONTRACT.md#cpu-affine-geometry-execution)
-and [contributor workflow](docs/Adding-Bridge-Styles-With-Coding-Agents.md#affine-matrix-generation-step).
-End-to-end speed improvements require in-game measurements.
-
-## In-game builder and identity
-
-The floating BridgeBuilder button opens the runtime builder in a loaded game. Roads are shown as
-icon-and-name cards (three per row); double-deck mode provides independent upper and lower network
-lists. Bridge styles are likewise selected from prototype cards, and unavailable styles are omitted
-when their providing DLC or mod is not installed. Creating a bridge publishes it into the running
-prefab world. Create-and-build also activates the ordinary network construction tool; neither action
-places a bridge automatically.
-
-Every bridge created there has two deliberately separate names:
-
-- `PrefabName`: immutable `b<UUID>` identity, for example
-  `b6f9619ff-8b86-d011-b42d-00c04fc964ff`. Saved references, activation and deletion use only this key.
-- registration name: the editable name shown in game. It can be duplicated or renamed without
-  changing the prefab identity or reconstructing the bridge.
-
-The management tab lists these bridges and supports activation, display-name changes and deletion.
-Construction inputs are read-only after creation; changing them means creating another UUID-backed
-bridge. Deleting a bridge asks for confirmation and removes its placed instances before removing its
-asset record.
-
-It is the parallel of [Road Prefab Exporter](../CS2RoadPrefabExporter) and shares its code — see
-[Layout](#layout).
-
-## One bridge at a time
-
-There is no batch mode, and that is not a simplification of one. A bridge is a **pairing** — this
-deck on top, that one underneath, in this style — and a pairing does not distribute over a list of
-roads. So the page asks for the two decks explicitly and builds exactly one bridge. The road exporter
-next door remains the batch tool.
+Read about [available inputs](#what-you-can-pick), [using the builder](#in-game-builder-and-identity),
+the [generation flow](#generation-flow), [technical details](#geometry-calculation), or
+[building and contributing](#building).
 
 ## What you can pick
 
@@ -115,21 +65,6 @@ Generated towers, cables and LODs are private derived assets owned by the bridge
 game/DLC resources remain prerequisites; external non-built-in dependencies are persisted as
 byte-identical copies with original CIDs under the bridge's UUID directory.
 
-### Width
-
-Generation selects a compatible prototype variant and uses its measured geometry data. Authored
-parts reaching or crossing the centre line stretch against their own span; side parts translate
-rigidly. The same classification applies to every LOD. Unsupported or missing metadata causes an
-explicit failure rather than an arbitrary width clamp or a fallback to another bridge design.
-
-The [material contract](docs/agent-contract/MATERIAL_GENERATION_CONTRACT.md#2-preserve-source-resolution-and-pattern-scale)
-allows verified non-tiling prototype UV mappings to stretch with that geometry while retaining
-authored UVs, original textures, resolution, channels, mips and compatible material identity.
-Tiling mappings retain original physical density. Evidence must identify the source, part, LOD
-and affected axes; a failed mapping or missing repeat evidence does not qualify. Selected-road
-appearance and marking layout retain their existing rules. This permission is not an implementation
-or visual-acceptance claim.
-
 ## Double decks
 
 Double decks use the matching archetype's `AuxiliaryNets` arrangement. The main network may be the
@@ -141,41 +76,43 @@ archetype is refused.
 Each generated deck has its own bridge-owned network copy. The auxiliary is placed with its carrier;
 its independent editing and connections remain subject to the game's auxiliary-network behavior.
 
+## In-game builder and identity
+
+The floating BridgeBuilder button opens the runtime builder in a loaded game. Roads are shown as
+icon-and-name cards (three per row); double-deck mode provides independent upper and lower network
+lists. Bridge styles are likewise selected from prototype cards, and unavailable styles are omitted
+when their providing DLC or mod is not installed. Creating a bridge publishes it into the running
+prefab world. Create-and-build also activates the ordinary network construction tool; neither action
+places a bridge automatically.
+
+Every bridge created there has two deliberately separate names:
+
+- `PrefabName`: immutable `b<UUID>` identity, for example
+  `b6f9619ff-8b86-d011-b42d-00c04fc964ff`. Saved references, activation and deletion use only this key.
+- registration name: the editable name shown in game. It can be duplicated or renamed without
+  changing the prefab identity or reconstructing the bridge.
+
+The management tab lists these bridges and supports activation, display-name changes and deletion.
+Construction inputs are read-only after creation; changing them means creating another UUID-backed
+bridge. Deleting a bridge asks for confirmation and removes its placed instances before removing its
+asset record.
+
+It is the parallel of [Road Prefab Exporter](../CS2RoadPrefabExporter) and shares its code — see
+[Layout](#layout).
+
+## One bridge at a time
+
+There is no batch mode, and that is not a simplification of one. A bridge is a **pairing** — this
+deck on top, that one underneath, in this style — and a pairing does not distribute over a list of
+roads. So the page asks for the two decks explicitly and builds exactly one bridge. The road exporter
+next door remains the batch tool.
+
 ## Naming and repeated creation
 
 The runtime builder and legacy options page use the same creation path. Each creation allocates a
 new immutable `b<UUID>` identity, including when the selected roads and style match an existing
 bridge. A suggested display name describes the pairing; it is not an overwrite key. Renaming or
 switching language does not change asset identity or saved references.
-
-## Building
-
-```powershell
-tools\Build.ps1
-```
-
-```powershell
-tools\Install.ps1
-```
-
-`Build.ps1` compiles the checked-in source snapshot at `vendor/CS2ModShared/src` and verifies its
-SHA-256 manifest with `tools/CheckSharedSources.ps1`. A sibling repository is not needed. The script
-resolves the installed game assemblies; pass `-GameDir` to override. Game assemblies and the .NET SDK
-are still external build prerequisites; the shared snapshot alone does not pin those versions.
-
-## Layout
-
-```
-CS2ModShared/               shared - discovery, cloning, asset IO, speed-limit correction, status model
-CS2RoadPrefabExporter/      exports Road Builder roads as plain roads, in batches
-CS2BridgeBuilder/            this repository
-```
-
-The shared code is **compiled into** each mod rather than referenced as an assembly: its types are
-`internal`, and a CS2 mod ships as a single DLL. The one thing it needs from its host — an id, a log,
-a page-rebuild callback and the export naming policy — comes through `ModHost`.
-
-The sibling projects describe the source family. This checkout builds from its own reviewed snapshot; see `vendor/CS2ModShared/README.md` for update instructions.
 
 ## Reports
 
@@ -187,6 +124,117 @@ failures retain their operation diagnostics.
 
 The log line `Bridge styles: N of M available, from D donor prefab(s) out of K bridge-capable
 prefab(s)`, followed by one line per style, is the authoritative record of what discovery bound.
+
+## Generation flow
+
+All 30 generator routes (20 fixed and 10 movable styles) share the request lifecycle below.
+Each selected network uses its elevated branch throughout generation; a double-deck bridge keeps
+one context for each selected network and follows the archetype's main/auxiliary arrangement.
+Fixed bridges retain the selected native road materials. Movable bridges also compose the road,
+mechanism and corresponding materials by physical part across all LODs.
+
+```mermaid
+flowchart TD
+    Request["Panel selection or queued Create request"] --> Kind{"Request kind"}
+    Kind -->|Existing bridge preview| Borrow["Borrow saved prefab graph by identity"]
+    Kind -->|New preview or Create| Files["Worker: read and hash requested style files"]
+    Files --> Resume["OnUpdate: completed snapshot resumes main thread"]
+    Resume --> Identity{"New preview or Create"}
+    Identity -->|Preview| Temp["Temporary preview identity"]
+    Identity -->|Create| Owner["Reserve new owner UUID"]
+    Temp --> Context["Resolve elevated context once per selected network"]
+    Owner --> Context
+    Context --> Compose["Clone and run style generator; assemble all LODs"]
+    Compose --> Result{"Preview or permanent result"}
+    Result -->|Preview| Private["Retain private result and captured road context"]
+    Borrow --> Render["Build preview scene and render current revision"]
+    Private --> Render
+    Result -->|Create| Save["Save owned prefab graph; persist native dependencies"]
+    Save --> Register["Register prefabs; await scheduled native initialization"]
+    Register --> Ready{"Native initialization ready"}
+    Ready -->|Yes| Commit["Commit asset metadata and record export"]
+    Commit --> UI["Refresh catalogue; optionally activate placement tool"]
+    Ready -->|No| Failed["Report failure; defer owner recovery to restart"]
+```
+
+Create allocates its new UUID before generation and always builds again; it never commits a
+preview graph. Background preparation covers file I/O and hashing, not Unity/native registration
+or the entire geometry pipeline. Superseded previews release private resources. Failed permanent
+creation follows owner-scoped recovery on restart rather than deleting live or healthy assets.
+Structural or appearance quality does not block a player's generation choice; real input,
+file and native-operation failures still report errors. Native initialization and offline checks
+do not establish in-game visual correctness.
+
+See the [bridge generation workflow design](docs/Bridge-Generation-Workflow.md#end-to-end-generation-flow)
+for scheduling, thread boundaries, persistence order, cancellation and cleanup.
+
+### What generation actually builds
+
+```mermaid
+flowchart TD
+    Context["Resolve one elevated context per selected network"] --> Measure["Measure road and footways; choose prototype arrangement"]
+    Measure --> Clone["Clone main network; clone auxiliary now if the mechanism needs both"]
+    Clone --> Family{"Fixed or movable style"}
+    Family -->|Fixed| Fixed["Select measured variant; apply native behavior; derive overhead parts, props and fitted towers at every LOD"]
+    Family -->|Movable| Sample["Sample actual road, lanes and source materials in the closed pose"]
+    Sample --> Bind["For each LOD: assign physical bones and appearance parts"]
+    Bind --> Match{"Actual source and prototype part correspond"}
+    Match -->|Yes| Material["Bind measured original-density PBR and UV mapping; use prepared resources where available"]
+    Match -->|No| Original["Retain Original through its supported native representation"]
+    Material --> Structure["Apply measured structural memberships, coordinate transforms, frames and face recipes"]
+    Original --> Structure
+    Structure --> Render["Build native structure, road and lane models; group complete LODs with stable part ownership"]
+    Render --> Mechanism["Assemble skeleton, supports, moving objects, fixed bases and network sections; attach intended paint"]
+    Mechanism --> Auxiliary["Verify coordinated auxiliary or attach requested second deck"]
+    Fixed --> Auxiliary
+    Auxiliary --> Result["Collect owned graph: temporary preview or permanent save and publication"]
+```
+
+The fixed and movable branches do different work: fixed roads keep their native surfaces and
+markings; movable roads are sampled and matched by actual physical part, not a bridge-wide
+material override. Known geometry memberships and prepared material units are authored offline.
+Runtime applies those measurements to the chosen road, binds original or prepared resources,
+and only uses conditional runtime conversion where the material contract permits it. It does
+not bake the entire bridge into a new texture. Source geometry, frames, UVs and bones follow the
+recorded transform/face recipes; all LODs are assembled before native publication.
+
+The diagram summarizes a shared sequence, not identical part recipes for every style. Combined
+physical/appearance partitioning, fixed versus moving receivers, coordinated double decks and
+style-specific paint/support assembly are expanded in the workflow design:
+[generation core](docs/Bridge-Generation-Workflow.md#generation-core-actual-sequence-and-branches),
+[movable workflow](docs/Bridge-Generation-Workflow.md#movable-generation-sampling-geometry-and-material-realization)
+and [offline/runtime products](docs/Bridge-Generation-Workflow.md#offline-inputs-and-runtime-products).
+Actual unavailable inputs or failed data/native operations exit to the failure lifecycle above;
+structural appearance is not an added rejection stage.
+
+## Geometry calculation
+
+Bridge geometry uses measured affine coefficients for X, Y and Z, stored in DLL-embedded
+typed arrays and compact part recipes. Independent numerical batches and movable LOD plans
+run on the CPU through `AffineGeometry`; native mesh access, materials and asset persistence
+remain on the main thread. Small batches execute serially to avoid scheduling overhead.
+This changes generation-time computation, not the runtime requirements of saved bridges.
+See the [affine execution contract](docs/agent-contract/BRIDGE_GENERATION_CONTRACT.md#cpu-affine-geometry-execution)
+and [contributor workflow](docs/Adding-Bridge-Styles-With-Coding-Agents.md#affine-matrix-generation-step).
+End-to-end speed improvements require in-game measurements.
+
+### Width
+
+Generation selects a compatible prototype variant and uses its measured geometry data. Authored
+parts reaching or crossing the centre line stretch against their own span; side parts translate
+rigidly, subject to the documented complete-assembly rules for Lift01 and Lift02. The same
+classification applies to every LOD. Actual missing inputs are reported; structural quality or a
+finite zero/reversed width does not block generation or select an arbitrary replacement design.
+
+The [material contract](docs/agent-contract/MATERIAL_GENERATION_CONTRACT.md#2-preserve-source-resolution-and-pattern-scale)
+allows verified non-tiling structural UV mappings to stretch with that geometry while retaining
+authored UVs, original textures, resolution, channels, mips and compatible material identity.
+This does not apply to processed movable-road materials: those use original-density tiling,
+physical-part correspondence and removal of embedded road markings across all LODs.
+Tiling mappings retain original physical density. Evidence must identify the source, part, LOD
+and affected axes; a failed mapping or missing repeat evidence does not qualify. Selected-road
+appearance and marking layout retain their existing rules. This permission is not an implementation
+or visual-acceptance claim.
 
 ## What the composer does not touch
 
@@ -222,7 +270,7 @@ rigidly by half the width change. Full-detail geometry and every LOD use the sam
 Missing supported metadata is a generation failure, not permission to guess a different bridge.
 Game assets and derived content remain subject to their original licenses.
 
-### Creation durability and recovery
+## Creation durability and recovery
 
 Creation reserves a UUID in memory and stores incomplete-creation metadata on the bridge root asset.
 The catalogue commits the bridge after native publication succeeds. Bridge metadata is asset-local;
@@ -233,6 +281,44 @@ migration first, preserving UUID/CID and valid data. Failed or impossible migrat
 backup/removal; backup failure falls back to deleting the remaining selected source files. Actual
 removal failures are reported. Persistent changes require restart; self-check does not unregister
 live prefabs. See contract sections 17–19 for persistence, ownership and migration requirements.
+
+## Documentation
+
+The rules generation is held to are in [AGENTS.md](AGENTS.md).
+Use the [documentation index](docs/README.md) to distinguish current contracts, native research
+and recorded implementation evidence.
+
+Contributors can follow [Adding a bridge style with a coding agent](#adding-a-bridge-style-with-a-coding-agent)
+for the evidence, implementation and acceptance workflow.
+
+## Building
+
+```powershell
+tools\Build.ps1
+```
+
+```powershell
+tools\Install.ps1
+```
+
+`Build.ps1` compiles the checked-in source snapshot at `vendor/CS2ModShared/src` and verifies its
+SHA-256 manifest with `tools/CheckSharedSources.ps1`. A sibling repository is not needed. The script
+resolves the installed game assemblies; pass `-GameDir` to override. Game assemblies and the .NET SDK
+are still external build prerequisites; the shared snapshot alone does not pin those versions.
+
+## Layout
+
+```
+CS2ModShared/               shared - discovery, cloning, asset IO, speed-limit correction, status model
+CS2RoadPrefabExporter/      exports Road Builder roads as plain roads, in batches
+CS2BridgeBuilder/            this repository
+```
+
+The shared code is **compiled into** each mod rather than referenced as an assembly: its types are
+`internal`, and a CS2 mod ships as a single DLL. The one thing it needs from its host — an id, a log,
+a page-rebuild callback and the export naming policy — comes through `ModHost`.
+
+The sibling projects describe the source family. This checkout builds from its own reviewed snapshot; see `vendor/CS2ModShared/README.md` for update instructions.
 
 ### Source layout and checks
 
@@ -560,3 +646,8 @@ Have your agent help summarize the changes, but review the code and verify its c
 delivery. A successful build is not evidence that a bridge looks correct or survives a restart.
 Address review feedback locally; update a remote pull request only if that optional workflow was chosen.
 <!-- END BRIDGE STYLE CONTRIBUTOR GUIDE -->
+
+## License
+
+This project's original code is available under the [MIT License](LICENSE).
+Game assets and third-party dependencies retain their respective licenses.

@@ -31,6 +31,7 @@ internal static class TowerTests
         LeavesTheCentreLineAlone();
         WideningIsReversible();
         DoesNotModifyTheInput();
+        AllowsCollapsedAndReversedSpans();
         SuspensionPicksTheFourLaneTowerAtTwentyMetres();
         SuspensionPicksTheThreeLaneTowerAtSixteenMetres();
         EveryTowerListIsOrderedByRoadWidth();
@@ -77,6 +78,16 @@ internal static class TowerTests
         Check("left leg moved out by half", math.abs(result[0].x - (-14f)) < 1e-5f);
         Check("right leg moved out by half", math.abs(result[2].x - 14f) < 1e-5f);
         Check("width grew by the full shift", math.abs(TowerWidening.WidthOf(result) - 28f) < 1e-5f);
+    }
+
+    private static void AllowsCollapsedAndReversedSpans()
+    {
+        var source = new[] { new float3(-2,3,4), new float3(2,3,4) };
+        var collapsed = TowerWidening.Widen(source,-4,1);
+        var crossed = TowerWidening.Widen(source,-6,1);
+        Check("zero target span remains a computed collapsed mesh", collapsed.All(p=>p.x==0 && p.y==3 && p.z==4));
+        Check("signed displacement may cross the centre without a clamp", crossed[0].Equals(new float3(1,3,4)) && crossed[1].Equals(new float3(-1,3,4)));
+        Check("signed widening does not mutate source",source[0].x==-2 && source[1].x==2);
     }
 
     private static void LeavesHeightAndDepthAlone()

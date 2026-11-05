@@ -17,6 +17,7 @@ internal static class PedestrianDraw01StructureWidthPlan
         PedestrianDraw01DeckBases.Apply(lod, source, positions, delta);
         PedestrianDraw01ControlHousing.Apply(lod, source, positions, delta);
         PedestrianDraw01Ropes.Apply(lod, source, positions, delta);
+        PedestrianDraw01LongitudinalRibs.Apply(lod, source, positions, delta);
         var constructedX = new float[frame.ConstructedCount];
         for (var i = Numeric_Types_PedestrianDraw01_PedestrianDraw01StructureWidthPlan_cs.Values.I32[0]; i < constructedX.Length; i++)
             constructedX[i] = frame.Positions[source.Length + i].x;
