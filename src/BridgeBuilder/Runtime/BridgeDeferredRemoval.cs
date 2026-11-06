@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System;
 using Game.SceneFlow;
 
@@ -11,12 +12,13 @@ internal static class BridgeDeferredRemoval
     internal static void Remember(string owner,string name,int count) => Results[owner]=(name,count);
     internal static (string Name,int Count) Result(string owner) => Results.TryGetValue(owner,out var info)?info:(owner,0);
     internal static readonly System.Collections.Generic.HashSet<string> Verified = new(StringComparer.Ordinal);
+    private static readonly HashSet<string> HiddenByRemoval = new(StringComparer.Ordinal);
     private static int _saves;
     internal static bool Saving => System.Threading.Volatile.Read(ref _saves) > 0;
     private static GameManager? _game;
     internal static void Initialize(string installation)
     {
-        ReadyOwners.Clear(); Verified.Clear(); Results.Clear();
+        HiddenByRemoval.Clear(); ReadyOwners.Clear(); Verified.Clear(); Results.Clear();
         _game=GameManager.instance;
         _game.onGameSaveLoad+=SaveChanged;
         foreach(string owner in BridgeLegacyRemoval.Load()) ReadyOwners.Add(owner);
@@ -36,6 +38,8 @@ internal static class BridgeDeferredRemoval
     {
         ReadyOwners.Remove(owner); Results.Remove(owner);
         if(success) Verified.Add(owner);
+        if(HiddenByRemoval.Remove(owner) && !success) BridgeStartupRecovery.Retired.Remove(owner);
+        BridgeRuntimeRequests.Touch();
     }
     internal static bool Pending(string owner)=>ReadyOwners.Contains(owner);
     internal static void Prepare(string owner)=>BridgeRemovalFiles.Match(UnityEngine.Application.persistentDataPath,owner);
@@ -44,6 +48,7 @@ internal static class BridgeDeferredRemoval
         Prepare(owner);
         Verified.Remove(owner);
         ReadyOwners.Add(owner);
-        BridgeStartupRecovery.Retired.Add(owner);
+        if(BridgeStartupRecovery.Retired.Add(owner)) HiddenByRemoval.Add(owner);
+        BridgeRuntimeRequests.Touch();
     }
 }

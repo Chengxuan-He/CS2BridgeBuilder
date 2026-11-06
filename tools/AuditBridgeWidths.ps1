@@ -23,7 +23,7 @@ if ([string]::IsNullOrWhiteSpace($OutputPath)) {
     } else {
         'bridge-width-invariant-measurements.tsv'
     }
-    $OutputPath = Join-Path $PSScriptRoot "..\docs\agent-contract\$fileName"
+    $OutputPath = Join-Path $PSScriptRoot "..\docs\archive\audits\width\$fileName"
 }
 
 # PowerShell promotes arithmetic to Double. Keep the complete measurement and audit pipeline in C#

@@ -84,7 +84,7 @@ and persistence remain governed by their corresponding contracts.
 The [CPU affine geometry execution rules](BRIDGE_GENERATION_CONTRACT.md#cpu-affine-geometry-execution)
 apply to fixed and movable bridges. They define XYZ parameter matrices, sparse embedded-array
 storage, independent numerical batches, native API thread boundaries and verification.
-The [contributor generation step](../Adding-Bridge-Styles-With-Coding-Agents.md#affine-matrix-generation-step)
+The [contributor generation step](../guides/Adding-Bridge-Styles-With-Coding-Agents.md#affine-matrix-generation-step)
 connects these requirements to extraction, regeneration and runtime assembly.
 
 [Generator code organization](GENERATOR_CODE_CONTRACT.md) governs base-class inheritance,
@@ -99,27 +99,18 @@ together with the material generation contract.** Section 15 records
 encountered failures and required solutions. Acceptance is recorded
 per style; the general method does not claim every registered generator is complete. Supporting
 audits retain measurements and implementation history rather than overriding current requirements.
-[Bridge asset persistence and reference policy](../Bridge-Asset-Persistence.md) is the normative
+[Bridge asset persistence and reference policy](Bridge-Asset-Persistence.md) is the normative
 supplement incorporated by bridge generation contract section 17. It distinguishes owned generated data,
 unchanged native references, external dependency snapshots and temporary preview objects.
 The repository and directory-level AGENTS.md files route agents to the applicable requirements.
 
-[Bridge preview specification](../Bridge-Preview-Specification.md) consolidates the existing preview
+[Bridge preview specification](Bridge-Preview-Specification.md) consolidates the existing preview
 requirements, including complete approaches and open movable mechanisms, temporary resource
 ownership, UI errors and human acceptance. Implementation history is maintained separately.
 
 ## Measured fixed-bridge rules
 
-The general contract incorporates the scoped rules in these measured specifications:
-
-- [Golden support mapping](GOLDEN_SUPPORT_MAPPING.md) and [return alignment](GOLDEN_RETURN_ALIGNMENT.md).
-- [Golden ornament mapping](GOLDEN_ORNAMENT_MAPPING.md), including its attached lamps.
-- [Grand reference width](GRAND_REFERENCE_WIDTH.md), the specifically authorized audit exception.
-- [Extradosed02 cable anchors](EXTRADOSED02_CABLE_ANCHOR.md), using each assembly's measured reach.
-
-[Elevated footway and support evidence](RAILING_AND_GOLDEN_TRUSS.md) and the width audits retain
-source measurements and verification limits. Measurement timestamps and resource-version evidence
-are not specification revision records. Supporting reports do not introduce competing rules.
+Use measured source geometry, assembly membership and LOD correspondence for fixed bridges. The general generation contract governs project requirements. Bridge-specific research records are maintained separately as implementation evidence.
 
 ## Style registration and UI
 
@@ -129,38 +120,16 @@ implementation increment.
 
 ## Implementation records
 
-[Movable bridge implementation status](../Movable-Bridges-Implementation.md) tracks the ten B&P
-mechanisms, their stable style identities, implementation evidence and remaining work.
-Update this record with implementation and verification evidence; keep admission requirements
-in the contracts.
-
-[Native movable material repetition](../Native-Movable-Material-Repetition.md) records measured
-original atlas reuse, mesh UV resets, native shader sampling and per-LOD limits.
-The separate [non-road material reuse assessment](../Movable-Nonroad-Material-Reuse-Assessment.md)
-describes the adopted generation scheme and the remaining source/prepared code paths. The
-normative rules live in the general, movable and material contracts; neither the research nor
-the implementation assessment establishes generated-output acceptance.
+Record implementation and verification by stable style ID, build and tested scope. Keep admission and acceptance requirements in the contracts.
 
 ## Documentation language and evidence labels
 
 All project documentation is written in English. Preserve literal source identifiers, paths
 and diagnostic quotations, with English explanations. Runtime localization is separate.
 
-The two width-measurement TSV files now use the English sample-name alias
-`TwoCarriagewaySixLane`. This is a documentation label, not a renamed game asset. To recover the
-exact original sample names, replace that token with the Unicode string represented by these escapes:
+For a contributor workflow, see [Adding a bridge style with a coding agent](../guides/Adding-Bridge-Styles-With-Coding-Agents.md).
 
-```text
-\u4e24\u5757\u677f\u516d\u8f66\u9053
-```
-
-No measurements, numeric tokens, bit patterns, sample suffixes or dispositions were changed.
-Hashes in the original audit reports describe the original generated reports, not the translated
-TSV bytes. Reverse the alias substitution before comparing original sample names or file hashes.
-
-For a contributor workflow, see [Adding a bridge style with a coding agent](../Adding-Bridge-Styles-With-Coding-Agents.md).
-
-The [persistence directory and migration specification](../Bridge-Asset-Persistence.md#6-approved-owner-directory-layout)
+The [persistence directory and migration specification](Bridge-Asset-Persistence.md#6-approved-owner-directory-layout)
 places owned resources and dependency snapshots below each UUID. Creation and migration share
 that layout, including VT and mid-mip resources. Native cold-load acceptance requires separate
 in-game verification. Section 7 defines migration safeguards.

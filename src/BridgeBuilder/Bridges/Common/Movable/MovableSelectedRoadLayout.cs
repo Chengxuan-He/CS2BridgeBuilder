@@ -1,3 +1,4 @@
+using System.Linq;
 using System;
 using UnityEngine;
 
@@ -46,42 +47,31 @@ internal sealed class MovableSelectedRoadLayout
         carCenters.Sort();
         CarLaneCenters=carCenters.ToArray();
         SidewalkOccurrences = new bool[road.Occurrences.Length];
-        var spans = new Vector2[road.Occurrences.Length];
-        for (var i = 0; i < spans.Length; i++)
+        var total = new Vector2(float.PositiveInfinity, float.NegativeInfinity);
+        var spans = Enumerable.Repeat(total, road.Occurrences.Length).ToArray();
+        foreach (var face in road.Triangles)
         {
-            var section = road.Occurrences[i].RootSection
-                ?? throw new InvalidOperationException("Moving road layout requires source section provenance.");
-            SidewalkOccurrences[i] = section.name == "Sidewalk" ||
-                section.name.StartsWith("Sidewalk ", StringComparison.Ordinal);
-            spans[i] = new Vector2(float.PositiveInfinity, float.NegativeInfinity);
+            float X(Vector3 position) => (roadToObject.rotation * position + roadToObject.position).x;
+            float a = X(face.A.Position), b = X(face.B.Position), c = X(face.C.Position);
+            var span = new Vector2(Math.Min(a,Math.Min(b,c)), Math.Max(a,Math.Max(b,c)));
+            Extend(ref total, span);
+            if (!road.Sidewalks.Walk(face)) continue;
+            Extend(ref spans[face.Occurrence], span);
+            SidewalkOccurrences[face.Occurrence] = true;
         }
-        foreach (var triangle in road.Triangles)
-        {
-            Add(triangle.Occurrence, triangle.A.Position);
-            Add(triangle.Occurrence, triangle.B.Position);
-            Add(triangle.Occurrence, triangle.C.Position);
-        }
-        var surfaceSpan = new Vector2(float.PositiveInfinity, float.NegativeInfinity);
-        foreach(var span in spans) if(span.y>span.x) Extend(ref surfaceSpan,span);
-        SurfaceSpan=surfaceSpan;
+        SurfaceSpan = total;
         var left = new Vector2(float.PositiveInfinity, float.NegativeInfinity);
         var right = left;
-        for (var i = 0; i < spans.Length; i++)
+        foreach (var span in spans)
         {
-            var span = spans[i];
-            if (!SidewalkOccurrences[i] || !(span.y > span.x)) continue;
-            if (span.x + span.y < 0f) Extend(ref left, span);
+            if (!(span.y > span.x)) continue;
+            if (span.x + span.y < 0) Extend(ref left, span);
             else Extend(ref right, span);
         }
         LeftSidewalk = left.y > left.x ? left : Vector2.zero;
         RightSidewalk = right.y > right.x ? right : Vector2.zero;
 
-        void Add(int occurrence, Vector3 position)
-        {
-            var x = (roadToObject.rotation * position + roadToObject.position).x;
-            spans[occurrence].x = Mathf.Min(spans[occurrence].x, x);
-            spans[occurrence].y = Mathf.Max(spans[occurrence].y, x);
-        }
+
     }
 
     private static void Extend(ref Vector2 target, Vector2 span)

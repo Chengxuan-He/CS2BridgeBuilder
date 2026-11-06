@@ -79,11 +79,11 @@ are owned here; they are not optional appendices of the movable-bridge contract.
 ## Contract routing
 
 - All bridge work: this contract and the [project contract](PROJECT_CONTRACT.md).
-- Implemented request, generation and publication sequence: [bridge generation workflow design](../Bridge-Generation-Workflow.md). The design explains execution; this contract retains normative requirements.
+- Implemented request, generation and publication sequence: [bridge generation workflow design](../design/generation/Bridge-Generation-Workflow.md). The design explains execution; this contract retains normative requirements.
 - Generator implementation and refactoring: additionally [generator code organization](GENERATOR_CODE_CONTRACT.md).
 - Movable bridges: additionally [movable bridge generation](MOVABLE_BRIDGES_CONTRACT.md), incorporated by section 21.
-- Persistence: additionally [asset persistence policy](../Bridge-Asset-Persistence.md), incorporated by section 17.
-- Previews: additionally [preview specification](../Bridge-Preview-Specification.md).
+- Persistence: additionally [asset persistence policy](Bridge-Asset-Persistence.md), incorporated by section 17.
+- Previews: additionally [preview specification](Bridge-Preview-Specification.md).
 - Materials: additionally [material generation](MATERIAL_GENERATION_CONTRACT.md).
 - Sidewalk-dependent components in every bridge: section 25. Use each side's actual elevated-mode
   sidewalk presence, position and width, including absent and asymmetric sidewalks. Adapt inner
@@ -660,25 +660,13 @@ Vertex/index/topology changes are limited to that measured LOD derivation. It do
 transforms, native skeleton/bone ownership, existing-material reuse, UV projection requirements,
 all-LOD coverage or human visual acceptance. Custom runtime shaders remain prohibited. Material preparation follows the material generation contract.
 
-### Golden ornament and support mappings
+### Measured exceptions to tower width mapping
 
-The measured Golden tower fan ornament uses uniform XY scaling about the top of its central
-spoke, with Z unchanged. Its recorded mounted lamps follow the same position map; their
-rotation, effects and other fields stay unchanged. Tower legs and the upper crossbeam retain
-their ordinary mappings. Apply only the exact offline membership and LOD correspondence in
-[Golden ornament mapping](GOLDEN_ORNAMENT_MAPPING.md).
-
-The recorded Golden below-deck centre truss retains its original coordinates. Side structures
-remain width-adjusted; each outer vertical return follows its complete side upright with one
-rigid displacement. See [Golden support mapping](GOLDEN_SUPPORT_MAPPING.md) and
-[return alignment](GOLDEN_RETURN_ALIGNMENT.md). These measured exceptions do not authorize
-runtime detection or changes to other structures. Their evidence does not imply visual acceptance.
+An approved mapping applies only to its measured members and corresponding LODs. Keep unaffected tower geometry on its ordinary map. Preserve attachment contact and transform orientation consistently. On Golden, the upper fan and its lamps share the measured XY map, the centre below-deck truss stays in place and the outer returns follow their uprights. These exceptions do not permit runtime geometry inference.
 
 ### Native materials and prepared resources
 
-For movable bridges, reuse original non-road materials by default. Only evidenced repeating
-domains that would otherwise require new period-wrap seams may use the source-atlas offline
-derivation defined in the material contract section 3; do not add those seams. Road composition/precomposition (offline material baking outside the game) has
+For movable bridges, use original native texture references on every non-road receiver, including repeating structural parts. Follow [the road-only packaged texture rule](MATERIAL_GENERATION_CONTRACT.md#packaged-textures-belong-to-road-running-surfaces) for mixed meshes and shared source materials. Road composition/precomposition (offline material baking outside the game) has
 two necessary correspondence conditions: the actual receiver appearance type is verified and
 the measured target prototype part has a matching material. Use that part's appearance, not a
 bridge-wide type override. Follow [physical part correspondence](MATERIAL_GENERATION_CONTRACT.md#physical-prototype-part-correspondence). Test asphalt, sidewalk surfacing and wheel-track/rut effects independently
@@ -996,118 +984,13 @@ both parts to one position or inventing an interpolation point. These coverage a
 connection checks are offline evidence, not structural rejection gates; finite signed
 or zero target scales remain player-controlled under the generation rule.
 
-### Draw02 central longitudinal girder
+### Members with a fixed transverse section
 
-The measured narrow central longitudinal girder beneath each Draw02 moving leaf retains
-its original transverse coordinates and section width. Its two walls and connecting
-faces form one centred longitudinal member; do not split them by the sign of X or
-stretch its section by the deck-width increment. Use exact offline membership in the
-near and middle meshes. The far native merged underside has no independent narrow
-girder; retain that simplified representation without inventing an extra near-detail part.
-This exception does not change hinge axles or other independently classified mechanism
-parts. The separately measured central hinge plate below each axle is one of three
-matching thin mechanism plates on that leaf. Preserve its original section and central
-position; its transverse thickness is not a width-spanning assembly reach. The two
-lateral plates retain their rigid signed translations, and the complete transverse
-axle retains its own measured span mapping. Apply the exact near/middle memberships;
-the native far mesh has no independent plates to add. This rule is unconditional,
-not a narrow-road clamp or permission to hold other centre-crossing members fixed.
-Preserve original Y/Z, UVs, packed frames and the leaf bone. The measured transverse supports directly beneath the moving deck belong to
-the moving base and use `x -> x + sign(x) * d`, matching its longitudinal side blocks,
-not own-span proportional widening. Apply their exact near/middle source membership;
-the far merged base already uses signed displacement. Do not change the central girder
-to make that mapping uniform across the whole mesh. Preserve original Y/Z, materials,
-raw attributes and bone ownership.
+Where the approved part mapping retains a longitudinal girder’s original section, preserve its measured centre and thickness at every LOD. Adapt only the measured contact interfaces. An adjoining transverse assembly may have a separate measured span transform.
 
-The separate original horizontal closure panels adjoining that girder retain their shared inner-edge
-coordinates at the girder. Their opposite edges follow the measured rigid longitudinal
-ribs, allowing the existing transverse panel span to extend without widening those ribs.
-Record the exact adjoining panel vertices offline, including the original leaf-seam tips;
-do not leave a gap by translating their inner edge away from the fixed girder. Preserve
-the original faces, Y/Z, UV projection mode and motion binding. This does not add a panel
-or a narrow girder to the native far merged representation. These panels are distinct
-from the transverse diagonal base supports: translating their inner boundary would
-reopen the joint to the deliberately unmoved central girder. Retain their recorded
-inner-anchor/outer-rib mapping while applying signed displacement to the base supports.
+### Longitudinal member distribution
 
-### Draw02 internal longitudinal rib distribution
-
-Distribute the six original thin longitudinal ribs evenly around the unchanged
-central longitudinal girder. Translate each complete original rib without changing
-its transverse section, Y/Z, material or bones. The three ribs on each side receive
-one-quarter, one-half and three-quarters of the signed half-width increment; their
-original centres and the centre girder then have equal internal intervals. Existing
-horizontal panel endpoints follow their adjoining ribs, retaining the central anchor
-and the outer base edge's signed displacement except its measured upper-beam
-contact adaptation below. Do not stretch a rib, duplicate
-one, invent closing geometry or apply this distribution to transverse base supports.
-Original small outer-edge offsets remain; uniform internal spacing does not imply
-equal distance to the separately measured primary side walls. Use immutable original
-near/middle membership. The native far merged shell has no independent thin ribs and
-retains its existing simplified representation.
-
-Draw02's measured outer deck downward faces and vertical closures remain on both
-sides even when the selected edge is a shoulder or another non-Sidewalk category.
-Except for the measured rail-contact edges below, without a Sidewalk allocation
-they follow the lateral body's original signed map; with a real Sidewalk they
-retain that side's recorded layout adaptation. This does
-not restore an upward prototype road/sidewalk face, add a pedestrian surface or
-change the selected edge's material category. Preserve original closure faces and
-exclude superseded fragments; do not replace them with newly guessed boxes.
-
-The original inner longitudinal wall's upper closure and the outer slab's inner
-edge meet the inner shell of the high orange lane separator. When that separator
-moves to an actual car/non-car boundary, those measured contact edges must use the
-same source anchor and boundary position. Restore the original wall faces up to
-their authored rail contact, replacing the old road-height fragments; retain the
-wall's lower edge, lower beam section, transverse base supports and central ribs.
-Adapt only the original upper closure faces between those two anchors. At the
-measured original under-road base top, Y=9.699951171875, use the necessary original
-face subdivision: the lower closure joins the actual rail position and the upper
-strip remains vertical there up to its original Y=10 contact. This existing
-structural boundary is below the actual road surface; do not run a diagonal wall
-through the car space above the road or hide the discrepancy with a height epsilon.
-Transform the lower domain's normal/tangent frame, retaining the upper domain's
-original frame, UV interpolation and bones. Keep the slab's other existing joints.
-The complete adjoining upper-beam section must follow that same displacement:
-carry its original inner upper wall and the horizontal panel's outer contact with
-the outer upper wall, preserving their original transverse offsets. The lower
-anchor at Y=7.935546875 remains unchanged. Preserve the central girder, internal
-rib centres and signed transverse supports. A merged middle-LOD face crossing
-that lower anchor uses only the necessary original-source subdivision; keep its
-lower domain unchanged. Do not move just one wall through the other wall or
-reverse an end-cap section on a wider sidewalk allocation.
-
-Restore each leaf's original folds and longitudinal-beam end caps at both its
-free tip and hinge end, including the near fold's front, back and downward bottom
-and the middle fold's original two-face profile,
-including their own recorded LOD shape and original road-contact height. Their
-contact edges follow the complete adjacent section, with original source UV,
-frame and bone interpolation. Do not leave the end caps at an earlier signed
-position or cut them off at the underside height after rejoining the side walls.
-The slab's thin terminal plates are part of its original closure at both leaf
-ends. A small positive Y component caused by native vertex quantization does not
-make an almost vertical end plate replaceable road. Preserve the complete plate,
-its underside contacts and its own side's measured allocation.
-The far merged end cap retains its native source geometry: keep the lower car
-closure and, only on an actual Sidewalk side, its measured original upper band
-from Y=9.800048828125 to the original sidewalk contact Y=10. Separate those actual
-physical domains with the minimum original-source subdivision and interpolate
-all native attributes. Map the band's inner edge to that side's sidewalk inner
-boundary and preserve its original outer-body contact. No sidewalk means no
-upper sidewalk band; do not raise the car cap or invent near-detail walls.
-Apply the corresponding transverse frame Jacobian to the newly mapped band.
-Record the native selected sidewalk's small coordinate-quantization difference
-from the original contact rather than claiming bit-identical coplanarity.
-Verify directed section area, inner/outer order, all shared edges and car clearance,
-not only face counts. Audit all incident source faces and coincident vertices with
-different source indices before freezing a repair; preserve the continuous fold
-contact across the original horizontal panel/rib assembly as well as the narrow
-beam end cap. Do not repair successive isolated endpoints while leaving the
-other leaf end or a fold's downward face behind.
-Faces already carried by the relocated rail must have one rendering owner, not
-coincident copies in both rail and main shell. Verify the complete contact chain in
-each LOD; the native far merged bottom is not evidence for inventing a narrow wall.
+Distribute measured members using their documented source stations and retain their section widths. Preserve the central anchor and adapt connecting panels at their measured interfaces. Keep transverse supports on their own map.
 
 ### User-approved central railing post exception
 
@@ -1133,9 +1016,7 @@ is, not which mesh the part belongs to.
 
 The default authored-part decision is whether the complete part reaches or crosses `x = 0`:
 crossing parts stretch against their own span; side parts translate rigidly. Apply the recorded
-deck-adjacent base mapping, Draw02 central longitudinal girder, central hinge plates and internal rib distribution, centred vertical railing-post exception and complete Draw03 truss
-exception, the pedestrian central-assembly and longitudinal-truss rules in this section,
-and the Golden mappings in section 5 before that default. All are measured offline and apply at every LOD.
+deck-adjacent base, longitudinal girder and rib mappings, measured hinge sections, centred posts, complete transverse assemblies and tower ornament mappings before that default. All are measured offline and apply at every LOD.
 Do not invent other family-specific boundaries or overrides. Check recorded mapping consistency
 offline; runtime must not reject a player-selected structure on that basis. Metaprogramming records the applicable rule and exact
 membership; runtime does not rediscover or reclassify the part.
@@ -1487,15 +1368,13 @@ to a span, or post-process generated geometry to make an audited result fit. Run
 hardcoded archetype parameters produced by metaprogramming as ordinary inputs; it must not know that
 a correction step existed.
 
-The measured audit evidence is
-[`BRIDGE_WIDTH_INVARIANT_AUDIT.md`](BRIDGE_WIDTH_INVARIANT_AUDIT.md). A bridge without the required
+A bridge without the required
 real generated sample remains mandatory unfinished work. A human must select a road and actually
 create a new bridge before the bridge can receive the `1 m` decision. It must not be marked skipped,
 compliant or complete merely because the implementation's algebra appears to preserve the constant.
 
 The measured Grand reference-road correction is a specifically authorized exception to the
-1 m audit limit: use the native 19 m reference, without a runtime correction. See
-[Grand reference evidence](GRAND_REFERENCE_WIDTH.md). It does not waive the limit for other cases.
+1 m audit limit: use the native 19 m reference, without a runtime correction. It does not waive the limit for other cases.
 
 ## 15. Bridge lighting is copied from the archetype as behavior
 
@@ -1558,7 +1437,7 @@ registration of the subscribed source.
 
 ### Persistence scope: generated data, references and dependency snapshots
 
-[Bridge asset persistence and reference policy](../Bridge-Asset-Persistence.md) is a normative
+[Bridge asset persistence and reference policy](Bridge-Asset-Persistence.md) is a normative
 supplement to this section. It applies to fixed and movable bridge generation and is grounded in
 the existing owned-node writer, geometry factory and dependency-copy path.
 
@@ -1645,8 +1524,7 @@ name or CID. File self-check must recognize intentional identical-CID copies acr
 not retire healthy bridges merely because these snapshots duplicate an asset identity. Existing
 checks for unintended collisions among independently generated assets remain separate.
 
-Back up and retire dependency copies with their owning bridge. Deleting one bridge must not remove
-another bridge's copy or the source asset in its original package. Ownership-scoped maintenance and
+Back up and retire dependency copies with their owning bridge. For explicit player deletion, follow [the shared owner lifecycle](BRIDGE_DELETION.md#shared-map-memory-and-file-lifecycle). Ownership-scoped maintenance and
 cleanup tools must include the dependency directories, including partial files from interrupted saves.
 
 Dependency copying is a file persistence operation. Do not add live integrity inspection,
@@ -1717,7 +1595,7 @@ borrowing another bridge's private resources. Try the original source or a permi
 same-CID source. Current-owner assets remain valid inputs for additive migration only while
 their files exist. If no permitted source exists, fail explicitly without omitting dependencies.
 Apply this rule to first-match and fallback CID lookup, generation inputs, native validation,
-texture streaming and legacy dependency-copy selection. Deleted files must never be reopened.
+texture streaming and legacy dependency-copy selection. For deleted resources, follow [the shared owner lifecycle](BRIDGE_DELETION.md#shared-map-memory-and-file-lifecycle).
 
 ## 19. Independent native persistence and additive legacy conversion
 
@@ -1828,24 +1706,14 @@ the All option where present. Short lists shrink to their contents; longer lists
 container to reach all remaining options. Row and viewport dimensions use the same scaling units.
 Popup padding and borders sit outside the seven-row viewport.
 
-### Explicit bulk deletion
+### Permanent creation identity
 
-Confirmed individual and bulk deletion finish in the current game session. The filesystem operation
-has two steps: match the exact immediate `ImportedData/b{UUID}` directory, then recursively delete
-that directory once. Single removal locates its UUID directly. Bulk removal matches only immediate
-UUID directories and uses the identical primitive for each. Never descend into directory links.
-Do not enumerate or check individual payloads, CIDs, proof files, hashes, duplicates or dependencies,
-move files to a holding directory, transfer registrations to another owner, or create deletion tickets.
-Independent copies in other UUID directories are intentional and outside the operation.
+All permanent creation entry points claim a new UUID directory atomically before writing any
+bridge assets. Retry a bounded number of occupied identities. In-flight owners, pending removal,
+incomplete files and older owner layouts all count as occupied. Failed attempts must preserve
+existing assets and must never schedule cleanup of the colliding owner.
 
-Before that filesystem operation, stop placement, complete removal of placed instances, pause during
-save/load and drain native render/mesh/VT readers. Unregister only prefabs and user asset registrations
-owned by the target physical path. Verify those native indices and the absence of its directory before
-reporting success. An outstanding reader or incomplete removal must produce a retryable failure.
-The legacy reader imports confirmed native95 tickets, including previously detached directories.
-New deletion requests stay in memory. The current build ships without the native95 cleanup worker.
-Self-check retirement is separate: it still backs up/moves files and requires restart, without live
-prefab unregistration. Neither operation replaces the style-scoped deployment cleanup in section 13.
+For confirmed player requests, follow [Bridge deletion](BRIDGE_DELETION.md).
 
 ### Migration failure falls back to removal
 
@@ -1891,7 +1759,7 @@ the existing bridge and deck CID, UUID and geometry. Back up before relocation, 
 without overwriting unrelated files, and leave a repeated migration unchanged. Retained historical
 backup files belong outside the game's active asset directories, subject to shared-reference safety.
 
-Use [asset persistence sections 6–7](../Bridge-Asset-Persistence.md#6-approved-owner-directory-layout)
+Use [asset persistence sections 6–7](Bridge-Asset-Persistence.md#6-approved-owner-directory-layout)
 for owner-local Prefabs, Geometry, Appearance, VT/mid-mips, Locales and Dependencies. Legacy sibling
 dependency directories remain migration inputs. Preserve healthy bridges on layout collisions;
 native cold-load acceptance remains separate.
@@ -2072,6 +1940,10 @@ resolve another branch for sidewalks. Do not infer sidewalks from another branch
 Only sections in the `Sidewalk` family count as sidewalks. Curbs and all other section
 families are not sidewalks and must not be classified as sidewalks when resolving either side's
 sidewalk presence, position or width.
+
+A template-32 colored lane keeps the selected road substrate and native footprint routing. Skip its projected color layer on the bridge and record that limitation. Do not substitute marking paint or bake an additional lane-color atlas.
+
+Use the selected root section and the source triangle together. In mixed sections only confirmed walking pavement contributes to the lateral span, walking motion, coverage subtraction and walking material. Keep the original curb faces, including flat tops, slopes and sidewalls. Preserve source triangle identity through clipping and all LODs. Pedestrian lane metadata alone does not establish sidewalk ownership.
 
 Adapt every sidewalk-dependent component, including inner bridge railings and bridge-authored
 sidewalk portions, to the presence, position and width of the actual selected-branch sidewalk on each

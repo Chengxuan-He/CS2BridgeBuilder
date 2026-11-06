@@ -31,17 +31,21 @@ namespace BridgeBuilder.Runtime {
 namespace BridgeBuilder {
     public static class Mod {
         public static Logger Log = new(); public static List<string> Messages = new();
-        public static void ShowMessage(string title, string message) => Messages.Add(message);
+        public static void ShowMessage(string title, string message) => TryShowMessage(title, message);
+        public static bool TryShowMessage(string title,string message) {
+            if(Game.SceneFlow.GameManager.instance.userInterface?.appBindings==null)return false;
+            Messages.Add(message);return true;
+        }
         public static void ShowRecoveryMessage(string message) => Messages.Add(message);
     }
     public class Logger {
-        public int Errors; public void Info(string message) { }
+        public List<string> Lines=new();public int Errors; public void Info(string message) { }
         public void Warn(Exception exception, string message) { }
-        public void Error(string message) => Errors++;
+        public void Error(string message) {Errors++;Lines.Add(message);}
     }
 }
 
-namespace Game { [Flags] public enum GameMode { MainMenu=1, Game=2 } }
+namespace Game { [Flags] public enum GameMode { MainMenu=1, Game=2, Editor=4 } }
 namespace Unity.Entities { public class World { public static World? DefaultGameObjectInjectionWorld; public T? GetExistingSystemManaged<T>() where T:class => null; } }
 namespace Game.Prefabs { public class PrefabSystem {} public class PrefabBase { public string name=""; } }
 namespace CS2Mods.Shared.Infrastructure { public static class PrefabCatalog { public static IEnumerable<Game.Prefabs.PrefabBase> GetAll(Game.Prefabs.PrefabSystem s) => Array.Empty<Game.Prefabs.PrefabBase>(); } }
@@ -51,6 +55,8 @@ namespace BridgeBuilder.Runtime {
  public class Entry { public string PrefabName=""; }
  public static class BridgeAssetCatalog { public static Entry[] Load()=>Array.Empty<Entry>(); }
  public enum BridgeRuntimeAction { Delete }
- public class BridgeRuntimeRequest { public BridgeRuntimeAction Action; public string PrefabName=""; }
- public static class BridgeRuntimeRequests { public static Queue<BridgeRuntimeRequest> Requests=new(); public static void Enqueue(BridgeRuntimeRequest r,string s)=>Requests.Enqueue(r); }
+ public class BridgeRuntimeRequest { public long RemovalBatch;public BridgeRuntimeAction Action; public string PrefabName=""; }
+ public static class BridgeRuntimeRequests { public static void Touch(){} public static Queue<BridgeRuntimeRequest> Requests=new(); public static void Enqueue(BridgeRuntimeRequest r,string s)=>Requests.Enqueue(r); }
 }
+
+namespace BridgeBuilder.UI {public static class BridgeBuilderUISystem {public static string[] Residual=Array.Empty<string>();public static string[] SyncVerifiedRemoval(string[] targets)=>Residual.Intersect(targets).ToArray();}}

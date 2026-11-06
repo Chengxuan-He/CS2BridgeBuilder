@@ -70,7 +70,7 @@ public partial class BridgeGenerationSystem : GameSystemBase
     protected override void OnGamePreload(Purpose purpose, GameMode mode)
     {
         base.OnGamePreload(purpose,mode);
-        BridgeBulkRemoval.Stop();
+        BridgeBulkRemoval.WorldChanging();
         BridgeRuntimeRequests.CancelDeletions();
         _pendingRemoval=null;
         _removingAsset=null;
@@ -391,6 +391,7 @@ public partial class BridgeGenerationSystem : GameSystemBase
                 RenameRuntimeBridge(request.PrefabName, request.DisplayName);
                 return;
             case BridgeRuntimeAction.Delete:
+                if (!BridgeBulkRemoval.Authorizes(request.RemovalBatch,request.PrefabName)) break;
                 DeleteRuntimeBridge(request.PrefabName);
                 return;
         }

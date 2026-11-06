@@ -178,7 +178,7 @@ internal sealed class Draw01ClosedRoad : IDisposable
 
         var inputs = new MovableSurfaceAtlas.Input[Numeric_Types_Draw01_Draw01ClosedRoad_cs.Values.I32[54]];
         var laneLevels = new MovableLaneGeometry.Result[Numeric_Types_Draw01_Draw01ClosedRoad_cs.Values.I32[55]];
-        var levelMotionPartitions = new MovableRoadGeometry.Partition[inputs.Length][];
+        var levelMotionPartitions = new Dictionary<(int,int),MovableRoadGeometry.Partition>[inputs.Length];
         for (var i = Numeric_Types_Draw01_Draw01ClosedRoad_cs.Values.I32[56]; i < inputs.Length; i++)
         {
             // Each level starts with the selected road's corresponding native mesh.
@@ -187,15 +187,9 @@ internal sealed class Draw01ClosedRoad : IDisposable
             var levelPatches = patches;
             var levelSupportedTypes = Draw01RoadAppearance.SupportedTypes;
             var levelNative = sources[0].GetSurfaceAsset(0);
-            var levelAppearancePartitions = new MovableRoadGeometry.Partition[levelRoad.Occurrences.Length];
-            levelMotionPartitions[i] = new MovableRoadGeometry.Partition[levelRoad.Occurrences.Length];
-            for (int occurrence = 0; occurrence < levelRoad.Occurrences.Length; occurrence++)
-            {
-                var section = levelRoad.Occurrences[occurrence].RootSection ?? throw new InvalidOperationException("Draw01 LOD occurrence has no section provenance.");
-                bool sidewalk = section.name == "Sidewalk" || section.name.StartsWith("Sidewalk ", StringComparison.Ordinal);
-                levelMotionPartitions[i][occurrence] = Draw01RoadPartitions.RoadSurface(sidewalk);
-                levelAppearancePartitions[occurrence] = sidewalk ? sidewalkAppearance : carriagewayAppearance;
-            }
+            var levelAppearancePartitions = levelRoad.Sidewalks.Partitions(carriagewayAppearance, sidewalkAppearance);
+            levelMotionPartitions[i] = levelRoad.Sidewalks.Partitions(Draw01RoadPartitions.RoadSurface(false),
+                Draw01RoadPartitions.RoadSurface(true));
 
             var levelCarriagewayAppearance = carriagewayAppearance;
             // Physical part roles are shared by all LODs; material changes never
@@ -203,7 +197,7 @@ internal sealed class Draw01ClosedRoad : IDisposable
             levelPatches = Draw01PartRepeats.Apply(levelPatches, RoadToObject);
             laneLevels[i] = new MovableLaneGeometry.Result(levelRoad.LaneGeometry.Triangles.ToList(), levelRoad.LaneGeometry.Surfaces.ToList(), new List<MovableLaneVisuals.Batch>());
             var levelGeometry = MovableRoadGeometry.InFrame(levelRoad.Triangles, RoadToObject);
-            if (!MovableRoadGeometry.TryBind(levelGeometry, partition, Numeric_Types_Draw01_Draw01ClosedRoad_cs.Values.I32[61], levelRoad.Surfaces.Length, out var receivers, out var error, occurrencePartitions: levelMotionPartitions[i]))
+            if (!MovableRoadGeometry.TryBind(levelGeometry, partition, Numeric_Types_Draw01_Draw01ClosedRoad_cs.Values.I32[61], levelRoad.Surfaces.Length, out var receivers, out var error, trianglePartitions: levelMotionPartitions[i]))
                 throw new InvalidOperationException(error);
             var converted = new bool[levelRoad.Surfaces.Length];
             for (var j = Numeric_Types_Draw01_Draw01ClosedRoad_cs.Values.I32[62]; j < converted.Length; j++)
@@ -218,11 +212,11 @@ internal sealed class Draw01ClosedRoad : IDisposable
             var prepared = MovableRoadTemplate.Prepare(receivers.Where(face => !Original(face)).ToArray(), converted);
             var selected = MovableRoadGeometry.InFrame(prepared, objectToRoad);
             var assigned = Array.Empty<MovableRoadGeometry.BoundTriangle>();
-            if (selected.Length != 0 && !MovableRoadGeometry.TryBind(selected, levelCarriagewayAppearance, levelPatches.Length, levelRoad.Surfaces.Length, out assigned, out error, occurrencePartitions: levelAppearancePartitions))
+            if (selected.Length != 0 && !MovableRoadGeometry.TryBind(selected, levelCarriagewayAppearance, levelPatches.Length, levelRoad.Surfaces.Length, out assigned, out error, trianglePartitions: levelAppearancePartitions))
                 throw new InvalidOperationException(error);
             var moving = MovableRoadGeometry.InFrame(original.Select(face => face.Geometry).ToArray(), objectToRoad);
             var movingAppearance = Array.Empty<MovableRoadGeometry.BoundTriangle>();
-            if (moving.Length != 0 && !MovableRoadGeometry.TryBind(moving, levelCarriagewayAppearance, levelPatches.Length, levelRoad.Surfaces.Length, out movingAppearance, out error, occurrencePartitions: levelAppearancePartitions))
+            if (moving.Length != 0 && !MovableRoadGeometry.TryBind(moving, levelCarriagewayAppearance, levelPatches.Length, levelRoad.Surfaces.Length, out movingAppearance, out error, trianglePartitions: levelAppearancePartitions))
                 throw new InvalidOperationException(error);
             else if (moving.Length != 0)
                 assigned = assigned.Concat(movingAppearance.Select(face => new MovableRoadGeometry.BoundTriangle(face.Geometry, face.Bone | MovableSurfaceAtlas.MovingSurface))).ToArray();
@@ -236,6 +230,7 @@ internal sealed class Draw01ClosedRoad : IDisposable
                 SupportedTypes = levelSupportedTypes,
                 Native = levelNative
             };
+            inputs[i].SetReceiverRoles(levelRoad);
         }
 
         var visibleLevels = MovableSurfaceAtlas.Compose(inputs, roadMaterial, Array.Empty<MovableNativeDecals.Region>(), out var materialLevels);
@@ -247,7 +242,7 @@ internal sealed class Draw01ClosedRoad : IDisposable
             bounds.max.x += halfWidthDelta;
             Include(road, ref bounds);
             Include(lanes, ref bounds);
-            levels[i] = new MovableRoadAssets.Level(sources[i], visibleLevels[i], materialLevels[i], partition, bounds, RoadToObject, lanes: laneLevels[i], closedWorld: closedWorld, roadPartitions: levelMotionPartitions[i], lanePartitions: lanePartitions);
+            levels[i] = new MovableRoadAssets.Level(sources[i], visibleLevels[i], materialLevels[i], partition, bounds, RoadToObject, lanes: laneLevels[i], closedWorld: closedWorld, roadTrianglePartitions: levelMotionPartitions[i], lanePartitions: lanePartitions);
         }
 
         return levels;

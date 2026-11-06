@@ -78,8 +78,8 @@ public sealed class Mod : IMod
         updateSystem.UpdateAt<BridgeBuilderUISystem>(SystemUpdatePhase.UIUpdate);
         // Optional manager setting; persisted native conditions work without this system.
         updateSystem.UpdateAt<BridgeUnlockSystem>(SystemUpdatePhase.UIUpdate);
-        // Self-check waits for native/PDX asset batches and mod initialization at a ready main menu.
-        updateSystem.UpdateAt<BridgeOwnerCleanupSystem>(SystemUpdatePhase.UIUpdate);
+        // Native PostTool and prefab consumers must see Deleted before same-frame entity cleanup.
+        updateSystem.UpdateBefore<BridgeOwnerCleanupSystem, Game.Prefabs.PrefabSystem>(SystemUpdatePhase.MainLoop);
         updateSystem.UpdateAt<BridgeStartupAssetSystem>(SystemUpdatePhase.UIUpdate);
         updateSystem.UpdateAt<BridgeRailSeamAuditSystem>(SystemUpdatePhase.UIUpdate);
         World.DefaultGameObjectInjectionWorld.GetOrCreateSystemManaged<BridgeStartupAssetSystem>().ScheduleInspectionAfterLoad();
@@ -197,7 +197,9 @@ public sealed class Mod : IMod
         }
     }
 
-    internal static void ShowMessage(string title, string message)
+    internal static void ShowMessage(string title, string message) => TryShowMessage(title, message);
+
+    internal static bool TryShowMessage(string title, string message)
     {
         try
         {
@@ -205,11 +207,15 @@ public sealed class Mod : IMod
                 LocalizedString.Value(title == "Bridge Builder" ? UiStringCatalog.Current.Title : title),
                 LocalizedString.Value(message),
                 LocalizedString.Value(RuntimeUiText.Get("OK")));
-            GameManager.instance?.userInterface?.appBindings?.ShowMessageDialog(dialog, _ => { });
+            var bindings = GameManager.instance?.userInterface?.appBindings;
+            if (bindings == null) return false;
+            bindings.ShowMessageDialog(dialog, _ => { });
+            return true;
         }
         catch (Exception exception)
         {
             Log.Warn(exception, "Could not show the result dialog");
+            return false;
         }
     }
 

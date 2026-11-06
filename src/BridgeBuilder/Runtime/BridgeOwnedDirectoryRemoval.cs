@@ -19,6 +19,9 @@ internal static class BridgeOwnedDirectoryRemoval
         return full.StartsWith(directory, StringComparison.OrdinalIgnoreCase) ? full : null;
     }
 
+    private static readonly System.Text.RegularExpressions.Regex OwnerName = new(
+        @"\Ab[0-9A-Fa-f]{8}(?:-[0-9A-Fa-f]{4}){3}-[0-9A-Fa-f]{12}\z");
+
     internal static IEnumerable<string> Owners(string gameRoot)
     {
         var root = Path.Combine(Path.GetFullPath(gameRoot), "ImportedData");
@@ -26,7 +29,7 @@ internal static class BridgeOwnedDirectoryRemoval
         BridgeRemovalFiles.RejectLink(gameRoot);
         BridgeRemovalFiles.RejectLink(root);
         return Directory.GetDirectories(BridgeFileAccess.Native(root))
-            .Select(Path.GetFileName).Where(BridgeAssetInfo.IsPrefabName).ToArray()!;
+            .Select(Path.GetFileName).Where(name => name != null && OwnerName.IsMatch(name)).ToArray()!;
     }
 
 }

@@ -62,27 +62,7 @@ mandatory entry points.
 
 ## First rule: fix reported bugs immediately
 
-### Deleted bridge files must never be read again
-
-After a bridge-owned file has been deleted, subsequent preview, generation, export,
-asset discovery and texture-streaming work must not attempt to read that file through
-a stale reference. Deletion must coordinate file removal with native asset registration,
-preview lifetime and pending consumers; deleting the directory alone is insufficient.
-Use supported native lifecycle APIs and scope cleanup to the exact owning directory
-and local database. Preserve other bridges, built-in assets and same-CID copies elsewhere.
-
-For both deletion actions, wait for save/load and native readers, then detach registrations whose
-physical paths belong to the selected UUID. Keep files readable during this stage. For the file
-operation, match the exact immediate UUID directory and invoke recursive deletion once. Verify
-directory and index absence before reporting success. A failed or partial removal can be retried.
-Leave independent copies and their registrations in other directories alone. Deletion performs no
-dependency traversal, duplicate checks, CID transfers or normal ticket processing.
-Do not unload or destroy shared live render objects to bypass native lifecycle requirements.
-
-Validate create/delete/create, repeated deletion and partial failure. Compilation alone
-does not establish that native asynchronous texture requests have drained; report any
-remaining in-game lifecycle verification explicitly. This requirement does not authorize
-changes to startup self-check or its separate recovery policy.
+For single and bulk player deletion, including stale-reader prevention and partial failure, follow [Bridge deletion](BRIDGE_DELETION.md).
 
 ### Compatibility review
 

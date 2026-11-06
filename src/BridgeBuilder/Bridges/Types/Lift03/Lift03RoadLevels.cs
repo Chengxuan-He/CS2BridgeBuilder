@@ -26,7 +26,20 @@ internal static class Lift03RoadLevels
                 throw new InvalidOperationException("Lift03 decks must share their mechanism source and closed transform.");
             var triangles = new List<Triangle>();
             Append(triangles, upper.Triangles, upper.RoadToObject, Numeric_Types_Lift03_Lift03RoadLevels_cs.Values.I32[4], Numeric_Types_Lift03_Lift03RoadLevels_cs.Values.I32[5]);
-            Append(triangles, lower.Triangles, lower.RoadToObject, upper.Surfaces.Length, upper.RoadPartitions!.Length);
+            int offset = upper.Triangles.Count == 0 ? 0 : checked(upper.Triangles.Max(t => t.Occurrence) + 1);
+            Append(triangles, lower.Triangles, lower.RoadToObject, upper.Surfaces.Length, offset);
+            var motion = new Dictionary<(int,int),MovableRoadGeometry.Partition>();
+            Bind(upper, 0);
+            Bind(lower, offset);
+            void Bind(Level deck, int first)
+            {
+                foreach (var face in deck.Triangles)
+                {
+                    var key = (face.Occurrence, face.SourceTriangle);
+                    motion[(first+face.Occurrence,face.SourceTriangle)] = deck.RoadTrianglePartitions != null
+                        ? deck.RoadTrianglePartitions[key] : deck.RoadPartitions![face.Occurrence];
+                }
+            }
             // Lane occurrence indices refer to visual batches, not road pieces.
             var lanes = new List<Triangle>();
             Append(lanes, upper.Lanes!.Triangles, upper.RoadToObject, Numeric_Types_Lift03_Lift03RoadLevels_cs.Values.I32[6], Numeric_Types_Lift03_Lift03RoadLevels_cs.Values.I32[7]);
@@ -35,7 +48,7 @@ internal static class Lift03RoadLevels
             var bounds = upper.RenderBounds;
             bounds.min = math.min(bounds.min, lower.RenderBounds.min);
             bounds.max = math.max(bounds.max, lower.RenderBounds.max);
-            result[lod] = new Level(upper.Source, triangles, upper.Surfaces.Concat(lower.Surfaces).ToArray(), upper.Partition!, bounds, new Pose(Vector3.zero, Quaternion.identity), skeleton: upper.Skeleton, lanes: laneResult, closedWorld: upper.ClosedWorld, appearancePageSize: upper.AppearancePageSize, texelsPerMeter: upper.TexelsPerMeter, roadPartitions: upper.RoadPartitions.Concat(lower.RoadPartitions!).ToArray(), lanePartitions: upper.LanePartitions.Concat(lower.LanePartitions!).ToArray());
+            result[lod] = new Level(upper.Source, triangles, upper.Surfaces.Concat(lower.Surfaces).ToArray(), upper.Partition!, bounds, new Pose(Vector3.zero, Quaternion.identity), skeleton: upper.Skeleton, lanes: laneResult, closedWorld: upper.ClosedWorld, appearancePageSize: upper.AppearancePageSize, texelsPerMeter: upper.TexelsPerMeter, roadTrianglePartitions: motion, lanePartitions: upper.LanePartitions.Concat(lower.LanePartitions!).ToArray());
         }
 
         return result;
@@ -51,7 +64,7 @@ internal static class Lift03RoadLevels
     {
         // Accept the output of PrepareDeck before structural plans or paint are attached.
         // Dropping an attached plan or a triangle-specific binding would corrupt the asset.
-        if (!level.HasRoad || level.Partition == null || level.RoadPartitions == null || level.LanePartitions == null || level.Lanes == null || level.Lanes.Decals.Length != Numeric_Types_Lift03_Lift03RoadLevels_cs.Values.I32[8] || level.Structure != null || level.ExtraStructure != null || level.RoadTrianglePartitions != null)
+        if (!level.HasRoad || level.Partition == null || (level.RoadPartitions == null && level.RoadTrianglePartitions == null) || level.LanePartitions == null || level.Lanes == null || level.Lanes.Decals.Length != Numeric_Types_Lift03_Lift03RoadLevels_cs.Values.I32[8] || level.Structure != null || level.ExtraStructure != null )
             throw new InvalidOperationException("Lift03 deck composition requires prepared road and lane partitions without structure or projectors.");
     }
 }

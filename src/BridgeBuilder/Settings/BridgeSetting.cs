@@ -100,13 +100,10 @@ public sealed class BridgeSetting : ModSetting
 
     [SettingsUISection(OptionsTab, DangerGroup)]
     [SettingsUIButton]
-    [SettingsUIDisableByCondition(typeof(BridgeSetting), nameof(RemoveAllBridgesUnavailable))]
     public bool RemoveAllBridges
     {
         set => BridgeBuilder.Runtime.BridgeBulkRemoval.RequestConfirmation();
     }
-
-    public bool RemoveAllBridgesUnavailable() => !BridgeBuilder.Runtime.BridgeBulkRemoval.CanRequest;
 
     [SettingsUIHidden]
     [SettingsUIMultilineText("")]

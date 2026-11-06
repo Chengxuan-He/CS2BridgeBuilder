@@ -15,6 +15,7 @@ internal enum BridgeRuntimeAction
 internal sealed class BridgeRuntimeRequest
 {
     internal BridgeRuntimeAction Action { get; set; }
+    internal long RemovalBatch { get; set; }
     internal bool BuildAfterCreate { get; set; }
     internal bool LowerDeckOpposite { get; set; } = true;
     internal string PrefabName { get; set; } = string.Empty;

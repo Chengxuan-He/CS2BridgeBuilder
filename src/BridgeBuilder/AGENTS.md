@@ -1,5 +1,7 @@
 # Runtime Bridge Generation Instructions
 
+For player-requested removal and native resource retirement, follow [Bridge deletion](../../docs/agent-contract/BRIDGE_DELETION.md).
+
 ### Packaged textures belong to road running surfaces
 
 A packaged `.Texture` must have a measured road-surface consumer. Check the actual
@@ -73,20 +75,7 @@ or installed-prototype dependency, giant initializer, or change to independently
 Read the [runtime invariants](../../docs/agent-contract/MOVABLE_RUNTIME_INVARIANTS.md#runtime-invariants)
 in full before code changes. Apply the current implementation policy.
 Prototype parameters and part maps remain hardcoded and independent of the original prototype file.
-The measured Draw02 central longitudinal girder retains its original transverse section under
-general section 8; apply that exact offline membership. Its central hinge plates
-retain their original section and zero transverse displacement; their thin section
-is not an axle assembly span. Lateral plates remain rigid and the transverse axle
-keeps its separate mapping. Draw02's measured transverse
-moving-base supports use signed half-width translation; unrelated crossbeams and axles
-retain their recorded mappings. Preserve the central girder's adjoining closure panels.
-Draw02's internal longitudinal ribs use measured quarter-width translations to keep
-their centres evenly spaced without stretching their profiles. Its outer deck bottom
-and closure faces remain with non-Sidewalk edges; only genuine sidewalk surfaces
-depend on sidewalk presence. Preserve the far native simplified representation.
-The movable and material contracts define appearance requirements. Preserve native asset
-ownership, API thread affinity, source provenance, skeletons, structure channels and independent
-persistence.
+Use measured assembly mappings for girder, hinge, rib, support and closure members at all LODs. Preserve the selected road’s actual sidewalk roles and verify the adjoining boundaries.
 
 ## Performance and iteration
 

@@ -30,7 +30,14 @@ void Visit(object node){Need(!(bool)Get(node,"IsGap"),"Material route deleted ge
 if(kind==16){Need(ReferenceEquals(surface,ballast),"Ballast identity depends on deck");Need(Math.Abs(Math.Abs(u.x)*1240-249)<1e-3&&Math.Abs(Math.Abs(v.z)*992-249)<1e-3,"Ballast physical density");Need((bool)Get(patch,"RepeatU")&&(bool)Get(patch,"RepeatV"),"Ballast axis mode");Need((int)types.GetValue(bone)==16,"Ballast family contaminated");}
 else{bool worn=ReferenceEquals(surface,wear);Need(worn||ReferenceEquals(surface,background),"Road identity depends on deck");Need(Math.Abs(u.x-124f/(worn?424:128))<1e-5&&Math.Abs(u.z)<1e-5,"Road transverse density");Need(Math.Abs(v.z+124.359375f/992)<1e-5,"Road longitudinal density");if(worn){float center=(3314.5f-3104-u.w*424)/124;Need(centers.Any(x=>Math.Abs(center-x)<1e-4),"Wear center mismatch");wornLeaves++;}}
 checks++;}
-Visit(Get(after,"Carriageway"));Visit(Get(after,"Sidewalk"));if(kind!=16)Need((wornLeaves>0)==(centers.Length>0),"No-lane wear semantics");cases++;}
+Visit(Get(after,"Carriageway"));
+if(kind==16)Visit(Get(after,"Sidewalk"));
+else{
+var walk=Get(after,"Sidewalk");var index=(int)Get(walk,"Bone");
+Need(!(bool)Get(walk,"IsGap") && index>=0 && (int)types.GetValue(index)==0,"Walking asphalt inherited carriageway paving or lost geometry");
+Need((wornLeaves>0)==(centers.Length>0),"No-lane wear semantics");
+}
+cases++;}
 }
 Debug.Log("PASS Lift03 shared deck receiver families: "+cases+" cases; "+checks+" reachable leaf checks; all 3 LODs, both deck heights and directions, source identities/PBR periods, actual lane centers/no-lane controls, unknown/mixed Original; independent motion retained. Not live-city motion or renderer acceptance.");EditorApplication.Exit(0);
 }catch(Exception e){Debug.LogException(e);EditorApplication.Exit(1);}}

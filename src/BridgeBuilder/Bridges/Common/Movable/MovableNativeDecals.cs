@@ -19,10 +19,47 @@ internal static class MovableNativeDecals
     {
         internal readonly Vector3 Center, Right, Up, Forward, Half;
         internal readonly bool Yellow;
-        internal Region(Vector3 center, Quaternion rotation, Vector3 half, bool yellow)
+        internal readonly SurfaceAsset? SourceColor;
+        internal readonly Vector4 UvRect;
+        internal bool Overlaps(MovableRoadGeometry.Triangle face)
+        {
+            // Separating-axis test in the actual decal frame. Merely sharing a
+            // boundary with a colored lane does not protect the adjoining sidewalk.
+            var center=Center; var right=Right; var forward=Forward;
+            Vector2 Local(Vector3 p) => new(Vector3.Dot(p-center,right),Vector3.Dot(p-center,forward));
+            var a=Local(face.A.Position); var b=Local(face.B.Position); var c=Local(face.C.Position);
+            var half=Half;
+            bool Separated(Vector2 axis)
+            {
+                if (axis.sqrMagnitude == 0) return false;
+                float radius=Math.Abs(axis.x)*half.x+Math.Abs(axis.y)*half.z;
+                float x=Vector2.Dot(a,axis),y=Vector2.Dot(b,axis),z=Vector2.Dot(c,axis);
+                return Math.Min(x,Math.Min(y,z)) >= radius || Math.Max(x,Math.Max(y,z)) <= -radius;
+            }
+            Vector2 Normal(Vector2 v) => new(-v.y,v.x);
+            return !Separated(Vector2.right) && !Separated(Vector2.up) && !Separated(Normal(b-a)) &&
+                !Separated(Normal(c-b)) && !Separated(Normal(a-c));
+        }
+        internal Vector4 SourceUv(Vector3 point)
+        {
+            var d=point-Center;
+            float u=Half.x==0 ? .5f : .5f+Vector3.Dot(d,Right)/(2*Half.x);
+            float v=Half.z==0 ? .5f : .5f+Vector3.Dot(d,Forward)/(2*Half.z);
+            return new Vector4(Mathf.LerpUnclamped(UvRect.x,UvRect.z,u),Mathf.LerpUnclamped(UvRect.y,UvRect.w,v),0,0);
+        }
+        internal Region(Vector3 center, Quaternion rotation, Vector3 half, bool yellow, SurfaceAsset? sourceColor = null, Vector4 uvRect = default)
         { Center = center; Right = rotation * Vector3.right; Up = rotation * Vector3.up;
-          Forward = rotation * Vector3.forward; Half = half; Yellow = yellow; }
+          Forward = rotation * Vector3.forward; Half = half; Yellow = yellow; SourceColor = sourceColor; UvRect = uvRect; }
     }
+    internal static bool IsLaneColor(MovableLaneVisuals.Batch batch)
+    {
+        if (!batch.Decal || batch.Surfaces.Length != 1) return false;
+        batch.Surfaces[0].LoadHeader();
+        // CurvedDecalColorOnly is the actual color/marking presentation. Only
+        // evaluated native batches enter here, after requirements and upgrades.
+        return batch.Surfaces[0].materialTemplateHash == 32;
+    }
+
     internal static List<Region> Regions(MovableLaneVisuals.Batch batch, Pose roadToObject, float texelsPerMeter)
     {
         var result = new List<Region>();
@@ -45,7 +82,10 @@ internal static class MovableNativeDecals
         var segments = new List<(Vector4 A, Vector4 D)>();
         Split(curve.GetColumn(0), curve.GetColumn(1), curve.GetColumn(2), curve.GetColumn(3), 0);
         var original = batch.Source.GetComponent<DecalProperties>();
-        foreach (var segment in segments.SelectMany(s => MovableExistingMarkings.Strokes(source, s.A, s.D, original.m_TextureArea)))
+        bool textured = IsLaneColor(batch);
+        var strokes = textured ? segments.Select(s => new MovableExistingMarkings.Stroke(s.A,s.D,1f,0f,false))
+            : segments.SelectMany(s => MovableExistingMarkings.Strokes(source, s.A, s.D, original.m_TextureArea));
+        foreach (var segment in strokes)
         {
             var direction = (Vector3)(segment.D - segment.A);
             var length = direction.magnitude;
@@ -62,7 +102,11 @@ internal static class MovableNativeDecals
                 + (Vector3)(segment.A + segment.D) * .5f + Vector3.up * batch.Size.w
                 + rotation * Vector3.right * (fullWidth * segment.Offset);
             result.Add(new Region(roadToObject.position + roadToObject.rotation * center,
-                roadToObject.rotation * rotation, new Vector3(Mathf.Abs(width), Mathf.Abs(height), length) * .5f, segment.Yellow));
+                roadToObject.rotation * rotation, new Vector3(Mathf.Abs(width), Mathf.Abs(height), length) * .5f, segment.Yellow, textured ? source : null,
+                new Vector4(original.m_TextureArea.min.x,
+                    Mathf.LerpUnclamped(original.m_TextureArea.min.y,original.m_TextureArea.max.y,segment.A.w),
+                    original.m_TextureArea.max.x,
+                    Mathf.LerpUnclamped(original.m_TextureArea.min.y,original.m_TextureArea.max.y,segment.D.w))));
         }
         return result;
 

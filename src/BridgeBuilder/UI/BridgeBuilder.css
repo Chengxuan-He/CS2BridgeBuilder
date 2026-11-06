@@ -35,7 +35,13 @@
 .bb-panel .bb-card.bb-selected { border-color: var(--accentColorNormal); background-color: var(--selectedColor); }
 .bb-card img { width: 76rem; height: 62rem; object-fit: contain; margin-bottom: 6rem; }
 .bb-panel .bb-card { text-align: center; }
-.bb-panel .bb-card .bb-card-name { display: block; align-self: stretch; width: 100%; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; text-align: center; }
+.bb-card-name { display: flex; --bb-name-fade: 8%; justify-content: flex-start; align-self: stretch; width: 100%; min-width: 0; overflow: hidden; white-space: nowrap; }
+.bb-card-name.bb-name-overflow .bb-card-name-area { justify-content: flex-start; }
+.bb-card-name-area { display: flex; justify-content: center; flex: 1 1 0; min-width: 0; margin: 0 var(--bb-name-fade); overflow: visible; text-align: left; }
+.bb-card-name-run { flex: 0 0 auto; }
+.bb-card-name.bb-fade-right { mask-image: linear-gradient(90deg, white 0%, white calc(100% - var(--bb-name-fade)), transparent 100%); }
+.bb-card-name.bb-fade-left { mask-image: linear-gradient(90deg, transparent 0%, white var(--bb-name-fade), white 100%); }
+.bb-card-name.bb-fade-left.bb-fade-right { mask-image: linear-gradient(90deg, transparent 0%, white var(--bb-name-fade), white calc(100% - var(--bb-name-fade)), transparent 100%); }
 .bb-card small { width: 100%; margin-top: 4rem; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; color: var(--textColorDisabled); font-size: var(--fontSizeXS); text-align: center; }
 .bb-right > .bb-preview { flex: 0 0 auto; }
 .bb-preview { min-height: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; background-color: var(--sectionBackgroundColor); border-radius: var(--panelRadiusInner); }

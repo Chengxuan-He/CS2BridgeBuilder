@@ -34,6 +34,11 @@ internal sealed partial class TowerFactory
             var groups = new Dictionary<(int Bone, bool Yellow, int Priority, bool Infoview, Quaternion Rotation), List<Vector3[]>>();
             foreach (var batch in batches)
             {
+                if (MovableNativeDecals.IsLaneColor(batch))
+                {
+                    Mod.Log.Info($"Native lane color requires a projected material; white/yellow substitute skipped: {batch.Source.name}.");
+                    continue;
+                }
                 var properties = batch.Source.GetComponent<DecalProperties>();
                 foreach (var region in MovableNativeDecals.Regions(batch, roadToObject, 32f))
                 {

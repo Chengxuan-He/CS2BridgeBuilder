@@ -134,6 +134,23 @@ public partial class BridgeBuilderUISystem : UISystemBase
         base.OnUpdate();
     }
 
+    internal static string[] SyncVerifiedRemoval(string[] targets)
+    {
+        var ui=World.DefaultGameObjectInjectionWorld?.GetExistingSystemManaged<BridgeBuilderUISystem>();
+        if(ui==null || ui._bridges==null) return Array.Empty<string>();
+        var ids=new HashSet<string>(targets,StringComparer.Ordinal);
+        var current=ui._bridges.value;
+        bool Gone(string owner)=>BridgeDeferredRemoval.Verified.Contains(owner) &&
+            !BridgeFileAccess.Exists(System.IO.Path.Combine(BridgeAssetCatalog.Root,owner));
+        var kept=current.Where(row=>!ids.Contains(row.PrefabName) ||
+            !Gone(row.PrefabName)).ToArray();
+        if(kept.Length!=current.Length) ui._bridges.Update(kept);
+        foreach(var id in targets)
+            if(Gone(id) && BridgePreviewState.Key=="existing\n"+id)
+                BridgePreviewState.Clear();
+        return ui._bridges.value.Where(row=>ids.Contains(row.PrefabName)).Select(row=>row.PrefabName).ToArray();
+    }
+
     internal static void RequestRefresh() => BridgeRuntimeRequests.Touch();
 
     protected override void OnStopRunning()
@@ -192,7 +209,7 @@ public partial class BridgeBuilderUISystem : UISystemBase
 
     private void PreviewExistingBridge(string prefabName)
     {
-        if (!_panelOpen.value) return;
+        if (!_panelOpen.value || BridgeAssetCatalog.CreatingOrRetiring(prefabName)) return;
         BridgePreviewState.SelectExisting(prefabName ?? string.Empty);
     }
 

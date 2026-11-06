@@ -34,7 +34,7 @@ This contract governs materials for fixed and movable bridges, every part and LO
 preview, creation, regeneration and export. Geometry and native behavior remain governed by
 [bridge generation](BRIDGE_GENERATION_CONTRACT.md); movable appearance roles are defined in
 [movable generation sections 17 and 24](MOVABLE_BRIDGES_CONTRACT.md#17-material-families-uv-density-and-texture-ownership).
-Persistence follows the [asset persistence policy](../Bridge-Asset-Persistence.md).
+Persistence follows the [asset persistence policy](Bridge-Asset-Persistence.md).
 
 
 Road appearance processing (prototype composition, source-density tiling, embedded-marking
@@ -48,8 +48,7 @@ For movable bridges, the generation design is: **reuse original native textures 
 or precompose prototype-supported road appearance types; use compatible original or
 corresponding native object road materials for other types under section 4; preserve source density, tile prototype-supported road appearances without stretching, and
 retain evidenced mapping modes for non-road materials**. This is a generation requirement, not a finding about how the original game
-converts roads. [Native repetition research](../Native-Movable-Material-Repetition.md) supplies
-source evidence only. Current code and prepared resources are not proof of compliance.
+converts roads. Current code and prepared resources are not proof of compliance.
 
 Road composition requires both a verified actual receiver appearance type and its corresponding
 measured prototype material at the target physical part. That matching part uses prototype appearance. Otherwise use the compatible
@@ -82,20 +81,9 @@ route. They must not inherit a material merely from proximity to the mechanism, 
 a shared section or renderer. Native network and skinned-object realizations remain distinct.
 A no-match returns Original without throwing; required matched-resource failures remain explicit.
 
-#### Lift03 shared deck appearance
+#### Shared deck appearance
 
-For Lift03, the user's shared-deck rule supersedes the default requirement to retain
-different appearances solely because the same road category occupies different decks.
-Classify each actual receiver domain, including mixed road/track inputs, independently
-of Main/Auxiliary identity. Both decks use Lift03's same prepared clean upper-road
-paving and complete same-source wear for matching road receivers; both use Lift03's
-same measured lower-road ballast for ballast receivers. Apply this at every LOD,
-including the generated far road, even when the original far shell has no road top.
-Preserve the shared family's source PBR, physical density, orientation and phase.
-Centre wear on each deck's actual vehicle lanes with unchanged physical width; no
-vehicle lane means no wear. Embedded prototype markings remain removed and selected
-road paint remains separate. This material sharing changes neither deck height/pose,
-motion partitions/bones nor structural and unrelated sidewalk/approach appearances.
+Where both decks of a coordinated style use a common approved road or ballast family, classify by the actual receiver on each deck. Preserve its motion, elevation, lane-aligned wear and selected-road paint at all LODs.
 
 ### Complete material coverage of a replaced component
 
@@ -137,6 +125,17 @@ unknown category, unmatched atlas region, absent optional mapping or mixed recei
 by a whole-domain rule is an ordinary no-match, not a generation exception. Never infer complete
 coverage from a root section named Sidewalk, one worldspace layer or a Surface family alone.
 Prototype-supported appearances take priority only on their evidenced matching domains.
+
+For every movable bridge and road LOD, classify the existing selected-road face in
+its evaluated physical domain (fixed end or moving span). Plain asphalt on a
+pedestrian running surface takes the prototype sidewalk appearance where that
+physical part has a verified match. Replace the appearance on the same receiver
+exactly once. Do not lay a second sidewalk mesh over it. Preserve curbs, gaps,
+lane geometry and genuine markings. Dyed bicycle/bus asphalt and uncertain or
+mixed source triangles retain the selected source material, coordinates and color.
+A matching asphalt base texture alone does not establish plain asphalt. A single
+selected piece can contain both walking and cycling strips. Neither a road's
+display name nor a sampled RGB threshold establishes the role of a strip.
 
 The common generation entry resolves the **elevated road-level branch once**, before width,
 cloning and style processing, under [the all-bridge rule](BRIDGE_GENERATION_CONTRACT.md#select-one-road-level-branch-before-generation).
@@ -694,7 +693,7 @@ Copy required external resources into the new bridge's independent dependency sn
 the existing persistence policy; deleting a bridge must never delete packaged source materials.
 
 Implementation status and packaging guidance are maintained in
-[prepared-material documentation](../Prepared-Materials.md). Directory presence does not prove runtime use.
+[prepared-material documentation](../design/materials/Prepared-Materials.md). Directory presence does not prove runtime use.
 
 ## 6. Verification
 

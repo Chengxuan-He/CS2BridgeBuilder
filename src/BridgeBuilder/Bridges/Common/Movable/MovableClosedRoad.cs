@@ -17,6 +17,7 @@ internal static class MovableClosedRoad
     internal sealed class Result
     {
         internal readonly MovableRoadGeometry.Triangle[] Triangles;
+        internal readonly MovableSidewalkFaces Sidewalks;
         internal readonly SurfaceAsset[] Surfaces;
         internal readonly BridgePreviewComposition.Piece[] Occurrences;
         internal readonly NetCompositionData[] Compositions;
@@ -33,10 +34,11 @@ internal static class MovableClosedRoad
             BridgePreviewComposition.Piece[] occurrences, NetCompositionData[] compositions,
             int[] occurrenceStarts, MovableLaneVisuals.Batch[] laneVisuals, MovableRoadObjects.Rule[][] objectRules,
             BridgePreviewNetMesh.SourceFace[][]? sourceFaces = null, int lod = 0)
-        { Triangles = triangles; Surfaces = surfaces; Occurrences = occurrences; Compositions = compositions;
+        { Sidewalks = new MovableSidewalkFaces(triangles, surfaces, occurrences);
+            Triangles = MovableRoadCoverage.ResolveFaces(triangles, Sidewalks.Walk, Sidewalks.Curb); Surfaces = surfaces; Occurrences = occurrences; Compositions = compositions;
             OccurrenceStarts = occurrenceStarts;
             SourceFaces = sourceFaces;
-            LaneVisuals = laneVisuals; LaneGeometry = MovableLaneGeometry.Compile(laneVisuals, triangles, lod);
+            LaneVisuals = laneVisuals; LaneGeometry = MovableLaneGeometry.Compile(laneVisuals, Triangles, lod);
             ObjectRules = objectRules; }
 
 

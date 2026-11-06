@@ -116,7 +116,7 @@ acceptance. Other mechanisms require their own measured data and implementation 
 registered catalogue entries alone do not establish working generators. Completion status must
 never disable a registered style or add unfinished-style notices (bridge generation contract section 22).
 
-Track every mechanism by its stable style ID in the [implementation record](../Movable-Bridges-Implementation.md).
+Track each mechanism’s implementation and acceptance by its stable style ID.
 Distinguish measured evidence, code, deployment and human acceptance. Completed audits and
 backups do not establish completed generation support.
 
@@ -172,8 +172,6 @@ preserving source lane semantics. Keep fixed-span structural conditions separate
 hiding so stationary geometry cannot intrude into the opening. Preview and persisted generation
 must include the same fixed structures at every LOD.
 
-Implementation and pending
-visual acceptance are recorded in [fixed approach bases](../Draw01-Fixed-Approach-Base.md).
 
 ## 3. Archetype evidence and immutable mechanism data
 
@@ -343,7 +341,7 @@ same resolved state.
 Keep surface width and outward side extensions separate in generator inputs. Report which boundary
 each width describes. A full composition width is not automatically the project's road-surface
 width or the measured outer width of the bridge mechanism. Follow
-[road width calculation](../road-width-calculation.md) and bridge generation contract section 14.
+[road width calculation](../design/generation/road-width-calculation.md) and bridge generation contract section 14.
 
 Preserve supported one-way/asymmetric arrangements and source lane restrictions. Do not mirror a
 road merely because the mechanism is symmetric. Preserve tram/rail/bicycle/transport-lane behavior
@@ -665,7 +663,7 @@ rail-seam limitation remains unfinished work and must not be hidden by this spec
 ## 11. Persistence, failures and compatibility
 
 Follow bridge generation contract section 17 and its normative
-[asset persistence and reference policy](../Bridge-Asset-Persistence.md). Save newly generated or
+[asset persistence and reference policy](Bridge-Asset-Persistence.md). Save newly generated or
 modified owned Prefabs and geometry, including required skinning channels, LODs, bounds, native
 skeleton configuration and attachment relationships in their actual containing asset formats.
 Retain compatible original surface, material, texture, marking and animation resource references;
@@ -773,7 +771,7 @@ a new movable style does not invalidate fixed bridges. Documentation-only change
 
 ### Preview and performance
 
-Follow the [bridge preview specification](../Bridge-Preview-Specification.md). Assemble both fixed
+Follow the [bridge preview specification](Bridge-Preview-Specification.md). Assemble both fixed
 ends and the complete central mechanism in an open pose; frame and centre the complete transformed
 assembly, including skinned bounds. Preview and formal creation share geometry and material rules,
 but preview does not publish permanent assets. Use the same localized style/name and normal error
@@ -851,19 +849,13 @@ variant; missing human acceptance does not block coding or routing the remaining
 
 Use these documents alongside this contract:
 
-- [Bridge model](../BridgeModel.md): native component roles and current support boundaries.
-- [Contributor workflow](../Adding-Bridge-Styles-With-Coding-Agents.md): implementation and submission.
-- [Preview render path](../Bridge-Preview-Render-Path.md): network mesh/shader and marking dependencies.
-- [Road width calculation](../road-width-calculation.md): selected-state measurement and boundary distinctions.
+- [Bridge model](../design/generation/BridgeModel.md): native component roles and current support boundaries.
+- [Contributor workflow](../guides/Adding-Bridge-Styles-With-Coding-Agents.md): implementation and submission.
+- [Road width calculation](../design/generation/road-width-calculation.md): selected-state measurement and boundary distinctions.
 - [Bridge generation contract](BRIDGE_GENERATION_CONTRACT.md): mandatory geometry, ownership, lifecycle and acceptance rules.
 
-- [Persistence policy](../Bridge-Asset-Persistence.md): normative asset/reference ownership.
-- [Preview specification](../Bridge-Preview-Specification.md): normative composition and framing.
-- [Mesh repair and performance](../Movable-Mesh-Repair-And-Performance.md): batch-registration and physical-domain evidence; old baking stages are historical.
-- [Road paint and platforms](../Movable-Road-Paint-And-Platforms.md): shared paint geometry, fixed caps, measured UV projection and tangent repairs.
-- [Graph compaction](../Movable-Prefab-Graph-Compaction.md): native condition-placement evidence; marking representation is defined in sections 18–19.
-- [Network and unlock audit](../Movable-Network-Unlock-Persistence-Audit.md): actual saved nodes and unlock equivalence checks.
-- [Odin compatibility](../Movable-Persistence-Odin-Compatibility.md): real-file parser/migration validation and remaining cold-load check.
+- [Persistence policy](Bridge-Asset-Persistence.md): normative asset/reference ownership.
+- [Preview specification](Bridge-Preview-Specification.md): normative composition and framing.
 
 Reproduce the six-lane reference by resolving the two named RoadPrefabs from the installed resource
 map, following sections to selected pieces and `NetPieceLanes`, then inspecting DrawBridge03's
@@ -1214,6 +1206,13 @@ Current feasibility and implementation must be verified separately from this spe
 
 ## 18. Marking layout, mesh and native material
 
+A selected bicycle or transit color decal carries its own textured coverage, including
+partial alpha and markings. Preserve its source albedo and native pre-lighting blend.
+White/yellow stroke extraction applies only to its measured line artwork. A distinct
+native projector for a color layer is eligible only when its evaluated footprint,
+UV interval, affected channels, receiver layer and bone motion are verified. Group
+such projections by physical connection and keep ordinary marking batches compact.
+
 The current implementation uses native **layout and texture input**, rendered by an object
 material that supports procedural skinning. It does not run native child decal projectors.
 
@@ -1386,7 +1385,7 @@ Actual post-change face counts and performance must be measured on newly generat
 
 ### Native persistence layout
 
-Follow [persistence policy sections 6–7](../Bridge-Asset-Persistence.md#6-approved-owner-directory-layout)
+Follow [persistence policy sections 6–7](Bridge-Asset-Persistence.md#6-approved-owner-directory-layout)
 for UUID-contained Prefabs, Geometry, Appearance, Locales and Dependencies, safe owned filename
 stems, paired CID migration and on-demand directories. All owned LOD Prefabs share `Prefabs/`
 while retaining independent CIDs. VT/mid-mip resources belong below the same owner UUID.
@@ -1446,7 +1445,7 @@ material section 4, with the accepted network-blend and world-projection differe
 separately, using each prototype's own measured support. Record prototype appearance from real source data;
 players need not possess the original files. Compare each deck separately.
 
-Lift03 additionally follows the [shared deck appearance rule](MATERIAL_GENERATION_CONTRACT.md#lift03-shared-deck-appearance):
+Lift03 additionally follows the [shared deck appearance rule](MATERIAL_GENERATION_CONTRACT.md#shared-deck-appearance):
 select its common road or ballast family from the actual receiver category, never
 from upper/lower identity. This explicit rule overrides deck-local prototype support
 differences at every LOD while preserving each deck's motion, height and native lane layout.

@@ -144,16 +144,77 @@ function ScrollArea({ className = "", style, children }) {
             horizontal: false, trackVisibility: "always" }, children));
 }
 
+// Measure the same glyph run the player sees, including custom names and the current locale.
+function bindCardName(view, text, active) {
+    let frame = 0, started = null, travel = 0, leg = 0;
+    const pause = 3000;
+    const position = x => {
+        text.style.transform = x ? `translateX(-${x}px)` : "";
+        view.classList.toggle("bb-fade-left", x > 0.5);
+        view.classList.toggle("bb-fade-right", travel - x > 0.5);
+    };
+    const animate = now => {
+        if (started === null) started = now;
+        const phase = (now - started) % (2 * (pause + leg));
+        const distance = phase < leg ? phase / leg : phase < leg + pause ? 1 :
+            phase < 2 * leg + pause ? 1 - (phase - leg - pause) / leg : 0;
+        position(travel * distance);
+        frame = requestAnimationFrame(animate);
+    };
+    const measure = () => {
+        const width = text.parentElement.getBoundingClientRect().width;
+        const bounds = text.getBoundingClientRect();
+        const excess = width > 0 ? Math.max(0, bounds.width - width) : 0;
+        if (frame) cancelAnimationFrame(frame);
+        frame = 0;
+        started = null;
+        travel = excess;
+        leg = Math.max(700, 1000 * travel / Math.max(1, bounds.height * 1.15));
+        view.classList.toggle("bb-name-overflow", travel > 0);
+        position(0);
+        if (active && travel) frame = requestAnimationFrame(animate);
+    };
+    // Cohtml may report the previous layout until the following frame.
+    const resize = () => {
+        if (frame) cancelAnimationFrame(frame);
+        frame = requestAnimationFrame(measure);
+    };
+    const observer = typeof window.ResizeObserver === "function" ? new window.ResizeObserver(resize) : null;
+    observer?.observe(view);
+    observer?.observe(text);
+    window.addEventListener("resize", resize);
+    measure();
+    resize();
+    return () => {
+        if (frame) cancelAnimationFrame(frame);
+        observer?.disconnect();
+        window.removeEventListener("resize", resize);
+        travel = 0;
+        position(0);
+        view.classList.remove("bb-name-overflow");
+    };
+}
+
 function Card({ item, selected, onSelect, subtitle }) {
+    const viewport = React.useRef(null), title = React.useRef(null);
+    const [hovered, setHovered] = React.useState(false);
+    const active = hovered || selected;
+    React.useEffect(() => {
+        if (viewport.current && title.current) return bindCardName(viewport.current, title.current, active);
+    }, [item.name, active]);
     return h("button", {
         className: `bb-card${selected ? " bb-selected" : ""}`,
+        onMouseEnter: () => setHovered(true),
+        onMouseLeave: () => setHovered(false),
         onClick: () => onSelect(item),
         type: "button",
         title: item.name,
         "aria-pressed": selected
     },
     h("img", { src: item.icon || fallbackIcon }),
-    h("span", { className: "bb-card-name" }, item.name),
+    h("span", { ref: viewport, className: "bb-card-name" },
+        h("span", { className: "bb-card-name-area" },
+            h("span", { ref: title, className: "bb-card-name-run" }, item.name))),
     subtitle ? h("small", null, subtitle) : null);
 }
 
@@ -411,7 +472,7 @@ function ManageView({ bridges, styles = [] }) {
     const [style, setStyle] = React.useState("");
 
     React.useEffect(() => {
-        if (selected && selected.prefabName !== selectedId) setSelectedId(selected.prefabName);
+        if ((selected?.prefabName || "") !== selectedId) setSelectedId(selected?.prefabName || "");
         setName(selected?.displayName || "");
     // Only switching bridges resets the draft: stale save acknowledgements must
     // not overwrite newer typing.

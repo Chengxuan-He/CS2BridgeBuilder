@@ -32,10 +32,13 @@ internal static class Lift03RoadAppearance
         if (receiver == MovableRoadAppearance.Type.Asphalt ||
             receiver == (MovableRoadAppearance.Type.Asphalt | MovableRoadAppearance.Type.WheelTrack))
         {
-            var domain = new Partition(0);
+            // Both decks have carriageway evidence, but neither prototype has
+            // a sidewalk material. Keep the selected walk on its own source.
+            var neutral = new Patch(Vector2.zero, Vector2.one);
             var clean = new MovableRoadAppearance.Level(source.GetSurfaceAsset(0),
-                new[] { new Patch(Vector2.zero, Vector2.one) },
-                new[] { MovableRoadAppearance.Type.Asphalt }, domain, domain);
+                new[] { neutral, neutral },
+                new[] { MovableRoadAppearance.Type.Asphalt, MovableRoadAppearance.Type.None },
+                new Partition(0), new Partition(1));
             return Lift03CleanRoadAppearance.Apply(clean, layout, roadToObject);
         }
         if (receiver != MovableRoadAppearance.Type.Ballast) return null;

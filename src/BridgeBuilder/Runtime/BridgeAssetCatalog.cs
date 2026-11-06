@@ -2,6 +2,7 @@ using BridgeBuilder.Bridges;
 using Game.Prefabs;
 using System;
 using System.Collections.Generic;
+using System.Collections.Concurrent;
 using System.IO;
 using System.Linq;
 
@@ -10,8 +11,8 @@ namespace BridgeBuilder.Runtime;
 /// <summary>Asset-derived catalogue. Reads metadata directly from each prefab.</summary>
 internal static class BridgeAssetCatalog
 {
-    private static readonly Dictionary<string, BridgeAssetInfo> Creating = new(StringComparer.Ordinal);
-    private static readonly Dictionary<string, PrefabBase> CreatingPrefabs = new(StringComparer.Ordinal);
+    private static readonly ConcurrentDictionary<string, BridgeAssetInfo> Creating = new(StringComparer.Ordinal);
+    private static readonly ConcurrentDictionary<string, PrefabBase> CreatingPrefabs = new(StringComparer.Ordinal);
     internal static string Root => Path.Combine(UnityEngine.Application.persistentDataPath, "ImportedData");
     private static string PathFor(string owner)
     {
@@ -61,13 +62,11 @@ internal static class BridgeAssetCatalog
     internal static BridgeAssetInfo? Find(string? owner) => owner == null || BridgeStartupRecovery.Retired.Contains(owner)
         ? null : Read(owner) is { Pending: false } entry ? entry : null;
 
-    internal static bool Begin(BridgeAssetInfo entry)
-    {
-        if (!BridgeAssetInfo.IsPrefabName(entry.PrefabName) || Creating.ContainsKey(entry.PrefabName)
-            || BridgeFileAccess.Exists(PathFor(entry.PrefabName))) return false;
-        Creating.Add(entry.PrefabName, entry);
-        return true;
-    }
+    internal static bool CreatingOrRetiring(string owner) => Creating.ContainsKey(owner)
+        || BridgeStartupRecovery.Retired.Contains(owner) || BridgeDeferredRemoval.Pending(owner)
+        || BridgeDeferredRemoval.Verified.Contains(owner);
+
+    internal static bool Begin(BridgeAssetInfo entry) => Creating.TryAdd(entry.PrefabName, entry);
 
     internal static void Attach(PrefabBase prefab, BridgeAssetInfo fallback)
     {
@@ -97,6 +96,10 @@ internal static class BridgeAssetCatalog
         entry.DisplayName = label.Trim();
         return BridgeAssetMetadata.Write(PathFor(owner), entry) && BridgeNativePresentation.Save(entry, out _);
     }
-    internal static void EndCreation(string owner) { Creating.Remove(owner); CreatingPrefabs.Remove(owner); }
+    internal static bool EndCreation(string owner)
+    {
+        CreatingPrefabs.TryRemove(owner, out _);
+        return Creating.TryRemove(owner, out _);
+    }
     internal static void ResetSession() { Creating.Clear(); CreatingPrefabs.Clear(); }
 }

@@ -58,8 +58,8 @@ The router includes all ten Bridges & Ports movable styles: Draw01–Draw03, Lif
 and PedestrianDraw01/02. Registered styles use the same catalogue and operation behavior;
 missing native prerequisites still prevent generation. Routing and compilation do not establish
 human acceptance of every selected road, motion cycle, LOD or independent cold load.
-See the [implementation record](docs/Movable-Bridges-Implementation.md) for per-style evidence
-and [prepared materials](docs/Prepared-Materials.md) for unfinished material migration.
+See the [implementation record](docs/archive/implementation/Movable-Bridges-Implementation.md) for per-style evidence
+and [prepared materials](docs/design/materials/Prepared-Materials.md) for unfinished material migration.
 
 Generated towers, cables and LODs are private derived assets owned by the bridge. Required native
 game/DLC resources remain prerequisites; external non-built-in dependencies are persisted as
@@ -107,11 +107,7 @@ existing bridges keep their saved display names and stable style IDs.
 The management tab lists these bridges and supports activation, display-name changes and deletion.
 Construction inputs are read-only after creation; changing them means creating another UUID-backed
 bridge. Confirm deletion in the management tab to remove that bridge and its placed instances.
-The settings action **Remove all bridges** applies the same operation to every immediate
-`ImportedData/b<UUID>/` directory. Both actions finish in the same game session. Cleanup waits for
-saving and native readers, unregisters the selected owner's assets, then recursively deletes its
-directory. Success requires the directory and its registrations to be gone. Independent copies in
-other bridges stay in their own directories.
+The settings action **Remove all bridges** removes local Bridge Builder bridges in the current session after confirmation. In a city or editor, it clears their placed instances first. See [Bridge deletion](docs/agent-contract/BRIDGE_DELETION.md) for the single and bulk workflows.
 
 It is the parallel of [Road Prefab Exporter](../CS2RoadPrefabExporter) and shares its code — see
 [Layout](#layout).
@@ -181,7 +177,7 @@ Structural or appearance quality does not block a player's generation choice; re
 file and native-operation failures still report errors. Native initialization and offline checks
 do not establish in-game visual correctness.
 
-See the [bridge generation workflow design](docs/Bridge-Generation-Workflow.md#end-to-end-generation-flow)
+See the [bridge generation workflow design](docs/design/generation/Bridge-Generation-Workflow.md#end-to-end-generation-flow)
 for scheduling, thread boundaries, persistence order, cancellation and cleanup.
 
 ### What generation actually builds
@@ -217,9 +213,9 @@ recorded transform/face recipes; all LODs are assembled before native publicatio
 The diagram summarizes a shared sequence, not identical part recipes for every style. Combined
 physical/appearance partitioning, fixed versus moving receivers, coordinated double decks and
 style-specific paint/support assembly are expanded in the workflow design:
-[generation core](docs/Bridge-Generation-Workflow.md#generation-core-actual-sequence-and-branches),
-[movable workflow](docs/Bridge-Generation-Workflow.md#movable-generation-sampling-geometry-and-material-realization)
-and [offline/runtime products](docs/Bridge-Generation-Workflow.md#offline-inputs-and-runtime-products).
+[generation core](docs/design/generation/Bridge-Generation-Workflow.md#generation-core-actual-sequence-and-branches),
+[movable workflow](docs/design/generation/Bridge-Generation-Workflow.md#movable-generation-sampling-geometry-and-material-realization)
+and [offline/runtime products](docs/design/generation/Bridge-Generation-Workflow.md#offline-inputs-and-runtime-products).
 Actual unavailable inputs or failed data/native operations exit to the failure lifecycle above;
 structural appearance is not an added rejection stage.
 
@@ -231,7 +227,7 @@ run on the CPU through `AffineGeometry`; native mesh access, materials and asset
 remain on the main thread. Small batches execute serially to avoid scheduling overhead.
 This changes generation-time computation, not the runtime requirements of saved bridges.
 See the [affine execution contract](docs/agent-contract/BRIDGE_GENERATION_CONTRACT.md#cpu-affine-geometry-execution)
-and [contributor workflow](docs/Adding-Bridge-Styles-With-Coding-Agents.md#affine-matrix-generation-step).
+and [contributor workflow](docs/guides/Adding-Bridge-Styles-With-Coding-Agents.md#affine-matrix-generation-step).
 End-to-end speed improvements require in-game measurements.
 
 ### Width
@@ -332,13 +328,13 @@ bridges keep independent copies. Built-in game/DLC assets remain native referenc
 must remain available. Persistence follows exact dependency CIDs and declared cache edges,
 without building a global asset or MidMips index.
 
-See the [persistence policy](docs/Bridge-Asset-Persistence.md) for naming and migration rules,
-and the [implementation overview](docs/Dependency-Persistence-Implementation.md) for lookup
+See the [persistence policy](docs/agent-contract/Bridge-Asset-Persistence.md) for naming and migration rules,
+and the [implementation overview](docs/design/persistence/Dependency-Persistence-Implementation.md) for lookup
 and self-check behavior.
 
 ## Creation durability and recovery
 
-Creation reserves a UUID in memory and stores incomplete-creation metadata on the bridge root asset.
+Creation atomically claims a fresh UUID directory before writing bridge assets. Collisions retry with a new UUID. The root prefab records incomplete-creation metadata until publication succeeds.
 The catalogue commits the bridge after native publication succeeds. Bridge metadata is asset-local;
 there is no separate bridge registry file or registration guard rejecting native loads.
 

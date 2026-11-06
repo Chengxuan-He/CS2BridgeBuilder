@@ -60,8 +60,7 @@ road bones, independent persistence and multilingual adaptation.
 
 ## First rule: fix reported bugs immediately
 
-Deleted bridge files must never be read again through stale asset registrations, previews
-or pending consumers. Follow [the deleted-file lifecycle requirement](docs/agent-contract/PROJECT_CONTRACT.md#deleted-bridge-files-must-never-be-read-again), including partial-deletion and exception paths.
+For player-requested bridge removal, follow [Bridge deletion](docs/agent-contract/BRIDGE_DELETION.md).
 
 Read the [implementation requirements](docs/agent-contract/PROJECT_CONTRACT.md#implementation-requirements)
 in full: contract routing, immediate bug fixes, compatibility review, simplest implementation,
@@ -192,6 +191,10 @@ and verified cleanup after completion: preserve deliverables outside environment
 have exited, then delete task-created environments while preserving pre-existing tools, licenses,
 source files and retained deliverables.
 
+## Game and launcher startup is manual
+
+Agents must never start Cities: Skylines II or its launcher. This applies to executables, Steam commands and URLs, shortcuts, scripts, UI automation and delegated actions. Agents cannot reliably reproduce a normal player launch. Explicitly decline any request to launch either application. If verification requires a launch or restart, stop at that step immediately and ask the user to perform it manually. Resume verification after the user has started the game. Do not close a player-started instance to facilitate testing.
+
 ## GitHub publication is optional
 
 GitHub access, pushing branches, opening pull requests and remote synchronization are not
@@ -318,7 +321,7 @@ subdivision is allowed. Preserve original vertices, materials and interpolated o
 attributes; this does not permit changing the part-transform rule. Deriving, simplifying or supplementing LODs
 from measured prototype high-detail geometry is permitted under bridge generation contract section 5,
 including its scoped vertex/index/topology exception. The measured Golden ornament/support
-exceptions are defined in section 5 and its linked specifications. Other structural, material and acceptance
+exceptions are defined in section 5. Other structural, material and acceptance
 requirements remain in force. Moving-road paint must be integrated into mechanism appearance;
 independent marking objects and custom runtime shaders are prohibited. Material preparation follows the material generation contract. Curve segmentation, endpoint-fade and existing-atlas pattern differences remain
 accepted. Follow the general method
@@ -333,26 +336,7 @@ in-memory integrity checks or quarantine as part of this persistence workflow.
 
 Apply the complete [authored-part mapping and error-boundary rules](docs/agent-contract/BRIDGE_GENERATION_CONTRACT.md#8-stretch-or-translate-is-decided-by-one-thing-does-the-part-cross-the-bridges-centre),
 including deck-adjacent bases, centred posts, Draw03 trusses and the section 5 Golden exceptions.
-The measured Draw02 central longitudinal girder follows section 8's narrow original-section
-exception; transverse crossbeams retain their separate recorded mapping.
-The two measured central hinge plates also retain their original section and central
-position, matching the independent lateral plates' rigid sections. Their thickness
-must not serve as an assembly span; axle mapping and unrelated members remain distinct.
-Draw02's measured transverse supports directly under the moving deck use the same
-signed half-width translation as its lateral base; do not scale those supports by
-their transverse span. Hinge axles and unrelated transverse mechanisms keep their rules.
-Its seven internal longitudinal member centres are evenly spaced across the added
-width: translate the three thin ribs on each side by the recorded quarter-width
-fractions, retaining their sections and the central girder's position. Preserve the
-original outer-edge offsets; this is not uniform spacing to the separate side walls.
-The measured downward/vertical outer deck closure faces remain even without a
-Sidewalk section; this does not restore the replaced sidewalk top or fabricate a walk.
-Identify the thin Draw02 slab end plates by their authored terminal role, not the
-sign of a near-zero normal component. Its far merged caps retain the lower car
-closure and add only the measured original upper band on each actual Sidewalk side.
-Keep the Draw02 girder's measured adjoining under-road panel edges connected while
-the panels' outer edges follow the rigid longitudinal ribs. Verify shared boundaries
-as well as each restored part's face coverage, including outer support turns.
+For approved longitudinal and transverse member maps, retain measured widths, contact boundaries, closure faces and LOD coverage.
 Bridge-pier columns translate, never stretch. Offline membership governs every LOD; runtime
 heuristics and silent internal-error fallbacks remain prohibited.
 

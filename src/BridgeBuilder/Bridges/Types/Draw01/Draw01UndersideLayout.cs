@@ -12,7 +12,6 @@ internal sealed class Draw01UndersideLayout
     {
         var ranges = new Vector2[road.Occurrences.Length];
         var topRanges = new Vector2[ranges.Length];
-        var sources = new MovableRoadRoute.Source?[road.Surfaces.Length];
         OccurrenceRoles = new int[ranges.Length];
         for (var i = Numeric_Types_Draw01_Draw01UndersideLayout_cs.Values.I32[0]; i < ranges.Length; i++)
             ranges[i] = topRanges[i] = new Vector2(float.PositiveInfinity, float.NegativeInfinity);
@@ -23,9 +22,7 @@ internal sealed class Draw01UndersideLayout
             Add(triangle.Occurrence, triangle.C.Position);
             // An occurrence also contains curb/gutter faces. Only its measured
             // sidewalk receiver contributes the paving/underside lateral extent.
-            var material = triangle.Material;
-            var source = (sources[material] ??= MovableRoadRoute.Read(road.Surfaces[material]));
-            if (source.Receiver(triangle) == MovableRoadAppearance.Type.Sidewalk)
+            if (road.Sidewalks.Walk(triangle))
             {
                 AddTop(triangle.Occurrence, triangle.A.Position);
                 AddTop(triangle.Occurrence, triangle.B.Position);
@@ -42,12 +39,8 @@ internal sealed class Draw01UndersideLayout
             if (span.y < span.x)
                 continue;
             Extend(ref total, span);
-            var section = road.Occurrences[i].RootSection ?? throw new InvalidOperationException("Draw01 underside requires section provenance.");
-            if (section.name != "Sidewalk" && !section.name.StartsWith("Sidewalk ", StringComparison.Ordinal))
-                continue;
-            // Unknown source families retain their existing native layout.
-            if (topRanges[i].y >= topRanges[i].x)
-                span = topRanges[i];
+            if (topRanges[i].y < topRanges[i].x) continue;
+            span = topRanges[i];
             OccurrenceRoles[i] = span.x + span.y < Numeric_Types_Draw01_Draw01UndersideLayout_cs.Values.F32[0] ? Numeric_Types_Draw01_Draw01UndersideLayout_cs.Values.I32[2] : Numeric_Types_Draw01_Draw01UndersideLayout_cs.Values.I32[3];
             if (span.x + span.y < Numeric_Types_Draw01_Draw01UndersideLayout_cs.Values.F32[1])
                 Extend(ref left, span);

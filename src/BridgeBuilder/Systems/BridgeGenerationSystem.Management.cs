@@ -89,27 +89,6 @@ public partial class BridgeGenerationSystem
             return;
         }
 
-        var loaded = LoadedExportNames();
-        var prefabName = string.Empty;
-        for (var attempt = 0; attempt < 16; attempt++)
-        {
-            var candidate = BridgeAssetInfo.NewPrefabName();
-            if (loaded.Contains(candidate) || state.Contains(candidate)
-                || BridgeAssetCatalog.Find(candidate) != null)
-                continue;
-            prefabName = candidate;
-            break;
-        }
-
-        if (prefabName.Length == 0)
-        {
-            report.Failed("(runtime bridge)", new InvalidOperationException(
-                "A unique bridge UUID could not be allocated."));
-            Finish(report, state, "Create runtime bridge", showMessage: false);
-            BridgeRuntimeRequests.Complete("UuidFailed");
-            return;
-        }
-
         string DefaultLabel()
         {
             if (!BridgeStyleDefinitions.IsMovable(style.Id)) return BridgeNaming.BaseName(upper, lower, style);
@@ -126,7 +105,30 @@ public partial class BridgeGenerationSystem
             LowerDeckOpposite = request.LowerDeckOpposite,
         };
 
-        // Reserve the UUID in memory; persist incomplete-creation state on the root prefab itself.
+        string? prefabName;
+        try
+        {
+            var loaded = LoadedExportNames();
+            prefabName = BridgeUuidReservation.Reserve(UnityEngine.Application.persistentDataPath, owner =>
+                loaded.Contains(owner) || state.Contains(owner) || BridgeAssetCatalog.CreatingOrRetiring(owner)
+                || Colossal.IO.AssetDatabase.AssetDatabase.user.TryGetAsset(
+                    "ImportedData/" + owner + "/Prefabs/Bridge.Prefab", out _), BridgeAssetInfo.NewPrefabName);
+        }
+        catch (Exception e)
+        {
+            report.Failed("(runtime bridge)", e);
+            prefabName = null;
+        }
+        if (prefabName == null)
+        {
+            if (report.FailedRoads == 0)
+                report.Failed("(runtime bridge)", new IOException("A unique bridge UUID could not be allocated after 16 attempts."));
+            Finish(report, state, "Create runtime bridge", showMessage: false);
+            BridgeRuntimeRequests.Complete("UuidFailed");
+            return;
+        }
+
+        // Keep pending metadata until publication or failure. The claimed directory fences concurrent writers.
         if (!BridgeAssetCatalog.Begin(new BridgeAssetInfo(prefabName, displayName,
             upper.Id, lower?.Id, style.Id, DateTime.UtcNow.ToString("O", CultureInfo.InvariantCulture), pending: true)))
         {
@@ -136,24 +138,34 @@ public partial class BridgeGenerationSystem
             return;
         }
 
-        if (!TryBuildBridge(
-            upper, lower, style, prefabName, options, overwrite: false, report,
-            onPublished: ready =>
-            {
-                var committed = false;
-                try
+        bool queued;
+        try
+        {
+            queued = TryBuildBridge(
+                upper, lower, style, prefabName, options, overwrite: false, report,
+                onPublished: ready =>
                 {
-                    if (ready)
-                        committed = CompleteRuntimeBridge(upper, lower, style, prefabName, displayName, state, report,
-                            request.BuildAfterCreate);
-                }
-                catch (Exception exception) { report.Failed(prefabName, exception); }
-                if (!committed) DeferFailedCreation(prefabName, report);
-                Finish(report, state, "Create runtime bridge", showMessage: false);
-                // Refresh only after publication and export-state persistence, so the
-                // new bridge cannot re-enter the selectable source-road catalogue.
-                if (committed) Refresh();
-            }))
+                    var committed = false;
+                    try
+                    {
+                        if (ready)
+                            committed = CompleteRuntimeBridge(upper, lower, style, prefabName, displayName, state, report,
+                                request.BuildAfterCreate);
+                    }
+                    catch (Exception exception) { report.Failed(prefabName, exception); }
+                    if (!committed) DeferFailedCreation(prefabName, report);
+                    Finish(report, state, "Create runtime bridge", showMessage: false);
+                    // Refresh only after publication and export-state persistence, so the
+                    // new bridge cannot re-enter the selectable source-road catalogue.
+                    if (committed) Refresh();
+                });
+        }
+        catch (Exception e)
+        {
+            report.Failed(prefabName, e);
+            queued = false;
+        }
+        if (!queued)
         {
             DeferFailedCreation(prefabName, report);
             Finish(report, state, "Create runtime bridge", showMessage: false);
@@ -205,7 +217,7 @@ public partial class BridgeGenerationSystem
     {
         if (report.FailedRoads == 0)
             report.Failed(prefabName, new InvalidOperationException("Bridge creation stopped before publication completed."));
-        BridgeAssetCatalog.EndCreation(prefabName);
+        if (!BridgeAssetCatalog.EndCreation(prefabName)) return;
         // Keep live native indices and geometry allocated; retire audited disk files at boot.
         foreach (var prefab in PrefabCatalog.GetAll(_prefabSystem).OfType<NetGeometryPrefab>())
             if (BridgeSessionState.TryOwner(prefab.name, out var owner) && owner == prefabName)
@@ -344,6 +356,13 @@ public partial class BridgeGenerationSystem
             foreach (var root in roots)
                 if (_prefabSystem.TryGetEntity(root, out var id)) ids.Add(id);
             var plan = BridgeInstanceRemoval.Collect(EntityManager, ids);
+            // The batch map phase has already finished. A new placement must not start
+            // another map mutation interleaved with the batch directory removals.
+            if (BridgeBulkRemoval.MapWasClearedFor(prefabName) && (plan.DeletedEntities.Count != 0 || plan.UpdatedEntities.Count != 0))
+            {
+                FailDeletion(prefabName, "DeleteUnsafe", "A bridge was placed after batch map cleanup.");
+                return;
+            }
             if (!plan.CanApply(EntityManager, out var blocked))
             {
                 FailDeletion(prefabName, "DeleteUnsafe", blocked);
@@ -414,13 +433,13 @@ public partial class BridgeGenerationSystem
 
     private HashSet<string> LoadedExportNames()
     {
-        return new HashSet<string>(
-            PrefabCatalog.GetAll(_prefabSystem)
-                .OfType<NetGeometryPrefab>()
-                .Where(prefab => prefab.asset != null
-                    && !prefab.isReadOnly)
-                .Select(prefab => prefab.name),
-            StringComparer.Ordinal);
+        var owners = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        foreach (var prefab in PrefabCatalog.GetAll(_prefabSystem))
+        {
+            if (BridgeAssetInfo.TryFileOwner(prefab.name, out var owner)) owners.Add(owner);
+            if (BridgeAssetInfo.TryFileOwner(prefab.asset?.path, out owner)) owners.Add(owner);
+        }
+        return owners;
     }
 
     private void RemoveOne()

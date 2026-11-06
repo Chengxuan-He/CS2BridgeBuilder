@@ -18,5 +18,5 @@ with the mod. The source template and this tool are offline authoring inputs. No
 generated bridge is required, and no original game file is changed.
 
 Run `PreparedMaterialCheck`, `PreparedCableCheck` and `Test-PreparedNative.ps1` after preparation.
-See [prepared materials](../../docs/Prepared-Materials.md) for lifetime, packaging, coverage and
+See [prepared materials](../../docs/design/materials/Prepared-Materials.md) for lifetime, packaging, coverage and
 remaining migration work. Successful binary checks do not establish in-game visual acceptance.
