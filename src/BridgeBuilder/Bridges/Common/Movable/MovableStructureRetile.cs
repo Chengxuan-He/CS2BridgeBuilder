@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Colossal.AssetPipeline.Importers;
@@ -85,6 +85,7 @@ internal static class MovableStructureRetile
             var d=recipe.Items[di];
             if(prepared.TryGetValue(di,out var finished))
             {
+                BridgeBuilder.Runtime.BridgePreparedMaterials.StructuralBinding(finished.Surface);
                 foreach(int face in d.Faces)
                 {
                     var vertices=Face(face);
@@ -219,19 +220,16 @@ internal static class MovableStructureRetile
                 }
             }
         }
-        var slots=tiles.Build(surface,units.Values);
+        // A transformed triangle may use measured density coordinates only when the
+        // original atlas can represent its complete footprint. The remaining domains
+        // keep their authored UVs and the native Surface on the existing physical faces.
+        var nativeDomains = new HashSet<int>(units.Values.Where(unit => unit.CanUseSource).Select(unit => unit.Id));
         Vector2 OutputUv(int domain,int vertex)
         {
             if(prepared.TryGetValue(domain,out var finished))return finished.Uvs[vertex];
-            var result=slots[domain].Map(UnitUv(domain,vertex));
-            // Original-atlas output keeps finite components exactly, avoiding an
-            // unnecessary UV inverse/forward round trip. Prepared regions already
-            // transform the combined source mapping through their finite guard.
-            if(slots[domain].Original!=null)
-            {
-                if((retainedAxes[domain]&1)!=0)result.x=Uv2(vertex).x;
-                if((retainedAxes[domain]&2)!=0)result.y=Uv2(vertex).y;
-            }
+            var result = units[domain].SourceUv(UnitUv(domain,vertex));
+            if ((retainedAxes[domain] & 1) != 0) result.x = Uv2(vertex).x;
+            if ((retainedAxes[domain] & 2) != 0) result.y = Uv2(vertex).y;
             return result;
         }
         var groups=new Dictionary<SurfaceAsset,List<(int Vertex,int Domain)>>();
@@ -243,7 +241,8 @@ internal static class MovableStructureRetile
             {
                 int domain=fragmentDomains.TryGetValue(face,out var parts)?parts[at/3]:faceDomains[face];
                 SurfaceAsset material=tiles.NativeSurface(surface);
-                if(domain>=0)material=prepared.TryGetValue(domain,out var finished)?finished.Surface:slots[domain].Surface;
+                if (domain >= 0 && prepared.TryGetValue(domain, out var finished)) material = finished.Surface;
+                else if (domain >= 0 && !nativeDomains.Contains(domain)) domain = -1;
                 if(!groups.TryGetValue(material,out var entries))groups.Add(material,entries=new());
                 for(int corner=0;corner<3;corner++){entries.Add((vertices[at+corner],domain));emitted++;}
             }

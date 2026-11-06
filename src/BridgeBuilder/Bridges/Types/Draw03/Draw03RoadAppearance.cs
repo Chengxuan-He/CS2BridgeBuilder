@@ -102,5 +102,5 @@ internal static class Draw03RoadAppearance
 internal static class Numeric_Types_Draw03_Draw03RoadAppearance_cs
 {
     static Numeric_Types_Draw03_Draw03RoadAppearance_cs() {}
-    internal static readonly HardcodedNumbers Values = HardcodedNumbers.Load("Types_Draw03_Draw03RoadAppearance_cs");
+    internal static HardcodedNumbers Values => GenerationParameters.Get<HardcodedNumbers>("BridgeBuilder.Bridges.Numeric_Types_Draw03_Draw03RoadAppearance_cs.Values", () => HardcodedNumbers.Load("Types_Draw03_Draw03RoadAppearance_cs"));
 }

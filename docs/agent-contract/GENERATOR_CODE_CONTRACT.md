@@ -28,6 +28,32 @@ It applies to every fixed and movable bridge generator, including future styles.
   its measured data and algorithms. Shared bases must not depend on a concrete style or contain
   style-ID switches, that style's dimensions, or assumptions borrowed from one prototype.
 
+## Shared structure coordinate execution
+
+All styles use the general contract's [common data-driven SIMD pipeline](BRIDGE_GENERATION_CONTRACT.md#cpu-affine-geometry-execution).
+Style-specific measured binary parameters, memberships and topology recipes remain data.
+The shared executor owns operation dispatch, packed arithmetic, explicit rounding stages,
+ordered writes and output publication. Offline producers encode interleaved XYZ stages
+and activity masks; the executor must not recognize arithmetic expressions or gather
+coordinates into axis columns. Native mesh construction consumes the owned packed
+coordinate target directly. Do not replace scalar style loops with a growing
+set of per-style SIMD wrappers or retain alternate style-owned coordinate executors.
+Offline producers lower their measurements to the shared program representation; native
+geometry/material realization retains its existing ownership and thread boundaries.
+
+## Numerical parameter lifetime
+
+Load numerical resources only on demand within the current generation request. Reuse decoded
+BBN arrays, SIMD programs and reconstructed parameter/membership records across that request's
+stages and joined LOD workers. Release all cache-owned strong references on success, failure or
+cancellation. Do not preload unused bridge types or retain permanent static numerical holders.
+Independent requests must not clear each other's active data. Deferred material preparation acquires
+this scope only when construction begins. Bounded metadata queries may use temporary scopes, not a
+permanent fallback cache. Final native output and delayed preview/publication callbacks must own
+their required data rather than retaining a session or borrowed parameter arrays. Copy required
+parameter slices into output-owned storage before handoff. Do not force GC or promise an immediate
+RSS decrease; later requests reload and validate only their demanded resources.
+
 ## Routing and compatibility
 
 `BridgeGeneratorRouter` remains the explicit stable-ID entry point and returns

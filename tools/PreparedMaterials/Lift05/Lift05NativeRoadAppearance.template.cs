@@ -40,9 +40,7 @@ internal static class Lift05NativeRoadAppearance
     }
     private static SurfaceAsset Resolve(int unit) => BridgePreparedMaterials.RepeatUnit("Lift05",unit switch
     {
-        0=>"84f30c1a451d65ae38673f25b4e8870b876e20e5977c0254a413fee964b68785",
         1=>"18d35ed1e221c7a1a1cad597b22896ce5146eb6050095b2b86fd3da7605cbd82",
-        2=>"bc6c38c2c3b14e5bb5743dec2c2ccd05d02dfd30501dc5f08118b70412ccf2d7",
         3=>"40d7c50979f1502da28972cacf93d06805317986a0d1b1cc6b1faba7ada71284",
         4=>"3061b3f27e2581a706363c6b7c7b86b5fe6fb0aba3e69c87a1b1f6318967ebec",
         5=>"7a355e468b816e195c561191ac1c5931847c874f2d0cbec74482c662ca3fe6f9",

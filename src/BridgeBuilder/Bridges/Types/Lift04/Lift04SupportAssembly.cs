@@ -52,5 +52,5 @@ internal static class Lift04SupportAssembly
 internal static class Numeric_Types_Lift04_Lift04SupportAssembly_cs
 {
     static Numeric_Types_Lift04_Lift04SupportAssembly_cs() {}
-    internal static readonly HardcodedNumbers Values = HardcodedNumbers.Load("Types_Lift04_Lift04SupportAssembly_cs");
+    internal static HardcodedNumbers Values => GenerationParameters.Get<HardcodedNumbers>("BridgeBuilder.Bridges.Numeric_Types_Lift04_Lift04SupportAssembly_cs.Values", () => HardcodedNumbers.Load("Types_Lift04_Lift04SupportAssembly_cs"));
 }

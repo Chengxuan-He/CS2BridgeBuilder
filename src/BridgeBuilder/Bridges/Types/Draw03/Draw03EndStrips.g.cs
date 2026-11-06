@@ -18,17 +18,14 @@ internal static class Draw03EndStrips
         {
             var span = part.Max - part.Min;
             foreach (var range in part.Ranges)
-                AffineGeometry.For(range.First, checked((range.Last) + 1), i =>
-                {
-                    positions[i].x = AffineGeometry.AddScaled(source[i].x, (Numeric_Types_Draw03_Draw03EndStrips_g_cs.Values.F32[0] * source[i].x - part.Min - part.Max) / span, delta);
-                });
+                AffineGeometry.Execute(RangePrograms.Data, 0, new[] { source, positions }, Array.Empty<float[]>(), new float[] { Numeric_Types_Draw03_Draw03EndStrips_g_cs.Values.F32[0], part.Min, part.Max, span, delta }, range.First, checked((checked((range.Last) + 1)) - (range.First)));
         }
     }
 
     // Geometry SHA-256: f7ecc824ad55745e791e40b18fd12f5def20657ed8ea56d373429d5a1337588f
-    private static readonly (float Min, float Max, (int First, int Last)[] Ranges)[] Near = ReadPackedNear();
+    private static (float Min, float Max, (int First, int Last)[] Ranges)[] Near => GenerationParameters.Get<(float Min, float Max, (int First, int Last)[] Ranges)[]>("BridgeBuilder.Bridges.Draw03EndStrips.Near", () => ReadPackedNear());
     // Geometry SHA-256: 15b8419da13d6e99e1dc0591f12f4019f0be09c3b220a481d24720daf7b57e12
-    private static readonly (float Min, float Max, (int First, int Last)[] Ranges)[] Middle = ReadPackedMiddle();
+    private static (float Min, float Max, (int First, int Last)[] Ranges)[] Middle => GenerationParameters.Get<(float Min, float Max, (int First, int Last)[] Ranges)[]>("BridgeBuilder.Bridges.Draw03EndStrips.Middle", () => ReadPackedMiddle());
     private static (float Min, float Max, (int First, int Last)[] Ranges)[] ReadPackedNear()
     {
         var d = Numeric_Types_Draw03_Draw03EndStrips_g_cs.Values;
@@ -46,11 +43,23 @@ internal static class Draw03EndStrips
             values[0 + i] = (-d.F32[17 + i * 2], d.F32[18 + i * 2], new (int, int)[] { (d.I32[34 + i * 4], d.I32[35 + i * 4]), (d.I32[36 + i * 4], d.I32[37 + i * 4]) });
         return values;
     }
+
+    private static class RangePrograms
+    {
+        static RangePrograms()
+        {
+        }
+
+        internal static HardcodedNumbers Data => GenerationParameters.Get<HardcodedNumbers>("BridgeBuilder.Bridges.Draw03EndStrips.RangePrograms.Data", () => HardcodedNumbers.Load("Types_Draw03_Draw03EndStrips_RangePrograms"));
+    }
 }
 
 // Embedded numerical arrays: Types_Draw03_Draw03EndStrips_g_cs
 internal static class Numeric_Types_Draw03_Draw03EndStrips_g_cs
 {
-    static Numeric_Types_Draw03_Draw03EndStrips_g_cs() {}
-    internal static readonly HardcodedNumbers Values = HardcodedNumbers.Load("Types_Draw03_Draw03EndStrips_g_cs");
+    static Numeric_Types_Draw03_Draw03EndStrips_g_cs()
+    {
+    }
+
+    internal static HardcodedNumbers Values => GenerationParameters.Get<HardcodedNumbers>("BridgeBuilder.Bridges.Numeric_Types_Draw03_Draw03EndStrips_g_cs.Values", () => HardcodedNumbers.Load("Types_Draw03_Draw03EndStrips_g_cs"));
 }

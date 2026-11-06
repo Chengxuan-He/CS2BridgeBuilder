@@ -69,14 +69,16 @@ internal static class BridgeStyleCatalog
     /// <summary>The named styles, with no variants attached yet.</summary>
     private static List<BridgeStyle> CreateNamedStyles()
     {
+        using var parameters = GenerationParameters.Attach(GenerationParameters.Capture()) ?? GenerationParameters.Begin();
         return BridgeStyleDefinitions.All
             .Where(definition => BridgeStyleDefinitions.CanList(definition.Id))
-            .Select(definition => new BridgeStyle(
-                definition.Id,
-                definition.NameSuffix,
-                () => UiStringCatalog.Current.StyleName(definition.Id),
-                definition.Clearance,
-                definition.ArchetypeStructureAllowance))
+            .Select(definition =>
+            {
+                string id = definition.Id;
+                return new BridgeStyle(id, definition.NameSuffix,
+                    () => UiStringCatalog.Current.StyleName(id),
+                    definition.Clearance, definition.ArchetypeStructureAllowance);
+            })
             .ToList();
     }
 
@@ -91,6 +93,7 @@ internal static class BridgeStyleCatalog
     /// </param>
     internal static void Rebuild(PrefabSystem prefabSystem, ICollection<string> generated)
     {
+        using var parameters = GenerationParameters.Begin();
         var named = CreateNamedStyles();
         var byId = named.ToDictionary(style => style.Id, StringComparer.Ordinal);
         // These routes already reconstruct their render, mechanism, network and unlock

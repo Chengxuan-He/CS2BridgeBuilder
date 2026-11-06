@@ -35,19 +35,20 @@ internal static class Draw02RailFootClosure
             return found;
         }
 
-        float Target(Vector3 source, int side, float unchangedX)
+        var requests = new List<(int Program, float A, float B, float C)>();
+        var positionWrites = new List<(int Vertex, int Row)>();
+        var constructedWrites = new List<(int Index, int Row)>();
+        var frameRows = new List<(int Vertex, int Row, float Lower)>();
+        int Target(Vector3 source, int side, float unchangedX)
         {
             if (!Contact(source.z, side, out float boundary))
-                return unchangedX;
+            {
+                requests.Add((StructurePrograms.CopyScalar, unchangedX, default, default));
+                return requests.Count - 1;
+            }
             int part = Draw02LaneRails.Part(lod, false, side > Numeric_Types_Draw02_Draw02RailFootClosure_cs.Values.I32[10], source.z > Numeric_Types_Draw02_Draw02RailFootClosure_cs.Values.I32[11]);
-            return AffineGeometry.Translate(source.x, boundary - Draw02LaneRails.Anchor(part));
-        }
-
-        Matrix4x4 Frame(float target, float lower)
-        {
-            var j = Matrix4x4.identity;
-            j.m01 = (target - lower) / (split.F32[Numeric_Types_Draw02_Draw02RailFootClosure_cs.Values.I32[12]] - Numeric_Types_Draw02_Draw02RailFootClosure_cs.Values.F32[0]);
-            return j;
+            requests.Add((StructurePrograms.TargetScalar, source.x, boundary, Draw02LaneRails.Anchor(part)));
+            return requests.Count - 1;
         }
 
         for (int side = -Numeric_Types_Draw02_Draw02RailFootClosure_cs.Values.I32[13]; side <= Numeric_Types_Draw02_Draw02RailFootClosure_cs.Values.I32[14]; side += Numeric_Types_Draw02_Draw02RailFootClosure_cs.Values.I32[15])
@@ -63,7 +64,7 @@ internal static class Draw02RailFootClosure
                     var source = plan.SourcePositions[vertex];
                     if (!Contact(source.z, side, out _))
                         continue;
-                    positions[vertex].x = Target(source, side, positions[vertex].x);
+                    positionWrites.Add((vertex, Target(source, side, positions[vertex].x)));
                     active.Add(vertex);
                 }
 
@@ -71,20 +72,32 @@ internal static class Draw02RailFootClosure
                 continue;
             int sh = record * Numeric_Types_Draw02_Draw02RailFootClosure_cs.Values.I32[28];
             var local = new int[split.I32[sh + Numeric_Types_Draw02_Draw02RailFootClosure_cs.Values.I32[29]]];
+            var sourcePoints = new Vector3[local.Length]; var originalPoints = new Vector3[local.Length];
+            var edgeA = new int[local.Length]; var edgeB = new int[local.Length]; var edgeOutput = new int[local.Length];
+            var fractions = new float[local.Length];
+            for (int i = 0; i < local.Length; i++)
+            {
+                int row = split.I32[sh] + i * Numeric_Types_Draw02_Draw02RailFootClosure_cs.Values.I32[31];
+                edgeA[i] = split.I32[row]; edgeB[i] = split.I32[row + Numeric_Types_Draw02_Draw02RailFootClosure_cs.Values.I32[32]];
+                fractions[i] = split.F32[split.I32[row + Numeric_Types_Draw02_Draw02RailFootClosure_cs.Values.I32[33]]]; edgeOutput[i] = i;
+            }
+            AffineGeometry.Execute(StructurePrograms.Data, StructurePrograms.EdgeXyz, new[] { plan.SourcePositions, sourcePoints },
+                new[] { fractions }, Array.Empty<float>(), count: local.Length, indices: new[] { edgeA, edgeB, edgeOutput });
+            AffineGeometry.Execute(StructurePrograms.Data, StructurePrograms.EdgeXyz, new[] { plan.Positions, originalPoints },
+                new[] { fractions }, Array.Empty<float>(), count: local.Length, indices: new[] { edgeA, edgeB, edgeOutput });
             for (int i = Numeric_Types_Draw02_Draw02RailFootClosure_cs.Values.I32[30]; i < local.Length; i++)
             {
                 int row = split.I32[sh] + i * Numeric_Types_Draw02_Draw02RailFootClosure_cs.Values.I32[31];
                 int a = split.I32[row], b = split.I32[row + Numeric_Types_Draw02_Draw02RailFootClosure_cs.Values.I32[32]];
                 float t = split.F32[split.I32[row + Numeric_Types_Draw02_Draw02RailFootClosure_cs.Values.I32[33]]];
-                var source = Vector3.LerpUnclamped(plan.SourcePositions[a], plan.SourcePositions[b], t);
-                float target = Target(source, side, Mathf.LerpUnclamped(plan.Positions[a].x, plan.Positions[b].x, t));
+                var source = sourcePoints[i];
+                int target = Target(source, side, originalPoints[i].x);
                 local[i] = plan.SourcePositions.Length + edges.Count;
                 edges.Add(new MovableStructureModel.EdgeVertex(a, b, t));
-                constructedX.Add(target);
+                constructedWrites.Add((constructedX.Count, target)); constructedX.Add(default);
                 if (split.I32[row + Numeric_Types_Draw02_Draw02RailFootClosure_cs.Values.I32[34]] == Numeric_Types_Draw02_Draw02RailFootClosure_cs.Values.I32[35])
                 {
-                    float lower = Mathf.LerpUnclamped(plan.Positions[a].x, plan.Positions[b].x, t);
-                    frames.Add(new KeyValuePair<int, Matrix4x4>(local[i], Frame(target, lower)));
+                    frameRows.Add((local[i], target, originalPoints[i].x));
                 }
             }
 
@@ -99,7 +112,7 @@ internal static class Draw02RailFootClosure
                     int id = split.I32[offset++];
                     indices[k] = id < Numeric_Types_Draw02_Draw02RailFootClosure_cs.Values.I32[40] ? local[-id - Numeric_Types_Draw02_Draw02RailFootClosure_cs.Values.I32[41]] : id;
                     if (id >= Numeric_Types_Draw02_Draw02RailFootClosure_cs.Values.I32[42] && plan.SourcePositions[id].y < split.F32[Numeric_Types_Draw02_Draw02RailFootClosure_cs.Values.I32[43]] && framed.Add(id))
-                        frames.Add(new KeyValuePair<int, Matrix4x4>(id, Frame(Target(plan.SourcePositions[id], side, plan.Positions[id].x), plan.Positions[id].x)));
+                        frameRows.Add((id, Target(plan.SourcePositions[id], side, plan.Positions[id].x), plan.Positions[id].x));
                 }
 
                 removed[face] = true;
@@ -115,6 +128,20 @@ internal static class Draw02RailFootClosure
                 replaced.Add(face);
             }
         }
+        var rows = requests.ToArray();
+        var targets = StructureRows.Evaluate(Array.ConvertAll(rows, r => r.Program), Array.ConvertAll(rows, r => r.A),
+            Array.ConvertAll(rows, r => r.B), Array.ConvertAll(rows, r => r.C));
+        foreach (var write in positionWrites) positions[write.Vertex].x = targets[write.Row];
+        foreach (var write in constructedWrites) constructedX[write.Index] = targets[write.Row];
+        var frameData = frameRows.ToArray();
+        float span = split.F32[Numeric_Types_Draw02_Draw02RailFootClosure_cs.Values.I32[12]] - Numeric_Types_Draw02_Draw02RailFootClosure_cs.Values.F32[0];
+        var shears = StructureRows.Evaluate(Array.ConvertAll(frameData, _ => StructurePrograms.ShearScalar),
+            Array.ConvertAll(frameData, r => targets[r.Row]), Array.ConvertAll(frameData, r => r.Lower), Array.ConvertAll(frameData, _ => span));
+        for (int i = 0; i < frameData.Length; i++)
+        {
+            var frame = Matrix4x4.identity; frame.m01 = shears[i];
+            frames.Add(new KeyValuePair<int, Matrix4x4>(frameData[i].Vertex, frame));
+        }
     }
 }
 
@@ -124,7 +151,7 @@ internal static class RailFootClosureMeasurements
     {
     }
 
-    internal static readonly HardcodedNumbers Values = HardcodedNumbers.Load("Types_Draw02_RailFootClosureMeasurements");
+    internal static HardcodedNumbers Values => GenerationParameters.Get<HardcodedNumbers>("BridgeBuilder.Bridges.RailFootClosureMeasurements.Values", () => HardcodedNumbers.Load("Types_Draw02_RailFootClosureMeasurements"));
 }
 
 internal static class RailFootContactSplitMeasurements
@@ -133,7 +160,7 @@ internal static class RailFootContactSplitMeasurements
     {
     }
 
-    internal static readonly HardcodedNumbers Values = HardcodedNumbers.Load("Types_Draw02_RailFootContactSplitMeasurements");
+    internal static HardcodedNumbers Values => GenerationParameters.Get<HardcodedNumbers>("BridgeBuilder.Bridges.RailFootContactSplitMeasurements.Values", () => HardcodedNumbers.Load("Types_Draw02_RailFootContactSplitMeasurements"));
 }
 
 // Embedded numerical arrays: Types_Draw02_Draw02RailFootClosure_cs
@@ -143,5 +170,5 @@ internal static class Numeric_Types_Draw02_Draw02RailFootClosure_cs
     {
     }
 
-    internal static readonly HardcodedNumbers Values = HardcodedNumbers.Load("Types_Draw02_Draw02RailFootClosure_cs");
+    internal static HardcodedNumbers Values => GenerationParameters.Get<HardcodedNumbers>("BridgeBuilder.Bridges.Numeric_Types_Draw02_Draw02RailFootClosure_cs.Values", () => HardcodedNumbers.Load("Types_Draw02_Draw02RailFootClosure_cs"));
 }

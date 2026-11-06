@@ -67,6 +67,22 @@ internal static class SelfCheckForwardCheck
                 "relocated cache edge survives restart without old-path reads: "+error);
         }
         finally {AssetDatabase.global.ForbidEnumeration=false;}
+        var testOwner="b"+Guid.NewGuid(); var id=new string('c',32);
+        var path2=Path.Combine(BridgeDependencyCopies.Folder(UnityEngine.Application.persistentDataPath,testOwner),id+".Texture");
+        Directory.CreateDirectory(Path.GetDirectoryName(path2)!);
+        var foreignHandle=new AssetData(id,()=>throw new Exception("Foreign owner bytes opened"));
+        foreignHandle.Metadata.path=Path.Combine(BridgeDependencyCopies.Folder(UnityEngine.Application.persistentDataPath,"b"+Guid.NewGuid()),id+".Texture");foreignHandle.Metadata.packaged=false;
+        AssetDatabase.global.Assets.Clear();AssetDatabase.global.Assets.Add(foreignHandle);
+        var inspect=new BridgeCreationDependencies(_=>Array.Empty<AssetData>());inspect.ReadRelations(testOwner);
+        var timing=new DependencySaveTimings();
+        Check(inspect.Resolve(id,testOwner,timing)==null&&inspect.Unconfirmed,"Foreign-only unresolved identity remains unfinished");
+        File.WriteAllBytes(path2,new byte[]{101});File.WriteAllText(path2+".cid",id);
+        Check(inspect.Resolve(id,testOwner,timing)!.Bytes.SequenceEqual(new byte[]{101})&&!inspect.Unconfirmed,"Owner file wins over foreign duplicate");
+        File.WriteAllText(path2+".cid",new string('f',32));
+        try { inspect.Resolve(id,testOwner,timing);throw new Exception("Wrong sidecar accepted"); }
+        catch(InvalidDataException){Check(!inspect.Unconfirmed,"Mismatched sidecar is a definite integrity failure");}
+        File.Delete(path2);File.Delete(path2+".cid");AssetDatabase.global.Assets.Clear();
+        Check(inspect.Resolve(id,testOwner,timing)==null&&!inspect.Unconfirmed,"Missing identity without stale handle retains definite missing result");
     }
     private static void Check(bool ok,string text){if(!ok)throw new Exception(text);Console.WriteLine("PASS "+text);}
 }

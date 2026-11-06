@@ -12,14 +12,11 @@ internal static class Lift01FarFooting
         if (source.Length != Numeric_Types_Lift01_Lift01FarFooting_g_cs.Values.I32[0] || indices.Length != Numeric_Types_Lift01_Lift01FarFooting_g_cs.Values.I32[1] || !float.IsFinite(delta))
             throw new InvalidOperationException("Lift01 far footing requires its measured source.");
         var positions = (Vector3[])source.Clone();
-        AffineGeometry.For(Numeric_Types_Lift01_Lift01FarFooting_g_cs.Values.I32[2], positions.Length, i =>
-        {
-            positions[i].x = AffineGeometry.Translate(positions[i].x, Weights[i] * delta);
-        });
+        AffineGeometry.Execute(RangePrograms.Data, 0, new[] { positions }, new[] { Weights }, new float[] { delta }, Numeric_Types_Lift01_Lift01FarFooting_g_cs.Values.I32[2], checked((positions.Length) - (Numeric_Types_Lift01_Lift01FarFooting_g_cs.Values.I32[2])));
         return new MovableStructureModel.Plan(source, positions, new[] { indices }, new[] { new bool[Numeric_Types_Lift01_Lift01FarFooting_g_cs.Values.I32[3]] });
     }
 
-    private static readonly float[] Weights = ReadPackedWeights();
+    private static float[] Weights => GenerationParameters.Get<float[]>("BridgeBuilder.Bridges.Lift01FarFooting.Weights", () => ReadPackedWeights());
     private static float[] ReadPackedWeights()
     {
         var d = Numeric_Types_Lift01_Lift01FarFooting_g_cs.Values;
@@ -224,11 +221,23 @@ internal static class Lift01FarFooting
             values[711 + i] = -d.F32[711 + i * 1];
         return values;
     }
+
+    private static class RangePrograms
+    {
+        static RangePrograms()
+        {
+        }
+
+        internal static HardcodedNumbers Data => GenerationParameters.Get<HardcodedNumbers>("BridgeBuilder.Bridges.Lift01FarFooting.RangePrograms.Data", () => HardcodedNumbers.Load("Types_Lift01_Lift01FarFooting_RangePrograms"));
+    }
 }
 
 // Embedded numerical arrays: Types_Lift01_Lift01FarFooting_g_cs
 internal static class Numeric_Types_Lift01_Lift01FarFooting_g_cs
 {
-    static Numeric_Types_Lift01_Lift01FarFooting_g_cs() {}
-    internal static readonly HardcodedNumbers Values = HardcodedNumbers.Load("Types_Lift01_Lift01FarFooting_g_cs");
+    static Numeric_Types_Lift01_Lift01FarFooting_g_cs()
+    {
+    }
+
+    internal static HardcodedNumbers Values => GenerationParameters.Get<HardcodedNumbers>("BridgeBuilder.Bridges.Numeric_Types_Lift01_Lift01FarFooting_g_cs.Values", () => HardcodedNumbers.Load("Types_Lift01_Lift01FarFooting_g_cs"));
 }

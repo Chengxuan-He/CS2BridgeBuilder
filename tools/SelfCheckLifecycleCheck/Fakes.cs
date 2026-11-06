@@ -177,6 +177,8 @@ namespace BridgeBuilder.Runtime {
 
 namespace BridgeBuilder.Runtime {
  internal sealed class BridgeCreationDependencies {
+  internal static bool Shadowed;
+  internal bool Unconfirmed => Shadowed;
   internal readonly HashSet<string> Files=new(); internal void SaveRelations(string owner) {} internal void Relocate(string a,string b) {}
  }
  internal sealed class BridgeInspectionScope {

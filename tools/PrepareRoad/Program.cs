@@ -41,19 +41,7 @@ string Add(string name, byte[] data)
     var cid = Digest(Encoding.UTF8.GetBytes(recipe + "/" + sourceCid + "/" + Digest(source) + "/" + Digest(data)))[..32];
     files.Add(name, (cid, data)); return cid;
 }
-var expectedControl = Bytes(w => {
-    w.Write((ushort)5); w.Write((ushort)1); w.Write((ushort)1); w.Write((ushort)1);
-    w.Write((byte)1); w.Write((byte)8); w.Write((byte)2);
-    w.Write((byte)1); w.Write((byte)0); w.Write((byte)1); w.Write(-1); w.Write(new byte[4]);
-});
-// Reuse the already prepared constant control identity, not another material's
-// generated snapshot. Each Road variant still carries a complete local copy.
-var controlPath = Path.Combine(Path.GetFullPath(args[1]), "Draw01/Cable/ZeroControl.Texture");
-var controlBytes = File.ReadAllBytes(controlPath);
-var controlCid = File.ReadAllText(controlPath + ".cid").Trim();
-Require(controlBytes.SequenceEqual(expectedControl), "Prepared control sampling/encoding differs.");
-Require(System.Text.RegularExpressions.Regex.IsMatch(controlCid, "^[a-f0-9]{32}$"), "Invalid prepared control identity.");
-files.Add("ZeroControl.Texture", (controlCid, controlBytes));
+var controlCid = NativeNeutralControl.Verify(args[0]);
 bindings.Add("_ControlMask", Enumerable.Range(0, 16).Select(i => (byte)(Convert.ToInt32(controlCid[i * 2].ToString(), 16)
     | Convert.ToInt32(controlCid[i * 2 + 1].ToString(), 16) << 4)).ToArray());
 Add("NativeAsphalt.Surface", Bytes(w => {

@@ -43,5 +43,5 @@ internal static class Numeric_Types_Draw02_Draw02AppearanceSupport_cs
     {
     }
 
-    internal static readonly HardcodedNumbers Values = HardcodedNumbers.Load("Types_Draw02_Draw02AppearanceSupport_cs");
+    internal static HardcodedNumbers Values => GenerationParameters.Get<HardcodedNumbers>("BridgeBuilder.Bridges.Numeric_Types_Draw02_Draw02AppearanceSupport_cs.Values", () => HardcodedNumbers.Load("Types_Draw02_Draw02AppearanceSupport_cs"));
 }

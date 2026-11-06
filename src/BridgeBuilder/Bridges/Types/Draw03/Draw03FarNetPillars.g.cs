@@ -13,27 +13,20 @@ internal static class Draw03FarNetPillars
         if (!float.IsFinite(delta) || source.Length != data.Count || indices.Length != data.Indices)
             throw new InvalidOperationException("Draw03 far ordinary pillars require their measured layout.");
         var positions = (Vector3[])source.Clone();
-        AffineGeometry.For(Numeric_Types_Draw03_Draw03FarNetPillars_g_cs.Values.I32[7], positions.Length, i =>
-        {
-            positions[i].x = AffineGeometry.Translate(positions[i].x, data.Weights[i] * delta);
-        });
+        AffineGeometry.Execute(RangePrograms.Data, 0, new[] { positions }, new[] { data.Weights }, new float[] { delta }, Numeric_Types_Draw03_Draw03FarNetPillars_g_cs.Values.I32[7], checked((positions.Length) - (Numeric_Types_Draw03_Draw03FarNetPillars_g_cs.Values.I32[7])));
         var x = new float[data.Edges.Length];
-        AffineGeometry.For(Numeric_Types_Draw03_Draw03FarNetPillars_g_cs.Values.I32[8], x.Length, i =>
-        {
-            var edge = data.Edges[i];
-            x[i] = AffineGeometry.AddScaled(Mathf.LerpUnclamped(source[edge.A].x, source[edge.B].x, edge.Fraction), data.Weights[source.Length + i], delta);
-        });
+        AffineGeometry.Execute(InterpolationProgram0.Data, (part == Numeric_Types_Draw03_Draw03FarNetPillars_g_cs.Values.I32[2]) ? 1 : 0, new[] { source }, new[] { x }, new float[] { delta });
         return new MovableStructureModel.Plan(source, positions, new[] { indices }, new[] { new bool[indices.Length / Numeric_Types_Draw03_Draw03FarNetPillars_g_cs.Values.I32[9]] }, data.Edges, data.Fragments, constructedX: x);
     }
 
     // Geometry SHA-256: dff592ca3ca730bf043d31bb4d28c8bfc8eebeb4cf9120fc5726a3037d513fad
-    private static readonly float[] Weights0 = ReadPackedWeights0();
-    private static readonly MovableStructureModel.EdgeVertex[] Edges0 = ReadPackedEdges0();
-    private static readonly MovableStructureModel.Fragment[] Fragments0 = ReadPackedFragments0();
+    private static float[] Weights0 => GenerationParameters.Get<float[]>("BridgeBuilder.Bridges.Draw03FarNetPillars.Weights0", () => ReadPackedWeights0());
+    private static MovableStructureModel.EdgeVertex[] Edges0 => GenerationParameters.Get<MovableStructureModel.EdgeVertex[]>("BridgeBuilder.Bridges.Draw03FarNetPillars.Edges0", () => ReadPackedEdges0());
+    private static MovableStructureModel.Fragment[] Fragments0 => GenerationParameters.Get<MovableStructureModel.Fragment[]>("BridgeBuilder.Bridges.Draw03FarNetPillars.Fragments0", () => ReadPackedFragments0());
     // Geometry SHA-256: 99be76079f0feeb9296e4f3e7cd762d2f7fecf6317c91660afa3db32de246091
-    private static readonly float[] Weights1 = ReadPackedWeights1();
-    private static readonly MovableStructureModel.EdgeVertex[] Edges1 = ReadPackedEdges1();
-    private static readonly MovableStructureModel.Fragment[] Fragments1 = ReadPackedFragments1();
+    private static float[] Weights1 => GenerationParameters.Get<float[]>("BridgeBuilder.Bridges.Draw03FarNetPillars.Weights1", () => ReadPackedWeights1());
+    private static MovableStructureModel.EdgeVertex[] Edges1 => GenerationParameters.Get<MovableStructureModel.EdgeVertex[]>("BridgeBuilder.Bridges.Draw03FarNetPillars.Edges1", () => ReadPackedEdges1());
+    private static MovableStructureModel.Fragment[] Fragments1 => GenerationParameters.Get<MovableStructureModel.Fragment[]>("BridgeBuilder.Bridges.Draw03FarNetPillars.Fragments1", () => ReadPackedFragments1());
     private static float[] ReadPackedWeights0()
     {
         var d = Numeric_Types_Draw03_Draw03FarNetPillars_g_cs.Values;
@@ -427,11 +420,32 @@ internal static class Draw03FarNetPillars
             values[20 + i] = new(d.I32[739 + i * 11], d.I32[740 + i * 11], d.I32[741 + i * 11], d.I32[742 + i * 11], d.I32[743 + i * 11], d.I32[744 + i * 11], d.I32[745 + i * 11], d.I32[746 + i * 11], d.I32[747 + i * 11], d.I32[748 + i * 11], d.I32[749 + i * 11]);
         return values;
     }
+
+    private static class RangePrograms
+    {
+        static RangePrograms()
+        {
+        }
+
+        internal static HardcodedNumbers Data => GenerationParameters.Get<HardcodedNumbers>("BridgeBuilder.Bridges.Draw03FarNetPillars.RangePrograms.Data", () => HardcodedNumbers.Load("Types_Draw03_Draw03FarNetPillars_RangePrograms"));
+    }
+
+    private static class InterpolationProgram0
+    {
+        static InterpolationProgram0()
+        {
+        }
+
+        internal static HardcodedNumbers Data => GenerationParameters.Get<HardcodedNumbers>("BridgeBuilder.Bridges.Draw03FarNetPillars.InterpolationProgram0.Data", () => HardcodedNumbers.Load("Types_Draw03_Draw03FarNetPillars_InterpolationProgram0"));
+    }
 }
 
 // Embedded numerical arrays: Types_Draw03_Draw03FarNetPillars_g_cs
 internal static class Numeric_Types_Draw03_Draw03FarNetPillars_g_cs
 {
-    static Numeric_Types_Draw03_Draw03FarNetPillars_g_cs() {}
-    internal static readonly HardcodedNumbers Values = HardcodedNumbers.Load("Types_Draw03_Draw03FarNetPillars_g_cs");
+    static Numeric_Types_Draw03_Draw03FarNetPillars_g_cs()
+    {
+    }
+
+    internal static HardcodedNumbers Values => GenerationParameters.Get<HardcodedNumbers>("BridgeBuilder.Bridges.Numeric_Types_Draw03_Draw03FarNetPillars_g_cs.Values", () => HardcodedNumbers.Load("Types_Draw03_Draw03FarNetPillars_g_cs"));
 }

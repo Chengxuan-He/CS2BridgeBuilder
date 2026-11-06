@@ -18,19 +18,13 @@ internal static class Lift01ApproachParts
         if (source.Length != count || positions.Length != count || !float.IsFinite(delta))
             throw new InvalidOperationException("Lift01 fixed-span parts require the recorded layout.");
         foreach (var part in Rigid[lod])
-            AffineGeometry.For(part.First, checked((part.Last) + 1), i =>
-            {
-                positions[i].x = AffineGeometry.AddScaled(source[i].x, part.Direction, delta);
-            });
+            AffineGeometry.Execute(RangePrograms.Data, 0, new[] { source, positions }, Array.Empty<float[]>(), new float[] { part.Direction, delta }, part.First, checked((checked((part.Last) + 1)) - (part.First)));
         foreach (var part in Plates[lod])
-            AffineGeometry.For(part.First, checked((part.Last) + 1), i =>
-            {
-                positions[i].x = AffineGeometry.AddScaled(source[i].x, source[i].x / Numeric_Types_Lift01_Lift01ApproachParts_g_cs.Values.F32[0], delta);
-            });
+            AffineGeometry.Execute(RangePrograms.Data, 1, new[] { source, positions }, Array.Empty<float[]>(), new float[] { Numeric_Types_Lift01_Lift01ApproachParts_g_cs.Values.F32[0], delta }, part.First, checked((checked((part.Last) + 1)) - (part.First)));
     }
 
-    private static readonly (int First, int Last, int Direction)[][] Rigid = ReadPackedRigid();
-    private static readonly (int First, int Last, int Direction)[][] Plates = ReadPackedPlates();
+    private static (int First, int Last, int Direction)[][] Rigid => GenerationParameters.Get<(int First, int Last, int Direction)[][]>("BridgeBuilder.Bridges.Lift01ApproachParts.Rigid", () => ReadPackedRigid());
+    private static (int First, int Last, int Direction)[][] Plates => GenerationParameters.Get<(int First, int Last, int Direction)[][]>("BridgeBuilder.Bridges.Lift01ApproachParts.Plates", () => ReadPackedPlates());
     private static (int First, int Last, int Direction)[] ReadPackedRigid_0()
     {
         var d = Numeric_Types_Lift01_Lift01ApproachParts_g_cs.Values;
@@ -190,11 +184,23 @@ internal static class Lift01ApproachParts
         values[2] = ReadPackedPlates_2();
         return values;
     }
+
+    private static class RangePrograms
+    {
+        static RangePrograms()
+        {
+        }
+
+        internal static HardcodedNumbers Data => GenerationParameters.Get<HardcodedNumbers>("BridgeBuilder.Bridges.Lift01ApproachParts.RangePrograms.Data", () => HardcodedNumbers.Load("Types_Lift01_Lift01ApproachParts_RangePrograms"));
+    }
 }
 
 // Embedded numerical arrays: Types_Lift01_Lift01ApproachParts_g_cs
 internal static class Numeric_Types_Lift01_Lift01ApproachParts_g_cs
 {
-    static Numeric_Types_Lift01_Lift01ApproachParts_g_cs() {}
-    internal static readonly HardcodedNumbers Values = HardcodedNumbers.Load("Types_Lift01_Lift01ApproachParts_g_cs");
+    static Numeric_Types_Lift01_Lift01ApproachParts_g_cs()
+    {
+    }
+
+    internal static HardcodedNumbers Values => GenerationParameters.Get<HardcodedNumbers>("BridgeBuilder.Bridges.Numeric_Types_Lift01_Lift01ApproachParts_g_cs.Values", () => HardcodedNumbers.Load("Types_Lift01_Lift01ApproachParts_g_cs"));
 }

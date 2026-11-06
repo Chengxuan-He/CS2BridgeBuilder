@@ -67,6 +67,15 @@ public partial class BridgeGenerationSystem : GameSystemBase
         Enabled = false;
     }
 
+    protected override void OnGamePreload(Purpose purpose, GameMode mode)
+    {
+        base.OnGamePreload(purpose,mode);
+        BridgeBulkRemoval.Stop();
+        BridgeRuntimeRequests.CancelDeletions();
+        _pendingRemoval=null;
+        _removingAsset=null;
+    }
+
     protected override void OnGameLoadingComplete(Purpose purpose, GameMode mode)
     {
         CancelMaterialPreparation();
@@ -132,6 +141,7 @@ public partial class BridgeGenerationSystem : GameSystemBase
         if (World.GetOrCreateSystemManaged<BridgePublicationSystem>().IsPending) return;
         if (_pendingRemoval != null)
         {
+            if (BridgeDeferredRemoval.Saving) { _removalStartedUtc=DateTime.UtcNow; return; }
             try
             {
                 if (_pendingRemoval.IsComplete(EntityManager)) CompleteRuntimeDeletion();
@@ -150,7 +160,7 @@ public partial class BridgeGenerationSystem : GameSystemBase
         if (UpdateMaterialPreparation()) return;
         if (!_settling)
         {
-            if (BridgeRuntimeRequests.TryTake(out var runtimeRequest) && runtimeRequest != null)
+            if (BridgeRuntimeRequests.TryTake(out var runtimeRequest, !BridgeDeferredRemoval.Saving) && runtimeRequest != null)
             {
                 HandleRuntimeRequest(runtimeRequest);
                 return;

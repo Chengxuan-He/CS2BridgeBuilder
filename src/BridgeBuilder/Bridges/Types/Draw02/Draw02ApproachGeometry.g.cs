@@ -24,21 +24,19 @@ internal static class Draw02ApproachGeometry
             (6, 0) => Family6Lod0,
             _ => Array.Empty<(float Weight, int[] Vertices)>()};
         foreach (var group in groups)
-            AffineGeometry.Indices(group.Vertices, index =>
-            {
-                positions[index].x = AffineGeometry.Translate(positions[index].x, group.Weight * delta);
-            });
+            foreach (var coordinateRows in StructureRows.Stages(group.Vertices))
+                AffineGeometry.Execute(RangePrograms.Data, 0, new[] { positions }, Array.Empty<float[]>(), new float[] { group.Weight, delta }, count: coordinateRows.Length, indices: new[] { coordinateRows });
         return new MovableStructureModel.Plan(source, positions, new[] { indices }, new[] { new bool[expected.Triangles] });
     }
 
-    private static readonly (int Vertices, int Triangles)[][] Counts = ReadPackedCounts();
-    private static readonly (float Weight, int[] Vertices)[] Family0Lod0 = ReadPackedFamily0Lod0();
-    private static readonly (float Weight, int[] Vertices)[] Family0Lod1 = ReadPackedFamily0Lod1();
-    private static readonly (float Weight, int[] Vertices)[] Family0Lod2 = ReadPackedFamily0Lod2();
-    private static readonly (float Weight, int[] Vertices)[] Family1Lod0 = ReadPackedFamily1Lod0();
-    private static readonly (float Weight, int[] Vertices)[] Family1Lod1 = ReadPackedFamily1Lod1();
-    private static readonly (float Weight, int[] Vertices)[] Family1Lod2 = ReadPackedFamily1Lod2();
-    private static readonly (float Weight, int[] Vertices)[] Family6Lod0 = ReadPackedFamily6Lod0();
+    private static (int Vertices, int Triangles)[][] Counts => GenerationParameters.Get<(int Vertices, int Triangles)[][]>("BridgeBuilder.Bridges.Draw02ApproachGeometry.Counts", () => ReadPackedCounts());
+    private static (float Weight, int[] Vertices)[] Family0Lod0 => GenerationParameters.Get<(float Weight, int[] Vertices)[]>("BridgeBuilder.Bridges.Draw02ApproachGeometry.Family0Lod0", () => ReadPackedFamily0Lod0());
+    private static (float Weight, int[] Vertices)[] Family0Lod1 => GenerationParameters.Get<(float Weight, int[] Vertices)[]>("BridgeBuilder.Bridges.Draw02ApproachGeometry.Family0Lod1", () => ReadPackedFamily0Lod1());
+    private static (float Weight, int[] Vertices)[] Family0Lod2 => GenerationParameters.Get<(float Weight, int[] Vertices)[]>("BridgeBuilder.Bridges.Draw02ApproachGeometry.Family0Lod2", () => ReadPackedFamily0Lod2());
+    private static (float Weight, int[] Vertices)[] Family1Lod0 => GenerationParameters.Get<(float Weight, int[] Vertices)[]>("BridgeBuilder.Bridges.Draw02ApproachGeometry.Family1Lod0", () => ReadPackedFamily1Lod0());
+    private static (float Weight, int[] Vertices)[] Family1Lod1 => GenerationParameters.Get<(float Weight, int[] Vertices)[]>("BridgeBuilder.Bridges.Draw02ApproachGeometry.Family1Lod1", () => ReadPackedFamily1Lod1());
+    private static (float Weight, int[] Vertices)[] Family1Lod2 => GenerationParameters.Get<(float Weight, int[] Vertices)[]>("BridgeBuilder.Bridges.Draw02ApproachGeometry.Family1Lod2", () => ReadPackedFamily1Lod2());
+    private static (float Weight, int[] Vertices)[] Family6Lod0 => GenerationParameters.Get<(float Weight, int[] Vertices)[]>("BridgeBuilder.Bridges.Draw02ApproachGeometry.Family6Lod0", () => ReadPackedFamily6Lod0());
     private static (int Vertices, int Triangles)[] ReadPackedCounts_0()
     {
         var d = Numeric_Types_Draw02_Draw02ApproachGeometry_g_cs.Values;
@@ -213,11 +211,23 @@ internal static class Draw02ApproachGeometry
             values[2 + i] = (d.F32[14 + i * 1], new[] { d.I32[2248 + i * 21], d.I32[2249 + i * 21], d.I32[2250 + i * 21], d.I32[2251 + i * 21], d.I32[2252 + i * 21], d.I32[2253 + i * 21], d.I32[2254 + i * 21], d.I32[2255 + i * 21], d.I32[2256 + i * 21], d.I32[2257 + i * 21], d.I32[2258 + i * 21], d.I32[2259 + i * 21], d.I32[2260 + i * 21], d.I32[2261 + i * 21], d.I32[2262 + i * 21], d.I32[2263 + i * 21], d.I32[2264 + i * 21], d.I32[2265 + i * 21], d.I32[2266 + i * 21], d.I32[2267 + i * 21], d.I32[2268 + i * 21], });
         return values;
     }
+
+    private static class RangePrograms
+    {
+        static RangePrograms()
+        {
+        }
+
+        internal static HardcodedNumbers Data => GenerationParameters.Get<HardcodedNumbers>("BridgeBuilder.Bridges.Draw02ApproachGeometry.RangePrograms.Data", () => HardcodedNumbers.Load("Types_Draw02_Draw02ApproachGeometry_RangePrograms"));
+    }
 }
 
 // Embedded numerical arrays: Types_Draw02_Draw02ApproachGeometry_g_cs
 internal static class Numeric_Types_Draw02_Draw02ApproachGeometry_g_cs
 {
-    static Numeric_Types_Draw02_Draw02ApproachGeometry_g_cs() {}
-    internal static readonly HardcodedNumbers Values = HardcodedNumbers.Load("Types_Draw02_Draw02ApproachGeometry_g_cs");
+    static Numeric_Types_Draw02_Draw02ApproachGeometry_g_cs()
+    {
+    }
+
+    internal static HardcodedNumbers Values => GenerationParameters.Get<HardcodedNumbers>("BridgeBuilder.Bridges.Numeric_Types_Draw02_Draw02ApproachGeometry_g_cs.Values", () => HardcodedNumbers.Load("Types_Draw02_Draw02ApproachGeometry_g_cs"));
 }

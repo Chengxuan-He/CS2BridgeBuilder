@@ -69,6 +69,6 @@ internal static class PedestrianDraw01PreparedRoadMapping
             if (Values.I32.Length != 2 || Values.I32[0] != 1 || Values.I32[1] != Keys.Length || Values.F32.Length != Keys.Length * 9)
                 throw new InvalidOperationException("Invalid PedestrianDraw01 prepared walking mapping schema.");
         }
-        internal static readonly HardcodedNumbers Values = HardcodedNumbers.Load("Types_PedestrianDraw01_PreparedRoadMapping");
+        internal static HardcodedNumbers Values => GenerationParameters.Get<HardcodedNumbers>("BridgeBuilder.Bridges.PedestrianDraw01PreparedRoadMapping.Data.Values", () => HardcodedNumbers.Load("Types_PedestrianDraw01_PreparedRoadMapping"));
     }
 }

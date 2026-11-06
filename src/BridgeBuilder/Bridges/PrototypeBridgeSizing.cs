@@ -18,5 +18,5 @@ internal static class PrototypeBridgeSizing
 internal static class Numeric_PrototypeBridgeSizing_cs
 {
     static Numeric_PrototypeBridgeSizing_cs() {}
-    internal static readonly HardcodedNumbers Values = HardcodedNumbers.Load("PrototypeBridgeSizing_cs");
+    internal static HardcodedNumbers Values => GenerationParameters.Get<HardcodedNumbers>("BridgeBuilder.Bridges.Numeric_PrototypeBridgeSizing_cs.Values", () => HardcodedNumbers.Load("PrototypeBridgeSizing_cs"));
 }

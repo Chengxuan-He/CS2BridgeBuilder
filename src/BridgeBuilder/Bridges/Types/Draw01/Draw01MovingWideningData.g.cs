@@ -32,19 +32,17 @@ internal static class Draw01MovingWideningData
             if (group.Weight == Numeric_Types_Draw01_Draw01MovingWideningData_g_cs.Values.F32[0])
                 continue;
             var displacement = group.Weight * halfWidthDelta;
-            AffineGeometry.Indices(group.Vertices, index =>
-            {
-                positions[index].x = AffineGeometry.Translate(positions[index].x, displacement);
-            });
+            foreach (var coordinateRows in StructureRows.Stages(group.Vertices))
+                AffineGeometry.Execute(RangePrograms.Data, 0, new[] { positions }, Array.Empty<float[]>(), new float[] { group.Weight, halfWidthDelta }, count: coordinateRows.Length, indices: new[] { coordinateRows });
         }
     }
 
     // Native source OBJ SHA-256: 97215ED0B33145FB53737999961C3DA0E6859E433A89566BB1F7C2C04EE7F9E1
-    private static readonly (float Weight, int[] Vertices)[] Near = ReadPackedNear();
+    private static (float Weight, int[] Vertices)[] Near => GenerationParameters.Get<(float Weight, int[] Vertices)[]>("BridgeBuilder.Bridges.Draw01MovingWideningData.Near", () => ReadPackedNear());
     // Native source OBJ SHA-256: 4987290BEF55D474AEA63DE7F54197C31C37BD243730AADD45986F1D87E4970D
-    private static readonly (float Weight, int[] Vertices)[] Middle = ReadPackedMiddle();
+    private static (float Weight, int[] Vertices)[] Middle => GenerationParameters.Get<(float Weight, int[] Vertices)[]>("BridgeBuilder.Bridges.Draw01MovingWideningData.Middle", () => ReadPackedMiddle());
     // Native source OBJ SHA-256: 7107118D476D585B8021DED3DC55F82BA6B349B3BD2F06F891320668D8FEA1D6
-    private static readonly (float Weight, int[] Vertices)[] Far = ReadPackedFar();
+    private static (float Weight, int[] Vertices)[] Far => GenerationParameters.Get<(float Weight, int[] Vertices)[]>("BridgeBuilder.Bridges.Draw01MovingWideningData.Far", () => ReadPackedFar());
     private static (float Weight, int[] Vertices)[] ReadPackedNear()
     {
         var d = Numeric_Types_Draw01_Draw01MovingWideningData_g_cs.Values;
@@ -117,11 +115,23 @@ internal static class Draw01MovingWideningData
             values[2 + i] = (d.F32[30 + i * 1], new[] { d.I32[31159 + i * 218], d.I32[31160 + i * 218], d.I32[31161 + i * 218], d.I32[31162 + i * 218], d.I32[31163 + i * 218], d.I32[31164 + i * 218], d.I32[31165 + i * 218], d.I32[31166 + i * 218], d.I32[31167 + i * 218], d.I32[31168 + i * 218], d.I32[31169 + i * 218], d.I32[31170 + i * 218], d.I32[31171 + i * 218], d.I32[31172 + i * 218], d.I32[31173 + i * 218], d.I32[31174 + i * 218], d.I32[31175 + i * 218], d.I32[31176 + i * 218], d.I32[31177 + i * 218], d.I32[31178 + i * 218], d.I32[31179 + i * 218], d.I32[31180 + i * 218], d.I32[31181 + i * 218], d.I32[31182 + i * 218], d.I32[31183 + i * 218], d.I32[31184 + i * 218], d.I32[31185 + i * 218], d.I32[31186 + i * 218], d.I32[31187 + i * 218], d.I32[31188 + i * 218], d.I32[31189 + i * 218], d.I32[31190 + i * 218], d.I32[31191 + i * 218], d.I32[31192 + i * 218], d.I32[31193 + i * 218], d.I32[31194 + i * 218], d.I32[31195 + i * 218], d.I32[31196 + i * 218], d.I32[31197 + i * 218], d.I32[31198 + i * 218], d.I32[31199 + i * 218], d.I32[31200 + i * 218], d.I32[31201 + i * 218], d.I32[31202 + i * 218], d.I32[31203 + i * 218], d.I32[31204 + i * 218], d.I32[31205 + i * 218], d.I32[31206 + i * 218], d.I32[31207 + i * 218], d.I32[31208 + i * 218], d.I32[31209 + i * 218], d.I32[31210 + i * 218], d.I32[31211 + i * 218], d.I32[31212 + i * 218], d.I32[31213 + i * 218], d.I32[31214 + i * 218], d.I32[31215 + i * 218], d.I32[31216 + i * 218], d.I32[31217 + i * 218], d.I32[31218 + i * 218], d.I32[31219 + i * 218], d.I32[31220 + i * 218], d.I32[31221 + i * 218], d.I32[31222 + i * 218], d.I32[31223 + i * 218], d.I32[31224 + i * 218], d.I32[31225 + i * 218], d.I32[31226 + i * 218], d.I32[31227 + i * 218], d.I32[31228 + i * 218], d.I32[31229 + i * 218], d.I32[31230 + i * 218], d.I32[31231 + i * 218], d.I32[31232 + i * 218], d.I32[31233 + i * 218], d.I32[31234 + i * 218], d.I32[31235 + i * 218], d.I32[31236 + i * 218], d.I32[31237 + i * 218], d.I32[31238 + i * 218], d.I32[31239 + i * 218], d.I32[31240 + i * 218], d.I32[31241 + i * 218], d.I32[31242 + i * 218], d.I32[31243 + i * 218], d.I32[31244 + i * 218], d.I32[31245 + i * 218], d.I32[31246 + i * 218], d.I32[31247 + i * 218], d.I32[31248 + i * 218], d.I32[31249 + i * 218], d.I32[31250 + i * 218], d.I32[31251 + i * 218], d.I32[31252 + i * 218], d.I32[31253 + i * 218], d.I32[31254 + i * 218], d.I32[31255 + i * 218], d.I32[31256 + i * 218], d.I32[31257 + i * 218], d.I32[31258 + i * 218], d.I32[31259 + i * 218], d.I32[31260 + i * 218], d.I32[31261 + i * 218], d.I32[31262 + i * 218], d.I32[31263 + i * 218], d.I32[31264 + i * 218], d.I32[31265 + i * 218], d.I32[31266 + i * 218], d.I32[31267 + i * 218], d.I32[31268 + i * 218], d.I32[31269 + i * 218], d.I32[31270 + i * 218], d.I32[31271 + i * 218], d.I32[31272 + i * 218], d.I32[31273 + i * 218], d.I32[31274 + i * 218], d.I32[31275 + i * 218], d.I32[31276 + i * 218], d.I32[31277 + i * 218], d.I32[31278 + i * 218], d.I32[31279 + i * 218], d.I32[31280 + i * 218], d.I32[31281 + i * 218], d.I32[31282 + i * 218], d.I32[31283 + i * 218], d.I32[31284 + i * 218], d.I32[31285 + i * 218], d.I32[31286 + i * 218], d.I32[31287 + i * 218], d.I32[31288 + i * 218], d.I32[31289 + i * 218], d.I32[31290 + i * 218], d.I32[31291 + i * 218], d.I32[31292 + i * 218], d.I32[31293 + i * 218], d.I32[31294 + i * 218], d.I32[31295 + i * 218], d.I32[31296 + i * 218], d.I32[31297 + i * 218], d.I32[31298 + i * 218], d.I32[31299 + i * 218], d.I32[31300 + i * 218], d.I32[31301 + i * 218], d.I32[31302 + i * 218], d.I32[31303 + i * 218], d.I32[31304 + i * 218], d.I32[31305 + i * 218], d.I32[31306 + i * 218], d.I32[31307 + i * 218], d.I32[31308 + i * 218], d.I32[31309 + i * 218], d.I32[31310 + i * 218], d.I32[31311 + i * 218], d.I32[31312 + i * 218], d.I32[31313 + i * 218], d.I32[31314 + i * 218], d.I32[31315 + i * 218], d.I32[31316 + i * 218], d.I32[31317 + i * 218], d.I32[31318 + i * 218], d.I32[31319 + i * 218], d.I32[31320 + i * 218], d.I32[31321 + i * 218], d.I32[31322 + i * 218], d.I32[31323 + i * 218], d.I32[31324 + i * 218], d.I32[31325 + i * 218], d.I32[31326 + i * 218], d.I32[31327 + i * 218], d.I32[31328 + i * 218], d.I32[31329 + i * 218], d.I32[31330 + i * 218], d.I32[31331 + i * 218], d.I32[31332 + i * 218], d.I32[31333 + i * 218], d.I32[31334 + i * 218], d.I32[31335 + i * 218], d.I32[31336 + i * 218], d.I32[31337 + i * 218], d.I32[31338 + i * 218], d.I32[31339 + i * 218], d.I32[31340 + i * 218], d.I32[31341 + i * 218], d.I32[31342 + i * 218], d.I32[31343 + i * 218], d.I32[31344 + i * 218], d.I32[31345 + i * 218], d.I32[31346 + i * 218], d.I32[31347 + i * 218], d.I32[31348 + i * 218], d.I32[31349 + i * 218], d.I32[31350 + i * 218], d.I32[31351 + i * 218], d.I32[31352 + i * 218], d.I32[31353 + i * 218], d.I32[31354 + i * 218], d.I32[31355 + i * 218], d.I32[31356 + i * 218], d.I32[31357 + i * 218], d.I32[31358 + i * 218], d.I32[31359 + i * 218], d.I32[31360 + i * 218], d.I32[31361 + i * 218], d.I32[31362 + i * 218], d.I32[31363 + i * 218], d.I32[31364 + i * 218], d.I32[31365 + i * 218], d.I32[31366 + i * 218], d.I32[31367 + i * 218], d.I32[31368 + i * 218], d.I32[31369 + i * 218], d.I32[31370 + i * 218], d.I32[31371 + i * 218], d.I32[31372 + i * 218], d.I32[31373 + i * 218], d.I32[31374 + i * 218], d.I32[31375 + i * 218], d.I32[31376 + i * 218], });
         return values;
     }
+
+    private static class RangePrograms
+    {
+        static RangePrograms()
+        {
+        }
+
+        internal static HardcodedNumbers Data => GenerationParameters.Get<HardcodedNumbers>("BridgeBuilder.Bridges.Draw01MovingWideningData.RangePrograms.Data", () => HardcodedNumbers.Load("Types_Draw01_Draw01MovingWideningData_RangePrograms"));
+    }
 }
 
 // Embedded numerical arrays: Types_Draw01_Draw01MovingWideningData_g_cs
 internal static class Numeric_Types_Draw01_Draw01MovingWideningData_g_cs
 {
-    static Numeric_Types_Draw01_Draw01MovingWideningData_g_cs() {}
-    internal static readonly HardcodedNumbers Values = HardcodedNumbers.Load("Types_Draw01_Draw01MovingWideningData_g_cs");
+    static Numeric_Types_Draw01_Draw01MovingWideningData_g_cs()
+    {
+    }
+
+    internal static HardcodedNumbers Values => GenerationParameters.Get<HardcodedNumbers>("BridgeBuilder.Bridges.Numeric_Types_Draw01_Draw01MovingWideningData_g_cs.Values", () => HardcodedNumbers.Load("Types_Draw01_Draw01MovingWideningData_g_cs"));
 }

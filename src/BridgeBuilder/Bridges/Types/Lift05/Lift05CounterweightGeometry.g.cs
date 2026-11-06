@@ -10,56 +10,34 @@ internal static class Lift05CounterweightGeometry
     {
         var data = lod switch
         {
-            0 => (Count: Numeric_Types_Lift05_Lift05CounterweightGeometry_g_cs.Values.I32[0], Parts: Parts0),
-            1 => (Count: Numeric_Types_Lift05_Lift05CounterweightGeometry_g_cs.Values.I32[1], Parts: Parts1),
-            2 => (Count: Numeric_Types_Lift05_Lift05CounterweightGeometry_g_cs.Values.I32[2], Parts: Parts2),
+            0 => Numeric_Types_Lift05_Lift05CounterweightGeometry_g_cs.Values.I32[0],
+            1 => Numeric_Types_Lift05_Lift05CounterweightGeometry_g_cs.Values.I32[1],
+            2 => Numeric_Types_Lift05_Lift05CounterweightGeometry_g_cs.Values.I32[2],
             _ => throw new ArgumentOutOfRangeException(nameof(lod))};
-        if (source.Length != data.Count || positions.Length != data.Count || !float.IsFinite(delta))
+        if (source.Length != data || positions.Length != data || !float.IsFinite(delta))
             throw new InvalidOperationException("Lift05 counterweights require their native layout.");
-        foreach (var part in data.Parts)
-            AffineGeometry.For(part.First, checked((part.Last) + 1), i =>
-            {
-                positions[i].x = AffineGeometry.AddScaled(source[i].x, source[i].x / Numeric_Types_Lift05_Lift05CounterweightGeometry_g_cs.Values.F32[0], delta);
-            });
+        AffineGeometry.Execute(BatchProgram0.Data, lod, new[] { source, positions }, Array.Empty<float[]>(), new float[] { Numeric_Types_Lift05_Lift05CounterweightGeometry_g_cs.Values.F32[0], delta });
     }
 
     // Geometry SHA-256: 10a9c40e522c91debff4bc0251dbe93980cac6b92ff6b176c216e27ba52c05fb
-    private static readonly (int First, int Last)[] Parts0 = ReadPackedParts0();
     // Geometry SHA-256: dc4b8d4ae9688952992b03d724d8549cdb79f52eb0877c7f6fe62d1246ce286e
-    private static readonly (int First, int Last)[] Parts1 = ReadPackedParts1();
     // Geometry SHA-256: 6ea1ea24f714feca8794c31500c743e3c599067a9da37a46ae83c1eaa8bc4160
-    private static readonly (int First, int Last)[] Parts2 = ReadPackedParts2();
-    private static (int First, int Last)[] ReadPackedParts0()
+    private static class BatchProgram0
     {
-        var d = Numeric_Types_Lift05_Lift05CounterweightGeometry_g_cs.Values;
-        var values = new (int First, int Last)[14];
-        for (int i = 0; i < 14; i++)
-            values[0 + i] = (d.I32[3 + i * 2], d.I32[4 + i * 2]);
-        return values;
-    }
+        static BatchProgram0()
+        {
+        }
 
-    private static (int First, int Last)[] ReadPackedParts1()
-    {
-        var d = Numeric_Types_Lift05_Lift05CounterweightGeometry_g_cs.Values;
-        var values = new (int First, int Last)[28];
-        for (int i = 0; i < 28; i++)
-            values[0 + i] = (d.I32[31 + i * 2], d.I32[32 + i * 2]);
-        return values;
-    }
-
-    private static (int First, int Last)[] ReadPackedParts2()
-    {
-        var d = Numeric_Types_Lift05_Lift05CounterweightGeometry_g_cs.Values;
-        var values = new (int First, int Last)[7];
-        for (int i = 0; i < 7; i++)
-            values[0 + i] = (d.I32[87 + i * 2], d.I32[88 + i * 2]);
-        return values;
+        internal static HardcodedNumbers Data => GenerationParameters.Get<HardcodedNumbers>("BridgeBuilder.Bridges.Lift05CounterweightGeometry.BatchProgram0.Data", () => HardcodedNumbers.Load("Types_Lift05_Lift05CounterweightGeometry_BatchProgram0"));
     }
 }
 
 // Embedded numerical arrays: Types_Lift05_Lift05CounterweightGeometry_g_cs
 internal static class Numeric_Types_Lift05_Lift05CounterweightGeometry_g_cs
 {
-    static Numeric_Types_Lift05_Lift05CounterweightGeometry_g_cs() {}
-    internal static readonly HardcodedNumbers Values = HardcodedNumbers.Load("Types_Lift05_Lift05CounterweightGeometry_g_cs");
+    static Numeric_Types_Lift05_Lift05CounterweightGeometry_g_cs()
+    {
+    }
+
+    internal static HardcodedNumbers Values => GenerationParameters.Get<HardcodedNumbers>("BridgeBuilder.Bridges.Numeric_Types_Lift05_Lift05CounterweightGeometry_g_cs.Values", () => HardcodedNumbers.Load("Types_Lift05_Lift05CounterweightGeometry_g_cs"));
 }

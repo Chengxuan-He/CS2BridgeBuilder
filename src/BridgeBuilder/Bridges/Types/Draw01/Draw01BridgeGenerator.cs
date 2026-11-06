@@ -44,5 +44,5 @@ internal sealed class Draw01BridgeGenerator : MovableBridgeGeneratorBase<Draw01C
 internal static class Numeric_Types_Draw01_Draw01BridgeGenerator_cs
 {
     static Numeric_Types_Draw01_Draw01BridgeGenerator_cs() {}
-    internal static readonly HardcodedNumbers Values = HardcodedNumbers.Load("Types_Draw01_Draw01BridgeGenerator_cs");
+    internal static HardcodedNumbers Values => GenerationParameters.Get<HardcodedNumbers>("BridgeBuilder.Bridges.Numeric_Types_Draw01_Draw01BridgeGenerator_cs.Values", () => HardcodedNumbers.Load("Types_Draw01_Draw01BridgeGenerator_cs"));
 }

@@ -14,13 +14,13 @@ internal static class Draw03ApproachGeometry
         if (family < Numeric_Types_Draw03_Draw03ApproachGeometry_g_cs.Values.I32[1])
         {
             var scale = Draw03Truss.Scale(delta);
-            AffineGeometry.For(Numeric_Types_Draw03_Draw03ApproachGeometry_g_cs.Values.I32[2], positions.Length, i => positions[i].x = AffineGeometry.Scale(source[i].x, scale));
+            AffineGeometry.Execute(RangePrograms.Data, 0, new[] { source, positions }, Array.Empty<float[]>(), new float[] { scale }, Numeric_Types_Draw03_Draw03ApproachGeometry_g_cs.Values.I32[2], checked((positions.Length) - (Numeric_Types_Draw03_Draw03ApproachGeometry_g_cs.Values.I32[2])));
         }
 
         return new MovableStructureModel.Plan(source, positions, new[] { indices }, new[] { new bool[expected.Triangles] });
     }
 
-    private static readonly (int Vertices, int Triangles)[][] Counts = ReadPackedCounts();
+    private static (int Vertices, int Triangles)[][] Counts => GenerationParameters.Get<(int Vertices, int Triangles)[][]>("BridgeBuilder.Bridges.Draw03ApproachGeometry.Counts", () => ReadPackedCounts());
     private static (int Vertices, int Triangles)[] ReadPackedCounts_0()
     {
         var d = Numeric_Types_Draw03_Draw03ApproachGeometry_g_cs.Values;
@@ -76,11 +76,23 @@ internal static class Draw03ApproachGeometry
         values[4] = ReadPackedCounts_4();
         return values;
     }
+
+    private static class RangePrograms
+    {
+        static RangePrograms()
+        {
+        }
+
+        internal static HardcodedNumbers Data => GenerationParameters.Get<HardcodedNumbers>("BridgeBuilder.Bridges.Draw03ApproachGeometry.RangePrograms.Data", () => HardcodedNumbers.Load("Types_Draw03_Draw03ApproachGeometry_RangePrograms"));
+    }
 }
 
 // Embedded numerical arrays: Types_Draw03_Draw03ApproachGeometry_g_cs
 internal static class Numeric_Types_Draw03_Draw03ApproachGeometry_g_cs
 {
-    static Numeric_Types_Draw03_Draw03ApproachGeometry_g_cs() {}
-    internal static readonly HardcodedNumbers Values = HardcodedNumbers.Load("Types_Draw03_Draw03ApproachGeometry_g_cs");
+    static Numeric_Types_Draw03_Draw03ApproachGeometry_g_cs()
+    {
+    }
+
+    internal static HardcodedNumbers Values => GenerationParameters.Get<HardcodedNumbers>("BridgeBuilder.Bridges.Numeric_Types_Draw03_Draw03ApproachGeometry_g_cs.Values", () => HardcodedNumbers.Load("Types_Draw03_Draw03ApproachGeometry_g_cs"));
 }

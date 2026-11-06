@@ -9,56 +9,34 @@ internal static class Lift04Crossbeams
     {
         var data = lod switch
         {
-            0 => (Count: Numeric_Types_Lift04_Lift04Crossbeams_g_cs.Values.I32[0], Parts: Level0),
-            1 => (Count: Numeric_Types_Lift04_Lift04Crossbeams_g_cs.Values.I32[1], Parts: Level1),
-            2 => (Count: Numeric_Types_Lift04_Lift04Crossbeams_g_cs.Values.I32[2], Parts: Level2),
+            0 => Numeric_Types_Lift04_Lift04Crossbeams_g_cs.Values.I32[0],
+            1 => Numeric_Types_Lift04_Lift04Crossbeams_g_cs.Values.I32[1],
+            2 => Numeric_Types_Lift04_Lift04Crossbeams_g_cs.Values.I32[2],
             _ => throw new ArgumentOutOfRangeException(nameof(lod))};
-        if (source.Length != data.Count || positions.Length != data.Count || !float.IsFinite(delta))
+        if (source.Length != data || positions.Length != data || !float.IsFinite(delta))
             throw new InvalidOperationException("Lift04 crossbeams require their recorded topology.");
-        foreach (var part in data.Parts)
-            AffineGeometry.For(part.First, checked((part.Last) + 1), i =>
-            {
-                positions[i].x = AffineGeometry.AddScaled(source[i].x, source[i].x / part.HalfSpan, delta);
-            });
+        AffineGeometry.Execute(BatchProgram0.Data, lod, new[] { source, positions }, Array.Empty<float[]>(), new float[] { delta });
     }
 
     // Geometry SHA-256: 869158c6d06c9a9717851460adf922838d45c294c4b1e692b7b96e4585422980
-    private static readonly (int First, int Last, float HalfSpan)[] Level0 = ReadPackedLevel0();
     // Geometry SHA-256: 4d57e1fe16365bf8702d310191fefbbbbbece9fcafb413b980052640e26d1b6f
-    private static readonly (int First, int Last, float HalfSpan)[] Level1 = ReadPackedLevel1();
     // Geometry SHA-256: ab81a0e0cdd6345fd8e80cdbad7c52b947fc7281aca1c1c37f986af0d49e863d
-    private static readonly (int First, int Last, float HalfSpan)[] Level2 = ReadPackedLevel2();
-    private static (int First, int Last, float HalfSpan)[] ReadPackedLevel0()
+    private static class BatchProgram0
     {
-        var d = Numeric_Types_Lift04_Lift04Crossbeams_g_cs.Values;
-        var values = new (int First, int Last, float HalfSpan)[73];
-        for (int i = 0; i < 73; i++)
-            values[0 + i] = (d.I32[3 + i * 2], d.I32[4 + i * 2], d.F32[0 + i * 1]);
-        return values;
-    }
+        static BatchProgram0()
+        {
+        }
 
-    private static (int First, int Last, float HalfSpan)[] ReadPackedLevel1()
-    {
-        var d = Numeric_Types_Lift04_Lift04Crossbeams_g_cs.Values;
-        var values = new (int First, int Last, float HalfSpan)[73];
-        for (int i = 0; i < 73; i++)
-            values[0 + i] = (d.I32[149 + i * 2], d.I32[150 + i * 2], d.F32[73 + i * 1]);
-        return values;
-    }
-
-    private static (int First, int Last, float HalfSpan)[] ReadPackedLevel2()
-    {
-        var d = Numeric_Types_Lift04_Lift04Crossbeams_g_cs.Values;
-        var values = new (int First, int Last, float HalfSpan)[33];
-        for (int i = 0; i < 33; i++)
-            values[0 + i] = (d.I32[295 + i * 2], d.I32[296 + i * 2], d.F32[146 + i * 1]);
-        return values;
+        internal static HardcodedNumbers Data => GenerationParameters.Get<HardcodedNumbers>("BridgeBuilder.Bridges.Lift04Crossbeams.BatchProgram0.Data", () => HardcodedNumbers.Load("Types_Lift04_Lift04Crossbeams_BatchProgram0"));
     }
 }
 
 // Embedded numerical arrays: Types_Lift04_Lift04Crossbeams_g_cs
 internal static class Numeric_Types_Lift04_Lift04Crossbeams_g_cs
 {
-    static Numeric_Types_Lift04_Lift04Crossbeams_g_cs() {}
-    internal static readonly HardcodedNumbers Values = HardcodedNumbers.Load("Types_Lift04_Lift04Crossbeams_g_cs");
+    static Numeric_Types_Lift04_Lift04Crossbeams_g_cs()
+    {
+    }
+
+    internal static HardcodedNumbers Values => GenerationParameters.Get<HardcodedNumbers>("BridgeBuilder.Bridges.Numeric_Types_Lift04_Lift04Crossbeams_g_cs.Values", () => HardcodedNumbers.Load("Types_Lift04_Lift04Crossbeams_g_cs"));
 }

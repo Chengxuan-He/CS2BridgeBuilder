@@ -18,14 +18,14 @@ internal static class Draw02RoadPartitions
     // independently recorded seam contains a tiny transverse skew. Its maximum
     // extent defines the conservative planar gap envelope (16.3 micrometres
     // larger than its minimum), rather than borrowing Draw01's sidewalk gap.
-    internal static readonly Partition Carriageway = Create(Numeric_Types_Draw02_Draw02RoadPartitions_cs.Values.F32[2]);
-    internal static readonly Partition Sidewalk = Create(Numeric_Types_Draw02_Draw02RoadPartitions_cs.Values.F32[3]);
+    internal static Partition Carriageway => GenerationParameters.Get<Partition>("BridgeBuilder.Bridges.Draw02RoadPartitions.Carriageway", () => Create(Numeric_Types_Draw02_Draw02RoadPartitions_cs.Values.F32[2]));
+    internal static Partition Sidewalk => GenerationParameters.Get<Partition>("BridgeBuilder.Bridges.Draw02RoadPartitions.Sidewalk", () => Create(Numeric_Types_Draw02_Draw02RoadPartitions_cs.Values.F32[3]));
     // Draw02's moving leaves intentionally carry no selected-road paint.
     // Keep fixed caps and approaches on the original paint route.
-    internal static readonly Partition FixedPaint = Cut(-FixedStart,
+    internal static Partition FixedPaint => GenerationParameters.Get<Partition>("BridgeBuilder.Bridges.Draw02RoadPartitions.FixedPaint", () => Cut(-FixedStart,
         new Partition(Numeric_Types_Draw02_Draw02RoadPartitions_cs.Values.I32[0]),
         Cut(FixedStart, Partition.Gap,
-            new Partition(Numeric_Types_Draw02_Draw02RoadPartitions_cs.Values.I32[0])));
+            new Partition(Numeric_Types_Draw02_Draw02RoadPartitions_cs.Values.I32[0]))));
     // Native bone ARRAY index 1 is the positive-Z leaf (connection 101),
     // index 2 is the negative-Z leaf (connection 100), and index 0 is fixed.
     // All generated LODs share these physical seams; the coarse original
@@ -48,5 +48,5 @@ internal static class Draw02RoadPartitions
 internal static class Numeric_Types_Draw02_Draw02RoadPartitions_cs
 {
     static Numeric_Types_Draw02_Draw02RoadPartitions_cs() {}
-    internal static readonly HardcodedNumbers Values = HardcodedNumbers.Load("Types_Draw02_Draw02RoadPartitions_cs");
+    internal static HardcodedNumbers Values => GenerationParameters.Get<HardcodedNumbers>("BridgeBuilder.Bridges.Numeric_Types_Draw02_Draw02RoadPartitions_cs.Values", () => HardcodedNumbers.Load("Types_Draw02_Draw02RoadPartitions_cs"));
 }

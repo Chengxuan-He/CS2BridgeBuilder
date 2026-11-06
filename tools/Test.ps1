@@ -41,8 +41,12 @@ $output = Join-Path $projectRoot 'tests\bin'
 $exe = Join-Path $output 'TowerTests.dll'
 
 $sources = @(
+    (Join-Path $projectRoot 'src\BridgeBuilder\Bridges\GenerationParameters.cs'),
     (Join-Path $projectRoot 'src\BridgeBuilder\Bridges\HardcodedNumbers.cs'),
     (Join-Path $projectRoot 'src\BridgeBuilder\Bridges\AffineGeometry.cs'),
+    (Join-Path $projectRoot 'src\BridgeBuilder\Bridges\StructureCoordinateProgram.cs'),
+    (Join-Path $projectRoot 'src\BridgeBuilder\Bridges\StructurePrograms.cs'),
+    (Join-Path $projectRoot 'src\BridgeBuilder\Bridges\StructureRows.cs'),
     (Join-Path $projectRoot 'src\BridgeBuilder\Bridges\Types\Suspension\SuspensionGeometry.cs'),
     (Join-Path $projectRoot 'src\BridgeBuilder\Settings\UiStringCatalog.cs'),
     (Join-Path $projectRoot 'src\BridgeBuilder\Settings\UiStrings.cs'),

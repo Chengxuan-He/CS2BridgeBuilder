@@ -21,27 +21,24 @@ internal static class Draw03NetPillarParts
         if (!float.IsFinite(delta) || source.Length != data.Count || indices.Length != data.Indices)
             throw new InvalidOperationException("Draw03 ordinary pillar parts require their measured layout.");
         var positions = (Vector3[])source.Clone();
-        AffineGeometry.For(Numeric_Types_Draw03_Draw03NetPillarParts_g_cs.Values.I32[14], positions.Length, i =>
-        {
-            positions[i].x = AffineGeometry.Translate(positions[i].x, data.Weights[i] * delta);
-        });
+        AffineGeometry.Execute(RangePrograms.Data, 0, new[] { positions }, new[] { data.Weights }, new float[] { delta }, Numeric_Types_Draw03_Draw03NetPillarParts_g_cs.Values.I32[14], checked((positions.Length) - (Numeric_Types_Draw03_Draw03NetPillarParts_g_cs.Values.I32[14])));
         return new MovableStructureModel.Plan(source, positions, new[] { indices }, new[] { new bool[indices.Length / Numeric_Types_Draw03_Draw03NetPillarParts_g_cs.Values.I32[15]] });
     }
 
     // Geometry SHA-256: 79c7a22e0810c73f18b4ce6bbb5be337a86fd4400ea5ef2eb653e12991590f05
-    private static readonly float[] Weights00 = ReadPackedWeights00();
+    private static float[] Weights00 => GenerationParameters.Get<float[]>("BridgeBuilder.Bridges.Draw03NetPillarParts.Weights00", () => ReadPackedWeights00());
     // Geometry SHA-256: 74054f4f3e465bae0e62712f7eefca5c7fc835c40f69e0d827ce51ac747b00fa
-    private static readonly float[] Weights01 = ReadPackedWeights01();
+    private static float[] Weights01 => GenerationParameters.Get<float[]>("BridgeBuilder.Bridges.Draw03NetPillarParts.Weights01", () => ReadPackedWeights01());
     // Geometry SHA-256: aef10845dbb237f1d44ace2c2d0f72cfd2624e9441c8ee752091b299e379d79b
-    private static readonly float[] Weights10 = ReadPackedWeights10();
+    private static float[] Weights10 => GenerationParameters.Get<float[]>("BridgeBuilder.Bridges.Draw03NetPillarParts.Weights10", () => ReadPackedWeights10());
     // Geometry SHA-256: 69a68399441b9395524548685432e3ee28c9968871f734f8b834d5f84d407174
-    private static readonly float[] Weights11 = ReadPackedWeights11();
+    private static float[] Weights11 => GenerationParameters.Get<float[]>("BridgeBuilder.Bridges.Draw03NetPillarParts.Weights11", () => ReadPackedWeights11());
     // Geometry SHA-256: fc8dab37b0cb267b74df2aecf7a0276a4aec6198224e436eeeeeb305d2f688b9
-    private static readonly float[] Weights20 = ReadPackedWeights20();
+    private static float[] Weights20 => GenerationParameters.Get<float[]>("BridgeBuilder.Bridges.Draw03NetPillarParts.Weights20", () => ReadPackedWeights20());
     // Geometry SHA-256: bff66e676364b4d382d5729103e0c9b9aee83625258a5945a9ea24f37cb5b2c0
-    private static readonly float[] Weights21 = ReadPackedWeights21();
+    private static float[] Weights21 => GenerationParameters.Get<float[]>("BridgeBuilder.Bridges.Draw03NetPillarParts.Weights21", () => ReadPackedWeights21());
     // Geometry SHA-256: dace0242c2fe15985d10fecc16be138f8835ec35da2679919c575689fb736aa5
-    private static readonly float[] Weights22 = ReadPackedWeights22();
+    private static float[] Weights22 => GenerationParameters.Get<float[]>("BridgeBuilder.Bridges.Draw03NetPillarParts.Weights22", () => ReadPackedWeights22());
     private static float[] ReadPackedWeights00()
     {
         var d = Numeric_Types_Draw03_Draw03NetPillarParts_g_cs.Values;
@@ -370,11 +367,23 @@ internal static class Draw03NetPillarParts
             values[72 + i] = d.F32[11913 + i * 1];
         return values;
     }
+
+    private static class RangePrograms
+    {
+        static RangePrograms()
+        {
+        }
+
+        internal static HardcodedNumbers Data => GenerationParameters.Get<HardcodedNumbers>("BridgeBuilder.Bridges.Draw03NetPillarParts.RangePrograms.Data", () => HardcodedNumbers.Load("Types_Draw03_Draw03NetPillarParts_RangePrograms"));
+    }
 }
 
 // Embedded numerical arrays: Types_Draw03_Draw03NetPillarParts_g_cs
 internal static class Numeric_Types_Draw03_Draw03NetPillarParts_g_cs
 {
-    static Numeric_Types_Draw03_Draw03NetPillarParts_g_cs() {}
-    internal static readonly HardcodedNumbers Values = HardcodedNumbers.Load("Types_Draw03_Draw03NetPillarParts_g_cs");
+    static Numeric_Types_Draw03_Draw03NetPillarParts_g_cs()
+    {
+    }
+
+    internal static HardcodedNumbers Values => GenerationParameters.Get<HardcodedNumbers>("BridgeBuilder.Bridges.Numeric_Types_Draw03_Draw03NetPillarParts_g_cs.Values", () => HardcodedNumbers.Load("Types_Draw03_Draw03NetPillarParts_g_cs"));
 }

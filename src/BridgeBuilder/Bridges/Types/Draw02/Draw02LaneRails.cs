@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using UnityEngine;
 
 namespace BridgeBuilder.Bridges;
@@ -37,6 +38,8 @@ internal static class Draw02LaneRails
         var used = new bool[source.Length];
         int start = data.I32[header + 2], count = data.I32[header + 3];
         float anchor = data.F32[part * 3];
+        var vertices = new List<int>();
+        var targets = new List<float>();
         for (int i = 0; i < count; i++)
         {
             int face = data.I32[start + i];
@@ -46,9 +49,13 @@ internal static class Draw02LaneRails
                 int vertex = indices[face * 3 + corner];
                 if (used[vertex]) continue;
                 used[vertex] = true;
-                positions[vertex].x = AffineGeometry.Translate(source[vertex].x, targetX(source[vertex].z) - anchor);
+                vertices.Add(vertex);
+                targets.Add(targetX(source[vertex].z));
             }
         }
+        AffineGeometry.Execute(StructurePrograms.Data, StructurePrograms.TargetTranslation,
+            new[] { source, positions }, new[] { targets.ToArray() }, new[] { anchor },
+            count: vertices.Count, indices: new[] { vertices.ToArray() });
         return new MovableStructureModel.Plan(source, positions, new[] { indices }, new[] { removed });
     }
 }
@@ -57,5 +64,5 @@ internal static class Draw02LaneRails
 internal static class Numeric_Types_Draw02_Draw02LaneRails_cs
 {
     static Numeric_Types_Draw02_Draw02LaneRails_cs() { }
-    internal static readonly HardcodedNumbers Values = HardcodedNumbers.Load("Types_Draw02_Draw02LaneRails_cs");
+    internal static HardcodedNumbers Values => GenerationParameters.Get<HardcodedNumbers>("BridgeBuilder.Bridges.Numeric_Types_Draw02_Draw02LaneRails_cs.Values", () => HardcodedNumbers.Load("Types_Draw02_Draw02LaneRails_cs"));
 }

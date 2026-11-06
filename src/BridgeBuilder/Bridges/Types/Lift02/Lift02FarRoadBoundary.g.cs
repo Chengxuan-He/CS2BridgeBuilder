@@ -22,7 +22,7 @@ internal static class Lift02FarRoadBoundary
         return new MovableStructureModel.Plan(plan.SourcePositions, positions, plan.SourceIndices, plan.RemoveTriangles, reconstructsAuthoredPositions: true);
     }
 
-    private static readonly (int Index, float SourceY, float SourceZ, float Y, float Z)[] Vertices = ReadPackedVertices();
+    private static (int Index, float SourceY, float SourceZ, float Y, float Z)[] Vertices => GenerationParameters.Get<(int Index, float SourceY, float SourceZ, float Y, float Z)[]>("BridgeBuilder.Bridges.Lift02FarRoadBoundary.Vertices", () => ReadPackedVertices());
     private static (int Index, float SourceY, float SourceZ, float Y, float Z)[] ReadPackedVertices()
     {
         var d = Numeric_Types_Lift02_Lift02FarRoadBoundary_g_cs.Values;
@@ -63,5 +63,5 @@ internal static class Lift02FarRoadBoundary
 internal static class Numeric_Types_Lift02_Lift02FarRoadBoundary_g_cs
 {
     static Numeric_Types_Lift02_Lift02FarRoadBoundary_g_cs() {}
-    internal static readonly HardcodedNumbers Values = HardcodedNumbers.Load("Types_Lift02_Lift02FarRoadBoundary_g_cs");
+    internal static HardcodedNumbers Values => GenerationParameters.Get<HardcodedNumbers>("BridgeBuilder.Bridges.Numeric_Types_Lift02_Lift02FarRoadBoundary_g_cs.Values", () => HardcodedNumbers.Load("Types_Lift02_Lift02FarRoadBoundary_g_cs"));
 }

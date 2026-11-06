@@ -94,6 +94,13 @@ const defaultText = {
     "SearchNetworks": "Search roads or tracks…",
     "SearchStyles": "Search bridge styles…",
     "SearchBridges": "Search bridges by name…",
+    "AllBridgeTypes": "All bridge types",
+    "FamilySuspension": "Suspension bridges",
+    "FamilyCableStayed": "Cable-stayed bridges",
+    "FamilyArch": "Arch bridges",
+    "FamilyCovered": "Covered bridges",
+    "FamilyBascule": "Bascule bridges",
+    "FamilyLift": "Lift bridges",
     "AllTypes": "All network types",
     "TypeRoad": "Roads",
     "TypeHighway": "Highways",
@@ -120,7 +127,7 @@ const h = React.createElement;
 const fallbackIcon = "coui://bridgebuilderui/BridgeBuilder.svg";
 
 // Cohtml needs the game's scrollbar, not only browser overflow styling.
-function ScrollArea({ className = "", children }) {
+function ScrollArea({ className = "", style, children }) {
     const viewport = React.useRef(null);
     const sensitivity = api.useValue(scrollSensitivityBinding);
     React.useEffect(() => {
@@ -132,7 +139,7 @@ function ScrollArea({ className = "", children }) {
         element.addEventListener("wheel", extraWheelStep, true);
         return () => element.removeEventListener("wheel", extraWheelStep, true);
     }, [sensitivity]);
-    return h("div", { className: `bb-scroll-slot ${className}` },
+    return h("div", { className: `bb-scroll-slot ${className}`, style },
         h(ui.Scrollable, { ref: viewport, className: "bb-scroll", vertical: true,
             horizontal: false, trackVisibility: "always" }, children));
 }
@@ -166,7 +173,7 @@ function CardGrid({ items, selectedId, onSelect, emptyText }) {
             cells.push(h("div", { className: "bb-card-cell", key: column },
                 item ? h(Card, { item,
                     selected: (item.id || item.prefabName) === selectedId,
-                    onSelect, subtitle: item.kind || item.source || "" }) : null));
+                    onSelect, subtitle: item.networkType ? t("Type" + item.networkType) : item.source || "" }) : null));
         }
         rows.push(h("div", { className: "bb-card-row",
             key: items[start].id || items[start].prefabName }, cells));
@@ -190,8 +197,21 @@ function SearchBox({ value, onChange, label }) {
 }
 
 // Cohtml-compatible dropdown: native HTML select popups are not used by the game.
+const dropdownRowRem = 36;
+const dropdownMaxRows = 7;
+
 function FilterBox({ value, onChange, options, label }) {
     const [open, setOpen] = React.useState(false);
+    let menu = null;
+    if (open) {
+        const list = h("div", { role: "listbox", "aria-label": label }, options.map(option => h("button", {
+            key: option.id, type: "button", role: "option", "aria-selected": value === option.id,
+            className: value === option.id ? "bb-active" : "", style: { height: `${dropdownRowRem}rem` },
+            onClick: () => { onChange(option.id); setOpen(false); }
+        }, option.name)));
+        menu = h("div", { className: "bb-filter-menu" }, options.length <= dropdownMaxRows ? list :
+            h(ScrollArea, { className: "bb-dropdown-viewport", style: { height: `${dropdownMaxRows * dropdownRowRem}rem` } }, list));
+    }
     return h("div", { className: "bb-filter", onBlur: event => {
         if (!event.currentTarget.contains(event.relatedTarget)) setOpen(false);
     }, onKeyDown: event => { if (event.key === "Escape") { setOpen(false); event.stopPropagation(); } } },
@@ -200,12 +220,7 @@ function FilterBox({ value, onChange, options, label }) {
             h("span", { className: "bb-field-icon bb-filter-icon", "aria-hidden": true }),
             h("span", { className: "bb-field-icon bb-filter-arrow", "aria-hidden": true }),
             h("span", { className: "bb-filter-label" }, options.find(option => option.id === value)?.name || label)),
-        open ? h("div", { className: "bb-filter-menu" }, h(ScrollArea, null,
-            h("div", { role: "listbox", "aria-label": label }, options.map(option => h("button", {
-                key: option.id, type: "button", role: "option", "aria-selected": value === option.id,
-                className: value === option.id ? "bb-active" : "",
-                onClick: () => { onChange(option.id); setOpen(false); }
-            }, option.name))))) : null);
+        menu);
 }
 
 function NetworkPicker({ decks, selectedId, onSelect, title, onOpenRoadBuilder }) {
@@ -310,15 +325,23 @@ function CreateView({ decks, styles, draft, onSaveDraft = () => {} }) {
     const [customName, setCustomName] = React.useState(draft?.customName ?? false);
     const [styleQuery, setStyleQuery] = React.useState(draft?.styleQuery ?? "");
     const [lowerDeckOpposite, setLowerDeckOpposite] = React.useState(draft?.lowerDeckOpposite ?? true);
+    const [styleFamily, setStyleFamily] = React.useState(draft?.styleFamily ?? "");
 
     const openRoadBuilder = () => {
-        onSaveDraft({ doubleDeck, upperId, lowerId, styleId, name, customName, styleQuery, lowerDeckOpposite });
+        onSaveDraft({ doubleDeck, upperId, lowerId, styleId, name, customName, styleQuery, lowerDeckOpposite, styleFamily: activeFamily });
         trigger("OpenRoadBuilder");
     };
 
     // The catalogue already contains usable deck networks. Tracks can occupy
     // either deck, including a single-deck bridge; IsRoad is not eligibility.
     const availableStyles = styles.filter(style => doubleDeck ? style.supportsDouble : style.supportsSingle);
+    const matchingStyles = availableStyles.filter(style => matchesSearch(styleQuery, style.name, style.id));
+    const families = [...new Set(matchingStyles.map(style => style.family).filter(Boolean))];
+    const activeFamily = families.includes(styleFamily) ? styleFamily : "";
+    const visibleStyles = activeFamily ? matchingStyles.filter(style => style.family === activeFamily) : matchingStyles;
+    React.useEffect(() => {
+        if (activeFamily !== styleFamily) setStyleFamily("");
+    }, [activeFamily, styleFamily]);
     const selectedStyle = availableStyles.find(style => style.id === styleId);
     const selectedUpper = decks.find(deck => deck.id === upperId);
     const selectedLower = doubleDeck ? decks.find(deck => deck.id === lowerId) : null;
@@ -362,9 +385,11 @@ function CreateView({ decks, styles, draft, onSaveDraft = () => {} }) {
                     "aria-pressed": lowerDeckOpposite, onClick: () => setLowerDeckOpposite(value => !value) },
                     t("LowerDeckOpposite"))) : null,
             h("div", { className: "bb-filters" },
-                h(SearchBox, { value: styleQuery, onChange: setStyleQuery, label: t("SearchStyles") })),
-            h(ScrollArea, { className: "bb-style-list", key: `${doubleDeck}\n${styleQuery}` },
-                h(CardGrid, { items: availableStyles.filter(style => matchesSearch(styleQuery, style.name, style.id)), selectedId: styleId,
+                h(SearchBox, { value: styleQuery, onChange: setStyleQuery, label: t("SearchStyles") }),
+                h(FilterBox, { value: activeFamily, onChange: setStyleFamily, label: t("AllBridgeTypes"),
+                    options: [{ id: "", name: t("AllBridgeTypes") }, ...families.map(id => ({ id, name: t("Family" + id) }))] })),
+            h(ScrollArea, { className: "bb-style-list", key: `${doubleDeck}\n${styleQuery}\n${activeFamily}` },
+                h(CardGrid, { items: visibleStyles, selectedId: styleId,
                     onSelect: item => setStyleId(item.id), emptyText: t(availableStyles.length ? "NoMatches" : "NoStyles") })),
             h("div", { className: "bb-create-bar" },
                 h(NativeTextInput, { ...textInputProps, value: displayName, maxLength: 250, placeholder: t("DisplayName"),

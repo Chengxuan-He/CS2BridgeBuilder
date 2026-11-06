@@ -8,7 +8,7 @@ internal static class Lift01TowerTrusses
 {
     // Original transverse tower and upper gantry assemblies, including their internal side
     // diagonals and centre connection plates. No runtime part identification.
-    private static readonly HardcodedNumbers Data = HardcodedNumbers.Load("Types_Lift01_TowerTrussMap");
+    private static HardcodedNumbers Data => GenerationParameters.Get<HardcodedNumbers>("BridgeBuilder.Bridges.Lift01TowerTrusses.Data", () => HardcodedNumbers.Load("Types_Lift01_TowerTrussMap"));
     internal static MovableStructureModel.Plan Complete(MovableStructureModel.Plan plan, int lod, float delta)
     {
         if (lod != Numeric_Types_Lift01_Lift01TowerTrusses_cs.Values.I32[0] && lod != Numeric_Types_Lift01_Lift01TowerTrusses_cs.Values.I32[1])
@@ -26,11 +26,9 @@ internal static class Lift01TowerTrusses
             var scale = (halfSpan + delta) / halfSpan;
             var frame = Matrix4x4.identity;
             frame.m00 = scale;
-            AffineGeometry.For(start, start + count, n =>
-            {
-                var i = Data.I32[n];
-                positions[i].x = plan.SourcePositions[i].x * scale;
-            });
+            AffineGeometry.Execute(StructurePrograms.Data, StructurePrograms.ScaleX,
+                new[] { plan.SourcePositions, positions }, Array.Empty<float[]>(), new[] { scale },
+                first: start, count: count, indices: new[] { Data.I32 });
             for (var n = start; n < start + count; n++)
                 frames.Add(new KeyValuePair<int, Matrix4x4>(Data.I32[n], frame));
         }
@@ -46,5 +44,5 @@ internal static class Numeric_Types_Lift01_Lift01TowerTrusses_cs
     {
     }
 
-    internal static readonly HardcodedNumbers Values = HardcodedNumbers.Load("Types_Lift01_Lift01TowerTrusses_cs");
+    internal static HardcodedNumbers Values => GenerationParameters.Get<HardcodedNumbers>("BridgeBuilder.Bridges.Numeric_Types_Lift01_Lift01TowerTrusses_cs.Values", () => HardcodedNumbers.Load("Types_Lift01_Lift01TowerTrusses_cs"));
 }

@@ -21,25 +21,22 @@ internal static class Lift05SupportGeometry
             throw new InvalidOperationException("Lift05 support requires its measured layout.");
         var positions = (Vector3[])source.Clone();
         foreach (var part in data.Parts)
-            AffineGeometry.For(part.First, checked((part.Last) + 1), i =>
-            {
-                positions[i].x = AffineGeometry.Translate(positions[i].x, part.Sign * delta);
-            });
+            AffineGeometry.Execute(RangePrograms.Data, 0, new[] { positions }, Array.Empty<float[]>(), new float[] { part.Sign, delta }, part.First, checked((checked((part.Last) + 1)) - (part.First)));
         return new MovableStructureModel.Plan(source, positions, new[] { indices }, new[] { new bool[indices.Length / Numeric_Types_Lift05_Lift05SupportGeometry_g_cs.Values.I32[12]] });
     }
 
     // Geometry SHA-256: 887e873cd753c5c1a6b661fc4f4e22796b764a99110d5751f24688a1235a6289
-    private static readonly (int First, int Last, int Sign)[] Parts00 = ReadPackedParts00();
+    private static (int First, int Last, int Sign)[] Parts00 => GenerationParameters.Get<(int First, int Last, int Sign)[]>("BridgeBuilder.Bridges.Lift05SupportGeometry.Parts00", () => ReadPackedParts00());
     // Geometry SHA-256: 28f7dcf6a584a25006233ce86c8ee0544ac96d2364ce5d41678fb47eeaeb76e8
-    private static readonly (int First, int Last, int Sign)[] Parts01 = ReadPackedParts01();
+    private static (int First, int Last, int Sign)[] Parts01 => GenerationParameters.Get<(int First, int Last, int Sign)[]>("BridgeBuilder.Bridges.Lift05SupportGeometry.Parts01", () => ReadPackedParts01());
     // Geometry SHA-256: f476f9bc2c84c2291a09cfea33fc462edca75a85090e21f4c935294ec1efddfa
-    private static readonly (int First, int Last, int Sign)[] Parts02 = ReadPackedParts02();
+    private static (int First, int Last, int Sign)[] Parts02 => GenerationParameters.Get<(int First, int Last, int Sign)[]>("BridgeBuilder.Bridges.Lift05SupportGeometry.Parts02", () => ReadPackedParts02());
     // Geometry SHA-256: 62b1522905fce325960bdae23ea15eea47627f52b1ec5b6077acbe5fa17af44c
-    private static readonly (int First, int Last, int Sign)[] Parts10 = ReadPackedParts10();
+    private static (int First, int Last, int Sign)[] Parts10 => GenerationParameters.Get<(int First, int Last, int Sign)[]>("BridgeBuilder.Bridges.Lift05SupportGeometry.Parts10", () => ReadPackedParts10());
     // Geometry SHA-256: 7628f84ea601e00b0406dc62d3c05d3c17921485ea02bbf8e07af5bc890706db
-    private static readonly (int First, int Last, int Sign)[] Parts11 = ReadPackedParts11();
+    private static (int First, int Last, int Sign)[] Parts11 => GenerationParameters.Get<(int First, int Last, int Sign)[]>("BridgeBuilder.Bridges.Lift05SupportGeometry.Parts11", () => ReadPackedParts11());
     // Geometry SHA-256: 7a186b25b4662a85ad8b9eccf8cc80ac098bbad796fce6be732770e79cf2e350
-    private static readonly (int First, int Last, int Sign)[] Parts12 = ReadPackedParts12();
+    private static (int First, int Last, int Sign)[] Parts12 => GenerationParameters.Get<(int First, int Last, int Sign)[]>("BridgeBuilder.Bridges.Lift05SupportGeometry.Parts12", () => ReadPackedParts12());
     private static (int First, int Last, int Sign)[] ReadPackedParts00()
     {
         var d = Numeric_Types_Lift05_Lift05SupportGeometry_g_cs.Values;
@@ -169,11 +166,23 @@ internal static class Lift05SupportGeometry
             values[8 + i] = (d.I32[142 + i * 3], d.I32[143 + i * 3], d.I32[144 + i * 3]);
         return values;
     }
+
+    private static class RangePrograms
+    {
+        static RangePrograms()
+        {
+        }
+
+        internal static HardcodedNumbers Data => GenerationParameters.Get<HardcodedNumbers>("BridgeBuilder.Bridges.Lift05SupportGeometry.RangePrograms.Data", () => HardcodedNumbers.Load("Types_Lift05_Lift05SupportGeometry_RangePrograms"));
+    }
 }
 
 // Embedded numerical arrays: Types_Lift05_Lift05SupportGeometry_g_cs
 internal static class Numeric_Types_Lift05_Lift05SupportGeometry_g_cs
 {
-    static Numeric_Types_Lift05_Lift05SupportGeometry_g_cs() {}
-    internal static readonly HardcodedNumbers Values = HardcodedNumbers.Load("Types_Lift05_Lift05SupportGeometry_g_cs");
+    static Numeric_Types_Lift05_Lift05SupportGeometry_g_cs()
+    {
+    }
+
+    internal static HardcodedNumbers Values => GenerationParameters.Get<HardcodedNumbers>("BridgeBuilder.Bridges.Numeric_Types_Lift05_Lift05SupportGeometry_g_cs.Values", () => HardcodedNumbers.Load("Types_Lift05_Lift05SupportGeometry_g_cs"));
 }

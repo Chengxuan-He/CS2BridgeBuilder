@@ -9,11 +9,10 @@ namespace BridgeBuilder.Bridges;
 // they do not classify an entire selected Section or grant wheel-track support.
 internal static class Draw01RoadAppearance
 {
-    internal static readonly Type[] SupportedTypes =
-    {
+    internal static Type[] SupportedTypes => GenerationParameters.Get<Type[]>("BridgeBuilder.Bridges.Draw01RoadAppearance.SupportedTypes", () => new Type[] {
         Type.Asphalt, Type.Sidewalk, Type.Sidewalk, Type.Asphalt,
         Type.Sidewalk, Type.Asphalt, Type.Asphalt,
         Type.Asphalt, Type.Sidewalk, Type.Sidewalk, Type.Asphalt,
         Type.Sidewalk, Type.Asphalt, Type.Asphalt
-    };
+    });
 }

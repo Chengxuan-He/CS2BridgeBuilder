@@ -10,48 +10,32 @@ internal static class Lift01TowerFrames
     {
         var data = lod switch
         {
-            0 => (Count: Numeric_Types_Lift01_Lift01TowerFrames_g_cs.Values.I32[0], Parts: Near),
-            1 => (Count: Numeric_Types_Lift01_Lift01TowerFrames_g_cs.Values.I32[1], Parts: Middle),
+            0 => Numeric_Types_Lift01_Lift01TowerFrames_g_cs.Values.I32[0],
+            1 => Numeric_Types_Lift01_Lift01TowerFrames_g_cs.Values.I32[1],
             _ => throw new ArgumentOutOfRangeException(nameof(lod))};
-        if (!float.IsFinite(delta) || source.Length != data.Count || positions.Length != data.Count)
+        if (!float.IsFinite(delta) || source.Length != data || positions.Length != data)
             throw new InvalidOperationException("Lift01 tower frames require their recorded layout.");
-        foreach (var range in data.Parts)
-            AffineGeometry.For(range.First, checked((range.Last) + 1), i =>
-            {
-                positions[i].x = AffineGeometry.AddScaled(source[i].x, range.Weight, delta);
-            });
+        AffineGeometry.Execute(BatchProgram0.Data, lod, new[] { source, positions }, Array.Empty<float[]>(), new float[] { delta });
     }
 
     // Geometry SHA-256: cc34bfcb478f5621513c458120bacfb395e21548e3eee2e753dca97e138b5714
-    private static readonly (int First, int Last, int Weight)[] Near = ReadPackedNear();
     // Geometry SHA-256: c5694dce731ce05218de15761665cc1d234723049c48bd707c87587509ed8e4e
-    private static readonly (int First, int Last, int Weight)[] Middle = ReadPackedMiddle();
-    private static (int First, int Last, int Weight)[] ReadPackedNear()
+    private static class BatchProgram0
     {
-        var d = Numeric_Types_Lift01_Lift01TowerFrames_g_cs.Values;
-        var values = new (int First, int Last, int Weight)[890];
-        for (int i = 0; i < 218; i++)
-            values[0 + i] = (d.I32[2 + i * 3], d.I32[3 + i * 3], -d.I32[4 + i * 3]);
-        for (int i = 0; i < 672; i++)
-            values[218 + i] = (d.I32[656 + i * 3], d.I32[657 + i * 3], d.I32[658 + i * 3]);
-        return values;
-    }
+        static BatchProgram0()
+        {
+        }
 
-    private static (int First, int Last, int Weight)[] ReadPackedMiddle()
-    {
-        var d = Numeric_Types_Lift01_Lift01TowerFrames_g_cs.Values;
-        var values = new (int First, int Last, int Weight)[890];
-        for (int i = 0; i < 218; i++)
-            values[0 + i] = (d.I32[2672 + i * 3], d.I32[2673 + i * 3], -d.I32[2674 + i * 3]);
-        for (int i = 0; i < 672; i++)
-            values[218 + i] = (d.I32[3326 + i * 3], d.I32[3327 + i * 3], d.I32[3328 + i * 3]);
-        return values;
+        internal static HardcodedNumbers Data => GenerationParameters.Get<HardcodedNumbers>("BridgeBuilder.Bridges.Lift01TowerFrames.BatchProgram0.Data", () => HardcodedNumbers.Load("Types_Lift01_Lift01TowerFrames_BatchProgram0"));
     }
 }
 
 // Embedded numerical arrays: Types_Lift01_Lift01TowerFrames_g_cs
 internal static class Numeric_Types_Lift01_Lift01TowerFrames_g_cs
 {
-    static Numeric_Types_Lift01_Lift01TowerFrames_g_cs() {}
-    internal static readonly HardcodedNumbers Values = HardcodedNumbers.Load("Types_Lift01_Lift01TowerFrames_g_cs");
+    static Numeric_Types_Lift01_Lift01TowerFrames_g_cs()
+    {
+    }
+
+    internal static HardcodedNumbers Values => GenerationParameters.Get<HardcodedNumbers>("BridgeBuilder.Bridges.Numeric_Types_Lift01_Lift01TowerFrames_g_cs.Values", () => HardcodedNumbers.Load("Types_Lift01_Lift01TowerFrames_g_cs"));
 }

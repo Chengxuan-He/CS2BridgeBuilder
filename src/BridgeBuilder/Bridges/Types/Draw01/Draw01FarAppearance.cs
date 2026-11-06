@@ -26,7 +26,7 @@ internal static class Draw01FarAppearance
         }
     }
 
-    private static readonly float[] Data = HardcodedNumbers.Load("Types_Draw01_FarAppearanceMeasurements").F32;
+    private static float[] Data => GenerationParameters.Get<float[]>("BridgeBuilder.Bridges.Draw01FarAppearance.Data", () => HardcodedNumbers.Load("Types_Draw01_FarAppearanceMeasurements").F32);
     private static int Stride => Numeric_Types_Draw01_Draw01FarAppearance_cs.Values.I32[0];
     private static int Near => Numeric_Types_Draw01_Draw01FarAppearance_cs.Values.I32[1] * Stride;
 
@@ -192,5 +192,5 @@ internal static class Numeric_Types_Draw01_Draw01FarAppearance_cs
     {
     }
 
-    internal static readonly HardcodedNumbers Values = HardcodedNumbers.Load("Types_Draw01_Draw01FarAppearance_cs");
+    internal static HardcodedNumbers Values => GenerationParameters.Get<HardcodedNumbers>("BridgeBuilder.Bridges.Numeric_Types_Draw01_Draw01FarAppearance_cs.Values", () => HardcodedNumbers.Load("Types_Draw01_Draw01FarAppearance_cs"));
 }

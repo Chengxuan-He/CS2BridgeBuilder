@@ -7,6 +7,12 @@ using UnityEngine;
 namespace BridgeBuilder.Bridges;
 internal static class PedestrianDraw02FootingWideningData
 {
+    private static class Coefficients
+    {
+        static Coefficients() { }
+        internal static float[] Near => GenerationParameters.Get<float[]>("BridgeBuilder.Bridges.PedestrianDraw02FootingWideningData.Coefficients.Near", () => Array.ConvertAll(PedestrianDraw02FootingWideningData.Near, row => row.Weight));
+        internal static float[] Far => GenerationParameters.Get<float[]>("BridgeBuilder.Bridges.PedestrianDraw02FootingWideningData.Coefficients.Far", () => Array.ConvertAll(PedestrianDraw02FootingWideningData.Far, row => row.Weight));
+    }
     internal static MovableStructureModel.Plan CreatePlan(int lod, Vector3[] sourcePositions, float halfWidthDelta, int[][] sourceIndices)
     {
         var measured = lod switch
@@ -18,21 +24,24 @@ internal static class PedestrianDraw02FootingWideningData
         if (!float.IsFinite(halfWidthDelta) || sourcePositions.Length != measured.Length || sourceIndices.Length != Numeric_Types_PedestrianDraw02_PedestrianDraw02FootingWideningData_g_cs.Values.I32[3] || sourceIndices[Numeric_Types_PedestrianDraw02_PedestrianDraw02FootingWideningData_g_cs.Values.I32[4]].Length != triangles * Numeric_Types_PedestrianDraw02_PedestrianDraw02FootingWideningData_g_cs.Values.I32[5])
             throw new ArgumentException("PedestrianDraw02 footing requires its measured native layout and a finite width change.");
         var positions = (Vector3[])sourcePositions.Clone();
-        AffineGeometry.For(Numeric_Types_PedestrianDraw02_PedestrianDraw02FootingWideningData_g_cs.Values.I32[6], measured.Length, i =>
+        for (int i = Numeric_Types_PedestrianDraw02_PedestrianDraw02FootingWideningData_g_cs.Values.I32[6]; i < measured.Length; i++)
         {
             var actual = sourcePositions[i];
             var expected = measured[i].Position;
             if (actual.x != expected.x || actual.y != expected.y || actual.z != expected.z)
                 throw new InvalidOperationException($"PedestrianDraw02 footing LOD {lod} vertex {i} differs from its recorded source.");
-            positions[i].x = AffineGeometry.Translate(positions[i].x, measured[i].Weight * halfWidthDelta);
-        });
+        }
+        var weights = lod == 0 ? Coefficients.Near : Coefficients.Far;
+        int first = Numeric_Types_PedestrianDraw02_PedestrianDraw02FootingWideningData_g_cs.Values.I32[6];
+        AffineGeometry.Execute(StructurePrograms.Data, StructurePrograms.DenseDelta, new[] { positions, positions },
+            new[] { weights }, new[] { halfWidthDelta }, first: first, count: measured.Length - first);
         return new MovableStructureModel.Plan(sourcePositions, positions, sourceIndices, new[] { new bool[triangles] });
     }
 
     // Geometry SHA-256: b42466fc4e11fbcb679ffbbdb54a47138616eab8d4ef732b76711e0b59a4c652
-    private static readonly (Vector3 Position, float Weight)[] Near = ReadPackedNear();
+    private static (Vector3 Position, float Weight)[] Near => GenerationParameters.Get<(Vector3 Position, float Weight)[]>("BridgeBuilder.Bridges.PedestrianDraw02FootingWideningData.Near", () => ReadPackedNear());
     // Geometry SHA-256: debb97074a80ef973707b0f058e9d191e0ddc82db886cc56979830234f8b6e6e
-    private static readonly (Vector3 Position, float Weight)[] Far = ReadPackedFar();
+    private static (Vector3 Position, float Weight)[] Far => GenerationParameters.Get<(Vector3 Position, float Weight)[]>("BridgeBuilder.Bridges.PedestrianDraw02FootingWideningData.Far", () => ReadPackedFar());
     private static (Vector3 Position, float Weight)[] ReadPackedNear()
     {
         var d = Numeric_Types_PedestrianDraw02_PedestrianDraw02FootingWideningData_g_cs.Values;
@@ -406,5 +415,5 @@ internal static class PedestrianDraw02FootingWideningData
 internal static class Numeric_Types_PedestrianDraw02_PedestrianDraw02FootingWideningData_g_cs
 {
     static Numeric_Types_PedestrianDraw02_PedestrianDraw02FootingWideningData_g_cs() {}
-    internal static readonly HardcodedNumbers Values = HardcodedNumbers.Load("Types_PedestrianDraw02_PedestrianDraw02FootingWideningData_g_cs");
+    internal static HardcodedNumbers Values => GenerationParameters.Get<HardcodedNumbers>("BridgeBuilder.Bridges.Numeric_Types_PedestrianDraw02_PedestrianDraw02FootingWideningData_g_cs.Values", () => HardcodedNumbers.Load("Types_PedestrianDraw02_PedestrianDraw02FootingWideningData_g_cs"));
 }

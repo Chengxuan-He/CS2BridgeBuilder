@@ -79,6 +79,7 @@ public sealed class Mod : IMod
         // Optional manager setting; persisted native conditions work without this system.
         updateSystem.UpdateAt<BridgeUnlockSystem>(SystemUpdatePhase.UIUpdate);
         // Self-check waits for native/PDX asset batches and mod initialization at a ready main menu.
+        updateSystem.UpdateAt<BridgeOwnerCleanupSystem>(SystemUpdatePhase.UIUpdate);
         updateSystem.UpdateAt<BridgeStartupAssetSystem>(SystemUpdatePhase.UIUpdate);
         updateSystem.UpdateAt<BridgeRailSeamAuditSystem>(SystemUpdatePhase.UIUpdate);
         World.DefaultGameObjectInjectionWorld.GetOrCreateSystemManaged<BridgeStartupAssetSystem>().ScheduleInspectionAfterLoad();
@@ -87,6 +88,7 @@ public sealed class Mod : IMod
     public void OnDispose()
     {
         Runtime.BridgeBulkRemoval.Stop();
+        Runtime.BridgeDeferredRemoval.Stop();
         BridgeStartupAssetSystem.StopInspection();
         BridgeBuilder.Runtime.BridgeStartupRecovery.Stop();
         BridgeBuilder.Runtime.BridgeRailSeamPatch.Stop();
@@ -242,6 +244,7 @@ public sealed class Mod : IMod
             }
             Runtime.BridgePreparedMaterials.Initialize(directory);
             UIManager.defaultUISystem.AddHostLocation("bridgebuilderui", directory, false, 0);
+            Runtime.BridgeDeferredRemoval.Initialize(directory);
         }
         catch (Exception exception)
         {

@@ -110,5 +110,5 @@ internal static class Lift05NetworkData
 internal static class Numeric_Types_Lift05_Lift05NetworkData_g_cs
 {
     static Numeric_Types_Lift05_Lift05NetworkData_g_cs() {}
-    internal static readonly HardcodedNumbers Values = HardcodedNumbers.Load("Types_Lift05_Lift05NetworkData_g_cs");
+    internal static HardcodedNumbers Values => GenerationParameters.Get<HardcodedNumbers>("BridgeBuilder.Bridges.Numeric_Types_Lift05_Lift05NetworkData_g_cs.Values", () => HardcodedNumbers.Load("Types_Lift05_Lift05NetworkData_g_cs"));
 }

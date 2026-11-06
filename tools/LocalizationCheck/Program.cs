@@ -13,6 +13,16 @@ internal static class Program
 
     private static void Main()
     {
+        foreach(var id in new[]{"Extradosed01","Extradosed02","Extradosed03","ExtradosedLarge","CableStayed"})
+            Check(BridgeBuilder.Bridges.BridgeStyleDefinitions.Family(id)=="CableStayed","Shared cable-stayed family: "+id);
+        var names=new[]{(Name:"波",Id:"b"),(Name:"阿",Id:"z"),(Name:"阿",Id:"a")};
+        var ordered=names.OrderBy(x=>x.Name,UiStringCatalog.NameOrder("zh-Hans")).ThenBy(x=>x.Id,StringComparer.Ordinal).ToArray();
+        Check(ordered.Select(x=>x.Id).SequenceEqual(new[]{"a","z","b"}),"Chinese dictionary order and stable ID ties");
+        Check(UiStringCatalog.NameOrder("sv-SE").Compare("ä","z")>0 && UiStringCatalog.NameOrder("de-DE").Compare("ä","z")<0,"Active locale collation");
+        foreach(var definition in BridgeBuilder.Bridges.BridgeStyleDefinitions.All.Where(x=>BridgeBuilder.Bridges.BridgeStyleDefinitions.CanList(x.Id))) {
+            var key="Family"+BridgeBuilder.Bridges.BridgeStyleDefinitions.Family(definition.Id);
+            foreach(var locale in RuntimeUiText.LocaleIds) Check(RuntimeUiText.ForLocale(locale).ContainsKey(key),"Missing family: "+key+"/"+locale);
+        }
         foreach (var family in new[] { ("Draw", "DrawBridge", 3), ("Lift", "LiftBridge", 5), ("PedestrianDraw", "PedestrianDrawBridge", 2) })
         for (var i = 1; i <= family.Item3; i++)
         {
@@ -23,7 +33,13 @@ internal static class Program
             Check(BridgeBuilder.Bridges.BridgeStyleDefinitions.GenerationUnsupportedReason(id, id == "Lift03") == null,
                 "Movable requests must reach the router: " + id);
             foreach (var locale in RuntimeUiText.LocaleIds)
-                Check(UiStringCatalog.ForLocale(locale).StyleName(id) != id, "Missing movable label: " + locale + "/" + id);
+            {
+                var table=UiStringCatalog.ForLocale(locale);
+                var label=table.StyleName(id);
+                Check(label != id && !label.Any(char.IsDigit), "Missing structural name: "+locale+"/"+id);
+                for(var previous=1;previous<i;previous++)
+                    Check(label != table.StyleName(family.Item1+previous.ToString("00")), "Ambiguous structural name: "+locale+"/"+id);
+            }
         }
         var freshPrefabName = BridgeAssetInfo.NewPrefabName();
         Check(freshPrefabName.StartsWith("b", StringComparison.Ordinal)

@@ -7,7 +7,7 @@ using System.Collections.Generic;
 namespace BridgeBuilder.Bridges;
 internal static class Draw03UvCharts
 {
-    private static readonly Dictionary<string, Entry> Loaded = new();
+    private static Dictionary<string, Entry> Loaded => GenerationParameters.Get<Dictionary<string, Entry>>("BridgeBuilder.Bridges.Draw03UvCharts.Loaded", () => new());
     internal static MovableUvChart[] For(string renderName, int meshIndex, int domain)
     {
         string? resource = (renderName, meshIndex) switch

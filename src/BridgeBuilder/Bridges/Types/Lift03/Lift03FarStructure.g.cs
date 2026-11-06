@@ -12,101 +12,20 @@ internal static class Lift03FarStructure
             throw new InvalidOperationException("Lift03 far structure requires its recorded native layout.");
         var positions = (Vector3[])source.Clone();
         Lift03RigidParts.Apply(Numeric_Types_Lift03_Lift03FarStructure_g_cs.Values.I32[3], source, positions, delta);
-        AffineGeometry.Scatter(Weights, item => item.Index, item =>
-        {
-            positions[item.Index].x = AffineGeometry.AddScaled(source[item.Index].x, item.Weight, delta);
-        });
+        AffineGeometry.Execute(CoordinatePrograms.Data, 0, new[] { source, positions }, Array.Empty<float[]>(), new[] { delta });
         var x = new float[ExtraWeights.Length];
-        AffineGeometry.For(Numeric_Types_Lift03_Lift03FarStructure_g_cs.Values.I32[4], Edges.Length, i =>
-        {
-            var edge = Edges[i];
-            x[i] = AffineGeometry.AddScaled(source[edge.A].x + (source[edge.B].x - source[edge.A].x) * edge.Fraction, ExtraWeights[i], delta);
-        });
-        for (var i = Numeric_Types_Lift03_Lift03FarStructure_g_cs.Values.I32[5]; i < Interior.Length; i++)
-        {
-            var vertex = Interior[i];
-            var index = Edges.Length + i;
-            x[index] = AffineGeometry.AddScaled(source[vertex.A].x + (source[vertex.B].x - source[vertex.A].x) * vertex.WeightB + (source[vertex.C].x - source[vertex.A].x) * vertex.WeightC, ExtraWeights[index], delta);
-        }
-
+        AffineGeometry.Execute(InterpolationProgram0.Data, 0, new[] { source }, new[] { x }, new float[] { delta });
+        AffineGeometry.Execute(InterpolationProgram1.Data, 0, new[] { source }, new[] { x }, new float[] { delta });
         var removed = new bool[Numeric_Types_Lift03_Lift03FarStructure_g_cs.Values.I32[6]];
         Lift03FarRoadTops.Remove(indices, removed);
         Lift03SupportFaces.RemoveFar(indices, removed);
         return new MovableStructureModel.Plan(source, positions, new[] { indices }, new[] { removed }, addedVertices: Edges, fragments: Fragments, interiorVertices: Interior, constructedX: x);
     }
 
-    private static readonly (int Index, float Weight)[] Weights = ReadPackedWeights();
-    private static readonly MovableStructureModel.EdgeVertex[] Edges = ReadPackedEdges();
-    private static readonly MovableStructureModel.TriangleVertex[] Interior = ReadPackedInterior();
-    private static readonly float[] ExtraWeights = ReadPackedExtraWeights();
-    private static readonly MovableStructureModel.Fragment[] Fragments = ReadPackedFragments();
-    private static (int Index, float Weight)[] ReadPackedWeights()
-    {
-        var d = Numeric_Types_Lift03_Lift03FarStructure_g_cs.Values;
-        var values = new (int Index, float Weight)[348];
-        for (int i = 0; i < 28; i++)
-            values[0 + i] = (d.I32[7 + i * 1], d.F32[0 + i * 1]);
-        for (int i = 0; i < 7; i++)
-            values[28 + i] = (d.I32[35 + i * 1], -d.F32[28 + i * 1]);
-        for (int i = 0; i < 2; i++)
-            values[35 + i] = (d.I32[42 + i * 1], d.F32[35 + i * 1]);
-        for (int i = 0; i < 5; i++)
-            values[37 + i] = (d.I32[44 + i * 1], -d.F32[37 + i * 1]);
-        for (int i = 0; i < 22; i++)
-            values[42 + i] = (d.I32[49 + i * 1], d.F32[42 + i * 1]);
-        for (int i = 0; i < 10; i++)
-            values[64 + i] = (d.I32[71 + i * 1], -d.F32[64 + i * 1]);
-        for (int i = 0; i < 12; i++)
-            values[74 + i] = (d.I32[81 + i * 1], d.F32[74 + i * 1]);
-        for (int i = 0; i < 10; i++)
-            values[86 + i] = (d.I32[93 + i * 1], -d.F32[86 + i * 1]);
-        for (int i = 0; i < 28; i++)
-            values[96 + i] = (d.I32[103 + i * 1], d.F32[96 + i * 1]);
-        for (int i = 0; i < 2; i++)
-            values[124 + i] = (d.I32[131 + i * 1], -d.F32[124 + i * 1]);
-        for (int i = 0; i < 12; i++)
-            values[126 + i] = (d.I32[133 + i * 1], d.F32[126 + i * 1]);
-        for (int i = 0; i < 22; i++)
-            values[138 + i] = (d.I32[145 + i * 1], -d.F32[138 + i * 1]);
-        for (int i = 0; i < 2; i++)
-            values[160 + i] = (d.I32[167 + i * 1], d.F32[160 + i * 1]);
-        for (int i = 0; i < 22; i++)
-            values[162 + i] = (d.I32[169 + i * 1], -d.F32[162 + i * 1]);
-        for (int i = 0; i < 2; i++)
-            values[184 + i] = (d.I32[191 + i * 1], d.F32[184 + i * 1]);
-        for (int i = 0; i < 10; i++)
-            values[186 + i] = (d.I32[193 + i * 1], -d.F32[186 + i * 1]);
-        for (int i = 0; i < 28; i++)
-            values[196 + i] = (d.I32[203 + i * 1], d.F32[196 + i * 1]);
-        for (int i = 0; i < 2; i++)
-            values[224 + i] = (d.I32[231 + i * 1], -d.F32[224 + i * 1]);
-        for (int i = 0; i < 12; i++)
-            values[226 + i] = (d.I32[233 + i * 1], d.F32[226 + i * 1]);
-        for (int i = 0; i < 10; i++)
-            values[238 + i] = (d.I32[245 + i * 1], -d.F32[238 + i * 1]);
-        for (int i = 0; i < 28; i++)
-            values[248 + i] = (d.I32[255 + i * 1], d.F32[248 + i * 1]);
-        for (int i = 0; i < 7; i++)
-            values[276 + i] = (d.I32[283 + i * 1], -d.F32[276 + i * 1]);
-        for (int i = 0; i < 2; i++)
-            values[283 + i] = (d.I32[290 + i * 1], d.F32[283 + i * 1]);
-        for (int i = 0; i < 5; i++)
-            values[285 + i] = (d.I32[292 + i * 1], -d.F32[285 + i * 1]);
-        for (int i = 0; i < 10; i++)
-            values[290 + i] = (d.I32[297 + i * 1], d.F32[290 + i * 1]);
-        for (int i = 0; i < 12; i++)
-            values[300 + i] = (d.I32[307 + i * 1], -d.F32[300 + i * 1]);
-        for (int i = 0; i < 2; i++)
-            values[312 + i] = (d.I32[319 + i * 1], d.F32[312 + i * 1]);
-        for (int i = 0; i < 22; i++)
-            values[314 + i] = (d.I32[321 + i * 1], -d.F32[314 + i * 1]);
-        for (int i = 0; i < 2; i++)
-            values[336 + i] = (d.I32[343 + i * 1], d.F32[336 + i * 1]);
-        for (int i = 0; i < 10; i++)
-            values[338 + i] = (d.I32[345 + i * 1], -d.F32[338 + i * 1]);
-        return values;
-    }
-
+    private static MovableStructureModel.EdgeVertex[] Edges => GenerationParameters.Get<MovableStructureModel.EdgeVertex[]>("BridgeBuilder.Bridges.Lift03FarStructure.Edges", () => ReadPackedEdges());
+    private static MovableStructureModel.TriangleVertex[] Interior => GenerationParameters.Get<MovableStructureModel.TriangleVertex[]>("BridgeBuilder.Bridges.Lift03FarStructure.Interior", () => ReadPackedInterior());
+    private static float[] ExtraWeights => GenerationParameters.Get<float[]>("BridgeBuilder.Bridges.Lift03FarStructure.ExtraWeights", () => ReadPackedExtraWeights());
+    private static MovableStructureModel.Fragment[] Fragments => GenerationParameters.Get<MovableStructureModel.Fragment[]>("BridgeBuilder.Bridges.Lift03FarStructure.Fragments", () => ReadPackedFragments());
     private static MovableStructureModel.EdgeVertex[] ReadPackedEdges()
     {
         var d = Numeric_Types_Lift03_Lift03FarStructure_g_cs.Values;
@@ -512,11 +431,41 @@ internal static class Lift03FarStructure
             values[194 + i] = new(d.I32[15757 + i * 29], d.I32[15758 + i * 29], d.I32[15759 + i * 29], d.I32[15760 + i * 29], d.I32[15761 + i * 29], d.I32[15762 + i * 29], d.I32[15763 + i * 29], d.I32[15764 + i * 29], d.I32[15765 + i * 29], d.I32[15766 + i * 29], d.I32[15767 + i * 29], d.I32[15768 + i * 29], d.I32[15769 + i * 29], d.I32[15770 + i * 29], d.I32[15771 + i * 29], d.I32[15772 + i * 29], d.I32[15773 + i * 29], d.I32[15774 + i * 29], d.I32[15775 + i * 29], d.I32[15776 + i * 29], d.I32[15777 + i * 29], d.I32[15778 + i * 29], d.I32[15779 + i * 29], d.I32[15780 + i * 29], d.I32[15781 + i * 29], d.I32[15782 + i * 29], d.I32[15783 + i * 29], d.I32[15784 + i * 29], d.I32[15785 + i * 29]);
         return values;
     }
+
+    private static class CoordinatePrograms
+    {
+        static CoordinatePrograms()
+        {
+        }
+
+        internal static HardcodedNumbers Data => GenerationParameters.Get<HardcodedNumbers>("BridgeBuilder.Bridges.Lift03FarStructure.CoordinatePrograms.Data", () => HardcodedNumbers.Load("Types_Lift03_Lift03FarStructure_CoordinateProgram"));
+    }
+
+    private static class InterpolationProgram0
+    {
+        static InterpolationProgram0()
+        {
+        }
+
+        internal static HardcodedNumbers Data => GenerationParameters.Get<HardcodedNumbers>("BridgeBuilder.Bridges.Lift03FarStructure.InterpolationProgram0.Data", () => HardcodedNumbers.Load("Types_Lift03_Lift03FarStructure_InterpolationProgram0"));
+    }
+
+    private static class InterpolationProgram1
+    {
+        static InterpolationProgram1()
+        {
+        }
+
+        internal static HardcodedNumbers Data => GenerationParameters.Get<HardcodedNumbers>("BridgeBuilder.Bridges.Lift03FarStructure.InterpolationProgram1.Data", () => HardcodedNumbers.Load("Types_Lift03_Lift03FarStructure_InterpolationProgram1"));
+    }
 }
 
 // Embedded numerical arrays: Types_Lift03_Lift03FarStructure_g_cs
 internal static class Numeric_Types_Lift03_Lift03FarStructure_g_cs
 {
-    static Numeric_Types_Lift03_Lift03FarStructure_g_cs() {}
-    internal static readonly HardcodedNumbers Values = HardcodedNumbers.Load("Types_Lift03_Lift03FarStructure_g_cs");
+    static Numeric_Types_Lift03_Lift03FarStructure_g_cs()
+    {
+    }
+
+    internal static HardcodedNumbers Values => GenerationParameters.Get<HardcodedNumbers>("BridgeBuilder.Bridges.Numeric_Types_Lift03_Lift03FarStructure_g_cs.Values", () => HardcodedNumbers.Load("Types_Lift03_Lift03FarStructure_g_cs"));
 }

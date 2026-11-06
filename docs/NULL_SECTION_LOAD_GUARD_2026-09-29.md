@@ -1,5 +1,8 @@
 # Null section registration guard
 
+Archived implementation evidence from 2026-09-29. For current startup recovery and manual
+removal, see the [bridge generation contract](agent-contract/BRIDGE_GENERATION_CONTRACT.md#explicit-bulk-deletion).
+
 The reported `ArgumentNullException(key)` occurs in native `NetInitializeSystem.AddSections`:
 it passes a null `NetSectionInfo.m_Section` to `PrefabSystem.GetEntity`. A map-complete
 cleanup cannot prevent this earlier `PrefabUpdate` failure. Native IL also calls AddSections

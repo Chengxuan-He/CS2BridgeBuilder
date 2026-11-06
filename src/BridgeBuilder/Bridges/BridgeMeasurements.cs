@@ -55,7 +55,7 @@ internal static class BridgeMeasurements
     internal static int Lift03AuxiliaryRoadWidth => Numeric_BridgeMeasurements_cs.Values.I32[9];
 
     /// <summary>Road width and tower width in whole metres, keyed by prefab name.</summary>
-    private static readonly Dictionary<string, (int Road, int Tower)> Table = new(StringComparer.Ordinal)
+    private static Dictionary<string, (int Road, int Tower)> Table => GenerationParameters.Get<Dictionary<string, (int Road, int Tower)>>("BridgeBuilder.Bridges.BridgeMeasurements.Table", () => new(StringComparer.Ordinal)
     {
         ["PedestrianDrawBridge01"] = (PedestrianDraw01RoadWidth, Numeric_BridgeMeasurements_cs.Values.I32[10]),
         ["PedestrianDrawBridge02"] = (PedestrianDraw02RoadWidth, Numeric_BridgeMeasurements_cs.Values.I32[11]),
@@ -196,7 +196,7 @@ internal static class BridgeMeasurements
         ["LeisurePier04Small01"] = (Numeric_BridgeMeasurements_cs.Values.I32[252], Numeric_BridgeMeasurements_cs.Values.I32[253]),
         ["Oil Pier"] = (Numeric_BridgeMeasurements_cs.Values.I32[254], Numeric_BridgeMeasurements_cs.Values.I32[255]),
         ["Wooden Covered Bridge - 2 lanes"] = (Numeric_BridgeMeasurements_cs.Values.I32[256], Numeric_BridgeMeasurements_cs.Values.I32[257]),
-    };
+    });
     /// <summary>The recorded widths, or false when this prefab was not in the scan.</summary>
     internal static bool TryGet(string? name, out float road, out float tower)
     {
@@ -224,5 +224,5 @@ internal static class BridgeMeasurements
 internal static class Numeric_BridgeMeasurements_cs
 {
     static Numeric_BridgeMeasurements_cs() {}
-    internal static readonly HardcodedNumbers Values = HardcodedNumbers.Load("BridgeMeasurements_cs");
+    internal static HardcodedNumbers Values => GenerationParameters.Get<HardcodedNumbers>("BridgeBuilder.Bridges.Numeric_BridgeMeasurements_cs.Values", () => HardcodedNumbers.Load("BridgeMeasurements_cs"));
 }

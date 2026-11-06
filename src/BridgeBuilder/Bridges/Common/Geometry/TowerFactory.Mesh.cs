@@ -196,8 +196,6 @@ internal sealed partial class TowerFactory
                 var bluePortal = IsBluePrototypeMainPier(original);
                 var blueSection = IsBluePrototypeSection(original);
                 TowerWidening.TrussWideningFacts trussFacts = default;
-                var usedRecordedTruss02 = false;
-                var usedRecordedTruss03 = false;
                 float3[] moved;
                 bool[]? dropped = null;
                 bool[]? protectedGoldenSupport = null;
@@ -266,7 +264,6 @@ internal sealed partial class TowerFactory
                         return null;
                     }
 
-                    usedRecordedTruss02 = true;
                 }
                 else if (openTruss && recordedTruss03)
                 {
@@ -286,7 +283,6 @@ internal sealed partial class TowerFactory
                         return null;
                     }
 
-                    usedRecordedTruss03 = true;
                 }
                 else
                 {
@@ -396,7 +392,7 @@ internal sealed partial class TowerFactory
                     if (_kerbPlans != null) dropped = ApplyKerbPlans(_kerbPlans, source, moved, protectedGoldenSupport);
                 }
 
-                var partVertices = ToVectors(moved);
+                var partVertices = moved;
 
                 var model = BuildModel(
                     models.Count == 0 ? name : name + " LOD" + models.Count,

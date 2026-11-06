@@ -46,7 +46,7 @@ internal static class MovableCableSurface
         assets.Add(surface);
 
         // Differing overrides still keep their own descriptor while that conversion
-        // coverage is migrated. The constant control payload is already prepared.
+        // coverage is migrated. The neutral control is a verified native game texture.
         // Never add it to assets: deleting this bridge must not destroy the source.
         var control = prepared.textures["_ControlMask"];
 

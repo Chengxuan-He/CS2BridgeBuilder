@@ -14,8 +14,8 @@ internal static class Draw01FixedWideningData
         {
             if (positions.Length != Numeric_Types_Draw01_Draw01FixedWideningData_g_cs.Values.I32[3])
                 throw new ArgumentException("Draw01 glass widening requires the original vertex layout.");
-            foreach (var index in Glass)
-                positions[index].x = AffineGeometry.Translate(positions[index].x, halfWidthDelta);
+            foreach (var coordinateRows in StructureRows.Stages(Glass))
+                AffineGeometry.Execute(RangePrograms1.Data, 0, new[] { positions }, Array.Empty<float[]>(), new float[] { halfWidthDelta }, count: coordinateRows.Length, indices: new[] { coordinateRows });
             return;
         }
 
@@ -41,22 +41,20 @@ internal static class Draw01FixedWideningData
             if (group.Weight == Numeric_Types_Draw01_Draw01FixedWideningData_g_cs.Values.F32[0])
                 continue;
             var displacement = group.Weight * halfWidthDelta;
-            AffineGeometry.Indices(group.Vertices, index =>
-            {
-                positions[index].x = AffineGeometry.Translate(positions[index].x, displacement);
-            });
+            foreach (var coordinateRows in StructureRows.Stages(group.Vertices))
+                AffineGeometry.Execute(RangePrograms.Data, 0, new[] { positions }, Array.Empty<float[]>(), new float[] { group.Weight, halfWidthDelta }, count: coordinateRows.Length, indices: new[] { coordinateRows });
         }
     }
 
     // Native source OBJ SHA-256: 97215ED0B33145FB53737999961C3DA0E6859E433A89566BB1F7C2C04EE7F9E1
-    private static readonly (float Weight, int[] Vertices)[] Near = ReadPackedNear();
+    private static (float Weight, int[] Vertices)[] Near => GenerationParameters.Get<(float Weight, int[] Vertices)[]>("BridgeBuilder.Bridges.Draw01FixedWideningData.Near", () => ReadPackedNear());
     // Native source OBJ SHA-256: 4987290BEF55D474AEA63DE7F54197C31C37BD243730AADD45986F1D87E4970D
-    private static readonly (float Weight, int[] Vertices)[] Middle = ReadPackedMiddle();
+    private static (float Weight, int[] Vertices)[] Middle => GenerationParameters.Get<(float Weight, int[] Vertices)[]>("BridgeBuilder.Bridges.Draw01FixedWideningData.Middle", () => ReadPackedMiddle());
     // Native source OBJ SHA-256: 7107118D476D585B8021DED3DC55F82BA6B349B3BD2F06F891320668D8FEA1D6
-    private static readonly (float Weight, int[] Vertices)[] Far = ReadPackedFar();
+    private static (float Weight, int[] Vertices)[] Far => GenerationParameters.Get<(float Weight, int[] Vertices)[]>("BridgeBuilder.Bridges.Draw01FixedWideningData.Far", () => ReadPackedFar());
     // Glass LOD0 source OBJ SHA-256: C50C34BCBA52945E9256BC05F1990E84C9BC8EE1D7B4643A205429A89EF5E57B
     // Glass _LOD1 source OBJ SHA-256: C50C34BCBA52945E9256BC05F1990E84C9BC8EE1D7B4643A205429A89EF5E57B
-    private static readonly int[] Glass = ReadPackedGlass();
+    private static int[] Glass => GenerationParameters.Get<int[]>("BridgeBuilder.Bridges.Draw01FixedWideningData.Glass", () => ReadPackedGlass());
     private static (float Weight, int[] Vertices)[] ReadPackedNear()
     {
         var d = Numeric_Types_Draw01_Draw01FixedWideningData_g_cs.Values;
@@ -104,11 +102,32 @@ internal static class Draw01FixedWideningData
             values[0 + i] = d.I32[10538 + i * 1];
         return values;
     }
+
+    private static class RangePrograms
+    {
+        static RangePrograms()
+        {
+        }
+
+        internal static HardcodedNumbers Data => GenerationParameters.Get<HardcodedNumbers>("BridgeBuilder.Bridges.Draw01FixedWideningData.RangePrograms.Data", () => HardcodedNumbers.Load("Types_Draw01_Draw01FixedWideningData_RangePrograms"));
+    }
+
+    private static class RangePrograms1
+    {
+        static RangePrograms1()
+        {
+        }
+
+        internal static HardcodedNumbers Data => GenerationParameters.Get<HardcodedNumbers>("BridgeBuilder.Bridges.Draw01FixedWideningData.RangePrograms1.Data", () => HardcodedNumbers.Load("Types_Draw01_Draw01FixedWideningData_RangePrograms1"));
+    }
 }
 
 // Embedded numerical arrays: Types_Draw01_Draw01FixedWideningData_g_cs
 internal static class Numeric_Types_Draw01_Draw01FixedWideningData_g_cs
 {
-    static Numeric_Types_Draw01_Draw01FixedWideningData_g_cs() {}
-    internal static readonly HardcodedNumbers Values = HardcodedNumbers.Load("Types_Draw01_Draw01FixedWideningData_g_cs");
+    static Numeric_Types_Draw01_Draw01FixedWideningData_g_cs()
+    {
+    }
+
+    internal static HardcodedNumbers Values => GenerationParameters.Get<HardcodedNumbers>("BridgeBuilder.Bridges.Numeric_Types_Draw01_Draw01FixedWideningData_g_cs.Values", () => HardcodedNumbers.Load("Types_Draw01_Draw01FixedWideningData_g_cs"));
 }

@@ -30,10 +30,9 @@ internal static class Draw02FixedSidewalks
                 continue;
             }
 
-            AffineGeometry.Scatter(group.Vertices, vertex => vertex.Index, vertex =>
-            {
-                positions[vertex.Index].x = AffineGeometry.AddScaled(plan.SourcePositions[vertex.Index].x + (span.x - group.Minimum), (span.y - span.x - Numeric_Types_Draw02_Draw02FixedSidewalks_g_cs.Values.F32[0]), vertex.Fraction);
-            });
+            AffineGeometry.Execute(StructurePrograms.Data, StructurePrograms.SidewalkX, new[] { plan.SourcePositions, positions },
+                new[] { group.Fractions }, new[] { span.x, span.y, group.Minimum, Numeric_Types_Draw02_Draw02FixedSidewalks_g_cs.Values.F32[0] },
+                count: group.Vertices.Length, indices: new[] { group.Vertices });
         }
 
         var constructedX = new float[plan.ConstructedCount];
@@ -48,20 +47,23 @@ internal static class Draw02FixedSidewalks
         internal readonly bool Left;
         internal readonly float Minimum;
         internal readonly int[] Faces;
-        internal readonly (int Index, float Fraction)[] Vertices;
+        internal readonly int[] Vertices;
+        internal readonly float[] Fractions;
         internal Group(bool left, float minimum, int[] faces, (int, float)[] vertices)
         {
             Left = left;
             Minimum = minimum;
             Faces = faces;
-            Vertices = vertices;
+            Vertices = new int[vertices.Length];
+            Fractions = new float[vertices.Length];
+            for (int i = 0; i < vertices.Length; i++) { Vertices[i] = vertices[i].Item1; Fractions[i] = vertices[i].Item2; }
         }
     }
 
     // Geometry SHA-256: 1f0ff1a2c0a8318e6537bd347ae064d1bb55bfa48f3cf3c2375601adcd05dd18
-    private static readonly Group[] Near = ReadPackedNear();
+    private static Group[] Near => GenerationParameters.Get<Group[]>("BridgeBuilder.Bridges.Draw02FixedSidewalks.Near", () => ReadPackedNear());
     // Geometry SHA-256: 9c0c22c62ef170b0a8be300dee2ab7d71c0c27b745e3fc6395b96a34b69b4b4d
-    private static readonly Group[] Middle = ReadPackedMiddle();
+    private static Group[] Middle => GenerationParameters.Get<Group[]>("BridgeBuilder.Bridges.Draw02FixedSidewalks.Middle", () => ReadPackedMiddle());
     private static Group[] ReadPackedNear()
     {
         var d = Numeric_Types_Draw02_Draw02FixedSidewalks_g_cs.Values;
@@ -89,5 +91,5 @@ internal static class Draw02FixedSidewalks
 internal static class Numeric_Types_Draw02_Draw02FixedSidewalks_g_cs
 {
     static Numeric_Types_Draw02_Draw02FixedSidewalks_g_cs() {}
-    internal static readonly HardcodedNumbers Values = HardcodedNumbers.Load("Types_Draw02_Draw02FixedSidewalks_g_cs");
+    internal static HardcodedNumbers Values => GenerationParameters.Get<HardcodedNumbers>("BridgeBuilder.Bridges.Numeric_Types_Draw02_Draw02FixedSidewalks_g_cs.Values", () => HardcodedNumbers.Load("Types_Draw02_Draw02FixedSidewalks_g_cs"));
 }

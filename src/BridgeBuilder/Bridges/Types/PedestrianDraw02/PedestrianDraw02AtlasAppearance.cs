@@ -13,9 +13,9 @@ namespace BridgeBuilder.Bridges;
 // Embedded numerical arrays: Types_PedestrianDraw02_AtlasAppearance
 internal static class PedestrianDraw02AtlasAppearance
 {
-    private static readonly HardcodedNumbers Data = HardcodedNumbers.Load("Types_PedestrianDraw02_AtlasAppearance");
+    private static HardcodedNumbers Data => GenerationParameters.Get<HardcodedNumbers>("BridgeBuilder.Bridges.PedestrianDraw02AtlasAppearance.Data", () => HardcodedNumbers.Load("Types_PedestrianDraw02_AtlasAppearance"));
     // Embedded numerical arrays: Types_PedestrianDraw02_SourceTangentFields
-    private static readonly HardcodedNumbers TangentFields = HardcodedNumbers.Load("Types_PedestrianDraw02_SourceTangentFields");
+    private static HardcodedNumbers TangentFields => GenerationParameters.Get<HardcodedNumbers>("BridgeBuilder.Bridges.PedestrianDraw02AtlasAppearance.TangentFields", () => HardcodedNumbers.Load("Types_PedestrianDraw02_SourceTangentFields"));
 
     internal static MovableRoadAppearance.Level Create(SurfaceAsset native, Pose roadToObject, float halfWidthDelta)
         => Prepared(native,
@@ -36,7 +36,7 @@ internal static class PedestrianDraw02AtlasAppearance
         var x = new float[stations];
         for (int i = 0; i < stations; i++)
         {
-            x[i] = AffineGeometry.AddScaled(values[stationOffset + i * 2], values[stationOffset + i * 2 + 1], halfWidthDelta);
+            x[i] = values[stationOffset + i * 2] + values[stationOffset + i * 2 + 1] * halfWidthDelta;
         }
         var pose = Matrix4x4.TRS(roadToObject.position, roadToObject.rotation, Vector3.one);
         var patches = new Patch[count];

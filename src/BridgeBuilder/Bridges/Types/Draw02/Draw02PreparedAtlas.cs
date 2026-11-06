@@ -9,7 +9,7 @@ namespace BridgeBuilder.Bridges;
 internal static class Draw02PreparedAtlas
 {
     static Draw02PreparedAtlas() { }
-    private static readonly HardcodedNumbers Data = HardcodedNumbers.Load("Types_Draw02_Draw02PreparedAtlas_cs");
+    private static HardcodedNumbers Data => GenerationParameters.Get<HardcodedNumbers>("BridgeBuilder.Bridges.Draw02PreparedAtlas.Data", () => HardcodedNumbers.Load("Types_Draw02_Draw02PreparedAtlas_cs"));
     internal static Patch Repeat(int unit, Vector4 u, Vector4 v, Vector4? tangent = null, bool projectTangent = false)
     {
         var key = unit switch

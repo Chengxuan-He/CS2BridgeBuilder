@@ -35,7 +35,15 @@ internal sealed class BridgeDiskAudit
         }
         foreach (string path in knownPaths)
             foreach (string owner in failures.Keys)
-                if (BridgeAssetInfo.MatchesOwner(path, owner) && BridgeFileAccess.Exists(path)) audit.FileOwners[path] = owner;
+                if (BridgeAssetInfo.MatchesOwner(path, owner) && BridgeFileAccess.Exists(path))
+                {
+                    string source = Path.GetFullPath(BridgeFileAccess.Logical(path));
+                    string ownerRoot = Path.Combine(audit._imported, owner);
+                    // Move the owner tree once, retaining relative names and sidecar pairs.
+                    // Metadata and file enumeration can spell the same file with different separators.
+                    if (Below(source, ownerRoot)) source = ownerRoot;
+                    audit.FileOwners[source] = owner;
+                }
         foreach (string owner in failures.Keys)
             if (!audit.FileOwners.ContainsValue(owner)) { audit.Error = "No matching local paths for bridge: " + owner; return audit; }
         audit.Complete = true;

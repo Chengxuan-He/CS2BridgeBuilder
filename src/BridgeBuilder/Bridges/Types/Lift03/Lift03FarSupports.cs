@@ -23,5 +23,5 @@ internal static class Lift03FarSupports
 internal static class Numeric_Types_Lift03_Lift03FarSupports_cs
 {
     static Numeric_Types_Lift03_Lift03FarSupports_cs() {}
-    internal static readonly HardcodedNumbers Values = HardcodedNumbers.Load("Types_Lift03_Lift03FarSupports_cs");
+    internal static HardcodedNumbers Values => GenerationParameters.Get<HardcodedNumbers>("BridgeBuilder.Bridges.Numeric_Types_Lift03_Lift03FarSupports_cs.Values", () => HardcodedNumbers.Load("Types_Lift03_Lift03FarSupports_cs"));
 }

@@ -16,17 +16,14 @@ internal static class PedestrianDraw02ColumnWideningData
         if (!float.IsFinite(delta) || source.Length != data.Weights.Length || indices.Length != data.IndexCount)
             throw new InvalidOperationException("PedestrianDraw02 column requires its recorded detailed mesh layout.");
         var positions = (Vector3[])source.Clone();
-        AffineGeometry.For(Numeric_Types_PedestrianDraw02_PedestrianDraw02ColumnWideningData_g_cs.Values.I32[2], positions.Length, i =>
-        {
-            positions[i].x = AffineGeometry.Translate(positions[i].x, data.Weights[i] * delta);
-        });
+        AffineGeometry.Execute(RangePrograms.Data, 0, new[] { positions }, new[] { data.Weights }, new float[] { delta }, Numeric_Types_PedestrianDraw02_PedestrianDraw02ColumnWideningData_g_cs.Values.I32[2], checked((positions.Length) - (Numeric_Types_PedestrianDraw02_PedestrianDraw02ColumnWideningData_g_cs.Values.I32[2])));
         return new MovableStructureModel.Plan(source, positions, new[] { indices }, new[] { new bool[indices.Length / Numeric_Types_PedestrianDraw02_PedestrianDraw02ColumnWideningData_g_cs.Values.I32[3]] });
     }
 
     // Geometry SHA-256: 98f138e40d8dd0ba1337a275e4f3cb087f033fc042108e140ee2ac591804d0d3
-    private static readonly float[] Near = ReadPackedNear();
+    private static float[] Near => GenerationParameters.Get<float[]>("BridgeBuilder.Bridges.PedestrianDraw02ColumnWideningData.Near", () => ReadPackedNear());
     // Geometry SHA-256: accc47b3bca78e3fa116614b38383f75bf77a4f725f548e53501d34115f4d117
-    private static readonly float[] Middle = ReadPackedMiddle();
+    private static float[] Middle => GenerationParameters.Get<float[]>("BridgeBuilder.Bridges.PedestrianDraw02ColumnWideningData.Middle", () => ReadPackedMiddle());
     private static float[] ReadPackedNear()
     {
         var d = Numeric_Types_PedestrianDraw02_PedestrianDraw02ColumnWideningData_g_cs.Values;
@@ -4772,11 +4769,23 @@ internal static class PedestrianDraw02ColumnWideningData
             values[3068 + i] = d.F32[6400 + i * 1];
         return values;
     }
+
+    private static class RangePrograms
+    {
+        static RangePrograms()
+        {
+        }
+
+        internal static HardcodedNumbers Data => GenerationParameters.Get<HardcodedNumbers>("BridgeBuilder.Bridges.PedestrianDraw02ColumnWideningData.RangePrograms.Data", () => HardcodedNumbers.Load("Types_PedestrianDraw02_PedestrianDraw02ColumnWideningData_RangePrograms"));
+    }
 }
 
 // Embedded numerical arrays: Types_PedestrianDraw02_PedestrianDraw02ColumnWideningData_g_cs
 internal static class Numeric_Types_PedestrianDraw02_PedestrianDraw02ColumnWideningData_g_cs
 {
-    static Numeric_Types_PedestrianDraw02_PedestrianDraw02ColumnWideningData_g_cs() {}
-    internal static readonly HardcodedNumbers Values = HardcodedNumbers.Load("Types_PedestrianDraw02_PedestrianDraw02ColumnWideningData_g_cs");
+    static Numeric_Types_PedestrianDraw02_PedestrianDraw02ColumnWideningData_g_cs()
+    {
+    }
+
+    internal static HardcodedNumbers Values => GenerationParameters.Get<HardcodedNumbers>("BridgeBuilder.Bridges.Numeric_Types_PedestrianDraw02_PedestrianDraw02ColumnWideningData_g_cs.Values", () => HardcodedNumbers.Load("Types_PedestrianDraw02_PedestrianDraw02ColumnWideningData_g_cs"));
 }

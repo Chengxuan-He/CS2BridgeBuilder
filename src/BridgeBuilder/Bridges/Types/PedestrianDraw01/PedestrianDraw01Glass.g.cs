@@ -13,17 +13,26 @@ internal static class PedestrianDraw01Glass
         if ((lod != Numeric_Types_PedestrianDraw01_PedestrianDraw01Glass_g_cs.Values.I32[0] && lod != Numeric_Types_PedestrianDraw01_PedestrianDraw01Glass_g_cs.Values.I32[1]) || source.Length != Numeric_Types_PedestrianDraw01_PedestrianDraw01Glass_g_cs.Values.I32[2] || indices.Length != Numeric_Types_PedestrianDraw01_PedestrianDraw01Glass_g_cs.Values.I32[3] || !float.IsFinite(delta))
             throw new InvalidOperationException("PedestrianDraw01 glass requires its recorded mesh-1 layout.");
         var positions = (Vector3[])source.Clone();
-        AffineGeometry.For(Numeric_Types_PedestrianDraw01_PedestrianDraw01Glass_g_cs.Values.I32[4], Numeric_Types_PedestrianDraw01_PedestrianDraw01Glass_g_cs.Values.I32[5], i =>
-        {
-            positions[i].x = AffineGeometry.Translate(positions[i].x, -(delta));
-        });
+        AffineGeometry.Execute(RangePrograms.Data, 0, new[] { positions }, Array.Empty<float[]>(), new float[] { delta }, Numeric_Types_PedestrianDraw01_PedestrianDraw01Glass_g_cs.Values.I32[4], checked((Numeric_Types_PedestrianDraw01_PedestrianDraw01Glass_g_cs.Values.I32[5]) - (Numeric_Types_PedestrianDraw01_PedestrianDraw01Glass_g_cs.Values.I32[4])));
         return new MovableStructureModel.Plan(source, positions, new[] { indices }, new[] { new bool[Numeric_Types_PedestrianDraw01_PedestrianDraw01Glass_g_cs.Values.I32[6]] });
+    }
+
+    private static class RangePrograms
+    {
+        static RangePrograms()
+        {
+        }
+
+        internal static HardcodedNumbers Data => GenerationParameters.Get<HardcodedNumbers>("BridgeBuilder.Bridges.PedestrianDraw01Glass.RangePrograms.Data", () => HardcodedNumbers.Load("Types_PedestrianDraw01_PedestrianDraw01Glass_RangePrograms"));
     }
 }
 
 // Embedded numerical arrays: Types_PedestrianDraw01_PedestrianDraw01Glass_g_cs
 internal static class Numeric_Types_PedestrianDraw01_PedestrianDraw01Glass_g_cs
 {
-    static Numeric_Types_PedestrianDraw01_PedestrianDraw01Glass_g_cs() {}
-    internal static readonly HardcodedNumbers Values = HardcodedNumbers.Load("Types_PedestrianDraw01_PedestrianDraw01Glass_g_cs");
+    static Numeric_Types_PedestrianDraw01_PedestrianDraw01Glass_g_cs()
+    {
+    }
+
+    internal static HardcodedNumbers Values => GenerationParameters.Get<HardcodedNumbers>("BridgeBuilder.Bridges.Numeric_Types_PedestrianDraw01_PedestrianDraw01Glass_g_cs.Values", () => HardcodedNumbers.Load("Types_PedestrianDraw01_PedestrianDraw01Glass_g_cs"));
 }

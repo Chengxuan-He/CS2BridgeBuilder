@@ -18,17 +18,15 @@ internal static class Lift01TowerBodies
         foreach (var part in data.Parts)
         {
             var span = part.Max - part.Min;
-            AffineGeometry.Indices(part.Vertices, i =>
-            {
-                positions[i].x = AffineGeometry.AddScaled(source[i].x, (Numeric_Types_Lift01_Lift01TowerBodies_g_cs.Values.F32[0] * source[i].x - part.Min - part.Max) / span, delta);
-            });
+            foreach (var coordinateRows in StructureRows.Stages(part.Vertices))
+                AffineGeometry.Execute(RangePrograms.Data, 0, new[] { source, positions }, Array.Empty<float[]>(), new float[] { Numeric_Types_Lift01_Lift01TowerBodies_g_cs.Values.F32[0], part.Min, part.Max, delta }, count: coordinateRows.Length, indices: new[] { coordinateRows });
         }
     }
 
     // Geometry SHA-256: cc34bfcb478f5621513c458120bacfb395e21548e3eee2e753dca97e138b5714
-    private static readonly (float Min, float Max, int[] Vertices)[] Near = ReadPackedNear();
+    private static (float Min, float Max, int[] Vertices)[] Near => GenerationParameters.Get<(float Min, float Max, int[] Vertices)[]>("BridgeBuilder.Bridges.Lift01TowerBodies.Near", () => ReadPackedNear());
     // Geometry SHA-256: c5694dce731ce05218de15761665cc1d234723049c48bd707c87587509ed8e4e
-    private static readonly (float Min, float Max, int[] Vertices)[] Middle = ReadPackedMiddle();
+    private static (float Min, float Max, int[] Vertices)[] Middle => GenerationParameters.Get<(float Min, float Max, int[] Vertices)[]>("BridgeBuilder.Bridges.Lift01TowerBodies.Middle", () => ReadPackedMiddle());
     private static (float Min, float Max, int[] Vertices)[] ReadPackedNear()
     {
         var d = Numeric_Types_Lift01_Lift01TowerBodies_g_cs.Values;
@@ -74,11 +72,23 @@ internal static class Lift01TowerBodies
             values[24 + i] = (-d.F32[101 + i * 2], d.F32[102 + i * 2], new[] { d.I32[3070 + i * 20], d.I32[3071 + i * 20], d.I32[3072 + i * 20], d.I32[3073 + i * 20], d.I32[3074 + i * 20], d.I32[3075 + i * 20], d.I32[3076 + i * 20], d.I32[3077 + i * 20], d.I32[3078 + i * 20], d.I32[3079 + i * 20], d.I32[3080 + i * 20], d.I32[3081 + i * 20], d.I32[3082 + i * 20], d.I32[3083 + i * 20], d.I32[3084 + i * 20], d.I32[3085 + i * 20], d.I32[3086 + i * 20], d.I32[3087 + i * 20], d.I32[3088 + i * 20], d.I32[3089 + i * 20], });
         return values;
     }
+
+    private static class RangePrograms
+    {
+        static RangePrograms()
+        {
+        }
+
+        internal static HardcodedNumbers Data => GenerationParameters.Get<HardcodedNumbers>("BridgeBuilder.Bridges.Lift01TowerBodies.RangePrograms.Data", () => HardcodedNumbers.Load("Types_Lift01_Lift01TowerBodies_RangePrograms"));
+    }
 }
 
 // Embedded numerical arrays: Types_Lift01_Lift01TowerBodies_g_cs
 internal static class Numeric_Types_Lift01_Lift01TowerBodies_g_cs
 {
-    static Numeric_Types_Lift01_Lift01TowerBodies_g_cs() {}
-    internal static readonly HardcodedNumbers Values = HardcodedNumbers.Load("Types_Lift01_Lift01TowerBodies_g_cs");
+    static Numeric_Types_Lift01_Lift01TowerBodies_g_cs()
+    {
+    }
+
+    internal static HardcodedNumbers Values => GenerationParameters.Get<HardcodedNumbers>("BridgeBuilder.Bridges.Numeric_Types_Lift01_Lift01TowerBodies_g_cs.Values", () => HardcodedNumbers.Load("Types_Lift01_Lift01TowerBodies_g_cs"));
 }

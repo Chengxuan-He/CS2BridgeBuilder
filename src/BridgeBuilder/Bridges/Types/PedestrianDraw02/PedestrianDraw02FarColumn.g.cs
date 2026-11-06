@@ -12,22 +12,15 @@ internal static class PedestrianDraw02FarColumn
         if (!float.IsFinite(delta) || source.Length != Numeric_Types_PedestrianDraw02_PedestrianDraw02FarColumn_g_cs.Values.I32[0] || indices.Length != Numeric_Types_PedestrianDraw02_PedestrianDraw02FarColumn_g_cs.Values.I32[1])
             throw new InvalidOperationException("PedestrianDraw02 far column requires its recorded shell layout.");
         var positions = (Vector3[])source.Clone();
-        AffineGeometry.For(Numeric_Types_PedestrianDraw02_PedestrianDraw02FarColumn_g_cs.Values.I32[2], positions.Length, i =>
-        {
-            positions[i].x = AffineGeometry.Translate(positions[i].x, Weights[i] * delta);
-        });
+        AffineGeometry.Execute(RangePrograms.Data, 0, new[] { positions }, new[] { Weights }, new float[] { delta }, Numeric_Types_PedestrianDraw02_PedestrianDraw02FarColumn_g_cs.Values.I32[2], checked((positions.Length) - (Numeric_Types_PedestrianDraw02_PedestrianDraw02FarColumn_g_cs.Values.I32[2])));
         var x = new float[Edges.Length];
-        AffineGeometry.For(Numeric_Types_PedestrianDraw02_PedestrianDraw02FarColumn_g_cs.Values.I32[3], x.Length, i =>
-        {
-            var edge = Edges[i];
-            x[i] = AffineGeometry.AddScaled(Mathf.LerpUnclamped(source[edge.A].x, source[edge.B].x, edge.Fraction), Weights[source.Length + i], delta);
-        });
+        AffineGeometry.Execute(InterpolationProgram0.Data, 0, new[] { source }, new[] { x }, new float[] { delta });
         return new MovableStructureModel.Plan(source, positions, new[] { indices }, new[] { new bool[Numeric_Types_PedestrianDraw02_PedestrianDraw02FarColumn_g_cs.Values.I32[4]] }, addedVertices: Edges, fragments: Fragments, constructedX: x);
     }
 
-    private static readonly float[] Weights = ReadPackedWeights();
-    private static readonly MovableStructureModel.EdgeVertex[] Edges = ReadPackedEdges();
-    private static readonly MovableStructureModel.Fragment[] Fragments = ReadPackedFragments();
+    private static float[] Weights => GenerationParameters.Get<float[]>("BridgeBuilder.Bridges.PedestrianDraw02FarColumn.Weights", () => ReadPackedWeights());
+    private static MovableStructureModel.EdgeVertex[] Edges => GenerationParameters.Get<MovableStructureModel.EdgeVertex[]>("BridgeBuilder.Bridges.PedestrianDraw02FarColumn.Edges", () => ReadPackedEdges());
+    private static MovableStructureModel.Fragment[] Fragments => GenerationParameters.Get<MovableStructureModel.Fragment[]>("BridgeBuilder.Bridges.PedestrianDraw02FarColumn.Fragments", () => ReadPackedFragments());
     private static float[] ReadPackedWeights()
     {
         var d = Numeric_Types_PedestrianDraw02_PedestrianDraw02FarColumn_g_cs.Values;
@@ -146,11 +139,32 @@ internal static class PedestrianDraw02FarColumn
             values[0 + i] = new(d.I32[205 + i * 11], d.I32[206 + i * 11], d.I32[207 + i * 11], d.I32[208 + i * 11], d.I32[209 + i * 11], d.I32[210 + i * 11], d.I32[211 + i * 11], d.I32[212 + i * 11], d.I32[213 + i * 11], d.I32[214 + i * 11], d.I32[215 + i * 11]);
         return values;
     }
+
+    private static class RangePrograms
+    {
+        static RangePrograms()
+        {
+        }
+
+        internal static HardcodedNumbers Data => GenerationParameters.Get<HardcodedNumbers>("BridgeBuilder.Bridges.PedestrianDraw02FarColumn.RangePrograms.Data", () => HardcodedNumbers.Load("Types_PedestrianDraw02_PedestrianDraw02FarColumn_RangePrograms"));
+    }
+
+    private static class InterpolationProgram0
+    {
+        static InterpolationProgram0()
+        {
+        }
+
+        internal static HardcodedNumbers Data => GenerationParameters.Get<HardcodedNumbers>("BridgeBuilder.Bridges.PedestrianDraw02FarColumn.InterpolationProgram0.Data", () => HardcodedNumbers.Load("Types_PedestrianDraw02_PedestrianDraw02FarColumn_InterpolationProgram0"));
+    }
 }
 
 // Embedded numerical arrays: Types_PedestrianDraw02_PedestrianDraw02FarColumn_g_cs
 internal static class Numeric_Types_PedestrianDraw02_PedestrianDraw02FarColumn_g_cs
 {
-    static Numeric_Types_PedestrianDraw02_PedestrianDraw02FarColumn_g_cs() {}
-    internal static readonly HardcodedNumbers Values = HardcodedNumbers.Load("Types_PedestrianDraw02_PedestrianDraw02FarColumn_g_cs");
+    static Numeric_Types_PedestrianDraw02_PedestrianDraw02FarColumn_g_cs()
+    {
+    }
+
+    internal static HardcodedNumbers Values => GenerationParameters.Get<HardcodedNumbers>("BridgeBuilder.Bridges.Numeric_Types_PedestrianDraw02_PedestrianDraw02FarColumn_g_cs.Values", () => HardcodedNumbers.Load("Types_PedestrianDraw02_PedestrianDraw02FarColumn_g_cs"));
 }

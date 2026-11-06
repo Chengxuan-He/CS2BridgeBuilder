@@ -43,8 +43,8 @@ internal static class Lift02UvCharts
     }
     private static class Data
     {
-        internal static readonly HardcodedNumbers Values=HardcodedNumbers.Load("Types_Lift02_Lift02UvCharts_cs");
-        internal static readonly ConcurrentDictionary<int,MovableUvChart> Charts=new();
-        internal static readonly ConcurrentDictionary<int,MovableUvChart[]> Sets=new();
+        internal static HardcodedNumbers Values => GenerationParameters.Get<HardcodedNumbers>("BridgeBuilder.Bridges.Lift02UvCharts.Data.Values", () => HardcodedNumbers.Load("Types_Lift02_Lift02UvCharts_cs"));
+        internal static ConcurrentDictionary<int,MovableUvChart> Charts => GenerationParameters.Get<ConcurrentDictionary<int,MovableUvChart>>("BridgeBuilder.Bridges.Lift02UvCharts.Data.Charts", () => new());
+        internal static ConcurrentDictionary<int,MovableUvChart[]> Sets => GenerationParameters.Get<ConcurrentDictionary<int,MovableUvChart[]>>("BridgeBuilder.Bridges.Lift02UvCharts.Data.Sets", () => new());
     }
 }

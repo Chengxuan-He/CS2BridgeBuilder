@@ -94,12 +94,14 @@ internal static class BridgeDependencyPersistence
             NativeFileName = meta.extension.Equals(".MidMips", StringComparison.OrdinalIgnoreCase)
                 ? CacheFileName(meta.fileName, meta.extension, meta.path) : "",
             Bytes = payload,
-            SerializedReferences = surface ? BridgeSurfaceReferences.Read(payload, (template, property) =>
-                (AssetDatabase.global.resources.materialLibrary.GetMaterialDescription(template)
-                    ?? throw new InvalidDataException("Unknown native surface material template " + template))
-                    .GetStackConfigIndex(property) != -1) : null,
+            SerializedReferences = surface ? ReadSurfaceReferences(payload) : null,
         };
     }
+
+    internal static string[] ReadSurfaceReferences(byte[] payload) => BridgeSurfaceReferences.Read(payload, (template, property) =>
+                (AssetDatabase.global.resources.materialLibrary.GetMaterialDescription(template)
+                    ?? throw new InvalidDataException("Unknown native surface material template " + template))
+                    .GetStackConfigIndex(property) != -1);
 }
 
 // A single generation owns these handles. Native cache edges can point backwards
@@ -127,8 +129,34 @@ internal sealed class BridgeCreationDependencies
     private static string RelationsPath(string owner) => Path.Combine(UnityEngine.Application.persistentDataPath,
         "ImportedData", owner, "BridgeCacheEdges.txt");
 
+    private bool _inspectSnapshots;
+    internal bool Unconfirmed { get; private set; }
+
+    private BridgeDependencyCopies.Source? ReadSnapshot(string cid, string owner, DependencySaveTimings timing)
+    {
+        if (!_inspectSnapshots || !ValidCid(cid)) return null;
+        string stem = Path.Combine(BridgeDependencyCopies.Folder(UnityEngine.Application.persistentDataPath, owner), cid);
+        BridgeDependencyCopies.Source? result = null;
+        foreach (string extension in new[] { ".Surface", ".Texture", ".Material", ".Prefab", ".Geometry", ".VTTexture", ".VTSurface", ".loc" })
+        {
+            string path = stem + extension;
+            if (!BridgeFileAccess.Exists(path)) continue;
+            if (result != null || !BridgeFileAccess.Exists(path + ".cid") ||
+                !BridgeFileAccess.ReadText(path + ".cid").Trim().Equals(cid, StringComparison.OrdinalIgnoreCase))
+                throw new InvalidDataException("Ambiguous or invalid owner dependency snapshot: " + path);
+            using var measure = timing.Measure(Stage.SourceRead);
+            var bytes = File.ReadAllBytes(BridgeFileAccess.Native(path));
+            timing.SourceBytesRead += bytes.LongLength;
+            result = new BridgeDependencyCopies.Source { Extension = extension, PhysicalPath = path, Bytes = bytes,
+                SerializedReferences = extension == ".Surface" || extension == ".Material"
+                    ? BridgeDependencyPersistence.ReadSurfaceReferences(bytes) : null };
+        }
+        return result;
+    }
+
     internal void ReadRelations(string owner)
     {
+        _inspectSnapshots = true;
         string path = RelationsPath(owner);
         if (!BridgeFileAccess.Exists(path)) return;
         var lines = BridgeFileAccess.ReadText(path).Split(new[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries);
@@ -248,6 +276,8 @@ internal sealed class BridgeCreationDependencies
 
     internal BridgeDependencyCopies.Source? Resolve(string cid, string owner, DependencySaveTimings timing)
     {
+        Unconfirmed = false;
+        bool inaccessibleHandle = false;
         var attempted = new List<AssetData>();
         IEnumerable<AssetData> Candidates()
         {
@@ -262,7 +292,17 @@ internal sealed class BridgeCreationDependencies
             if (attempted.Any(previous => ReferenceEquals(previous, asset))) continue;
             attempted.Add(asset);
             var source = BridgeDependencyPersistence.Read(asset, owner, timing);
-            if (source == null) continue;
+            if (source == null) { inaccessibleHandle = true; continue; }
+            return Complete(source, asset);
+        }
+        var snapshot = ReadSnapshot(cid, owner, timing);
+        if (snapshot != null) return Complete(snapshot, null);
+        var cacheSource = LocalCache(cid, owner, timing);
+        if (cacheSource == null && _inspectSnapshots && inaccessibleHandle) Unconfirmed = true;
+        return cacheSource;
+
+        BridgeDependencyCopies.Source Complete(BridgeDependencyCopies.Source source, AssetData? asset)
+        {
             if (source.Builtin) return source;
             if (source.Extension.Equals(".MidMips", StringComparison.OrdinalIgnoreCase))
                 {
@@ -286,7 +326,12 @@ internal sealed class BridgeCreationDependencies
                 }
                 else
                 {
-                    string? path = _localCache?.Invoke(asset);
+                    if (asset == null && source.Bytes[6] != 0)
+                    {
+                        Unconfirmed = true;
+                        throw new InvalidDataException("Virtual snapshot cache relations unavailable: " + cid);
+                    }
+                    string? path = asset == null ? null : _localCache?.Invoke(asset);
                     if (path != null)
                     {
                         string cacheCid = BridgeFileAccess.ReadText(path + ".cid").Trim();
@@ -294,6 +339,7 @@ internal sealed class BridgeCreationDependencies
                         _cachePaths[cacheCid] = path;
                         _cacheEdges[cid] = new[] { cacheCid };
                     }
+                    else if (asset == null) _cacheEdges[cid] = Array.Empty<string>();
                     else Material(asset, _nativeCaches(asset));
                     caches = _cacheEdges[cid];
                 }
@@ -306,6 +352,5 @@ internal sealed class BridgeCreationDependencies
                 .Distinct(StringComparer.OrdinalIgnoreCase).ToArray();
             return source;
         }
-        return LocalCache(cid, owner, timing);
     }
 }

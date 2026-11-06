@@ -78,10 +78,10 @@ internal static class BridgeSpec
         internal int XpReward { get; }
     }
 
-    private static readonly Dictionary<string, Archetype> Table = new(StringComparer.Ordinal)
+    private static Dictionary<string, Archetype> Table => GenerationParameters.Get<Dictionary<string, Archetype>>("BridgeBuilder.Bridges.BridgeSpec.Table", () => new(StringComparer.Ordinal)
     {
         ["Suspension"] = new Archetype("Suspension Bridge - Highway Oneway - 5 Lanes", segmentLength: Numeric_BridgeSpec_cs.Values.F32[0], hanging: Numeric_BridgeSpec_cs.Values.F32[1], elevationOnWater: Numeric_BridgeSpec_cs.Values.F32[2], canCurve: false, allowMinimalLength: false, towerHeightAboveOrigin: Numeric_BridgeSpec_cs.Values.F32[3], elevationMin: Numeric_BridgeSpec_cs.Values.F32[4], elevationMax: Numeric_BridgeSpec_cs.Values.F32[5], allowParallelMode: true, xpReward: Numeric_BridgeSpec_cs.Values.I32[0]),
-    };
+    });
     /// <summary>The archetype for a bridge type, or null when it has not been measured yet.</summary>
     internal static Archetype? For(string styleId)
     {
@@ -147,5 +147,5 @@ internal static class BridgeSpec
 internal static class Numeric_BridgeSpec_cs
 {
     static Numeric_BridgeSpec_cs() {}
-    internal static readonly HardcodedNumbers Values = HardcodedNumbers.Load("BridgeSpec_cs");
+    internal static HardcodedNumbers Values => GenerationParameters.Get<HardcodedNumbers>("BridgeBuilder.Bridges.Numeric_BridgeSpec_cs.Values", () => HardcodedNumbers.Load("BridgeSpec_cs"));
 }

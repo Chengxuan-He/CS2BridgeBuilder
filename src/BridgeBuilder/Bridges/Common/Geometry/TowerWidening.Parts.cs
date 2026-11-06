@@ -52,8 +52,11 @@ internal static partial class TowerWidening
             return result;
         if (profile.Outer <= CentreEpsilon)
             return result;
-        var shift = extra * 0.5f;
-        AffineGeometry.For(0, result.Length, index =>
+        var spans = new float[vertices.Length];
+        var stretching = new List<int>();
+        var positive = new List<int>();
+        var negative = new List<int>();
+        for (int index = 0; index < result.Length; index++)
         {
             var x = result[index].x;
             // Material that stands clear of the centre over its whole extent is carried entire,
@@ -61,19 +64,26 @@ internal static partial class TowerWidening
             // shares with its levels of detail, and not of this mesh - see Profile.CarriedAt.
             if (profile.CarriedAt(result[index].y, Math.Abs(x)))
             {
-                result[index].x = AffineGeometry.Translate(x, (x > 0f ? shift : -shift));
-                return;
+                if (x > 0f) positive.Add(index); else negative.Add(index);
+                continue;
             }
 
             var span = profile.SpanAt(result[index].y);
             if (span <= CentreEpsilon || Math.Abs(x) > span)
             {
-                result[index].x = AffineGeometry.Translate(x, (x > 0f ? shift : -shift));
-                return;
+                if (x > 0f) positive.Add(index); else negative.Add(index);
+                continue;
             }
 
-            result[index].x = AffineGeometry.Scale(x, (span + shift) / span);
-        });
+            spans[index] = span;
+            stretching.Add(index);
+        }
+        AffineGeometry.Execute(StructurePrograms.Data, StructurePrograms.ProfileScaleX, new[] { vertices, result },
+            new[] { spans }, new[] { extra }, count: stretching.Count, indices: new[] { stretching.ToArray() });
+        AffineGeometry.Execute(StructurePrograms.Data, StructurePrograms.PositiveHalfX, new[] { vertices, result },
+            Array.Empty<float[]>(), new[] { extra }, count: positive.Count, indices: new[] { positive.ToArray() });
+        AffineGeometry.Execute(StructurePrograms.Data, StructurePrograms.NegativeHalfX, new[] { vertices, result },
+            Array.Empty<float[]>(), new[] { extra }, count: negative.Count, indices: new[] { negative.ToArray() });
         return result;
     }
 

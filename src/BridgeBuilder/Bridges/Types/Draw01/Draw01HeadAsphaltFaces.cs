@@ -38,7 +38,7 @@ internal static class Draw01HeadAsphaltFaces
 
     private static class Data
     {
-        internal static readonly HardcodedNumbers Values = HardcodedNumbers.Load("Types_Draw01_HeadAsphaltFaces");
+        internal static HardcodedNumbers Values => GenerationParameters.Get<HardcodedNumbers>("BridgeBuilder.Bridges.Draw01HeadAsphaltFaces.Data.Values", () => HardcodedNumbers.Load("Types_Draw01_HeadAsphaltFaces"));
     }
 }
 
@@ -49,5 +49,5 @@ internal static class Numeric_Types_Draw01_Draw01HeadAsphaltFaces_cs
     {
     }
 
-    internal static readonly HardcodedNumbers Values = HardcodedNumbers.Load("Types_Draw01_Draw01HeadAsphaltFaces_cs");
+    internal static HardcodedNumbers Values => GenerationParameters.Get<HardcodedNumbers>("BridgeBuilder.Bridges.Numeric_Types_Draw01_Draw01HeadAsphaltFaces_cs.Values", () => HardcodedNumbers.Load("Types_Draw01_Draw01HeadAsphaltFaces_cs"));
 }

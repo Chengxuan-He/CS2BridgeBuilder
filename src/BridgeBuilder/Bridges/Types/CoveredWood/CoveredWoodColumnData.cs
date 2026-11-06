@@ -8,7 +8,7 @@ internal static class CoveredWoodColumnData
     internal static float Left => -Numeric_Types_CoveredWood_CoveredWoodColumnData_cs.Values.F32[1];
     internal static float Right => Numeric_Types_CoveredWood_CoveredWoodColumnData_cs.Values.F32[2];
 
-    internal static readonly int[][] Ranges = ReadPackedRanges();
+    internal static int[][] Ranges => GenerationParameters.Get<int[][]>("BridgeBuilder.Bridges.CoveredWoodColumnData.Ranges", () => ReadPackedRanges());
     private static int[] ReadPackedRanges_0()
     {
         var d = Numeric_Types_CoveredWood_CoveredWoodColumnData_cs.Values;
@@ -48,5 +48,5 @@ internal static class CoveredWoodColumnData
 internal static class Numeric_Types_CoveredWood_CoveredWoodColumnData_cs
 {
     static Numeric_Types_CoveredWood_CoveredWoodColumnData_cs() {}
-    internal static readonly HardcodedNumbers Values = HardcodedNumbers.Load("Types_CoveredWood_CoveredWoodColumnData_cs");
+    internal static HardcodedNumbers Values => GenerationParameters.Get<HardcodedNumbers>("BridgeBuilder.Bridges.Numeric_Types_CoveredWood_CoveredWoodColumnData_cs.Values", () => HardcodedNumbers.Load("Types_CoveredWood_CoveredWoodColumnData_cs"));
 }

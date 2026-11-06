@@ -15,15 +15,16 @@ internal static class Lift04FarShoulders
         Array.Copy(plan.Positions, positions, count);
         var offset = plan.AddedVertices.Length;
         var x = new float[offset + Edges.Length];
-        AffineGeometry.For(Numeric_Types_Lift04_Lift04FarShoulders_g_cs.Values.I32[5], offset, i =>
+        for (int i = Numeric_Types_Lift04_Lift04FarShoulders_g_cs.Values.I32[5]; i < offset; i++)
         {
             x[i] = plan.Positions[count + i].x;
-        });
-        for (var i = Numeric_Types_Lift04_Lift04FarShoulders_g_cs.Values.I32[6]; i < Edges.Length; i++)
-        {
-            var edge = Edges[i];
-            x[offset + i] = AffineGeometry.AddScaled(Mathf.LerpUnclamped(plan.SourcePositions[edge.A].x, plan.SourcePositions[edge.B].x, edge.Fraction), Signs[i], delta);
         }
+        var outputs = new int[Edges.Length];
+        for (var i = Numeric_Types_Lift04_Lift04FarShoulders_g_cs.Values.I32[6]; i < Edges.Length; i++)
+            outputs[i] = offset + i;
+        AffineGeometry.Execute(StructurePrograms.Data, StructurePrograms.EdgeDeltaScalar,
+            new[] { plan.SourcePositions }, new[] { EdgeFractions, Signs, x }, new[] { delta },
+            count: Edges.Length, indices: new[] { EdgeA, EdgeB, outputs });
 
         foreach (var face in SourceFaces)
         {
@@ -37,10 +38,13 @@ internal static class Lift04FarShoulders
         return new MovableStructureModel.Plan(plan.SourcePositions, positions, plan.SourceIndices, plan.RemoveTriangles, plan.AddedVertices.Concat(Edges).ToArray(), plan.Fragments.Concat(fragments).ToArray(), constructedX: x);
     }
 
-    private static readonly (int Triangle, int A, int B, int C)[] SourceFaces = ReadPackedSourceFaces();
-    private static readonly MovableStructureModel.EdgeVertex[] Edges = ReadPackedEdges();
-    private static readonly float[] Signs = ReadPackedSigns();
-    private static readonly MovableStructureModel.Fragment[] Fragments = ReadPackedFragments();
+    private static (int Triangle, int A, int B, int C)[] SourceFaces => GenerationParameters.Get<(int Triangle, int A, int B, int C)[]>("BridgeBuilder.Bridges.Lift04FarShoulders.SourceFaces", () => ReadPackedSourceFaces());
+    private static MovableStructureModel.EdgeVertex[] Edges => GenerationParameters.Get<MovableStructureModel.EdgeVertex[]>("BridgeBuilder.Bridges.Lift04FarShoulders.Edges", () => ReadPackedEdges());
+    private static int[] EdgeA => GenerationParameters.Get<int[]>("BridgeBuilder.Bridges.Lift04FarShoulders.EdgeA", () => Array.ConvertAll(Edges, e => e.A));
+private static int[] EdgeB => GenerationParameters.Get<int[]>("BridgeBuilder.Bridges.Lift04FarShoulders.EdgeB", () => Array.ConvertAll(Edges, e => e.B));
+    private static float[] EdgeFractions => GenerationParameters.Get<float[]>("BridgeBuilder.Bridges.Lift04FarShoulders.EdgeFractions", () => Array.ConvertAll(Edges, e => e.Fraction));
+    private static float[] Signs => GenerationParameters.Get<float[]>("BridgeBuilder.Bridges.Lift04FarShoulders.Signs", () => ReadPackedSigns());
+    private static MovableStructureModel.Fragment[] Fragments => GenerationParameters.Get<MovableStructureModel.Fragment[]>("BridgeBuilder.Bridges.Lift04FarShoulders.Fragments", () => ReadPackedFragments());
     private static (int Triangle, int A, int B, int C)[] ReadPackedSourceFaces()
     {
         var d = Numeric_Types_Lift04_Lift04FarShoulders_g_cs.Values;
@@ -136,5 +140,5 @@ internal static class Lift04FarShoulders
 internal static class Numeric_Types_Lift04_Lift04FarShoulders_g_cs
 {
     static Numeric_Types_Lift04_Lift04FarShoulders_g_cs() {}
-    internal static readonly HardcodedNumbers Values = HardcodedNumbers.Load("Types_Lift04_Lift04FarShoulders_g_cs");
+    internal static HardcodedNumbers Values => GenerationParameters.Get<HardcodedNumbers>("BridgeBuilder.Bridges.Numeric_Types_Lift04_Lift04FarShoulders_g_cs.Values", () => HardcodedNumbers.Load("Types_Lift04_Lift04FarShoulders_g_cs"));
 }

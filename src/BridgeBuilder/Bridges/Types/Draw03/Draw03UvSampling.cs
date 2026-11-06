@@ -53,7 +53,7 @@ internal static class Draw03UvSampling
     }
     private static class Data
     {
-        internal static readonly bool[][] Items = Read();
+        internal static bool[][] Items => GenerationParameters.Get<bool[][]>("BridgeBuilder.Bridges.Draw03UvSampling.Data.Items", () => Read());
         static Data() { }
         private static bool[][] Read()
         {

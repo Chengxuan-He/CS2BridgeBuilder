@@ -18,7 +18,7 @@ internal static class Lift03FarRoadTops
         }
     }
 
-    private static readonly (int Triangle, int A, int B, int C)[] Faces = ReadPackedFaces();
+    private static (int Triangle, int A, int B, int C)[] Faces => GenerationParameters.Get<(int Triangle, int A, int B, int C)[]>("BridgeBuilder.Bridges.Lift03FarRoadTops.Faces", () => ReadPackedFaces());
     private static (int Triangle, int A, int B, int C)[] ReadPackedFaces()
     {
         var d = Numeric_Types_Lift03_Lift03FarRoadTops_g_cs.Values;
@@ -33,5 +33,5 @@ internal static class Lift03FarRoadTops
 internal static class Numeric_Types_Lift03_Lift03FarRoadTops_g_cs
 {
     static Numeric_Types_Lift03_Lift03FarRoadTops_g_cs() {}
-    internal static readonly HardcodedNumbers Values = HardcodedNumbers.Load("Types_Lift03_Lift03FarRoadTops_g_cs");
+    internal static HardcodedNumbers Values => GenerationParameters.Get<HardcodedNumbers>("BridgeBuilder.Bridges.Numeric_Types_Lift03_Lift03FarRoadTops_g_cs.Values", () => HardcodedNumbers.Load("Types_Lift03_Lift03FarRoadTops_g_cs"));
 }

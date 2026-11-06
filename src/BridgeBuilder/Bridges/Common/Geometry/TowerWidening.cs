@@ -45,10 +45,18 @@ internal static partial class TowerWidening
         Array.Copy(vertices, result, vertices.Length);
         if (Math.Abs(extra) < CentreEpsilon)
             return result;
-        AffineGeometry.For(0, result.Length, index =>
+        var positive = new List<int>();
+        var negative = new List<int>();
+        for (int index = 0; index < result.Length; index++)
         {
-            result[index].x = Spread(result[index].x, extra);
-        });
+            float x = vertices[index].x;
+            if (Math.Abs(x) <= CentreEpsilon) continue;
+            if (x > 0f) positive.Add(index); else negative.Add(index);
+        }
+        AffineGeometry.Execute(StructurePrograms.Data, StructurePrograms.PositiveHalfX, new[] { vertices, result },
+            Array.Empty<float[]>(), new[] { extra }, count: positive.Count, indices: new[] { positive.ToArray() });
+        AffineGeometry.Execute(StructurePrograms.Data, StructurePrograms.NegativeHalfX, new[] { vertices, result },
+            Array.Empty<float[]>(), new[] { extra }, count: negative.Count, indices: new[] { negative.ToArray() });
 
         return result;
     }
@@ -68,7 +76,7 @@ internal static partial class TowerWidening
         if (Math.Abs(x) <= CentreEpsilon)
             return x;
         var shift = extra * 0.5f;
-        return AffineGeometry.Translate(x, x > 0f ? shift : -shift);
+        return x + (x > 0f ? shift : -shift);
     }
 
     /// <summary>
@@ -102,18 +110,27 @@ internal static partial class TowerWidening
             return Widen(vertices, extra);
         var shift = extra * 0.5f;
         var ratio = (inner + shift) / inner;
-        AffineGeometry.For(0, result.Length, index =>
+        var stretching = new List<int>();
+        var positive = new List<int>();
+        var negative = new List<int>();
+        for (int index = 0; index < result.Length; index++)
         {
             var x = result[index].x;
             if (Math.Abs(x) < inner)
             {
-                result[index].x = AffineGeometry.Scale(x, ratio);
-                return;
+                stretching.Add(index);
+                continue;
             }
 
             // Preserve the requested signed displacement, including a crossing of the centre.
-            result[index].x = x + (x > 0f ? shift : -shift);
-        });
+            if (x > 0f) positive.Add(index); else negative.Add(index);
+        }
+        AffineGeometry.Execute(StructurePrograms.Data, StructurePrograms.ScaleX, new[] { vertices, result },
+            Array.Empty<float[]>(), new[] { ratio }, count: stretching.Count, indices: new[] { stretching.ToArray() });
+        AffineGeometry.Execute(StructurePrograms.Data, StructurePrograms.PositiveHalfX, new[] { vertices, result },
+            Array.Empty<float[]>(), new[] { extra }, count: positive.Count, indices: new[] { positive.ToArray() });
+        AffineGeometry.Execute(StructurePrograms.Data, StructurePrograms.NegativeHalfX, new[] { vertices, result },
+            Array.Empty<float[]>(), new[] { extra }, count: negative.Count, indices: new[] { negative.ToArray() });
         return result;
     }
 
@@ -150,10 +167,8 @@ internal static partial class TowerWidening
         if (width <= CentreEpsilon || Math.Abs(extra) < CentreEpsilon)
             return result;
         var ratio = (width + extra) / width;
-        AffineGeometry.For(0, result.Length, index =>
-        {
-            result[index].x = AffineGeometry.Scale(result[index].x, ratio);
-        });
+        AffineGeometry.Execute(StructurePrograms.Data, StructurePrograms.DenseScaleX, new[] { vertices, result },
+            Array.Empty<float[]>(), new[] { ratio }, count: result.Length);
         return result;
     }
 

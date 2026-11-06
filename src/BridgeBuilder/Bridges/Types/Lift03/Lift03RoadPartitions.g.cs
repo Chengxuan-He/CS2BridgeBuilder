@@ -11,7 +11,7 @@ internal static class Lift03RoadPartitions
     internal static float FixedStart => Numeric_Types_Lift03_Lift03RoadPartitions_g_cs.Values.F32[1];
     internal static float FixedEnd => Numeric_Types_Lift03_Lift03RoadPartitions_g_cs.Values.F32[2];
 
-    internal static readonly Partition Carriageway = Cut(-FixedEnd, Partition.Gap, Cut(-FixedStart, new Partition(Numeric_Types_Lift03_Lift03RoadPartitions_g_cs.Values.I32[0]), Cut(-MovingEnd, Partition.Gap, Cut(MovingEnd, new Partition(Numeric_Types_Lift03_Lift03RoadPartitions_g_cs.Values.I32[1]), Cut(FixedStart, Partition.Gap, Cut(FixedEnd, new Partition(Numeric_Types_Lift03_Lift03RoadPartitions_g_cs.Values.I32[2]), Partition.Gap))))));
+    internal static Partition Carriageway => GenerationParameters.Get<Partition>("BridgeBuilder.Bridges.Lift03RoadPartitions.Carriageway", () => Cut(-FixedEnd, Partition.Gap, Cut(-FixedStart, new Partition(Numeric_Types_Lift03_Lift03RoadPartitions_g_cs.Values.I32[0]), Cut(-MovingEnd, Partition.Gap, Cut(MovingEnd, new Partition(Numeric_Types_Lift03_Lift03RoadPartitions_g_cs.Values.I32[1]), Cut(FixedStart, Partition.Gap, Cut(FixedEnd, new Partition(Numeric_Types_Lift03_Lift03RoadPartitions_g_cs.Values.I32[2]), Partition.Gap)))))));
     private static Partition Cut(float station, Partition negative, Partition positive)
     {
         var frame = Matrix4x4.identity;
@@ -24,5 +24,5 @@ internal static class Lift03RoadPartitions
 internal static class Numeric_Types_Lift03_Lift03RoadPartitions_g_cs
 {
     static Numeric_Types_Lift03_Lift03RoadPartitions_g_cs() {}
-    internal static readonly HardcodedNumbers Values = HardcodedNumbers.Load("Types_Lift03_Lift03RoadPartitions_g_cs");
+    internal static HardcodedNumbers Values => GenerationParameters.Get<HardcodedNumbers>("BridgeBuilder.Bridges.Numeric_Types_Lift03_Lift03RoadPartitions_g_cs.Values", () => HardcodedNumbers.Load("Types_Lift03_Lift03RoadPartitions_g_cs"));
 }

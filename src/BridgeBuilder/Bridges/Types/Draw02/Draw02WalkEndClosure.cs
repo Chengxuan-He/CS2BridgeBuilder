@@ -26,6 +26,10 @@ internal static class Draw02WalkEndClosure
         for (int i = Numeric_Types_Draw02_Draw02WalkEndClosure_cs.Values.I32[9]; i < plan.ConstructedCount; i++)
             xs.Add(plan.Positions[positions.Length + i].x);
         var local = new int[data.I32[Numeric_Types_Draw02_Draw02WalkEndClosure_cs.Values.I32[10]]];
+        var spanInner = new List<float>();
+        var spanOuter = new List<float>();
+        var spanFractions = new List<float>();
+        var spanOutputs = new List<int>();
         for (int kind = Numeric_Types_Draw02_Draw02WalkEndClosure_cs.Values.I32[11]; kind < Numeric_Types_Draw02_Draw02WalkEndClosure_cs.Values.I32[12]; kind++)
             for (int i = Numeric_Types_Draw02_Draw02WalkEndClosure_cs.Values.I32[13]; i < local.Length; i++)
             {
@@ -39,22 +43,29 @@ internal static class Draw02WalkEndClosure
                 var frame = Matrix4x4.identity;
                 frame.m00 = side * (outer - inner) / Numeric_Types_Draw02_Draw02WalkEndClosure_cs.Values.F32[0];
                 frames.Add(new KeyValuePair<int, Matrix4x4>(local[i], frame));
-                if (kind == Numeric_Types_Draw02_Draw02WalkEndClosure_cs.Values.I32[26])
+                if (kind == Numeric_Types_Draw02_Draw02WalkEndClosure_cs.Values.I32[25])
                     edges.Add(new MovableStructureModel.EdgeVertex(a, b, data.F32[k]));
                 else
-                    interiors.Add(new MovableStructureModel.TriangleVertex(a, b, c, data.F32[k], data.F32[k + Numeric_Types_Draw02_Draw02WalkEndClosure_cs.Values.I32[27]]));
-                xs.Add(AffineGeometry.AddScaled(inner, data.F32[k + Numeric_Types_Draw02_Draw02WalkEndClosure_cs.Values.I32[28]], outer - inner));
+                    interiors.Add(new MovableStructureModel.TriangleVertex(a, b, c, data.F32[k], data.F32[k + Numeric_Types_Draw02_Draw02WalkEndClosure_cs.Values.I32[26]]));
+                spanInner.Add(inner); spanOuter.Add(outer);
+                spanFractions.Add(data.F32[k + Numeric_Types_Draw02_Draw02WalkEndClosure_cs.Values.I32[27]]);
+                spanOutputs.Add(xs.Count); xs.Add(default);
             }
 
+        var constructed = xs.ToArray();
+        AffineGeometry.Execute(StructurePrograms.Data, StructurePrograms.RowSpanScalar,
+            Array.Empty<Vector3[]>(), new[] { spanInner.ToArray(), spanOuter.ToArray(), spanFractions.ToArray(), constructed }, Array.Empty<float>(),
+            count: spanOutputs.Count, indices: new[] { spanOutputs.ToArray() });
+
         var added = new Dictionary<int, List<int>>();
-        int offset = data.I32[Numeric_Types_Draw02_Draw02WalkEndClosure_cs.Values.I32[29]];
-        for (int i = Numeric_Types_Draw02_Draw02WalkEndClosure_cs.Values.I32[30]; i < data.I32[Numeric_Types_Draw02_Draw02WalkEndClosure_cs.Values.I32[31]]; i++)
+        int offset = data.I32[Numeric_Types_Draw02_Draw02WalkEndClosure_cs.Values.I32[28]];
+        for (int i = Numeric_Types_Draw02_Draw02WalkEndClosure_cs.Values.I32[29]; i < data.I32[Numeric_Types_Draw02_Draw02WalkEndClosure_cs.Values.I32[30]]; i++)
         {
             int face = data.I32[offset++], side = data.I32[offset++], count = data.I32[offset++];
             if (Present(side))
             {
                 var ids = new List<int>();
-                for (int k = Numeric_Types_Draw02_Draw02WalkEndClosure_cs.Values.I32[32]; k < count; k++)
+                for (int k = Numeric_Types_Draw02_Draw02WalkEndClosure_cs.Values.I32[31]; k < count; k++)
                     ids.Add(local[data.I32[offset + k]]);
                 added.Add(face, ids);
             }
@@ -67,7 +78,7 @@ internal static class Draw02WalkEndClosure
         {
             if (added.TryGetValue(fragment.Triangle, out var ids))
             {
-                ids.InsertRange(Numeric_Types_Draw02_Draw02WalkEndClosure_cs.Values.I32[33], fragment.Indices);
+                ids.InsertRange(Numeric_Types_Draw02_Draw02WalkEndClosure_cs.Values.I32[32], fragment.Indices);
                 fragments.Add(new MovableStructureModel.Fragment(fragment.Slot, fragment.Triangle, ids.ToArray()));
                 added.Remove(fragment.Triangle);
             }
@@ -75,9 +86,9 @@ internal static class Draw02WalkEndClosure
                 fragments.Add(fragment);
         }
 
-        if (added.Count != Numeric_Types_Draw02_Draw02WalkEndClosure_cs.Values.I32[34])
+        if (added.Count != Numeric_Types_Draw02_Draw02WalkEndClosure_cs.Values.I32[33])
             throw new InvalidOperationException("Draw02 sidewalk strip lost its original lower end cap.");
-        return new MovableStructureModel.Plan(plan.SourcePositions, positions, plan.SourceIndices, plan.RemoveTriangles, edges.ToArray(), fragments.ToArray(), interiors.ToArray(), xs.ToArray(), uvCorrections: plan.UvCorrections, preparedDomains: plan.PreparedDomains, frameTransforms: frames.ToArray());
+        return new MovableStructureModel.Plan(plan.SourcePositions, positions, plan.SourceIndices, plan.RemoveTriangles, edges.ToArray(), fragments.ToArray(), interiors.ToArray(), constructed, uvCorrections: plan.UvCorrections, preparedDomains: plan.PreparedDomains, frameTransforms: frames.ToArray());
     }
 }
 
@@ -87,7 +98,7 @@ internal static class WalkEndMeasurements
     {
     }
 
-    internal static readonly HardcodedNumbers Values = HardcodedNumbers.Load("Types_Draw02_WalkEndMeasurements");
+    internal static HardcodedNumbers Values => GenerationParameters.Get<HardcodedNumbers>("BridgeBuilder.Bridges.WalkEndMeasurements.Values", () => HardcodedNumbers.Load("Types_Draw02_WalkEndMeasurements"));
 }
 
 // Embedded numerical arrays: Types_Draw02_Draw02WalkEndClosure_cs
@@ -97,5 +108,5 @@ internal static class Numeric_Types_Draw02_Draw02WalkEndClosure_cs
     {
     }
 
-    internal static readonly HardcodedNumbers Values = HardcodedNumbers.Load("Types_Draw02_Draw02WalkEndClosure_cs");
+    internal static HardcodedNumbers Values => GenerationParameters.Get<HardcodedNumbers>("BridgeBuilder.Bridges.Numeric_Types_Draw02_Draw02WalkEndClosure_cs.Values", () => HardcodedNumbers.Load("Types_Draw02_Draw02WalkEndClosure_cs"));
 }

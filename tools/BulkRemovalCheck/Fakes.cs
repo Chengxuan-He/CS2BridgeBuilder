@@ -14,7 +14,7 @@ namespace Game.UI {
     }
 }
 namespace Game.SceneFlow {
-    public class GameManager { public enum State { WorldReady, Loading } public State state = State.WorldReady; public bool isGameLoading; public Game.GameMode gameMode = Game.GameMode.MainMenu; public static GameManager instance = new(); public Interface? userInterface = new(); }
+    public class GameManager { public event Action<string,string,bool,bool>? onGameSaveLoad; public void Saving(bool start)=>onGameSaveLoad?.Invoke("fixture","",start,true); public enum State { WorldReady, Loading } public State state = State.WorldReady; public bool isGameLoading; public Game.GameMode gameMode = Game.GameMode.MainMenu; public static GameManager instance = new(); public Interface? userInterface = new(); }
     public class Interface { public Game.UI.Bindings? appBindings = new(); }
 }
 namespace UnityEngine { public static class Application { public static string persistentDataPath = ""; } }
@@ -46,6 +46,7 @@ namespace Unity.Entities { public class World { public static World? DefaultGame
 namespace Game.Prefabs { public class PrefabSystem {} public class PrefabBase { public string name=""; } }
 namespace CS2Mods.Shared.Infrastructure { public static class PrefabCatalog { public static IEnumerable<Game.Prefabs.PrefabBase> GetAll(Game.Prefabs.PrefabSystem s) => Array.Empty<Game.Prefabs.PrefabBase>(); } }
 namespace BridgeBuilder.Runtime {
+
  public static class BridgeAssetLoading { public static bool Ready = true; }
  public class Entry { public string PrefabName=""; }
  public static class BridgeAssetCatalog { public static Entry[] Load()=>Array.Empty<Entry>(); }

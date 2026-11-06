@@ -29,7 +29,7 @@ internal static class TrussArch02Geometry
     internal static float PrototypePillarInnerWidth => Numeric_Types_TrussArch02_TrussArch02Geometry_cs.Values.F32[4];
     internal static float PrototypePillarOuterWidth => Numeric_Types_TrussArch02_TrussArch02Geometry_cs.Values.F32[5];
 
-    private static readonly IReadOnlyDictionary<string, TransformMap> Maps = TrussArch02GeometryData.Maps;
+    private static IReadOnlyDictionary<string, TransformMap> Maps => GenerationParameters.Get<IReadOnlyDictionary<string, TransformMap>>("BridgeBuilder.Bridges.TrussArch02Geometry.Maps", () => TrussArch02GeometryData.Maps);
     internal static bool IsRecorded(string? styleId, string? meshName) => string.Equals(styleId, "TrussArch02", StringComparison.Ordinal) && !string.IsNullOrEmpty(meshName) && Maps.ContainsKey(meshName);
     internal static bool TryWidenSection(string meshName, float3[] source, float targetOuterWidth, float targetInnerLeft, float targetInnerRight, bool removeLeftOuterRailing, bool removeRightOuterRailing, out float3[] moved, out TransformFacts facts, out bool[]? dropped)
     {
@@ -52,33 +52,47 @@ internal static class TrussArch02Geometry
         var droppedRailingVertices = 0;
         for (int index = 0; index < source.Length; index++)
         {
-            if (map.IsInner(index)) innerVertices++;
-            if (map.IsOuterRailing(index) && ((source[index].x < 0f && removeLeftOuterRailing) ||
-                (source[index].x > 0f && removeRightOuterRailing)))
+            if (map.IsInner(index))
+                innerVertices++;
+            if (map.IsOuterRailing(index) && ((source[index].x < 0f && removeLeftOuterRailing) || (source[index].x > 0f && removeRightOuterRailing)))
             {
                 dropped ??= new bool[source.Length];
                 dropped[index] = true;
                 droppedRailingVertices++;
             }
         }
-        var output = moved;
-        AffineGeometry.For(0, output.Length, index =>
+
+        var groups = new List<int>[9];
+        for (int group = 0; group < groups.Length; group++) groups[group] = new List<int>();
+        for (int index = 0; index < moved.Length; index++)
         {
             bool inner = map.IsInner(index);
-            float left = inner ? innerLeftDelta : outerLeftDelta;
-            float right = inner ? innerRightDelta : outerRightDelta;
             float x = source[index].x;
             if (map.Stretches(index))
             {
                 float coefficient = map.VertexCoefficient(index);
-                output[index].x = AffineGeometry.Translate(x,
-                    coefficient < 0f ? coefficient * left : coefficient > 0f ? coefficient * right : 0f);
+                if (coefficient < 0f) groups[inner ? 0 : 2].Add(index);
+                else if (coefficient > 0f) groups[inner ? 1 : 3].Add(index);
+                else groups[8].Add(index);
             }
-            else output[index].x = x < 0f ? AffineGeometry.Translate(x, -left) : x > 0f ? AffineGeometry.Translate(x, right) : x;
-        });
+            else
+            {
+                if (x < 0f) groups[inner ? 4 : 6].Add(index);
+                else if (x > 0f) groups[inner ? 5 : 7].Add(index);
+            }
+        }
+        var deltas = new[] { innerLeftDelta, innerRightDelta, outerLeftDelta, outerRightDelta };
+        for (int group = 0; group < 4; group++)
+            AffineGeometry.Execute(StructurePrograms.Data, StructurePrograms.DeltaTable, new[] { source, moved },
+                new[] { map.Coefficients }, new[] { deltas[group] }, count: groups[group].Count, indices: new[] { groups[group].ToArray() });
+        for (int group = 4; group < 8; group++)
+            AffineGeometry.Execute(StructurePrograms.Data, group % 2 == 0 ? StructurePrograms.NegativeTranslateX : StructurePrograms.TranslateX,
+                new[] { source, moved }, Array.Empty<float[]>(), new[] { deltas[group - 4] },
+                count: groups[group].Count, indices: new[] { groups[group].ToArray() });
+        AffineGeometry.Execute(StructurePrograms.Data, StructurePrograms.TranslateX, new[] { source, moved },
+            Array.Empty<float[]>(), new[] { 0f }, count: groups[8].Count, indices: new[] { groups[8].ToArray() });
         int stretchedVertices = map.CoefficientCount;
-        facts = new TransformFacts(innerVertices, source.Length - innerVertices, stretchedVertices,
-            source.Length - stretchedVertices, innerLeftDelta, innerRightDelta, outerLeftDelta, outerRightDelta, droppedRailingVertices);
+        facts = new TransformFacts(innerVertices, source.Length - innerVertices, stretchedVertices, source.Length - stretchedVertices, innerLeftDelta, innerRightDelta, outerLeftDelta, outerRightDelta, droppedRailingVertices);
         return true;
     }
 
@@ -127,28 +141,31 @@ internal static class TrussArch02Geometry
             foreach (var bits in _stretching)
             {
                 var remaining = bits;
-                while (remaining != Numeric_Types_TrussArch02_TrussArch02Geometry_cs.Values.I32[5])
+                while (remaining != Numeric_Types_TrussArch02_TrussArch02Geometry_cs.Values.I32[0])
                 {
-                    _markedVertices += remaining & Numeric_Types_TrussArch02_TrussArch02Geometry_cs.Values.I32[6];
-                    remaining >>= Numeric_Types_TrussArch02_TrussArch02Geometry_cs.Values.I32[7];
+                    _markedVertices += remaining & Numeric_Types_TrussArch02_TrussArch02Geometry_cs.Values.I32[1];
+                    remaining >>= Numeric_Types_TrussArch02_TrussArch02Geometry_cs.Values.I32[2];
                 }
             }
+
             _vertexCoefficients = new float[vertices];
             if (Matches(vertices))
             {
                 int coefficient = 0;
                 for (int vertex = 0; vertex < vertices; vertex++)
-                    if (Stretches(vertex)) _vertexCoefficients[vertex] = Coefficient(coefficient++);
+                    if (Stretches(vertex))
+                        _vertexCoefficients[vertex] = Coefficient(coefficient++);
             }
         }
 
         internal float VertexCoefficient(int index) => _vertexCoefficients[index];
+        internal float[] Coefficients => _vertexCoefficients;
         internal int CoefficientCount => _coefficients.Length / sizeof(float);
 
-        internal bool Matches(int vertices) => vertices == _vertices && _innerLayer.Length == (vertices + Numeric_Types_TrussArch02_TrussArch02Geometry_cs.Values.I32[8]) / Numeric_Types_TrussArch02_TrussArch02Geometry_cs.Values.I32[9] && _stretching.Length == (vertices + Numeric_Types_TrussArch02_TrussArch02Geometry_cs.Values.I32[10]) / Numeric_Types_TrussArch02_TrussArch02Geometry_cs.Values.I32[11] && _outerRailing.Length == (vertices + Numeric_Types_TrussArch02_TrussArch02Geometry_cs.Values.I32[12]) / Numeric_Types_TrussArch02_TrussArch02Geometry_cs.Values.I32[13] && _coefficients.Length == _markedVertices * sizeof(float);
-        internal bool IsInner(int vertex) => (_innerLayer[vertex >> Numeric_Types_TrussArch02_TrussArch02Geometry_cs.Values.I32[14]] & (Numeric_Types_TrussArch02_TrussArch02Geometry_cs.Values.I32[15] << (vertex & Numeric_Types_TrussArch02_TrussArch02Geometry_cs.Values.I32[16]))) != Numeric_Types_TrussArch02_TrussArch02Geometry_cs.Values.I32[17];
-        internal bool Stretches(int vertex) => (_stretching[vertex >> Numeric_Types_TrussArch02_TrussArch02Geometry_cs.Values.I32[18]] & (Numeric_Types_TrussArch02_TrussArch02Geometry_cs.Values.I32[19] << (vertex & Numeric_Types_TrussArch02_TrussArch02Geometry_cs.Values.I32[20]))) != Numeric_Types_TrussArch02_TrussArch02Geometry_cs.Values.I32[21];
-        internal bool IsOuterRailing(int vertex) => (_outerRailing[vertex >> Numeric_Types_TrussArch02_TrussArch02Geometry_cs.Values.I32[22]] & (Numeric_Types_TrussArch02_TrussArch02Geometry_cs.Values.I32[23] << (vertex & Numeric_Types_TrussArch02_TrussArch02Geometry_cs.Values.I32[24]))) != Numeric_Types_TrussArch02_TrussArch02Geometry_cs.Values.I32[25];
+        internal bool Matches(int vertices) => vertices == _vertices && _innerLayer.Length == (vertices + Numeric_Types_TrussArch02_TrussArch02Geometry_cs.Values.I32[3]) / Numeric_Types_TrussArch02_TrussArch02Geometry_cs.Values.I32[4] && _stretching.Length == (vertices + Numeric_Types_TrussArch02_TrussArch02Geometry_cs.Values.I32[5]) / Numeric_Types_TrussArch02_TrussArch02Geometry_cs.Values.I32[6] && _outerRailing.Length == (vertices + Numeric_Types_TrussArch02_TrussArch02Geometry_cs.Values.I32[7]) / Numeric_Types_TrussArch02_TrussArch02Geometry_cs.Values.I32[8] && _coefficients.Length == _markedVertices * sizeof(float);
+        internal bool IsInner(int vertex) => (_innerLayer[vertex >> Numeric_Types_TrussArch02_TrussArch02Geometry_cs.Values.I32[9]] & (Numeric_Types_TrussArch02_TrussArch02Geometry_cs.Values.I32[10] << (vertex & Numeric_Types_TrussArch02_TrussArch02Geometry_cs.Values.I32[11]))) != Numeric_Types_TrussArch02_TrussArch02Geometry_cs.Values.I32[12];
+        internal bool Stretches(int vertex) => (_stretching[vertex >> Numeric_Types_TrussArch02_TrussArch02Geometry_cs.Values.I32[13]] & (Numeric_Types_TrussArch02_TrussArch02Geometry_cs.Values.I32[14] << (vertex & Numeric_Types_TrussArch02_TrussArch02Geometry_cs.Values.I32[15]))) != Numeric_Types_TrussArch02_TrussArch02Geometry_cs.Values.I32[16];
+        internal bool IsOuterRailing(int vertex) => (_outerRailing[vertex >> Numeric_Types_TrussArch02_TrussArch02Geometry_cs.Values.I32[17]] & (Numeric_Types_TrussArch02_TrussArch02Geometry_cs.Values.I32[18] << (vertex & Numeric_Types_TrussArch02_TrussArch02Geometry_cs.Values.I32[19]))) != Numeric_Types_TrussArch02_TrussArch02Geometry_cs.Values.I32[20];
         internal float Coefficient(int index) => BitConverter.ToSingle(_coefficients, index * sizeof(float));
     }
 }
@@ -156,6 +173,9 @@ internal static class TrussArch02Geometry
 // Embedded numerical arrays: Types_TrussArch02_TrussArch02Geometry_cs
 internal static class Numeric_Types_TrussArch02_TrussArch02Geometry_cs
 {
-    static Numeric_Types_TrussArch02_TrussArch02Geometry_cs() {}
-    internal static readonly HardcodedNumbers Values = HardcodedNumbers.Load("Types_TrussArch02_TrussArch02Geometry_cs");
+    static Numeric_Types_TrussArch02_TrussArch02Geometry_cs()
+    {
+    }
+
+    internal static HardcodedNumbers Values => GenerationParameters.Get<HardcodedNumbers>("BridgeBuilder.Bridges.Numeric_Types_TrussArch02_TrussArch02Geometry_cs.Values", () => HardcodedNumbers.Load("Types_TrussArch02_TrussArch02Geometry_cs"));
 }

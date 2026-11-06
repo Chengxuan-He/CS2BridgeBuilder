@@ -8,7 +8,7 @@ internal static class Draw02UvSampling
 {
     private static class Data
     {
-        internal static readonly bool[][] Items = Read();
+        internal static bool[][] Items => GenerationParameters.Get<bool[][]>("BridgeBuilder.Bridges.Draw02UvSampling.Data.Items", () => Read());
     }
 
     internal static bool For(string render, int mesh, int domain)

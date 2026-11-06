@@ -1,6 +1,12 @@
 using System.Buffers.Binary;
 using Colossal.AssetPipeline.Native;
 
+if (args.Length == 3 && args[0] == "--simd-fixed-fixtures")
+{
+    SimdFixtures.Export(args[1], args[2]);
+    return 0;
+}
+
 if (args.Length == 3 && args[0] == "--skin-report")
 {
     MovableSkinReport.Write(args[1], args[2]);

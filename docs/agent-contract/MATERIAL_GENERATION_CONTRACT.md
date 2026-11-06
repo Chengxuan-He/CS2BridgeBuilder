@@ -1,5 +1,25 @@
 # Material Generation Contract
 
+### Packaged textures belong to road running surfaces
+
+A packaged `.Texture` must have a measured road-surface consumer. Check the actual
+faces, appearance type, LOD and native Surface channel that references it. Asphalt,
+walkable sidewalk paving, running grating, running caps and selected-road paint
+qualify only on their measured road-facing domains. A structural platform, curb
+sidewall, truss, cable or underside uses its original game or DLC texture references.
+This requirement also applies when a road and a structural face share the same atlas.
+A descriptor conversion needed for native rendering may bind original native channels.
+It must never give a non-road consumer a dependency on a packaged texture.
+
+Retain valid native UV projection, sampling and mip identities. A local repeating
+atlas island that cannot be sampled at a requested width through its original
+representation retains its authored coordinates. Record any resulting change in
+physical density. Do not bake a structural repeat or wrap individual vertices into
+an atlas chart to fill that gap. This supersedes earlier structural repeat permissions,
+including the earlier Lift05 profile recipe. Independently persisted external owner
+copies remain governed by the dependency persistence contract.
+
+
 Follow [player-controlled generation](BRIDGE_GENERATION_CONTRACT.md#player-controlled-generation-without-structural-rejection-gates): do not reject a generation request
 because of structural shape, width, signed scale, degeneracy, overlap, clearance or appearance
 quality. Such checks belong to offline verification or non-blocking diagnostics. Material
@@ -24,8 +44,7 @@ markings; they require no prototype road-support table, road-material replacemen
 cleanup under these rules. Structural source-UV/density rules still apply to every bridge.
 A fixed running cap within a movable bridge remains part of that movable road-processing scope.
 
-For movable bridges, the generation design is: **reuse original non-road materials by default, with only the narrow offline repeat-material
-derivation in section 3 to avoid new period-wrap seams; compose
+For movable bridges, the generation design is: **reuse original native textures for every non-road surface; compose
 or precompose prototype-supported road appearance types; use compatible original or
 corresponding native object road materials for other types under section 4; preserve source density, tile prototype-supported road appearances without stretching, and
 retain evidenced mapping modes for non-road materials**. This is a generation requirement, not a finding about how the original game
@@ -167,9 +186,7 @@ Retain original prototype materials for carried structure, towers, trusses, unde
 railings, mechanisms and other non-road components, at their corresponding LODs. Retain
 original shader/template, parameters, keywords, texture bindings, channels and dependencies.
 Do not recolor, clone, rebake, extract replacement structure textures or assign a new Surface
-merely because geometry dimensions or the generated owner changed. The sole structural
-texture-derivation permission is section 3's evidenced offline repeat material needed to avoid
-new period-wrap seams. Fix unrelated mapping and native render-context problems separately;
+merely because geometry dimensions or the generated owner changed. Structural texture derivation is prohibited. Fix unrelated mapping and native render-context problems separately;
 a failed UV eligibility test alone does not authorize a replacement. Retain the source material
 and attributes when no corresponding representation is available. Record appearance limitations
 without blocking generation; actual resource or native API failures remain errors.
@@ -182,7 +199,7 @@ structure; recorded running-surface caps retain their physical-domain rules. Sel
 sleepers, lane graphics, wires and attachments retain their separately specified original sources.
 
 A shared Surface or atlas may serve both road and structure. Keep it unchanged for structural
-faces except those independently eligible for section 3's narrow offline repeat derivation,
+faces for every non-road receiver,
 and bind a supported type's road composite only to its road faces. Unsupported road
 types follow section 4's compatible road replacement rule. Never edit the shared atlas,
 change its global parameters or clear embedded markings on behalf of the road. Use measured
@@ -274,8 +291,7 @@ UVs with vertex-only modulo and claim it repeats internally.
 For extracted original repeats, establish the actual source pattern, region, physical period,
 orientation and boundary behavior across all channels and mips. Repeated UV triangles, a crop,
 source wrap flags or a receiver rectangle alone do not prove a filterable repeat. The road rule
-below separately permits authored repeats from original road content; structural derivatives
-still require evidenced original repetition. A sampling variant is not a new content identity.
+below permits authored repeats from original road content. Non-road textures remain native. A sampling variant is not a new content identity.
 
 Prepare each necessary known content unit once offline and share it across uses. Preserve measured
 bounds and physical scale. Fractional source extents may use upward-rounded sampling grids and
@@ -370,9 +386,7 @@ automatic quality acceptance is implied.
 
 Do not cut movable road or structural triangles, or add seam vertices, solely to reset a repeated
 atlas coordinate. Where such new seams would otherwise be necessary, bake an independent tiling
-material from the original atlas outside the game. This includes evidenced Lift05 repeating
-structural profile domains. It is a narrow permission for verified repeating domains, not permission
-to remake arbitrary structure or to bake every domain. Keep fully reusable original materials.
+material from original road content only for an eligible running surface. Structural domains use their native material and authored atlas mapping.
 
 Retain existing native seams and necessary cuts at actual shape, motion and distinct material-domain
 boundaries. Preserve selected-road shape, lane layout, original attributes and bone ownership.
@@ -461,7 +475,6 @@ valid mapping. Preserve independently measured source quantization rather than f
 ### Meaning of precomposition
 
 **Precomposition means material baking outside the game.** Bake the eligible road composite
-or section 3's narrowly permitted structural repeat derivative
 with offline authoring/baking tools before distribution, save the finished native material,
 texture and complete mip/VT dependencies, and include them in the mod package. The game loads,
 copies when ownership requires it, and binds those finished resources without rebaking,
@@ -470,8 +483,7 @@ resampling or recompressing their texture payloads.
 Baking at game startup, asset loading, first use, preview, bridge creation or export is runtime
 work, not precomposition. An in-memory or disk cache of an in-game bake is not a precomposed
 material. The separate bounded runtime-composition exceptions below do not change this meaning.
-Road precomposition remains subject to the prototype-supported-type gate; structural repeat
-derivation follows section 3's separate narrow eligibility. Both preserve their applicable mapping rules and original
+Road precomposition remains subject to the prototype-supported-type gate; non-road bindings retain native texture references. Preserve applicable mapping rules and original
 resolution, no full-road pattern expansion, independent persistence, owner size reporting and the package byte limit.
 
 ### Corresponding native road materials for movable objects
@@ -638,16 +650,18 @@ Store one byte-identical shared payload per CID within that style. The same one-
 applies within each generated bridge's dependency snapshot; different bridge owners still
 retain independent byte-identical snapshots. Validate the complete variant dependency graph before native
 registration; shared lookup must stay within the selected style, except for the explicit
-shared MidMips source below, and must not fall through to another style or generated bridge.
+shared native cache or reviewed road paint source below, and must not fall through to another style or generated bridge.
 Sharing storage must not resample or rebake the texture.
 
 ### Shared immutable MidMips source cache
 
-The sole cross-style prepared-resource exception is
+The read-only cross-style sources are the three byte-identical road paint channels in
+`Materials/Shared/Paint/<cid>.Texture` and the native cache in
 `assets/Materials/Shared/MidMips/<cacheCID>/TS512_MB3.MidMips` and its `.cid` sidecar,
 shipped as `Materials/Shared/MidMips/<cacheCID>/TS512_MB3.MidMips` beside the mod DLL.
-This reserved root contains only offline-prepared native MidMips dependencies, not shared
-Surface, Material or Texture payloads. Preserve native cache bytes, CID, tag-bearing filename,
+The MidMips subtree contains only native cache dependencies. The Paint subtree contains only the
+base color, flat normal and white mask referenced by a reviewed SkinnedPaint.Surface. Each
+owner snapshots the exact dependencies of its Surface. Preserve native cache bytes, CID, tag-bearing filename,
 texture stacks and primary/duplicate Surface CID membership. The style's complete dependency
 graph may reference this common source; other per-style resource rules remain unchanged.
 

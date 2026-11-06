@@ -84,9 +84,9 @@ public static class Lift05RoadContinuousCheck
             }
             var near=Surface("native.Surface","78fda4223742d922d34b5cc2331eb65f");var far=Surface("far.Surface","d68e4bd81e9e8a61ded03d2ac017680f");
             var finishedUnits=ArrayOf(surfaceType,new[]{
-                Surface(Path.Combine(Arg("-preparedRoot"),"RepeatUnits","84f30c1a451d65ae38673f25b4e8870b876e20e5977c0254a413fee964b68785","Repeat.Surface"),"9bbf078b4233bf1ecd54241731531e11"),
+                null,
                 Surface(Path.Combine(Arg("-preparedRoot"),"RepeatUnits","18d35ed1e221c7a1a1cad597b22896ce5146eb6050095b2b86fd3da7605cbd82","Repeat.Surface"),"bb218fc2b3c073924e369256371898e9"),
-                Surface(Path.Combine(Arg("-preparedRoot"),"RepeatUnits","bc6c38c2c3b14e5bb5743dec2c2ccd05d02dfd30501dc5f08118b70412ccf2d7","Repeat.Surface"),"fb6dc888789e8df3d8da5bd518ce1b0b"),
+                null,
                 Surface(Path.Combine(Arg("-preparedRoot"),"RepeatUnits","40d7c50979f1502da28972cacf93d06805317986a0d1b1cc6b1faba7ada71284","Repeat.Surface"),"7f60749d006f1da7687effb9f60e56e8"),
                 Surface(Path.Combine(Arg("-preparedRoot"),"RepeatUnits","3061b3f27e2581a706363c6b7c7b86b5fe6fb0aba3e69c87a1b1f6318967ebec","Repeat.Surface"),"e4d91db61aaf481c811cfab769900338"),
                 Surface(Path.Combine(Arg("-preparedRoot"),"RepeatUnits","7a355e468b816e195c561191ac1c5931847c874f2d0cbec74482c662ca3fe6f9","Repeat.Surface"),"f2de4a0ded42bfe8c2c3b9d227ed764d"),

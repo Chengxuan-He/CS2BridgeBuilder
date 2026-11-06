@@ -292,7 +292,7 @@ public static class RoadRouteCheck {
  string ballastPath=Arg("-ballastObject");var ballastObject=Surface(ballastPath,File.ReadAllText(ballastPath+".cid").Trim(),false);
  var catalog=mod.GetType("BridgeBuilder.Runtime.BridgePreparedMaterials",true);
  catalog.GetField("_root",S).SetValue(null,Path.GetDirectoryName(ballastPath));
- ((IDictionary)catalog.GetField("Surfaces",S).GetValue(null))["Lift02/NativeSources/8b9121008e8de326e7abc88b69df080e/Object.Surface"]=ballastObject;
+ ((IDictionary)catalog.GetField("Surfaces",S).GetValue(null))["Lift02/NativeSources/3aaa84602734568f9f0909f01c8527f0/Object.Surface"]=ballastObject;
  Set(owner,"<StyleId>k__BackingField","Lift02");var ballast=Enum.Parse(kind,"Ballast");
  var gb=T("MovableCompatibleRoad").GetMethod("Read",S).Invoke(null,new[]{gravel,owner});Check(gb!=null,"measured gravel object unavailable");
  var gt=(IDictionary)Get(gravel,"m_Textures");var bt=(IDictionary)Get(ballastObject,"m_Textures");

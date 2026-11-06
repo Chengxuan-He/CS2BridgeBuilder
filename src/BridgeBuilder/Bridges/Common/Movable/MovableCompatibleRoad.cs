@@ -44,7 +44,7 @@ internal static class MovableCompatibleRoad
             // Ballast descriptor is prepared offline, never an Asphalt fallback.
             var target=kind==MovableRoadAppearance.Type.Ballast
                 ? BridgeBuilder.Runtime.BridgePreparedMaterials.NativeSource(owner.StyleId,
-                    "8b9121008e8de326e7abc88b69df080e")
+                    "3aaa84602734568f9f0909f01c8527f0")
                 : owner.Asset;
             target.LoadProperties(true);
             try

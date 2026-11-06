@@ -29,7 +29,7 @@ internal static class Lift05StructuralWrapData
     private static class Data
     {
         static Data() { }
-        internal static readonly Level[] Levels = Read();
+        internal static Level[] Levels => GenerationParameters.Get<Level[]>("BridgeBuilder.Bridges.Lift05StructuralWrapData.Data.Levels", () => Read());
         private static Level[] Read()
         {
             var d = Numeric_Types_Lift05_StructuralWrap.Values;
@@ -67,5 +67,5 @@ internal static class Lift05StructuralWrapData
 internal static class Numeric_Types_Lift05_StructuralWrap
 {
     static Numeric_Types_Lift05_StructuralWrap() { }
-    internal static readonly HardcodedNumbers Values = HardcodedNumbers.Load("Types_Lift05_StructuralWrap");
+    internal static HardcodedNumbers Values => GenerationParameters.Get<HardcodedNumbers>("BridgeBuilder.Bridges.Numeric_Types_Lift05_StructuralWrap.Values", () => HardcodedNumbers.Load("Types_Lift05_StructuralWrap"));
 }

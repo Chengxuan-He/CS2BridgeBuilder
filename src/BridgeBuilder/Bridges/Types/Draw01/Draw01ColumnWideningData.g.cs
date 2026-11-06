@@ -28,21 +28,19 @@ internal static class Draw01ColumnWideningData
             if (group.Weight == Numeric_Types_Draw01_Draw01ColumnWideningData_g_cs.Values.F32[0])
                 continue;
             var displacement = group.Weight * halfWidthDelta;
-            AffineGeometry.Indices(group.Vertices, index =>
-            {
-                positions[index].x = AffineGeometry.Translate(positions[index].x, displacement);
-            });
+            foreach (var coordinateRows in StructureRows.Stages(group.Vertices))
+                AffineGeometry.Execute(RangePrograms.Data, 0, new[] { positions }, Array.Empty<float[]>(), new float[] { group.Weight, halfWidthDelta }, count: coordinateRows.Length, indices: new[] { coordinateRows });
         }
 
         return new MovableStructureModel.Plan(sourcePositions, positions, sourceIndices, new[] { new bool[counts.Triangles] });
     }
 
     // Native Geometry SHA-256: 58E287710EBCCC17052472C54F6C88EDFD876DE5C8DFB68BB40BE5236DF4E5B8
-    private static readonly (float Weight, int[] Vertices)[] Near = ReadPackedNear();
+    private static (float Weight, int[] Vertices)[] Near => GenerationParameters.Get<(float Weight, int[] Vertices)[]>("BridgeBuilder.Bridges.Draw01ColumnWideningData.Near", () => ReadPackedNear());
     // Native Geometry SHA-256: 75FD4EC55594F8B785CF8ABA7D826645BB92FF04BD7AA7FF7B0E3C030DD3BB45
-    private static readonly (float Weight, int[] Vertices)[] Middle = ReadPackedMiddle();
+    private static (float Weight, int[] Vertices)[] Middle => GenerationParameters.Get<(float Weight, int[] Vertices)[]>("BridgeBuilder.Bridges.Draw01ColumnWideningData.Middle", () => ReadPackedMiddle());
     // Native Geometry SHA-256: DC1A8A335221D46CAAF2D531D9B5B8D69DD6B6AB830EC4F229BB07491B5AEFB9
-    private static readonly (float Weight, int[] Vertices)[] Far = ReadPackedFar();
+    private static (float Weight, int[] Vertices)[] Far => GenerationParameters.Get<(float Weight, int[] Vertices)[]>("BridgeBuilder.Bridges.Draw01ColumnWideningData.Far", () => ReadPackedFar());
     private static (float Weight, int[] Vertices)[] ReadPackedNear()
     {
         var d = Numeric_Types_Draw01_Draw01ColumnWideningData_g_cs.Values;
@@ -89,11 +87,23 @@ internal static class Draw01ColumnWideningData
             values[8 + i] = (d.F32[15 + i * 1], new[] { d.I32[631 + i * 56], d.I32[632 + i * 56], d.I32[633 + i * 56], d.I32[634 + i * 56], d.I32[635 + i * 56], d.I32[636 + i * 56], d.I32[637 + i * 56], d.I32[638 + i * 56], d.I32[639 + i * 56], d.I32[640 + i * 56], d.I32[641 + i * 56], d.I32[642 + i * 56], d.I32[643 + i * 56], d.I32[644 + i * 56], d.I32[645 + i * 56], d.I32[646 + i * 56], d.I32[647 + i * 56], d.I32[648 + i * 56], d.I32[649 + i * 56], d.I32[650 + i * 56], d.I32[651 + i * 56], d.I32[652 + i * 56], d.I32[653 + i * 56], d.I32[654 + i * 56], d.I32[655 + i * 56], d.I32[656 + i * 56], d.I32[657 + i * 56], d.I32[658 + i * 56], d.I32[659 + i * 56], d.I32[660 + i * 56], d.I32[661 + i * 56], d.I32[662 + i * 56], d.I32[663 + i * 56], d.I32[664 + i * 56], d.I32[665 + i * 56], d.I32[666 + i * 56], d.I32[667 + i * 56], d.I32[668 + i * 56], d.I32[669 + i * 56], d.I32[670 + i * 56], d.I32[671 + i * 56], d.I32[672 + i * 56], d.I32[673 + i * 56], d.I32[674 + i * 56], d.I32[675 + i * 56], d.I32[676 + i * 56], d.I32[677 + i * 56], d.I32[678 + i * 56], d.I32[679 + i * 56], d.I32[680 + i * 56], d.I32[681 + i * 56], d.I32[682 + i * 56], d.I32[683 + i * 56], d.I32[684 + i * 56], d.I32[685 + i * 56], d.I32[686 + i * 56], });
         return values;
     }
+
+    private static class RangePrograms
+    {
+        static RangePrograms()
+        {
+        }
+
+        internal static HardcodedNumbers Data => GenerationParameters.Get<HardcodedNumbers>("BridgeBuilder.Bridges.Draw01ColumnWideningData.RangePrograms.Data", () => HardcodedNumbers.Load("Types_Draw01_Draw01ColumnWideningData_RangePrograms"));
+    }
 }
 
 // Embedded numerical arrays: Types_Draw01_Draw01ColumnWideningData_g_cs
 internal static class Numeric_Types_Draw01_Draw01ColumnWideningData_g_cs
 {
-    static Numeric_Types_Draw01_Draw01ColumnWideningData_g_cs() {}
-    internal static readonly HardcodedNumbers Values = HardcodedNumbers.Load("Types_Draw01_Draw01ColumnWideningData_g_cs");
+    static Numeric_Types_Draw01_Draw01ColumnWideningData_g_cs()
+    {
+    }
+
+    internal static HardcodedNumbers Values => GenerationParameters.Get<HardcodedNumbers>("BridgeBuilder.Bridges.Numeric_Types_Draw01_Draw01ColumnWideningData_g_cs.Values", () => HardcodedNumbers.Load("Types_Draw01_Draw01ColumnWideningData_g_cs"));
 }

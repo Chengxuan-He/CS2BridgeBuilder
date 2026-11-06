@@ -9,43 +9,34 @@ internal static class Draw03Truss
     {
         var data = lod switch
         {
-            0 => (Count: Numeric_Types_Draw03_Draw03Truss_g_cs.Values.I32[0], Ranges: Level0),
-            1 => (Count: Numeric_Types_Draw03_Draw03Truss_g_cs.Values.I32[1], Ranges: Level1),
+            0 => Numeric_Types_Draw03_Draw03Truss_g_cs.Values.I32[0],
+            1 => Numeric_Types_Draw03_Draw03Truss_g_cs.Values.I32[1],
             _ => throw new ArgumentOutOfRangeException(nameof(lod))};
-        if (source.Length != data.Count || positions.Length != data.Count || !float.IsFinite(delta))
+        if (source.Length != data || positions.Length != data || !float.IsFinite(delta))
             throw new InvalidOperationException("Draw03 truss requires its measured mesh.");
-        foreach (var range in data.Ranges)
-            AffineGeometry.For(range.First, range.Last + Numeric_Types_Draw03_Draw03Truss_g_cs.Values.I32[2], i => positions[i].x = AffineGeometry.AddScaled(source[i].x, source[i].x / Numeric_Types_Draw03_Draw03Truss_g_cs.Values.F32[0], delta));
+        AffineGeometry.Execute(BatchProgram0.Data, lod, new[] { source, positions }, Array.Empty<float[]>(), new float[] { Numeric_Types_Draw03_Draw03Truss_g_cs.Values.F32[0], delta });
     }
 
     internal static float Scale(float delta) => Numeric_Types_Draw03_Draw03Truss_g_cs.Values.F32[1] + delta / Numeric_Types_Draw03_Draw03Truss_g_cs.Values.F32[2];
-    internal static bool IsApproachStructure(int family) => family < Numeric_Types_Draw03_Draw03Truss_g_cs.Values.I32[3];
+    internal static bool IsApproachStructure(int family) => family < Numeric_Types_Draw03_Draw03Truss_g_cs.Values.I32[2];
     // SHA256: f7ecc824ad55745e791e40b18fd12f5def20657ed8ea56d373429d5a1337588f
-    private static readonly (int First, int Last)[] Level0 = ReadPackedLevel0();
     // SHA256: 15b8419da13d6e99e1dc0591f12f4019f0be09c3b220a481d24720daf7b57e12
-    private static readonly (int First, int Last)[] Level1 = ReadPackedLevel1();
-    private static (int First, int Last)[] ReadPackedLevel0()
+    private static class BatchProgram0
     {
-        var d = Numeric_Types_Draw03_Draw03Truss_g_cs.Values;
-        var values = new (int First, int Last)[16];
-        for (int i = 0; i < 16; i++)
-            values[0 + i] = (d.I32[4 + i * 2], d.I32[5 + i * 2]);
-        return values;
-    }
+        static BatchProgram0()
+        {
+        }
 
-    private static (int First, int Last)[] ReadPackedLevel1()
-    {
-        var d = Numeric_Types_Draw03_Draw03Truss_g_cs.Values;
-        var values = new (int First, int Last)[16];
-        for (int i = 0; i < 16; i++)
-            values[0 + i] = (d.I32[36 + i * 2], d.I32[37 + i * 2]);
-        return values;
+        internal static HardcodedNumbers Data => GenerationParameters.Get<HardcodedNumbers>("BridgeBuilder.Bridges.Draw03Truss.BatchProgram0.Data", () => HardcodedNumbers.Load("Types_Draw03_Draw03Truss_BatchProgram0"));
     }
 }
 
 // Embedded numerical arrays: Types_Draw03_Draw03Truss_g_cs
 internal static class Numeric_Types_Draw03_Draw03Truss_g_cs
 {
-    static Numeric_Types_Draw03_Draw03Truss_g_cs() {}
-    internal static readonly HardcodedNumbers Values = HardcodedNumbers.Load("Types_Draw03_Draw03Truss_g_cs");
+    static Numeric_Types_Draw03_Draw03Truss_g_cs()
+    {
+    }
+
+    internal static HardcodedNumbers Values => GenerationParameters.Get<HardcodedNumbers>("BridgeBuilder.Bridges.Numeric_Types_Draw03_Draw03Truss_g_cs.Values", () => HardcodedNumbers.Load("Types_Draw03_Draw03Truss_g_cs"));
 }

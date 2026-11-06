@@ -37,13 +37,13 @@ internal static class Lift05RoadTops
     }
 
     // Geometry SHA-256: 10a9c40e522c91debff4bc0251dbe93980cac6b92ff6b176c216e27ba52c05fb
-    private static readonly (int Triangle, int A, int B, int C)[] Moving0 = ReadPackedMoving0();
-    private static readonly (int Triangle, int A, int B, int C)[] Fixed0 = ReadPackedFixed0();
+    private static (int Triangle, int A, int B, int C)[] Moving0 => GenerationParameters.Get<(int Triangle, int A, int B, int C)[]>("BridgeBuilder.Bridges.Lift05RoadTops.Moving0", () => ReadPackedMoving0());
+    private static (int Triangle, int A, int B, int C)[] Fixed0 => GenerationParameters.Get<(int Triangle, int A, int B, int C)[]>("BridgeBuilder.Bridges.Lift05RoadTops.Fixed0", () => ReadPackedFixed0());
     // Geometry SHA-256: dc4b8d4ae9688952992b03d724d8549cdb79f52eb0877c7f6fe62d1246ce286e
-    private static readonly (int Triangle, int A, int B, int C)[] Moving1 = ReadPackedMoving1();
-    private static readonly (int Triangle, int A, int B, int C)[] Fixed1 = ReadPackedFixed1();
+    private static (int Triangle, int A, int B, int C)[] Moving1 => GenerationParameters.Get<(int Triangle, int A, int B, int C)[]>("BridgeBuilder.Bridges.Lift05RoadTops.Moving1", () => ReadPackedMoving1());
+    private static (int Triangle, int A, int B, int C)[] Fixed1 => GenerationParameters.Get<(int Triangle, int A, int B, int C)[]>("BridgeBuilder.Bridges.Lift05RoadTops.Fixed1", () => ReadPackedFixed1());
     // Geometry SHA-256: 6ea1ea24f714feca8794c31500c743e3c599067a9da37a46ae83c1eaa8bc4160
-    private static readonly (int Triangle, int A, int B, int C)[] Moving2 = ReadPackedMoving2();
+    private static (int Triangle, int A, int B, int C)[] Moving2 => GenerationParameters.Get<(int Triangle, int A, int B, int C)[]>("BridgeBuilder.Bridges.Lift05RoadTops.Moving2", () => ReadPackedMoving2());
     private static (int Triangle, int A, int B, int C)[] ReadPackedMoving0()
     {
         var d = Numeric_Types_Lift05_Lift05RoadTops_g_cs.Values;
@@ -94,5 +94,5 @@ internal static class Lift05RoadTops
 internal static class Numeric_Types_Lift05_Lift05RoadTops_g_cs
 {
     static Numeric_Types_Lift05_Lift05RoadTops_g_cs() {}
-    internal static readonly HardcodedNumbers Values = HardcodedNumbers.Load("Types_Lift05_Lift05RoadTops_g_cs");
+    internal static HardcodedNumbers Values => GenerationParameters.Get<HardcodedNumbers>("BridgeBuilder.Bridges.Numeric_Types_Lift05_Lift05RoadTops_g_cs.Values", () => HardcodedNumbers.Load("Types_Lift05_Lift05RoadTops_g_cs"));
 }

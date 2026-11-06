@@ -11,7 +11,7 @@ internal static class PedestrianDraw01RoadPartitions
     internal static float FixedStart => Numeric_Types_PedestrianDraw01_PedestrianDraw01RoadPartitions_cs.Values.F32[2];
     internal static float FixedEnd => Numeric_Types_PedestrianDraw01_PedestrianDraw01RoadPartitions_cs.Values.F32[3];
 
-    internal static readonly Partition Carriageway = Cut(-FixedEnd, Partition.Gap, Cut(-FixedStart, new Partition(Numeric_Types_PedestrianDraw01_PedestrianDraw01RoadPartitions_cs.Values.I32[0]), Cut(-MovingEnd, Partition.Gap, Cut(-CentreGapHalf, new Partition(Numeric_Types_PedestrianDraw01_PedestrianDraw01RoadPartitions_cs.Values.I32[1]), Cut(CentreGapHalf, Partition.Gap, Cut(MovingEnd, new Partition(Numeric_Types_PedestrianDraw01_PedestrianDraw01RoadPartitions_cs.Values.I32[2]), Cut(FixedStart, Partition.Gap, Cut(FixedEnd, new Partition(Numeric_Types_PedestrianDraw01_PedestrianDraw01RoadPartitions_cs.Values.I32[3]), Partition.Gap))))))));
+    internal static Partition Carriageway => GenerationParameters.Get<Partition>("BridgeBuilder.Bridges.PedestrianDraw01RoadPartitions.Carriageway", () => Cut(-FixedEnd, Partition.Gap, Cut(-FixedStart, new Partition(Numeric_Types_PedestrianDraw01_PedestrianDraw01RoadPartitions_cs.Values.I32[0]), Cut(-MovingEnd, Partition.Gap, Cut(-CentreGapHalf, new Partition(Numeric_Types_PedestrianDraw01_PedestrianDraw01RoadPartitions_cs.Values.I32[1]), Cut(CentreGapHalf, Partition.Gap, Cut(MovingEnd, new Partition(Numeric_Types_PedestrianDraw01_PedestrianDraw01RoadPartitions_cs.Values.I32[2]), Cut(FixedStart, Partition.Gap, Cut(FixedEnd, new Partition(Numeric_Types_PedestrianDraw01_PedestrianDraw01RoadPartitions_cs.Values.I32[3]), Partition.Gap)))))))));
     private static Partition Cut(float station, Partition negative, Partition positive)
     {
         var frame = Matrix4x4.identity;
@@ -24,5 +24,5 @@ internal static class PedestrianDraw01RoadPartitions
 internal static class Numeric_Types_PedestrianDraw01_PedestrianDraw01RoadPartitions_cs
 {
     static Numeric_Types_PedestrianDraw01_PedestrianDraw01RoadPartitions_cs() {}
-    internal static readonly HardcodedNumbers Values = HardcodedNumbers.Load("Types_PedestrianDraw01_PedestrianDraw01RoadPartitions_cs");
+    internal static HardcodedNumbers Values => GenerationParameters.Get<HardcodedNumbers>("BridgeBuilder.Bridges.Numeric_Types_PedestrianDraw01_PedestrianDraw01RoadPartitions_cs.Values", () => HardcodedNumbers.Load("Types_PedestrianDraw01_PedestrianDraw01RoadPartitions_cs"));
 }

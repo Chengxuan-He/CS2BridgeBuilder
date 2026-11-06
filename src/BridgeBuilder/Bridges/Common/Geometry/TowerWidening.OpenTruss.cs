@@ -87,20 +87,33 @@ internal static partial class TowerWidening
                     rigid++;
             }
 
-            AffineGeometry.For(0, moved.Length, index =>
+            var positive = new List<int>();
+            var negative = new List<int>();
+            var stretchLeft = new List<int>();
+            var stretchRight = new List<int>();
+            for (int index = 0; index < moved.Length; index++)
             {
                 var component = components[labels[index]];
                 var x = source[index].x;
                 if (translated[component.Id])
                 {
                     var centre = (component.Left + component.Right) * 0.5f;
-                    moved[index].x = AffineGeometry.Translate(x, (centre >= 0f ? shift : -shift));
+                    if (centre >= 0f) positive.Add(index); else negative.Add(index);
                 }
                 else
                 {
-                    moved[index].x = Math.Abs(x) <= CentreEpsilon ? x : x < 0f ? AffineGeometry.Scale(x, leftRatio) : AffineGeometry.Scale(x, rightRatio);
+                    if (Math.Abs(x) <= CentreEpsilon) continue;
+                    if (x < 0f) stretchLeft.Add(index); else stretchRight.Add(index);
                 }
-            });
+            }
+            AffineGeometry.Execute(StructurePrograms.Data, StructurePrograms.PositiveHalfX, new[] { source, moved },
+                Array.Empty<float[]>(), new[] { extra }, count: positive.Count, indices: new[] { positive.ToArray() });
+            AffineGeometry.Execute(StructurePrograms.Data, StructurePrograms.NegativeHalfX, new[] { source, moved },
+                Array.Empty<float[]>(), new[] { extra }, count: negative.Count, indices: new[] { negative.ToArray() });
+            AffineGeometry.Execute(StructurePrograms.Data, StructurePrograms.ScaleX, new[] { source, moved },
+                Array.Empty<float[]>(), new[] { leftRatio }, count: stretchLeft.Count, indices: new[] { stretchLeft.ToArray() });
+            AffineGeometry.Execute(StructurePrograms.Data, StructurePrograms.ScaleX, new[] { source, moved },
+                Array.Empty<float[]>(), new[] { rightRatio }, count: stretchRight.Count, indices: new[] { stretchRight.ToArray() });
         }
 
         var contractSatisfied = RequireCentrelineRule(source, moved, components, labels, extra, leftReach, rightReach);
@@ -158,16 +171,25 @@ internal static partial class TowerWidening
         // the measured inner face of the side assembly receives an exact rigid translation. Both
         // formulae agree at the boundary, so a welded beam stays connected and no triangle can become
         // a fan merely because its vertices fell in different height bands.
-        AffineGeometry.For(0, source.Length, index =>
+        var negative = new List<int>();
+        var positive = new List<int>();
+        var stretching = new List<int>();
+        for (int index = 0; index < source.Length; index++)
         {
             var x = source[index].x;
             if (x <= -boundary)
-                moved[index].x = AffineGeometry.Translate(x, -(shift));
+                negative.Add(index);
             else if (x >= boundary)
-                moved[index].x = AffineGeometry.Translate(x, shift);
+                positive.Add(index);
             else
-                moved[index].x = AffineGeometry.Scale(x, ratio);
-        });
+                stretching.Add(index);
+        }
+        AffineGeometry.Execute(StructurePrograms.Data, StructurePrograms.NegativeHalfX, new[] { source, moved },
+            Array.Empty<float[]>(), new[] { extra }, count: negative.Count, indices: new[] { negative.ToArray() });
+        AffineGeometry.Execute(StructurePrograms.Data, StructurePrograms.PositiveHalfX, new[] { source, moved },
+            Array.Empty<float[]>(), new[] { extra }, count: positive.Count, indices: new[] { positive.ToArray() });
+        AffineGeometry.Execute(StructurePrograms.Data, StructurePrograms.ScaleX, new[] { source, moved },
+            Array.Empty<float[]>(), new[] { ratio }, count: stretching.Count, indices: new[] { stretching.ToArray() });
         var contractSatisfied = RequireProfiledCentrelineRule(source, moved, boundary, ratio, extra);
         var degenerateBefore = DegenerateTriangles(source, triangles);
         var degenerateAfter = DegenerateTriangles(moved, triangles);

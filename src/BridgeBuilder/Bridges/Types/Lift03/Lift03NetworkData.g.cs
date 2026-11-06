@@ -12,7 +12,7 @@ internal static class Lift03NetworkData
     internal static float ApproachLength => Numeric_Types_Lift03_Lift03NetworkData_g_cs.Values.F32[0];
     internal static float MainElevation => Numeric_Types_Lift03_Lift03NetworkData_g_cs.Values.F32[1];
 
-    internal static readonly float3 AuxiliaryOffset = new(Numeric_Types_Lift03_Lift03NetworkData_g_cs.Values.F32[2], -Numeric_Types_Lift03_Lift03NetworkData_g_cs.Values.F32[3], Numeric_Types_Lift03_Lift03NetworkData_g_cs.Values.F32[4]);
+    internal static float3 AuxiliaryOffset => GenerationParameters.Get<float3>("BridgeBuilder.Bridges.Lift03NetworkData.AuxiliaryOffset", () => new(Numeric_Types_Lift03_Lift03NetworkData_g_cs.Values.F32[2], -Numeric_Types_Lift03_Lift03NetworkData_g_cs.Values.F32[3], Numeric_Types_Lift03_Lift03NetworkData_g_cs.Values.F32[4]));
     internal enum MainRole
     {
         Side,
@@ -205,5 +205,5 @@ internal static class Lift03NetworkData
 internal static class Numeric_Types_Lift03_Lift03NetworkData_g_cs
 {
     static Numeric_Types_Lift03_Lift03NetworkData_g_cs() {}
-    internal static readonly HardcodedNumbers Values = HardcodedNumbers.Load("Types_Lift03_Lift03NetworkData_g_cs");
+    internal static HardcodedNumbers Values => GenerationParameters.Get<HardcodedNumbers>("BridgeBuilder.Bridges.Numeric_Types_Lift03_Lift03NetworkData_g_cs.Values", () => HardcodedNumbers.Load("Types_Lift03_Lift03NetworkData_g_cs"));
 }

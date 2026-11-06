@@ -18,17 +18,15 @@ internal static class Lift01Connectors
         foreach (var part in data.Parts)
         {
             var span = part.Max - part.Min;
-            AffineGeometry.Indices(part.Vertices, i =>
-            {
-                positions[i].x = AffineGeometry.AddScaled(source[i].x, (Numeric_Types_Lift01_Lift01Connectors_g_cs.Values.F32[0] * source[i].x - part.Min - part.Max) / span, delta);
-            });
+            foreach (var coordinateRows in StructureRows.Stages(part.Vertices))
+                AffineGeometry.Execute(RangePrograms.Data, 0, new[] { source, positions }, Array.Empty<float[]>(), new float[] { Numeric_Types_Lift01_Lift01Connectors_g_cs.Values.F32[0], part.Min, part.Max, delta }, count: coordinateRows.Length, indices: new[] { coordinateRows });
         }
     }
 
     // Geometry SHA-256: cc34bfcb478f5621513c458120bacfb395e21548e3eee2e753dca97e138b5714
-    private static readonly (float Min, float Max, int[] Vertices)[] Near = ReadPackedNear();
+    private static (float Min, float Max, int[] Vertices)[] Near => GenerationParameters.Get<(float Min, float Max, int[] Vertices)[]>("BridgeBuilder.Bridges.Lift01Connectors.Near", () => ReadPackedNear());
     // Geometry SHA-256: c5694dce731ce05218de15761665cc1d234723049c48bd707c87587509ed8e4e
-    private static readonly (float Min, float Max, int[] Vertices)[] Middle = ReadPackedMiddle();
+    private static (float Min, float Max, int[] Vertices)[] Middle => GenerationParameters.Get<(float Min, float Max, int[] Vertices)[]>("BridgeBuilder.Bridges.Lift01Connectors.Middle", () => ReadPackedMiddle());
     private static (float Min, float Max, int[] Vertices)[] ReadPackedNear()
     {
         var d = Numeric_Types_Lift01_Lift01Connectors_g_cs.Values;
@@ -396,11 +394,23 @@ internal static class Lift01Connectors
             values[126 + i] = (-d.F32[557 + i * 2], d.F32[558 + i * 2], new[] { d.I32[24494 + i * 24], d.I32[24495 + i * 24], d.I32[24496 + i * 24], d.I32[24497 + i * 24], d.I32[24498 + i * 24], d.I32[24499 + i * 24], d.I32[24500 + i * 24], d.I32[24501 + i * 24], d.I32[24502 + i * 24], d.I32[24503 + i * 24], d.I32[24504 + i * 24], d.I32[24505 + i * 24], d.I32[24506 + i * 24], d.I32[24507 + i * 24], d.I32[24508 + i * 24], d.I32[24509 + i * 24], d.I32[24510 + i * 24], d.I32[24511 + i * 24], d.I32[24512 + i * 24], d.I32[24513 + i * 24], d.I32[24514 + i * 24], d.I32[24515 + i * 24], d.I32[24516 + i * 24], d.I32[24517 + i * 24], });
         return values;
     }
+
+    private static class RangePrograms
+    {
+        static RangePrograms()
+        {
+        }
+
+        internal static HardcodedNumbers Data => GenerationParameters.Get<HardcodedNumbers>("BridgeBuilder.Bridges.Lift01Connectors.RangePrograms.Data", () => HardcodedNumbers.Load("Types_Lift01_Lift01Connectors_RangePrograms"));
+    }
 }
 
 // Embedded numerical arrays: Types_Lift01_Lift01Connectors_g_cs
 internal static class Numeric_Types_Lift01_Lift01Connectors_g_cs
 {
-    static Numeric_Types_Lift01_Lift01Connectors_g_cs() {}
-    internal static readonly HardcodedNumbers Values = HardcodedNumbers.Load("Types_Lift01_Lift01Connectors_g_cs");
+    static Numeric_Types_Lift01_Lift01Connectors_g_cs()
+    {
+    }
+
+    internal static HardcodedNumbers Values => GenerationParameters.Get<HardcodedNumbers>("BridgeBuilder.Bridges.Numeric_Types_Lift01_Lift01Connectors_g_cs.Values", () => HardcodedNumbers.Load("Types_Lift01_Lift01Connectors_g_cs"));
 }

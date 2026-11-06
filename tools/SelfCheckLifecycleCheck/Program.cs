@@ -120,6 +120,10 @@ p = Fresh(); BridgeLegacyNames.Changed = true; p.ScheduleInspectionAfterLoad(); 
 Check(BridgeBuilder.Mod.Messages.Single() == "BridgeSelfCheckMigrated(1)\n\nBridgeSelfCheckRestart", "Legacy rename requests restart as migration");
 p.RequestManualCheck(); p.Tick();
 Check(BridgeDependencyPersistence.MigrationCalls == 1, "Renamed bridge skips stale in-memory asset index until restart");
+p = Fresh(); BridgeDependencyPersistence.MigrationFail = true;
+BridgeCreationDependencies.Shadowed = true; p.ScheduleInspectionAfterLoad(); Menu(p);
+Check(BridgeStartupRecovery.Retired.Count == 0 && BridgeBuilder.Mod.Messages.Single().Contains("BridgeSelfCheckIncomplete(1)"), "Unconfirmed lookup preserves owner and reports unfinished");
+BridgeCreationDependencies.Shadowed = false;
 p = Fresh(); BridgeLegacyNames.Fail = true; p.ScheduleInspectionAfterLoad(); Menu(p);
 Check(BridgeBuilder.Mod.Messages.Single() == "BridgeSelfCheckRemoved(1)\n\nBridgeSelfCheckRestart" && BridgeStartupRecovery.Retired.Count == 1,
     "Rename failure falls back to removal");

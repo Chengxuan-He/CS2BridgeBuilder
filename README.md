@@ -92,10 +92,26 @@ Every bridge created there has two deliberately separate names:
 - registration name: the editable name shown in game. It can be duplicated or renamed without
   changing the prefab identity or reconstructing the bridge.
 
+Movable bridge names use the silhouette of the complete native span, towers and lifting arms.
+The native closed-pose meshes distinguish the following styles. The catalog translates these labels;
+existing bridges keep their saved display names and stable style IDs.
+
+| Bascule bridges | Lift bridges | Pedestrian bascule bridges |
+| --- | --- | --- |
+| Curved-Soffit Girder Bascule Bridge | Portal-Frame Lift Bridge | Fan-Cable Pedestrian Bascule Bridge |
+| Solid-Web Girder Bascule Bridge | Curved-Chord Truss Lift Bridge | Overhead-Beam Pedestrian Bascule Bridge |
+| Deck-Truss Bascule Bridge | Double-Deck Lift Bridge | |
+| | Straight-Tower Truss Lift Bridge | |
+| | Curved-Brace Tower Lift Bridge | |
+
 The management tab lists these bridges and supports activation, display-name changes and deletion.
 Construction inputs are read-only after creation; changing them means creating another UUID-backed
-bridge. Deleting a bridge asks for confirmation and removes its placed instances before removing its
-asset record.
+bridge. Confirm deletion in the management tab to remove that bridge and its placed instances.
+The settings action **Remove all bridges** applies the same operation to every immediate
+`ImportedData/b<UUID>/` directory. Both actions finish in the same game session. Cleanup waits for
+saving and native readers, unregisters the selected owner's assets, then recursively deletes its
+directory. Success requires the directory and its registrations to be gone. Independent copies in
+other bridges stay in their own directories.
 
 It is the parallel of [Road Prefab Exporter](../CS2RoadPrefabExporter) and shares its code — see
 [Layout](#layout).
@@ -270,6 +286,56 @@ rigidly by half the width change. Full-detail geometry and every LOD use the sam
 Missing supported metadata is a generation failure, not permission to guess a different bridge.
 Game assets and derived content remain subject to their original licenses.
 
+## Bridge persistence
+
+Saved bridges use native game assets grouped by their immutable `b<UUID>` owner under
+`%USERPROFILE%\AppData\LocalLow\Colossal Order\Cities Skylines II\ImportedData\`.
+The following tree shows the layout; appearance, cache and dependency entries are created
+only when needed, and filenames other than `Bridge.Prefab` are illustrative.
+
+```text
+ImportedData/
+└── b<UUID>/
+    ├── Prefabs/
+    │   ├── Bridge.Prefab             Main bridge network
+    │   ├── Bridge.Prefab.cid         Native asset identity
+    │   └── <part or LOD>.Prefab      Other owned network/render components
+    ├── Geometry/
+    │   └── <mesh or LOD>.Geometry    Private generated geometry
+    ├── Appearance/
+    │   ├── <name>.Surface           Owned material data
+    │   ├── <name>.Texture           Owned texture data
+    │   ├── VT/
+    │   │   └── <name>.VTTexture     Owned virtual-texture payloads
+    │   └── MidMips/
+    │       └── <cacheCID>/
+    │           └── TS512_MB3.MidMips
+    ├── Locales/
+    │   └── en-US.loc                Native names/descriptions; other locales alongside
+    ├── Dependencies/
+    │   ├── <CID>.Surface            Unchanged external dependency snapshots
+    │   ├── <CID>.Texture
+    │   └── <cacheCID>/
+    │       └── TS512_MB3.MidMips
+    └── BridgeCacheEdges.txt         Forward cache relations for later self-checks
+```
+
+Every native asset payload has a matching `.cid` sidecar, omitted from most tree entries
+for readability. Cache filenames preserve their native `TS…_MB….MidMips` tag; the shown
+tag is an example. `Appearance` may also contain `.Material` files, and `VT` may contain
+`.VTSurface` files. `BridgeCacheEdges.txt` is manager metadata, not a native asset or a
+separate bridge registry.
+
+Generated components and geometry have private identities. Required external non-built-in
+dependencies are copied byte-for-byte with their original CIDs, once per bridge; different
+bridges keep independent copies. Built-in game/DLC assets remain native references and
+must remain available. Persistence follows exact dependency CIDs and declared cache edges,
+without building a global asset or MidMips index.
+
+See the [persistence policy](docs/Bridge-Asset-Persistence.md) for naming and migration rules,
+and the [implementation overview](docs/Dependency-Persistence-Implementation.md) for lookup
+and self-check behavior.
+
 ## Creation durability and recovery
 
 Creation reserves a UUID in memory and stores incomplete-creation metadata on the bridge root asset.
@@ -277,7 +343,8 @@ The catalogue commits the bridge after native publication succeeds. Bridge metad
 there is no separate bridge registry file or registration guard rejecting native loads.
 
 Startup self-check waits for native loading, mod initialization and PDX asset batches. It attempts
-migration first, preserving UUID/CID and valid data. Failed or impossible migration enters UUID-scoped
+migration first, preserving UUID/CID and valid data. An unresolved shadowed CID or unverifiable
+cache relation leaves inspection unfinished. Confirmed failed or impossible migration enters UUID-scoped
 backup/removal; backup failure falls back to deleting the remaining selected source files. Actual
 removal failures are reported. Persistent changes require restart; self-check does not unregister
 live prefabs. See contract sections 17–19 for persistence, ownership and migration requirements.
@@ -470,17 +537,24 @@ for every style's coordinate stage:
 2. Store numerical values in the existing DLL-embedded typed arrays. Sparse vertex weights and
    part ranges are valid matrix representations; the BBN1 format need not change or expand to
    dense matrices. Preserve float bits, anchors and evaluation order.
-3. Snapshot native mesh inputs on the main thread. Evaluate independent coordinate ranges with
-   `AffineGeometry.For`, source-only sparse assignments with `Scatter`, and repeated additive
-   index recipes with `Indices`. Use `Row`/`Matrix` for general XYZ parameter mappings and the
-   specialized scalar kernels where appropriate. Retain dependent stage ordering.
-4. Shared movable assembly schedules independent LOD plans with `Groups`, waits for completion,
-   then creates native render assets on the main thread. Do not put Mesh, Prefab, material or
-   persistence API calls into numerical workers. Small batches and nested work stay serial.
-5. After regenerating recipes, review the [offline lowering pass](tools/AffineGeometryMigration/README.md)
-   and preserve manual coefficient caches and snapshot boundaries. Run `AffineGeometryCheck`,
-   resource integrity checks, affected geometry/LOD regressions and localization checks.
-   Compare actual cold/warm preview and creation timings before claiming an acceleration.
+3. Load only demanded binary resources into the current generation's parameter session. Reuse
+   decoded arrays, membership records and SIMD programs within that request and its joined LOD
+   workers. Release references on completion, failure or cancellation; no catalogue preload,
+   permanent static parameter arrays or forced garbage collection.
+4. Snapshot native inputs on the main thread. `AffineGeometry.Execute` consumes offline APF2
+   stages with actual interleaved `x0,y0,z0,x1,...` storage. Load/bind operands, execute ordered
+   SIMD operations, and store/scatter results with unchanged-axis masks and alias snapshots.
+   Expression-recognition paths and per-axis register columns are prohibited. Scalar coefficient
+   and frame programs remain distinct from vertex storage.
+5. `Groups` joins independent LOD plans before main-thread native construction. Offline row-dependency
+   proof permits bounded blocks; dependent stages keep their order. Native position bytes consume
+   the completed owned array directly, without scalar XYZ repacking. Later preview/publication
+   must not retain parameter sessions or borrowed parameter arrays.
+6. Run the [offline lowering pass](tools/AffineGeometryMigration/README.md), resource/lifetime guards,
+   numerical/LOD checks and localization checks after regeneration. Report initial checksum/decode
+   separately from within-request cached execution. Measure preparation, operand loads, arithmetic,
+   output stores and final byte copy separately before claiming an acceleration; arithmetic stages
+   include memory traffic, not just pure ALU work.
 
 The implementation entry points are [AffineGeometry.cs](src/BridgeBuilder/Bridges/AffineGeometry.cs),
 [HardcodedNumbers.cs](src/BridgeBuilder/Bridges/HardcodedNumbers.cs) and

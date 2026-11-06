@@ -45,7 +45,8 @@ integrating an executable stage is implied by this identification phase.
 Recorded numerical output must be converted to the embedded typed-array resource format in bridge
 generation contract section 2: store each uncompressed BBN1 resource under its bridge-type
 directory. Runtime reading is on demand directly from the embedded stream, without extraction.
-Keep extraction reproducible, preserve numeric bits and order, and
+Emit request-scoped cached accessors for decoded arrays and derived records, not permanent static
+numerical fields. Keep extraction reproducible, preserve numeric bits and order, and
 run the resource conversion/check after regenerating C# recipes. Do not ship giant numeric literal
 initializers. Compound records must be reconstructed with bounded loops over the stored arrays.
 
@@ -55,7 +56,10 @@ instead of expanding every record into a dense matrix. Preserve parameter domain
 arithmetic order and binary numeric bits. Follow the
 [CPU affine execution contract](../../docs/agent-contract/BRIDGE_GENERATION_CONTRACT.md#cpu-affine-geometry-execution)
 and review the [offline lowering tool](../AffineGeometryMigration/README.md) after regeneration.
-Retain manually reviewed coefficient caches and native snapshot boundaries; automatic lowering
+Compile explicit packed XYZ stages and lane activity offline. Merge compatible axis work
+without changing evaluation order; runtime must not recognize expressions or execute
+per-axis register columns. Preserve untouched-axis bits rather than emitting identity arithmetic.
+Retain manually reviewed request-owned coefficient caches and native snapshot boundaries; automatic lowering
 does not prove a loop is safe to parallelize or replace geometric equivalence checks.
 
 - Emit reviewed, immutable source data keyed by exact archetype and mesh/LOD identity, with exact

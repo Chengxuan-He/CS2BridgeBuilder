@@ -13,138 +13,26 @@ internal static class Lift01FarBaseProfile
         if (plan.SourcePositions.Length != Numeric_Types_Lift01_Lift01FarBaseProfile_g_cs.Values.I32[0] || plan.SourceIndices.Length != Numeric_Types_Lift01_Lift01FarBaseProfile_g_cs.Values.I32[1] || plan.SourceIndices[Numeric_Types_Lift01_Lift01FarBaseProfile_g_cs.Values.I32[2]].Length != Numeric_Types_Lift01_Lift01FarBaseProfile_g_cs.Values.I32[3] || !float.IsFinite(delta))
             throw new InvalidOperationException("Lift01 far base requires its recorded road boundaries.");
         var positions = plan.Positions.Take(Numeric_Types_Lift01_Lift01FarBaseProfile_g_cs.Values.I32[4]).ToArray();
-        AffineGeometry.Scatter(Profile, point => point.Index, point =>
-        {
-            var matrix = new AffineGeometry.Matrix(AffineGeometry.Row.Affine(point.X, point.Direction),
-                AffineGeometry.Row.Constant(point.Y), AffineGeometry.Row.Constant(point.Z));
-            matrix.Evaluate(delta, 0f, 0f, out float x, out float y, out float z);
-            positions[point.Index] = new Vector3(x, y, z);
-        });
+        AffineGeometry.Execute(ScatterProgram.Data, 0, new[] { positions }, Array.Empty<float[]>(), new float[] { delta });
         return new MovableStructureModel.Plan(plan.SourcePositions, positions, plan.SourceIndices, plan.RemoveTriangles, plan.AddedVertices, plan.Fragments, plan.InteriorVertices, plan.Positions.Skip(Numeric_Types_Lift01_Lift01FarBaseProfile_g_cs.Values.I32[5]).Select(p => p.x).ToArray(), reconstructsAuthoredPositions: true, uvCorrections: plan.UvCorrections, preparedDomains: plan.PreparedDomains, frameTransforms: plan.FrameTransforms, sourceCopies: plan.SourceCopies);
     }
 
-    private static readonly (int Index, float X, float Y, float Z, int Direction)[] Profile = ReadPackedProfile();
-    private static (int Index, float X, float Y, float Z, int Direction)[] ReadPackedProfile()
+    private static class ScatterProgram
     {
-        var d = Numeric_Types_Lift01_Lift01FarBaseProfile_g_cs.Values;
-        var values = new (int Index, float X, float Y, float Z, int Direction)[152];
-        for (int i = 0; i < 4; i++)
-            values[0 + i] = (d.I32[6 + i * 2], d.F32[0 + i * 3], d.F32[1 + i * 3], d.F32[2 + i * 3], d.I32[7 + i * 2]);
-        for (int i = 0; i < 4; i++)
-            values[4 + i] = (d.I32[14 + i * 2], -d.F32[12 + i * 3], d.F32[13 + i * 3], d.F32[14 + i * 3], -d.I32[15 + i * 2]);
-        for (int i = 0; i < 4; i++)
-            values[8 + i] = (d.I32[22 + i * 2], d.F32[24 + i * 3], d.F32[25 + i * 3], d.F32[26 + i * 3], d.I32[23 + i * 2]);
-        for (int i = 0; i < 4; i++)
-            values[12 + i] = (d.I32[30 + i * 2], -d.F32[36 + i * 3], d.F32[37 + i * 3], d.F32[38 + i * 3], -d.I32[31 + i * 2]);
-        for (int i = 0; i < 4; i++)
-            values[16 + i] = (d.I32[38 + i * 2], d.F32[48 + i * 3], d.F32[49 + i * 3], d.F32[50 + i * 3], d.I32[39 + i * 2]);
-        for (int i = 0; i < 4; i++)
-            values[20 + i] = (d.I32[46 + i * 2], -d.F32[60 + i * 3], d.F32[61 + i * 3], d.F32[62 + i * 3], -d.I32[47 + i * 2]);
-        for (int i = 0; i < 4; i++)
-            values[24 + i] = (d.I32[54 + i * 2], d.F32[72 + i * 3], d.F32[73 + i * 3], d.F32[74 + i * 3], d.I32[55 + i * 2]);
-        for (int i = 0; i < 1; i++)
-            values[28 + i] = (d.I32[62 + i * 2], -d.F32[84 + i * 3], d.F32[85 + i * 3], d.F32[86 + i * 3], -d.I32[63 + i * 2]);
-        for (int i = 0; i < 1; i++)
-            values[29 + i] = (d.I32[64 + i * 2], d.F32[87 + i * 3], d.F32[88 + i * 3], d.F32[89 + i * 3], d.I32[65 + i * 2]);
-        for (int i = 0; i < 1; i++)
-            values[30 + i] = (d.I32[66 + i * 2], -d.F32[90 + i * 3], d.F32[91 + i * 3], d.F32[92 + i * 3], -d.I32[67 + i * 2]);
-        for (int i = 0; i < 5; i++)
-            values[31 + i] = (d.I32[68 + i * 2], d.F32[93 + i * 3], d.F32[94 + i * 3], d.F32[95 + i * 3], d.I32[69 + i * 2]);
-        for (int i = 0; i < 1; i++)
-            values[36 + i] = (d.I32[78 + i * 2], -d.F32[108 + i * 3], d.F32[109 + i * 3], d.F32[110 + i * 3], -d.I32[79 + i * 2]);
-        for (int i = 0; i < 2; i++)
-            values[37 + i] = (d.I32[80 + i * 2], d.F32[111 + i * 3], d.F32[112 + i * 3], d.F32[113 + i * 3], d.I32[81 + i * 2]);
-        for (int i = 0; i < 9; i++)
-            values[39 + i] = (d.I32[84 + i * 2], -d.F32[117 + i * 3], d.F32[118 + i * 3], d.F32[119 + i * 3], -d.I32[85 + i * 2]);
-        for (int i = 0; i < 2; i++)
-            values[48 + i] = (d.I32[102 + i * 2], d.F32[144 + i * 3], d.F32[145 + i * 3], d.F32[146 + i * 3], d.I32[103 + i * 2]);
-        for (int i = 0; i < 2; i++)
-            values[50 + i] = (d.I32[106 + i * 2], -d.F32[150 + i * 3], d.F32[151 + i * 3], d.F32[152 + i * 3], -d.I32[107 + i * 2]);
-        for (int i = 0; i < 2; i++)
-            values[52 + i] = (d.I32[110 + i * 2], d.F32[156 + i * 3], d.F32[157 + i * 3], d.F32[158 + i * 3], d.I32[111 + i * 2]);
-        for (int i = 0; i < 4; i++)
-            values[54 + i] = (d.I32[114 + i * 2], -d.F32[162 + i * 3], d.F32[163 + i * 3], d.F32[164 + i * 3], -d.I32[115 + i * 2]);
-        for (int i = 0; i < 5; i++)
-            values[58 + i] = (d.I32[122 + i * 2], d.F32[174 + i * 3], d.F32[175 + i * 3], d.F32[176 + i * 3], d.I32[123 + i * 2]);
-        for (int i = 0; i < 1; i++)
-            values[63 + i] = (d.I32[132 + i * 2], -d.F32[189 + i * 3], d.F32[190 + i * 3], d.F32[191 + i * 3], -d.I32[133 + i * 2]);
-        for (int i = 0; i < 3; i++)
-            values[64 + i] = (d.I32[134 + i * 2], d.F32[192 + i * 3], d.F32[193 + i * 3], d.F32[194 + i * 3], d.I32[135 + i * 2]);
-        for (int i = 0; i < 1; i++)
-            values[67 + i] = (d.I32[140 + i * 2], -d.F32[201 + i * 3], d.F32[202 + i * 3], d.F32[203 + i * 3], -d.I32[141 + i * 2]);
-        for (int i = 0; i < 2; i++)
-            values[68 + i] = (d.I32[142 + i * 2], d.F32[204 + i * 3], d.F32[205 + i * 3], d.F32[206 + i * 3], d.I32[143 + i * 2]);
-        for (int i = 0; i < 6; i++)
-            values[70 + i] = (d.I32[146 + i * 2], -d.F32[210 + i * 3], d.F32[211 + i * 3], d.F32[212 + i * 3], -d.I32[147 + i * 2]);
-        for (int i = 0; i < 4; i++)
-            values[76 + i] = (d.I32[158 + i * 2], d.F32[228 + i * 3], d.F32[229 + i * 3], -d.F32[230 + i * 3], d.I32[159 + i * 2]);
-        for (int i = 0; i < 4; i++)
-            values[80 + i] = (d.I32[166 + i * 2], -d.F32[240 + i * 3], d.F32[241 + i * 3], -d.F32[242 + i * 3], -d.I32[167 + i * 2]);
-        for (int i = 0; i < 4; i++)
-            values[84 + i] = (d.I32[174 + i * 2], d.F32[252 + i * 3], d.F32[253 + i * 3], -d.F32[254 + i * 3], d.I32[175 + i * 2]);
-        for (int i = 0; i < 4; i++)
-            values[88 + i] = (d.I32[182 + i * 2], -d.F32[264 + i * 3], d.F32[265 + i * 3], -d.F32[266 + i * 3], -d.I32[183 + i * 2]);
-        for (int i = 0; i < 4; i++)
-            values[92 + i] = (d.I32[190 + i * 2], d.F32[276 + i * 3], d.F32[277 + i * 3], -d.F32[278 + i * 3], d.I32[191 + i * 2]);
-        for (int i = 0; i < 4; i++)
-            values[96 + i] = (d.I32[198 + i * 2], -d.F32[288 + i * 3], d.F32[289 + i * 3], -d.F32[290 + i * 3], -d.I32[199 + i * 2]);
-        for (int i = 0; i < 4; i++)
-            values[100 + i] = (d.I32[206 + i * 2], d.F32[300 + i * 3], d.F32[301 + i * 3], -d.F32[302 + i * 3], d.I32[207 + i * 2]);
-        for (int i = 0; i < 1; i++)
-            values[104 + i] = (d.I32[214 + i * 2], -d.F32[312 + i * 3], d.F32[313 + i * 3], -d.F32[314 + i * 3], -d.I32[215 + i * 2]);
-        for (int i = 0; i < 2; i++)
-            values[105 + i] = (d.I32[216 + i * 2], d.F32[315 + i * 3], d.F32[316 + i * 3], -d.F32[317 + i * 3], d.I32[217 + i * 2]);
-        for (int i = 0; i < 1; i++)
-            values[107 + i] = (d.I32[220 + i * 2], -d.F32[321 + i * 3], d.F32[322 + i * 3], -d.F32[323 + i * 3], -d.I32[221 + i * 2]);
-        for (int i = 0; i < 4; i++)
-            values[108 + i] = (d.I32[222 + i * 2], d.F32[324 + i * 3], d.F32[325 + i * 3], -d.F32[326 + i * 3], d.I32[223 + i * 2]);
-        for (int i = 0; i < 1; i++)
-            values[112 + i] = (d.I32[230 + i * 2], -d.F32[336 + i * 3], d.F32[337 + i * 3], -d.F32[338 + i * 3], -d.I32[231 + i * 2]);
-        for (int i = 0; i < 1; i++)
-            values[113 + i] = (d.I32[232 + i * 2], d.F32[339 + i * 3], d.F32[340 + i * 3], -d.F32[341 + i * 3], d.I32[233 + i * 2]);
-        for (int i = 0; i < 1; i++)
-            values[114 + i] = (d.I32[234 + i * 2], -d.F32[342 + i * 3], d.F32[343 + i * 3], -d.F32[344 + i * 3], -d.I32[235 + i * 2]);
-        for (int i = 0; i < 1; i++)
-            values[115 + i] = (d.I32[236 + i * 2], d.F32[345 + i * 3], d.F32[346 + i * 3], -d.F32[347 + i * 3], d.I32[237 + i * 2]);
-        for (int i = 0; i < 8; i++)
-            values[116 + i] = (d.I32[238 + i * 2], -d.F32[348 + i * 3], d.F32[349 + i * 3], -d.F32[350 + i * 3], -d.I32[239 + i * 2]);
-        for (int i = 0; i < 2; i++)
-            values[124 + i] = (d.I32[254 + i * 2], d.F32[372 + i * 3], d.F32[373 + i * 3], -d.F32[374 + i * 3], d.I32[255 + i * 2]);
-        for (int i = 0; i < 2; i++)
-            values[126 + i] = (d.I32[258 + i * 2], -d.F32[378 + i * 3], d.F32[379 + i * 3], -d.F32[380 + i * 3], -d.I32[259 + i * 2]);
-        for (int i = 0; i < 2; i++)
-            values[128 + i] = (d.I32[262 + i * 2], d.F32[384 + i * 3], d.F32[385 + i * 3], -d.F32[386 + i * 3], d.I32[263 + i * 2]);
-        for (int i = 0; i < 4; i++)
-            values[130 + i] = (d.I32[266 + i * 2], -d.F32[390 + i * 3], d.F32[391 + i * 3], -d.F32[392 + i * 3], -d.I32[267 + i * 2]);
-        for (int i = 0; i < 5; i++)
-            values[134 + i] = (d.I32[274 + i * 2], d.F32[402 + i * 3], d.F32[403 + i * 3], -d.F32[404 + i * 3], d.I32[275 + i * 2]);
-        for (int i = 0; i < 1; i++)
-            values[139 + i] = (d.I32[284 + i * 2], -d.F32[417 + i * 3], d.F32[418 + i * 3], -d.F32[419 + i * 3], -d.I32[285 + i * 2]);
-        for (int i = 0; i < 1; i++)
-            values[140 + i] = (d.I32[286 + i * 2], d.F32[420 + i * 3], d.F32[421 + i * 3], d.F32[422 + i * 3], d.I32[287 + i * 2]);
-        for (int i = 0; i < 2; i++)
-            values[141 + i] = (d.I32[288 + i * 2], d.F32[423 + i * 3], d.F32[424 + i * 3], -d.F32[425 + i * 3], d.I32[289 + i * 2]);
-        for (int i = 0; i < 1; i++)
-            values[143 + i] = (d.I32[292 + i * 2], -d.F32[429 + i * 3], d.F32[430 + i * 3], d.F32[431 + i * 3], -d.I32[293 + i * 2]);
-        for (int i = 0; i < 1; i++)
-            values[144 + i] = (d.I32[294 + i * 2], d.F32[432 + i * 3], d.F32[433 + i * 3], -d.F32[434 + i * 3], d.I32[295 + i * 2]);
-        for (int i = 0; i < 1; i++)
-            values[145 + i] = (d.I32[296 + i * 2], -d.F32[435 + i * 3], d.F32[436 + i * 3], -d.F32[437 + i * 3], -d.I32[297 + i * 2]);
-        for (int i = 0; i < 1; i++)
-            values[146 + i] = (d.I32[298 + i * 2], d.F32[438 + i * 3], d.F32[439 + i * 3], d.F32[440 + i * 3], d.I32[299 + i * 2]);
-        for (int i = 0; i < 1; i++)
-            values[147 + i] = (d.I32[300 + i * 2], -d.F32[441 + i * 3], d.F32[442 + i * 3], -d.F32[443 + i * 3], -d.I32[301 + i * 2]);
-        for (int i = 0; i < 1; i++)
-            values[148 + i] = (d.I32[302 + i * 2], -d.F32[444 + i * 3], d.F32[445 + i * 3], d.F32[446 + i * 3], -d.I32[303 + i * 2]);
-        for (int i = 0; i < 3; i++)
-            values[149 + i] = (d.I32[304 + i * 2], -d.F32[447 + i * 3], d.F32[448 + i * 3], -d.F32[449 + i * 3], -d.I32[305 + i * 2]);
-        return values;
+        static ScatterProgram()
+        {
+        }
+
+        internal static HardcodedNumbers Data => GenerationParameters.Get<HardcodedNumbers>("BridgeBuilder.Bridges.Lift01FarBaseProfile.ScatterProgram.Data", () => HardcodedNumbers.Load("Types_Lift01_Lift01FarBaseProfile_ScatterProgram"));
     }
 }
 
 // Embedded numerical arrays: Types_Lift01_Lift01FarBaseProfile_g_cs
 internal static class Numeric_Types_Lift01_Lift01FarBaseProfile_g_cs
 {
-    static Numeric_Types_Lift01_Lift01FarBaseProfile_g_cs() {}
-    internal static readonly HardcodedNumbers Values = HardcodedNumbers.Load("Types_Lift01_Lift01FarBaseProfile_g_cs");
+    static Numeric_Types_Lift01_Lift01FarBaseProfile_g_cs()
+    {
+    }
+
+    internal static HardcodedNumbers Values => GenerationParameters.Get<HardcodedNumbers>("BridgeBuilder.Bridges.Numeric_Types_Lift01_Lift01FarBaseProfile_g_cs.Values", () => HardcodedNumbers.Load("Types_Lift01_Lift01FarBaseProfile_g_cs"));
 }

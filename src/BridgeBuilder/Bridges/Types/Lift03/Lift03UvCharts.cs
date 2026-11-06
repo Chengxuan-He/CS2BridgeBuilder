@@ -55,8 +55,8 @@ internal static class Lift03UvCharts
         {
             if(Values.I32[0]!=1)throw new InvalidOperationException("Unsupported Lift03 chart schema.");
         }
-        internal static readonly HardcodedNumbers Values=HardcodedNumbers.Load("Types_Lift03_Lift03UvCharts_cs");
-        internal static readonly ConcurrentDictionary<int,MovableUvChart> Charts=new();
-        internal static readonly ConcurrentDictionary<int,MovableUvChart[]> Sets=new();
+        internal static HardcodedNumbers Values => GenerationParameters.Get<HardcodedNumbers>("BridgeBuilder.Bridges.Lift03UvCharts.Data.Values", () => HardcodedNumbers.Load("Types_Lift03_Lift03UvCharts_cs"));
+        internal static ConcurrentDictionary<int,MovableUvChart> Charts => GenerationParameters.Get<ConcurrentDictionary<int,MovableUvChart>>("BridgeBuilder.Bridges.Lift03UvCharts.Data.Charts", () => new());
+        internal static ConcurrentDictionary<int,MovableUvChart[]> Sets => GenerationParameters.Get<ConcurrentDictionary<int,MovableUvChart[]>>("BridgeBuilder.Bridges.Lift03UvCharts.Data.Sets", () => new());
     }
 }

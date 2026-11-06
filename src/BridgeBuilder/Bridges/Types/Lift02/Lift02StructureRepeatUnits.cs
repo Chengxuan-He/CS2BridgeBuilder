@@ -14,6 +14,6 @@ internal static partial class MovableRepeatUnits
     }
     private static class Lift02StructureRepeatData
     {
-        internal static readonly HardcodedNumbers Values=HardcodedNumbers.Load("Types_Lift02_Lift02StructureRepeatUnits_cs");
+        internal static HardcodedNumbers Values => GenerationParameters.Get<HardcodedNumbers>("BridgeBuilder.Bridges.MovableRepeatUnits.Lift02StructureRepeatData.Values", () => HardcodedNumbers.Load("Types_Lift02_Lift02StructureRepeatUnits_cs"));
     }
 }

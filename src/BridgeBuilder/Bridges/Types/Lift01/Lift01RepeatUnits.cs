@@ -9,11 +9,7 @@ internal static partial class MovableRepeatUnits
     // indices, not a second copy of the measured floor bounds.
     // One measured 2 m by 4 m floor unit serves all eight original direction/phase
     // uses. The source UV recipe retains those transforms; the texture is shared.
-    static partial void Lift01(string samplerKey, ref string? unitKey)
-    {
-        if (samplerKey == "f7fcada6949aa34822e7279596faf7e86b7d927afb4b60c5203810d673dcc0c3")
-            unitKey = "e1b5c319c5fe1af13e49a8fc18bbec63ca7540402deb7d9c7c262620ba7bcd0a";
-    }
+    static partial void Lift01(string samplerKey, ref string? unitKey) { }
 
     // Structural receivers retain the source single-sided template. Only the
     // measured floor rectangle is registered, never an arbitrary triangle/chart.

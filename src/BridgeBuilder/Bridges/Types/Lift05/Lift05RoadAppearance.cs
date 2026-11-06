@@ -68,5 +68,5 @@ internal static class Lift05RoadAppearance
 internal static class Numeric_Types_Lift05_Lift05RoadAppearance_cs
 {
     static Numeric_Types_Lift05_Lift05RoadAppearance_cs() {}
-    internal static readonly HardcodedNumbers Values = HardcodedNumbers.Load("Types_Lift05_Lift05RoadAppearance_cs");
+    internal static HardcodedNumbers Values => GenerationParameters.Get<HardcodedNumbers>("BridgeBuilder.Bridges.Numeric_Types_Lift05_Lift05RoadAppearance_cs.Values", () => HardcodedNumbers.Load("Types_Lift05_Lift05RoadAppearance_cs"));
 }

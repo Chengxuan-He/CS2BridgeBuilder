@@ -56,7 +56,7 @@ internal static class Lift03FarRoadMapping
     }
     private static class Data
     {
-        internal static readonly HardcodedNumbers Values = HardcodedNumbers.Load("Types_Lift03_Lift03FarRoadMapping_cs");
+        internal static HardcodedNumbers Values => GenerationParameters.Get<HardcodedNumbers>("BridgeBuilder.Bridges.Lift03FarRoadMapping.Data.Values", () => HardcodedNumbers.Load("Types_Lift03_Lift03FarRoadMapping_cs"));
         static Data()
         {
             if (Values.I32.Length != 2 || Values.I32[0] != 1 || Values.I32[1] != 4 || Values.F32.Length != 44)

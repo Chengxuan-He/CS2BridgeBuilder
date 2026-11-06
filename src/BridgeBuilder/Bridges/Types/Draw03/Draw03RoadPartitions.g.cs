@@ -10,8 +10,8 @@ internal static class Draw03RoadPartitions
     private static float FixedStart => Numeric_Types_Draw03_Draw03RoadPartitions_g_cs.Values.F32[0];
     private static float LeafEnd => Numeric_Types_Draw03_Draw03RoadPartitions_g_cs.Values.F32[1];
 
-    internal static readonly Partition Carriageway = Create(Numeric_Types_Draw03_Draw03RoadPartitions_g_cs.Values.F32[2]);
-    internal static readonly Partition Sidewalk = Create(Numeric_Types_Draw03_Draw03RoadPartitions_g_cs.Values.F32[3]);
+    internal static Partition Carriageway => GenerationParameters.Get<Partition>("BridgeBuilder.Bridges.Draw03RoadPartitions.Carriageway", () => Create(Numeric_Types_Draw03_Draw03RoadPartitions_g_cs.Values.F32[2]));
+    internal static Partition Sidewalk => GenerationParameters.Get<Partition>("BridgeBuilder.Bridges.Draw03RoadPartitions.Sidewalk", () => Create(Numeric_Types_Draw03_Draw03RoadPartitions_g_cs.Values.F32[3]));
     private static Partition Create(float centreHalfGap)
     {
         var fixedRoad = new Partition(Numeric_Types_Draw03_Draw03RoadPartitions_g_cs.Values.I32[0]);
@@ -30,5 +30,5 @@ internal static class Draw03RoadPartitions
 internal static class Numeric_Types_Draw03_Draw03RoadPartitions_g_cs
 {
     static Numeric_Types_Draw03_Draw03RoadPartitions_g_cs() {}
-    internal static readonly HardcodedNumbers Values = HardcodedNumbers.Load("Types_Draw03_Draw03RoadPartitions_g_cs");
+    internal static HardcodedNumbers Values => GenerationParameters.Get<HardcodedNumbers>("BridgeBuilder.Bridges.Numeric_Types_Draw03_Draw03RoadPartitions_g_cs.Values", () => HardcodedNumbers.Load("Types_Draw03_Draw03RoadPartitions_g_cs"));
 }

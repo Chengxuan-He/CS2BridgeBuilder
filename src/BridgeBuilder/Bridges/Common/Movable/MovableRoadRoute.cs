@@ -69,7 +69,7 @@ internal static class MovableRoadRoute
         MovableRoadAppearance.Type supported, bool hasPrototype, bool hasCorresponding)
     {
         var actual=source.Receiver(triangle);
-        if (actual==MovableRoadAppearance.Type.None) return Kind.Original;
+        if (actual is MovableRoadAppearance.Type.None or MovableRoadAppearance.Type.Curb) return Kind.Original;
         if (hasPrototype && (supported & actual)!=0) return Kind.Prototype;
         return hasCorresponding ? Kind.Corresponding : Kind.Original;
     }

@@ -7,7 +7,7 @@ namespace BridgeBuilder.Bridges;
 // Complete measured transverse assemblies; outer side frames retain their prior map.
 internal static class Lift02CentralTrusses
 {
-    private static readonly HardcodedNumbers Data = HardcodedNumbers.Load("Types_Lift02_CentralTrusses");
+    private static HardcodedNumbers Data => GenerationParameters.Get<HardcodedNumbers>("BridgeBuilder.Bridges.Lift02CentralTrusses.Data", () => HardcodedNumbers.Load("Types_Lift02_CentralTrusses"));
     internal static MovableStructureModel.Plan Complete(MovableStructureModel.Plan plan, int lod, float delta)
     {
         if ((uint)lod >= (uint)(Numeric_Types_Lift02_Lift02CentralTrusses_cs.Values.I32[0]))
@@ -24,10 +24,12 @@ internal static class Lift02CentralTrusses
             float scale = (Data.F32[assembly] + delta) / Data.F32[assembly];
             var frame = Matrix4x4.identity;
             frame.m00 = scale;
+            AffineGeometry.Execute(StructurePrograms.Data, StructurePrograms.ScaleX,
+                new[] { plan.SourcePositions, positions }, Array.Empty<float[]>(), new[] { scale },
+                first: start, count: count, indices: new[] { Data.I32 });
             for (int n = start; n < start + count; n++)
             {
                 int vertex = Data.I32[n];
-                positions[vertex].x = plan.SourcePositions[vertex].x * scale;
                 frames[vertex] = frame;
             }
 
@@ -45,5 +47,5 @@ internal static class Numeric_Types_Lift02_Lift02CentralTrusses_cs
     {
     }
 
-    internal static readonly HardcodedNumbers Values = HardcodedNumbers.Load("Types_Lift02_Lift02CentralTrusses_cs");
+    internal static HardcodedNumbers Values => GenerationParameters.Get<HardcodedNumbers>("BridgeBuilder.Bridges.Numeric_Types_Lift02_Lift02CentralTrusses_cs.Values", () => HardcodedNumbers.Load("Types_Lift02_Lift02CentralTrusses_cs"));
 }

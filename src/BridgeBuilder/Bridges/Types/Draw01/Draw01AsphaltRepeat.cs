@@ -7,7 +7,7 @@ namespace BridgeBuilder.Bridges;
 // Physical partitions still control coverage and motion; they never reset grain.
 internal static class Draw01AsphaltRepeat
 {
-    private static readonly float[] Data = HardcodedNumbers.Load("Types_Draw01_AsphaltRepeatMeasurements").F32;
+    private static float[] Data => GenerationParameters.Get<float[]>("BridgeBuilder.Bridges.Draw01AsphaltRepeat.Data", () => HardcodedNumbers.Load("Types_Draw01_AsphaltRepeatMeasurements").F32);
     internal static float LongitudinalDensity => Data[1];
     internal static Vector4 NativeU(float direction, float offset)
         => new Vector4(direction * Data[0], 0, 0, offset * Data[0] + Data[2]);
@@ -35,5 +35,5 @@ internal static class Numeric_Types_Draw01_Draw01AsphaltRepeat_cs
     {
     }
 
-    internal static readonly HardcodedNumbers Values = HardcodedNumbers.Load("Types_Draw01_Draw01AsphaltRepeat_cs");
+    internal static HardcodedNumbers Values => GenerationParameters.Get<HardcodedNumbers>("BridgeBuilder.Bridges.Numeric_Types_Draw01_Draw01AsphaltRepeat_cs.Values", () => HardcodedNumbers.Load("Types_Draw01_Draw01AsphaltRepeat_cs"));
 }

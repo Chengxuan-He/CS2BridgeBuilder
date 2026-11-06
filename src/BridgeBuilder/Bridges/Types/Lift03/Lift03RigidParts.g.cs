@@ -11,90 +11,34 @@ internal static class Lift03RigidParts
     {
         var data = lod switch
         {
-            0 => (Count: Numeric_Types_Lift03_Lift03RigidParts_g_cs.Values.I32[0], Parts: Parts0),
-            1 => (Count: Numeric_Types_Lift03_Lift03RigidParts_g_cs.Values.I32[1], Parts: Parts1),
-            2 => (Count: Numeric_Types_Lift03_Lift03RigidParts_g_cs.Values.I32[2], Parts: Parts2),
+            0 => Numeric_Types_Lift03_Lift03RigidParts_g_cs.Values.I32[0],
+            1 => Numeric_Types_Lift03_Lift03RigidParts_g_cs.Values.I32[1],
+            2 => Numeric_Types_Lift03_Lift03RigidParts_g_cs.Values.I32[2],
             _ => throw new ArgumentOutOfRangeException(nameof(lod))};
-        if (source.Length != data.Count || positions.Length != data.Count || !float.IsFinite(delta))
+        if (source.Length != data || positions.Length != data || !float.IsFinite(delta))
             throw new InvalidOperationException("Lift03 side-part source layout changed.");
-        foreach (var part in data.Parts)
-            AffineGeometry.For(part.First, checked((part.Last) + 1), i =>
-            {
-                positions[i].x = AffineGeometry.AddScaled(source[i].x, part.Side, delta);
-            });
+        AffineGeometry.Execute(BatchProgram0.Data, lod, new[] { source, positions }, Array.Empty<float[]>(), new float[] { delta });
     }
 
     // Geometry SHA-256: f8bc2882fcba043d1d57a17fd27a43631b492ab4292f8fc6b9c3beeb00af53cd
-    private static readonly (int First, int Last, int Side)[] Parts0 = ReadPackedParts0();
     // Geometry SHA-256: 455d25f8ec83f91ea097551fb09a9f41abc79e9f15e836b19c0a527ad50ff9fa
-    private static readonly (int First, int Last, int Side)[] Parts1 = ReadPackedParts1();
     // Geometry SHA-256: 4dd846ac20f020fb45de94549d66e0bbafda4c575554a5b235a93e7d5a6008e4
-    private static readonly (int First, int Last, int Side)[] Parts2 = ReadPackedParts2();
-    private static (int First, int Last, int Side)[] ReadPackedParts0()
+    private static class BatchProgram0
     {
-        var d = Numeric_Types_Lift03_Lift03RigidParts_g_cs.Values;
-        var values = new (int First, int Last, int Side)[230];
-        for (int i = 0; i < 49; i++)
-            values[0 + i] = (d.I32[3 + i * 3], d.I32[4 + i * 3], -d.I32[5 + i * 3]);
-        for (int i = 0; i < 49; i++)
-            values[49 + i] = (d.I32[150 + i * 3], d.I32[151 + i * 3], d.I32[152 + i * 3]);
-        for (int i = 0; i < 62; i++)
-            values[98 + i] = (d.I32[297 + i * 3], d.I32[298 + i * 3], -d.I32[299 + i * 3]);
-        for (int i = 0; i < 62; i++)
-            values[160 + i] = (d.I32[483 + i * 3], d.I32[484 + i * 3], d.I32[485 + i * 3]);
-        for (int i = 0; i < 1; i++)
-            values[222 + i] = (d.I32[669 + i * 3], d.I32[670 + i * 3], -d.I32[671 + i * 3]);
-        for (int i = 0; i < 1; i++)
-            values[223 + i] = (d.I32[672 + i * 3], d.I32[673 + i * 3], d.I32[674 + i * 3]);
-        for (int i = 0; i < 3; i++)
-            values[224 + i] = (d.I32[675 + i * 3], d.I32[676 + i * 3], -d.I32[677 + i * 3]);
-        for (int i = 0; i < 3; i++)
-            values[227 + i] = (d.I32[684 + i * 3], d.I32[685 + i * 3], d.I32[686 + i * 3]);
-        return values;
-    }
+        static BatchProgram0()
+        {
+        }
 
-    private static (int First, int Last, int Side)[] ReadPackedParts1()
-    {
-        var d = Numeric_Types_Lift03_Lift03RigidParts_g_cs.Values;
-        var values = new (int First, int Last, int Side)[260];
-        for (int i = 0; i < 54; i++)
-            values[0 + i] = (d.I32[693 + i * 3], d.I32[694 + i * 3], -d.I32[695 + i * 3]);
-        for (int i = 0; i < 54; i++)
-            values[54 + i] = (d.I32[855 + i * 3], d.I32[856 + i * 3], d.I32[857 + i * 3]);
-        for (int i = 0; i < 71; i++)
-            values[108 + i] = (d.I32[1017 + i * 3], d.I32[1018 + i * 3], -d.I32[1019 + i * 3]);
-        for (int i = 0; i < 73; i++)
-            values[179 + i] = (d.I32[1230 + i * 3], d.I32[1231 + i * 3], d.I32[1232 + i * 3]);
-        for (int i = 0; i < 1; i++)
-            values[252 + i] = (d.I32[1449 + i * 3], d.I32[1450 + i * 3], -d.I32[1451 + i * 3]);
-        for (int i = 0; i < 1; i++)
-            values[253 + i] = (d.I32[1452 + i * 3], d.I32[1453 + i * 3], d.I32[1454 + i * 3]);
-        for (int i = 0; i < 3; i++)
-            values[254 + i] = (d.I32[1455 + i * 3], d.I32[1456 + i * 3], -d.I32[1457 + i * 3]);
-        for (int i = 0; i < 3; i++)
-            values[257 + i] = (d.I32[1464 + i * 3], d.I32[1465 + i * 3], d.I32[1466 + i * 3]);
-        return values;
-    }
-
-    private static (int First, int Last, int Side)[] ReadPackedParts2()
-    {
-        var d = Numeric_Types_Lift03_Lift03RigidParts_g_cs.Values;
-        var values = new (int First, int Last, int Side)[4];
-        for (int i = 0; i < 1; i++)
-            values[0 + i] = (d.I32[1473 + i * 3], d.I32[1474 + i * 3], d.I32[1475 + i * 3]);
-        for (int i = 0; i < 1; i++)
-            values[1 + i] = (d.I32[1476 + i * 3], d.I32[1477 + i * 3], -d.I32[1478 + i * 3]);
-        for (int i = 0; i < 1; i++)
-            values[2 + i] = (d.I32[1479 + i * 3], d.I32[1480 + i * 3], d.I32[1481 + i * 3]);
-        for (int i = 0; i < 1; i++)
-            values[3 + i] = (d.I32[1482 + i * 3], d.I32[1483 + i * 3], -d.I32[1484 + i * 3]);
-        return values;
+        internal static HardcodedNumbers Data => GenerationParameters.Get<HardcodedNumbers>("BridgeBuilder.Bridges.Lift03RigidParts.BatchProgram0.Data", () => HardcodedNumbers.Load("Types_Lift03_Lift03RigidParts_BatchProgram0"));
     }
 }
 
 // Embedded numerical arrays: Types_Lift03_Lift03RigidParts_g_cs
 internal static class Numeric_Types_Lift03_Lift03RigidParts_g_cs
 {
-    static Numeric_Types_Lift03_Lift03RigidParts_g_cs() {}
-    internal static readonly HardcodedNumbers Values = HardcodedNumbers.Load("Types_Lift03_Lift03RigidParts_g_cs");
+    static Numeric_Types_Lift03_Lift03RigidParts_g_cs()
+    {
+    }
+
+    internal static HardcodedNumbers Values => GenerationParameters.Get<HardcodedNumbers>("BridgeBuilder.Bridges.Numeric_Types_Lift03_Lift03RigidParts_g_cs.Values", () => HardcodedNumbers.Load("Types_Lift03_Lift03RigidParts_g_cs"));
 }

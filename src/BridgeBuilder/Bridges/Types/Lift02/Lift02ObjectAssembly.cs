@@ -27,5 +27,5 @@ internal static class Lift02ObjectAssembly
 internal static class Numeric_Types_Lift02_Lift02ObjectAssembly_cs
 {
     static Numeric_Types_Lift02_Lift02ObjectAssembly_cs() {}
-    internal static readonly HardcodedNumbers Values = HardcodedNumbers.Load("Types_Lift02_Lift02ObjectAssembly_cs");
+    internal static HardcodedNumbers Values => GenerationParameters.Get<HardcodedNumbers>("BridgeBuilder.Bridges.Numeric_Types_Lift02_Lift02ObjectAssembly_cs.Values", () => HardcodedNumbers.Load("Types_Lift02_Lift02ObjectAssembly_cs"));
 }

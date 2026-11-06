@@ -18,17 +18,15 @@ internal static class PedestrianDraw02TransverseParts
         foreach (var part in data.Parts)
         {
             var span = part.Max - part.Min;
-            AffineGeometry.Indices(part.Vertices, i =>
-            {
-                positions[i].x = AffineGeometry.AddScaled(source[i].x, (Numeric_Types_PedestrianDraw02_PedestrianDraw02TransverseParts_g_cs.Values.F32[0] * source[i].x - part.Min - part.Max) / span, delta);
-            });
+            foreach (var coordinateRows in StructureRows.Stages(part.Vertices))
+                AffineGeometry.Execute(RangePrograms.Data, 0, new[] { source, positions }, Array.Empty<float[]>(), new float[] { Numeric_Types_PedestrianDraw02_PedestrianDraw02TransverseParts_g_cs.Values.F32[0], part.Min, part.Max, delta }, count: coordinateRows.Length, indices: new[] { coordinateRows });
         }
     }
 
     // Geometry SHA-256: 55b8fb530c4f5d80a211feecb2e82b6deb12cc8af5d76bdc3abef78b192494be
-    private static readonly (float Min, float Max, int[] Vertices)[] Near = ReadPackedNear();
+    private static (float Min, float Max, int[] Vertices)[] Near => GenerationParameters.Get<(float Min, float Max, int[] Vertices)[]>("BridgeBuilder.Bridges.PedestrianDraw02TransverseParts.Near", () => ReadPackedNear());
     // Geometry SHA-256: 0dc1d41ae4acd634537b75699a226946ecb909c7c18780418a24584ca2519157
-    private static readonly (float Min, float Max, int[] Vertices)[] Middle = ReadPackedMiddle();
+    private static (float Min, float Max, int[] Vertices)[] Middle => GenerationParameters.Get<(float Min, float Max, int[] Vertices)[]>("BridgeBuilder.Bridges.PedestrianDraw02TransverseParts.Middle", () => ReadPackedMiddle());
     private static (float Min, float Max, int[] Vertices)[] ReadPackedNear()
     {
         var d = Numeric_Types_PedestrianDraw02_PedestrianDraw02TransverseParts_g_cs.Values;
@@ -350,11 +348,23 @@ internal static class PedestrianDraw02TransverseParts
             values[155 + i] = (-d.F32[623 + i * 2], d.F32[624 + i * 2], new[] { d.I32[21015 + i * 106], d.I32[21016 + i * 106], d.I32[21017 + i * 106], d.I32[21018 + i * 106], d.I32[21019 + i * 106], d.I32[21020 + i * 106], d.I32[21021 + i * 106], d.I32[21022 + i * 106], d.I32[21023 + i * 106], d.I32[21024 + i * 106], d.I32[21025 + i * 106], d.I32[21026 + i * 106], d.I32[21027 + i * 106], d.I32[21028 + i * 106], d.I32[21029 + i * 106], d.I32[21030 + i * 106], d.I32[21031 + i * 106], d.I32[21032 + i * 106], d.I32[21033 + i * 106], d.I32[21034 + i * 106], d.I32[21035 + i * 106], d.I32[21036 + i * 106], d.I32[21037 + i * 106], d.I32[21038 + i * 106], d.I32[21039 + i * 106], d.I32[21040 + i * 106], d.I32[21041 + i * 106], d.I32[21042 + i * 106], d.I32[21043 + i * 106], d.I32[21044 + i * 106], d.I32[21045 + i * 106], d.I32[21046 + i * 106], d.I32[21047 + i * 106], d.I32[21048 + i * 106], d.I32[21049 + i * 106], d.I32[21050 + i * 106], d.I32[21051 + i * 106], d.I32[21052 + i * 106], d.I32[21053 + i * 106], d.I32[21054 + i * 106], d.I32[21055 + i * 106], d.I32[21056 + i * 106], d.I32[21057 + i * 106], d.I32[21058 + i * 106], d.I32[21059 + i * 106], d.I32[21060 + i * 106], d.I32[21061 + i * 106], d.I32[21062 + i * 106], d.I32[21063 + i * 106], d.I32[21064 + i * 106], d.I32[21065 + i * 106], d.I32[21066 + i * 106], d.I32[21067 + i * 106], d.I32[21068 + i * 106], d.I32[21069 + i * 106], d.I32[21070 + i * 106], d.I32[21071 + i * 106], d.I32[21072 + i * 106], d.I32[21073 + i * 106], d.I32[21074 + i * 106], d.I32[21075 + i * 106], d.I32[21076 + i * 106], d.I32[21077 + i * 106], d.I32[21078 + i * 106], d.I32[21079 + i * 106], d.I32[21080 + i * 106], d.I32[21081 + i * 106], d.I32[21082 + i * 106], d.I32[21083 + i * 106], d.I32[21084 + i * 106], d.I32[21085 + i * 106], d.I32[21086 + i * 106], d.I32[21087 + i * 106], d.I32[21088 + i * 106], d.I32[21089 + i * 106], d.I32[21090 + i * 106], d.I32[21091 + i * 106], d.I32[21092 + i * 106], d.I32[21093 + i * 106], d.I32[21094 + i * 106], d.I32[21095 + i * 106], d.I32[21096 + i * 106], d.I32[21097 + i * 106], d.I32[21098 + i * 106], d.I32[21099 + i * 106], d.I32[21100 + i * 106], d.I32[21101 + i * 106], d.I32[21102 + i * 106], d.I32[21103 + i * 106], d.I32[21104 + i * 106], d.I32[21105 + i * 106], d.I32[21106 + i * 106], d.I32[21107 + i * 106], d.I32[21108 + i * 106], d.I32[21109 + i * 106], d.I32[21110 + i * 106], d.I32[21111 + i * 106], d.I32[21112 + i * 106], d.I32[21113 + i * 106], d.I32[21114 + i * 106], d.I32[21115 + i * 106], d.I32[21116 + i * 106], d.I32[21117 + i * 106], d.I32[21118 + i * 106], d.I32[21119 + i * 106], d.I32[21120 + i * 106], });
         return values;
     }
+
+    private static class RangePrograms
+    {
+        static RangePrograms()
+        {
+        }
+
+        internal static HardcodedNumbers Data => GenerationParameters.Get<HardcodedNumbers>("BridgeBuilder.Bridges.PedestrianDraw02TransverseParts.RangePrograms.Data", () => HardcodedNumbers.Load("Types_PedestrianDraw02_PedestrianDraw02TransverseParts_RangePrograms"));
+    }
 }
 
 // Embedded numerical arrays: Types_PedestrianDraw02_PedestrianDraw02TransverseParts_g_cs
 internal static class Numeric_Types_PedestrianDraw02_PedestrianDraw02TransverseParts_g_cs
 {
-    static Numeric_Types_PedestrianDraw02_PedestrianDraw02TransverseParts_g_cs() {}
-    internal static readonly HardcodedNumbers Values = HardcodedNumbers.Load("Types_PedestrianDraw02_PedestrianDraw02TransverseParts_g_cs");
+    static Numeric_Types_PedestrianDraw02_PedestrianDraw02TransverseParts_g_cs()
+    {
+    }
+
+    internal static HardcodedNumbers Values => GenerationParameters.Get<HardcodedNumbers>("BridgeBuilder.Bridges.Numeric_Types_PedestrianDraw02_PedestrianDraw02TransverseParts_g_cs.Values", () => HardcodedNumbers.Load("Types_PedestrianDraw02_PedestrianDraw02TransverseParts_g_cs"));
 }

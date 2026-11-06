@@ -19,21 +19,18 @@ internal static class Lift03FootingGeometry
         foreach (var part in data.Parts)
         {
             var span = part.Maximum - part.Minimum;
-            AffineGeometry.For(part.First, checked((part.Last) + 1), i =>
-            {
-                positions[i].x = AffineGeometry.Translate(positions[i].x, (Numeric_Types_Lift03_Lift03FootingGeometry_g_cs.Values.F32[0] * (source[i].x - part.Minimum) / span - Numeric_Types_Lift03_Lift03FootingGeometry_g_cs.Values.F32[1]) * delta);
-            });
+            AffineGeometry.Execute(RangePrograms.Data, 0, new[] { positions, source }, Array.Empty<float[]>(), new float[] { Numeric_Types_Lift03_Lift03FootingGeometry_g_cs.Values.F32[0], part.Minimum, span, Numeric_Types_Lift03_Lift03FootingGeometry_g_cs.Values.F32[1], delta }, part.First, checked((checked((part.Last) + 1)) - (part.First)));
         }
 
         return new MovableStructureModel.Plan(source, positions, new[] { indices }, new[] { new bool[indices.Length / Numeric_Types_Lift03_Lift03FootingGeometry_g_cs.Values.I32[6]] });
     }
 
     // Geometry SHA-256: 3ebea1b5996139c7c0830f2ec4814f83b392d89c8040f43fbd2e9da307f2d3e4
-    private static readonly (int First, int Last, float Minimum, float Maximum)[] Parts0 = ReadPackedParts0();
+    private static (int First, int Last, float Minimum, float Maximum)[] Parts0 => GenerationParameters.Get<(int First, int Last, float Minimum, float Maximum)[]>("BridgeBuilder.Bridges.Lift03FootingGeometry.Parts0", () => ReadPackedParts0());
     // Geometry SHA-256: a10bfa33e05223b9e61ff47bc4a951046653f476e1bb613aaf7f2d31574c50c0
-    private static readonly (int First, int Last, float Minimum, float Maximum)[] Parts1 = ReadPackedParts1();
+    private static (int First, int Last, float Minimum, float Maximum)[] Parts1 => GenerationParameters.Get<(int First, int Last, float Minimum, float Maximum)[]>("BridgeBuilder.Bridges.Lift03FootingGeometry.Parts1", () => ReadPackedParts1());
     // Geometry SHA-256: cf49402959aeab30071f2b3b06bfb1b7d54022d02246bc57f904d0807132946d
-    private static readonly (int First, int Last, float Minimum, float Maximum)[] Parts2 = ReadPackedParts2();
+    private static (int First, int Last, float Minimum, float Maximum)[] Parts2 => GenerationParameters.Get<(int First, int Last, float Minimum, float Maximum)[]>("BridgeBuilder.Bridges.Lift03FootingGeometry.Parts2", () => ReadPackedParts2());
     private static (int First, int Last, float Minimum, float Maximum)[] ReadPackedParts0()
     {
         var d = Numeric_Types_Lift03_Lift03FootingGeometry_g_cs.Values;
@@ -60,11 +57,23 @@ internal static class Lift03FootingGeometry
             values[0 + i] = (d.I32[15 + i * 2], d.I32[16 + i * 2], -d.F32[10 + i * 2], d.F32[11 + i * 2]);
         return values;
     }
+
+    private static class RangePrograms
+    {
+        static RangePrograms()
+        {
+        }
+
+        internal static HardcodedNumbers Data => GenerationParameters.Get<HardcodedNumbers>("BridgeBuilder.Bridges.Lift03FootingGeometry.RangePrograms.Data", () => HardcodedNumbers.Load("Types_Lift03_Lift03FootingGeometry_RangePrograms"));
+    }
 }
 
 // Embedded numerical arrays: Types_Lift03_Lift03FootingGeometry_g_cs
 internal static class Numeric_Types_Lift03_Lift03FootingGeometry_g_cs
 {
-    static Numeric_Types_Lift03_Lift03FootingGeometry_g_cs() {}
-    internal static readonly HardcodedNumbers Values = HardcodedNumbers.Load("Types_Lift03_Lift03FootingGeometry_g_cs");
+    static Numeric_Types_Lift03_Lift03FootingGeometry_g_cs()
+    {
+    }
+
+    internal static HardcodedNumbers Values => GenerationParameters.Get<HardcodedNumbers>("BridgeBuilder.Bridges.Numeric_Types_Lift03_Lift03FootingGeometry_g_cs.Values", () => HardcodedNumbers.Load("Types_Lift03_Lift03FootingGeometry_g_cs"));
 }

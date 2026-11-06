@@ -9,6 +9,7 @@ using Colossal.AssetPipeline.Importers;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Runtime.InteropServices;
 
 using Unity.Collections;
 using Unity.Mathematics;
@@ -41,7 +42,7 @@ internal sealed partial class TowerFactory
     /// positions are rewritten, and only because they are the one thing this is meant to change.
     /// </summary>
     private static ModelImporter.Model? BuildModel(
-        string name, Mesh mesh, Vector3[] vertices, out string? error,
+        string name, Mesh mesh, float3[] vertices, out string? error,
         bool[]? dropped = null)
     {
         error = null;
@@ -108,7 +109,9 @@ internal sealed partial class TowerFactory
                 {
                     // The one channel that changes. Written in the format the mesh declares for it -
                     // three floats on every mesh seen so far, preflighted above rather than assumed.
-                    Buffer.BlockCopy(Flatten(vertices), 0, bytes, 0, bytes.Length);
+                    if (Marshal.SizeOf<float3>() != 12 || bytes.Length != checked(vertices.Length * 12))
+                        throw new InvalidOperationException("Position output requires native packed Float32 XYZ.");
+                    MemoryMarshal.AsBytes(vertices.AsSpan()).CopyTo(bytes);
                 }
                 else
                 {
@@ -143,7 +146,7 @@ internal sealed partial class TowerFactory
         // at the origin - which is what every mesh this mod has written did, tower and cable alike,
         // while its vertices, indices and vertex layout were all correct. The game's own importers
         // set this field; this did not until it was read out of the dump.
-        var points = ToPoints(vertices);
+        var points = vertices;
         var indices = new List<int>();
         var subMeshes = new List<SubMeshDescriptor>();
         for (var sub = 0; sub < mesh.subMeshCount; sub++)
@@ -233,41 +236,17 @@ internal sealed partial class TowerFactory
 
 
 
-    private static float[] Flatten(Vector3[] values)
-    {
-        var result = new float[values.Length * 3];
-        for (var index = 0; index < values.Length; index++)
-        {
-            result[index * 3] = values[index].x;
-            result[(index * 3) + 1] = values[index].y;
-            result[(index * 3) + 2] = values[index].z;
-        }
-
-        return result;
-    }
-
-
     private static float3[] ToPoints(Vector3[] vertices)
     {
         var points = new float3[vertices.Length];
-        AffineGeometry.For(0, vertices.Length, index =>
+        for (int index = 0; index < vertices.Length; index++)
         {
             points[index] = new float3(vertices[index].x, vertices[index].y, vertices[index].z);
-        });
+        }
 
         return points;
     }
 
-    private static Vector3[] ToVectors(float3[] points)
-    {
-        var vertices = new Vector3[points.Length];
-        AffineGeometry.For(0, points.Length, index =>
-        {
-            vertices[index] = new Vector3(points[index].x, points[index].y, points[index].z);
-        });
-
-        return vertices;
-    }
 
     private static uint CountIndices(Mesh mesh)
     {

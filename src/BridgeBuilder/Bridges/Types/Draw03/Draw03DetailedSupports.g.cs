@@ -19,21 +19,18 @@ internal static class Draw03DetailedSupports
             throw new InvalidOperationException("Draw03 detailed supports require their measured layout.");
         var positions = (Vector3[])source.Clone();
         foreach (var part in data.Parts)
-            AffineGeometry.For(part.First, checked((part.Last) + 1), i =>
-            {
-                positions[i].x = AffineGeometry.Translate(positions[i].x, part.Sign * delta);
-            });
+            AffineGeometry.Execute(RangePrograms.Data, 0, new[] { positions }, Array.Empty<float[]>(), new float[] { part.Sign, delta }, part.First, checked((checked((part.Last) + 1)) - (part.First)));
         return new MovableStructureModel.Plan(source, positions, new[] { indices }, new[] { new bool[indices.Length / Numeric_Types_Draw03_Draw03DetailedSupports_g_cs.Values.I32[8]] });
     }
 
     // Geometry SHA-256: 77ebf81e11324571d8e552f53aa32a258866ddb67376d41d06bdc397bf5a4a5b
-    private static readonly (int First, int Last, int Sign)[] Parts00 = ReadPackedParts00();
+    private static (int First, int Last, int Sign)[] Parts00 => GenerationParameters.Get<(int First, int Last, int Sign)[]>("BridgeBuilder.Bridges.Draw03DetailedSupports.Parts00", () => ReadPackedParts00());
     // Geometry SHA-256: 5b10921bd36c6c587c42e8b6d76c90bdc61e7ad23de4e155e07a295d4df3db3e
-    private static readonly (int First, int Last, int Sign)[] Parts01 = ReadPackedParts01();
+    private static (int First, int Last, int Sign)[] Parts01 => GenerationParameters.Get<(int First, int Last, int Sign)[]>("BridgeBuilder.Bridges.Draw03DetailedSupports.Parts01", () => ReadPackedParts01());
     // Geometry SHA-256: e0deea7435d42761f8ac5bf8274617587c0c55f5568ba913c7be053908b8eaba
-    private static readonly (int First, int Last, int Sign)[] Parts10 = ReadPackedParts10();
+    private static (int First, int Last, int Sign)[] Parts10 => GenerationParameters.Get<(int First, int Last, int Sign)[]>("BridgeBuilder.Bridges.Draw03DetailedSupports.Parts10", () => ReadPackedParts10());
     // Geometry SHA-256: b69766bacb96f51545bf0dccd1928a5d6e0d4ec0de931bd1c1ea006f68e38b42
-    private static readonly (int First, int Last, int Sign)[] Parts11 = ReadPackedParts11();
+    private static (int First, int Last, int Sign)[] Parts11 => GenerationParameters.Get<(int First, int Last, int Sign)[]>("BridgeBuilder.Bridges.Draw03DetailedSupports.Parts11", () => ReadPackedParts11());
     private static (int First, int Last, int Sign)[] ReadPackedParts00()
     {
         var d = Numeric_Types_Draw03_Draw03DetailedSupports_g_cs.Values;
@@ -729,11 +726,23 @@ internal static class Draw03DetailedSupports
             values[34 + i] = (d.I32[1509 + i * 3], d.I32[1510 + i * 3], d.I32[1511 + i * 3]);
         return values;
     }
+
+    private static class RangePrograms
+    {
+        static RangePrograms()
+        {
+        }
+
+        internal static HardcodedNumbers Data => GenerationParameters.Get<HardcodedNumbers>("BridgeBuilder.Bridges.Draw03DetailedSupports.RangePrograms.Data", () => HardcodedNumbers.Load("Types_Draw03_Draw03DetailedSupports_RangePrograms"));
+    }
 }
 
 // Embedded numerical arrays: Types_Draw03_Draw03DetailedSupports_g_cs
 internal static class Numeric_Types_Draw03_Draw03DetailedSupports_g_cs
 {
-    static Numeric_Types_Draw03_Draw03DetailedSupports_g_cs() {}
-    internal static readonly HardcodedNumbers Values = HardcodedNumbers.Load("Types_Draw03_Draw03DetailedSupports_g_cs");
+    static Numeric_Types_Draw03_Draw03DetailedSupports_g_cs()
+    {
+    }
+
+    internal static HardcodedNumbers Values => GenerationParameters.Get<HardcodedNumbers>("BridgeBuilder.Bridges.Numeric_Types_Draw03_Draw03DetailedSupports_g_cs.Values", () => HardcodedNumbers.Load("Types_Draw03_Draw03DetailedSupports_g_cs"));
 }

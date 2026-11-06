@@ -28,7 +28,7 @@ internal static class Lift04UvCharts
     private static class Data
     {
         static Data() { }
-        internal static readonly MovableUvChart[][][] Items = Read();
+        internal static MovableUvChart[][][] Items => GenerationParameters.Get<MovableUvChart[][][]>("BridgeBuilder.Bridges.Lift04UvCharts.Data.Items", () => Read());
         private static MovableUvChart[][][] Read()
         {
             var data = HardcodedNumbers.Load("Lift04UvCharts");

@@ -226,6 +226,19 @@ for (const icon of ["Search", "Filter", "ArrowDown"]) {
     assert(read("src/BridgeBuilder/UI/BridgeBuilder.css").includes(`coui://bridgebuilderui/BridgeBuilder${icon}.svg`));
 }
 console.log("PASS native input theme, localized placeholder, left-hand SVG search/filter/arrow icons");
+for (const count of [1, 3, 7, 8, 15]) {
+    context.rowOptions=Array.from({length:count},(_,i)=>({id:i ? String(i) : "",name:i ? "Option "+i : "All"}));
+    state=[true];
+    const popup=render('FilterBox({ value:"", onChange:()=>{}, options:rowOptions, label:"Filter" })');
+    const viewport=popup.find(n=>n.type?.name==="ScrollArea");
+    const options=popup.filter(n=>n.props.role==="option");
+    assert.equal(options.length,count);
+    assert.equal(options[0].props["aria-selected"],true);
+    assert.equal(Boolean(viewport),count>7);
+    assert(options.every(n=>n.props.style.height==="36rem"));
+    if(viewport) assert.equal(viewport.props.style.height,"252rem");
+}
+state=[];
 const dropdownCss = read("src/BridgeBuilder/UI/BridgeBuilder.css");
 for (const selector of [".bb-filter > button", ".bb-filter-menu"]) {
     const rule = dropdownCss.slice(dropdownCss.indexOf(`${selector} {`)).split("}")[0];
@@ -361,3 +374,37 @@ const emptyPicker = render('NetworkPicker({ decks: [], title: "Networks", onOpen
 emptyPicker.find(n => n.props.className === "bb-custom-road").props.onClick();
 assert.deepEqual(triggers[0], ["BridgeBuilder", "OpenRoadBuilder"]);
 console.log("PASS Road Builder entry with empty catalogue and single/double-deck draft handoff");
+
+// Creating a bridge combines eligibility, search and native family while keeping the draft selection.
+context.filterStyles = [
+    {id:"first",name:"Alpine truss",family:"Lift",supportsSingle:true,supportsDouble:false},
+    {id:"second",name:"Alpine arch",family:"Arch",supportsSingle:true,supportsDouble:true},
+    {id:"third",name:"Port truss",family:"Lift",supportsSingle:true,supportsDouble:true}];
+state=[false,"Road","","second",custom,true,"Alpine",true,"Lift"];
+const shownStyles=()=>render('CreateView({ decks, styles:filterStyles, status:"" })').find(n=>n.type?.name==="CardGrid");
+assert.deepEqual(Array.from(shownStyles().props.items,i=>i.id),["first"]);
+assert.equal(shownStyles().props.selectedId,"second");
+const familyFilter=()=>render('CreateView({ decks, styles:filterStyles, status:"" })').find(n=>n.type?.name==="FilterBox");
+const familyIds=()=>Array.from(familyFilter().props.options,o=>o.id);
+assert.deepEqual(familyIds(),["","Lift","Arch"],"selected family must not hide alternative families");
+state[0]=true;
+assert.deepEqual(familyIds(),["","Arch"]);
+assert.equal(familyFilter().props.value,"","removed family immediately falls back to All");
+assert.deepEqual(Array.from(shownStyles().props.items,i=>i.id),["second"]);
+const oldEffect=context.window.React.useEffect;
+context.window.React.useEffect=fn=>fn();familyFilter();context.window.React.useEffect=oldEffect;
+assert.equal(state[8],"","fallback persisted after React effects");
+state[0]=false;assert.equal(familyFilter().props.value,"","previous family does not silently reactivate");
+state[6]="no matching style";assert.deepEqual(familyIds(),[""]);assert.equal(shownStyles().props.items.length,0);
+state[6]="Alpine";state[0]=true;
+context.filterStyles=context.filterStyles.filter(s=>s.family!=="Arch");
+assert.deepEqual(familyIds(),[""],"double-deck arch absent until a matching style exists");
+context.filterStyles.push({id:"second",name:"Alpine arch",family:"Arch",supportsSingle:true,supportsDouble:true});
+assert.deepEqual(familyIds(),["","Arch"],"new double-deck arch appears without a menu change");
+state[8]="Arch"; assert.deepEqual(Array.from(shownStyles().props.items,i=>i.id),["second"]);
+state=[];activeTexts=Object.fromEntries([...entries].map(([key,row])=>[key,row[locales.indexOf("zh-HANS")]]));
+bindings.CatalogLoading=false;
+context.importedHighway={id:"builder-guid",name:"My highway",kind:"Road Builder",networkType:"Highway"};
+const importedCard=render('CardGrid({items:[importedHighway],selectedId:"",onSelect:()=>{},emptyText:""})').find(n=>n.type?.name==="Card");
+assert.equal(importedCard.props.subtitle,activeTexts.TypeHighway);
+console.log("PASS combined bridge family, search, deck mode and Road Builder native road category");

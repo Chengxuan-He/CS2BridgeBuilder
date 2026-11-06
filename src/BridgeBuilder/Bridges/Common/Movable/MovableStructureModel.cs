@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.InteropServices;
 using Colossal.AssetPipeline.Importers;
 using Colossal.IO.AssetDatabase;
 using Unity.Collections;
@@ -158,14 +159,29 @@ internal static class MovableStructureModel
                 throw new ArgumentException("A structural plan must preserve every original vertex.");
             Positions = new Vector3[checked(positions.Length + ConstructedCount)];
             Array.Copy(positions, Positions, positions.Length);
+            var edgeA = new int[AddedVertices.Length];
+            var edgeB = new int[AddedVertices.Length];
+            var edgeOutput = new int[AddedVertices.Length];
+            var edgeWeight = new float[AddedVertices.Length];
             for (var i = 0; i < AddedVertices.Length; i++)
             {
                 var edge = AddedVertices[i];
                 if (edge.A < 0 || edge.A >= positions.Length || edge.B < 0 || edge.B >= positions.Length ||
                     !float.IsFinite(edge.Fraction) || edge.Fraction <= 0f || edge.Fraction >= 1f)
                     throw new ArgumentException($"Constructed structural vertex {i} has an invalid measured edge.");
-                Positions[positions.Length + i] = Vector3.LerpUnclamped(positions[edge.A], positions[edge.B], edge.Fraction);
+                edgeA[i] = edge.A; edgeB[i] = edge.B;
+                edgeOutput[i] = positions.Length + i; edgeWeight[i] = edge.Fraction;
             }
+            if (AddedVertices.Length != 0)
+                AffineGeometry.Execute(StructurePrograms.Data, StructurePrograms.EdgeXyz, new[] { positions, Positions },
+                    new[] { edgeWeight }, Array.Empty<float>(), count: AddedVertices.Length,
+                    indices: new[] { edgeA, edgeB, edgeOutput });
+            var interiorA = new int[InteriorVertices.Length];
+            var interiorB = new int[InteriorVertices.Length];
+            var interiorC = new int[InteriorVertices.Length];
+            var interiorOutput = new int[InteriorVertices.Length];
+            var weightB = new float[InteriorVertices.Length];
+            var weightC = new float[InteriorVertices.Length];
             for (var i = 0; i < InteriorVertices.Length; i++)
             {
                 var vertex = InteriorVertices[i];
@@ -174,10 +190,14 @@ internal static class MovableStructureModel
                     !float.IsFinite(vertex.WeightB) || !float.IsFinite(vertex.WeightC) ||
                     vertex.WeightB <= 0f || vertex.WeightC <= 0f || vertex.WeightB + vertex.WeightC >= 1f)
                     throw new ArgumentException($"Interior structural vertex {i} has invalid measured barycentric data.");
-                var a = positions[vertex.A];
-                Positions[positions.Length + AddedVertices.Length + i] = a +
-                    (positions[vertex.B] - a) * vertex.WeightB + (positions[vertex.C] - a) * vertex.WeightC;
+                interiorA[i] = vertex.A; interiorB[i] = vertex.B; interiorC[i] = vertex.C;
+                interiorOutput[i] = positions.Length + AddedVertices.Length + i;
+                weightB[i] = vertex.WeightB; weightC[i] = vertex.WeightC;
             }
+            if (InteriorVertices.Length != 0)
+                AffineGeometry.Execute(StructurePrograms.Data, StructurePrograms.InteriorXyz, new[] { positions, Positions },
+                    new[] { weightB, weightC }, Array.Empty<float>(), count: InteriorVertices.Length,
+                    indices: new[] { interiorA, interiorB, interiorC, interiorOutput });
             for (int i = 0; i < SourceCopies.Length; i++)
                 Positions[positions.Length + AddedVertices.Length + InteriorVertices.Length + i] = positions[SourceCopies[i]];
             // A merged LOD face may contain independently transformed authored parts.
@@ -334,14 +354,9 @@ internal static class MovableStructureModel
                 var bytes = new byte[checked(size * outputCount)];
                 if (attribute.attribute == VertexAttribute.Position)
                 {
-                    var values = new float[outputCount * 3];
-                    for (var i = 0; i < outputCount; i++)
-                    {
-                        values[i * 3] = plan.Positions[i].x;
-                        values[i * 3 + 1] = plan.Positions[i].y;
-                        values[i * 3 + 2] = plan.Positions[i].z;
-                    }
-                    Buffer.BlockCopy(values, 0, bytes, 0, bytes.Length);
+                    if (Marshal.SizeOf<Vector3>() != 12 || bytes.Length != checked(outputCount * 12))
+                        throw new InvalidOperationException("Position output requires native packed Float32 XYZ.");
+                    MemoryMarshal.AsBytes(plan.Positions.AsSpan(0, outputCount)).CopyTo(bytes);
                 }
                 else
                 {

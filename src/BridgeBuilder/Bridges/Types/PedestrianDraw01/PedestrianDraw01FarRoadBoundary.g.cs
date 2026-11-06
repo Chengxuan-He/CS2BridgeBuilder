@@ -21,14 +21,14 @@ internal static class PedestrianDraw01FarRoadBoundary
         }
 
         var x = new float[plan.ConstructedCount];
-        AffineGeometry.For(Numeric_Types_PedestrianDraw01_PedestrianDraw01FarRoadBoundary_g_cs.Values.I32[4], x.Length, i =>
+        for (int i = Numeric_Types_PedestrianDraw01_PedestrianDraw01FarRoadBoundary_g_cs.Values.I32[4]; i < x.Length; i++)
         {
             x[i] = plan.Positions[positions.Length + i].x;
-        });
+        }
         return new MovableStructureModel.Plan(plan.SourcePositions, positions, plan.SourceIndices, plan.RemoveTriangles, addedVertices: plan.AddedVertices, interiorVertices: plan.InteriorVertices, fragments: plan.Fragments, constructedX: x, reconstructsAuthoredPositions: true);
     }
 
-    private static readonly (int Index, float SourceY, float SourceZ, float Y, float Z)[] Vertices = ReadPackedVertices();
+    private static (int Index, float SourceY, float SourceZ, float Y, float Z)[] Vertices => GenerationParameters.Get<(int Index, float SourceY, float SourceZ, float Y, float Z)[]>("BridgeBuilder.Bridges.PedestrianDraw01FarRoadBoundary.Vertices", () => ReadPackedVertices());
     private static (int Index, float SourceY, float SourceZ, float Y, float Z)[] ReadPackedVertices()
     {
         var d = Numeric_Types_PedestrianDraw01_PedestrianDraw01FarRoadBoundary_g_cs.Values;
@@ -55,5 +55,5 @@ internal static class PedestrianDraw01FarRoadBoundary
 internal static class Numeric_Types_PedestrianDraw01_PedestrianDraw01FarRoadBoundary_g_cs
 {
     static Numeric_Types_PedestrianDraw01_PedestrianDraw01FarRoadBoundary_g_cs() {}
-    internal static readonly HardcodedNumbers Values = HardcodedNumbers.Load("Types_PedestrianDraw01_PedestrianDraw01FarRoadBoundary_g_cs");
+    internal static HardcodedNumbers Values => GenerationParameters.Get<HardcodedNumbers>("BridgeBuilder.Bridges.Numeric_Types_PedestrianDraw01_PedestrianDraw01FarRoadBoundary_g_cs.Values", () => HardcodedNumbers.Load("Types_PedestrianDraw01_PedestrianDraw01FarRoadBoundary_g_cs"));
 }

@@ -90,5 +90,5 @@ internal static class Numeric_Types_Draw01_Draw01HeadRoad_cs
     {
     }
 
-    internal static readonly HardcodedNumbers Values = HardcodedNumbers.Load("Types_Draw01_Draw01HeadRoad_cs");
+    internal static HardcodedNumbers Values => GenerationParameters.Get<HardcodedNumbers>("BridgeBuilder.Bridges.Numeric_Types_Draw01_Draw01HeadRoad_cs.Values", () => HardcodedNumbers.Load("Types_Draw01_Draw01HeadRoad_cs"));
 }

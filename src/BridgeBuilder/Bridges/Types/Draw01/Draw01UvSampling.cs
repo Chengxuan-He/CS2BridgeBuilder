@@ -44,7 +44,7 @@ internal static class Draw01UvSampling
     private static class Data
     {
         static Data() { }
-        internal static readonly bool[][] Items = Read();
+        internal static bool[][] Items => GenerationParameters.Get<bool[][]>("BridgeBuilder.Bridges.Draw01UvSampling.Data.Items", () => Read());
         private static bool[][] Read()
         {
             var values = HardcodedNumbers.Load("Draw01UvSampling").I32;

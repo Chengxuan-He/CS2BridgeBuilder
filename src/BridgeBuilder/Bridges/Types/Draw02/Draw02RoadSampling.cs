@@ -29,16 +29,9 @@ internal static class Draw02RoadSampling
             level = Draw02WalkAtlasAppearance.Apply(lod, level, layout, sample.RoadToObject);
             return Draw02LaneAppearance.Apply(level, layout, sample.RoadToObject);
         }
-        void Curb(int lod, MovableClosedRoad.Result source,
-            ref MovableRoadGeometry.BoundTriangle[] assigned,
-            ref MovableExistingRoadSurface.Patch[] levelPatches,
-            ref MovableRoadAppearance.Type[] levelTypes)
-            => Draw02CurbAppearance.Apply(sample.RoadToObject, lod, source,
-                ref assigned, ref levelPatches, ref levelTypes);
         return MovableRoadPreparation.Prepare(sample, nativeLevels, halfWidthDelta, closedWorld, material,
             Draw02RoadPartitions.Carriageway, Draw02RoadPartitions.Sidewalk, carriageway, sidewalk,
-            patches, Numeric_Types_Draw02_Draw02RoadSampling_cs.Values.I32[0], layout, Appearance,
-            assignedAppearance: Curb);
+            patches, Numeric_Types_Draw02_Draw02RoadSampling_cs.Values.I32[0], layout, Appearance);
     }
 
     internal static MovableStraightSample Create(string owner, Entity selectedRoad, RenderPrefab[] roots, ContentPrefab content, float halfWidthDelta, RandomSeed seed, Upgraded? upgrade = null) => MovableStraightSample.Create(owner, selectedRoad, roots, content, halfWidthDelta, seed, new[] { "DrawBridge02 Mesh", "DrawBridge02Pillar Mesh", "DrawBridge02PillarBase Mesh" }, Draw02MechanismData.Meshes, Draw02MechanismData.ApplyComponents, Draw02NetworkData.MechanismPlacement, Numeric_Types_Draw02_Draw02RoadSampling_cs.Values.F32[0], Numeric_Types_Draw02_Draw02RoadSampling_cs.Values.F32[1], NetPieceLayerMask.Bottom | NetPieceLayerMask.Side, upgrade);
@@ -48,5 +41,5 @@ internal static class Draw02RoadSampling
 internal static class Numeric_Types_Draw02_Draw02RoadSampling_cs
 {
     static Numeric_Types_Draw02_Draw02RoadSampling_cs() {}
-    internal static readonly HardcodedNumbers Values = HardcodedNumbers.Load("Types_Draw02_Draw02RoadSampling_cs");
+    internal static HardcodedNumbers Values => GenerationParameters.Get<HardcodedNumbers>("BridgeBuilder.Bridges.Numeric_Types_Draw02_Draw02RoadSampling_cs.Values", () => HardcodedNumbers.Load("Types_Draw02_Draw02RoadSampling_cs"));
 }

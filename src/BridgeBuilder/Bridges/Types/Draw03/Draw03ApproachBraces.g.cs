@@ -13,50 +13,34 @@ internal static class Draw03ApproachBraces
     {
         var data = lod switch
         {
-            0 => (Count: Numeric_Types_Draw03_Draw03ApproachBraces_g_cs.Values.I32[0], HalfSpan: Numeric_Types_Draw03_Draw03ApproachBraces_g_cs.Values.F32[0], Ranges: Level0),
-            1 => (Count: Numeric_Types_Draw03_Draw03ApproachBraces_g_cs.Values.I32[1], HalfSpan: Numeric_Types_Draw03_Draw03ApproachBraces_g_cs.Values.F32[1], Ranges: Level1),
-            2 => (Count: Numeric_Types_Draw03_Draw03ApproachBraces_g_cs.Values.I32[2], HalfSpan: Numeric_Types_Draw03_Draw03ApproachBraces_g_cs.Values.F32[2], Ranges: Level2),
+            0 => (Count: Numeric_Types_Draw03_Draw03ApproachBraces_g_cs.Values.I32[0], HalfSpan: Numeric_Types_Draw03_Draw03ApproachBraces_g_cs.Values.F32[0]),
+            1 => (Count: Numeric_Types_Draw03_Draw03ApproachBraces_g_cs.Values.I32[1], HalfSpan: Numeric_Types_Draw03_Draw03ApproachBraces_g_cs.Values.F32[1]),
+            2 => (Count: Numeric_Types_Draw03_Draw03ApproachBraces_g_cs.Values.I32[2], HalfSpan: Numeric_Types_Draw03_Draw03ApproachBraces_g_cs.Values.F32[2]),
             _ => throw new ArgumentOutOfRangeException(nameof(lod))};
         if (source.Length != data.Count || positions.Length != data.Count || !float.IsFinite(delta))
             throw new InvalidOperationException("Draw03 approach braces require their measured first strip.");
-        foreach (var range in data.Ranges)
-            AffineGeometry.For(range.First, checked((range.Last) + 1), i =>
-            {
-                positions[i].x = AffineGeometry.AddScaled(source[i].x, ((source[i].x + Numeric_Types_Draw03_Draw03ApproachBraces_g_cs.Values.F32[3]) / data.HalfSpan - Numeric_Types_Draw03_Draw03ApproachBraces_g_cs.Values.F32[4]), delta);
-            });
+        AffineGeometry.Execute(BatchProgram0.Data, lod, new[] { source, positions }, Array.Empty<float[]>(), new float[] { Numeric_Types_Draw03_Draw03ApproachBraces_g_cs.Values.F32[3], data.HalfSpan, Numeric_Types_Draw03_Draw03ApproachBraces_g_cs.Values.F32[4], delta });
     }
 
     // Geometry SHA-256: 848e012c23966df4d5b3103d79b243673e148c7b87fa64d2c0386a569d359191
-    private static readonly (int First, int Last)[] Level0 = ReadPackedLevel0();
     // Geometry SHA-256: f7d29e6a97dd3a96516c3437436780ff978f74eb93681a7256ef56c0ff7df619
-    private static readonly (int First, int Last)[] Level1 = ReadPackedLevel1();
     // Geometry SHA-256: 51cf3f9b9b961404c7c726bc919e21ba2ef2d8f48e25540d5d095dcd552a8d32
-    private static readonly (int First, int Last)[] Level2 =
+    private static class BatchProgram0
     {
-        (Numeric_Types_Draw03_Draw03ApproachBraces_g_cs.Values.I32[115], Numeric_Types_Draw03_Draw03ApproachBraces_g_cs.Values.I32[116]),
-    };
-    private static (int First, int Last)[] ReadPackedLevel0()
-    {
-        var d = Numeric_Types_Draw03_Draw03ApproachBraces_g_cs.Values;
-        var values = new (int First, int Last)[33];
-        for (int i = 0; i < 33; i++)
-            values[0 + i] = (d.I32[3 + i * 2], d.I32[4 + i * 2]);
-        return values;
-    }
+        static BatchProgram0()
+        {
+        }
 
-    private static (int First, int Last)[] ReadPackedLevel1()
-    {
-        var d = Numeric_Types_Draw03_Draw03ApproachBraces_g_cs.Values;
-        var values = new (int First, int Last)[23];
-        for (int i = 0; i < 23; i++)
-            values[0 + i] = (d.I32[69 + i * 2], d.I32[70 + i * 2]);
-        return values;
+        internal static HardcodedNumbers Data => GenerationParameters.Get<HardcodedNumbers>("BridgeBuilder.Bridges.Draw03ApproachBraces.BatchProgram0.Data", () => HardcodedNumbers.Load("Types_Draw03_Draw03ApproachBraces_BatchProgram0"));
     }
 }
 
 // Embedded numerical arrays: Types_Draw03_Draw03ApproachBraces_g_cs
 internal static class Numeric_Types_Draw03_Draw03ApproachBraces_g_cs
 {
-    static Numeric_Types_Draw03_Draw03ApproachBraces_g_cs() {}
-    internal static readonly HardcodedNumbers Values = HardcodedNumbers.Load("Types_Draw03_Draw03ApproachBraces_g_cs");
+    static Numeric_Types_Draw03_Draw03ApproachBraces_g_cs()
+    {
+    }
+
+    internal static HardcodedNumbers Values => GenerationParameters.Get<HardcodedNumbers>("BridgeBuilder.Bridges.Numeric_Types_Draw03_Draw03ApproachBraces_g_cs.Values", () => HardcodedNumbers.Load("Types_Draw03_Draw03ApproachBraces_g_cs"));
 }

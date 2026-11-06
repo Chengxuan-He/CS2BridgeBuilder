@@ -47,6 +47,13 @@ internal sealed class BridgeMaterialFileSnapshot : IDisposable
                 {
                     if (Path.GetExtension(file) is not (".Surface" or ".Texture" or ".MidMips" or ".cid")) continue;
                     yield return file;
+                    if (string.Equals(Path.GetFileName(file), "SkinnedPaint.Surface", StringComparison.Ordinal)
+                        && string.Equals(Path.GetFileName(Path.GetDirectoryName(file)), "Paint", StringComparison.Ordinal))
+                    {
+                        var refs = BridgeSurfaceReferences.Read(result.Get(file).Bytes!, (_, _) => false);
+                        foreach (var cid in refs.Where(BridgePreparedMaterialFiles.IsSharedPaint))
+                            cachePaths.Add(BridgePreparedMaterialFiles.PaintPath(root, cid));
+                    }
                     if (!file.EndsWith(".Surface.cid", StringComparison.OrdinalIgnoreCase)) continue;
                     using var reader = new StreamReader(new MemoryStream(result.Get(file).Bytes!, false));
                     string? cache = BridgePreparedMaterialFiles.CacheFor(reader.ReadToEnd().Trim());

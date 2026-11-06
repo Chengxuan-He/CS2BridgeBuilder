@@ -7,7 +7,7 @@ namespace BridgeBuilder.Bridges;
 // Seven existing finite LOD2 bed charts, measured by BuildFarAppearance.py.
 internal static class Lift04FarAppearance
 {
-    private static readonly HardcodedNumbers Data = HardcodedNumbers.Load("Types_Lift04_FarAppearance");
+    private static HardcodedNumbers Data => GenerationParameters.Get<HardcodedNumbers>("BridgeBuilder.Bridges.Lift04FarAppearance.Data", () => HardcodedNumbers.Load("Types_Lift04_FarAppearance"));
     internal static MovableRoadAppearance.Level Create(RenderPrefab native, Pose roadToObject, float halfDelta)
     {
         var pose = Matrix4x4.TRS(roadToObject.position, roadToObject.rotation, Vector3.one);
@@ -48,5 +48,5 @@ internal static class Numeric_Types_Lift04_Lift04FarAppearance_cs
     {
     }
 
-    internal static readonly HardcodedNumbers Values = HardcodedNumbers.Load("Types_Lift04_Lift04FarAppearance_cs");
+    internal static HardcodedNumbers Values => GenerationParameters.Get<HardcodedNumbers>("BridgeBuilder.Bridges.Numeric_Types_Lift04_Lift04FarAppearance_cs.Values", () => HardcodedNumbers.Load("Types_Lift04_Lift04FarAppearance_cs"));
 }

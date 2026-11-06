@@ -57,5 +57,5 @@ internal static class Lift03RenderAssembly
 internal static class Numeric_Types_Lift03_Lift03RenderAssembly_cs
 {
     static Numeric_Types_Lift03_Lift03RenderAssembly_cs() {}
-    internal static readonly HardcodedNumbers Values = HardcodedNumbers.Load("Types_Lift03_Lift03RenderAssembly_cs");
+    internal static HardcodedNumbers Values => GenerationParameters.Get<HardcodedNumbers>("BridgeBuilder.Bridges.Numeric_Types_Lift03_Lift03RenderAssembly_cs.Values", () => HardcodedNumbers.Load("Types_Lift03_Lift03RenderAssembly_cs"));
 }

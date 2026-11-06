@@ -6,7 +6,7 @@ internal static partial class MovableRepeatUnits
 {
     private static class Draw02RegionsData
     {
-        internal static readonly double[] Bounds = HardcodedNumbers.Load("Draw02_StructureRepeatUnits").F64;
+        internal static double[] Bounds => GenerationParameters.Get<double[]>("BridgeBuilder.Bridges.MovableRepeatUnits.Draw02RegionsData.Bounds", () => HardcodedNumbers.Load("Draw02_StructureRepeatUnits").F64);
     }
 
     static partial void Draw02Regions(string sourceDigest, List<Region> regions)
@@ -27,5 +27,5 @@ internal static class Numeric_Types_Draw02_Draw02RepeatRegions_cs
     {
     }
 
-    internal static readonly HardcodedNumbers Values = HardcodedNumbers.Load("Types_Draw02_Draw02RepeatRegions_cs");
+    internal static HardcodedNumbers Values => GenerationParameters.Get<HardcodedNumbers>("BridgeBuilder.Bridges.Numeric_Types_Draw02_Draw02RepeatRegions_cs.Values", () => HardcodedNumbers.Load("Types_Draw02_Draw02RepeatRegions_cs"));
 }

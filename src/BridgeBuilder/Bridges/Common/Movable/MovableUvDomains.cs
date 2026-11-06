@@ -19,7 +19,7 @@ internal sealed class MovableUvDomains
         { A=a; B=b; C=c; _data=data; _start=start; _count=count; Bounds=bounds; Triangle=triangle; }
     }
     internal readonly Domain[] Items;
-    private static readonly Dictionary<string, MovableUvDomains?> Loaded = new();
+    private static Dictionary<string, MovableUvDomains?> Loaded => GenerationParameters.Get<Dictionary<string, MovableUvDomains?>>("BridgeBuilder.Bridges.MovableUvDomains.Loaded", () => new());
     private MovableUvDomains(HardcodedNumbers data)
     {
         if(data.I32.Length>=4 && data.I32[0]==-3)

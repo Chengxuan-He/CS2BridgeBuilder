@@ -82,7 +82,7 @@ internal static class BridgeTowers
         internal bool Verified { get; }
     }
 
-    private static readonly Dictionary<string, Tower[]> Table = new(StringComparer.Ordinal)
+    private static Dictionary<string, Tower[]> Table => GenerationParameters.Get<Dictionary<string, Tower[]>>("BridgeBuilder.Bridges.BridgeTowers.Table", () => new(StringComparer.Ordinal)
     {
         ["CableStayed"] = new[]
         {
@@ -309,7 +309,7 @@ internal static class BridgeTowers
         //
         // 02 and 03 are recorded under their own white and green styles.
         },
-    };
+    });
     /// <summary>The towers listed for a type, narrowest road first. Empty when the type has none.</summary>
     internal static IReadOnlyList<Tower> For(string styleId)
     {
@@ -557,5 +557,5 @@ internal static class BridgeTowers
 internal static class Numeric_BridgeTowers_cs
 {
     static Numeric_BridgeTowers_cs() {}
-    internal static readonly HardcodedNumbers Values = HardcodedNumbers.Load("BridgeTowers_cs");
+    internal static HardcodedNumbers Values => GenerationParameters.Get<HardcodedNumbers>("BridgeBuilder.Bridges.Numeric_BridgeTowers_cs.Values", () => HardcodedNumbers.Load("BridgeTowers_cs"));
 }

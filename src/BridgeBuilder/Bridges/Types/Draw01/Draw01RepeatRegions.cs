@@ -15,6 +15,6 @@ internal static partial class MovableRepeatUnits
     private static class Draw01RegionData
     {
         static Draw01RegionData() { }
-        internal static readonly HardcodedNumbers Values = HardcodedNumbers.Load("Draw01RepeatRegions");
+        internal static HardcodedNumbers Values => GenerationParameters.Get<HardcodedNumbers>("BridgeBuilder.Bridges.MovableRepeatUnits.Draw01RegionData.Values", () => HardcodedNumbers.Load("Draw01RepeatRegions"));
     }
 }

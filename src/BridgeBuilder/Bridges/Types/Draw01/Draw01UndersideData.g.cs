@@ -19,10 +19,8 @@ internal static class Draw01UndersideData
                 continue;
             foreach (var face in group.Faces)
                 removed[face] = false;
-            AffineGeometry.Scatter(group.Vertices, vertex => vertex.Index, vertex =>
-            {
-                positions[vertex.Index].x = Mathf.LerpUnclamped(span.x, span.y, vertex.Fraction);
-            });
+            AffineGeometry.Execute(StructurePrograms.Data, StructurePrograms.SpanX, new[] { positions, positions },
+                new[] { group.Fractions }, new[] { span.x, span.y }, count: group.Vertices.Length, indices: new[] { group.Vertices });
         }
     }
 
@@ -30,19 +28,22 @@ internal static class Draw01UndersideData
     {
         internal readonly int Role;
         internal readonly int[] Faces;
-        internal readonly (int Index, float Fraction)[] Vertices;
+        internal readonly int[] Vertices;
+        internal readonly float[] Fractions;
         internal Group(int role, int[] faces, (int, float)[] vertices)
         {
             Role = role;
             Faces = faces;
-            Vertices = vertices;
+            Vertices = new int[vertices.Length];
+            Fractions = new float[vertices.Length];
+            for (int i = 0; i < vertices.Length; i++) { Vertices[i] = vertices[i].Item1; Fractions[i] = vertices[i].Item2; }
         }
     }
 
     // Source OBJ SHA-256: 97215ED0B33145FB53737999961C3DA0E6859E433A89566BB1F7C2C04EE7F9E1
-    private static readonly Group[] Near = ReadPackedNear();
+    private static Group[] Near => GenerationParameters.Get<Group[]>("BridgeBuilder.Bridges.Draw01UndersideData.Near", () => ReadPackedNear());
     // Source OBJ SHA-256: 4987290BEF55D474AEA63DE7F54197C31C37BD243730AADD45986F1D87E4970D
-    private static readonly Group[] Middle = ReadPackedMiddle();
+    private static Group[] Middle => GenerationParameters.Get<Group[]>("BridgeBuilder.Bridges.Draw01UndersideData.Middle", () => ReadPackedMiddle());
     private static Group[] ReadPackedNear()
     {
         var d = Numeric_Types_Draw01_Draw01UndersideData_g_cs.Values;
@@ -78,5 +79,5 @@ internal static class Draw01UndersideData
 internal static class Numeric_Types_Draw01_Draw01UndersideData_g_cs
 {
     static Numeric_Types_Draw01_Draw01UndersideData_g_cs() {}
-    internal static readonly HardcodedNumbers Values = HardcodedNumbers.Load("Types_Draw01_Draw01UndersideData_g_cs");
+    internal static HardcodedNumbers Values => GenerationParameters.Get<HardcodedNumbers>("BridgeBuilder.Bridges.Numeric_Types_Draw01_Draw01UndersideData_g_cs.Values", () => HardcodedNumbers.Load("Types_Draw01_Draw01UndersideData_g_cs"));
 }

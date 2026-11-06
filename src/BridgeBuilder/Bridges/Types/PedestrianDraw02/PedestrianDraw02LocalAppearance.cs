@@ -9,7 +9,7 @@ namespace BridgeBuilder.Bridges;
 // Local authored outline rules, grouped by source and width-affine mapping.
 internal static class PedestrianDraw02LocalAppearance
 {
-    private static readonly HardcodedNumbers Data = HardcodedNumbers.Load("Types_PedestrianDraw02_LocalAppearance");
+    private static HardcodedNumbers Data => GenerationParameters.Get<HardcodedNumbers>("BridgeBuilder.Bridges.PedestrianDraw02LocalAppearance.Data", () => HardcodedNumbers.Load("Types_PedestrianDraw02_LocalAppearance"));
 
     internal static Partition Create(Patch[] source, Pose roadToObject, float delta, out Patch[] compact)
     {
@@ -42,8 +42,8 @@ internal static class PedestrianDraw02LocalAppearance
             int at=5+i[4]*2+index*3,offset=i[at]*8;
             var low=Node(i[at+1]);var high=Node(i[at+2]);
             if(physical && ((low.IsGap&&high.IsGap) || (low.Bone>=0&&low.Bone==high.Bone)))return low;
-            float ax=AffineGeometry.AddScaled(f[offset],f[offset+2],delta),az=f[offset+1];
-            float bx=AffineGeometry.AddScaled(f[offset+3],f[offset+5],delta),bz=f[offset+4];
+            float ax=f[offset]+f[offset+2]*delta,az=f[offset+1];
+            float bx=f[offset+3]+f[offset+5]*delta,bz=f[offset+4];
             float nx=az-bz,nz=bx-ax;
             float length=MathF.Sqrt(nx*nx+nz*nz);
             if(!float.IsFinite(length))throw new InvalidOperationException(nameof(PedestrianDraw02LocalAppearance));

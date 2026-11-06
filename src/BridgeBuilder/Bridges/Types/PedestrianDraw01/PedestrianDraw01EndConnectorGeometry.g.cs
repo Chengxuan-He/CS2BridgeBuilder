@@ -9,49 +9,34 @@ internal static class PedestrianDraw01EndConnectorGeometry
     {
         var data = lod switch
         {
-            0 => (Count: Numeric_Types_PedestrianDraw01_PedestrianDraw01EndConnectorGeometry_g_cs.Values.I32[0], Parts: Parts0),
-            1 => (Count: Numeric_Types_PedestrianDraw01_PedestrianDraw01EndConnectorGeometry_g_cs.Values.I32[1], Parts: Parts1),
-            2 => (Count: Numeric_Types_PedestrianDraw01_PedestrianDraw01EndConnectorGeometry_g_cs.Values.I32[2], Parts: Parts2),
+            0 => Numeric_Types_PedestrianDraw01_PedestrianDraw01EndConnectorGeometry_g_cs.Values.I32[0],
+            1 => Numeric_Types_PedestrianDraw01_PedestrianDraw01EndConnectorGeometry_g_cs.Values.I32[1],
+            2 => Numeric_Types_PedestrianDraw01_PedestrianDraw01EndConnectorGeometry_g_cs.Values.I32[2],
             _ => throw new ArgumentOutOfRangeException(nameof(lod))};
-        if (source.Length != data.Count || positions.Length != data.Count || !float.IsFinite(delta))
+        if (source.Length != data || positions.Length != data || !float.IsFinite(delta))
             throw new InvalidOperationException("PedestrianDraw01 end connectors require their recorded layout and finite delta.");
-        foreach (var part in data.Parts)
-            AffineGeometry.For(part.First, checked((part.Last) + 1), i =>
-            {
-                positions[i].x = AffineGeometry.AddScaled(source[i].x, source[i].x / part.HalfSpan, delta);
-            });
+        AffineGeometry.Execute(BatchProgram0.Data, lod, new[] { source, positions }, Array.Empty<float[]>(), new float[] { delta });
     }
 
     // Geometry SHA-256: 491d8dae6420e0b5b00fbf0014ff74a8aff44c45a1bd48ab40708978888d7f05
-    private static readonly (int First, int Last, float HalfSpan)[] Parts0 = ReadPackedParts0();
     // Geometry SHA-256: 0b0544aff8720327910927fda2f398ce78c8e3e3d2a1262de8204acdcac34053
-    private static readonly (int First, int Last, float HalfSpan)[] Parts1 = ReadPackedParts1();
     // Geometry SHA-256: d514d88bf5fd4d8453a81578b36f099887cf562ad55255d4ca97267add15952b
-    private static readonly (int First, int Last, float HalfSpan)[] Parts2 =
+    private static class BatchProgram0
     {
-    };
-    private static (int First, int Last, float HalfSpan)[] ReadPackedParts0()
-    {
-        var d = Numeric_Types_PedestrianDraw01_PedestrianDraw01EndConnectorGeometry_g_cs.Values;
-        var values = new (int First, int Last, float HalfSpan)[24];
-        for (int i = 0; i < 24; i++)
-            values[0 + i] = (d.I32[3 + i * 2], d.I32[4 + i * 2], d.F32[1 + i * 1]);
-        return values;
-    }
+        static BatchProgram0()
+        {
+        }
 
-    private static (int First, int Last, float HalfSpan)[] ReadPackedParts1()
-    {
-        var d = Numeric_Types_PedestrianDraw01_PedestrianDraw01EndConnectorGeometry_g_cs.Values;
-        var values = new (int First, int Last, float HalfSpan)[32];
-        for (int i = 0; i < 32; i++)
-            values[0 + i] = (d.I32[51 + i * 2], d.I32[52 + i * 2], d.F32[25 + i * 1]);
-        return values;
+        internal static HardcodedNumbers Data => GenerationParameters.Get<HardcodedNumbers>("BridgeBuilder.Bridges.PedestrianDraw01EndConnectorGeometry.BatchProgram0.Data", () => HardcodedNumbers.Load("Types_PedestrianDraw01_PedestrianDraw01EndConnectorGeometry_BatchProgram0"));
     }
 }
 
 // Embedded numerical arrays: Types_PedestrianDraw01_PedestrianDraw01EndConnectorGeometry_g_cs
 internal static class Numeric_Types_PedestrianDraw01_PedestrianDraw01EndConnectorGeometry_g_cs
 {
-    static Numeric_Types_PedestrianDraw01_PedestrianDraw01EndConnectorGeometry_g_cs() {}
-    internal static readonly HardcodedNumbers Values = HardcodedNumbers.Load("Types_PedestrianDraw01_PedestrianDraw01EndConnectorGeometry_g_cs");
+    static Numeric_Types_PedestrianDraw01_PedestrianDraw01EndConnectorGeometry_g_cs()
+    {
+    }
+
+    internal static HardcodedNumbers Values => GenerationParameters.Get<HardcodedNumbers>("BridgeBuilder.Bridges.Numeric_Types_PedestrianDraw01_PedestrianDraw01EndConnectorGeometry_g_cs.Values", () => HardcodedNumbers.Load("Types_PedestrianDraw01_PedestrianDraw01EndConnectorGeometry_g_cs"));
 }

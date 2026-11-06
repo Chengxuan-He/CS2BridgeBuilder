@@ -18,17 +18,14 @@ internal static class Draw03CentreMembers
         {
             var span = part.Max - part.Min;
             foreach (var range in part.Ranges)
-                AffineGeometry.For(range.First, checked((range.Last) + 1), i =>
-                {
-                    positions[i].x = AffineGeometry.AddScaled(source[i].x, (Numeric_Types_Draw03_Draw03CentreMembers_g_cs.Values.F32[0] * source[i].x - part.Min - part.Max) / span, delta);
-                });
+                AffineGeometry.Execute(RangePrograms.Data, 0, new[] { source, positions }, Array.Empty<float[]>(), new float[] { Numeric_Types_Draw03_Draw03CentreMembers_g_cs.Values.F32[0], part.Min, part.Max, span, delta }, range.First, checked((checked((range.Last) + 1)) - (range.First)));
         }
     }
 
     // Geometry SHA-256: f7ecc824ad55745e791e40b18fd12f5def20657ed8ea56d373429d5a1337588f
-    private static readonly (float Min, float Max, (int First, int Last)[] Ranges)[] Near = ReadPackedNear();
+    private static (float Min, float Max, (int First, int Last)[] Ranges)[] Near => GenerationParameters.Get<(float Min, float Max, (int First, int Last)[] Ranges)[]>("BridgeBuilder.Bridges.Draw03CentreMembers.Near", () => ReadPackedNear());
     // Geometry SHA-256: 15b8419da13d6e99e1dc0591f12f4019f0be09c3b220a481d24720daf7b57e12
-    private static readonly (float Min, float Max, (int First, int Last)[] Ranges)[] Middle = ReadPackedMiddle();
+    private static (float Min, float Max, (int First, int Last)[] Ranges)[] Middle => GenerationParameters.Get<(float Min, float Max, (int First, int Last)[] Ranges)[]>("BridgeBuilder.Bridges.Draw03CentreMembers.Middle", () => ReadPackedMiddle());
     private static (float Min, float Max, (int First, int Last)[] Ranges)[] ReadPackedNear()
     {
         var d = Numeric_Types_Draw03_Draw03CentreMembers_g_cs.Values;
@@ -290,11 +287,23 @@ internal static class Draw03CentreMembers
             values[151 + i] = (-d.F32[607 + i * 2], d.F32[608 + i * 2], new (int, int)[] { (d.I32[1380 + i * 8], d.I32[1381 + i * 8]), (d.I32[1382 + i * 8], d.I32[1383 + i * 8]), (d.I32[1384 + i * 8], d.I32[1385 + i * 8]), (d.I32[1386 + i * 8], d.I32[1387 + i * 8]) });
         return values;
     }
+
+    private static class RangePrograms
+    {
+        static RangePrograms()
+        {
+        }
+
+        internal static HardcodedNumbers Data => GenerationParameters.Get<HardcodedNumbers>("BridgeBuilder.Bridges.Draw03CentreMembers.RangePrograms.Data", () => HardcodedNumbers.Load("Types_Draw03_Draw03CentreMembers_RangePrograms"));
+    }
 }
 
 // Embedded numerical arrays: Types_Draw03_Draw03CentreMembers_g_cs
 internal static class Numeric_Types_Draw03_Draw03CentreMembers_g_cs
 {
-    static Numeric_Types_Draw03_Draw03CentreMembers_g_cs() {}
-    internal static readonly HardcodedNumbers Values = HardcodedNumbers.Load("Types_Draw03_Draw03CentreMembers_g_cs");
+    static Numeric_Types_Draw03_Draw03CentreMembers_g_cs()
+    {
+    }
+
+    internal static HardcodedNumbers Values => GenerationParameters.Get<HardcodedNumbers>("BridgeBuilder.Bridges.Numeric_Types_Draw03_Draw03CentreMembers_g_cs.Values", () => HardcodedNumbers.Load("Types_Draw03_Draw03CentreMembers_g_cs"));
 }

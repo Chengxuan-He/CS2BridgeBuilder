@@ -17,5 +17,5 @@ internal static class Lift01RoadSampling
 internal static class Numeric_Types_Lift01_Lift01RoadSampling_cs
 {
     static Numeric_Types_Lift01_Lift01RoadSampling_cs() {}
-    internal static readonly HardcodedNumbers Values = HardcodedNumbers.Load("Types_Lift01_Lift01RoadSampling_cs");
+    internal static HardcodedNumbers Values => GenerationParameters.Get<HardcodedNumbers>("BridgeBuilder.Bridges.Numeric_Types_Lift01_Lift01RoadSampling_cs.Values", () => HardcodedNumbers.Load("Types_Lift01_Lift01RoadSampling_cs"));
 }

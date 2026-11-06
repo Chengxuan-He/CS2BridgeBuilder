@@ -28,7 +28,7 @@ internal sealed class Lift03BridgeGenerator : MovableBridgeGeneratorBase<Lift03R
             var width = WidthOf(Lower.Source, Numeric_Types_Lift03_Lift03BridgeGenerator_cs.Values.F32[0]);
             if (!float.IsFinite(width))
                 throw new InvalidOperationException("Lift03 auxiliary road has no initialized surface width.");
-            return (width - BridgeMeasurements.Lift03AuxiliaryRoadWidth) * Numeric_Types_Lift03_Lift03BridgeGenerator_cs.Values.F32[2];
+            return (width - BridgeMeasurements.Lift03AuxiliaryRoadWidth) * Numeric_Types_Lift03_Lift03BridgeGenerator_cs.Values.F32[1];
         }
     }
 
@@ -52,7 +52,7 @@ internal sealed class Lift03BridgeGenerator : MovableBridgeGeneratorBase<Lift03R
     {
         // Recover the shared mechanism world frame from the sampled main road frame.
         var pose = road.MainToObject;
-        var closedWorld = Matrix4x4.Translate(new Vector3(Numeric_Types_Lift03_Lift03BridgeGenerator_cs.Values.F32[3], Lift03NetworkData.MainElevation, Numeric_Types_Lift03_Lift03BridgeGenerator_cs.Values.F32[4])) * Matrix4x4.TRS(pose.position, pose.rotation, Vector3.one).inverse;
+        var closedWorld = Matrix4x4.Translate(new Vector3(Numeric_Types_Lift03_Lift03BridgeGenerator_cs.Values.F32[2], Lift03NetworkData.MainElevation, Numeric_Types_Lift03_Lift03BridgeGenerator_cs.Values.F32[3])) * Matrix4x4.TRS(pose.position, pose.rotation, Vector3.one).inverse;
         MovableRoadAssets.Level[] Prepare(Lift03RoadSampling.Deck deck, float delta, Pose frame)
         {
             var appearance = Lift03RoadAppearance.Regions(frame);
@@ -80,6 +80,9 @@ internal sealed class Lift03BridgeGenerator : MovableBridgeGeneratorBase<Lift03R
 // Embedded numerical arrays: Types_Lift03_Lift03BridgeGenerator_cs
 internal static class Numeric_Types_Lift03_Lift03BridgeGenerator_cs
 {
-    static Numeric_Types_Lift03_Lift03BridgeGenerator_cs() {}
-    internal static readonly HardcodedNumbers Values = HardcodedNumbers.Load("Types_Lift03_Lift03BridgeGenerator_cs");
+    static Numeric_Types_Lift03_Lift03BridgeGenerator_cs()
+    {
+    }
+
+    internal static HardcodedNumbers Values => GenerationParameters.Get<HardcodedNumbers>("BridgeBuilder.Bridges.Numeric_Types_Lift03_Lift03BridgeGenerator_cs.Values", () => HardcodedNumbers.Load("Types_Lift03_Lift03BridgeGenerator_cs"));
 }

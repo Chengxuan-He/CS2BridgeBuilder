@@ -210,13 +210,16 @@ internal sealed partial class TowerFactory
         if (source.Length != moved.Length) return null;
 
         var dropMask = new bool[source.Length];
-        AffineGeometry.For(0, source.Length, index =>
+        var groups = new List<int>[plans.Count];
+        for (int planIndex = 0; planIndex < groups.Length; planIndex++) groups[planIndex] = new List<int>();
+        for (int index = 0; index < source.Length; index++)
         {
             // Offline archetype membership: railing x bands also overlap the truss below.
             // Never overwrite or remove those already-transformed structural vertices.
-            if (protectedSupport != null && protectedSupport[index]) return;
-            foreach (var plan in plans)
+            if (protectedSupport != null && protectedSupport[index]) continue;
+            for (int planIndex = 0; planIndex < plans.Count; planIndex++)
             {
+                var plan = plans[planIndex];
                 if (!plan.Covers(source[index])) continue;
 
                 if (plan.Remove)
@@ -227,13 +230,17 @@ internal sealed partial class TowerFactory
                 }
                 else
                 {
-                    moved[index] = new float3(
-                        AffineGeometry.Translate(source[index].x, plan.Shift), moved[index].y, moved[index].z);
+                    groups[planIndex].Add(index);
                 }
 
                 break;
             }
-        });
+        }
+        for (int planIndex = 0; planIndex < plans.Count; planIndex++)
+            if (groups[planIndex].Count != 0)
+                AffineGeometry.Execute(StructurePrograms.Data, StructurePrograms.TranslateX, new[] { source, moved },
+                    Array.Empty<float[]>(), new[] { plans[planIndex].Shift }, count: groups[planIndex].Count,
+                    indices: new[] { groups[planIndex].ToArray() });
 
         return Array.IndexOf(dropMask, true) < 0 ? null : dropMask;
     }

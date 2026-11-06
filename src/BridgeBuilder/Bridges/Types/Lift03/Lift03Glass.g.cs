@@ -8,39 +8,31 @@ using UnityEngine;
 namespace BridgeBuilder.Bridges;
 internal static class Lift03Glass
 {
-    private static readonly (int First, int Last, int Side)[] Sides = ReadPackedSides();
     internal static MovableStructureModel.Plan Create(int lod, Vector3[] source, int[] indices, float delta)
     {
-        if ((lod != Numeric_Types_Lift03_Lift03Glass_g_cs.Values.I32[12] && lod != Numeric_Types_Lift03_Lift03Glass_g_cs.Values.I32[13]) || source.Length != Numeric_Types_Lift03_Lift03Glass_g_cs.Values.I32[14] || indices.Length != Numeric_Types_Lift03_Lift03Glass_g_cs.Values.I32[15] || !float.IsFinite(delta))
+        if ((lod != Numeric_Types_Lift03_Lift03Glass_g_cs.Values.I32[0] && lod != Numeric_Types_Lift03_Lift03Glass_g_cs.Values.I32[1]) || source.Length != Numeric_Types_Lift03_Lift03Glass_g_cs.Values.I32[2] || indices.Length != Numeric_Types_Lift03_Lift03Glass_g_cs.Values.I32[3] || !float.IsFinite(delta))
             throw new InvalidOperationException("Lift03 glass requires its recorded mesh-1 layout.");
         var positions = (Vector3[])source.Clone();
-        foreach (var range in Sides)
-            AffineGeometry.For(range.First, checked((range.Last) + 1), i =>
-            {
-                positions[i].x = AffineGeometry.Translate(positions[i].x, range.Side * delta);
-            });
-        return new MovableStructureModel.Plan(source, positions, new[] { indices }, new[] { new bool[Numeric_Types_Lift03_Lift03Glass_g_cs.Values.I32[16]] });
+        AffineGeometry.Execute(BatchProgram0.Data, 0, new[] { positions }, Array.Empty<float[]>(), new float[] { delta });
+        return new MovableStructureModel.Plan(source, positions, new[] { indices }, new[] { new bool[Numeric_Types_Lift03_Lift03Glass_g_cs.Values.I32[4]] });
     }
 
-    private static (int First, int Last, int Side)[] ReadPackedSides()
+    private static class BatchProgram0
     {
-        var d = Numeric_Types_Lift03_Lift03Glass_g_cs.Values;
-        var values = new (int First, int Last, int Side)[4];
-        for (int i = 0; i < 1; i++)
-            values[0 + i] = (d.I32[0 + i * 3], d.I32[1 + i * 3], -d.I32[2 + i * 3]);
-        for (int i = 0; i < 1; i++)
-            values[1 + i] = (d.I32[3 + i * 3], d.I32[4 + i * 3], d.I32[5 + i * 3]);
-        for (int i = 0; i < 1; i++)
-            values[2 + i] = (d.I32[6 + i * 3], d.I32[7 + i * 3], -d.I32[8 + i * 3]);
-        for (int i = 0; i < 1; i++)
-            values[3 + i] = (d.I32[9 + i * 3], d.I32[10 + i * 3], d.I32[11 + i * 3]);
-        return values;
+        static BatchProgram0()
+        {
+        }
+
+        internal static HardcodedNumbers Data => GenerationParameters.Get<HardcodedNumbers>("BridgeBuilder.Bridges.Lift03Glass.BatchProgram0.Data", () => HardcodedNumbers.Load("Types_Lift03_Lift03Glass_BatchProgram0"));
     }
 }
 
 // Embedded numerical arrays: Types_Lift03_Lift03Glass_g_cs
 internal static class Numeric_Types_Lift03_Lift03Glass_g_cs
 {
-    static Numeric_Types_Lift03_Lift03Glass_g_cs() {}
-    internal static readonly HardcodedNumbers Values = HardcodedNumbers.Load("Types_Lift03_Lift03Glass_g_cs");
+    static Numeric_Types_Lift03_Lift03Glass_g_cs()
+    {
+    }
+
+    internal static HardcodedNumbers Values => GenerationParameters.Get<HardcodedNumbers>("BridgeBuilder.Bridges.Numeric_Types_Lift03_Lift03Glass_g_cs.Values", () => HardcodedNumbers.Load("Types_Lift03_Lift03Glass_g_cs"));
 }

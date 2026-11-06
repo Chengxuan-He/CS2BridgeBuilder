@@ -66,6 +66,6 @@ internal static class Lift02UvSampling
     private static class Data
     {
         static Data() { }
-        internal static readonly int[][] Items = Read();
+        internal static int[][] Items => GenerationParameters.Get<int[][]>("BridgeBuilder.Bridges.Lift02UvSampling.Data.Items", () => Read());
     }
 }

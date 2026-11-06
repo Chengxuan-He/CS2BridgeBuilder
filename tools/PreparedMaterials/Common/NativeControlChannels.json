@@ -1,0 +1,112 @@
+{
+  "0dc93ca5c7e0ef3fd1324c5d4065ec8c": {
+    "native": "1e0fe816316f7182c373cd101fd525fe",
+    "sha256": "d09cc35a7c0efef31d23c4d50456cec85a065c8b94df7c628284f2959889a36f",
+    "rgba": [
+      0,
+      0,
+      0,
+      255
+    ]
+  },
+  "1ffba3c2e43eba7a6a6497f4263badb1": {
+    "native": "1e0fe816316f7182c373cd101fd525fe",
+    "sha256": "f1bf3a2c4ee3aba7a646794f62b3da1b8047615ec71e60c29b099f3eea67f9ae",
+    "rgba": [
+      0,
+      0,
+      0,
+      255
+    ]
+  },
+  "7393a787f3f85073f0096e1709e0db62": {
+    "native": "1e0fe816316f7182c373cd101fd525fe",
+    "sha256": "37397a783f8f05370f90e671900ebd263527147fadca17ef05bf975affd40c66",
+    "rgba": [
+      0,
+      0,
+      0,
+      255
+    ]
+  },
+  "abfa4c349a7a64110c6af8f14d0908aa": {
+    "native": "1e0fe816316f7182c373cd101fd525fe",
+    "sha256": "baafc443a9a74611c0a68f1fd49080aa93b192549edcd79394a5c67c9885b23a",
+    "rgba": [
+      0,
+      0,
+      0,
+      255
+    ]
+  },
+  "6607bc76b9a41e32f607d20253280bd0": {
+    "native": "1e0fe816316f7182c373cd101fd525fe",
+    "sha256": "f26f91e73b81a588014f4a0ab900440bab926dfb3e9e60bfd366a9fa938f1498",
+    "rgba": [
+      0,
+      0,
+      0,
+      255
+    ]
+  },
+  "cc47fa5d33a4ab2bff9ed2bdf2a3936a": {
+    "native": "1e0fe816316f7182c373cd101fd525fe",
+    "sha256": "83ee7363a5b6227be46a10568ccd4b4c05133abc10e054415a8d75c32f00bf3c",
+    "rgba": [
+      0,
+      0,
+      0,
+      255
+    ]
+  },
+  "07ecb11c0a26edf0fd95080ef5968f08": {
+    "native": "09426c88de2bf8983a7e1943ea8a21ad",
+    "sha256": "ed5c8c700b027a420ceae7ed581e33db92a3dd3138ff27688d96d96ed622801f",
+    "rgba": [
+      0,
+      0,
+      0,
+      0
+    ]
+  },
+  "729893d593df5d52ba911bc1e7eab77b": {
+    "native": "09426c88de2bf8983a7e1943ea8a21ad",
+    "sha256": "d002cc9d2fb6777d63a7b16bb306e05dca09bf521552371106c5d8c12c2bcdf4",
+    "rgba": [
+      0,
+      0,
+      0,
+      0
+    ]
+  },
+  "2b1079d49b4e06a87390437fd98dcc1a": {
+    "native": "09426c88de2bf8983a7e1943ea8a21ad",
+    "sha256": "ed5c8c700b027a420ceae7ed581e33db92a3dd3138ff27688d96d96ed622801f",
+    "rgba": [
+      0,
+      0,
+      0,
+      0
+    ]
+  },
+  "64f7cb513af050702cc9dc7a0fa28e6e": {
+    "native": "09426c88de2bf8983a7e1943ea8a21ad",
+    "sha256": "ed5c8c700b027a420ceae7ed581e33db92a3dd3138ff27688d96d96ed622801f",
+    "rgba": [
+      0,
+      0,
+      0,
+      0
+    ]
+  },
+  "61b9923bf7f6a89512c9081e0850ff6c": {
+    "native": "09426c88de2bf8983a7e1943ea8a21ad",
+    "sha256": "169b29b37f6f8a59219c80e18005ffc61d5714fb25e40a1225ecc0a47374c7e2",
+    "rgba": [
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ]
+  }
+}

@@ -44,7 +44,7 @@ def main():
     def constant(rgba):
         return struct.pack('<4H6Bi',5,1,1,1,1,48,2,2,1,1,-1)+struct.pack('<4e',*rgba)
     payloads={'_BaseColorMap':base,'_NormalMap':constant((1,.5,1,.5)),
-              '_MaskMap':constant((1,1,1,1)),'_ControlMask':constant((0,0,0,0))}
+              '_MaskMap':constant((1,1,1,1))}
     # Preserve all old explicit material parameters and keywords, changing only
     # VT storage to fully bound regular textures. No color or alpha adjustment.
     legacy=ROOT/'assets/Materials/Draw01/NativeSources/d765f1348645cc68318b5ac29c61abde/Object.Surface'
@@ -54,7 +54,9 @@ def main():
     at=7+276;at+=1 if old[at]==0 else 17
     props=old[at:];needle=b'\xff'+struct.pack('<i',0)+b'\xff'+struct.pack('<i',2)+text('_TANGENTSPACE_OCTO')
     pos=props.index(needle)
-    texture_map=b'\xff'+struct.pack('<i',4)+b''.join(text(k)+b'\xff'+token(identity(v)) for k,v in payloads.items())
+    bindings={name:identity(value) for name,value in payloads.items()}
+    bindings['_ControlMask']='09426c88de2bf8983a7e1943ea8a21ad'
+    texture_map=b'\xff'+struct.pack('<i',len(bindings))+b''.join(text(k)+b'\xff'+token(cid) for k,cid in bindings.items())
     surface=old[:6]+b'\x00'+props[:pos]+texture_map+props[pos+5:]
     a.output.mkdir(parents=True,exist_ok=True)
     for name,data in {'SkinnedPaint.Surface':surface,**{identity(v)+'.Texture':v for v in payloads.values()}}.items():

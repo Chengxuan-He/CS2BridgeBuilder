@@ -62,50 +62,12 @@ public partial class BridgeGenerationSystem
             netTool.prefab = replacement;
             Mod.Log.Info("Bridge deletion replaced retained NetTool selection with: " + replacement.name);
         }
-        // Capture physical ownership before deleting files. PrefabSystem removal alone
-        // leaves Surface/Texture/MidMip entries in the native database; RefreshVT then
-        // tries to open deleted materials when the next bridge is generated.
-        var ownedAssets = AssetDatabase.user.AllAssets().OfType<AssetData>()
-            .Select(asset => (asset.id, Path: BridgeOwnedDirectoryRemoval.AssetPath(
-                UnityEngine.Application.persistentDataPath, exportName, asset.path)))
-            .Where(asset => asset.Path != null).ToArray();
-        // Cover every caller, not just the gameplay delete action: no retained
-        // preview may issue another read while its backing files are removed.
+        // Native serialization and streaming may still read these prefabs after ECS deletion.
+        // Keep their instances and files intact until the game process exits.
         ClearPreview();
         BridgePreviewState.Clear();
-        var unregisterFailed = false;
-        try
-        {
-            // Placed instances have finished native cleanup before unregistering their prefabs.
-            if (!BridgeOwnedDirectoryRemoval.Delete(UnityEngine.Application.persistentDataPath, exportName, out var moveError))
-            { report.Warning(moveError); return removed; }
-            BridgeStartupRecovery.Retired.Add(exportName);
-            foreach (var root in roots) HideRemovedBridge(root);
-            foreach (var prefab in loaded.Where(p => BridgeAssetInfo.MatchesOwner(p.name, exportName)))
-            {
-                // Native removal updates swapped PrefabData indices and removes current/legacy IDs.
-                // Keep Unity objects and meshes alive for pending native cleanup; do not Destroy them.
-                if (!_prefabSystem.TryGetEntity(prefab, out _)) continue;
-                if (!_prefabSystem.RemovePrefab(prefab))
-                {
-                    unregisterFailed = true;
-                    report.Warning("Could not unregister removed bridge prefab: " + prefab.name);
-                    continue;
-                }
-                prefab.asset = null;
-                Mod.Log.Info("Bridge prefab unregistered after file removal: " + prefab.name);
-            }
-        }
-        finally
-        {
-            // Directory.Delete may remove some files before failing, and native
-            // prefab removal may throw. Neither may leave deleted payloads indexed.
-            // Exists propagates access errors: inaccessible is not proof of deletion.
-            foreach (var asset in ownedAssets)
-                if (!BridgeFileAccess.Exists(asset.Path!))
-                    AssetDatabase.user.DeleteAsset(asset.id);
-        }
-        if (unregisterFailed) return removed;
+        BridgeDeferredRemoval.Schedule(exportName);
+        foreach (var root in roots) HideRemovedBridge(root);
         foreach (var root in roots)
         {
             state.Remove(root.name);

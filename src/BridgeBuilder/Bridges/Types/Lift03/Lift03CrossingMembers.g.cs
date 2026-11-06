@@ -15,16 +15,13 @@ internal static class Lift03CrossingMembers
         if (source.Length != data.Count || positions.Length != data.Count || !float.IsFinite(upperDelta) || !float.IsFinite(lowerDelta))
             throw new InvalidOperationException("Lift03 crossing-members require their recorded topology.");
         foreach (var part in data.Parts)
-            AffineGeometry.For(part.First, checked((part.Last) + 1), i =>
-            {
-                positions[i].x = AffineGeometry.AddScaled(source[i].x, source[i].x / part.HalfSpan, (part.Domain == Numeric_Types_Lift03_Lift03CrossingMembers_g_cs.Values.I32[2] ? upperDelta : lowerDelta));
-            });
+            AffineGeometry.Execute(RangePrograms.Data, 0, new[] { source, positions }, Array.Empty<float[]>(), new float[] { part.HalfSpan, part.Domain == Numeric_Types_Lift03_Lift03CrossingMembers_g_cs.Values.I32[2] ? upperDelta : lowerDelta }, part.First, checked((checked((part.Last) + 1)) - (part.First)));
     }
 
     // Geometry SHA-256: f8bc2882fcba043d1d57a17fd27a43631b492ab4292f8fc6b9c3beeb00af53cd
-    private static readonly (int First, int Last, float HalfSpan, int Domain)[] Level0 = ReadPackedLevel0();
+    private static (int First, int Last, float HalfSpan, int Domain)[] Level0 => GenerationParameters.Get<(int First, int Last, float HalfSpan, int Domain)[]>("BridgeBuilder.Bridges.Lift03CrossingMembers.Level0", () => ReadPackedLevel0());
     // Geometry SHA-256: 455d25f8ec83f91ea097551fb09a9f41abc79e9f15e836b19c0a527ad50ff9fa
-    private static readonly (int First, int Last, float HalfSpan, int Domain)[] Level1 = ReadPackedLevel1();
+    private static (int First, int Last, float HalfSpan, int Domain)[] Level1 => GenerationParameters.Get<(int First, int Last, float HalfSpan, int Domain)[]>("BridgeBuilder.Bridges.Lift03CrossingMembers.Level1", () => ReadPackedLevel1());
     private static (int First, int Last, float HalfSpan, int Domain)[] ReadPackedLevel0()
     {
         var d = Numeric_Types_Lift03_Lift03CrossingMembers_g_cs.Values;
@@ -42,11 +39,23 @@ internal static class Lift03CrossingMembers
             values[0 + i] = (d.I32[207 + i * 3], d.I32[208 + i * 3], d.F32[68 + i * 1], d.I32[209 + i * 3]);
         return values;
     }
+
+    private static class RangePrograms
+    {
+        static RangePrograms()
+        {
+        }
+
+        internal static HardcodedNumbers Data => GenerationParameters.Get<HardcodedNumbers>("BridgeBuilder.Bridges.Lift03CrossingMembers.RangePrograms.Data", () => HardcodedNumbers.Load("Types_Lift03_Lift03CrossingMembers_RangePrograms"));
+    }
 }
 
 // Embedded numerical arrays: Types_Lift03_Lift03CrossingMembers_g_cs
 internal static class Numeric_Types_Lift03_Lift03CrossingMembers_g_cs
 {
-    static Numeric_Types_Lift03_Lift03CrossingMembers_g_cs() {}
-    internal static readonly HardcodedNumbers Values = HardcodedNumbers.Load("Types_Lift03_Lift03CrossingMembers_g_cs");
+    static Numeric_Types_Lift03_Lift03CrossingMembers_g_cs()
+    {
+    }
+
+    internal static HardcodedNumbers Values => GenerationParameters.Get<HardcodedNumbers>("BridgeBuilder.Bridges.Numeric_Types_Lift03_Lift03CrossingMembers_g_cs.Values", () => HardcodedNumbers.Load("Types_Lift03_Lift03CrossingMembers_g_cs"));
 }

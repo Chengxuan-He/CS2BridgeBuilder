@@ -200,5 +200,5 @@ internal static class GoldenBridgeRailings
 internal static class Numeric_GoldenBridgeRailings_cs
 {
     static Numeric_GoldenBridgeRailings_cs() {}
-    internal static readonly HardcodedNumbers Values = HardcodedNumbers.Load("GoldenBridgeRailings_cs");
+    internal static HardcodedNumbers Values => GenerationParameters.Get<HardcodedNumbers>("BridgeBuilder.Bridges.Numeric_GoldenBridgeRailings_cs.Values", () => HardcodedNumbers.Load("GoldenBridgeRailings_cs"));
 }

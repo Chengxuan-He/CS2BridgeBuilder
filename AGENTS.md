@@ -1,5 +1,25 @@
 All documentation must be written in English.
 
+### Packaged textures belong to road running surfaces
+
+A packaged `.Texture` must have a measured road-surface consumer. Check the actual
+faces, appearance type, LOD and native Surface channel that references it. Asphalt,
+walkable sidewalk paving, running grating, running caps and selected-road paint
+qualify only on their measured road-facing domains. A structural platform, curb
+sidewall, truss, cable or underside uses its original game or DLC texture references.
+This requirement also applies when a road and a structural face share the same atlas.
+A descriptor conversion needed for native rendering may bind original native channels.
+It must never give a non-road consumer a dependency on a packaged texture.
+
+Retain valid native UV projection, sampling and mip identities. A local repeating
+atlas island that cannot be sampled at a requested width through its original
+representation retains its authored coordinates. Record any resulting change in
+physical density. Do not bake a structural repeat or wrap individual vertices into
+an atlas chart to fill that gap. This supersedes earlier structural repeat permissions,
+including the earlier Lift05 profile recipe. Independently persisted external owner
+copies remain governed by the dependency persistence contract.
+
+
 Follow [player-controlled generation](docs/agent-contract/BRIDGE_GENERATION_CONTRACT.md#player-controlled-generation-without-structural-rejection-gates): do not reject a generation request
 because of structural shape, width, signed scale, degeneracy, overlap, clearance or appearance
 quality. Such checks belong to offline verification or non-blocking diagnostics. Material
@@ -109,7 +129,7 @@ Resource corruption and native realization failures remain separate explicit err
   aligned PBR donor coordinates and complete periodic mips. Record new periods as authored, not
   original evidence. Keep source/PBR, density and phase coherent across domains sharing the same evidenced prototype appearance.
 - Non-road materials retain original identity/modes by default; only evidenced repeat domains
-  needing avoidance of new period cuts may use section 3's narrow structural derivative.
+  must use original native references, including at widths beyond a finite atlas chart.
   Unsupported road types use compatible originals or corresponding native object road materials
   under section 4, including its accepted network-layer/worldspace differences, never another category.
 - No full-span pixels, new period cuts, arbitrary downsampling, custom shaders or changed original
@@ -125,9 +145,17 @@ Resource corruption and native realization failures remain separate explicit err
 - Package complete immutable resources in `assets/Materials/<BridgeStyleId>/` and ship beside the
   DLL as `Materials/<BridgeStyleId>/`. Resolve sources relative to the loaded mod, not developer or
   other-owner paths. Keep no empty/placeholder material directories. Preflight full native dependency
-  graphs before registration; byte-identical shared payloads stay within each style. Section 5's sole
-  cross-style exception is read-only `Materials/Shared/MidMips/<cacheCID>/TS512_MB3.MidMips` plus CID;
+  graphs before registration; byte-identical shared payloads stay within each style. Section 5 permits three identical skinned-road paint channels under read-only
+  `Materials/Shared/Paint/<cid>.Texture` and the native cache under `Materials/Shared/MidMips/<cacheCID>/TS512_MB3.MidMips` plus CID;
   each generated owner still snapshots only its required dependencies independently.
+
+Structure coordinate generation uses the common data-driven SIMD pipeline in the bridge
+generation contract's CPU affine execution section. Styles supply binary floating-point
+parameters, memberships and topology recipes, not separate numerical callbacks or SIMD
+adapters. Use actual interleaved XYZ SIMD stages and direct owned target-buffer consumption;
+runtime expression-recognition fast paths and axis-column execution are prohibited.
+Preserve existing runtime intermediate precision and ordered float-rounding
+boundaries; verify real packed execution and all-LOD numerical equivalence.
 
 Bridge geometry uses the [CPU affine execution contract](docs/agent-contract/BRIDGE_GENERATION_CONTRACT.md#cpu-affine-geometry-execution).
 Preserve measured XYZ coefficient arrays and sparse recipes; run independent LOD/vertex work
@@ -268,7 +296,9 @@ road-height/bounds deletion and capacity fallbacks that cause part-visibility ga
 Recorded hardcoded numbers must use DLL-embedded typed arrays under bridge generation contract
 section 2. Store uncompressed BBN1 resources by bridge type; let Paradox Mods compress the complete
 publication package. On first demand, validate and read only the needed embedded resource into
-class-owned static arrays without extracting files. Any development decompression must use
+request-owned arrays without extracting files. Reuse demanded resources within that request,
+then release decoded arrays and all derived parameter caches on completion, failure or cancellation.
+Never preload unused bridge types or retain permanent static numerical holders. Any development decompression must use
 temporary files deleted on success or failure. Retain exact numeric bits
 and ordering, and reconstruct large tables with bounded loops. Offline extraction remains required.
 This storage migration does not change any bridge's geometry or runtime independence.
@@ -416,7 +446,7 @@ Follow [supported-road tiling](docs/agent-contract/MATERIAL_GENERATION_CONTRACT.
 [all-LOD marking removal](docs/agent-contract/MATERIAL_GENERATION_CONTRACT.md#remove-embedded-road-markings-at-every-lod)
 and [offline source-atlas derivation](docs/agent-contract/MATERIAL_GENERATION_CONTRACT.md#offline-source-atlas-repeat-materials).
 Road repeats may be authored from pure prototype road content at original texel density;
-structural derivatives remain restricted to evidenced repeats needing avoidance of period cuts.
+structural surfaces retain original native texture references.
 Preserve actual shape/motion/material boundaries, native loading, complete PBR/mips, informational owner measurements and the package byte limit.
 Keep original assets unchanged and assign new identities to changed derivatives. This specification
 does not certify implementation, quality or acceptance. No runtime strings change with these rules.

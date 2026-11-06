@@ -1,5 +1,25 @@
 # Bridge generation contract
 
+### Packaged textures belong to road running surfaces
+
+A packaged `.Texture` must have a measured road-surface consumer. Check the actual
+faces, appearance type, LOD and native Surface channel that references it. Asphalt,
+walkable sidewalk paving, running grating, running caps and selected-road paint
+qualify only on their measured road-facing domains. A structural platform, curb
+sidewall, truss, cable or underside uses its original game or DLC texture references.
+This requirement also applies when a road and a structural face share the same atlas.
+A descriptor conversion needed for native rendering may bind original native channels.
+It must never give a non-road consumer a dependency on a packaged texture.
+
+Retain valid native UV projection, sampling and mip identities. A local repeating
+atlas island that cannot be sampled at a requested width through its original
+representation retains its authored coordinates. Record any resulting change in
+physical density. Do not bake a structural repeat or wrap individual vertices into
+an atlas chart to fill that gap. This supersedes earlier structural repeat permissions,
+including the earlier Lift05 profile recipe. Independently persisted external owner
+copies remain governed by the dependency persistence contract.
+
+
 ## Movable bridges: no special road-width adaptation
 
 Do not apply special adaptation based on road width to movable bridges. Retain the
@@ -186,8 +206,7 @@ prepare supported-road repeats outside the game under material contract section 
 bounded authored repeats from original pure road grain. Such new periods must be identified as
 authored derivatives, not claimed as original prototype evidence. Preserve base texel density,
 channel alignment and complete native periodic mips; no arbitrary downsampling or budget increase.
-Non-road offline derivatives remain limited to evidenced repeat domains that would otherwise need
-new texture-period seams, including the recorded Lift05 profile domains.
+Non-road texture derivatives are prohibited, including the recorded Lift05 profile domains.
 
 Keep existing seams and necessary actual shape, motion and material-domain boundaries. No new
 cuts solely to reset periods, prototype-triangle Boolean operations, per-use texture copies or
@@ -301,9 +320,18 @@ eager static initialization of unused numerical resource holders. Validate the r
 array lengths, complete payload and checksum directly from the embedded stream and read its
 typed arrays. Uncompressed loading needs no extraction file. If a development conversion needs
 decompression, its decoded file must be temporary and deleted on success or failure, never a
-persistent extraction cache or installed/generated bridge asset. Retain only the decoded typed
-arrays in static storage for that class, like DLL-owned static variables, so subsequent use does
-not read the same resource again. Do not require loose files beside the DLL,
+persistent extraction cache or installed/generated bridge asset. Load numerical resources only on demand within the current generation request. Reuse decoded
+BBN arrays, SIMD programs and reconstructed parameter/membership records across that request's
+stages and joined LOD workers. Release all cache-owned strong references on success, failure or
+cancellation. Do not preload unused bridge types or retain permanent static numerical holders.
+Independent requests must not clear each other's active data. Deferred material preparation acquires
+this scope only when construction begins. Bounded metadata queries may use temporary scopes, not a
+permanent fallback cache. Final native output and delayed preview/publication callbacks must own
+their required data rather than retaining a session or borrowed parameter arrays. Copy required
+parameter slices into output-owned storage before handoff. Do not force GC or promise an immediate
+RSS decrease; later requests reload and validate only their demanded resources. Numerical scratch
+pools are separately request-owned: return buffers to the captured request pool, and release that
+pool at completion rather than retaining large register buffers in a global shared pool. Do not require loose files beside the DLL,
 an installed prototype, a network request, or runtime geometry inspection to reconstruct the values.
 Use bounded loops to reconstruct compound records from the numerical arrays; do not regenerate
 huge static initializer methods. Ordinary algorithmic constants, enum values, array indices and
@@ -328,11 +356,46 @@ upper deck, lower deck and structure. Preserve measured branch/domain membership
 anchors and arithmetic order. Do not replace piecewise rules with a global scale,
 infer missing coefficients at runtime, or introduce new width-specific behavior.
 
+Structure coordinate generation uses one common data-driven SIMD pipeline. Bridge styles
+supply measured binary floating-point arrays, index memberships and topology recipes;
+they do not supply separate numerical execution loops, callbacks or style-specific SIMD
+adapters. Lower measured transformations offline into ordered shared numerical stages.
+Compile axis scheduling and parameter layout offline into explicit interleaved stages.
+Coordinate storage and numerical work use packed `x0,y0,z0,x1,y1,z1,...` order;
+each SIMD block spans adjacent coordinates, not a gathered column of one axis.
+Merge independent XYZ operations into these stages offline. Do not retain per-axis
+register columns behind an AoS wrapper, replicate one coordinate into three lanes,
+or recognize expressions at runtime to select specialized affine/interpolation paths.
+`ExecuteAffine`/`AffineWeights` and `ExecuteEdges`/`EdgeXyz`, including equivalent
+renamed recognition paths, are prohibited. The runtime executes the encoded operations
+without algebraic pattern matching. Preserve sparse constant axes and source/destination
+ownership. Inactive lanes retain their original bits, including signed zero and NaN payloads;
+identity multiplication/addition is not an unchanged-axis copy. The same executor
+serves fixed and movable structures, previews, permanent generation and every LOD.
+Geometry/topology preparation and native realization remain separate from coordinate
+execution; this rule does not introduce SIMD operations into asset database or mesh APIs.
+Use contiguous source/target coordinate spans directly where the recorded membership
+is contiguous. Sparse memberships may adapt whole XYZ records, never transpose them
+into axis columns. Preserve aliased-read snapshots and ordered duplicate writes.
+The completed owned AoS target is the source of the native position bytes: do not
+unpack it into another scalar XYZ array before mesh construction. Scalar coefficient
+and frame calculations are distinct from vertex storage and must be reported as such.
+
+Keep operand bits and evaluation boundaries distinct. Binary32 storage does not imply
+that an existing runtime rounds every intermediate to binary32. Preserve the original
+runtime's intermediate precision, expression order, explicit float-rounding boundaries
+and duplicate-write semantics in the encoded stages. Do not enable a different global
+JIT floating-point mode, add fused operations or relax equivalence tolerances to make a
+SIMD backend pass. Verify actual packed machine instructions on the supported game runtime;
+a vector-shaped API or a scalar-emulated library is not SIMD evidence. Report unsupported
+execution and remaining scalar structure paths explicitly; an unused kernel or partial
+caller migration is not completion of this architecture.
+
 Use `AffineGeometry` for CPU numerical execution. Existing per-vertex coefficient
 arrays and part-range recipes are sparse matrix storage; they need not expand into
 a dense matrix per vertex. Keep their BBN1 typed payloads inside independently readable embedded
 resources and preserve exact numeric bits when the existing representation suffices. Decode reusable coefficient tables
-once. General XYZ matrices and specialized scale, translation and single-coefficient
+once within their owning generation request. General XYZ matrices and specialized scale, translation and single-coefficient
 rows share the same numerical execution path. Avoid extra zero operations on
 constant axes and do not fuse or reassociate measured multiply/add operations.
 
@@ -356,6 +419,9 @@ resource integrity check, numerical equivalence/race checks, relevant measured
 geometry checks and localization checks before deployment. Generated native assets
 must remain usable without the mod. Record snapshot and parallel-plan timings;
 build success and microbenchmarks do not prove an in-game speed improvement.
+Compare executors with identical threading and nesting settings, including the real
+outer-LOD worker context. Include dispatch, sparse adaptation, allocation and native
+position publication costs; report cold decoding separately from warm execution.
 
 The original authoring Prefab need not be installed. Required native game/DLC content and
 permitted packaged resources must still be available; hardcoded numbers do not replace missing
@@ -1739,17 +1805,45 @@ dependencies for every inspected owner, including bridges with valid live refere
 metadata. Run the creation dependency traversal before live-reference validation; do not wait for
 missing materials or a version change. Keep existing complete copies unchanged, preserve UUID/CID
 and geometry, and report new copies as migration requiring restart. Resolve only original sources,
-permitted packaged resources or existing current-owner files. Unavailable sources and byte conflicts
-remain explicit migration failures under the policy above; never recover from another bridge.
+permitted packaged resources or existing current-owner files. Confirmed missing sources and byte conflicts
+remain migration failures under the policy above. An unresolved shadowed identity or unverifiable
+cache relation leaves this inspection unfinished. Never recover from another bridge.
+
+### Creation picker ordering and categories
+
+Order the upper network, lower network and bridge-style cards by their displayed names using the
+active game language's dictionary order. Use the stable ID as the ordinal tie-breaker. Refresh
+ordering on a language change. A network card and its type filter use the same native network
+category, regardless of the provider. Keep Road Builder provenance for identity, custom labels and
+import. The bridge-type filter uses explicit structural families keyed by stable style ID. Combine
+the selected family with search and the existing single/double-deck eligibility rules. Build the
+family options from the installed styles that match deck mode and search, before applying the
+selected family. Always offer All, including when no styles match. If the selected family disappears,
+reset it to All. An admitted style contributes its family in every compatible mode automatically.
+Extradosed styles retain their display names and share the cable-stayed filter. Filtering
+the visible list must not change the selected asset or the player's custom bridge name.
+
+Every mod-owned dropdown viewport fits its available options up to seven complete rows, including
+the All option where present. Short lists shrink to their contents; longer lists use the game scroll
+container to reach all remaining options. Row and viewport dimensions use the same scaling units.
+Popup padding and borders sit outside the seven-row viewport.
 
 ### Explicit bulk deletion
 
-The confirmed settings action to remove all bridges must run the same sequential deletion pipeline
-as individually deleting every Bridge Builder bridge. It is available in a ready main menu or loaded
-city. Permanently delete UUID-owned files, not move them. In a city remove placed bridge networks and
-wait for native entity cleanup before deleting files and unregistering the owned prefabs, including
-clearing tool/menu references. Keep the dangerous-operation confirmation, with localized
-"Continue removal" action and text describing permanent deletion and effects on other saves.
+Confirmed individual and bulk deletion finish in the current game session. The filesystem operation
+has two steps: match the exact immediate `ImportedData/b{UUID}` directory, then recursively delete
+that directory once. Single removal locates its UUID directly. Bulk removal matches only immediate
+UUID directories and uses the identical primitive for each. Never descend into directory links.
+Do not enumerate or check individual payloads, CIDs, proof files, hashes, duplicates or dependencies,
+move files to a holding directory, transfer registrations to another owner, or create deletion tickets.
+Independent copies in other UUID directories are intentional and outside the operation.
+
+Before that filesystem operation, stop placement, complete removal of placed instances, pause during
+save/load and drain native render/mesh/VT readers. Unregister only prefabs and user asset registrations
+owned by the target physical path. Verify those native indices and the absence of its directory before
+reporting success. An outstanding reader or incomplete removal must produce a retryable failure.
+The legacy reader imports confirmed native95 tickets, including previously detached directories.
+New deletion requests stay in memory. The current build ships without the native95 cleanup worker.
 Self-check retirement is separate: it still backs up/moves files and requires restart, without live
 prefab unregistration. Neither operation replaces the style-scoped deployment cleanup in section 13.
 
@@ -2028,3 +2122,7 @@ with zero sidewalks, one sidewalk and unequal left/right sidewalk widths when cl
 5. Integrate routing, UI and all supported languages; preserve fees, unlocks and identities.
 6. Build/deploy coherent increments and scope any necessary recovery to affected owned assets.
 7. Verify actual geometry, saved references and native behavior; label pending visual/cold-load checks.
+
+### Exact owner snapshot resolution during inspection
+
+When a native database cannot supply a dependency handle for the current owner, check its canonical CID-named snapshot and matching sidecar before classifying the bridge. Parse the saved bytes with the native Surface rules and traverse its persisted cache edges. Foreign-owner handles alone cannot establish that a dependency has disappeared. An unresolved shadowed identity or a virtual surface with unverifiable cache provenance leaves this inspection unfinished. Confirmed corruption and genuinely missing dependencies retain the section 19 migration policy.

@@ -41,8 +41,7 @@ internal static class MovableExistingMarkings
                     (x1-x0)/uvWidth, ((x0+x1)*.5f-area.min.x)/uvWidth-.5f, p.Yellow);
             }
     }
-    private static readonly (float X0, float Y0, float X1, float Y1, bool Yellow)[] Patterns =
-    {
+    private static (float X0, float Y0, float X1, float Y1, bool Yellow)[] Patterns => GenerationParameters.Get<(float X0, float Y0, float X1, float Y1, bool Yellow)[]>("BridgeBuilder.Bridges.MovableExistingMarkings.Patterns", () => new (float X0, float Y0, float X1, float Y1, bool Yellow)[] {
         (0.21484375f, 0f, 0.22265625f, 1f, false),
         (0.341796875f, 0f, 0.349609375f, 1f, false),
         (0.357421875f, 0f, 0.365234375f, 1f, false),
@@ -89,5 +88,5 @@ internal static class MovableExistingMarkings
         (0.021484375f, 0.890625f, 0.103515625f, 0.921875f, false),
         (0.740234375f, 0.921875f, 0.76171875f, 0.96875f, false),
         (0.021484375f, 0.953125f, 0.103515625f, 0.984375f, false),
-    };
+    });
 }

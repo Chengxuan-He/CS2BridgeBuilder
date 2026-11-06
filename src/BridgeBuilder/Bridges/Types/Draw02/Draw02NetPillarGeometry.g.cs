@@ -24,31 +24,29 @@ internal static class Draw02NetPillarGeometry
             throw new InvalidOperationException("Draw02 ordinary pillar geometry differs from the measured source.");
         var moved = (Vector3[])source.Clone();
         foreach (var group in data.Groups)
-            AffineGeometry.Indices(group.Vertices, index =>
-            {
-                moved[index].x = AffineGeometry.AddScaled(source[index].x, group.Weight, delta);
-            });
+            foreach (var coordinateRows in StructureRows.Stages(group.Vertices))
+                AffineGeometry.Execute(RangePrograms.Data, 0, new[] { source, moved }, Array.Empty<float[]>(), new float[] { group.Weight, delta }, count: coordinateRows.Length, indices: new[] { coordinateRows });
         return new MovableStructureModel.Plan(source, moved, new[] { indices }, new[] { new bool[data.Triangles] });
     }
 
     // Geometry SHA-256: 0ba06713b4f8acba50452d661d253854c1ae47580a3d16b71622c83a83d5b0d6
-    private static readonly (float Weight, int[] Vertices)[] Part0Lod0 = ReadPackedPart0Lod0();
+    private static (float Weight, int[] Vertices)[] Part0Lod0 => GenerationParameters.Get<(float Weight, int[] Vertices)[]>("BridgeBuilder.Bridges.Draw02NetPillarGeometry.Part0Lod0", () => ReadPackedPart0Lod0());
     // Geometry SHA-256: 3997103c0b4ec3ae671b68679aedb7ce9c55f9f124d36ce36bbe2688c1eea66a
-    private static readonly (float Weight, int[] Vertices)[] Part0Lod1 = ReadPackedPart0Lod1();
+    private static (float Weight, int[] Vertices)[] Part0Lod1 => GenerationParameters.Get<(float Weight, int[] Vertices)[]>("BridgeBuilder.Bridges.Draw02NetPillarGeometry.Part0Lod1", () => ReadPackedPart0Lod1());
     // Geometry SHA-256: ccd1bece339c0655fcd10a1bc914fa5dd618dc3608056e509158564ed555f661
-    private static readonly (float Weight, int[] Vertices)[] Part0Lod2 = ReadPackedPart0Lod2();
+    private static (float Weight, int[] Vertices)[] Part0Lod2 => GenerationParameters.Get<(float Weight, int[] Vertices)[]>("BridgeBuilder.Bridges.Draw02NetPillarGeometry.Part0Lod2", () => ReadPackedPart0Lod2());
     // Geometry SHA-256: da7d39bf29da8b843ac641a0714aec5af40595cd8817efbdaaec2acad3691964
-    private static readonly (float Weight, int[] Vertices)[] Part1Lod0 = ReadPackedPart1Lod0();
+    private static (float Weight, int[] Vertices)[] Part1Lod0 => GenerationParameters.Get<(float Weight, int[] Vertices)[]>("BridgeBuilder.Bridges.Draw02NetPillarGeometry.Part1Lod0", () => ReadPackedPart1Lod0());
     // Geometry SHA-256: 69c3765efb83c8365b704220feeb915591c455475490d397a14ea037fa9c5a5c
-    private static readonly (float Weight, int[] Vertices)[] Part1Lod1 = ReadPackedPart1Lod1();
+    private static (float Weight, int[] Vertices)[] Part1Lod1 => GenerationParameters.Get<(float Weight, int[] Vertices)[]>("BridgeBuilder.Bridges.Draw02NetPillarGeometry.Part1Lod1", () => ReadPackedPart1Lod1());
     // Geometry SHA-256: cc2fdef5dbd450118f23803d8bdd0a734a2b698618702360de188da55a40a184
-    private static readonly (float Weight, int[] Vertices)[] Part1Lod2 = ReadPackedPart1Lod2();
+    private static (float Weight, int[] Vertices)[] Part1Lod2 => GenerationParameters.Get<(float Weight, int[] Vertices)[]>("BridgeBuilder.Bridges.Draw02NetPillarGeometry.Part1Lod2", () => ReadPackedPart1Lod2());
     // Geometry SHA-256: 2ff3e7c0cb0cb22b548ecaec5c6c052b32f7075e31b1515ebe22a02782ee61df
-    private static readonly (float Weight, int[] Vertices)[] Part2Lod0 = ReadPackedPart2Lod0();
+    private static (float Weight, int[] Vertices)[] Part2Lod0 => GenerationParameters.Get<(float Weight, int[] Vertices)[]>("BridgeBuilder.Bridges.Draw02NetPillarGeometry.Part2Lod0", () => ReadPackedPart2Lod0());
     // Geometry SHA-256: 9df8cd938c7f3894a3c4806c8b31e4f57aa8b91e292ff677a5869362a1beea96
-    private static readonly (float Weight, int[] Vertices)[] Part2Lod1 = ReadPackedPart2Lod1();
+    private static (float Weight, int[] Vertices)[] Part2Lod1 => GenerationParameters.Get<(float Weight, int[] Vertices)[]>("BridgeBuilder.Bridges.Draw02NetPillarGeometry.Part2Lod1", () => ReadPackedPart2Lod1());
     // Geometry SHA-256: 6f642c715723a21e75af5e9e8d194ed0af13af151e0db085cb69b6397313ab24
-    private static readonly (float Weight, int[] Vertices)[] Part2Lod2 = ReadPackedPart2Lod2();
+    private static (float Weight, int[] Vertices)[] Part2Lod2 => GenerationParameters.Get<(float Weight, int[] Vertices)[]>("BridgeBuilder.Bridges.Draw02NetPillarGeometry.Part2Lod2", () => ReadPackedPart2Lod2());
     private static (float Weight, int[] Vertices)[] ReadPackedPart0Lod0()
     {
         var d = Numeric_Types_Draw02_Draw02NetPillarGeometry_g_cs.Values;
@@ -219,11 +217,23 @@ internal static class Draw02NetPillarGeometry
             values[50 + i] = (d.F32[76 + i * 1], new[] { d.I32[2400 + i * 2], d.I32[2401 + i * 2], });
         return values;
     }
+
+    private static class RangePrograms
+    {
+        static RangePrograms()
+        {
+        }
+
+        internal static HardcodedNumbers Data => GenerationParameters.Get<HardcodedNumbers>("BridgeBuilder.Bridges.Draw02NetPillarGeometry.RangePrograms.Data", () => HardcodedNumbers.Load("Types_Draw02_Draw02NetPillarGeometry_RangePrograms"));
+    }
 }
 
 // Embedded numerical arrays: Types_Draw02_Draw02NetPillarGeometry_g_cs
 internal static class Numeric_Types_Draw02_Draw02NetPillarGeometry_g_cs
 {
-    static Numeric_Types_Draw02_Draw02NetPillarGeometry_g_cs() {}
-    internal static readonly HardcodedNumbers Values = HardcodedNumbers.Load("Types_Draw02_Draw02NetPillarGeometry_g_cs");
+    static Numeric_Types_Draw02_Draw02NetPillarGeometry_g_cs()
+    {
+    }
+
+    internal static HardcodedNumbers Values => GenerationParameters.Get<HardcodedNumbers>("BridgeBuilder.Bridges.Numeric_Types_Draw02_Draw02NetPillarGeometry_g_cs.Values", () => HardcodedNumbers.Load("Types_Draw02_Draw02NetPillarGeometry_g_cs"));
 }

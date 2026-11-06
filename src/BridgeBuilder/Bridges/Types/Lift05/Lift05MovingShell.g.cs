@@ -10,340 +10,44 @@ internal static class Lift05MovingShell
     {
         var data = lod switch
         {
-            0 => (Count: Numeric_Types_Lift05_Lift05MovingShell_g_cs.Values.I32[0], Faces: Numeric_Types_Lift05_Lift05MovingShell_g_cs.Values.I32[1], Motion: Motion0, Edges: Edges0, Fragments: Fragments0),
-            1 => (Count: Numeric_Types_Lift05_Lift05MovingShell_g_cs.Values.I32[2], Faces: Numeric_Types_Lift05_Lift05MovingShell_g_cs.Values.I32[3], Motion: Motion1, Edges: Edges1, Fragments: Fragments1),
-            2 => (Count: Numeric_Types_Lift05_Lift05MovingShell_g_cs.Values.I32[4], Faces: Numeric_Types_Lift05_Lift05MovingShell_g_cs.Values.I32[5], Motion: Motion2, Edges: Edges2, Fragments: Fragments2),
+            0 => (Count: Numeric_Types_Lift05_Lift05MovingShell_g_cs.Values.I32[0], Faces: Numeric_Types_Lift05_Lift05MovingShell_g_cs.Values.I32[1], Edges: Edges0, Fragments: Fragments0),
+            1 => (Count: Numeric_Types_Lift05_Lift05MovingShell_g_cs.Values.I32[2], Faces: Numeric_Types_Lift05_Lift05MovingShell_g_cs.Values.I32[3], Edges: Edges1, Fragments: Fragments1),
+            2 => (Count: Numeric_Types_Lift05_Lift05MovingShell_g_cs.Values.I32[4], Faces: Numeric_Types_Lift05_Lift05MovingShell_g_cs.Values.I32[5], Edges: Edges2, Fragments: Fragments2),
             _ => throw new ArgumentOutOfRangeException(nameof(lod))};
         if (source.Length != data.Count || indices.Length != data.Faces * Numeric_Types_Lift05_Lift05MovingShell_g_cs.Values.I32[6] || !float.IsFinite(delta))
             throw new InvalidOperationException("Lift05 moving shell requires their native source.");
         var positions = (Vector3[])source.Clone();
-        foreach (var item in data.Motion)
-            AffineGeometry.For(item.First, checked((item.Last) + 1), i =>
-            {
-                positions[i].x = AffineGeometry.AddScaled(source[i].x, item.Weight, delta);
-            });
+        AffineGeometry.Execute(BatchProgram0.Data, lod, new[] { source, positions }, Array.Empty<float[]>(), new float[] { delta });
         var edges = new MovableStructureModel.EdgeVertex[data.Edges.Length];
         var x = new float[edges.Length];
-        for (var i = Numeric_Types_Lift05_Lift05MovingShell_g_cs.Values.I32[7]; i < edges.Length; i++)
         {
-            var edge = data.Edges[i];
-            edges[i] = new MovableStructureModel.EdgeVertex(edge.A, edge.B, edge.Fraction);
-            x[i] = AffineGeometry.AddScaled(Mathf.LerpUnclamped(source[edge.A].x, source[edge.B].x, edge.Fraction), edge.Weight, delta);
+            {
+                for (var i = Numeric_Types_Lift05_Lift05MovingShell_g_cs.Values.I32[7]; i < edges.Length; i++)
+                {
+                    var edge = data.Edges[i];
+                    edges[i] = new MovableStructureModel.EdgeVertex(edge.A, edge.B, edge.Fraction);
+                }
+            }
+
+            AffineGeometry.Execute(InterpolationProgram0.Data, lod, new[] { source }, new[] { x }, new float[] { delta });
         }
 
         return new MovableStructureModel.Plan(source, positions, new[] { indices }, new[] { new bool[data.Faces] }, addedVertices: edges, fragments: data.Fragments, constructedX: x);
     }
 
     // Geometry SHA-256: 10a9c40e522c91debff4bc0251dbe93980cac6b92ff6b176c216e27ba52c05fb
-    private static readonly (int First, int Last, float Weight)[] Motion0 = ReadPackedMotion0();
-    private static readonly (int A, int B, float Fraction, int Weight)[] Edges0 =
-    {
-    };
-    private static readonly MovableStructureModel.Fragment[] Fragments0 =
-    {
-    };
+    private static (int A, int B, float Fraction, int Weight)[] Edges0 => GenerationParameters.Get<(int A, int B, float Fraction, int Weight)[]>("BridgeBuilder.Bridges.Lift05MovingShell.Edges0", () => new (int A, int B, float Fraction, int Weight)[] {
+    });
+    private static MovableStructureModel.Fragment[] Fragments0 => GenerationParameters.Get<MovableStructureModel.Fragment[]>("BridgeBuilder.Bridges.Lift05MovingShell.Fragments0", () => new MovableStructureModel.Fragment[] {
+    });
     // Geometry SHA-256: dc4b8d4ae9688952992b03d724d8549cdb79f52eb0877c7f6fe62d1246ce286e
-    private static readonly (int First, int Last, float Weight)[] Motion1 = ReadPackedMotion1();
-    private static readonly (int A, int B, float Fraction, int Weight)[] Edges1 = ReadPackedEdges1();
-    private static readonly MovableStructureModel.Fragment[] Fragments1 = ReadPackedFragments1();
+    private static (int A, int B, float Fraction, int Weight)[] Edges1 => GenerationParameters.Get<(int A, int B, float Fraction, int Weight)[]>("BridgeBuilder.Bridges.Lift05MovingShell.Edges1", () => ReadPackedEdges1());
+    private static MovableStructureModel.Fragment[] Fragments1 => GenerationParameters.Get<MovableStructureModel.Fragment[]>("BridgeBuilder.Bridges.Lift05MovingShell.Fragments1", () => ReadPackedFragments1());
     // Geometry SHA-256: 6ea1ea24f714feca8794c31500c743e3c599067a9da37a46ae83c1eaa8bc4160
-    private static readonly (int First, int Last, float Weight)[] Motion2 = ReadPackedMotion2();
-    private static readonly (int A, int B, float Fraction, int Weight)[] Edges2 =
-    {
-    };
-    private static readonly MovableStructureModel.Fragment[] Fragments2 =
-    {
-    };
-    private static (int First, int Last, float Weight)[] ReadPackedMotion0()
-    {
-        var d = Numeric_Types_Lift05_Lift05MovingShell_g_cs.Values;
-        var values = new (int First, int Last, float Weight)[309];
-        for (int i = 0; i < 35; i++)
-            values[0 + i] = (d.I32[8 + i * 2], d.I32[9 + i * 2], -d.F32[0 + i * 1]);
-        for (int i = 0; i < 1; i++)
-            values[35 + i] = (d.I32[78 + i * 2], d.I32[79 + i * 2], d.F32[35 + i * 1]);
-        for (int i = 0; i < 2; i++)
-            values[36 + i] = (d.I32[80 + i * 2], d.I32[81 + i * 2], -d.F32[36 + i * 1]);
-        for (int i = 0; i < 2; i++)
-            values[38 + i] = (d.I32[84 + i * 2], d.I32[85 + i * 2], d.F32[38 + i * 1]);
-        for (int i = 0; i < 2; i++)
-            values[40 + i] = (d.I32[88 + i * 2], d.I32[89 + i * 2], -d.F32[40 + i * 1]);
-        for (int i = 0; i < 2; i++)
-            values[42 + i] = (d.I32[92 + i * 2], d.I32[93 + i * 2], d.F32[42 + i * 1]);
-        for (int i = 0; i < 5; i++)
-            values[44 + i] = (d.I32[96 + i * 2], d.I32[97 + i * 2], -d.F32[44 + i * 1]);
-        for (int i = 0; i < 1; i++)
-            values[49 + i] = (d.I32[106 + i * 2], d.I32[107 + i * 2], d.F32[49 + i * 1]);
-        for (int i = 0; i < 1; i++)
-            values[50 + i] = (d.I32[108 + i * 2], d.I32[109 + i * 2], -d.F32[50 + i * 1]);
-        for (int i = 0; i < 1; i++)
-            values[51 + i] = (d.I32[110 + i * 2], d.I32[111 + i * 2], d.F32[51 + i * 1]);
-        for (int i = 0; i < 1; i++)
-            values[52 + i] = (d.I32[112 + i * 2], d.I32[113 + i * 2], -d.F32[52 + i * 1]);
-        for (int i = 0; i < 2; i++)
-            values[53 + i] = (d.I32[114 + i * 2], d.I32[115 + i * 2], d.F32[53 + i * 1]);
-        for (int i = 0; i < 1; i++)
-            values[55 + i] = (d.I32[118 + i * 2], d.I32[119 + i * 2], -d.F32[55 + i * 1]);
-        for (int i = 0; i < 4; i++)
-            values[56 + i] = (d.I32[120 + i * 2], d.I32[121 + i * 2], d.F32[56 + i * 1]);
-        for (int i = 0; i < 2; i++)
-            values[60 + i] = (d.I32[128 + i * 2], d.I32[129 + i * 2], -d.F32[60 + i * 1]);
-        for (int i = 0; i < 2; i++)
-            values[62 + i] = (d.I32[132 + i * 2], d.I32[133 + i * 2], d.F32[62 + i * 1]);
-        for (int i = 0; i < 1; i++)
-            values[64 + i] = (d.I32[136 + i * 2], d.I32[137 + i * 2], -d.F32[64 + i * 1]);
-        for (int i = 0; i < 1; i++)
-            values[65 + i] = (d.I32[138 + i * 2], d.I32[139 + i * 2], d.F32[65 + i * 1]);
-        for (int i = 0; i < 3; i++)
-            values[66 + i] = (d.I32[140 + i * 2], d.I32[141 + i * 2], -d.F32[66 + i * 1]);
-        for (int i = 0; i < 5; i++)
-            values[69 + i] = (d.I32[146 + i * 2], d.I32[147 + i * 2], d.F32[69 + i * 1]);
-        for (int i = 0; i < 1; i++)
-            values[74 + i] = (d.I32[156 + i * 2], d.I32[157 + i * 2], -d.F32[74 + i * 1]);
-        for (int i = 0; i < 1; i++)
-            values[75 + i] = (d.I32[158 + i * 2], d.I32[159 + i * 2], d.F32[75 + i * 1]);
-        for (int i = 0; i < 1; i++)
-            values[76 + i] = (d.I32[160 + i * 2], d.I32[161 + i * 2], -d.F32[76 + i * 1]);
-        for (int i = 0; i < 1; i++)
-            values[77 + i] = (d.I32[162 + i * 2], d.I32[163 + i * 2], d.F32[77 + i * 1]);
-        for (int i = 0; i < 3; i++)
-            values[78 + i] = (d.I32[164 + i * 2], d.I32[165 + i * 2], -d.F32[78 + i * 1]);
-        for (int i = 0; i < 5; i++)
-            values[81 + i] = (d.I32[170 + i * 2], d.I32[171 + i * 2], d.F32[81 + i * 1]);
-        for (int i = 0; i < 1; i++)
-            values[86 + i] = (d.I32[180 + i * 2], d.I32[181 + i * 2], -d.F32[86 + i * 1]);
-        for (int i = 0; i < 3; i++)
-            values[87 + i] = (d.I32[182 + i * 2], d.I32[183 + i * 2], d.F32[87 + i * 1]);
-        for (int i = 0; i < 1; i++)
-            values[90 + i] = (d.I32[188 + i * 2], d.I32[189 + i * 2], -d.F32[90 + i * 1]);
-        for (int i = 0; i < 1; i++)
-            values[91 + i] = (d.I32[190 + i * 2], d.I32[191 + i * 2], d.F32[91 + i * 1]);
-        for (int i = 0; i < 2; i++)
-            values[92 + i] = (d.I32[192 + i * 2], d.I32[193 + i * 2], -d.F32[92 + i * 1]);
-        for (int i = 0; i < 5; i++)
-            values[94 + i] = (d.I32[196 + i * 2], d.I32[197 + i * 2], d.F32[94 + i * 1]);
-        for (int i = 0; i < 2; i++)
-            values[99 + i] = (d.I32[206 + i * 2], d.I32[207 + i * 2], -d.F32[99 + i * 1]);
-        for (int i = 0; i < 1; i++)
-            values[101 + i] = (d.I32[210 + i * 2], d.I32[211 + i * 2], d.F32[101 + i * 1]);
-        for (int i = 0; i < 1; i++)
-            values[102 + i] = (d.I32[212 + i * 2], d.I32[213 + i * 2], -d.F32[102 + i * 1]);
-        for (int i = 0; i < 1; i++)
-            values[103 + i] = (d.I32[214 + i * 2], d.I32[215 + i * 2], d.F32[103 + i * 1]);
-        for (int i = 0; i < 36; i++)
-            values[104 + i] = (d.I32[216 + i * 2], d.I32[217 + i * 2], -d.F32[104 + i * 1]);
-        for (int i = 0; i < 41; i++)
-            values[140 + i] = (d.I32[288 + i * 2], d.I32[289 + i * 2], d.F32[140 + i * 1]);
-        for (int i = 0; i < 2; i++)
-            values[181 + i] = (d.I32[370 + i * 2], d.I32[371 + i * 2], -d.F32[181 + i * 1]);
-        for (int i = 0; i < 1; i++)
-            values[183 + i] = (d.I32[374 + i * 2], d.I32[375 + i * 2], d.F32[183 + i * 1]);
-        for (int i = 0; i < 1; i++)
-            values[184 + i] = (d.I32[376 + i * 2], d.I32[377 + i * 2], -d.F32[184 + i * 1]);
-        for (int i = 0; i < 1; i++)
-            values[185 + i] = (d.I32[378 + i * 2], d.I32[379 + i * 2], d.F32[185 + i * 1]);
-        for (int i = 0; i < 1; i++)
-            values[186 + i] = (d.I32[380 + i * 2], d.I32[381 + i * 2], -d.F32[186 + i * 1]);
-        for (int i = 0; i < 1; i++)
-            values[187 + i] = (d.I32[382 + i * 2], d.I32[383 + i * 2], d.F32[187 + i * 1]);
-        for (int i = 0; i < 1; i++)
-            values[188 + i] = (d.I32[384 + i * 2], d.I32[385 + i * 2], -d.F32[188 + i * 1]);
-        for (int i = 0; i < 1; i++)
-            values[189 + i] = (d.I32[386 + i * 2], d.I32[387 + i * 2], d.F32[189 + i * 1]);
-        for (int i = 0; i < 40; i++)
-            values[190 + i] = (d.I32[388 + i * 2], d.I32[389 + i * 2], -d.F32[190 + i * 1]);
-        for (int i = 0; i < 62; i++)
-            values[230 + i] = (d.I32[468 + i * 2], d.I32[469 + i * 2], d.F32[230 + i * 1]);
-        for (int i = 0; i < 1; i++)
-            values[292 + i] = (d.I32[592 + i * 2], d.I32[593 + i * 2], -d.F32[292 + i * 1]);
-        for (int i = 0; i < 1; i++)
-            values[293 + i] = (d.I32[594 + i * 2], d.I32[595 + i * 2], d.F32[293 + i * 1]);
-        for (int i = 0; i < 1; i++)
-            values[294 + i] = (d.I32[596 + i * 2], d.I32[597 + i * 2], -d.F32[294 + i * 1]);
-        for (int i = 0; i < 1; i++)
-            values[295 + i] = (d.I32[598 + i * 2], d.I32[599 + i * 2], d.F32[295 + i * 1]);
-        for (int i = 0; i < 1; i++)
-            values[296 + i] = (d.I32[600 + i * 2], d.I32[601 + i * 2], -d.F32[296 + i * 1]);
-        for (int i = 0; i < 1; i++)
-            values[297 + i] = (d.I32[602 + i * 2], d.I32[603 + i * 2], d.F32[297 + i * 1]);
-        for (int i = 0; i < 1; i++)
-            values[298 + i] = (d.I32[604 + i * 2], d.I32[605 + i * 2], -d.F32[298 + i * 1]);
-        for (int i = 0; i < 1; i++)
-            values[299 + i] = (d.I32[606 + i * 2], d.I32[607 + i * 2], d.F32[299 + i * 1]);
-        for (int i = 0; i < 1; i++)
-            values[300 + i] = (d.I32[608 + i * 2], d.I32[609 + i * 2], -d.F32[300 + i * 1]);
-        for (int i = 0; i < 1; i++)
-            values[301 + i] = (d.I32[610 + i * 2], d.I32[611 + i * 2], d.F32[301 + i * 1]);
-        for (int i = 0; i < 1; i++)
-            values[302 + i] = (d.I32[612 + i * 2], d.I32[613 + i * 2], -d.F32[302 + i * 1]);
-        for (int i = 0; i < 1; i++)
-            values[303 + i] = (d.I32[614 + i * 2], d.I32[615 + i * 2], d.F32[303 + i * 1]);
-        for (int i = 0; i < 1; i++)
-            values[304 + i] = (d.I32[616 + i * 2], d.I32[617 + i * 2], -d.F32[304 + i * 1]);
-        for (int i = 0; i < 1; i++)
-            values[305 + i] = (d.I32[618 + i * 2], d.I32[619 + i * 2], d.F32[305 + i * 1]);
-        for (int i = 0; i < 1; i++)
-            values[306 + i] = (d.I32[620 + i * 2], d.I32[621 + i * 2], -d.F32[306 + i * 1]);
-        for (int i = 0; i < 1; i++)
-            values[307 + i] = (d.I32[622 + i * 2], d.I32[623 + i * 2], d.F32[307 + i * 1]);
-        for (int i = 0; i < 1; i++)
-            values[308 + i] = (d.I32[624 + i * 2], d.I32[625 + i * 2], -d.F32[308 + i * 1]);
-        return values;
-    }
-
-    private static (int First, int Last, float Weight)[] ReadPackedMotion1()
-    {
-        var d = Numeric_Types_Lift05_Lift05MovingShell_g_cs.Values;
-        var values = new (int First, int Last, float Weight)[299];
-        for (int i = 0; i < 42; i++)
-            values[0 + i] = (d.I32[626 + i * 2], d.I32[627 + i * 2], -d.F32[309 + i * 1]);
-        for (int i = 0; i < 1; i++)
-            values[42 + i] = (d.I32[710 + i * 2], d.I32[711 + i * 2], d.F32[351 + i * 1]);
-        for (int i = 0; i < 5; i++)
-            values[43 + i] = (d.I32[712 + i * 2], d.I32[713 + i * 2], -d.F32[352 + i * 1]);
-        for (int i = 0; i < 1; i++)
-            values[48 + i] = (d.I32[722 + i * 2], d.I32[723 + i * 2], d.F32[357 + i * 1]);
-        for (int i = 0; i < 1; i++)
-            values[49 + i] = (d.I32[724 + i * 2], d.I32[725 + i * 2], -d.F32[358 + i * 1]);
-        for (int i = 0; i < 1; i++)
-            values[50 + i] = (d.I32[726 + i * 2], d.I32[727 + i * 2], d.F32[359 + i * 1]);
-        for (int i = 0; i < 1; i++)
-            values[51 + i] = (d.I32[728 + i * 2], d.I32[729 + i * 2], -d.F32[360 + i * 1]);
-        for (int i = 0; i < 1; i++)
-            values[52 + i] = (d.I32[730 + i * 2], d.I32[731 + i * 2], d.F32[361 + i * 1]);
-        for (int i = 0; i < 1; i++)
-            values[53 + i] = (d.I32[732 + i * 2], d.I32[733 + i * 2], -d.F32[362 + i * 1]);
-        for (int i = 0; i < 1; i++)
-            values[54 + i] = (d.I32[734 + i * 2], d.I32[735 + i * 2], d.F32[363 + i * 1]);
-        for (int i = 0; i < 1; i++)
-            values[55 + i] = (d.I32[736 + i * 2], d.I32[737 + i * 2], -d.F32[364 + i * 1]);
-        for (int i = 0; i < 1; i++)
-            values[56 + i] = (d.I32[738 + i * 2], d.I32[739 + i * 2], d.F32[365 + i * 1]);
-        for (int i = 0; i < 1; i++)
-            values[57 + i] = (d.I32[740 + i * 2], d.I32[741 + i * 2], -d.F32[366 + i * 1]);
-        for (int i = 0; i < 1; i++)
-            values[58 + i] = (d.I32[742 + i * 2], d.I32[743 + i * 2], d.F32[367 + i * 1]);
-        for (int i = 0; i < 1; i++)
-            values[59 + i] = (d.I32[744 + i * 2], d.I32[745 + i * 2], -d.F32[368 + i * 1]);
-        for (int i = 0; i < 4; i++)
-            values[60 + i] = (d.I32[746 + i * 2], d.I32[747 + i * 2], d.F32[369 + i * 1]);
-        for (int i = 0; i < 2; i++)
-            values[64 + i] = (d.I32[754 + i * 2], d.I32[755 + i * 2], -d.F32[373 + i * 1]);
-        for (int i = 0; i < 2; i++)
-            values[66 + i] = (d.I32[758 + i * 2], d.I32[759 + i * 2], d.F32[375 + i * 1]);
-        for (int i = 0; i < 1; i++)
-            values[68 + i] = (d.I32[762 + i * 2], d.I32[763 + i * 2], -d.F32[377 + i * 1]);
-        for (int i = 0; i < 1; i++)
-            values[69 + i] = (d.I32[764 + i * 2], d.I32[765 + i * 2], d.F32[378 + i * 1]);
-        for (int i = 0; i < 2; i++)
-            values[70 + i] = (d.I32[766 + i * 2], d.I32[767 + i * 2], -d.F32[379 + i * 1]);
-        for (int i = 0; i < 5; i++)
-            values[72 + i] = (d.I32[770 + i * 2], d.I32[771 + i * 2], d.F32[381 + i * 1]);
-        for (int i = 0; i < 1; i++)
-            values[77 + i] = (d.I32[780 + i * 2], d.I32[781 + i * 2], -d.F32[386 + i * 1]);
-        for (int i = 0; i < 1; i++)
-            values[78 + i] = (d.I32[782 + i * 2], d.I32[783 + i * 2], d.F32[387 + i * 1]);
-        for (int i = 0; i < 1; i++)
-            values[79 + i] = (d.I32[784 + i * 2], d.I32[785 + i * 2], -d.F32[388 + i * 1]);
-        for (int i = 0; i < 1; i++)
-            values[80 + i] = (d.I32[786 + i * 2], d.I32[787 + i * 2], d.F32[389 + i * 1]);
-        for (int i = 0; i < 3; i++)
-            values[81 + i] = (d.I32[788 + i * 2], d.I32[789 + i * 2], -d.F32[390 + i * 1]);
-        for (int i = 0; i < 5; i++)
-            values[84 + i] = (d.I32[794 + i * 2], d.I32[795 + i * 2], d.F32[393 + i * 1]);
-        for (int i = 0; i < 1; i++)
-            values[89 + i] = (d.I32[804 + i * 2], d.I32[805 + i * 2], -d.F32[398 + i * 1]);
-        for (int i = 0; i < 3; i++)
-            values[90 + i] = (d.I32[806 + i * 2], d.I32[807 + i * 2], d.F32[399 + i * 1]);
-        for (int i = 0; i < 1; i++)
-            values[93 + i] = (d.I32[812 + i * 2], d.I32[813 + i * 2], -d.F32[402 + i * 1]);
-        for (int i = 0; i < 1; i++)
-            values[94 + i] = (d.I32[814 + i * 2], d.I32[815 + i * 2], d.F32[403 + i * 1]);
-        for (int i = 0; i < 2; i++)
-            values[95 + i] = (d.I32[816 + i * 2], d.I32[817 + i * 2], -d.F32[404 + i * 1]);
-        for (int i = 0; i < 5; i++)
-            values[97 + i] = (d.I32[820 + i * 2], d.I32[821 + i * 2], d.F32[406 + i * 1]);
-        for (int i = 0; i < 2; i++)
-            values[102 + i] = (d.I32[830 + i * 2], d.I32[831 + i * 2], -d.F32[411 + i * 1]);
-        for (int i = 0; i < 1; i++)
-            values[104 + i] = (d.I32[834 + i * 2], d.I32[835 + i * 2], d.F32[413 + i * 1]);
-        for (int i = 0; i < 1; i++)
-            values[105 + i] = (d.I32[836 + i * 2], d.I32[837 + i * 2], -d.F32[414 + i * 1]);
-        for (int i = 0; i < 1; i++)
-            values[106 + i] = (d.I32[838 + i * 2], d.I32[839 + i * 2], d.F32[415 + i * 1]);
-        for (int i = 0; i < 36; i++)
-            values[107 + i] = (d.I32[840 + i * 2], d.I32[841 + i * 2], -d.F32[416 + i * 1]);
-        for (int i = 0; i < 20; i++)
-            values[143 + i] = (d.I32[912 + i * 2], d.I32[913 + i * 2], d.F32[452 + i * 1]);
-        for (int i = 0; i < 2; i++)
-            values[163 + i] = (d.I32[952 + i * 2], d.I32[953 + i * 2], -d.F32[472 + i * 1]);
-        for (int i = 0; i < 2; i++)
-            values[165 + i] = (d.I32[956 + i * 2], d.I32[957 + i * 2], d.F32[474 + i * 1]);
-        for (int i = 0; i < 2; i++)
-            values[167 + i] = (d.I32[960 + i * 2], d.I32[961 + i * 2], -d.F32[476 + i * 1]);
-        for (int i = 0; i < 2; i++)
-            values[169 + i] = (d.I32[964 + i * 2], d.I32[965 + i * 2], d.F32[478 + i * 1]);
-        for (int i = 0; i < 1; i++)
-            values[171 + i] = (d.I32[968 + i * 2], d.I32[969 + i * 2], -d.F32[480 + i * 1]);
-        for (int i = 0; i < 1; i++)
-            values[172 + i] = (d.I32[970 + i * 2], d.I32[971 + i * 2], d.F32[481 + i * 1]);
-        for (int i = 0; i < 1; i++)
-            values[173 + i] = (d.I32[972 + i * 2], d.I32[973 + i * 2], -d.F32[482 + i * 1]);
-        for (int i = 0; i < 1; i++)
-            values[174 + i] = (d.I32[974 + i * 2], d.I32[975 + i * 2], d.F32[483 + i * 1]);
-        for (int i = 0; i < 1; i++)
-            values[175 + i] = (d.I32[976 + i * 2], d.I32[977 + i * 2], -d.F32[484 + i * 1]);
-        for (int i = 0; i < 1; i++)
-            values[176 + i] = (d.I32[978 + i * 2], d.I32[979 + i * 2], d.F32[485 + i * 1]);
-        for (int i = 0; i < 1; i++)
-            values[177 + i] = (d.I32[980 + i * 2], d.I32[981 + i * 2], -d.F32[486 + i * 1]);
-        for (int i = 0; i < 1; i++)
-            values[178 + i] = (d.I32[982 + i * 2], d.I32[983 + i * 2], d.F32[487 + i * 1]);
-        for (int i = 0; i < 1; i++)
-            values[179 + i] = (d.I32[984 + i * 2], d.I32[985 + i * 2], -d.F32[488 + i * 1]);
-        for (int i = 0; i < 1; i++)
-            values[180 + i] = (d.I32[986 + i * 2], d.I32[987 + i * 2], d.F32[489 + i * 1]);
-        for (int i = 0; i < 39; i++)
-            values[181 + i] = (d.I32[988 + i * 2], d.I32[989 + i * 2], -d.F32[490 + i * 1]);
-        for (int i = 0; i < 62; i++)
-            values[220 + i] = (d.I32[1066 + i * 2], d.I32[1067 + i * 2], d.F32[529 + i * 1]);
-        for (int i = 0; i < 1; i++)
-            values[282 + i] = (d.I32[1190 + i * 2], d.I32[1191 + i * 2], -d.F32[591 + i * 1]);
-        for (int i = 0; i < 1; i++)
-            values[283 + i] = (d.I32[1192 + i * 2], d.I32[1193 + i * 2], d.F32[592 + i * 1]);
-        for (int i = 0; i < 1; i++)
-            values[284 + i] = (d.I32[1194 + i * 2], d.I32[1195 + i * 2], -d.F32[593 + i * 1]);
-        for (int i = 0; i < 1; i++)
-            values[285 + i] = (d.I32[1196 + i * 2], d.I32[1197 + i * 2], d.F32[594 + i * 1]);
-        for (int i = 0; i < 1; i++)
-            values[286 + i] = (d.I32[1198 + i * 2], d.I32[1199 + i * 2], -d.F32[595 + i * 1]);
-        for (int i = 0; i < 1; i++)
-            values[287 + i] = (d.I32[1200 + i * 2], d.I32[1201 + i * 2], d.F32[596 + i * 1]);
-        for (int i = 0; i < 1; i++)
-            values[288 + i] = (d.I32[1202 + i * 2], d.I32[1203 + i * 2], -d.F32[597 + i * 1]);
-        for (int i = 0; i < 1; i++)
-            values[289 + i] = (d.I32[1204 + i * 2], d.I32[1205 + i * 2], d.F32[598 + i * 1]);
-        for (int i = 0; i < 1; i++)
-            values[290 + i] = (d.I32[1206 + i * 2], d.I32[1207 + i * 2], -d.F32[599 + i * 1]);
-        for (int i = 0; i < 1; i++)
-            values[291 + i] = (d.I32[1208 + i * 2], d.I32[1209 + i * 2], d.F32[600 + i * 1]);
-        for (int i = 0; i < 1; i++)
-            values[292 + i] = (d.I32[1210 + i * 2], d.I32[1211 + i * 2], -d.F32[601 + i * 1]);
-        for (int i = 0; i < 1; i++)
-            values[293 + i] = (d.I32[1212 + i * 2], d.I32[1213 + i * 2], d.F32[602 + i * 1]);
-        for (int i = 0; i < 1; i++)
-            values[294 + i] = (d.I32[1214 + i * 2], d.I32[1215 + i * 2], -d.F32[603 + i * 1]);
-        for (int i = 0; i < 1; i++)
-            values[295 + i] = (d.I32[1216 + i * 2], d.I32[1217 + i * 2], d.F32[604 + i * 1]);
-        for (int i = 0; i < 1; i++)
-            values[296 + i] = (d.I32[1218 + i * 2], d.I32[1219 + i * 2], -d.F32[605 + i * 1]);
-        for (int i = 0; i < 1; i++)
-            values[297 + i] = (d.I32[1220 + i * 2], d.I32[1221 + i * 2], d.F32[606 + i * 1]);
-        for (int i = 0; i < 1; i++)
-            values[298 + i] = (d.I32[1222 + i * 2], d.I32[1223 + i * 2], -d.F32[607 + i * 1]);
-        return values;
-    }
-
+    private static (int A, int B, float Fraction, int Weight)[] Edges2 => GenerationParameters.Get<(int A, int B, float Fraction, int Weight)[]>("BridgeBuilder.Bridges.Lift05MovingShell.Edges2", () => new (int A, int B, float Fraction, int Weight)[] {
+    });
+    private static MovableStructureModel.Fragment[] Fragments2 => GenerationParameters.Get<MovableStructureModel.Fragment[]>("BridgeBuilder.Bridges.Lift05MovingShell.Fragments2", () => new MovableStructureModel.Fragment[] {
+    });
     private static (int A, int B, float Fraction, int Weight)[] ReadPackedEdges1()
     {
         var d = Numeric_Types_Lift05_Lift05MovingShell_g_cs.Values;
@@ -362,65 +66,31 @@ internal static class Lift05MovingShell
         return values;
     }
 
-    private static (int First, int Last, float Weight)[] ReadPackedMotion2()
+    private static class BatchProgram0
     {
-        var d = Numeric_Types_Lift05_Lift05MovingShell_g_cs.Values;
-        var values = new (int First, int Last, float Weight)[28];
-        for (int i = 0; i < 5; i++)
-            values[0 + i] = (d.I32[1246 + i * 2], d.I32[1247 + i * 2], -d.F32[610 + i * 1]);
-        for (int i = 0; i < 1; i++)
-            values[5 + i] = (d.I32[1256 + i * 2], d.I32[1257 + i * 2], d.F32[615 + i * 1]);
-        for (int i = 0; i < 1; i++)
-            values[6 + i] = (d.I32[1258 + i * 2], d.I32[1259 + i * 2], -d.F32[616 + i * 1]);
-        for (int i = 0; i < 1; i++)
-            values[7 + i] = (d.I32[1260 + i * 2], d.I32[1261 + i * 2], d.F32[617 + i * 1]);
-        for (int i = 0; i < 1; i++)
-            values[8 + i] = (d.I32[1262 + i * 2], d.I32[1263 + i * 2], -d.F32[618 + i * 1]);
-        for (int i = 0; i < 1; i++)
-            values[9 + i] = (d.I32[1264 + i * 2], d.I32[1265 + i * 2], d.F32[619 + i * 1]);
-        for (int i = 0; i < 1; i++)
-            values[10 + i] = (d.I32[1266 + i * 2], d.I32[1267 + i * 2], -d.F32[620 + i * 1]);
-        for (int i = 0; i < 1; i++)
-            values[11 + i] = (d.I32[1268 + i * 2], d.I32[1269 + i * 2], d.F32[621 + i * 1]);
-        for (int i = 0; i < 1; i++)
-            values[12 + i] = (d.I32[1270 + i * 2], d.I32[1271 + i * 2], -d.F32[622 + i * 1]);
-        for (int i = 0; i < 1; i++)
-            values[13 + i] = (d.I32[1272 + i * 2], d.I32[1273 + i * 2], d.F32[623 + i * 1]);
-        for (int i = 0; i < 1; i++)
-            values[14 + i] = (d.I32[1274 + i * 2], d.I32[1275 + i * 2], -d.F32[624 + i * 1]);
-        for (int i = 0; i < 1; i++)
-            values[15 + i] = (d.I32[1276 + i * 2], d.I32[1277 + i * 2], d.F32[625 + i * 1]);
-        for (int i = 0; i < 1; i++)
-            values[16 + i] = (d.I32[1278 + i * 2], d.I32[1279 + i * 2], -d.F32[626 + i * 1]);
-        for (int i = 0; i < 1; i++)
-            values[17 + i] = (d.I32[1280 + i * 2], d.I32[1281 + i * 2], d.F32[627 + i * 1]);
-        for (int i = 0; i < 1; i++)
-            values[18 + i] = (d.I32[1282 + i * 2], d.I32[1283 + i * 2], -d.F32[628 + i * 1]);
-        for (int i = 0; i < 1; i++)
-            values[19 + i] = (d.I32[1284 + i * 2], d.I32[1285 + i * 2], d.F32[629 + i * 1]);
-        for (int i = 0; i < 1; i++)
-            values[20 + i] = (d.I32[1286 + i * 2], d.I32[1287 + i * 2], -d.F32[630 + i * 1]);
-        for (int i = 0; i < 1; i++)
-            values[21 + i] = (d.I32[1288 + i * 2], d.I32[1289 + i * 2], d.F32[631 + i * 1]);
-        for (int i = 0; i < 1; i++)
-            values[22 + i] = (d.I32[1290 + i * 2], d.I32[1291 + i * 2], -d.F32[632 + i * 1]);
-        for (int i = 0; i < 1; i++)
-            values[23 + i] = (d.I32[1292 + i * 2], d.I32[1293 + i * 2], d.F32[633 + i * 1]);
-        for (int i = 0; i < 1; i++)
-            values[24 + i] = (d.I32[1294 + i * 2], d.I32[1295 + i * 2], -d.F32[634 + i * 1]);
-        for (int i = 0; i < 1; i++)
-            values[25 + i] = (d.I32[1296 + i * 2], d.I32[1297 + i * 2], d.F32[635 + i * 1]);
-        for (int i = 0; i < 1; i++)
-            values[26 + i] = (d.I32[1298 + i * 2], d.I32[1299 + i * 2], -d.F32[636 + i * 1]);
-        for (int i = 0; i < 1; i++)
-            values[27 + i] = (d.I32[1300 + i * 2], d.I32[1301 + i * 2], d.F32[637 + i * 1]);
-        return values;
+        static BatchProgram0()
+        {
+        }
+
+        internal static HardcodedNumbers Data => GenerationParameters.Get<HardcodedNumbers>("BridgeBuilder.Bridges.Lift05MovingShell.BatchProgram0.Data", () => HardcodedNumbers.Load("Types_Lift05_Lift05MovingShell_BatchProgram0"));
+    }
+
+    private static class InterpolationProgram0
+    {
+        static InterpolationProgram0()
+        {
+        }
+
+        internal static HardcodedNumbers Data => GenerationParameters.Get<HardcodedNumbers>("BridgeBuilder.Bridges.Lift05MovingShell.InterpolationProgram0.Data", () => HardcodedNumbers.Load("Types_Lift05_Lift05MovingShell_InterpolationProgram0"));
     }
 }
 
 // Embedded numerical arrays: Types_Lift05_Lift05MovingShell_g_cs
 internal static class Numeric_Types_Lift05_Lift05MovingShell_g_cs
 {
-    static Numeric_Types_Lift05_Lift05MovingShell_g_cs() {}
-    internal static readonly HardcodedNumbers Values = HardcodedNumbers.Load("Types_Lift05_Lift05MovingShell_g_cs");
+    static Numeric_Types_Lift05_Lift05MovingShell_g_cs()
+    {
+    }
+
+    internal static HardcodedNumbers Values => GenerationParameters.Get<HardcodedNumbers>("BridgeBuilder.Bridges.Numeric_Types_Lift05_Lift05MovingShell_g_cs.Values", () => HardcodedNumbers.Load("Types_Lift05_Lift05MovingShell_g_cs"));
 }

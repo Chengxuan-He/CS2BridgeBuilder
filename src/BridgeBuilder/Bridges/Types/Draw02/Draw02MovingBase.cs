@@ -1,4 +1,6 @@
 using UnityEngine;
+using System;
+using System.Collections.Generic;
 
 namespace BridgeBuilder.Bridges;
 // Measured transverse supports immediately below the moving road, not hinge
@@ -13,12 +15,24 @@ internal static class Draw02MovingBase
         int row = lod * Numeric_Types_Draw02_Draw02MovingBase_cs.Values.I32[1];
         if (source.Length != data[row] || positions.Length != data[row])
             throw new System.InvalidOperationException("Draw02 moving base requires its measured main mesh.");
-        AffineGeometry.For(Numeric_Types_Draw02_Draw02MovingBase_cs.Values.I32[2], data[row + Numeric_Types_Draw02_Draw02MovingBase_cs.Values.I32[3]], i =>
+        var left = new List<int>();
+        var right = new List<int>();
+        var centre = new List<int>();
+        for (int i = Numeric_Types_Draw02_Draw02MovingBase_cs.Values.I32[2]; i < data[row + Numeric_Types_Draw02_Draw02MovingBase_cs.Values.I32[3]]; i++)
         {
             int vertex = data[data[row + Numeric_Types_Draw02_Draw02MovingBase_cs.Values.I32[4]] + i];
             float x = source[vertex].x;
-            positions[vertex].x = AffineGeometry.Translate(x, x < Numeric_Types_Draw02_Draw02MovingBase_cs.Values.I32[5] ? -delta : x > Numeric_Types_Draw02_Draw02MovingBase_cs.Values.I32[6] ? delta : Numeric_Types_Draw02_Draw02MovingBase_cs.Values.I32[7]);
-        });
+            if (x < Numeric_Types_Draw02_Draw02MovingBase_cs.Values.I32[5]) left.Add(vertex);
+            else if (x > Numeric_Types_Draw02_Draw02MovingBase_cs.Values.I32[6]) right.Add(vertex);
+            else centre.Add(vertex);
+        }
+        AffineGeometry.Execute(StructurePrograms.Data, StructurePrograms.NegativeTranslateX, new[] { source, positions },
+            Array.Empty<float[]>(), new[] { delta }, count: left.Count, indices: new[] { left.ToArray() });
+        AffineGeometry.Execute(StructurePrograms.Data, StructurePrograms.TranslateX, new[] { source, positions },
+            Array.Empty<float[]>(), new[] { delta }, count: right.Count, indices: new[] { right.ToArray() });
+        AffineGeometry.Execute(StructurePrograms.Data, StructurePrograms.TranslateX, new[] { source, positions },
+            Array.Empty<float[]>(), new float[] { Numeric_Types_Draw02_Draw02MovingBase_cs.Values.I32[7] },
+            count: centre.Count, indices: new[] { centre.ToArray() });
     }
 }
 
@@ -28,7 +42,7 @@ internal static class Draw02MovingBaseMeasurements
     {
     }
 
-    internal static readonly HardcodedNumbers Values = HardcodedNumbers.Load("Types_Draw02_MovingBaseMeasurements");
+    internal static HardcodedNumbers Values => GenerationParameters.Get<HardcodedNumbers>("BridgeBuilder.Bridges.Draw02MovingBaseMeasurements.Values", () => HardcodedNumbers.Load("Types_Draw02_MovingBaseMeasurements"));
 }
 
 // Embedded numerical arrays: Types_Draw02_Draw02MovingBase_cs
@@ -38,5 +52,5 @@ internal static class Numeric_Types_Draw02_Draw02MovingBase_cs
     {
     }
 
-    internal static readonly HardcodedNumbers Values = HardcodedNumbers.Load("Types_Draw02_Draw02MovingBase_cs");
+    internal static HardcodedNumbers Values => GenerationParameters.Get<HardcodedNumbers>("BridgeBuilder.Bridges.Numeric_Types_Draw02_Draw02MovingBase_cs.Values", () => HardcodedNumbers.Load("Types_Draw02_Draw02MovingBase_cs"));
 }

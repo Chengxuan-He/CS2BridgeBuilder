@@ -10,69 +10,27 @@ internal static class Lift01ApproachBases
     {
         var data = lod switch
         {
-            0 => (Count: Numeric_Types_Lift01_Lift01ApproachBases_g_cs.Values.I32[0], Left: Left0, Centre: Centre0, Right: Right0),
-            1 => (Count: Numeric_Types_Lift01_Lift01ApproachBases_g_cs.Values.I32[1], Left: Left1, Centre: Centre1, Right: Right1),
+            0 => (Count: Numeric_Types_Lift01_Lift01ApproachBases_g_cs.Values.I32[0], Centre: Centre0),
+            1 => (Count: Numeric_Types_Lift01_Lift01ApproachBases_g_cs.Values.I32[1], Centre: Centre1),
             _ => throw new ArgumentOutOfRangeException(nameof(lod))};
         if (!float.IsFinite(delta) || source.Length != data.Count || positions.Length != data.Count)
             throw new InvalidOperationException("Lift01 bases require their recorded fixed-span mesh.");
-        foreach (var range in data.Left)
-            AffineGeometry.For(range.First, checked((range.Last) + 1), i =>
-            {
-                positions[i].x = AffineGeometry.Translate(source[i].x, -(delta));
-            });
+        AffineGeometry.Execute(BatchProgram0.Data, lod, new[] { source, positions }, Array.Empty<float[]>(), new float[] { delta });
         foreach (var range in data.Centre)
-            AffineGeometry.For(range.First, checked((range.Last) + 1), i =>
-            {
-                positions[i].x = source[i].x;
-            });
-        foreach (var range in data.Right)
-            AffineGeometry.For(range.First, checked((range.Last) + 1), i =>
-            {
-                positions[i].x = AffineGeometry.Translate(source[i].x, delta);
-            });
+            AffineGeometry.Execute(RangePrograms1.Data, 0, new[] { source, positions }, Array.Empty<float[]>(), Array.Empty<float>(), range.First, Math.Max(0, checked((checked((range.Last) + 1)) - (range.First))));
+        AffineGeometry.Execute(BatchProgram1.Data, lod, new[] { source, positions }, Array.Empty<float[]>(), new float[] { delta });
     }
 
     // Geometry SHA-256: 13872e5563f59223f541d1d2146d9cec7bfe7fac937c9d829c4a7474313621f3
-    private static readonly (int First, int Last)[] Left0 = ReadPackedLeft0();
-    private static readonly (int First, int Last)[] Centre0 = ReadPackedCentre0();
-    private static readonly (int First, int Last)[] Right0 = ReadPackedRight0();
+    private static (int First, int Last)[] Centre0 => GenerationParameters.Get<(int First, int Last)[]>("BridgeBuilder.Bridges.Lift01ApproachBases.Centre0", () => ReadPackedCentre0());
     // Geometry SHA-256: 7d859975ab9190b8881d6b93b38ada4a70db112f9a6b9eecc4c11880e7047992
-    private static readonly (int First, int Last)[] Left1 = ReadPackedLeft1();
-    private static readonly (int First, int Last)[] Centre1 = ReadPackedCentre1();
-    private static readonly (int First, int Last)[] Right1 = ReadPackedRight1();
-    private static (int First, int Last)[] ReadPackedLeft0()
-    {
-        var d = Numeric_Types_Lift01_Lift01ApproachBases_g_cs.Values;
-        var values = new (int First, int Last)[28];
-        for (int i = 0; i < 28; i++)
-            values[0 + i] = (d.I32[2 + i * 2], d.I32[3 + i * 2]);
-        return values;
-    }
-
+    private static (int First, int Last)[] Centre1 => GenerationParameters.Get<(int First, int Last)[]>("BridgeBuilder.Bridges.Lift01ApproachBases.Centre1", () => ReadPackedCentre1());
     private static (int First, int Last)[] ReadPackedCentre0()
     {
         var d = Numeric_Types_Lift01_Lift01ApproachBases_g_cs.Values;
         var values = new (int First, int Last)[50];
         for (int i = 0; i < 50; i++)
             values[0 + i] = (d.I32[58 + i * 2], d.I32[59 + i * 2]);
-        return values;
-    }
-
-    private static (int First, int Last)[] ReadPackedRight0()
-    {
-        var d = Numeric_Types_Lift01_Lift01ApproachBases_g_cs.Values;
-        var values = new (int First, int Last)[27];
-        for (int i = 0; i < 27; i++)
-            values[0 + i] = (d.I32[158 + i * 2], d.I32[159 + i * 2]);
-        return values;
-    }
-
-    private static (int First, int Last)[] ReadPackedLeft1()
-    {
-        var d = Numeric_Types_Lift01_Lift01ApproachBases_g_cs.Values;
-        var values = new (int First, int Last)[23];
-        for (int i = 0; i < 23; i++)
-            values[0 + i] = (d.I32[212 + i * 2], d.I32[213 + i * 2]);
         return values;
     }
 
@@ -85,19 +43,40 @@ internal static class Lift01ApproachBases
         return values;
     }
 
-    private static (int First, int Last)[] ReadPackedRight1()
+    private static class BatchProgram0
     {
-        var d = Numeric_Types_Lift01_Lift01ApproachBases_g_cs.Values;
-        var values = new (int First, int Last)[29];
-        for (int i = 0; i < 29; i++)
-            values[0 + i] = (d.I32[352 + i * 2], d.I32[353 + i * 2]);
-        return values;
+        static BatchProgram0()
+        {
+        }
+
+        internal static HardcodedNumbers Data => GenerationParameters.Get<HardcodedNumbers>("BridgeBuilder.Bridges.Lift01ApproachBases.BatchProgram0.Data", () => HardcodedNumbers.Load("Types_Lift01_Lift01ApproachBases_BatchProgram0"));
+    }
+
+    private static class BatchProgram1
+    {
+        static BatchProgram1()
+        {
+        }
+
+        internal static HardcodedNumbers Data => GenerationParameters.Get<HardcodedNumbers>("BridgeBuilder.Bridges.Lift01ApproachBases.BatchProgram1.Data", () => HardcodedNumbers.Load("Types_Lift01_Lift01ApproachBases_BatchProgram1"));
+    }
+
+    private static class RangePrograms1
+    {
+        static RangePrograms1()
+        {
+        }
+
+        internal static HardcodedNumbers Data => GenerationParameters.Get<HardcodedNumbers>("BridgeBuilder.Bridges.Lift01ApproachBases.RangePrograms1.Data", () => HardcodedNumbers.Load("Types_Lift01_Lift01ApproachBases_RangePrograms1"));
     }
 }
 
 // Embedded numerical arrays: Types_Lift01_Lift01ApproachBases_g_cs
 internal static class Numeric_Types_Lift01_Lift01ApproachBases_g_cs
 {
-    static Numeric_Types_Lift01_Lift01ApproachBases_g_cs() {}
-    internal static readonly HardcodedNumbers Values = HardcodedNumbers.Load("Types_Lift01_Lift01ApproachBases_g_cs");
+    static Numeric_Types_Lift01_Lift01ApproachBases_g_cs()
+    {
+    }
+
+    internal static HardcodedNumbers Values => GenerationParameters.Get<HardcodedNumbers>("BridgeBuilder.Bridges.Numeric_Types_Lift01_Lift01ApproachBases_g_cs.Values", () => HardcodedNumbers.Load("Types_Lift01_Lift01ApproachBases_g_cs"));
 }

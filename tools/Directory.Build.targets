@@ -1,8 +1,12 @@
 <Project>
   <!-- Source-linked offline checks must see the same embedded arrays as the mod DLL. -->
-  <ItemGroup Condition="'$(MSBuildProjectName)' != 'HardcodedDataPack'">
+  <ItemGroup Condition="'$(MSBuildProjectName)' != 'HardcodedDataPack' and '$(SkipStructureSource)' != 'true'">
+    <Compile Include="$(MSBuildThisFileDirectory)..\src\BridgeBuilder\Bridges\GenerationParameters.cs" Link="GenerationParameters.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)..\src\BridgeBuilder\Bridges\HardcodedNumbers.cs" Link="HardcodedNumbers.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)..\src\BridgeBuilder\Bridges\AffineGeometry.cs" Link="AffineGeometry.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\src\BridgeBuilder\Bridges\StructureCoordinateProgram.cs" Link="StructureCoordinateProgram.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\src\BridgeBuilder\Bridges\StructurePrograms.cs" Link="StructurePrograms.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\src\BridgeBuilder\Bridges\StructureRows.cs" Link="StructureRows.cs" />
     <EmbeddedResource Include="$(MSBuildThisFileDirectory)..\assets\HardcodedNumbers\**\*.bin" LogicalName="BridgeBuilder.Numbers.%(Filename)%(Extension)" WithCulture="false" />
   </ItemGroup>
 </Project>

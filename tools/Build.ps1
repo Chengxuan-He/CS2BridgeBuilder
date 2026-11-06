@@ -166,6 +166,10 @@ $arguments = @(
 $responseFile = Join-Path $intermediate 'BridgeBuilder.rsp'
 $responseArguments = $arguments | Select-Object -Skip 1 | ForEach-Object { '"' + $_ + '"' }
 [IO.File]::WriteAllLines($responseFile, [string[]]$responseArguments, [Text.UTF8Encoding]::new($false))
+& $dotnet run --project (Join-Path $PSScriptRoot 'ParameterLifetime\ParameterLifetime.csproj') -- $projectRoot --check
+if ($LASTEXITCODE -ne 0) { throw 'Parameter lifetime guard failed.' }
+& $dotnet run --project (Join-Path $PSScriptRoot 'AffineGeometryMigration\AffineGeometryMigration.csproj') -- $projectRoot --check
+if ($LASTEXITCODE -ne 0) { throw 'Structural coordinate programs must be lowered before building.' }
 & $dotnet $compiler "@$responseFile"
 if ($LASTEXITCODE -ne 0) { throw "Compilation failed with exit code $LASTEXITCODE" }
 Copy-Item -LiteralPath $harmonyDll -Destination $output -Force

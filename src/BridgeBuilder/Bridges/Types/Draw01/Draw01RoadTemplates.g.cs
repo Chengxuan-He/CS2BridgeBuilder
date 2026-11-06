@@ -7,7 +7,7 @@ namespace BridgeBuilder.Bridges;
 internal static class Draw01RoadTemplates
 {
     internal static MovableRoadTemplate.Face[] Get(int lod) => Levels[lod];
-    private static readonly MovableRoadTemplate.Face[][] Levels = ReadPackedLevels();
+    private static MovableRoadTemplate.Face[][] Levels => GenerationParameters.Get<MovableRoadTemplate.Face[][]>("BridgeBuilder.Bridges.Draw01RoadTemplates.Levels", () => ReadPackedLevels());
     private static MovableRoadTemplate.Face[] ReadPackedLevels_0()
     {
         var d = Numeric_Types_Draw01_Draw01RoadTemplates_g_cs.Values;
@@ -55,5 +55,5 @@ internal static class Draw01RoadTemplates
 internal static class Numeric_Types_Draw01_Draw01RoadTemplates_g_cs
 {
     static Numeric_Types_Draw01_Draw01RoadTemplates_g_cs() {}
-    internal static readonly HardcodedNumbers Values = HardcodedNumbers.Load("Types_Draw01_Draw01RoadTemplates_g_cs");
+    internal static HardcodedNumbers Values => GenerationParameters.Get<HardcodedNumbers>("BridgeBuilder.Bridges.Numeric_Types_Draw01_Draw01RoadTemplates_g_cs.Values", () => HardcodedNumbers.Load("Types_Draw01_Draw01RoadTemplates_g_cs"));
 }

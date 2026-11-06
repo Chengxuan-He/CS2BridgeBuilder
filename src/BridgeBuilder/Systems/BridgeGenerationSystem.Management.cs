@@ -110,9 +110,15 @@ public partial class BridgeGenerationSystem
             return;
         }
 
-        var displayName = string.IsNullOrWhiteSpace(request.DisplayName)
-            ? BridgeNaming.BaseName(upper, lower, style)
-            : request.DisplayName.Trim();
+        string DefaultLabel()
+        {
+            if (!BridgeStyleDefinitions.IsMovable(style.Id)) return BridgeNaming.BaseName(upper, lower, style);
+            string RoadName(Deck deck) => deck.Road?.Name ?? DeckCatalog.DisplayNameOf(deck.Prefab);
+            string name = style.DisplayName + "·" + RoadName(upper);
+            return lower == null ? name : name + "·" + RoadName(lower) + "·"
+                + RuntimeUiText.Get(request.LowerDeckOpposite ? "OppositeDirection" : "SameDirection");
+        }
+        var displayName = string.IsNullOrWhiteSpace(request.DisplayName) ? DefaultLabel() : request.DisplayName.Trim();
         var options = exportOptions ?? new BridgeOptions
         {
             DoubleDeck = doubleDeck,
@@ -319,6 +325,11 @@ public partial class BridgeGenerationSystem
 
     private void DeleteRuntimeBridge(string prefabName)
     {
+        if(BridgeDeferredRemoval.Pending(prefabName))
+        {
+            BridgeDeferredRemoval.Schedule(prefabName);
+            return;
+        }
         var assetInfo = BridgeAssetCatalog.Find(prefabName) ?? new BridgeAssetInfo(prefabName, prefabName, "", null, "", "");
         if (!BridgeAssetInfo.IsPrefabName(prefabName))
         {
@@ -338,6 +349,7 @@ public partial class BridgeGenerationSystem
                 FailDeletion(prefabName, "DeleteUnsafe", blocked);
                 return;
             }
+            BridgeDeferredRemoval.Prepare(prefabName);
             // Stop placement before marking any entity. A temporary tool preview is not a
             // placed bridge, and must be released by its owning tool, not by our PrefabRef query.
             var tools = World.GetOrCreateSystemManaged<ToolSystem>();
@@ -369,21 +381,19 @@ public partial class BridgeGenerationSystem
         var state = ExportStateStore.Load();
         var report = new ExportReport();
         var removed = RemoveByName(prefabName, state, report);
-        // RemoveByName reports success only after file deletion and native unregistration.
+        // Scheduling succeeded only after native instance cleanup and durable consent.
         if (removed.Contains(prefabName))
         {
-            Mod.ReloadActiveLocale();
-            BridgeRuntimeRequests.Complete(
-                "Deleted", assetInfo.DisplayName, placed);
+            BridgeDeferredRemoval.Remember(prefabName,assetInfo.DisplayName,placed);
+            Mod.Log.Info("Waiting for verified physical deletion: "+prefabName);
         }
         else
         {
             FailDeletion(prefabName, "DeleteIncomplete",
-                "Bridge file removal or runtime prefab unregistration did not complete. "
+                "Bridge removal could not be scheduled. "
                 + "See ModsData/BridgeBuilder/last-export-report.txt for the operation failure.");
         }
 
-        BridgeBulkRemoval.Completed(prefabName, removed.Contains(prefabName));
         Finish(report, state, "Delete runtime bridge", showMessage: false);
         // Native removal has completed and state is saved. Also reflect partial
         // deletion accurately instead of keeping a stale list until reopening.
@@ -434,7 +444,7 @@ public partial class BridgeGenerationSystem
             report);
         if (removed.Count > 0)
         {
-            report.Warning("The removed prefabs stay registered in the running session. Restart the game to get rid of them.");
+            report.Warning("Bridge files will be removed after native readers finish within this session.");
         }
 
         Finish(report, state, "Remove bridge");

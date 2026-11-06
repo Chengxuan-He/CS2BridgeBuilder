@@ -10,7 +10,7 @@ namespace BridgeBuilder.Bridges;
 // Internal prototype reset stations are not emitted as geometry partitions.
 internal static class Draw01NativeAtlasRoad
 {
-    private static readonly float[] Data = HardcodedNumbers.Load("Types_Draw01_NativeAtlasRoadMeasurements").F32;
+    private static float[] Data => GenerationParameters.Get<float[]>("BridgeBuilder.Bridges.Draw01NativeAtlasRoad.Data", () => HardcodedNumbers.Load("Types_Draw01_NativeAtlasRoadMeasurements").F32);
     private static int Stride => Numeric_Types_Draw01_Draw01NativeAtlasRoad_cs.Values.I32[0];
 
     internal static Draw01FarAppearance.Result Create(MovableClosedRoad.Result road, Pose roadToObject, SurfaceAsset native, SurfaceAsset? paintedRoad = null, Draw01FarAppearance.Result? fallback = null, bool middleLod = false)
@@ -71,9 +71,9 @@ internal static class Draw01NativeAtlasRoad
                     // Middle fixed-carriageway XYZ/UV triangles and native N/T/bones
                     // exactly match near; AuditMiddleCoverage.py retains the proof.
                     if (fallback != null && middleLod && domain == 2)
-                        return Draw01MiddleFixedWalk.Create(right,positive,extent.Min,extent.Max,frame,native,fallback.Occurrences[occurrence],patches,types,Cut);
+                        return Draw01MiddleFixedWalk.Create(right, positive, extent.Min, extent.Max, frame, native, fallback.Occurrences[occurrence], patches, types, Cut);
                     if (fallback != null && middleLod && domain == 0)
-                        return Draw01MiddleAsphaltEnds.Create(right,positive,extent.Min,extent.Max,frame,fallback.Occurrences[occurrence],patches,types,Cut);
+                        return Draw01MiddleAsphaltEnds.Create(right, positive, extent.Min, extent.Max, frame, fallback.Occurrences[occurrence], patches, types, Cut);
                     var cells = new List<int>();
                     for (int at = Numeric_Types_Draw01_Draw01NativeAtlasRoad_cs.Values.I32[26]; at < Data.Length; at += Stride)
                         if ((int)Data[at] == domain && (Data[at + Numeric_Types_Draw01_Draw01NativeAtlasRoad_cs.Values.I32[27]] != Numeric_Types_Draw01_Draw01NativeAtlasRoad_cs.Values.I32[28]) == right && (Data[at + Numeric_Types_Draw01_Draw01NativeAtlasRoad_cs.Values.I32[29]] != Numeric_Types_Draw01_Draw01NativeAtlasRoad_cs.Values.I32[30]) == positive)
@@ -89,43 +89,45 @@ internal static class Draw01NativeAtlasRoad
                         int last = cells.Count - (terminal ? 2 : 1);
                         int reference = Math.Min(2, last);
                         domains.Add((cells[reference], Data[cells[last] + 4], true));
-                        if (terminal) domains.Add((cells[cells.Count-1], Data[cells[cells.Count-1]+4], false));
+                        if (terminal)
+                            domains.Add((cells[cells.Count - 1], Data[cells[cells.Count - 1] + 4], false));
                     }
+
                     Partition next = original;
                     for (int cell = domains.Count - 1; cell >= 0; cell--)
                     {
                         int at = domains[cell].At;
-                        float scale = (Data[at + Numeric_Types_Draw01_Draw01NativeAtlasRoad_cs.Values.I32[35]] - Data[at + Numeric_Types_Draw01_Draw01NativeAtlasRoad_cs.Values.I32[36]]) / (extent.Max - extent.Min);
-                        float offset = Data[at + Numeric_Types_Draw01_Draw01NativeAtlasRoad_cs.Values.I32[37]] - scale * extent.Min;
-                        var u = new Vector4(Data[at + Numeric_Types_Draw01_Draw01NativeAtlasRoad_cs.Values.I32[38]] * scale, Numeric_Types_Draw01_Draw01NativeAtlasRoad_cs.Values.I32[39], Data[at + Numeric_Types_Draw01_Draw01NativeAtlasRoad_cs.Values.I32[40]], Data[at + Numeric_Types_Draw01_Draw01NativeAtlasRoad_cs.Values.I32[41]] * offset + Data[at + Numeric_Types_Draw01_Draw01NativeAtlasRoad_cs.Values.I32[42]]);
-                        var v = new Vector4(Data[at + Numeric_Types_Draw01_Draw01NativeAtlasRoad_cs.Values.I32[43]] * scale, Numeric_Types_Draw01_Draw01NativeAtlasRoad_cs.Values.I32[44], Data[at + Numeric_Types_Draw01_Draw01NativeAtlasRoad_cs.Values.I32[45]], Data[at + Numeric_Types_Draw01_Draw01NativeAtlasRoad_cs.Values.I32[46]] * offset + Data[at + Numeric_Types_Draw01_Draw01NativeAtlasRoad_cs.Values.I32[47]]);
+                        float scale = (Data[at + Numeric_Types_Draw01_Draw01NativeAtlasRoad_cs.Values.I32[33]] - Data[at + Numeric_Types_Draw01_Draw01NativeAtlasRoad_cs.Values.I32[34]]) / (extent.Max - extent.Min);
+                        float offset = Data[at + Numeric_Types_Draw01_Draw01NativeAtlasRoad_cs.Values.I32[35]] - scale * extent.Min;
+                        var u = new Vector4(Data[at + Numeric_Types_Draw01_Draw01NativeAtlasRoad_cs.Values.I32[36]] * scale, Numeric_Types_Draw01_Draw01NativeAtlasRoad_cs.Values.I32[37], Data[at + Numeric_Types_Draw01_Draw01NativeAtlasRoad_cs.Values.I32[38]], Data[at + Numeric_Types_Draw01_Draw01NativeAtlasRoad_cs.Values.I32[39]] * offset + Data[at + Numeric_Types_Draw01_Draw01NativeAtlasRoad_cs.Values.I32[40]]);
+                        var v = new Vector4(Data[at + Numeric_Types_Draw01_Draw01NativeAtlasRoad_cs.Values.I32[41]] * scale, Numeric_Types_Draw01_Draw01NativeAtlasRoad_cs.Values.I32[42], Data[at + Numeric_Types_Draw01_Draw01NativeAtlasRoad_cs.Values.I32[43]], Data[at + Numeric_Types_Draw01_Draw01NativeAtlasRoad_cs.Values.I32[44]] * offset + Data[at + Numeric_Types_Draw01_Draw01NativeAtlasRoad_cs.Values.I32[45]]);
                         // Native codec proves this projection frame matches every near cell.
                         int index = patches.Count;
                         // The first cap cell is a partial traversal of the same measured
                         // four-metre unit. It must not bypass the paint-free cap material.
                         if (domains[cell].Prepared || domain == 3)
-                            patches.Add(Draw01PreparedRoadUnit.Create(domain,u,v,frame,Data[at+7],Data[at+9]));
+                            patches.Add(Draw01PreparedRoadUnit.Create(domain, u, v, frame, Data[at + 7], Data[at + 9]));
                         else if (domain == 0)
-                            patches.Add(Draw01FiniteAsphalt.Create(u,v,frame,new Vector2(Data[at+7],Data[at+8]),new Vector2(Data[at+9],Data[at+10])));
+                            patches.Add(Draw01FiniteAsphalt.Create(u, v, frame, new Vector2(Data[at + 7], Data[at + 8]), new Vector2(Data[at + 9], Data[at + 10])));
                         else
-                        patches.Add(new MovableExistingRoadSurface.Patch(new Vector2(Data[at + Numeric_Types_Draw01_Draw01NativeAtlasRoad_cs.Values.I32[48]], Data[at + Numeric_Types_Draw01_Draw01NativeAtlasRoad_cs.Values.I32[49]]), new Vector2(Data[at + Numeric_Types_Draw01_Draw01NativeAtlasRoad_cs.Values.I32[50]], Data[at + Numeric_Types_Draw01_Draw01NativeAtlasRoad_cs.Values.I32[51]]), frame.transpose * u, frame.transpose * v, domain == Numeric_Types_Draw01_Draw01NativeAtlasRoad_cs.Values.I32[52] ? paintedRoad ?? native : native, sourceUv: true, projectTangent: true));
+                            patches.Add(new MovableExistingRoadSurface.Patch(new Vector2(Data[at + Numeric_Types_Draw01_Draw01NativeAtlasRoad_cs.Values.I32[46]], Data[at + Numeric_Types_Draw01_Draw01NativeAtlasRoad_cs.Values.I32[47]]), new Vector2(Data[at + Numeric_Types_Draw01_Draw01NativeAtlasRoad_cs.Values.I32[48]], Data[at + Numeric_Types_Draw01_Draw01NativeAtlasRoad_cs.Values.I32[49]]), frame.transpose * u, frame.transpose * v, domain == Numeric_Types_Draw01_Draw01NativeAtlasRoad_cs.Values.I32[50] ? paintedRoad ?? native : native, sourceUv: true, projectTangent: true));
                         types.Add(sidewalk ? Type.Sidewalk : Type.Asphalt);
-                        next = Cut(new Vector4(Numeric_Types_Draw01_Draw01NativeAtlasRoad_cs.Values.I32[53], Numeric_Types_Draw01_Draw01NativeAtlasRoad_cs.Values.I32[54], sign, -domains[cell].End), new Partition(index), next);
+                        next = Cut(new Vector4(Numeric_Types_Draw01_Draw01NativeAtlasRoad_cs.Values.I32[51], Numeric_Types_Draw01_Draw01NativeAtlasRoad_cs.Values.I32[52], sign, -domains[cell].End), new Partition(index), next);
                     }
 
-                    return cells.Count == Numeric_Types_Draw01_Draw01NativeAtlasRoad_cs.Values.I32[56] ? Partition.Gap : Cut(new Vector4(Numeric_Types_Draw01_Draw01NativeAtlasRoad_cs.Values.I32[57], Numeric_Types_Draw01_Draw01NativeAtlasRoad_cs.Values.I32[58], sign, -Data[cells[Numeric_Types_Draw01_Draw01NativeAtlasRoad_cs.Values.I32[59]] + Numeric_Types_Draw01_Draw01NativeAtlasRoad_cs.Values.I32[60]]), Partition.Gap, next);
+                    return cells.Count == Numeric_Types_Draw01_Draw01NativeAtlasRoad_cs.Values.I32[53] ? Partition.Gap : Cut(new Vector4(Numeric_Types_Draw01_Draw01NativeAtlasRoad_cs.Values.I32[54], Numeric_Types_Draw01_Draw01NativeAtlasRoad_cs.Values.I32[55], sign, -Data[cells[Numeric_Types_Draw01_Draw01NativeAtlasRoad_cs.Values.I32[56]] + Numeric_Types_Draw01_Draw01NativeAtlasRoad_cs.Values.I32[57]]), Partition.Gap, next);
                 }
 
-                int movingDomain = sidewalk ? Numeric_Types_Draw01_Draw01NativeAtlasRoad_cs.Values.I32[61] : Numeric_Types_Draw01_Draw01NativeAtlasRoad_cs.Values.I32[62], fixedDomain = sidewalk ? Numeric_Types_Draw01_Draw01NativeAtlasRoad_cs.Values.I32[63] : Numeric_Types_Draw01_Draw01NativeAtlasRoad_cs.Values.I32[64];
+                int movingDomain = sidewalk ? Numeric_Types_Draw01_Draw01NativeAtlasRoad_cs.Values.I32[58] : Numeric_Types_Draw01_Draw01NativeAtlasRoad_cs.Values.I32[59], fixedDomain = sidewalk ? Numeric_Types_Draw01_Draw01NativeAtlasRoad_cs.Values.I32[60] : Numeric_Types_Draw01_Draw01NativeAtlasRoad_cs.Values.I32[61];
                 float fixedStart = float.PositiveInfinity;
-                for (int at = Numeric_Types_Draw01_Draw01NativeAtlasRoad_cs.Values.I32[65]; at < Data.Length; at += Stride)
-                    if ((int)Data[at] == fixedDomain && (Data[at + Numeric_Types_Draw01_Draw01NativeAtlasRoad_cs.Values.I32[66]] != Numeric_Types_Draw01_Draw01NativeAtlasRoad_cs.Values.I32[67]) == right && (Data[at + Numeric_Types_Draw01_Draw01NativeAtlasRoad_cs.Values.I32[68]] != Numeric_Types_Draw01_Draw01NativeAtlasRoad_cs.Values.I32[69]) == positive)
-                        fixedStart = Math.Min(fixedStart, Data[at + Numeric_Types_Draw01_Draw01NativeAtlasRoad_cs.Values.I32[70]]);
-                return Cut(new Vector4(Numeric_Types_Draw01_Draw01NativeAtlasRoad_cs.Values.I32[71], Numeric_Types_Draw01_Draw01NativeAtlasRoad_cs.Values.I32[72], sign, -fixedStart), Domain(movingDomain), Domain(fixedDomain));
+                for (int at = Numeric_Types_Draw01_Draw01NativeAtlasRoad_cs.Values.I32[62]; at < Data.Length; at += Stride)
+                    if ((int)Data[at] == fixedDomain && (Data[at + Numeric_Types_Draw01_Draw01NativeAtlasRoad_cs.Values.I32[63]] != Numeric_Types_Draw01_Draw01NativeAtlasRoad_cs.Values.I32[64]) == right && (Data[at + Numeric_Types_Draw01_Draw01NativeAtlasRoad_cs.Values.I32[65]] != Numeric_Types_Draw01_Draw01NativeAtlasRoad_cs.Values.I32[66]) == positive)
+                        fixedStart = Math.Min(fixedStart, Data[at + Numeric_Types_Draw01_Draw01NativeAtlasRoad_cs.Values.I32[67]]);
+                return Cut(new Vector4(Numeric_Types_Draw01_Draw01NativeAtlasRoad_cs.Values.I32[68], Numeric_Types_Draw01_Draw01NativeAtlasRoad_cs.Values.I32[69], sign, -fixedStart), Domain(movingDomain), Domain(fixedDomain));
             }
 
-            Partition Side(bool positive) => Cut(new Vector4(Numeric_Types_Draw01_Draw01NativeAtlasRoad_cs.Values.I32[73], Numeric_Types_Draw01_Draw01NativeAtlasRoad_cs.Values.I32[74], Numeric_Types_Draw01_Draw01NativeAtlasRoad_cs.Values.I32[75], Numeric_Types_Draw01_Draw01NativeAtlasRoad_cs.Values.I32[76]), Half(false, positive), Half(true, positive));
-            partitions[occurrence] = Cut(new Vector4(Numeric_Types_Draw01_Draw01NativeAtlasRoad_cs.Values.I32[77], Numeric_Types_Draw01_Draw01NativeAtlasRoad_cs.Values.I32[78], Numeric_Types_Draw01_Draw01NativeAtlasRoad_cs.Values.I32[79], Numeric_Types_Draw01_Draw01NativeAtlasRoad_cs.Values.I32[80]), Side(false), Side(true));
+            Partition Side(bool positive) => Cut(new Vector4(Numeric_Types_Draw01_Draw01NativeAtlasRoad_cs.Values.I32[70], Numeric_Types_Draw01_Draw01NativeAtlasRoad_cs.Values.I32[71], Numeric_Types_Draw01_Draw01NativeAtlasRoad_cs.Values.I32[72], Numeric_Types_Draw01_Draw01NativeAtlasRoad_cs.Values.I32[73]), Half(false, positive), Half(true, positive));
+            partitions[occurrence] = Cut(new Vector4(Numeric_Types_Draw01_Draw01NativeAtlasRoad_cs.Values.I32[74], Numeric_Types_Draw01_Draw01NativeAtlasRoad_cs.Values.I32[75], Numeric_Types_Draw01_Draw01NativeAtlasRoad_cs.Values.I32[76], Numeric_Types_Draw01_Draw01NativeAtlasRoad_cs.Values.I32[77]), Side(false), Side(true));
         }
 
         return new Draw01FarAppearance.Result(patches.ToArray(), types.ToArray(), partitions);
@@ -139,5 +141,5 @@ internal static class Numeric_Types_Draw01_Draw01NativeAtlasRoad_cs
     {
     }
 
-    internal static readonly HardcodedNumbers Values = HardcodedNumbers.Load("Types_Draw01_Draw01NativeAtlasRoad_cs");
+    internal static HardcodedNumbers Values => GenerationParameters.Get<HardcodedNumbers>("BridgeBuilder.Bridges.Numeric_Types_Draw01_Draw01NativeAtlasRoad_cs.Values", () => HardcodedNumbers.Load("Types_Draw01_Draw01NativeAtlasRoad_cs"));
 }

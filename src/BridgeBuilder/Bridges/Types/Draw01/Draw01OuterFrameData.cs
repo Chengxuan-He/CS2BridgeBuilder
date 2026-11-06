@@ -15,16 +15,18 @@ internal static class Draw01OuterFrameData
             removed[face] = false;
         var left = lod == Numeric_Types_Draw01_Draw01OuterFrameData_cs.Values.I32[2] ? NearLeft : MiddleLeft;
         var right = lod == Numeric_Types_Draw01_Draw01OuterFrameData_cs.Values.I32[3] ? NearRight : MiddleRight;
-        AffineGeometry.Indices(left, index => positions[index].x = AffineGeometry.Translate(source[index].x, -delta));
-        AffineGeometry.Indices(right, index => positions[index].x = AffineGeometry.Translate(source[index].x, delta));
+        foreach (var coordinateRows in StructureRows.Stages(left))
+            AffineGeometry.Execute(RangePrograms.Data, 0, new[] { source, positions }, Array.Empty<float[]>(), new float[] { delta }, count: coordinateRows.Length, indices: new[] { coordinateRows });
+        foreach (var coordinateRows in StructureRows.Stages(right))
+            AffineGeometry.Execute(RangePrograms.Data, 1, new[] { source, positions }, Array.Empty<float[]>(), new float[] { delta }, count: coordinateRows.Length, indices: new[] { coordinateRows });
     }
 
-    private static readonly int[] NearFaces = ReadPackedNearFaces();
-    private static readonly int[] NearLeft = ReadPackedNearLeft();
-    private static readonly int[] NearRight = ReadPackedNearRight();
-    private static readonly int[] MiddleFaces = ReadPackedMiddleFaces();
-    private static readonly int[] MiddleLeft = ReadPackedMiddleLeft();
-    private static readonly int[] MiddleRight = ReadPackedMiddleRight();
+    private static int[] NearFaces => GenerationParameters.Get<int[]>("BridgeBuilder.Bridges.Draw01OuterFrameData.NearFaces", () => ReadPackedNearFaces());
+    private static int[] NearLeft => GenerationParameters.Get<int[]>("BridgeBuilder.Bridges.Draw01OuterFrameData.NearLeft", () => ReadPackedNearLeft());
+    private static int[] NearRight => GenerationParameters.Get<int[]>("BridgeBuilder.Bridges.Draw01OuterFrameData.NearRight", () => ReadPackedNearRight());
+    private static int[] MiddleFaces => GenerationParameters.Get<int[]>("BridgeBuilder.Bridges.Draw01OuterFrameData.MiddleFaces", () => ReadPackedMiddleFaces());
+    private static int[] MiddleLeft => GenerationParameters.Get<int[]>("BridgeBuilder.Bridges.Draw01OuterFrameData.MiddleLeft", () => ReadPackedMiddleLeft());
+    private static int[] MiddleRight => GenerationParameters.Get<int[]>("BridgeBuilder.Bridges.Draw01OuterFrameData.MiddleRight", () => ReadPackedMiddleRight());
     private static int[] ReadPackedNearFaces()
     {
         var d = Numeric_Types_Draw01_Draw01OuterFrameData_cs.Values;
@@ -78,6 +80,15 @@ internal static class Draw01OuterFrameData
             values[0 + i] = d.I32[2172 + i * 1];
         return values;
     }
+
+    private static class RangePrograms
+    {
+        static RangePrograms()
+        {
+        }
+
+        internal static HardcodedNumbers Data => GenerationParameters.Get<HardcodedNumbers>("BridgeBuilder.Bridges.Draw01OuterFrameData.RangePrograms.Data", () => HardcodedNumbers.Load("Types_Draw01_Draw01OuterFrameData_RangePrograms"));
+    }
 }
 
 // Embedded numerical arrays: Types_Draw01_Draw01OuterFrameData_cs
@@ -87,5 +98,5 @@ internal static class Numeric_Types_Draw01_Draw01OuterFrameData_cs
     {
     }
 
-    internal static readonly HardcodedNumbers Values = HardcodedNumbers.Load("Types_Draw01_Draw01OuterFrameData_cs");
+    internal static HardcodedNumbers Values => GenerationParameters.Get<HardcodedNumbers>("BridgeBuilder.Bridges.Numeric_Types_Draw01_Draw01OuterFrameData_cs.Values", () => HardcodedNumbers.Load("Types_Draw01_Draw01OuterFrameData_cs"));
 }

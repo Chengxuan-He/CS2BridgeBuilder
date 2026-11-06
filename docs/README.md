@@ -21,6 +21,10 @@ Asphalt, sidewalks and wheel-track/rut effects are classified separately per pro
 The original source mapping rule applies to non-movable bridges too. The package limit is 55,000,000 bytes. Complete owner material bytes are measured separately
 for information, without a per-owner ceiling.
 
+The native96 local build's official SDK ZIP measured 77,080,830 bytes. It exceeded the
+55,000,000-byte publication limit and was deployed locally only. The owner-size measurement
+and the complete ZIP measurement serve different purposes.
+
 ## Workflow design
 
 [Bridge generation workflow](Bridge-Generation-Workflow.md) explains request scheduling, fixed

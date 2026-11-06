@@ -89,6 +89,18 @@ internal static class BridgeStyleDefinitions
     internal const string Default = "Suspension";
     // Independent native mechanisms, not aliases. Admission does not imply a connected generator.
     internal static bool IsMovable(string? id) => id is "Draw01" or "Draw02" or "Draw03" or "Lift01" or "Lift02" or "Lift03" or "Lift04" or "Lift05" or "PedestrianDraw01" or "PedestrianDraw02";
+    internal static string Family(string id) => id switch
+    {
+        "Suspension" or "SuspensionDouble" or "Suspension01" or "Suspension02" or "SuspensionGolden"
+            or "GoldenGate" or "GoldenGateDouble" or "Grand" => "Suspension",
+        "CableStayed" or "Extradosed01" or "Extradosed02" or "Extradosed03" or "ExtradosedLarge" => "CableStayed",
+        "TrussArch" or "TrussArch01" or "TrussArch02" or "TrussArch03" or "TiedArch" => "Arch",
+        "WoodenCovered" or "CoveredWood" => "Covered",
+        "Draw01" or "Draw02" or "Draw03" or "PedestrianDraw01" or "PedestrianDraw02" => "Bascule",
+        "Lift01" or "Lift02" or "Lift03" or "Lift04" or "Lift05" => "Lift",
+        _ => throw new ArgumentOutOfRangeException(nameof(id),id,"Unclassified bridge style"),
+    };
+
     internal static bool CanList(string? id) => IsMovable(id) || CanGenerate(id);
     // Explicit generator coverage, not a list inferred from installed Bridge
     // components. These families have recorded TowerFactory/section generation
@@ -222,18 +234,18 @@ internal static class BridgeStyleDefinitions
     /// its deck rather than standing over it, so demanding a margin would rule out every variant.
     /// The comment on each line is the measurement and how many samples agreed.
     /// </summary>
-    internal static readonly IReadOnlyList<BridgeStyleDefinition> All = new[]
+    internal static IReadOnlyList<BridgeStyleDefinition> All => GenerationParameters.Get<IReadOnlyList<BridgeStyleDefinition>>("BridgeBuilder.Bridges.BridgeStyleDefinitions.All", () => new[]
     {
-        new BridgeStyleDefinition("PedestrianDraw01", "Pedestrian Bascule Bridge 01", Numeric_BridgeStyleDefinitions_cs.Values.I32[0], "pedestriandrawbridge01"),
-        new BridgeStyleDefinition("PedestrianDraw02", "Pedestrian Bascule Bridge 02", Numeric_BridgeStyleDefinitions_cs.Values.I32[1], "pedestriandrawbridge02"),
-        new BridgeStyleDefinition("Draw01", "Bascule Bridge 01", Numeric_BridgeStyleDefinitions_cs.Values.I32[2], "drawbridge01"),
-        new BridgeStyleDefinition("Draw02", "Bascule Bridge 02", Numeric_BridgeStyleDefinitions_cs.Values.I32[3], "drawbridge02"),
-        new BridgeStyleDefinition("Draw03", "Bascule Bridge 03", Numeric_BridgeStyleDefinitions_cs.Values.I32[4], "drawbridge03"),
-        new BridgeStyleDefinition("Lift01", "Lift Bridge 01", Numeric_BridgeStyleDefinitions_cs.Values.I32[5], "liftbridge01"),
-        new BridgeStyleDefinition("Lift02", "Lift Bridge 02", Numeric_BridgeStyleDefinitions_cs.Values.I32[6], "liftbridge02"),
-        new BridgeStyleDefinition("Lift03", "Lift Bridge 03", Numeric_BridgeStyleDefinitions_cs.Values.I32[7], "liftbridge03"),
-        new BridgeStyleDefinition("Lift04", "Lift Bridge 04", Numeric_BridgeStyleDefinitions_cs.Values.I32[8], "liftbridge04"),
-        new BridgeStyleDefinition("Lift05", "Lift Bridge 05", Numeric_BridgeStyleDefinitions_cs.Values.I32[9], "liftbridge05"),
+        new BridgeStyleDefinition("PedestrianDraw01", "Fan-Cable Pedestrian Bascule Bridge", Numeric_BridgeStyleDefinitions_cs.Values.I32[0], "pedestriandrawbridge01"),
+        new BridgeStyleDefinition("PedestrianDraw02", "Overhead-Beam Pedestrian Bascule Bridge", Numeric_BridgeStyleDefinitions_cs.Values.I32[1], "pedestriandrawbridge02"),
+        new BridgeStyleDefinition("Draw01", "Curved-Soffit Girder Bascule Bridge", Numeric_BridgeStyleDefinitions_cs.Values.I32[2], "drawbridge01"),
+        new BridgeStyleDefinition("Draw02", "Solid-Web Girder Bascule Bridge", Numeric_BridgeStyleDefinitions_cs.Values.I32[3], "drawbridge02"),
+        new BridgeStyleDefinition("Draw03", "Deck-Truss Bascule Bridge", Numeric_BridgeStyleDefinitions_cs.Values.I32[4], "drawbridge03"),
+        new BridgeStyleDefinition("Lift01", "Portal-Frame Lift Bridge", Numeric_BridgeStyleDefinitions_cs.Values.I32[5], "liftbridge01"),
+        new BridgeStyleDefinition("Lift02", "Curved-Chord Truss Lift Bridge", Numeric_BridgeStyleDefinitions_cs.Values.I32[6], "liftbridge02"),
+        new BridgeStyleDefinition("Lift03", "Double-Deck Lift Bridge", Numeric_BridgeStyleDefinitions_cs.Values.I32[7], "liftbridge03"),
+        new BridgeStyleDefinition("Lift04", "Straight-Tower Truss Lift Bridge", Numeric_BridgeStyleDefinitions_cs.Values.I32[8], "liftbridge04"),
+        new BridgeStyleDefinition("Lift05", "Curved-Brace Tower Lift Bridge", Numeric_BridgeStyleDefinitions_cs.Values.I32[9], "liftbridge05"),
         new BridgeStyleDefinition("PedestrianDraw", "Pedestrian Bascule Bridge", Numeric_BridgeStyleDefinitions_cs.Values.I32[10], "pedestriandrawbridge"),
         new BridgeStyleDefinition("WoodenCovered", "Wooden Covered Bridge", Numeric_BridgeStyleDefinitions_cs.Values.I32[11], "woodencoveredbridge"),
         new BridgeStyleDefinition("CoveredWood", "Covered Wooden Bridge", Numeric_BridgeStyleDefinitions_cs.Values.I32[12], -Numeric_BridgeStyleDefinitions_cs.Values.F32[1], // 0xC0000000
@@ -308,7 +320,7 @@ internal static class BridgeStyleDefinitions
         // structure wider than its road. Demanding a margin would rule out every variant they have.
         new BridgeStyleDefinition("Draw", "Bascule Bridge", Numeric_BridgeStyleDefinitions_cs.Values.I32[31], "drawbridge", "bascule"),
         new BridgeStyleDefinition("Lift", "Lift Bridge", Numeric_BridgeStyleDefinitions_cs.Values.I32[32], "liftbridge"),
-    };
+    });
     /// <summary>The style a prefab belongs to, or null when it is not one of the named styles.</summary>
     internal static BridgeStyleDefinition? Match(string prefabName)
     {
@@ -390,5 +402,5 @@ internal static class BridgeStyleDefinitions
 internal static class Numeric_BridgeStyleDefinitions_cs
 {
     static Numeric_BridgeStyleDefinitions_cs() {}
-    internal static readonly HardcodedNumbers Values = HardcodedNumbers.Load("BridgeStyleDefinitions_cs");
+    internal static HardcodedNumbers Values => GenerationParameters.Get<HardcodedNumbers>("BridgeBuilder.Bridges.Numeric_BridgeStyleDefinitions_cs.Values", () => HardcodedNumbers.Load("BridgeStyleDefinitions_cs"));
 }

@@ -25,17 +25,14 @@ internal static class Lift01NetPillarGeometry
         var positions = (Vector3[])source.Clone();
         if (part == Numeric_Types_Lift01_Lift01NetPillarGeometry_g_cs.Values.I32[19])
             foreach (var range in CapRanges[lod])
-                AffineGeometry.For(range.First, checked((range.Last) + 1), i =>
-                {
-                    positions[i].x = AffineGeometry.AddScaled(source[i].x, range.Direction, delta);
-                });
+                AffineGeometry.Execute(RangePrograms.Data, 0, new[] { source, positions }, Array.Empty<float[]>(), new float[] { range.Direction, delta }, range.First, checked((checked((range.Last) + 1)) - (range.First)));
         var split = part == Numeric_Types_Lift01_Lift01NetPillarGeometry_g_cs.Values.I32[20] && lod == Numeric_Types_Lift01_Lift01NetPillarGeometry_g_cs.Values.I32[21];
         return new MovableStructureModel.Plan(source, positions, new[] { indices }, new[] { new bool[counts.Triangles] }, addedVertices: split ? Edges : null, fragments: split ? Fragments : null, constructedX: split ? new float[Edges.Length] : null);
     }
 
-    private static readonly (int First, int Last, int Direction)[][] CapRanges = ReadPackedCapRanges();
-    private static readonly MovableStructureModel.EdgeVertex[] Edges = ReadPackedEdges();
-    private static readonly MovableStructureModel.Fragment[] Fragments = ReadPackedFragments();
+    private static (int First, int Last, int Direction)[][] CapRanges => GenerationParameters.Get<(int First, int Last, int Direction)[][]>("BridgeBuilder.Bridges.Lift01NetPillarGeometry.CapRanges", () => ReadPackedCapRanges());
+    private static MovableStructureModel.EdgeVertex[] Edges => GenerationParameters.Get<MovableStructureModel.EdgeVertex[]>("BridgeBuilder.Bridges.Lift01NetPillarGeometry.Edges", () => ReadPackedEdges());
+    private static MovableStructureModel.Fragment[] Fragments => GenerationParameters.Get<MovableStructureModel.Fragment[]>("BridgeBuilder.Bridges.Lift01NetPillarGeometry.Fragments", () => ReadPackedFragments());
     private static (int First, int Last, int Direction)[] ReadPackedCapRanges_0()
     {
         var d = Numeric_Types_Lift01_Lift01NetPillarGeometry_g_cs.Values;
@@ -305,11 +302,23 @@ internal static class Lift01NetPillarGeometry
             values[0 + i] = new(d.I32[517 + i * 11], d.I32[518 + i * 11], d.I32[519 + i * 11], d.I32[520 + i * 11], d.I32[521 + i * 11], d.I32[522 + i * 11], d.I32[523 + i * 11], d.I32[524 + i * 11], d.I32[525 + i * 11], d.I32[526 + i * 11], d.I32[527 + i * 11]);
         return values;
     }
+
+    private static class RangePrograms
+    {
+        static RangePrograms()
+        {
+        }
+
+        internal static HardcodedNumbers Data => GenerationParameters.Get<HardcodedNumbers>("BridgeBuilder.Bridges.Lift01NetPillarGeometry.RangePrograms.Data", () => HardcodedNumbers.Load("Types_Lift01_Lift01NetPillarGeometry_RangePrograms"));
+    }
 }
 
 // Embedded numerical arrays: Types_Lift01_Lift01NetPillarGeometry_g_cs
 internal static class Numeric_Types_Lift01_Lift01NetPillarGeometry_g_cs
 {
-    static Numeric_Types_Lift01_Lift01NetPillarGeometry_g_cs() {}
-    internal static readonly HardcodedNumbers Values = HardcodedNumbers.Load("Types_Lift01_Lift01NetPillarGeometry_g_cs");
+    static Numeric_Types_Lift01_Lift01NetPillarGeometry_g_cs()
+    {
+    }
+
+    internal static HardcodedNumbers Values => GenerationParameters.Get<HardcodedNumbers>("BridgeBuilder.Bridges.Numeric_Types_Lift01_Lift01NetPillarGeometry_g_cs.Values", () => HardcodedNumbers.Load("Types_Lift01_Lift01NetPillarGeometry_g_cs"));
 }

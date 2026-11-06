@@ -20,34 +20,36 @@ internal static class PedestrianDraw01SupportGeometry
             throw new InvalidOperationException("PedestrianDraw01 support requires its native topology and finite delta.");
         var positions = (Vector3[])source.Clone();
         foreach (var part in data.Parts)
-            AffineGeometry.For(part.First, checked((part.Last) + 1), i =>
+            if (footing)
             {
-                positions[i].x = AffineGeometry.Translate(positions[i].x, (footing ? source[i].x / Numeric_Types_PedestrianDraw01_PedestrianDraw01SupportGeometry_g_cs.Values.F32[2] : part.Sign) * delta);
-            });
+                AffineGeometry.Execute(RangePrograms.Data, 0, new[] { positions, source }, Array.Empty<float[]>(), new float[] { Numeric_Types_PedestrianDraw01_PedestrianDraw01SupportGeometry_g_cs.Values.F32[2], delta }, part.First, Math.Max(0, checked((checked((part.Last) + 1)) - (part.First))));
+            }
+            else
+            {
+                AffineGeometry.Execute(RangePrograms.Data, 1, new[] { positions }, Array.Empty<float[]>(), new float[] { part.Sign, delta }, part.First, Math.Max(0, checked((checked((part.Last) + 1)) - (part.First))));
+            }
+
         return new MovableStructureModel.Plan(source, positions, new[] { indices }, new[] { new bool[indices.Length / Numeric_Types_PedestrianDraw01_PedestrianDraw01SupportGeometry_g_cs.Values.I32[12]] });
     }
 
     // Geometry SHA-256: 1944665003aec7a5992eaf3aeb2545d12d7e024130d11a329981582eed7b11d1
-    private static readonly (int First, int Last, float Sign)[] Parts00 = ReadPackedParts00();
+    private static (int First, int Last, float Sign)[] Parts00 => GenerationParameters.Get<(int First, int Last, float Sign)[]>("BridgeBuilder.Bridges.PedestrianDraw01SupportGeometry.Parts00", () => ReadPackedParts00());
     // Geometry SHA-256: 1944665003aec7a5992eaf3aeb2545d12d7e024130d11a329981582eed7b11d1
-    private static readonly (int First, int Last, float Sign)[] Parts01 = ReadPackedParts01();
+    private static (int First, int Last, float Sign)[] Parts01 => GenerationParameters.Get<(int First, int Last, float Sign)[]>("BridgeBuilder.Bridges.PedestrianDraw01SupportGeometry.Parts01", () => ReadPackedParts01());
     // Geometry SHA-256: 014551574ba090a6a542cf13432bc9451add8583b3658293f127a9721fc5d64a
-    private static readonly (int First, int Last, float Sign)[] Parts02 = ReadPackedParts02();
+    private static (int First, int Last, float Sign)[] Parts02 => GenerationParameters.Get<(int First, int Last, float Sign)[]>("BridgeBuilder.Bridges.PedestrianDraw01SupportGeometry.Parts02", () => ReadPackedParts02());
     // Geometry SHA-256: 7a9b99e4853b42284d7163f19e320025977c3c0068e59a5c8100745f36b4f051
-    private static readonly (int First, int Last, float Sign)[] Parts10 =
-    {
+    private static (int First, int Last, float Sign)[] Parts10 => GenerationParameters.Get<(int First, int Last, float Sign)[]>("BridgeBuilder.Bridges.PedestrianDraw01SupportGeometry.Parts10", () => new (int First, int Last, float Sign)[] {
         (Numeric_Types_PedestrianDraw01_PedestrianDraw01SupportGeometry_g_cs.Values.I32[219], Numeric_Types_PedestrianDraw01_PedestrianDraw01SupportGeometry_g_cs.Values.I32[220], Numeric_Types_PedestrianDraw01_PedestrianDraw01SupportGeometry_g_cs.Values.F32[106]),
-    };
+    });
     // Geometry SHA-256: e785b2ff5500195240a0858e1495492b82463293a5839ee00e8bf553d583f5c4
-    private static readonly (int First, int Last, float Sign)[] Parts11 =
-    {
+    private static (int First, int Last, float Sign)[] Parts11 => GenerationParameters.Get<(int First, int Last, float Sign)[]>("BridgeBuilder.Bridges.PedestrianDraw01SupportGeometry.Parts11", () => new (int First, int Last, float Sign)[] {
         (Numeric_Types_PedestrianDraw01_PedestrianDraw01SupportGeometry_g_cs.Values.I32[221], Numeric_Types_PedestrianDraw01_PedestrianDraw01SupportGeometry_g_cs.Values.I32[222], Numeric_Types_PedestrianDraw01_PedestrianDraw01SupportGeometry_g_cs.Values.F32[107]),
-    };
+    });
     // Geometry SHA-256: 17d598b912b94fd035f59221a9f88d08ebc05567ef2defe3e86e5977a17a0403
-    private static readonly (int First, int Last, float Sign)[] Parts12 =
-    {
+    private static (int First, int Last, float Sign)[] Parts12 => GenerationParameters.Get<(int First, int Last, float Sign)[]>("BridgeBuilder.Bridges.PedestrianDraw01SupportGeometry.Parts12", () => new (int First, int Last, float Sign)[] {
         (Numeric_Types_PedestrianDraw01_PedestrianDraw01SupportGeometry_g_cs.Values.I32[223], Numeric_Types_PedestrianDraw01_PedestrianDraw01SupportGeometry_g_cs.Values.I32[224], Numeric_Types_PedestrianDraw01_PedestrianDraw01SupportGeometry_g_cs.Values.F32[108]),
-    };
+    });
     private static (int First, int Last, float Sign)[] ReadPackedParts00()
     {
         var d = Numeric_Types_PedestrianDraw01_PedestrianDraw01SupportGeometry_g_cs.Values;
@@ -274,11 +276,23 @@ internal static class PedestrianDraw01SupportGeometry
             values[12 + i] = (d.I32[217 + i * 2], d.I32[218 + i * 2], -d.F32[105 + i * 1]);
         return values;
     }
+
+    private static class RangePrograms
+    {
+        static RangePrograms()
+        {
+        }
+
+        internal static HardcodedNumbers Data => GenerationParameters.Get<HardcodedNumbers>("BridgeBuilder.Bridges.PedestrianDraw01SupportGeometry.RangePrograms.Data", () => HardcodedNumbers.Load("Types_PedestrianDraw01_PedestrianDraw01SupportGeometry_RangePrograms"));
+    }
 }
 
 // Embedded numerical arrays: Types_PedestrianDraw01_PedestrianDraw01SupportGeometry_g_cs
 internal static class Numeric_Types_PedestrianDraw01_PedestrianDraw01SupportGeometry_g_cs
 {
-    static Numeric_Types_PedestrianDraw01_PedestrianDraw01SupportGeometry_g_cs() {}
-    internal static readonly HardcodedNumbers Values = HardcodedNumbers.Load("Types_PedestrianDraw01_PedestrianDraw01SupportGeometry_g_cs");
+    static Numeric_Types_PedestrianDraw01_PedestrianDraw01SupportGeometry_g_cs()
+    {
+    }
+
+    internal static HardcodedNumbers Values => GenerationParameters.Get<HardcodedNumbers>("BridgeBuilder.Bridges.Numeric_Types_PedestrianDraw01_PedestrianDraw01SupportGeometry_g_cs.Values", () => HardcodedNumbers.Load("Types_PedestrianDraw01_PedestrianDraw01SupportGeometry_g_cs"));
 }

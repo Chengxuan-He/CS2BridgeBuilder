@@ -10,69 +10,42 @@ internal static class Lift01RigidParts
     {
         var data = lod switch
         {
-            0 => (Count: Numeric_Types_Lift01_Lift01RigidParts_g_cs.Values.I32[0], Left: Left0, Right: Right0),
-            1 => (Count: Numeric_Types_Lift01_Lift01RigidParts_g_cs.Values.I32[1], Left: Left1, Right: Right1),
+            0 => Numeric_Types_Lift01_Lift01RigidParts_g_cs.Values.I32[0],
+            1 => Numeric_Types_Lift01_Lift01RigidParts_g_cs.Values.I32[1],
             _ => throw new ArgumentOutOfRangeException(nameof(lod))};
-        if (!float.IsFinite(delta) || source.Length != data.Count || positions.Length != data.Count)
+        if (!float.IsFinite(delta) || source.Length != data || positions.Length != data)
             throw new InvalidOperationException("Lift01 rigid parts require their recorded main mesh.");
-        foreach (var range in data.Left)
-            AffineGeometry.For(range.First, checked((range.Last) + 1), i =>
-            {
-                positions[i].x = AffineGeometry.Translate(source[i].x, -(delta));
-            });
-        foreach (var range in data.Right)
-            AffineGeometry.For(range.First, checked((range.Last) + 1), i =>
-            {
-                positions[i].x = AffineGeometry.Translate(source[i].x, delta);
-            });
+        AffineGeometry.Execute(BatchProgram0.Data, lod, new[] { source, positions }, Array.Empty<float[]>(), new float[] { delta });
+        AffineGeometry.Execute(BatchProgram1.Data, lod, new[] { source, positions }, Array.Empty<float[]>(), new float[] { delta });
     }
 
     // Geometry SHA-256: cc34bfcb478f5621513c458120bacfb395e21548e3eee2e753dca97e138b5714
-    private static readonly (int First, int Last)[] Left0 = ReadPackedLeft0();
-    private static readonly (int First, int Last)[] Right0 = ReadPackedRight0();
     // Geometry SHA-256: c5694dce731ce05218de15761665cc1d234723049c48bd707c87587509ed8e4e
-    private static readonly (int First, int Last)[] Left1 = ReadPackedLeft1();
-    private static readonly (int First, int Last)[] Right1 = ReadPackedRight1();
-    private static (int First, int Last)[] ReadPackedLeft0()
+    private static class BatchProgram0
     {
-        var d = Numeric_Types_Lift01_Lift01RigidParts_g_cs.Values;
-        var values = new (int First, int Last)[781];
-        for (int i = 0; i < 781; i++)
-            values[0 + i] = (d.I32[2 + i * 2], d.I32[3 + i * 2]);
-        return values;
+        static BatchProgram0()
+        {
+        }
+
+        internal static HardcodedNumbers Data => GenerationParameters.Get<HardcodedNumbers>("BridgeBuilder.Bridges.Lift01RigidParts.BatchProgram0.Data", () => HardcodedNumbers.Load("Types_Lift01_Lift01RigidParts_BatchProgram0"));
     }
 
-    private static (int First, int Last)[] ReadPackedRight0()
+    private static class BatchProgram1
     {
-        var d = Numeric_Types_Lift01_Lift01RigidParts_g_cs.Values;
-        var values = new (int First, int Last)[805];
-        for (int i = 0; i < 805; i++)
-            values[0 + i] = (d.I32[1564 + i * 2], d.I32[1565 + i * 2]);
-        return values;
-    }
+        static BatchProgram1()
+        {
+        }
 
-    private static (int First, int Last)[] ReadPackedLeft1()
-    {
-        var d = Numeric_Types_Lift01_Lift01RigidParts_g_cs.Values;
-        var values = new (int First, int Last)[793];
-        for (int i = 0; i < 793; i++)
-            values[0 + i] = (d.I32[3174 + i * 2], d.I32[3175 + i * 2]);
-        return values;
-    }
-
-    private static (int First, int Last)[] ReadPackedRight1()
-    {
-        var d = Numeric_Types_Lift01_Lift01RigidParts_g_cs.Values;
-        var values = new (int First, int Last)[811];
-        for (int i = 0; i < 811; i++)
-            values[0 + i] = (d.I32[4760 + i * 2], d.I32[4761 + i * 2]);
-        return values;
+        internal static HardcodedNumbers Data => GenerationParameters.Get<HardcodedNumbers>("BridgeBuilder.Bridges.Lift01RigidParts.BatchProgram1.Data", () => HardcodedNumbers.Load("Types_Lift01_Lift01RigidParts_BatchProgram1"));
     }
 }
 
 // Embedded numerical arrays: Types_Lift01_Lift01RigidParts_g_cs
 internal static class Numeric_Types_Lift01_Lift01RigidParts_g_cs
 {
-    static Numeric_Types_Lift01_Lift01RigidParts_g_cs() {}
-    internal static readonly HardcodedNumbers Values = HardcodedNumbers.Load("Types_Lift01_Lift01RigidParts_g_cs");
+    static Numeric_Types_Lift01_Lift01RigidParts_g_cs()
+    {
+    }
+
+    internal static HardcodedNumbers Values => GenerationParameters.Get<HardcodedNumbers>("BridgeBuilder.Bridges.Numeric_Types_Lift01_Lift01RigidParts_g_cs.Values", () => HardcodedNumbers.Load("Types_Lift01_Lift01RigidParts_g_cs"));
 }

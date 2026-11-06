@@ -65,6 +65,27 @@ internal static class UiStringCatalog
         }
     }
 
+    [System.Runtime.InteropServices.DllImport("kernel32.dll",CharSet=System.Runtime.InteropServices.CharSet.Unicode,
+        ExactSpelling=true,SetLastError=true)]
+    private static extern int CompareStringEx(string locale,uint flags,string left,int leftLength,
+        string right,int rightLength,IntPtr version,IntPtr reserved,IntPtr parameter);
+
+    internal static IComparer<string> NameOrder(string? locale)
+    {
+        var name=string.IsNullOrWhiteSpace(locale) ? "en-US" : locale!.Replace('_','-');
+        System.Globalization.CultureInfo culture;
+        try { culture=System.Globalization.CultureInfo.GetCultureInfo(name); }
+        catch(System.Globalization.CultureNotFoundException) { culture=System.Globalization.CultureInfo.GetCultureInfo(Resolve(name)); }
+        var fallback=StringComparer.Create(culture,true);
+        if(Environment.OSVersion.Platform!=PlatformID.Win32NT) return fallback;
+        // Game Mono orders Han characters by code point even for zh-CN. Use the native locale tables.
+        return Comparer<string>.Create((left,right)=>{
+            if(string.IsNullOrEmpty(left) || string.IsNullOrEmpty(right)) return string.CompareOrdinal(left,right);
+            int result=CompareStringEx(culture.Name,1,left,left.Length,right,right.Length,IntPtr.Zero,IntPtr.Zero,IntPtr.Zero);
+            return result==0 ? fallback.Compare(left,right) : result-2;
+        });
+    }
+
     internal static string Resolve(string? localeId)
     {
         if (string.IsNullOrEmpty(localeId)) return "en-US";

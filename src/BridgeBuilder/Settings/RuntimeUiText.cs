@@ -516,6 +516,34 @@ internal static class RuntimeUiText
             "Buscar pontes por nome…",
             "Поиск мостов по названию…"
         },
+        ["AllBridgeTypes"] = new[]
+        {
+            "All bridge types", "全部桥型", "全部橋型", "Alle Brückentypen", "Todos los tipos de puente", "Tous les types de ponts", "Tutti i tipi di ponte", "すべての橋種", "모든 교량 유형", "Wszystkie typy mostów", "Todos os tipos de ponte", "Все типы мостов"
+        },
+        ["FamilySuspension"] = new[]
+        {
+            "Suspension bridges", "悬索桥", "懸索橋", "Hängebrücken", "Puentes colgantes", "Ponts suspendus", "Ponti sospesi", "吊橋", "현수교", "Mosty wiszące", "Pontes suspensas", "Висячие мосты"
+        },
+        ["FamilyCableStayed"] = new[]
+        {
+            "Cable-stayed bridges", "斜拉桥", "斜張橋", "Schrägseilbrücken", "Puentes atirantados", "Ponts à haubans", "Ponti strallati", "斜張橋", "사장교", "Mosty wantowe", "Pontes estaiadas", "Вантовые мосты"
+        },
+        ["FamilyArch"] = new[]
+        {
+            "Arch bridges", "拱桥", "拱橋", "Bogenbrücken", "Puentes de arco", "Ponts en arc", "Ponti ad arco", "アーチ橋", "아치교", "Mosty łukowe", "Pontes em arco", "Арочные мосты"
+        },
+        ["FamilyCovered"] = new[]
+        {
+            "Covered bridges", "廊桥", "廊橋", "Gedeckte Brücken", "Puentes cubiertos", "Ponts couverts", "Ponti coperti", "屋根付き橋", "지붕 다리", "Mosty kryte", "Pontes cobertas", "Крытые мосты"
+        },
+        ["FamilyBascule"] = new[]
+        {
+            "Bascule bridges", "开合桥", "開合橋", "Klappbrücken", "Puentes basculantes", "Ponts basculants", "Ponti basculanti", "跳ね橋", "도개교", "Mosty zwodzone", "Pontes basculantes", "Раскрывающиеся мосты"
+        },
+        ["FamilyLift"] = new[]
+        {
+            "Lift bridges", "升降桥", "升降橋", "Hubbrücken", "Puentes elevadizos", "Ponts levants", "Ponti sollevabili", "昇開橋", "승개교", "Mosty podnoszone", "Pontes levadiças", "Подъёмные мосты"
+        },
         ["AllTypes"] = new[]
         {
             "All network types", "全部道路类型", "全部道路類型", "Alle Netztypen", "Todos los tipos de vía", "Tous les types de réseau", "Tutti i tipi di rete", "すべての道路・軌道", "모든 네트워크 유형", "Wszystkie typy sieci", "Todos os tipos de via", "Все типы сетей"

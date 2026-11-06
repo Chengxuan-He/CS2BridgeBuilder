@@ -52,9 +52,9 @@ internal static class Lift02RoadUnderlay
         internal Matrix4x4 Frame;
     }
 
-    private static readonly HardcodedNumbers Data = HardcodedNumbers.Load("Types_Lift02_RoadUnderlay");
-    private static readonly Recipe[] Recipes = Read();
-    internal static void Append(MovableRoadAssets.Level[] levels, RenderPrefab[] sources, float delta, IReadOnlyList<MovableRoadAppearanceBinding>[] appearances)
+    private static HardcodedNumbers Data => GenerationParameters.Get<HardcodedNumbers>("BridgeBuilder.Bridges.Lift02RoadUnderlay.Data", () => HardcodedNumbers.Load("Types_Lift02_RoadUnderlay"));
+    private static Recipe[] Recipes => GenerationParameters.Get<Recipe[]>("BridgeBuilder.Bridges.Lift02RoadUnderlay.Recipes", () => Read());
+    internal static void Append(MovableRoadAssets.Level[] levels, RenderPrefab[] sources, float delta)
     {
         for (int lod = Numeric_Types_Lift02_Lift02RoadUnderlay_cs.Values.I32[0]; lod < levels.Length; lod++)
         {
@@ -68,9 +68,9 @@ internal static class Lift02RoadUnderlay
                 var mesh = meshes[Numeric_Types_Lift02_Lift02RoadUnderlay_cs.Values.I32[2]];
                 var plan = Create(lod, mesh.vertices, mesh.GetIndices(Numeric_Types_Lift02_Lift02RoadUnderlay_cs.Values.I32[3]), mesh.uv, MovableRoadGeometry.InFrame(input.Triangles, input.RoadToObject), delta, source.name, source.surfaceAssets.First());
                 var extras = input.AdditionalStructures.ToList();
-                var remapped = Lift02UnderlayAppearance.Apply(plan, FaceKinds(sourceLod), source.name, appearances[lod], input.RoadToObject);
-                foreach (var mapping in remapped)
-                    extras.Add(new MovableRoadAssets.Supplement(source, Numeric_Types_Lift02_Lift02RoadUnderlay_cs.Values.I32[4], mapping.Value, mapping.Key));
+                // The reconstructed sleeper boards form the underside. Create retained their
+                // source material, source UV interpolation and measured physical faces.
+                extras.Add(new MovableRoadAssets.Supplement(source, Numeric_Types_Lift02_Lift02RoadUnderlay_cs.Values.I32[4], plan, "Native sleeper underside"));
                 var bounds = input.RenderBounds;
                 foreach (var fragment in plan.Fragments)
                     foreach (int index in fragment.Indices)
@@ -506,5 +506,5 @@ internal static class Numeric_Types_Lift02_Lift02RoadUnderlay_cs
     {
     }
 
-    internal static readonly HardcodedNumbers Values = HardcodedNumbers.Load("Types_Lift02_Lift02RoadUnderlay_cs");
+    internal static HardcodedNumbers Values => GenerationParameters.Get<HardcodedNumbers>("BridgeBuilder.Bridges.Numeric_Types_Lift02_Lift02RoadUnderlay_cs.Values", () => HardcodedNumbers.Load("Types_Lift02_Lift02RoadUnderlay_cs"));
 }

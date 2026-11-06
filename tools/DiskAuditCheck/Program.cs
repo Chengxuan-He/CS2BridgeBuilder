@@ -13,6 +13,10 @@ var mesh = Path.Combine(geometry,"anything-"+owner+".unknown"); File.WriteAllTex
 File.WriteAllText(Path.Combine(geometry,"shared.Geometry"),"shared");
 var verdict = new Dictionary<string,string>{{owner,"invalid"}};
 void Check(bool ok,string label) { if(!ok) throw new Exception(label); Console.WriteLine("PASS "+label); }
+var scopedOwner="b"+Guid.NewGuid();var scopedRoot=Path.Combine(imported,scopedOwner);
+Directory.CreateDirectory(Path.Combine(scopedRoot,"Prefabs"));var scopedFile=Path.Combine(scopedRoot,"Prefabs","Bridge.Prefab");File.WriteAllText(scopedFile,"test");
+var scoped=BridgeDiskAudit.ForMemoryFailures(root,new Dictionary<string,string>{{scopedOwner,"test"}},new[]{scopedFile,scopedFile.Replace('\\','/'),scopedRoot});
+Check(scoped.Complete && scoped.FileOwners.Count==1 && scoped.FileOwners.ContainsKey(scopedRoot),"Scoped inspection selects the whole owner tree once");
 var audit = BridgeDiskAudit.ForMemoryFailures(root,verdict);
 Check(audit.Complete && audit.FileOwners.Count==3,"substring alone selects directory, empty dependencies and arbitrary-extension file");
 var backup = root+"-backup"; Directory.CreateDirectory(backup);

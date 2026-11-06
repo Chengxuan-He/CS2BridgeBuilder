@@ -16,7 +16,11 @@ The measured XYZ parameter matrices, embedded sparse arrays, bounded CPU schedul
 main-thread native API boundary and numerical verification requirements apply to new
 styles and regenerated recipes as well as existing implementations. This generation-time
 change does not add a mod dependency to independently persisted bridges or require GPU
-geometry execution. Keep runtime and metaprogram instructions synchronized with that section.
+geometry execution. Use its interleaved XYZ storage and direct target-buffer requirements;
+runtime expression recognition and per-axis register-column execution are prohibited.
+Its parameter lifetime is on demand per generation; release decoded and derived arrays after
+completion/failure/cancellation. No permanent static numerical cache or unused-style preload.
+Keep runtime and metaprogram instructions synchronized with that section.
 
 ## Optional GitHub publication
 
@@ -67,11 +71,12 @@ preview lifetime and pending consumers; deleting the directory alone is insuffic
 Use supported native lifecycle APIs and scope cleanup to the exact owning directory
 and local database. Preserve other bridges, built-in assets and same-CID copies elsewhere.
 
-This applies to single and bulk deletion and to failure paths. Partial directory deletion
-or a later prefab-unregistration exception must still retire registrations for files already
-removed. Preserve registrations for surviving files; an access error is not evidence that
-a file is missing. Do not mask stale-read exceptions, recreate deleted payloads, substitute
-another bridge's material or require a restart as the normal deletion implementation.
+For both deletion actions, wait for save/load and native readers, then detach registrations whose
+physical paths belong to the selected UUID. Keep files readable during this stage. For the file
+operation, match the exact immediate UUID directory and invoke recursive deletion once. Verify
+directory and index absence before reporting success. A failed or partial removal can be retried.
+Leave independent copies and their registrations in other directories alone. Deletion performs no
+dependency traversal, duplicate checks, CID transfers or normal ticket processing.
 Do not unload or destroy shared live render objects to bypass native lifecycle requirements.
 
 Validate create/delete/create, repeated deletion and partial failure. Compilation alone

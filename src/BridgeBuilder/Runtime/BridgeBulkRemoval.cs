@@ -12,6 +12,7 @@ namespace BridgeBuilder.Runtime;
 
 internal static class BridgeBulkRemoval
 {
+    internal static int Context { get; private set; }
     private static object? _pending;
     private static readonly Queue<string> _remaining = new();
     private static string? _current;
@@ -22,7 +23,7 @@ internal static class BridgeBulkRemoval
         && !BridgeStartupAssetSystem.IsStartupInspection
         && (GameManager.instance.gameMode == GameMode.MainMenu || (GameManager.instance.gameMode & GameMode.Game) != 0);
     internal static bool CanRequest => _pending == null && _current == null && Ready;
-    internal static void Stop() { _pending = null; _current = null; _remaining.Clear(); _failed = false; }
+    internal static void Stop() { Context++; _pending = null; _current = null; _remaining.Clear(); _failed = false; }
 
     internal static void RequestConfirmation()
     {
@@ -65,7 +66,7 @@ internal static class BridgeBulkRemoval
                 return;
             }
             _failed = false;
-            foreach (var owner in owners.OrderBy(o => o)) _remaining.Enqueue(owner);
+            foreach (var owner in owners.OrderBy(o=>o)) _remaining.Enqueue(owner);
             Next();
         }
         catch (Exception exception) { Failed(exception.ToString()); }
@@ -84,6 +85,14 @@ internal static class BridgeBulkRemoval
         if (_remaining.Count != 0)
         {
             _current = _remaining.Dequeue();
+            if(BridgeDeferredRemoval.Verified.Contains(_current) && !BridgeFileAccess.Exists(System.IO.Path.Combine(UnityEngine.Application.persistentDataPath,"ImportedData",_current)))
+            { Completed(_current,true); return; }
+            if(GameManager.instance.gameMode==GameMode.MainMenu || BridgeDeferredRemoval.Pending(_current))
+            {
+                try { BridgeDeferredRemoval.Schedule(_current); }
+                catch(Exception e) { Failed(e.ToString()); Completed(_current,false); }
+                return;
+            }
             BridgeRuntimeRequests.Enqueue(new BridgeRuntimeRequest { Action = BridgeRuntimeAction.Delete,
                 PrefabName = _current }, "");
             return;

@@ -31,5 +31,5 @@ internal static class Numeric_Types_PedestrianDraw02_PedestrianDraw02RepeatAppea
     {
     }
 
-    internal static readonly HardcodedNumbers Values = HardcodedNumbers.Load("Types_PedestrianDraw02_PedestrianDraw02RepeatAppearance_cs");
+    internal static HardcodedNumbers Values => GenerationParameters.Get<HardcodedNumbers>("BridgeBuilder.Bridges.Numeric_Types_PedestrianDraw02_PedestrianDraw02RepeatAppearance_cs.Values", () => HardcodedNumbers.Load("Types_PedestrianDraw02_PedestrianDraw02RepeatAppearance_cs"));
 }

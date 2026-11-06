@@ -11,22 +11,15 @@ internal static class Lift01FarJoinedParts
     {
         if (!float.IsFinite(delta) || source.Length != Numeric_Types_Lift01_Lift01FarJoinedParts_g_cs.Values.I32[0] || positions.Length != Numeric_Types_Lift01_Lift01FarJoinedParts_g_cs.Values.I32[1] || indices.Length != Numeric_Types_Lift01_Lift01FarJoinedParts_g_cs.Values.I32[2])
             throw new InvalidOperationException("Lift01 far platforms require their recorded shell layout.");
-        AffineGeometry.For(Numeric_Types_Lift01_Lift01FarJoinedParts_g_cs.Values.I32[3], positions.Length, i =>
-        {
-            positions[i].x = AffineGeometry.Translate(positions[i].x, Weights[i] * delta);
-        });
+        AffineGeometry.Execute(RangePrograms.Data, 0, new[] { positions }, new[] { Weights }, new float[] { delta }, Numeric_Types_Lift01_Lift01FarJoinedParts_g_cs.Values.I32[3], checked((positions.Length) - (Numeric_Types_Lift01_Lift01FarJoinedParts_g_cs.Values.I32[3])));
         var x = new float[Edges.Length];
-        AffineGeometry.For(Numeric_Types_Lift01_Lift01FarJoinedParts_g_cs.Values.I32[4], x.Length, i =>
-        {
-            var edge = Edges[i];
-            x[i] = AffineGeometry.AddScaled(Mathf.LerpUnclamped(source[edge.A].x, source[edge.B].x, edge.Fraction), Weights[source.Length + i], delta);
-        });
+        AffineGeometry.Execute(InterpolationProgram0.Data, 0, new[] { source }, new[] { x }, new float[] { delta });
         return new MovableStructureModel.Plan(source, positions, new[] { indices }, new[] { new bool[Numeric_Types_Lift01_Lift01FarJoinedParts_g_cs.Values.I32[5]] }, addedVertices: Edges, fragments: Fragments, constructedX: x);
     }
 
-    private static readonly float[] Weights = ReadPackedWeights();
-    private static readonly MovableStructureModel.EdgeVertex[] Edges = ReadPackedEdges();
-    private static readonly MovableStructureModel.Fragment[] Fragments = ReadPackedFragments();
+    private static float[] Weights => GenerationParameters.Get<float[]>("BridgeBuilder.Bridges.Lift01FarJoinedParts.Weights", () => ReadPackedWeights());
+    private static MovableStructureModel.EdgeVertex[] Edges => GenerationParameters.Get<MovableStructureModel.EdgeVertex[]>("BridgeBuilder.Bridges.Lift01FarJoinedParts.Edges", () => ReadPackedEdges());
+    private static MovableStructureModel.Fragment[] Fragments => GenerationParameters.Get<MovableStructureModel.Fragment[]>("BridgeBuilder.Bridges.Lift01FarJoinedParts.Fragments", () => ReadPackedFragments());
     private static float[] ReadPackedWeights()
     {
         var d = Numeric_Types_Lift01_Lift01FarJoinedParts_g_cs.Values;
@@ -225,11 +218,32 @@ internal static class Lift01FarJoinedParts
             values[41 + i] = new(d.I32[721 + i * 11], d.I32[722 + i * 11], d.I32[723 + i * 11], d.I32[724 + i * 11], d.I32[725 + i * 11], d.I32[726 + i * 11], d.I32[727 + i * 11], d.I32[728 + i * 11], d.I32[729 + i * 11], d.I32[730 + i * 11], d.I32[731 + i * 11]);
         return values;
     }
+
+    private static class RangePrograms
+    {
+        static RangePrograms()
+        {
+        }
+
+        internal static HardcodedNumbers Data => GenerationParameters.Get<HardcodedNumbers>("BridgeBuilder.Bridges.Lift01FarJoinedParts.RangePrograms.Data", () => HardcodedNumbers.Load("Types_Lift01_Lift01FarJoinedParts_RangePrograms"));
+    }
+
+    private static class InterpolationProgram0
+    {
+        static InterpolationProgram0()
+        {
+        }
+
+        internal static HardcodedNumbers Data => GenerationParameters.Get<HardcodedNumbers>("BridgeBuilder.Bridges.Lift01FarJoinedParts.InterpolationProgram0.Data", () => HardcodedNumbers.Load("Types_Lift01_Lift01FarJoinedParts_InterpolationProgram0"));
+    }
 }
 
 // Embedded numerical arrays: Types_Lift01_Lift01FarJoinedParts_g_cs
 internal static class Numeric_Types_Lift01_Lift01FarJoinedParts_g_cs
 {
-    static Numeric_Types_Lift01_Lift01FarJoinedParts_g_cs() {}
-    internal static readonly HardcodedNumbers Values = HardcodedNumbers.Load("Types_Lift01_Lift01FarJoinedParts_g_cs");
+    static Numeric_Types_Lift01_Lift01FarJoinedParts_g_cs()
+    {
+    }
+
+    internal static HardcodedNumbers Values => GenerationParameters.Get<HardcodedNumbers>("BridgeBuilder.Bridges.Numeric_Types_Lift01_Lift01FarJoinedParts_g_cs.Values", () => HardcodedNumbers.Load("Types_Lift01_Lift01FarJoinedParts_g_cs"));
 }

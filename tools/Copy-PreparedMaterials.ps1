@@ -22,6 +22,11 @@ if (Test-Path -LiteralPath $sourceRoot) {
     }
     $payloads = @($entries | Where-Object { -not $_.PSIsContainer -and $_.Extension -in $extensions })
 }
+$normalRoot = [IO.Path]::GetFullPath((Join-Path $PSScriptRoot '../assets/Materials')).TrimEnd('\', '/')
+if ($sourceRoot -eq $normalRoot -or @($payloads | Where-Object Extension -eq '.Surface').Length) {
+    dotnet run --project (Join-Path $PSScriptRoot 'MaterialTexturePolicy') -- $sourceRoot (Join-Path $PSScriptRoot 'PreparedMaterials/Common/RoadTextureConsumers.json')
+    if ($LASTEXITCODE -ne 0) { throw 'Prepared texture consumer validation failed.' }
+}
 $copies = [Collections.Generic.List[object]]::new()
 foreach ($payload in $payloads) {
     $relative = [IO.Path]::GetRelativePath($sourceRoot, $payload.FullName)
@@ -34,9 +39,10 @@ foreach ($payload in $payloads) {
         throw "Prepared native payload requires its original CID sidecar: $relative"
     }
     if ($relative -match '^Shared[\\/]') {
-        if ($relative -notmatch '^Shared[\\/]MidMips[\\/]([a-f0-9]{32})[\\/]TS[0-9]+_MB[0-9]+\.MidMips$' -or
+        if (($relative -notmatch '^Shared[\\/]MidMips[\\/]([a-f0-9]{32})[\\/]TS[0-9]+_MB[0-9]+\.MidMips$' -and
+             $relative -notmatch '^Shared[\\/]Paint[\\/]([a-f0-9]{32})\.Texture$') -or
             [IO.File]::ReadAllText($cid).Trim() -ne $Matches[1]) {
-            throw "Only CID-scoped native MidMips are permitted in the common material root: $relative"
+            throw "Only reviewed CID-scoped Paint textures and native MidMips are permitted in the common material root: $relative"
         }
     }
     $copies.Add([pscustomobject]@{ Source = $payload.FullName; Relative = $relative })

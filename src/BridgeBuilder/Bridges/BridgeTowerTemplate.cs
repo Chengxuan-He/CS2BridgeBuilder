@@ -53,7 +53,7 @@ internal static class BridgeTowerTemplate
     /// small adjustment it is allowed either way, not a stretching distance - which is why a tower
     /// cannot be made to reach further by widening this.
     /// </summary>
-    internal static readonly PillarType Pillar = (PillarType)BridgeTowerSpec.PillarTypeStandalone;
+    internal static PillarType Pillar => GenerationParameters.Get<PillarType>("BridgeBuilder.Bridges.BridgeTowerTemplate.Pillar", () => (PillarType)BridgeTowerSpec.PillarTypeStandalone);
     internal static Bounds1 VerticalRange => new(BridgeTowerSpec.VerticalRangeMin, BridgeTowerSpec.VerticalRangeMax);
 
     /// <summary>

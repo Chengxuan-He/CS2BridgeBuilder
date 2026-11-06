@@ -12,7 +12,7 @@ internal static class Draw02RoadAppearance
 {
     // One complete transverse period, including both halves of the solid strip.
     // Sharing this immutable recipe also shares the generated repeating material.
-    private static readonly RepeatBand[] CarriagewayBands = ReadPackedCarriagewayBands();
+    private static RepeatBand[] CarriagewayBands => GenerationParameters.Get<RepeatBand[]>("BridgeBuilder.Bridges.Draw02RoadAppearance.CarriagewayBands", () => ReadPackedCarriagewayBands());
     internal static Patch[] Patches(MovableSelectedRoadLayout layout, Pose roadToObject)
     {
         var frame = Matrix4x4.TRS(roadToObject.position, roadToObject.rotation, Vector3.one).transpose;
@@ -82,5 +82,5 @@ internal static class Draw02RoadAppearance
 internal static class Numeric_Types_Draw02_Draw02RoadAppearance_cs
 {
     static Numeric_Types_Draw02_Draw02RoadAppearance_cs() {}
-    internal static readonly HardcodedNumbers Values = HardcodedNumbers.Load("Types_Draw02_Draw02RoadAppearance_cs");
+    internal static HardcodedNumbers Values => GenerationParameters.Get<HardcodedNumbers>("BridgeBuilder.Bridges.Numeric_Types_Draw02_Draw02RoadAppearance_cs.Values", () => HardcodedNumbers.Load("Types_Draw02_Draw02RoadAppearance_cs"));
 }

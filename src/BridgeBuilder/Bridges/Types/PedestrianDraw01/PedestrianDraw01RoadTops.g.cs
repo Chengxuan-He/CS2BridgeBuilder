@@ -24,11 +24,11 @@ internal static class PedestrianDraw01RoadTops
     }
 
     // Geometry SHA-256: 491d8dae6420e0b5b00fbf0014ff74a8aff44c45a1bd48ab40708978888d7f05
-    private static readonly (int Triangle, int A, int B, int C)[] Faces0 = ReadPackedFaces0();
+    private static (int Triangle, int A, int B, int C)[] Faces0 => GenerationParameters.Get<(int Triangle, int A, int B, int C)[]>("BridgeBuilder.Bridges.PedestrianDraw01RoadTops.Faces0", () => ReadPackedFaces0());
     // Geometry SHA-256: 0b0544aff8720327910927fda2f398ce78c8e3e3d2a1262de8204acdcac34053
-    private static readonly (int Triangle, int A, int B, int C)[] Faces1 = ReadPackedFaces1();
+    private static (int Triangle, int A, int B, int C)[] Faces1 => GenerationParameters.Get<(int Triangle, int A, int B, int C)[]>("BridgeBuilder.Bridges.PedestrianDraw01RoadTops.Faces1", () => ReadPackedFaces1());
     // Geometry SHA-256: d514d88bf5fd4d8453a81578b36f099887cf562ad55255d4ca97267add15952b
-    private static readonly (int Triangle, int A, int B, int C)[] Faces2 = ReadPackedFaces2();
+    private static (int Triangle, int A, int B, int C)[] Faces2 => GenerationParameters.Get<(int Triangle, int A, int B, int C)[]>("BridgeBuilder.Bridges.PedestrianDraw01RoadTops.Faces2", () => ReadPackedFaces2());
     private static (int Triangle, int A, int B, int C)[] ReadPackedFaces0()
     {
         var d = Numeric_Types_PedestrianDraw01_PedestrianDraw01RoadTops_g_cs.Values;
@@ -61,5 +61,5 @@ internal static class PedestrianDraw01RoadTops
 internal static class Numeric_Types_PedestrianDraw01_PedestrianDraw01RoadTops_g_cs
 {
     static Numeric_Types_PedestrianDraw01_PedestrianDraw01RoadTops_g_cs() {}
-    internal static readonly HardcodedNumbers Values = HardcodedNumbers.Load("Types_PedestrianDraw01_PedestrianDraw01RoadTops_g_cs");
+    internal static HardcodedNumbers Values => GenerationParameters.Get<HardcodedNumbers>("BridgeBuilder.Bridges.Numeric_Types_PedestrianDraw01_PedestrianDraw01RoadTops_g_cs.Values", () => HardcodedNumbers.Load("Types_PedestrianDraw01_PedestrianDraw01RoadTops_g_cs"));
 }

@@ -38,14 +38,7 @@ string Add(string name, byte[] bytes)
     var cid = Digest(Encoding.UTF8.GetBytes(recipe + "/" + sourceCid + "/" + Digest(source) + "/" + Digest(templateBytes) + "/" + Digest(bytes)))[..32];
     files.Add(name, (cid, bytes)); return cid;
 }
-// Native Texture v5: 1x1 linear RGBA8, one raw zero mip. No encoding/decoding at runtime.
-var control = Bytes(w => {
-    w.Write((ushort)5); w.Write((ushort)1); w.Write((ushort)1); w.Write((ushort)1);
-    w.Write((byte)1); w.Write((byte)8); w.Write((byte)2); // mips, GraphicsFormat, TextureDimension
-    w.Write((byte)1); w.Write((byte)0); w.Write((byte)1); // bilinear, repeat, anisotropy
-    w.Write(-1); w.Write(new byte[4]);
-});
-var controlCid = Add("ZeroControl.Texture", control);
+var controlCid = NativeNeutralControl.Verify(args[0]);
 Add("SkinnedCable.Surface", Bytes(w => {
     void Map(int count) { w.Write((byte)255); w.Write(count); }
     w.Write((ushort)1); w.Write(0); w.Write(false); // Default, non-VT

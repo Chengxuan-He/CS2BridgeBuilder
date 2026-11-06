@@ -13,7 +13,7 @@ var output = Path.Combine(root, "assets/HardcodedNumbers");
 Directory.CreateDirectory(output);
 var top = new HashSet<string> { "BridgeTowers.cs", "BridgeCables.cs", "BridgeMeasurements.cs",
     "BridgeStyleDefinitions.cs", "BridgeSpec.cs", "GoldenBridgeRailings.cs", "PrototypeBridgeSizing.cs",
-    "BridgeTowerSpec.cs", "BridgeTowerTemplate.cs", "BridgeCableTemplate.cs" };
+    "BridgeTowerSpec.cs", "BridgeTowerTemplate.cs", "BridgeCableTemplate.cs", "StructurePrograms.cs" };
 var files = Directory.GetFiles(sourceRoot, "*.cs", SearchOption.AllDirectories)
     .Where(p => p.Contains(Path.DirectorySeparatorChar + "Types" + Path.DirectorySeparatorChar) ||
         p.EndsWith(".g.cs") || top.Contains(Path.GetFileName(p))).OrderBy(p => p).ToArray();
@@ -142,7 +142,7 @@ foreach (var file in files)
     // A separate static holder avoids ordering dependencies between fields in the owner class.
     var holder = SyntaxFactory.ParseMemberDeclaration(
         "// Embedded numerical arrays: " + name + "\ninternal static class Numeric_" + name +
-        " { static Numeric_" + name + "() {} internal static readonly HardcodedNumbers Values = HardcodedNumbers.Load(\"" + name + "\"); }")!;
+        " { static Numeric_" + name + "() {} internal static HardcodedNumbers Values => HardcodedNumbers.Load(\"" + name + "\"); }")!;
     var ns = updated.Members.OfType<BaseNamespaceDeclarationSyntax>().Single();
     updated = updated.ReplaceNode(ns, ns.AddMembers(holder));
     var text = updated.NormalizeWhitespace().ToFullString() + Environment.NewLine;

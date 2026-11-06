@@ -21,25 +21,22 @@ internal static class Draw02SupportWideningData
         if (source.Length != weights.Length || indices.Length != data.Item2)
             throw new InvalidOperationException("Draw02 support source does not match its recorded layout.");
         var positions = (Vector3[])source.Clone();
-        AffineGeometry.For(Numeric_Types_Draw02_Draw02SupportWideningData_g_cs.Values.I32[6], positions.Length, i =>
-        {
-            positions[i].x = AffineGeometry.Translate(positions[i].x, weights[i] * delta);
-        });
+        AffineGeometry.Execute(RangePrograms.Data, 0, new[] { positions }, new[] { weights }, new float[] { delta }, Numeric_Types_Draw02_Draw02SupportWideningData_g_cs.Values.I32[6], checked((positions.Length) - (Numeric_Types_Draw02_Draw02SupportWideningData_g_cs.Values.I32[6])));
         return new MovableStructureModel.Plan(source, positions, new[] { indices }, new[] { new bool[indices.Length / Numeric_Types_Draw02_Draw02SupportWideningData_g_cs.Values.I32[7]] });
     }
 
     // Geometry SHA-256: 3b34c05a454cf08fed4feadd0555902c5fd70a28ce69d62ef7f2205767dd143a
-    private static readonly float[] Column0 = ReadPackedColumn0();
+    private static float[] Column0 => GenerationParameters.Get<float[]>("BridgeBuilder.Bridges.Draw02SupportWideningData.Column0", () => ReadPackedColumn0());
     // Geometry SHA-256: a527f1a69cd819298222650d83a609e723098ad867c7d620111f445ae157552a
-    private static readonly float[] Column1 = ReadPackedColumn1();
+    private static float[] Column1 => GenerationParameters.Get<float[]>("BridgeBuilder.Bridges.Draw02SupportWideningData.Column1", () => ReadPackedColumn1());
     // Geometry SHA-256: 33610283fdbee0d84e153aa95ad942c932476cf15c8122dec634c4d04b32c1b8
-    private static readonly float[] Column2 = ReadPackedColumn2();
+    private static float[] Column2 => GenerationParameters.Get<float[]>("BridgeBuilder.Bridges.Draw02SupportWideningData.Column2", () => ReadPackedColumn2());
     // Geometry SHA-256: 79f4b892290d21cb017067a4ab19ddbd3ebb2c7522af587661c324993b42c7fd
-    private static readonly float[] Footing0 = ReadPackedFooting0();
+    private static float[] Footing0 => GenerationParameters.Get<float[]>("BridgeBuilder.Bridges.Draw02SupportWideningData.Footing0", () => ReadPackedFooting0());
     // Geometry SHA-256: 4e41fbd07dd519d165daaa53329d502a41dd55b9c2295e6114f68c545e0d3203
-    private static readonly float[] Footing1 = ReadPackedFooting1();
+    private static float[] Footing1 => GenerationParameters.Get<float[]>("BridgeBuilder.Bridges.Draw02SupportWideningData.Footing1", () => ReadPackedFooting1());
     // Geometry SHA-256: cff1d8169526fb27e878d4ea14ad5fb97ba23d55e2dae9cb1a90d2c4f3f13348
-    private static readonly float[] Footing2 = ReadPackedFooting2();
+    private static float[] Footing2 => GenerationParameters.Get<float[]>("BridgeBuilder.Bridges.Draw02SupportWideningData.Footing2", () => ReadPackedFooting2());
     private static float[] ReadPackedColumn0()
     {
         var d = Numeric_Types_Draw02_Draw02SupportWideningData_g_cs.Values;
@@ -719,11 +716,23 @@ internal static class Draw02SupportWideningData
             values[208 + i] = d.F32[4395 + i * 1];
         return values;
     }
+
+    private static class RangePrograms
+    {
+        static RangePrograms()
+        {
+        }
+
+        internal static HardcodedNumbers Data => GenerationParameters.Get<HardcodedNumbers>("BridgeBuilder.Bridges.Draw02SupportWideningData.RangePrograms.Data", () => HardcodedNumbers.Load("Types_Draw02_Draw02SupportWideningData_RangePrograms"));
+    }
 }
 
 // Embedded numerical arrays: Types_Draw02_Draw02SupportWideningData_g_cs
 internal static class Numeric_Types_Draw02_Draw02SupportWideningData_g_cs
 {
-    static Numeric_Types_Draw02_Draw02SupportWideningData_g_cs() {}
-    internal static readonly HardcodedNumbers Values = HardcodedNumbers.Load("Types_Draw02_Draw02SupportWideningData_g_cs");
+    static Numeric_Types_Draw02_Draw02SupportWideningData_g_cs()
+    {
+    }
+
+    internal static HardcodedNumbers Values => GenerationParameters.Get<HardcodedNumbers>("BridgeBuilder.Bridges.Numeric_Types_Draw02_Draw02SupportWideningData_g_cs.Values", () => HardcodedNumbers.Load("Types_Draw02_Draw02SupportWideningData_g_cs"));
 }

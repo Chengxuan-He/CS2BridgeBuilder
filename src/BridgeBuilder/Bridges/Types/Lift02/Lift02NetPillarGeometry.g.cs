@@ -23,90 +23,85 @@ internal static class Lift02NetPillarGeometry
             throw new InvalidOperationException("Lift02 ordinary pillar requires its measured native layout.");
         var positions = (Vector3[])source.Clone();
         foreach (var range in data.Motion)
-            AffineGeometry.For(range.First, checked((range.Last) + 1), i =>
-            {
-                positions[i].x = AffineGeometry.AddScaled(source[i].x, range.Weight, delta);
-            });
+            AffineGeometry.Execute(RangePrograms.Data, 0, new[] { source, positions }, Array.Empty<float[]>(), new float[] { range.Weight, delta }, range.First, checked((checked((range.Last) + 1)) - (range.First)));
         var edges = new MovableStructureModel.EdgeVertex[data.Edges.Length];
         var x = new float[edges.Length];
-        for (var i = Numeric_Types_Lift02_Lift02NetPillarGeometry_g_cs.Values.I32[19]; i < edges.Length; i++)
         {
-            var edge = data.Edges[i];
-            edges[i] = new MovableStructureModel.EdgeVertex(edge.A, edge.B, edge.Fraction);
-            x[i] = AffineGeometry.AddScaled(Mathf.LerpUnclamped(source[edge.A].x, source[edge.B].x, edge.Fraction), edge.Weight, delta);
+            for (var i = Numeric_Types_Lift02_Lift02NetPillarGeometry_g_cs.Values.I32[19]; i < edges.Length; i++)
+            {
+                var edge = data.Edges[i];
+                edges[i] = new MovableStructureModel.EdgeVertex(edge.A, edge.B, edge.Fraction);
+            }
+
+            AffineGeometry.Execute(InterpolationProgram0.Data, (part, lod) switch
+            {
+                (0, 0) => 0,
+                (0, 1) => 1,
+                (0, 2) => 2,
+                (1, 0) => 3,
+                (1, 1) => 4,
+                (1, 2) => 5,
+                (2, 0) => 6,
+                (2, 1) => 7,
+                (2, 2) => 8,
+                _ => throw new ArgumentOutOfRangeException()}, new[] { source }, new[] { x }, new float[] { delta });
         }
 
         return new MovableStructureModel.Plan(source, positions, new[] { indices }, new[] { new bool[data.Faces] }, addedVertices: edges, fragments: data.Fragments, constructedX: x);
     }
 
     // Geometry SHA-256: 93760866137b52e2e2084350bf0de94b2bdad3790c9c80e044606514883a7b68
-    private static readonly (int First, int Last, float Weight)[] Motion00 = ReadPackedMotion00();
-    private static readonly (int A, int B, float Fraction, float Weight)[] Edges00 =
-    {
-    };
-    private static readonly MovableStructureModel.Fragment[] Fragments00 =
-    {
-    };
+    private static (int First, int Last, float Weight)[] Motion00 => GenerationParameters.Get<(int First, int Last, float Weight)[]>("BridgeBuilder.Bridges.Lift02NetPillarGeometry.Motion00", () => ReadPackedMotion00());
+    private static (int A, int B, float Fraction, float Weight)[] Edges00 => GenerationParameters.Get<(int A, int B, float Fraction, float Weight)[]>("BridgeBuilder.Bridges.Lift02NetPillarGeometry.Edges00", () => new (int A, int B, float Fraction, float Weight)[] {
+    });
+    private static MovableStructureModel.Fragment[] Fragments00 => GenerationParameters.Get<MovableStructureModel.Fragment[]>("BridgeBuilder.Bridges.Lift02NetPillarGeometry.Fragments00", () => new MovableStructureModel.Fragment[] {
+    });
     // Geometry SHA-256: d465c5bfad780d2bf3038c071acf71ecd49adc651ac91ed8f72f5b6d0a28019d
-    private static readonly (int First, int Last, float Weight)[] Motion01 = ReadPackedMotion01();
-    private static readonly (int A, int B, float Fraction, float Weight)[] Edges01 =
-    {
-    };
-    private static readonly MovableStructureModel.Fragment[] Fragments01 =
-    {
-    };
+    private static (int First, int Last, float Weight)[] Motion01 => GenerationParameters.Get<(int First, int Last, float Weight)[]>("BridgeBuilder.Bridges.Lift02NetPillarGeometry.Motion01", () => ReadPackedMotion01());
+    private static (int A, int B, float Fraction, float Weight)[] Edges01 => GenerationParameters.Get<(int A, int B, float Fraction, float Weight)[]>("BridgeBuilder.Bridges.Lift02NetPillarGeometry.Edges01", () => new (int A, int B, float Fraction, float Weight)[] {
+    });
+    private static MovableStructureModel.Fragment[] Fragments01 => GenerationParameters.Get<MovableStructureModel.Fragment[]>("BridgeBuilder.Bridges.Lift02NetPillarGeometry.Fragments01", () => new MovableStructureModel.Fragment[] {
+    });
     // Geometry SHA-256: 60e050f302dc5a11ba6e5fac21d73ba92ba2af5c01e628f27e0baac83fede909
-    private static readonly (int First, int Last, float Weight)[] Motion02 = ReadPackedMotion02();
-    private static readonly (int A, int B, float Fraction, float Weight)[] Edges02 =
-    {
-    };
-    private static readonly MovableStructureModel.Fragment[] Fragments02 =
-    {
-    };
+    private static (int First, int Last, float Weight)[] Motion02 => GenerationParameters.Get<(int First, int Last, float Weight)[]>("BridgeBuilder.Bridges.Lift02NetPillarGeometry.Motion02", () => ReadPackedMotion02());
+    private static (int A, int B, float Fraction, float Weight)[] Edges02 => GenerationParameters.Get<(int A, int B, float Fraction, float Weight)[]>("BridgeBuilder.Bridges.Lift02NetPillarGeometry.Edges02", () => new (int A, int B, float Fraction, float Weight)[] {
+    });
+    private static MovableStructureModel.Fragment[] Fragments02 => GenerationParameters.Get<MovableStructureModel.Fragment[]>("BridgeBuilder.Bridges.Lift02NetPillarGeometry.Fragments02", () => new MovableStructureModel.Fragment[] {
+    });
     // Geometry SHA-256: 7d19959d70de143ccdad82ad4614c7c9650907f69edf39490e813e33172574b1
-    private static readonly (int First, int Last, float Weight)[] Motion10 = ReadPackedMotion10();
-    private static readonly (int A, int B, float Fraction, float Weight)[] Edges10 =
-    {
-    };
-    private static readonly MovableStructureModel.Fragment[] Fragments10 =
-    {
-    };
+    private static (int First, int Last, float Weight)[] Motion10 => GenerationParameters.Get<(int First, int Last, float Weight)[]>("BridgeBuilder.Bridges.Lift02NetPillarGeometry.Motion10", () => ReadPackedMotion10());
+    private static (int A, int B, float Fraction, float Weight)[] Edges10 => GenerationParameters.Get<(int A, int B, float Fraction, float Weight)[]>("BridgeBuilder.Bridges.Lift02NetPillarGeometry.Edges10", () => new (int A, int B, float Fraction, float Weight)[] {
+    });
+    private static MovableStructureModel.Fragment[] Fragments10 => GenerationParameters.Get<MovableStructureModel.Fragment[]>("BridgeBuilder.Bridges.Lift02NetPillarGeometry.Fragments10", () => new MovableStructureModel.Fragment[] {
+    });
     // Geometry SHA-256: a1b57e173989e8bfc068b92877da34e3217302e845d0c782d7db30fd71b7771c
-    private static readonly (int First, int Last, float Weight)[] Motion11 = ReadPackedMotion11();
-    private static readonly (int A, int B, float Fraction, float Weight)[] Edges11 =
-    {
-    };
-    private static readonly MovableStructureModel.Fragment[] Fragments11 =
-    {
-    };
+    private static (int First, int Last, float Weight)[] Motion11 => GenerationParameters.Get<(int First, int Last, float Weight)[]>("BridgeBuilder.Bridges.Lift02NetPillarGeometry.Motion11", () => ReadPackedMotion11());
+    private static (int A, int B, float Fraction, float Weight)[] Edges11 => GenerationParameters.Get<(int A, int B, float Fraction, float Weight)[]>("BridgeBuilder.Bridges.Lift02NetPillarGeometry.Edges11", () => new (int A, int B, float Fraction, float Weight)[] {
+    });
+    private static MovableStructureModel.Fragment[] Fragments11 => GenerationParameters.Get<MovableStructureModel.Fragment[]>("BridgeBuilder.Bridges.Lift02NetPillarGeometry.Fragments11", () => new MovableStructureModel.Fragment[] {
+    });
     // Geometry SHA-256: 39356bfe83f2ffd7c35b5bd3eec31adb1b4cb5e848447b32aed12479ef7ea88c
-    private static readonly (int First, int Last, float Weight)[] Motion12 = ReadPackedMotion12();
-    private static readonly (int A, int B, float Fraction, float Weight)[] Edges12 =
-    {
-    };
-    private static readonly MovableStructureModel.Fragment[] Fragments12 =
-    {
-    };
+    private static (int First, int Last, float Weight)[] Motion12 => GenerationParameters.Get<(int First, int Last, float Weight)[]>("BridgeBuilder.Bridges.Lift02NetPillarGeometry.Motion12", () => ReadPackedMotion12());
+    private static (int A, int B, float Fraction, float Weight)[] Edges12 => GenerationParameters.Get<(int A, int B, float Fraction, float Weight)[]>("BridgeBuilder.Bridges.Lift02NetPillarGeometry.Edges12", () => new (int A, int B, float Fraction, float Weight)[] {
+    });
+    private static MovableStructureModel.Fragment[] Fragments12 => GenerationParameters.Get<MovableStructureModel.Fragment[]>("BridgeBuilder.Bridges.Lift02NetPillarGeometry.Fragments12", () => new MovableStructureModel.Fragment[] {
+    });
     // Geometry SHA-256: f5c0011e31b09f10b78088ca56fd4b8e5198ebf2345930b45c40820f4f1dc5b1
-    private static readonly (int First, int Last, float Weight)[] Motion20 = ReadPackedMotion20();
-    private static readonly (int A, int B, float Fraction, float Weight)[] Edges20 =
-    {
-    };
-    private static readonly MovableStructureModel.Fragment[] Fragments20 =
-    {
-    };
+    private static (int First, int Last, float Weight)[] Motion20 => GenerationParameters.Get<(int First, int Last, float Weight)[]>("BridgeBuilder.Bridges.Lift02NetPillarGeometry.Motion20", () => ReadPackedMotion20());
+    private static (int A, int B, float Fraction, float Weight)[] Edges20 => GenerationParameters.Get<(int A, int B, float Fraction, float Weight)[]>("BridgeBuilder.Bridges.Lift02NetPillarGeometry.Edges20", () => new (int A, int B, float Fraction, float Weight)[] {
+    });
+    private static MovableStructureModel.Fragment[] Fragments20 => GenerationParameters.Get<MovableStructureModel.Fragment[]>("BridgeBuilder.Bridges.Lift02NetPillarGeometry.Fragments20", () => new MovableStructureModel.Fragment[] {
+    });
     // Geometry SHA-256: 34649418a3a236ed4b6a3aa27a8a00cc3e9907678a21fd1bd2f7739c28b45860
-    private static readonly (int First, int Last, float Weight)[] Motion21 = ReadPackedMotion21();
-    private static readonly (int A, int B, float Fraction, float Weight)[] Edges21 =
-    {
-    };
-    private static readonly MovableStructureModel.Fragment[] Fragments21 =
-    {
-    };
+    private static (int First, int Last, float Weight)[] Motion21 => GenerationParameters.Get<(int First, int Last, float Weight)[]>("BridgeBuilder.Bridges.Lift02NetPillarGeometry.Motion21", () => ReadPackedMotion21());
+    private static (int A, int B, float Fraction, float Weight)[] Edges21 => GenerationParameters.Get<(int A, int B, float Fraction, float Weight)[]>("BridgeBuilder.Bridges.Lift02NetPillarGeometry.Edges21", () => new (int A, int B, float Fraction, float Weight)[] {
+    });
+    private static MovableStructureModel.Fragment[] Fragments21 => GenerationParameters.Get<MovableStructureModel.Fragment[]>("BridgeBuilder.Bridges.Lift02NetPillarGeometry.Fragments21", () => new MovableStructureModel.Fragment[] {
+    });
     // Geometry SHA-256: 98b1403dec27b6d237fe7f571edc1da3e54282a1145706ef8b2b19ddc292e0a4
-    private static readonly (int First, int Last, float Weight)[] Motion22 = ReadPackedMotion22();
-    private static readonly (int A, int B, float Fraction, float Weight)[] Edges22 = ReadPackedEdges22();
-    private static readonly MovableStructureModel.Fragment[] Fragments22 = ReadPackedFragments22();
+    private static (int First, int Last, float Weight)[] Motion22 => GenerationParameters.Get<(int First, int Last, float Weight)[]>("BridgeBuilder.Bridges.Lift02NetPillarGeometry.Motion22", () => ReadPackedMotion22());
+    private static (int A, int B, float Fraction, float Weight)[] Edges22 => GenerationParameters.Get<(int A, int B, float Fraction, float Weight)[]>("BridgeBuilder.Bridges.Lift02NetPillarGeometry.Edges22", () => ReadPackedEdges22());
+    private static MovableStructureModel.Fragment[] Fragments22 => GenerationParameters.Get<MovableStructureModel.Fragment[]>("BridgeBuilder.Bridges.Lift02NetPillarGeometry.Fragments22", () => ReadPackedFragments22());
     private static (int First, int Last, float Weight)[] ReadPackedMotion00()
     {
         var d = Numeric_Types_Lift02_Lift02NetPillarGeometry_g_cs.Values;
@@ -557,11 +552,32 @@ internal static class Lift02NetPillarGeometry
             values[19 + i] = new(d.I32[735 + i * 11], d.I32[736 + i * 11], d.I32[737 + i * 11], d.I32[738 + i * 11], d.I32[739 + i * 11], d.I32[740 + i * 11], d.I32[741 + i * 11], d.I32[742 + i * 11], d.I32[743 + i * 11], d.I32[744 + i * 11], d.I32[745 + i * 11]);
         return values;
     }
+
+    private static class RangePrograms
+    {
+        static RangePrograms()
+        {
+        }
+
+        internal static HardcodedNumbers Data => GenerationParameters.Get<HardcodedNumbers>("BridgeBuilder.Bridges.Lift02NetPillarGeometry.RangePrograms.Data", () => HardcodedNumbers.Load("Types_Lift02_Lift02NetPillarGeometry_RangePrograms"));
+    }
+
+    private static class InterpolationProgram0
+    {
+        static InterpolationProgram0()
+        {
+        }
+
+        internal static HardcodedNumbers Data => GenerationParameters.Get<HardcodedNumbers>("BridgeBuilder.Bridges.Lift02NetPillarGeometry.InterpolationProgram0.Data", () => HardcodedNumbers.Load("Types_Lift02_Lift02NetPillarGeometry_InterpolationProgram0"));
+    }
 }
 
 // Embedded numerical arrays: Types_Lift02_Lift02NetPillarGeometry_g_cs
 internal static class Numeric_Types_Lift02_Lift02NetPillarGeometry_g_cs
 {
-    static Numeric_Types_Lift02_Lift02NetPillarGeometry_g_cs() {}
-    internal static readonly HardcodedNumbers Values = HardcodedNumbers.Load("Types_Lift02_Lift02NetPillarGeometry_g_cs");
+    static Numeric_Types_Lift02_Lift02NetPillarGeometry_g_cs()
+    {
+    }
+
+    internal static HardcodedNumbers Values => GenerationParameters.Get<HardcodedNumbers>("BridgeBuilder.Bridges.Numeric_Types_Lift02_Lift02NetPillarGeometry_g_cs.Values", () => HardcodedNumbers.Load("Types_Lift02_Lift02NetPillarGeometry_g_cs"));
 }

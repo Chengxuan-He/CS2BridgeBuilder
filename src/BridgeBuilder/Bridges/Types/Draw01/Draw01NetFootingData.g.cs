@@ -19,10 +19,7 @@ internal static class Draw01NetFootingData
         if (source.Length != weights.Length || indices.Length != expectedTriangles * Numeric_Types_Draw01_Draw01NetFootingData_g_cs.Values.I32[3])
             throw new InvalidOperationException("Draw01 ordinary footing differs from its recorded topology.");
         var positions = (Vector3[])source.Clone();
-        AffineGeometry.For(Numeric_Types_Draw01_Draw01NetFootingData_g_cs.Values.I32[4], positions.Length, i =>
-        {
-            positions[i].x = AffineGeometry.Translate(positions[i].x, weights[i] * halfWidthDelta);
-        });
+        AffineGeometry.Execute(RangePrograms.Data, 0, new[] { positions }, new[] { weights }, new float[] { halfWidthDelta }, Numeric_Types_Draw01_Draw01NetFootingData_g_cs.Values.I32[4], checked((positions.Length) - (Numeric_Types_Draw01_Draw01NetFootingData_g_cs.Values.I32[4])));
         return new MovableStructureModel.Plan(source, positions, new[] { indices }, new[] { new bool[expectedTriangles] });
     }
 
@@ -578,11 +575,22 @@ internal static class Draw01NetFootingData
             Numeric_Types_Draw01_Draw01NetFootingData_g_cs.Values.F32[536],
         },
         _ => throw new ArgumentOutOfRangeException(nameof(lod))};
+    private static class RangePrograms
+    {
+        static RangePrograms()
+        {
+        }
+
+        internal static HardcodedNumbers Data => GenerationParameters.Get<HardcodedNumbers>("BridgeBuilder.Bridges.Draw01NetFootingData.RangePrograms.Data", () => HardcodedNumbers.Load("Types_Draw01_Draw01NetFootingData_RangePrograms"));
+    }
 }
 
 // Embedded numerical arrays: Types_Draw01_Draw01NetFootingData_g_cs
 internal static class Numeric_Types_Draw01_Draw01NetFootingData_g_cs
 {
-    static Numeric_Types_Draw01_Draw01NetFootingData_g_cs() {}
-    internal static readonly HardcodedNumbers Values = HardcodedNumbers.Load("Types_Draw01_Draw01NetFootingData_g_cs");
+    static Numeric_Types_Draw01_Draw01NetFootingData_g_cs()
+    {
+    }
+
+    internal static HardcodedNumbers Values => GenerationParameters.Get<HardcodedNumbers>("BridgeBuilder.Bridges.Numeric_Types_Draw01_Draw01NetFootingData_g_cs.Values", () => HardcodedNumbers.Load("Types_Draw01_Draw01NetFootingData_g_cs"));
 }

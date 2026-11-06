@@ -22,7 +22,7 @@ internal static class Lift05Catenary
 
     private static class Data
     {
-        internal static readonly HardcodedNumbers Values = HardcodedNumbers.Load("Types_Lift05_Catenary");
+        internal static HardcodedNumbers Values => GenerationParameters.Get<HardcodedNumbers>("BridgeBuilder.Bridges.Lift05Catenary.Data.Values", () => HardcodedNumbers.Load("Types_Lift05_Catenary"));
     }
 }
 
@@ -33,5 +33,5 @@ internal static class Numeric_Types_Lift05_Lift05Catenary_cs
     {
     }
 
-    internal static readonly HardcodedNumbers Values = HardcodedNumbers.Load("Types_Lift05_Lift05Catenary_cs");
+    internal static HardcodedNumbers Values => GenerationParameters.Get<HardcodedNumbers>("BridgeBuilder.Bridges.Numeric_Types_Lift05_Lift05Catenary_cs.Values", () => HardcodedNumbers.Load("Types_Lift05_Lift05Catenary_cs"));
 }

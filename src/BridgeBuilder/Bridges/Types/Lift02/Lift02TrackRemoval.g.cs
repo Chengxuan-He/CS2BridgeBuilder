@@ -27,9 +27,9 @@ internal static class Lift02TrackRemoval
     }
 
     // Geometry SHA-256: 53331bc5a3dbeddd67c26f2c8b315443f2dba59d32c527adb7b453ceb275d124
-    private static readonly (int First, int Last, uint Hash)[] Ranges0 = ReadPackedRanges0();
+    private static (int First, int Last, uint Hash)[] Ranges0 => GenerationParameters.Get<(int First, int Last, uint Hash)[]>("BridgeBuilder.Bridges.Lift02TrackRemoval.Ranges0", () => ReadPackedRanges0());
     // Geometry SHA-256: cf477f02ad4682961a0b7cdeff9f37a77da9016a2886b6436399d388eb711e66
-    private static readonly (int First, int Last, uint Hash)[] Ranges1 = ReadPackedRanges1();
+    private static (int First, int Last, uint Hash)[] Ranges1 => GenerationParameters.Get<(int First, int Last, uint Hash)[]>("BridgeBuilder.Bridges.Lift02TrackRemoval.Ranges1", () => ReadPackedRanges1());
     private static (int First, int Last, uint Hash)[] ReadPackedRanges0()
     {
         var d = Numeric_Types_Lift02_Lift02TrackRemoval_g_cs.Values;
@@ -53,5 +53,5 @@ internal static class Lift02TrackRemoval
 internal static class Numeric_Types_Lift02_Lift02TrackRemoval_g_cs
 {
     static Numeric_Types_Lift02_Lift02TrackRemoval_g_cs() {}
-    internal static readonly HardcodedNumbers Values = HardcodedNumbers.Load("Types_Lift02_Lift02TrackRemoval_g_cs");
+    internal static HardcodedNumbers Values => GenerationParameters.Get<HardcodedNumbers>("BridgeBuilder.Bridges.Numeric_Types_Lift02_Lift02TrackRemoval_g_cs.Values", () => HardcodedNumbers.Load("Types_Lift02_Lift02TrackRemoval_g_cs"));
 }

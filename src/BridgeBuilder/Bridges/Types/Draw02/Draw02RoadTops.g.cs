@@ -52,38 +52,34 @@ internal static class Draw02RoadTops
             constructedX[i] = structure.Positions[data.Vertices + i].x;
         // Measured platform/road boundary: +/-9.5 m. It follows the same rigid
         // displacement as the exterior platform, not interpolation from x=0.
-        for (var i = Numeric_Types_Draw02_Draw02RoadTops_g_cs.Values.I32[25]; i < data.Edges.Length; i++)
-            constructedX[structure.ConstructedCount + i] = data.Weights[i] * (Numeric_Types_Draw02_Draw02RoadTops_g_cs.Values.F32[0] + delta);
+        var outputRows = new int[data.Edges.Length];
+        for (var i = Numeric_Types_Draw02_Draw02RoadTops_g_cs.Values.I32[25]; i < outputRows.Length; i++)
+            outputRows[i] = structure.ConstructedCount + i;
+        AffineGeometry.Execute(StructurePrograms.Data, StructurePrograms.BoundaryScalar, Array.Empty<Vector3[]>(), new[] { Array.ConvertAll(data.Weights, w => (float)w), constructedX }, new[] { Numeric_Types_Draw02_Draw02RoadTops_g_cs.Values.F32[0], delta }, count: outputRows.Length, indices: new[] { outputRows });
         return new MovableStructureModel.Plan(structure.SourcePositions, originalPositions, structure.SourceIndices, new[] { mask }, edges, fragments.ToArray(), constructedX: constructedX);
     }
 
     // Geometry SHA-256: 1f0ff1a2c0a8318e6537bd347ae064d1bb55bfa48f3cf3c2375601adcd05dd18
-    private static readonly int[] Lod0 = ReadPackedLod0();
-    private static readonly MovableStructureModel.EdgeVertex[] Edges0 =
-    {
-    };
-    private static readonly int[] Weights0 =
-    {
-    };
-    private static readonly MovableStructureModel.Fragment[] Fragments0 =
-    {
-    };
+    private static int[] Lod0 => GenerationParameters.Get<int[]>("BridgeBuilder.Bridges.Draw02RoadTops.Lod0", () => ReadPackedLod0());
+    private static MovableStructureModel.EdgeVertex[] Edges0 => GenerationParameters.Get<MovableStructureModel.EdgeVertex[]>("BridgeBuilder.Bridges.Draw02RoadTops.Edges0", () => new MovableStructureModel.EdgeVertex[] {
+    });
+    private static int[] Weights0 => GenerationParameters.Get<int[]>("BridgeBuilder.Bridges.Draw02RoadTops.Weights0", () => new int[] {
+    });
+    private static MovableStructureModel.Fragment[] Fragments0 => GenerationParameters.Get<MovableStructureModel.Fragment[]>("BridgeBuilder.Bridges.Draw02RoadTops.Fragments0", () => new MovableStructureModel.Fragment[] {
+    });
     // Geometry SHA-256: 9c0c22c62ef170b0a8be300dee2ab7d71c0c27b745e3fc6395b96a34b69b4b4d
-    private static readonly int[] Lod1 = ReadPackedLod1();
-    private static readonly MovableStructureModel.EdgeVertex[] Edges1 =
-    {
-    };
-    private static readonly int[] Weights1 =
-    {
-    };
-    private static readonly MovableStructureModel.Fragment[] Fragments1 =
-    {
-    };
+    private static int[] Lod1 => GenerationParameters.Get<int[]>("BridgeBuilder.Bridges.Draw02RoadTops.Lod1", () => ReadPackedLod1());
+    private static MovableStructureModel.EdgeVertex[] Edges1 => GenerationParameters.Get<MovableStructureModel.EdgeVertex[]>("BridgeBuilder.Bridges.Draw02RoadTops.Edges1", () => new MovableStructureModel.EdgeVertex[] {
+    });
+    private static int[] Weights1 => GenerationParameters.Get<int[]>("BridgeBuilder.Bridges.Draw02RoadTops.Weights1", () => new int[] {
+    });
+    private static MovableStructureModel.Fragment[] Fragments1 => GenerationParameters.Get<MovableStructureModel.Fragment[]>("BridgeBuilder.Bridges.Draw02RoadTops.Fragments1", () => new MovableStructureModel.Fragment[] {
+    });
     // Geometry SHA-256: 6535b8c60ffb7e45d69153e99c482c603443ba7f761a39a399bbaf84111dbf1c
-    private static readonly int[] Lod2 = ReadPackedLod2();
-    private static readonly MovableStructureModel.EdgeVertex[] Edges2 = ReadPackedEdges2();
-    private static readonly int[] Weights2 = ReadPackedWeights2();
-    private static readonly MovableStructureModel.Fragment[] Fragments2 = ReadPackedFragments2();
+    private static int[] Lod2 => GenerationParameters.Get<int[]>("BridgeBuilder.Bridges.Draw02RoadTops.Lod2", () => ReadPackedLod2());
+    private static MovableStructureModel.EdgeVertex[] Edges2 => GenerationParameters.Get<MovableStructureModel.EdgeVertex[]>("BridgeBuilder.Bridges.Draw02RoadTops.Edges2", () => ReadPackedEdges2());
+    private static int[] Weights2 => GenerationParameters.Get<int[]>("BridgeBuilder.Bridges.Draw02RoadTops.Weights2", () => ReadPackedWeights2());
+    private static MovableStructureModel.Fragment[] Fragments2 => GenerationParameters.Get<MovableStructureModel.Fragment[]>("BridgeBuilder.Bridges.Draw02RoadTops.Fragments2", () => ReadPackedFragments2());
     private static int[] ReadPackedLod0()
     {
         var d = Numeric_Types_Draw02_Draw02RoadTops_g_cs.Values;
@@ -164,6 +160,9 @@ internal static class Draw02RoadTops
 // Embedded numerical arrays: Types_Draw02_Draw02RoadTops_g_cs
 internal static class Numeric_Types_Draw02_Draw02RoadTops_g_cs
 {
-    static Numeric_Types_Draw02_Draw02RoadTops_g_cs() {}
-    internal static readonly HardcodedNumbers Values = HardcodedNumbers.Load("Types_Draw02_Draw02RoadTops_g_cs");
+    static Numeric_Types_Draw02_Draw02RoadTops_g_cs()
+    {
+    }
+
+    internal static HardcodedNumbers Values => GenerationParameters.Get<HardcodedNumbers>("BridgeBuilder.Bridges.Numeric_Types_Draw02_Draw02RoadTops_g_cs.Values", () => HardcodedNumbers.Load("Types_Draw02_Draw02RoadTops_g_cs"));
 }

@@ -71,18 +71,13 @@ internal static class BridgePreparedMaterials
             ? Surface(styleId, variant, "Repeat.Surface") : null;
     }
 
-    internal static SurfaceAsset Structure(string styleId, string samplerKey)
+    private static readonly HashSet<string> RoadTextureSurfaces = new(StringComparer.OrdinalIgnoreCase);
+
+    internal static SurfaceAsset StructuralBinding(SurfaceAsset surface)
     {
-        if (_root == null) throw new InvalidOperationException("Prepared material installation directory is unavailable.");
-        // A measured structural rectangle can use the same genuine unit as a
-        // road appearance. The bridge's alias must preserve its actual UV frame;
-        // an arbitrary triangular atlas island is not a repeating rectangle.
-        var unit=Bridges.MovableRepeatUnits.For(styleId,samplerKey);
-        if(unit!=null)return Surface(styleId,"RepeatUnits/"+unit,"Repeat.Surface");
-        var variant = "Structure/" + samplerKey;
-        // Missing immutable input is a packaging/source-version error, never a
-        // request to recreate a constant texture during preview or generation.
-        return Surface(styleId, variant, "Structure.Surface");
+        if (RoadTextureSurfaces.Contains(surface.id.guid.ToString()))
+            throw new InvalidDataException("Structural geometry cannot consume a packaged road texture: " + surface.id.guid);
+        return surface;
     }
 
     internal static SurfaceAsset? Lane(string styleId, byte[] source)
@@ -120,6 +115,7 @@ internal static class BridgePreparedMaterials
                 throw new InvalidDataException("Prepared material CID has different payloads: " + input.Cid);
         }
         var surfaceInput = inputs.Single(i => Path.GetFileName(i.Path) == name);
+        if (inputs.Any(i => Path.GetExtension(i.Path) == ".Texture")) RoadTextureSurfaces.Add(surfaceInput.Cid);
         var cacheInputs = inputs.Where(i => Path.GetExtension(i.Path) == ".MidMips").ToArray();
         MidMipEdges[surfaceInput.Cid] = cacheInputs.Where(i => i.Cid == BridgePreparedMaterialFiles.CacheFor(surfaceInput.Cid))
             .Select(i => i.Cid).Distinct().ToArray();
@@ -219,7 +215,7 @@ internal static class BridgePreparedMaterials
     {
         foreach (var surface in RetainedSurfaces) surface.UnloadProperties();
         RetainedSurfaces.Clear();
-        Surfaces.Clear(); Assets.Clear(); MidMipEdges.Clear(); _root = null;
+        RoadTextureSurfaces.Clear(); Surfaces.Clear(); Assets.Clear(); MidMipEdges.Clear(); _root = null;
         if (_database == null) return;
         AssetDatabase.global.UnregisterDatabase(_database).GetAwaiter().GetResult();
         _database.Dispose(); // Never MarkForDeletion: these are installed source assets.

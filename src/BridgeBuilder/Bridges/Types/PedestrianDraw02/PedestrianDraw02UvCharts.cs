@@ -29,7 +29,7 @@ internal static class PedestrianDraw02UvCharts
     private static class Data
     {
         static Data() { }
-        internal static readonly MovableUvChart[][][] Values = Load();
+        internal static MovableUvChart[][][] Values => GenerationParameters.Get<MovableUvChart[][][]>("BridgeBuilder.Bridges.PedestrianDraw02UvCharts.Data.Values", () => Load());
         private static MovableUvChart[][][] Load()
         {
             var data = HardcodedNumbers.Load("PedestrianDraw02UvCharts");

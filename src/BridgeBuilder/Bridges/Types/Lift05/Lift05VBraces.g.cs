@@ -19,21 +19,26 @@ internal static class Lift05VBraces
         foreach (var part in data.Parts)
         {
             var span = part.Max - part.Min;
-            AffineGeometry.Indices(part.Vertices, i =>
+            if (part.Side != Numeric_Types_Lift05_Lift05VBraces_g_cs.Values.I32[3])
             {
-                positions[i].x = AffineGeometry.AddScaled(source[i].x, (part.Side != Numeric_Types_Lift05_Lift05VBraces_g_cs.Values.I32[3] ? part.Side : (Numeric_Types_Lift05_Lift05VBraces_g_cs.Values.F32[0] * source[i].x - part.Min - part.Max) / span), delta);
-            });
+                foreach (var coordinateRows in StructureRows.Stages(part.Vertices))
+                    AffineGeometry.Execute(RangePrograms.Data, 0, new[] { source, positions }, Array.Empty<float[]>(), new float[] { part.Side, delta }, count: coordinateRows.Length, indices: new[] { coordinateRows });
+            }
+            else
+            {
+                foreach (var coordinateRows in StructureRows.Stages(part.Vertices))
+                    AffineGeometry.Execute(RangePrograms.Data, 1, new[] { source, positions }, Array.Empty<float[]>(), new float[] { Numeric_Types_Lift05_Lift05VBraces_g_cs.Values.F32[0], part.Min, part.Max, delta }, count: coordinateRows.Length, indices: new[] { coordinateRows });
+            }
         }
     }
 
     // Geometry SHA-256: 10a9c40e522c91debff4bc0251dbe93980cac6b92ff6b176c216e27ba52c05fb
-    private static readonly (int Side, float Min, float Max, int[] Vertices)[] Parts0 = ReadPackedParts0();
+    private static (int Side, float Min, float Max, int[] Vertices)[] Parts0 => GenerationParameters.Get<(int Side, float Min, float Max, int[] Vertices)[]>("BridgeBuilder.Bridges.Lift05VBraces.Parts0", () => ReadPackedParts0());
     // Geometry SHA-256: dc4b8d4ae9688952992b03d724d8549cdb79f52eb0877c7f6fe62d1246ce286e
-    private static readonly (int Side, float Min, float Max, int[] Vertices)[] Parts1 = ReadPackedParts1();
+    private static (int Side, float Min, float Max, int[] Vertices)[] Parts1 => GenerationParameters.Get<(int Side, float Min, float Max, int[] Vertices)[]>("BridgeBuilder.Bridges.Lift05VBraces.Parts1", () => ReadPackedParts1());
     // Geometry SHA-256: 6ea1ea24f714feca8794c31500c743e3c599067a9da37a46ae83c1eaa8bc4160
-    private static readonly (int Side, float Min, float Max, int[] Vertices)[] Parts2 =
-    {
-    };
+    private static (int Side, float Min, float Max, int[] Vertices)[] Parts2 => GenerationParameters.Get<(int Side, float Min, float Max, int[] Vertices)[]>("BridgeBuilder.Bridges.Lift05VBraces.Parts2", () => new (int Side, float Min, float Max, int[] Vertices)[] {
+    });
     private static (int Side, float Min, float Max, int[] Vertices)[] ReadPackedParts0()
     {
         var d = Numeric_Types_Lift05_Lift05VBraces_g_cs.Values;
@@ -143,11 +148,23 @@ internal static class Lift05VBraces
             values[23 + i] = (d.I32[609 + i * 13], d.F32[95 + i * 2], d.F32[96 + i * 2], new[] { d.I32[610 + i * 13], d.I32[611 + i * 13], d.I32[612 + i * 13], d.I32[613 + i * 13], d.I32[614 + i * 13], d.I32[615 + i * 13], d.I32[616 + i * 13], d.I32[617 + i * 13], d.I32[618 + i * 13], d.I32[619 + i * 13], d.I32[620 + i * 13], d.I32[621 + i * 13], });
         return values;
     }
+
+    private static class RangePrograms
+    {
+        static RangePrograms()
+        {
+        }
+
+        internal static HardcodedNumbers Data => GenerationParameters.Get<HardcodedNumbers>("BridgeBuilder.Bridges.Lift05VBraces.RangePrograms.Data", () => HardcodedNumbers.Load("Types_Lift05_Lift05VBraces_RangePrograms"));
+    }
 }
 
 // Embedded numerical arrays: Types_Lift05_Lift05VBraces_g_cs
 internal static class Numeric_Types_Lift05_Lift05VBraces_g_cs
 {
-    static Numeric_Types_Lift05_Lift05VBraces_g_cs() {}
-    internal static readonly HardcodedNumbers Values = HardcodedNumbers.Load("Types_Lift05_Lift05VBraces_g_cs");
+    static Numeric_Types_Lift05_Lift05VBraces_g_cs()
+    {
+    }
+
+    internal static HardcodedNumbers Values => GenerationParameters.Get<HardcodedNumbers>("BridgeBuilder.Bridges.Numeric_Types_Lift05_Lift05VBraces_g_cs.Values", () => HardcodedNumbers.Load("Types_Lift05_Lift05VBraces_g_cs"));
 }

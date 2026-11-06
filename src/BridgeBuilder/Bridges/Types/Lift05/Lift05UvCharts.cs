@@ -30,7 +30,7 @@ internal static class Lift05UvCharts
     private static class Holder
     {
         static Holder() {}
-        internal static readonly Data Value = new();
+        internal static Data Value => GenerationParameters.Get<Data>("BridgeBuilder.Bridges.Lift05UvCharts.Holder.Value", () => new());
     }
 
     private sealed class Data

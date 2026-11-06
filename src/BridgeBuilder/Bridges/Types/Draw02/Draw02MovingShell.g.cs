@@ -25,62 +25,53 @@ internal static class Draw02MovingShell
         if (lod < Numeric_Types_Draw02_Draw02MovingShell_g_cs.Values.I32[7])
             Draw02TransverseMembers.Apply(lod, source, positions, delta);
         Draw02MovingBase.Apply(lod, source, positions, delta);
-        foreach (var index in data.Left)
-            positions[index].x = AffineGeometry.Translate(source[index].x, -(delta));
-        foreach (var index in data.Right)
-            positions[index].x = AffineGeometry.Translate(source[index].x, delta);
+        foreach (var coordinateRows in StructureRows.Stages(data.Left))
+            AffineGeometry.Execute(RangePrograms.Data, 0, new[] { source, positions }, Array.Empty<float[]>(), new float[] { delta }, count: coordinateRows.Length, indices: new[] { coordinateRows });
+        foreach (var coordinateRows in StructureRows.Stages(data.Right))
+            AffineGeometry.Execute(RangePrograms.Data, 1, new[] { source, positions }, Array.Empty<float[]>(), new float[] { delta }, count: coordinateRows.Length, indices: new[] { coordinateRows });
         Draw02LongitudinalRibs.Apply(lod, source, positions, delta);
         var mask = new bool[data.Faces];
         foreach (var face in data.Removed)
             mask[face] = true;
         var constructedX = new float[data.Weights.Length];
-        for (var i = Numeric_Types_Draw02_Draw02MovingShell_g_cs.Values.I32[8]; i < data.Edges.Length; i++)
-        {
-            var edge = data.Edges[i];
-            constructedX[i] = Vector3.LerpUnclamped(source[edge.A], source[edge.B], edge.Fraction).x + data.Weights[i] * delta;
-        }
-
-        for (var i = Numeric_Types_Draw02_Draw02MovingShell_g_cs.Values.I32[9]; i < data.Interior.Length; i++)
-        {
-            var vertex = data.Interior[i];
-            var a = source[vertex.A];
-            constructedX[data.Edges.Length + i] = (a + (source[vertex.B] - a) * vertex.WeightB + (source[vertex.C] - a) * vertex.WeightC).x + data.Weights[data.Edges.Length + i] * delta;
-        }
-
+        var outputRows = new int[data.Edges.Length];
+        for (var i = Numeric_Types_Draw02_Draw02MovingShell_g_cs.Values.I32[8]; i < outputRows.Length; i++)
+            outputRows[i] = i;
+        AffineGeometry.Execute(StructurePrograms.Data, StructurePrograms.EdgeDeltaScalar, new[] { source }, new[] { Array.ConvertAll(data.Edges, e => e.Fraction), Array.ConvertAll(data.Weights, w => (float)w), constructedX }, new[] { delta }, count: data.Edges.Length, indices: new[] { Array.ConvertAll(data.Edges, e => e.A), Array.ConvertAll(data.Edges, e => e.B), outputRows });
         var plan = new MovableStructureModel.Plan(source, positions, new[] { indices }, new[] { mask }, data.Edges, data.Fragments, data.Interior, constructedX);
         return Draw02RoadTops.Remove(lod, plan, delta);
     }
 
-    private static readonly int[] Left0 = ReadPackedLeft0();
-    private static readonly int[] Right0 = ReadPackedRight0();
-    private static readonly sbyte[] BoundaryWeights0 = ReadPackedBoundaryWeights0();
+    private static int[] Left0 => GenerationParameters.Get<int[]>("BridgeBuilder.Bridges.Draw02MovingShell.Left0", () => ReadPackedLeft0());
+    private static int[] Right0 => GenerationParameters.Get<int[]>("BridgeBuilder.Bridges.Draw02MovingShell.Right0", () => ReadPackedRight0());
+    private static sbyte[] BoundaryWeights0 => GenerationParameters.Get<sbyte[]>("BridgeBuilder.Bridges.Draw02MovingShell.BoundaryWeights0", () => ReadPackedBoundaryWeights0());
     // Geometry SHA-256: 1f0ff1a2c0a8318e6537bd347ae064d1bb55bfa48f3cf3c2375601adcd05dd18
-    private static readonly int[] Removed0 = ReadPackedRemoved0();
-    private static readonly MovableStructureModel.EdgeVertex[] Edges0 = ReadPackedEdges0();
-    private static readonly MovableStructureModel.TriangleVertex[] Interior0 = new MovableStructureModel.TriangleVertex[]
+    private static int[] Removed0 => GenerationParameters.Get<int[]>("BridgeBuilder.Bridges.Draw02MovingShell.Removed0", () => ReadPackedRemoved0());
+    private static MovableStructureModel.EdgeVertex[] Edges0 => GenerationParameters.Get<MovableStructureModel.EdgeVertex[]>("BridgeBuilder.Bridges.Draw02MovingShell.Edges0", () => ReadPackedEdges0());
+    private static MovableStructureModel.TriangleVertex[] Interior0 => GenerationParameters.Get<MovableStructureModel.TriangleVertex[]>("BridgeBuilder.Bridges.Draw02MovingShell.Interior0", () => new MovableStructureModel.TriangleVertex[]
     {
-    };
-    private static readonly MovableStructureModel.Fragment[] Fragments0 = ReadPackedFragments0();
-    private static readonly int[] Left1 = ReadPackedLeft1();
-    private static readonly int[] Right1 = ReadPackedRight1();
-    private static readonly sbyte[] BoundaryWeights1 = ReadPackedBoundaryWeights1();
+    });
+    private static MovableStructureModel.Fragment[] Fragments0 => GenerationParameters.Get<MovableStructureModel.Fragment[]>("BridgeBuilder.Bridges.Draw02MovingShell.Fragments0", () => ReadPackedFragments0());
+    private static int[] Left1 => GenerationParameters.Get<int[]>("BridgeBuilder.Bridges.Draw02MovingShell.Left1", () => ReadPackedLeft1());
+    private static int[] Right1 => GenerationParameters.Get<int[]>("BridgeBuilder.Bridges.Draw02MovingShell.Right1", () => ReadPackedRight1());
+    private static sbyte[] BoundaryWeights1 => GenerationParameters.Get<sbyte[]>("BridgeBuilder.Bridges.Draw02MovingShell.BoundaryWeights1", () => ReadPackedBoundaryWeights1());
     // Geometry SHA-256: 9c0c22c62ef170b0a8be300dee2ab7d71c0c27b745e3fc6395b96a34b69b4b4d
-    private static readonly int[] Removed1 = ReadPackedRemoved1();
-    private static readonly MovableStructureModel.EdgeVertex[] Edges1 = ReadPackedEdges1();
-    private static readonly MovableStructureModel.TriangleVertex[] Interior1 = new MovableStructureModel.TriangleVertex[]
+    private static int[] Removed1 => GenerationParameters.Get<int[]>("BridgeBuilder.Bridges.Draw02MovingShell.Removed1", () => ReadPackedRemoved1());
+    private static MovableStructureModel.EdgeVertex[] Edges1 => GenerationParameters.Get<MovableStructureModel.EdgeVertex[]>("BridgeBuilder.Bridges.Draw02MovingShell.Edges1", () => ReadPackedEdges1());
+    private static MovableStructureModel.TriangleVertex[] Interior1 => GenerationParameters.Get<MovableStructureModel.TriangleVertex[]>("BridgeBuilder.Bridges.Draw02MovingShell.Interior1", () => new MovableStructureModel.TriangleVertex[]
     {
-    };
-    private static readonly MovableStructureModel.Fragment[] Fragments1 = ReadPackedFragments1();
-    private static readonly int[] Left2 = ReadPackedLeft2();
-    private static readonly int[] Right2 = ReadPackedRight2();
-    private static readonly sbyte[] BoundaryWeights2 = ReadPackedBoundaryWeights2();
+    });
+    private static MovableStructureModel.Fragment[] Fragments1 => GenerationParameters.Get<MovableStructureModel.Fragment[]>("BridgeBuilder.Bridges.Draw02MovingShell.Fragments1", () => ReadPackedFragments1());
+    private static int[] Left2 => GenerationParameters.Get<int[]>("BridgeBuilder.Bridges.Draw02MovingShell.Left2", () => ReadPackedLeft2());
+    private static int[] Right2 => GenerationParameters.Get<int[]>("BridgeBuilder.Bridges.Draw02MovingShell.Right2", () => ReadPackedRight2());
+    private static sbyte[] BoundaryWeights2 => GenerationParameters.Get<sbyte[]>("BridgeBuilder.Bridges.Draw02MovingShell.BoundaryWeights2", () => ReadPackedBoundaryWeights2());
     // Geometry SHA-256: 6535b8c60ffb7e45d69153e99c482c603443ba7f761a39a399bbaf84111dbf1c
-    private static readonly int[] Removed2 = ReadPackedRemoved2();
-    private static readonly MovableStructureModel.EdgeVertex[] Edges2 = ReadPackedEdges2();
-    private static readonly MovableStructureModel.TriangleVertex[] Interior2 = new MovableStructureModel.TriangleVertex[]
+    private static int[] Removed2 => GenerationParameters.Get<int[]>("BridgeBuilder.Bridges.Draw02MovingShell.Removed2", () => ReadPackedRemoved2());
+    private static MovableStructureModel.EdgeVertex[] Edges2 => GenerationParameters.Get<MovableStructureModel.EdgeVertex[]>("BridgeBuilder.Bridges.Draw02MovingShell.Edges2", () => ReadPackedEdges2());
+    private static MovableStructureModel.TriangleVertex[] Interior2 => GenerationParameters.Get<MovableStructureModel.TriangleVertex[]>("BridgeBuilder.Bridges.Draw02MovingShell.Interior2", () => new MovableStructureModel.TriangleVertex[]
     {
-    };
-    private static readonly MovableStructureModel.Fragment[] Fragments2 = ReadPackedFragments2();
+    });
+    private static MovableStructureModel.Fragment[] Fragments2 => GenerationParameters.Get<MovableStructureModel.Fragment[]>("BridgeBuilder.Bridges.Draw02MovingShell.Fragments2", () => ReadPackedFragments2());
     private static int[] ReadPackedLeft0()
     {
         var d = Numeric_Types_Draw02_Draw02MovingShell_g_cs.Values;
@@ -2526,11 +2517,23 @@ internal static class Draw02MovingShell
             values[15 + i] = new(d.I32[55571 + i * 8], d.I32[55572 + i * 8], d.I32[55573 + i * 8], d.I32[55574 + i * 8], d.I32[55575 + i * 8], d.I32[55576 + i * 8], d.I32[55577 + i * 8], d.I32[55578 + i * 8]);
         return values;
     }
+
+    private static class RangePrograms
+    {
+        static RangePrograms()
+        {
+        }
+
+        internal static HardcodedNumbers Data => GenerationParameters.Get<HardcodedNumbers>("BridgeBuilder.Bridges.Draw02MovingShell.RangePrograms.Data", () => HardcodedNumbers.Load("Types_Draw02_Draw02MovingShell_RangePrograms"));
+    }
 }
 
 // Embedded numerical arrays: Types_Draw02_Draw02MovingShell_g_cs
 internal static class Numeric_Types_Draw02_Draw02MovingShell_g_cs
 {
-    static Numeric_Types_Draw02_Draw02MovingShell_g_cs() {}
-    internal static readonly HardcodedNumbers Values = HardcodedNumbers.Load("Types_Draw02_Draw02MovingShell_g_cs");
+    static Numeric_Types_Draw02_Draw02MovingShell_g_cs()
+    {
+    }
+
+    internal static HardcodedNumbers Values => GenerationParameters.Get<HardcodedNumbers>("BridgeBuilder.Bridges.Numeric_Types_Draw02_Draw02MovingShell_g_cs.Values", () => HardcodedNumbers.Load("Types_Draw02_Draw02MovingShell_g_cs"));
 }

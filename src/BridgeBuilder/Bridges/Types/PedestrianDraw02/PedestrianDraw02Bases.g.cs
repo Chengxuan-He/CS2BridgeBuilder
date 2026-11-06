@@ -10,69 +10,27 @@ internal static class PedestrianDraw02Bases
     {
         var data = lod switch
         {
-            0 => (Count: Numeric_Types_PedestrianDraw02_PedestrianDraw02Bases_g_cs.Values.I32[0], Left: Left0, Centre: Centre0, Right: Right0),
-            1 => (Count: Numeric_Types_PedestrianDraw02_PedestrianDraw02Bases_g_cs.Values.I32[1], Left: Left1, Centre: Centre1, Right: Right1),
+            0 => (Count: Numeric_Types_PedestrianDraw02_PedestrianDraw02Bases_g_cs.Values.I32[0], Centre: Centre0),
+            1 => (Count: Numeric_Types_PedestrianDraw02_PedestrianDraw02Bases_g_cs.Values.I32[1], Centre: Centre1),
             _ => throw new ArgumentOutOfRangeException(nameof(lod))};
         if (!float.IsFinite(delta) || source.Length != data.Count || positions.Length != data.Count)
             throw new InvalidOperationException("PedestrianDraw02 bases require their recorded main mesh.");
-        foreach (var range in data.Left)
-            AffineGeometry.For(range.First, checked((range.Last) + 1), i =>
-            {
-                positions[i].x = AffineGeometry.Translate(source[i].x, -(delta));
-            });
+        AffineGeometry.Execute(BatchProgram0.Data, lod, new[] { source, positions }, Array.Empty<float[]>(), new float[] { delta });
         foreach (var range in data.Centre)
-            AffineGeometry.For(range.First, checked((range.Last) + 1), i =>
-            {
-                positions[i].x = source[i].x;
-            });
-        foreach (var range in data.Right)
-            AffineGeometry.For(range.First, checked((range.Last) + 1), i =>
-            {
-                positions[i].x = AffineGeometry.Translate(source[i].x, delta);
-            });
+            AffineGeometry.Execute(RangePrograms1.Data, 0, new[] { source, positions }, Array.Empty<float[]>(), Array.Empty<float>(), range.First, Math.Max(0, checked((checked((range.Last) + 1)) - (range.First))));
+        AffineGeometry.Execute(BatchProgram1.Data, lod, new[] { source, positions }, Array.Empty<float[]>(), new float[] { delta });
     }
 
     // Geometry SHA-256: 55b8fb530c4f5d80a211feecb2e82b6deb12cc8af5d76bdc3abef78b192494be
-    private static readonly (int First, int Last)[] Left0 = ReadPackedLeft0();
-    private static readonly (int First, int Last)[] Centre0 = ReadPackedCentre0();
-    private static readonly (int First, int Last)[] Right0 = ReadPackedRight0();
+    private static (int First, int Last)[] Centre0 => GenerationParameters.Get<(int First, int Last)[]>("BridgeBuilder.Bridges.PedestrianDraw02Bases.Centre0", () => ReadPackedCentre0());
     // Geometry SHA-256: 0dc1d41ae4acd634537b75699a226946ecb909c7c18780418a24584ca2519157
-    private static readonly (int First, int Last)[] Left1 = ReadPackedLeft1();
-    private static readonly (int First, int Last)[] Centre1 = ReadPackedCentre1();
-    private static readonly (int First, int Last)[] Right1 = ReadPackedRight1();
-    private static (int First, int Last)[] ReadPackedLeft0()
-    {
-        var d = Numeric_Types_PedestrianDraw02_PedestrianDraw02Bases_g_cs.Values;
-        var values = new (int First, int Last)[210];
-        for (int i = 0; i < 210; i++)
-            values[0 + i] = (d.I32[2 + i * 2], d.I32[3 + i * 2]);
-        return values;
-    }
-
+    private static (int First, int Last)[] Centre1 => GenerationParameters.Get<(int First, int Last)[]>("BridgeBuilder.Bridges.PedestrianDraw02Bases.Centre1", () => ReadPackedCentre1());
     private static (int First, int Last)[] ReadPackedCentre0()
     {
         var d = Numeric_Types_PedestrianDraw02_PedestrianDraw02Bases_g_cs.Values;
         var values = new (int First, int Last)[267];
         for (int i = 0; i < 267; i++)
             values[0 + i] = (d.I32[422 + i * 2], d.I32[423 + i * 2]);
-        return values;
-    }
-
-    private static (int First, int Last)[] ReadPackedRight0()
-    {
-        var d = Numeric_Types_PedestrianDraw02_PedestrianDraw02Bases_g_cs.Values;
-        var values = new (int First, int Last)[212];
-        for (int i = 0; i < 212; i++)
-            values[0 + i] = (d.I32[956 + i * 2], d.I32[957 + i * 2]);
-        return values;
-    }
-
-    private static (int First, int Last)[] ReadPackedLeft1()
-    {
-        var d = Numeric_Types_PedestrianDraw02_PedestrianDraw02Bases_g_cs.Values;
-        var values = new (int First, int Last)[210];
-        for (int i = 0; i < 210; i++)
-            values[0 + i] = (d.I32[1380 + i * 2], d.I32[1381 + i * 2]);
         return values;
     }
 
@@ -85,19 +43,40 @@ internal static class PedestrianDraw02Bases
         return values;
     }
 
-    private static (int First, int Last)[] ReadPackedRight1()
+    private static class BatchProgram0
     {
-        var d = Numeric_Types_PedestrianDraw02_PedestrianDraw02Bases_g_cs.Values;
-        var values = new (int First, int Last)[202];
-        for (int i = 0; i < 202; i++)
-            values[0 + i] = (d.I32[2270 + i * 2], d.I32[2271 + i * 2]);
-        return values;
+        static BatchProgram0()
+        {
+        }
+
+        internal static HardcodedNumbers Data => GenerationParameters.Get<HardcodedNumbers>("BridgeBuilder.Bridges.PedestrianDraw02Bases.BatchProgram0.Data", () => HardcodedNumbers.Load("Types_PedestrianDraw02_PedestrianDraw02Bases_BatchProgram0"));
+    }
+
+    private static class BatchProgram1
+    {
+        static BatchProgram1()
+        {
+        }
+
+        internal static HardcodedNumbers Data => GenerationParameters.Get<HardcodedNumbers>("BridgeBuilder.Bridges.PedestrianDraw02Bases.BatchProgram1.Data", () => HardcodedNumbers.Load("Types_PedestrianDraw02_PedestrianDraw02Bases_BatchProgram1"));
+    }
+
+    private static class RangePrograms1
+    {
+        static RangePrograms1()
+        {
+        }
+
+        internal static HardcodedNumbers Data => GenerationParameters.Get<HardcodedNumbers>("BridgeBuilder.Bridges.PedestrianDraw02Bases.RangePrograms1.Data", () => HardcodedNumbers.Load("Types_PedestrianDraw02_PedestrianDraw02Bases_RangePrograms1"));
     }
 }
 
 // Embedded numerical arrays: Types_PedestrianDraw02_PedestrianDraw02Bases_g_cs
 internal static class Numeric_Types_PedestrianDraw02_PedestrianDraw02Bases_g_cs
 {
-    static Numeric_Types_PedestrianDraw02_PedestrianDraw02Bases_g_cs() {}
-    internal static readonly HardcodedNumbers Values = HardcodedNumbers.Load("Types_PedestrianDraw02_PedestrianDraw02Bases_g_cs");
+    static Numeric_Types_PedestrianDraw02_PedestrianDraw02Bases_g_cs()
+    {
+    }
+
+    internal static HardcodedNumbers Values => GenerationParameters.Get<HardcodedNumbers>("BridgeBuilder.Bridges.Numeric_Types_PedestrianDraw02_PedestrianDraw02Bases_g_cs.Values", () => HardcodedNumbers.Load("Types_PedestrianDraw02_PedestrianDraw02Bases_g_cs"));
 }

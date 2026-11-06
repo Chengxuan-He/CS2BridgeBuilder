@@ -10,8 +10,8 @@ internal static class Draw03RoadReplacement
     {
         var data = lod switch
         {
-            0 => (Count: Numeric_Types_Draw03_Draw03RoadReplacement_g_cs.Values.I32[0], Indices: Numeric_Types_Draw03_Draw03RoadReplacement_g_cs.Values.I32[1], Faces: Faces0, Sides: Sides0),
-            1 => (Count: Numeric_Types_Draw03_Draw03RoadReplacement_g_cs.Values.I32[2], Indices: Numeric_Types_Draw03_Draw03RoadReplacement_g_cs.Values.I32[3], Faces: Faces1, Sides: Sides1),
+            0 => (Count: Numeric_Types_Draw03_Draw03RoadReplacement_g_cs.Values.I32[0], Indices: Numeric_Types_Draw03_Draw03RoadReplacement_g_cs.Values.I32[1], Faces: Faces0),
+            1 => (Count: Numeric_Types_Draw03_Draw03RoadReplacement_g_cs.Values.I32[2], Indices: Numeric_Types_Draw03_Draw03RoadReplacement_g_cs.Values.I32[3], Faces: Faces1),
             _ => throw new ArgumentOutOfRangeException(nameof(lod))};
         if (!float.IsFinite(delta) || plan.SourcePositions.Length != data.Count || plan.SourceIndices.Length != Numeric_Types_Draw03_Draw03RoadReplacement_g_cs.Values.I32[4] || plan.SourceIndices[Numeric_Types_Draw03_Draw03RoadReplacement_g_cs.Values.I32[5]].Length != data.Indices)
             throw new InvalidOperationException("Draw03 road replacement requires its recorded main mesh.");
@@ -30,10 +30,7 @@ internal static class Draw03RoadReplacement
 
         var positions = new Vector3[data.Count];
         Array.Copy(plan.Positions, positions, positions.Length);
-        AffineGeometry.Scatter(data.Sides, vertex => vertex.Index, vertex =>
-        {
-            positions[vertex.Index].x = AffineGeometry.AddScaled(plan.SourcePositions[vertex.Index].x, vertex.Side, delta);
-        });
+        AffineGeometry.Execute(CoordinatePrograms.Data, lod, new[] { plan.SourcePositions, positions }, Array.Empty<float[]>(), new[] { delta });
         var constructedX = new float[plan.ConstructedCount];
         for (var i = Numeric_Types_Draw03_Draw03RoadReplacement_g_cs.Values.I32[15]; i < constructedX.Length; i++)
             constructedX[i] = plan.Positions[positions.Length + i].x;
@@ -41,36 +38,15 @@ internal static class Draw03RoadReplacement
     }
 
     // Geometry SHA-256: f7ecc824ad55745e791e40b18fd12f5def20657ed8ea56d373429d5a1337588f
-    private static readonly int[] Faces0 = ReadPackedFaces0();
-    private static readonly (int Index, int Side)[] Sides0 = ReadPackedSides0();
+    private static int[] Faces0 => GenerationParameters.Get<int[]>("BridgeBuilder.Bridges.Draw03RoadReplacement.Faces0", () => ReadPackedFaces0());
     // Geometry SHA-256: 15b8419da13d6e99e1dc0591f12f4019f0be09c3b220a481d24720daf7b57e12
-    private static readonly int[] Faces1 = ReadPackedFaces1();
-    private static readonly (int Index, int Side)[] Sides1 = ReadPackedSides1();
+    private static int[] Faces1 => GenerationParameters.Get<int[]>("BridgeBuilder.Bridges.Draw03RoadReplacement.Faces1", () => ReadPackedFaces1());
     private static int[] ReadPackedFaces0()
     {
         var d = Numeric_Types_Draw03_Draw03RoadReplacement_g_cs.Values;
         var values = new int[1248];
         for (int i = 0; i < 1248; i++)
             values[0 + i] = d.I32[16 + i * 1];
-        return values;
-    }
-
-    private static (int Index, int Side)[] ReadPackedSides0()
-    {
-        var d = Numeric_Types_Draw03_Draw03RoadReplacement_g_cs.Values;
-        var values = new (int Index, int Side)[416];
-        for (int i = 0; i < 90; i++)
-            values[0 + i] = (d.I32[1264 + i * 2], -d.I32[1265 + i * 2]);
-        for (int i = 0; i < 90; i++)
-            values[90 + i] = (d.I32[1444 + i * 2], d.I32[1445 + i * 2]);
-        for (int i = 0; i < 28; i++)
-            values[180 + i] = (d.I32[1624 + i * 2], -d.I32[1625 + i * 2]);
-        for (int i = 0; i < 90; i++)
-            values[208 + i] = (d.I32[1680 + i * 2], d.I32[1681 + i * 2]);
-        for (int i = 0; i < 90; i++)
-            values[298 + i] = (d.I32[1860 + i * 2], -d.I32[1861 + i * 2]);
-        for (int i = 0; i < 28; i++)
-            values[388 + i] = (d.I32[2040 + i * 2], d.I32[2041 + i * 2]);
         return values;
     }
 
@@ -83,29 +59,22 @@ internal static class Draw03RoadReplacement
         return values;
     }
 
-    private static (int Index, int Side)[] ReadPackedSides1()
+    private static class CoordinatePrograms
     {
-        var d = Numeric_Types_Draw03_Draw03RoadReplacement_g_cs.Values;
-        var values = new (int Index, int Side)[380];
-        for (int i = 0; i < 78; i++)
-            values[0 + i] = (d.I32[3344 + i * 2], -d.I32[3345 + i * 2]);
-        for (int i = 0; i < 88; i++)
-            values[78 + i] = (d.I32[3500 + i * 2], d.I32[3501 + i * 2]);
-        for (int i = 0; i < 24; i++)
-            values[166 + i] = (d.I32[3676 + i * 2], -d.I32[3677 + i * 2]);
-        for (int i = 0; i < 78; i++)
-            values[190 + i] = (d.I32[3724 + i * 2], d.I32[3725 + i * 2]);
-        for (int i = 0; i < 88; i++)
-            values[268 + i] = (d.I32[3880 + i * 2], -d.I32[3881 + i * 2]);
-        for (int i = 0; i < 24; i++)
-            values[356 + i] = (d.I32[4056 + i * 2], d.I32[4057 + i * 2]);
-        return values;
+        static CoordinatePrograms()
+        {
+        }
+
+        internal static HardcodedNumbers Data => GenerationParameters.Get<HardcodedNumbers>("BridgeBuilder.Bridges.Draw03RoadReplacement.CoordinatePrograms.Data", () => HardcodedNumbers.Load("Types_Draw03_Draw03RoadReplacement_CoordinateProgram"));
     }
 }
 
 // Embedded numerical arrays: Types_Draw03_Draw03RoadReplacement_g_cs
 internal static class Numeric_Types_Draw03_Draw03RoadReplacement_g_cs
 {
-    static Numeric_Types_Draw03_Draw03RoadReplacement_g_cs() {}
-    internal static readonly HardcodedNumbers Values = HardcodedNumbers.Load("Types_Draw03_Draw03RoadReplacement_g_cs");
+    static Numeric_Types_Draw03_Draw03RoadReplacement_g_cs()
+    {
+    }
+
+    internal static HardcodedNumbers Values => GenerationParameters.Get<HardcodedNumbers>("BridgeBuilder.Bridges.Numeric_Types_Draw03_Draw03RoadReplacement_g_cs.Values", () => HardcodedNumbers.Load("Types_Draw03_Draw03RoadReplacement_g_cs"));
 }

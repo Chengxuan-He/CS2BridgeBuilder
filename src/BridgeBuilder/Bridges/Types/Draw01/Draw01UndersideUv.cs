@@ -7,8 +7,8 @@ namespace BridgeBuilder.Bridges;
 internal static class Draw01UndersideUv
 {
     internal static KeyValuePair<int, Vector2>[] ForLod(int lod) => lod == Numeric_Types_Draw01_Draw01UndersideUv_cs.Values.I32[0] ? Near : lod == Numeric_Types_Draw01_Draw01UndersideUv_cs.Values.I32[1] ? Middle : Array.Empty<KeyValuePair<int, Vector2>>();
-    private static readonly KeyValuePair<int, Vector2>[] Near = ReadPackedNear();
-    private static readonly KeyValuePair<int, Vector2>[] Middle = ReadPackedMiddle();
+    private static KeyValuePair<int, Vector2>[] Near => GenerationParameters.Get<KeyValuePair<int, Vector2>[]>("BridgeBuilder.Bridges.Draw01UndersideUv.Near", () => ReadPackedNear());
+    private static KeyValuePair<int, Vector2>[] Middle => GenerationParameters.Get<KeyValuePair<int, Vector2>[]>("BridgeBuilder.Bridges.Draw01UndersideUv.Middle", () => ReadPackedMiddle());
     private static KeyValuePair<int, Vector2>[] ReadPackedNear()
     {
         var d = Numeric_Types_Draw01_Draw01UndersideUv_cs.Values;
@@ -32,5 +32,5 @@ internal static class Draw01UndersideUv
 internal static class Numeric_Types_Draw01_Draw01UndersideUv_cs
 {
     static Numeric_Types_Draw01_Draw01UndersideUv_cs() {}
-    internal static readonly HardcodedNumbers Values = HardcodedNumbers.Load("Types_Draw01_Draw01UndersideUv_cs");
+    internal static HardcodedNumbers Values => GenerationParameters.Get<HardcodedNumbers>("BridgeBuilder.Bridges.Numeric_Types_Draw01_Draw01UndersideUv_cs.Values", () => HardcodedNumbers.Load("Types_Draw01_Draw01UndersideUv_cs"));
 }

@@ -19,19 +19,17 @@ internal static class Lift05TransverseParts
         foreach (var part in data.Parts)
         {
             var span = part.Max - part.Min;
-            AffineGeometry.Indices(part.Vertices, i =>
-            {
-                positions[i].x = AffineGeometry.AddScaled(source[i].x, (Numeric_Types_Lift05_Lift05TransverseParts_g_cs.Values.F32[0] * source[i].x - part.Min - part.Max) / span, delta);
-            });
+            foreach (var coordinateRows in StructureRows.Stages(part.Vertices))
+                AffineGeometry.Execute(RangePrograms.Data, 0, new[] { source, positions }, Array.Empty<float[]>(), new float[] { Numeric_Types_Lift05_Lift05TransverseParts_g_cs.Values.F32[0], part.Min, part.Max, delta }, count: coordinateRows.Length, indices: new[] { coordinateRows });
         }
     }
 
     // Geometry SHA-256: 10a9c40e522c91debff4bc0251dbe93980cac6b92ff6b176c216e27ba52c05fb
-    private static readonly (float Min, float Max, int[] Vertices)[] Parts0 = ReadPackedParts0();
+    private static (float Min, float Max, int[] Vertices)[] Parts0 => GenerationParameters.Get<(float Min, float Max, int[] Vertices)[]>("BridgeBuilder.Bridges.Lift05TransverseParts.Parts0", () => ReadPackedParts0());
     // Geometry SHA-256: dc4b8d4ae9688952992b03d724d8549cdb79f52eb0877c7f6fe62d1246ce286e
-    private static readonly (float Min, float Max, int[] Vertices)[] Parts1 = ReadPackedParts1();
+    private static (float Min, float Max, int[] Vertices)[] Parts1 => GenerationParameters.Get<(float Min, float Max, int[] Vertices)[]>("BridgeBuilder.Bridges.Lift05TransverseParts.Parts1", () => ReadPackedParts1());
     // Geometry SHA-256: 6ea1ea24f714feca8794c31500c743e3c599067a9da37a46ae83c1eaa8bc4160
-    private static readonly (float Min, float Max, int[] Vertices)[] Parts2 = ReadPackedParts2();
+    private static (float Min, float Max, int[] Vertices)[] Parts2 => GenerationParameters.Get<(float Min, float Max, int[] Vertices)[]>("BridgeBuilder.Bridges.Lift05TransverseParts.Parts2", () => ReadPackedParts2());
     private static (float Min, float Max, int[] Vertices)[] ReadPackedParts0()
     {
         var d = Numeric_Types_Lift05_Lift05TransverseParts_g_cs.Values;
@@ -84,11 +82,23 @@ internal static class Lift05TransverseParts
             values[0 + i] = (-d.F32[105 + i * 2], d.F32[106 + i * 2], new[] { d.I32[3381 + i * 32], d.I32[3382 + i * 32], d.I32[3383 + i * 32], d.I32[3384 + i * 32], d.I32[3385 + i * 32], d.I32[3386 + i * 32], d.I32[3387 + i * 32], d.I32[3388 + i * 32], d.I32[3389 + i * 32], d.I32[3390 + i * 32], d.I32[3391 + i * 32], d.I32[3392 + i * 32], d.I32[3393 + i * 32], d.I32[3394 + i * 32], d.I32[3395 + i * 32], d.I32[3396 + i * 32], d.I32[3397 + i * 32], d.I32[3398 + i * 32], d.I32[3399 + i * 32], d.I32[3400 + i * 32], d.I32[3401 + i * 32], d.I32[3402 + i * 32], d.I32[3403 + i * 32], d.I32[3404 + i * 32], d.I32[3405 + i * 32], d.I32[3406 + i * 32], d.I32[3407 + i * 32], d.I32[3408 + i * 32], d.I32[3409 + i * 32], d.I32[3410 + i * 32], d.I32[3411 + i * 32], d.I32[3412 + i * 32], });
         return values;
     }
+
+    private static class RangePrograms
+    {
+        static RangePrograms()
+        {
+        }
+
+        internal static HardcodedNumbers Data => GenerationParameters.Get<HardcodedNumbers>("BridgeBuilder.Bridges.Lift05TransverseParts.RangePrograms.Data", () => HardcodedNumbers.Load("Types_Lift05_Lift05TransverseParts_RangePrograms"));
+    }
 }
 
 // Embedded numerical arrays: Types_Lift05_Lift05TransverseParts_g_cs
 internal static class Numeric_Types_Lift05_Lift05TransverseParts_g_cs
 {
-    static Numeric_Types_Lift05_Lift05TransverseParts_g_cs() {}
-    internal static readonly HardcodedNumbers Values = HardcodedNumbers.Load("Types_Lift05_Lift05TransverseParts_g_cs");
+    static Numeric_Types_Lift05_Lift05TransverseParts_g_cs()
+    {
+    }
+
+    internal static HardcodedNumbers Values => GenerationParameters.Get<HardcodedNumbers>("BridgeBuilder.Bridges.Numeric_Types_Lift05_Lift05TransverseParts_g_cs.Values", () => HardcodedNumbers.Load("Types_Lift05_Lift05TransverseParts_g_cs"));
 }

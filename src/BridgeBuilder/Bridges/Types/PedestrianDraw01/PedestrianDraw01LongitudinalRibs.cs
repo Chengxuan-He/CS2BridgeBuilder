@@ -2,7 +2,6 @@ using System;
 using UnityEngine;
 
 namespace BridgeBuilder.Bridges;
-
 // Exact original component ranges measured by PedestrianDraw01LongitudinalRibs.py.
 // Internal centres retain equal intervals; native outer-edge offsets are separate.
 internal static class PedestrianDraw01LongitudinalRibs
@@ -22,15 +21,26 @@ internal static class PedestrianDraw01LongitudinalRibs
             var first = data.I32[cursor++];
             var last = data.I32[cursor++];
             var coefficient = data.F32[data.I32[cursor++]];
-            AffineGeometry.For(first, checked(last + 1), index =>
-                positions[index].x = AffineGeometry.AddScaled(source[index].x, coefficient, delta));
+            AffineGeometry.Execute(RangePrograms.Data, 0, new[] { source, positions }, Array.Empty<float[]>(), new float[] { coefficient, delta }, first, checked((checked(last + 1)) - (first)));
         }
+    }
+
+    private static class RangePrograms
+    {
+        static RangePrograms()
+        {
+        }
+
+        internal static HardcodedNumbers Data => GenerationParameters.Get<HardcodedNumbers>("BridgeBuilder.Bridges.PedestrianDraw01LongitudinalRibs.RangePrograms.Data", () => HardcodedNumbers.Load("Types_PedestrianDraw01_PedestrianDraw01LongitudinalRibs_RangePrograms"));
     }
 }
 
 // Embedded numerical arrays: Types_PedestrianDraw01_PedestrianDraw01LongitudinalRibs_cs
 internal static class Numeric_Types_PedestrianDraw01_PedestrianDraw01LongitudinalRibs_cs
 {
-    static Numeric_Types_PedestrianDraw01_PedestrianDraw01LongitudinalRibs_cs() {}
-    internal static readonly HardcodedNumbers Values = HardcodedNumbers.Load("Types_PedestrianDraw01_PedestrianDraw01LongitudinalRibs_cs");
+    static Numeric_Types_PedestrianDraw01_PedestrianDraw01LongitudinalRibs_cs()
+    {
+    }
+
+    internal static HardcodedNumbers Values => GenerationParameters.Get<HardcodedNumbers>("BridgeBuilder.Bridges.Numeric_Types_PedestrianDraw01_PedestrianDraw01LongitudinalRibs_cs.Values", () => HardcodedNumbers.Load("Types_PedestrianDraw01_PedestrianDraw01LongitudinalRibs_cs"));
 }

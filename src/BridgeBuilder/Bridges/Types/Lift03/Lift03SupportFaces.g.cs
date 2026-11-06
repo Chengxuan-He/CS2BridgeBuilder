@@ -19,7 +19,7 @@ internal static class Lift03SupportFaces
     }
 
     // Geometry SHA-256: 455d25f8ec83f91ea097551fb09a9f41abc79e9f15e836b19c0a527ad50ff9fa
-    private static readonly (int Triangle, int A, int B, int C)[] Level1 = ReadPackedLevel1();
+    private static (int Triangle, int A, int B, int C)[] Level1 => GenerationParameters.Get<(int Triangle, int A, int B, int C)[]>("BridgeBuilder.Bridges.Lift03SupportFaces.Level1", () => ReadPackedLevel1());
     internal static void RemoveFar(int[] indices, bool[] removed)
     {
         if (indices.Length != Numeric_Types_Lift03_Lift03SupportFaces_g_cs.Values.I32[9630] * Numeric_Types_Lift03_Lift03SupportFaces_g_cs.Values.I32[9631] || removed.Length != Numeric_Types_Lift03_Lift03SupportFaces_g_cs.Values.I32[9632])
@@ -34,7 +34,7 @@ internal static class Lift03SupportFaces
     }
 
     // Geometry SHA-256: 4dd846ac20f020fb45de94549d66e0bbafda4c575554a5b235a93e7d5a6008e4
-    private static readonly (int Triangle, int A, int B, int C)[] Level2 = ReadPackedLevel2();
+    private static (int Triangle, int A, int B, int C)[] Level2 => GenerationParameters.Get<(int Triangle, int A, int B, int C)[]>("BridgeBuilder.Bridges.Lift03SupportFaces.Level2", () => ReadPackedLevel2());
     private static (int Triangle, int A, int B, int C)[] ReadPackedLevel1()
     {
         var d = Numeric_Types_Lift03_Lift03SupportFaces_g_cs.Values;
@@ -58,5 +58,5 @@ internal static class Lift03SupportFaces
 internal static class Numeric_Types_Lift03_Lift03SupportFaces_g_cs
 {
     static Numeric_Types_Lift03_Lift03SupportFaces_g_cs() {}
-    internal static readonly HardcodedNumbers Values = HardcodedNumbers.Load("Types_Lift03_Lift03SupportFaces_g_cs");
+    internal static HardcodedNumbers Values => GenerationParameters.Get<HardcodedNumbers>("BridgeBuilder.Bridges.Numeric_Types_Lift03_Lift03SupportFaces_g_cs.Values", () => HardcodedNumbers.Load("Types_Lift03_Lift03SupportFaces_g_cs"));
 }

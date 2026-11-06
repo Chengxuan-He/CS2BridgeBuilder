@@ -24,9 +24,9 @@ internal static class Lift03RoadTops
     }
 
     // Geometry SHA-256: f8bc2882fcba043d1d57a17fd27a43631b492ab4292f8fc6b9c3beeb00af53cd
-    private static readonly (int Triangle, int A, int B, int C)[] Level0 = ReadPackedLevel0();
+    private static (int Triangle, int A, int B, int C)[] Level0 => GenerationParameters.Get<(int Triangle, int A, int B, int C)[]>("BridgeBuilder.Bridges.Lift03RoadTops.Level0", () => ReadPackedLevel0());
     // Geometry SHA-256: 455d25f8ec83f91ea097551fb09a9f41abc79e9f15e836b19c0a527ad50ff9fa
-    private static readonly (int Triangle, int A, int B, int C)[] Level1 = ReadPackedLevel1();
+    private static (int Triangle, int A, int B, int C)[] Level1 => GenerationParameters.Get<(int Triangle, int A, int B, int C)[]>("BridgeBuilder.Bridges.Lift03RoadTops.Level1", () => ReadPackedLevel1());
     private static (int Triangle, int A, int B, int C)[] ReadPackedLevel0()
     {
         var d = Numeric_Types_Lift03_Lift03RoadTops_g_cs.Values;
@@ -50,5 +50,5 @@ internal static class Lift03RoadTops
 internal static class Numeric_Types_Lift03_Lift03RoadTops_g_cs
 {
     static Numeric_Types_Lift03_Lift03RoadTops_g_cs() {}
-    internal static readonly HardcodedNumbers Values = HardcodedNumbers.Load("Types_Lift03_Lift03RoadTops_g_cs");
+    internal static HardcodedNumbers Values => GenerationParameters.Get<HardcodedNumbers>("BridgeBuilder.Bridges.Numeric_Types_Lift03_Lift03RoadTops_g_cs.Values", () => HardcodedNumbers.Load("Types_Lift03_Lift03RoadTops_g_cs"));
 }

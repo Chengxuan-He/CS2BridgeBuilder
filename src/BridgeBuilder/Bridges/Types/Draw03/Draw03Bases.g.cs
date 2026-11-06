@@ -16,41 +16,25 @@ internal static class Draw03Bases
         if (!float.IsFinite(delta) || source.Length != data.Count || positions.Length != data.Count)
             throw new InvalidOperationException("Draw03 bases require their recorded main mesh.");
         foreach (var range in data.Left)
-            AffineGeometry.For(Numeric_Types_Draw03_Draw03Bases_g_cs.Values.I32[2], range.Last - range.First + Numeric_Types_Draw03_Draw03Bases_g_cs.Values.I32[3], offset =>
-            {
-                var i = range.First + offset;
-                positions[i].x = source[i].x - delta;
-            });
+            AffineGeometry.Execute(RangePrograms.Data, 0, new[] { source, positions }, Array.Empty<float[]>(), new float[] { delta }, checked((Numeric_Types_Draw03_Draw03Bases_g_cs.Values.I32[2]) + (range.First)), Math.Max(0, checked((range.Last - range.First + Numeric_Types_Draw03_Draw03Bases_g_cs.Values.I32[3]) - (Numeric_Types_Draw03_Draw03Bases_g_cs.Values.I32[2]))));
         foreach (var range in data.Centre)
-            AffineGeometry.For(Numeric_Types_Draw03_Draw03Bases_g_cs.Values.I32[4], range.Last - range.First + Numeric_Types_Draw03_Draw03Bases_g_cs.Values.I32[5], offset =>
-            {
-                var i = range.First + offset;
-                positions[i].x = source[i].x;
-            });
+            AffineGeometry.Execute(RangePrograms.Data, 1, new[] { source, positions }, Array.Empty<float[]>(), Array.Empty<float>(), checked((Numeric_Types_Draw03_Draw03Bases_g_cs.Values.I32[4]) + (range.First)), Math.Max(0, checked((range.Last - range.First + Numeric_Types_Draw03_Draw03Bases_g_cs.Values.I32[5]) - (Numeric_Types_Draw03_Draw03Bases_g_cs.Values.I32[4]))));
         foreach (var range in data.Right)
-            AffineGeometry.For(Numeric_Types_Draw03_Draw03Bases_g_cs.Values.I32[6], range.Last - range.First + Numeric_Types_Draw03_Draw03Bases_g_cs.Values.I32[7], offset =>
-            {
-                var i = range.First + offset;
-                positions[i].x = source[i].x + delta;
-            });
+            AffineGeometry.Execute(RangePrograms.Data, 2, new[] { source, positions }, Array.Empty<float[]>(), new float[] { delta }, checked((Numeric_Types_Draw03_Draw03Bases_g_cs.Values.I32[6]) + (range.First)), Math.Max(0, checked((range.Last - range.First + Numeric_Types_Draw03_Draw03Bases_g_cs.Values.I32[7]) - (Numeric_Types_Draw03_Draw03Bases_g_cs.Values.I32[6]))));
         foreach (var range in data.Moving)
-            AffineGeometry.For(Numeric_Types_Draw03_Draw03Bases_g_cs.Values.I32[8], range.Last - range.First + Numeric_Types_Draw03_Draw03Bases_g_cs.Values.I32[9], offset =>
-            {
-                var i = range.First + offset;
-                positions[i].x = AffineGeometry.AddScaled(source[i].x, source[i].x / Numeric_Types_Draw03_Draw03Bases_g_cs.Values.F32[0], delta);
-            });
+            AffineGeometry.Execute(RangePrograms.Data, 3, new[] { source, positions }, Array.Empty<float[]>(), new float[] { Numeric_Types_Draw03_Draw03Bases_g_cs.Values.F32[0], delta }, checked((Numeric_Types_Draw03_Draw03Bases_g_cs.Values.I32[8]) + (range.First)), Math.Max(0, checked((range.Last - range.First + Numeric_Types_Draw03_Draw03Bases_g_cs.Values.I32[9]) - (Numeric_Types_Draw03_Draw03Bases_g_cs.Values.I32[8]))));
     }
 
     // Geometry SHA-256: f7ecc824ad55745e791e40b18fd12f5def20657ed8ea56d373429d5a1337588f
-    private static readonly (int First, int Last)[] Left0 = ReadPackedLeft0();
-    private static readonly (int First, int Last)[] Centre0 = ReadPackedCentre0();
-    private static readonly (int First, int Last)[] Right0 = ReadPackedRight0();
-    private static readonly (int First, int Last)[] Moving0 = ReadPackedMoving0();
+    private static (int First, int Last)[] Left0 => GenerationParameters.Get<(int First, int Last)[]>("BridgeBuilder.Bridges.Draw03Bases.Left0", () => ReadPackedLeft0());
+    private static (int First, int Last)[] Centre0 => GenerationParameters.Get<(int First, int Last)[]>("BridgeBuilder.Bridges.Draw03Bases.Centre0", () => ReadPackedCentre0());
+    private static (int First, int Last)[] Right0 => GenerationParameters.Get<(int First, int Last)[]>("BridgeBuilder.Bridges.Draw03Bases.Right0", () => ReadPackedRight0());
+    private static (int First, int Last)[] Moving0 => GenerationParameters.Get<(int First, int Last)[]>("BridgeBuilder.Bridges.Draw03Bases.Moving0", () => ReadPackedMoving0());
     // Geometry SHA-256: 15b8419da13d6e99e1dc0591f12f4019f0be09c3b220a481d24720daf7b57e12
-    private static readonly (int First, int Last)[] Left1 = ReadPackedLeft1();
-    private static readonly (int First, int Last)[] Centre1 = ReadPackedCentre1();
-    private static readonly (int First, int Last)[] Right1 = ReadPackedRight1();
-    private static readonly (int First, int Last)[] Moving1 = ReadPackedMoving1();
+    private static (int First, int Last)[] Left1 => GenerationParameters.Get<(int First, int Last)[]>("BridgeBuilder.Bridges.Draw03Bases.Left1", () => ReadPackedLeft1());
+    private static (int First, int Last)[] Centre1 => GenerationParameters.Get<(int First, int Last)[]>("BridgeBuilder.Bridges.Draw03Bases.Centre1", () => ReadPackedCentre1());
+    private static (int First, int Last)[] Right1 => GenerationParameters.Get<(int First, int Last)[]>("BridgeBuilder.Bridges.Draw03Bases.Right1", () => ReadPackedRight1());
+    private static (int First, int Last)[] Moving1 => GenerationParameters.Get<(int First, int Last)[]>("BridgeBuilder.Bridges.Draw03Bases.Moving1", () => ReadPackedMoving1());
     private static (int First, int Last)[] ReadPackedLeft0()
     {
         var d = Numeric_Types_Draw03_Draw03Bases_g_cs.Values;
@@ -122,11 +106,23 @@ internal static class Draw03Bases
             values[0 + i] = (d.I32[1180 + i * 2], d.I32[1181 + i * 2]);
         return values;
     }
+
+    private static class RangePrograms
+    {
+        static RangePrograms()
+        {
+        }
+
+        internal static HardcodedNumbers Data => GenerationParameters.Get<HardcodedNumbers>("BridgeBuilder.Bridges.Draw03Bases.RangePrograms.Data", () => HardcodedNumbers.Load("Types_Draw03_Draw03Bases_RangePrograms"));
+    }
 }
 
 // Embedded numerical arrays: Types_Draw03_Draw03Bases_g_cs
 internal static class Numeric_Types_Draw03_Draw03Bases_g_cs
 {
-    static Numeric_Types_Draw03_Draw03Bases_g_cs() {}
-    internal static readonly HardcodedNumbers Values = HardcodedNumbers.Load("Types_Draw03_Draw03Bases_g_cs");
+    static Numeric_Types_Draw03_Draw03Bases_g_cs()
+    {
+    }
+
+    internal static HardcodedNumbers Values => GenerationParameters.Get<HardcodedNumbers>("BridgeBuilder.Bridges.Numeric_Types_Draw03_Draw03Bases_g_cs.Values", () => HardcodedNumbers.Load("Types_Draw03_Draw03Bases_g_cs"));
 }

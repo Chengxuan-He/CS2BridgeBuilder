@@ -13,11 +13,10 @@ internal static class Draw02LongitudinalRibs
         int row = lod * Numeric_Types_Draw02_Draw02LongitudinalRibs_cs.Values.I32[1];
         if (source.Length != data.I32[row] || positions.Length != data.I32[row])
             throw new System.InvalidOperationException("Draw02 longitudinal ribs require the measured main mesh.");
-        AffineGeometry.For(Numeric_Types_Draw02_Draw02LongitudinalRibs_cs.Values.I32[2], data.I32[row + Numeric_Types_Draw02_Draw02LongitudinalRibs_cs.Values.I32[3]], i =>
-        {
-            int vertex = data.I32[data.I32[row + Numeric_Types_Draw02_Draw02LongitudinalRibs_cs.Values.I32[4]] + i];
-            positions[vertex].x = AffineGeometry.AddScaled(source[vertex].x, data.F32[data.I32[row + Numeric_Types_Draw02_Draw02LongitudinalRibs_cs.Values.I32[5]] + i], delta);
-        });
+        int count = data.I32[row + Numeric_Types_Draw02_Draw02LongitudinalRibs_cs.Values.I32[2]];
+        var vertices = StructureRows.Slice(data.I32, data.I32[row + Numeric_Types_Draw02_Draw02LongitudinalRibs_cs.Values.I32[3]], count);
+        var weights = StructureRows.Slice(data.F32, data.I32[row + Numeric_Types_Draw02_Draw02LongitudinalRibs_cs.Values.I32[4]], count);
+        AffineGeometry.Execute(StructurePrograms.Data, StructurePrograms.RowDelta, new[] { source, positions }, new[] { weights }, new[] { delta }, count: count, indices: new[] { vertices });
     }
 }
 
@@ -27,7 +26,7 @@ internal static class Draw02LongitudinalRibMeasurements
     {
     }
 
-    internal static readonly HardcodedNumbers Values = HardcodedNumbers.Load("Types_Draw02_LongitudinalRibMeasurements");
+    internal static HardcodedNumbers Values => GenerationParameters.Get<HardcodedNumbers>("BridgeBuilder.Bridges.Draw02LongitudinalRibMeasurements.Values", () => HardcodedNumbers.Load("Types_Draw02_LongitudinalRibMeasurements"));
 }
 
 // Embedded numerical arrays: Types_Draw02_Draw02LongitudinalRibs_cs
@@ -37,5 +36,5 @@ internal static class Numeric_Types_Draw02_Draw02LongitudinalRibs_cs
     {
     }
 
-    internal static readonly HardcodedNumbers Values = HardcodedNumbers.Load("Types_Draw02_Draw02LongitudinalRibs_cs");
+    internal static HardcodedNumbers Values => GenerationParameters.Get<HardcodedNumbers>("BridgeBuilder.Bridges.Numeric_Types_Draw02_Draw02LongitudinalRibs_cs.Values", () => HardcodedNumbers.Load("Types_Draw02_Draw02LongitudinalRibs_cs"));
 }

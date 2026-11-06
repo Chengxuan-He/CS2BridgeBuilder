@@ -44,12 +44,12 @@ internal static class Draw02Underside
             if (!present) continue;
             float shift = span.x - data.F32[side + 1];
             float widthChange = span.y - span.x - data.F32[0];
-            for (int i = 0; i < data.I32[row + 3]; i++)
-            {
-                int vertex = data.I32[data.I32[row + 2] + i];
-                positions[vertex].x = AffineGeometry.AddScaled(AffineGeometry.Translate(
-                    plan.SourcePositions[vertex].x, shift), data.F32[data.I32[row + 4] + i], widthChange);
-            }
+            int count = data.I32[row + 3];
+            AffineGeometry.Execute(StructurePrograms.Data, StructurePrograms.OriginDelta,
+                new[] { plan.SourcePositions, positions },
+                new[] { StructureRows.Slice(data.F32, data.I32[row + 4], count) },
+                new[] { shift, widthChange }, count: count,
+                indices: new[] { StructureRows.Slice(data.I32, data.I32[row + 2], count) });
         }
         // The original outer wall and stepped railing seat are structural,
         // including their upward faces. Road replacement must not cut them at
@@ -84,5 +84,5 @@ internal static class Draw02Underside
 internal static class Numeric_Types_Draw02_Draw02Underside_cs
 {
     static Numeric_Types_Draw02_Draw02Underside_cs() { }
-    internal static readonly HardcodedNumbers Values = HardcodedNumbers.Load("Types_Draw02_Draw02Underside_cs");
+    internal static HardcodedNumbers Values => GenerationParameters.Get<HardcodedNumbers>("BridgeBuilder.Bridges.Numeric_Types_Draw02_Draw02Underside_cs.Values", () => HardcodedNumbers.Load("Types_Draw02_Draw02Underside_cs"));
 }

@@ -87,11 +87,24 @@ internal static class BridgeRuntimeRequests
         }
     }
 
-    internal static bool TryTake(out BridgeRuntimeRequest? request)
+    internal static void CancelDeletions()
     {
         lock (Gate)
         {
-            request = Requests.Count > 0 ? Requests.Dequeue() : null;
+            int count=Requests.Count;
+            while(count-- > 0)
+            {
+                var item=Requests.Dequeue();
+                if(item.Action!=BridgeRuntimeAction.Delete) Requests.Enqueue(item);
+            }
+        }
+    }
+
+    internal static bool TryTake(out BridgeRuntimeRequest? request, bool allowDelete = true)
+    {
+        lock (Gate)
+        {
+            request = Requests.Count > 0 && (allowDelete || Requests.Peek().Action != BridgeRuntimeAction.Delete) ? Requests.Dequeue() : null;
             return request != null;
         }
     }

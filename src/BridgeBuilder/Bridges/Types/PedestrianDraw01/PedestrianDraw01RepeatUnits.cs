@@ -6,15 +6,7 @@ namespace BridgeBuilder.Bridges;
 // Embedded numerical arrays: Types_PedestrianDraw01_PedestrianDraw01RoadAppearance_cs (shared existing resource)
 internal static partial class MovableRepeatUnits
 {
-    static partial void PedestrianDraw01(string samplerKey, ref string? unitKey)
-    {
-        unitKey = samplerKey switch
-        {
-            "d677e3715acd370b1752af75b5a0ea3a08fb5dd486a4f449a3af5381f6840402" => "3b767a8cf95af2a6d70bfabed5aa1b2ef66c30a9b7730cf5a0f8822d8bd2c55a",
-            "70f2e23753c16049452af963ad2a24834821dcc36d16cb4ce962ddb92c3bfe33" => "92097f47855293023ad8e98d399653dd718c3e8fea334ed21d6cc9c934281ad8",
-            _ => unitKey
-        };
-    }
+    static partial void PedestrianDraw01(string samplerKey, ref string? unitKey) { }
 
     static partial void PedestrianDraw01Regions(string sourceDigest, List<Region> regions)
     {

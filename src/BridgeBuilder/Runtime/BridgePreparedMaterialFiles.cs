@@ -41,6 +41,14 @@ internal static class BridgePreparedMaterialFiles
     internal static string CachePath(string root, string cid) =>
         System.IO.Path.Combine(root, "Shared", "MidMips", cid, "TS512_MB3.MidMips");
 
+    internal static bool IsSharedPaint(string cid) => cid is
+        "9a7a7da8813bd92cf48a0f9a4052e651" or
+        "bc2e09a359ba8e1f4b41c417b5f631af" or
+        "d9d33ecb2b319859d2d356059bc00b22";
+
+    internal static string PaintPath(string root, string cid) =>
+        System.IO.Path.Combine(root, "Shared", "Paint", cid + ".Texture");
+
     internal readonly struct Input
     {
         internal readonly string Path, Cid, Digest;
@@ -96,7 +104,9 @@ internal static class BridgePreparedMaterialFiles
             if (cid.Length != 32 || cid.Any(c => !Uri.IsHexDigit(c)))
                 throw new InvalidDataException("Invalid prepared dependency identity: " + cid);
             var shared = System.IO.Path.Combine(styleFolder, "Shared", cid.ToLowerInvariant() + ".Texture");
-            if (File.Exists(shared)) Add(shared, cid);
+            if (variant == "Paint" && name == "SkinnedPaint.Surface" && IsSharedPaint(cid))
+                Add(PaintPath(Directory.GetParent(styleFolder)!.FullName, cid), cid);
+            else if (File.Exists(shared)) Add(shared, cid);
             else
             {
                 requireBuiltin(cid);

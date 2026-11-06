@@ -32,7 +32,7 @@ internal static class Lift04UvSampling
     private static class Data
     {
         static Data() { }
-        internal static readonly int[][] Items = Read();
+        internal static int[][] Items => GenerationParameters.Get<int[][]>("BridgeBuilder.Bridges.Lift04UvSampling.Data.Items", () => Read());
         private static int[][] Read()
         {
             var values = HardcodedNumbers.Load("Lift04UvSampling").I32;

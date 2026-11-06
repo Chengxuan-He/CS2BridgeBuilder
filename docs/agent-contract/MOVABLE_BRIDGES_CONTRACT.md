@@ -1,5 +1,25 @@
 # Movable bridge generation contract
 
+### Packaged textures belong to road running surfaces
+
+A packaged `.Texture` must have a measured road-surface consumer. Check the actual
+faces, appearance type, LOD and native Surface channel that references it. Asphalt,
+walkable sidewalk paving, running grating, running caps and selected-road paint
+qualify only on their measured road-facing domains. A structural platform, curb
+sidewall, truss, cable or underside uses its original game or DLC texture references.
+This requirement also applies when a road and a structural face share the same atlas.
+A descriptor conversion needed for native rendering may bind original native channels.
+It must never give a non-road consumer a dependency on a packaged texture.
+
+Retain valid native UV projection, sampling and mip identities. A local repeating
+atlas island that cannot be sampled at a requested width through its original
+representation retains its authored coordinates. Record any resulting change in
+physical density. Do not bake a structural repeat or wrap individual vertices into
+an atlas chart to fill that gap. This supersedes earlier structural repeat permissions,
+including the earlier Lift05 profile recipe. Independently persisted external owner
+copies remain governed by the dependency persistence contract.
+
+
 Follow [player-controlled generation](BRIDGE_GENERATION_CONTRACT.md#player-controlled-generation-without-structural-rejection-gates): do not reject a generation request
 because of structural shape, width, signed scale, degeneracy, overlap, clearance or appearance
 quality. Such checks belong to offline verification or non-blocking diagnostics. Material
@@ -1049,7 +1069,7 @@ original material without baking only if supported-road tiling and all-LOD marki
 are satisfied. Descriptor-only conversions retain compatible pixels. Only
 material contract section 4's genuinely variable or unknown-selected-input cases permit bounded
 runtime composition/conversion. These runtime exceptions permit neither full-road rasterization nor structural rebaking;
-section 3's eligible structural repeat derivatives are prepared outside the game only.
+structural consumers retain native pixels at every LOD.
 Preserve independent owner snapshots, native loading and no custom shaders/runtime rebinding.
 
 ### Native network context and independent sampling axes
@@ -1093,8 +1113,7 @@ follow material section 3 instead of retaining incompatible finite content or em
   source/domain data. Retain original corrected U, interpolated on permitted construction
   fragments, while preserving V's original physical density, phase and verified repeat
   boundaries. A whole-domain non-tiling flag cannot authorize stretching V. Keep the original
-  Surface where it expresses the measured mixed axes without new period cuts. An eligible
-  structural repeat domain may instead use the narrow offline derivative in material section 3.
+  Surface where it expresses the measured mixed axes without new period cuts. Preserve native sampling on all other structural domains.
   A separately identified prototype-supported road
   composition must use a compliant tiled unpainted unit under material sections 3 and 4.
 - **Domains touching repeat coverage:** classify the actual original source faces, authored
@@ -1183,7 +1202,7 @@ remain unchanged; the informational owner material measurement still includes th
 ### Offline repeat materials instead of period seams
 
 Apply [material section 3](MATERIAL_GENERATION_CONTRACT.md#offline-source-atlas-repeat-materials)
-to road and narrowly eligible structural repeat domains. Bake independent tiling materials from
+to verified running-surface domains only. Bake independent tiling materials from
 the original atlas outside the game instead of adding cuts solely for period wraps. Preserve
 existing native seams and necessary motion, shape and actual material boundaries. Keep independent
 axes/layers, phase, original density, physical terminal bounds, original attributes and bones.

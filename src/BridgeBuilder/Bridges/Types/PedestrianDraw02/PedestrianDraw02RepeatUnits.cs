@@ -8,11 +8,7 @@ internal static partial class MovableRepeatUnits
     // Reuse the existing demand-loaded holder; literals below are array indices.
     // The measured fixed-road rectangle retains its original density and phase.
     // Both mirrored regions share one full-mip unit; no structural alias is inferred.
-    static partial void PedestrianDraw02(string samplerKey, ref string? unitKey)
-    {
-        if (samplerKey == "6b68a0d1dcd3be3978c4452f10b446aa9a71047b508956d5097175b8f88a07b2")
-            unitKey = "32f9c9b0969c3cfc217e6155a7a39c8bc40cba840c70c495f8f811a68dbd91c3";
-    }
+    static partial void PedestrianDraw02(string samplerKey, ref string? unitKey) { }
 
     // Structural sampling keeps source template 0. Road cutout template 14 shares
     // these pixels but is not a substitute for the original structural descriptor.

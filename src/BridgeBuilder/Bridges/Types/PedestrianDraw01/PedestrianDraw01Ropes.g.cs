@@ -18,34 +18,26 @@ internal static class PedestrianDraw01Ropes
         // Detailed ropes are covered by RigidParts. The far mesh omits ropes.
         if (lod != Numeric_Types_PedestrianDraw01_PedestrianDraw01Ropes_g_cs.Values.I32[3])
             return;
-        foreach (var part in Parts)
-            AffineGeometry.For(part.First, checked((part.Last) + 1), i =>
-            {
-                positions[i].x = AffineGeometry.AddScaled(source[i].x, part.Side, delta);
-            });
+        AffineGeometry.Execute(BatchProgram0.Data, 0, new[] { source, positions }, Array.Empty<float[]>(), new float[] { delta });
     }
 
     // Geometry SHA-256: 0b0544aff8720327910927fda2f398ce78c8e3e3d2a1262de8204acdcac34053
-    private static readonly (int First, int Last, int Side)[] Parts = ReadPackedParts();
-    private static (int First, int Last, int Side)[] ReadPackedParts()
+    private static class BatchProgram0
     {
-        var d = Numeric_Types_PedestrianDraw01_PedestrianDraw01Ropes_g_cs.Values;
-        var values = new (int First, int Last, int Side)[4];
-        for (int i = 0; i < 1; i++)
-            values[0 + i] = (d.I32[4 + i * 3], d.I32[5 + i * 3], -d.I32[6 + i * 3]);
-        for (int i = 0; i < 1; i++)
-            values[1 + i] = (d.I32[7 + i * 3], d.I32[8 + i * 3], d.I32[9 + i * 3]);
-        for (int i = 0; i < 1; i++)
-            values[2 + i] = (d.I32[10 + i * 3], d.I32[11 + i * 3], -d.I32[12 + i * 3]);
-        for (int i = 0; i < 1; i++)
-            values[3 + i] = (d.I32[13 + i * 3], d.I32[14 + i * 3], d.I32[15 + i * 3]);
-        return values;
+        static BatchProgram0()
+        {
+        }
+
+        internal static HardcodedNumbers Data => GenerationParameters.Get<HardcodedNumbers>("BridgeBuilder.Bridges.PedestrianDraw01Ropes.BatchProgram0.Data", () => HardcodedNumbers.Load("Types_PedestrianDraw01_PedestrianDraw01Ropes_BatchProgram0"));
     }
 }
 
 // Embedded numerical arrays: Types_PedestrianDraw01_PedestrianDraw01Ropes_g_cs
 internal static class Numeric_Types_PedestrianDraw01_PedestrianDraw01Ropes_g_cs
 {
-    static Numeric_Types_PedestrianDraw01_PedestrianDraw01Ropes_g_cs() {}
-    internal static readonly HardcodedNumbers Values = HardcodedNumbers.Load("Types_PedestrianDraw01_PedestrianDraw01Ropes_g_cs");
+    static Numeric_Types_PedestrianDraw01_PedestrianDraw01Ropes_g_cs()
+    {
+    }
+
+    internal static HardcodedNumbers Values => GenerationParameters.Get<HardcodedNumbers>("BridgeBuilder.Bridges.Numeric_Types_PedestrianDraw01_PedestrianDraw01Ropes_g_cs.Values", () => HardcodedNumbers.Load("Types_PedestrianDraw01_PedestrianDraw01Ropes_g_cs"));
 }

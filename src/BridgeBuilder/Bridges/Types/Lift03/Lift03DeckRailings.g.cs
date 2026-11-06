@@ -15,16 +15,13 @@ internal static class Lift03DeckRailings
         if (source.Length != data.Count || positions.Length != data.Count || !float.IsFinite(upperDelta) || !float.IsFinite(lowerDelta))
             throw new InvalidOperationException("Lift03 deck railings require their recorded native layout.");
         foreach (var part in data.Parts)
-            AffineGeometry.For(part.First, checked((part.Last) + 1), i =>
-            {
-                positions[i].x = AffineGeometry.AddScaled(source[i].x, part.Sign, (part.Upper ? upperDelta : lowerDelta));
-            });
+            AffineGeometry.Execute(RangePrograms.Data, 0, new[] { source, positions }, Array.Empty<float[]>(), new float[] { part.Sign, part.Upper ? upperDelta : lowerDelta }, part.First, checked((checked((part.Last) + 1)) - (part.First)));
     }
 
     // Geometry SHA-256: f8bc2882fcba043d1d57a17fd27a43631b492ab4292f8fc6b9c3beeb00af53cd
-    private static readonly (int First, int Last, int Sign, bool Upper)[] Level0 = ReadPackedLevel0();
+    private static (int First, int Last, int Sign, bool Upper)[] Level0 => GenerationParameters.Get<(int First, int Last, int Sign, bool Upper)[]>("BridgeBuilder.Bridges.Lift03DeckRailings.Level0", () => ReadPackedLevel0());
     // Geometry SHA-256: 455d25f8ec83f91ea097551fb09a9f41abc79e9f15e836b19c0a527ad50ff9fa
-    private static readonly (int First, int Last, int Sign, bool Upper)[] Level1 = ReadPackedLevel1();
+    private static (int First, int Last, int Sign, bool Upper)[] Level1 => GenerationParameters.Get<(int First, int Last, int Sign, bool Upper)[]>("BridgeBuilder.Bridges.Lift03DeckRailings.Level1", () => ReadPackedLevel1());
     private static (int First, int Last, int Sign, bool Upper)[] ReadPackedLevel0()
     {
         var d = Numeric_Types_Lift03_Lift03DeckRailings_g_cs.Values;
@@ -70,11 +67,23 @@ internal static class Lift03DeckRailings
             values[31 + i] = (d.I32[191 + i * 3], d.I32[192 + i * 3], d.I32[193 + i * 3], false);
         return values;
     }
+
+    private static class RangePrograms
+    {
+        static RangePrograms()
+        {
+        }
+
+        internal static HardcodedNumbers Data => GenerationParameters.Get<HardcodedNumbers>("BridgeBuilder.Bridges.Lift03DeckRailings.RangePrograms.Data", () => HardcodedNumbers.Load("Types_Lift03_Lift03DeckRailings_RangePrograms"));
+    }
 }
 
 // Embedded numerical arrays: Types_Lift03_Lift03DeckRailings_g_cs
 internal static class Numeric_Types_Lift03_Lift03DeckRailings_g_cs
 {
-    static Numeric_Types_Lift03_Lift03DeckRailings_g_cs() {}
-    internal static readonly HardcodedNumbers Values = HardcodedNumbers.Load("Types_Lift03_Lift03DeckRailings_g_cs");
+    static Numeric_Types_Lift03_Lift03DeckRailings_g_cs()
+    {
+    }
+
+    internal static HardcodedNumbers Values => GenerationParameters.Get<HardcodedNumbers>("BridgeBuilder.Bridges.Numeric_Types_Lift03_Lift03DeckRailings_g_cs.Values", () => HardcodedNumbers.Load("Types_Lift03_Lift03DeckRailings_g_cs"));
 }

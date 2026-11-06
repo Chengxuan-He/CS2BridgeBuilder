@@ -60,6 +60,7 @@ Check(!BridgeDependencyCopies.Save(UnityEngine.Application.persistentDataPath,"b
  _=>throw new NullReferenceException("original inner failure"),out _,out error,out _,null,e=>diagnostic=e)
  && error.Contains(a) && error.Contains("resolve source") && diagnostic?.InnerException is NullReferenceException
  && diagnostic.ToString().Contains("original inner failure"),"failure callback retains inner type/stack and current CID/phase");
+if(args.Length==2 && args[0]=="--retired-owner-replay"){OwnerSnapshotReplay.Run(args[1]);return;}
 if(args.Length==3 && args[0]=="--saved-materials"){SavedMaterialReplay.Run(args[1],args[2]);return;}
 MaterialSnapshotCheck.Run(imported);
 MidMipSnapshotCheck.Run(imported);

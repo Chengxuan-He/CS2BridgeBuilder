@@ -13,11 +13,7 @@ internal static class Lift01FarEndLips
             throw new InvalidOperationException("Lift01 end lips require their recorded middle source.");
         var positions = new Vector3[plan.SourcePositions.Length];
         Array.Copy(plan.Positions, positions, positions.Length);
-        foreach (var item in Motion)
-            AffineGeometry.For(item.First, checked((item.Last) + 1), i =>
-            {
-                positions[i].x = AffineGeometry.AddScaled(plan.SourcePositions[i].x, item.Weight, delta);
-            });
+        AffineGeometry.Execute(BatchProgram0.Data, 0, new[] { plan.SourcePositions, positions }, Array.Empty<float[]>(), new float[] { delta });
         var remove = (bool[])plan.RemoveTriangles[Numeric_Types_Lift01_Lift01FarEndLips_g_cs.Values.I32[4]].Clone();
         foreach (var range in Faces)
             for (var i = range.First; i <= range.Last; i++)
@@ -25,8 +21,7 @@ internal static class Lift01FarEndLips
         return new MovableStructureModel.Plan(plan.SourcePositions, positions, plan.SourceIndices, new[] { remove }, plan.AddedVertices, plan.Fragments, plan.InteriorVertices, plan.Positions.Skip(positions.Length).Select(p => p.x).ToArray(), plan.ReconstructsAuthoredPositions, plan.UvCorrections, plan.PreparedDomains, plan.FrameTransforms, plan.SourceCopies);
     }
 
-    private static readonly (int First, int Last)[] Faces = ReadPackedFaces();
-    private static readonly (int First, int Last, int Weight)[] Motion = ReadPackedMotion();
+    private static (int First, int Last)[] Faces => GenerationParameters.Get<(int First, int Last)[]>("BridgeBuilder.Bridges.Lift01FarEndLips.Faces", () => ReadPackedFaces());
     private static (int First, int Last)[] ReadPackedFaces()
     {
         var d = Numeric_Types_Lift01_Lift01FarEndLips_g_cs.Values;
@@ -36,21 +31,22 @@ internal static class Lift01FarEndLips
         return values;
     }
 
-    private static (int First, int Last, int Weight)[] ReadPackedMotion()
+    private static class BatchProgram0
     {
-        var d = Numeric_Types_Lift01_Lift01FarEndLips_g_cs.Values;
-        var values = new (int First, int Last, int Weight)[146];
-        for (int i = 0; i < 37; i++)
-            values[0 + i] = (d.I32[11 + i * 3], d.I32[12 + i * 3], -d.I32[13 + i * 3]);
-        for (int i = 0; i < 109; i++)
-            values[37 + i] = (d.I32[122 + i * 3], d.I32[123 + i * 3], d.I32[124 + i * 3]);
-        return values;
+        static BatchProgram0()
+        {
+        }
+
+        internal static HardcodedNumbers Data => GenerationParameters.Get<HardcodedNumbers>("BridgeBuilder.Bridges.Lift01FarEndLips.BatchProgram0.Data", () => HardcodedNumbers.Load("Types_Lift01_Lift01FarEndLips_BatchProgram0"));
     }
 }
 
 // Embedded numerical arrays: Types_Lift01_Lift01FarEndLips_g_cs
 internal static class Numeric_Types_Lift01_Lift01FarEndLips_g_cs
 {
-    static Numeric_Types_Lift01_Lift01FarEndLips_g_cs() {}
-    internal static readonly HardcodedNumbers Values = HardcodedNumbers.Load("Types_Lift01_Lift01FarEndLips_g_cs");
+    static Numeric_Types_Lift01_Lift01FarEndLips_g_cs()
+    {
+    }
+
+    internal static HardcodedNumbers Values => GenerationParameters.Get<HardcodedNumbers>("BridgeBuilder.Bridges.Numeric_Types_Lift01_Lift01FarEndLips_g_cs.Values", () => HardcodedNumbers.Load("Types_Lift01_Lift01FarEndLips_g_cs"));
 }

@@ -83,5 +83,5 @@ internal static class Lift03SectionRoles
 internal static class Numeric_Types_Lift03_Lift03SectionRoles_cs
 {
     static Numeric_Types_Lift03_Lift03SectionRoles_cs() {}
-    internal static readonly HardcodedNumbers Values = HardcodedNumbers.Load("Types_Lift03_Lift03SectionRoles_cs");
+    internal static HardcodedNumbers Values => GenerationParameters.Get<HardcodedNumbers>("BridgeBuilder.Bridges.Numeric_Types_Lift03_Lift03SectionRoles_cs.Values", () => HardcodedNumbers.Load("Types_Lift03_Lift03SectionRoles_cs"));
 }

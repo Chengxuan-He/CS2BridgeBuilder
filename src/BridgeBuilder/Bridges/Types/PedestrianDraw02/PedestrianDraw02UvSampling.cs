@@ -33,7 +33,7 @@ internal static class PedestrianDraw02UvSampling
     private static class Data
     {
         static Data() { }
-        internal static readonly bool[][] Items = Read();
+        internal static bool[][] Items => GenerationParameters.Get<bool[][]>("BridgeBuilder.Bridges.PedestrianDraw02UvSampling.Data.Items", () => Read());
         private static bool[][] Read()
         {
             var values = HardcodedNumbers.Load("PedestrianDraw02UvSampling").I32;

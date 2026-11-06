@@ -19,7 +19,7 @@ internal static class Draw01RoadPartitions
         var innerCurb = Numeric_Types_Draw01_Draw01RoadPartitions_cs.Values.F32[0] + halfWidthDelta;
         if (!float.IsFinite(innerCurb))
             throw new InvalidOperationException("Draw01 carriageway coordinate is not representable.");
-        var sidewalk = retainNativePlatforms ? Cut(-Numeric_Types_Draw01_Draw01RoadPartitions_cs.Values.F32[2], Partition.Gap, Cut(Numeric_Types_Draw01_Draw01RoadPartitions_cs.Values.F32[3], Sidewalk, Partition.Gap)) : Sidewalk;
+        var sidewalk = retainNativePlatforms ? Cut(-Numeric_Types_Draw01_Draw01RoadPartitions_cs.Values.F32[1], Partition.Gap, Cut(Numeric_Types_Draw01_Draw01RoadPartitions_cs.Values.F32[2], Sidewalk, Partition.Gap)) : Sidewalk;
         return Across(-innerCurb, sidewalk, Across(innerCurb, Carriageway, sidewalk));
     }
 
@@ -32,10 +32,10 @@ internal static class Draw01RoadPartitions
         Partition CutX(float x, Partition negative, Partition positive)
         {
             var frame = Matrix4x4.identity;
-            frame.m00 = Numeric_Types_Draw01_Draw01RoadPartitions_cs.Values.F32[4];
-            frame.m02 = -Numeric_Types_Draw01_Draw01RoadPartitions_cs.Values.F32[5];
-            frame.m20 = Numeric_Types_Draw01_Draw01RoadPartitions_cs.Values.F32[6];
-            frame.m22 = Numeric_Types_Draw01_Draw01RoadPartitions_cs.Values.F32[7];
+            frame.m00 = Numeric_Types_Draw01_Draw01RoadPartitions_cs.Values.F32[3];
+            frame.m02 = -Numeric_Types_Draw01_Draw01RoadPartitions_cs.Values.F32[4];
+            frame.m20 = Numeric_Types_Draw01_Draw01RoadPartitions_cs.Values.F32[5];
+            frame.m22 = Numeric_Types_Draw01_Draw01RoadPartitions_cs.Values.F32[6];
             frame.m23 = -x;
             return new Partition(frame * pose, negative, positive);
         }
@@ -51,14 +51,14 @@ internal static class Draw01RoadPartitions
 
         Partition Half(int offset)
         {
-            var leftWalkway = CutZ(-Numeric_Types_Draw01_Draw01RoadPartitions_cs.Values.F32[8], new Partition(Numeric_Types_Draw01_Draw01RoadPartitions_cs.Values.I32[0] + offset), CutZ(Numeric_Types_Draw01_Draw01RoadPartitions_cs.Values.F32[9], new Partition(Numeric_Types_Draw01_Draw01RoadPartitions_cs.Values.I32[1] + offset), new Partition(Numeric_Types_Draw01_Draw01RoadPartitions_cs.Values.I32[2] + offset)));
-            var rightWalkway = CutZ(-Numeric_Types_Draw01_Draw01RoadPartitions_cs.Values.F32[10], new Partition(Numeric_Types_Draw01_Draw01RoadPartitions_cs.Values.I32[3] + offset), CutZ(Numeric_Types_Draw01_Draw01RoadPartitions_cs.Values.F32[11], new Partition(Numeric_Types_Draw01_Draw01RoadPartitions_cs.Values.I32[4] + offset), new Partition(Numeric_Types_Draw01_Draw01RoadPartitions_cs.Values.I32[5] + offset)));
-            Partition Carriageway(int moving, int fixedCap) => CutZ(-Numeric_Types_Draw01_Draw01RoadPartitions_cs.Values.F32[12], new Partition(fixedCap + offset), CutZ(Numeric_Types_Draw01_Draw01RoadPartitions_cs.Values.F32[13], new Partition(moving + offset), new Partition(fixedCap + offset)));
-            var roadway = CutX(Numeric_Types_Draw01_Draw01RoadPartitions_cs.Values.F32[14], Carriageway(Numeric_Types_Draw01_Draw01RoadPartitions_cs.Values.I32[6], Numeric_Types_Draw01_Draw01RoadPartitions_cs.Values.I32[7]), Carriageway(Numeric_Types_Draw01_Draw01RoadPartitions_cs.Values.I32[8], Numeric_Types_Draw01_Draw01RoadPartitions_cs.Values.I32[9]));
-            return sidewalk ? CutX(Numeric_Types_Draw01_Draw01RoadPartitions_cs.Values.F32[15], leftWalkway, rightWalkway) : roadway;
+            var leftWalkway = CutZ(-Numeric_Types_Draw01_Draw01RoadPartitions_cs.Values.F32[7], new Partition(Numeric_Types_Draw01_Draw01RoadPartitions_cs.Values.I32[0] + offset), CutZ(Numeric_Types_Draw01_Draw01RoadPartitions_cs.Values.F32[8], new Partition(Numeric_Types_Draw01_Draw01RoadPartitions_cs.Values.I32[1] + offset), new Partition(Numeric_Types_Draw01_Draw01RoadPartitions_cs.Values.I32[2] + offset)));
+            var rightWalkway = CutZ(-Numeric_Types_Draw01_Draw01RoadPartitions_cs.Values.F32[9], new Partition(Numeric_Types_Draw01_Draw01RoadPartitions_cs.Values.I32[3] + offset), CutZ(Numeric_Types_Draw01_Draw01RoadPartitions_cs.Values.F32[10], new Partition(Numeric_Types_Draw01_Draw01RoadPartitions_cs.Values.I32[4] + offset), new Partition(Numeric_Types_Draw01_Draw01RoadPartitions_cs.Values.I32[5] + offset)));
+            Partition Carriageway(int moving, int fixedCap) => CutZ(-Numeric_Types_Draw01_Draw01RoadPartitions_cs.Values.F32[11], new Partition(fixedCap + offset), CutZ(Numeric_Types_Draw01_Draw01RoadPartitions_cs.Values.F32[12], new Partition(moving + offset), new Partition(fixedCap + offset)));
+            var roadway = CutX(Numeric_Types_Draw01_Draw01RoadPartitions_cs.Values.F32[13], Carriageway(Numeric_Types_Draw01_Draw01RoadPartitions_cs.Values.I32[6], Numeric_Types_Draw01_Draw01RoadPartitions_cs.Values.I32[7]), Carriageway(Numeric_Types_Draw01_Draw01RoadPartitions_cs.Values.I32[8], Numeric_Types_Draw01_Draw01RoadPartitions_cs.Values.I32[9]));
+            return sidewalk ? CutX(Numeric_Types_Draw01_Draw01RoadPartitions_cs.Values.F32[14], leftWalkway, rightWalkway) : roadway;
         }
 
-        return CutZ(Numeric_Types_Draw01_Draw01RoadPartitions_cs.Values.F32[16], Half(Numeric_Types_Draw01_Draw01RoadPartitions_cs.Values.I32[10]), Half(Numeric_Types_Draw01_Draw01RoadPartitions_cs.Values.I32[11]));
+        return CutZ(Numeric_Types_Draw01_Draw01RoadPartitions_cs.Values.F32[15], Half(Numeric_Types_Draw01_Draw01RoadPartitions_cs.Values.I32[10]), Half(Numeric_Types_Draw01_Draw01RoadPartitions_cs.Values.I32[11]));
     }
 
     internal static Partition[] ForObjects(MovableNodeObjects.Result objects, float halfWidthDelta)
@@ -73,16 +73,16 @@ internal static class Draw01RoadPartitions
     {
         // Exact quarter-turn: seam-local Z is object X minus the measured seam.
         var frame = Matrix4x4.identity;
-        frame.m00 = Numeric_Types_Draw01_Draw01RoadPartitions_cs.Values.F32[17];
-        frame.m02 = -Numeric_Types_Draw01_Draw01RoadPartitions_cs.Values.F32[18];
-        frame.m20 = Numeric_Types_Draw01_Draw01RoadPartitions_cs.Values.F32[19];
-        frame.m22 = Numeric_Types_Draw01_Draw01RoadPartitions_cs.Values.F32[20];
+        frame.m00 = Numeric_Types_Draw01_Draw01RoadPartitions_cs.Values.F32[16];
+        frame.m02 = -Numeric_Types_Draw01_Draw01RoadPartitions_cs.Values.F32[17];
+        frame.m20 = Numeric_Types_Draw01_Draw01RoadPartitions_cs.Values.F32[18];
+        frame.m22 = Numeric_Types_Draw01_Draw01RoadPartitions_cs.Values.F32[19];
         frame.m23 = -seam;
         return new Partition(frame, negative, positive);
     }
 
-    internal static readonly Partition Carriageway = Create(-Numeric_Types_Draw01_Draw01RoadPartitions_cs.Values.F32[21], -Numeric_Types_Draw01_Draw01RoadPartitions_cs.Values.F32[22], -Numeric_Types_Draw01_Draw01RoadPartitions_cs.Values.F32[23], Numeric_Types_Draw01_Draw01RoadPartitions_cs.Values.F32[24], Numeric_Types_Draw01_Draw01RoadPartitions_cs.Values.F32[25], Numeric_Types_Draw01_Draw01RoadPartitions_cs.Values.F32[26]);
-    internal static readonly Partition Sidewalk = Create(-Numeric_Types_Draw01_Draw01RoadPartitions_cs.Values.F32[27], -Numeric_Types_Draw01_Draw01RoadPartitions_cs.Values.F32[28], -Numeric_Types_Draw01_Draw01RoadPartitions_cs.Values.F32[29], Numeric_Types_Draw01_Draw01RoadPartitions_cs.Values.F32[30], Numeric_Types_Draw01_Draw01RoadPartitions_cs.Values.F32[31], Numeric_Types_Draw01_Draw01RoadPartitions_cs.Values.F32[32]);
+    internal static Partition Carriageway => GenerationParameters.Get<Partition>("BridgeBuilder.Bridges.Draw01RoadPartitions.Carriageway", () => Create(-Numeric_Types_Draw01_Draw01RoadPartitions_cs.Values.F32[20], -Numeric_Types_Draw01_Draw01RoadPartitions_cs.Values.F32[21], -Numeric_Types_Draw01_Draw01RoadPartitions_cs.Values.F32[22], Numeric_Types_Draw01_Draw01RoadPartitions_cs.Values.F32[23], Numeric_Types_Draw01_Draw01RoadPartitions_cs.Values.F32[24], Numeric_Types_Draw01_Draw01RoadPartitions_cs.Values.F32[25]));
+    internal static Partition Sidewalk => GenerationParameters.Get<Partition>("BridgeBuilder.Bridges.Draw01RoadPartitions.Sidewalk", () => Create(-Numeric_Types_Draw01_Draw01RoadPartitions_cs.Values.F32[26], -Numeric_Types_Draw01_Draw01RoadPartitions_cs.Values.F32[27], -Numeric_Types_Draw01_Draw01RoadPartitions_cs.Values.F32[28], Numeric_Types_Draw01_Draw01RoadPartitions_cs.Values.F32[29], Numeric_Types_Draw01_Draw01RoadPartitions_cs.Values.F32[30], Numeric_Types_Draw01_Draw01RoadPartitions_cs.Values.F32[31]));
     // In increasing Z: fixed, end gap, negative leaf, central gap, positive leaf,
     // end gap, fixed. Bone ARRAY indices 1/2 correspond to native connections 100/101.
     // Sampling supplies the finite node extent; these trees do not fabricate approaches.
@@ -103,6 +103,9 @@ internal static class Draw01RoadPartitions
 // Embedded numerical arrays: Types_Draw01_Draw01RoadPartitions_cs
 internal static class Numeric_Types_Draw01_Draw01RoadPartitions_cs
 {
-    static Numeric_Types_Draw01_Draw01RoadPartitions_cs() {}
-    internal static readonly HardcodedNumbers Values = HardcodedNumbers.Load("Types_Draw01_Draw01RoadPartitions_cs");
+    static Numeric_Types_Draw01_Draw01RoadPartitions_cs()
+    {
+    }
+
+    internal static HardcodedNumbers Values => GenerationParameters.Get<HardcodedNumbers>("BridgeBuilder.Bridges.Numeric_Types_Draw01_Draw01RoadPartitions_cs.Values", () => HardcodedNumbers.Load("Types_Draw01_Draw01RoadPartitions_cs"));
 }

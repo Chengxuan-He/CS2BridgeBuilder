@@ -62,6 +62,7 @@ public partial class BridgeGenerationSystem
         BridgePreviewSession? preview = null,
         Action<bool>? onPublished = null)
     {
+        using var parameters = GenerationParameters.Begin();
         var importedRoot = Path.Combine(UnityEngine.Application.persistentDataPath, "ImportedData");
         if (BridgeAssetInfo.IsOtherBridgePrefab(upper.Prefab.asset?.path, exportName, importedRoot)
             || BridgeAssetInfo.IsOtherBridgePrefab(chosen?.Prefab.asset?.path, exportName, importedRoot))

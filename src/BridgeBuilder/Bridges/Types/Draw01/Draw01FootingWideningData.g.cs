@@ -17,16 +17,13 @@ internal static class Draw01FootingWideningData
         if (source.Length != weights.Length || indices.Length % Numeric_Types_Draw01_Draw01FootingWideningData_g_cs.Values.I32[0] != Numeric_Types_Draw01_Draw01FootingWideningData_g_cs.Values.I32[1])
             throw new InvalidOperationException("Draw01 footing source does not match recorded geometry.");
         var positions = (Vector3[])source.Clone();
-        AffineGeometry.For(Numeric_Types_Draw01_Draw01FootingWideningData_g_cs.Values.I32[2], positions.Length, i =>
-        {
-            positions[i].x = AffineGeometry.Translate(positions[i].x, weights[i] * delta);
-        });
+        AffineGeometry.Execute(RangePrograms.Data, 0, new[] { positions }, new[] { weights }, new float[] { delta }, Numeric_Types_Draw01_Draw01FootingWideningData_g_cs.Values.I32[2], checked((positions.Length) - (Numeric_Types_Draw01_Draw01FootingWideningData_g_cs.Values.I32[2])));
         return new MovableStructureModel.Plan(source, positions, new[] { indices }, new[] { new bool[indices.Length / Numeric_Types_Draw01_Draw01FootingWideningData_g_cs.Values.I32[3]] });
     }
 
-    private static readonly float[] Near = ReadPackedNear();
-    private static readonly float[] Middle = ReadPackedMiddle();
-    private static readonly float[] Far = ReadPackedFar();
+    private static float[] Near => GenerationParameters.Get<float[]>("BridgeBuilder.Bridges.Draw01FootingWideningData.Near", () => ReadPackedNear());
+    private static float[] Middle => GenerationParameters.Get<float[]>("BridgeBuilder.Bridges.Draw01FootingWideningData.Middle", () => ReadPackedMiddle());
+    private static float[] Far => GenerationParameters.Get<float[]>("BridgeBuilder.Bridges.Draw01FootingWideningData.Far", () => ReadPackedFar());
     private static float[] ReadPackedNear()
     {
         var d = Numeric_Types_Draw01_Draw01FootingWideningData_g_cs.Values;
@@ -579,11 +576,23 @@ internal static class Draw01FootingWideningData
             values[400 + i] = d.F32[4552 + i * 1];
         return values;
     }
+
+    private static class RangePrograms
+    {
+        static RangePrograms()
+        {
+        }
+
+        internal static HardcodedNumbers Data => GenerationParameters.Get<HardcodedNumbers>("BridgeBuilder.Bridges.Draw01FootingWideningData.RangePrograms.Data", () => HardcodedNumbers.Load("Types_Draw01_Draw01FootingWideningData_RangePrograms"));
+    }
 }
 
 // Embedded numerical arrays: Types_Draw01_Draw01FootingWideningData_g_cs
 internal static class Numeric_Types_Draw01_Draw01FootingWideningData_g_cs
 {
-    static Numeric_Types_Draw01_Draw01FootingWideningData_g_cs() {}
-    internal static readonly HardcodedNumbers Values = HardcodedNumbers.Load("Types_Draw01_Draw01FootingWideningData_g_cs");
+    static Numeric_Types_Draw01_Draw01FootingWideningData_g_cs()
+    {
+    }
+
+    internal static HardcodedNumbers Values => GenerationParameters.Get<HardcodedNumbers>("BridgeBuilder.Bridges.Numeric_Types_Draw01_Draw01FootingWideningData_g_cs.Values", () => HardcodedNumbers.Load("Types_Draw01_Draw01FootingWideningData_g_cs"));
 }

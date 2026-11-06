@@ -8,7 +8,7 @@ namespace BridgeBuilder.Bridges;
 // No sampling-key fallback: each lookup is restricted to this source mesh's domain.
 internal static class PedestrianDraw01UvCharts
 {
-    private static readonly Lazy<Dictionary<string, MovableUvChart[][]>> Loaded = new(Load);
+    private static Lazy<Dictionary<string, MovableUvChart[][]>> Loaded => GenerationParameters.Get<Lazy<Dictionary<string, MovableUvChart[][]>>>("BridgeBuilder.Bridges.PedestrianDraw01UvCharts.Loaded", () => new(Load));
 
     internal static MovableUvChart[] For(string renderName, int meshIndex, int domain)
     {

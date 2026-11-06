@@ -17,7 +17,7 @@ internal static class PedestrianDraw02RoadPartitions
         var x = new float[Stations.Length];
         for (var i = Numeric_Types_PedestrianDraw02_PedestrianDraw02RoadPartitions_g_cs.Values.I32[0]; i < x.Length; i++)
         {
-            x[i] = AffineGeometry.AddScaled(Stations[i].X, Stations[i].Weight, halfWidthDelta);
+            x[i] = Stations[i].X + Stations[i].Weight * halfWidthDelta;
         }
 
         Partition Slab(int index)
@@ -65,8 +65,8 @@ internal static class PedestrianDraw02RoadPartitions
         return new Partition(frame, negative, positive);
     }
 
-    private static readonly (float X, float Weight)[] Stations = ReadPackedStations();
-    private static readonly (int Bone, float LowerLeft, float LowerRight, float UpperLeft, float UpperRight)[][] Cells = ReadPackedCells();
+    private static (float X, float Weight)[] Stations => GenerationParameters.Get<(float X, float Weight)[]>("BridgeBuilder.Bridges.PedestrianDraw02RoadPartitions.Stations", () => ReadPackedStations());
+    private static (int Bone, float LowerLeft, float LowerRight, float UpperLeft, float UpperRight)[][] Cells => GenerationParameters.Get<(int Bone, float LowerLeft, float LowerRight, float UpperLeft, float UpperRight)[][]>("BridgeBuilder.Bridges.PedestrianDraw02RoadPartitions.Cells", () => ReadPackedCells());
     private static (float X, float Weight)[] ReadPackedStations()
     {
         var d = Numeric_Types_PedestrianDraw02_PedestrianDraw02RoadPartitions_g_cs.Values;
@@ -259,5 +259,5 @@ internal static class PedestrianDraw02RoadPartitions
 internal static class Numeric_Types_PedestrianDraw02_PedestrianDraw02RoadPartitions_g_cs
 {
     static Numeric_Types_PedestrianDraw02_PedestrianDraw02RoadPartitions_g_cs() {}
-    internal static readonly HardcodedNumbers Values = HardcodedNumbers.Load("Types_PedestrianDraw02_PedestrianDraw02RoadPartitions_g_cs");
+    internal static HardcodedNumbers Values => GenerationParameters.Get<HardcodedNumbers>("BridgeBuilder.Bridges.Numeric_Types_PedestrianDraw02_PedestrianDraw02RoadPartitions_g_cs.Values", () => HardcodedNumbers.Load("Types_PedestrianDraw02_PedestrianDraw02RoadPartitions_g_cs"));
 }

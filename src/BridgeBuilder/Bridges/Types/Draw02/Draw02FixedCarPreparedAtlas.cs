@@ -9,7 +9,7 @@ namespace BridgeBuilder.Bridges;
 internal static class Draw02FixedCarPreparedAtlas
 {
     static Draw02FixedCarPreparedAtlas() { }
-    private static readonly HardcodedNumbers Data = HardcodedNumbers.Load("Types_Draw02_Draw02FixedCarPreparedAtlas_cs");
+    private static HardcodedNumbers Data => GenerationParameters.Get<HardcodedNumbers>("BridgeBuilder.Bridges.Draw02FixedCarPreparedAtlas.Data", () => HardcodedNumbers.Load("Types_Draw02_Draw02FixedCarPreparedAtlas_cs"));
     internal static Patch Create(Vector4 u, Vector4 v, bool repeatV, Vector4 tangent)
     {
         var f = Data.F32;

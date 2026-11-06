@@ -1,5 +1,8 @@
 # Title recovery and save cleanup separation
 
+Archived implementation evidence from 2026-10-02. For current startup recovery and manual
+removal, see the [bridge generation contract](agent-contract/BRIDGE_GENERATION_CONTRACT.md#explicit-bulk-deletion).
+
 ## Implemented locally
 
 - Keep legacy unlock migration and the registration guard at the earliest startup callback, before native network initialization.

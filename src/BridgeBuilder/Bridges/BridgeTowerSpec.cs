@@ -137,5 +137,5 @@ internal static class BridgeTowerSpec
 internal static class Numeric_BridgeTowerSpec_cs
 {
     static Numeric_BridgeTowerSpec_cs() {}
-    internal static readonly HardcodedNumbers Values = HardcodedNumbers.Load("BridgeTowerSpec_cs");
+    internal static HardcodedNumbers Values => GenerationParameters.Get<HardcodedNumbers>("BridgeBuilder.Bridges.Numeric_BridgeTowerSpec_cs.Values", () => HardcodedNumbers.Load("BridgeTowerSpec_cs"));
 }

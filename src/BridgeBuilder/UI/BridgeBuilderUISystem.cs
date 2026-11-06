@@ -224,6 +224,7 @@ public partial class BridgeBuilderUISystem : UISystemBase
 
     private static void ConfirmDelete(string prefabName)
     {
+        int removalContext=BridgeBulkRemoval.Context;
         var assetInfo = BridgeAssetCatalog.Find(prefabName);
         if (assetInfo == null)
         {
@@ -241,7 +242,7 @@ public partial class BridgeBuilderUISystem : UISystemBase
                 Array.Empty<LocalizedString>());
             GameManager.instance.userInterface.appBindings.ShowConfirmationDialog(dialog, result =>
             {
-                if (result != 0) return;
+                if (result != 0 || removalContext!=BridgeBulkRemoval.Context) return;
                 BridgeRuntimeRequests.Enqueue(new BridgeRuntimeRequest
                 {
                     Action = BridgeRuntimeAction.Delete,
@@ -265,6 +266,7 @@ public partial class BridgeBuilderUISystem : UISystemBase
         }
         try
         {
+            var order = UiStringCatalog.NameOrder(GameManager.instance?.localizationManager?.activeLocaleId);
             var decks = DeckCatalog.Decks.Select(deck => new BridgeDeckUiItem
             {
                 Id = deck.Id,
@@ -272,12 +274,9 @@ public partial class BridgeBuilderUISystem : UISystemBase
                 // language cached at catalogue scan time. Custom names stay intact.
                 Name = deck.Road?.Name ?? DeckCatalog.DisplayNameOf(deck.Prefab),
                 Icon = ImageSystem.GetIcon(deck.Prefab) ?? string.Empty,
-                Kind = UiStringCatalog.Current.DeckKindName(deck.Kind.ToString()),
-                NetworkType = deck.Prefab is RoadPrefab road
-                    ? (road.m_HighwayRules ? "Highway" : road.m_RoadType == RoadType.PublicTransport ? "PublicTransport" : "Road")
-                    : deck.Kind.ToString(),
+                NetworkType = BridgeDeckUiItem.TypeOf(deck),
                 Width = deck.Width,
-            }).ToArray();
+            }).OrderBy(deck => deck.Name,order).ThenBy(deck => deck.Id,StringComparer.Ordinal).ToArray();
 
             var styles = BridgeStyleCatalog.Styles
                 .Where(style => style.IsInstalled &&
@@ -290,12 +289,13 @@ public partial class BridgeBuilderUISystem : UISystemBase
                     {
                         Id = style.Id,
                         Name = style.DisplayName,
+                        Family = BridgeStyleDefinitions.Family(style.Id),
                         Icon = preview == null ? string.Empty : preview.RecordedIcon ?? ImageSystem.GetIcon(preview.Donor) ?? string.Empty,
                         Source = preview?.Source.LocalizedLabel ?? string.Empty,
                         SupportsSingle = style.Variants.Any(variant => variant.IsAvailable && !variant.IsDoubleDeck),
                         SupportsDouble = style.Variants.Any(variant => variant.IsAvailable && variant.IsDoubleDeck),
                     };
-                }).ToArray();
+                }).OrderBy(style => style.Name,order).ThenBy(style => style.Id,StringComparer.Ordinal).ToArray();
 
             var loaded = PrefabCatalog.GetAll(_prefabSystem)
                 .OfType<NetGeometryPrefab>()
@@ -338,10 +338,14 @@ public partial class BridgeBuilderUISystem : UISystemBase
 
 internal sealed class BridgeDeckUiItem : IJsonWritable
 {
+    internal static string TypeOf(Deck deck) => deck.Prefab is RoadPrefab road
+        ? (road.m_HighwayRules ? "Highway" : road.m_RoadType == RoadType.PublicTransport ? "PublicTransport" : "Road")
+        : deck.Kind.ToString();
+
+
     internal string Id { get; set; } = string.Empty;
     internal string Name { get; set; } = string.Empty;
     internal string Icon { get; set; } = string.Empty;
-    internal string Kind { get; set; } = string.Empty;
     internal string NetworkType { get; set; } = string.Empty;
     internal float Width { get; set; }
 
@@ -351,7 +355,6 @@ internal sealed class BridgeDeckUiItem : IJsonWritable
         Property(writer, "id", Id);
         Property(writer, "name", Name);
         Property(writer, "icon", Icon);
-        Property(writer, "kind", Kind);
         Property(writer, "networkType", NetworkType);
         writer.PropertyName("width"); writer.Write(Width);
         writer.TypeEnd();
@@ -368,6 +371,7 @@ internal sealed class BridgeStyleUiItem : IJsonWritable
     internal string Id { get; set; } = string.Empty;
     internal string Name { get; set; } = string.Empty;
     internal string Icon { get; set; } = string.Empty;
+    internal string Family { get; set; } = string.Empty;
     internal string Source { get; set; } = string.Empty;
     internal bool SupportsSingle { get; set; }
     internal bool SupportsDouble { get; set; }
@@ -378,6 +382,7 @@ internal sealed class BridgeStyleUiItem : IJsonWritable
         Property(writer, "id", Id);
         Property(writer, "name", Name);
         Property(writer, "icon", Icon);
+        Property(writer, "family", Family);
         Property(writer, "source", Source);
         writer.PropertyName("supportsSingle"); writer.Write(SupportsSingle);
         writer.PropertyName("supportsDouble"); writer.Write(SupportsDouble);

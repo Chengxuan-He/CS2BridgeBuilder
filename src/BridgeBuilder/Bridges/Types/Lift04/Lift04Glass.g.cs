@@ -8,18 +8,19 @@ using UnityEngine;
 namespace BridgeBuilder.Bridges;
 internal static class Lift04Glass
 {
-    private static readonly int[] NearSides = ReadPackedNearSides();
-    private static readonly int[] MiddleSides = ReadPackedMiddleSides();
+    private static int[] NearSides => GenerationParameters.Get<int[]>("BridgeBuilder.Bridges.Lift04Glass.NearSides", () => ReadPackedNearSides());
+    private static int[] MiddleSides => GenerationParameters.Get<int[]>("BridgeBuilder.Bridges.Lift04Glass.MiddleSides", () => ReadPackedMiddleSides());
+    private static float[] NearWeights => GenerationParameters.Get<float[]>("BridgeBuilder.Bridges.Lift04Glass.NearWeights", () => Array.ConvertAll(NearSides, side => (float)side));
+    private static float[] MiddleWeights => GenerationParameters.Get<float[]>("BridgeBuilder.Bridges.Lift04Glass.MiddleWeights", () => Array.ConvertAll(MiddleSides, side => (float)side));
     internal static MovableStructureModel.Plan Create(int lod, Vector3[] source, int[] indices, float delta)
     {
         if ((lod != Numeric_Types_Lift04_Lift04Glass_g_cs.Values.I32[32] && lod != Numeric_Types_Lift04_Lift04Glass_g_cs.Values.I32[33]) || source.Length != Numeric_Types_Lift04_Lift04Glass_g_cs.Values.I32[34] || indices.Length != Numeric_Types_Lift04_Lift04Glass_g_cs.Values.I32[35] || !float.IsFinite(delta))
             throw new InvalidOperationException("Lift04 glass requires its recorded mesh-1 layout.");
         var positions = (Vector3[])source.Clone();
-        var sides = lod == Numeric_Types_Lift04_Lift04Glass_g_cs.Values.I32[36] ? NearSides : MiddleSides;
-        AffineGeometry.For(Numeric_Types_Lift04_Lift04Glass_g_cs.Values.I32[37], sides.Length, i =>
-        {
-            positions[i].x = AffineGeometry.Translate(positions[i].x, sides[i] * delta);
-        });
+        var sides = lod == Numeric_Types_Lift04_Lift04Glass_g_cs.Values.I32[36] ? NearWeights : MiddleWeights;
+        int first = Numeric_Types_Lift04_Lift04Glass_g_cs.Values.I32[37];
+        AffineGeometry.Execute(StructurePrograms.Data, StructurePrograms.DenseDelta, new[] { positions, positions },
+            new[] { sides }, new[] { delta }, first: first, count: sides.Length - first);
         return new MovableStructureModel.Plan(source, positions, new[] { indices }, new[] { new bool[Numeric_Types_Lift04_Lift04Glass_g_cs.Values.I32[38]] });
     }
 
@@ -52,5 +53,5 @@ internal static class Lift04Glass
 internal static class Numeric_Types_Lift04_Lift04Glass_g_cs
 {
     static Numeric_Types_Lift04_Lift04Glass_g_cs() {}
-    internal static readonly HardcodedNumbers Values = HardcodedNumbers.Load("Types_Lift04_Lift04Glass_g_cs");
+    internal static HardcodedNumbers Values => GenerationParameters.Get<HardcodedNumbers>("BridgeBuilder.Bridges.Numeric_Types_Lift04_Lift04Glass_g_cs.Values", () => HardcodedNumbers.Load("Types_Lift04_Lift04Glass_g_cs"));
 }

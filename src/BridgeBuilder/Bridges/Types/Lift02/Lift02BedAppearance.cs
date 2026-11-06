@@ -10,7 +10,7 @@ namespace BridgeBuilder.Bridges;
 internal static class Lift02BedAppearance
 {
     static Lift02BedAppearance() { }
-    private static readonly HardcodedNumbers Data = HardcodedNumbers.Load("Types_Lift02_BedAppearance");
+    private static HardcodedNumbers Data => GenerationParameters.Get<HardcodedNumbers>("BridgeBuilder.Bridges.Lift02BedAppearance.Data", () => HardcodedNumbers.Load("Types_Lift02_BedAppearance"));
     internal static MovableRoadAppearance.Level Detailed(RenderPrefab native, Pose roadToObject, float halfDelta)
         => Prepared(BridgePreparedMaterials.RepeatUnit("Lift02", "1c6aac78ba66e66ebd3f5bb395a04d5d0f8223a6bf34f1edb74ef3b873929a48"), roadToObject, halfDelta);
 

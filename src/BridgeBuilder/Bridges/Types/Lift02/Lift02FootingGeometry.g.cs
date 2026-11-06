@@ -17,19 +17,16 @@ internal static class Lift02FootingGeometry
         if (!float.IsFinite(delta) || source.Length != data.Count || indices.Length != data.Indices)
             throw new InvalidOperationException("Lift02 foundation requires its recorded layout.");
         var positions = (Vector3[])source.Clone();
-        AffineGeometry.For(Numeric_Types_Lift02_Lift02FootingGeometry_g_cs.Values.I32[6], positions.Length, i =>
-        {
-            positions[i].x = AffineGeometry.Translate(positions[i].x, data.Weights[i] * delta);
-        });
+        AffineGeometry.Execute(RangePrograms.Data, 0, new[] { positions }, new[] { data.Weights }, new float[] { delta }, Numeric_Types_Lift02_Lift02FootingGeometry_g_cs.Values.I32[6], checked((positions.Length) - (Numeric_Types_Lift02_Lift02FootingGeometry_g_cs.Values.I32[6])));
         return new MovableStructureModel.Plan(source, positions, new[] { indices }, new[] { new bool[indices.Length / Numeric_Types_Lift02_Lift02FootingGeometry_g_cs.Values.I32[7]] });
     }
 
     // Geometry SHA-256: 7d87d24c9b9d585a080709321e6bf52050bc8e09742419edc1ee6dbbeae8584f
-    private static readonly float[] Weights0 = ReadPackedWeights0();
+    private static float[] Weights0 => GenerationParameters.Get<float[]>("BridgeBuilder.Bridges.Lift02FootingGeometry.Weights0", () => ReadPackedWeights0());
     // Geometry SHA-256: 3b858a87ae426d0171873b56103271b41d7e611cbf20e92c6878a81d708adf50
-    private static readonly float[] Weights1 = ReadPackedWeights1();
+    private static float[] Weights1 => GenerationParameters.Get<float[]>("BridgeBuilder.Bridges.Lift02FootingGeometry.Weights1", () => ReadPackedWeights1());
     // Geometry SHA-256: 2844fe808b7a6314c4174078667976d3ae5afb957ad1f0d4a521990c2a794f1b
-    private static readonly float[] Weights2 = ReadPackedWeights2();
+    private static float[] Weights2 => GenerationParameters.Get<float[]>("BridgeBuilder.Bridges.Lift02FootingGeometry.Weights2", () => ReadPackedWeights2());
     private static float[] ReadPackedWeights0()
     {
         var d = Numeric_Types_Lift02_Lift02FootingGeometry_g_cs.Values;
@@ -376,11 +373,23 @@ internal static class Lift02FootingGeometry
             values[118 + i] = d.F32[1534 + i * 1];
         return values;
     }
+
+    private static class RangePrograms
+    {
+        static RangePrograms()
+        {
+        }
+
+        internal static HardcodedNumbers Data => GenerationParameters.Get<HardcodedNumbers>("BridgeBuilder.Bridges.Lift02FootingGeometry.RangePrograms.Data", () => HardcodedNumbers.Load("Types_Lift02_Lift02FootingGeometry_RangePrograms"));
+    }
 }
 
 // Embedded numerical arrays: Types_Lift02_Lift02FootingGeometry_g_cs
 internal static class Numeric_Types_Lift02_Lift02FootingGeometry_g_cs
 {
-    static Numeric_Types_Lift02_Lift02FootingGeometry_g_cs() {}
-    internal static readonly HardcodedNumbers Values = HardcodedNumbers.Load("Types_Lift02_Lift02FootingGeometry_g_cs");
+    static Numeric_Types_Lift02_Lift02FootingGeometry_g_cs()
+    {
+    }
+
+    internal static HardcodedNumbers Values => GenerationParameters.Get<HardcodedNumbers>("BridgeBuilder.Bridges.Numeric_Types_Lift02_Lift02FootingGeometry_g_cs.Values", () => HardcodedNumbers.Load("Types_Lift02_Lift02FootingGeometry_g_cs"));
 }

@@ -18,7 +18,7 @@ internal static class SuspensionGeometry
     private static float Suspension01NetSpan => Numeric_Types_Suspension_SuspensionGeometry_cs.Values.F32[0];
     private static float Suspension02NetSpan => Numeric_Types_Suspension_SuspensionGeometry_cs.Values.F32[1];
 
-    private static readonly IReadOnlyDictionary<string, float> ContinuousSheets = new Dictionary<string, float>(StringComparer.Ordinal)
+    private static IReadOnlyDictionary<string, float> ContinuousSheets => GenerationParameters.Get<IReadOnlyDictionary<string, float>>("BridgeBuilder.Bridges.SuspensionGeometry.ContinuousSheets", () => new Dictionary<string, float>(StringComparer.Ordinal)
     {
         ["SuspensionBridge01EndNet Mesh"] = Suspension01NetSpan,
         ["SuspensionBridge01EndNet_LOD1 Mesh"] = Suspension01NetSpan,
@@ -29,7 +29,7 @@ internal static class SuspensionGeometry
         ["SuspensionBridge02Net Mesh"] = Suspension02NetSpan,
         ["SuspensionBridge02Net_LOD1 Mesh"] = Suspension02NetSpan,
         ["SuspensionBridge02Net_LOD2 Mesh"] = Suspension02NetSpan,
-    };
+    });
     private static readonly HashSet<string> RigidSideParts = new(StringComparer.Ordinal)
     {
         "SuspensionBridge01NetPillar Mesh",
@@ -72,5 +72,5 @@ internal static class SuspensionGeometry
 internal static class Numeric_Types_Suspension_SuspensionGeometry_cs
 {
     static Numeric_Types_Suspension_SuspensionGeometry_cs() {}
-    internal static readonly HardcodedNumbers Values = HardcodedNumbers.Load("Types_Suspension_SuspensionGeometry_cs");
+    internal static HardcodedNumbers Values => GenerationParameters.Get<HardcodedNumbers>("BridgeBuilder.Bridges.Numeric_Types_Suspension_SuspensionGeometry_cs.Values", () => HardcodedNumbers.Load("Types_Suspension_SuspensionGeometry_cs"));
 }

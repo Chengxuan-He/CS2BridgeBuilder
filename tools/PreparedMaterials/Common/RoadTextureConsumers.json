@@ -1,0 +1,2982 @@
+[
+  {
+    "style": "Draw01",
+    "path": "Cable/SkinnedCable.Surface",
+    "role": "NonRoad",
+    "consumer": "MovableCableSurface.Create",
+    "surfaceSha256": "f06e97cf7933eb1b8fca2d5bc2c040f4fd47b0d9fa804bd9a084f8d809d0aded",
+    "local": {}
+  },
+  {
+    "style": "Draw01",
+    "path": "Paint/SkinnedPaint.Surface",
+    "role": "Road",
+    "consumer": "Skinned selected-road paint",
+    "surfaceSha256": "1d134b5fd2695596a2c9cde3a00de241268dc33b3916b52fe6ada9b06c296e08",
+    "local": {
+      "_BaseColorMap": "bc2e09a359ba8e1f4b41c417b5f631af",
+      "_NormalMap": "d9d33ecb2b319859d2d356059bc00b22",
+      "_MaskMap": "9a7a7da8813bd92cf48a0f9a4052e651"
+    }
+  },
+  {
+    "style": "Draw01",
+    "path": "Road/NativeAsphalt.Surface",
+    "role": "Road",
+    "consumer": "NativeAsphalt corresponding road",
+    "surfaceSha256": "26223d0cca8f272b7dc0c97fa7a2fa23d0bb46aa31fd32db05de7d5159c29119",
+    "local": {}
+  },
+  {
+    "style": "Draw01",
+    "path": "Lanes/0315c992c5fafbd4e58999588f61d11ad0c7e657d62ee1f6aa2d0a830ea2ac91/SkinnedLane.Surface",
+    "role": "Road",
+    "consumer": "Movable skinned lane binding",
+    "surfaceSha256": "8281744eb937df1bf0ca9828245b11b4880dbd937b39dd878b1422141f4bf972",
+    "local": {}
+  },
+  {
+    "style": "Draw01",
+    "path": "Lanes/05a9841d7b95a456b8f3c0ae404bd10edacaa6a2671f2894b478e90a04ec509f/SkinnedLane.Surface",
+    "role": "Road",
+    "consumer": "Movable skinned lane binding",
+    "surfaceSha256": "dfc55c5abc492b3a037209c6fb62c797680a49ec1084ad3e11fa8c65d9c3333d",
+    "local": {}
+  },
+  {
+    "style": "Draw01",
+    "path": "Lanes/0bbf724ede5f09d195cdeaa85ac06a6b1a1aba39adb08daa578b73bca18b8871/SkinnedLane.Surface",
+    "role": "Road",
+    "consumer": "Movable skinned lane binding",
+    "surfaceSha256": "6758ca887f0d96207c5db788b3b60353c805f6bb0c6f328d7a9bef9f16d3b9d2",
+    "local": {}
+  },
+  {
+    "style": "Draw01",
+    "path": "Lanes/11e315e8ffbe4f0e8c0d648eda78ce3a488d5910e659d5ee46289ab98345f695/SkinnedLane.Surface",
+    "role": "Road",
+    "consumer": "Movable skinned lane binding",
+    "surfaceSha256": "3ddcfa5bbaab8476b6e8135fb064c98939d7a6d83fff5246eaa0d6cbb574831a",
+    "local": {}
+  },
+  {
+    "style": "Draw01",
+    "path": "Lanes/17758c69a425cf6cb7161e19b44e8069ea7c04cef8f417db4e9ae76873e82683/SkinnedLane.Surface",
+    "role": "Road",
+    "consumer": "Movable skinned lane binding",
+    "surfaceSha256": "931e7259b6dcae46b5d3002af1959acc346f12f1975fab9a70341523422f7cdf",
+    "local": {}
+  },
+  {
+    "style": "Draw01",
+    "path": "Lanes/179822297be72b5b03fb8dc696cb7e6dd67c3807cd098439e8a47c29717ad148/SkinnedLane.Surface",
+    "role": "Road",
+    "consumer": "Movable skinned lane binding",
+    "surfaceSha256": "644965751e672f29d592d1da143a1ce43cb51978ea90643cf8443fab0c66f351",
+    "local": {}
+  },
+  {
+    "style": "Draw01",
+    "path": "Lanes/2c3ef9341347ced4e6cff656c68f2304630b334301ceb1fba2573c1ea41dd9dc/SkinnedLane.Surface",
+    "role": "Road",
+    "consumer": "Movable skinned lane binding",
+    "surfaceSha256": "4e23aba4a739ac70126baacf0650f4d0818563126b18ef57f5d71f26365c9cea",
+    "local": {}
+  },
+  {
+    "style": "Draw01",
+    "path": "Lanes/34ccc3e758c8df9767b308ce3c98761698e1592fe2df0d81444461df798ee629/SkinnedLane.Surface",
+    "role": "Road",
+    "consumer": "Movable skinned lane binding",
+    "surfaceSha256": "e053acbae5761b0658a6039db8616c20c407f9c323286e4f1200b6798120bc5b",
+    "local": {}
+  },
+  {
+    "style": "Draw01",
+    "path": "Lanes/3734eced6e70ddd097d7704ed9b898643bde1f9ec505d0f537df2651560ff5dd/SkinnedLane.Surface",
+    "role": "Road",
+    "consumer": "Movable skinned lane binding",
+    "surfaceSha256": "b6d9e34cd44e2a7097689b9d29cd448b3848e96ae382b01bc4e6696d80140ee2",
+    "local": {}
+  },
+  {
+    "style": "Draw01",
+    "path": "Lanes/5bb944aa5c029094a902d6f2be80e90b68167718e137fd3f020528e71db77a5f/SkinnedLane.Surface",
+    "role": "Road",
+    "consumer": "Movable skinned lane binding",
+    "surfaceSha256": "c7311e5553515ad844b0b96d754630c20c5673444e79813284ece2bec677d9bc",
+    "local": {}
+  },
+  {
+    "style": "Draw01",
+    "path": "Lanes/626ef2c6d1b53f36be90c185a171307cb9902e4618a6c9e37637862466519c9b/SkinnedLane.Surface",
+    "role": "Road",
+    "consumer": "Movable skinned lane binding",
+    "surfaceSha256": "10bd53a5787efdc36af55660a277fff20c5ea6b4a888b7de4e197ceea36542a0",
+    "local": {}
+  },
+  {
+    "style": "Draw01",
+    "path": "Lanes/7576f3cefce849a339d988a445d3df515a68a04837e81537e96a821184716460/SkinnedLane.Surface",
+    "role": "Road",
+    "consumer": "Movable skinned lane binding",
+    "surfaceSha256": "ba227ebc039acd70619ac4b1d47677884525689ba3b78264fac08decaf912d85",
+    "local": {}
+  },
+  {
+    "style": "Draw01",
+    "path": "Lanes/847f881b6a5a452ac8342afb854c774103c4e9e2558a18f9fe27adb83475a118/SkinnedLane.Surface",
+    "role": "Road",
+    "consumer": "Movable skinned lane binding",
+    "surfaceSha256": "596aeebe37b6f91fc47a3a28ace9da3b93310706d1c784ca7b7663b1602a99af",
+    "local": {}
+  },
+  {
+    "style": "Draw01",
+    "path": "Lanes/876989b1c60a7f4d610f1fe6874fbdaa8fb334d7ed58f95aba8eec1bd2b2d4e5/SkinnedLane.Surface",
+    "role": "Road",
+    "consumer": "Movable skinned lane binding",
+    "surfaceSha256": "91ee1d89642250c56fd67425c015d3705688e077e114cec0000ed656e3813ef4",
+    "local": {}
+  },
+  {
+    "style": "Draw01",
+    "path": "Lanes/90da02dcdb3d7e5f32aff72dedec311dee71580d1da54fb4c942078d2d5e71a7/SkinnedLane.Surface",
+    "role": "Road",
+    "consumer": "Movable skinned lane binding",
+    "surfaceSha256": "d794db343a6813e774731a14728adb32d2e544a88977749940f19e2cff145b1a",
+    "local": {}
+  },
+  {
+    "style": "Draw01",
+    "path": "Lanes/9ccf93a45d3301a859ecfd4dda85a039276917e2b5c8cb994d53948fe90d97a2/SkinnedLane.Surface",
+    "role": "Road",
+    "consumer": "Movable skinned lane binding",
+    "surfaceSha256": "1ff07a149413e5f100e3ec190d9d570d4338a4fe963d07c19fcd5391352481e2",
+    "local": {}
+  },
+  {
+    "style": "Draw01",
+    "path": "Lanes/9fd63b6610f45acb64d02680e77c11f38cb4565142f6920ec71923346efe7ef4/SkinnedLane.Surface",
+    "role": "Road",
+    "consumer": "Movable skinned lane binding",
+    "surfaceSha256": "7f6b7a0c4f3187c71939baad46312ed79755cba26a656315a5d556b2fbddf088",
+    "local": {}
+  },
+  {
+    "style": "Draw01",
+    "path": "Lanes/b20edfead16a3619356210216a42f2edfcae4f2e97185440e2a9e8d8bb149f17/SkinnedLane.Surface",
+    "role": "Road",
+    "consumer": "Movable skinned lane binding",
+    "surfaceSha256": "759a7bec3565c0a8a2e398c23a9d5fa1c05b4f3e1fae6cabc7f7f4011a47a46b",
+    "local": {}
+  },
+  {
+    "style": "Draw01",
+    "path": "Lanes/c212a2e5dde32ad874620108a88d7a802e2c996a5d9a0867716ee9641bc94b15/SkinnedLane.Surface",
+    "role": "Road",
+    "consumer": "Movable skinned lane binding",
+    "surfaceSha256": "3d5f0af73eb4dd85d6769d6c8aa1c3279a03352d9e8731ae3c42af24c04d18ff",
+    "local": {}
+  },
+  {
+    "style": "Draw01",
+    "path": "Lanes/c99e03034ce36221bc586ed623296bc0b607027d2d2462e8b96a20365d6ece2d/SkinnedLane.Surface",
+    "role": "Road",
+    "consumer": "Movable skinned lane binding",
+    "surfaceSha256": "b169a5306360dc366987af5de69d304c7a55fefa4e1736d59197e7835bb4b99e",
+    "local": {}
+  },
+  {
+    "style": "Draw01",
+    "path": "Lanes/d0abbc276d6f224f779f9511990bc42192b8cdc008a8b0dad2d0c3f00af0c602/SkinnedLane.Surface",
+    "role": "Road",
+    "consumer": "Movable skinned lane binding",
+    "surfaceSha256": "b197670ea8fe29d11a8d6dbd87def7b6524034c837e048e955dcd9aed5608802",
+    "local": {}
+  },
+  {
+    "style": "Draw01",
+    "path": "Lanes/d4ae678adbc26682fd70255910c46c38797cb47b55d91cfcd49b68d0c66b7383/SkinnedLane.Surface",
+    "role": "Road",
+    "consumer": "Movable skinned lane binding",
+    "surfaceSha256": "aa7e8a38d0d11b65184b028e4fc3c03f85ac8edbc770a8e81e37059f67144007",
+    "local": {}
+  },
+  {
+    "style": "Draw01",
+    "path": "Lanes/d58e5214b94403f7caf1c41de0cee471ab1668bc475b5c3e9e58c90a7a1f1105/SkinnedLane.Surface",
+    "role": "Road",
+    "consumer": "Movable skinned lane binding",
+    "surfaceSha256": "a9599a2ddaf1f068a079d6c182f0b2fe827140ec23dcaa2057ed5355c2d286d9",
+    "local": {}
+  },
+  {
+    "style": "Draw01",
+    "path": "Lanes/d74d853453d6df8265992d9d5376df255f14d4075d339d1866322dd38354ae2b/SkinnedLane.Surface",
+    "role": "Road",
+    "consumer": "Movable skinned lane binding",
+    "surfaceSha256": "0ff3244b47eb5fe9c66214a46cdacc8ee90c9c6e8d43adcbbd1e14140e163b00",
+    "local": {}
+  },
+  {
+    "style": "Draw01",
+    "path": "Lanes/d857b7cc202f9e8b231f18ca168d3858a8de2adaaffddd9a00e2c57a3c70c127/SkinnedLane.Surface",
+    "role": "Road",
+    "consumer": "Movable skinned lane binding",
+    "surfaceSha256": "43d8c2d04ea827a26b9e02422d8e995a56cdde0ab10b0155198176beb9631b91",
+    "local": {}
+  },
+  {
+    "style": "Draw01",
+    "path": "Lanes/fa1abfdf0f1bde8b2ad4faae88d13dab8ef9df38459cf048fcade8d500d500a9/SkinnedLane.Surface",
+    "role": "Road",
+    "consumer": "Movable skinned lane binding",
+    "surfaceSha256": "2e9ceb667f1bb421aee42a806fe5ad2a4453174a0c453cf2d4139e9172034a7e",
+    "local": {}
+  },
+  {
+    "style": "Draw01",
+    "path": "NativeSources/1d6c92d008a952b1db4e1cc6cf7a1160/Object.Surface",
+    "role": "NonRoad",
+    "consumer": "Measured native object descriptor conversion",
+    "surfaceSha256": "1d6c92d008a952b1db4e1cc6cf7a11603ab61760b05252f5e86805278d1c8904",
+    "local": {}
+  },
+  {
+    "style": "Draw01",
+    "path": "NativeSources/3aaa84602734568f9f0909f01c8527f0/Object.Surface",
+    "role": "Road",
+    "consumer": "MovableCompatibleRoad.CompatibleBase",
+    "surfaceSha256": "a3aa4806724365f8f990900fc158720f8872fac6523d51c287827323562eaed1",
+    "local": {}
+  },
+  {
+    "style": "Draw01",
+    "path": "NativeSources/d765f1348645cc68318b5ac29c61abde/Object.Surface",
+    "role": "NonRoad",
+    "consumer": "Measured native object descriptor conversion",
+    "surfaceSha256": "d765f1348645cc68318b5ac29c61abdea9d8c90c663a2e62a056b8019c05519f",
+    "local": {}
+  },
+  {
+    "style": "Draw01",
+    "path": "RepeatUnits/2c21be8e861d7f307eafd18a7f6563365ad81e386bc5f76f80fcd4b70f866902/Repeat.Surface",
+    "role": "Road",
+    "consumer": "Draw01PartRepeats.cs",
+    "surfaceSha256": "288e981db1fe0dd9892e03a08fab49932a556489c3e7fd561f4c7704e2d362b2",
+    "local": {
+      "_BaseColorMap": "8e9fbea2e956809883f1bf2706876846",
+      "_MaskMap": "e4b5cd97e0c00f6ffe885b33f0893739",
+      "_NormalMap": "69563dc8929ae3e09b359ec6589fabda"
+    }
+  },
+  {
+    "style": "Draw01",
+    "path": "RepeatUnits/646ce47f8b33867ff5d17c39bd5f298a5f903bde264dfd658f2a7885d90e7acc/Repeat.Surface",
+    "role": "Road",
+    "consumer": "Draw01PartRepeats.cs",
+    "surfaceSha256": "8106754183a4d0ae24803845bae317778084bb1ef5aa14ec4f855d3ff20c1e80",
+    "local": {
+      "_BaseColorMap": "40705dbb3f7664aacf77ee963f582bce",
+      "_MaskMap": "2e6ecf7cfe77017f4026108dc36f4a95",
+      "_NormalMap": "ede1ddcf83c86711f17a29a71c2abf97"
+    }
+  },
+  {
+    "style": "Draw01",
+    "path": "RepeatUnits/87b16f614d85671f0ad2e65f113b218460b330780cbb8d6003a089d600139a16/Repeat.Surface",
+    "role": "Road",
+    "consumer": "Draw01AsphaltRepeat.cs",
+    "surfaceSha256": "7c55afb985fdcbcbffe28cd1c40790473d1db101560f284fedde05c1c8839c7f",
+    "local": {
+      "_BaseColorMap": "158941eb22f64e42043d1d7693da1a62",
+      "_MaskMap": "d61398bb1c644e289676841196beb491",
+      "_NormalMap": "2a71b9417a12fdee8947ac628e9fd28f"
+    }
+  },
+  {
+    "style": "Draw01",
+    "path": "RepeatUnits/abd357e2483159049ec72564fef01ecb06fc1fdcc8dcad501a5506c65fa37e98/Repeat.Surface",
+    "role": "Road",
+    "consumer": "Draw01PartRepeats.cs",
+    "surfaceSha256": "6d03994f87f92eae22a909b165b56c0ab3122a50f9a2ec878d0c461687f41881",
+    "local": {
+      "_BaseColorMap": "494f8d6de27f9ea757c2b572f779a7ec",
+      "_MaskMap": "7fcd36dcc85fc1f0827db05d6f2fa2e7",
+      "_NormalMap": "6eeaf594f0b0333b8bcbe2e82413660f"
+    }
+  },
+  {
+    "style": "Draw02",
+    "path": "Cable/SkinnedCable.Surface",
+    "role": "NonRoad",
+    "consumer": "MovableCableSurface.Create",
+    "surfaceSha256": "f06e97cf7933eb1b8fca2d5bc2c040f4fd47b0d9fa804bd9a084f8d809d0aded",
+    "local": {}
+  },
+  {
+    "style": "Draw02",
+    "path": "Paint/SkinnedPaint.Surface",
+    "role": "Road",
+    "consumer": "Skinned selected-road paint",
+    "surfaceSha256": "1d134b5fd2695596a2c9cde3a00de241268dc33b3916b52fe6ada9b06c296e08",
+    "local": {
+      "_BaseColorMap": "bc2e09a359ba8e1f4b41c417b5f631af",
+      "_NormalMap": "d9d33ecb2b319859d2d356059bc00b22",
+      "_MaskMap": "9a7a7da8813bd92cf48a0f9a4052e651"
+    }
+  },
+  {
+    "style": "Draw02",
+    "path": "Road/NativeAsphalt.Surface",
+    "role": "Road",
+    "consumer": "NativeAsphalt corresponding road",
+    "surfaceSha256": "26223d0cca8f272b7dc0c97fa7a2fa23d0bb46aa31fd32db05de7d5159c29119",
+    "local": {}
+  },
+  {
+    "style": "Draw02",
+    "path": "Lanes/0315c992c5fafbd4e58999588f61d11ad0c7e657d62ee1f6aa2d0a830ea2ac91/SkinnedLane.Surface",
+    "role": "Road",
+    "consumer": "Movable skinned lane binding",
+    "surfaceSha256": "8281744eb937df1bf0ca9828245b11b4880dbd937b39dd878b1422141f4bf972",
+    "local": {}
+  },
+  {
+    "style": "Draw02",
+    "path": "Lanes/05a9841d7b95a456b8f3c0ae404bd10edacaa6a2671f2894b478e90a04ec509f/SkinnedLane.Surface",
+    "role": "Road",
+    "consumer": "Movable skinned lane binding",
+    "surfaceSha256": "dfc55c5abc492b3a037209c6fb62c797680a49ec1084ad3e11fa8c65d9c3333d",
+    "local": {}
+  },
+  {
+    "style": "Draw02",
+    "path": "Lanes/0bbf724ede5f09d195cdeaa85ac06a6b1a1aba39adb08daa578b73bca18b8871/SkinnedLane.Surface",
+    "role": "Road",
+    "consumer": "Movable skinned lane binding",
+    "surfaceSha256": "6758ca887f0d96207c5db788b3b60353c805f6bb0c6f328d7a9bef9f16d3b9d2",
+    "local": {}
+  },
+  {
+    "style": "Draw02",
+    "path": "Lanes/11e315e8ffbe4f0e8c0d648eda78ce3a488d5910e659d5ee46289ab98345f695/SkinnedLane.Surface",
+    "role": "Road",
+    "consumer": "Movable skinned lane binding",
+    "surfaceSha256": "3ddcfa5bbaab8476b6e8135fb064c98939d7a6d83fff5246eaa0d6cbb574831a",
+    "local": {}
+  },
+  {
+    "style": "Draw02",
+    "path": "Lanes/17758c69a425cf6cb7161e19b44e8069ea7c04cef8f417db4e9ae76873e82683/SkinnedLane.Surface",
+    "role": "Road",
+    "consumer": "Movable skinned lane binding",
+    "surfaceSha256": "931e7259b6dcae46b5d3002af1959acc346f12f1975fab9a70341523422f7cdf",
+    "local": {}
+  },
+  {
+    "style": "Draw02",
+    "path": "Lanes/179822297be72b5b03fb8dc696cb7e6dd67c3807cd098439e8a47c29717ad148/SkinnedLane.Surface",
+    "role": "Road",
+    "consumer": "Movable skinned lane binding",
+    "surfaceSha256": "644965751e672f29d592d1da143a1ce43cb51978ea90643cf8443fab0c66f351",
+    "local": {}
+  },
+  {
+    "style": "Draw02",
+    "path": "Lanes/2c3ef9341347ced4e6cff656c68f2304630b334301ceb1fba2573c1ea41dd9dc/SkinnedLane.Surface",
+    "role": "Road",
+    "consumer": "Movable skinned lane binding",
+    "surfaceSha256": "4e23aba4a739ac70126baacf0650f4d0818563126b18ef57f5d71f26365c9cea",
+    "local": {}
+  },
+  {
+    "style": "Draw02",
+    "path": "Lanes/34ccc3e758c8df9767b308ce3c98761698e1592fe2df0d81444461df798ee629/SkinnedLane.Surface",
+    "role": "Road",
+    "consumer": "Movable skinned lane binding",
+    "surfaceSha256": "e053acbae5761b0658a6039db8616c20c407f9c323286e4f1200b6798120bc5b",
+    "local": {}
+  },
+  {
+    "style": "Draw02",
+    "path": "Lanes/3734eced6e70ddd097d7704ed9b898643bde1f9ec505d0f537df2651560ff5dd/SkinnedLane.Surface",
+    "role": "Road",
+    "consumer": "Movable skinned lane binding",
+    "surfaceSha256": "b6d9e34cd44e2a7097689b9d29cd448b3848e96ae382b01bc4e6696d80140ee2",
+    "local": {}
+  },
+  {
+    "style": "Draw02",
+    "path": "Lanes/5bb944aa5c029094a902d6f2be80e90b68167718e137fd3f020528e71db77a5f/SkinnedLane.Surface",
+    "role": "Road",
+    "consumer": "Movable skinned lane binding",
+    "surfaceSha256": "c7311e5553515ad844b0b96d754630c20c5673444e79813284ece2bec677d9bc",
+    "local": {}
+  },
+  {
+    "style": "Draw02",
+    "path": "Lanes/626ef2c6d1b53f36be90c185a171307cb9902e4618a6c9e37637862466519c9b/SkinnedLane.Surface",
+    "role": "Road",
+    "consumer": "Movable skinned lane binding",
+    "surfaceSha256": "10bd53a5787efdc36af55660a277fff20c5ea6b4a888b7de4e197ceea36542a0",
+    "local": {}
+  },
+  {
+    "style": "Draw02",
+    "path": "Lanes/7576f3cefce849a339d988a445d3df515a68a04837e81537e96a821184716460/SkinnedLane.Surface",
+    "role": "Road",
+    "consumer": "Movable skinned lane binding",
+    "surfaceSha256": "ba227ebc039acd70619ac4b1d47677884525689ba3b78264fac08decaf912d85",
+    "local": {}
+  },
+  {
+    "style": "Draw02",
+    "path": "Lanes/847f881b6a5a452ac8342afb854c774103c4e9e2558a18f9fe27adb83475a118/SkinnedLane.Surface",
+    "role": "Road",
+    "consumer": "Movable skinned lane binding",
+    "surfaceSha256": "596aeebe37b6f91fc47a3a28ace9da3b93310706d1c784ca7b7663b1602a99af",
+    "local": {}
+  },
+  {
+    "style": "Draw02",
+    "path": "Lanes/876989b1c60a7f4d610f1fe6874fbdaa8fb334d7ed58f95aba8eec1bd2b2d4e5/SkinnedLane.Surface",
+    "role": "Road",
+    "consumer": "Movable skinned lane binding",
+    "surfaceSha256": "91ee1d89642250c56fd67425c015d3705688e077e114cec0000ed656e3813ef4",
+    "local": {}
+  },
+  {
+    "style": "Draw02",
+    "path": "Lanes/90da02dcdb3d7e5f32aff72dedec311dee71580d1da54fb4c942078d2d5e71a7/SkinnedLane.Surface",
+    "role": "Road",
+    "consumer": "Movable skinned lane binding",
+    "surfaceSha256": "d794db343a6813e774731a14728adb32d2e544a88977749940f19e2cff145b1a",
+    "local": {}
+  },
+  {
+    "style": "Draw02",
+    "path": "Lanes/9ccf93a45d3301a859ecfd4dda85a039276917e2b5c8cb994d53948fe90d97a2/SkinnedLane.Surface",
+    "role": "Road",
+    "consumer": "Movable skinned lane binding",
+    "surfaceSha256": "1ff07a149413e5f100e3ec190d9d570d4338a4fe963d07c19fcd5391352481e2",
+    "local": {}
+  },
+  {
+    "style": "Draw02",
+    "path": "Lanes/9fd63b6610f45acb64d02680e77c11f38cb4565142f6920ec71923346efe7ef4/SkinnedLane.Surface",
+    "role": "Road",
+    "consumer": "Movable skinned lane binding",
+    "surfaceSha256": "7f6b7a0c4f3187c71939baad46312ed79755cba26a656315a5d556b2fbddf088",
+    "local": {}
+  },
+  {
+    "style": "Draw02",
+    "path": "Lanes/b20edfead16a3619356210216a42f2edfcae4f2e97185440e2a9e8d8bb149f17/SkinnedLane.Surface",
+    "role": "Road",
+    "consumer": "Movable skinned lane binding",
+    "surfaceSha256": "759a7bec3565c0a8a2e398c23a9d5fa1c05b4f3e1fae6cabc7f7f4011a47a46b",
+    "local": {}
+  },
+  {
+    "style": "Draw02",
+    "path": "Lanes/c212a2e5dde32ad874620108a88d7a802e2c996a5d9a0867716ee9641bc94b15/SkinnedLane.Surface",
+    "role": "Road",
+    "consumer": "Movable skinned lane binding",
+    "surfaceSha256": "3d5f0af73eb4dd85d6769d6c8aa1c3279a03352d9e8731ae3c42af24c04d18ff",
+    "local": {}
+  },
+  {
+    "style": "Draw02",
+    "path": "Lanes/c99e03034ce36221bc586ed623296bc0b607027d2d2462e8b96a20365d6ece2d/SkinnedLane.Surface",
+    "role": "Road",
+    "consumer": "Movable skinned lane binding",
+    "surfaceSha256": "b169a5306360dc366987af5de69d304c7a55fefa4e1736d59197e7835bb4b99e",
+    "local": {}
+  },
+  {
+    "style": "Draw02",
+    "path": "Lanes/d0abbc276d6f224f779f9511990bc42192b8cdc008a8b0dad2d0c3f00af0c602/SkinnedLane.Surface",
+    "role": "Road",
+    "consumer": "Movable skinned lane binding",
+    "surfaceSha256": "b197670ea8fe29d11a8d6dbd87def7b6524034c837e048e955dcd9aed5608802",
+    "local": {}
+  },
+  {
+    "style": "Draw02",
+    "path": "Lanes/d4ae678adbc26682fd70255910c46c38797cb47b55d91cfcd49b68d0c66b7383/SkinnedLane.Surface",
+    "role": "Road",
+    "consumer": "Movable skinned lane binding",
+    "surfaceSha256": "aa7e8a38d0d11b65184b028e4fc3c03f85ac8edbc770a8e81e37059f67144007",
+    "local": {}
+  },
+  {
+    "style": "Draw02",
+    "path": "Lanes/d58e5214b94403f7caf1c41de0cee471ab1668bc475b5c3e9e58c90a7a1f1105/SkinnedLane.Surface",
+    "role": "Road",
+    "consumer": "Movable skinned lane binding",
+    "surfaceSha256": "a9599a2ddaf1f068a079d6c182f0b2fe827140ec23dcaa2057ed5355c2d286d9",
+    "local": {}
+  },
+  {
+    "style": "Draw02",
+    "path": "Lanes/d74d853453d6df8265992d9d5376df255f14d4075d339d1866322dd38354ae2b/SkinnedLane.Surface",
+    "role": "Road",
+    "consumer": "Movable skinned lane binding",
+    "surfaceSha256": "0ff3244b47eb5fe9c66214a46cdacc8ee90c9c6e8d43adcbbd1e14140e163b00",
+    "local": {}
+  },
+  {
+    "style": "Draw02",
+    "path": "Lanes/d857b7cc202f9e8b231f18ca168d3858a8de2adaaffddd9a00e2c57a3c70c127/SkinnedLane.Surface",
+    "role": "Road",
+    "consumer": "Movable skinned lane binding",
+    "surfaceSha256": "43d8c2d04ea827a26b9e02422d8e995a56cdde0ab10b0155198176beb9631b91",
+    "local": {}
+  },
+  {
+    "style": "Draw02",
+    "path": "Lanes/fa1abfdf0f1bde8b2ad4faae88d13dab8ef9df38459cf048fcade8d500d500a9/SkinnedLane.Surface",
+    "role": "Road",
+    "consumer": "Movable skinned lane binding",
+    "surfaceSha256": "2e9ceb667f1bb421aee42a806fe5ad2a4453174a0c453cf2d4139e9172034a7e",
+    "local": {}
+  },
+  {
+    "style": "Draw02",
+    "path": "NativeSources/1d6c92d008a952b1db4e1cc6cf7a1160/Object.Surface",
+    "role": "NonRoad",
+    "consumer": "Measured native object descriptor conversion",
+    "surfaceSha256": "1d6c92d008a952b1db4e1cc6cf7a11603ab61760b05252f5e86805278d1c8904",
+    "local": {}
+  },
+  {
+    "style": "Draw02",
+    "path": "NativeSources/3aaa84602734568f9f0909f01c8527f0/Object.Surface",
+    "role": "Road",
+    "consumer": "MovableCompatibleRoad.CompatibleBase",
+    "surfaceSha256": "a3aa4806724365f8f990900fc158720f8872fac6523d51c287827323562eaed1",
+    "local": {}
+  },
+  {
+    "style": "Draw02",
+    "path": "NativeSources/d765f1348645cc68318b5ac29c61abde/Object.Surface",
+    "role": "NonRoad",
+    "consumer": "Measured native object descriptor conversion",
+    "surfaceSha256": "d765f1348645cc68318b5ac29c61abdea9d8c90c663a2e62a056b8019c05519f",
+    "local": {}
+  },
+  {
+    "style": "Draw02",
+    "path": "NativeSources/e7e3a33d1499167c8c385ebfb70af78b/Object.Surface",
+    "role": "NonRoad",
+    "consumer": "Measured native object descriptor conversion",
+    "surfaceSha256": "e7e3a33d1499167c8c385ebfb70af78bad6a93b124e02c81d03512b516e77510",
+    "local": {}
+  },
+  {
+    "style": "Draw02",
+    "path": "RepeatUnits/75dffef619cd682850620b2937e8d63cd406eaa564fffbfd8f241e2e1e048ea3/Repeat.Surface",
+    "role": "Road",
+    "consumer": "Draw02PreparedAtlas.cs",
+    "surfaceSha256": "8c235451e201234105599405099a0f677f52964e60a17a56bb72bfb1f0bac13d",
+    "local": {
+      "_BaseColorMap": "e22dec09a3ad33dc1bf252baef293fdc",
+      "_ControlMask": "06647e9038e46d2188a79240ca27bb1a",
+      "_MaskMap": "176c03df7dd331c561939a2cc1b4ea2e",
+      "_NormalMap": "520f6ffb7e9396381730e5725929acd8"
+    }
+  },
+  {
+    "style": "Draw02",
+    "path": "RepeatUnits/9c8457b9077bb0b478f487fe21ddc3515dbcda3bb3c69e5d27f1cd4e7f99b9e3/Repeat.Surface",
+    "role": "Road",
+    "consumer": "Draw02FixedCarPreparedAtlas.cs",
+    "surfaceSha256": "834aa57577e11675625981e74cda4041f13d7a380d0fb91c5fc5933039b10869",
+    "local": {
+      "_BaseColorMap": "e0e858c7d0055b37319fa5daca7ba99e",
+      "_ControlMask": "e55dd05846f38c28b3e75d0973b604ed",
+      "_MaskMap": "fc566b408c54e2c0b5ab018f8a7f767a",
+      "_NormalMap": "0fc21861b237a7a88e5c65384455b09e"
+    }
+  },
+  {
+    "style": "Draw02",
+    "path": "RepeatUnits/dbcf4b520d9cfe7b5bdced376806be978d10a364de44116f867dbe5a9d0ba541/Repeat.Surface",
+    "role": "Road",
+    "consumer": "Draw02PreparedAtlas.cs",
+    "surfaceSha256": "14c19446d6becf0fcd87c7833c67ec384a1427b8646a9a2b77febd8d0d7eced9",
+    "local": {
+      "_BaseColorMap": "74177b577b3f39545bf464fb5f894026",
+      "_ControlMask": "348b41c46d1adc87e2887a9f6fc42abc",
+      "_MaskMap": "2cea6e7ea4a841561db26874acee8ca9",
+      "_NormalMap": "754712f4bc1fb9c2770e632869a120a1"
+    }
+  },
+  {
+    "style": "Draw02",
+    "path": "RepeatUnits/e5b04c743e8060755c092c47231ff40578fe0e9d9f984cab7dd985fe76a8e2c3/Repeat.Surface",
+    "role": "Road",
+    "consumer": "Draw02PreparedAtlas.cs",
+    "surfaceSha256": "d6c6002a30186d9d5788b822e22050bd0963ae0e40f95107a65f4aa98bac8c3c",
+    "local": {
+      "_BaseColorMap": "d5204cf3e3c69525325175203345945b",
+      "_ControlMask": "3fd0a4ff64dc8a3a88a1cb3c7fe1309d",
+      "_MaskMap": "f8df816f00042fa45eb2e6d52a7c8595",
+      "_NormalMap": "38a075a2ee86f9421db5fb8997be28b2"
+    }
+  },
+  {
+    "style": "Draw02",
+    "path": "RepeatUnits/LaneBackground/Repeat.Surface",
+    "role": "Road",
+    "consumer": "Draw02LaneAppearance.cs",
+    "surfaceSha256": "9415f1d51baba9546f3e9eb38918215ef40e161f3b254a98bb2fa1f0526f2b81",
+    "local": {
+      "_BaseColorMap": "c1d62b13b0cabebb545a92e616037022",
+      "_MaskMap": "09d23fcfdca993aaad863804475724f3",
+      "_NormalMap": "f9925743fba20968a707e07fb9810cf5"
+    }
+  },
+  {
+    "style": "Draw02",
+    "path": "RepeatUnits/LanePattern/Repeat.Surface",
+    "role": "Road",
+    "consumer": "Draw02LaneAppearance.cs",
+    "surfaceSha256": "9f065bff53beb317111b2a3db4c4bdcc87255956d44d9a8e100a5f2ea47ce77e",
+    "local": {
+      "_BaseColorMap": "a489c7d570e37602f4c03b418a5bc377",
+      "_MaskMap": "a5f4aba400cad810df486d4e42b1a6e1",
+      "_NormalMap": "1fd63ba0a327eb430a9110ba1e1e46c6"
+    }
+  },
+  {
+    "style": "Draw03",
+    "path": "Cable/SkinnedCable.Surface",
+    "role": "NonRoad",
+    "consumer": "MovableCableSurface.Create",
+    "surfaceSha256": "f06e97cf7933eb1b8fca2d5bc2c040f4fd47b0d9fa804bd9a084f8d809d0aded",
+    "local": {}
+  },
+  {
+    "style": "Draw03",
+    "path": "Paint/SkinnedPaint.Surface",
+    "role": "Road",
+    "consumer": "Skinned selected-road paint",
+    "surfaceSha256": "1d134b5fd2695596a2c9cde3a00de241268dc33b3916b52fe6ada9b06c296e08",
+    "local": {
+      "_BaseColorMap": "bc2e09a359ba8e1f4b41c417b5f631af",
+      "_NormalMap": "d9d33ecb2b319859d2d356059bc00b22",
+      "_MaskMap": "9a7a7da8813bd92cf48a0f9a4052e651"
+    }
+  },
+  {
+    "style": "Draw03",
+    "path": "Road/NativeAsphalt.Surface",
+    "role": "Road",
+    "consumer": "NativeAsphalt corresponding road",
+    "surfaceSha256": "26223d0cca8f272b7dc0c97fa7a2fa23d0bb46aa31fd32db05de7d5159c29119",
+    "local": {}
+  },
+  {
+    "style": "Draw03",
+    "path": "Lanes/0315c992c5fafbd4e58999588f61d11ad0c7e657d62ee1f6aa2d0a830ea2ac91/SkinnedLane.Surface",
+    "role": "Road",
+    "consumer": "Movable skinned lane binding",
+    "surfaceSha256": "8281744eb937df1bf0ca9828245b11b4880dbd937b39dd878b1422141f4bf972",
+    "local": {}
+  },
+  {
+    "style": "Draw03",
+    "path": "Lanes/05a9841d7b95a456b8f3c0ae404bd10edacaa6a2671f2894b478e90a04ec509f/SkinnedLane.Surface",
+    "role": "Road",
+    "consumer": "Movable skinned lane binding",
+    "surfaceSha256": "dfc55c5abc492b3a037209c6fb62c797680a49ec1084ad3e11fa8c65d9c3333d",
+    "local": {}
+  },
+  {
+    "style": "Draw03",
+    "path": "Lanes/0bbf724ede5f09d195cdeaa85ac06a6b1a1aba39adb08daa578b73bca18b8871/SkinnedLane.Surface",
+    "role": "Road",
+    "consumer": "Movable skinned lane binding",
+    "surfaceSha256": "6758ca887f0d96207c5db788b3b60353c805f6bb0c6f328d7a9bef9f16d3b9d2",
+    "local": {}
+  },
+  {
+    "style": "Draw03",
+    "path": "Lanes/11e315e8ffbe4f0e8c0d648eda78ce3a488d5910e659d5ee46289ab98345f695/SkinnedLane.Surface",
+    "role": "Road",
+    "consumer": "Movable skinned lane binding",
+    "surfaceSha256": "3ddcfa5bbaab8476b6e8135fb064c98939d7a6d83fff5246eaa0d6cbb574831a",
+    "local": {}
+  },
+  {
+    "style": "Draw03",
+    "path": "Lanes/17758c69a425cf6cb7161e19b44e8069ea7c04cef8f417db4e9ae76873e82683/SkinnedLane.Surface",
+    "role": "Road",
+    "consumer": "Movable skinned lane binding",
+    "surfaceSha256": "931e7259b6dcae46b5d3002af1959acc346f12f1975fab9a70341523422f7cdf",
+    "local": {}
+  },
+  {
+    "style": "Draw03",
+    "path": "Lanes/179822297be72b5b03fb8dc696cb7e6dd67c3807cd098439e8a47c29717ad148/SkinnedLane.Surface",
+    "role": "Road",
+    "consumer": "Movable skinned lane binding",
+    "surfaceSha256": "644965751e672f29d592d1da143a1ce43cb51978ea90643cf8443fab0c66f351",
+    "local": {}
+  },
+  {
+    "style": "Draw03",
+    "path": "Lanes/2c3ef9341347ced4e6cff656c68f2304630b334301ceb1fba2573c1ea41dd9dc/SkinnedLane.Surface",
+    "role": "Road",
+    "consumer": "Movable skinned lane binding",
+    "surfaceSha256": "4e23aba4a739ac70126baacf0650f4d0818563126b18ef57f5d71f26365c9cea",
+    "local": {}
+  },
+  {
+    "style": "Draw03",
+    "path": "Lanes/34ccc3e758c8df9767b308ce3c98761698e1592fe2df0d81444461df798ee629/SkinnedLane.Surface",
+    "role": "Road",
+    "consumer": "Movable skinned lane binding",
+    "surfaceSha256": "e053acbae5761b0658a6039db8616c20c407f9c323286e4f1200b6798120bc5b",
+    "local": {}
+  },
+  {
+    "style": "Draw03",
+    "path": "Lanes/3734eced6e70ddd097d7704ed9b898643bde1f9ec505d0f537df2651560ff5dd/SkinnedLane.Surface",
+    "role": "Road",
+    "consumer": "Movable skinned lane binding",
+    "surfaceSha256": "b6d9e34cd44e2a7097689b9d29cd448b3848e96ae382b01bc4e6696d80140ee2",
+    "local": {}
+  },
+  {
+    "style": "Draw03",
+    "path": "Lanes/5bb944aa5c029094a902d6f2be80e90b68167718e137fd3f020528e71db77a5f/SkinnedLane.Surface",
+    "role": "Road",
+    "consumer": "Movable skinned lane binding",
+    "surfaceSha256": "c7311e5553515ad844b0b96d754630c20c5673444e79813284ece2bec677d9bc",
+    "local": {}
+  },
+  {
+    "style": "Draw03",
+    "path": "Lanes/626ef2c6d1b53f36be90c185a171307cb9902e4618a6c9e37637862466519c9b/SkinnedLane.Surface",
+    "role": "Road",
+    "consumer": "Movable skinned lane binding",
+    "surfaceSha256": "10bd53a5787efdc36af55660a277fff20c5ea6b4a888b7de4e197ceea36542a0",
+    "local": {}
+  },
+  {
+    "style": "Draw03",
+    "path": "Lanes/7576f3cefce849a339d988a445d3df515a68a04837e81537e96a821184716460/SkinnedLane.Surface",
+    "role": "Road",
+    "consumer": "Movable skinned lane binding",
+    "surfaceSha256": "ba227ebc039acd70619ac4b1d47677884525689ba3b78264fac08decaf912d85",
+    "local": {}
+  },
+  {
+    "style": "Draw03",
+    "path": "Lanes/847f881b6a5a452ac8342afb854c774103c4e9e2558a18f9fe27adb83475a118/SkinnedLane.Surface",
+    "role": "Road",
+    "consumer": "Movable skinned lane binding",
+    "surfaceSha256": "596aeebe37b6f91fc47a3a28ace9da3b93310706d1c784ca7b7663b1602a99af",
+    "local": {}
+  },
+  {
+    "style": "Draw03",
+    "path": "Lanes/876989b1c60a7f4d610f1fe6874fbdaa8fb334d7ed58f95aba8eec1bd2b2d4e5/SkinnedLane.Surface",
+    "role": "Road",
+    "consumer": "Movable skinned lane binding",
+    "surfaceSha256": "91ee1d89642250c56fd67425c015d3705688e077e114cec0000ed656e3813ef4",
+    "local": {}
+  },
+  {
+    "style": "Draw03",
+    "path": "Lanes/90da02dcdb3d7e5f32aff72dedec311dee71580d1da54fb4c942078d2d5e71a7/SkinnedLane.Surface",
+    "role": "Road",
+    "consumer": "Movable skinned lane binding",
+    "surfaceSha256": "d794db343a6813e774731a14728adb32d2e544a88977749940f19e2cff145b1a",
+    "local": {}
+  },
+  {
+    "style": "Draw03",
+    "path": "Lanes/9ccf93a45d3301a859ecfd4dda85a039276917e2b5c8cb994d53948fe90d97a2/SkinnedLane.Surface",
+    "role": "Road",
+    "consumer": "Movable skinned lane binding",
+    "surfaceSha256": "1ff07a149413e5f100e3ec190d9d570d4338a4fe963d07c19fcd5391352481e2",
+    "local": {}
+  },
+  {
+    "style": "Draw03",
+    "path": "Lanes/9fd63b6610f45acb64d02680e77c11f38cb4565142f6920ec71923346efe7ef4/SkinnedLane.Surface",
+    "role": "Road",
+    "consumer": "Movable skinned lane binding",
+    "surfaceSha256": "7f6b7a0c4f3187c71939baad46312ed79755cba26a656315a5d556b2fbddf088",
+    "local": {}
+  },
+  {
+    "style": "Draw03",
+    "path": "Lanes/b20edfead16a3619356210216a42f2edfcae4f2e97185440e2a9e8d8bb149f17/SkinnedLane.Surface",
+    "role": "Road",
+    "consumer": "Movable skinned lane binding",
+    "surfaceSha256": "759a7bec3565c0a8a2e398c23a9d5fa1c05b4f3e1fae6cabc7f7f4011a47a46b",
+    "local": {}
+  },
+  {
+    "style": "Draw03",
+    "path": "Lanes/c212a2e5dde32ad874620108a88d7a802e2c996a5d9a0867716ee9641bc94b15/SkinnedLane.Surface",
+    "role": "Road",
+    "consumer": "Movable skinned lane binding",
+    "surfaceSha256": "3d5f0af73eb4dd85d6769d6c8aa1c3279a03352d9e8731ae3c42af24c04d18ff",
+    "local": {}
+  },
+  {
+    "style": "Draw03",
+    "path": "Lanes/c99e03034ce36221bc586ed623296bc0b607027d2d2462e8b96a20365d6ece2d/SkinnedLane.Surface",
+    "role": "Road",
+    "consumer": "Movable skinned lane binding",
+    "surfaceSha256": "b169a5306360dc366987af5de69d304c7a55fefa4e1736d59197e7835bb4b99e",
+    "local": {}
+  },
+  {
+    "style": "Draw03",
+    "path": "Lanes/d0abbc276d6f224f779f9511990bc42192b8cdc008a8b0dad2d0c3f00af0c602/SkinnedLane.Surface",
+    "role": "Road",
+    "consumer": "Movable skinned lane binding",
+    "surfaceSha256": "b197670ea8fe29d11a8d6dbd87def7b6524034c837e048e955dcd9aed5608802",
+    "local": {}
+  },
+  {
+    "style": "Draw03",
+    "path": "Lanes/d4ae678adbc26682fd70255910c46c38797cb47b55d91cfcd49b68d0c66b7383/SkinnedLane.Surface",
+    "role": "Road",
+    "consumer": "Movable skinned lane binding",
+    "surfaceSha256": "aa7e8a38d0d11b65184b028e4fc3c03f85ac8edbc770a8e81e37059f67144007",
+    "local": {}
+  },
+  {
+    "style": "Draw03",
+    "path": "Lanes/d58e5214b94403f7caf1c41de0cee471ab1668bc475b5c3e9e58c90a7a1f1105/SkinnedLane.Surface",
+    "role": "Road",
+    "consumer": "Movable skinned lane binding",
+    "surfaceSha256": "a9599a2ddaf1f068a079d6c182f0b2fe827140ec23dcaa2057ed5355c2d286d9",
+    "local": {}
+  },
+  {
+    "style": "Draw03",
+    "path": "Lanes/d74d853453d6df8265992d9d5376df255f14d4075d339d1866322dd38354ae2b/SkinnedLane.Surface",
+    "role": "Road",
+    "consumer": "Movable skinned lane binding",
+    "surfaceSha256": "0ff3244b47eb5fe9c66214a46cdacc8ee90c9c6e8d43adcbbd1e14140e163b00",
+    "local": {}
+  },
+  {
+    "style": "Draw03",
+    "path": "Lanes/d857b7cc202f9e8b231f18ca168d3858a8de2adaaffddd9a00e2c57a3c70c127/SkinnedLane.Surface",
+    "role": "Road",
+    "consumer": "Movable skinned lane binding",
+    "surfaceSha256": "43d8c2d04ea827a26b9e02422d8e995a56cdde0ab10b0155198176beb9631b91",
+    "local": {}
+  },
+  {
+    "style": "Draw03",
+    "path": "Lanes/fa1abfdf0f1bde8b2ad4faae88d13dab8ef9df38459cf048fcade8d500d500a9/SkinnedLane.Surface",
+    "role": "Road",
+    "consumer": "Movable skinned lane binding",
+    "surfaceSha256": "2e9ceb667f1bb421aee42a806fe5ad2a4453174a0c453cf2d4139e9172034a7e",
+    "local": {}
+  },
+  {
+    "style": "Draw03",
+    "path": "NativeSources/1b7d44bbf84bd6c880f2dde840b638f6/Object.Surface",
+    "role": "NonRoad",
+    "consumer": "Measured native object descriptor conversion",
+    "surfaceSha256": "1b7d44bbf84bd6c880f2dde840b638f63f56b183a377b3c1ceeaeadcf2f41afd",
+    "local": {}
+  },
+  {
+    "style": "Draw03",
+    "path": "NativeSources/3aaa84602734568f9f0909f01c8527f0/Object.Surface",
+    "role": "Road",
+    "consumer": "MovableCompatibleRoad.CompatibleBase",
+    "surfaceSha256": "a3aa4806724365f8f990900fc158720f8872fac6523d51c287827323562eaed1",
+    "local": {}
+  },
+  {
+    "style": "Draw03",
+    "path": "NativeSources/a6b3efae98e0fc2f3056ec517bb949cb/Object.Surface",
+    "role": "NonRoad",
+    "consumer": "Measured native object descriptor conversion",
+    "surfaceSha256": "a6b3efae98e0fc2f3056ec517bb949cbdc44aeffca47d2dd8da07dde13b4f54d",
+    "local": {}
+  },
+  {
+    "style": "Draw03",
+    "path": "NativeSources/b2e79001615c2697a6448f909f6ad7f3/Object.Surface",
+    "role": "NonRoad",
+    "consumer": "Measured native object descriptor conversion",
+    "surfaceSha256": "b2e79001615c2697a6448f909f6ad7f3d7089cd1dadd7a62ae8f5dc5a4effcb9",
+    "local": {}
+  },
+  {
+    "style": "Draw03",
+    "path": "NativeSources/d765f1348645cc68318b5ac29c61abde/Object.Surface",
+    "role": "NonRoad",
+    "consumer": "Measured native object descriptor conversion",
+    "surfaceSha256": "d765f1348645cc68318b5ac29c61abdea9d8c90c663a2e62a056b8019c05519f",
+    "local": {}
+  },
+  {
+    "style": "Draw03",
+    "path": "NativeSources/eb26a16316548f7db386fdf96b019862/Object.Surface",
+    "role": "NonRoad",
+    "consumer": "Measured native object descriptor conversion",
+    "surfaceSha256": "eb26a16316548f7db386fdf96b019862bd4aec1b354d0bf3a72491cf8da37d67",
+    "local": {}
+  },
+  {
+    "style": "Draw03",
+    "path": "RepeatUnits/DerivedRoadBackground/Repeat.Surface",
+    "role": "Road",
+    "consumer": "Draw03LaneAppearance.cs",
+    "surfaceSha256": "df9889a7ef34fed0f5d214203840bf8ad630b5cf8eabb3a490299916d781e3da",
+    "local": {
+      "_BaseColorMap": "b2a0163813140f4b9f53fb3b130adc28",
+      "_NormalMap": "dfb414a45b0373bc9dbdac97604d272c",
+      "_MaskMap": "327c56e05192794114c2368a190f5a99"
+    }
+  },
+  {
+    "style": "Draw03",
+    "path": "RepeatUnits/FarRoadAtlas/Repeat.Surface",
+    "role": "Road",
+    "consumer": "Draw03PreparedRoad.cs",
+    "surfaceSha256": "5a7723fb56ee1165eeec9fa9644be2543fb465970a1203df329d37e0d8d05e42",
+    "local": {
+      "_BaseColorMap": "8694861231a46794d70b643710966874",
+      "_NormalMap": "413d25b092bf83790d75cdc95537babd",
+      "_MaskMap": "881b1621403a783ce0e79e9c405dfd12"
+    }
+  },
+  {
+    "style": "Draw03",
+    "path": "RepeatUnits/FullPeriodGrating/Repeat.Surface",
+    "role": "Road",
+    "consumer": "Draw03PreparedRoad.cs",
+    "surfaceSha256": "9a212e1ba2f163502a26a5542ccc5919d161a8e06f052df3d818100a10cbef4a",
+    "local": {
+      "_BaseColorMap": "a5ba81ba93e49d6c2d78c0662430e114",
+      "_NormalMap": "303e0d00ec0c146bfeb20c3a7053766a",
+      "_MaskMap": "04f1ca8309ee1a08ddb51a253c25de3a"
+    }
+  },
+  {
+    "style": "Draw03",
+    "path": "RepeatUnits/FullPeriodRoadCrossSection/Repeat.Surface",
+    "role": "Road",
+    "consumer": "Draw03PreparedRoad.cs",
+    "surfaceSha256": "a4ce349698b97366995cd04d632d66dadd6ab0c9a74987a9395355507423c710",
+    "local": {
+      "_BaseColorMap": "5d1b3819baf8cac135f538cba0947c5d",
+      "_NormalMap": "9d3939a13026af98700f87184deb7a9e",
+      "_MaskMap": "3d57e9dfc7cbc301d5753adc5e396178"
+    }
+  },
+  {
+    "style": "Lift01",
+    "path": "Cable/SkinnedCable.Surface",
+    "role": "NonRoad",
+    "consumer": "MovableCableSurface.Create",
+    "surfaceSha256": "f06e97cf7933eb1b8fca2d5bc2c040f4fd47b0d9fa804bd9a084f8d809d0aded",
+    "local": {}
+  },
+  {
+    "style": "Lift01",
+    "path": "Paint/SkinnedPaint.Surface",
+    "role": "Road",
+    "consumer": "Skinned selected-road paint",
+    "surfaceSha256": "1d134b5fd2695596a2c9cde3a00de241268dc33b3916b52fe6ada9b06c296e08",
+    "local": {
+      "_BaseColorMap": "bc2e09a359ba8e1f4b41c417b5f631af",
+      "_NormalMap": "d9d33ecb2b319859d2d356059bc00b22",
+      "_MaskMap": "9a7a7da8813bd92cf48a0f9a4052e651"
+    }
+  },
+  {
+    "style": "Lift01",
+    "path": "Road/NativeAsphalt.Surface",
+    "role": "Road",
+    "consumer": "NativeAsphalt corresponding road",
+    "surfaceSha256": "26223d0cca8f272b7dc0c97fa7a2fa23d0bb46aa31fd32db05de7d5159c29119",
+    "local": {}
+  },
+  {
+    "style": "Lift01",
+    "path": "Lanes/0315c992c5fafbd4e58999588f61d11ad0c7e657d62ee1f6aa2d0a830ea2ac91/SkinnedLane.Surface",
+    "role": "Road",
+    "consumer": "Movable skinned lane binding",
+    "surfaceSha256": "8281744eb937df1bf0ca9828245b11b4880dbd937b39dd878b1422141f4bf972",
+    "local": {}
+  },
+  {
+    "style": "Lift01",
+    "path": "Lanes/05a9841d7b95a456b8f3c0ae404bd10edacaa6a2671f2894b478e90a04ec509f/SkinnedLane.Surface",
+    "role": "Road",
+    "consumer": "Movable skinned lane binding",
+    "surfaceSha256": "dfc55c5abc492b3a037209c6fb62c797680a49ec1084ad3e11fa8c65d9c3333d",
+    "local": {}
+  },
+  {
+    "style": "Lift01",
+    "path": "Lanes/0bbf724ede5f09d195cdeaa85ac06a6b1a1aba39adb08daa578b73bca18b8871/SkinnedLane.Surface",
+    "role": "Road",
+    "consumer": "Movable skinned lane binding",
+    "surfaceSha256": "6758ca887f0d96207c5db788b3b60353c805f6bb0c6f328d7a9bef9f16d3b9d2",
+    "local": {}
+  },
+  {
+    "style": "Lift01",
+    "path": "Lanes/11e315e8ffbe4f0e8c0d648eda78ce3a488d5910e659d5ee46289ab98345f695/SkinnedLane.Surface",
+    "role": "Road",
+    "consumer": "Movable skinned lane binding",
+    "surfaceSha256": "3ddcfa5bbaab8476b6e8135fb064c98939d7a6d83fff5246eaa0d6cbb574831a",
+    "local": {}
+  },
+  {
+    "style": "Lift01",
+    "path": "Lanes/17758c69a425cf6cb7161e19b44e8069ea7c04cef8f417db4e9ae76873e82683/SkinnedLane.Surface",
+    "role": "Road",
+    "consumer": "Movable skinned lane binding",
+    "surfaceSha256": "931e7259b6dcae46b5d3002af1959acc346f12f1975fab9a70341523422f7cdf",
+    "local": {}
+  },
+  {
+    "style": "Lift01",
+    "path": "Lanes/179822297be72b5b03fb8dc696cb7e6dd67c3807cd098439e8a47c29717ad148/SkinnedLane.Surface",
+    "role": "Road",
+    "consumer": "Movable skinned lane binding",
+    "surfaceSha256": "644965751e672f29d592d1da143a1ce43cb51978ea90643cf8443fab0c66f351",
+    "local": {}
+  },
+  {
+    "style": "Lift01",
+    "path": "Lanes/2c3ef9341347ced4e6cff656c68f2304630b334301ceb1fba2573c1ea41dd9dc/SkinnedLane.Surface",
+    "role": "Road",
+    "consumer": "Movable skinned lane binding",
+    "surfaceSha256": "4e23aba4a739ac70126baacf0650f4d0818563126b18ef57f5d71f26365c9cea",
+    "local": {}
+  },
+  {
+    "style": "Lift01",
+    "path": "Lanes/34ccc3e758c8df9767b308ce3c98761698e1592fe2df0d81444461df798ee629/SkinnedLane.Surface",
+    "role": "Road",
+    "consumer": "Movable skinned lane binding",
+    "surfaceSha256": "e053acbae5761b0658a6039db8616c20c407f9c323286e4f1200b6798120bc5b",
+    "local": {}
+  },
+  {
+    "style": "Lift01",
+    "path": "Lanes/3734eced6e70ddd097d7704ed9b898643bde1f9ec505d0f537df2651560ff5dd/SkinnedLane.Surface",
+    "role": "Road",
+    "consumer": "Movable skinned lane binding",
+    "surfaceSha256": "b6d9e34cd44e2a7097689b9d29cd448b3848e96ae382b01bc4e6696d80140ee2",
+    "local": {}
+  },
+  {
+    "style": "Lift01",
+    "path": "Lanes/5bb944aa5c029094a902d6f2be80e90b68167718e137fd3f020528e71db77a5f/SkinnedLane.Surface",
+    "role": "Road",
+    "consumer": "Movable skinned lane binding",
+    "surfaceSha256": "c7311e5553515ad844b0b96d754630c20c5673444e79813284ece2bec677d9bc",
+    "local": {}
+  },
+  {
+    "style": "Lift01",
+    "path": "Lanes/626ef2c6d1b53f36be90c185a171307cb9902e4618a6c9e37637862466519c9b/SkinnedLane.Surface",
+    "role": "Road",
+    "consumer": "Movable skinned lane binding",
+    "surfaceSha256": "10bd53a5787efdc36af55660a277fff20c5ea6b4a888b7de4e197ceea36542a0",
+    "local": {}
+  },
+  {
+    "style": "Lift01",
+    "path": "Lanes/7576f3cefce849a339d988a445d3df515a68a04837e81537e96a821184716460/SkinnedLane.Surface",
+    "role": "Road",
+    "consumer": "Movable skinned lane binding",
+    "surfaceSha256": "ba227ebc039acd70619ac4b1d47677884525689ba3b78264fac08decaf912d85",
+    "local": {}
+  },
+  {
+    "style": "Lift01",
+    "path": "Lanes/847f881b6a5a452ac8342afb854c774103c4e9e2558a18f9fe27adb83475a118/SkinnedLane.Surface",
+    "role": "Road",
+    "consumer": "Movable skinned lane binding",
+    "surfaceSha256": "596aeebe37b6f91fc47a3a28ace9da3b93310706d1c784ca7b7663b1602a99af",
+    "local": {}
+  },
+  {
+    "style": "Lift01",
+    "path": "Lanes/876989b1c60a7f4d610f1fe6874fbdaa8fb334d7ed58f95aba8eec1bd2b2d4e5/SkinnedLane.Surface",
+    "role": "Road",
+    "consumer": "Movable skinned lane binding",
+    "surfaceSha256": "91ee1d89642250c56fd67425c015d3705688e077e114cec0000ed656e3813ef4",
+    "local": {}
+  },
+  {
+    "style": "Lift01",
+    "path": "Lanes/90da02dcdb3d7e5f32aff72dedec311dee71580d1da54fb4c942078d2d5e71a7/SkinnedLane.Surface",
+    "role": "Road",
+    "consumer": "Movable skinned lane binding",
+    "surfaceSha256": "d794db343a6813e774731a14728adb32d2e544a88977749940f19e2cff145b1a",
+    "local": {}
+  },
+  {
+    "style": "Lift01",
+    "path": "Lanes/9ccf93a45d3301a859ecfd4dda85a039276917e2b5c8cb994d53948fe90d97a2/SkinnedLane.Surface",
+    "role": "Road",
+    "consumer": "Movable skinned lane binding",
+    "surfaceSha256": "1ff07a149413e5f100e3ec190d9d570d4338a4fe963d07c19fcd5391352481e2",
+    "local": {}
+  },
+  {
+    "style": "Lift01",
+    "path": "Lanes/9fd63b6610f45acb64d02680e77c11f38cb4565142f6920ec71923346efe7ef4/SkinnedLane.Surface",
+    "role": "Road",
+    "consumer": "Movable skinned lane binding",
+    "surfaceSha256": "7f6b7a0c4f3187c71939baad46312ed79755cba26a656315a5d556b2fbddf088",
+    "local": {}
+  },
+  {
+    "style": "Lift01",
+    "path": "Lanes/b20edfead16a3619356210216a42f2edfcae4f2e97185440e2a9e8d8bb149f17/SkinnedLane.Surface",
+    "role": "Road",
+    "consumer": "Movable skinned lane binding",
+    "surfaceSha256": "759a7bec3565c0a8a2e398c23a9d5fa1c05b4f3e1fae6cabc7f7f4011a47a46b",
+    "local": {}
+  },
+  {
+    "style": "Lift01",
+    "path": "Lanes/c212a2e5dde32ad874620108a88d7a802e2c996a5d9a0867716ee9641bc94b15/SkinnedLane.Surface",
+    "role": "Road",
+    "consumer": "Movable skinned lane binding",
+    "surfaceSha256": "3d5f0af73eb4dd85d6769d6c8aa1c3279a03352d9e8731ae3c42af24c04d18ff",
+    "local": {}
+  },
+  {
+    "style": "Lift01",
+    "path": "Lanes/c99e03034ce36221bc586ed623296bc0b607027d2d2462e8b96a20365d6ece2d/SkinnedLane.Surface",
+    "role": "Road",
+    "consumer": "Movable skinned lane binding",
+    "surfaceSha256": "b169a5306360dc366987af5de69d304c7a55fefa4e1736d59197e7835bb4b99e",
+    "local": {}
+  },
+  {
+    "style": "Lift01",
+    "path": "Lanes/d0abbc276d6f224f779f9511990bc42192b8cdc008a8b0dad2d0c3f00af0c602/SkinnedLane.Surface",
+    "role": "Road",
+    "consumer": "Movable skinned lane binding",
+    "surfaceSha256": "b197670ea8fe29d11a8d6dbd87def7b6524034c837e048e955dcd9aed5608802",
+    "local": {}
+  },
+  {
+    "style": "Lift01",
+    "path": "Lanes/d4ae678adbc26682fd70255910c46c38797cb47b55d91cfcd49b68d0c66b7383/SkinnedLane.Surface",
+    "role": "Road",
+    "consumer": "Movable skinned lane binding",
+    "surfaceSha256": "aa7e8a38d0d11b65184b028e4fc3c03f85ac8edbc770a8e81e37059f67144007",
+    "local": {}
+  },
+  {
+    "style": "Lift01",
+    "path": "Lanes/d58e5214b94403f7caf1c41de0cee471ab1668bc475b5c3e9e58c90a7a1f1105/SkinnedLane.Surface",
+    "role": "Road",
+    "consumer": "Movable skinned lane binding",
+    "surfaceSha256": "a9599a2ddaf1f068a079d6c182f0b2fe827140ec23dcaa2057ed5355c2d286d9",
+    "local": {}
+  },
+  {
+    "style": "Lift01",
+    "path": "Lanes/d74d853453d6df8265992d9d5376df255f14d4075d339d1866322dd38354ae2b/SkinnedLane.Surface",
+    "role": "Road",
+    "consumer": "Movable skinned lane binding",
+    "surfaceSha256": "0ff3244b47eb5fe9c66214a46cdacc8ee90c9c6e8d43adcbbd1e14140e163b00",
+    "local": {}
+  },
+  {
+    "style": "Lift01",
+    "path": "Lanes/d857b7cc202f9e8b231f18ca168d3858a8de2adaaffddd9a00e2c57a3c70c127/SkinnedLane.Surface",
+    "role": "Road",
+    "consumer": "Movable skinned lane binding",
+    "surfaceSha256": "43d8c2d04ea827a26b9e02422d8e995a56cdde0ab10b0155198176beb9631b91",
+    "local": {}
+  },
+  {
+    "style": "Lift01",
+    "path": "Lanes/fa1abfdf0f1bde8b2ad4faae88d13dab8ef9df38459cf048fcade8d500d500a9/SkinnedLane.Surface",
+    "role": "Road",
+    "consumer": "Movable skinned lane binding",
+    "surfaceSha256": "2e9ceb667f1bb421aee42a806fe5ad2a4453174a0c453cf2d4139e9172034a7e",
+    "local": {}
+  },
+  {
+    "style": "Lift01",
+    "path": "NativeSources/2d94a491d55ac415c29591597618b5ef/Object.Surface",
+    "role": "NonRoad",
+    "consumer": "Measured native object descriptor conversion",
+    "surfaceSha256": "2d94a491d55ac415c29591597618b5efbbb2e8a257cd13d953512e716ca74a78",
+    "local": {}
+  },
+  {
+    "style": "Lift01",
+    "path": "NativeSources/3aaa84602734568f9f0909f01c8527f0/Object.Surface",
+    "role": "Road",
+    "consumer": "MovableCompatibleRoad.CompatibleBase",
+    "surfaceSha256": "a3aa4806724365f8f990900fc158720f8872fac6523d51c287827323562eaed1",
+    "local": {}
+  },
+  {
+    "style": "Lift01",
+    "path": "NativeSources/d765f1348645cc68318b5ac29c61abde/Object.Surface",
+    "role": "NonRoad",
+    "consumer": "Measured native object descriptor conversion",
+    "surfaceSha256": "d765f1348645cc68318b5ac29c61abdea9d8c90c663a2e62a056b8019c05519f",
+    "local": {}
+  },
+  {
+    "style": "Lift01",
+    "path": "NativeSources/ec895036ef4c8b94de29cb702fdd6120/Object.Surface",
+    "role": "NonRoad",
+    "consumer": "Measured native object descriptor conversion",
+    "surfaceSha256": "ec895036ef4c8b94de29cb702fdd61200075d5aa4bdff31834d7094405255486",
+    "local": {}
+  },
+  {
+    "style": "Lift01",
+    "path": "RepeatUnits/7f727eeef2ad7c28df48e6200815357a780ac5636f83f82cd8d0ba46180e5f43/Repeat.Surface",
+    "role": "Road",
+    "consumer": "Lift01HalfFloorAppearance.cs",
+    "surfaceSha256": "bed42651bbce4eb32654e6a0322570c3128a33259b847f28a9bf3f28787ea766",
+    "local": {
+      "_BaseColorMap": "9b0eb74fce73abaea80d8bc15d40931b",
+      "_MaskMap": "1a7c08526b0f1407b1326e47cae7074a",
+      "_NormalMap": "d92edd13bc1dd2c693db60152bbba9db"
+    }
+  },
+  {
+    "style": "Lift01",
+    "path": "RepeatUnits/aa572971f7048c8097d4756077cccd5bce76d15388d43755a5d8e80bf76fa8bf/Repeat.Surface",
+    "role": "Road",
+    "consumer": "Lift01FarAppearance.cs",
+    "surfaceSha256": "6b72087178a50f31f29fa47ffe3d768b8f7a47fca5b8abfe16d0b99508ad1048",
+    "local": {
+      "_BaseColorMap": "2a92eb3ea8fa55549d4d54258c030991",
+      "_MaskMap": "a0ee1c00104d35323cd7aa322765f9f5",
+      "_NormalMap": "4257e13c7c74aabacaa5a5bb5aa6b97f"
+    }
+  },
+  {
+    "style": "Lift02",
+    "path": "Cable/SkinnedCable.Surface",
+    "role": "NonRoad",
+    "consumer": "MovableCableSurface.Create",
+    "surfaceSha256": "f06e97cf7933eb1b8fca2d5bc2c040f4fd47b0d9fa804bd9a084f8d809d0aded",
+    "local": {}
+  },
+  {
+    "style": "Lift02",
+    "path": "Paint/SkinnedPaint.Surface",
+    "role": "Road",
+    "consumer": "Skinned selected-road paint",
+    "surfaceSha256": "1d134b5fd2695596a2c9cde3a00de241268dc33b3916b52fe6ada9b06c296e08",
+    "local": {
+      "_BaseColorMap": "bc2e09a359ba8e1f4b41c417b5f631af",
+      "_NormalMap": "d9d33ecb2b319859d2d356059bc00b22",
+      "_MaskMap": "9a7a7da8813bd92cf48a0f9a4052e651"
+    }
+  },
+  {
+    "style": "Lift02",
+    "path": "Road/NativeAsphalt.Surface",
+    "role": "Road",
+    "consumer": "NativeAsphalt corresponding road",
+    "surfaceSha256": "26223d0cca8f272b7dc0c97fa7a2fa23d0bb46aa31fd32db05de7d5159c29119",
+    "local": {}
+  },
+  {
+    "style": "Lift02",
+    "path": "Lanes/0315c992c5fafbd4e58999588f61d11ad0c7e657d62ee1f6aa2d0a830ea2ac91/SkinnedLane.Surface",
+    "role": "Road",
+    "consumer": "Movable skinned lane binding",
+    "surfaceSha256": "8281744eb937df1bf0ca9828245b11b4880dbd937b39dd878b1422141f4bf972",
+    "local": {}
+  },
+  {
+    "style": "Lift02",
+    "path": "Lanes/05a9841d7b95a456b8f3c0ae404bd10edacaa6a2671f2894b478e90a04ec509f/SkinnedLane.Surface",
+    "role": "Road",
+    "consumer": "Movable skinned lane binding",
+    "surfaceSha256": "dfc55c5abc492b3a037209c6fb62c797680a49ec1084ad3e11fa8c65d9c3333d",
+    "local": {}
+  },
+  {
+    "style": "Lift02",
+    "path": "Lanes/0bbf724ede5f09d195cdeaa85ac06a6b1a1aba39adb08daa578b73bca18b8871/SkinnedLane.Surface",
+    "role": "Road",
+    "consumer": "Movable skinned lane binding",
+    "surfaceSha256": "6758ca887f0d96207c5db788b3b60353c805f6bb0c6f328d7a9bef9f16d3b9d2",
+    "local": {}
+  },
+  {
+    "style": "Lift02",
+    "path": "Lanes/11e315e8ffbe4f0e8c0d648eda78ce3a488d5910e659d5ee46289ab98345f695/SkinnedLane.Surface",
+    "role": "Road",
+    "consumer": "Movable skinned lane binding",
+    "surfaceSha256": "3ddcfa5bbaab8476b6e8135fb064c98939d7a6d83fff5246eaa0d6cbb574831a",
+    "local": {}
+  },
+  {
+    "style": "Lift02",
+    "path": "Lanes/17758c69a425cf6cb7161e19b44e8069ea7c04cef8f417db4e9ae76873e82683/SkinnedLane.Surface",
+    "role": "Road",
+    "consumer": "Movable skinned lane binding",
+    "surfaceSha256": "931e7259b6dcae46b5d3002af1959acc346f12f1975fab9a70341523422f7cdf",
+    "local": {}
+  },
+  {
+    "style": "Lift02",
+    "path": "Lanes/179822297be72b5b03fb8dc696cb7e6dd67c3807cd098439e8a47c29717ad148/SkinnedLane.Surface",
+    "role": "Road",
+    "consumer": "Movable skinned lane binding",
+    "surfaceSha256": "644965751e672f29d592d1da143a1ce43cb51978ea90643cf8443fab0c66f351",
+    "local": {}
+  },
+  {
+    "style": "Lift02",
+    "path": "Lanes/2c3ef9341347ced4e6cff656c68f2304630b334301ceb1fba2573c1ea41dd9dc/SkinnedLane.Surface",
+    "role": "Road",
+    "consumer": "Movable skinned lane binding",
+    "surfaceSha256": "4e23aba4a739ac70126baacf0650f4d0818563126b18ef57f5d71f26365c9cea",
+    "local": {}
+  },
+  {
+    "style": "Lift02",
+    "path": "Lanes/34ccc3e758c8df9767b308ce3c98761698e1592fe2df0d81444461df798ee629/SkinnedLane.Surface",
+    "role": "Road",
+    "consumer": "Movable skinned lane binding",
+    "surfaceSha256": "e053acbae5761b0658a6039db8616c20c407f9c323286e4f1200b6798120bc5b",
+    "local": {}
+  },
+  {
+    "style": "Lift02",
+    "path": "Lanes/3734eced6e70ddd097d7704ed9b898643bde1f9ec505d0f537df2651560ff5dd/SkinnedLane.Surface",
+    "role": "Road",
+    "consumer": "Movable skinned lane binding",
+    "surfaceSha256": "b6d9e34cd44e2a7097689b9d29cd448b3848e96ae382b01bc4e6696d80140ee2",
+    "local": {}
+  },
+  {
+    "style": "Lift02",
+    "path": "Lanes/5bb944aa5c029094a902d6f2be80e90b68167718e137fd3f020528e71db77a5f/SkinnedLane.Surface",
+    "role": "Road",
+    "consumer": "Movable skinned lane binding",
+    "surfaceSha256": "c7311e5553515ad844b0b96d754630c20c5673444e79813284ece2bec677d9bc",
+    "local": {}
+  },
+  {
+    "style": "Lift02",
+    "path": "Lanes/626ef2c6d1b53f36be90c185a171307cb9902e4618a6c9e37637862466519c9b/SkinnedLane.Surface",
+    "role": "Road",
+    "consumer": "Movable skinned lane binding",
+    "surfaceSha256": "10bd53a5787efdc36af55660a277fff20c5ea6b4a888b7de4e197ceea36542a0",
+    "local": {}
+  },
+  {
+    "style": "Lift02",
+    "path": "Lanes/7576f3cefce849a339d988a445d3df515a68a04837e81537e96a821184716460/SkinnedLane.Surface",
+    "role": "Road",
+    "consumer": "Movable skinned lane binding",
+    "surfaceSha256": "ba227ebc039acd70619ac4b1d47677884525689ba3b78264fac08decaf912d85",
+    "local": {}
+  },
+  {
+    "style": "Lift02",
+    "path": "Lanes/847f881b6a5a452ac8342afb854c774103c4e9e2558a18f9fe27adb83475a118/SkinnedLane.Surface",
+    "role": "Road",
+    "consumer": "Movable skinned lane binding",
+    "surfaceSha256": "596aeebe37b6f91fc47a3a28ace9da3b93310706d1c784ca7b7663b1602a99af",
+    "local": {}
+  },
+  {
+    "style": "Lift02",
+    "path": "Lanes/876989b1c60a7f4d610f1fe6874fbdaa8fb334d7ed58f95aba8eec1bd2b2d4e5/SkinnedLane.Surface",
+    "role": "Road",
+    "consumer": "Movable skinned lane binding",
+    "surfaceSha256": "91ee1d89642250c56fd67425c015d3705688e077e114cec0000ed656e3813ef4",
+    "local": {}
+  },
+  {
+    "style": "Lift02",
+    "path": "Lanes/90da02dcdb3d7e5f32aff72dedec311dee71580d1da54fb4c942078d2d5e71a7/SkinnedLane.Surface",
+    "role": "Road",
+    "consumer": "Movable skinned lane binding",
+    "surfaceSha256": "d794db343a6813e774731a14728adb32d2e544a88977749940f19e2cff145b1a",
+    "local": {}
+  },
+  {
+    "style": "Lift02",
+    "path": "Lanes/9ccf93a45d3301a859ecfd4dda85a039276917e2b5c8cb994d53948fe90d97a2/SkinnedLane.Surface",
+    "role": "Road",
+    "consumer": "Movable skinned lane binding",
+    "surfaceSha256": "1ff07a149413e5f100e3ec190d9d570d4338a4fe963d07c19fcd5391352481e2",
+    "local": {}
+  },
+  {
+    "style": "Lift02",
+    "path": "Lanes/9fd63b6610f45acb64d02680e77c11f38cb4565142f6920ec71923346efe7ef4/SkinnedLane.Surface",
+    "role": "Road",
+    "consumer": "Movable skinned lane binding",
+    "surfaceSha256": "7f6b7a0c4f3187c71939baad46312ed79755cba26a656315a5d556b2fbddf088",
+    "local": {}
+  },
+  {
+    "style": "Lift02",
+    "path": "Lanes/b20edfead16a3619356210216a42f2edfcae4f2e97185440e2a9e8d8bb149f17/SkinnedLane.Surface",
+    "role": "Road",
+    "consumer": "Movable skinned lane binding",
+    "surfaceSha256": "759a7bec3565c0a8a2e398c23a9d5fa1c05b4f3e1fae6cabc7f7f4011a47a46b",
+    "local": {}
+  },
+  {
+    "style": "Lift02",
+    "path": "Lanes/c212a2e5dde32ad874620108a88d7a802e2c996a5d9a0867716ee9641bc94b15/SkinnedLane.Surface",
+    "role": "Road",
+    "consumer": "Movable skinned lane binding",
+    "surfaceSha256": "3d5f0af73eb4dd85d6769d6c8aa1c3279a03352d9e8731ae3c42af24c04d18ff",
+    "local": {}
+  },
+  {
+    "style": "Lift02",
+    "path": "Lanes/c99e03034ce36221bc586ed623296bc0b607027d2d2462e8b96a20365d6ece2d/SkinnedLane.Surface",
+    "role": "Road",
+    "consumer": "Movable skinned lane binding",
+    "surfaceSha256": "b169a5306360dc366987af5de69d304c7a55fefa4e1736d59197e7835bb4b99e",
+    "local": {}
+  },
+  {
+    "style": "Lift02",
+    "path": "Lanes/d0abbc276d6f224f779f9511990bc42192b8cdc008a8b0dad2d0c3f00af0c602/SkinnedLane.Surface",
+    "role": "Road",
+    "consumer": "Movable skinned lane binding",
+    "surfaceSha256": "b197670ea8fe29d11a8d6dbd87def7b6524034c837e048e955dcd9aed5608802",
+    "local": {}
+  },
+  {
+    "style": "Lift02",
+    "path": "Lanes/d4ae678adbc26682fd70255910c46c38797cb47b55d91cfcd49b68d0c66b7383/SkinnedLane.Surface",
+    "role": "Road",
+    "consumer": "Movable skinned lane binding",
+    "surfaceSha256": "aa7e8a38d0d11b65184b028e4fc3c03f85ac8edbc770a8e81e37059f67144007",
+    "local": {}
+  },
+  {
+    "style": "Lift02",
+    "path": "Lanes/d58e5214b94403f7caf1c41de0cee471ab1668bc475b5c3e9e58c90a7a1f1105/SkinnedLane.Surface",
+    "role": "Road",
+    "consumer": "Movable skinned lane binding",
+    "surfaceSha256": "a9599a2ddaf1f068a079d6c182f0b2fe827140ec23dcaa2057ed5355c2d286d9",
+    "local": {}
+  },
+  {
+    "style": "Lift02",
+    "path": "Lanes/d74d853453d6df8265992d9d5376df255f14d4075d339d1866322dd38354ae2b/SkinnedLane.Surface",
+    "role": "Road",
+    "consumer": "Movable skinned lane binding",
+    "surfaceSha256": "0ff3244b47eb5fe9c66214a46cdacc8ee90c9c6e8d43adcbbd1e14140e163b00",
+    "local": {}
+  },
+  {
+    "style": "Lift02",
+    "path": "Lanes/d857b7cc202f9e8b231f18ca168d3858a8de2adaaffddd9a00e2c57a3c70c127/SkinnedLane.Surface",
+    "role": "Road",
+    "consumer": "Movable skinned lane binding",
+    "surfaceSha256": "43d8c2d04ea827a26b9e02422d8e995a56cdde0ab10b0155198176beb9631b91",
+    "local": {}
+  },
+  {
+    "style": "Lift02",
+    "path": "Lanes/fa1abfdf0f1bde8b2ad4faae88d13dab8ef9df38459cf048fcade8d500d500a9/SkinnedLane.Surface",
+    "role": "Road",
+    "consumer": "Movable skinned lane binding",
+    "surfaceSha256": "2e9ceb667f1bb421aee42a806fe5ad2a4453174a0c453cf2d4139e9172034a7e",
+    "local": {}
+  },
+  {
+    "style": "Lift02",
+    "path": "NativeSources/3aaa84602734568f9f0909f01c8527f0/Object.Surface",
+    "role": "Road",
+    "consumer": "MovableCompatibleRoad.CompatibleBase",
+    "surfaceSha256": "a3aa4806724365f8f990900fc158720f8872fac6523d51c287827323562eaed1",
+    "local": {}
+  },
+  {
+    "style": "Lift02",
+    "path": "NativeSources/d765f1348645cc68318b5ac29c61abde/Object.Surface",
+    "role": "NonRoad",
+    "consumer": "Measured native object descriptor conversion",
+    "surfaceSha256": "d765f1348645cc68318b5ac29c61abdea9d8c90c663a2e62a056b8019c05519f",
+    "local": {}
+  },
+  {
+    "style": "Lift02",
+    "path": "RepeatUnits/1c6aac78ba66e66ebd3f5bb395a04d5d0f8223a6bf34f1edb74ef3b873929a48/Repeat.Surface",
+    "role": "Road",
+    "consumer": "Lift02BedAppearance.cs",
+    "surfaceSha256": "9a5e5372c6ab3e7b304ee7e7408f5a1cefe492654eabeb0a4f57d909b0637d42",
+    "local": {
+      "_BaseColorMap": "5357fcbd4935f45cf2271bcf3c3dd97a",
+      "_MaskMap": "b0faaee7695b98ca70f3715237e884f2",
+      "_NormalMap": "185d55ee7cf8d2f270d81b753dcf92a4"
+    }
+  },
+  {
+    "style": "Lift03",
+    "path": "Cable/SkinnedCable.Surface",
+    "role": "NonRoad",
+    "consumer": "MovableCableSurface.Create",
+    "surfaceSha256": "f06e97cf7933eb1b8fca2d5bc2c040f4fd47b0d9fa804bd9a084f8d809d0aded",
+    "local": {}
+  },
+  {
+    "style": "Lift03",
+    "path": "Paint/SkinnedPaint.Surface",
+    "role": "Road",
+    "consumer": "Skinned selected-road paint",
+    "surfaceSha256": "1d134b5fd2695596a2c9cde3a00de241268dc33b3916b52fe6ada9b06c296e08",
+    "local": {
+      "_BaseColorMap": "bc2e09a359ba8e1f4b41c417b5f631af",
+      "_NormalMap": "d9d33ecb2b319859d2d356059bc00b22",
+      "_MaskMap": "9a7a7da8813bd92cf48a0f9a4052e651"
+    }
+  },
+  {
+    "style": "Lift03",
+    "path": "Road/NativeAsphalt.Surface",
+    "role": "Road",
+    "consumer": "NativeAsphalt corresponding road",
+    "surfaceSha256": "26223d0cca8f272b7dc0c97fa7a2fa23d0bb46aa31fd32db05de7d5159c29119",
+    "local": {}
+  },
+  {
+    "style": "Lift03",
+    "path": "Lanes/0315c992c5fafbd4e58999588f61d11ad0c7e657d62ee1f6aa2d0a830ea2ac91/SkinnedLane.Surface",
+    "role": "Road",
+    "consumer": "Movable skinned lane binding",
+    "surfaceSha256": "8281744eb937df1bf0ca9828245b11b4880dbd937b39dd878b1422141f4bf972",
+    "local": {}
+  },
+  {
+    "style": "Lift03",
+    "path": "Lanes/05a9841d7b95a456b8f3c0ae404bd10edacaa6a2671f2894b478e90a04ec509f/SkinnedLane.Surface",
+    "role": "Road",
+    "consumer": "Movable skinned lane binding",
+    "surfaceSha256": "dfc55c5abc492b3a037209c6fb62c797680a49ec1084ad3e11fa8c65d9c3333d",
+    "local": {}
+  },
+  {
+    "style": "Lift03",
+    "path": "Lanes/0bbf724ede5f09d195cdeaa85ac06a6b1a1aba39adb08daa578b73bca18b8871/SkinnedLane.Surface",
+    "role": "Road",
+    "consumer": "Movable skinned lane binding",
+    "surfaceSha256": "6758ca887f0d96207c5db788b3b60353c805f6bb0c6f328d7a9bef9f16d3b9d2",
+    "local": {}
+  },
+  {
+    "style": "Lift03",
+    "path": "Lanes/11e315e8ffbe4f0e8c0d648eda78ce3a488d5910e659d5ee46289ab98345f695/SkinnedLane.Surface",
+    "role": "Road",
+    "consumer": "Movable skinned lane binding",
+    "surfaceSha256": "3ddcfa5bbaab8476b6e8135fb064c98939d7a6d83fff5246eaa0d6cbb574831a",
+    "local": {}
+  },
+  {
+    "style": "Lift03",
+    "path": "Lanes/17758c69a425cf6cb7161e19b44e8069ea7c04cef8f417db4e9ae76873e82683/SkinnedLane.Surface",
+    "role": "Road",
+    "consumer": "Movable skinned lane binding",
+    "surfaceSha256": "931e7259b6dcae46b5d3002af1959acc346f12f1975fab9a70341523422f7cdf",
+    "local": {}
+  },
+  {
+    "style": "Lift03",
+    "path": "Lanes/179822297be72b5b03fb8dc696cb7e6dd67c3807cd098439e8a47c29717ad148/SkinnedLane.Surface",
+    "role": "Road",
+    "consumer": "Movable skinned lane binding",
+    "surfaceSha256": "644965751e672f29d592d1da143a1ce43cb51978ea90643cf8443fab0c66f351",
+    "local": {}
+  },
+  {
+    "style": "Lift03",
+    "path": "Lanes/2c3ef9341347ced4e6cff656c68f2304630b334301ceb1fba2573c1ea41dd9dc/SkinnedLane.Surface",
+    "role": "Road",
+    "consumer": "Movable skinned lane binding",
+    "surfaceSha256": "4e23aba4a739ac70126baacf0650f4d0818563126b18ef57f5d71f26365c9cea",
+    "local": {}
+  },
+  {
+    "style": "Lift03",
+    "path": "Lanes/34ccc3e758c8df9767b308ce3c98761698e1592fe2df0d81444461df798ee629/SkinnedLane.Surface",
+    "role": "Road",
+    "consumer": "Movable skinned lane binding",
+    "surfaceSha256": "e053acbae5761b0658a6039db8616c20c407f9c323286e4f1200b6798120bc5b",
+    "local": {}
+  },
+  {
+    "style": "Lift03",
+    "path": "Lanes/3734eced6e70ddd097d7704ed9b898643bde1f9ec505d0f537df2651560ff5dd/SkinnedLane.Surface",
+    "role": "Road",
+    "consumer": "Movable skinned lane binding",
+    "surfaceSha256": "b6d9e34cd44e2a7097689b9d29cd448b3848e96ae382b01bc4e6696d80140ee2",
+    "local": {}
+  },
+  {
+    "style": "Lift03",
+    "path": "Lanes/5bb944aa5c029094a902d6f2be80e90b68167718e137fd3f020528e71db77a5f/SkinnedLane.Surface",
+    "role": "Road",
+    "consumer": "Movable skinned lane binding",
+    "surfaceSha256": "c7311e5553515ad844b0b96d754630c20c5673444e79813284ece2bec677d9bc",
+    "local": {}
+  },
+  {
+    "style": "Lift03",
+    "path": "Lanes/626ef2c6d1b53f36be90c185a171307cb9902e4618a6c9e37637862466519c9b/SkinnedLane.Surface",
+    "role": "Road",
+    "consumer": "Movable skinned lane binding",
+    "surfaceSha256": "10bd53a5787efdc36af55660a277fff20c5ea6b4a888b7de4e197ceea36542a0",
+    "local": {}
+  },
+  {
+    "style": "Lift03",
+    "path": "Lanes/7576f3cefce849a339d988a445d3df515a68a04837e81537e96a821184716460/SkinnedLane.Surface",
+    "role": "Road",
+    "consumer": "Movable skinned lane binding",
+    "surfaceSha256": "ba227ebc039acd70619ac4b1d47677884525689ba3b78264fac08decaf912d85",
+    "local": {}
+  },
+  {
+    "style": "Lift03",
+    "path": "Lanes/847f881b6a5a452ac8342afb854c774103c4e9e2558a18f9fe27adb83475a118/SkinnedLane.Surface",
+    "role": "Road",
+    "consumer": "Movable skinned lane binding",
+    "surfaceSha256": "596aeebe37b6f91fc47a3a28ace9da3b93310706d1c784ca7b7663b1602a99af",
+    "local": {}
+  },
+  {
+    "style": "Lift03",
+    "path": "Lanes/876989b1c60a7f4d610f1fe6874fbdaa8fb334d7ed58f95aba8eec1bd2b2d4e5/SkinnedLane.Surface",
+    "role": "Road",
+    "consumer": "Movable skinned lane binding",
+    "surfaceSha256": "91ee1d89642250c56fd67425c015d3705688e077e114cec0000ed656e3813ef4",
+    "local": {}
+  },
+  {
+    "style": "Lift03",
+    "path": "Lanes/90da02dcdb3d7e5f32aff72dedec311dee71580d1da54fb4c942078d2d5e71a7/SkinnedLane.Surface",
+    "role": "Road",
+    "consumer": "Movable skinned lane binding",
+    "surfaceSha256": "d794db343a6813e774731a14728adb32d2e544a88977749940f19e2cff145b1a",
+    "local": {}
+  },
+  {
+    "style": "Lift03",
+    "path": "Lanes/9ccf93a45d3301a859ecfd4dda85a039276917e2b5c8cb994d53948fe90d97a2/SkinnedLane.Surface",
+    "role": "Road",
+    "consumer": "Movable skinned lane binding",
+    "surfaceSha256": "1ff07a149413e5f100e3ec190d9d570d4338a4fe963d07c19fcd5391352481e2",
+    "local": {}
+  },
+  {
+    "style": "Lift03",
+    "path": "Lanes/9fd63b6610f45acb64d02680e77c11f38cb4565142f6920ec71923346efe7ef4/SkinnedLane.Surface",
+    "role": "Road",
+    "consumer": "Movable skinned lane binding",
+    "surfaceSha256": "7f6b7a0c4f3187c71939baad46312ed79755cba26a656315a5d556b2fbddf088",
+    "local": {}
+  },
+  {
+    "style": "Lift03",
+    "path": "Lanes/b20edfead16a3619356210216a42f2edfcae4f2e97185440e2a9e8d8bb149f17/SkinnedLane.Surface",
+    "role": "Road",
+    "consumer": "Movable skinned lane binding",
+    "surfaceSha256": "759a7bec3565c0a8a2e398c23a9d5fa1c05b4f3e1fae6cabc7f7f4011a47a46b",
+    "local": {}
+  },
+  {
+    "style": "Lift03",
+    "path": "Lanes/c212a2e5dde32ad874620108a88d7a802e2c996a5d9a0867716ee9641bc94b15/SkinnedLane.Surface",
+    "role": "Road",
+    "consumer": "Movable skinned lane binding",
+    "surfaceSha256": "3d5f0af73eb4dd85d6769d6c8aa1c3279a03352d9e8731ae3c42af24c04d18ff",
+    "local": {}
+  },
+  {
+    "style": "Lift03",
+    "path": "Lanes/c99e03034ce36221bc586ed623296bc0b607027d2d2462e8b96a20365d6ece2d/SkinnedLane.Surface",
+    "role": "Road",
+    "consumer": "Movable skinned lane binding",
+    "surfaceSha256": "b169a5306360dc366987af5de69d304c7a55fefa4e1736d59197e7835bb4b99e",
+    "local": {}
+  },
+  {
+    "style": "Lift03",
+    "path": "Lanes/d0abbc276d6f224f779f9511990bc42192b8cdc008a8b0dad2d0c3f00af0c602/SkinnedLane.Surface",
+    "role": "Road",
+    "consumer": "Movable skinned lane binding",
+    "surfaceSha256": "b197670ea8fe29d11a8d6dbd87def7b6524034c837e048e955dcd9aed5608802",
+    "local": {}
+  },
+  {
+    "style": "Lift03",
+    "path": "Lanes/d4ae678adbc26682fd70255910c46c38797cb47b55d91cfcd49b68d0c66b7383/SkinnedLane.Surface",
+    "role": "Road",
+    "consumer": "Movable skinned lane binding",
+    "surfaceSha256": "aa7e8a38d0d11b65184b028e4fc3c03f85ac8edbc770a8e81e37059f67144007",
+    "local": {}
+  },
+  {
+    "style": "Lift03",
+    "path": "Lanes/d58e5214b94403f7caf1c41de0cee471ab1668bc475b5c3e9e58c90a7a1f1105/SkinnedLane.Surface",
+    "role": "Road",
+    "consumer": "Movable skinned lane binding",
+    "surfaceSha256": "a9599a2ddaf1f068a079d6c182f0b2fe827140ec23dcaa2057ed5355c2d286d9",
+    "local": {}
+  },
+  {
+    "style": "Lift03",
+    "path": "Lanes/d74d853453d6df8265992d9d5376df255f14d4075d339d1866322dd38354ae2b/SkinnedLane.Surface",
+    "role": "Road",
+    "consumer": "Movable skinned lane binding",
+    "surfaceSha256": "0ff3244b47eb5fe9c66214a46cdacc8ee90c9c6e8d43adcbbd1e14140e163b00",
+    "local": {}
+  },
+  {
+    "style": "Lift03",
+    "path": "Lanes/d857b7cc202f9e8b231f18ca168d3858a8de2adaaffddd9a00e2c57a3c70c127/SkinnedLane.Surface",
+    "role": "Road",
+    "consumer": "Movable skinned lane binding",
+    "surfaceSha256": "43d8c2d04ea827a26b9e02422d8e995a56cdde0ab10b0155198176beb9631b91",
+    "local": {}
+  },
+  {
+    "style": "Lift03",
+    "path": "Lanes/fa1abfdf0f1bde8b2ad4faae88d13dab8ef9df38459cf048fcade8d500d500a9/SkinnedLane.Surface",
+    "role": "Road",
+    "consumer": "Movable skinned lane binding",
+    "surfaceSha256": "2e9ceb667f1bb421aee42a806fe5ad2a4453174a0c453cf2d4139e9172034a7e",
+    "local": {}
+  },
+  {
+    "style": "Lift03",
+    "path": "NativeSources/3aaa84602734568f9f0909f01c8527f0/Object.Surface",
+    "role": "Road",
+    "consumer": "MovableCompatibleRoad.CompatibleBase",
+    "surfaceSha256": "a3aa4806724365f8f990900fc158720f8872fac6523d51c287827323562eaed1",
+    "local": {}
+  },
+  {
+    "style": "Lift03",
+    "path": "NativeSources/d765f1348645cc68318b5ac29c61abde/Object.Surface",
+    "role": "NonRoad",
+    "consumer": "Measured native object descriptor conversion",
+    "surfaceSha256": "d765f1348645cc68318b5ac29c61abdea9d8c90c663a2e62a056b8019c05519f",
+    "local": {}
+  },
+  {
+    "style": "Lift03",
+    "path": "RepeatUnits/906eeb04251378f9e20b74cc9dc1a3d0f689e383892d58517a3853e6b803adff/Repeat.Surface",
+    "role": "Road",
+    "consumer": "Lift03RoadAppearance.cs",
+    "surfaceSha256": "f6f5b0e5fa2195fc1a82719e4f63b61e8d4dd8cc9704ae07a0805fee1c5ed7b4",
+    "local": {
+      "_BaseColorMap": "3a1c46af23741a2534096c70a3dd69a8",
+      "_MaskMap": "69a27bacd10171c49bc0c98c9a1c814d",
+      "_NormalMap": "3a680a999b290a728fd74eb431b2688a"
+    }
+  },
+  {
+    "style": "Lift03",
+    "path": "RepeatUnits/CleanLaneWear/Repeat.Surface",
+    "role": "Road",
+    "consumer": "Lift03CleanRoadAppearance.cs",
+    "surfaceSha256": "d5e247d2af1b74745551aa86ac3c5a62d5a89554caddbffb1f54a89b38a128b2",
+    "local": {
+      "_MaskMap": "d203a224a03a794544d98d80efb22320",
+      "_NormalMap": "2fba6549b30e96bd772f22b3c5046a02",
+      "_BaseColorMap": "5f1b27403a465fa369b2a6a3dc32a0fe"
+    }
+  },
+  {
+    "style": "Lift03",
+    "path": "RepeatUnits/CleanRoadBackground/Repeat.Surface",
+    "role": "Road",
+    "consumer": "Lift03CleanRoadAppearance.cs",
+    "surfaceSha256": "85cc3aad8545a4cc56e7e7e6cb41063b30327f1291830942258b66b5c91f1cc1",
+    "local": {
+      "_MaskMap": "36083cb45d8bd0f3e51e9ada3bb66291",
+      "_NormalMap": "085ee6c709a5250ae9bce9cf18137bb9",
+      "_BaseColorMap": "ce2615b42e2f782c833261768fad488d"
+    }
+  },
+  {
+    "style": "Lift04",
+    "path": "Cable/SkinnedCable.Surface",
+    "role": "NonRoad",
+    "consumer": "MovableCableSurface.Create",
+    "surfaceSha256": "f06e97cf7933eb1b8fca2d5bc2c040f4fd47b0d9fa804bd9a084f8d809d0aded",
+    "local": {}
+  },
+  {
+    "style": "Lift04",
+    "path": "Paint/SkinnedPaint.Surface",
+    "role": "Road",
+    "consumer": "Skinned selected-road paint",
+    "surfaceSha256": "1d134b5fd2695596a2c9cde3a00de241268dc33b3916b52fe6ada9b06c296e08",
+    "local": {
+      "_BaseColorMap": "bc2e09a359ba8e1f4b41c417b5f631af",
+      "_NormalMap": "d9d33ecb2b319859d2d356059bc00b22",
+      "_MaskMap": "9a7a7da8813bd92cf48a0f9a4052e651"
+    }
+  },
+  {
+    "style": "Lift04",
+    "path": "Road/NativeAsphalt.Surface",
+    "role": "Road",
+    "consumer": "NativeAsphalt corresponding road",
+    "surfaceSha256": "26223d0cca8f272b7dc0c97fa7a2fa23d0bb46aa31fd32db05de7d5159c29119",
+    "local": {}
+  },
+  {
+    "style": "Lift04",
+    "path": "Lanes/0315c992c5fafbd4e58999588f61d11ad0c7e657d62ee1f6aa2d0a830ea2ac91/SkinnedLane.Surface",
+    "role": "Road",
+    "consumer": "Movable skinned lane binding",
+    "surfaceSha256": "8281744eb937df1bf0ca9828245b11b4880dbd937b39dd878b1422141f4bf972",
+    "local": {}
+  },
+  {
+    "style": "Lift04",
+    "path": "Lanes/05a9841d7b95a456b8f3c0ae404bd10edacaa6a2671f2894b478e90a04ec509f/SkinnedLane.Surface",
+    "role": "Road",
+    "consumer": "Movable skinned lane binding",
+    "surfaceSha256": "dfc55c5abc492b3a037209c6fb62c797680a49ec1084ad3e11fa8c65d9c3333d",
+    "local": {}
+  },
+  {
+    "style": "Lift04",
+    "path": "Lanes/0bbf724ede5f09d195cdeaa85ac06a6b1a1aba39adb08daa578b73bca18b8871/SkinnedLane.Surface",
+    "role": "Road",
+    "consumer": "Movable skinned lane binding",
+    "surfaceSha256": "6758ca887f0d96207c5db788b3b60353c805f6bb0c6f328d7a9bef9f16d3b9d2",
+    "local": {}
+  },
+  {
+    "style": "Lift04",
+    "path": "Lanes/11e315e8ffbe4f0e8c0d648eda78ce3a488d5910e659d5ee46289ab98345f695/SkinnedLane.Surface",
+    "role": "Road",
+    "consumer": "Movable skinned lane binding",
+    "surfaceSha256": "3ddcfa5bbaab8476b6e8135fb064c98939d7a6d83fff5246eaa0d6cbb574831a",
+    "local": {}
+  },
+  {
+    "style": "Lift04",
+    "path": "Lanes/17758c69a425cf6cb7161e19b44e8069ea7c04cef8f417db4e9ae76873e82683/SkinnedLane.Surface",
+    "role": "Road",
+    "consumer": "Movable skinned lane binding",
+    "surfaceSha256": "931e7259b6dcae46b5d3002af1959acc346f12f1975fab9a70341523422f7cdf",
+    "local": {}
+  },
+  {
+    "style": "Lift04",
+    "path": "Lanes/179822297be72b5b03fb8dc696cb7e6dd67c3807cd098439e8a47c29717ad148/SkinnedLane.Surface",
+    "role": "Road",
+    "consumer": "Movable skinned lane binding",
+    "surfaceSha256": "644965751e672f29d592d1da143a1ce43cb51978ea90643cf8443fab0c66f351",
+    "local": {}
+  },
+  {
+    "style": "Lift04",
+    "path": "Lanes/2c3ef9341347ced4e6cff656c68f2304630b334301ceb1fba2573c1ea41dd9dc/SkinnedLane.Surface",
+    "role": "Road",
+    "consumer": "Movable skinned lane binding",
+    "surfaceSha256": "4e23aba4a739ac70126baacf0650f4d0818563126b18ef57f5d71f26365c9cea",
+    "local": {}
+  },
+  {
+    "style": "Lift04",
+    "path": "Lanes/34ccc3e758c8df9767b308ce3c98761698e1592fe2df0d81444461df798ee629/SkinnedLane.Surface",
+    "role": "Road",
+    "consumer": "Movable skinned lane binding",
+    "surfaceSha256": "e053acbae5761b0658a6039db8616c20c407f9c323286e4f1200b6798120bc5b",
+    "local": {}
+  },
+  {
+    "style": "Lift04",
+    "path": "Lanes/3734eced6e70ddd097d7704ed9b898643bde1f9ec505d0f537df2651560ff5dd/SkinnedLane.Surface",
+    "role": "Road",
+    "consumer": "Movable skinned lane binding",
+    "surfaceSha256": "b6d9e34cd44e2a7097689b9d29cd448b3848e96ae382b01bc4e6696d80140ee2",
+    "local": {}
+  },
+  {
+    "style": "Lift04",
+    "path": "Lanes/5bb944aa5c029094a902d6f2be80e90b68167718e137fd3f020528e71db77a5f/SkinnedLane.Surface",
+    "role": "Road",
+    "consumer": "Movable skinned lane binding",
+    "surfaceSha256": "c7311e5553515ad844b0b96d754630c20c5673444e79813284ece2bec677d9bc",
+    "local": {}
+  },
+  {
+    "style": "Lift04",
+    "path": "Lanes/626ef2c6d1b53f36be90c185a171307cb9902e4618a6c9e37637862466519c9b/SkinnedLane.Surface",
+    "role": "Road",
+    "consumer": "Movable skinned lane binding",
+    "surfaceSha256": "10bd53a5787efdc36af55660a277fff20c5ea6b4a888b7de4e197ceea36542a0",
+    "local": {}
+  },
+  {
+    "style": "Lift04",
+    "path": "Lanes/7576f3cefce849a339d988a445d3df515a68a04837e81537e96a821184716460/SkinnedLane.Surface",
+    "role": "Road",
+    "consumer": "Movable skinned lane binding",
+    "surfaceSha256": "ba227ebc039acd70619ac4b1d47677884525689ba3b78264fac08decaf912d85",
+    "local": {}
+  },
+  {
+    "style": "Lift04",
+    "path": "Lanes/847f881b6a5a452ac8342afb854c774103c4e9e2558a18f9fe27adb83475a118/SkinnedLane.Surface",
+    "role": "Road",
+    "consumer": "Movable skinned lane binding",
+    "surfaceSha256": "596aeebe37b6f91fc47a3a28ace9da3b93310706d1c784ca7b7663b1602a99af",
+    "local": {}
+  },
+  {
+    "style": "Lift04",
+    "path": "Lanes/876989b1c60a7f4d610f1fe6874fbdaa8fb334d7ed58f95aba8eec1bd2b2d4e5/SkinnedLane.Surface",
+    "role": "Road",
+    "consumer": "Movable skinned lane binding",
+    "surfaceSha256": "91ee1d89642250c56fd67425c015d3705688e077e114cec0000ed656e3813ef4",
+    "local": {}
+  },
+  {
+    "style": "Lift04",
+    "path": "Lanes/90da02dcdb3d7e5f32aff72dedec311dee71580d1da54fb4c942078d2d5e71a7/SkinnedLane.Surface",
+    "role": "Road",
+    "consumer": "Movable skinned lane binding",
+    "surfaceSha256": "d794db343a6813e774731a14728adb32d2e544a88977749940f19e2cff145b1a",
+    "local": {}
+  },
+  {
+    "style": "Lift04",
+    "path": "Lanes/9ccf93a45d3301a859ecfd4dda85a039276917e2b5c8cb994d53948fe90d97a2/SkinnedLane.Surface",
+    "role": "Road",
+    "consumer": "Movable skinned lane binding",
+    "surfaceSha256": "1ff07a149413e5f100e3ec190d9d570d4338a4fe963d07c19fcd5391352481e2",
+    "local": {}
+  },
+  {
+    "style": "Lift04",
+    "path": "Lanes/9fd63b6610f45acb64d02680e77c11f38cb4565142f6920ec71923346efe7ef4/SkinnedLane.Surface",
+    "role": "Road",
+    "consumer": "Movable skinned lane binding",
+    "surfaceSha256": "7f6b7a0c4f3187c71939baad46312ed79755cba26a656315a5d556b2fbddf088",
+    "local": {}
+  },
+  {
+    "style": "Lift04",
+    "path": "Lanes/b20edfead16a3619356210216a42f2edfcae4f2e97185440e2a9e8d8bb149f17/SkinnedLane.Surface",
+    "role": "Road",
+    "consumer": "Movable skinned lane binding",
+    "surfaceSha256": "759a7bec3565c0a8a2e398c23a9d5fa1c05b4f3e1fae6cabc7f7f4011a47a46b",
+    "local": {}
+  },
+  {
+    "style": "Lift04",
+    "path": "Lanes/c212a2e5dde32ad874620108a88d7a802e2c996a5d9a0867716ee9641bc94b15/SkinnedLane.Surface",
+    "role": "Road",
+    "consumer": "Movable skinned lane binding",
+    "surfaceSha256": "3d5f0af73eb4dd85d6769d6c8aa1c3279a03352d9e8731ae3c42af24c04d18ff",
+    "local": {}
+  },
+  {
+    "style": "Lift04",
+    "path": "Lanes/c99e03034ce36221bc586ed623296bc0b607027d2d2462e8b96a20365d6ece2d/SkinnedLane.Surface",
+    "role": "Road",
+    "consumer": "Movable skinned lane binding",
+    "surfaceSha256": "b169a5306360dc366987af5de69d304c7a55fefa4e1736d59197e7835bb4b99e",
+    "local": {}
+  },
+  {
+    "style": "Lift04",
+    "path": "Lanes/d0abbc276d6f224f779f9511990bc42192b8cdc008a8b0dad2d0c3f00af0c602/SkinnedLane.Surface",
+    "role": "Road",
+    "consumer": "Movable skinned lane binding",
+    "surfaceSha256": "b197670ea8fe29d11a8d6dbd87def7b6524034c837e048e955dcd9aed5608802",
+    "local": {}
+  },
+  {
+    "style": "Lift04",
+    "path": "Lanes/d4ae678adbc26682fd70255910c46c38797cb47b55d91cfcd49b68d0c66b7383/SkinnedLane.Surface",
+    "role": "Road",
+    "consumer": "Movable skinned lane binding",
+    "surfaceSha256": "aa7e8a38d0d11b65184b028e4fc3c03f85ac8edbc770a8e81e37059f67144007",
+    "local": {}
+  },
+  {
+    "style": "Lift04",
+    "path": "Lanes/d58e5214b94403f7caf1c41de0cee471ab1668bc475b5c3e9e58c90a7a1f1105/SkinnedLane.Surface",
+    "role": "Road",
+    "consumer": "Movable skinned lane binding",
+    "surfaceSha256": "a9599a2ddaf1f068a079d6c182f0b2fe827140ec23dcaa2057ed5355c2d286d9",
+    "local": {}
+  },
+  {
+    "style": "Lift04",
+    "path": "Lanes/d74d853453d6df8265992d9d5376df255f14d4075d339d1866322dd38354ae2b/SkinnedLane.Surface",
+    "role": "Road",
+    "consumer": "Movable skinned lane binding",
+    "surfaceSha256": "0ff3244b47eb5fe9c66214a46cdacc8ee90c9c6e8d43adcbbd1e14140e163b00",
+    "local": {}
+  },
+  {
+    "style": "Lift04",
+    "path": "Lanes/d857b7cc202f9e8b231f18ca168d3858a8de2adaaffddd9a00e2c57a3c70c127/SkinnedLane.Surface",
+    "role": "Road",
+    "consumer": "Movable skinned lane binding",
+    "surfaceSha256": "43d8c2d04ea827a26b9e02422d8e995a56cdde0ab10b0155198176beb9631b91",
+    "local": {}
+  },
+  {
+    "style": "Lift04",
+    "path": "Lanes/fa1abfdf0f1bde8b2ad4faae88d13dab8ef9df38459cf048fcade8d500d500a9/SkinnedLane.Surface",
+    "role": "Road",
+    "consumer": "Movable skinned lane binding",
+    "surfaceSha256": "2e9ceb667f1bb421aee42a806fe5ad2a4453174a0c453cf2d4139e9172034a7e",
+    "local": {}
+  },
+  {
+    "style": "Lift04",
+    "path": "NativeSources/3aaa84602734568f9f0909f01c8527f0/Object.Surface",
+    "role": "Road",
+    "consumer": "MovableCompatibleRoad.CompatibleBase",
+    "surfaceSha256": "a3aa4806724365f8f990900fc158720f8872fac6523d51c287827323562eaed1",
+    "local": {}
+  },
+  {
+    "style": "Lift04",
+    "path": "NativeSources/d765f1348645cc68318b5ac29c61abde/Object.Surface",
+    "role": "NonRoad",
+    "consumer": "Measured native object descriptor conversion",
+    "surfaceSha256": "d765f1348645cc68318b5ac29c61abdea9d8c90c663a2e62a056b8019c05519f",
+    "local": {}
+  },
+  {
+    "style": "Lift04",
+    "path": "RepeatUnits/128604022d6d3d98bf5940187aa449ef214e75095ad81c04b10279e8b8275d0c/Repeat.Surface",
+    "role": "Road",
+    "consumer": "Lift04NearAppearance.cs",
+    "surfaceSha256": "27579ff7e7473600594596d2fa203109a1a85c776dd0b61d593dc95908ef42aa",
+    "local": {
+      "_BaseColorMap": "86835479da0788aca398ff14e700f03f",
+      "_MaskMap": "9892206de28fa9db600e8fa0c6dcf69d",
+      "_NormalMap": "f5b9a9abaa0db2547bfa2b75e8816749"
+    }
+  },
+  {
+    "style": "Lift04",
+    "path": "RepeatUnits/2bc06fd00989705f14f9bc1c57c4295e38ae2292dfcb776d49aec1dfee80b746/Repeat.Surface",
+    "role": "Road",
+    "consumer": "Lift04NearAppearance.cs",
+    "surfaceSha256": "a9970382d5665b2795817d40cca99d8dad168070fd78fc387b66eb02b3507b4e",
+    "local": {
+      "_BaseColorMap": "003b7a44afd8088b4b57ef8e163b1cb7",
+      "_MaskMap": "0bf2e6f1df335392593a18f353d5d346",
+      "_NormalMap": "43a2be81cb54230346d62b87e07c7350"
+    }
+  },
+  {
+    "style": "Lift05",
+    "path": "Cable/SkinnedCable.Surface",
+    "role": "NonRoad",
+    "consumer": "MovableCableSurface.Create",
+    "surfaceSha256": "f06e97cf7933eb1b8fca2d5bc2c040f4fd47b0d9fa804bd9a084f8d809d0aded",
+    "local": {}
+  },
+  {
+    "style": "Lift05",
+    "path": "Paint/SkinnedPaint.Surface",
+    "role": "Road",
+    "consumer": "Skinned selected-road paint",
+    "surfaceSha256": "1d134b5fd2695596a2c9cde3a00de241268dc33b3916b52fe6ada9b06c296e08",
+    "local": {
+      "_BaseColorMap": "bc2e09a359ba8e1f4b41c417b5f631af",
+      "_NormalMap": "d9d33ecb2b319859d2d356059bc00b22",
+      "_MaskMap": "9a7a7da8813bd92cf48a0f9a4052e651"
+    }
+  },
+  {
+    "style": "Lift05",
+    "path": "Road/NativeAsphalt.Surface",
+    "role": "Road",
+    "consumer": "NativeAsphalt corresponding road",
+    "surfaceSha256": "26223d0cca8f272b7dc0c97fa7a2fa23d0bb46aa31fd32db05de7d5159c29119",
+    "local": {}
+  },
+  {
+    "style": "Lift05",
+    "path": "Lanes/0315c992c5fafbd4e58999588f61d11ad0c7e657d62ee1f6aa2d0a830ea2ac91/SkinnedLane.Surface",
+    "role": "Road",
+    "consumer": "Movable skinned lane binding",
+    "surfaceSha256": "8281744eb937df1bf0ca9828245b11b4880dbd937b39dd878b1422141f4bf972",
+    "local": {}
+  },
+  {
+    "style": "Lift05",
+    "path": "Lanes/05a9841d7b95a456b8f3c0ae404bd10edacaa6a2671f2894b478e90a04ec509f/SkinnedLane.Surface",
+    "role": "Road",
+    "consumer": "Movable skinned lane binding",
+    "surfaceSha256": "dfc55c5abc492b3a037209c6fb62c797680a49ec1084ad3e11fa8c65d9c3333d",
+    "local": {}
+  },
+  {
+    "style": "Lift05",
+    "path": "Lanes/0bbf724ede5f09d195cdeaa85ac06a6b1a1aba39adb08daa578b73bca18b8871/SkinnedLane.Surface",
+    "role": "Road",
+    "consumer": "Movable skinned lane binding",
+    "surfaceSha256": "6758ca887f0d96207c5db788b3b60353c805f6bb0c6f328d7a9bef9f16d3b9d2",
+    "local": {}
+  },
+  {
+    "style": "Lift05",
+    "path": "Lanes/11e315e8ffbe4f0e8c0d648eda78ce3a488d5910e659d5ee46289ab98345f695/SkinnedLane.Surface",
+    "role": "Road",
+    "consumer": "Movable skinned lane binding",
+    "surfaceSha256": "3ddcfa5bbaab8476b6e8135fb064c98939d7a6d83fff5246eaa0d6cbb574831a",
+    "local": {}
+  },
+  {
+    "style": "Lift05",
+    "path": "Lanes/17758c69a425cf6cb7161e19b44e8069ea7c04cef8f417db4e9ae76873e82683/SkinnedLane.Surface",
+    "role": "Road",
+    "consumer": "Movable skinned lane binding",
+    "surfaceSha256": "931e7259b6dcae46b5d3002af1959acc346f12f1975fab9a70341523422f7cdf",
+    "local": {}
+  },
+  {
+    "style": "Lift05",
+    "path": "Lanes/179822297be72b5b03fb8dc696cb7e6dd67c3807cd098439e8a47c29717ad148/SkinnedLane.Surface",
+    "role": "Road",
+    "consumer": "Movable skinned lane binding",
+    "surfaceSha256": "644965751e672f29d592d1da143a1ce43cb51978ea90643cf8443fab0c66f351",
+    "local": {}
+  },
+  {
+    "style": "Lift05",
+    "path": "Lanes/2c3ef9341347ced4e6cff656c68f2304630b334301ceb1fba2573c1ea41dd9dc/SkinnedLane.Surface",
+    "role": "Road",
+    "consumer": "Movable skinned lane binding",
+    "surfaceSha256": "4e23aba4a739ac70126baacf0650f4d0818563126b18ef57f5d71f26365c9cea",
+    "local": {}
+  },
+  {
+    "style": "Lift05",
+    "path": "Lanes/34ccc3e758c8df9767b308ce3c98761698e1592fe2df0d81444461df798ee629/SkinnedLane.Surface",
+    "role": "Road",
+    "consumer": "Movable skinned lane binding",
+    "surfaceSha256": "e053acbae5761b0658a6039db8616c20c407f9c323286e4f1200b6798120bc5b",
+    "local": {}
+  },
+  {
+    "style": "Lift05",
+    "path": "Lanes/3734eced6e70ddd097d7704ed9b898643bde1f9ec505d0f537df2651560ff5dd/SkinnedLane.Surface",
+    "role": "Road",
+    "consumer": "Movable skinned lane binding",
+    "surfaceSha256": "b6d9e34cd44e2a7097689b9d29cd448b3848e96ae382b01bc4e6696d80140ee2",
+    "local": {}
+  },
+  {
+    "style": "Lift05",
+    "path": "Lanes/5bb944aa5c029094a902d6f2be80e90b68167718e137fd3f020528e71db77a5f/SkinnedLane.Surface",
+    "role": "Road",
+    "consumer": "Movable skinned lane binding",
+    "surfaceSha256": "c7311e5553515ad844b0b96d754630c20c5673444e79813284ece2bec677d9bc",
+    "local": {}
+  },
+  {
+    "style": "Lift05",
+    "path": "Lanes/626ef2c6d1b53f36be90c185a171307cb9902e4618a6c9e37637862466519c9b/SkinnedLane.Surface",
+    "role": "Road",
+    "consumer": "Movable skinned lane binding",
+    "surfaceSha256": "10bd53a5787efdc36af55660a277fff20c5ea6b4a888b7de4e197ceea36542a0",
+    "local": {}
+  },
+  {
+    "style": "Lift05",
+    "path": "Lanes/7576f3cefce849a339d988a445d3df515a68a04837e81537e96a821184716460/SkinnedLane.Surface",
+    "role": "Road",
+    "consumer": "Movable skinned lane binding",
+    "surfaceSha256": "ba227ebc039acd70619ac4b1d47677884525689ba3b78264fac08decaf912d85",
+    "local": {}
+  },
+  {
+    "style": "Lift05",
+    "path": "Lanes/847f881b6a5a452ac8342afb854c774103c4e9e2558a18f9fe27adb83475a118/SkinnedLane.Surface",
+    "role": "Road",
+    "consumer": "Movable skinned lane binding",
+    "surfaceSha256": "596aeebe37b6f91fc47a3a28ace9da3b93310706d1c784ca7b7663b1602a99af",
+    "local": {}
+  },
+  {
+    "style": "Lift05",
+    "path": "Lanes/876989b1c60a7f4d610f1fe6874fbdaa8fb334d7ed58f95aba8eec1bd2b2d4e5/SkinnedLane.Surface",
+    "role": "Road",
+    "consumer": "Movable skinned lane binding",
+    "surfaceSha256": "91ee1d89642250c56fd67425c015d3705688e077e114cec0000ed656e3813ef4",
+    "local": {}
+  },
+  {
+    "style": "Lift05",
+    "path": "Lanes/90da02dcdb3d7e5f32aff72dedec311dee71580d1da54fb4c942078d2d5e71a7/SkinnedLane.Surface",
+    "role": "Road",
+    "consumer": "Movable skinned lane binding",
+    "surfaceSha256": "d794db343a6813e774731a14728adb32d2e544a88977749940f19e2cff145b1a",
+    "local": {}
+  },
+  {
+    "style": "Lift05",
+    "path": "Lanes/9ccf93a45d3301a859ecfd4dda85a039276917e2b5c8cb994d53948fe90d97a2/SkinnedLane.Surface",
+    "role": "Road",
+    "consumer": "Movable skinned lane binding",
+    "surfaceSha256": "1ff07a149413e5f100e3ec190d9d570d4338a4fe963d07c19fcd5391352481e2",
+    "local": {}
+  },
+  {
+    "style": "Lift05",
+    "path": "Lanes/9fd63b6610f45acb64d02680e77c11f38cb4565142f6920ec71923346efe7ef4/SkinnedLane.Surface",
+    "role": "Road",
+    "consumer": "Movable skinned lane binding",
+    "surfaceSha256": "7f6b7a0c4f3187c71939baad46312ed79755cba26a656315a5d556b2fbddf088",
+    "local": {}
+  },
+  {
+    "style": "Lift05",
+    "path": "Lanes/b20edfead16a3619356210216a42f2edfcae4f2e97185440e2a9e8d8bb149f17/SkinnedLane.Surface",
+    "role": "Road",
+    "consumer": "Movable skinned lane binding",
+    "surfaceSha256": "759a7bec3565c0a8a2e398c23a9d5fa1c05b4f3e1fae6cabc7f7f4011a47a46b",
+    "local": {}
+  },
+  {
+    "style": "Lift05",
+    "path": "Lanes/c212a2e5dde32ad874620108a88d7a802e2c996a5d9a0867716ee9641bc94b15/SkinnedLane.Surface",
+    "role": "Road",
+    "consumer": "Movable skinned lane binding",
+    "surfaceSha256": "3d5f0af73eb4dd85d6769d6c8aa1c3279a03352d9e8731ae3c42af24c04d18ff",
+    "local": {}
+  },
+  {
+    "style": "Lift05",
+    "path": "Lanes/c99e03034ce36221bc586ed623296bc0b607027d2d2462e8b96a20365d6ece2d/SkinnedLane.Surface",
+    "role": "Road",
+    "consumer": "Movable skinned lane binding",
+    "surfaceSha256": "b169a5306360dc366987af5de69d304c7a55fefa4e1736d59197e7835bb4b99e",
+    "local": {}
+  },
+  {
+    "style": "Lift05",
+    "path": "Lanes/d0abbc276d6f224f779f9511990bc42192b8cdc008a8b0dad2d0c3f00af0c602/SkinnedLane.Surface",
+    "role": "Road",
+    "consumer": "Movable skinned lane binding",
+    "surfaceSha256": "b197670ea8fe29d11a8d6dbd87def7b6524034c837e048e955dcd9aed5608802",
+    "local": {}
+  },
+  {
+    "style": "Lift05",
+    "path": "Lanes/d4ae678adbc26682fd70255910c46c38797cb47b55d91cfcd49b68d0c66b7383/SkinnedLane.Surface",
+    "role": "Road",
+    "consumer": "Movable skinned lane binding",
+    "surfaceSha256": "aa7e8a38d0d11b65184b028e4fc3c03f85ac8edbc770a8e81e37059f67144007",
+    "local": {}
+  },
+  {
+    "style": "Lift05",
+    "path": "Lanes/d58e5214b94403f7caf1c41de0cee471ab1668bc475b5c3e9e58c90a7a1f1105/SkinnedLane.Surface",
+    "role": "Road",
+    "consumer": "Movable skinned lane binding",
+    "surfaceSha256": "a9599a2ddaf1f068a079d6c182f0b2fe827140ec23dcaa2057ed5355c2d286d9",
+    "local": {}
+  },
+  {
+    "style": "Lift05",
+    "path": "Lanes/d74d853453d6df8265992d9d5376df255f14d4075d339d1866322dd38354ae2b/SkinnedLane.Surface",
+    "role": "Road",
+    "consumer": "Movable skinned lane binding",
+    "surfaceSha256": "0ff3244b47eb5fe9c66214a46cdacc8ee90c9c6e8d43adcbbd1e14140e163b00",
+    "local": {}
+  },
+  {
+    "style": "Lift05",
+    "path": "Lanes/d857b7cc202f9e8b231f18ca168d3858a8de2adaaffddd9a00e2c57a3c70c127/SkinnedLane.Surface",
+    "role": "Road",
+    "consumer": "Movable skinned lane binding",
+    "surfaceSha256": "43d8c2d04ea827a26b9e02422d8e995a56cdde0ab10b0155198176beb9631b91",
+    "local": {}
+  },
+  {
+    "style": "Lift05",
+    "path": "Lanes/fa1abfdf0f1bde8b2ad4faae88d13dab8ef9df38459cf048fcade8d500d500a9/SkinnedLane.Surface",
+    "role": "Road",
+    "consumer": "Movable skinned lane binding",
+    "surfaceSha256": "2e9ceb667f1bb421aee42a806fe5ad2a4453174a0c453cf2d4139e9172034a7e",
+    "local": {}
+  },
+  {
+    "style": "Lift05",
+    "path": "NativeSources/3aaa84602734568f9f0909f01c8527f0/Object.Surface",
+    "role": "Road",
+    "consumer": "MovableCompatibleRoad.CompatibleBase",
+    "surfaceSha256": "a3aa4806724365f8f990900fc158720f8872fac6523d51c287827323562eaed1",
+    "local": {}
+  },
+  {
+    "style": "Lift05",
+    "path": "NativeSources/d765f1348645cc68318b5ac29c61abde/Object.Surface",
+    "role": "NonRoad",
+    "consumer": "Measured native object descriptor conversion",
+    "surfaceSha256": "d765f1348645cc68318b5ac29c61abdea9d8c90c663a2e62a056b8019c05519f",
+    "local": {}
+  },
+  {
+    "style": "Lift05",
+    "path": "RepeatUnits/18d35ed1e221c7a1a1cad597b22896ce5146eb6050095b2b86fd3da7605cbd82/Repeat.Surface",
+    "role": "Road",
+    "consumer": "Lift05NativeRoadAppearance.cs",
+    "surfaceSha256": "c02df4041cd89cb04ba9a2de549fc8f0e03db267a5ba4f09c4a360828afd4a91",
+    "local": {
+      "_BaseColorMap": "8b01c90e1a7dd8aea03cda1b6f141990",
+      "_MaskMap": "8ba2cc9d30ea72ea7993349ef85e3239",
+      "_NormalMap": "c57cb8679ea7cf33c25a505cc53ddf80"
+    }
+  },
+  {
+    "style": "Lift05",
+    "path": "RepeatUnits/240850aa002f85d71ce250f44328a8ab275e0542717942cee71af30bb82f5042/Repeat.Surface",
+    "role": "Road",
+    "consumer": "Lift05NativeRoadAppearance.cs",
+    "surfaceSha256": "b703bc889ee9f83a25af706c0512ec01ea5135b11dce3b3c4c2d4b288bc73823",
+    "local": {
+      "_BaseColorMap": "6d91d59e1145a5ee55a4a615ac3fd5d8",
+      "_NormalMap": "0125f839d04ca34bdf1413587f1952fe",
+      "_MaskMap": "0f592f20844cabd103b420ec3e480b16"
+    }
+  },
+  {
+    "style": "Lift05",
+    "path": "RepeatUnits/3061b3f27e2581a706363c6b7c7b86b5fe6fb0aba3e69c87a1b1f6318967ebec/Repeat.Surface",
+    "role": "Road",
+    "consumer": "Lift05NativeRoadAppearance.cs",
+    "surfaceSha256": "95f8e628c4438401c798fe0113067e3357a5639ac5718c30d93a21e366ea9155",
+    "local": {
+      "_BaseColorMap": "d0f83673edc23894d524cc17ce34e1c7",
+      "_NormalMap": "3d70c967fa19a66a95aed7f6481c02c5",
+      "_MaskMap": "0f5b086b83b7494d77b0f4efae0f89be"
+    }
+  },
+  {
+    "style": "Lift05",
+    "path": "RepeatUnits/40d7c50979f1502da28972cacf93d06805317986a0d1b1cc6b1faba7ada71284/Repeat.Surface",
+    "role": "Road",
+    "consumer": "Lift05NativeRoadAppearance.cs",
+    "surfaceSha256": "a7245728c9ffc5bdb62bda4c0095ffd99163eda4041f03712e6e639cfd19cd3a",
+    "local": {
+      "_BaseColorMap": "eec9d5d5d4bbf1ad3eaec8c6ecf80a6b",
+      "_MaskMap": "530fb93ab474fe47c9be0dd34e266067",
+      "_NormalMap": "66a08767fd5289fbfb00216d9216c5db"
+    }
+  },
+  {
+    "style": "Lift05",
+    "path": "RepeatUnits/7a355e468b816e195c561191ac1c5931847c874f2d0cbec74482c662ca3fe6f9/Repeat.Surface",
+    "role": "Road",
+    "consumer": "Lift05NativeRoadAppearance.cs",
+    "surfaceSha256": "2d584620b52cfdaf906807100eadd3e443d6452dcbbe33972bf129496a10504b",
+    "local": {
+      "_BaseColorMap": "fb2fdaaaba1f5cd82c3027ac064f2ac6",
+      "_NormalMap": "31a560544ac97508e0b22304cf6cc832",
+      "_MaskMap": "3aff7167104fb978471f0c01178247a9"
+    }
+  },
+  {
+    "style": "PedestrianDraw01",
+    "path": "Cable/SkinnedCable.Surface",
+    "role": "NonRoad",
+    "consumer": "MovableCableSurface.Create",
+    "surfaceSha256": "f06e97cf7933eb1b8fca2d5bc2c040f4fd47b0d9fa804bd9a084f8d809d0aded",
+    "local": {}
+  },
+  {
+    "style": "PedestrianDraw01",
+    "path": "Paint/SkinnedPaint.Surface",
+    "role": "Road",
+    "consumer": "Skinned selected-road paint",
+    "surfaceSha256": "1d134b5fd2695596a2c9cde3a00de241268dc33b3916b52fe6ada9b06c296e08",
+    "local": {
+      "_BaseColorMap": "bc2e09a359ba8e1f4b41c417b5f631af",
+      "_NormalMap": "d9d33ecb2b319859d2d356059bc00b22",
+      "_MaskMap": "9a7a7da8813bd92cf48a0f9a4052e651"
+    }
+  },
+  {
+    "style": "PedestrianDraw01",
+    "path": "Road/NativeAsphalt.Surface",
+    "role": "Road",
+    "consumer": "NativeAsphalt corresponding road",
+    "surfaceSha256": "26223d0cca8f272b7dc0c97fa7a2fa23d0bb46aa31fd32db05de7d5159c29119",
+    "local": {}
+  },
+  {
+    "style": "PedestrianDraw01",
+    "path": "Lanes/0315c992c5fafbd4e58999588f61d11ad0c7e657d62ee1f6aa2d0a830ea2ac91/SkinnedLane.Surface",
+    "role": "Road",
+    "consumer": "Movable skinned lane binding",
+    "surfaceSha256": "8281744eb937df1bf0ca9828245b11b4880dbd937b39dd878b1422141f4bf972",
+    "local": {}
+  },
+  {
+    "style": "PedestrianDraw01",
+    "path": "Lanes/05a9841d7b95a456b8f3c0ae404bd10edacaa6a2671f2894b478e90a04ec509f/SkinnedLane.Surface",
+    "role": "Road",
+    "consumer": "Movable skinned lane binding",
+    "surfaceSha256": "dfc55c5abc492b3a037209c6fb62c797680a49ec1084ad3e11fa8c65d9c3333d",
+    "local": {}
+  },
+  {
+    "style": "PedestrianDraw01",
+    "path": "Lanes/0bbf724ede5f09d195cdeaa85ac06a6b1a1aba39adb08daa578b73bca18b8871/SkinnedLane.Surface",
+    "role": "Road",
+    "consumer": "Movable skinned lane binding",
+    "surfaceSha256": "6758ca887f0d96207c5db788b3b60353c805f6bb0c6f328d7a9bef9f16d3b9d2",
+    "local": {}
+  },
+  {
+    "style": "PedestrianDraw01",
+    "path": "Lanes/11e315e8ffbe4f0e8c0d648eda78ce3a488d5910e659d5ee46289ab98345f695/SkinnedLane.Surface",
+    "role": "Road",
+    "consumer": "Movable skinned lane binding",
+    "surfaceSha256": "3ddcfa5bbaab8476b6e8135fb064c98939d7a6d83fff5246eaa0d6cbb574831a",
+    "local": {}
+  },
+  {
+    "style": "PedestrianDraw01",
+    "path": "Lanes/17758c69a425cf6cb7161e19b44e8069ea7c04cef8f417db4e9ae76873e82683/SkinnedLane.Surface",
+    "role": "Road",
+    "consumer": "Movable skinned lane binding",
+    "surfaceSha256": "931e7259b6dcae46b5d3002af1959acc346f12f1975fab9a70341523422f7cdf",
+    "local": {}
+  },
+  {
+    "style": "PedestrianDraw01",
+    "path": "Lanes/179822297be72b5b03fb8dc696cb7e6dd67c3807cd098439e8a47c29717ad148/SkinnedLane.Surface",
+    "role": "Road",
+    "consumer": "Movable skinned lane binding",
+    "surfaceSha256": "644965751e672f29d592d1da143a1ce43cb51978ea90643cf8443fab0c66f351",
+    "local": {}
+  },
+  {
+    "style": "PedestrianDraw01",
+    "path": "Lanes/2c3ef9341347ced4e6cff656c68f2304630b334301ceb1fba2573c1ea41dd9dc/SkinnedLane.Surface",
+    "role": "Road",
+    "consumer": "Movable skinned lane binding",
+    "surfaceSha256": "4e23aba4a739ac70126baacf0650f4d0818563126b18ef57f5d71f26365c9cea",
+    "local": {}
+  },
+  {
+    "style": "PedestrianDraw01",
+    "path": "Lanes/34ccc3e758c8df9767b308ce3c98761698e1592fe2df0d81444461df798ee629/SkinnedLane.Surface",
+    "role": "Road",
+    "consumer": "Movable skinned lane binding",
+    "surfaceSha256": "e053acbae5761b0658a6039db8616c20c407f9c323286e4f1200b6798120bc5b",
+    "local": {}
+  },
+  {
+    "style": "PedestrianDraw01",
+    "path": "Lanes/3734eced6e70ddd097d7704ed9b898643bde1f9ec505d0f537df2651560ff5dd/SkinnedLane.Surface",
+    "role": "Road",
+    "consumer": "Movable skinned lane binding",
+    "surfaceSha256": "b6d9e34cd44e2a7097689b9d29cd448b3848e96ae382b01bc4e6696d80140ee2",
+    "local": {}
+  },
+  {
+    "style": "PedestrianDraw01",
+    "path": "Lanes/5bb944aa5c029094a902d6f2be80e90b68167718e137fd3f020528e71db77a5f/SkinnedLane.Surface",
+    "role": "Road",
+    "consumer": "Movable skinned lane binding",
+    "surfaceSha256": "c7311e5553515ad844b0b96d754630c20c5673444e79813284ece2bec677d9bc",
+    "local": {}
+  },
+  {
+    "style": "PedestrianDraw01",
+    "path": "Lanes/626ef2c6d1b53f36be90c185a171307cb9902e4618a6c9e37637862466519c9b/SkinnedLane.Surface",
+    "role": "Road",
+    "consumer": "Movable skinned lane binding",
+    "surfaceSha256": "10bd53a5787efdc36af55660a277fff20c5ea6b4a888b7de4e197ceea36542a0",
+    "local": {}
+  },
+  {
+    "style": "PedestrianDraw01",
+    "path": "Lanes/7576f3cefce849a339d988a445d3df515a68a04837e81537e96a821184716460/SkinnedLane.Surface",
+    "role": "Road",
+    "consumer": "Movable skinned lane binding",
+    "surfaceSha256": "ba227ebc039acd70619ac4b1d47677884525689ba3b78264fac08decaf912d85",
+    "local": {}
+  },
+  {
+    "style": "PedestrianDraw01",
+    "path": "Lanes/847f881b6a5a452ac8342afb854c774103c4e9e2558a18f9fe27adb83475a118/SkinnedLane.Surface",
+    "role": "Road",
+    "consumer": "Movable skinned lane binding",
+    "surfaceSha256": "596aeebe37b6f91fc47a3a28ace9da3b93310706d1c784ca7b7663b1602a99af",
+    "local": {}
+  },
+  {
+    "style": "PedestrianDraw01",
+    "path": "Lanes/876989b1c60a7f4d610f1fe6874fbdaa8fb334d7ed58f95aba8eec1bd2b2d4e5/SkinnedLane.Surface",
+    "role": "Road",
+    "consumer": "Movable skinned lane binding",
+    "surfaceSha256": "91ee1d89642250c56fd67425c015d3705688e077e114cec0000ed656e3813ef4",
+    "local": {}
+  },
+  {
+    "style": "PedestrianDraw01",
+    "path": "Lanes/90da02dcdb3d7e5f32aff72dedec311dee71580d1da54fb4c942078d2d5e71a7/SkinnedLane.Surface",
+    "role": "Road",
+    "consumer": "Movable skinned lane binding",
+    "surfaceSha256": "d794db343a6813e774731a14728adb32d2e544a88977749940f19e2cff145b1a",
+    "local": {}
+  },
+  {
+    "style": "PedestrianDraw01",
+    "path": "Lanes/9ccf93a45d3301a859ecfd4dda85a039276917e2b5c8cb994d53948fe90d97a2/SkinnedLane.Surface",
+    "role": "Road",
+    "consumer": "Movable skinned lane binding",
+    "surfaceSha256": "1ff07a149413e5f100e3ec190d9d570d4338a4fe963d07c19fcd5391352481e2",
+    "local": {}
+  },
+  {
+    "style": "PedestrianDraw01",
+    "path": "Lanes/9fd63b6610f45acb64d02680e77c11f38cb4565142f6920ec71923346efe7ef4/SkinnedLane.Surface",
+    "role": "Road",
+    "consumer": "Movable skinned lane binding",
+    "surfaceSha256": "7f6b7a0c4f3187c71939baad46312ed79755cba26a656315a5d556b2fbddf088",
+    "local": {}
+  },
+  {
+    "style": "PedestrianDraw01",
+    "path": "Lanes/b20edfead16a3619356210216a42f2edfcae4f2e97185440e2a9e8d8bb149f17/SkinnedLane.Surface",
+    "role": "Road",
+    "consumer": "Movable skinned lane binding",
+    "surfaceSha256": "759a7bec3565c0a8a2e398c23a9d5fa1c05b4f3e1fae6cabc7f7f4011a47a46b",
+    "local": {}
+  },
+  {
+    "style": "PedestrianDraw01",
+    "path": "Lanes/c212a2e5dde32ad874620108a88d7a802e2c996a5d9a0867716ee9641bc94b15/SkinnedLane.Surface",
+    "role": "Road",
+    "consumer": "Movable skinned lane binding",
+    "surfaceSha256": "3d5f0af73eb4dd85d6769d6c8aa1c3279a03352d9e8731ae3c42af24c04d18ff",
+    "local": {}
+  },
+  {
+    "style": "PedestrianDraw01",
+    "path": "Lanes/c99e03034ce36221bc586ed623296bc0b607027d2d2462e8b96a20365d6ece2d/SkinnedLane.Surface",
+    "role": "Road",
+    "consumer": "Movable skinned lane binding",
+    "surfaceSha256": "b169a5306360dc366987af5de69d304c7a55fefa4e1736d59197e7835bb4b99e",
+    "local": {}
+  },
+  {
+    "style": "PedestrianDraw01",
+    "path": "Lanes/d0abbc276d6f224f779f9511990bc42192b8cdc008a8b0dad2d0c3f00af0c602/SkinnedLane.Surface",
+    "role": "Road",
+    "consumer": "Movable skinned lane binding",
+    "surfaceSha256": "b197670ea8fe29d11a8d6dbd87def7b6524034c837e048e955dcd9aed5608802",
+    "local": {}
+  },
+  {
+    "style": "PedestrianDraw01",
+    "path": "Lanes/d4ae678adbc26682fd70255910c46c38797cb47b55d91cfcd49b68d0c66b7383/SkinnedLane.Surface",
+    "role": "Road",
+    "consumer": "Movable skinned lane binding",
+    "surfaceSha256": "aa7e8a38d0d11b65184b028e4fc3c03f85ac8edbc770a8e81e37059f67144007",
+    "local": {}
+  },
+  {
+    "style": "PedestrianDraw01",
+    "path": "Lanes/d58e5214b94403f7caf1c41de0cee471ab1668bc475b5c3e9e58c90a7a1f1105/SkinnedLane.Surface",
+    "role": "Road",
+    "consumer": "Movable skinned lane binding",
+    "surfaceSha256": "a9599a2ddaf1f068a079d6c182f0b2fe827140ec23dcaa2057ed5355c2d286d9",
+    "local": {}
+  },
+  {
+    "style": "PedestrianDraw01",
+    "path": "Lanes/d74d853453d6df8265992d9d5376df255f14d4075d339d1866322dd38354ae2b/SkinnedLane.Surface",
+    "role": "Road",
+    "consumer": "Movable skinned lane binding",
+    "surfaceSha256": "0ff3244b47eb5fe9c66214a46cdacc8ee90c9c6e8d43adcbbd1e14140e163b00",
+    "local": {}
+  },
+  {
+    "style": "PedestrianDraw01",
+    "path": "Lanes/d857b7cc202f9e8b231f18ca168d3858a8de2adaaffddd9a00e2c57a3c70c127/SkinnedLane.Surface",
+    "role": "Road",
+    "consumer": "Movable skinned lane binding",
+    "surfaceSha256": "43d8c2d04ea827a26b9e02422d8e995a56cdde0ab10b0155198176beb9631b91",
+    "local": {}
+  },
+  {
+    "style": "PedestrianDraw01",
+    "path": "Lanes/fa1abfdf0f1bde8b2ad4faae88d13dab8ef9df38459cf048fcade8d500d500a9/SkinnedLane.Surface",
+    "role": "Road",
+    "consumer": "Movable skinned lane binding",
+    "surfaceSha256": "2e9ceb667f1bb421aee42a806fe5ad2a4453174a0c453cf2d4139e9172034a7e",
+    "local": {}
+  },
+  {
+    "style": "PedestrianDraw01",
+    "path": "NativeSources/3aaa84602734568f9f0909f01c8527f0/Object.Surface",
+    "role": "Road",
+    "consumer": "MovableCompatibleRoad.CompatibleBase",
+    "surfaceSha256": "a3aa4806724365f8f990900fc158720f8872fac6523d51c287827323562eaed1",
+    "local": {}
+  },
+  {
+    "style": "PedestrianDraw01",
+    "path": "NativeSources/d765f1348645cc68318b5ac29c61abde/Object.Surface",
+    "role": "NonRoad",
+    "consumer": "Measured native object descriptor conversion",
+    "surfaceSha256": "d765f1348645cc68318b5ac29c61abdea9d8c90c663a2e62a056b8019c05519f",
+    "local": {}
+  },
+  {
+    "style": "PedestrianDraw01",
+    "path": "RepeatUnits/0654d55f6457bbf76e4a452b45560f6480e62d24eebd602a74bc62fade7089ae/Repeat.Surface",
+    "role": "Road",
+    "consumer": "PedestrianDraw01PreparedRoadMapping.cs",
+    "surfaceSha256": "b02e42a3454d578e541d78f7eeede862b9f10194559de8c78b4f36fa9cee054f",
+    "local": {
+      "_BaseColorMap": "bc40035b163838bb6c954d3e3d49c1a3",
+      "_MaskMap": "57c12e611aece4f2b21e911b290ecbd6",
+      "_NormalMap": "f1c8f363ef813fafb4dedd5205e1543b"
+    }
+  },
+  {
+    "style": "PedestrianDraw01",
+    "path": "RepeatUnits/19e7aa9db90b4ad913271ca9a959209161a0d865e65082b8c3171e2c8accb650/Repeat.Surface",
+    "role": "Road",
+    "consumer": "PedestrianDraw01PreparedRoadMapping.cs",
+    "surfaceSha256": "84874a5ce9113a61f10abda6e87d0e40225f043acaa48dc5ed8bf1cec2202123",
+    "local": {
+      "_BaseColorMap": "dd92153cb0dff3fd1c0eb6670d88687d",
+      "_MaskMap": "7f9026f9765d5a8eccd30b6d11b48a57",
+      "_NormalMap": "cc4263b316fa2c3373406092f5a37621"
+    }
+  },
+  {
+    "style": "PedestrianDraw01",
+    "path": "RepeatUnits/9a7f4b58ff26c496ab8b4441fd5614c707c5880717fcd52c43a81cce887db6dc/Repeat.Surface",
+    "role": "Road",
+    "consumer": "PedestrianDraw01PreparedRoadMapping.cs",
+    "surfaceSha256": "f1885bf62e732f8fe7f8307b34edf37192dfe465de5b980f2e564b0fcb09bfbf",
+    "local": {
+      "_BaseColorMap": "70b48c91eabf10922c817b10fdb17828",
+      "_MaskMap": "da9438d4d15cd2035cca0d20d039825c",
+      "_NormalMap": "16947b9119fa5116230d1cb08e57bf90"
+    }
+  },
+  {
+    "style": "PedestrianDraw02",
+    "path": "Cable/SkinnedCable.Surface",
+    "role": "NonRoad",
+    "consumer": "MovableCableSurface.Create",
+    "surfaceSha256": "f06e97cf7933eb1b8fca2d5bc2c040f4fd47b0d9fa804bd9a084f8d809d0aded",
+    "local": {}
+  },
+  {
+    "style": "PedestrianDraw02",
+    "path": "Paint/SkinnedPaint.Surface",
+    "role": "Road",
+    "consumer": "Skinned selected-road paint",
+    "surfaceSha256": "1d134b5fd2695596a2c9cde3a00de241268dc33b3916b52fe6ada9b06c296e08",
+    "local": {
+      "_BaseColorMap": "bc2e09a359ba8e1f4b41c417b5f631af",
+      "_NormalMap": "d9d33ecb2b319859d2d356059bc00b22",
+      "_MaskMap": "9a7a7da8813bd92cf48a0f9a4052e651"
+    }
+  },
+  {
+    "style": "PedestrianDraw02",
+    "path": "Road/NativeAsphalt.Surface",
+    "role": "Road",
+    "consumer": "NativeAsphalt corresponding road",
+    "surfaceSha256": "26223d0cca8f272b7dc0c97fa7a2fa23d0bb46aa31fd32db05de7d5159c29119",
+    "local": {}
+  },
+  {
+    "style": "PedestrianDraw02",
+    "path": "Lanes/0315c992c5fafbd4e58999588f61d11ad0c7e657d62ee1f6aa2d0a830ea2ac91/SkinnedLane.Surface",
+    "role": "Road",
+    "consumer": "Movable skinned lane binding",
+    "surfaceSha256": "8281744eb937df1bf0ca9828245b11b4880dbd937b39dd878b1422141f4bf972",
+    "local": {}
+  },
+  {
+    "style": "PedestrianDraw02",
+    "path": "Lanes/05a9841d7b95a456b8f3c0ae404bd10edacaa6a2671f2894b478e90a04ec509f/SkinnedLane.Surface",
+    "role": "Road",
+    "consumer": "Movable skinned lane binding",
+    "surfaceSha256": "dfc55c5abc492b3a037209c6fb62c797680a49ec1084ad3e11fa8c65d9c3333d",
+    "local": {}
+  },
+  {
+    "style": "PedestrianDraw02",
+    "path": "Lanes/0bbf724ede5f09d195cdeaa85ac06a6b1a1aba39adb08daa578b73bca18b8871/SkinnedLane.Surface",
+    "role": "Road",
+    "consumer": "Movable skinned lane binding",
+    "surfaceSha256": "6758ca887f0d96207c5db788b3b60353c805f6bb0c6f328d7a9bef9f16d3b9d2",
+    "local": {}
+  },
+  {
+    "style": "PedestrianDraw02",
+    "path": "Lanes/11e315e8ffbe4f0e8c0d648eda78ce3a488d5910e659d5ee46289ab98345f695/SkinnedLane.Surface",
+    "role": "Road",
+    "consumer": "Movable skinned lane binding",
+    "surfaceSha256": "3ddcfa5bbaab8476b6e8135fb064c98939d7a6d83fff5246eaa0d6cbb574831a",
+    "local": {}
+  },
+  {
+    "style": "PedestrianDraw02",
+    "path": "Lanes/17758c69a425cf6cb7161e19b44e8069ea7c04cef8f417db4e9ae76873e82683/SkinnedLane.Surface",
+    "role": "Road",
+    "consumer": "Movable skinned lane binding",
+    "surfaceSha256": "931e7259b6dcae46b5d3002af1959acc346f12f1975fab9a70341523422f7cdf",
+    "local": {}
+  },
+  {
+    "style": "PedestrianDraw02",
+    "path": "Lanes/179822297be72b5b03fb8dc696cb7e6dd67c3807cd098439e8a47c29717ad148/SkinnedLane.Surface",
+    "role": "Road",
+    "consumer": "Movable skinned lane binding",
+    "surfaceSha256": "644965751e672f29d592d1da143a1ce43cb51978ea90643cf8443fab0c66f351",
+    "local": {}
+  },
+  {
+    "style": "PedestrianDraw02",
+    "path": "Lanes/2c3ef9341347ced4e6cff656c68f2304630b334301ceb1fba2573c1ea41dd9dc/SkinnedLane.Surface",
+    "role": "Road",
+    "consumer": "Movable skinned lane binding",
+    "surfaceSha256": "4e23aba4a739ac70126baacf0650f4d0818563126b18ef57f5d71f26365c9cea",
+    "local": {}
+  },
+  {
+    "style": "PedestrianDraw02",
+    "path": "Lanes/34ccc3e758c8df9767b308ce3c98761698e1592fe2df0d81444461df798ee629/SkinnedLane.Surface",
+    "role": "Road",
+    "consumer": "Movable skinned lane binding",
+    "surfaceSha256": "e053acbae5761b0658a6039db8616c20c407f9c323286e4f1200b6798120bc5b",
+    "local": {}
+  },
+  {
+    "style": "PedestrianDraw02",
+    "path": "Lanes/3734eced6e70ddd097d7704ed9b898643bde1f9ec505d0f537df2651560ff5dd/SkinnedLane.Surface",
+    "role": "Road",
+    "consumer": "Movable skinned lane binding",
+    "surfaceSha256": "b6d9e34cd44e2a7097689b9d29cd448b3848e96ae382b01bc4e6696d80140ee2",
+    "local": {}
+  },
+  {
+    "style": "PedestrianDraw02",
+    "path": "Lanes/5bb944aa5c029094a902d6f2be80e90b68167718e137fd3f020528e71db77a5f/SkinnedLane.Surface",
+    "role": "Road",
+    "consumer": "Movable skinned lane binding",
+    "surfaceSha256": "c7311e5553515ad844b0b96d754630c20c5673444e79813284ece2bec677d9bc",
+    "local": {}
+  },
+  {
+    "style": "PedestrianDraw02",
+    "path": "Lanes/626ef2c6d1b53f36be90c185a171307cb9902e4618a6c9e37637862466519c9b/SkinnedLane.Surface",
+    "role": "Road",
+    "consumer": "Movable skinned lane binding",
+    "surfaceSha256": "10bd53a5787efdc36af55660a277fff20c5ea6b4a888b7de4e197ceea36542a0",
+    "local": {}
+  },
+  {
+    "style": "PedestrianDraw02",
+    "path": "Lanes/7576f3cefce849a339d988a445d3df515a68a04837e81537e96a821184716460/SkinnedLane.Surface",
+    "role": "Road",
+    "consumer": "Movable skinned lane binding",
+    "surfaceSha256": "ba227ebc039acd70619ac4b1d47677884525689ba3b78264fac08decaf912d85",
+    "local": {}
+  },
+  {
+    "style": "PedestrianDraw02",
+    "path": "Lanes/847f881b6a5a452ac8342afb854c774103c4e9e2558a18f9fe27adb83475a118/SkinnedLane.Surface",
+    "role": "Road",
+    "consumer": "Movable skinned lane binding",
+    "surfaceSha256": "596aeebe37b6f91fc47a3a28ace9da3b93310706d1c784ca7b7663b1602a99af",
+    "local": {}
+  },
+  {
+    "style": "PedestrianDraw02",
+    "path": "Lanes/876989b1c60a7f4d610f1fe6874fbdaa8fb334d7ed58f95aba8eec1bd2b2d4e5/SkinnedLane.Surface",
+    "role": "Road",
+    "consumer": "Movable skinned lane binding",
+    "surfaceSha256": "91ee1d89642250c56fd67425c015d3705688e077e114cec0000ed656e3813ef4",
+    "local": {}
+  },
+  {
+    "style": "PedestrianDraw02",
+    "path": "Lanes/90da02dcdb3d7e5f32aff72dedec311dee71580d1da54fb4c942078d2d5e71a7/SkinnedLane.Surface",
+    "role": "Road",
+    "consumer": "Movable skinned lane binding",
+    "surfaceSha256": "d794db343a6813e774731a14728adb32d2e544a88977749940f19e2cff145b1a",
+    "local": {}
+  },
+  {
+    "style": "PedestrianDraw02",
+    "path": "Lanes/9ccf93a45d3301a859ecfd4dda85a039276917e2b5c8cb994d53948fe90d97a2/SkinnedLane.Surface",
+    "role": "Road",
+    "consumer": "Movable skinned lane binding",
+    "surfaceSha256": "1ff07a149413e5f100e3ec190d9d570d4338a4fe963d07c19fcd5391352481e2",
+    "local": {}
+  },
+  {
+    "style": "PedestrianDraw02",
+    "path": "Lanes/9fd63b6610f45acb64d02680e77c11f38cb4565142f6920ec71923346efe7ef4/SkinnedLane.Surface",
+    "role": "Road",
+    "consumer": "Movable skinned lane binding",
+    "surfaceSha256": "7f6b7a0c4f3187c71939baad46312ed79755cba26a656315a5d556b2fbddf088",
+    "local": {}
+  },
+  {
+    "style": "PedestrianDraw02",
+    "path": "Lanes/b20edfead16a3619356210216a42f2edfcae4f2e97185440e2a9e8d8bb149f17/SkinnedLane.Surface",
+    "role": "Road",
+    "consumer": "Movable skinned lane binding",
+    "surfaceSha256": "759a7bec3565c0a8a2e398c23a9d5fa1c05b4f3e1fae6cabc7f7f4011a47a46b",
+    "local": {}
+  },
+  {
+    "style": "PedestrianDraw02",
+    "path": "Lanes/c212a2e5dde32ad874620108a88d7a802e2c996a5d9a0867716ee9641bc94b15/SkinnedLane.Surface",
+    "role": "Road",
+    "consumer": "Movable skinned lane binding",
+    "surfaceSha256": "3d5f0af73eb4dd85d6769d6c8aa1c3279a03352d9e8731ae3c42af24c04d18ff",
+    "local": {}
+  },
+  {
+    "style": "PedestrianDraw02",
+    "path": "Lanes/c99e03034ce36221bc586ed623296bc0b607027d2d2462e8b96a20365d6ece2d/SkinnedLane.Surface",
+    "role": "Road",
+    "consumer": "Movable skinned lane binding",
+    "surfaceSha256": "b169a5306360dc366987af5de69d304c7a55fefa4e1736d59197e7835bb4b99e",
+    "local": {}
+  },
+  {
+    "style": "PedestrianDraw02",
+    "path": "Lanes/d0abbc276d6f224f779f9511990bc42192b8cdc008a8b0dad2d0c3f00af0c602/SkinnedLane.Surface",
+    "role": "Road",
+    "consumer": "Movable skinned lane binding",
+    "surfaceSha256": "b197670ea8fe29d11a8d6dbd87def7b6524034c837e048e955dcd9aed5608802",
+    "local": {}
+  },
+  {
+    "style": "PedestrianDraw02",
+    "path": "Lanes/d4ae678adbc26682fd70255910c46c38797cb47b55d91cfcd49b68d0c66b7383/SkinnedLane.Surface",
+    "role": "Road",
+    "consumer": "Movable skinned lane binding",
+    "surfaceSha256": "aa7e8a38d0d11b65184b028e4fc3c03f85ac8edbc770a8e81e37059f67144007",
+    "local": {}
+  },
+  {
+    "style": "PedestrianDraw02",
+    "path": "Lanes/d58e5214b94403f7caf1c41de0cee471ab1668bc475b5c3e9e58c90a7a1f1105/SkinnedLane.Surface",
+    "role": "Road",
+    "consumer": "Movable skinned lane binding",
+    "surfaceSha256": "a9599a2ddaf1f068a079d6c182f0b2fe827140ec23dcaa2057ed5355c2d286d9",
+    "local": {}
+  },
+  {
+    "style": "PedestrianDraw02",
+    "path": "Lanes/d74d853453d6df8265992d9d5376df255f14d4075d339d1866322dd38354ae2b/SkinnedLane.Surface",
+    "role": "Road",
+    "consumer": "Movable skinned lane binding",
+    "surfaceSha256": "0ff3244b47eb5fe9c66214a46cdacc8ee90c9c6e8d43adcbbd1e14140e163b00",
+    "local": {}
+  },
+  {
+    "style": "PedestrianDraw02",
+    "path": "Lanes/d857b7cc202f9e8b231f18ca168d3858a8de2adaaffddd9a00e2c57a3c70c127/SkinnedLane.Surface",
+    "role": "Road",
+    "consumer": "Movable skinned lane binding",
+    "surfaceSha256": "43d8c2d04ea827a26b9e02422d8e995a56cdde0ab10b0155198176beb9631b91",
+    "local": {}
+  },
+  {
+    "style": "PedestrianDraw02",
+    "path": "Lanes/fa1abfdf0f1bde8b2ad4faae88d13dab8ef9df38459cf048fcade8d500d500a9/SkinnedLane.Surface",
+    "role": "Road",
+    "consumer": "Movable skinned lane binding",
+    "surfaceSha256": "2e9ceb667f1bb421aee42a806fe5ad2a4453174a0c453cf2d4139e9172034a7e",
+    "local": {}
+  },
+  {
+    "style": "PedestrianDraw02",
+    "path": "NativeSources/3aaa84602734568f9f0909f01c8527f0/Object.Surface",
+    "role": "Road",
+    "consumer": "MovableCompatibleRoad.CompatibleBase",
+    "surfaceSha256": "a3aa4806724365f8f990900fc158720f8872fac6523d51c287827323562eaed1",
+    "local": {}
+  },
+  {
+    "style": "PedestrianDraw02",
+    "path": "NativeSources/d765f1348645cc68318b5ac29c61abde/Object.Surface",
+    "role": "NonRoad",
+    "consumer": "Measured native object descriptor conversion",
+    "surfaceSha256": "d765f1348645cc68318b5ac29c61abdea9d8c90c663a2e62a056b8019c05519f",
+    "local": {}
+  },
+  {
+    "style": "PedestrianDraw02",
+    "path": "RepeatUnits/32b19a6ad3c9751659a935b6b819bcdf6c9e8307b42714b56b500392c22c2ce1/Repeat.Surface",
+    "role": "Road",
+    "consumer": "PedestrianDraw02AtlasAppearance.cs",
+    "surfaceSha256": "a117ae7f20fad7849ab100fe49e4f3f52bdd0d1b3460e9a0a5de9e0f0f0f68d6",
+    "local": {
+      "_BaseColorMap": "9cff2e8df65bd892d22d7b4d7b6e21b1",
+      "_MaskMap": "47731bb23519ba87c98a9e96570195ab",
+      "_NormalMap": "85a889fa67ffdca6b9680c425e96fb02"
+    }
+  },
+  {
+    "style": "PedestrianDraw02",
+    "path": "RepeatUnits/3bd3b389ccd3e506b219788ef22876c161e2d15582578ad50965312f2a99731d/Repeat.Surface",
+    "role": "Road",
+    "consumer": "PedestrianDraw02AtlasAppearance.cs",
+    "surfaceSha256": "b8b6e88a0b64bb848b0f7829ee1ab0bf70dd655ef078cdb0a351ad676886e0e0",
+    "local": {
+      "_BaseColorMap": "f124174e26a210105cdf699c2511e302",
+      "_MaskMap": "af1272d3d6aad28452eb06e8fb65dcf7",
+      "_NormalMap": "7d30dce636b4a0ae660102a821f26419"
+    }
+  }
+]

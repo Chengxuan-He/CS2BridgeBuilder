@@ -61,7 +61,7 @@ internal static class BridgeCables
         internal bool Outer { get; }
     }
 
-    private static readonly Cables[] Measured = ReadPackedMeasured();
+    private static Cables[] Measured => GenerationParameters.Get<Cables[]>("BridgeBuilder.Bridges.BridgeCables.Measured", () => ReadPackedMeasured());
     /// <summary>Everything measured, for the tests to hold the tower table against.</summary>
     internal static IEnumerable<Cables> All => Measured;
 
@@ -258,7 +258,7 @@ internal static class BridgeCables
     /// <see cref = "Cables.Outer"/> is the recorded test for that, and both have to hold before a tower is
     /// sized against its cables.
     /// </summary>
-    private static readonly Spacing[] Spacings = ReadPackedSpacings();
+    private static Spacing[] Spacings => GenerationParameters.Get<Spacing[]>("BridgeBuilder.Bridges.BridgeCables.Spacings", () => ReadPackedSpacings());
     /// <summary>The measured distances for a tower, or null when none were taken.</summary>
     internal static Spacing? SpacingFor(string towerName)
     {
@@ -371,5 +371,5 @@ internal static class BridgeCables
 internal static class Numeric_BridgeCables_cs
 {
     static Numeric_BridgeCables_cs() {}
-    internal static readonly HardcodedNumbers Values = HardcodedNumbers.Load("BridgeCables_cs");
+    internal static HardcodedNumbers Values => GenerationParameters.Get<HardcodedNumbers>("BridgeBuilder.Bridges.Numeric_BridgeCables_cs.Values", () => HardcodedNumbers.Load("BridgeCables_cs"));
 }

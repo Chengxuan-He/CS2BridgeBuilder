@@ -13,7 +13,7 @@ pairs={
  '375b871b66aaf675dacef141eb2a9810':'646901d94c691865ba8a1a647f57f7c3'}
 report=[]
 for style in ('Draw01','Draw02','Draw03','Lift01','Lift02','Lift03','Lift04','Lift05','PedestrianDraw01','PedestrianDraw02'):
- source=ROOT/'assets/Materials'/style/'Road/NativeAsphalt.Surface';raw=source.read_bytes();assert source.with_suffix('.Surface.cid').read_text().strip()=='88df662f6bc8058d3ecf8f7a5d7f2239'
+ source=ROOT/'assets/Materials'/style/'Road/NativeAsphalt.Surface';raw=source.read_bytes();assert source.with_suffix('.Surface.cid').read_text().strip()=='4ed62106d81ea5ff38241d96c73b85fb'
  assert raw[:7]==bytes([1,0,0,0,0,0,0])
  result=raw;offsets=set()
  for old,new in pairs.items():

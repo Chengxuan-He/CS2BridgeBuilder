@@ -36,9 +36,9 @@ internal static class Draw02FixedCurbs
     }
 
     // Geometry SHA-256: 1f0ff1a2c0a8318e6537bd347ae064d1bb55bfa48f3cf3c2375601adcd05dd18
-    private static readonly int[] Near = ReadPackedNear();
+    private static int[] Near => GenerationParameters.Get<int[]>("BridgeBuilder.Bridges.Draw02FixedCurbs.Near", () => ReadPackedNear());
     // Geometry SHA-256: 9c0c22c62ef170b0a8be300dee2ab7d71c0c27b745e3fc6395b96a34b69b4b4d
-    private static readonly int[] Middle = ReadPackedMiddle();
+    private static int[] Middle => GenerationParameters.Get<int[]>("BridgeBuilder.Bridges.Draw02FixedCurbs.Middle", () => ReadPackedMiddle());
     private static int[] ReadPackedNear()
     {
         var d = Numeric_Types_Draw02_Draw02FixedCurbs_g_cs.Values;
@@ -62,5 +62,5 @@ internal static class Draw02FixedCurbs
 internal static class Numeric_Types_Draw02_Draw02FixedCurbs_g_cs
 {
     static Numeric_Types_Draw02_Draw02FixedCurbs_g_cs() {}
-    internal static readonly HardcodedNumbers Values = HardcodedNumbers.Load("Types_Draw02_Draw02FixedCurbs_g_cs");
+    internal static HardcodedNumbers Values => GenerationParameters.Get<HardcodedNumbers>("BridgeBuilder.Bridges.Numeric_Types_Draw02_Draw02FixedCurbs_g_cs.Values", () => HardcodedNumbers.Load("Types_Draw02_Draw02FixedCurbs_g_cs"));
 }

@@ -54,5 +54,5 @@ internal sealed class Lift03SourceRenders : MovableSourceRenders
 internal static class Numeric_Types_Lift03_Lift03SourceRenders_cs
 {
     static Numeric_Types_Lift03_Lift03SourceRenders_cs() {}
-    internal static readonly HardcodedNumbers Values = HardcodedNumbers.Load("Types_Lift03_Lift03SourceRenders_cs");
+    internal static HardcodedNumbers Values => GenerationParameters.Get<HardcodedNumbers>("BridgeBuilder.Bridges.Numeric_Types_Lift03_Lift03SourceRenders_cs.Values", () => HardcodedNumbers.Load("Types_Lift03_Lift03SourceRenders_cs"));
 }

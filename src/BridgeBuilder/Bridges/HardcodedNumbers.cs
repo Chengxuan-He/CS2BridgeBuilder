@@ -4,7 +4,7 @@ using System.Security.Cryptography;
 
 namespace BridgeBuilder.Bridges;
 
-// Immutable measured arrays, owned by each generated data class for its assembly lifetime.
+// Immutable measured arrays, owned by the active construction/metadata scope.
 // The resource is manager input only; generated native assets never reference this loader.
 internal sealed class HardcodedNumbers
 {
@@ -26,6 +26,9 @@ internal sealed class HardcodedNumbers
     }
 
     internal static HardcodedNumbers Load(string name)
+        => GenerationParameters.Get("BBN:" + name, () => Read(name));
+
+    private static HardcodedNumbers Read(string name)
     {
         using var stream = typeof(HardcodedNumbers).Assembly.GetManifestResourceStream(
             "BridgeBuilder.Numbers." + name + ".bin")

@@ -91,5 +91,5 @@ internal sealed class Draw01UndersideLayout
 internal static class Numeric_Types_Draw01_Draw01UndersideLayout_cs
 {
     static Numeric_Types_Draw01_Draw01UndersideLayout_cs() {}
-    internal static readonly HardcodedNumbers Values = HardcodedNumbers.Load("Types_Draw01_Draw01UndersideLayout_cs");
+    internal static HardcodedNumbers Values => GenerationParameters.Get<HardcodedNumbers>("BridgeBuilder.Bridges.Numeric_Types_Draw01_Draw01UndersideLayout_cs.Values", () => HardcodedNumbers.Load("Types_Draw01_Draw01UndersideLayout_cs"));
 }

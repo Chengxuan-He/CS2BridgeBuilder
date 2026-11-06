@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using Unity.Mathematics;
 
 namespace BridgeBuilder.Bridges;
@@ -36,14 +37,21 @@ internal static class CoveredWoodGeometry
             for (var i = ranges[r]; i < ranges[r + Numeric_Types_CoveredWood_CoveredWoodGeometry_cs.Values.I32[8]]; i++)
                 if (Math.Abs(source[i].x) != CoveredWoodColumnData.HalfSpan)
                     return false;
+        var left = new List<int>();
+        var right = new List<int>();
         for (var r = Numeric_Types_CoveredWood_CoveredWoodGeometry_cs.Values.I32[9]; r < ranges.Length; r += Numeric_Types_CoveredWood_CoveredWoodGeometry_cs.Values.I32[10])
-            AffineGeometry.For(ranges[r], ranges[r + Numeric_Types_CoveredWood_CoveredWoodGeometry_cs.Values.I32[11]], i =>
+            for (int i = ranges[r]; i < ranges[r + Numeric_Types_CoveredWood_CoveredWoodGeometry_cs.Values.I32[11]]; i++)
             {
                 // User explicitly requires the pre-fix TOP width throughout the upright.
                 // The metaprogram has resolved its rectangular faces; road widening must not
                 // enlarge them again. Preserve authored y/z and all other mesh data and parts.
-                moved[i].x = source[i].x < Numeric_Types_CoveredWood_CoveredWoodGeometry_cs.Values.F32[0] ? CoveredWoodColumnData.Left : CoveredWoodColumnData.Right;
-            });
+                if (source[i].x < Numeric_Types_CoveredWood_CoveredWoodGeometry_cs.Values.F32[0]) left.Add(i);
+                else right.Add(i);
+            }
+        AffineGeometry.Execute(StructurePrograms.Data, StructurePrograms.ConstantX, new[] { source, moved },
+            Array.Empty<float[]>(), new[] { CoveredWoodColumnData.Left }, count: left.Count, indices: new[] { left.ToArray() });
+        AffineGeometry.Execute(StructurePrograms.Data, StructurePrograms.ConstantX, new[] { source, moved },
+            Array.Empty<float[]>(), new[] { CoveredWoodColumnData.Right }, count: right.Count, indices: new[] { right.ToArray() });
         return true;
     }
 }
@@ -52,5 +60,5 @@ internal static class CoveredWoodGeometry
 internal static class Numeric_Types_CoveredWood_CoveredWoodGeometry_cs
 {
     static Numeric_Types_CoveredWood_CoveredWoodGeometry_cs() {}
-    internal static readonly HardcodedNumbers Values = HardcodedNumbers.Load("Types_CoveredWood_CoveredWoodGeometry_cs");
+    internal static HardcodedNumbers Values => GenerationParameters.Get<HardcodedNumbers>("BridgeBuilder.Bridges.Numeric_Types_CoveredWood_CoveredWoodGeometry_cs.Values", () => HardcodedNumbers.Load("Types_CoveredWood_CoveredWoodGeometry_cs"));
 }

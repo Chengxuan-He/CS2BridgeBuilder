@@ -51,11 +51,11 @@ internal static class Draw02LaneRailAssembly
                 int extentPart = Draw02LaneRails.Part(lod, false, true, positive);
                 var extent = Draw02LaneRails.Extent(extentPart);
                 var middle = Boundaries((extent.x + extent.y) * Numeric_Types_Draw02_Draw02LaneRailAssembly_cs.Values.F32[0]);
-                for (int boundary = Numeric_Types_Draw02_Draw02LaneRailAssembly_cs.Values.I32[11]; boundary < middle.Length; boundary++)
+                for (int boundary = Numeric_Types_Draw02_Draw02LaneRailAssembly_cs.Values.I32[7]; boundary < middle.Length; boundary++)
                 {
                     int index = boundary;
                     var contact = middle[index];
-                    int part = Draw02LaneRails.Part(lod, contact.CarCar, (contact.Left & Kind.Car) != (BridgeBuilder.Bridges.MovableRoadLaneLayout.Kind)(Numeric_Types_Draw02_Draw02LaneRailAssembly_cs.Values.I32[12]), positive);
+                    int part = Draw02LaneRails.Part(lod, contact.CarCar, (contact.Left & Kind.Car) != (BridgeBuilder.Bridges.MovableRoadLaneLayout.Kind)(Numeric_Types_Draw02_Draw02LaneRailAssembly_cs.Values.I32[8]), positive);
                     int sourceLod = Draw02LaneRails.SourceLod(lod);
                     // Retain this rail's assigned reference contact at stations where
                     // that ordinal is absent, without adding cuts or rejecting shape.
@@ -64,9 +64,9 @@ internal static class Draw02LaneRailAssembly
                         var values = Boundaries(z);
                         return index < values.Length ? values[index].X : contact.X;
                     }
+
                     var plan = Draw02LaneRails.Create(part, Target, vertices[sourceLod], indices[sourceLod]);
-                    extra.Add(new MovableRoadAssets.Supplement(input[sourceLod].Source, Numeric_Types_Draw02_Draw02LaneRailAssembly_cs.Values.I32[13], plan,
-                        semanticKey: $"Draw02Rail/{(positive ? "positive" : "negative")}/{boundary}"));
+                    extra.Add(new MovableRoadAssets.Supplement(input[sourceLod].Source, Numeric_Types_Draw02_Draw02LaneRailAssembly_cs.Values.I32[9], plan, semanticKey: $"Draw02Rail/{(positive ? "positive" : "negative")}/{boundary}"));
                 }
             }
 
@@ -84,5 +84,5 @@ internal static class Numeric_Types_Draw02_Draw02LaneRailAssembly_cs
     {
     }
 
-    internal static readonly HardcodedNumbers Values = HardcodedNumbers.Load("Types_Draw02_Draw02LaneRailAssembly_cs");
+    internal static HardcodedNumbers Values => GenerationParameters.Get<HardcodedNumbers>("BridgeBuilder.Bridges.Numeric_Types_Draw02_Draw02LaneRailAssembly_cs.Values", () => HardcodedNumbers.Load("Types_Draw02_Draw02LaneRailAssembly_cs"));
 }

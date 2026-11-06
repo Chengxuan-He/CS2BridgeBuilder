@@ -7,7 +7,7 @@ namespace BridgeBuilder.Bridges;
 // translate without changing their section. All source faces and channels remain.
 internal static class Lift03ApproachStructure
 {
-    private static readonly HardcodedNumbers Numbers = HardcodedNumbers.Load("Types_Lift03_ApproachCenterJoints");
+    private static HardcodedNumbers Numbers => GenerationParameters.Get<HardcodedNumbers>("BridgeBuilder.Bridges.Lift03ApproachStructure.Numbers", () => HardcodedNumbers.Load("Types_Lift03_ApproachCenterJoints"));
     internal static MovableStructureModel.Plan Create(int lod, Vector3[] source, int[] indices, float delta)
     {
         var data = Numbers.I32;
@@ -30,11 +30,19 @@ internal static class Lift03ApproachStructure
             int first = data[at], last = data[at + Numeric_Types_Lift03_Lift03ApproachStructure_cs.Values.I32[16]], side = data[at + Numeric_Types_Lift03_Lift03ApproachStructure_cs.Values.I32[17]];
             if (first < Numeric_Types_Lift03_Lift03ApproachStructure_cs.Values.I32[18] || last < first || last >= positions.Length || side < -Numeric_Types_Lift03_Lift03ApproachStructure_cs.Values.I32[19] || side > Numeric_Types_Lift03_Lift03ApproachStructure_cs.Values.I32[20])
                 throw new InvalidOperationException("Invalid Lift03 fixed source ownership.");
-            for (var i = first; i <= last; i++)
-                positions[i].x += side * delta;
+            AffineGeometry.Execute(RangePrograms.Data, 0, new[] { positions }, Array.Empty<float[]>(), new float[] { side, delta }, first, Math.Max(0, checked((checked((last) + 1)) - (first))));
         }
 
         return new MovableStructureModel.Plan(source, positions, new[] { indices }, new[] { new bool[indices.Length / Numeric_Types_Lift03_Lift03ApproachStructure_cs.Values.I32[21]] });
+    }
+
+    private static class RangePrograms
+    {
+        static RangePrograms()
+        {
+        }
+
+        internal static HardcodedNumbers Data => GenerationParameters.Get<HardcodedNumbers>("BridgeBuilder.Bridges.Lift03ApproachStructure.RangePrograms.Data", () => HardcodedNumbers.Load("Types_Lift03_Lift03ApproachStructure_RangePrograms"));
     }
 }
 
@@ -45,5 +53,5 @@ internal static class Numeric_Types_Lift03_Lift03ApproachStructure_cs
     {
     }
 
-    internal static readonly HardcodedNumbers Values = HardcodedNumbers.Load("Types_Lift03_Lift03ApproachStructure_cs");
+    internal static HardcodedNumbers Values => GenerationParameters.Get<HardcodedNumbers>("BridgeBuilder.Bridges.Numeric_Types_Lift03_Lift03ApproachStructure_cs.Values", () => HardcodedNumbers.Load("Types_Lift03_Lift03ApproachStructure_cs"));
 }

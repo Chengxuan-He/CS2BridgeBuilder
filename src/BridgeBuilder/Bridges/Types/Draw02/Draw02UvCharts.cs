@@ -56,8 +56,8 @@ internal static class Draw02UvCharts
     };
     private static class Data
     {
-        internal static readonly HardcodedNumbers Values = HardcodedNumbers.Load("Draw02_NativeUvCharts");
-        internal static readonly Dictionary<int, MovableUvChart[]> Loaded = new();
+        internal static HardcodedNumbers Values => GenerationParameters.Get<HardcodedNumbers>("BridgeBuilder.Bridges.Draw02UvCharts.Data.Values", () => HardcodedNumbers.Load("Draw02_NativeUvCharts"));
+        internal static Dictionary<int, MovableUvChart[]> Loaded => GenerationParameters.Get<Dictionary<int, MovableUvChart[]>>("BridgeBuilder.Bridges.Draw02UvCharts.Data.Loaded", () => new());
     }
     internal static MovableUvChart[] For(string renderName, int meshIndex, int domain)
     {

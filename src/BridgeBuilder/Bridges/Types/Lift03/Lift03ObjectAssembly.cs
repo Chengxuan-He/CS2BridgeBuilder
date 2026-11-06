@@ -9,7 +9,7 @@ namespace BridgeBuilder.Bridges;
 internal static class Lift03ObjectAssembly
 {
     // Native authored order: four warning lights and twenty fixed-tower wall lights.
-    private static readonly int[] AttachmentSides = ReadPackedAttachmentSides();
+    private static int[] AttachmentSides => GenerationParameters.Get<int[]>("BridgeBuilder.Bridges.Lift03ObjectAssembly.AttachmentSides", () => ReadPackedAttachmentSides());
     internal static StaticObjectPrefab Create(TowerFactory factory, string owner, string name, RenderPrefab mechanism, RenderPrefab column, RenderPrefab footing, ContentPrefab content, float structureHalfDelta, Lift03RoadSampling roads)
     {
         var attachments = Lift03MechanismData.AuthoredAttachments(factory.ResolveOriginal<ObjectPrefab>);
@@ -82,5 +82,5 @@ internal static class Lift03ObjectAssembly
 internal static class Numeric_Types_Lift03_Lift03ObjectAssembly_cs
 {
     static Numeric_Types_Lift03_Lift03ObjectAssembly_cs() {}
-    internal static readonly HardcodedNumbers Values = HardcodedNumbers.Load("Types_Lift03_Lift03ObjectAssembly_cs");
+    internal static HardcodedNumbers Values => GenerationParameters.Get<HardcodedNumbers>("BridgeBuilder.Bridges.Numeric_Types_Lift03_Lift03ObjectAssembly_cs.Values", () => HardcodedNumbers.Load("Types_Lift03_Lift03ObjectAssembly_cs"));
 }

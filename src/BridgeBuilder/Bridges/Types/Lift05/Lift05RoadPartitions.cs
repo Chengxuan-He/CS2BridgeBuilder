@@ -12,7 +12,7 @@ internal static class Lift05RoadPartitions
 
     // Original road bone array index 2, connection 100. Index 1 is counterweight.
     // Far fixed shells must adapt to these detailed seams, not redefine them.
-    internal static readonly Partition Carriageway = Cut(-FixedEnd, Partition.Gap, Cut(-FixedStart, new Partition(Numeric_Types_Lift05_Lift05RoadPartitions_cs.Values.I32[0]), Cut(-MovingEnd, Partition.Gap, Cut(MovingEnd, new Partition(Numeric_Types_Lift05_Lift05RoadPartitions_cs.Values.I32[1]), Cut(FixedStart, Partition.Gap, Cut(FixedEnd, new Partition(Numeric_Types_Lift05_Lift05RoadPartitions_cs.Values.I32[2]), Partition.Gap))))));
+    internal static Partition Carriageway => GenerationParameters.Get<Partition>("BridgeBuilder.Bridges.Lift05RoadPartitions.Carriageway", () => Cut(-FixedEnd, Partition.Gap, Cut(-FixedStart, new Partition(Numeric_Types_Lift05_Lift05RoadPartitions_cs.Values.I32[0]), Cut(-MovingEnd, Partition.Gap, Cut(MovingEnd, new Partition(Numeric_Types_Lift05_Lift05RoadPartitions_cs.Values.I32[1]), Cut(FixedStart, Partition.Gap, Cut(FixedEnd, new Partition(Numeric_Types_Lift05_Lift05RoadPartitions_cs.Values.I32[2]), Partition.Gap)))))));
     private static Partition Cut(float station, Partition negative, Partition positive)
     {
         var frame = Matrix4x4.identity;
@@ -25,5 +25,5 @@ internal static class Lift05RoadPartitions
 internal static class Numeric_Types_Lift05_Lift05RoadPartitions_cs
 {
     static Numeric_Types_Lift05_Lift05RoadPartitions_cs() {}
-    internal static readonly HardcodedNumbers Values = HardcodedNumbers.Load("Types_Lift05_Lift05RoadPartitions_cs");
+    internal static HardcodedNumbers Values => GenerationParameters.Get<HardcodedNumbers>("BridgeBuilder.Bridges.Numeric_Types_Lift05_Lift05RoadPartitions_cs.Values", () => HardcodedNumbers.Load("Types_Lift05_Lift05RoadPartitions_cs"));
 }

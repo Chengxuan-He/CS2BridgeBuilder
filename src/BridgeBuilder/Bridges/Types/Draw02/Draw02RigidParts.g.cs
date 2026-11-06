@@ -17,10 +17,10 @@ internal static class Draw02RigidParts
             _ => throw new ArgumentOutOfRangeException(nameof(lod))};
         if (source.Length != data.Count || positions.Length != data.Count)
             throw new InvalidOperationException("Draw02 rigid mapping requires its recorded main mesh.");
-        foreach (var i in data.Left)
-            positions[i].x = AffineGeometry.Translate(source[i].x, -(delta));
-        foreach (var i in data.Right)
-            positions[i].x = AffineGeometry.Translate(source[i].x, delta);
+        foreach (var coordinateRows in StructureRows.Stages(data.Left))
+            AffineGeometry.Execute(RangePrograms1.Data, 0, new[] { source, positions }, Array.Empty<float[]>(), new float[] { delta }, count: coordinateRows.Length, indices: new[] { coordinateRows });
+        foreach (var coordinateRows in StructureRows.Stages(data.Right))
+            AffineGeometry.Execute(RangePrograms1.Data, 1, new[] { source, positions }, Array.Empty<float[]>(), new float[] { delta }, count: coordinateRows.Length, indices: new[] { coordinateRows });
     }
 
     internal static MovableStructureModel.Plan Glass(int lod, Vector3[] source, int[] indices, float delta)
@@ -28,24 +28,21 @@ internal static class Draw02RigidParts
         if ((lod != Numeric_Types_Draw02_Draw02RigidParts_g_cs.Values.I32[3] && lod != Numeric_Types_Draw02_Draw02RigidParts_g_cs.Values.I32[4]) || source.Length != Numeric_Types_Draw02_Draw02RigidParts_g_cs.Values.I32[5] || indices.Length != Numeric_Types_Draw02_Draw02RigidParts_g_cs.Values.I32[6])
             throw new InvalidOperationException("Draw02 glass requires its recorded control-room mesh.");
         var moved = (Vector3[])source.Clone();
-        AffineGeometry.For(Numeric_Types_Draw02_Draw02RigidParts_g_cs.Values.I32[7], moved.Length, i =>
-        {
-            moved[i].x = AffineGeometry.Translate(moved[i].x, -(delta));
-        });
+        AffineGeometry.Execute(RangePrograms.Data, 0, new[] { moved }, Array.Empty<float[]>(), new float[] { delta }, Numeric_Types_Draw02_Draw02RigidParts_g_cs.Values.I32[7], checked((moved.Length) - (Numeric_Types_Draw02_Draw02RigidParts_g_cs.Values.I32[7])));
         return new MovableStructureModel.Plan(source, moved, new[] { indices }, new[] { new bool[Numeric_Types_Draw02_Draw02RigidParts_g_cs.Values.I32[8]] });
     }
 
     // Geometry SHA-256: 1f0ff1a2c0a8318e6537bd347ae064d1bb55bfa48f3cf3c2375601adcd05dd18
-    private static readonly int[] Left0 = ReadPackedLeft0();
-    private static readonly int[] Right0 = ReadPackedRight0();
+    private static int[] Left0 => GenerationParameters.Get<int[]>("BridgeBuilder.Bridges.Draw02RigidParts.Left0", () => ReadPackedLeft0());
+    private static int[] Right0 => GenerationParameters.Get<int[]>("BridgeBuilder.Bridges.Draw02RigidParts.Right0", () => ReadPackedRight0());
     // Geometry SHA-256: 9c0c22c62ef170b0a8be300dee2ab7d71c0c27b745e3fc6395b96a34b69b4b4d
-    private static readonly int[] Left1 = ReadPackedLeft1();
-    private static readonly int[] Right1 = ReadPackedRight1();
+    private static int[] Left1 => GenerationParameters.Get<int[]>("BridgeBuilder.Bridges.Draw02RigidParts.Left1", () => ReadPackedLeft1());
+    private static int[] Right1 => GenerationParameters.Get<int[]>("BridgeBuilder.Bridges.Draw02RigidParts.Right1", () => ReadPackedRight1());
     // Geometry SHA-256: 6535b8c60ffb7e45d69153e99c482c603443ba7f761a39a399bbaf84111dbf1c
-    private static readonly int[] Left2 = ReadPackedLeft2();
-    private static readonly int[] Right2 = new int[]
+    private static int[] Left2 => GenerationParameters.Get<int[]>("BridgeBuilder.Bridges.Draw02RigidParts.Left2", () => ReadPackedLeft2());
+    private static int[] Right2 => GenerationParameters.Get<int[]>("BridgeBuilder.Bridges.Draw02RigidParts.Right2", () => new int[]
     {
-    };
+    });
     private static int[] ReadPackedLeft0()
     {
         var d = Numeric_Types_Draw02_Draw02RigidParts_g_cs.Values;
@@ -90,11 +87,32 @@ internal static class Draw02RigidParts
             values[0 + i] = d.I32[24041 + i * 1];
         return values;
     }
+
+    private static class RangePrograms
+    {
+        static RangePrograms()
+        {
+        }
+
+        internal static HardcodedNumbers Data => GenerationParameters.Get<HardcodedNumbers>("BridgeBuilder.Bridges.Draw02RigidParts.RangePrograms.Data", () => HardcodedNumbers.Load("Types_Draw02_Draw02RigidParts_RangePrograms"));
+    }
+
+    private static class RangePrograms1
+    {
+        static RangePrograms1()
+        {
+        }
+
+        internal static HardcodedNumbers Data => GenerationParameters.Get<HardcodedNumbers>("BridgeBuilder.Bridges.Draw02RigidParts.RangePrograms1.Data", () => HardcodedNumbers.Load("Types_Draw02_Draw02RigidParts_RangePrograms1"));
+    }
 }
 
 // Embedded numerical arrays: Types_Draw02_Draw02RigidParts_g_cs
 internal static class Numeric_Types_Draw02_Draw02RigidParts_g_cs
 {
-    static Numeric_Types_Draw02_Draw02RigidParts_g_cs() {}
-    internal static readonly HardcodedNumbers Values = HardcodedNumbers.Load("Types_Draw02_Draw02RigidParts_g_cs");
+    static Numeric_Types_Draw02_Draw02RigidParts_g_cs()
+    {
+    }
+
+    internal static HardcodedNumbers Values => GenerationParameters.Get<HardcodedNumbers>("BridgeBuilder.Bridges.Numeric_Types_Draw02_Draw02RigidParts_g_cs.Values", () => HardcodedNumbers.Load("Types_Draw02_Draw02RigidParts_g_cs"));
 }
