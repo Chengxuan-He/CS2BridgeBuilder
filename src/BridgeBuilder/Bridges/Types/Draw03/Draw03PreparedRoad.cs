@@ -15,7 +15,7 @@ internal static class Draw03PreparedRoad
     private static int NativeRows => Numeric_Types_Draw03_Draw03PreparedRoad_cs.Values.I32[0];
     private static int NearDomains => Numeric_Types_Draw03_Draw03RoadAppearance_cs.Values.I32[0];
     private static int Units => NativeRows * 8;
-    private static SurfaceAsset Unit(string name) => BridgePreparedMaterials.RepeatUnit("Draw03", name);
+    private static MovableExistingRoadSurface.SurfaceResult Unit(string name) => BridgePreparedMaterials.RepeatUnit("Draw03", name);
 
     private static Patch Prepared(Patch source, string unit, Vector4 u, Vector4 v, int guard)
     {

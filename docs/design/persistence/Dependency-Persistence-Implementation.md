@@ -9,16 +9,22 @@ offline edges; selected native surfaces resolve their native cache entry through
 metadata or package URI. Generated cache handles are recorded when produced.
 
 Resolution uses recorded handles, packaged sources and exact CID lookup in registered
-databases. It does not build an all-asset index or scan caches to reverse-discover their
-Surface memberships. Another generated owner's files are excluded before stream access.
+databases. Creation does not build an all-asset index or scan caches to reverse-discover their
+Surface memberships. Valid other-owner sources may supply independent target snapshots.
 Missing required dependencies, corrupt metadata and conflicting destination bytes remain
 explicit failures. Built-in assets terminate traversal; external snapshots preserve bytes
 and CIDs independently for each owner.
 
-`ImportedData/<owner>/BridgeCacheEdges.txt` preserves forward cache edges and owner-local
-cache paths across restarts. Its versioned records are manager metadata, not replacement
-native asset identities. Layout migration updates those paths. Historical files can use
-exact prepared/native metadata and known owner locations without a reverse scan.
+`BridgeCacheEdges.txt` is obsolete and is neither read nor written. Exact native
+Surface-CID atlas lookups and prepared provenance supply cache identities. If necessary,
+a shared ephemeral MidMips membership map is built once for the entire inspection, not
+once per owner. The shared preparation completes after the native loading barrier and
+before any owner migration or structural check. Preparation failure logs an ERROR and
+aborts the inspection before mutation, rather than marking individual owners cache-not-ready.
+No additional file, cache copy or layout alias is persisted. A successful
+complete owner inspection backs up and removes its old ledger; failed inspection retains
+it solely as historical data, not as a resolver input. This is the required target behavior;
+implementation and native acceptance must be verified separately.
 
 ## Self-check discovery and migration
 

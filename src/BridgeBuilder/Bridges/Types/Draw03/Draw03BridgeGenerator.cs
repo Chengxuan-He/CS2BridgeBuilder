@@ -29,11 +29,12 @@ internal sealed class Draw03BridgeGenerator : MovableBridgeGeneratorBase<Movable
     }
 
     protected override MovableStraightSample SampleRoad(string owner, Entity selectedRoad, RenderPrefab[] roots, ContentPrefab content, float halfDelta, RandomSeed seed) => Draw03RoadSampling.Create(owner, selectedRoad, roots, content, halfDelta, seed, NetPieceLayerMask.Bottom | NetPieceLayerMask.Side);
-    protected override RenderPrefab BuildMechanism(TowerFactory factory, string owner, MovableStraightSample road, RenderPrefab[] nativeLevels, float halfDelta, MovableRoadMaterial material)
+    protected override RenderPrefab? BuildMechanism(TowerFactory factory, string owner, MovableStraightSample road, RenderPrefab[] nativeLevels, float halfDelta, MovableRoadMaterial material)
     {
         var layout = new MovableSelectedRoadLayout(road.Road, road.RoadToObject, "Draw03");
         var levels = Draw03RoadPreparation.PrepareRenderLevels(road, nativeLevels, halfDelta, Matrix4x4.Translate(new Vector3(Numeric_Types_Draw03_Draw03BridgeGenerator_cs.Values.F32[0], Numeric_Types_Draw03_Draw03BridgeGenerator_cs.Values.F32[1], Numeric_Types_Draw03_Draw03BridgeGenerator_cs.Values.F32[2])), material, layout);
-        return Draw03RenderAssembly.CreateMechanism(factory, owner + " Mechanism", levels, halfDelta, layout) ?? throw new InvalidOperationException("Draw03 moving render graph creation failed.");
+        if (levels == null) return null;
+        return Draw03RenderAssembly.CreateMechanism(factory, owner + " Mechanism", levels, halfDelta, layout);
     }
 
     protected override void AssembleBridge(NetGeometryPrefab target, TowerFactory factory, RenderPrefab[] roots, ContentPrefab content, float halfDelta, MovableStraightSample road, RenderPrefab moving)
@@ -41,6 +42,7 @@ internal sealed class Draw03BridgeGenerator : MovableBridgeGeneratorBase<Movable
         var column = Draw03SupportAssembly.Create(factory, target.name + " Column", roots[Numeric_Types_Draw03_Draw03BridgeGenerator_cs.Values.I32[0]], false, halfDelta) ?? throw new InvalidOperationException("Draw03 support render graph creation failed.");
         var footing = Draw03SupportAssembly.Create(factory, target.name + " Footing", roots[Numeric_Types_Draw03_Draw03BridgeGenerator_cs.Values.I32[1]], true, halfDelta) ?? throw new InvalidOperationException("Draw03 footing render graph creation failed.");
         var mechanism = Draw03ObjectAssembly.Create(factory, target.name, target.name + " Moving Object", moving, column, footing, content, halfDelta, road);
+        if(mechanism==null)return;
         var pillar = Draw03PillarAssembly.Create(factory, target.name + " Pillar", factory.ResolveOriginal<RenderPrefab>("Default_Base Mesh"), content, halfDelta) ?? throw new InvalidOperationException("Draw03 ordinary pillar creation failed.");
         Draw03ApproachAssembly.Apply(target, factory, content, halfDelta);
         Draw03NetworkAssembly.Apply(target, factory, pillar, mechanism);

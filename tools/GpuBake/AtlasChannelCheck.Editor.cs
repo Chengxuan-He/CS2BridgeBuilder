@@ -33,8 +33,8 @@ public static class AtlasChannelCheck
                 Graphics.Blit(input,source);RenderTexture.active=previous;
                 try
                 {
-                    using var channel=new MovableAtlasChannel(shader,source,kind,false);
-                    channel.Read();
+                    using var channel=(MovableAtlasChannel.TryCreate(shader,source,kind,false,out var createdChannel1,out var channelError1)?createdChannel1:throw new InvalidOperationException(channelError1));
+                    if(!channel.TryRead(out var readError))throw new InvalidOperationException(readError);
                     var texture=channel.Texture;
                     if(texture.width!=size.x || texture.height!=size.y)throw new Exception("Compressed dimensions changed.");
                     using var stream=new MemoryStream();
@@ -47,7 +47,7 @@ public static class AtlasChannelCheck
                         writer.Write(texture.GetRawTextureData<byte>().ToArray());
                     }
                     stream.Position=0;
-                    var decoded=MovableTextureSource.Read(stream,_=>throw new Exception("Unexpected compressed container."));
+                    var decoded=(MovableTextureSource.TryRead(stream,_=>throw new Exception("Unexpected compressed container."),out var parsedTexture1,out var textureReadError1)?parsedTexture1:throw new System.IO.InvalidDataException(textureReadError1));
                     try
                     {
                         if(decoded.width!=size.x || decoded.height!=size.y || decoded.mipmapCount!=texture.mipmapCount)

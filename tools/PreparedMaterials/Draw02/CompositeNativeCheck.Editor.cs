@@ -51,7 +51,7 @@ public static class Draw02CompositeNativeCheck
    foreach(var cid in maps[0].Values)
    {
     using var stream=File.OpenRead(Path.Combine(root,"Shared",cid+".Texture"));
-    var tex=MovableTextureSource.Read(stream,b=>(byte[])decode.Invoke(null,new[]{(object)b,mode}));
+    var tex=(MovableTextureSource.TryRead(stream,b=>(byte[])decode.Invoke(null,new[]{(object)b,mode}),out var parsedTexture1,out var textureReadError1)?parsedTexture1:throw new System.IO.InvalidDataException(textureReadError1));
     try {Need(stream.Position==stream.Length,"Complete texture");Need(tex.width==311&&tex.height==827&&tex.mipmapCount==10,"Full density/mip chain");
      Need(tex.wrapMode==TextureWrapMode.Repeat&&tex.filterMode==FilterMode.Trilinear,"Native repeat filtering");
      for(int mip=0;mip<10;mip++){var read=UnityEngine.Rendering.AsyncGPUReadback.Request(tex,mip,TextureFormat.RGBA32);read.WaitForCompletion();Need(!read.hasError&&read.GetData<byte>().Length==Math.Max(1,311>>mip)*Math.Max(1,827>>mip)*4,"Complete RGBA mip bytes");}}

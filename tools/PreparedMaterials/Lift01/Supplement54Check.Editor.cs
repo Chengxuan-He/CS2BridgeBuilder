@@ -3,7 +3,7 @@ public static class Lift01Supplement54Check {
 [System.Runtime.InteropServices.DllImport("kernel32",CharSet=System.Runtime.InteropServices.CharSet.Unicode)]static extern IntPtr LoadLibraryW(string p);
 public static void Run(){try{
 const BindingFlags F=BindingFlags.Public|BindingFlags.NonPublic|BindingFlags.Static|BindingFlags.Instance;
-string root="D:/CS2BridgeBuilder",managed="D:/Program Files (x86)/Steam/steamapps/common/Cities Skylines II/Cities2_Data/Managed",candidate=Environment.GetEnvironmentVariable("LIFT01_COVERAGE_DLL");
+string root="E:/CS2BridgeBuilder",managed="D:/Program Files (x86)/Steam/steamapps/common/Cities Skylines II/Cities2_Data/Managed",candidate=Environment.GetEnvironmentVariable("LIFT01_COVERAGE_DLL");
 AppDomain.CurrentDomain.AssemblyResolve+=(_,e)=>{var p=Path.Combine(managed,new AssemblyName(e.Name).Name+".dll");return File.Exists(p)?Assembly.LoadFrom(p):null;};
 LoadLibraryW(Path.GetFullPath(Path.Combine(managed,"../Plugins/x86_64/PipelinePlugin.dll")));
 var asm=Assembly.LoadFrom(candidate);string dir=root+"/artifacts/material-remap/Lift01/coverage54/";
@@ -35,7 +35,7 @@ int nativeCases=0,retileCases=0; void VerifyNative(int lod,object plan,int[] sou
     var cid=guidType.GetMethod("Parse",new[]{typeof(string)}).Invoke(null,new object[]{lod==2?"e0101c8ca7e9dc14016d187d012704a4":"bcdd054871e3bcb50f793ccefc50304d"});var surface=Activator.CreateInstance(surfaceType,true);surfaceType.BaseType.GetField("m_Id",F).SetValue(surface,Activator.CreateInstance(identifier,new[]{cid}));
     using(var header=new BinaryReader(File.OpenRead(root+"/artifacts/material-remap/Lift01/"+(lod==2?"far-finite/Original.Surface":"half-floor/inputs/Original.Surface"))))surfaceType.GetMethod("ReadHeader",F).Invoke(surface,new object[]{header});
     var tiles=Activator.CreateInstance(asm.GetType("BridgeBuilder.Bridges.MovableStructureTiles",true),F,null,new object[]{"Lift01"},null);var listType=typeof(List<>).MakeGenericType(model.GetType());var owned=(System.Collections.IList)Activator.CreateInstance(listType);var models=(System.Collections.IList)Activator.CreateInstance(listType);var surfaces=(System.Collections.IList)Activator.CreateInstance(typeof(List<>).MakeGenericType(surfaceType));
-    asm.GetType("BridgeBuilder.Bridges.MovableStructureRetile",true).GetMethod("Append",F).Invoke(null,new object[]{"Restored outer/walk structure","LiftBridge01"+(lod==0?"":"_LOD"+lod)+" Mesh",0,plan,model,surface,tiles,owned,models,surfaces});
+    var retileArgs=new object[]{"Restored outer/walk structure","LiftBridge01"+(lod==0?"":"_LOD"+lod)+" Mesh",0,plan,model,surface,tiles,owned,models,surfaces,null};if(!(bool)asm.GetType("BridgeBuilder.Bridges.MovableStructureRetile",true).GetMethod("TryAppend",F).Invoke(null,retileArgs))throw new Exception((string)retileArgs[retileArgs.Length-1]);
     if(owned.Count!=0||models.Count!=1||!ReferenceEquals(models[0],model)||surfaces.Count!=1||!ReferenceEquals(surfaces[0],surface))throw new Exception("Restored finite-source structure did not retain its actual native model/material through Retile.");
     retileCases++;
    }

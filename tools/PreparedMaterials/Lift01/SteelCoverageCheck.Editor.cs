@@ -26,7 +26,7 @@ public static class Lift01SteelCoverageCheck
    foreach(var c in input.units.First().channels)
    {
     using var stream=File.OpenRead(c.path);
-    var texture=MovableTextureSource.Read(stream,b=>(byte[])decode.Invoke(null,new[]{(object)b,zstd}));
+    var texture=(MovableTextureSource.TryRead(stream,b=>(byte[])decode.Invoke(null,new[]{(object)b,zstd}),out var parsedTexture1,out var textureReadError1)?parsedTexture1:throw new System.IO.InvalidDataException(textureReadError1));
     var render=RenderTexture.GetTemporary(texture.width,texture.height,0,RenderTextureFormat.ARGB32,RenderTextureReadWrite.Linear);
     var pixels=new Texture2D(texture.width,texture.height,TextureFormat.RGBA32,false,true);
     var old=RenderTexture.active;

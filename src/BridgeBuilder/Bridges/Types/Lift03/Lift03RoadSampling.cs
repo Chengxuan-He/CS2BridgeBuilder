@@ -12,7 +12,7 @@ using Partition = BridgeBuilder.Bridges.MovableRoadGeometry.Partition;
 namespace BridgeBuilder.Bridges;
 // Both selected networks share one native calculation and one mechanism. Auxiliary
 // nodes/edges belong to corresponding main nodes/edges through native Owner/SubNet.
-internal sealed class Lift03RoadSampling : IDisposable
+internal sealed class Lift03RoadSampling : IMovableRoadSample
 {
     internal enum Deck
     {
@@ -22,6 +22,7 @@ internal sealed class Lift03RoadSampling : IDisposable
 
     internal readonly MovableNetworkContext Network;
     internal readonly MovableClosedRoad.Result MainRoad, AuxiliaryRoad;
+    public string? MaterialError=>MainRoad.Error??AuxiliaryRoad.Error;
     internal readonly Pose MainToObject, AuxiliaryToObject;
     private readonly MovableSamplingMechanism _mechanism;
     private readonly Entity _theme;
@@ -103,6 +104,7 @@ internal sealed class Lift03RoadSampling : IDisposable
         {
             MainRoad = Compile(Deck.Main, Numeric_Types_Lift03_Lift03RoadSampling_cs.Values.I32[27]);
             AuxiliaryRoad = Compile(Deck.Auxiliary, Numeric_Types_Lift03_Lift03RoadSampling_cs.Values.I32[28]);
+            if(MaterialError!=null)return;
             MainToObject = Network.RoadToMechanism(Numeric_Types_Lift03_Lift03RoadSampling_cs.Values.I32[29], _origins[Numeric_Types_Lift03_Lift03RoadSampling_cs.Values.I32[30]]);
             AuxiliaryToObject = Network.RoadToMechanism(Numeric_Types_Lift03_Lift03RoadSampling_cs.Values.I32[31], _origins[Numeric_Types_Lift03_Lift03RoadSampling_cs.Values.I32[32]]);
         }
@@ -131,7 +133,7 @@ internal sealed class Lift03RoadSampling : IDisposable
         return Network.NodeObjects(index * Numeric_Types_Lift03_Lift03RoadSampling_cs.Values.I32[40] + Numeric_Types_Lift03_Lift03RoadSampling_cs.Values.I32[41], _theme, _origins[index]);
     }
 
-    internal MovableRoadAssets.Level[] PrepareDeck(Deck deck, IReadOnlyList<RenderPrefab> sources, float halfDelta, Matrix4x4 closedWorld, MovableRoadMaterial material, Partition sidewalk, Partition carriagewayAppearance, Partition sidewalkAppearance, MovableExistingRoadSurface.Patch[] patches)
+    internal MovableRoadAssets.Level[]? PrepareDeck(Deck deck, IReadOnlyList<RenderPrefab> sources, float halfDelta, Matrix4x4 closedWorld, MovableRoadMaterial material, Partition sidewalk, Partition carriagewayAppearance, Partition sidewalkAppearance, MovableExistingRoadSurface.Patch[] patches)
     {
         var index = DeckIndex(deck);
         var road = index == Numeric_Types_Lift03_Lift03RoadSampling_cs.Values.I32[42] ? MainRoad : AuxiliaryRoad;

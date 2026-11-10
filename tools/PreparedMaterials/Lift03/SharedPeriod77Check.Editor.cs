@@ -50,7 +50,7 @@ public static class Lift03SharedPeriod77Check
                     if(!seen.Add(cid))continue;
                     using(var header=new BinaryReader(File.OpenRead(texturePath))){var textureAsset=FormatterServices.GetUninitializedObject(tt);tt.GetMethod("ReadHeader",BindingFlags.Instance|BindingFlags.NonPublic).Invoke(textureAsset,new object[]{header});Need((int)tt.GetProperty("width").GetValue(textureAsset)>0,"Native texture header");}
                     using var stream=File.OpenRead(texturePath);
-                    var texture=MovableTextureSource.Read(stream,b=>(byte[])decode.Invoke(null,new[]{(object)b,zstd}));
+                    var texture=(MovableTextureSource.TryRead(stream,b=>(byte[])decode.Invoke(null,new[]{(object)b,zstd}),out var parsedTexture1,out var textureReadError1)?parsedTexture1:throw new System.IO.InvalidDataException(textureReadError1));
                     try
                     {
                         Need(stream.Position==stream.Length,"Complete texture consumed");

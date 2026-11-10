@@ -23,6 +23,7 @@ internal static class MovableRoadAppearance
     internal sealed class Level
     {
         internal readonly SurfaceAsset Native;
+        internal readonly string? Error;
         internal readonly MovableExistingRoadSurface.Patch[] Patches;
         internal readonly Type[] SupportedTypes;
         // Null inherits the caller's partition; it does not mean no correspondence.
@@ -36,12 +37,15 @@ internal static class MovableRoadAppearance
             MovableRoadGeometry.Partition? sidewalk = null)
         {
             if (patches.Length != supportedTypes.Length)
-                throw new ArgumentException("Road appearance support must match the LOD's physical domains.");
+                Error="Road appearance support must match the LOD's physical domains.";
             Native = native;
             Patches = patches;
             SupportedTypes = supportedTypes;
             Carriageway = carriageway;
             Sidewalk = sidewalk;
         }
+        internal Level(MovableExistingRoadSurface.SurfaceResult native,MovableExistingRoadSurface.Patch[] patches,
+            Type[] supportedTypes,MovableRoadGeometry.Partition? carriageway=null,MovableRoadGeometry.Partition? sidewalk=null)
+            :this(native.Value!,patches,supportedTypes,carriageway,sidewalk){Error=native.Error??Error;}
     }
 }

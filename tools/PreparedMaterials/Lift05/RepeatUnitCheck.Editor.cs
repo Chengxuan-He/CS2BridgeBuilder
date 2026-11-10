@@ -50,7 +50,7 @@ public static class Lift05RepeatUnitCheck
      Need((int)textureType.GetProperty("width").GetValue(asset)>0,"Native texture header");
     }
     using var stream=File.OpenRead(path);
-    var texture=MovableTextureSource.Read(stream,b=>(byte[])decode.Invoke(null,new[]{(object)b,zstd}));
+    var texture=(MovableTextureSource.TryRead(stream,b=>(byte[])decode.Invoke(null,new[]{(object)b,zstd}),out var parsedTexture1,out var textureReadError1)?parsedTexture1:throw new System.IO.InvalidDataException(textureReadError1));
     Need(stream.Position==stream.Length,"Native full texture consumed");return texture;
    }
    var maps=new Dictionary<string,string>();

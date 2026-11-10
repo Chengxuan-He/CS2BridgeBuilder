@@ -1,0 +1,51 @@
+#pragma kernel Count
+#pragma kernel Emit
+#pragma kernel Probe
+#pragma target 5.0
+#pragma enable_d3d11_debug_symbols
+struct V { uint4 xy;uint2 zz; precise float3 n; precise float4 t,uv,c;float padding; };
+struct Step { float4 plane; uint positive; };
+StructuredBuffer<uint2> Roots;
+StructuredBuffer<uint3> Paths;
+StructuredBuffer<Step> Steps;
+ByteAddressBuffer Input;
+StructuredBuffer<uint> Offsets;
+RWStructuredBuffer<uint> Counts;
+RWByteAddressBuffer Output;
+RWStructuredBuffer<uint> Errors;
+uint TriangleCount;uint RowStart;
+[numthreads(1,1,1)]void Probe(uint3 id:SV_DispatchThreadID){precise double x=(double)asfloat(Input.Load(0));precise double y=x+0.0000000000009094947017729282379150390625;precise double z=y-x;Output.Store(0,asuint((float)z));}
+double3 Pos(V v){return double3(asdouble(v.xy.x,v.xy.y),asdouble(v.xy.z,v.xy.w),asdouble(v.zz.x,v.zz.y));}
+V SetPos(V v,double3 p){asuint(p.x,v.xy.x,v.xy.y);asuint(p.y,v.xy.z,v.xy.w);asuint(p.z,v.zz.x,v.zz.y);return v;}
+V Load(uint a) { V v;v.padding=0;v=SetPos(v,(double3)asfloat(Input.Load3(a)));v.n=asfloat(Input.Load3(a+12));v.t=asfloat(Input.Load4(a+24));v.uv=asfloat(Input.Load4(a+40));v.c=asfloat(Input.Load4(a+56));return v; }
+void Save(uint a,V v) {Output.Store3(a,asuint((float3)Pos(v)));Output.Store3(a+12,asuint(v.n));Output.Store4(a+24,asuint(v.t));Output.Store4(a+40,asuint(v.uv));Output.Store4(a+56,asuint(v.c));}
+float3 Norm(float3 a){precise float l=sqrt(dot(a,a));return l>0.00001f?a/l:float3(0,0,0);}
+V Mix(V a,V b,double2 distances) { double da=distances.x;double db=distances.y;
+ bool swap=Pos(a).x>Pos(b).x||(Pos(a).x==Pos(b).x&&(Pos(a).y>Pos(b).y||(Pos(a).y==Pos(b).y&&Pos(a).z>Pos(b).z)));
+ if(swap){V t=a;a=b;b=t;double d=da;da=db;db=d;}
+ precise double t=da/(da-db);precise float f=(float)t; V v;v.padding=0;v=SetPos(v,Pos(a)+(Pos(b)-Pos(a))*t);
+ v.n=Norm(a.n+(b.n-a.n)*f);precise float4 tangent=a.t+(b.t-a.t)*f;
+ v.t=float4(Norm(tangent.xyz-v.n*dot(v.n,tangent.xyz)),a.t.w);
+ v.uv=a.uv+(b.uv-a.uv)*f;v.c=a.c+(b.c-a.c)*f;return v;
+}
+void Run(uint id,bool emit){if(id>=TriangleCount)return;uint2 root=Roots[id];uint total=0;
+ [loop] for(uint leaf=0;leaf<root.y;leaf++){
+  uint3 path=Paths[root.x+leaf];V polygon[32];V next[32];double2 distances[32];uint n=3;
+  polygon[0]=Load(id*228);polygon[1]=Load(id*228+72);polygon[2]=Load(id*228+144);
+  [loop] for(uint j=0;j<path.y&&n>=3;j++){
+   Step s=Steps[path.x+j];bool reliable=false;bool negative=false;bool positive=false;
+   [loop] for(uint k=0;k<n;k++){precise double x=(double)s.plane.x*Pos(polygon[k]).x;precise double y=(double)s.plane.y*Pos(polygon[k]).y;precise double z=(double)s.plane.z*Pos(polygon[k]).z;precise double w=(double)s.plane.w;distances[k].x=x+y+z+w;distances[k].y=(6.0/16777216.0)/(1.0-6.0/16777216.0)*(abs(x)+abs(y)+abs(z)+abs(w));reliable=reliable||abs(distances[k].x)>distances[k].y;}
+   [loop] for(uint k=0;k<n;k++){if(reliable&&abs(distances[k].x)<=distances[k].y)distances[k].x=0;negative=negative||distances[k].x<0;positive=positive||distances[k].x>0;}
+   if(!negative&&!positive){if(!s.positive)n=0;continue;}
+   if((s.positive&&!positive)||(!s.positive&&!negative)){n=0;break;}
+   uint m=0;[loop] for(uint k=0;k<n;k++){uint b=(k+1)%n;double da=distances[k].x,db=distances[b].x;
+    if(s.positive?da>=0:da<=0){if(m>=32){Errors[id]=1;return;}next[m]=polygon[k];m=m+1;}
+    if((da<0&&db>0)||(da>0&&db<0)){if(m>=32){Errors[id]=2;return;}next[m]=Mix(polygon[k],polygon[b],double2(da,db));m=m+1;}}
+   n=m;[loop] for(uint k=0;k<n;k++)polygon[k]=next[k];
+  }
+  if(n>=3)[loop] for(uint k=1;k+1<n;k++){if(emit){if(total>=Counts[id]){Errors[id]=3;return;}uint a=(Offsets[id]+total)*232;Save(a,polygon[0]);Save(a+72,polygon[k]);Save(a+144,polygon[k+1]);Output.Store3(a+216,Input.Load3(id*228+216));Output.Store(a+228,path.z);}total++;}
+ }
+ if(!emit)Counts[id]=total;else if(total!=Counts[id])Errors[id]=4;
+}
+[numthreads(32,1,1)]void Count(uint3 id:SV_DispatchThreadID){Run(id.x+RowStart,false);}
+[numthreads(32,1,1)]void Emit(uint3 id:SV_DispatchThreadID){Run(id.x+RowStart,true);}

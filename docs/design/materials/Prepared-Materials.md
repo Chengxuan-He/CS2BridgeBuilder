@@ -20,6 +20,114 @@ recorded implementation gap under the current scheme. See the [code-path assessm
 and [shared integration handoff](../../../tools/PreparedMaterials/SharedCurrent.md) before using those tools.
 No new runtime integration or acceptance is established by this documentation.
 
+The conversion entry below is the current material-realization design. Numbered
+increment sections record historical coverage at that increment, not current missing APIs.
+Native126 completed GPU atlas channel readback/release and native surface extraction
+result APIs; remaining planner/chart work is tracked separately.
+
+## Source coordinate-density investigation (native137)
+
+The user rejected domain approximation and receiver-dependent baking, then authorized dynamically generated shaders persisted with each bridge. The completed feasibility investigation preserved both coordinate fields in a bounded sampling probe, but the complete custom-shader route is not implementable under the current independent cold-load requirement. No production shader change has been implemented yet; native136 remains the installed baseline.
+
+Compare the actual source vertex/shader coordinate protocol with the uploaded
+converted geometry. Network longitudinal UV rates are evaluated before object
+rendering; they must not be mistaken for already evaluated mesh coordinates.
+Texture ST applies only when the source shader consumes it. Matching texture
+resolution alone does not establish matching physical density.
+
+For the inspected source, the original network fragment samples base UV.xy and
+position.xz times world scale independently, then blends with base MaskMap.B.
+Its base ST is identity and is not consumed by that shader. The retained base field
+has approximately 0.125 UV/m laterally and 0.03125 UV/m longitudinally, giving
+128 texels/m with its 1024x4096 image. The omitted 1024x1024 world layer has
+0.4 UV/m, or 409.6 texels/m. Their ratio is not a legitimate automatic correction
+of the base UV. Scaling base UV also moves/scales the base atlas's borders and bands.
+
+The earlier finite-period composition investigation is recorded evidence only,
+not an active implementation plan: nominal base/world periods of 32m and 2.5m
+require a 160m joint period (65,536 pixels at world density). The source mask has
+near-one rather than exactly-one values and mixed boundaries. Neither thresholding
+it nor baking the receiver is authorized for this repair. If original base mapping
+already matches, a new density/phase target must be specified before changing it;
+a UV-only multiplier cannot reproduce two independent texture sample fields.
+
+## Runtime result API increment (native122)
+
+Road setup, private source decoding, composed resource writes/ownership transfer and native
+cache lookup now expose result APIs consumed by shared generation and dependency persistence.
+Native failures retain source/stage context instead of becoming an empty successful material or
+cache relation. All ten movable mechanism callers propagate failed preparation to the existing
+preview/formal rollback boundary.
+
+Original object descriptors can be reused by actual shader identity and supported instance-buffer
+protocol, including a new template ID using that same shader. This is not support for arbitrary
+new shaders: shape/normal animation, geometry tiling and dilated protocols require additional
+buffers not provided by the current object route. Known partial OriginalBase/TiledPaving and
+world-only corresponding conversions are no longer accepted as full source reuse. Original
+network descriptors survive composition unchanged; unsupported native network realization still
+returns an explicit incomplete-representation result. Some previously approximated roads can
+therefore fail instead of showing a silently incomplete material. The arbitrary-material goal
+and all-internal-API noexcept migration remain unfinished; native122 is an incremental result
+pipeline improvement, not renderer completion or game visual acceptance.
+
+## Classification, atlas and VT result increment (native123)
+
+Source classification, atlas texture binding and plane validation, native VT texture/surface
+parsing, MidMips subset copying and generation-side mip-level queries now return explicit
+results consumed by the production preparation path. A failed classification is propagated;
+it is not treated as an ordinary unmatched material. Private decoded textures are owned before
+binding and are released on failed preparation, including partially decoded surface stacks.
+A valid cache without the requested source is distinguished from malformed cache bytes.
+
+This remains an incremental implementation. Ordinary Texture decoding, some prepared-material
+and projection helpers, the historical RequiredLevels wrapper and MidMips membership parser
+still contain throwing APIs behind operation boundaries. Original network descriptors are
+preserved, but arbitrary network/world/projection rendering on moving geometry is not yet
+implemented. Unsupported representation is distinct from damaged resources; neither may be
+reported as successful full-fidelity adaptation. Native parameter-calculator tests do not
+constitute a parent/bone renderer test or in-game visual acceptance.
+
+## Texture, cache membership and patch result increment (native124)
+
+Ordinary Texture mip decoding and native decompression now return explicit failure results
+with no private Texture output on failure. Native MidMips membership and required-level
+readers no longer expose throwing compatibility wrappers. Exact historical owned-cache lookup
+uses a result delegate through inspection/persistence, distinguishing failed lookup from valid
+absence. Prepared-file preflight returns a result and no partial input list. Catalogue
+lookup, registration, retention and shutdown expose explicit results to production callers.
+Successfully registered immutable installed source handles survive a failed attempt for retry;
+failed loads do not publish a completed Surface. Pending native cache refresh remains pending
+until refresh succeeds. This is distinct from ownership of newly generated outputs.
+
+Patch construction records invalid declarations as an explicit Error, propagated by derivative
+patches and rejected by atlas composition before source loading or output creation. Prepared
+vertex/tangent projection uses result APIs, and atlas consumers reject failed projection without
+returning partial geometry/material output. Structural Retile and native network mapping expose
+transactional result APIs: a failed operation disposes only its newly owned models and rolls
+back appended outputs, preserving earlier live models. Prepared levels and patches carry
+lookup errors to composition. All ten movable paint callers check the shared result API and
+report failure instead of treating a missing paint assembly as success.
+
+The next result-API increment also covers original-atlas wrap, UV frame and parent-frame
+mapping, serialized Surface references, native structural preservation and the existing measured
+prototype descriptor resolvers. Retile checks frame/projection errors before exposing outputs.
+Dependency source reads, owner snapshots, cache filenames/paths/membership and persisted cache
+relations return diagnostics. Relation reads validate temporary dictionaries before committing
+edges; failures remain sticky for that request. Snapshot cancellation and IO failure return an
+empty failed snapshot after releasing leases; the readiness callback cannot consume it.
+
+At native125, internal result conversion was incomplete: GPU atlas channel readback, native network
+surface extraction, embedded UV recipe/chart decoding and LOD material-slot planning retain
+throwing internals behind operation boundaries. Offline-only packing and retired decal helpers
+must not be confused with reachable generation paths. Source/schema errors and material capacity
+failures remain material-pipeline work, even where originally expressed as argument exceptions.
+Pure unrelated geometry/programming contracts are outside this material API conversion.
+
+The independent persistent-asset requirement remains in force. Runtime synchronization of
+network buffers to moving bridge leaves is prohibited, including as a workaround for unsupported
+material protocols. The incomplete original-network rendering capability is unchanged by this
+result-API increment; no arbitrary third-party renderer support or visual acceptance is implied.
+
 ## Directory layout
 
 Prepared material payloads belong in `assets/Materials/<BridgeStyleId>/`. Follow the
@@ -224,37 +332,22 @@ the accepted existing-atlas pattern differences. Lift01's measured normal endpoi
 0.619608 on its longitudinal period; this is distinct from missing normals, density loss or a
 wrong channel binding. A periodic self-comparison alone does not establish original appearance.
 
-The Paint path is independently connected to the new library. All ten production object
-assemblies call `AttachMovablePaint`, which loads `Paint/SkinnedPaint.Surface` through
-`BridgePreparedMaterials.Paint(style)` and passes that same surface to the render prefab and
-preview capture. All ten files exist and have matching native VT base-layer bindings and
-content identities. This path does not request deleted Structure/Repeat keys. The check is
-recorded in `artifacts/shared-material-pipeline/paint-route-review.json`; it inspected actual
-production sources and serialized assets, rather than executing a live game prefab.
-The Paint descriptor has no explicit normal/mask/control VT layers; its GPU default-layer
-appearance remains for human visual acceptance. No confirmed route or binding defect was
-found, so this review did not change production code.
+The former shared SkinnedPaint route is historical: it reduced native line art to
+constant white/yellow samples and incorrectly gave unknown rail artwork a full-width
+white footprint. It is not the selected-decal implementation contract.
 
 Reaching human acceptance is sufficient for this task's completion criterion: visual quality,
 actual opening/closing and cold-load observations may be performed by the user. Complete
 preview, creation and persistence must still be available first. Missing required prepared
 material keys prevent that readiness; they are not deferred visual checks.
 
-## Offline paint preparation
+## Historical offline paint preparation (not the selected-decal route)
 
-The source-level producer creates `Paint/SkinnedPaint.Surface` from the measured original
-paint source `4b5500b1b5c270890d99149f7f62e51a`. It uses the native object template with the
-original first-layer VTTexture backing, its original dimensions and complete authored mip
-pyramid. It does not decode pixels, regenerate mips, or create a color texture. Original
-nonexistent authoring Texture IDs remain header metadata and are not ordinary texture
-file dependencies. The active native VTTexture CID is the dependency.
-
-The producer requires an independently available original first-layer VTTexture. A source
-that exists only as a combined VTSurface needs a verified layer conversion before use; do
-not bind a missing original Texture CID to a non-VT descriptor. Native reader validation has
-passed; actual native rendering and paint/control fallback behavior remain acceptance work.
-The mip-zero decoder in `PreparePaint.Editor.cs` is an authoring diagnostic and must not be
-used to populate the rebuilt deliverable.
+The retained offline producer prepared `Paint/SkinnedPaint.Surface` from original
+source `4b5500b1b5c270890d99149f7f62e51a`, preserving its first-layer VT backing,
+dimensions and mip chain. These files and authoring diagnostics are historical
+package evidence. They are not the runtime selected-decal workflow, do not justify
+white/yellow substitution, and are not pending steps for the source-preserving fix.
 
 ## Offline cable preparation
 
@@ -306,6 +399,14 @@ the template-evidence digest, recipe `BridgeBuilder/SkinnedLane/1` and output by
 
 ## Offline worldspace asphalt conversion
 
+**Implementation limitation:** the historical recipe below transfers selected base
+texture channels and measured UV/tangent inputs. It does not reproduce every network
+shader layer, world-dependent operation or projection input. Zero control data is
+not a substitute for the original shader's additional layer logic. Use of the recipe
+is therefore not evidence of complete conversion for arbitrary network materials;
+the current material contract requires explicit incomplete results where required
+semantics cannot be represented. The result-API work does not close this renderer gap.
+
 The shared native Road source uses network worldspace template 17. Its object conversion binds
 the same albedo, normal and mask textures in template 0, with a zero control mask and native
 octahedral tangents. This is a recorded conversion recipe, not an instruction to convert every road. Prepare it
@@ -328,3 +429,263 @@ bindings retain their own descriptor until their offline conversion coverage is 
 
 
 Recorded inputs, measurements and their acceptance limits are preserved in [the historical evidence](../../archive/audits/Prepared-material-rebuild-checkpoints.md).
+
+## GPU and source-result implementation checkpoint (native126)
+
+Atlas channel creation, readback and release use explicit results. All readback
+requests are checked before copying any mip into the output texture; an incomplete
+channel is never saved. Cleanup attempts each independently owned resource, appends
+cleanup diagnostics to the original failure and retains failed releases for retry.
+Unconfirmed GPU requests retain their input buffers until completion is known.
+Persistent engine cleanup failures are reported, not described as successful release.
+
+Native source compilation returns `Surface.Error` / `MovableClosedRoad.Result.Error`.
+The shared movable generator checks sample failure before mechanism construction;
+per-LOD preparation also checks the result before consuming its arrays. Original
+native-road submesh copying and appending use result APIs and roll back only outputs
+created by the failed operation. These changes do not supply missing network shader
+inputs or establish arbitrary source-renderer compatibility. Material-slot planning,
+embedded chart validation and some lane/assembly internals still require result
+conversion; the material contract remains the target rather than a completion claim.
+
+## Visible compatibility output (native130 implementation direction)
+
+This policy supersedes native129's rejection of valid unsupported render protocols.
+The common planner returns exact reuse, equivalent conversion, or processed native
+compatibility output. Only actual resource/schema/native-operation errors are fatal.
+Compatibility warnings identify source, selected receiving protocol and appearance
+loss; they are not generation failures or claims of full fidelity.
+
+- Network/worldspace surfaces: retain usable source base or world PBR channels and
+  matching local UV interpretation in a native object descriptor. Report discarded
+  blending and frozen world anchoring. Never bind network vertex shaders to object data.
+- Transparent curves/cables and unknown shaders: choose an available native object
+  alpha/lighting representation from source properties; preserve source texture/color
+  where possible and report alpha, refraction or sorting approximation. No individual
+  source identity selects this path.
+- Projected lane color: map the original source color texture/alpha over measured
+  receiver patches, following their existing bones and native source UV region. Use
+  local source-resolution data, bounded footprint geometry and small physical paint
+  clearance; do not reintroduce a bridge-wide GPU atlas or omit the color layer.
+
+Native130 introduced no custom production shaders or continuing runtime synchronization; its outputs use the existing independent native persistence route. Historical full-equivalence/fail-closed descriptions
+below remain evidence of earlier increments, not current compatibility acceptance.
+
+## Common source-to-native material conversion
+
+Every selected-road, lane, cable and Original material uses the same realization
+entry. The caller supplies the actual geometry state: unchanged native network
+inputs, or evaluated object-local positions/UVs with rigid procedural bones. A
+Surface alone is insufficient to choose a renderer. Metadata-only prototype-source
+reads do not certify that the source can render on an object.
+
+1. Read the complete source descriptor, actual shader identity, template defaults,
+   keywords, ordered texture stacks and ordinary/VT dependencies. Preserve source
+   identities as provenance, not per-material adapter selectors.
+2. Compare those requirements with the receiving native vertex and instance protocol.
+   Direct reuse is valid only in a compatible context. Already evaluated curve or
+   composition vertices must not run the source deformation again.
+3. Select an evidenced native protocol conversion. The measured curved/object shader
+   pair supports descriptor conversion after curve evaluation, including different
+   template IDs using the same shader. Preserve resolved appearance defaults,
+   overrides, valid appearance keywords, texture/VT identity and sampling. Geometry
+   instance modes are derived from real inputs, not copied as appearance. Prepared
+   resources are cached equivalent results of this same plan, not a separate route.
+4. Realize once per generation and source/protocol, with owner-local changed identities.
+   Finish native writes and required VT/cache initialization before consumers read.
+   Preserve exact unchanged dependencies through the existing forward traversal.
+   Failed operations expose no successful partial material and retain cleanup errors.
+5. Verify the actual source and output descriptor, geometry layout and persistence;
+   separately verify native rendering, motion and cold loading without this mod.
+
+No source name, road name or CID whitelist selects support. New source identities
+using a supported protocol take the same conversion. Unknown protocols remain an
+implementation gap requiring a complete adapter, not corruption. The planner must
+report the missing capability explicitly rather than bind incompatible inputs,
+remove a source layer, or claim that a failure result implements arbitrary support.
+The dynamically generated persistent-shader route is currently unavailable under the feasibility conclusion below. Runtime network-buffer synchronization and full-span texture baking remain prohibited.
+
+The original-shader experiment demonstrated a concrete failure on native template17:
+CPU-evaluated Draw01 road geometry was bound to NetCompositionMeshLitShader. Its
+composition matrix/selectors and vertex protocol were not supplied by the object
+renderer. Descriptor and texture identity tests did not establish rendering. Remove
+that blind binding route. The complete worldspace/base-layer blend and motion-aware
+projection have no demonstrated equivalent. A source-layer selection may now serve as
+processed compatibility output, with its differences explicitly recorded; it is not
+a successful full-equivalence conversion.
+
+### Current conversion increment and limits (native129)
+
+The shared `MovableMaterialConversion` entry realizes evaluated road and lane
+Surfaces through the same geometry-qualified plan. The curved/default shader pair
+uses opaque, cutout, hashed and double-sided native object variants when render
+queue, enabled pass state, texture-stack layout and source appearance requirements agree.
+A disabled source-only transparent depth pass does not require an object equivalent.
+Source descriptor dictionaries are copied in full before adding missing template
+defaults: native `UpdateFloats`, `UpdateColors` and related methods replace their
+whole dictionaries, rather than merging individual values. Existing prepared object
+Surfaces use the same compatible direct-reuse branch. Failed new resources are
+rolled back; source assets are never rewritten.
+
+This is not arbitrary-material completion. Original network composition/worldspace
+materials still lack an equivalent object receiver. Curved transparent materials
+also cannot use an opaque target: their queue and transparency requirements differ.
+The former partial cable-to-opaque adapter is removed, not represented as an
+acceptable fallback. Consequently some valid sources previously accepted by the
+native127 blind binding experiment now return an explicit incomplete-representation
+result. They are not corrupt, and this result is not a successful rendering repair.
+The projected-color omission remains a separate unresolved source-layer issue.
+
+Validation separates native Surface serialization from shader rendering. Diagnostic
+protocol shaders exercise the real conversion and native Surface IO; a real VT
+Surface verifies its complete backing header and texture identities through a
+byte-exact native write/reload. These do not certify game vertex/pixel behavior or
+VT streaming initialization. Game visual validation remains required.
+
+### Preview draw state and original descriptors
+
+Original Surface bytes and appearance properties remain unchanged. Private preview
+materials additionally require draw-instance geometry modes: packed normals, actual
+procedural bone inputs, native lane curve mode, VT binding and offscreen depth state.
+These are not a replacement shader or permission to change source layer composition.
+Do not describe all effective preview keywords as byte-identical to the source.
+Keep a native-lane draw distinct from a procedural object carrying a preview pose.
+Only a real native lane or an enabled CurveProperties tiling mode selects the curve
+keywords; a plain object must not gain the lane-default mode merely because it has
+bones. Procedural mode requires actual nonempty bone data. Preserve unrelated source
+appearance keywords. Full network vertex/buffer compatibility and omitted template32
+projected color remain unverified/incomplete; do not create a substitute surface from
+its footprint alone.
+
+## Current multilayer compatibility limit
+
+**Complete multilayer adaptation is not implementable under the current game and
+project requirements.** The available persisted native object protocols do not
+express the required independent base/world-coordinate sampling and source-mask
+PBR mixture in full. A dynamically generated shader can perform that computation,
+but restoring its shader/template registration currently depends on Bridge Builder.
+That dependency cannot coexist with the non-negotiable requirement that saved
+bridges cold-load with Bridge Builder disabled or uninstalled.
+
+Compatibility materials remain usable approximations with diagnosed differences;
+they are not a complete multilayer repair. Keeping texture dimensions or changing
+one UV scale does not restore an omitted layer, its coordinate system or blend
+weights. Dynamic-shader experiments are archived evidence, not an active production
+route. This conclusion is bounded to the investigated current game interfaces and
+unchanged project constraints, not every possible future engine implementation.
+
+## Dynamic persistent shader feasibility conclusion
+
+**Not implementable under current requirements.** In the current game version,
+the complete custom-shader solution cannot satisfy cold loading after Bridge Builder
+is disabled or uninstalled. This is an unavailable production route, not a pending
+implementation or a delivered density fix. This is a capability conclusion, not a statement about the currently installed build.
+
+The limited experiment succeeded: standalone Player-side HLSL compilation, Unity
+shader-container loading and actual GPU execution, including a six-original-texture
+base/world-coordinate and Mask.B sampling probe. These successes do not restore
+native persistent template registration. Surface assets store a MaterialLibrary hash;
+Prefab references to Shader/Material store UnityObjectsMap tokens. The real native
+resolver tests fail after those live registrations are absent, even when the saved
+owner bundle exists or is already loaded. A startup loader is a disqualified counterexample, not an optional solution: it
+would require a service after the mod is disabled or uninstalled.
+
+The user's permission to investigate dynamic shaders remains. It does not authorize
+changing game shared resources, installing a bootstrap loader, runtime synchronization,
+or relaxing independent loading. Independence is a non-negotiable project constraint
+at all times, not a trade-off to ask the user to abandon. Reopen implementation only
+when a demonstrated native owner-local loading path satisfies this unchanged constraint.
+The source, timing, numerical differences and negative persistence results remain
+archived as bounded evidence; none establishes complete HDRP, motion or game acceptance.
+
+## Source-preserving decal realization
+
+The native139 shared decal path retains the selected source Surface provenance, original texture/VT channels and evaluated texture-area coordinates through projection and bone binding. The native object representation requires a derived descriptor, but no source-name filtering, line-atlas extraction or common white/yellow paint substitution is allowed. Distinct translucent layers retain their ordering and source coverage; only repeated segments of one occurrence share receiver coverage bookkeeping. Native decal blend equivalence is checked separately from descriptor identity, and unsupported channel semantics must be diagnosed rather than described as exact reproduction. The road receiver is not cut or replaced by decal generation. Existing GPU road computation and request-local LOD reuse remain unchanged.
+
+Historically, native139 used single-sided hashed cutout. Later deterministic-cutoff and chart-coverage experiments also did not reproduce the original continuous decal blend. These are implementation history, not the source-alpha requirement below or verified visual acceptance.
+
+The obsolete Strokes white-ribbon fallback and source-name exclusions were removed.
+The current consumer groups by original source occurrence, preserves full texture-area
+UVs and source ordering, clips to the existing receivers and binds their native bones.
+It uses a derived object Surface with original texture identities; this is not literal
+original-descriptor or native decal-pass equivalence. No original road face is removed.
+
+## Prototype-owned mechanism wear, including fixed ends
+
+The movable bridge mechanism includes its moving span and its stationary end caps.
+Generate wheel-track/wear appearance there only from the measured prototype's
+WheelTrack road representation. Do not overlay selected-road deterioration on any
+mechanism receiver, even when its bone is stationary or its substrate uses an
+Original fallback. Prototype-provided wear remains in the road material and must
+not be duplicated as a hashed-alpha object layer.
+
+The external fixed elevated approaches are separate native network assets. Keep
+their selected-road deterioration and original network rendering unchanged. Do not
+mistake a stationary cap within the mechanism for such an approach, or delete wear
+from external roads. Source line/rail artwork and bus/bicycle color coverage remain
+on the source-preserving decal route. Classify deterioration by native shader
+protocol identity, not road/material names or CIDs. No hard-alpha threshold,
+texture erasure, or replacement white ribbon is a wear-noise repair.
+
+## Stable projected coverage and preview precision
+
+Preserve the source marking's actual initial alpha rule, including whether clipping
+is enabled, its resolved cutoff when enabled, continuous blend factors, original
+alpha samples and mip chain. A template's serialized cutoff default is not an
+active threshold when its alpha-test feature is disabled. Do not substitute the
+receiving object template's cutoff and describe it as the source cutoff.
+
+For an actually alpha-tested source, resolve the source override or native template
+default and retain that value through conversion, persistence and preview refresh.
+For a continuously blended source, matching a numeric cutoff cannot reproduce the
+source rule. Do not set an arbitrary epsilon, disable clipping on an opaque object
+and expose its whole rectangle, or re-enable stochastic hashed testing as a supposed
+source-equivalent repair. A native representation must also consume the real motion,
+vertex and instance protocol; material identity alone is insufficient.
+
+Inspect generated city rendering and preview independently. Place the isolated
+preview stage at coordinates whose float32 spacing preserves the 0.001 m surface
+clearance on absolute-coordinate paths. This does not prove a depth failure in
+camera-relative paths. Preserve private scene/layer isolation and source resources.
+
+## Projected chart coverage across mips
+
+Do not renormalize source alpha or its mip coverage to compensate for an incompatible
+receiving cutoff. Such a change modifies the initial source rule even when mip zero,
+texture dimensions and UV-to-metre density remain approximately unchanged. Cropping
+and coverage counts are not proof of original alpha/blend equivalence. Preserve the
+original source mip signals; a reported approximation must not be presented as a
+repair satisfying the source-alpha requirement.
+
+The installed native144 chart-coverage implementation does not satisfy this rule:
+it deliberately rescales lower-mip alpha, and its object cutoff is enabled where
+native CurvedDecal line sources use continuous DBuffer blending. It remains an
+unresolved implementation defect, not accepted appearance or a complete repair.
+Reverting only its coverage change would restore the previously observed far-line
+loss; disabling object alpha testing would expose opaque rectangles. Neither is a
+completed fix. Do not deploy either regression merely to report a changed threshold.
+
+The currently inspected native DefaultDecal DBuffer mesh path does not consume the
+road procedural-bone protocol; CurvedDecal additionally requires lane-instance curve
+inputs. A Surface swap alone is not an evidenced independently persisted moving
+representation. Report this concrete capability gap without claiming that all future
+native arrangements are impossible. Independent loading and the prohibition on a
+continuing mod rendering/synchronization service remain unchanged.
+
+## Native rigid source-decal attachment experiment
+
+The current implementation task replaces the cutout/renormalized-mip approximation with native
+rigid decal children driven by persisted bone connection IDs. All retained source decal kinds use
+one path, preserving original channels, authored mips, alpha blending and evaluated curve UVs.
+The selected-road wear exclusion remains unchanged. Native static-decal protocol conversion is
+not literal identity with a curved source descriptor; test its consumed fields and sampling.
+Native relative-object animation, preview parent transforms, receiver-layer binding and independent
+cold loading must be verified separately. Earlier same-object skinned-paint results do not prove
+this child route. There is no continuing manager synchronization or custom shader dependency.
+
+The native static decal mesh pass reconstructs receiver positions from depth and samples
+object-local X/Z using MeshSize and TextureArea; vertex UVs do not replace that protocol.
+Use correctly oriented closed projection volumes, native receiver layers and source projection
+frames. Preserve the source sampling transform when clipping motion domains. Validate clipped
+volume boundaries separately, especially oblique seams; do not present an untested silhouette
+clip as an exact shader-space clipping predicate.

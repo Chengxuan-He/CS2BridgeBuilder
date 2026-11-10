@@ -100,6 +100,21 @@ try
     Check(changed.Contains(ownerE)&&lookups==1&&!File.ReadAllText(eroot).Contains(legacyCid)
         &&File.Exists(esource)&&File.Exists(esource+".cid"),"exact closure migrated; shared unowned source retained without reverse consumer scan");
     Check(paths.Any(p=>p.Contains("Shared-"+ownerE)),"migration reports newly written owner paths for same-pass layout");
+    // Another owner supplies a legacy component; source is read but never retired.
+    var ownerF="b66666666-6666-4666-8666-666666666666";
+    var fc=new string('7',32);var fr=Save(ownerF,new string('0',32),Doc(ownerF,"RoadPrefab",fc));
+    var foreign=Path.Combine(game,"ImportedData",ownerB,"Dependencies",fc+".Prefab");
+    Directory.CreateDirectory(Path.GetDirectoryName(foreign)!);File.WriteAllText(foreign,Doc("Old shared section","NetSectionPrefab"));File.WriteAllText(foreign+".cid",fc);
+    var foreignBytes=File.ReadAllBytes(foreign);
+    Check(BridgeLegacyNames.Run(game,new[]{ownerF},Path.Combine(sandbox,"foreign"),out changed,out error,
+        name=>Path.Combine("ImportedData",name,name+".Prefab"),new[]{fr},cid=>cid==fc?foreign:null),error);
+    Check(changed.Contains(ownerF)&&!File.ReadAllText(fr).Contains(fc)&&File.ReadAllBytes(foreign).SequenceEqual(foreignBytes),"foreign legacy source can seed private copy and remains untouched");
+    var ownerG="b77777777-7777-4777-8777-777777777777";
+    var gc=new string('a',31)+"1";var gr=Save(ownerG,new string('a',31)+"2",Doc(ownerG,"RoadPrefab",gc));
+    var named=Save(ownerB+" Named",gc,Doc(ownerB+" Named","NetSectionPrefab"));
+    Check(BridgeLegacyNames.Run(game,new[]{ownerG},Path.Combine(sandbox,"foreign-named"),out changed,out error,
+        name=>Path.Combine("ImportedData",name,name+".Prefab"),new[]{gr},cid=>cid==gc?named:null)
+        &&changed.Count==0&&File.ReadAllText(gr).Contains(gc)&&File.Exists(named),"UUID-named foreign input remains ordinary snapshot, not legacy rename mutation");
     // Destination collision must fail before touching the bridge or legacy source.
     File.WriteAllText(a, Doc(ownerA, "RoadPrefab", sectionCid));
     old = Save(section, sectionCid, Doc(section, "NetSectionPrefab"));

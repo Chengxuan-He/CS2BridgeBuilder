@@ -177,14 +177,16 @@ namespace BridgeBuilder.Runtime {
 
 namespace BridgeBuilder.Runtime {
  internal sealed class BridgeCreationDependencies {
-  internal static bool Shadowed;
+  internal static bool Shadowed; internal static bool RemoveObsoleteRelations(string owner,string backup,out bool changed,out string error){changed=false;error="";return true;}
   internal bool Unconfirmed => Shadowed;
   internal readonly HashSet<string> Files=new(); internal void SaveRelations(string owner) {} internal void Relocate(string a,string b) {}
  }
  internal sealed class BridgeInspectionScope {
-  private readonly Dictionary<string,HashSet<string>> paths=new();
+  internal int CacheTraversals=>1;internal int CacheHeaders=>0;internal bool PrepareCaches(out string error){error="";return true;} private readonly Dictionary<string,HashSet<string>> paths=new();
   internal BridgeInspectionScope(string root,IEnumerable<string> owners) {foreach(var owner in owners) paths[owner]=new();}
   internal HashSet<string> Paths(string owner)=>paths[owner]; internal string? Find(string cid,string owner)=>null;
   internal BridgeCreationDependencies Dependencies(string owner,IEnumerable<BridgeInspectionAssets.Entry> assets)=>new();
  }
 }
+
+namespace BridgeBuilder.Runtime { internal static class BridgeDeferredRemoval { internal static HashSet<string> Hidden=new(); internal static int Resumes; internal static void Resume(){Resumes++;} internal static bool Excluded(string owner)=>Hidden.Contains(owner); } }

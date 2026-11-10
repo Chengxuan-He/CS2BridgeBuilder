@@ -112,8 +112,7 @@ internal static class MovableStreetLights
 
     private static void CheckSource(string owner, PrefabBase source)
     {
-        if (source == null || BridgeAssetInfo.IsOtherBridgePrefab(source.asset?.path, owner,
-            Path.Combine(Application.persistentDataPath, "ImportedData")))
-            throw new InvalidOperationException("Moving lighting cannot read a missing or foreign bridge-owned source.");
+        if (source == null)
+            throw new InvalidOperationException("Moving lighting cannot read a missing source.");
     }
 }

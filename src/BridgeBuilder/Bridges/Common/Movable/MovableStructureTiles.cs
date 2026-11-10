@@ -25,14 +25,19 @@ internal sealed class MovableStructureTiles
 
     // This capability belongs to a complete fixed NetPiece graph, including its
     // plain RenderPrefab LOD children. Identity alone never grants that context.
-    internal bool PreserveNativeNetwork(string render,int mesh,SurfaceAsset source)
+    internal bool TryPreserveNativeNetwork(string render,int mesh,SurfaceAsset source,out bool preserve,out string? error)
     {
-        var cid=source.id.guid.ToString();
-        if(!NativeNetworkIdentity(render,mesh,cid))return false;
-        source.LoadHeader();
-        if(!source.isBuiltin || source.materialTemplateHash is not (17 or 33))
-            throw new System.InvalidOperationException("Measured native network surface changed: "+cid);
-        return true;
+        preserve=false;error=null;
+        try
+        {
+            var cid=source.id.guid.ToString();
+            if(!NativeNetworkIdentity(render,mesh,cid))return true;
+            source.LoadHeader();
+            if(source.materialTemplateHash is not (17 or 33))
+            {error="Measured native network surface changed: "+cid;return false;}
+            preserve=true;return true;
+        }
+        catch(System.Exception exception){error="Native network preservation: "+exception.Message;return false;}
     }
 
     internal bool NativeNetworkIdentity(string render,int mesh,string cid)
@@ -55,22 +60,30 @@ internal sealed class MovableStructureTiles
     internal int RetainedAxes(string render,int mesh,int parentDomain)
         => MovableUvSampling.Axes(_style,render,mesh,parentDomain);
 
-    internal SurfaceAsset NativeSurface(SurfaceAsset source)
+    internal bool TryNativeSurface(SurfaceAsset source,out SurfaceAsset result,out string? error)
     {
-        if(!_nativeSurfaces.TryGetValue(source,out var result))
+        result=null!;error=null;string? lookupError=null;
+        try
         {
-            result=_style switch
+        MovableExistingRoadSurface.SurfaceResult Load(string cid)=>BridgePreparedMaterials.NativeSource(_style,cid);
+        if(!_nativeSurfaces.TryGetValue(source,out result))
+        {
+            MovableExistingRoadSurface.SurfaceResult resolved=_style switch
             {
-                "Draw01"=>Draw01NativeMaterials.Resolve(source,cid=>BridgePreparedMaterials.NativeSource(_style,cid)),
-                "Draw02"=>Draw02NativeMaterials.Resolve(source,cid=>BridgePreparedMaterials.NativeSource(_style,cid)),
-                "Draw03"=>Draw03NativeMaterials.Resolve(source,cid=>BridgePreparedMaterials.NativeSource(_style,cid)),
-                "Lift01"=>Lift01NativeMaterials.Resolve(source,cid=>BridgePreparedMaterials.NativeSource(_style,cid)),
+                "Draw01"=>Draw01NativeMaterials.Resolve(source,Load),
+                "Draw02"=>Draw02NativeMaterials.Resolve(source,Load),
+                "Draw03"=>Draw03NativeMaterials.Resolve(source,Load),
+                "Lift01"=>Lift01NativeMaterials.Resolve(source,Load),
                 _=>source
             };
-            BridgePreparedMaterials.StructuralBinding(result);
+            if(!resolved.Success||resolved.Value==null){error=resolved.Error??"Required native structural Surface is absent.";result=null!;return false;}
+            result=resolved.Value;
+            if(!BridgePreparedMaterials.TryStructuralBinding(result,out error)){result=null!;return false;}
             _nativeSurfaces.Add(source,result);
         }
-        return result;
+        return true;
+        }
+        catch(System.Exception exception){result=null!;error=lookupError??("Native structural material: "+exception);return false;}
     }
 
 }

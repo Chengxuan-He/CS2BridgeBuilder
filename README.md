@@ -313,14 +313,12 @@ ImportedData/
     │   ├── <CID>.Texture
     │   └── <cacheCID>/
     │       └── TS512_MB3.MidMips
-    └── BridgeCacheEdges.txt         Forward cache relations for later self-checks
 ```
 
 Every native asset payload has a matching `.cid` sidecar, omitted from most tree entries
 for readability. Cache filenames preserve their native `TS…_MB….MidMips` tag; the shown
 tag is an example. `Appearance` may also contain `.Material` files, and `VT` may contain
-`.VTSurface` files. `BridgeCacheEdges.txt` is manager metadata, not a native asset or a
-separate bridge registry.
+`.VTSurface` files. Self-check uses native cache metadata without a separate persisted relationship ledger.
 
 Generated components and geometry have private identities. Required external non-built-in
 dependencies are copied byte-for-byte with their original CIDs, once per bridge; different
@@ -339,8 +337,9 @@ The catalogue commits the bridge after native publication succeeds. Bridge metad
 there is no separate bridge registry file or registration guard rejecting native loads.
 
 Startup self-check waits for native loading, mod initialization and PDX asset batches. It attempts
-migration first, preserving UUID/CID and valid data. An unresolved shadowed CID or unverifiable
-cache relation leaves inspection unfinished. Confirmed failed or impossible migration enters UUID-scoped
+migration first, preserving UUID/CID and valid data. Shared cache-relation preparation completes
+before owner inspection; preparation errors abort the run without retiring owners. An independently
+unresolved shadowed file identity retains its inaccessible-file handling. Confirmed failed or impossible migration enters UUID-scoped
 backup/removal; backup failure falls back to deleting the remaining selected source files. Actual
 removal failures are reported. Persistent changes require restart; self-check does not unregister
 live prefabs. See contract sections 17–19 for persistence, ownership and migration requirements.

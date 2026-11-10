@@ -89,9 +89,7 @@ internal static class BridgeLoadedCidRecovery
         {
             foreach (var database in AssetDatabase.global.databases)
             {
-                if (!database.TryGetAsset(Colossal.Hash128.Parse(cid), out PrefabAsset asset)
-                    || BridgeAssetInfo.IsOtherBridgePrefab(asset.path, owner,
-                        Path.Combine(UnityEngine.Application.persistentDataPath, "ImportedData"))) continue;
+                if (!database.TryGetAsset(Colossal.Hash128.Parse(cid), out PrefabAsset asset)) continue;
                 var instance = asset.GetInstance<PrefabBase>();
                 if (instance != null && expected.IsInstanceOfType(instance)) return instance;
             }

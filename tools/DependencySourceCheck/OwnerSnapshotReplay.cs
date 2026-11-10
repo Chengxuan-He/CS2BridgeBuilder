@@ -48,12 +48,12 @@ internal static class OwnerSnapshotReplay
                 if(native.Metadata.extension==".Prefab") registeredPrefabSeeds.Add(native.id.guid.ToString());
             }
             var request=new BridgeCreationDependencies(_=>throw new Exception("Unexpected cache search."));
-            request.ReadRelations(owner);
+            FixturePersistence.Inspect(request,owner);
             AssetDatabase.global.ForbidEnumeration=true;
             if(!BridgeDependencyPersistence.Save(owner,roots,request,out _,out var error,out var writes)||writes!=0)
                 throw new Exception(owner+" "+error+" writes="+writes);
             var request2=new BridgeCreationDependencies(_=>throw new Exception("Unexpected cache search."));
-            request2.ReadRelations(owner);
+            FixturePersistence.Inspect(request2,owner);
             if(!BridgeDependencyPersistence.Save(owner,registeredPrefabSeeds,request2,out _,out error,out writes)||writes!=0)
                 throw new Exception("Full registered prefab graph: "+owner+" "+error+" writes="+writes);
             Console.WriteLine("PASS material and registered Prefab closure: "+owner);

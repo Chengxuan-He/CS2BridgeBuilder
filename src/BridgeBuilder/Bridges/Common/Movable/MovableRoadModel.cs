@@ -18,12 +18,26 @@ internal static class MovableRoadModel
     internal static bool TryBuild(string name, IReadOnlyList<MovableRoadGeometry.BoundTriangle> triangles,
         int materialCount, int boneCount, out ModelImporter.Model? model, out string? error)
     {
+        return TryBuildCore(name,triangles,materialCount,boneCount,null,out model,out error);
+    }
+
+    internal static bool TryBuildPacked(string name, IReadOnlyList<MovableRoadGeometry.BoundTriangle> triangles,
+        int materialCount, int boneCount, uint[] packed, out ModelImporter.Model? model, out string? error)
+    {
+        return TryBuildCore(name,triangles,materialCount,boneCount,packed,out model,out error);
+    }
+
+    private static bool TryBuildCore(string name, IReadOnlyList<MovableRoadGeometry.BoundTriangle> triangles,
+        int materialCount, int boneCount, uint[]? packed, out ModelImporter.Model? model, out string? error)
+    {
         model = null; error = null;
         if (string.IsNullOrEmpty(name) || triangles == null || triangles.Count == 0 ||
             triangles.Count > int.MaxValue / 3 || materialCount <= 0 || boneCount <= 0)
         { error = "A moving road model requires an owner, bound triangles and material slots."; return false; }
 
         var count = triangles.Count * 3;
+        if(packed!=null && packed.Length!=checked(count*11))
+        {error="GPU encoded vertex payload length differs from bound geometry.";return false;}
         var positions = new float[count * 3]; var normals = new uint[count];
         var tangents = new uint[count]; var uv = new float[count * 4];
         var colors = new byte[count * 4]; var bones = new uint[count];
@@ -44,15 +58,17 @@ internal static class MovableRoadModel
                 positions[index * 3] = vertex.Position.x;
                 positions[index * 3 + 1] = vertex.Position.y;
                 positions[index * 3 + 2] = vertex.Position.z;
-                normals[index] = MathUtils.NormalToOctahedral((float3)vertex.Normal);
-                tangents[index] = MathUtils.TangentToOctahedral((float4)vertex.Tangent);
+                normals[index] = packed==null ? MathUtils.NormalToOctahedral((float3)vertex.Normal) : packed[index*11+3];
+                tangents[index] = packed==null ? MathUtils.TangentToOctahedral((float4)vertex.Tangent) : packed[index*11+4];
                 for (var k = 0; k < 4; k++)
                 {
-                    uv[index * 4 + k] = vertex.UV[k];
+                    uv[index * 4 + k] = packed==null ? vertex.UV[k] : BitConverter.Int32BitsToSingle(unchecked((int)packed[index*11+5+k]));
                     // Colors describe a baked surface, not composition-matrix selectors.
-                    colors[index * 4 + k] = (byte)Mathf.RoundToInt(Mathf.Clamp01(vertex.Color[k]) * 255f);
+                    colors[index * 4 + k] = packed==null ? (byte)Mathf.RoundToInt(Mathf.Clamp01(vertex.Color[k]) * 255f) : (byte)(packed[index*11+9]>>(k*8));
                 }
-                bones[index] = triangle.Bone;
+                bones[index] = packed==null ? triangle.Bone : packed[index*11+10];
+                if(packed!=null && (bones[index]!=triangle.Bone || packed[index*11]!=unchecked((uint)BitConverter.SingleToInt32Bits(vertex.Position.x)) || packed[index*11+1]!=unchecked((uint)BitConverter.SingleToInt32Bits(vertex.Position.y)) || packed[index*11+2]!=unchecked((uint)BitConverter.SingleToInt32Bits(vertex.Position.z))))
+                {error="GPU encoded position/bone differs from bound geometry.";return false;}
                 slots[geometry.Material].Add(index);
                 if (!initialized[geometry.Material])
                 { bounds[geometry.Material] = new Bounds(vertex.Position, Vector3.zero); initialized[geometry.Material] = true; }

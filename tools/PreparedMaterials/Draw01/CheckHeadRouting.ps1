@@ -1,4 +1,4 @@
-param([string]$Repository = 'D:/CS2BridgeBuilder')
+param([string]$Repository = 'E:/CS2BridgeBuilder')
 $ErrorActionPreference = 'Stop'
 $source = Get-Content -Raw (Join-Path $Repository 'src/BridgeBuilder/Bridges/Types/Draw01/Draw01HeadRoad.cs')
 $assembly = Get-Content -Raw (Join-Path $Repository 'src/BridgeBuilder/Bridges/Types/Draw01/Draw01NetworkAssembly.cs')

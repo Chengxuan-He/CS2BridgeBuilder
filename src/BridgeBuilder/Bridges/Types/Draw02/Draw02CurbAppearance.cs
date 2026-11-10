@@ -8,8 +8,9 @@ namespace BridgeBuilder.Bridges;
 // closure and fixed-platform curb have different measured prototype materials.
 internal static class Draw02CurbAppearance
 {
-    internal static void Apply(Pose pose, int lod, MovableClosedRoad.Result road, ref MovableRoadGeometry.BoundTriangle[] faces, ref MovableExistingRoadSurface.Patch[] patches, ref MovableRoadAppearance.Type[] types)
+    internal static bool TryApply(Pose pose, int lod, MovableClosedRoad.Result road, ref MovableRoadGeometry.BoundTriangle[] faces, ref MovableExistingRoadSurface.Patch[] patches, ref MovableRoadAppearance.Type[] types,out string? error)
     {
+        error=null;
         var output = new List<MovableExistingRoadSurface.Patch>(patches);
         var support = new List<MovableRoadAppearance.Type>(types);
         var sources = new MovableRoadRoute.Source? [road.Surfaces.Length];
@@ -29,7 +30,12 @@ internal static class Draw02CurbAppearance
                 continue;
             if (section.name != "Sidewalk" && !section.name.StartsWith("Sidewalk ", StringComparison.Ordinal))
                 continue;
-            var source = sources[triangle.Material] ??= MovableRoadRoute.Read(road.Surfaces[triangle.Material]);
+            if(!sources[triangle.Material].HasValue)
+            {
+                if(!MovableRoadRoute.TryRead(road.Surfaces[triangle.Material],out var read,out error))return false;
+                sources[triangle.Material]=read;
+            }
+            var source=sources[triangle.Material]!.Value;
             if (source.Receiver(triangle) != MovableRoadAppearance.Type.Curb)
                 continue;
             var a = transform.MultiplyPoint3x4(triangle.A.Position);
@@ -54,7 +60,7 @@ internal static class Draw02CurbAppearance
         }
 
         patches = output.ToArray();
-        types = support.ToArray();
+        types = support.ToArray();return true;
     }
 }
 

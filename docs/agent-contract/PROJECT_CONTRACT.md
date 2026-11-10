@@ -249,6 +249,10 @@ fail during correct operation: actual data/API operation failures raise an expli
 and preserve diagnostic context. Structural/appearance quality cannot gate generation under the bridge contract. Throw an exception for actual failed operations when appropriate; do not add special cases,
 silent returns, fallback values or exception swallowing merely to prevent an internal error from
 surfacing. Fix the underlying defect rather than hiding it.
+The [complete material pipeline](MATERIAL_GENERATION_CONTRACT.md#complete-material-processing-without-propagated-exceptions)
+is explicitly non-throwing: contain native/external exceptions at operation boundaries,
+return diagnosed failure results and preserve complete support for valid unknown sources.
+This specific material result contract takes precedence over the general throw guidance above.
 
 Fix every reported bug immediately. A user bug report is a request to implement a fix. After diagnosis,
 immediately proceed with implementation and verification; do not stop at acknowledgment, analysis,

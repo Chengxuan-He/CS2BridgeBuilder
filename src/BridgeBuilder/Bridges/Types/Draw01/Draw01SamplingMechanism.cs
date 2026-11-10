@@ -50,8 +50,8 @@ internal sealed class Draw01SamplingMechanism : IDisposable
 
         RenderPrefab Copy(RenderPrefab source)
         {
-            if (source == null || BridgeAssetInfo.IsOtherBridgePrefab(source.asset?.path, owner, imported))
-                throw new InvalidOperationException("Draw01 sampling cannot use missing or foreign bridge render metadata.");
+            if (source == null)
+                throw new InvalidOperationException("Draw01 sampling cannot use missing render metadata.");
             if (copies.TryGetValue(source, out var existing))
                 return existing;
             var copy = ScriptableObject.CreateInstance<RenderPrefab>();

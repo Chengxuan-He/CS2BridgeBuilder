@@ -32,7 +32,7 @@ public static class Lift01RepeatControlAudit
         var pipeline=Assembly.LoadFrom(Path.Combine(Path.GetDirectoryName(db.Location),"Colossal.AssetPipeline.Native.dll"));
         var decode=pipeline.GetType("Colossal.AssetPipeline.Native.CompressionUtilities",true).GetMethods().Single(m=>m.Name=="Decompress" && m.GetParameters()[0].ParameterType==typeof(byte[]));
         var zstd=Enum.Parse(decode.GetParameters()[1].ParameterType,"ZSTD");
-        var texture=MovableTextureSource.Read(input,b=>(byte[])decode.Invoke(null,new[]{(object)b,zstd}));
+        var texture=(MovableTextureSource.TryRead(input,b=>(byte[])decode.Invoke(null,new[]{(object)b,zstd}),out var parsedTexture1,out var textureReadError1)?parsedTexture1:throw new System.IO.InvalidDataException(textureReadError1));
         try {
             Need(input.Position==input.Length,"Unconsumed texture bytes.");
             Need(texture.width==(int)nativeType.GetProperty("width").GetValue(asset) && texture.height==(int)nativeType.GetProperty("height").GetValue(asset),"Native texture metadata differs.");

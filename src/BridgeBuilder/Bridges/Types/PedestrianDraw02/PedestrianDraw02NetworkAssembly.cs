@@ -19,7 +19,7 @@ internal static class PedestrianDraw02NetworkAssembly
         // reverse references and therefore could not select the native pillar variants.
         // This is a generic built-in pathway placeholder, not the bridge prototype.
         var pillar = factory.ResolveOriginal<ObjectPrefab>("Pillar Pedestrian Placeholder");
-        if (!pillar.isBuiltin || !pillar.Has<PlaceholderObject>())
+        if (!pillar.Has<PlaceholderObject>())
             throw new InvalidOperationException("PedestrianDraw02 requires the built-in pedestrian pillar placeholder.");
 
         var sections = PedestrianDraw02NetworkData.ConvertSections(target.name,

@@ -13,10 +13,11 @@ namespace BridgeBuilder.Bridges;
 
 // Private straight single-network sampling. This does not provide a dual-deck arrangement,
 // road replacement masks, motion seams, structural widening or a complete generator.
-internal sealed class MovableStraightSample : IDisposable
+internal sealed class MovableStraightSample : IMovableRoadSample
 {
     internal readonly MovableNetworkContext Network;
     internal readonly MovableClosedRoad.Result Road;
+    public string? MaterialError=>Road.Error;
     internal readonly Pose RoadToObject;
     private readonly Entity _sourceTheme;
     private readonly float3 _roadOrigin;
@@ -97,6 +98,7 @@ internal sealed class MovableStraightSample : IDisposable
             }, new[] { centralNode }, roadOrigin,
                 replacedStructureLayers: replacedLayers,
                 trackSourceFaces: false);
+            if(Road.Error!=null)return;
             RoadToObject = Network.RoadToMechanism(0, roadOrigin);
         }
         catch

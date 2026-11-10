@@ -85,6 +85,67 @@ internal static class BridgeOwnerMemory
         return result;
     }
 
+    internal static void PreserveShared(World world,string root,string retiring,HashSet<AssetData> assets,HashSet<Object> destroying)
+    {
+        var prefabs=world.GetExistingSystemManaged<PrefabSystem>();
+        if(prefabs==null)return;
+        var retain=SharedSources(PrefabCatalog.GetAll(prefabs),root,retiring,assets);
+        PreserveRoutes(world,retiring,assets,destroying,retain);
+    }
+
+    internal static Dictionary<AssetData,string> SharedSources(IEnumerable<PrefabBase> prefabs,string root,string retiring,HashSet<AssetData> assets)
+    {
+        var retain=new Dictionary<AssetData,string>(new Identity());
+        void Keep(AssetData? asset,string consumer)
+        {
+            if(asset==null || !assets.Contains(asset) || retain.ContainsKey(asset))return;
+            var meta=asset.GetMeta();
+            var destination=Path.Combine(root,"ImportedData",consumer,"Dependencies",asset.id.guid+meta.extension);
+            if(!BridgeBuilder.Runtime.BridgeFileAccess.Exists(destination))
+                throw new IOException("Shared resource requires an independent read source: CID="+asset.id.guid+
+                    "; retiring="+retiring+"; consumer="+consumer+"; expected="+destination);
+            retain.Add(asset,destination);
+        }
+        foreach(var render in prefabs.OfType<RenderPrefab>())
+        {
+            if(!BridgeBuilder.Runtime.BridgeAssetInfo.TryFileOwner(render.name,out var consumer) || consumer==retiring)continue;
+            Keep(render.geometryAsset,consumer);
+            if(Field(render,"m_SurfaceAssets") is AssetReference<SurfaceAsset>[] references)
+                foreach(var reference in references)
+                {
+                    SurfaceAsset? surface=reference;
+                    Keep(surface,consumer);
+                    if(surface?.textures!=null)foreach(var texture in surface.textures.Values)Keep(texture,consumer);
+                }
+            // Loaded material texture references may outlive the Surface property lease.
+            if(Field(render,"m_MaterialsContainer") is Material[] materials)
+                foreach(var material in materials)
+                    if(material!=null)foreach(int property in material.GetTexturePropertyNameIDs())
+                        if(material.GetTexture(property) is Texture texture)
+                            foreach(var asset in assets.OfType<TextureAsset>())
+                                if(ReferenceEquals(Field(asset,"m_Instance"),texture))Keep(asset,consumer);
+        }
+        return retain;
+    }
+
+    private static void PreserveRoutes(World world,string retiring,HashSet<AssetData> assets,HashSet<Object> destroying,Dictionary<AssetData,string> retain)
+    {
+        if(retain.Count==0)return;
+        var paths=retain.ToDictionary(p=>Path.GetFullPath(BridgeBuilder.Runtime.BridgeFileAccess.Logical(p.Key.path)),p=>p.Value,StringComparer.OrdinalIgnoreCase);
+        // Complete old reads first. Already loaded pixels and materials remain the same objects.
+        var streaming=world.GetExistingSystemManaged<TextureStreamingSystem>();
+        if(streaming!=null && !CompleteHeaders(streaming,p=>p!=null && paths.ContainsKey(Path.GetFullPath(BridgeBuilder.Runtime.BridgeFileAccess.Logical(p)))))
+            throw new IOException("Shared texture header cannot complete synchronously.");
+        if(streaming!=null)BridgeBuilder.Runtime.BridgeVirtualTextureRemoval.Redirect(streaming,paths);
+        foreach(var pair in retain)
+        {
+            BridgeBuilder.Runtime.BridgeNativeRemoval.Redirect(pair.Key,pair.Value);
+            Mod.Log.Info("Preserved live shared bridge asset: CID="+pair.Key.id.guid+"; retiring="+retiring+"; readPath="+pair.Value);
+        }
+        destroying.ExceptWith(Instances(retain.Keys));
+        assets.ExceptWith(retain.Keys);
+    }
+
     // Inspect existing native registrations/materials, without loading any asset payload or traversing saved bridges.
     internal static void CheckConsumers(World world,HashSet<AssetData> assets,HashSet<Object> objects)
     {
@@ -111,7 +172,8 @@ internal static class BridgeOwnerMemory
                 if((geometry!=null && ids.Contains(geometry.guid) && Asset(render.geometryAsset)) ||
                     (surfaces?.Any(s=>s!=null && ids.Contains(s.guid) && Asset((SurfaceAsset)s))??false) ||
                     (Field(render,"m_MaterialsContainer") is Material[] mats && mats.Any(MaterialUses)))
-                    throw new InUse("A surviving render prefab still uses owner memory: "+render.name);
+                    throw new InUse("A surviving render prefab still uses owner memory: "+render.name+
+                        "; referencedCIDs=["+string.Join(",",new[]{geometry?.guid.ToString()}.Concat(surfaces?.Select(s=>s?.guid.ToString())??Array.Empty<string>()).Where(id=>id!=null))+"]");
             }
         var system=world.GetExistingSystemManaged<BatchManagerSystem>();
         if(system!=null)

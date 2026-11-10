@@ -1,0 +1,8 @@
+#pragma kernel Encode
+#pragma target 5.0
+ByteAddressBuffer Bound;
+RWByteAddressBuffer Encoded;
+uint VertexCount; uint VertexStart;
+precise float2 Oct(float3 n){precise float sum=abs(n.x)+abs(n.y)+abs(n.z);precise float r=sum==0?0:1.0f/sum;precise float x=n.x*r;precise float y=n.y*r;return float2(n.z>=0?x:(1-abs(y))*(x>=0?1:-1),n.z>=0?y:(1-abs(x))*(y>=0?1:-1));}
+int Q(float v,float m){precise float a=clamp(v,-1,1)*m;precise float b=a+(v>=0?0.5f:-0.5f);return (int)b;}
+[numthreads(64,1,1)]void Encode(uint3 id:SV_DispatchThreadID){uint i=id.x+VertexStart;if(i>=VertexCount)return;uint s=(i/3)*232+(i%3)*72;uint d=i*44;Encoded.Store3(d,Bound.Load3(s));float2 n=Oct(asfloat(Bound.Load3(s+12)));uint normal=(Q(n.x,32767)&65535)|((Q(n.y,32767)&65535)<<16);float4 t=asfloat(Bound.Load4(s+24));float2 o=Oct(t.xyz);uint tangent=(Q(o.x,16383)&32767)|((Q(o.y,16383)&32767)<<16)|(t.w<0?0x80000000:0);Encoded.Store(d+12,normal);Encoded.Store(d+16,tangent);Encoded.Store4(d+20,Bound.Load4(s+40));uint4 c=(uint4)round(saturate(asfloat(Bound.Load4(s+56)))*255);Encoded.Store(d+36,c.x|(c.y<<8)|(c.z<<16)|(c.w<<24));Encoded.Store(d+40,Bound.Load((i/3)*232+228));}

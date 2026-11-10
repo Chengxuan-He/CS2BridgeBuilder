@@ -4,6 +4,14 @@ using UnityEngine;
 using G = BridgeBuilder.Bridges.MovableRoadGeometry;
 using Kind = BridgeBuilder.Bridges.MovableRoadAppearance.Type;
 
+G.Vertex Prepared(G.Vertex vertex,MovableExistingRoadSurface.Patch patch)
+{
+    if(MovableRoadProjection.TryPrepared(vertex,patch,out var result,out var error))return result;
+    throw new InvalidOperationException(error);
+}
+void InvalidPatch(MovableExistingRoadSurface.Patch patch)
+{if(string.IsNullOrEmpty(patch.Error))throw new Exception("Invalid patch was not returned as failure.");}
+
 // Regression: preparing a non-object receiver used to erase its evaluated native
 // UV and color before the material path could choose original-source retention.
 G.Vertex Vertex(float x) => new(new Vector3(x, 2, 3), Vector3.up,
@@ -38,12 +46,8 @@ if (!ReferenceEquals(levels[1].Native, far) || !levels[1].Patches[0].SourceUv ||
     levels[1].SupportedTypes[0] != Kind.Pathway || !ReferenceEquals(levels[1].Sidewalk, partition) ||
     levels[0].Patches[0].SourceUv)
     throw new Exception("Per-LOD appearance state was conflated.");
-try
-{
-    _ = new MovableRoadAppearance.Level(near, new[] { nearPatch }, Array.Empty<Kind>());
-    throw new Exception("Mismatched support domains were accepted.");
-}
-catch (ArgumentException) { }
+var invalidLevel = new MovableRoadAppearance.Level(near, new[] { nearPatch }, Array.Empty<Kind>());
+if (string.IsNullOrEmpty(invalidLevel.Error)) throw new Exception("Mismatched support domains lack a failure result.");
 Console.WriteLine("PASS material mapping: receiver UV/color/provenance retained for both conversion paths; distinct LOD source, mapping, support and partition retained.");
 
 var ballast = MovableRoadLayerIdentity.Worldspace("a3522ead5e61e02569f0884fb4607eec", true,
@@ -86,39 +90,36 @@ var unit = new MovableExistingRoadSurface.Patch(Vector2.zero,Vector2.one,new Vec
     new Vector4(0,0,.1f,.25f),far,preparedUnit:true,repeatU:true);
 if (!unit.PreparedUnit || !unit.RepeatU || unit.RepeatV) throw new Exception("Offline unit axes lost.");
 var preparedVertex=Vertex(8);
-var preparedMapped=MovableRoadProjection.Prepared(preparedVertex,unit);
+var preparedMapped=Prepared(preparedVertex,unit);
 if(preparedMapped.Position!=preparedVertex.Position || preparedMapped.Normal!=preparedVertex.Normal ||
    preparedMapped.Color!=preparedVertex.Color || preparedMapped.Tangent!=preparedVertex.Tangent ||
    preparedMapped.UV!=new Vector4(8,.55f,7,9))
     throw new Exception("Prepared mapping lost source attributes or wrapped continuous U.");
 var preparedProjected=new MovableExistingRoadSurface.Patch(Vector2.zero,Vector2.one,
     new(1,0,0,0),new(0,0,.1f,.25f),far,preparedUnit:true,repeatU:true,projectTangent:true);
-var projectedUnit=MovableRoadProjection.Prepared(preparedVertex,preparedProjected);
+var projectedUnit=Prepared(preparedVertex,preparedProjected);
 if(projectedUnit.Tangent!=new Vector4(1,0,0,-1) || projectedUnit.Normal!=preparedVertex.Normal)
     throw new Exception("Prepared projected tangent failed.");
-try {
-    _=new MovableExistingRoadSurface.Patch(Vector2.zero,Vector2.one,new(1,0,0,0),new(0,0,1,0),far,
-       preparedUnit:true,repeatU:true,projectTangent:true,tangent:Vector4.one);
-    throw new Exception("Conflicting prepared tangent modes accepted.");
-} catch(ArgumentException) { }
+InvalidPatch(new MovableExistingRoadSurface.Patch(Vector2.zero,Vector2.one,new(1,0,0,0),new(0,0,1,0),far,
+       preparedUnit:true,repeatU:true,projectTangent:true,tangent:Vector4.one));
 var beyond = new G.Vertex(new Vector3(0,0,20),Vector3.up,Vector4.one,Vector4.zero,Color.white);
-var beyondMapped=MovableRoadProjection.Prepared(beyond,unit);
+var beyondMapped=Prepared(beyond,unit);
 if(beyondMapped.Position!=beyond.Position)throw new Exception("Finite UV range changed geometry.");
 foreach(float bad in new[]{float.NaN,float.PositiveInfinity})
 {
     try {
         var invalid=new MovableExistingRoadSurface.Patch(Vector2.zero,Vector2.one,new(bad,0,0,0),new(0,0,0,.5f),far,preparedUnit:true,repeatU:true);
-        _=MovableRoadProjection.Prepared(preparedVertex,invalid);
+        _=Prepared(preparedVertex,invalid);
         throw new Exception("Non-finite repeated coordinate accepted.");
     } catch(InvalidOperationException) { }
     try {
         var invalid=new MovableExistingRoadSurface.Patch(Vector2.zero,Vector2.one,new(1,0,0,0),new(0,0,0,.5f),far,preparedUnit:true,repeatU:true,tangent:new(bad,0,0,1));
-        _=MovableRoadProjection.Prepared(preparedVertex,invalid);
+        _=Prepared(preparedVertex,invalid);
         throw new Exception("Non-finite explicit frame accepted.");
     } catch(InvalidOperationException) { }
 }
 var guarded=new MovableExistingRoadSurface.Patch(new(0,.4f),new(1,.6f),new(1,0,0,0),new(0,0,0,.7f),far,preparedUnit:true,repeatU:true);
-if(MovableRoadProjection.Prepared(preparedVertex,guarded).UV.y!=.7f)throw new Exception("Finite coordinate was clamped.");
+if(Prepared(preparedVertex,guarded).UV.y!=.7f)throw new Exception("Finite coordinate was clamped.");
 Console.WriteLine("PASS prepared projection: continuous repeated UV, guarded finite axis, raw receiver attributes and explicit tangent modes.");
 Console.WriteLine("PASS source appearance: exact six-channel identity and Pathway footprint; Ballast is independent of bridge role; original B=254 residual belongs to the same supported whole appearance; offline unit axes retained.");
 if(args.Length>=1)
@@ -148,7 +149,7 @@ foreach(bool uRepeat in new[]{false,true}) foreach(bool vRepeat in new[]{false,t
         var patch=new MovableExistingRoadSurface.Patch(new(.25f,.125f),new(.5f,.625f),
             new(.25f,0,0,.25f+phase*.25f),new(0,0,.5f,.125f+phase*.5f),near,
             sourceUv:true,repeatU:uRepeat,repeatV:vRepeat,sourceAtlasRepeat:true);
-        var output=MovableRoadAtlasWrap.Apply(triangle,patch);
+        var output=(MovableRoadAtlasWrap.TryApply(triangle,patch,out var wrapApply1,out var wrapErrorApply1)?wrapApply1:throw new System.IO.InvalidDataException(wrapErrorApply1));
         double area=0;
         foreach(var t in output)
         {
@@ -176,8 +177,8 @@ Console.WriteLine("PASS original-atlas wrap: 36 phase/axis/span cases, coverage,
 var seamPatch=new MovableExistingRoadSurface.Patch(new(.25f,.125f),new(.5f,.625f),
     new(.25f,0,0,.25f),new(0,0,.5f,.125f),near,sourceUv:true,repeatU:true,
     tangent:new Vector4(1,0,0,1),sourceAtlasRepeat:true);
-var left=MovableRoadAtlasWrap.Apply(new G.Triangle(WrapVertex(0,0),WrapVertex(3,0),WrapVertex(0,1),0,1,1),seamPatch);
-var right=MovableRoadAtlasWrap.Apply(new G.Triangle(WrapVertex(3,1),WrapVertex(0,1),WrapVertex(3,0),0,1,2),seamPatch);
+var left=(MovableRoadAtlasWrap.TryApply(new G.Triangle(WrapVertex(0,0),WrapVertex(3,0),WrapVertex(0,1),0,1,1),seamPatch,out var wrapApply2,out var wrapErrorApply2)?wrapApply2:throw new System.IO.InvalidDataException(wrapErrorApply2));
+var right=(MovableRoadAtlasWrap.TryApply(new G.Triangle(WrapVertex(3,1),WrapVertex(0,1),WrapVertex(3,0),0,1,2),seamPatch,out var wrapApply3,out var wrapErrorApply3)?wrapApply3:throw new System.IO.InvalidDataException(wrapErrorApply3));
 foreach(float x in new[]{1f,2f})
 {
     var a=left.SelectMany(t=>new[]{t.A,t.B,t.C}).Where(v=>v.Position.x==x&&v.Position.z!=0).ToArray();
@@ -191,19 +192,16 @@ Console.WriteLine("PASS atlas seams: bit-equal reversed shared edges, dual UV en
 var tilted=new G.Vertex(new(0,0,0),new Vector3(0,1,1).normalized,new(0,1,0,1),new(0,0,7,9),Color.white);
 var projectedPatch=new MovableExistingRoadSurface.Patch(new(.25f,.125f),new(.5f,.625f),
     new(.25f,0,0,.25f),new(0,0,.5f,.125f),near,sourceUv:true,repeatU:true,sourceAtlasRepeat:true,projectTangent:true);
-var projected=MovableRoadAtlasWrap.Apply(new G.Triangle(tilted,WrapVertex(1,0),WrapVertex(0,1),0,1,1),projectedPatch);
+var projected=(MovableRoadAtlasWrap.TryApply(new G.Triangle(tilted,WrapVertex(1,0),WrapVertex(0,1),0,1,1),projectedPatch,out var wrapApply4,out var wrapErrorApply4)?wrapApply4:throw new System.IO.InvalidDataException(wrapErrorApply4));
 var origin=projected.SelectMany(t=>new[]{t.A,t.B,t.C}).First(v=>v.Position==Vector3.zero);
 if(origin.Normal!=tilted.Normal||origin.Tangent!=new Vector4(1,0,0,-1))throw new Exception("Explicit projected tangent changed receiver normal or frame.");
-try {
- _=new MovableExistingRoadSurface.Patch(Vector2.zero,Vector2.one,new(1,0,0,0),new(0,0,1,0),near,
-     sourceUv:true,repeatU:true,sourceAtlasRepeat:true,projectTangent:true,tangent:Vector4.one);
- throw new Exception("Conflicting tangent modes were accepted.");
-} catch(ArgumentException) { }
+InvalidPatch(new MovableExistingRoadSurface.Patch(Vector2.zero,Vector2.one,new(1,0,0,0),new(0,0,1,0),near,
+     sourceUv:true,repeatU:true,sourceAtlasRepeat:true,projectTangent:true,tangent:Vector4.one));
 Console.WriteLine("PASS opt-in projected tangent: actual receiver normal retained; conflicting constant override rejected.");
 var finiteProjected=new MovableExistingRoadSurface.Patch(Vector2.zero,Vector2.one,new(1,0,0,0),new(0,0,1,0),near,
     sourceUv:true,projectTangent:true);
 if(finiteProjected.SourceAtlasRepeat || !finiteProjected.ProjectTangent ||
-   MovableRoadAtlasWrap.ProjectedTangent(tilted.Normal,finiteProjected.U,finiteProjected.V)!=new Vector4(1,0,0,-1))
+   (MovableRoadAtlasWrap.TryProjectedTangent(tilted.Normal,finiteProjected.U,finiteProjected.V,out var wrapProjectedTangent1,out var wrapErrorProjectedTangent1)?wrapProjectedTangent1:throw new System.IO.InvalidDataException(wrapErrorProjectedTangent1))!=new Vector4(1,0,0,-1))
     throw new Exception("Finite source-atlas projection mode is unavailable or differs from wrap mode.");
 Console.WriteLine("PASS finite SourceUv explicit projected tangent shares the tested wrap formula.");
 // A native Float32 dot-product boundary interval is not a geometric area threshold.
@@ -212,7 +210,7 @@ var roundNear=MovableRoadAtlasWrap.Coordinate(roundP,new Vector3(1.0000001f,0,0)
 var roundFar=MovableRoadAtlasWrap.Coordinate(roundP,new Vector3(1.00001f,0,0),.25f,.5f,true);
 if(roundNear!=1||!(roundFar>1))throw new Exception("Float32 wrap boundary interval lost its genuine cross-seam negative control.");
 var narrow=new G.Triangle(WrapVertex(.99999f,0),WrapVertex(1.00001f,0),WrapVertex(.99999f,1),0,1,1);
-var retainedNarrow=MovableRoadAtlasWrap.Apply(narrow,seamPatch);
+var retainedNarrow=(MovableRoadAtlasWrap.TryApply(narrow,seamPatch,out var wrapApply5,out var wrapErrorApply5)?wrapApply5:throw new System.IO.InvalidDataException(wrapErrorApply5));
 if(retainedNarrow.Length<2)throw new Exception("A genuinely narrow cross-seam face was removed by a geometric epsilon.");
 Console.WriteLine("PASS Float32 wrap-boundary interval: representational boundary canonicalized, genuine narrow crossing retained.");
 if(args.Length>1)
@@ -228,7 +226,7 @@ if(args.Length>1)
    Read4(data.GetProperty("u")),Read4(data.GetProperty("v")),near,sourceUv:true,
    repeatU:data.GetProperty("repeatU").GetBoolean(),repeatV:data.GetProperty("repeatV").GetBoolean(),
    tangent:Read4(data.GetProperty("tangent")),sourceAtlasRepeat:true);
- var output=MovableRoadAtlasWrap.Apply(input,patch);
+ var output=(MovableRoadAtlasWrap.TryApply(input,patch,out var wrapApply6,out var wrapErrorApply6)?wrapApply6:throw new System.IO.InvalidDataException(wrapErrorApply6));
  if(output.Length!=1)throw new Exception($"Real Lift04 identity boundary still creates {output.Length} fragments.");
  var actual=new[]{output[0].A,output[0].B,output[0].C};
  for(int i=0;i<3;i++)if(!actual[i].Position.Equals(vertices[i].Position)||!actual[i].Color.Equals(vertices[i].Color)||actual[i].UV.z!=7||actual[i].UV.w!=9)
@@ -253,17 +251,16 @@ var contentOnly=new MovableExistingRoadSurface.Patch(new(.25f,0),new(.75f,1),
     new(0,0,0,.2499992f),new(0,0,1,0),far,preparedUnit:true,repeatV:true);
 var declaredGuard=contentOnly.WithFiniteSampling(new(.125f,0),new(.875f,1));
 var guardPoint=Vertex(0);
-var inGuard=MovableRoadProjection.Prepared(guardPoint,declaredGuard);
+var inGuard=Prepared(guardPoint,declaredGuard);
 if(inGuard.UV.x!=.2499992f||inGuard.Color!=guardPoint.Color||inGuard.UV.z!=guardPoint.UV.z)
     throw new Exception("Explicit finite guard altered the original coordinate or attributes.");
-if(MovableRoadProjection.Prepared(guardPoint,contentOnly).UV.x!=.2499992f)throw new Exception("Finite coordinate changed.");
+if(Prepared(guardPoint,contentOnly).UV.x!=.2499992f)throw new Exception("Finite coordinate changed.");
 var outsideGuard=new MovableExistingRoadSurface.Patch(new(.25f,0),new(.75f,1),
     new(0,0,0,.1f),new(0,0,1,0),far,preparedUnit:true,repeatV:true).WithFiniteSampling(new(.125f,0),new(.875f,1));
-if(MovableRoadProjection.Prepared(guardPoint,outsideGuard).UV.x!=.1f)throw new Exception("Outside coordinate changed.");
+if(Prepared(guardPoint,outsideGuard).UV.x!=.1f)throw new Exception("Outside coordinate changed.");
 foreach(var invalidBounds in new[]{(new Vector2(-.1f,0),Vector2.one),(new Vector2(.3f,0),Vector2.one),(Vector2.zero,new Vector2(float.NaN,1))})
 {
-    try{contentOnly.WithFiniteSampling(invalidBounds.Item1,invalidBounds.Item2);throw new Exception("Invalid guard declaration accepted.");}
-    catch(ArgumentException){}
+    InvalidPatch(contentOnly.WithFiniteSampling(invalidBounds.Item1,invalidBounds.Item2));
 }
 var witnessFile=Path.Combine("artifacts","material-remap","Lift05","road-continuous-candidate","results","finite-guard-complete-inputs.json");
 if(File.Exists(witnessFile))
@@ -276,7 +273,7 @@ if(File.Exists(witnessFile))
         var position=row.GetProperty("position");var point=new G.Vertex(new(position.GetProperty("x").GetSingle(),position.GetProperty("y").GetSingle(),position.GetProperty("z").GetSingle()),Vector3.up,Vector4.one,new(0,0,7,9),Color.gray);
         var patch=new MovableExistingRoadSurface.Patch(B("min"),B("max"),Q("U"),Q("V"),far,preparedUnit:true,
             repeatU:row.GetProperty("repeatU").GetBoolean(),repeatV:row.GetProperty("repeatV").GetBoolean()).WithFiniteSampling(Vector2.zero,Vector2.one);
-        var actual=MovableRoadProjection.Prepared(point,patch);var expected=new Vector4(point.Position.x,point.Position.y,point.Position.z,1);
+        var actual=Prepared(point,patch);var expected=new Vector4(point.Position.x,point.Position.y,point.Position.z,1);
         if(actual.UV.x!=Vector4.Dot(expected,patch.U)||actual.UV.y!=Vector4.Dot(expected,patch.V)||actual.UV.z!=7||actual.UV.w!=9)
             throw new Exception("Actual finite guard witness was clamped or changed.");
         count++;
@@ -284,8 +281,6 @@ if(File.Exists(witnessFile))
     Console.WriteLine($"PASS explicit offline finite sampling domain: {count} actual Lift05 witnesses retain exact evaluated UV; undeclared/outside domain and invalid-bound negative controls.");
 }
 
-try{new MovableExistingRoadSurface.Patch(Vector2.zero,Vector2.one).WithFiniteSampling(Vector2.zero,Vector2.one);throw new Exception("Non-prepared material declared offline guards.");}
-catch(ArgumentException){}
-try{new MovableExistingRoadSurface.Patch(new(float.NaN,0),Vector2.one,Vector4.one,Vector4.one,far,preparedUnit:true).WithFiniteSampling(Vector2.zero,Vector2.one);throw new Exception("Non-finite content window accepted.");}
-catch(ArgumentException){}
+InvalidPatch(new MovableExistingRoadSurface.Patch(Vector2.zero,Vector2.one).WithFiniteSampling(Vector2.zero,Vector2.one));
+InvalidPatch(new MovableExistingRoadSurface.Patch(new(float.NaN,0),Vector2.one,Vector4.one,Vector4.one,far,preparedUnit:true).WithFiniteSampling(Vector2.zero,Vector2.one));
 Console.WriteLine("PASS offline guard declarations reject non-prepared surfaces and non-finite content windows.");

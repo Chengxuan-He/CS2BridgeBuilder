@@ -63,7 +63,7 @@ public partial class BridgeGenerationSystem
             Mod.Log.Info("Bridge deletion replaced retained NetTool selection with: " + replacement.name);
         }
         // Native serialization and streaming may still read these prefabs after ECS deletion.
-        // Keep their instances and files intact until the game process exits.
+        // Keep their instances and files intact until the verified late normal-shutdown boundary.
         ClearPreview();
         BridgePreviewState.Clear();
         BridgeDeferredRemoval.Schedule(exportName);

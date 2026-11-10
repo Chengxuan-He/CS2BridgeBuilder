@@ -1,0 +1,18 @@
+#pragma kernel Sample
+Texture2D<float4> Source;
+SamplerState sampler_Source;
+RWTexture2D<float4> Output;
+RWStructuredBuffer<uint> Counts;
+float Mip;
+int Mode;
+[numthreads(8,8,1)] void Sample(uint3 id:SV_DispatchThreadID){
+ if(id.x>=1024||id.y>=512)return;
+ float2 uv=(float2(id.xy)+.5)/float2(1024,512);
+ float4 s=Source.SampleLevel(sampler_Source,uv,Mip);
+ bool oldCoverage=s.a>=.001;bool nativeCoverage=s.a>=.5;
+ if(oldCoverage)InterlockedAdd(Counts[0],1);
+ if(nativeCoverage)InterlockedAdd(Counts[1],1);
+ if(s.a>0&&s.a<.5)InterlockedAdd(Counts[2],1);
+ float a=Mode==0?s.a:Mode==1?(oldCoverage?1:0):(nativeCoverage?1:0);
+ Output[id.xy]=float4(lerp(float3(.03,.03,.03),s.rgb,a),1);
+}

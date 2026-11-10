@@ -46,6 +46,7 @@ public sealed class Mod : IMod
         // A bridge made from a road must not collide with that same road exported by the road
         // exporter, and its generated dependencies must not collide either.
         ModHost.DefaultNamePrefix = "RBBridge";
+        Runtime.BridgeShutdownCleanup.Start();
         BridgeBuilder.Runtime.BridgeRailSeamPatch.Start();
 
         Log.Info($"{Id} loaded (build {BuildStamp()})");
@@ -87,13 +88,14 @@ public sealed class Mod : IMod
 
     public void OnDispose()
     {
+        Runtime.BridgeShutdownCleanup.DisposingMod();
         Runtime.BridgeBulkRemoval.Stop();
         Runtime.BridgeDeferredRemoval.Stop();
         BridgeStartupAssetSystem.StopInspection();
         BridgeBuilder.Runtime.BridgeStartupRecovery.Stop();
         BridgeBuilder.Runtime.BridgeRailSeamPatch.Stop();
         BridgeBuilder.Runtime.BridgeSessionState.Stop();
-        BridgeBuilder.Runtime.BridgePreparedMaterials.Stop();
+        if(!BridgeBuilder.Runtime.BridgePreparedMaterials.TryStop(out var preparedError))Log.Error("Prepared material shutdown: "+preparedError);
         try
         {
             RoadBuilderIconExporter.UnregisterHost();

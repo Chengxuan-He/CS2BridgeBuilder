@@ -48,14 +48,14 @@ public static class PreparePaint
             if (textureCid != new string('0', 32))
             {
                 using var stream = new MemoryStream(ReadAsset(game, textureCid, "VT.cok"));
-                input = MovableVtTextureSource.ReadTexture(stream, Decompress);
+                input = (MovableVtTextureSource.TryReadTexture(stream, Decompress,out var decodedVt1,out var errorVt1) ? decodedVt1 : throw new InvalidOperationException(errorVt1));
                 images.Add(input);
             }
             else
             {
                 if (source[283] != 255) throw new InvalidDataException("Paint has no native backing texture.");
                 using var stream = new MemoryStream(ReadAsset(game, HashText(source, 284), "VT.cok"));
-                var layers = MovableVtTextureSource.ReadSurface(stream, Decompress);
+                var layers = (MovableVtTextureSource.TryReadSurface(stream, Decompress,out var decodedVt2,out var errorVt2) ? decodedVt2 : throw new InvalidOperationException(errorVt2));
                 images.AddRange(layers.Values);
                 input = layers[(0, 0)];
             }

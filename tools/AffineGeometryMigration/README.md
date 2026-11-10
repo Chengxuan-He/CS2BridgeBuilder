@@ -14,8 +14,8 @@ independent mesh jobs, not numerical callbacks.
 After running a historical producer, run:
 
 ```powershell
-dotnet run --project tools/AffineGeometryMigration -- D:\CS2BridgeBuilder --apply
-dotnet run --project tools/AffineGeometryMigration -- D:\CS2BridgeBuilder --check
+dotnet run --project tools/AffineGeometryMigration -- E:\CS2BridgeBuilder --apply
+dotnet run --project tools/AffineGeometryMigration -- E:\CS2BridgeBuilder --check
 ```
 
 Without `--apply`, lowering writes a report only. The offline compiler reflects

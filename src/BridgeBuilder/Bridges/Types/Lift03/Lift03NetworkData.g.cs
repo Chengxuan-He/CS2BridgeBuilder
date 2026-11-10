@@ -113,8 +113,8 @@ internal static class Lift03NetworkData
     // Apply once to the private main network. The auxiliary network adds no state rules.
     internal static void AddMainStates(NetGeometryPrefab target)
     {
-        target.m_EdgeStates = (target.m_EdgeStates ?? Array.Empty<NetEdgeStateInfo>()).Concat(new[] { new NetEdgeStateInfo { m_RequireAll = Array.Empty<NetPieceRequirements>(), m_RequireAny = Array.Empty<NetPieceRequirements>(), m_RequireNone = Array.Empty<NetPieceRequirements>(), m_SetState = new[] { (NetPieceRequirements)Numeric_Types_Lift03_Lift03NetworkData_g_cs.Values.I32[18] }, }, }).ToArray();
-        target.m_NodeStates = (target.m_NodeStates ?? Array.Empty<NetNodeStateInfo>()).Concat(new[] { new NetNodeStateInfo { m_RequireAll = Array.Empty<NetPieceRequirements>(), m_RequireAny = Array.Empty<NetPieceRequirements>(), m_RequireNone = Array.Empty<NetPieceRequirements>(), m_SetState = new[] { (NetPieceRequirements)Numeric_Types_Lift03_Lift03NetworkData_g_cs.Values.I32[19] }, m_MatchType = (NetEdgeMatchType)Numeric_Types_Lift03_Lift03NetworkData_g_cs.Values.I32[20], }, }).ToArray();
+        target.m_EdgeStates = MovableNetworkStates.Append(target.m_EdgeStates, new[] { new NetEdgeStateInfo { m_RequireAll = Array.Empty<NetPieceRequirements>(), m_RequireAny = Array.Empty<NetPieceRequirements>(), m_RequireNone = Array.Empty<NetPieceRequirements>(), m_SetState = new[] { (NetPieceRequirements)Numeric_Types_Lift03_Lift03NetworkData_g_cs.Values.I32[18] }, }, });
+        target.m_NodeStates = MovableNetworkStates.Append(target.m_NodeStates, new[] { new NetNodeStateInfo { m_RequireAll = Array.Empty<NetPieceRequirements>(), m_RequireAny = Array.Empty<NetPieceRequirements>(), m_RequireNone = Array.Empty<NetPieceRequirements>(), m_SetState = new[] { (NetPieceRequirements)Numeric_Types_Lift03_Lift03NetworkData_g_cs.Values.I32[19] }, m_MatchType = (NetEdgeMatchType)Numeric_Types_Lift03_Lift03NetworkData_g_cs.Values.I32[20], }, });
     }
 
     internal static NetSubObjectInfo[] StructurePlacements(ObjectPrefab pillar, ObjectPrefab mechanism) => new[]

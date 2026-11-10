@@ -15,7 +15,7 @@ internal static class Lift05ObjectAssembly
         var imported = Path.Combine(Application.persistentDataPath, "ImportedData");
         foreach (var item in attachments)
         {
-            if (item.m_Object == null || BridgeAssetInfo.IsOtherBridgePrefab(item.m_Object.asset?.path, owner, imported))
+            if (item.m_Object == null)
                 throw new InvalidOperationException("Lift05 requires its original wall-light and roof-vent sources.");
             // Contract attachment rule: nonzero X follows its parent's side displacement.
             item.m_Position.x += Math.Sign(item.m_Position.x) * halfWidthDelta;
@@ -30,7 +30,7 @@ internal static class Lift05ObjectAssembly
         var partitions = new MovableRoadGeometry.Partition[objects.Placements.Length];
         Array.Fill(partitions, physical);
         factory.AttachMovableRoadObjects(result, objects.Placements, road.RoadToObject, partitions);
-        factory.AttachMovablePaint(result, road.Road.LaneGeometry.Decals, road.RoadToObject, physical, MovableRoadGeometry.InFrame(road.Road.Triangles, road.RoadToObject));
+        if(!factory.TryAttachMovablePaint(result, road.Road.LaneGeometry.Decals, road.RoadToObject, physical, MovableRoadGeometry.InFrame(road.Road.Triangles, road.RoadToObject),out _))return null!;
         return result;
     }
 }

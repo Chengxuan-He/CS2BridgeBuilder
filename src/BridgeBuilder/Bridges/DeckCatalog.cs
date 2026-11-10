@@ -85,7 +85,7 @@ internal static class DeckCatalog
 
     internal static IReadOnlyList<Deck> Decks
     {
-        get { lock (Gate) return _decks; }
+        get { lock (Gate) return _decks.Where(d => !Runtime.BridgeDeferredRemoval.ExcludedPrefab(d.Prefab)).ToArray(); }
     }
 
     internal static bool Scanned
@@ -99,7 +99,7 @@ internal static class DeckCatalog
         lock (Gate)
         {
             return _decks.FirstOrDefault(deck => string.Equals(deck.Id, id, StringComparison.Ordinal)
-                && !RoadBuilderCompatibility.IsDeleted(deck.Prefab));
+                && !RoadBuilderCompatibility.IsDeleted(deck.Prefab) && !Runtime.BridgeDeferredRemoval.ExcludedPrefab(deck.Prefab));
         }
     }
 
@@ -130,7 +130,7 @@ internal static class DeckCatalog
         {
             try
             {
-                if (RoadBuilderCompatibility.IsDeleted(prefab)) continue;
+                if (RoadBuilderCompatibility.IsDeleted(prefab) || Runtime.BridgeDeferredRemoval.ExcludedPrefab(prefab)) continue;
                 if (!roadBuilderAvailable && RoadBuilderCompatibility.OwnsPrefab(prefab)) continue;
                 var deck = Describe(prefab, byPrefab);
                 if (deck != null) decks.Add(deck);

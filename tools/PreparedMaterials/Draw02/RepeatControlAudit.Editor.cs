@@ -72,7 +72,7 @@ public static class Draw02RepeatControlAudit
                 byte[] bytes=File.ReadAllBytes(path);
                 var materialType=typeof(PrepareStructure).GetNestedType("MaterialSource",BindingFlags.NonPublic);
                 int rawSize=(int)materialType.GetMethod("RawSize",BindingFlags.NonPublic|BindingFlags.Static).Invoke(null,new object[]{bytes});
-                using var stream=new MemoryStream(bytes);var texture=MovableTextureSource.Read(stream,b=>PreparePaint.DecodeRaw(b,rawSize));
+                using var stream=new MemoryStream(bytes);var texture=(MovableTextureSource.TryRead(stream,b=>PreparePaint.DecodeRaw(b,rawSize),out var parsedTexture1,out var textureReadError1)?parsedTexture1:throw new System.IO.InvalidDataException(textureReadError1));
                 try
                 {
                     var mips=new List<MipProof>();program.SetTexture(kernel,"Input",texture);

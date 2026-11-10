@@ -62,14 +62,32 @@ public partial class BridgeGenerationSystem
         BridgePreviewSession? preview = null,
         Action<bool>? onPublished = null)
     {
-        using var parameters = GenerationParameters.Begin();
-        var importedRoot = Path.Combine(UnityEngine.Application.persistentDataPath, "ImportedData");
-        if (BridgeAssetInfo.IsOtherBridgePrefab(upper.Prefab.asset?.path, exportName, importedRoot)
-            || BridgeAssetInfo.IsOtherBridgePrefab(chosen?.Prefab.asset?.path, exportName, importedRoot))
+        // Include setup, ownership adoption and disposal in the caller-facing result.
+        // Native failures in those stages must not escape preview or creation.
+        try
         {
-            report.Failed(exportName, new InvalidOperationException("Another bridge's ImportedData Prefab cannot be used as a creation source."));
+            return BuildBridgeCore(upper, chosen, style, exportName, options, overwrite,
+                report, preview, onPublished);
+        }
+        catch (Exception exception)
+        {
+            report.Failed(exportName + " [generation setup/cleanup]", exception);
             return false;
         }
+    }
+
+    private bool BuildBridgeCore(
+        Deck upper,
+        Deck? chosen,
+        BridgeStyle style,
+        string exportName,
+        BridgeOptions options,
+        bool overwrite,
+        ExportReport report,
+        BridgePreviewSession? preview = null,
+        Action<bool>? onPublished = null)
+    {
+        using var parameters = GenerationParameters.Begin();
         var unsupported = BridgeStyleDefinitions.GenerationUnsupportedReason(style.Id, options.DoubleDeck);
         if (unsupported != null)
         {

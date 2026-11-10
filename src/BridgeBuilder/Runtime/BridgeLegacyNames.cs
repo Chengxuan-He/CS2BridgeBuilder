@@ -71,7 +71,7 @@ internal static class BridgeLegacyNames
             var retire = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
             foreach (var owner in selected)
             {
-                var byCid = assets.Where(a => !BridgeAssetInfo.IsOtherBridgePrefab(a.Path, owner, imported))
+                var byCid = assets
                     .GroupBy(a => a.Cid, StringComparer.OrdinalIgnoreCase)
                     .ToDictionary(g => g.Key, g => g.First(), StringComparer.OrdinalIgnoreCase);
                 if (!BridgeAssetInfo.IsPrefabName(owner)) continue;
@@ -104,7 +104,8 @@ internal static class BridgeLegacyNames
                     var ownedGeometry = part.Path.EndsWith(".Geometry", StringComparison.OrdinalIgnoreCase)
                         && BridgeAssetInfo.MatchesOwner(part.Path, owner)
                         && !BridgeAssetInfo.IsDependencyPath(part.Path, owner);
-                    if (!ownedGeometry && !BridgeAssetInfo.MatchesOwner(partName, owner)) components.Add(cid, part);
+                    // UUID-named external components are ordinary snapshots, not pre-UUID rename candidates.
+                    if (!ownedGeometry && !BridgeAssetInfo.TryFileOwner(partName, out _)) components.Add(cid, part);
                     foreach (var child in BridgeDependencyCopies.References(part.Bytes))
                     {
                         pending.Push(child);
@@ -140,7 +141,8 @@ internal static class BridgeLegacyNames
                     destinations.Add(path);
                     destinations.Add(path + ".cid");
                     foreach (var duplicate in assets.Where(a => a.Cid.Equals(asset.Cid, StringComparison.OrdinalIgnoreCase)))
-                        if (exactPath == null || BridgeAssetInfo.MatchesOwner(duplicate.Path, owner))
+                        if (!BridgeAssetInfo.IsOtherBridgeAsset(duplicate.Path, owner, imported)
+                            && (exactPath == null || BridgeAssetInfo.MatchesOwner(duplicate.Path, owner)))
                             retire.Add(duplicate.Path);
                 }
                 foreach (var asset in owned.Where(a => a.Text.Length != 0 && !mapping.ContainsKey(a.Cid)))

@@ -7,6 +7,7 @@ namespace Colossal.IO.AssetDatabase
     internal sealed class SurfaceAsset : AssetData
     {
         internal string id = "", name = "";
+        internal bool FailRead;
         internal byte[] Bytes = Array.Empty<byte>();
         internal int materialTemplateHash, Leases, Reads, Saves;
         internal Dictionary<string, float> floats = new();
@@ -15,7 +16,7 @@ namespace Colossal.IO.AssetDatabase
         internal Dictionary<string, TextureAsset?> textures = new();
         internal HashSet<string> keywords = new();
         internal void LoadHeader() => materialTemplateHash = BitConverter.ToInt32(Bytes, 2);
-        internal Stream GetReadStream() { Reads++; return new MemoryStream(Bytes, false); }
+        internal Stream GetReadStream() { if(FailRead)throw new IOException("injected source read failure"); Reads++; return new MemoryStream(Bytes, false); }
         internal Stream GetWriteStream() => new Written(b => { Bytes = b; Parse(); });
         internal void LoadProperties(bool useVT) { Leases++; }
         internal void UnloadProperties() => Leases--;
@@ -72,8 +73,15 @@ namespace BridgeBuilder.Runtime
     using Colossal.IO.AssetDatabase;
     internal static class BridgePreparedMaterials
     {
+        internal readonly struct Result {
+            internal readonly SurfaceAsset? Value;internal readonly string? Error;
+            internal bool Success=>Error==null;
+            internal Result(SurfaceAsset? value,string? error=null){Value=value;Error=error;}
+            public static implicit operator Result(SurfaceAsset? value)=>new Result(value);
+        }
+
         internal static Func<string, byte[], SurfaceAsset?> Lookup = null!;
-        internal static SurfaceAsset? Lane(string style, byte[] bytes) => Lookup(style, bytes);
+        internal static Result Lane(string style, byte[] bytes) => Lookup(style, bytes);
     }
     internal static class BridgePrefabPersistence { internal static string ResourcePath(string name, string category) => category + "/" + name; }
 }
@@ -81,10 +89,21 @@ namespace BridgeBuilder.Bridges
 {
     using Colossal.IO.AssetDatabase;
     internal sealed class PreviewGeometry { internal Database NativeAssets = new(); internal void RetainSurfaceProperties(SurfaceAsset s) { } }
-    internal static class MovableSurfaceAssets { internal static bool IsObjectSurface(SurfaceAsset s) => s.materialTemplateHash is 0 or 1 or 35; }
+    internal static class MovableSurfaceAssets { internal static bool IsObjectSurface(SurfaceAsset s) => s.materialTemplateHash is 0 or 1 or 35; internal static bool TryValidateObjectProtocol(SurfaceAsset s, out string? error) { error = null; return true; } }
     internal static class MovableCableSurface
     {
-        internal static SurfaceAsset Create(SurfaceAsset s, string owner, string style, PreviewGeometry? preview, List<AssetData> assets)
-            => throw new Exception("Lane test must not dispatch to cable");
+        internal static bool TryCreate(SurfaceAsset s, string owner, string style, PreviewGeometry? preview, List<AssetData> assets, out SurfaceAsset result, out string? error)
+        { result=null!;error="Lane test must not dispatch to cable";return false; }
+    }
+}
+
+namespace BridgeBuilder.Bridges
+{
+    // These routing tests exclude GPU/native cache registration. Native integration
+    // must separately verify VT registration and dependency preservation.
+    internal static class MovableLaneMidMips
+    {
+        internal static bool TryCompletePrepared(Colossal.IO.AssetDatabase.SurfaceAsset source, Colossal.IO.AssetDatabase.SurfaceAsset target, out string? error) { error = null; return true; }
+        internal static bool TryComplete(Colossal.IO.AssetDatabase.SurfaceAsset source, Colossal.IO.AssetDatabase.SurfaceAsset target, string owner, PreviewGeometry? preview, List<Colossal.IO.AssetDatabase.AssetData> assets, out string? error) { error = null; return true; }
     }
 }

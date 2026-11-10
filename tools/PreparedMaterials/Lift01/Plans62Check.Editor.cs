@@ -2,7 +2,7 @@ using System.Reflection;
 using System.Text;
 using System;using System.IO;using System.Linq;using System.Collections.Generic;using UnityEditor;
 using UnityEngine;
-public static class Lift01Plans62Check { public static void Run(){try{var cmd=Environment.GetCommandLineArgs();var args=new[]{cmd[Array.IndexOf(cmd,"-candidate")+1],"D:/Program Files (x86)/Steam/steamapps/common/Cities Skylines II/Cities2_Data/Managed","D:/CS2BridgeBuilder/artifacts/uv-density/actual-plans.bin","D:/CS2BridgeBuilder/artifacts/material-remap/Lift01/truss62/final-r4/native-plans.txt"};
+public static class Lift01Plans62Check { public static void Run(){try{var cmd=Environment.GetCommandLineArgs();var args=new[]{cmd[Array.IndexOf(cmd,"-candidate")+1],"D:/Program Files (x86)/Steam/steamapps/common/Cities Skylines II/Cities2_Data/Managed","E:/CS2BridgeBuilder/artifacts/uv-density/actual-plans.bin","E:/CS2BridgeBuilder/artifacts/material-remap/Lift01/truss62/final-r4/native-plans.txt"};
 const BindingFlags F=BindingFlags.Instance|BindingFlags.Public|BindingFlags.NonPublic;
 const BindingFlags S=BindingFlags.Static|BindingFlags.Public|BindingFlags.NonPublic;
 AppDomain.CurrentDomain.AssemblyResolve+=(_,e)=>{var p=Path.Combine(args[1],new AssemblyName(e.Name).Name+".dll");return File.Exists(p)?Assembly.LoadFrom(p):null;};

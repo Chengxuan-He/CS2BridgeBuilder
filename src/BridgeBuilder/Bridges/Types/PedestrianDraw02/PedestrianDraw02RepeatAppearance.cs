@@ -9,10 +9,11 @@ namespace BridgeBuilder.Bridges;
 // This helper creates no assets and performs no atlas-period subdivision.
 internal static class PedestrianDraw02RepeatAppearance
 {
-    internal static Patch Create(SurfaceAsset finished, Vector2 contentMin, Vector2 contentMax, Vector4 finiteU, Vector4 continuousV, Vector4 measuredTangent)
+    internal static Patch Create(MovableExistingRoadSurface.SurfaceResult finished, Vector2 contentMin, Vector2 contentMax, Vector4 finiteU, Vector4 continuousV, Vector4 measuredTangent)
     {
-        if (finished == null || !Valid(contentMin.x) || !Valid(contentMax.x) || !Valid(contentMin.y) || !Valid(contentMax.y) || contentMin.x < Numeric_Types_PedestrianDraw02_PedestrianDraw02RepeatAppearance_cs.Values.I32[0] || contentMax.x > Numeric_Types_PedestrianDraw02_PedestrianDraw02RepeatAppearance_cs.Values.I32[1] || contentMin.x >= contentMax.x || contentMin.y < Numeric_Types_PedestrianDraw02_PedestrianDraw02RepeatAppearance_cs.Values.I32[2] || contentMax.y > Numeric_Types_PedestrianDraw02_PedestrianDraw02RepeatAppearance_cs.Values.I32[3] || contentMin.y >= contentMax.y || !Valid(finiteU) || !Valid(continuousV) || !Valid(measuredTangent))
-            throw new InvalidOperationException(nameof(PedestrianDraw02RepeatAppearance));
+        if(finished.Error!=null)return new Patch(finished.Error);
+        if (finished.Value == null || !Valid(contentMin.x) || !Valid(contentMax.x) || !Valid(contentMin.y) || !Valid(contentMax.y) || contentMin.x < Numeric_Types_PedestrianDraw02_PedestrianDraw02RepeatAppearance_cs.Values.I32[0] || contentMax.x > Numeric_Types_PedestrianDraw02_PedestrianDraw02RepeatAppearance_cs.Values.I32[1] || contentMin.x >= contentMax.x || contentMin.y < Numeric_Types_PedestrianDraw02_PedestrianDraw02RepeatAppearance_cs.Values.I32[2] || contentMax.y > Numeric_Types_PedestrianDraw02_PedestrianDraw02RepeatAppearance_cs.Values.I32[3] || contentMin.y >= contentMax.y || !Valid(finiteU) || !Valid(continuousV) || !Valid(measuredTangent))
+            return new Patch("Invalid measured PedestrianDraw02 repeat mapping.");
         // The completed /3 products include explicitly evidenced outer guard
         // panels and passed coverage at every output mip. Content bounds remain
         // distinct from the full texture's valid finite sampling domain.

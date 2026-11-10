@@ -50,10 +50,8 @@ var identity=new MovableUvFrame(source[0],source[1],source[2],uv[0],uv[1],uv[2],
 var residual=new Vector2(.123456f,.987654f);
 if(identity.Map(source[0]+(source[1]-source[0])*.3f,source[0]+(source[1]-source[0])*.3f,residual)!=residual)
     throw new Exception("Identity mapping did not retain native UV residuals.");
-try { _=new MovableUvFrame(source[0],source[0],source[0],uv[0],uv[1],uv[2],source[0],source[1],source[2]);throw new Exception("Degenerate source accepted"); }
-catch(ArgumentException) { }
-try { _=new MovableUvFrame(source[0],source[1],source[2],uv[0],uv[1],uv[2],source[0],source[0],source[0]);throw new Exception("Degenerate target accepted"); }
-catch(ArgumentException) { }
+if(new MovableUvFrame(source[0],source[0],source[0],uv[0],uv[1],uv[2],source[0],source[1],source[2]).Error==null)throw new Exception("Degenerate source accepted without failure result");
+if(new MovableUvFrame(source[0],source[1],source[2],uv[0],uv[1],uv[2],source[0],source[0],source[0]).Error==null)throw new Exception("Degenerate target accepted without failure result");
 Console.WriteLine("PASS native UV density tensor for rigid motion, widening, narrowing, reciprocal stretch, XYZ shear and reflection; native residuals and degenerate rejection.");
 
 // Draw01 measured main-mesh domain102 anchors304/305/306: horizontal strip,

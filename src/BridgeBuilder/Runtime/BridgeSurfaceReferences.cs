@@ -11,19 +11,24 @@ internal static class BridgeSurfaceReferences
     // Layout from game 1.6.2f1 SurfaceAsset, SurfaceAssetVTHeader, PerStackData and the
     // Colossal binary reader extensions. Hash128 prints least-significant nibbles first;
     // neither Guid.ToString nor ordinary byte hexadecimal produces its CID representation.
-    internal static string[] Read(byte[] bytes, Func<int, string, bool> inVirtualStack)
+    internal static bool TryRead(byte[] bytes, Func<int, string, bool> inVirtualStack, out string[] references, out string? error)
     {
+        references=Array.Empty<string>();error=null;
+        string? failure=null;
+        bool Fail(string message){failure??=message;return false;}
+        try
+        {
         using var stream = new MemoryStream(bytes, writable: false);
         using var reader = new BinaryReader(stream, Encoding.UTF8);
         var result = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
         var version = reader.ReadUInt16();
-        if (version > 11) throw new InvalidDataException("Unsupported native surface version " + version);
+        if (version > 11) return Fail("Unsupported native surface version " + version);
         var template = reader.ReadInt32();
         var virtualTextures = reader.ReadBoolean();
         if (virtualTextures)
         {
             var stacks = reader.ReadInt32();
-            if (stacks < 0 || stacks > 2) throw new InvalidDataException("Invalid native surface VT stack count.");
+            if (stacks < 0 || stacks > 2) return Fail("Invalid native surface VT stack count.");
             for (var stack = 0; stack < 2; stack++)
             {
                 Skip(reader, 8); // Unbiased stack dimensions.
@@ -64,17 +69,37 @@ internal static class BridgeSurfaceReferences
                         case 0: case 1: Skip(reader, 16); break; // Color, Vector.
                         case 2: case 3: Skip(reader, 4); break; // Float, Range.
                         case 4: Texture(property, ReadHash(reader)); break;
-                        default: throw new InvalidDataException("Unknown legacy surface property type " + type);
+                        default: return Fail("Unknown legacy surface property type " + type);
                     }
                 }
             if (version >= 11) Strings();
         }
-        if (stream.Position != stream.Length)
-            throw new InvalidDataException("Unexpected trailing native surface data.");
-        var references = new string[result.Count];
+        if(failure!=null)return false;
+        if (stream.Position != stream.Length) return Fail("Unexpected trailing native surface data.");
+        references = new string[result.Count];
         result.CopyTo(references);
-        return references;
+        return true;
 
+        bool Present(BinaryReader input)
+        {
+            byte value=input.ReadByte();
+            if(value==0)return false;
+            if(value==255)return true;
+            Fail("Invalid native surface null marker.");return false;
+        }
+        int Count(BinaryReader input)
+        {
+            int count=input.ReadInt32();
+            if(count<0 || count>input.BaseStream.Length-input.BaseStream.Position)
+            {Fail("Invalid native surface collection count.");return 0;}
+            return count;
+        }
+        void Skip(BinaryReader input,int count)
+        {
+            if(count<0 || count>input.BaseStream.Length-input.BaseStream.Position)
+            {Fail("Truncated native surface data.");input.BaseStream.Position=input.BaseStream.Length;return;}
+            input.BaseStream.Position+=count;
+        }
         void Add(string cid) { if (cid != "00000000000000000000000000000000") result.Add(cid); }
         void Texture(string property, string cid)
         {
@@ -93,29 +118,12 @@ internal static class BridgeSurfaceReferences
             if (!Present(reader)) return;
             for (var n = Count(reader); n > 0; n--) reader.ReadString();
         }
+        }
+        catch(Exception exception){failure??="Native surface read: "+exception.Message;return false;}
+        finally{if(failure!=null){references=Array.Empty<string>();error=failure;}}
     }
 
-    private static bool Present(BinaryReader reader) => reader.ReadByte() switch
-    {
-        0 => false, 255 => true,
-        _ => throw new InvalidDataException("Invalid native surface null marker.")
-    };
-
-    private static int Count(BinaryReader reader)
-    {
-        var count = reader.ReadInt32();
-        if (count < 0 || count > reader.BaseStream.Length - reader.BaseStream.Position)
-            throw new InvalidDataException("Invalid native surface collection count.");
-        return count;
-    }
-
-    private static void Skip(BinaryReader reader, int count)
-    {
-        if (count > reader.BaseStream.Length - reader.BaseStream.Position) throw new EndOfStreamException();
-        reader.BaseStream.Position += count;
-    }
-
-    private static string ReadHash(BinaryReader reader)
+    internal static string ReadHash(BinaryReader reader)
     {
         const string digits = "0123456789abcdef";
         var chars = new char[32];

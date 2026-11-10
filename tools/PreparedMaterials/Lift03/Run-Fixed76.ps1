@@ -1,5 +1,5 @@
 param([Parameter(Mandatory)][string]$Dll)
-$taskRoot='D:/CS2BridgeBuilder'
+$taskRoot='E:/CS2BridgeBuilder'
 $taskProject="$taskRoot/artifacts/material-remap/environments/Lift03/unity"
 $taskOutput="$taskRoot/artifacts/material-remap/Lift03/appearance76/fixed-source"
 $env:LIFT03_CANDIDATE_PATH=Split-Path -Parent $Dll

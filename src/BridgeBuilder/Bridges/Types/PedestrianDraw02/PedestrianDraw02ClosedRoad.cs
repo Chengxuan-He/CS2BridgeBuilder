@@ -12,10 +12,11 @@ namespace BridgeBuilder.Bridges;
 // PedestrianDraw02's straight closed-pose sampling arrangement. The approaches supply native
 // connectivity; only the two central-node halves become the mechanism's road input.
 // This is not a city-construction request and does not persist the sampling entities.
-internal sealed class PedestrianDraw02ClosedRoad : IDisposable
+internal sealed class PedestrianDraw02ClosedRoad : IMovableRoadSample
 {
     internal readonly MovableNetworkContext Network;
     internal readonly MovableClosedRoad.Result Road;
+    public string? MaterialError=>Road.Error;
     internal readonly Pose RoadToObject;
     private readonly Entity _sourceTheme;
     private readonly float3 _roadOrigin;
@@ -49,6 +50,7 @@ internal sealed class PedestrianDraw02ClosedRoad : IDisposable
         try
         {
             Road = Network.CompileRoad(new[] { (Numeric_Types_PedestrianDraw02_PedestrianDraw02ClosedRoad_cs.Values.I32[10], MovableNetworkContext.SurfacePart.EndNode), (Numeric_Types_PedestrianDraw02_PedestrianDraw02ClosedRoad_cs.Values.I32[11], MovableNetworkContext.SurfacePart.StartNode) }, new[] { centralNode }, roadOrigin);
+            if(Road.Error!=null)return;
             RoadToObject = Network.RoadToMechanism(Numeric_Types_PedestrianDraw02_PedestrianDraw02ClosedRoad_cs.Values.I32[12], roadOrigin);
         }
         catch

@@ -21,35 +21,22 @@ Check(!FixturePersistence.Save(owner,new[]{a},out _,out error)&&error.Contains("
 TimingCheck.CheckSummary(false, resolves:1, globalBuilds:0, mipBuilds:0, preflight:0, verify:0, payloadBytes:0);
 AssetDatabase.global.Assets.Clear();AssetDatabase.global.Assets.Add(original);AssetDatabase.global.Assets.Add(second);AssetDatabase.global.Scans=0;
 Check(FixturePersistence.Save(owner,new[]{a},out _,out error)&&AssetDatabase.global.Scans==0,"readable first match avoids scanning");
-var foreign=new AssetData(a,()=>throw new Exception("Foreign source must never be opened"));
-foreign.Metadata.path=Path.Combine(UnityEngine.Application.persistentDataPath,"ImportedData","b"+Guid.NewGuid()+"_Dependencies",a+".Prefab");
-AssetDatabase.global.Assets.Insert(0,foreign);
-Check(FixturePersistence.Save(owner,new[]{a},out _,out error),"readable foreign first match excluded before stream access");
-AssetDatabase.global.Assets.Clear();AssetDatabase.global.Assets.Add(stale);AssetDatabase.global.Assets.Add(foreign);
-Check(!FixturePersistence.Save(owner,new[]{a},out _,out error)&&error.Contains(a),"foreign fallback is never selected");
 var imported=Path.Combine(UnityEngine.Application.persistentDataPath,"ImportedData");
-Check(!BridgeAssetInfo.IsOtherBridgePrefab(Path.Combine(imported,owner+"_Dependencies",a+".Prefab"),owner,imported),"current bridge remains permitted");
-Check(!BridgeAssetInfo.IsOtherBridgePrefab(Path.Combine(imported+"Other","b"+Guid.NewGuid()+".Prefab"),owner,imported),"root containment has directory boundary");
-Check(BridgeAssetInfo.IsOtherBridgePrefab(foreign.Metadata.path.Replace("ImportedData", "IMPORTEDDATA").Replace(".Prefab", ".PREFAB"),owner,imported),"case-insensitive foreign ownership");
-Check(BridgeAssetInfo.IsOtherBridgePrefab(Path.Combine(imported,"b"+Guid.NewGuid(),"Prefabs","Bridge.Prefab"),owner,imported),"short foreign prefab remains excluded by directory UUID");
-Check(BridgeAssetInfo.IsOtherBridgePrefab(Path.Combine(imported,"b"+Guid.NewGuid(),"Dependencies",a+".Prefab"),owner,imported),"new foreign dependency directory excluded");
-Check(BridgeDependencyCopies.Folder(UnityEngine.Application.persistentDataPath,owner)==Path.Combine(imported,owner,"Dependencies"),"dependency copies belong inside owner folder");
-AssetDatabase.global.Assets.Clear();
-AssetDatabase.global.Assets.Add(new AssetData(a,()=>throw new Exception("Deleted snapshot was read before packaged source")));
-BridgePreparedMaterials.Assets.Add(a,original); BridgePreparedMaterials.Assets.Add(b,second);
-Check(FixturePersistence.Save(owner,new[]{a},out _,out error),"prepared source precedes deleted same-CID registration");
-BridgePreparedMaterials.Assets.Clear();
 foreach (var extension in new[]{".Prefab", ".Surface", ".Material", ".Texture", ".VTSurface", ".VTTexture", ".Geometry", ".MidMips"}) {
- var isolatedOwner="b"+Guid.NewGuid();
- var other=new AssetData(a,()=>throw new Exception("Foreign "+extension+" stream opened"));
- other.Metadata.path=Path.Combine(imported,"b"+Guid.NewGuid(),"Dependencies",a+extension);
- other.Metadata.extension=extension;
- AssetDatabase.global.Assets.Clear();
- AssetDatabase.global.Assets.AddRange(new[]{other,original,second});
- Check(FixturePersistence.Save(isolatedOwner,new[]{a},out _,out error),"exclude foreign first-match "+extension+": "+error);
- AssetDatabase.global.Assets.Clear();AssetDatabase.global.Assets.AddRange(new[]{stale,other});
- Check(!FixturePersistence.Save(isolatedOwner,new[]{a},out _,out error)&&error.Contains("Dependency unavailable"),
-  "exclude foreign fallback "+extension+" before reading: "+error);
+ var isolatedOwner="b"+Guid.NewGuid();var sourceOwner="b"+Guid.NewGuid();
+ byte[] payload=extension is ".Surface" or ".Material"?MidMipSnapshotCheck.Surface():extension==".MidMips"?MidMipSnapshotCheck.Cache(b):new byte[]{4,5,6};
+ var sourcePath=Path.Combine(imported,sourceOwner,"Dependencies",extension==".MidMips"?a+"/TS512_MB3.MidMips":a+extension);
+ Directory.CreateDirectory(Path.GetDirectoryName(sourcePath)!);File.WriteAllBytes(sourcePath,payload);File.WriteAllText(sourcePath+".cid",a);
+ var other=new AssetData(a,()=>File.OpenRead(sourcePath));other.Metadata.path=sourcePath;other.Metadata.extension=extension;other.Metadata.packaged=false;other.Metadata.fileName=extension==".MidMips"?"TS512_MB3":a;
+ AssetDatabase.global.Assets.Clear();AssetDatabase.global.Assets.Add(other);
+ var creation=new BridgeCreationDependencies(_=>Array.Empty<AssetData>());
+ Check(FixturePersistence.Save(isolatedOwner,new[]{a},creation,out count,out error,out written)&&count==1&&written==2,"other-owner source independently copied "+extension+": "+error);
+ var copy=Path.Combine(BridgeDependencyCopies.Folder(UnityEngine.Application.persistentDataPath,isolatedOwner),extension==".MidMips"?a+"/TS512_MB3.MidMips":a+extension);
+ Check(File.ReadAllBytes(copy).SequenceEqual(payload)&&File.ReadAllText(copy+".cid")==a&&File.ReadAllBytes(sourcePath).SequenceEqual(payload),"source unchanged, output bytes/CID retained "+extension);
+ File.Delete(sourcePath);File.Delete(sourcePath+".cid");
+ var local=new AssetData(a,()=>File.OpenRead(copy));local.Metadata.path=copy;local.Metadata.extension=extension;local.Metadata.packaged=false;local.Metadata.fileName=other.Metadata.fileName;
+ AssetDatabase.global.Assets.Add(local);
+ Check(FixturePersistence.Save(isolatedOwner,new[]{a},new BridgeCreationDependencies(_=>Array.Empty<AssetData>()),out count,out error,out written)&&written==0,"local snapshot survives deleted original "+extension+": "+error);
 }
 var missingMetadata = new AssetData(new string('9',32),()=>throw new Exception("Missing metadata source must not be read"));
 missingMetadata.Metadata.extension=null!;AssetDatabase.global.Assets.Clear();AssetDatabase.global.Assets.Add(missingMetadata);
@@ -67,7 +54,7 @@ MidMipSnapshotCheck.Run(imported);
 SelfCheckForwardCheck.Run();
 foreach(var fixture in args) {
  var payload=File.ReadAllBytes(fixture);
- var refs=BridgeSurfaceReferences.Read(payload,(_,_)=>false);
+ var refs=(BridgeSurfaceReferences.TryRead(payload,(_,_)=>false,out var surfaceRefs1,out var surfaceRefsError1)?surfaceRefs1:throw new System.IO.InvalidDataException(surfaceRefsError1));
  foreach(var extension in new[]{".Surface",".Material"}) {
   var materialOwner="b"+Guid.NewGuid();
   AssetDatabase.global.Assets.Clear();
@@ -94,6 +81,7 @@ namespace Colossal.IO.AssetDatabase {
   public Meta Metadata=new(); public Meta GetMeta()=>Metadata;public Stream GetReadStream()=>open();
  }
  class MidMipCacheAsset : AssetData {public MidMipCacheAsset(string cid,Func<Stream> read):base(cid,read){} }
+ struct SearchFilter<T> {}
  class AssetDatabase {
   public Resources resources=new();
   public class Resources { public Library materialLibrary=new(); }
@@ -101,10 +89,11 @@ namespace Colossal.IO.AssetDatabase {
   public class Description { public int GetStackConfigIndex(string property)=>property=="_BaseColorMap" || (SavedMaterialReplay.Active && property is ("_NormalMap" or "_MaskMap" or "_ControlMask" or "_EmissiveColorMap")) ? 0 : -1; }
   public static AssetDatabase global=new(); public List<AssetData> Assets=new();public int Scans;public IEnumerable<AssetDatabase> databases => Assets.Select(asset => new AssetDatabase { Assets = new List<AssetData>{asset} });
   public bool TryGetAsset(Colossal.Hash128 cid,out AssetData asset){asset=Assets.FirstOrDefault(a=>a.id.guid==cid)!;return asset!=null;}
+  public IEnumerable<T> GetAssets<T>(SearchFilter<T> filter){Scans++;return Assets.OfType<T>();}
   public bool ForbidEnumeration = true; public IEnumerable<T> GetAssets<T>(){if(ForbidEnumeration)throw new Exception("Global asset enumeration forbidden");Scans++;return Assets.Cast<T>();}
  }
 }
-namespace BridgeBuilder {static class Mod{public static Logger Log=new();} class Logger{public string LastSave=""; public void Info(string s){if(s.StartsWith("Bridge dependency persistence UUID=")) LastSave=s;} public void Warn(string s){} public void Error(Exception e){}}}
+namespace BridgeBuilder {static class Mod{public static Logger Log=new();} class Logger{public string LastSave=""; public void Info(string s){if(s.StartsWith("Bridge dependency persistence UUID=")) LastSave=s;} public void Warn(string s){} public void Error(Exception e){} public void Error(string e){}}}
 namespace BridgeBuilder.Runtime {
  static class BridgePreparedMaterials {
   internal static readonly Dictionary<string,AssetData> Assets=new();

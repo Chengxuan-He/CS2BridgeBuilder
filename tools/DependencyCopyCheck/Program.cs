@@ -40,12 +40,12 @@ foreach(var file in args.SelectMany(path=>Directory.Exists(path)?Directory.GetFi
  var bytes=File.ReadAllBytes(file);
  if (Path.GetExtension(file)==".Surface") {
   var stackProperties=new HashSet<string>{"_BaseColorMap","_NormalMap","_MaskMap","_ControlMask","_EmissiveColorMap"};
-  var refs=BridgeSurfaceReferences.Read(bytes,(template,property)=>new[]{0,1,16}.Contains(template)&&stackProperties.Contains(property));
+  var refs=(BridgeSurfaceReferences.TryRead(bytes,(template,property)=>new[]{0,1,16}.Contains(template)&&stackProperties.Contains(property),out var surfaceRefs1,out var surfaceRefsError1)?surfaceRefs1:throw new System.IO.InvalidDataException(surfaceRefsError1));
   Check(refs.OrderBy(cid=>cid).SequenceEqual(File.ReadAllLines(file+".refs")),"real native surface/VT payload graph: "+Path.GetFileName(file));
   continue;
  }
  if (Path.GetExtension(file)==".bin") {
-  var refs=BridgeSurfaceReferences.Read(bytes,(_,_)=>throw new Exception("Expected ordinary non-VT source fixture"));
+  var refs=(BridgeSurfaceReferences.TryRead(bytes,(_,_)=>throw new Exception("Expected ordinary non-VT source fixture"),out var surfaceRefs2,out var surfaceRefsError2)?surfaceRefs2:throw new System.IO.InvalidDataException(surfaceRefsError2));
   // Independent oracle for these extracted non-VT files: texture property names followed by
   // native present marker + 16 raw hash bytes. The structured parser must match every reference.
   var text=Encoding.Latin1.GetString(bytes);
@@ -82,9 +82,9 @@ byte[] Surface(bool vt) {
  return stream.ToArray();
 }
 var vtBytes=Surface(true);
-var vtRefs=BridgeSurfaceReferences.Read(vtBytes,(template,property)=>template==16&&property=="_BaseColorMap");
+var vtRefs=(BridgeSurfaceReferences.TryRead(vtBytes,(template,property)=>template==16&&property=="_BaseColorMap",out var surfaceRefs3,out var surfaceRefsError3)?surfaceRefs3:throw new System.IO.InvalidDataException(surfaceRefsError3));
 Check(vtRefs.OrderBy(x=>x).SequenceEqual(new[]{vtCid,surfaceCid,ordinaryCid}.OrderBy(x=>x)),"VT payloads and non-stack textures traversed; original VT source identity and keyword text excluded");
-Check(BridgeSurfaceReferences.Read(Surface(false),(_,_)=>false).OrderBy(x=>x).SequenceEqual(new[]{textureCid,ordinaryCid}.OrderBy(x=>x)),"ordinary binary texture identities use native Hash128 nibble order");
+Check((BridgeSurfaceReferences.TryRead(Surface(false),(_,_)=>false,out var surfaceRefs4,out var surfaceRefsError4)?surfaceRefs4:throw new System.IO.InvalidDataException(surfaceRefsError4)).OrderBy(x=>x).SequenceEqual(new[]{textureCid,ordinaryCid}.OrderBy(x=>x)),"ordinary binary texture identities use native Hash128 nibble order");
 sources[a]=new(){Owned=true,Extension=".Surface",Bytes=vtBytes,SerializedReferences=vtRefs};
 sources[vtCid]=new(){Extension=".VTTexture",Bytes=new byte[]{1,2,3}};
 sources[surfaceCid]=new(){Extension=".VTSurface",Bytes=new byte[]{4,5,6}};
@@ -95,7 +95,7 @@ Check(File.ReadAllBytes(Path.Combine(BridgeDependencyCopies.Folder(root,vtOwner)
 sources.Remove(vtCid);
 Check(!BridgeDependencyCopies.Save(root,vtOwner,new[]{a},Resolve,out _,out err,out _)&&err.Contains(vtCid),"missing VT payload is an explicit persistence failure");
 foreach(var invalid in new[]{vtBytes.Take(50).ToArray(),new byte[]{12,0,0,0,0,0,0},Surface(false).Concat(new byte[]{1}).ToArray()}) {
- bool rejected=false;try {BridgeSurfaceReferences.Read(invalid,(_,_)=>false);}catch(Exception e) when(e is IOException or InvalidDataException){rejected=true;}
+ bool rejected=false;try {_ = (BridgeSurfaceReferences.TryRead(invalid,(_,_)=>false,out var surfaceRefs5,out var surfaceRefsError5)?surfaceRefs5:throw new System.IO.InvalidDataException(surfaceRefsError5));}catch(Exception e) when(e is IOException or InvalidDataException){rejected=true;}
  Check(rejected,"truncated, unsupported-version or trailing surface data rejected");
 }
 namespace BridgeBuilder.Runtime { internal static class BridgeAssetInfo { internal static bool IsPrefabName(string n)=>System.Text.RegularExpressions.Regex.IsMatch(n,@"\Ab[0-9a-f]{8}(?:-[0-9a-f]{4}){3}-[0-9a-f]{12}\z"); } }

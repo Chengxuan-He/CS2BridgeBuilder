@@ -17,7 +17,7 @@ public static class Draw02NormalMipReadback
             var input=JsonUtility.FromJson<Draw02FiniteCellBake.Manifest>(File.ReadAllText(folder+"/bake-input.json"));
             var channel=input.channels.Single(c=>c.name=="_NormalMap");
             using var stream=File.OpenRead(channel.path);
-            var source=MovableTextureSource.Read(stream,_=>throw new InvalidDataException("Expected retained uncompressed full native mip payload."));
+            var source=(MovableTextureSource.TryRead(stream,_=>throw new InvalidDataException("Expected retained uncompressed full native mip payload."),out var parsedTexture1,out var textureReadError1)?parsedTexture1:throw new System.IO.InvalidDataException(textureReadError1));
             source.filterMode=FilterMode.Bilinear; source.wrapMode=TextureWrapMode.Clamp;
             var shader=AssetDatabase.LoadAssetAtPath<ComputeShader>("Assets/FiniteCell.compute");var kernel=shader.FindKernel("Extract");
             using var buffer=new ComputeBuffer(3,16);using var tracking=new ComputeBuffer(1,4);

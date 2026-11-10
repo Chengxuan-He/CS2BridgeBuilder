@@ -58,8 +58,8 @@ internal static class MaterialSnapshotCheck
         AssetDatabase.global.Assets.AddRange(new[] { root, localMaterial, localTexture, builtin });
         Check(FixturePersistence.Save(owner, new[] { rootCid }, out count, out error, out written)
             && count == 2 && written == 0, "current-owner snapshots resolve with source mod absent: " + error);
-        Check(!FixturePersistence.Save("b" + Guid.NewGuid(), new[] { materialCid }, out _, out error)
-            && error.Contains(materialCid), "another bridge cannot borrow these snapshots");
+        Check(FixturePersistence.Save("b" + Guid.NewGuid(), new[] { materialCid }, out count, out error, out written)
+            && count == 2 && written == 4, "another bridge receives independent material/texture snapshots: " + error);
         Check(File.ReadAllBytes(rootPath).SequenceEqual(rootBytes) && File.ReadAllText(rootPath + ".cid") == rootCid,
             "root serialized references and identity remain unchanged");
     }

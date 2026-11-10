@@ -51,7 +51,7 @@ internal static class PedestrianDraw02RenderAssembly
     internal static RenderPrefab? CreateColumn(TowerFactory factory, string owner, string name, RenderPrefab source, float halfWidthDelta)
     {
         var imported = Path.Combine(Application.persistentDataPath, "ImportedData");
-        if (source == null || !string.Equals(source.name, "PedestrianDrawBridge02Pillar Mesh", StringComparison.Ordinal) || BridgeAssetInfo.IsOtherBridgePrefab(source.asset?.path, owner, imported))
+        if (source == null || !string.Equals(source.name, "PedestrianDrawBridge02Pillar Mesh", StringComparison.Ordinal))
             throw new InvalidOperationException("PedestrianDraw02 column requires its permitted native source.");
         var lods = source.GetComponent<LodProperties>()?.m_LodMeshes;
         if (lods == null || lods.Length != Numeric_Types_PedestrianDraw02_PedestrianDraw02RenderAssembly_cs.Values.I32[16])
@@ -67,7 +67,7 @@ internal static class PedestrianDraw02RenderAssembly
         {
             var original = sources[lod];
             var expected = "PedestrianDrawBridge02Pillar" + (lod == Numeric_Types_PedestrianDraw02_PedestrianDraw02RenderAssembly_cs.Values.I32[20] ? "" : "_LOD" + lod) + " Mesh";
-            if (original == null || !string.Equals(original.name, expected, StringComparison.Ordinal) || BridgeAssetInfo.IsOtherBridgePrefab(original.asset?.path, owner, imported))
+            if (original == null || !string.Equals(original.name, expected, StringComparison.Ordinal))
                 throw new InvalidOperationException("PedestrianDraw02 column LOD is not its permitted native source.");
             Mesh[]? meshes = null;
             try
@@ -95,7 +95,7 @@ internal static class PedestrianDraw02RenderAssembly
     internal static RenderPrefab? CreateFooting(TowerFactory factory, string owner, string name, RenderPrefab source, float halfWidthDelta)
     {
         var imported = Path.Combine(Application.persistentDataPath, "ImportedData");
-        if (source == null || !string.Equals(source.name, "PedestrianDrawBridge02PillarBase Mesh", StringComparison.Ordinal) || BridgeAssetInfo.IsOtherBridgePrefab(source.asset?.path, owner, imported))
+        if (source == null || !string.Equals(source.name, "PedestrianDrawBridge02PillarBase Mesh", StringComparison.Ordinal))
             throw new InvalidOperationException("PedestrianDraw02 footing requires its permitted native source.");
         var lods = source.GetComponent<LodProperties>()?.m_LodMeshes;
         if (lods == null || lods.Length != Numeric_Types_PedestrianDraw02_PedestrianDraw02RenderAssembly_cs.Values.I32[29])
@@ -105,7 +105,7 @@ internal static class PedestrianDraw02RenderAssembly
             source,
             lods[Numeric_Types_PedestrianDraw02_PedestrianDraw02RenderAssembly_cs.Values.I32[30]]
         };
-        if (sources[Numeric_Types_PedestrianDraw02_PedestrianDraw02RenderAssembly_cs.Values.I32[31]] == null || !string.Equals(sources[Numeric_Types_PedestrianDraw02_PedestrianDraw02RenderAssembly_cs.Values.I32[32]].name, "PedestrianDrawBridge02PillarBase_LOD1 Mesh", StringComparison.Ordinal) || BridgeAssetInfo.IsOtherBridgePrefab(sources[Numeric_Types_PedestrianDraw02_PedestrianDraw02RenderAssembly_cs.Values.I32[33]].asset?.path, owner, imported))
+        if (sources[Numeric_Types_PedestrianDraw02_PedestrianDraw02RenderAssembly_cs.Values.I32[31]] == null || !string.Equals(sources[Numeric_Types_PedestrianDraw02_PedestrianDraw02RenderAssembly_cs.Values.I32[32]].name, "PedestrianDrawBridge02PillarBase_LOD1 Mesh", StringComparison.Ordinal))
             throw new InvalidOperationException("PedestrianDraw02 footing LOD1 is not its permitted native source.");
         var levels = new MovableRoadAssets.Level[Numeric_Types_PedestrianDraw02_PedestrianDraw02RenderAssembly_cs.Values.I32[34]];
         for (var lod = Numeric_Types_PedestrianDraw02_PedestrianDraw02RenderAssembly_cs.Values.I32[35]; lod < levels.Length; lod++)

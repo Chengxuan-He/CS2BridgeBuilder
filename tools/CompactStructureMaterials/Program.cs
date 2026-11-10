@@ -2,6 +2,7 @@ using BridgeBuilder.Runtime;
 using System.Security.Cryptography;
 using System.Text.Json;
 
+if(args.Length>0 && args[0]=="--test-isolation"){FileChecks.Run();return;}
 if (args.Length > 0 && args[0] == "--test")
 {
     FileChecks.Run();
@@ -42,7 +43,7 @@ if (Directory.Exists(output) || File.Exists(output)) throw new IOException("Use 
 if (output.StartsWith(source + Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase))
     throw new IOException("The destination cannot be inside the source.");
 string Digest(string path) { using var s = File.OpenRead(path); return BitConverter.ToString(SHA256.HashData(s)); }
-string[] References(byte[] bytes) => BridgeSurfaceReferences.Read(bytes, (_, _) => throw new InvalidDataException("Structural repeats must not use VT."));
+string[] References(byte[] bytes) => (BridgeSurfaceReferences.TryRead(bytes, (_, _) => throw new InvalidDataException("Structural repeats must not use VT."),out var surfaceRefs1,out var surfaceRefsError1)?surfaceRefs1:throw new System.IO.InvalidDataException(surfaceRefsError1));
 void Missing(string cid) => throw new InvalidDataException("Incomplete structural source graph: " + cid);
 var copies = new Dictionary<string, (string Source, string Digest)>(StringComparer.OrdinalIgnoreCase);
 var variants = new List<(string Style, string Variant, string Name)>();
@@ -59,7 +60,7 @@ foreach (var styleGroup in selectedSurfaces.GroupBy(p => (p.Style, Folder: Direc
         var sourceVariant = Path.GetRelativePath(styleFolder, Path.GetDirectoryName(surface)!);
         var variant = Path.Combine("Structure", Path.GetFileName(Path.GetDirectoryName(surface)!));
         variants.Add((style, variant, "Structure.Surface"));
-        foreach (var input in BridgePreparedMaterialFiles.Read(styleFolder, sourceVariant, "Structure.Surface", References, Missing))
+        foreach (var input in (BridgePreparedMaterialFiles.TryRead(styleFolder, sourceVariant, "Structure.Surface",out var preparedInputs1,out var preparedError1, References, Missing)?preparedInputs1:throw new System.IO.InvalidDataException(preparedError1)))
         {
             inputs++; inputBytes += new FileInfo(input.Path).Length + new FileInfo(input.Path + ".cid").Length;
             var destination = Path.GetExtension(input.Path) == ".Texture"
@@ -89,7 +90,7 @@ foreach (var copy in copies)
     if (++written % 10000 == 0) Console.WriteLine($"Copied and verified {written}/{copies.Count} payloads.");
 }
 foreach (var variant in variants)
-    BridgePreparedMaterialFiles.Read(Path.Combine(output, variant.Style), variant.Variant, variant.Name, References, Missing);
+    _ = (BridgePreparedMaterialFiles.TryRead(Path.Combine(output, variant.Style), variant.Variant, variant.Name,out var preparedInputs2,out var preparedError2, References, Missing)?preparedInputs2:throw new System.IO.InvalidDataException(preparedError2));
 var report = new { variants = variants.Count, sourcePayloadVisits = inputs, outputPayloads = copies.Count,
     authoringInputBytes = inputBytes, authoringOutputBytes = outputBytes, bytesAndCidsUnchanged = true,
     independentStyles = variants.Select(v => v.Style).Distinct().Count(), runtimePreflightPassed = true };

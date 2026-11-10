@@ -27,7 +27,7 @@ internal sealed class BridgePreviewRenderResources : IDisposable
     private readonly Dictionary<RenderPrefab, Mesh[]> _sourceMeshes = new();
     private readonly Dictionary<(RenderPrefab, bool, bool), Material[]> _materials = new();
     private readonly Dictionary<RenderPrefab, MaterialPropertyBlock> _properties = new();
-    private readonly Dictionary<(SurfaceAsset Surface, bool Network, bool Packed, RenderPrefab? Lane), Material> _surfaceMaterials = new();
+    private readonly Dictionary<(SurfaceAsset Surface, bool Network, bool Packed, RenderPrefab? Lane, bool NativeLane), Material> _surfaceMaterials = new();
     private readonly Dictionary<SurfaceAsset, Material> _sourceMaterials = new();
     private readonly List<Material> _ownedMaterials = new();
     private readonly HashSet<RenderPrefab> _animated = new();
@@ -139,7 +139,7 @@ internal sealed class BridgePreviewRenderResources : IDisposable
                 if (surfaces![i] == null)
                     throw new InvalidOperationException($"Preview surface slot {i} is unresolved for {prefab.name}.");
                 var material = MaterialFor(surfaces[i], network, packed,
-                    lane || prefab.Has<DecalProperties>() || _animated.Contains(prefab) ? prefab : null);
+                    lane || prefab.Has<DecalProperties>() || _animated.Contains(prefab) ? prefab : null, lane);
                 if (material == null) return Array.Empty<Material>();
                 materials[i] = material;
             }
@@ -148,9 +148,9 @@ internal sealed class BridgePreviewRenderResources : IDisposable
         return materials;
     }
 
-    private Material? MaterialFor(SurfaceAsset surface, bool network, bool packed, RenderPrefab? lane)
+    private Material? MaterialFor(SurfaceAsset surface, bool network, bool packed, RenderPrefab? lane, bool nativeLane)
     {
-        var key = (surface, network, packed, lane);
+        var key = (surface, network, packed, lane, nativeLane);
         if (_surfaceMaterials.TryGetValue(key, out var cached)) return cached;
         var propertiesAcquired = false;
         var loadStarted = false;
@@ -187,7 +187,7 @@ internal sealed class BridgePreviewRenderResources : IDisposable
             };
             _ownedMaterials.Add(material);
             HDMaterial.ValidateMaterial(material);
-            ConfigurePreviewDepth(material, network, packed, lane);
+            ConfigurePreviewDepth(material, network, packed, lane, nativeLane);
             BindVirtualTextures(surface, material, true);
             if(surface.name.Contains(" Road Surface", StringComparison.Ordinal))
             {
@@ -226,7 +226,7 @@ internal sealed class BridgePreviewRenderResources : IDisposable
         {
             pair.Value.CopyPropertiesFromMaterial(_sourceMaterials[pair.Key.Surface]);
             pair.Value.enableInstancing = false;
-            ConfigurePreviewDepth(pair.Value, pair.Key.Network, pair.Key.Packed, pair.Key.Lane);
+            ConfigurePreviewDepth(pair.Value, pair.Key.Network, pair.Key.Packed, pair.Key.Lane, pair.Key.NativeLane);
             BindVirtualTextures(pair.Key.Surface, pair.Value, false);
         }
         if (_textureRequests == null) return;
@@ -264,7 +264,7 @@ internal sealed class BridgePreviewRenderResources : IDisposable
         if (keyword.isValid) material.SetKeyword(keyword, enabled);
     }
 
-    private static void ConfigurePreviewDepth(Material material, bool network, bool packed, RenderPrefab? lane)
+    private static void ConfigurePreviewDepth(Material material, bool network, bool packed, RenderPrefab? lane, bool nativeLane)
     {
         // Native net batches retain the surface's network shader variant. The
         // generated mesh and CompositionMatrix properties supply its deformation.
@@ -281,12 +281,18 @@ internal sealed class BridgePreviewRenderResources : IDisposable
             // ManagedBatchSystem selects these from CurveProperties, not from
             // the base surface material. Keep native curve/decal deformation.
             var tiling = lane.TryGet<CurveProperties>(out var curve) && curve.m_GeometryTiling;
-            SetKeyword(material, "COLOSSAL_GEOMETRY_TILING", tiling);
-            SetKeyword(material, "COLOSSAL_GEOMETRY_DILATED", false);
-            SetKeyword(material, "COLOSSAL_GEOMETRY_DEFAULT", !tiling);
+            // A procedural object pose is not a native lane. Match the native
+            // batch distinction; preserve source curve modes on ordinary objects.
+            if(nativeLane || tiling)
+            {
+                SetKeyword(material, "COLOSSAL_GEOMETRY_TILING", tiling);
+                SetKeyword(material, "COLOSSAL_GEOMETRY_DILATED", false);
+                SetKeyword(material, "COLOSSAL_GEOMETRY_DEFAULT", !tiling);
+            }
             if (lane.TryGet<DecalProperties>(out var decal))
                 material.renderQueue = material.shader.renderQueue + decal.m_RendererPriority;
-            var animated = lane.TryGet<ProceduralAnimationProperties>(out var skeleton) && skeleton.active;
+            var animated = lane.TryGet<ProceduralAnimationProperties>(out var skeleton) && skeleton.active &&
+                skeleton.m_Bones != null && skeleton.m_Bones.Length != 0;
             SetKeyword(material, "_GPU_ANIMATION_PROCEDURAL", animated);
             SetKeyword(material, "_GPU_ANIMATION_OFF", !animated);
             SetKeyword(material, "_GPU_ANIMATION_SHAPE", false);
@@ -294,9 +300,6 @@ internal sealed class BridgePreviewRenderResources : IDisposable
         }
         else if (!network)
         {
-            SetKeyword(material, "COLOSSAL_GEOMETRY_TILING", false);
-            SetKeyword(material, "COLOSSAL_GEOMETRY_DILATED", false);
-            SetKeyword(material, "COLOSSAL_GEOMETRY_DEFAULT", true);
             SetKeyword(material, "_GPU_ANIMATION_PROCEDURAL", false);
             SetKeyword(material, "_GPU_ANIMATION_SHAPE", false);
             SetKeyword(material, "_GPU_ANIMATION_NORMAL", false);

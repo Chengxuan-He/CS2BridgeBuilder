@@ -58,10 +58,7 @@ internal sealed class BridgeAssetInfo
     internal static bool MatchesOwner(string? path, string owner) => IsPrefabName(owner)
         && path != null && path.IndexOf(owner, StringComparison.OrdinalIgnoreCase) >= 0;
 
-    internal static bool IsOtherBridgePrefab(string? path, string owner, string importedRoot)
-        => path != null && path.EndsWith(".Prefab", StringComparison.OrdinalIgnoreCase)
-            && IsOtherBridgeAsset(path, owner, importedRoot);
-
+    // Mutation/metadata containment only. Never use ownership to reject readable input.
     internal static bool IsOtherBridgeAsset(string? path, string owner, string importedRoot)
     {
         if (string.IsNullOrEmpty(path)) return false;

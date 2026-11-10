@@ -17,7 +17,7 @@ foreach (var file in surfaces)
     var bytes = File.ReadAllBytes(file);
     if (!Digest(bytes).Equals(row.surfaceSha256, StringComparison.OrdinalIgnoreCase))
         throw new InvalidDataException("Changed Surface requires a fresh channel/consumer review: " + path);
-    var links = BridgeSurfaceReferences.Read(bytes, (_, _) => false)
+    var links = (BridgeSurfaceReferences.TryRead(bytes, (_, _) => false,out var surfaceRefs1,out var surfaceRefsError1)?surfaceRefs1:throw new System.IO.InvalidDataException(surfaceRefsError1))
         .Where(textures.ContainsKey).ToHashSet();
     CheckRole(row.role, links, row.local.Values, path);
     foreach (var cid in links)

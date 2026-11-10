@@ -107,6 +107,7 @@ internal static class BridgeUnlockMigration
             foreach (var directory in Directory.GetDirectories(BridgeFileAccess.Native(imported)))
             {
                 var stem = Path.GetFileName(directory);
+                if (BridgeDeletionIntent.Contains(gameRoot, stem)) continue;
                 if (!BridgeAssetInfo.TryFileOwner(stem, out _)) continue;
                 var path = Path.Combine(directory, stem + ".Prefab");
                 if (!BridgeFileAccess.Exists(path)) continue;

@@ -77,7 +77,7 @@ public static class Lift01NativeObjectCheck
             foreach(var pair in entries.OrderBy(x=>x.Key))
             {
                 using var read=pair.Value.Open();using var bytes=new MemoryStream();read.CopyTo(bytes);var payload=bytes.ToArray();
-                using var stream=new MemoryStream(payload);var texture=MovableTextureSource.Read(stream,b=>(byte[])decode.Invoke(null,new[]{(object)b,zstd}));
+                using var stream=new MemoryStream(payload);var texture=(MovableTextureSource.TryRead(stream,b=>(byte[])decode.Invoke(null,new[]{(object)b,zstd}),out var parsedTexture1,out var textureReadError1)?parsedTexture1:throw new System.IO.InvalidDataException(textureReadError1));
                 try
                 {
                     Need(stream.Position==stream.Length,"Incomplete native texture read");

@@ -5,7 +5,7 @@ if (args.Length == 2 && args[0] == "--catalog")
     foreach (var file in Directory.EnumerateFiles(args[1], "*.MidMips", SearchOption.AllDirectories).OrderBy(p => p))
     {
         string cache = File.ReadAllText(file + ".cid").Trim();
-        foreach (var surface in BridgeMidMipReferences.Read(File.ReadAllBytes(file)))
+        foreach (var surface in (BridgeMidMipReferences.TryRead(File.ReadAllBytes(file),out var midResult1,out var midError1)?midResult1:throw new System.IO.InvalidDataException(midError1)))
         {
             Console.WriteLine($"        \"{surface}\" => \"{cache}\",");
             if (BridgePreparedMaterialFiles.CacheFor(surface) != cache)
@@ -17,13 +17,13 @@ if (args.Length == 2 && args[0] == "--catalog")
 
 if (args.Length != 3) throw new ArgumentException("Usage: PreparedMidMipCheck <candidate-style-root> <original-style-root> <VT-fixtures>");
 int required = 0, zero = 0, negative = 0;
-string[] Refs(byte[] bytes) => BridgeSurfaceReferences.Read(bytes, (_, _) => true);
+string[] Refs(byte[] bytes) => (BridgeSurfaceReferences.TryRead(bytes, (_, _) => true,out var surfaceRefs1,out var surfaceRefsError1)?surfaceRefs1:throw new System.IO.InvalidDataException(surfaceRefsError1));
 int Levels(string cid)
 {
     var path = Path.Combine(args[2], cid + ".VTTexture");
     if (!File.Exists(path)) return 0;
     using var stream = File.OpenRead(path);
-    return BridgeMidMipReferences.RequiredLevels(stream, false);
+    return (BridgeMidMipReferences.TryRequiredLevels(stream, false,out var midResult5,out var midError5)?midResult5:throw new System.IO.InvalidDataException(midError5));
 }
 void MustFail(Action action)
 {
@@ -37,7 +37,7 @@ foreach (var file in Directory.GetFiles(args[0], "*.Surface", SearchOption.AllDi
     string relative = Path.GetRelativePath(args[0], Path.GetDirectoryName(file)!);
     if (relative != "Paint" && !relative.StartsWith("Lanes" + Path.DirectorySeparatorChar, StringComparison.Ordinal)) continue;
     int levels = Refs(File.ReadAllBytes(file)).Select(Levels).DefaultIfEmpty().Max();
-    var inputs = BridgePreparedMaterialFiles.Read(args[0], relative, Path.GetFileName(file), Refs, _ => { }, Levels);
+    var inputs = (BridgePreparedMaterialFiles.TryRead(args[0], relative, Path.GetFileName(file),out var preparedInputs1,out var preparedError1, Refs, _ => { }, Levels)?preparedInputs1:throw new System.IO.InvalidDataException(preparedError1));
     var caches = inputs.Where(i => Path.GetExtension(i.Path) == ".MidMips").ToArray();
     if (levels == 0)
     {
@@ -48,18 +48,18 @@ foreach (var file in Directory.GetFiles(args[0], "*.Surface", SearchOption.AllDi
     {
         if (caches.Length != 1) throw new Exception("Expected one unambiguous native cache membership.");
         required++;
-        MustFail(() => BridgePreparedMaterialFiles.Read(args[1], relative, Path.GetFileName(file), Refs, _ => { }, Levels));
+        MustFail(() => _ = (BridgePreparedMaterialFiles.TryRead(args[1], relative, Path.GetFileName(file),out var preparedInputs2,out var preparedError2, Refs, _ => { }, Levels)?preparedInputs2:throw new System.IO.InvalidDataException(preparedError2)));
         var bytes = File.ReadAllBytes(caches[0].Path);
         var cid = File.ReadAllText(file + ".cid").Trim();
-        if (!BridgeMidMipReferences.Read(bytes).Contains(cid)) throw new Exception("Cache omitted exact Surface identity.");
+        if (!(BridgeMidMipReferences.TryRead(bytes,out var midResult2,out var midError2)?midResult2:throw new System.IO.InvalidDataException(midError2)).Contains(cid)) throw new Exception("Cache omitted exact Surface identity.");
     }
 }
 var common = Path.Combine(Path.GetDirectoryName(Path.GetFullPath(args[0]))!, "Shared", "MidMips");
 var sample = Directory.GetFiles(common, "*.MidMips", SearchOption.AllDirectories).First();
 var content = File.ReadAllBytes(sample);
-MustFail(() => BridgeMidMipReferences.Read(content[..^1]));
+MustFail(() => _ = (BridgeMidMipReferences.TryRead(content[..^1],out var midResult3,out var midError3)?midResult3:throw new System.IO.InvalidDataException(midError3)));
 var wrongLevels = (byte[])content.Clone(); BitConverter.GetBytes(0).CopyTo(wrongLevels, 4);
-MustFail(() => BridgeMidMipReferences.Read(wrongLevels));
+MustFail(() => _ = (BridgeMidMipReferences.TryRead(wrongLevels,out var midResult4,out var midError4)?midResult4:throw new System.IO.InvalidDataException(midError4)));
 // The current skinned paint descriptor has no VT carrier. The historical
 // positive-level paint fixture remains the control for its original cache.
 bool currentPaint = File.ReadAllText(Path.Combine(args[0], "Paint", "SkinnedPaint.Surface.cid")).Trim()

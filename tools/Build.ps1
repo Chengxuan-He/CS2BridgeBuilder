@@ -7,6 +7,14 @@ param(
 
 $ErrorActionPreference = 'Stop'
 $projectRoot = Split-Path -Parent $PSScriptRoot
+& (Join-Path $projectRoot 'tools/RoadGpu/VerifyBundle.ps1')
+# Regenerated mechanism recipes must use the shared selected-road appearance merge.
+foreach ($file in Get-ChildItem -Path (Join-Path $projectRoot 'src/BridgeBuilder/Bridges/Types/*/*NetworkData.g.cs')) {
+    if ([IO.File]::ReadAllText($file.FullName) -match 'target\.m_(Edge|Node)States\s*=.*\.Concat\(') {
+        throw "Run tools/NormalizeMovableNetworkStates.py before building regenerated network data: $($file.FullName)"
+    }
+}
+
 
 function Find-GameDirectory {
     param([string]$RequestedPath)
@@ -151,6 +159,7 @@ $arguments = @(
     '/target:library',
     ('/resource:' + (Join-Path $projectRoot 'assets\BridgeBuilderPack.svg') + ',BridgeBuilderPack.svg'),
     ('/resource:' + (Join-Path $projectRoot 'assets\bridgebake') + ',BridgeBuilder.GpuBake'),
+    ('/resource:' + (Join-Path $projectRoot 'assets\roadgpu') + ',BridgeBuilder.RoadGpu'),
     '/deterministic+',
     '/codepage:65001',
     '/optimize+',

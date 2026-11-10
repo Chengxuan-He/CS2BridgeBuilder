@@ -11,8 +11,10 @@ namespace BridgeBuilder.Bridges;
 
 // Owns the movable generation lifecycle; measured mechanism rules belong to the style.
 // The sample type keeps each style's disposable sampling state strongly typed.
+internal interface IMovableRoadSample : IDisposable { string? MaterialError {get;} }
+
 internal abstract class MovableBridgeGeneratorBase<TSample> : BridgeGeneratorBase
-    where TSample : IDisposable
+    where TSample : IMovableRoadSample
 {
     protected MovableBridgeGeneratorBase(ExportReport report, TowerFactory? towers) : base(report, towers) { }
 
@@ -34,7 +36,7 @@ internal abstract class MovableBridgeGeneratorBase<TSample> : BridgeGeneratorBas
     }
     protected abstract TSample SampleRoad(string owner, Entity selectedRoad, RenderPrefab[] roots,
         ContentPrefab content, float halfDelta, RandomSeed seed);
-    protected abstract RenderPrefab BuildMechanism(TowerFactory factory, string owner, TSample road,
+    protected abstract RenderPrefab? BuildMechanism(TowerFactory factory, string owner, TSample road,
         RenderPrefab[] nativeLevels, float halfDelta, MovableRoadMaterial material);
     protected abstract void AssembleBridge(NetGeometryPrefab target, TowerFactory factory,
         RenderPrefab[] roots, ContentPrefab content, float halfDelta, TSample road, RenderPrefab moving);
@@ -64,13 +66,16 @@ internal abstract class MovableBridgeGeneratorBase<TSample> : BridgeGeneratorBas
 
         var clock = Stopwatch.StartNew();
         using var road = SampleRoad(target.name, selectedEntity, roots, content, halfDelta, RandomSeed.Next());
+        if(road.MaterialError!=null){_report.Failed(target.name,new InvalidOperationException(road.MaterialError));return null;}
         var samplingMs = clock.ElapsedMilliseconds;
         // Shared native tileable asphalt source, independent of each structural atlas.
         if (!AssetDatabase.global.TryGetAsset(Colossal.Hash128.Parse("1d7dad9f64c9fe55a809f1080c39fb92"), out SurfaceAsset surface))
             throw new InvalidOperationException("The native Road surface is unavailable.");
-        using var material = factory.CreateMovableRoadMaterial(surface);
+        if (!factory.TryCreateMovableRoadMaterial(surface, out var material)) return null;
+        using var materialLifetime = material;
         var nativeLevels = new[] { main }.Concat(main.GetComponent<LodProperties>().m_LodMeshes).ToArray();
         var moving = BuildMechanism(factory, target.name, road, nativeLevels, halfDelta, material);
+        if (moving == null) return null; // The owned graph factory already records the material failure.
         var mechanismMs = clock.ElapsedMilliseconds - samplingMs;
         AssembleBridge(target, factory, roots, content, halfDelta, road, moving);
         // These fields are measured style data, not runtime reads from the original
@@ -82,7 +87,7 @@ internal abstract class MovableBridgeGeneratorBase<TSample> : BridgeGeneratorBas
         Mod.Log.Info($"{target.name}: {StyleId} generation samplingMs={samplingMs}; mechanismMs={mechanismMs}; " +
             $"supports/objects/networkMs={clock.ElapsedMilliseconds - samplingMs - mechanismMs}; totalMs={clock.ElapsedMilliseconds}.");
         // Transfer material ownership only after the complete native graph exists.
-        material.Keep();
+        if (!material.TryKeep()) return null;
         return variant;
     }
 }

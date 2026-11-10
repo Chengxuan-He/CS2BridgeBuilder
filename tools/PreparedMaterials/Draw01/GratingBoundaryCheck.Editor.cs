@@ -34,7 +34,7 @@ public static class Draw01GratingBoundaryCheck
                 byte[] bytes=File.ReadAllBytes(channel.path);
                 int size=(int)typeof(PrepareRepeatUnits).GetMethod("NativeRawSize",BindingFlags.NonPublic|BindingFlags.Static).Invoke(null,new object[]{bytes});
                 using var stream=new MemoryStream(bytes);
-                var texture=BridgeBuilder.Bridges.MovableTextureSource.Read(stream,b=>PreparePaint.DecodeRaw(b,size));
+                var texture=(BridgeBuilder.Bridges.MovableTextureSource.TryRead(stream,b=>PreparePaint.DecodeRaw(b,size),out var parsedTexture1,out var textureReadError1)?parsedTexture1:throw new System.IO.InvalidDataException(textureReadError1));
                 try
                 {
                     shader.SetTexture(kernel,"Original",texture);shader.SetTexture(kernel,"Prepared",texture);

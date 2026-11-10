@@ -74,7 +74,7 @@ internal sealed class BridgeRoadGeneration : IDisposable
 {
     [ThreadStatic] private static BridgeRoadGeneration? _current;
     private readonly BridgeRoadGeneration? _previous;
-    internal readonly BridgeBuilder.Runtime.BridgeCreationDependencies Dependencies = new(MovableLaneMidMips.RequiredCaches);
+    internal readonly BridgeBuilder.Runtime.BridgeCreationDependencies Dependencies = new(MovableLaneMidMips.TryRequiredCaches);
     internal static BridgeBuilder.Runtime.BridgeCreationDependencies? CurrentDependencies => _current?.Dependencies;
     private readonly Dictionary<NetGeometryPrefab, BridgeRoadContext> _sources = new();
     private readonly Dictionary<Entity, BridgeRoadContext> _entities = new();

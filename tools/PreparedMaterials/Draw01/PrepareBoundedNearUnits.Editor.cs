@@ -176,7 +176,7 @@ public static class Draw01PrepareBoundedNearUnits
                         else
                         {
                         using var stream=new MemoryStream(sourceBytes);
-                        var source=MovableTextureSource.Read(stream,b=>PreparePaint.DecodeRaw(b,NativeRawSize(sourceBytes)));
+                        var source=(MovableTextureSource.TryRead(stream,b=>PreparePaint.DecodeRaw(b,NativeRawSize(sourceBytes)),out var parsedTexture1,out var textureReadError1)?parsedTexture1:throw new System.IO.InvalidDataException(textureReadError1));
                         try
                         {
                             int complete=1+(int)Math.Floor(Math.Log(Math.Max(source.width,source.height),2));

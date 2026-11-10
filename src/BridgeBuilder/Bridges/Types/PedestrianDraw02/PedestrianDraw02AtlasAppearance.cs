@@ -23,8 +23,8 @@ internal static class PedestrianDraw02AtlasAppearance
             BridgePreparedMaterials.RepeatUnit("PedestrianDraw02", "3bd3b389ccd3e506b219788ef22876c161e2d15582578ad50965312f2a99731d"),
             roadToObject, halfWidthDelta);
 
-    internal static MovableRoadAppearance.Level Prepared(SurfaceAsset native, SurfaceAsset rightUnit,
-        SurfaceAsset leftUnit, Pose roadToObject, float halfWidthDelta)
+    internal static MovableRoadAppearance.Level Prepared(SurfaceAsset native, MovableExistingRoadSurface.SurfaceResult rightUnit,
+        MovableExistingRoadSurface.SurfaceResult leftUnit, Pose roadToObject, float halfWidthDelta)
     {
         var integers = Data.I32;
         var values = Data.F32;

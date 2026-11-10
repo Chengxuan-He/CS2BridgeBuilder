@@ -15,30 +15,45 @@ namespace BridgeBuilder.Bridges;
 // use one model per Surface; split only the existing submesh index streams.
 internal static class MovableNativeRoadOriginal
 {
-    internal static void Append(string name, RenderPrefab source,
-        List<ModelImporter.Model> owned, List<ModelImporter.Model> batch, List<SurfaceAsset> surfaces)
+    internal static bool TryAppend(string name,RenderPrefab source,List<ModelImporter.Model> owned,
+        List<ModelImporter.Model> batch,List<SurfaceAsset> surfaces,out string? error)
     {
-        Mesh[]? meshes = null;
+        error=null;Mesh[]? meshes=null;string? failure=null;bool complete=false;
+        int ownedStart=owned.Count,batchStart=batch.Count,surfaceStart=surfaces.Count;
         try
         {
-            meshes = PrivateGeometryReader.Read(source);
-            int slot = 0;
-            foreach (var mesh in meshes)
-                for (int submesh = 0; submesh < mesh.subMeshCount; submesh++)
-                {
-                    var surface = source.GetSurfaceAsset(slot++);
-                    if (surface == null) throw new InvalidOperationException("Original native road has a missing Surface.");
-                    var model = Copy(name + " Original " + (slot - 1), mesh, submesh);
-                    owned.Add(model); batch.Add(model); surfaces.Add(surface);
-                }
-            if (slot == 0 || source.surfaceAssets == null || slot != source.surfaceAssets.Count())
-                throw new InvalidOperationException("Original native road has inconsistent material slots.");
+            meshes=PrivateGeometryReader.Read(source);int slot=0;
+            foreach(var mesh in meshes)
+            {
+            if(failure!=null)break;
+            for(int submesh=0;submesh<mesh.subMeshCount;submesh++)
+            {
+                var surface=source.GetSurfaceAsset(slot++);
+                if(surface==null){failure="Original native road has a missing Surface.";break;}
+                if(!TryCopy(name+" Original "+(slot-1),mesh,submesh,out var model,out failure))break;
+                owned.Add(model);batch.Add(model);surfaces.Add(surface);
+            }
+            }
+            if(failure==null && (slot==0 || source.surfaceAssets==null || slot!=source.surfaceAssets.Count()))failure="Original native road has inconsistent material slots.";
+            complete=failure==null;
         }
-        finally { PrivateGeometryReader.Release(meshes); }
+        catch(Exception exception){failure="Original native road assembly: "+exception.Message;}
+        finally
+        {
+            try{PrivateGeometryReader.Release(meshes);}catch(Exception exception){complete=false;failure=(failure??"Original native road cleanup failed")+"; source mesh release: "+exception.Message;}
+            if(!complete)
+            {
+                for(int i=owned.Count-1;i>=ownedStart;i--)try{owned[i].Dispose();}catch(Exception exception){failure+="; model cleanup: "+exception.Message;}
+                owned.RemoveRange(ownedStart,owned.Count-ownedStart);batch.RemoveRange(batchStart,batch.Count-batchStart);surfaces.RemoveRange(surfaceStart,surfaces.Count-surfaceStart);
+            }
+            error=failure;
+        }
+        return complete;
     }
 
-    internal static ModelImporter.Model Copy(string name, Mesh source, int submesh)
+    internal static bool TryCopy(string name,Mesh source,int submesh,out ModelImporter.Model result,out string? error)
     {
+        result=null!;error=null;string? failure=null;
         var attributes = new List<ModelImporter.Model.VertexData>();
         NativeArray<int> indices = default;
         bool transferred = false;
@@ -48,7 +63,7 @@ internal static class MovableNativeRoadOriginal
             foreach (var attribute in source.GetVertexAttributes())
             {
                 int size = Size(attribute.format) * attribute.dimension;
-                if (size == 0) throw new InvalidOperationException("Unsupported original native attribute format.");
+                if(size==0){failure="Unsupported original native attribute format.";return false;}
                 int stride = source.GetVertexBufferStride(attribute.stream);
                 int offset = source.GetVertexAttributeOffset(attribute.attribute);
                 var raw = read[0].GetVertexData<byte>(attribute.stream);
@@ -65,15 +80,17 @@ internal static class MovableNativeRoadOriginal
             var model = new ModelImporter.Model(name, Matrix4x4.identity, source.vertexCount, indices,
                 attributes.ToArray(), new[] { descriptor }, -1, Array.Empty<ModelImporter.Model.BoneInfo>());
             transferred = true;
-            return model;
+            result=model;return true;
         }
+        catch(Exception exception){failure="Original native attribute copy: "+exception.Message;return false;}
         finally
         {
             if (!transferred)
             {
-                if (indices.IsCreated) indices.Dispose();
-                foreach (var attribute in attributes) attribute.Dispose();
+                if(indices.IsCreated)try{indices.Dispose();}catch(Exception exception){failure+="; index cleanup: "+exception.Message;}
+                foreach(var attribute in attributes)try{attribute.Dispose();}catch(Exception exception){failure+="; attribute cleanup: "+exception.Message;}
             }
+            error=failure;
         }
     }
 

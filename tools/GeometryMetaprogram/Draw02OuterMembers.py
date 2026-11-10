@@ -1,6 +1,6 @@
 import numpy as np,json,struct
 from pathlib import Path
-R=Path('D:/CS2BridgeBuilder');O=R/'artifacts/material-remap/Draw02/closure53'
+R=Path('E:/CS2BridgeBuilder');O=R/'artifacts/material-remap/Draw02/closure53'
 for lod in range(3):
  d=np.load(R/f'artifacts/layer-decoupling/Draw02/outputs/native-repeat-mechanism/lod{lod}-native.npz');v=d['mesh0_positions'];f=d['mesh0_indices'].reshape(-1,3);p=v[f];lo=p.min(1);hi=p.max(1);bones=d['mesh0_bones'].reshape(-1);print('bones',lod,np.unique(bones))
  lateral=((lo[:,0]>=9.4999)&(hi[:,0]<=10.0001))|((lo[:,0]>=-10.0001)&(hi[:,0]<=-9.4999));motion=np.all(bones[f]!=0,axis=1);ids=np.flatnonzero(lateral&motion)

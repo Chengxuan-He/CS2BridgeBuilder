@@ -42,8 +42,11 @@ internal sealed partial class TowerFactory
             section.m_Pieces=expanded.ToArray();_expandedMovableSections.Add(section);
         }
     }
-    internal MovableRoadMaterial CreateMovableRoadMaterial(Colossal.IO.AssetDatabase.SurfaceAsset source)
-        => new(_bridgeName, _styleId ?? throw new InvalidOperationException("Movable material requires a bridge style."), source, _previewGeometry);
+    internal bool TryCreateMovableRoadMaterial(Colossal.IO.AssetDatabase.SurfaceAsset source, out MovableRoadMaterial material)
+    {
+        if (MovableRoadMaterial.TryCreate(_bridgeName, _styleId ?? string.Empty, source, _previewGeometry, out material, out var error)) return true;
+        Mod.Log.Error(error); return false;
+    }
 
     // Lighting conversion writes native root-owned effects. Bind only AFTER the
     // final mechanism exists, so these effects are not left on a staging object.

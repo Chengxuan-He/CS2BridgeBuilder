@@ -24,7 +24,7 @@ foreach(var sidecar in files.Where(p=>p.EndsWith(".cid",StringComparison.Ordinal
 var roots=new List<object>();var dependencies=new Dictionary<string,string[]>();var reached=new HashSet<string>();
 foreach(var pair in payloads.Where(p=>p.Value.EndsWith(".Surface",StringComparison.Ordinal)))
 {
-    var refs=BridgeSurfaceReferences.Read(File.ReadAllBytes(pair.Value),(template,property)=>templates[template].GetProperty("stacks").EnumerateArray().Any(s=>s.EnumerateArray().Any(p=>p.GetString()==property)));
+    var refs=(BridgeSurfaceReferences.TryRead(File.ReadAllBytes(pair.Value),(template,property)=>templates[template].GetProperty("stacks").EnumerateArray().Any(s=>s.EnumerateArray().Any(p=>p.GetString()==property)),out var surfaceRefs1,out var surfaceRefsError1)?surfaceRefs1:throw new System.IO.InvalidDataException(surfaceRefsError1));
     foreach(var cid in refs)if(!payloads.ContainsKey(cid)&&!builtins.Contains(cid))throw new Exception("Unresolved original/native dependency "+cid);
     dependencies[pair.Key]=refs;
     roots.Add(new {relativePath=Path.GetRelativePath(folder,pair.Value).Replace('\\','/'),reason=pair.Value.Contains(Path.DirectorySeparatorChar+"Lanes"+Path.DirectorySeparatorChar)?"Exact native curve-to-object descriptor conversion reachable from selected track sources":"Native object descriptor required by common bridge generation",sourceKey=pair.Value.Contains(Path.DirectorySeparatorChar+"Lanes"+Path.DirectorySeparatorChar)?Path.GetFileName(Path.GetDirectoryName(pair.Value)):null});

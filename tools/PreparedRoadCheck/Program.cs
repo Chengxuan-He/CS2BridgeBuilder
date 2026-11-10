@@ -23,7 +23,7 @@ foreach (var folder in Directory.GetDirectories(Path.GetFullPath(args[0])))
         }
         var capture = preview ? new PreviewGeometry() : null;
         var source = Source(); var owned = new List<AssetData>(); int before = Database.Created;
-        var result = MovableRoadSurface.Create("test-owner", style, source, capture, owned, out var uv, out var asphalt);
+        Require(MovableRoadSurface.TryCreate("test-owner", style, source, capture, owned, out var result, out var uv, out var asphalt, out var error), "Source road result: " + error);
         Require(ReferenceEquals(result, prepared) && owned.Count == 0 && Database.Created == before, "Prepared road creates no material or texture");
         Require(uv.Equals(scale ?? .125f) && ReferenceEquals(asphalt, source.textures["_WorldspaceAlbedo"]), "Original density and source texture preserved");
         Require(source.Leases == 0 && prepared.Leases == 0, "Balanced source lease; catalogue lease untouched");
@@ -31,7 +31,7 @@ foreach (var folder in Directory.GetDirectories(Path.GetFullPath(args[0])))
         {
             var changed = Source(); changed.textures[property] = new TextureAsset { id = Guid.NewGuid().ToString("N") };
             var privateAssets = new List<AssetData>();
-            var different = MovableRoadSurface.Create("test-owner", style, changed, capture, privateAssets, out _, out _);
+            Require(MovableRoadSurface.TryCreate("test-owner", style, changed, capture, privateAssets, out var different, out _, out _, out error), "Changed road result: " + error);
             Require(privateAssets.Count == 1 && ReferenceEquals(privateAssets[0], different) && different.Saves == 1, "Different source texture retains private descriptor");
             Require(ReferenceEquals(different.textures["_ControlMask"], prepared.textures["_ControlMask"]), "Prepared control is shared, never owned");
             Require(different.textures.Values.Any(t => t.id == changed.textures[property].id) && changed.Leases == 0, "Changed texture reference retained");
@@ -39,8 +39,7 @@ foreach (var folder in Directory.GetDirectories(Path.GetFullPath(args[0])))
         foreach (float bad in new[] { float.NaN, float.PositiveInfinity })
         {
             var invalid = Source(); invalid.floats["_WorldspaceUVScale"] = bad; int reads = BridgePreparedMaterials.Reads;
-            try { MovableRoadSurface.Create("test-owner", style, invalid, capture, new(), out _, out _); throw new Exception("Invalid density accepted"); }
-            catch (InvalidOperationException) { }
+            Require(!MovableRoadSurface.TryCreate("test-owner", style, invalid, capture, new(), out var rejected, out _, out _, out error) && rejected == null && error != null && error.Contains("owner=test-owner") && error.Contains("style="+style), "Diagnosed result: Invalid density accepted");
             Require(invalid.Leases == 0 && BridgePreparedMaterials.Reads == reads, "Reject invalid density before catalogue access, release source lease");
         }
         foreach (bool missing in new[] { false, true })
@@ -48,9 +47,17 @@ foreach (var folder in Directory.GetDirectories(Path.GetFullPath(args[0])))
             var invalid = Source(); int reads = BridgePreparedMaterials.Reads;
             if (missing) invalid.textures.Remove("_WorldspaceNormalMap");
             else invalid.textures["_WorldspaceNormalMap"].isDummy = true;
-            try { MovableRoadSurface.Create("test-owner", style, invalid, capture, new(), out _, out _); throw new Exception("Missing texture accepted"); }
-            catch (InvalidOperationException) { }
+            Require(!MovableRoadSurface.TryCreate("test-owner", style, invalid, capture, new(), out var rejected, out _, out _, out error) && rejected == null && error != null && error.Contains("owner=test-owner") && error.Contains("style="+style), "Diagnosed result: Missing texture accepted");
             Require(invalid.Leases == 0 && BridgePreparedMaterials.Reads == reads, "Missing/dummy texture fails before binding and releases lease");
+        }
+        foreach(var fault in new[]{"load","save-false","save-throw","unload"}) {
+            var invalid=Source(); invalid.textures["_WorldspaceAlbedo"]=new TextureAsset {id=Guid.NewGuid().ToString("N")};
+            var partial=new List<AssetData>(); SurfaceAsset.Fault=fault;
+            try {
+                Require(!MovableRoadSurface.TryCreate("test-owner",style,invalid,capture,partial,out var failed,out var failedScale,out var failedTexture,out error)
+                    && failed==null && failedTexture==null && failedScale==0 && error!=null,"Native fault must not expose partial success: "+fault);
+                Require(invalid.Leases==0 && partial.Cast<SurfaceAsset>().All(x=>x.Leases==0),"Native fault must balance source/result leases: "+fault);
+            } finally {SurfaceAsset.Fault="";}
         }
         cases++;
     }

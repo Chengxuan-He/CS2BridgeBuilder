@@ -25,7 +25,7 @@ internal static class Draw01ObjectAssembly
         var imported = Path.Combine(Application.persistentDataPath, "ImportedData");
         foreach (var item in authored)
         {
-            if (item.m_Object == null || BridgeAssetInfo.IsOtherBridgePrefab(item.m_Object.asset?.path, owner, imported))
+            if (item.m_Object == null)
                 throw new InvalidOperationException("Draw01 requires its original structural light and rooftop attachment sources.");
             // Both recorded control buildings are on positive X (Draw01ControlBuildingData).
             // Their six lights and two vents follow that same rigid displacement.
@@ -42,7 +42,7 @@ internal static class Draw01ObjectAssembly
             target.GetComponent<StandingObject>().m_LegSize.x += halfWidthDelta * Numeric_Types_Draw01_Draw01ObjectAssembly_cs.Values.F32[0];
         });
         factory.AttachMovableRoadObjects(result, roadObjects.Placements, road.RoadToObject, attachmentPartitions);
-        factory.AttachMovablePaint(result, road.Road.LaneGeometry.Decals, road.RoadToObject, Draw01RoadPartitions.Carriageway, MovableRoadGeometry.InFrame(road.Road.Triangles, road.RoadToObject));
+        if(!factory.TryAttachMovablePaint(result, road.Road.LaneGeometry.Decals, road.RoadToObject, Draw01RoadPartitions.Carriageway, MovableRoadGeometry.InFrame(road.Road.Triangles, road.RoadToObject),out _))return null!;
         return result;
     }
 }

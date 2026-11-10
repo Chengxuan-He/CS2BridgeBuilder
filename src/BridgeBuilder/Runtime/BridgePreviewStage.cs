@@ -33,7 +33,9 @@ internal sealed class BridgePreviewStage : IDisposable
         // Isolate through the preview scene and rendering layer.
         // Never toggle lights per camera: HDRP collects multiple
         // cameras before executing their render requests and shadow preparation.
-        _root.transform.position = new Vector3(0f, -100000f, 0f);
+        // Avoid 0.0078125 m float spacing in absolute-world calculations
+        // beside 0.001 m decal clearance. Camera-relative depth is separate.
+        _root.transform.position = new Vector3(0f, -1000f, 0f);
         SceneManager.MoveGameObjectToScene(_root, _scene);
         SceneManager.MoveGameObjectToScene(camera.gameObject, _scene);
         camera.scene = _scene;

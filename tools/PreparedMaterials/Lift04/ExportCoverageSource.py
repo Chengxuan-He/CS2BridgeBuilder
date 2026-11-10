@@ -1,7 +1,7 @@
 """Export real Lift04 native mesh bytes for the isolated coverage probe."""
 import ctypes as c,struct,zipfile,json,hashlib
 from pathlib import Path
-R=Path('D:/CS2BridgeBuilder');O=R/'artifacts/material-remap/Lift04/coverage54';O.mkdir(exist_ok=True)
+R=Path('E:/CS2BridgeBuilder');O=R/'artifacts/material-remap/Lift04/coverage54';O.mkdir(exist_ok=True)
 G=Path('D:/Program Files (x86)/Steam/steamapps/common/Cities Skylines II/Cities2_Data')
 ns={'__name__':'fixture'};exec((R/'tools/GeometryMetaprogram/UvDensityAudit.py').read_text(),ns);dll=ns['NativeGeometry'](G/'Plugins/x86_64/PipelinePlugin.dll').dll
 wanted=['37c9d971785164e3ffad27e43316fb1e','cfacdca3e966b81c975f0c598dce68ed','02e211c2a51037ea43d6727acdd28922'];reports=[]

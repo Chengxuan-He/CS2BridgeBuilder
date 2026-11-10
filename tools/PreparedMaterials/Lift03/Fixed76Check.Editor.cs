@@ -2,7 +2,7 @@ using System; using System.Linq; using System.Collections.Generic; using UnityEn
 public static class Lift03Fixed76Check {
  [System.Runtime.InteropServices.DllImport("kernel32",CharSet=System.Runtime.InteropServices.CharSet.Unicode,SetLastError=true)]static extern IntPtr LoadLibraryW(string path);
  public static void Run(){try{
- string root="D:/CS2BridgeBuilder",candidate=Environment.GetEnvironmentVariable("LIFT03_CANDIDATE_PATH");
+ string root="E:/CS2BridgeBuilder",candidate=Environment.GetEnvironmentVariable("LIFT03_CANDIDATE_PATH");
  const BindingFlags F=BindingFlags.Public|BindingFlags.NonPublic|BindingFlags.Static|BindingFlags.Instance;
  string managed="D:/Program Files (x86)/Steam/steamapps/common/Cities Skylines II/Cities2_Data/Managed";
  AppDomain.CurrentDomain.AssemblyResolve+=(_,e)=>{var n=new AssemblyName(e.Name).Name+".dll";var p=Path.Combine(candidate,n);if(!File.Exists(p))p=Path.Combine(managed,n);return File.Exists(p)?Assembly.LoadFrom(p):null;};
@@ -37,7 +37,7 @@ public static class Lift03Fixed76Check {
     var native=Assembly.LoadFrom(Path.Combine(managed,"Colossal.IO.AssetDatabase.dll"));var surfaceType=native.GetType("Colossal.IO.AssetDatabase.SurfaceAsset",true);var identifier=native.GetType("Colossal.IO.AssetDatabase.Identifier",true);var guidType=identifier.GetField("guid").FieldType;
     var cid=guidType.GetMethod("Parse",new[]{typeof(string)}).Invoke(null,new object[]{sourceMesh==1?"cecb54030a3a20699d4616aa7f38a762":lod==2?"5402741b305d5f85e66a54863f585b84":"d5708265307c0c422270f918fb8ca8e8"});var surface=Activator.CreateInstance(surfaceType,true);surfaceType.BaseType.GetField("m_Id",F).SetValue(surface,Activator.CreateInstance(identifier,new[]{cid}));
     var tiles=Activator.CreateInstance(asm.GetType("BridgeBuilder.Bridges.MovableStructureTiles",true),F,null,new object[]{"Lift03"},null);var listType=typeof(List<>).MakeGenericType(model.GetType());var owned=(System.Collections.IList)Activator.CreateInstance(listType);var models=(System.Collections.IList)Activator.CreateInstance(listType);var surfaces=(System.Collections.IList)Activator.CreateInstance(typeof(List<>).MakeGenericType(surfaceType));
-    asm.GetType("BridgeBuilder.Bridges.MovableStructureRetile",true).GetMethod("Append",F).Invoke(null,new object[]{"Restored outer/walk structure","LiftBridge03"+(lod==0?"":"_LOD"+lod)+" Mesh",sourceMesh,plan,model,surface,tiles,owned,models,surfaces});
+    var retileArgs=new object[]{"Restored outer/walk structure","LiftBridge03"+(lod==0?"":"_LOD"+lod)+" Mesh",sourceMesh,plan,model,surface,tiles,owned,models,surfaces,null};if(!(bool)asm.GetType("BridgeBuilder.Bridges.MovableStructureRetile",true).GetMethod("TryAppend",F).Invoke(null,retileArgs))throw new Exception((string)retileArgs[retileArgs.Length-1]);
     int total=0;foreach(var batch in models){var method=batch.GetType().GetMethods(F).Where(m=>m.Name=="ToUnityMesh").OrderBy(m=>m.GetParameters().Length).First();var mesh=(Mesh)method.Invoke(batch,method.GetParameters().Select(p=>p.HasDefaultValue?p.DefaultValue:Type.Missing).ToArray());total+=mesh.GetIndices(0).Length;UnityEngine.Object.DestroyImmediate(mesh);} if(total!=expected.Count)throw new Exception("Retile lost or added triangle indices."); File.AppendAllText(Path.Combine(outputDir,"retile-counts.txt"),"lod="+lod+" mesh="+sourceMesh+" slots="+models.Count+" indices="+total+"\n");foreach(var value in owned)((IDisposable)value).Dispose();
     retileCases++;
    }

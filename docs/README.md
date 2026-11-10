@@ -25,13 +25,18 @@ replace them. Documentation updates do not establish runtime implementation or g
 | Native ownership, snapshots and cold loading | [Persistence policy](agent-contract/Bridge-Asset-Persistence.md) |
 | Other specialist contracts | [Contract index](agent-contract/README.md) |
 
-The movable material scheme is original non-road reuse plus composition/precomposition (offline material baking outside the game) only
-for prototype-supported road appearance types. Other road types use original materials.
+The movable material scheme uses original non-road reuse and approved composition for
+prototype-supported running surfaces. Other sources pass through the common conversion
+and compatibility workflow; output is not necessarily equivalent to the original shader.
+[Complete multilayer adaptation remains unavailable](agent-contract/MATERIAL_GENERATION_CONTRACT.md#current-multilayer-compatibility-limit)
+under the current game's loading interfaces and mandatory mod-independent persistence.
+Selected-road decal artwork and UVs are preserved through native object materials;
+hashed-alpha coverage is not exact native DBuffer blending.
 Asphalt, sidewalks and wheel-track/rut effects are classified separately per prototype/domain.
 The original source mapping rule applies to non-movable bridges too. The package limit is 55,000,000 bytes. Complete owner material bytes are measured separately
 for information, without a per-owner ceiling.
 
-The native96 local build's official SDK ZIP measured 77,080,830 bytes. It exceeded the
+The recorded native139 local build's official SDK ZIP measured 77,158,177 bytes. It exceeded the
 55,000,000-byte publication limit and was deployed locally only. The owner-size measurement
 and the complete ZIP measurement serve different purposes.
 

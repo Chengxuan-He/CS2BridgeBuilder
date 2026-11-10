@@ -47,7 +47,7 @@ internal static class SavedMaterialReplay
                 recorded.Add(cid,a);AssetDatabase.global.Assets.Add(a);expected.Add(relative,file);
                 if(a.Metadata.extension.Equals(".MidMips",StringComparison.OrdinalIgnoreCase))
                 {
-                    foreach(string surface in BridgeMidMipReferences.Read(File.ReadAllBytes(file)))
+                    foreach(string surface in (BridgeMidMipReferences.TryRead(File.ReadAllBytes(file),out var midResult1,out var midError1)?midResult1:throw new System.IO.InvalidDataException(midError1)))
                     {
                         if(!ownedEdges.TryGetValue(surface,out var list))ownedEdges.Add(surface,list=new());
                         list.Add(a);
@@ -90,7 +90,7 @@ internal static class SavedMaterialReplay
             BridgePreparedMaterials.Assets.Clear(); BridgePreparedMaterials.MidMips.Clear();
             AssetDatabase.global.Assets.RemoveAll(a => a.Metadata.extension == ".MidMips");
             var restarted = new BridgeCreationDependencies(_ => throw new Exception("Restart tried reverse/native discovery despite recorded edges"));
-            restarted.ReadRelations(owner);
+            FixturePersistence.Inspect(restarted,owner);
             if(!BridgeDependencyPersistence.Save(owner,roots,restarted,out _,out error,out int restartWrites) || restartWrites!=0)
                 throw new Exception("Self-check restart: "+owner+": "+error);
             if(before!=AssetDatabase.global.Scans || !BridgeBuilder.Mod.Log.LastSave.Contains("globalIndexBuilds=0, midMipIndexBuilds=0"))

@@ -117,9 +117,11 @@ public partial class BridgePublicationSystem : GameSystemBase
         {
             completed(ready);
         }
-        catch (Exception)
+        catch (Exception exception)
         {
-            // Generation diagnostics are silent; retain the external API exception boundary.
+            report.Failed("Bridge publication completion", exception);
+            BridgeBuilder.Runtime.BridgeRuntimeRequests.Complete("CreateFailed");
+            return;
         }
         if (ready) RefreshMenus(report);
     }

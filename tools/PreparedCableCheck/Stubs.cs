@@ -29,11 +29,12 @@ namespace Colossal.IO.AssetDatabase
         internal void UpdateColors(Dictionary<string, Color> data) => colors = data;
         internal void UpdateFloats(Dictionary<string, float> data) => floats = data;
         internal void UpdateKeywords(HashSet<string> data) => keywords = data;
-        internal bool Save(int mipBias, bool force, bool saveTextures, bool vt) { SaveCount++; return true; }
+        internal bool Save(int mipBias, bool force, bool saveTextures, bool vt) { SaveCount++; if(Database.ThrowSave)throw new IOException("injected persistence failure"); return !Database.FailSave; }
     }
     internal sealed class Database
     {
         internal static int Created;
+        internal static bool FailSave, ThrowSave;
         internal SurfaceAsset AddAsset(string path, Colossal.AssetPipeline.Surface data)
         { Created++; return new SurfaceAsset { name = data.name, Leases = 1 }; }
     }
@@ -62,9 +63,16 @@ namespace BridgeBuilder.Runtime
     using Colossal.IO.AssetDatabase;
     internal static class BridgePreparedMaterials
     {
+        internal readonly struct Result {
+            internal readonly SurfaceAsset? Value;internal readonly string? Error;
+            internal bool Success=>Error==null;
+            internal Result(SurfaceAsset? value,string? error=null){Value=value;Error=error;}
+            public static implicit operator Result(SurfaceAsset? value)=>new Result(value);
+        }
+
         internal static string Style = "";
         internal static SurfaceAsset Prepared = null!;
-        internal static SurfaceAsset Cable(string style)
+        internal static Result Cable(string style)
         { if (style != Style) throw new Exception("Wrong style catalogue."); return Prepared; }
     }
     internal static class BridgePrefabPersistence { internal static string ResourcePath(string name, string folder) => folder + "/" + name; }

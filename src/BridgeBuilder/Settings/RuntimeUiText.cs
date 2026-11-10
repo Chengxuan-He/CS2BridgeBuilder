@@ -157,25 +157,9 @@ internal static class RuntimeUiText
         },
         ["RemoveAllBridgesDone"] = new[]
         {
-            "Removal of all Bridge Builder bridges is complete.",
-            "全部 Bridge Builder 桥梁均已移除。",
-            "全部 Bridge Builder 橋梁均已移除。",
-            "Die Entfernung aller Bridge-Builder-Brücken ist abgeschlossen.",
-            "Se ha completado la eliminación de todos los puentes de Bridge Builder.",
-            "La suppression de tous les ponts Bridge Builder est terminée.",
-            "La rimozione di tutti i ponti di Bridge Builder è stata completata.",
-            "Bridge Builder のすべての橋の削除が完了しました。",
-            "모든 Bridge Builder 교량의 제거가 완료되었습니다.",
-            "Usuwanie wszystkich mostów Bridge Builder zostało zakończone.",
-            "A remoção de todas as pontes do Bridge Builder foi concluída.",
-            "Удаление всех мостов Bridge Builder завершено."
-        },
-        ["RemoveAllBridgesEmpty"] = new[]
-        {
-            "No locally saved Bridge Builder bridge assets were found.", "未找到本地保存的 Bridge Builder 桥梁资产。", "未找到本機儲存的 Bridge Builder 橋梁資產。",
-            "Keine lokal gespeicherten Bridge-Builder-Brücken gefunden.", "No se encontraron puentes de Bridge Builder guardados localmente.", "Aucun pont Bridge Builder enregistré localement n’a été trouvé.",
-            "Nessun ponte di Bridge Builder salvato localmente trovato.", "ローカルに保存された Bridge Builder の橋アセットはありません。", "로컬에 저장된 Bridge Builder 교량 에셋이 없습니다.",
-            "Nie znaleziono lokalnie zapisanych mostów Bridge Builder.", "Nenhuma ponte do Bridge Builder salva localmente foi encontrada.", "Локально сохранённые мосты Bridge Builder не найдены."
+            "Cleanup successful", "清理成功", "清理成功", "Bereinigung erfolgreich",
+            "Limpieza completada", "Nettoyage réussi", "Pulizia completata", "クリーンアップ完了",
+            "정리 완료", "Czyszczenie zakończone", "Limpeza concluída", "Очистка завершена"
         },
         ["RemoveAllBridgesFailed"] = new[]
         {

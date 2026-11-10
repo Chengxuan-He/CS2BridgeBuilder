@@ -20,16 +20,13 @@ internal abstract class MovableSourceRenders : IDisposable
     protected T Create<T>(string name, string geometryId, string[] surfaceIds,
         Bounds3 bounds, int vertices, int indices, int meshes, float area) where T : RenderPrefab
     {
-        // These recorded inputs belong to the built-in DLC. Do not substitute an
-        // ImportedData dependency carrying the same CID from another bridge.
-        if (!AssetDatabase.global.TryGetAsset(Colossal.Hash128.Parse(geometryId), out GeometryAsset geometry)
-            || !geometry.isBuiltin)
+        // Resolve the exact recorded resource identity, including valid local copies.
+        if (!AssetDatabase.global.TryGetAsset(Colossal.Hash128.Parse(geometryId), out GeometryAsset geometry))
             throw new InvalidOperationException("Recorded native geometry unavailable: " + geometryId);
         var surfaces = new SurfaceAsset[surfaceIds.Length];
         for (var i = 0; i < surfaces.Length; i++)
         {
-            if (!AssetDatabase.global.TryGetAsset(Colossal.Hash128.Parse(surfaceIds[i]), out SurfaceAsset surface)
-                || !surface.isBuiltin)
+            if (!AssetDatabase.global.TryGetAsset(Colossal.Hash128.Parse(surfaceIds[i]), out SurfaceAsset surface))
                 throw new InvalidOperationException("Recorded native surface unavailable: " + surfaceIds[i]);
             surfaces[i] = surface;
         }

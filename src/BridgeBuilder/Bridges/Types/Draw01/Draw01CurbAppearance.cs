@@ -7,8 +7,9 @@ namespace BridgeBuilder.Bridges;
 // Only the measured selected-road curb within a prototype sidewalk edge is supported.
 internal static class Draw01CurbAppearance
 {
-    internal static void Apply(MovableClosedRoad.Result road, Pose pose, ref MovableRoadGeometry.BoundTriangle[] faces, ref MovableExistingRoadSurface.Patch[] patches, ref MovableRoadAppearance.Type[] types)
+    internal static bool TryApply(MovableClosedRoad.Result road, Pose pose, ref MovableRoadGeometry.BoundTriangle[] faces, ref MovableExistingRoadSurface.Patch[] patches, ref MovableRoadAppearance.Type[] types,out string? error)
     {
+        error=null;
         var output = new List<MovableExistingRoadSurface.Patch>(patches);
         var support = new List<MovableRoadAppearance.Type>(types);
         var sources = new MovableRoadRoute.Source? [road.Surfaces.Length];
@@ -26,7 +27,12 @@ internal static class Draw01CurbAppearance
                 throw new InvalidOperationException("Draw01 curb has no section provenance.");
             if (section.name != "Sidewalk" && !section.name.StartsWith("Sidewalk ", StringComparison.Ordinal))
                 continue;
-            var source = (sources[triangle.Material] ??= MovableRoadRoute.Read(road.Surfaces[triangle.Material]));
+            if(!sources[triangle.Material].HasValue)
+            {
+                if(!MovableRoadRoute.TryRead(road.Surfaces[triangle.Material],out var read,out error))return false;
+                sources[triangle.Material]=read;
+            }
+            var source=sources[triangle.Material]!.Value;
             if (source.Receiver(triangle) != MovableRoadAppearance.Type.Curb)
                 continue;
             bool moving = part != Numeric_Types_Draw01_Draw01CurbAppearance_cs.Values.I32[5];
@@ -46,7 +52,7 @@ internal static class Draw01CurbAppearance
         }
 
         patches = output.ToArray();
-        types = support.ToArray();
+        types = support.ToArray();return true;
     }
 }
 

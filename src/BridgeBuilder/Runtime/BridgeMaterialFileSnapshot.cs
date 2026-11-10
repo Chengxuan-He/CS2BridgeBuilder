@@ -21,18 +21,29 @@ internal sealed class BridgeMaterialFileSnapshot : IDisposable
         { Lease = lease; Digest = digest; Bytes = bytes; }
     }
     private readonly Dictionary<string, Entry> _files = new(StringComparer.OrdinalIgnoreCase);
+    internal string? Error { get; private set; }
+    internal bool Cancelled { get; private set; }
     internal long BytesHashed { get; private set; }
     internal long ElapsedMilliseconds { get; private set; }
     internal int WorkerThreadId { get; private set; }
     internal int FileCount => _files.Count;
-    internal Entry Get(string path) => _files.TryGetValue(Path.GetFullPath(path), out var entry)
-        ? entry : throw new InvalidDataException("Material file was not in the request snapshot: " + path);
+    internal bool TryGet(string path,out Entry entry,out string? error)
+    {
+        entry=null!;error=Error;
+        if(error!=null)return false;
+        try
+        {
+            if(_files.TryGetValue(Path.GetFullPath(path),out var found)){entry=found;return true;}
+            error="Material file was not in the request snapshot: "+path;return false;
+        }
+        catch(Exception exception){error="Snapshot path lookup: "+exception.Message;return false;}
+    }
 
     internal static BridgeMaterialFileSnapshot Read(string root, string style, CancellationToken cancellation)
     {
-        if (string.IsNullOrEmpty(style) || style.Any(c => !char.IsLetterOrDigit(c)))
-            throw new ArgumentException("Prepared material requires a stable style ID.", nameof(style));
         var result = new BridgeMaterialFileSnapshot { WorkerThreadId = Thread.CurrentThread.ManagedThreadId };
+        if(string.IsNullOrEmpty(style)||style.Any(c=>!char.IsLetterOrDigit(c)))
+        {result.Error="Prepared material requires a stable style ID.";return result;}
         var clock = Stopwatch.StartNew();
         try
         {
@@ -50,12 +61,15 @@ internal sealed class BridgeMaterialFileSnapshot : IDisposable
                     if (string.Equals(Path.GetFileName(file), "SkinnedPaint.Surface", StringComparison.Ordinal)
                         && string.Equals(Path.GetFileName(Path.GetDirectoryName(file)), "Paint", StringComparison.Ordinal))
                     {
-                        var refs = BridgeSurfaceReferences.Read(result.Get(file).Bytes!, (_, _) => false);
+                        if(!result.TryGet(file,out var surfaceEntry,out var entryError)){result.Error=entryError;yield break;}
+                        if(!BridgeSurfaceReferences.TryRead(surfaceEntry.Bytes!,(_,_)=>false,out var refs,out var cause))
+                        {result.Error="Prepared snapshot: "+file+"; "+cause;yield break;}
                         foreach (var cid in refs.Where(BridgePreparedMaterialFiles.IsSharedPaint))
                             cachePaths.Add(BridgePreparedMaterialFiles.PaintPath(root, cid));
                     }
                     if (!file.EndsWith(".Surface.cid", StringComparison.OrdinalIgnoreCase)) continue;
-                    using var reader = new StreamReader(new MemoryStream(result.Get(file).Bytes!, false));
+                    if(!result.TryGet(file,out var cidEntry,out var cidError)){result.Error=cidError;yield break;}
+                    using var reader = new StreamReader(new MemoryStream(cidEntry.Bytes!, false));
                     string? cache = BridgePreparedMaterialFiles.CacheFor(reader.ReadToEnd().Trim());
                     if (cache != null) cachePaths.Add(BridgePreparedMaterialFiles.CachePath(root, cache));
                 }
@@ -69,6 +83,7 @@ internal sealed class BridgeMaterialFileSnapshot : IDisposable
             {
                 cancellation.ThrowIfCancellationRequested();
                 var lease = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read);
+                bool retained=false;
                 try
                 {
                     using var sha = SHA256.Create();
@@ -89,20 +104,24 @@ internal sealed class BridgeMaterialFileSnapshot : IDisposable
                         {
                             cancellation.ThrowIfCancellationRequested();
                             int read = lease.Read(bytes, offset, bytes.Length - offset);
-                            if (read == 0) throw new EndOfStreamException(path);
+                            if(read==0){result.Error="Truncated prepared material snapshot: "+path;return result;}
                             offset += read;
                         }
                     }
                     result._files.Add(Path.GetFullPath(path), new Entry(lease, BitConverter.ToString(sha.Hash!), bytes));
+                    retained=true;
                     result.BytesHashed += lease.Length;
                 }
-                catch { lease.Dispose(); throw; }
+                finally {if(!retained)lease.Dispose();}
             }
             cancellation.ThrowIfCancellationRequested();
+            if(result.Error!=null){result.Dispose();return result;}
             result.ElapsedMilliseconds = clock.ElapsedMilliseconds;
             return result;
         }
-        catch { result.Dispose(); throw; }
+        catch(OperationCanceledException){result.Cancelled=true;result.Error="Prepared material snapshot cancelled.";result.Dispose();return result;}
+        catch(Exception exception){result.Error="Prepared material snapshot read: "+exception.Message;return result;}
+        finally{if(result.Error!=null)result.Dispose();}
     }
 
     public void Dispose()

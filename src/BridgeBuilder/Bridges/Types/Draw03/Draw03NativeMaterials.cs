@@ -54,19 +54,26 @@ internal static class Draw03NativeMaterials
 
     // The caller supplies the style-scoped loader and owns its resource lifetime.
     // These descriptors retain source-atlas UVs and native texture-global settings.
-    internal static SurfaceAsset Resolve(SurfaceAsset original, Func<string, SurfaceAsset> load)
+    internal static MovableExistingRoadSurface.SurfaceResult Resolve(SurfaceAsset original, Func<string, MovableExistingRoadSurface.SurfaceResult> load)
     {
+        try
+        {
         var cid = ObjectDescriptor(original.id.guid.ToString());
         if (cid == null) return original;
         original.LoadHeader();
         var source33 = cid is "a6b3efae98e0fc2f3056ec517bb949cb" or "1b7d44bbf84bd6c880f2dde840b638f6";
         var wrongTemplate = source33 ? original.materialTemplateHash is not 33 : original.materialTemplateHash is not 17;
-        if (!original.isBuiltin || wrongTemplate || original.isVTMaterial)
-            throw new InvalidOperationException("Draw03 native network surface identity or template differs: " + original.id);
-        var converted = load(cid);
+        if (wrongTemplate || original.isVTMaterial)
+            return new MovableExistingRoadSurface.SurfaceResult(null,"Draw03 native network surface identity or template differs: " + original.id);
+        var loaded=load(cid);
+        if(!loaded.Success)return loaded;
+        var converted=loaded.Value;
+        if(converted==null)return new MovableExistingRoadSurface.SurfaceResult(null,"Required native object descriptor is absent.");
         converted.LoadHeader();
         if (converted.id.guid.ToString() != cid || converted.materialTemplateHash is not 0 || converted.isVTMaterial)
-            throw new InvalidOperationException("Draw03 native object descriptor differs: " + cid);
+            return new MovableExistingRoadSurface.SurfaceResult(null,"Draw03 native object descriptor differs: " + cid);
         return converted;
+            }
+        catch(Exception exception){return new MovableExistingRoadSurface.SurfaceResult(null,"Native prototype descriptor: "+exception.Message);}
     }
 }

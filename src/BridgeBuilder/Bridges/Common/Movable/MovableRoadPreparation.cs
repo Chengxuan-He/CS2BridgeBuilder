@@ -28,7 +28,7 @@ internal static class MovableRoadPreparation
     // sources. Null inherits appearanceForLod; physical partitions and lane bones are
     // never selected by this callback. Compose still checks correspondence per face.
 
-    internal static MovableRoadAssets.Level[] Prepare(MovableStraightSample sample,
+    internal static MovableRoadAssets.Level[]? Prepare(MovableStraightSample sample,
         IReadOnlyList<RenderPrefab> sources, float halfDelta, Matrix4x4 closedWorld,
         MovableRoadMaterial material, Partition carriageway, Partition sidewalk,
         Partition carriagewayAppearance, Partition sidewalkAppearance,
@@ -43,7 +43,7 @@ internal static class MovableRoadPreparation
 
     // A coordinated dual-network sample supplies a separate road frame and LOD
     // compiler for each deck. Never reuse the main deck's frame for the auxiliary.
-    internal static MovableRoadAssets.Level[] Prepare(MovableClosedRoad.Result road,
+    internal static MovableRoadAssets.Level[]? Prepare(MovableClosedRoad.Result road,
         Pose pose, Func<int, MovableClosedRoad.Result> compileLod,
         IReadOnlyList<RenderPrefab> sources, float halfDelta, Matrix4x4 closedWorld,
         MovableRoadMaterial material, Partition carriageway, Partition sidewalk,
@@ -54,6 +54,7 @@ internal static class MovableRoadPreparation
         Action<int, IReadOnlyList<MovableRoadAppearanceBinding>>? captureAppearance = null,
         Func<int, MovableRoadAppearance.Type, MovableRoadAppearance.Level?>? appearanceForReceiver = null)
     {
+        if(road.Error!=null){material.Fail("native-source",road.Error);return null;}
         var physicalByLod = new Dictionary<(int,int),Partition>[sources.Count];
         var lanePartitions = road.LaneVisuals.Select(lane =>
             lane.SourceLane.Has<PedestrianLane>() ? sidewalk : carriageway).ToArray();
@@ -66,7 +67,17 @@ internal static class MovableRoadPreparation
         for (var lod = 0; lod < sources.Count; lod++)
         {
             var appearanceLevel = appearanceForLod?.Invoke(lod);
+            if(appearanceLevel?.Error!=null){material.Fail("appearance-level",appearanceLevel.Error);return null;}
             var source = compileLod(lod);
+            if(source.Error!=null){material.Fail("native-source",source.Error);return null;}
+            if(source.Sidewalks.Error!=null){material.Fail("receiver-classification",source.Sidewalks.Error);return null;}
+            if(appearanceForReceiver!=null)foreach(var face in source.Triangles)
+            {
+                var surface=source.Surfaces[face.Material];
+                if(routeSources.ContainsKey(surface))continue;
+                if(!MovableRoadRoute.TryRead(surface,out var identity,out var error)){material.Fail("appearance-classification",error);return null;}
+                routeSources.Add(surface,identity);
+            }
             var physical = physicalByLod[lod] = source.Sidewalks.Partitions(carriageway, sidewalk);
             lanes[lod] = new MovableLaneGeometry.Result(source.LaneGeometry.Triangles.ToList(),
                 source.LaneGeometry.Surfaces.ToList(), new List<MovableLaneVisuals.Batch>());
@@ -78,8 +89,7 @@ internal static class MovableRoadPreparation
             {
                 if (appearanceForReceiver == null) return appearanceLevel;
                 var surface = source.Surfaces[triangle.Material];
-                if (!routeSources.TryGetValue(surface, out var identity))
-                    routeSources.Add(surface, identity = MovableRoadRoute.Read(surface));
+                var identity=routeSources[surface];
                 return appearanceForReceiver(lod, identity.Receiver(triangle)) ?? appearanceLevel;
             }
             var allAssigned = new List<MovableRoadGeometry.BoundTriangle>();
@@ -95,6 +105,7 @@ internal static class MovableRoadPreparation
             foreach (var family in families)
             {
                 var familyLevel = family.Level;
+                if(familyLevel?.Error!=null){material.Fail("appearance-family",familyLevel.Error);return null;}
                 var familyTriangles = family.Triangles;
                 var familyPatches = familyLevel?.Patches ?? patches;
                 var levelCarriageway = familyLevel?.Carriageway ?? carriagewayAppearance;
@@ -181,6 +192,7 @@ internal static class MovableRoadPreparation
         }
         var visible = MovableSurfaceAtlas.Compose(inputs, material,
             Array.Empty<MovableNativeDecals.Region>(), out var surfaces, captureAppearance);
+        if (visible == null) return null;
         var result = new MovableRoadAssets.Level[sources.Count];
         for (var lod = 0; lod < result.Length; lod++)
             result[lod] = new MovableRoadAssets.Level(sources[lod], visible[lod], surfaces[lod],

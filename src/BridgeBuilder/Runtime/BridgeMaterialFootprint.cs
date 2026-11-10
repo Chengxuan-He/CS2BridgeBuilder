@@ -33,8 +33,10 @@ internal sealed class BridgeMaterialFootprint
             string cid=pending.Pop();if(!visited.Add(cid))continue;
             if(!_nodes.TryGetValue(cid,out var node)){issues.Add("Unobserved dependency: "+cid);continue;}
             if(node.Builtin){builtins.Add(cid+"\t"+node.Extension);continue;}
-            string path=node.Owned?node.Path:BridgeDependencyCopies.Destination(gameRoot,owner,cid,
-                new BridgeDependencyCopies.Source{Extension=node.Extension,NativeFileName=node.NativeFileName});
+            string path=node.Path;
+            if(!node.Owned && !BridgeDependencyCopies.TryDestination(gameRoot,owner,cid,
+                new BridgeDependencyCopies.Source{Extension=node.Extension,NativeFileName=node.NativeFileName},out path,out var cause))
+            {issues.Add(cause!);continue;}
             if(string.IsNullOrEmpty(path)){issues.Add("Missing owned physical path: "+cid);continue;}
             path=Path.GetFullPath(path);
             if(!BridgeAssetInfo.MatchesOwner(path,owner)){issues.Add("Material outside current owner: "+cid);continue;}

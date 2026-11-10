@@ -4,6 +4,12 @@ These records retain the input, revision and limitations of each investigation. 
 
 ## Audits and measurements
 
+- [Documentation classification inventory](audits/Documentation-Classification.md): historical organization scope and canonical design locations.
+
+- [Dynamic persistent shader feasibility — 2026-11-08](audits/Dynamic-Persistent-Shader-Feasibility-20261108.md)
+
+- [Native object layered-material capabilities — 2026-11-08](audits/Native-Object-Layered-Material-Capabilities-20261108.md)
+
 - [Bridge file cleanup regression](audits/DISK_CLEANUP_AUDIT_2026-09-29.md)
 - [Bridge price correction — 2026-09-19](audits/Economy-No-Pricing-Audit-20260919.md)
 - [Lift bridge native surface candidates](audits/Lift-native-surface-candidates.md)

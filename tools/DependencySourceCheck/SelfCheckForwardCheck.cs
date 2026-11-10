@@ -5,84 +5,84 @@ internal static class SelfCheckForwardCheck
 {
     internal static void Run()
     {
-        string root=UnityEngine.Application.persistentDataPath, owner="b"+Guid.NewGuid(), other="b"+Guid.NewGuid();
-        string surfaceCid=new string('1',32), cacheCid=new string('2',32);
+        string root=UnityEngine.Application.persistentDataPath;
+        string[] owners={"b"+Guid.NewGuid(),"b"+Guid.NewGuid()};
+        string surfaceCid=new string('1',32),cacheCid=new string('2',32);
         var surface=new AssetData(surfaceCid,()=>new MemoryStream(MidMipSnapshotCheck.Surface()));
-        surface.Metadata.extension=".Surface"; surface.Metadata.packaged=true;
+        surface.Metadata.extension=".Surface";surface.Metadata.packaged=true;
         var cache=new MidMipCacheAsset(cacheCid,()=>new MemoryStream(MidMipSnapshotCheck.Cache(surfaceCid)));
-        cache.Metadata.extension=".MidMips";cache.Metadata.fileName="TS512_MB3";cache.Metadata.packaged=true;
+        cache.Metadata.extension=".MidMips";cache.Metadata.fileName="TS512_MB3";
         AssetDatabase.global.Assets.Clear();BridgePreparedMaterials.Assets.Clear();BridgePreparedMaterials.MidMips.Clear();
-        AssetDatabase.global.Assets.Add(surface); AssetDatabase.global.Assets.Add(cache);
-        AssetDatabase.global.ForbidEnumeration=true;
-        try
+        AssetDatabase.global.Assets.AddRange(new AssetData[]{surface,cache});
+        foreach(string owner in owners)
         {
-            // Existing owners without a ledger use only the selected native material's provenance.
-            int nativeQueries=0;
-            var old=new BridgeCreationDependencies(a=>{if(!ReferenceEquals(a,surface))throw new Exception("Unexpected native material");nativeQueries++;return new[]{cache};});
-            Check(BridgeDependencyPersistence.Save(owner,new[]{surfaceCid},old,out _,out var error,out _),"historical exact native provenance: "+error);
-            Check(nativeQueries==1,"native provenance queried only for required Surface");
-            string path=Path.Combine(BridgeDependencyCopies.Folder(root,owner),cacheCid,"TS512_MB3.MidMips");
-            string ledger=Path.Combine(root,"ImportedData",owner,"BridgeCacheEdges.txt");
-            string original=File.ReadAllText(ledger);
-            AssetDatabase.global.Assets.Remove(cache);
-            BridgeCreationDependencies Restart() { var x=new BridgeCreationDependencies(_=>throw new Exception("Unexpected discovery"));x.ReadRelations(owner);return x; }
-            Check(BridgeDependencyPersistence.Save(owner,new[]{surfaceCid},Restart(),out _,out error,out int writes)&&writes==0,"unregistered owned cache exact path after restart: "+error);
-            File.Delete(path+".cid");
-            Check(!BridgeDependencyPersistence.Save(owner,new[]{surfaceCid},Restart(),out _,out error,out _)&&error.Contains("Dependency unavailable"),"missing cache sidecar remains explicit failure");
-            AssetDatabase.global.Assets.Add(cache);
-            Check(BridgeDependencyPersistence.Save(owner,new[]{surfaceCid},Restart(),out _,out error,out writes)&&writes==1,"registered exact source repairs missing cache sidecar: "+error);
-            AssetDatabase.global.Assets.Remove(cache);
-            File.WriteAllText(path+".cid",new string('3',32));
-            Check(!BridgeDependencyPersistence.Save(owner,new[]{surfaceCid},Restart(),out _,out error,out _)&&error.Contains("sidecar mismatch"),"wrong local CID rejected");
-            File.WriteAllText(path+".cid",cacheCid);
-            File.WriteAllBytes(path,MidMipSnapshotCheck.Cache(new string('4',32)));
-            Check(!BridgeDependencyPersistence.Save(owner,new[]{surfaceCid},Restart(),out _,out error,out _)&&error.Contains("membership"),"cache without required Surface rejected");
-            File.WriteAllBytes(path,MidMipSnapshotCheck.Cache(surfaceCid));
-            foreach(string bad in new[]{original.Replace(owner,other),original.Replace("BridgeCacheEdges/1","BridgeCacheEdges/2"),original+"E\t"+surfaceCid+"\n"})
-            {
-                File.WriteAllText(ledger,bad);
-                try { Restart();throw new Exception("Invalid ledger accepted"); } catch(InvalidDataException) {}
-            }
-            File.WriteAllText(ledger,original);
-            string secondCid=new string('7',32);
-            var second=new AssetData(secondCid,()=>new MemoryStream(MidMipSnapshotCheck.Surface()));
-            second.Metadata.extension=".Surface";second.Metadata.packaged=true;AssetDatabase.global.Assets.Add(second);
-            File.WriteAllText(ledger,original+"E\t"+secondCid+"\t"+cacheCid+"\n");
-            Check(!BridgeDependencyPersistence.Save(owner,new[]{secondCid,surfaceCid},Restart(),out _,out error,out _)
-                &&error.Contains("membership"),"shared cache checked for Surface reached after cache visitation");
-            File.WriteAllText(ledger,original);AssetDatabase.global.Assets.Remove(second);
-            string unrelated=Path.Combine(root,"ImportedData","Unrelated","Deep",other,"poison.Prefab");
-            Directory.CreateDirectory(Path.GetDirectoryName(unrelated)!);File.WriteAllText(unrelated,"not a Prefab");
-            var scope=new BridgeInspectionScope(root,new[]{owner});
-            Check(scope.Paths(owner).Contains(path)&&!scope.Paths(owner).Contains(unrelated),"path discovery enters only named owner directories, no content/CID index");
-            Check(scope.Find(surfaceCid,owner)==null,"packaged source is not a local legacy clone target");
-            Check(BridgeBuilder.Mod.Log.LastSave.Contains("globalIndexBuilds=0, midMipIndexBuilds=0"),"self-check failure paths never build global indices");
-            var relocated=Restart();
-            string moved=Path.Combine(root,"ImportedData",owner,"Appearance","MidMips",cacheCid,"TS512_MB3.MidMips");
-            Directory.CreateDirectory(Path.GetDirectoryName(moved)!);File.Move(path,moved);File.Move(path+".cid",moved+".cid");
-            relocated.Relocate(BridgeFileAccess.Native(path.Replace('\\','/')),moved);
-            Check(BridgeDependencyPersistence.Save(owner,new[]{surfaceCid},relocated,out _,out error,out writes)&&writes==0,
-                "cache relocation matches native/logical slash aliases: "+error);
-            Check(BridgeDependencyPersistence.Save(owner,new[]{surfaceCid},Restart(),out _,out error,out writes)&&writes==0,
-                "relocated cache edge survives restart without old-path reads: "+error);
+            var creation=new BridgeCreationDependencies(_=>new[]{cache});
+            Check(BridgeDependencyPersistence.Save(owner,new[]{surfaceCid},creation,out _,out var error,out _),"create original cache snapshot: "+error);
+            Check(!File.Exists(Path.Combine(root,"ImportedData",owner,"BridgeCacheEdges.txt")),"creation writes no relation ledger");
         }
-        finally {AssetDatabase.global.ForbidEnumeration=false;}
-        var testOwner="b"+Guid.NewGuid(); var id=new string('c',32);
-        var path2=Path.Combine(BridgeDependencyCopies.Folder(UnityEngine.Application.persistentDataPath,testOwner),id+".Texture");
-        Directory.CreateDirectory(Path.GetDirectoryName(path2)!);
-        var foreignHandle=new AssetData(id,()=>throw new Exception("Foreign owner bytes opened"));
-        foreignHandle.Metadata.path=Path.Combine(BridgeDependencyCopies.Folder(UnityEngine.Application.persistentDataPath,"b"+Guid.NewGuid()),id+".Texture");foreignHandle.Metadata.packaged=false;
-        AssetDatabase.global.Assets.Clear();AssetDatabase.global.Assets.Add(foreignHandle);
-        var inspect=new BridgeCreationDependencies(_=>Array.Empty<AssetData>());inspect.ReadRelations(testOwner);
-        var timing=new DependencySaveTimings();
-        Check(inspect.Resolve(id,testOwner,timing)==null&&inspect.Unconfirmed,"Foreign-only unresolved identity remains unfinished");
-        File.WriteAllBytes(path2,new byte[]{101});File.WriteAllText(path2+".cid",id);
-        Check(inspect.Resolve(id,testOwner,timing)!.Bytes.SequenceEqual(new byte[]{101})&&!inspect.Unconfirmed,"Owner file wins over foreign duplicate");
-        File.WriteAllText(path2+".cid",new string('f',32));
-        try { inspect.Resolve(id,testOwner,timing);throw new Exception("Wrong sidecar accepted"); }
-        catch(InvalidDataException){Check(!inspect.Unconfirmed,"Mismatched sidecar is a definite integrity failure");}
-        File.Delete(path2);File.Delete(path2+".cid");AssetDatabase.global.Assets.Clear();
-        Check(inspect.Resolve(id,testOwner,timing)==null&&!inspect.Unconfirmed,"Missing identity without stale handle retains definite missing result");
+        AssetDatabase.global.Assets.Remove(cache);
+        int before=AssetDatabase.global.Scans;
+        var scope=new BridgeInspectionScope(root,owners);
+        Check(scope.PrepareCaches(out var preparationError),"shared preparation precedes all owner checks: "+preparationError);
+        foreach(string owner in owners)
+        {
+            var context=scope.Dependencies(owner,Array.Empty<BridgeInspectionAssets.Entry>());
+            Check(BridgeDependencyPersistence.Save(owner,new[]{surfaceCid},context,out _,out var error,out var writes)&&writes==0,"unregistered owner caches recovered without ledger: "+error);
+        }
+        Check(AssetDatabase.global.Scans-before==1,"one typed cache traversal shared across owners");
+        var failed=new BridgeInspectionCaches(()=>throw new IOException("not ready"),()=>Array.Empty<string>());
+        Check(!failed.TryFind(surfaceCid,owners[0],out _,out _)&&failed.Traversals==0,"owner lookup never builds inventory late");
+        Check(!failed.Prepare(out _),"unready native inventory aborts preparation");
+        Check(!failed.TryFind(surfaceCid,owners[1],out _,out _)&&failed.Traversals==1,"failed traversal is not retried per owner");
+        string obsolete=Path.Combine(root,"ImportedData",owners[0],"BridgeCacheEdges.txt");
+        File.WriteAllText(obsolete,"invalid old ledger must never be parsed");
+        var restarted=scope.Dependencies(owners[0],Array.Empty<BridgeInspectionAssets.Entry>());
+        Check(BridgeDependencyPersistence.Save(owners[0],new[]{surfaceCid},restarted,out _,out var failure,out _),"obsolete ledger is ignored: "+failure);
+        string backup=Path.Combine(root,"backup-original-only");
+        Check(BridgeCreationDependencies.RemoveObsoleteRelations(owners[0],backup,out var changed,out failure)&&changed&&!File.Exists(obsolete),"successful upgrade removes obsolete metadata: "+failure);
+        Check(File.ReadAllText(Directory.GetFiles(backup,"BridgeCacheEdges.txt",SearchOption.AllDirectories).Single())=="invalid old ledger must never be parsed","obsolete original preserved exactly");
+        Check(BridgeCreationDependencies.RemoveObsoleteRelations(owners[0],backup,out changed,out failure)&&!changed,"metadata cleanup idempotent");
+        SnapshotOnly();
+    }
+    private static void SnapshotOnly()
+    {
+        AssetDatabase.global.Assets.Clear();
+        string owner="b"+Guid.NewGuid(),cid=new string('a',32),texture=new string('b',32),cache=new string('c',32);
+        string folder=BridgeDependencyCopies.Folder(UnityEngine.Application.persistentDataPath,owner);
+        void Save(string id,string ext,byte[] bytes)
+        {Directory.CreateDirectory(folder);File.WriteAllBytes(Path.Combine(folder,id+ext),bytes);File.WriteAllText(Path.Combine(folder,id+ext+".cid"),id);}
+        byte[] Surface()
+        {
+            using var output=new MemoryStream();using var w=new BinaryWriter(output);
+            w.Write((ushort)1);w.Write(0);w.Write(true);w.Write(1);
+            for(int stack=0;stack<2;stack++)
+            {w.Write(512);w.Write(512);w.Write(new byte[64]);for(int layer=0;layer<4;layer++)w.Write(Enumerable.Repeat((byte)(stack==0&&layer==0?0xbb:0),16).ToArray());}
+            for(int i=0;i<7;i++)w.Write((byte)0);return output.ToArray();
+        }
+        byte[] Header(int levels)
+        {
+            using var output=new MemoryStream();using var w=new BinaryWriter(output);
+            w.Write((ushort)1);w.Write((byte)0);w.Write(new byte[8]);w.Write((ushort)levels);w.Write(new byte[5]);w.Write(1);return output.ToArray();
+        }
+        Save(cid,".Surface",Surface());Save(texture,".VTTexture",Header(0));
+        BridgeInspectionScope Scope()=>new(UnityEngine.Application.persistentDataPath,new[]{owner});
+        var zero=Scope();Check(zero.PrepareCaches(out _),"zero-mip preparation");
+        var request=zero.Dependencies(owner,Array.Empty<BridgeInspectionAssets.Entry>());
+        Check(BridgeDependencyPersistence.Save(owner,new[]{cid},request,out var count,out var error,out var writes)&&count==2&&writes==0,"owner-only VT zero-mip header needs no cache or ledger: "+error);
+        Save(texture,".VTTexture",Header(3));
+        var missing=Scope();Check(missing.PrepareCaches(out _),"missing-cache preparation completed");
+        request=missing.Dependencies(owner,Array.Empty<BridgeInspectionAssets.Entry>());
+        Check(!BridgeDependencyPersistence.Save(owner,new[]{cid},request,out _,out error,out _)&&!request.Unconfirmed&&error.Contains("Required native cache"),"required missing cache is explicit after completed preparation: "+error);
+        string cachePath=Path.Combine(folder,cache,"TS512_MB3.MidMips");Directory.CreateDirectory(Path.GetDirectoryName(cachePath)!);
+        string second=new string('d',32);Save(second,".Surface",Surface());
+        File.WriteAllBytes(cachePath,MidMipSnapshotCheck.Cache(cid,second));File.WriteAllText(cachePath+".cid",cache);
+        var ready=Scope();Check(ready.PrepareCaches(out _),"owner-only cache preparation");
+        var before=Directory.GetFiles(Path.GetDirectoryName(folder)!,"*",SearchOption.AllDirectories).OrderBy(x=>x).ToArray();
+        request=ready.Dependencies(owner,Array.Empty<BridgeInspectionAssets.Entry>());
+        Check(BridgeDependencyPersistence.Save(owner,new[]{cid,second},request,out count,out error,out writes)&&count==4&&writes==0,"owner-only primary/duplicate Surface identities share one cache without native handles: "+error);
+        Check(before.SequenceEqual(Directory.GetFiles(Path.GetDirectoryName(folder)!,"*",SearchOption.AllDirectories).OrderBy(x=>x)),"self-check adds no owner files or duplicate caches");
+        File.WriteAllBytes(cachePath,new byte[8]);var corrupt=Scope();
+        Check(!corrupt.PrepareCaches(out error)&&error!=null,"corrupt cache aborts shared preflight before owner mutation");
     }
     private static void Check(bool ok,string text){if(!ok)throw new Exception(text);Console.WriteLine("PASS "+text);}
 }
@@ -94,5 +94,5 @@ namespace BridgeBuilder.Runtime
 }
 namespace BridgeBuilder.Bridges
 {
-    internal static class MovableLaneMidMips {internal static string? OwnedCachePath(AssetData a,string owner)=>null;internal static IEnumerable<AssetData> RequiredCaches(AssetData a,string owner)=>throw new Exception("Unexpected native adapter");}
+    internal static class MovableLaneMidMips {internal static bool TryCachesByIdentity(string cid,out IEnumerable<AssetData> caches,out string? error){caches=Array.Empty<AssetData>();error="Native index not ready";return false;}internal static bool TryOwnedCachePath(AssetData a,string owner,out string? path,out string? error){path=null;error=null;return true;}internal static bool TryRequiredCaches(AssetData a,string owner,out IEnumerable<AssetData> caches,out string? error){caches=Array.Empty<AssetData>();error="Unexpected native adapter";return false;}}
 }

@@ -44,7 +44,7 @@ public static class RoadRouteCheck {
     var mode=Get(binding,"ProjectionKind").ToString();
     if(mode=="Corresponding")Check((float)Get(binding,"CompatibleScale")==.4f,"capture compatible density lost");
     if(mode=="Prepared")Check((bool)Get(Get(binding,"Patch"),"PreparedUnit"),"capture prepared semantics lost");
-    if(mode=="Original")Check(Get(binding,"Route").ToString()=="Original","capture retained route mislabeled");
+    if(mode=="Original")Check(Get(binding,"Route").ToString()=="Original" || (Get(binding,"Route").ToString()=="Corresponding" && (bool)Get(Get(binding,"SourceIdentity"),"TiledPaving")),"capture retained route mislabeled");
     var domainField=binding.GetType().GetField("SourceDomain",F);
     if(domainField!=null){
      var domain=domainField.GetValue(binding);

@@ -2,7 +2,7 @@ using System; using System.Linq; using System.Collections.Generic; using UnityEn
 public static class AffineGeometry88NativeMeshCheck {
  [System.Runtime.InteropServices.DllImport("kernel32",CharSet=System.Runtime.InteropServices.CharSet.Unicode,SetLastError=true)]static extern IntPtr LoadLibraryW(string path);
  public static void Run(){try{
- string root=Environment.GetEnvironmentVariable("BB_AFFINE_ROOT")??"D:/CS2BridgeBuilder",candidate=Environment.GetEnvironmentVariable("BB_AFFINE_CANDIDATE");
+ string root=Environment.GetEnvironmentVariable("BB_AFFINE_ROOT")??"E:/CS2BridgeBuilder",candidate=Environment.GetEnvironmentVariable("BB_AFFINE_CANDIDATE");
  const BindingFlags F=BindingFlags.Public|BindingFlags.NonPublic|BindingFlags.Static|BindingFlags.Instance;
  string managed="D:/Program Files (x86)/Steam/steamapps/common/Cities Skylines II/Cities2_Data/Managed";
  AppDomain.CurrentDomain.AssemblyResolve+=(_,e)=>{var n=new AssemblyName(e.Name).Name+".dll";var p=Path.Combine(candidate,n);if(!File.Exists(p))p=Path.Combine(managed,n);return File.Exists(p)?Assembly.LoadFrom(p):null;};
@@ -67,7 +67,7 @@ public static class AffineGeometry88NativeMeshCheck {
      string id=File.ReadAllText(file+".cid").Trim();var item=Activator.CreateInstance(surfaceType,true);using(var reader=new BinaryReader(File.OpenRead(file)))surfaceType.GetMethod("ReadHeader",F).Invoke(item,new object[]{reader});var hash=guidType.GetMethod("Parse",new[]{typeof(string)}).Invoke(null,new object[]{id});surfaceType.BaseType.GetField("m_Id",F).SetValue(item,Activator.CreateInstance(identifier,new[]{hash}));string key=file.Substring((root+"/assets/Materials/").Length).Replace('\\','/');if(!cache.Contains(key))cache.Add(key,item);
     }
 var listType=typeof(List<>).MakeGenericType(model.GetType());var owned=(System.Collections.IList)Activator.CreateInstance(listType);var models=(System.Collections.IList)Activator.CreateInstance(listType);var surfaces=(System.Collections.IList)Activator.CreateInstance(typeof(List<>).MakeGenericType(surfaceType));
-    asm.GetType("BridgeBuilder.Bridges.MovableStructureRetile",true).GetMethod("Append",F).Invoke(null,new object[]{"Restored outer/walk structure","PedestrianDrawBridge02"+(lod==0?"":"_LOD"+lod)+" Mesh",meshIndex,plan,model,surface,tiles,owned,models,surfaces});
+    var retileArgs=new object[]{"Restored outer/walk structure","PedestrianDrawBridge02"+(lod==0?"":"_LOD"+lod)+" Mesh",meshIndex,plan,model,surface,tiles,owned,models,surfaces,null};if(!(bool)asm.GetType("BridgeBuilder.Bridges.MovableStructureRetile",true).GetMethod("TryAppend",F).Invoke(null,retileArgs))throw new Exception((string)retileArgs[retileArgs.Length-1]);
     string Point(Vector3 v)=>BitConverter.SingleToInt32Bits(v.x)+","+BitConverter.SingleToInt32Bits(v.y)+","+BitConverter.SingleToInt32Bits(v.z);
     string Tri(Vector3 a,Vector3 b,Vector3 c)=>string.Join(";",new[]{Point(a),Point(b),Point(c)}.OrderBy(x=>x));
     var counts=new Dictionary<string,int>();for(int t=0;t<expected.Count;t+=3){var key=Tri(planned[expected[t]],planned[expected[t+1]],planned[expected[t+2]]);counts.TryGetValue(key,out int n);counts[key]=n+1;}

@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Security.Cryptography;
 using Colossal;
+using SurfaceResult = BridgeBuilder.Bridges.MovableExistingRoadSurface.SurfaceResult;
 using Colossal.IO.AssetDatabase;
 using Colossal.PSI.Common;
 
@@ -30,8 +31,10 @@ internal static class BridgePreparedMaterials
     private static string? _root;
     // Set and consumed on the game thread only, for the duration of one request.
     internal static BridgeMaterialFileSnapshot? RequestFiles { get; set; }
-    internal static string SourceRoot => _root ?? throw new InvalidOperationException("Prepared material installation directory is unavailable.");
+    internal static bool TrySourceRoot(out string root,out string? error)
+    {root=_root??"";error=_root==null?"Prepared material installation directory is unavailable.":null;return error==null;}
     private static ILocalAssetDatabase? _database;
+    private static bool _pendingCacheRefresh;
     private static readonly Dictionary<string, (AssetData Asset, string Digest)> Assets = new(StringComparer.OrdinalIgnoreCase);
     private static readonly Dictionary<string, SurfaceAsset> Surfaces = new(StringComparer.Ordinal);
     private static readonly HashSet<SurfaceAsset> RetainedSurfaces = new();
@@ -43,88 +46,113 @@ internal static class BridgePreparedMaterials
     internal static void Initialize(string installationDirectory)
         => _root = Path.GetFullPath(Path.Combine(installationDirectory, "Materials"));
 
-    internal static SurfaceAsset Paint(string styleId) => Surface(styleId, "Paint", "SkinnedPaint.Surface");
-    internal static SurfaceAsset Cable(string styleId) => Surface(styleId, "Cable", "SkinnedCable.Surface");
-    internal static SurfaceAsset Road(string styleId) => Surface(styleId, "Road", "NativeAsphalt.Surface");
-    internal static SurfaceAsset NativeSource(string styleId,string descriptorCid)
+    internal static SurfaceResult Paint(string styleId) => Surface(styleId, "Paint", "SkinnedPaint.Surface");
+    internal static SurfaceResult Cable(string styleId) => Surface(styleId, "Cable", "SkinnedCable.Surface");
+    internal static SurfaceResult Road(string styleId) => Surface(styleId, "Road", "NativeAsphalt.Surface");
+    internal static SurfaceResult NativeSource(string styleId,string descriptorCid)
         => Surface(styleId,"NativeSources/"+descriptorCid,"Object.Surface");
 
-    internal static SurfaceAsset RepeatUnit(string styleId,string bindingKey)
+    internal static SurfaceResult RepeatUnit(string styleId,string bindingKey)
         => Surface(styleId,"RepeatUnits/"+bindingKey,"Repeat.Surface");
 
-    internal static TextureAsset ZeroControl(string styleId)
+    internal static bool TryZeroControl(string styleId,out TextureAsset texture,out string? error)
     {
-        // Road already retains authoritative, style-local texture references.
-        // Borrow this offline-authored constant; it is not a generated resource.
-        var road = Road(styleId);
-        if (road.TryGetTexture("_ControlMask", out var texture) && texture != null) return texture;
-        throw new InvalidDataException("Prepared road control texture is missing: " + styleId);
+        texture=null!;var road=Road(styleId);error=road.Error;if(!road.Success)return false;
+        try
+        {
+            if(road.Value!.TryGetTexture("_ControlMask",out texture)&&texture!=null)return true;
+            error="Prepared road control texture is missing: "+styleId;return false;
+        }
+        catch(Exception exception){texture=null!;error="Prepared control lookup: "+exception;return false;}
     }
 
-    internal static SurfaceAsset? Repeat(string styleId, string samplerKey)
+    internal static SurfaceResult Repeat(string styleId, string samplerKey)
     {
-        if (_root == null) throw new InvalidOperationException("Prepared material installation directory is unavailable.");
+        try
+        {
+        if (_root == null)return new SurfaceResult(null,"Prepared material installation directory is unavailable.");
         var unit=Bridges.MovableRepeatUnits.For(styleId,samplerKey);
         if(unit!=null)return Surface(styleId,"RepeatUnits/"+unit,"Repeat.Surface");
         var variant = "Repeat/" + samplerKey;
         return File.Exists(Path.Combine(_root, styleId, variant, "Repeat.Surface"))
-            ? Surface(styleId, variant, "Repeat.Surface") : null;
+            ? Surface(styleId, variant, "Repeat.Surface") : new SurfaceResult(null);
+        }
+        catch(Exception exception){return new SurfaceResult(null,"Prepared Repeat lookup: "+styleId+"; "+exception);}
     }
 
     private static readonly HashSet<string> RoadTextureSurfaces = new(StringComparer.OrdinalIgnoreCase);
 
-    internal static SurfaceAsset StructuralBinding(SurfaceAsset surface)
+    internal static bool TryStructuralBinding(SurfaceAsset surface,out string? error)
     {
-        if (RoadTextureSurfaces.Contains(surface.id.guid.ToString()))
-            throw new InvalidDataException("Structural geometry cannot consume a packaged road texture: " + surface.id.guid);
-        return surface;
+        error=null;
+        try
+        {
+            if(surface==null){error="Structural material result is absent.";return false;}
+            if(RoadTextureSurfaces.Contains(surface.id.guid.ToString())){error="Structural geometry cannot consume a packaged road texture: "+surface.id.guid;return false;}
+            return true;
+        }
+        catch(Exception exception){error="Structural material binding: "+exception;return false;}
     }
 
-    internal static SurfaceAsset? Lane(string styleId, byte[] source)
+    internal static SurfaceResult Lane(string styleId, byte[] source)
     {
-        if (_root == null) throw new InvalidOperationException("Prepared material installation directory is unavailable.");
+        try
+        {
+        if (_root == null)return new SurfaceResult(null,"Prepared material installation directory is unavailable.");
         using var sha = SHA256.Create();
         var digest = BitConverter.ToString(sha.ComputeHash(source)).Replace("-", "").ToLowerInvariant();
         var variant = "Lanes/" + digest;
         return File.Exists(Path.Combine(_root, styleId, variant, "SkinnedLane.Surface"))
-            ? Surface(styleId, variant, "SkinnedLane.Surface") : null;
+            ? Surface(styleId, variant, "SkinnedLane.Surface") : new SurfaceResult(null);
+        }
+        catch(Exception exception){return new SurfaceResult(null,"Prepared Lane lookup: "+styleId+"; "+exception);}
     }
 
-    private static SurfaceAsset Surface(string styleId, string variant, string name)
+    private static SurfaceResult Surface(string styleId, string variant, string name)
     {
-        if (_root == null) throw new InvalidOperationException("Prepared material installation directory is unavailable.");
+        SurfaceResult Fail(string message)=>new SurfaceResult(null,$"Prepared material: style={styleId}; variant={variant}; name={name}; {message}");
+        try
+        {
+        if (_root == null)return new SurfaceResult(null,"Prepared material installation directory is unavailable.");
         if (string.IsNullOrEmpty(styleId) || styleId.Any(c => !char.IsLetterOrDigit(c)))
-            throw new ArgumentException("Prepared material requires a stable style ID.", nameof(styleId));
+            return Fail("Prepared material requires a stable style ID.");
         string key = styleId + "/" + variant + "/" + name;
         if (Surfaces.TryGetValue(key, out var existing)) return Record(existing);
         // Preflight the complete variant before native registration. Sidecars retain
         // the prepared identity; a shared CID must always describe identical bytes.
-        var inputs = BridgePreparedMaterialFiles.Read(Path.Combine(_root, styleId), variant, name,
-            bytes => BridgeSurfaceReferences.Read(bytes, (template, property) =>
-                AssetDatabase.global.resources.materialLibrary.GetMaterialDescription(template).GetStackConfigIndex(property) != -1),
-            cid => RequireBuiltin(cid, key), cid =>
+        string? callbackError=null;
+        if(!BridgePreparedMaterialFiles.TryRead(Path.Combine(_root, styleId), variant, name,out var inputs,out var preflightError,
+            bytes =>
             {
-                var asset = RequireBuiltin(cid, key);
+                if(BridgeDependencyPersistence.TryReadSurfaceReferences(bytes,out var references,out var cause))return references;
+                callbackError??=cause;return System.Array.Empty<string>();
+            },
+            cid => {if(!TryBuiltin(cid,key,out _,out var cause))callbackError??=cause;}, cid =>
+            {
+                if(!TryBuiltin(cid,key,out var asset,out var cause)){callbackError??=cause;return 0;}
                 if (asset is not VTTextureAsset && asset is not VTSurfaceAsset) return 0;
                 using var stream = asset.GetReadStream();
-                return BridgeMidMipReferences.RequiredLevels(stream, asset is VTSurfaceAsset);
-            }, RequestFiles);
+                if(!BridgeMidMipReferences.TryRequiredLevels(stream,asset is VTSurfaceAsset,out var levels,out var levelError))
+                    {callbackError??="Prepared mip requirements: "+key+"; "+levelError;return 0;}
+                return levels;
+            }, RequestFiles))return Fail(preflightError!);
+        if(callbackError!=null)return Fail(callbackError);
         foreach (var input in inputs)
         {
             if (Assets.TryGetValue(input.Cid, out var registered) && registered.Digest != input.Digest)
-                throw new InvalidDataException("Prepared material CID has different payloads: " + input.Cid);
+                return Fail("Prepared material CID has different payloads: " + input.Cid);
         }
         var surfaceInput = inputs.Single(i => Path.GetFileName(i.Path) == name);
-        if (inputs.Any(i => Path.GetExtension(i.Path) == ".Texture")) RoadTextureSurfaces.Add(surfaceInput.Cid);
+        bool roadTextures=inputs.Any(i => Path.GetExtension(i.Path)==".Texture");
         var cacheInputs = inputs.Where(i => Path.GetExtension(i.Path) == ".MidMips").ToArray();
-        MidMipEdges[surfaceInput.Cid] = cacheInputs.Where(i => i.Cid == BridgePreparedMaterialFiles.CacheFor(surfaceInput.Cid))
+        var cacheEdges = cacheInputs.Where(i => i.Cid == BridgePreparedMaterialFiles.CacheFor(surfaceInput.Cid))
             .Select(i => i.Cid).Distinct().ToArray();
         if (_database == null)
         {
             _database = AssetDatabase<Descriptor>.GetInstance(new Descriptor(_root));
             AssetDatabase.global.RegisterDatabase(_database).GetAwaiter().GetResult();
         }
-        bool newCache = false;
+
         foreach (var input in inputs)
         {
             if (Assets.ContainsKey(input.Cid)) continue;
@@ -133,21 +161,23 @@ internal static class BridgePreparedMaterials
             // serialize, compress, copy, or save the file (native API verified).
             var asset = (AssetData)_database.AddAsset(path, Hash128.Parse(input.Cid));
             Assets.Add(input.Cid, (asset, input.Digest));
-            newCache |= asset is MidMipCacheAsset;
+            _pendingCacheRefresh |= asset is MidMipCacheAsset;
         }
-        if (newCache)
+        if (_pendingCacheRefresh)
         {
             var world = Unity.Entities.World.DefaultGameObjectInjectionWorld;
             var streaming = world?.GetExistingSystemManaged<Colossal.IO.AssetDatabase.VirtualTexturing.TextureStreamingSystem>();
-            if (streaming == null) throw new InvalidOperationException("Native VT streaming is unavailable for prepared mid-mip registration.");
+            if (streaming == null) return Fail("Native VT streaming is unavailable for prepared mid-mip registration.");
             streaming.MarkVTAssetsDirty();
             streaming.RefreshVT(_database);
+            _pendingCacheRefresh=false;
         }
         var surface = (SurfaceAsset)Assets[surfaceInput.Cid].Asset;
         // Keep the immutable source descriptor's direct texture references alive.
         // Global CID resolution can otherwise choose an old bridge's private copy.
         if (!RetainedSurfaces.Contains(surface))
         {
+            bool retained=false;
             surface.LoadProperties(useVT: true);
             try
             {
@@ -155,7 +185,7 @@ internal static class BridgePreparedMaterials
                 // metadata before any VT payload stream can be opened; never use
                 // a private/deleted bridge snapshot as an installed source.
                 if (surface.isVTMaterial && surface.hasVTSurfaceAsset && !surface.vtSurfaceAsset.isBuiltin)
-                    throw new InvalidDataException("Prepared VT source is not built-in: " + key);
+                    return Fail("Prepared VT source is not built-in: " + key);
                 var description = AssetDatabase.global.resources.materialLibrary.GetMaterialDescription(surface.materialTemplateHash);
                 var textures = new Dictionary<string, TextureAsset>();
                 foreach (var texture in surface.textures)
@@ -171,37 +201,48 @@ internal static class BridgePreparedMaterials
                         continue;
                     }
                     if (texture.Value == null)
-                        throw new InvalidDataException("Prepared material texture is missing: " + key + "/" + texture.Key);
+                        return Fail("Prepared material texture is missing: " + key + "/" + texture.Key);
                     var cid = texture.Value.id.guid.ToString();
-                    var payload = Assets.TryGetValue(cid, out var dependency) ? dependency.Asset : RequireBuiltin(cid, key);
+                    AssetData payload;
+                    if(Assets.TryGetValue(cid,out var dependency))payload=dependency.Asset;
+                    else if(!TryBuiltin(cid,key,out payload,out var cause))return Fail(cause!);
                     if (payload is not TextureAsset nativeTexture)
-                        throw new InvalidDataException("Prepared texture has an incompatible asset type: " + key + "/" + texture.Key);
+                        return Fail("Prepared texture has an incompatible asset type: " + key + "/" + texture.Key);
                     textures.Add(texture.Key, nativeTexture);
                 }
                 surface.UpdateTextures(textures);
-                RetainedSurfaces.Add(surface);
+                RetainedSurfaces.Add(surface);retained=true;
             }
-            catch { surface.UnloadProperties(); throw; }
+            finally {if(!retained)surface.UnloadProperties();}
         }
+        MidMipEdges[surfaceInput.Cid]=cacheEdges;
+        if(roadTextures)RoadTextureSurfaces.Add(surfaceInput.Cid);
         Surfaces.Add(key, surface);
         return Record(surface);
+        }
+        catch(Exception exception){return Fail(exception.ToString());}
     }
 
-    private static SurfaceAsset Record(SurfaceAsset surface)
+    private static SurfaceResult Record(SurfaceAsset surface)
     {
         var dependencies = Bridges.BridgeRoadGeneration.CurrentDependencies;
         if (dependencies != null)
         {
             string cid = surface.id.guid.ToString();
-            dependencies.Material(surface, MidMipEdges[cid].Select(cache => Assets[cache].Asset));
+            if(!dependencies.Material(surface,MidMipEdges[cid].Select(cache=>Assets[cache].Asset)))return new SurfaceResult(null,dependencies.ResolutionError);
         }
-        return surface;
+        return new SurfaceResult(surface);
     }
 
-    private static AssetData RequireBuiltin(string cid, string key)
+    private static bool TryBuiltin(string cid,string key,out AssetData asset,out string? error)
     {
-        if (AssetDatabase.global.TryGetAsset(Hash128.Parse(cid), out AssetData asset) && asset.isBuiltin) return asset;
-        throw new InvalidDataException("Prepared material requires an authoritative built-in dependency: " + key + "/" + cid);
+        asset=null!;error=null;
+        try
+        {
+            if(AssetDatabase.global.TryGetAsset(Hash128.Parse(cid),out asset)&&asset.isBuiltin)return true;
+            error="Prepared material requires an authoritative built-in dependency: "+key+"/"+cid;asset=null!;return false;
+        }
+        catch(Exception exception){asset=null!;error="Prepared built-in lookup: "+key+"/"+cid+"; "+exception;return false;}
     }
 
     internal static bool TryGet(string cid, out AssetData asset)
@@ -211,14 +252,18 @@ internal static class BridgePreparedMaterials
         return false;
     }
 
-    internal static void Stop()
+    internal static bool TryStop(out string? error)
     {
-        foreach (var surface in RetainedSurfaces) surface.UnloadProperties();
-        RetainedSurfaces.Clear();
-        RoadTextureSurfaces.Clear(); Surfaces.Clear(); Assets.Clear(); MidMipEdges.Clear(); _root = null;
-        if (_database == null) return;
-        AssetDatabase.global.UnregisterDatabase(_database).GetAwaiter().GetResult();
-        _database.Dispose(); // Never MarkForDeletion: these are installed source assets.
-        _database = null;
+        string? failure=null;
+        void Fault(Exception exception){failure=(failure==null?"":failure+"; ")+exception;}
+        foreach(var surface in RetainedSurfaces)try{surface.UnloadProperties();}catch(Exception exception){Fault(exception);}
+        RetainedSurfaces.Clear();RoadTextureSurfaces.Clear();Surfaces.Clear();Assets.Clear();MidMipEdges.Clear();_root=null;_pendingCacheRefresh=false;
+        if(_database!=null)
+        {
+            var database=_database;_database=null;
+            try{AssetDatabase.global.UnregisterDatabase(database).GetAwaiter().GetResult();}catch(Exception exception){Fault(exception);}
+            try{database.Dispose();}catch(Exception exception){Fault(exception);}
+        }
+        error=failure;return error==null;
     }
 }

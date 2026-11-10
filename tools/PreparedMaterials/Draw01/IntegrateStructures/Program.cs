@@ -15,7 +15,7 @@ var keys = inventory.RootElement.GetProperty("units").EnumerateArray()
 Require(keys.Length == 1029 && keys.Distinct().Count() == keys.Length, "Unexpected Draw01 inventory");
 Require(keys.SequenceEqual(Directory.GetDirectories(Path.Combine(source, "Structure")).Select(Path.GetFileName).Order()), "Staging inventory differs");
 string Hash(string p) { using var stream = File.OpenRead(p); return Convert.ToHexString(SHA256.HashData(stream)); }
-string[] References(byte[] bytes) => BridgeSurfaceReferences.Read(bytes, (_, _) => throw new InvalidDataException("Unexpected structural VT"));
+string[] References(byte[] bytes) => (BridgeSurfaceReferences.TryRead(bytes, (_, _) => throw new InvalidDataException("Unexpected structural VT"),out var surfaceRefs1,out var surfaceRefsError1)?surfaceRefs1:throw new System.IO.InvalidDataException(surfaceRefsError1));
 void Missing(string cid) => throw new InvalidDataException("Missing style-local structural dependency: " + cid);
 var identities = new Dictionary<string, string>(StringComparer.Ordinal);
 foreach (var sidecar in Directory.GetFiles(target, "*.cid", SearchOption.AllDirectories))
@@ -27,7 +27,7 @@ foreach (var sidecar in Directory.GetFiles(target, "*.cid", SearchOption.AllDire
 }
 var copies = new SortedDictionary<string, string>(StringComparer.Ordinal);
 foreach (var key in keys)
-foreach (var input in BridgePreparedMaterialFiles.Read(source, "Structure/" + key, "Structure.Surface", References, Missing))
+foreach (var input in (BridgePreparedMaterialFiles.TryRead(source, "Structure/" + key, "Structure.Surface",out var preparedInputs1,out var preparedError1, References, Missing)?preparedInputs1:throw new System.IO.InvalidDataException(preparedError1)))
 {
     Require(!identities.TryGetValue(input.Cid, out var old) || old == Hash(input.Path), "CID conflict: " + input.Cid);
     identities[input.Cid] = Hash(input.Path);
@@ -62,7 +62,7 @@ foreach (var (relative, src) in copies)
 }
 // Run the production dependency reader once for every integrated variant.
 foreach (var key in keys)
-    BridgePreparedMaterialFiles.Read(target, "Structure/" + key, "Structure.Surface", References, Missing);
+    _ = (BridgePreparedMaterialFiles.TryRead(target, "Structure/" + key, "Structure.Surface",out var preparedInputs2,out var preparedError2, References, Missing)?preparedInputs2:throw new System.IO.InvalidDataException(preparedError2));
 Require(!Directory.GetDirectories(target, "*", SearchOption.AllDirectories).Any(p => !Directory.EnumerateFileSystemEntries(p).Any()), "Empty material directory");
 var report = new { status = "PASS", style = "Draw01", inventorySha256 = Hash(inventoryPath), units = keys.Length,
     source, target, requiredFiles = copies.Count, addedFiles = added, reusedFiles = reused, addedBytes,

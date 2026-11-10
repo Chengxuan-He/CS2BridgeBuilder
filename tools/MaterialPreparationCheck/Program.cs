@@ -13,20 +13,23 @@ File.WriteAllText(texture + ".cid", new string('1', 32));
 File.WriteAllText(surface + ".cid", new string('2', 32));
 void Check(bool value, string message) { if (!value) throw new Exception(message); }
 List<BridgePreparedMaterialFiles.Input> Graph(BridgeMaterialFileSnapshot? snapshot) =>
-    BridgePreparedMaterialFiles.Read(Path.Combine(root, "Draw01"), "Road", "NativeAsphalt.Surface",
-        _ => Array.Empty<string>(), _ => throw new Exception("Unexpected built-in"), snapshot: snapshot);
+    (BridgePreparedMaterialFiles.TryRead(Path.Combine(root, "Draw01"), "Road", "NativeAsphalt.Surface",out var preparedInputs1,out var preparedError1,
+        _ => Array.Empty<string>(), _ => throw new Exception("Unexpected built-in"), snapshot: snapshot)?preparedInputs1:throw new System.IO.InvalidDataException(preparedError1));
 try
 {
     int caller = Environment.CurrentManagedThreadId;
     var sync = Graph(null);
+    using(var invalid=BridgeMaterialFileSnapshot.Read(root,"../invalid",CancellationToken.None))
+    {Check(invalid.Error!=null && invalid.FileCount==0,"Invalid style must return failed snapshot");}
+
     using (var snapshot = await Task.Run(() => BridgeMaterialFileSnapshot.Read(root, "Draw01", CancellationToken.None)))
     {
         Check(snapshot.WorkerThreadId != caller, "Work ran on caller thread");
         var asyncGraph = Graph(snapshot);
         Check(sync.Select(x => (x.Path, x.Cid, x.Digest)).SequenceEqual(asyncGraph.Select(x => (x.Path, x.Cid, x.Digest))), "Graph differs");
-        Check(snapshot.Get(texture).Bytes == null, "Texture unnecessarily resident");
+        Check(snapshot.TryGet(texture,out var entry,out var lookupError)&&entry.Bytes == null, "Texture unnecessarily resident");
         using var nativeRead = File.OpenRead(texture);
-        Check(BitConverter.ToString(SHA256.HashData(nativeRead)) == snapshot.Get(texture).Digest, "Native read differs");
+        Check(BitConverter.ToString(SHA256.HashData(nativeRead)) == entry.Digest, "Native read differs");
         bool writeBlocked = false;
         try { using var write = new FileStream(texture, FileMode.Open, FileAccess.Write, FileShare.Read); }
         catch (IOException) { writeBlocked = true; }
@@ -36,8 +39,8 @@ try
     using (var cts = new CancellationTokenSource())
     {
         cts.Cancel();
-        try { BridgeMaterialFileSnapshot.Read(root, "Draw01", cts.Token); throw new Exception("Cancellation ignored"); }
-        catch (OperationCanceledException) { }
+        using var cancelled=BridgeMaterialFileSnapshot.Read(root,"Draw01",cts.Token);
+        Check(cancelled.Cancelled && cancelled.Error!=null && cancelled.FileCount==0,"Cancellation must return an empty failure result");
     }
     using (var empty = BridgeMaterialFileSnapshot.Read(root, "Suspension", CancellationToken.None))
         Check(empty.FileCount == 0, "Fixed style read shared files");
@@ -56,8 +59,8 @@ try
         }
         Check(leased, "Could not observe running worker lease");
         cancelRunning.Cancel();
-        try { using var unexpected = await running; throw new Exception("Running work ignored cancellation"); }
-        catch (OperationCanceledException) { }
+        using var cancelled=await running;
+        Check(cancelled.Cancelled && cancelled.Error!=null && cancelled.FileCount==0,"Running cancellation must release leases and return failure");
         using var released = new FileStream(large, FileMode.Open, FileAccess.Write, FileShare.None);
     }
     File.Delete(large);
@@ -101,10 +104,10 @@ try
         {
             string style = Path.Combine(args[0], "Draw01");
             string variant = Path.GetRelativePath(style, Path.GetDirectoryName(path)!);
-            var expected = BridgePreparedMaterialFiles.Read(style, variant, Path.GetFileName(path),
-                bytes => BridgeSurfaceReferences.Read(bytes, (_, _) => true), _ => { });
-            var observed = BridgePreparedMaterialFiles.Read(style, variant, Path.GetFileName(path),
-                bytes => BridgeSurfaceReferences.Read(bytes, (_, _) => true), _ => { }, snapshot: actual);
+            var expected = (BridgePreparedMaterialFiles.TryRead(style, variant, Path.GetFileName(path),out var preparedInputs2,out var preparedError2,
+                bytes => (BridgeSurfaceReferences.TryRead(bytes, (_, _) => true,out var surfaceRefs1,out var surfaceRefsError1)?surfaceRefs1:throw new System.IO.InvalidDataException(surfaceRefsError1)), _ => { })?preparedInputs2:throw new System.IO.InvalidDataException(preparedError2));
+            var observed = (BridgePreparedMaterialFiles.TryRead(style, variant, Path.GetFileName(path),out var preparedInputs3,out var preparedError3,
+                bytes => (BridgeSurfaceReferences.TryRead(bytes, (_, _) => true,out var surfaceRefs2,out var surfaceRefsError2)?surfaceRefs2:throw new System.IO.InvalidDataException(surfaceRefsError2)), _ => { }, snapshot: actual)?preparedInputs3:throw new System.IO.InvalidDataException(preparedError3));
             Check(expected.Select(x => (x.Path,x.Cid,x.Digest)).SequenceEqual(observed.Select(x => (x.Path,x.Cid,x.Digest))), "Actual prepared graph differs: " + path);
             graphs++;
         }

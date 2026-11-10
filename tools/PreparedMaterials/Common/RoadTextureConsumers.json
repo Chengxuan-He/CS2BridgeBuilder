@@ -3,7 +3,7 @@
     "style": "Draw01",
     "path": "Cable/SkinnedCable.Surface",
     "role": "NonRoad",
-    "consumer": "MovableCableSurface.Create",
+    "consumer": "MovableCableSurface.TryCreate",
     "surfaceSha256": "f06e97cf7933eb1b8fca2d5bc2c040f4fd47b0d9fa804bd9a084f8d809d0aded",
     "local": {}
   },
@@ -311,7 +311,7 @@
     "style": "Draw02",
     "path": "Cable/SkinnedCable.Surface",
     "role": "NonRoad",
-    "consumer": "MovableCableSurface.Create",
+    "consumer": "MovableCableSurface.TryCreate",
     "surfaceSha256": "f06e97cf7933eb1b8fca2d5bc2c040f4fd47b0d9fa804bd9a084f8d809d0aded",
     "local": {}
   },
@@ -655,7 +655,7 @@
     "style": "Draw03",
     "path": "Cable/SkinnedCable.Surface",
     "role": "NonRoad",
-    "consumer": "MovableCableSurface.Create",
+    "consumer": "MovableCableSurface.TryCreate",
     "surfaceSha256": "f06e97cf7933eb1b8fca2d5bc2c040f4fd47b0d9fa804bd9a084f8d809d0aded",
     "local": {}
   },
@@ -987,7 +987,7 @@
     "style": "Lift01",
     "path": "Cable/SkinnedCable.Surface",
     "role": "NonRoad",
-    "consumer": "MovableCableSurface.Create",
+    "consumer": "MovableCableSurface.TryCreate",
     "surfaceSha256": "f06e97cf7933eb1b8fca2d5bc2c040f4fd47b0d9fa804bd9a084f8d809d0aded",
     "local": {}
   },
@@ -1279,7 +1279,7 @@
     "style": "Lift02",
     "path": "Cable/SkinnedCable.Surface",
     "role": "NonRoad",
-    "consumer": "MovableCableSurface.Create",
+    "consumer": "MovableCableSurface.TryCreate",
     "surfaceSha256": "f06e97cf7933eb1b8fca2d5bc2c040f4fd47b0d9fa804bd9a084f8d809d0aded",
     "local": {}
   },
@@ -1543,7 +1543,7 @@
     "style": "Lift03",
     "path": "Cable/SkinnedCable.Surface",
     "role": "NonRoad",
-    "consumer": "MovableCableSurface.Create",
+    "consumer": "MovableCableSurface.TryCreate",
     "surfaceSha256": "f06e97cf7933eb1b8fca2d5bc2c040f4fd47b0d9fa804bd9a084f8d809d0aded",
     "local": {}
   },
@@ -1831,7 +1831,7 @@
     "style": "Lift04",
     "path": "Cable/SkinnedCable.Surface",
     "role": "NonRoad",
-    "consumer": "MovableCableSurface.Create",
+    "consumer": "MovableCableSurface.TryCreate",
     "surfaceSha256": "f06e97cf7933eb1b8fca2d5bc2c040f4fd47b0d9fa804bd9a084f8d809d0aded",
     "local": {}
   },
@@ -2107,7 +2107,7 @@
     "style": "Lift05",
     "path": "Cable/SkinnedCable.Surface",
     "role": "NonRoad",
-    "consumer": "MovableCableSurface.Create",
+    "consumer": "MovableCableSurface.TryCreate",
     "surfaceSha256": "f06e97cf7933eb1b8fca2d5bc2c040f4fd47b0d9fa804bd9a084f8d809d0aded",
     "local": {}
   },
@@ -2419,7 +2419,7 @@
     "style": "PedestrianDraw01",
     "path": "Cable/SkinnedCable.Surface",
     "role": "NonRoad",
-    "consumer": "MovableCableSurface.Create",
+    "consumer": "MovableCableSurface.TryCreate",
     "surfaceSha256": "f06e97cf7933eb1b8fca2d5bc2c040f4fd47b0d9fa804bd9a084f8d809d0aded",
     "local": {}
   },
@@ -2707,7 +2707,7 @@
     "style": "PedestrianDraw02",
     "path": "Cable/SkinnedCable.Surface",
     "role": "NonRoad",
-    "consumer": "MovableCableSurface.Create",
+    "consumer": "MovableCableSurface.TryCreate",
     "surfaceSha256": "f06e97cf7933eb1b8fca2d5bc2c040f4fd47b0d9fa804bd9a084f8d809d0aded",
     "local": {}
   },

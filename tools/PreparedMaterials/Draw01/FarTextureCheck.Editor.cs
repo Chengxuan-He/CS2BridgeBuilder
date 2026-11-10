@@ -20,7 +20,7 @@ public static class Draw01FarTextureCheck {
  using var hash=System.Security.Cryptography.SHA256.Create();var digest=string.Concat(hash.ComputeHash(surface).Select(v=>v.ToString("x2")));
  if(digest!="eb8ccf270ed33f4a8b7b59b004d1e19b16a1f37ab27eb9c432cb877ac6c3f814")throw new Exception("Native far Surface differs from measured prototype.");
  var id=Cid(surface,83);Texture2D tex;
- if(id!=new string('0',32)){using var s=new MemoryStream(Read(id));tex=MovableVtTextureSource.ReadTexture(s,Decode);}else{using var s=new MemoryStream(Read(Cid(surface,284)));tex=MovableVtTextureSource.ReadSurface(s,Decode)[(0,0)];}
+ if(id!=new string('0',32)){using var s=new MemoryStream(Read(id));tex=(MovableVtTextureSource.TryReadTexture(s,Decode,out var decodedVt1,out var errorVt1) ? decodedVt1 : throw new InvalidOperationException(errorVt1));}else{using var s=new MemoryStream(Read(Cid(surface,284)));tex=(MovableVtTextureSource.TryReadSurface(s,Decode,out var decodedVt2,out var errorVt2) ? decodedVt2 : throw new InvalidOperationException(errorVt2))[(0,0)];}
  var rt=new RenderTexture(tex.width,tex.height,0,RenderTextureFormat.ARGB32,RenderTextureReadWrite.Linear);Graphics.Blit(tex,rt);var old=RenderTexture.active;RenderTexture.active=rt;var result=new Texture2D(tex.width,tex.height,TextureFormat.RGBA32,false,true);result.ReadPixels(new Rect(0,0,tex.width,tex.height),0,0);result.Apply();RenderTexture.active=old;File.WriteAllBytes(Path.Combine(output,"far-basecolor.png"),result.EncodeToPNG());Debug.Log("PASS native far image "+tex.width+" x "+tex.height);
  }finally{foreach(var z in zips)z.Dispose();}
  }

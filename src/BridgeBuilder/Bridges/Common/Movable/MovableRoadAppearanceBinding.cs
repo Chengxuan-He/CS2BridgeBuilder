@@ -21,7 +21,7 @@ internal sealed class MovableRoadAppearanceBinding
     internal readonly Matrix4x4 SourceFrame;
     internal readonly float CompatibleScale;
     internal readonly MovableRoadRoute.Source? SourceIdentity;
-    // Only the OriginalBase route preserves these source coordinates/PBR. This
+    // The Original descriptor route preserves these source coordinates/PBR. This
     // domain never authorizes extrapolating a different prototype/prepared atlas.
     internal readonly MovableRoadRoute.SourceDomain? SourceDomain;
     // These rows describe only the final receiver triangle's plane. A zero

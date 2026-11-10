@@ -20,7 +20,7 @@ public static class Draw02AllMipReadback
             var input=JsonUtility.FromJson<Draw02FiniteCellBake.Manifest>(File.ReadAllText(manifest));
             foreach(var channel in input.channels) {
             using var stream=File.OpenRead(channel.path);
-            var source=MovableTextureSource.Read(stream,b=>PreparePaint.DecodeRaw(b,RawSize(channel.path)));
+            var source=(MovableTextureSource.TryRead(stream,b=>PreparePaint.DecodeRaw(b,RawSize(channel.path)),out var parsedTexture1,out var textureReadError1)?parsedTexture1:throw new System.IO.InvalidDataException(textureReadError1));
             source.filterMode=FilterMode.Bilinear; source.wrapMode=TextureWrapMode.Clamp;
             var shader=AssetDatabase.LoadAssetAtPath<ComputeShader>("Assets/FiniteCell.compute");var kernel=shader.FindKernel("Extract");
             using var buffer=new ComputeBuffer(3,16);using var tracking=new ComputeBuffer(1,4);

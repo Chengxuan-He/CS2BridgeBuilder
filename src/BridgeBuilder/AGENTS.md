@@ -97,6 +97,12 @@ fall back to ground/other road-level branches; no downstream re-selection.
 Keep all physical contributions and section-local branches within the selected road branch.
 Material matching within it is noexcept: a corresponding match selects that route; no match
 selects the original source-material route, without selecting a different road branch.
+The [complete material pipeline](../../docs/agent-contract/MATERIAL_GENERATION_CONTRACT.md#complete-material-processing-without-propagated-exceptions) must return explicit outcomes through
+resolution, adaptation, assembly, persistence, preview and creation without propagated exceptions.
+Valid unknown materials use compatible originals, equivalent conversion, or a visible processed
+native compatibility material with non-blocking difference diagnostics. Compatibility gaps must
+not reject valid input. Name/CID whitelist adapters, incompatible blind shader binding and
+unreported appearance losses are prohibited; genuine resource/IO failures remain explicit.
 Branch mechanism decks and native network bridgeheads
 by their own source/domain and render context; do not classify a mixed piece from a section name.
 Require both actual receiver classification and matching measured prototype material at the target
@@ -105,14 +111,14 @@ not inherit a bridge-wide material override; unmatched external approaches retai
 Keep deliberate part-specific appearances and all-LOD PBR/alpha, density and paint handling.
 Cover each replaced component's measured edge/sidewall/cap material domains as well as its top;
 do not omit matching sidewalk or median edges or blanket-replace unmatched edges.
-Resource corruption and native realization failures remain separate explicit errors. Follow
+Resource corruption and native realization failures return explicit non-exception failure results. Follow
 [the material routing rule](../../docs/agent-contract/MATERIAL_GENERATION_CONTRACT.md#total-material-routing-by-part-and-actual-source).
 
 
 - Processed movable-road appearances supported by the prototype use prototype content tiled at original resolution and
   physical texel density, never stretched, at every LOD and in fixed caps/finite terminals.
   Remove embedded road markings from every road-material channel/mip; retain intended selected-road
-  paint through its native path (separate skinned paint for movable mechanisms).
+  paint through its native path (native rigidly attached source decals for movable mechanisms).
 - Test asphalt, sidewalk and wear support independently. Wear uses the same complete measured
   source and matching same-source background. Align its measured visual center to actual native
   lane centers; preserve physical width, internal relationships and longitudinal density.
@@ -123,8 +129,8 @@ Resource corruption and native realization failures remain separate explicit err
 - Non-road materials retain original identity/modes by default; only evidenced repeat domains
   must use original native references, including at widths beyond a finite atlas chart.
   Unsupported road types use compatible originals or corresponding native object road materials
-  under section 4, including its accepted network-layer/worldspace differences, never another category.
-- No full-span pixels, new period cuts, arbitrary downsampling, custom shaders or changed original
+  under section 4, preserving source layers/projection where representable, otherwise reporting compatibility differences.
+- No full-span pixels, new period cuts, arbitrary downsampling, unauthorized custom shaders or changed original
   assets. Changed derivatives receive new CIDs. Preserve complete PBR, frames, filtering and mips;
   no global tolerance relaxation or acceptance from metadata alone. Integer-grid resampling and
   bounded two-period storage follow section 3, not an unrestricted boundary-blending permission.
@@ -212,9 +218,10 @@ native payloads and layout through migration before considering removal. Failed 
 migration enters section 19's per-UUID backup/move, then deletion fallback on backup/move failure.
 Do not unregister live prefabs. Report actual removal failures and preserve healthy current assets.
 
-Creation and copy operations must exclude another generated bridge's ImportedData resources,
-including UUID dependency directories, before reading them even when CIDs match. Use original
-or permitted packaged sources; fail if unavailable. Ownership remains UUID/path-string based.
+Creation and copy operations may read valid resources from any bridge owner. Source UUID/path
+or non-built-in provenance is not a backend rejection gate. Save required non-built-in dependencies
+as independent target-owner snapshots; never modify or delete another owner's source. Preserve
+actual resource validity, destination conflict and UUID/path write/delete boundaries.
 
 ## Documentation language
 
@@ -237,9 +244,10 @@ Those sections define the generation pipeline: compatible original structural Su
 or required offline conversions under material contract section 2; measured non-VT repeating road
 and grating units, plus the bounded variable-content and unknown-selected-input conversions
 permitted by material generation contract section 4;
-separate single-sided native skinned paint
-with 0.001 m clearance on the original road bones, matching stack metadata and transforms.
-No receiver cuts for markings, no child projectors, no structural receiver-only material copies,
+original native decal appearance on rigid child components attached through native bone
+connection IDs, preserving artwork, alpha blending and evaluated UV density for all retained
+decal sources. This authorization supersedes the former child-projector prohibition.
+No receiver cuts for decals, no structural receiver-only material copies,
 no moving the road onto marking bones, and no runtime synchronization dependency. Acceptance is
 specific to the tested style, input and build; every style requires its own evidence.
 
@@ -261,3 +269,15 @@ structural surfaces retain original native texture references.
 Preserve actual shape/motion/material boundaries, native loading, complete PBR/mips, informational owner measurements and the package byte limit.
 Keep original assets unchanged and assign new identities to changed derivatives. This specification
 does not certify implementation, quality or acceptance. No runtime strings change with these rules.
+
+## Dynamically generated persistent material shaders
+
+Follow [dynamic material shaders](../../docs/agent-contract/MATERIAL_GENERATION_CONTRACT.md#dynamically-generated-and-independently-persisted-material-shaders). **Not implementable under current requirements:** the current game cannot independently restore the generated shader/template from its owner-local assets with Bridge Builder disabled or uninstalled. Dynamic source compilation and bounded sampling succeeded, but complete multilayer adaptation remains unsolved under the current game/project constraints: restoration of the custom shader/template would depend on Bridge Builder registration. The complete custom-shader solution is unavailable and must not be deployed or described as a density fix. The user's permission to investigate dynamic shaders remains; it does not waive independent cold loading. Independent loading with the mod disabled or uninstalled is a non-negotiable project constraint at all times. Do not offer a startup loader dependency or relaxation of independence as a trade-off. Experimental or partial success never substitutes for it. Reconsider implementation only when an evidenced native loading capability satisfies this unchanged constraint. A fixed precompiled shader is not dynamic generation. Editor compilation or raw GPU bytecode alone does not establish Player loading or independent cold loading. No continuing renderer synchronization, custom runtime controller, game launch or launcher launch is authorized.
+
+Selected-road decals follow [source identity and coverage](../../docs/agent-contract/MATERIAL_GENERATION_CONTRACT.md#source-preserving-selected-road-decals): preserve each original texture, alpha and evaluated UV; no name/type/CID filtering or generic white/yellow replacement. Distinct transparent layers cannot erase each other by footprint alone.
+
+The movable mechanism includes its stationary end caps: selected-road deterioration
+must not be added there as object decals. Only measured prototype WheelTrack road
+composition supplies mechanism wear. External fixed elevated approaches retain
+their original native network wear; this is not a rule to erase wear from fixed roads.
+Line art, rail artwork and colored-lane decals retain their source-preserving route.

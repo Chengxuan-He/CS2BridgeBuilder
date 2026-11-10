@@ -2,7 +2,7 @@ using System; using System.Linq; using System.Collections.Generic; using UnityEn
 public static class Lift04FullRetileProbe {
  [System.Runtime.InteropServices.DllImport("kernel32",CharSet=System.Runtime.InteropServices.CharSet.Unicode,SetLastError=true)]static extern IntPtr LoadLibraryW(string path);
  public static void Run(){try{
- string root="D:/CS2BridgeBuilder",candidate=Environment.GetEnvironmentVariable("LIFT04_CANDIDATE_PATH");
+ string root="E:/CS2BridgeBuilder",candidate=Environment.GetEnvironmentVariable("LIFT04_CANDIDATE_PATH");
  const BindingFlags F=BindingFlags.Public|BindingFlags.NonPublic|BindingFlags.Static|BindingFlags.Instance;
  string managed="D:/Program Files (x86)/Steam/steamapps/common/Cities Skylines II/Cities2_Data/Managed";
  AppDomain.CurrentDomain.AssemblyResolve+=(_,e)=>{var n=new AssemblyName(e.Name).Name+".dll";var p=Path.Combine(candidate,n);if(!File.Exists(p))p=Path.Combine(managed,n);return File.Exists(p)?Assembly.LoadFrom(p):null;};
@@ -44,7 +44,7 @@ public static class Lift04FullRetileProbe {
     }
     var digest=(System.Collections.IDictionary)tiles.GetType().GetField("_sourceDigests",F).GetValue(tiles);using(var sha=System.Security.Cryptography.SHA256.Create())digest.Add(surface,BitConverter.ToString(sha.ComputeHash(File.ReadAllBytes(dir+sourceCid+".Surface"))).Replace("-","").ToLowerInvariant());
 var listType=typeof(List<>).MakeGenericType(model.GetType());var owned=(System.Collections.IList)Activator.CreateInstance(listType);var models=(System.Collections.IList)Activator.CreateInstance(listType);var surfaces=(System.Collections.IList)Activator.CreateInstance(typeof(List<>).MakeGenericType(surfaceType));
-    asm.GetType("BridgeBuilder.Bridges.MovableStructureRetile",true).GetMethod("Append",F).Invoke(null,new object[]{"Restored outer/walk structure","LiftBridge04"+(lod==0?"":"_LOD"+lod)+" Mesh",meshIndex,plan,model,surface,tiles,owned,models,surfaces});
+    var retileArgs=new object[]{"Restored outer/walk structure","LiftBridge04"+(lod==0?"":"_LOD"+lod)+" Mesh",meshIndex,plan,model,surface,tiles,owned,models,surfaces,null};if(!(bool)asm.GetType("BridgeBuilder.Bridges.MovableStructureRetile",true).GetMethod("TryAppend",F).Invoke(null,retileArgs))throw new Exception((string)retileArgs[retileArgs.Length-1]);
     long triangles=0;for(int slot=0;slot<models.Count;slot++){var part=models[slot];var method=part.GetType().GetMethods(F).Where(m=>m.Name=="ToUnityMesh").OrderBy(m=>m.GetParameters().Length).First();var mesh=(Mesh)method.Invoke(part,method.GetParameters().Select(p=>p.HasDefaultValue?p.DefaultValue:Type.Missing).ToArray());long countTriangles=(long)mesh.GetIndexCount(0)/3;triangles+=countTriangles;string sid=surfaceType.GetProperty("id").GetValue(surfaces[slot]).ToString();inventory.Add(lod+"\t"+currentDelta+"\t"+meshIndex+"\t"+slot+"\t"+sid+"\t"+countTriangles);UnityEngine.Object.DestroyImmediate(mesh);}if(triangles!=expected.Count/3)throw new Exception("Full Retile triangle count changed");foreach(IDisposable part in owned)part.Dispose();
     retileCases++;
    }

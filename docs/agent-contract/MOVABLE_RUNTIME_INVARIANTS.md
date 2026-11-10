@@ -1,5 +1,10 @@
 # Movable runtime invariants
 
+Selected-road attachments use the [common measured-gap rule](MOVABLE_BRIDGES_CONTRACT.md#attachment-anchors-in-measured-gaps):
+omit every kind of attachment at an unsupported gap anchor, preserve supported moving/fixed
+mounts, and keep external native approach ownership separate. No type/name/CID gap exceptions.
+
+
 Follow [player-controlled generation](BRIDGE_GENERATION_CONTRACT.md#player-controlled-generation-without-structural-rejection-gates): do not reject a generation request
 because of structural shape, width, signed scale, degeneracy, overlap, clearance or appearance
 quality. Such checks belong to offline verification or non-blocking diagnostics. Material
@@ -62,9 +67,15 @@ fall back to ground/other road-level branches; no downstream re-selection.
 Keep all physical contributions and section-local branches within the selected road branch.
 Material matching within it is noexcept: a corresponding match selects that route; no match
 selects the original source-material route, without selecting a different road branch.
+The [complete material pipeline](MATERIAL_GENERATION_CONTRACT.md#complete-material-processing-without-propagated-exceptions) must return explicit outcomes through
+resolution, adaptation, assembly, persistence, preview and creation without propagated exceptions.
+Valid unknown materials use compatible originals, equivalent conversion, or a visible processed
+native compatibility material with non-blocking difference diagnostics. Compatibility gaps must
+not reject valid input. Name/CID whitelist adapters, incompatible blind shader binding and
+unreported appearance losses are prohibited; genuine resource/IO failures remain explicit.
 Branch mechanism decks and native network bridgeheads
 by their own source/domain and render context; do not classify a mixed piece from a section name.
-Resource corruption and native realization failures remain separate explicit errors. Follow
+Resource corruption and native realization failures return explicit non-exception failure results. Follow
 [the material routing rule](MATERIAL_GENERATION_CONTRACT.md#total-material-routing-by-part-and-actual-source).
 
 
@@ -80,8 +91,7 @@ two necessary correspondence conditions: the actual receiver appearance type is 
 the measured target prototype part has a matching material. Use that part's appearance, not a
 bridge-wide type override. Follow [physical part correspondence](MATERIAL_GENERATION_CONTRACT.md#physical-prototype-part-correspondence). Test asphalt, sidewalk surfacing and wheel-track/rut effects independently
 per prototype and physical domain. Other road types reuse compatible input materials or use the corresponding native
-animated-object road material under material contract section 4; this replacement may differ
-in network-layer blending and dynamic worldspace projection, but must preserve the actual
+animated-object road material under material contract section 4; this replacement must preserve complete network-layer blending and dynamic worldspace projection, together with the actual
 appearance category, sampling density and tiling/stretch behavior. Supported road types instead require fixed-density tiling and all-LOD marking removal;
 non-road source modes remain unchanged. This is a generation rule, not a reverse-engineering finding or proof that the
 current implementation complies. Road processing must not mutate a shared structural Surface.
@@ -93,7 +103,7 @@ and rules directly; offline prototype inspection does not authorize runtime mesh
 Prototype-supported road appearances must tile at original resolution and physical texel density,
 never stretch, including fixed running caps, finite terminals and every LOD. Remove embedded road
 markings from every road-material channel and mip; preserve intended selected-road paint through
-the applicable native path (the separate skinned paint mesh for movable mechanisms). Necessary
+the applicable native path (native rigidly attached source decals for movable mechanisms). Necessary
 bounded offline repeats may be authored from pure original road content with aligned PBR donor
 coordinates and complete periodic mip chains; do not claim new periods as original evidence.
 Domains sharing the same evidenced prototype appearance require coherent source/PBR, density, orientation and phase; intentionally different physical-part materials remain distinct. Wear uses the
@@ -101,7 +111,7 @@ same complete measured source and matching same-source background; translate the
 measured visual center to actual native lane centers while preserving physical width, internal
 relationships and longitudinal density. No vehicle lane means no wear. Non-road finite/stretch
 modes retain their own source evidence. No full-span pixels, period cuts, arbitrary downsampling,
-custom shaders or a relaxed package byte limit are permitted.
+custom shaders that cannot independently cold-load or a relaxed package byte limit are permitted.
 
 - Meshes must use the prototype bridge's corresponding LOD meshes as their shape and complexity
   reference; derived geometry must not retain an unchanged prototype geometry reference. Excessive subdivision
@@ -210,3 +220,5 @@ on legacy conversion and fee restoration. The complete policy remains in the con
   ornament XY mapping under general contract sections 5 and 15, with rotation and effects unchanged.
   Do not replace the selected road's ordinary street lighting with the
   archetype road's street lighting.
+
+Dynamic material shaders are governed by [the scoped material requirements](MATERIAL_GENERATION_CONTRACT.md#dynamically-generated-and-independently-persisted-material-shaders): actual source generation, Player-capable loading and independent owner-local cold loading, without a continuing mod synchronization service. This permission does not relax geometry, texture-content or source-ownership rules.

@@ -141,7 +141,7 @@ public partial class BridgeGenerationSystem : GameSystemBase
         if (World.GetOrCreateSystemManaged<BridgePublicationSystem>().IsPending) return;
         if (_pendingRemoval != null)
         {
-            if (BridgeDeferredRemoval.Saving) { _removalStartedUtc=DateTime.UtcNow; return; }
+            if (!BridgePrefabRetirement.Ready(EntityManager,_prefabSystem)) return;
             try
             {
                 if (_pendingRemoval.IsComplete(EntityManager)) CompleteRuntimeDeletion();

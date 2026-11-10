@@ -1,6 +1,6 @@
 from pathlib import Path
 import numpy as np,json,struct
-R=Path('D:/CS2BridgeBuilder');O=R/'artifacts/material-remap/Draw02/closure53';O.mkdir(exist_ok=True)
+R=Path('E:/CS2BridgeBuilder');O=R/'artifacts/material-remap/Draw02/closure53';O.mkdir(exist_ok=True)
 for lod,cid in enumerate(['47331a7032e9c0eda9bdb8b522f40ca1','c401f6a114b090084d35c02325febc23','d8ef11a742ab332ffb7e583befeb21dd']):
  d=np.load(R/f'artifacts/layer-decoupling/Draw02/outputs/native-repeat-mechanism/lod{lod}-native.npz');v=d['mesh0_positions'];f=d['mesh0_indices'].reshape(-1,3);p=v[f];lo=p.min(1);hi=p.max(1);n=np.cross(p[:,1]-p[:,0],p[:,2]-p[:,0]);raw=(R/f'artifacts/material-remap/Draw02/underside52/after52-lod{lod}-delta2-case0.bin').read_bytes();nv,nf,nfrag=struct.unpack_from('<3i',raw);mask=np.frombuffer(raw,dtype='?',offset=12+nv*12,count=nf)
  # original faces at outer sidewalk rim below upper surface, not road replacement

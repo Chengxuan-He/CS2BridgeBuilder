@@ -16,6 +16,13 @@ internal static class MovableClosedRoad
 {
     internal sealed class Result
     {
+        internal readonly string? Error;
+        internal Result(string error)
+        {
+            Error=error;Triangles=Array.Empty<MovableRoadGeometry.Triangle>();Sidewalks=null!;Surfaces=Array.Empty<SurfaceAsset>();
+            Occurrences=Array.Empty<BridgePreviewComposition.Piece>();Compositions=Array.Empty<NetCompositionData>();OccurrenceStarts=Array.Empty<int>();
+            SourceFaces=null;LaneVisuals=Array.Empty<MovableLaneVisuals.Batch>();LaneGeometry=null!;ObjectRules=Array.Empty<MovableRoadObjects.Rule[]>();
+        }
         internal readonly MovableRoadGeometry.Triangle[] Triangles;
         internal readonly MovableSidewalkFaces Sidewalks;
         internal readonly SurfaceAsset[] Surfaces;
@@ -108,6 +115,7 @@ internal static class MovableClosedRoad
             var objectRules = MovableRoadObjects.Extract(pieces, data);
             result = new Result(output.ToArray(), surfaces.ToArray(), occurrences, new[] { data },
                 new[] { 0 }, laneVisuals, new[] { objectRules }, sourceFaces: sourceFaces);
+            if(result.Sidewalks.Error!=null){error=result.Sidewalks.Error;result=null;return false;}
             return true;
         }
         catch (Exception exception)

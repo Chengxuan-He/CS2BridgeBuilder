@@ -24,10 +24,10 @@ public static class Lift01FiniteCandidateCheck
    shader.SetVector("FiniteWarpU1",Part(13,3));shader.SetVector("FiniteWarpV1",Part(16,3));
    foreach(var product in result.channels) {
     var channel=unit.channels.Single(c=>c.name==product.name);
-    using var sourceStream=File.OpenRead(channel.path);var source=MovableTextureSource.Read(sourceStream,b=>b);
+    using var sourceStream=File.OpenRead(channel.path);var source=(MovableTextureSource.TryRead(sourceStream,b=>b,out var parsedTexture1,out var textureReadError1)?parsedTexture1:throw new System.IO.InvalidDataException(textureReadError1));
     using var targetStream=File.OpenRead(Path.Combine(root,"candidate-v2/Lift01/Shared",product.cid+".Texture"));
     int rawSize=Enumerable.Range(0,product.mips).Sum(m=>Math.Max(1,product.width>>m)*Math.Max(1,product.height>>m)*4);
-    var target=MovableTextureSource.Read(targetStream,b=>PreparePaint.DecodeRaw(b,rawSize));
+    var target=(MovableTextureSource.TryRead(targetStream,b=>PreparePaint.DecodeRaw(b,rawSize),out var parsedTexture2,out var textureReadError2)?parsedTexture2:throw new System.IO.InvalidDataException(textureReadError2));
     try {
      if(target.wrapMode!=TextureWrapMode.Clamp||target.anisoLevel!=source.anisoLevel||target.filterMode!=source.filterMode)throw new InvalidDataException("Original sampling settings differ.");
      shader.SetTexture(k,"Source",source);shader.SetTexture(k,"Product",target);

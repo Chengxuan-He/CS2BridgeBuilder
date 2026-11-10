@@ -29,7 +29,7 @@ internal static class Draw01RenderAssembly
             if (!level.HasRoad || level.Partition == null || level.Structure != null)
                 throw new ArgumentException($"Draw01 mechanism LOD {lod} requires road input before structural assembly.");
             var item = level.Source;
-            if (item == null || !string.Equals(item.name, expected[lod], StringComparison.Ordinal) || BridgeAssetInfo.IsOtherBridgePrefab(item.asset?.path, owner, imported))
+            if (item == null || !string.Equals(item.name, expected[lod], StringComparison.Ordinal))
                 throw new InvalidOperationException($"Draw01 mechanism LOD {lod} is not the permitted recorded source '{expected[lod]}'.");
         }
 
@@ -95,11 +95,11 @@ internal static class Draw01RenderAssembly
             "DrawBridge01Pillar_LOD2 Mesh"
         };
         var imported = Path.Combine(Application.persistentDataPath, "ImportedData");
-        // Preflight every source before opening any geometry. Never borrow another bridge's copy.
+        // Check required measured source metadata before opening geometry.
         for (var lod = Numeric_Types_Draw01_Draw01RenderAssembly_cs.Values.I32[13]; lod < sources.Length; lod++)
         {
             var item = sources[lod];
-            if (item == null || !string.Equals(item.name, expected[lod], StringComparison.Ordinal) || BridgeAssetInfo.IsOtherBridgePrefab(item.asset?.path, owner, imported))
+            if (item == null || !string.Equals(item.name, expected[lod], StringComparison.Ordinal))
                 throw new InvalidOperationException($"Draw01 column LOD {lod} is not the permitted recorded source '{expected[lod]}'.");
         }
 
@@ -149,11 +149,11 @@ internal static class Draw01RenderAssembly
             "DrawBridge01PillarBase_LOD2 Mesh"
         };
         var imported = Path.Combine(Application.persistentDataPath, "ImportedData");
-        // Preflight every source before opening any geometry. Never borrow another bridge's copy.
+        // Check required measured source metadata before opening geometry.
         for (var lod = Numeric_Types_Draw01_Draw01RenderAssembly_cs.Values.I32[24]; lod < sources.Length; lod++)
         {
             var item = sources[lod];
-            if (item == null || !string.Equals(item.name, expected[lod], StringComparison.Ordinal) || BridgeAssetInfo.IsOtherBridgePrefab(item.asset?.path, owner, imported))
+            if (item == null || !string.Equals(item.name, expected[lod], StringComparison.Ordinal))
                 throw new InvalidOperationException($"Draw01 footing LOD {lod} is not the permitted recorded source '{expected[lod]}'.");
         }
 

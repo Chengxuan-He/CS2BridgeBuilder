@@ -10,8 +10,7 @@ internal sealed partial class TowerFactory
     {
         var imported = Path.Combine(Application.persistentDataPath, "ImportedData");
         foreach (var prefab in _prefabs)
-            if (prefab is T typed && string.Equals(typed.name, name, StringComparison.Ordinal) &&
-                !BridgeAssetInfo.IsOtherBridgePrefab(typed.asset?.path, _bridgeName, imported)) return typed;
+            if (prefab is T typed && string.Equals(typed.name, name, StringComparison.Ordinal)) return typed;
         throw new InvalidOperationException($"Original {typeof(T).Name} '{name}' is unavailable.");
     }
 }

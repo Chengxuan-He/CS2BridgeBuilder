@@ -175,10 +175,9 @@ world. Its explicit list now covers 59 component/buffer record types used by nat
 section composition, signals and object selection. Native instance components are not copied from
 the city. The importer retains original PrefabBase references for later visual/object extraction.
 
-Each source entity must resolve to a valid original prefab. Before reading its component payload,
-the importer applies the existing path-based foreign-bridge exclusion. This applies recursively,
-including placeholder alternatives, requirements, utility node objects, lane alternatives and
-section/piece dependencies. There is no same-CID exception permitting another bridge's private data.
+Each source entity must resolve to a valid prefab. The importer accepts valid other-owner
+inputs recursively, including placeholders, requirements, objects, lanes and sections.
+Only temporary private entities are created; source access grants no write ownership.
 
 One private entity is cached per source before recursively importing its references, preserving
 cycles and identity. Direct Entity fields are rewritten to private entities. Direct EntityArchetype
@@ -304,9 +303,9 @@ assembles them. Importing such an object through the loaded-prefab path would ei
 an incorrect dependency on a live DLC prototype. `StageMechanism` therefore accepts the assembled
 StaticObjectPrefab directly, together with its generated ObjectGeometryData and PlaceableObjectData.
 
-The method preflights its dependency graph for foreign bridge paths before reading archetype
-metadata. Native dependency enumeration includes null optional references; those are not traversed.
-Cycles are visited once. The root and all actual referenced prefabs still pass source-isolation checks.
+The method traverses required valid dependency handles before reading archetype metadata.
+Native dependency enumeration includes null optional references; those are not traversed.
+Cycles are visited once. Source bridge ownership does not reject the input.
 It collects the object's active native components and uses their GetArchetypeComponents methods,
 then adds the native Created/Updated markers and builds that archetype in the private world.
 
@@ -377,10 +376,10 @@ installed payload or existing bridge was modified during this inspection.
 ## Generated render metadata staging
 
 `MovableNetworkPrefabs.StageRender` now stages generated RenderPrefab metadata in the existing
-private network world. It checks source ownership before reading each prefab, memoizes identity
+private network world. It checks required prefab existence, memoizes identity
 before traversing LOD references, and exposes original-prefab provenance through `Original`.
 LOD entities are staged recursively and ordered by descending index count with stable equal-count
-ordering, matching the native valid-reference path. Missing or foreign LOD references fail rather
+ordering, matching the native valid-reference path. Missing LOD references fail rather
 than producing an incomplete generated graph. Dispose the temporary context after a staging failure.
 
 The scalar projection follows the inspected `MeshSystem.OnUpdate`:

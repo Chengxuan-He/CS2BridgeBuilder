@@ -28,7 +28,7 @@ public static class Lift02RepeatControlAudit
         var compression=Assembly.Load("Colossal.AssetPipeline.Native").GetType("Colossal.AssetPipeline.Native.CompressionUtilities",true);
         var decode=compression.GetMethods().Single(m=>m.Name=="Decompress" && m.GetParameters()[0].ParameterType==typeof(byte[]));
         var zstd=Enum.Parse(decode.GetParameters()[1].ParameterType,"ZSTD");
-        var texture=MovableTextureSource.Read(stream,raw=>(byte[])decode.Invoke(null,new[]{(object)raw,zstd}));
+        var texture=(MovableTextureSource.TryRead(stream,raw=>(byte[])decode.Invoke(null,new[]{(object)raw,zstd}),out var parsedTexture1,out var textureReadError1)?parsedTexture1:throw new System.IO.InvalidDataException(textureReadError1));
         try {
             Need((int)nativeType.GetProperty("width").GetValue(native)==texture.width &&
                 (int)nativeType.GetProperty("height").GetValue(native)==texture.height,"Native dimensions differ.");

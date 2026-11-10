@@ -55,12 +55,22 @@ internal static class BridgePreparedMaterialFiles
         internal Input(string path, string cid, string digest) { Path = path; Cid = cid; Digest = digest; }
     }
 
-    internal static List<Input> Read(string styleFolder, string variant, string name,
+    internal static bool TryRead(string styleFolder, string variant, string name,
+        out List<Input> result,out string? error,
         Func<byte[], string[]> references, Action<string> requireBuiltin, Func<string, int>? requiredMidMipLevels = null,
         BridgeMaterialFileSnapshot? snapshot = null)
     {
-        byte[] Bytes(string path) => snapshot == null ? File.ReadAllBytes(path)
-            : snapshot.Get(path).Bytes ?? throw new InvalidDataException("Snapshot descriptor bytes are missing: " + path);
+        result=new List<Input>();error=null;string? failure=null;
+        bool Fail(string message){failure=message;return false;}
+        try
+        {
+        byte[] Bytes(string path)
+        {
+            if(snapshot==null)return File.ReadAllBytes(path);
+            if(!snapshot.TryGet(path,out var entry,out var cause)){Fail(cause!);return Array.Empty<byte>();}
+            if(entry.Bytes==null){Fail("Prepared snapshot has no retained descriptor bytes: "+path);return Array.Empty<byte>();}
+            return entry.Bytes;
+        }
         string Identity(string path)
         {
             using var reader = new StreamReader(new MemoryStream(Bytes(path + ".cid"), false));
@@ -68,32 +78,33 @@ internal static class BridgePreparedMaterialFiles
         }
         string Digest(string path)
         {
-            if (snapshot != null) return snapshot.Get(path).Digest;
+            if(snapshot!=null){if(snapshot.TryGet(path,out var entry,out var cause))return entry.Digest;Fail(cause!);return "";}
             using var stream = File.OpenRead(path);
             using var sha = SHA256.Create();
             return BitConverter.ToString(sha.ComputeHash(stream));
         }
         string folder = System.IO.Path.Combine(styleFolder, variant);
-        if (!Directory.Exists(folder)) throw new DirectoryNotFoundException("Prepared material payloads are missing: " + folder);
+        if (!Directory.Exists(folder)) return Fail("Prepared material payloads are missing: " + folder);
         var inputs = new List<Input>();
         var identities = new Dictionary<string, Input>(StringComparer.OrdinalIgnoreCase);
-        void Add(string path, string? expected = null)
+        bool Add(string path, string? expected = null)
         {
             string cid = Identity(path);
             if (cid.Length != 32 || cid.All(c => c == '0') || cid.Any(c => !Uri.IsHexDigit(c)) ||
                 (expected != null && !StringComparer.OrdinalIgnoreCase.Equals(cid, expected)))
-                throw new InvalidDataException("Invalid prepared material identity: " + path);
+                return Fail("Invalid prepared material identity: " + path);
             string digest = Digest(path);
+            if(failure!=null)return false;
             var input = new Input(path, cid, digest);
             if (identities.TryGetValue(cid, out var existing) && existing.Digest != digest)
-                throw new InvalidDataException("Prepared variant contains conflicting payloads: " + cid);
+                return Fail("Prepared variant contains conflicting payloads: " + cid);
             identities[cid] = input;
-            inputs.Add(input);
+            inputs.Add(input);return true;
         }
         foreach (string path in Directory.EnumerateFiles(folder).OrderBy(p => p, StringComparer.Ordinal))
-            if (System.IO.Path.GetExtension(path) is ".Surface" or ".Texture") Add(path);
+            if (System.IO.Path.GetExtension(path) is ".Surface" or ".Texture")if(!Add(path))return false;
         if (!inputs.Any(i => System.IO.Path.GetFileName(i.Path) == name))
-            throw new FileNotFoundException("Prepared material descriptor is missing.", System.IO.Path.Combine(folder, name));
+            return Fail("Prepared material descriptor is missing: "+System.IO.Path.Combine(folder,name));
         foreach (var surface in inputs.Where(i => System.IO.Path.GetExtension(i.Path) == ".Surface").ToArray())
         {
         int levels = 0;
@@ -102,34 +113,39 @@ internal static class BridgePreparedMaterialFiles
             if (identities.ContainsKey(cid)) continue;
             // Only a serialized CID may select a shared filename. No global or cross-owner lookup.
             if (cid.Length != 32 || cid.Any(c => !Uri.IsHexDigit(c)))
-                throw new InvalidDataException("Invalid prepared dependency identity: " + cid);
+                return Fail("Invalid prepared dependency identity: " + cid);
             var shared = System.IO.Path.Combine(styleFolder, "Shared", cid.ToLowerInvariant() + ".Texture");
             if (variant == "Paint" && name == "SkinnedPaint.Surface" && IsSharedPaint(cid))
-                Add(PaintPath(Directory.GetParent(styleFolder)!.FullName, cid), cid);
-            else if (File.Exists(shared)) Add(shared, cid);
+                {if(!Add(PaintPath(Directory.GetParent(styleFolder)!.FullName, cid), cid))return false;}
+            else if (File.Exists(shared)){if(!Add(shared,cid))return false;}
             else
             {
                 requireBuiltin(cid);
                 int required = requiredMidMipLevels?.Invoke(cid) ?? 0;
                 if (required != 0 && levels != 0 && required != levels)
-                    throw new InvalidDataException("Prepared VT dependencies disagree on mid-mip levels.");
+                    return Fail("Prepared VT dependencies disagree on mid-mip levels.");
                 levels = Math.Max(levels, required);
             }
         }
         if (levels == 0) continue;
         // Only native MidMips may use the approved common immutable source root.
         // Ordinary textures remain strictly style-local; snapshots remain owner-local.
-        string cacheCid = CacheFor(surface.Cid)
-            ?? throw new InvalidDataException("Prepared Surface has no native mid-mip membership: " + surface.Cid);
+        string? cacheCid=CacheFor(surface.Cid);
+        if(cacheCid==null)return Fail("Prepared Surface has no native mid-mip membership: "+surface.Cid);
         string cachePath = CachePath(System.IO.Path.GetDirectoryName(System.IO.Path.GetFullPath(styleFolder))!, cacheCid);
-        if (!File.Exists(cachePath)) throw new InvalidDataException("Required prepared MidMips file is missing: " + cachePath);
+        if (!File.Exists(cachePath)) return Fail("Required prepared MidMips file is missing: " + cachePath);
         byte[] cacheBytes = Bytes(cachePath);
-        if (!BridgeMidMipReferences.Read(cacheBytes).Contains(surface.Cid, StringComparer.OrdinalIgnoreCase)
+        if(!BridgeMidMipReferences.TryRead(cacheBytes,out var membership,out var cause))
+            return Fail("Prepared cache membership: "+surface.Cid+"; "+cause);
+        if (!membership.Contains(surface.Cid, StringComparer.OrdinalIgnoreCase)
             || levels != BitConverter.ToInt32(cacheBytes, 4)
             || System.IO.Path.GetFileNameWithoutExtension(cachePath) != $"TS{BitConverter.ToInt32(cacheBytes, 0)}_MB{levels}")
-            throw new InvalidDataException("Prepared MidMips membership, discovery tag or level count differs: " + cacheCid);
-        if (!identities.ContainsKey(cacheCid)) Add(cachePath, cacheCid);
+            return Fail("Prepared MidMips membership, discovery tag or level count differs: " + cacheCid);
+        if (!identities.ContainsKey(cacheCid) && !Add(cachePath,cacheCid))return false;
         }
-        return inputs;
+        if(failure!=null)return false;result=inputs;return true;
+        }
+        catch(Exception exception){return Fail("Prepared material preflight: "+styleFolder+"/"+variant+"/"+name+"; "+exception);}
+        finally{error=failure;if(error!=null)result=new List<Input>();}
     }
 }

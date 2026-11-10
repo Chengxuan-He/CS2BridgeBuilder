@@ -15,7 +15,7 @@ internal static class Lift02BedAppearance
         => Prepared(BridgePreparedMaterials.RepeatUnit("Lift02", "1c6aac78ba66e66ebd3f5bb395a04d5d0f8223a6bf34f1edb74ef3b873929a48"), roadToObject, halfDelta);
 
     // Native resource graph is complete; filtering acceptance remains a separate gate.
-    internal static MovableRoadAppearance.Level Prepared(SurfaceAsset surface, Pose roadToObject, float halfDelta)
+    internal static MovableRoadAppearance.Level Prepared(MovableExistingRoadSurface.SurfaceResult surface, Pose roadToObject, float halfDelta)
     {
         var frame = Matrix4x4.TRS(roadToObject.position,roadToObject.rotation,Vector3.one).transpose;
         var offset = Data.I32[2];

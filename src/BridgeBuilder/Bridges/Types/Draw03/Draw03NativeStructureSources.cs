@@ -43,19 +43,18 @@ internal static class Draw03NativeStructureSources
         slot = null!;
         var expected = SourceDigest(source.id.guid.ToString());
         if (expected == null || !unit.CanUseSource) return false;
-        if (!source.isBuiltin || expected != sourceDigest)
+        if (expected != sourceDigest)
             throw new InvalidDataException("Draw03 native structural source identity/content differs.");
         slot = new MovableStructureTiles.Slot { Surface = source, Original = unit };
         return true;
     }
 
-    // No fallback to a generated bridge's copy and no new material or texture.
+    // Exact recorded content, without requiring a particular source owner.
     internal static SurfaceAsset Resolve(string sourceCid)
     {
         var expected = SourceDigest(sourceCid)
             ?? throw new InvalidDataException("Unknown Draw03 native structural source identity.");
-        if (!AssetDatabase.global.TryGetAsset(Colossal.Hash128.Parse(sourceCid), out SurfaceAsset source)
-            || !source.isBuiltin)
+        if (!AssetDatabase.global.TryGetAsset(Colossal.Hash128.Parse(sourceCid), out SurfaceAsset source))
             throw new InvalidDataException("Draw03 native structural source is unavailable: " + sourceCid);
         using var stream = source.GetReadStream();
         using var bytes = new MemoryStream();

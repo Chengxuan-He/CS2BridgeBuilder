@@ -1,6 +1,6 @@
 import json,numpy as np
 from pathlib import Path
-R=Path('D:/CS2BridgeBuilder');O=R/'artifacts/material-remap/Draw02/closure53';rows=json.loads((R/'artifacts/material-remap/shared/draw02-structure52/mechanism-bindings.json').read_text());report=[]
+R=Path('E:/CS2BridgeBuilder');O=R/'artifacts/material-remap/Draw02/closure53';rows=json.loads((R/'artifacts/material-remap/shared/draw02-structure52/mechanism-bindings.json').read_text());report=[]
 for lod in range(3):
  found=set();target=[]
  for r in rows:

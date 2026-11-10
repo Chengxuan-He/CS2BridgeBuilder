@@ -22,6 +22,15 @@ geometry, ownership and complete-Prefab comparison requirements. Implementation 
 candidate inventories and old acceptance records are evidence for their recorded build/input only;
 they do not override these contracts or establish acceptance of a later material migration.
 
+## Current material capability boundary
+
+Complete multilayer adaptation is [not implementable under current requirements](MATERIAL_GENERATION_CONTRACT.md#current-multilayer-compatibility-limit).
+Compatibility output does not establish complete fidelity. Saved bridges must remain
+independent of Bridge Builder; dynamic-shader registration dependencies are not an
+alternative. [Selected-road decals](MATERIAL_GENERATION_CONTRACT.md#source-preserving-selected-road-decals)
+retain original artwork/UVs through derived native objects, with explicit hashed-alpha
+blend differences rather than the removed shared white/yellow paint substitution.
+
 ## Shared sidewalk requirements
 
 **Mandatory for every bridge generator:** roads may have no sidewalks, a sidewalk on only one
@@ -51,7 +60,10 @@ For movable bridges, reuse original non-road materials. Road composition/precomp
 two necessary correspondence conditions: verified actual receiver appearance and matching measured
 prototype material at the target physical part. Follow [physical part correspondence](MATERIAL_GENERATION_CONTRACT.md#physical-prototype-part-correspondence). Test asphalt, sidewalk surfacing and wheel-track/rut effects independently
 per prototype and physical domain. Other road types use compatible originals or corresponding native object road materials under
-material section 4, with its accepted network-layer/worldspace differences. Supported road types instead require fixed-density tiling and all-LOD marking removal;
+material section 4, preserving complete source layers and worldspace behavior. The
+[complete material pipeline](MATERIAL_GENERATION_CONTRACT.md#complete-material-processing-without-propagated-exceptions)
+returns explicit outcomes without propagated exceptions and supports valid unknown sources
+without name/CID whitelist adapters. Supported road types require fixed-density tiling and all-LOD marking removal;
 non-road source modes remain unchanged. This is a generation rule, not a reverse-engineering finding or proof that the
 current implementation complies. Road processing must not mutate a shared structural Surface.
 
@@ -66,7 +78,7 @@ same complete measured source and matching same-source background; translate the
 measured visual center to actual native lane centers while preserving physical width, internal
 relationships and longitudinal density. No vehicle lane means no wear. Non-road finite/stretch
 modes retain their own source evidence. No full-span pixels, period cuts, arbitrary downsampling,
-custom shaders or a relaxed package byte limit are permitted.
+custom shaders that cannot independently cold-load or a relaxed package byte limit are permitted.
 
 [Material generation](MATERIAL_GENERATION_CONTRACT.md) governs every bridge material path,
 including preview, creation, export and all LODs. Its first rule prohibits creating new materials
@@ -133,3 +145,5 @@ The [persistence directory and migration specification](Bridge-Asset-Persistence
 places owned resources and dependency snapshots below each UUID. Creation and migration share
 that layout, including VT and mid-mip resources. Native cold-load acceptance requires separate
 in-game verification. Section 7 defines migration safeguards.
+
+Dynamic material shaders are governed by [the scoped material requirements](MATERIAL_GENERATION_CONTRACT.md#dynamically-generated-and-independently-persisted-material-shaders): actual source generation, Player-capable loading and independent owner-local cold loading, without a continuing mod synchronization service. This permission does not relax geometry, texture-content or source-ownership rules.

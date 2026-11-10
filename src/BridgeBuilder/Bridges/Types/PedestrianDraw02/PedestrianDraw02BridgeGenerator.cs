@@ -28,10 +28,11 @@ internal sealed class PedestrianDraw02BridgeGenerator : MovableBridgeGeneratorBa
     }
 
     protected override MovableStraightSample SampleRoad(string owner, Entity selectedRoad, RenderPrefab[] roots, ContentPrefab content, float halfDelta, RandomSeed seed) => PedestrianDraw02RoadSampling.Create(owner, selectedRoad, roots, content, halfDelta, seed, NetPieceLayerMask.Bottom | NetPieceLayerMask.Side);
-    protected override RenderPrefab BuildMechanism(TowerFactory factory, string owner, MovableStraightSample road, RenderPrefab[] nativeLevels, float halfDelta, MovableRoadMaterial material)
+    protected override RenderPrefab? BuildMechanism(TowerFactory factory, string owner, MovableStraightSample road, RenderPrefab[] nativeLevels, float halfDelta, MovableRoadMaterial material)
     {
         var levels = PedestrianDraw02RoadPreparation.Prepare(road, nativeLevels, halfDelta, Matrix4x4.Translate(new Vector3(Numeric_Types_PedestrianDraw02_PedestrianDraw02BridgeGenerator_cs.Values.F32[0], Numeric_Types_PedestrianDraw02_PedestrianDraw02BridgeGenerator_cs.Values.F32[1], Numeric_Types_PedestrianDraw02_PedestrianDraw02BridgeGenerator_cs.Values.F32[2])), material);
-        return PedestrianDraw02RenderAssembly.CreateMechanism(factory, owner + " Mechanism", levels, halfDelta) ?? throw new InvalidOperationException("PedestrianDraw02 moving render graph creation failed.");
+        if (levels == null) return null;
+        return PedestrianDraw02RenderAssembly.CreateMechanism(factory, owner + " Mechanism", levels, halfDelta);
     }
 
     protected override void AssembleBridge(NetGeometryPrefab target, TowerFactory factory, RenderPrefab[] roots, ContentPrefab content, float halfDelta, MovableStraightSample road, RenderPrefab moving)
@@ -39,6 +40,7 @@ internal sealed class PedestrianDraw02BridgeGenerator : MovableBridgeGeneratorBa
         var column = PedestrianDraw02RenderAssembly.CreateColumn(factory, target.name, target.name + " Column", roots[Numeric_Types_PedestrianDraw02_PedestrianDraw02BridgeGenerator_cs.Values.I32[0]], halfDelta) ?? throw new InvalidOperationException("PedestrianDraw02 support render graph creation failed.");
         var footing = PedestrianDraw02RenderAssembly.CreateFooting(factory, target.name, target.name + " Footing", roots[Numeric_Types_PedestrianDraw02_PedestrianDraw02BridgeGenerator_cs.Values.I32[1]], halfDelta) ?? throw new InvalidOperationException("PedestrianDraw02 footing render graph creation failed.");
         var mechanism = PedestrianDraw02ObjectAssembly.Create(factory, target.name, target.name + " Moving Object", moving, column, footing, content, factory.ResolveOriginal<ObjectPrefab>, halfDelta, road);
+        if(mechanism==null)return;
         // The native pathway uses ordinary approach sections, not a custom approach mesh.
         PedestrianDraw02NetworkAssembly.Apply(target, factory, mechanism);
     }

@@ -19,7 +19,7 @@ try {
   foreach(var entry in zip.Entries.Where(e=>e.FullName.EndsWith(".cid",StringComparison.Ordinal))){using var r=new StreamReader(entry.Open());var cid=r.ReadToEnd().Trim();var payload=zip.GetEntry(entry.FullName[..^4]);if(payload!=null)index.TryAdd(cid,payload);}
  }
  byte[] Read(string cid){if(!index.TryGetValue(cid,out var entry))throw new InvalidDataException("Missing builtin payload: "+cid);using var s=entry.Open();using var b=new MemoryStream();s.CopyTo(b);return b.ToArray();}
- string[] References(byte[] bytes)=>BridgeSurfaceReferences.Read(bytes,(template,p)=>Stack(template).Contains(p));
+ string[] References(byte[] bytes)=>(BridgeSurfaceReferences.TryRead(bytes,(template,p)=>Stack(template).Contains(p),out var surfaceRefs1,out var surfaceRefsError1)?surfaceRefs1:throw new System.IO.InvalidDataException(surfaceRefsError1));
  IEnumerable<string> Stack(int template)=>library.TryGetValue(template,out var value)?value.GetProperty("stacks").EnumerateArray().SelectMany(s=>s.EnumerateArray().Select(p=>p.GetString()!)):template==17?new[]{"_BaseColorMap","_NormalMap","_MaskMap","_ControlMask","_WorldspaceAlbedo","_WorldspaceNormalMap","_WorldspaceMaskMap"}:Array.Empty<string>();
  void Add(string path,byte[] bytes){if(files.TryGetValue(path,out var prior)&&!prior.SequenceEqual(bytes))throw new InvalidDataException("Conflicting output: "+path);files[path]=bytes;}
  string Surface(string path,byte[] bytes){var cid=Digest(bytes)[..32];Add(path,bytes);Add(path+".cid",Encoding.UTF8.GetBytes(cid));return cid;}

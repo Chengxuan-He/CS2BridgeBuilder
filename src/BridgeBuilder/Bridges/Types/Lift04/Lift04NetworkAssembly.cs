@@ -15,7 +15,7 @@ internal static class Lift04NetworkAssembly
         // Lift04 uses the subway placeholder, not the ordinary road pillar placeholder.
         // Preserve its identity for native spawnable-pillar reverse references.
         var pillar = factory.ResolveOriginal<ObjectPrefab>("Subway Pillar Placeholder");
-        if (!pillar.isBuiltin || !pillar.Has<PlaceholderObject>())
+        if (!pillar.Has<PlaceholderObject>())
             throw new InvalidOperationException("Lift04 requires the built-in subway pillar placeholder.");
         var sections = Lift04NetworkData.ConvertSections(target.name, target.m_Sections,
             roles, out var created);

@@ -19,7 +19,7 @@ internal static class Lift03ObjectAssembly
         for (var i = Numeric_Types_Lift03_Lift03ObjectAssembly_cs.Values.I32[24]; i < attachments.Length; i++)
         {
             var item = attachments[i];
-            if (item.m_Object == null || BridgeAssetInfo.IsOtherBridgePrefab(item.m_Object.asset?.path, owner, imported))
+            if (item.m_Object == null)
                 throw new InvalidOperationException("Lift03 requires its original tower light sources.");
             item.m_Position.x += AttachmentSides[i] * structureHalfDelta;
         }
@@ -39,7 +39,7 @@ internal static class Lift03ObjectAssembly
         factory.AttachMovableRoadObjects(result, objects, Pose.identity, partitions);
         // Each deck supplies only its own receivers. Merge the resulting paint once,
         // preserving shared bone 3 and fixed bone 0 without duplicate resource names.
-        factory.AttachMovablePaint(result, new[] { new MovablePaintDeck(roads.MainRoad.LaneGeometry.Decals, roads.MainToObject, Lift03RoadPartitions.Carriageway, MovableRoadGeometry.InFrame(roads.MainRoad.Triangles, roads.MainToObject)), new MovablePaintDeck(roads.AuxiliaryRoad.LaneGeometry.Decals, roads.AuxiliaryToObject, Lift03RoadPartitions.Carriageway, MovableRoadGeometry.InFrame(roads.AuxiliaryRoad.Triangles, roads.AuxiliaryToObject)) });
+        if(!factory.TryAttachMovablePaint(result, new[] { new MovablePaintDeck(roads.MainRoad.LaneGeometry.Decals, roads.MainToObject, Lift03RoadPartitions.Carriageway, MovableRoadGeometry.InFrame(roads.MainRoad.Triangles, roads.MainToObject)), new MovablePaintDeck(roads.AuxiliaryRoad.LaneGeometry.Decals, roads.AuxiliaryToObject, Lift03RoadPartitions.Carriageway, MovableRoadGeometry.InFrame(roads.AuxiliaryRoad.Triangles, roads.AuxiliaryToObject)) },out _))return null!;
         return result;
         void AddObjects(Lift03RoadSampling.Deck deck, Pose pose)
         {

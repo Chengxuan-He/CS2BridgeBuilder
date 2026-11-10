@@ -50,7 +50,7 @@ public static class NativeMidMipCokCheck
             var entryType = sourceType.GetNestedType("EntryInfo");
             var read = sourceType.GetMethod("GetReadStream", BindingFlags.NonPublic | BindingFlags.Instance, null, new[] { entryType }, null);
             var mod = Assembly.LoadFrom(Arg("-modAssembly"));
-            var subset = mod.GetType("BridgeBuilder.Bridges.MovableMidMipSubset", true).GetMethod("Copy", BindingFlags.Static | BindingFlags.NonPublic);
+            var subset = mod.GetType("BridgeBuilder.Bridges.MovableMidMipSubset", true).GetMethod("TryCopy", BindingFlags.Static | BindingFlags.NonPublic);
             int count = 0;
             foreach (string line in File.ReadAllLines(Arg("-cokCases")))
             {
@@ -69,7 +69,9 @@ public static class NativeMidMipCokCheck
                 if (tags.Length != 1 || tags[0] != "TS512_MB3") throw new Exception("Native cache discovery tag changed.");
                 using var stream = (Stream)cache.GetType().GetMethod("GetReadStream").Invoke(cache, null);
                 if (!stream.CanSeek || stream.Length != long.Parse(row[2])) throw new Exception("Native COK stream is not correctly bounded/seekable.");
-                var result = (byte[])subset.Invoke(null, new object[] { stream, row[3], row[4], 512, 3 });
+                object[] call={stream,row[3],row[4],512,3,null,null};
+                if(!(bool)subset.Invoke(null,call))throw new Exception("Native subset failed: "+call[6]);
+                var result=(byte[])call[5];
                 if (!result.SequenceEqual(File.ReadAllBytes(row[5]))) throw new Exception("Native COK subset differs from independently recovered BC7 blocks.");
                 count++;
             }

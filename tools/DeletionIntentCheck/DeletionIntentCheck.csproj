@@ -1,0 +1,13 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup><TargetFramework>net8.0</TargetFramework><OutputType>Exe</OutputType><ImplicitUsings>enable</ImplicitUsings><Nullable>enable</Nullable><SkipStructureSource>true</SkipStructureSource></PropertyGroup>
+  <ItemGroup><Compile Include="../../src/BridgeBuilder/Runtime/BridgePrefabRetirement.cs" /><Compile Include="../../src/BridgeBuilder/Runtime/BridgeShutdownCleanup.cs" />
+    <Compile Include="../../src/BridgeBuilder/Runtime/BridgeDeletionIntent.cs" />
+    <Compile Include="../../src/BridgeBuilder/Runtime/BridgeLegacyRemoval.cs" />
+    <Compile Include="../../src/BridgeBuilder/Runtime/BridgeRemovalFiles.cs" />
+    <Compile Include="../../src/BridgeBuilder/Runtime/BridgeDeferredRemoval.cs" />
+    <Compile Include="../../src/BridgeBuilder/Runtime/BridgeBulkRemoval.cs" />
+    <Compile Include="../../src/BridgeBuilder/Runtime/BridgeOwnedDirectoryRemoval.cs" />
+    <Compile Include="../../src/BridgeBuilder/Runtime/BridgeFileAccess.cs" />
+    <Compile Include="../../src/BridgeBuilder/Runtime/BridgeAssetInfo.cs" />
+  </ItemGroup>
+</Project>

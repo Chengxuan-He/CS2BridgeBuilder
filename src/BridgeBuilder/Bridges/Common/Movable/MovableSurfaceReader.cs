@@ -15,7 +15,7 @@ namespace BridgeBuilder.Bridges;
 // game texture/material, and never inherit its current rendering-quality bias.
 internal sealed class MovableSurfaceReader : IDisposable
 {
-    internal Material Material { get; }
+    internal Material Material { get; private set; } = null!;
     internal IEnumerable<string> TextureProperties => _textureProperties;
     private readonly HashSet<Texture> _textures = new();
     private readonly HashSet<string> _textureProperties = new(StringComparer.Ordinal);
@@ -25,8 +25,26 @@ internal sealed class MovableSurfaceReader : IDisposable
     internal bool HasAuthoredTexture(string property) => Material.HasProperty(property) &&
         _textures.Contains(Material.GetTexture(property));
 
-    internal MovableSurfaceReader(SurfaceAsset source)
+    private MovableSurfaceReader() { }
+
+    internal static bool TryRead(SurfaceAsset source, out MovableSurfaceReader reader, out string? error)
     {
+        var candidate = new MovableSurfaceReader(); reader = null!; error = null;
+        try
+        {
+            if (!candidate.Read(source, out error)) { if(!candidate.TryDispose(out var cleanup))error += "; cleanup="+cleanup; return false; }
+            reader = candidate; return true;
+        }
+        catch (Exception exception)
+        {
+            error = "Source material read failed: " + exception.GetType().Name + ": " + exception.Message;
+            if(!candidate.TryDispose(out var cleanup))error += "; cleanup="+cleanup; return false;
+        }
+    }
+
+    private bool Read(SurfaceAsset source, out string? error)
+    {
+        error = null;
         source.LoadHeader();
         var library = AssetDatabase.global.resources.materialLibrary;
         var template = library.GetMaterial(source.materialTemplateHash);
@@ -52,15 +70,15 @@ internal sealed class MovableSurfaceReader : IDisposable
                         if (!textures.TryGetValue(item.Value, out var texture))
                         {
                             using var stream = item.Value.GetReadStream();
-                            texture = MovableTextureSource.Read(stream, Decompress);
-                            texture.name = item.Value.name;
+                            if(!MovableTextureSource.TryRead(stream, TryDecompress,out texture,out error))return false;
                             _textures.Add(texture);
+                            texture.name = item.Value.name;
                             textures.Add(item.Value, texture);
                         }
                         Material.SetTexture(item.Key, texture);
                         _textureProperties.Add(item.Key);
                     }
-                    return;
+                    return true;
                 }
                 var description = library.GetMaterialDescription(source.materialTemplateHash);
                 // VT channels are declared by stacks. Ordinary materials above use
@@ -71,7 +89,7 @@ internal sealed class MovableSurfaceReader : IDisposable
                 if (source.hasVTSurfaceAsset)
                 {
                     using var stream = source.vtSurfaceAsset.GetReadStream();
-                    var textures = MovableVtTextureSource.ReadSurface(stream, Colossal.Compression.CompressionUtils.DecompressZstdWithMarker);
+                    if (!MovableVtTextureSource.TryReadSurface(stream, Colossal.Compression.CompressionUtils.DecompressZstdWithMarker, out var textures, out error)) return false;
                     foreach (var texture in textures.Values) _textures.Add(texture);
                     foreach (var item in textures)
                     {
@@ -89,32 +107,46 @@ internal sealed class MovableSurfaceReader : IDisposable
                     if (!id.isValid) continue;
                     if (!source.database.TryGetAsset(id, out VTTextureAsset asset) &&
                         !AssetDatabase.global.TryGetAsset(id, out asset))
-                        throw new InvalidOperationException($"Missing native VT texture {id} on {source.name}.");
+                        { error = $"Missing native VT texture {id} on {source.name}."; return false; }
                     if (!standalone.TryGetValue(asset, out var texture))
                     {
                         using var stream = asset.GetReadStream();
-                        texture = MovableVtTextureSource.ReadTexture(stream, Colossal.Compression.CompressionUtils.DecompressZstdWithMarker);
-                        texture.name = asset.name; _textures.Add(texture); standalone.Add(asset,texture);
+                        if (!MovableVtTextureSource.TryReadTexture(stream, Colossal.Compression.CompressionUtils.DecompressZstdWithMarker, out texture, out error)) return false;
+                        _textures.Add(texture); texture.name = asset.name; standalone.Add(asset,texture);
                     }
                     Material.SetTexture(description.m_Stacks[stack].m_PropertyNames[layer], texture);
                 }
             }
             finally { source.UnloadProperties(); }
         }
-        catch { Dispose(); throw; }
+        catch (Exception exception) { error = exception.GetType().Name + ": " + exception.Message; return false; }
+        return true;
     }
 
-    public void Dispose()
+    internal bool TryDispose(out string? error)
     {
-        UnityEngine.Object.Destroy(Material);
-        foreach (var texture in _textures) UnityEngine.Object.Destroy(texture);
+        string? failure=null;
+        void Destroy(UnityEngine.Object value)
+        {
+            try{if(value!=null)UnityEngine.Object.Destroy(value);}
+            catch(Exception exception){failure=(failure==null?"":failure+"; ")+exception;}
+        }
+        Destroy(Material);Material=null!;
+        foreach(var texture in _textures)Destroy(texture);
+        _textures.Clear();_textureProperties.Clear();error=failure;return error==null;
     }
+    public void Dispose(){if(!TryDispose(out var error))Mod.Log.Error("Material reader cleanup: "+error);}
 
-    private static byte[] Decompress(byte[] bytes)
+    private static bool TryDecompress(byte[] bytes,out byte[] result,out string? error)
     {
-        using var input = new NativeArray<byte>(bytes, Allocator.Temp);
-        using var output = CompressionUtilities.Decompress(input, input.Length, CompressionFormat.ZSTD, out var length);
-        if (length != output.Length) throw new InvalidDataException("Invalid native decompressed texture length.");
-        return output.ToArray();
+        result=Array.Empty<byte>();error=null;
+        try
+        {
+            using var input = new NativeArray<byte>(bytes, Allocator.Temp);
+            using var output = CompressionUtilities.Decompress(input, input.Length, CompressionFormat.ZSTD, out var length);
+            if(length!=output.Length){error="Invalid native decompressed texture length.";return false;}
+            result=output.ToArray();return true;
+        }
+        catch(Exception exception){error="Native texture decompression: "+exception;return false;}
     }
 }

@@ -16,7 +16,7 @@ internal static class Lift01ObjectAssembly
         for (var i = Numeric_Types_Lift01_Lift01ObjectAssembly_cs.Values.I32[0]; i < attachments.Length; i++)
         {
             var item = attachments[i];
-            if (item.m_Object == null || BridgeAssetInfo.IsOtherBridgePrefab(item.m_Object.asset?.path, owner, imported))
+            if (item.m_Object == null)
                 throw new InvalidOperationException("Lift01 requires its original control-room light sources.");
             item.m_Position.x += i == Numeric_Types_Lift01_Lift01ObjectAssembly_cs.Values.I32[1] ? halfWidthDelta : -halfWidthDelta;
         }
@@ -30,7 +30,7 @@ internal static class Lift01ObjectAssembly
         var partitions = new MovableRoadGeometry.Partition[objects.Placements.Length];
         Array.Fill(partitions, physical);
         factory.AttachMovableRoadObjects(result, objects.Placements, road.RoadToObject, partitions);
-        factory.AttachMovablePaint(result, road.Road.LaneGeometry.Decals, road.RoadToObject, physical, MovableRoadGeometry.InFrame(road.Road.Triangles, road.RoadToObject));
+        if(!factory.TryAttachMovablePaint(result, road.Road.LaneGeometry.Decals, road.RoadToObject, physical, MovableRoadGeometry.InFrame(road.Road.Triangles, road.RoadToObject),out _))return null!;
         return result;
     }
 }

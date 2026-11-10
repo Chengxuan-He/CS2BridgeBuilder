@@ -15,157 +15,115 @@ namespace BridgeBuilder.Bridges;
 
 internal sealed partial class TowerFactory
 {
-    // Marking surfaces use the original road skeleton on the same native object.
-    // Only paint polygons are partitioned; receiver topology is untouched.
-    internal void AttachMovablePaint(StaticObjectPrefab mechanism,
+    // Original native decals follow the road through native relative child transforms.
+    // Only projection volumes are partitioned; receiver topology is untouched.
+    internal bool TryAttachMovablePaint(StaticObjectPrefab mechanism,
         IReadOnlyList<MovableLaneVisuals.Batch> batches, Pose roadToObject,
-        MovableRoadGeometry.Partition partition, IReadOnlyList<MovableRoadGeometry.Triangle> receivers)
-        => AttachMovablePaint(mechanism, new[] { new MovablePaintDeck(batches, roadToObject, partition, receivers) });
+        MovableRoadGeometry.Partition partition, IReadOnlyList<MovableRoadGeometry.Triangle> receivers,out string? error)
+        => TryAttachMovablePaint(mechanism, new[] { new MovablePaintDeck(batches, roadToObject, partition, receivers) },out error);
 
-    internal void AttachMovablePaint(StaticObjectPrefab mechanism, IReadOnlyList<MovablePaintDeck> decks)
+    internal bool TryAttachMovablePaint(StaticObjectPrefab mechanism, IReadOnlyList<MovablePaintDeck> decks,out string? error)
     {
-        var triangles = new List<MovableRoadGeometry.BoundTriangle>();
-        foreach (var deck in decks)
+        error=null;string? failure=null;bool success=false;
+        var assets=new List<AssetData>();
+        bool Fail(string cause){failure??=cause;return false;}
+        try{success=Build();return success;}
+        catch(Exception exception){return Fail("Native paint assembly: "+exception);}
+        finally
         {
-            var batches = deck.Batches;
-            var roadToObject = deck.RoadToObject;
-            var partition = deck.Partition;
-            var receivers = deck.Receivers;
-            var groups = new Dictionary<(int Bone, bool Yellow, int Priority, bool Infoview, Quaternion Rotation), List<Vector3[]>>();
-            foreach (var batch in batches)
+            if(!success)
             {
-                if (MovableNativeDecals.IsLaneColor(batch))
+                foreach(var asset in assets)try{asset.database.DeleteAsset(asset);}catch(Exception exception){failure=(failure??"Paint assembly failed")+"; cleanup: "+exception;}
+                try{_report.Failed(mechanism.name+" [paint material]",new InvalidOperationException(failure));}
+                catch(Exception exception){failure=(failure??"Paint assembly failed")+"; report: "+exception;}
+            }
+            error=failure;
+        }
+        bool Build()
+        {
+        var root = (RenderPrefab)mechanism.m_Meshes[0].m_Mesh;
+        var skeleton = root.GetComponent<ProceduralAnimationProperties>();
+        if(skeleton==null || skeleton.m_Bones.Length==0)return Fail("Decal attachment requires the actual road skeleton.");
+        var materials=new Dictionary<SurfaceAsset,SurfaceAsset>();
+        var children=new List<ObjectSubObjectInfo>();
+        int regionCount=0,faceCount=0;
+        foreach(var deck in decks)
+        foreach(var batch in deck.Batches.OrderBy(b=>b.Source.GetComponent<DecalProperties>()?.m_RendererPriority??0))
+        {
+            if(!batch.Decal || batch.Surfaces.Length!=1 || batch.Source.GetComponent<DecalProperties>()==null)
+                return Fail("Native decal occurrence requires one source Surface and its projection properties.");
+            var source=batch.Surfaces[0];
+            if(MovableNativeDecals.IsSelectedRoadWear(batch))
+            {
+                Mod.Log.Info($"Selected-road wear excluded from mechanism: owner={mechanism.name}; source={source.id}; stationary ends included; prototype-owned wear retained.");
+                continue;
+            }
+            if(!materials.TryGetValue(source,out var surface))
+            {
+                if(!MovableRigidDecalMaterial.TryCreate(source,mechanism.name+" Rigid Decal "+materials.Count,
+                    _previewGeometry,assets,out surface,out var materialError)||materialError!=null)return Fail(materialError!);
+                materials.Add(source,surface);
+            }
+            var properties=batch.Source.GetComponent<DecalProperties>();
+            foreach(var region in MovableNativeDecals.Regions(batch,deck.RoadToObject,32f))
+            {
+                // Projection volumes are native DBuffer geometry, never opaque road
+                // faces. Native shader depth reconstruction supplies the receiver.
+                if(!deck.Receivers.Any(region.Overlaps))continue;
+                regionCount++;
+                foreach(var part in MovableRigidDecalVolume.Build(region,deck.Partition))
                 {
-                    Mod.Log.Info($"Native lane color requires a projected material; white/yellow substitute skipped: {batch.Source.name}.");
-                    continue;
-                }
-                var properties = batch.Source.GetComponent<DecalProperties>();
-                foreach (var region in MovableNativeDecals.Regions(batch, roadToObject, 32f))
-                {
-                    var corners = new List<Vector3> {
-                        region.Center-region.Right*region.Half.x-region.Forward*region.Half.z,
-                        region.Center-region.Right*region.Half.x+region.Forward*region.Half.z,
-                        region.Center+region.Right*region.Half.x+region.Forward*region.Half.z,
-                        region.Center+region.Right*region.Half.x-region.Forward*region.Half.z };
-                    Divide(corners, partition);
-                    void Divide(List<Vector3> polygon, MovableRoadGeometry.Partition part)
+                    var bone=skeleton.m_Bones[part.Bone];
+                    int parent=bone.m_ConnectionID;
+                    if(parent==0 && (bone.parentId!=-1 || bone.m_Type!=(BoneType)0))return Fail("A moving decal bone has no native connection ID.");
+                    if(parent!=0 && (parent<mechanism.m_Meshes.Length || parent>=1000 || skeleton.m_Bones.Take(part.Bone).Any(b=>b.m_ConnectionID==parent)))
+                        return Fail("A decal parent connection ID is ambiguous.");
+                    string name=mechanism.name+" Native Decal "+children.Count;
+                    if(!MovableRoadModel.TryBuild(name,part.Triangles,1,1,out var model,out var modelError))return Fail(modelError!);
+                    using(model)
                     {
-                        if (polygon.Count < 3 || part.IsGap) return;
-                        if (part.Bone >= 0)
+                        var render=ScriptableObject.CreateInstance<RenderPrefab>();_created.Add(render);
+                        render.name=name+" Mesh";render.bounds=new Bounds3(-(float3)part.Size*.5f,(float3)part.Size*.5f);
+                        render.vertexCount=model!.vertexCount;render.indexCount=model.indexCount;render.meshCount=1;
+                        render.surfaceAssets=new[]{surface};render.surfaceArea=new Geometry(new[]{model}).CalcSurfaceArea();
+                        var decal=render.AddComponent<DecalProperties>();
+                        decal.m_TextureArea=new Bounds2(new float2(part.Area.x,part.Area.y),new float2(part.Area.z,part.Area.w));
+                        decal.m_RendererPriority=properties.m_RendererPriority;
+                        decal.m_EnableInfoviewColor=properties.m_EnableInfoviewColor;
+                        decal.m_LayerMask=Game.Rendering.DecalLayers.Other;
+                        if(_previewGeometry!=null)
                         {
-                            var key = (part.Bone, region.Yellow, properties.m_RendererPriority, properties.m_EnableInfoviewColor, Quaternion.LookRotation(region.Forward,region.Up));
-                            if (!groups.TryGetValue(key, out var volumes)) groups.Add(key, volumes = new());
-                            var volume = new Vector3[polygon.Count];
-                            for(int i=0;i<polygon.Count;i++)
-                            {
-                                // User-approved 1 mm physical paint clearance, following
-                                // the same skin transform as the original road.
-                                volume[i]=RoadHeight(polygon[i])+region.Up*.001f;
-                            }
-                            volumes.Add(volume);
-                            return;
+                            render.hideFlags=HideFlags.HideAndDontSave;
+                            if(!_previewGeometry.Capture(render,new[]{model},new[]{surface}))return Fail("Rigid decal preview capture failed.");
                         }
-                        var negative=new List<Vector3>();var positive=new List<Vector3>();
-                        var previous=polygon[polygon.Count-1];
-                        var before=part.ObjectToSeam.MultiplyPoint3x4(previous).z;
-                        foreach(var point in polygon)
+                        else
                         {
-                            var distance=part.ObjectToSeam.MultiplyPoint3x4(point).z;
-                            if((before<0 && distance>0)||(before>0 && distance<0))
-                            {
-                                var crossing=Vector3.LerpUnclamped(previous,point,before/(before-distance));
-                                negative.Add(crossing);positive.Add(crossing);
-                            }
-                            if(distance<=0)negative.Add(point);
-                            if(distance>=0)positive.Add(point);
-                            previous=point;before=distance;
+                            var asset=AssetDatabase.user.AddAsset(BridgeBuilder.Runtime.BridgePrefabPersistence.ResourcePath(render.name,"Geometry"),new Geometry(new[]{model}));
+                            assets.Add(asset);render.geometryAsset=asset;asset.Save();asset.Unload();
                         }
-                        Divide(negative,part.Negative!);Divide(positive,part.Positive!);
+                        var child=ScriptableObject.CreateInstance<StaticObjectPrefab>();_created.Add(child);
+                        child.name=name;
+                        child.m_Meshes=new[]{new ObjectMeshInfo {m_Mesh=render,m_Rotation=Quaternion.identity}};
+                        // Native FindBoneIndex performs inverse-bind conversion. The
+                        // saved child remains in the mechanism's closed object frame.
+                        var mesh=mechanism.m_Meshes[0];
+                        children.Add(new ObjectSubObjectInfo {m_Object=child,
+                            m_Position=(Vector3)mesh.m_Position+(Quaternion)mesh.m_Rotation*part.Center,
+                            m_Rotation=(Quaternion)mesh.m_Rotation*part.Rotation,
+                            m_ParentMesh=parent,m_Probability=100});
+                        faceCount+=part.Triangles.Length;
                     }
                 }
             }
-            Vector3 RoadHeight(Vector3 point)
-            {
-                var found=false;var best=float.PositiveInfinity;var height=0f;
-                foreach(var triangle in receivers)
-                {
-                    if(triangle.A.Normal.y+triangle.B.Normal.y+triangle.C.Normal.y<1.5f)continue;
-                    var a=triangle.A.Position;var ab=triangle.B.Position-a;var ac=triangle.C.Position-a;
-                    var d=point-a;var determinant=ab.x*ac.z-ab.z*ac.x;
-                    if(Mathf.Abs(determinant)<1e-10f)continue;
-                    var u=(d.x*ac.z-d.z*ac.x)/determinant;
-                    var v=(ab.x*d.z-ab.z*d.x)/determinant;
-                    if(u<-.0001f || v<-.0001f || u+v>1.0001f)continue;
-                    var y=a.y+u*ab.y+v*ac.y;var distance=Mathf.Abs(y-point.y);
-                    if(distance>=best)continue;
-                    found=true;best=distance;height=y;
-                }
-                if(!found)throw new InvalidOperationException($"Native paint has no upward road receiver at {point}.");
-                return new Vector3(point.x,height,point.z);
-            }
-            foreach (var group in groups)
-            foreach (var polygon in group.Value)
-            {
-                var uv = group.Key.Yellow ? new Vector4(400.5f/2048f,35.5f/2048f,0f,0f)
-                    : new Vector4(14.5f/2048f,1610.5f/2048f,0f,0f);
-                var normal = group.Key.Rotation * Vector3.up;
-                var right = group.Key.Rotation * Vector3.right;
-                MovableRoadGeometry.Vertex Vertex(int i) => new(polygon[i], normal,
-                    new Vector4(right.x,right.y,right.z,1f), uv, Color.white);
-                for (var i=1;i<polygon.Length-1;i++)
-                    triangles.Add(new MovableRoadGeometry.BoundTriangle(
-                        new MovableRoadGeometry.Triangle(Vertex(0),Vertex(i),Vertex(i+1),0,-1,-1),(uint)group.Key.Bone));
-            }
         }
-        if(triangles.Count==0)return;
-        var root = (RenderPrefab)mechanism.m_Meshes[0].m_Mesh;
-        var skeleton = root.GetComponent<ProceduralAnimationProperties>();
-        var assets = new List<AssetData>();
-        try
+        if(children.Count!=0)
         {
-            var surface = BridgeBuilder.Runtime.BridgePreparedMaterials.Paint(
-                _styleId ?? throw new InvalidOperationException("Movable paint requires a bridge style."));
-            if(!MovableRoadModel.TryBuild(mechanism.name+" Skinned Paint",triangles,1,
-                skeleton.m_Bones.Length,out var model,out var error))throw new InvalidOperationException(error);
-            using(model)
-            {
-                var render=ScriptableObject.CreateInstance<RenderPrefab>(); _created.Add(render);
-                render.name=mechanism.name+" Skinned Paint Mesh";
-                // A single low-poly paint mesh spans all road LODs. No individual dash
-                // is distance-culled as a tiny independent child projector anymore.
-                render.bounds=root.bounds;
-                render.vertexCount=model!.vertexCount;render.indexCount=model.indexCount;render.meshCount=1;
-                render.surfaceAssets=new[]{surface};render.surfaceArea=new Geometry(new[]{model}).CalcSurfaceArea();
-                render.AddComponentFrom(skeleton);
-                // The mechanism is a native stacked render. Skinning alone is not
-                // enough: paint must receive the identical stack placement/scale.
-                // Equal authored bounds union into the same native stack range.
-                var stack = root.GetComponent<StackProperties>();
-                if (stack != null) render.AddComponentFrom(stack);
-                if(_previewGeometry!=null)
-                {
-                    render.hideFlags=HideFlags.HideAndDontSave;
-                    if(!_previewGeometry.Capture(render,new[]{model},new[]{surface}))
-                        throw new InvalidOperationException("Skinned paint preview capture failed.");
-                }
-                else
-                {
-                    var asset=AssetDatabase.user.AddAsset(BridgeBuilder.Runtime.BridgePrefabPersistence.ResourcePath(render.name, "Geometry"),new Geometry(new[]{model}));
-                    assets.Add(asset);render.geometryAsset=asset;asset.Save();asset.Unload();
-                }
-                // Preserve original mesh ordering and every existing connection code.
-                // Native animation updates this surface in the same object/frame as
-                // the road, using identical bone definitions, indices and bind poses.
-                mechanism.m_Meshes=mechanism.m_Meshes.Concat(new[]{new ObjectMeshInfo {
-                    m_Mesh=render,m_Position=mechanism.m_Meshes[0].m_Position,
-                    m_Rotation=mechanism.m_Meshes[0].m_Rotation }}).ToArray();
-            }
-            Mod.Log.Info($"Native skinned paint: triangles={triangles.Count}; clearance=0.001m; native object meshes=1; child projectors=0; road cuts=0.");
+            var sub=mechanism.GetComponent<ObjectSubObjects>()??mechanism.AddComponent<ObjectSubObjects>();
+            sub.m_SubObjects=(sub.m_SubObjects??Array.Empty<ObjectSubObjectInfo>()).Concat(children).ToArray();
+            mechanism.isDirty=true;
         }
-        catch
-        {
-            foreach(var asset in assets)asset.database.DeleteAsset(asset);
-            throw;
+        Mod.Log.Info($"Native rigid decals: owner={mechanism.name}; sources={materials.Count}; projectionRegions={regionCount}; children={children.Count}; volumeTriangles={faceCount}; original textures/mips; native continuous alpha; native bone connections.");
+        return true;
         }
     }
 

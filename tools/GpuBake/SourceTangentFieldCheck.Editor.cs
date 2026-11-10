@@ -64,6 +64,18 @@ public static class SourceTangentFieldCheck
                 Set(result,"m_InstanceRefCount",1);
                 return result;
             }
+            Type D(string name)=>db.GetType("Colossal.IO.AssetDatabase."+name,true);
+            var global=FormatterServices.GetUninitializedObject(D("AssetDatabase"));
+            D("AssetDatabase").GetField("s_Instance",Static).SetValue(null,global);
+            var resources=ScriptableObject.CreateInstance(D("AssetDatabaseResources"));var library=New(D("MaterialLibrary"));
+            var descriptions=D("MaterialLibrary").GetField("m_Materials",Fields);
+            var list=(System.Collections.IList)Activator.CreateInstance(descriptions.FieldType);
+            var description=D("MaterialLibrary").GetNestedType("MaterialDescription");var entry=New(description);
+            description.GetField("m_Hash",Fields).SetValue(entry,0);
+            var stacks=description.GetField("m_Stacks",Fields);stacks.SetValue(entry,Array.CreateInstance(stacks.FieldType.GetElementType(),0));
+            description.GetField("m_Material",Fields).SetValue(entry,new Material(Shader.Find("Standard")));list.Add(entry);descriptions.SetValue(library,list);
+            resources.GetType().GetField("m_MaterialLibrary",Fields).SetValue(resources,library);
+            D("AssetDatabase").GetField("m_Resources",Fields).SetValue(global,resources);
             var original=Surface(); var prototype=Surface();
             var vertex=T("MovableRoadGeometry+Vertex"); var triangle=T("MovableRoadGeometry+Triangle");
             var bound=T("MovableRoadGeometry+BoundTriangle"); var patch=T("MovableExistingRoadSurface+Patch");
@@ -72,13 +84,17 @@ public static class SourceTangentFieldCheck
             var face=New(triangle,V(0,0),V(1,0),V(0,1),0,5,23);
             // Reproduce Unity's magnitude cutoff without changing the projection
             // determinant threshold or dropping a small, nonzero-area triangle.
-            var planeMethod=T("MovableSurfaceAtlas").GetMethod("PlaneNormal",Static);
+            var planeMethod=T("MovableSurfaceAtlas").GetMethod("TryPlaneNormal",Static) ?? T("MovableSurfaceAtlas").GetMethod("PlaneNormal",Static);
+            bool Plane(object[] args){
+                if(planeMethod.GetParameters().Length==3)return (bool)planeMethod.Invoke(null,args);
+                try{args[1]=planeMethod.Invoke(null,new[]{args[0]});return true;}catch(TargetInvocationException e){args[2]=e.InnerException.Message;return false;}
+            }
             var eligibility=T("MovableRoadGeometry").GetMethod("CanRepeatProjection",Static);
             foreach(float height in new[]{1f,1e-6f,1e-8f})
             {
                 var thin=New(triangle,V(0,0),V(0,height),V(1.5f,0),0,5,23);
                 var old=Vector3.Cross(new Vector3(0,0,height),new Vector3(1.5f,0,0)).normalized;
-                var actual=(Vector3)planeMethod.Invoke(null,new[]{thin});
+                object[] planeCall={thin,null,null};Require(Plane(planeCall),"Thin plane failed result: "+planeCall[2]);var actual=(Vector3)planeCall[1];
                 Require(actual==Vector3.up,"Nonzero triangle lost its actual plane");
                 bool Can(Vector3 n,Vector3 vertexNormal)=>(bool)eligibility.Invoke(null,new object[]{new Vector4(1,0,0,0),new Vector4(0,0,1,0),n,vertexNormal,vertexNormal,vertexNormal});
                 Require(Can(actual,Vector3.up),"Valid thin receiver was rejected");
@@ -86,9 +102,8 @@ public static class SourceTangentFieldCheck
                 Require(!Can(actual,Vector3.right),"Singular authored normal was admitted");
                 if(height<1e-5f)Require(old==Vector3.zero&&!Can(old,Vector3.up),"Fixture did not reproduce old gate failure");
             }
-            bool degenerateRejected=false;
-            try{planeMethod.Invoke(null,new[]{New(triangle,V(0,0),V(1,0),V(2,0),0,5,23)});}
-            catch(TargetInvocationException e)when(e.InnerException is InvalidOperationException){degenerateRejected=true;}
+            object[] degenerateCall={New(triangle,V(0,0),V(1,0),V(2,0),0,5,23),null,null};
+            bool degenerateRejected=!Plane(degenerateCall) && degenerateCall[2]!=null;
             Require(degenerateRejected,"Truly degenerate chart was admitted");
             var finite=New(patch,new Vector2(.2f,.3f),new Vector2(.4f,.5f),new Vector4(.01f,0,0,.2f),
                 new Vector4(0,0,.02f,.3f),prototype,false,null,false,true,false,false,false,null,false,true);
@@ -118,7 +133,7 @@ public static class SourceTangentFieldCheck
                     return New(vertex,new Vector3(x,0,z),Vector3.up,new Vector4(dir.x,dir.y,dir.z,1),new Vector4(3+x,7+z,7,9),new Color(.2f,.3f,.4f,.7f));
                 }
                 var src=New(triangle,W(0,0),W(1,0),W(0,1),0,5,23);
-                object[] call={ArrayOf(input,Input(keep,src),Input(plain,src),Input(finite,src),Input(keep,src,true)),owner,paint,null};
+                object[] call={ArrayOf(input,Input(keep,src),Input(plain,src),Input(finite,src),Input(keep,src,true)),owner,paint,null,null};
                 var results=(Array)T("MovableSurfaceAtlas").GetMethod("Compose",Static).Invoke(null,call);
                 var materials=(Array)call[3];
                 Require(((Array)results.GetValue(0)).Length==1,"Field changed topology");
@@ -145,7 +160,7 @@ public static class SourceTangentFieldCheck
             var pair=Input(keep,face);
             Set(pair,"Faces",ArrayOf(bound,New(bound,face,0u),New(bound,face,1u)));
             Set(pair,"Patches",ArrayOf(patch,keep,close));
-            object[] pairCall={ArrayOf(input,pair),owner,paint,null};
+            object[] pairCall={ArrayOf(input,pair),owner,paint,null,null};
             var pairResult=(Array)((Array)T("MovableSurfaceAtlas").GetMethod("Compose",Static).Invoke(null,pairCall)).GetValue(0);
             Require(pairResult.Length==2,"Close-field test lost faces");
             float z0=((Vector4)Get(Get(pairResult.GetValue(0),"C"),"Tangent")).z;
@@ -158,23 +173,36 @@ public static class SourceTangentFieldCheck
                 New(patch,Vector2.zero,Vector2.one,new Vector4(1,0,0,0),new Vector4(0,1,0,0),prototype,false,null,false,true,false,true,false,null,true,false)};
             foreach(var item in invalid)
             {
-                bool rejected=false;try{keepMethod.Invoke(item,field);}catch(TargetInvocationException e)when(e.InnerException is ArgumentException){rejected=true;}
-                Require(rejected,"Invalid retention combination accepted");
+                var rejected=keepMethod.Invoke(item,field);
+                Require(!string.IsNullOrEmpty((string)Get(rejected,"Error")),"Invalid retention combination accepted");
+                var failedOwner=FormatterServices.GetUninitializedObject(T("MovableRoadMaterial"));
+                object[] failureCall={ArrayOf(input,Input(rejected,face)),failedOwner,paint,null,null};
+                Require(T("MovableSurfaceAtlas").GetMethod("Compose",Static).Invoke(null,failureCall)==null,"Invalid patch succeeded in Compose");
+                Require(((Array)failureCall[3]).Length==0,"Invalid patch returned material output");
             }
             foreach(var bad in new[]{new object[]{new Vector4(float.NaN,0,0,1),Vector4.zero,Vector4.zero,1f},new object[]{Vector4.zero,Vector4.zero,Vector4.zero,0f}})
             {
-                bool rejected=false;try{keepMethod.Invoke(plain,bad);}catch(TargetInvocationException e)when(e.InnerException is ArgumentException){rejected=true;}
-                Require(rejected,"Nonfinite coefficient or invalid handedness accepted");
+                var rejected=keepMethod.Invoke(plain,bad);
+                Require(!string.IsNullOrEmpty((string)Get(rejected,"Error")),"Nonfinite coefficient or invalid handedness accepted");
             }
             var zero=keepMethod.Invoke(plain,new object[]{Vector4.zero,Vector4.zero,Vector4.zero,1f});
-            object[] zeroCall={ArrayOf(input,Input(zero,face)),owner,paint,null};
+            object[] zeroCall={ArrayOf(input,Input(zero,face)),owner,paint,null,null};
             var zeroResult=(Array)((Array)T("MovableSurfaceAtlas").GetMethod("Compose",Static).Invoke(null,zeroCall)).GetValue(0);
             foreach(string corner in new[]{"A","B","C"})
                 Require(Get(Get(zeroResult.GetValue(0),corner),"Tangent").Equals(Get(Get(face,corner),"Tangent")),"Collapsed tangent field changed source frame");
             var collapsed=New(triangle,V(0,0),V(1,0),V(2,0),0,5,23);
-            object[] collapsedCall={ArrayOf(input,Input(plain,collapsed)),owner,paint,null};
+            object[] collapsedCall={ArrayOf(input,Input(plain,collapsed)),owner,paint,null,null};
             var collapsedResult=(Array)((Array)T("MovableSurfaceAtlas").GetMethod("Compose",Static).Invoke(null,collapsedCall)).GetValue(0);
-            Require(collapsedResult.Length==1&&collapsedResult.GetValue(0).Equals(collapsed),"Collapsed receiver was rejected or rewritten");
+            Require(collapsedResult.Length==1,"Collapsed receiver was rejected");
+            var collapsedOutput=collapsedResult.GetValue(0);
+            foreach(string fieldName in new[]{"Occurrence","SourceTriangle"})Require(Get(collapsedOutput,fieldName).Equals(Get(collapsed,fieldName)),"Collapsed receiver changed "+fieldName);
+            foreach(string corner in new[]{"A","B","C"}){
+                var before=Get(collapsed,corner);var after=Get(collapsedOutput,corner);
+                foreach(string attribute in new[]{"Position","Normal","Tangent","Color"})Require(Get(before,attribute).Equals(Get(after,attribute)),"Collapsed receiver changed "+attribute);
+                var position=(Vector3)Get(before,"Position");var uv=(Vector4)Get(after,"UV");var originalUv=(Vector4)Get(before,"UV");
+                Require(uv==new Vector4(.01f*position.x+.2f,.02f*position.z+.3f,originalUv.z,originalUv.w),"Collapsed SourceUv patch projection differs");
+            }
+            Require(ReferenceEquals(((Array)((Array)collapsedCall[3]).GetValue(0)).GetValue((int)Get(collapsedOutput,"Material")),prototype),"Collapsed SourceUv patch lost its assigned material");
             Debug.Log($"PASS source tangent opt-in: {checks} real Compose/native codec vertices; default/projected controls; five invalid modes; Surface/UV/attributes/topology retained. No varying-field equivalence claim.");
             EditorApplication.Exit(0);
         }

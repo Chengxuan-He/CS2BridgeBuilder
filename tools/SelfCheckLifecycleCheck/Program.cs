@@ -5,7 +5,7 @@ using Game.SceneFlow;
 static void Check(bool ok, string text) { if (!ok) throw new Exception(text); }
 static Probe Fresh()
 {
-    BridgeStartupAssetSystem.StopInspection();
+    BridgeDeferredRemoval.Hidden.Clear(); BridgeStartupAssetSystem.StopInspection();
     GameManager.instance = new() { state = GameManager.State.Booting, isGameLoading = true };
     BridgeDiskAudit.Calls = 0; BridgeDiskAudit.Incomplete = false; BridgeDiskAudit.Raise = false; BridgeDiskAudit.BackupFailed = false; BridgeDiskAudit.DeleteFailed = false; BridgeDiskAudit.Retirement = null;
     Colossal.IO.AssetDatabase.PrefabAsset.Reads = 0;
@@ -237,6 +237,9 @@ Colossal.IO.AssetDatabase.AssetDatabase.user.Assets.Add(new() { path = Path.Comb
 Check(BridgeInspectionAssets.Read(owner => owner == "bridge").Count() == 1 && Colossal.IO.AssetDatabase.PrefabAsset.Reads == 1,
     "Migration owner predicate excludes unrelated cached instances before reading");
 Console.WriteLine("PASS memory lifecycle, native conversion, repair-or-remove, both load orders and idempotence");
+p=Fresh();BridgeDeferredRemoval.Hidden.Add("bridge");p.ScheduleInspectionAfterLoad();Menu(p);
+Check(BridgeDeferredRemoval.Resumes>0 && BridgeNetworkValidation.Calls==0 && BridgeDependencyPersistence.Calls==0 && BridgeBuilder.Mod.Messages.Count==0,"Tombstoned owners resume silently and never enter structural inspection or its result counts");
+Console.WriteLine("PASS tombstoned startup exclusion and silent inspection result");
 class Probe : BridgeStartupAssetSystem
 {
     public void Create() => OnCreate();

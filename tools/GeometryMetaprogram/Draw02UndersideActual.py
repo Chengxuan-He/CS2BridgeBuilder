@@ -1,6 +1,6 @@
 from pathlib import Path
 import numpy as np,json
-R=Path('D:/CS2BridgeBuilder');O=R/'artifacts/material-remap/Draw02/underside52'
+R=Path('E:/CS2BridgeBuilder');O=R/'artifacts/material-remap/Draw02/underside52'
 for lod,cid in enumerate(['792796a81ca9354398b7ff63a93386d8','1583c7b680b9a0d3de9810c6ec409e7b']):
  d=np.load(R/f'artifacts/layer-decoupling/Draw02/outputs/native-repeat-mechanism/lod{lod}-native.npz');v=d['mesh0_positions'];uv=d['mesh0_uv'];f=d['mesh0_indices'].reshape(-1,3);members=json.loads((O/f'lod{lod}-center-members.json').read_text())
  a=json.loads((R/f'artifacts/material-remap/shared/draw02-layout50/attributes/{cid}.attributes.json').read_text());m=a['meshes'][0];print(m.keys());p=np.array(m['positions']);q=np.array(m['uv0']);t=np.array(m['faces']);lookup={}

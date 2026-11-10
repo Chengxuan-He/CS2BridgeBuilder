@@ -24,7 +24,7 @@ public static class Lift02SourceSeamLimit
    Texture.anisotropicFiltering=AnisotropicFiltering.ForceEnable;
    foreach(var channel in unit.channels)
    {
-    using var input=File.OpenRead(channel.path);var source=MovableTextureSource.Read(input,b=>(byte[])decode.Invoke(null,new[]{(object)b,zstd}));
+    using var input=File.OpenRead(channel.path);var source=(MovableTextureSource.TryRead(input,b=>(byte[])decode.Invoke(null,new[]{(object)b,zstd}),out var parsedTexture1,out var textureReadError1)?parsedTexture1:throw new System.IO.InvalidDataException(textureReadError1));
     try
     {
      program.SetTexture(kernel,"Source",source);program.SetVector("Region",new Vector4((float)unit.min[0],(float)unit.min[1],(float)(unit.max[0]-unit.min[0]),(float)(unit.max[1]-unit.min[1])));

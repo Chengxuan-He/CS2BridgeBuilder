@@ -170,9 +170,8 @@ internal sealed class MovableSectionObjects
 
     private void CheckSource(PrefabBase source)
     {
-        if (BridgeAssetInfo.IsOtherBridgePrefab(source.asset?.path, _owner,
-                Path.Combine(Application.persistentDataPath, "ImportedData")))
-            throw new InvalidOperationException("Moving section source belongs to another generated bridge.");
+        if (source == null)
+            throw new InvalidOperationException("Moving section source is missing.");
     }
 
     private PrefabBase Clone(PrefabBase source, string kind)

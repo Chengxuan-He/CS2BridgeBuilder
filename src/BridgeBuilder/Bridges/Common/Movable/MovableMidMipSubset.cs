@@ -21,10 +21,14 @@ internal static class MovableMidMipSubset
         internal (int First, int Mask)[] Indices = null!;
     }
 
-    internal static byte[]? Copy(Stream source, string sourceCid, string targetCid, int tile, int levels)
+    internal static bool TryCopy(Stream source, string sourceCid, string targetCid, int tile, int levels, out byte[]? payload, out string? error)
     {
-        byte[] from = Hash(sourceCid), to = Hash(targetCid);
-        if (!source.CanSeek) throw new InvalidDataException("Native MidMips source must support bounded seeking.");
+        payload=null;error=null;string? failure=null;
+        bool Fail(string text){failure=text;return false;}
+        try
+        {
+        if(!TryHash(sourceCid,out var from) || !TryHash(targetCid,out var to))return Fail("Invalid native Surface CID.");
+        if (!source.CanSeek) return Fail("Native MidMips source must support bounded seeking.");
         using var reader = new BinaryReader(source, System.Text.Encoding.UTF8, true);
         int actualTile = reader.ReadInt32(), actualLevels = reader.ReadInt32(), group = reader.ReadInt32();
         int stacks = reader.ReadInt32(), groups = reader.ReadInt32(), entries = reader.ReadInt32();
@@ -32,22 +36,22 @@ internal static class MovableMidMipSubset
             (tile & (tile - 1)) != 0 || levels < 1 || levels > 8 ||
             (tile >> (levels + 3)) == 0 || group != 1 << (2 * levels) ||
             stacks < 1 || stacks > 16 || groups < 0 || entries < 0)
-            throw new InvalidDataException("Unsupported native MidMips layout.");
-        int Count()
+            return Fail("Unsupported native MidMips layout.");
+        bool Count(out int n)
         {
-            int n = reader.ReadInt32();
-            if (n < 0 || n > source.Length / 4) throw new InvalidDataException("Invalid native MidMips count.");
-            return n;
+            n=reader.ReadInt32();
+            return (n>=0 && n<=source.Length/4) || Fail("Invalid native MidMips count.");
         }
         var categories = new List<Category>();
         for (int stack = 0; stack < stacks; stack++)
         {
-            int count = Count();
+            if(!Count(out var count))return false;
             for (int i = 0; i < count; i++)
             {
-                var c = new Category { Stack = stack, Width = reader.ReadInt32(), Height = reader.ReadInt32(),
-                    Count = Count(), First = Count(), Tiles = Count(), Disabled = reader.ReadBoolean(), Bias = reader.ReadInt32() };
-                if (c.Width <= 0 || c.Height <= 0) throw new InvalidDataException("Invalid native MidMips dimensions.");
+                var c=new Category {Stack=stack,Width=reader.ReadInt32(),Height=reader.ReadInt32()};
+                if(!Count(out c.Count) || !Count(out c.First) || !Count(out c.Tiles))return false;
+                c.Disabled=reader.ReadBoolean();c.Bias=reader.ReadInt32();
+                if (c.Width <= 0 || c.Height <= 0) return Fail("Invalid native MidMips dimensions.");
                 categories.Add(c);
             }
         }
@@ -59,37 +63,37 @@ internal static class MovableMidMipSubset
             for (int i = 0; i < c.Count; i++)
             {
                 bool match = reader.ReadBytes(16).SequenceEqual(from);
-                int mask = reader.ReadInt32(), ordinal = reader.ReadInt16(), duplicates = Count();
+                int mask=reader.ReadInt32(),ordinal=reader.ReadInt16();if(!Count(out var duplicates))return false;
                 if (mask < 0 || mask > 15 || ordinal != i % group)
-                    throw new InvalidDataException("Invalid native MidMips entry.");
+                    return Fail("Invalid native MidMips entry.");
                 for (int d = 0; d < duplicates; d++) match |= reader.ReadBytes(16).SequenceEqual(from);
                 var indices = new (int First, int Mask)[levels];
                 for (int level = 0; level < levels; level++)
                 {
-                    int first = Count(), groupedMask = reader.ReadInt32();
+                    if(!Count(out var first))return false;int groupedMask=reader.ReadInt32();
                     if (groupedMask < 0 || groupedMask > 15 || (groupedMask & mask) != mask)
-                        throw new InvalidDataException("Invalid native MidMips mask.");
+                        return Fail("Invalid native MidMips mask.");
                     indices[level] = (first, groupedMask);
                     largestTileEnd = Math.Max(largestTileEnd, (long)first + Bits(groupedMask));
                 }
                 if (match) selected.Add(new Entry { Category = c, Mask = mask, Ordinal = ordinal, Indices = indices });
             }
         }
-        int tiles = Count(); long alignment = source.Position;
+        if(!Count(out var tiles))return false;long alignment=source.Position;
         if (reader.ReadInt64() != alignment || largestTileEnd > tiles ||
             categories.Any(c => !c.Disabled && (long)c.First + c.Tiles > tiles))
-            throw new InvalidDataException("Invalid native MidMips offsets.");
+            return Fail("Invalid native MidMips offsets.");
         long dataStart = source.Position;
         int mainBytes = checked((tile + 16) * (tile + 16)), tileBytes = checked(mainBytes * 5 / 4);
         if (dataStart + (long)tiles * tileBytes != source.Length)
-            throw new InvalidDataException("Incomplete native MidMips source.");
-        if (selected.Count == 0) return null;
+            return Fail("Incomplete native MidMips source.");
+        if (selected.Count == 0) return true; // Valid cache without this Surface membership.
         if (selected.GroupBy(e => e.Category.Stack).Any(g => g.Count() != 1) ||
             selected.Any(e => e.Category.Width != e.Category.Height || e.Mask == 0))
-            throw new InvalidDataException("Ambiguous native Surface MidMips membership.");
+            return Fail("Ambiguous native Surface MidMips membership.");
         int outputTiles = selected.Sum(e => levels * Bits(e.Mask));
-        if ((long)outputTiles * tileBytes > 10_000_000)
-            throw new InvalidDataException("Selected native MidMips alone exceed the owner material limit.");
+        if ((long)outputTiles * tileBytes > int.MaxValue)
+            return Fail("Native MidMips payload exceeds addressable byte-array storage.");
         using var output = new MemoryStream();
         using var writer = new BinaryWriter(output);
         writer.Write(tile); writer.Write(levels); writer.Write(group); writer.Write(stacks);
@@ -120,7 +124,7 @@ internal static class MovableMidMipSubset
         for (int layer = 0; layer < 4; layer++)
         {
             if ((e.Mask & (1 << layer)) == 0) continue;
-            var payload = new byte[tileBytes];
+            var tilePayload = new byte[tileBytes];
             int index = e.Indices[level].First + Bits(e.Indices[level].Mask & ((1 << layer) - 1));
             int ordinal = e.Ordinal % (1 << (2 * (level + 1))), x = 0, y = 0;
             for (int bit = 0; bit <= level; bit++)
@@ -137,23 +141,27 @@ internal static class MovableMidMipSubset
                     int remaining = side * 16, at = toOffset;
                     while (remaining > 0)
                     {
-                        int read = source.Read(payload, at, remaining);
-                        if (read == 0) throw new EndOfStreamException();
+                        int read = source.Read(tilePayload, at, remaining);
+                        if(read==0)return Fail("Incomplete native MidMips tile payload.");
                         at += read; remaining -= read;
                     }
                 }
             }
-            writer.Write(payload);
+            writer.Write(tilePayload);
         }
-        return output.ToArray();
+        payload=output.ToArray();return true;
+        }
+        catch(Exception exception){return Fail("Native MidMips read/write: "+exception);}
+        finally{error=failure;if(error!=null)payload=null;}
     }
 
     private static int Bits(int mask) { int count = 0; for (; mask != 0; mask >>= 1) count += mask & 1; return count; }
-    private static byte[] Hash(string cid)
+    private static bool TryHash(string cid,out byte[] bytes)
     {
-        if (cid.Length != 32 || cid.Any(c => !Uri.IsHexDigit(c))) throw new InvalidDataException("Invalid native Surface CID.");
-        var bytes = new byte[16];
+        bytes=Array.Empty<byte>();
+        if (cid==null || cid.Length != 32 || cid.Any(c => !Uri.IsHexDigit(c))) return false;
+        bytes = new byte[16];
         for (int i = 0; i < 16; i++) bytes[i] = Convert.ToByte(new string(new[] { cid[i * 2 + 1], cid[i * 2] }), 16);
-        return bytes;
+        return true;
     }
 }

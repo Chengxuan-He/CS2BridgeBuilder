@@ -16,27 +16,47 @@ namespace BridgeBuilder.Bridges;
 // positions, procedural bones and all unrelated raw vertex channels are retained.
 internal static class MovableStructureRetile
 {
-    internal static void Append(string name, string renderName, int meshIndex,
+    internal static bool TryAppend(string name, string renderName, int meshIndex,
         MovableStructureModel.Plan plan, ModelImporter.Model original, SurfaceAsset surface,
         MovableStructureTiles tiles, List<ModelImporter.Model> owned,
-        List<ModelImporter.Model> models, List<SurfaceAsset> surfaces)
+        List<ModelImporter.Model> models, List<SurfaceAsset> surfaces,out string? error)
     {
+        error=null;string? failure=null;bool complete=false;
+        int ownedStart=owned.Count,modelsStart=models.Count,surfacesStart=surfaces.Count;
+        bool Fail(string message){failure=message;return false;}
+        try{complete=AppendCore();return complete;}
+        catch(Exception exception){return Fail("Native structural material assembly: "+exception);}
+        finally
+        {
+            if(!complete)
+            {
+                for(int i=owned.Count-1;i>=ownedStart;i--)
+                    try{owned[i].Dispose();}catch(Exception exception){failure=(failure??"Structural material assembly failed")+"; cleanup: "+exception;}
+                owned.RemoveRange(ownedStart,owned.Count-ownedStart);
+                models.RemoveRange(modelsStart,models.Count-modelsStart);
+                surfaces.RemoveRange(surfacesStart,surfaces.Count-surfacesStart);
+            }
+            error=failure;
+        }
+        bool AppendCore()
+        {
         // The native graph retains NetPiece tiling metadata and shader 581's
         // signed longitudinal coordinate/worldspace evaluation. Build's raw
         // channels must reach that shader without object conversion or UV retile.
-        if(tiles.PreserveNativeNetwork(renderName,meshIndex,surface))
-        { models.Add(original); surfaces.Add(surface); return; }
+        if(!tiles.TryPreserveNativeNetwork(renderName,meshIndex,surface,out var preserveNetwork,out var preserveError))return Fail(preserveError!);
+        if(preserveNetwork)
+        { models.Add(original); surfaces.Add(surface); return true; }
         var recipe=MovableUvDomains.For(renderName,meshIndex);
         if(recipe==null || recipe.Items.Length==0)
-        { models.Add(original); surfaces.Add(tiles.NativeSurface(surface)); return; }
+        { models.Add(original); if(!tiles.TryNativeSurface(surface,out var native,out var cause))return Fail(cause!);surfaces.Add(native); return true; }
         if(original.subMeshCount!=1 || plan.SourceIndices.Length!=1)
-            throw new InvalidOperationException("Measured UV domains require their original single-surface mesh.");
+            return Fail("Measured UV domains require their original single-surface mesh.");
         var prepared=plan.PreparedDomains.ToDictionary(d=>d.Domain);
         if(prepared.Keys.Any(d=>d>=recipe.Items.Length))
-            throw new InvalidOperationException("Prepared structural mapping requires a measured domain.");
+            return Fail("Prepared structural mapping requires a measured domain.");
         var rawUv=original.FirstOrDefault(a=>a.attribute==VertexAttribute.TexCoord0);
         if(rawUv==null || rawUv.dimension<2 || rawUv.format is not (VertexAttributeFormat.Float32 or VertexAttributeFormat.Float16))
-            throw new InvalidOperationException("Measured UV domains require floating-point native UV0.");
+            return Fail("Measured UV domains require floating-point native UV0.");
         var uvBytes=rawUv.data.ToArray();
         float Uv(int index,int axis) => rawUv.format==VertexAttributeFormat.Float32
             ? BitConverter.ToSingle(uvBytes,index*rawUv.elementSize+axis*4)
@@ -74,6 +94,7 @@ internal static class MovableStructureRetile
             var d=mappings[di];
             var frame=new MovableUvFrame(SourcePosition(d.A),SourcePosition(d.B),SourcePosition(d.C),
                 Uv2(d.A),Uv2(d.B),Uv2(d.C),plan.Positions[d.A],plan.Positions[d.B],plan.Positions[d.C]);
+            if(frame.Error!=null)return Fail(frame.Error);
             // Only numerical evaluation of recorded domains; rigid parts retain their
             // exact original Surface/VT references and their original attribute bytes.
             if(!frame.HasStretch && !vertices.Any(v=>(frame.Map(SourcePosition(v),plan.Positions[v],Uv2(v))-Uv2(v)).sqrMagnitude>1e-12f))return false;
@@ -85,14 +106,14 @@ internal static class MovableStructureRetile
             var d=recipe.Items[di];
             if(prepared.TryGetValue(di,out var finished))
             {
-                BridgeBuilder.Runtime.BridgePreparedMaterials.StructuralBinding(finished.Surface);
+                if(!BridgeBuilder.Runtime.BridgePreparedMaterials.TryStructuralBinding(finished.Surface,out var bindingError))return Fail(bindingError!);
                 foreach(int face in d.Faces)
                 {
                     var vertices=Face(face);
                     foreach(int vertex in vertices)
                         if(!finished.Uvs.ContainsKey(vertex))
-                            throw new InvalidOperationException("Prepared structural mapping lacks a retained vertex UV.");
-                    if(faceDomains[face]!=-1)throw new InvalidOperationException("Overlapping prepared structural domains.");
+                            return Fail("Prepared structural mapping lacks a retained vertex UV.");
+                    if(faceDomains[face]!=-1)return Fail("Overlapping prepared structural domains.");
                     faceDomains[face]=di;
                     if(fragments.ContainsKey(face))fragmentDomains.Add(face,Enumerable.Repeat(di,vertices.Length/3).ToArray());
                 }
@@ -124,6 +145,7 @@ internal static class MovableStructureRetile
                         mappings.Add((ids[at+pivot],ids[at+(pivot+1)%3],ids[at+(pivot+2)%3],default,true));
                         retainedAxes.Add(retainedAxes[di]);
                         domains[at/3]=AddFrame(mapping,new[]{ids[at],ids[at+1],ids[at+2]})?mapping:-1;
+                        if(failure!=null)return false;
                         if(domains[at/3]<0)continue;
                         var unit=new MovableStructurePacking.Unit{Id=mapping,Triangle=d.Triangle,Bounds=d.Bounds,
                             Charts=tiles.Charts(renderName,meshIndex,di),
@@ -133,6 +155,7 @@ internal static class MovableStructureRetile
                             corners.Select(i=>plan.Positions[i]).ToArray(),
                             new[]{SourcePosition(d.A),SourcePosition(d.B),SourcePosition(d.C)},
                             new[]{Uv2(d.A),Uv2(d.B),Uv2(d.C)},d.Triangle,d.Bounds,retainedAxes[di]);
+                        if(projection.Error!=null)return Fail(projection.Error);
                         var points=projection.Select(unit);
                         if(retainedAxes[di]!=0)
                         {
@@ -153,14 +176,14 @@ internal static class MovableStructureRetile
                 }
                 else foreach(var vertex in Face(face))members.Add(vertex);
             }
-            if(!AddFrame(di,members.ToArray()))continue;
+            if(!AddFrame(di,members.ToArray())){if(failure!=null)return false;continue;}
             foreach(var face in d.Faces)if(!fragments.ContainsKey(face))
             {
-                if(faceDomains[face]!=-1)throw new InvalidOperationException("Overlapping measured structural UV domains.");
+                if(faceDomains[face]!=-1)return Fail("Overlapping measured structural UV domains.");
                 faceDomains[face]=di;
             }
         }
-        if(frames.Count==0 && prepared.Count==0){models.Add(original);surfaces.Add(tiles.NativeSurface(surface));return;}
+        if(frames.Count==0 && prepared.Count==0){models.Add(original);if(!tiles.TryNativeSurface(surface,out var native,out var cause))return Fail(cause!);surfaces.Add(native);return true;}
         Vector2 SourceSample(int domain,int vertex)
         {
             var value=frames[domain].Map(SourcePosition(vertex),plan.Positions[vertex],Uv2(vertex));
@@ -178,7 +201,7 @@ internal static class MovableStructureRetile
             {
                 var a=Uv2(d.A);var u=Uv2(d.B)-a;var v=Uv2(d.C)-a;var delta=value-a;
                 double det=(double)u.x*v.y-(double)u.y*v.x;
-                if(det==0)throw new InvalidOperationException("Independent sampling axes require a measured nonsingular UV mapping.");
+                if(det==0){Fail("Independent sampling axes require a measured nonsingular UV mapping.");return default;}
                 return new Vector2((float)(((double)delta.x*v.y-(double)delta.y*v.x)/det),
                     (float)(((double)u.x*delta.y-(double)u.y*delta.x)/det));
             }
@@ -197,7 +220,7 @@ internal static class MovableStructureRetile
                     mixedFaces.Add(domain,new[]{vertices[at],vertices[at+1],vertices[at+2]});
                 if(!units.TryGetValue(domain,out var unit))
                 {
-                    var d=mappings[domain];var q=UnitUv(domain,vertices[at]);
+                    var d=mappings[domain];var q=UnitUv(domain,vertices[at]);if(failure!=null)return false;
                     unit=fragmentUnits.TryGetValue(domain,out var parentUnit)?parentUnit:
                         new MovableStructurePacking.Unit{Id=domain,Triangle=d.Triangle,Bounds=d.Bounds,
                         Charts=tiles.Charts(renderName,meshIndex,domain),
@@ -208,12 +231,12 @@ internal static class MovableStructureRetile
                 }
                 for(int corner=0;corner<3;corner++)
                 {
-                    var q=UnitUv(domain,vertices[at+corner]);
+                    var q=UnitUv(domain,vertices[at+corner]);if(failure!=null)return false;
                     if(unit.RetainedAxes!=0 && !fragmentUnits.ContainsKey(domain))
                     {
                         var sample=SourceSample(domain,vertices[at+corner]);
                         if(unit.ExactSourceUvs!.TryGetValue(q,out var previous) && previous!=sample)
-                            throw new InvalidOperationException("Independent-axis source samples collide after Float32 parameterization.");
+                            return Fail("Independent-axis source samples collide after Float32 parameterization.");
                         unit.ExactSourceUvs[q]=sample;
                     }
                     unit.Points.Add(q);unit.Min=Vector2.Min(unit.Min,q);unit.Max=Vector2.Max(unit.Max,q);
@@ -240,14 +263,14 @@ internal static class MovableStructureRetile
             for(int at=0;at<vertices.Length;at+=3)
             {
                 int domain=fragmentDomains.TryGetValue(face,out var parts)?parts[at/3]:faceDomains[face];
-                SurfaceAsset material=tiles.NativeSurface(surface);
+                if(!tiles.TryNativeSurface(surface,out var material,out var materialError))return Fail(materialError!);
                 if (domain >= 0 && prepared.TryGetValue(domain, out var finished)) material = finished.Surface;
                 else if (domain >= 0 && !nativeDomains.Contains(domain)) domain = -1;
                 if(!groups.TryGetValue(material,out var entries))groups.Add(material,entries=new());
                 for(int corner=0;corner<3;corner++){entries.Add((vertices[at+corner],domain));emitted++;}
             }
         }
-        if(emitted!=original.indexCount)throw new InvalidOperationException("Structural UV retile changed the physical triangle count.");
+        if(emitted!=original.indexCount)return Fail("Structural UV retile changed the physical triangle count.");
         var originalNormals=original.FirstOrDefault(a=>a.attribute==VertexAttribute.Normal);
         var originalTangents=original.FirstOrDefault(a=>a.attribute==VertexAttribute.Tangent);
         var correctedFrames=new HashSet<int>(plan.FrameTransforms.Select(p=>p.Key));
@@ -282,6 +305,7 @@ internal static class MovableStructureRetile
                             var value=Uv2(entry.Vertex);
                             if(entry.Domain>=0)
                                 value=OutputUv(entry.Domain,entry.Vertex);
+                            if(failure!=null)return false;
                             for(int axis=0;axis<attribute.dimension;axis++)
                                 Buffer.BlockCopy(BitConverter.GetBytes(axis<2?value[axis]:Uv(entry.Vertex,axis)),0,bytes,i*size+axis*4,4);
                         }
@@ -293,10 +317,11 @@ internal static class MovableStructureRetile
                                 if(tangent && preparedFrame.TangentProjections.TryGetValue(entry.Vertex,out var projection))
                                 {
                                     if(originalNormals==null)
-                                        throw new InvalidOperationException("Prepared tangent projection requires native normals.");
+                                        return Fail("Prepared tangent projection requires native normals.");
                                     var authored=tangents[entry.Vertex].m_Tangent;
-                                    var value=MovableRoadProjection.Tangent((Vector3)normals[entry.Vertex].m_Normal,
-                                        projection.U,projection.V,(Vector4)authored);
+                                    if(!MovableRoadProjection.TryTangent((Vector3)normals[entry.Vertex].m_Normal,
+                                        projection.U,projection.V,out var value,out var projectionError,(Vector4)authored))
+                                        return Fail(projectionError??"Prepared tangent projection failed.");
                                     // A collapsed projection keeps the original packed frame,
                                     // including its exact bits, rather than introducing a gate.
                                     if(!value.Equals((Vector4)authored))
@@ -306,14 +331,14 @@ internal static class MovableStructureRetile
                                         else if(format==VertexAttributeFormat.Float32 && attribute.dimension==4)
                                             for(int axis=0;axis<4;axis++)
                                                 Buffer.BlockCopy(BitConverter.GetBytes(value[axis]),0,bytes,i*size+axis*4,4);
-                                        else throw new InvalidOperationException("Unsupported native tangent encoding for prepared projection.");
+                                        else return Fail("Unsupported native tangent encoding for prepared projection.");
                                     }
                                 }
                                 continue;
                             }
                             if(entry.Domain<0 || (!normal && !tangent))continue;
                             if(correctedFrames.Contains(entry.Vertex))
-                                throw new InvalidOperationException("An explicitly corrected structural frame cannot also undergo UV-frame rotation.");
+                                return Fail("An explicitly corrected structural frame cannot also undergo UV-frame rotation.");
                             var frame=frames[entry.Domain];
                             if(normal && format==VertexAttributeFormat.SNorm16 && attribute.dimension==2)
                             {
@@ -327,16 +352,17 @@ internal static class MovableStructureRetile
                                 float handedness=t.w;
                                 if(mixedFaces.TryGetValue(entry.Domain,out var face))
                                 {
-                                    if(originalNormals==null)throw new InvalidOperationException("Independent UV axes require native normals for their tangent basis.");
+                                    if(originalNormals==null)return Fail("Independent UV axes require native normals for their tangent basis.");
                                     var normalValue=frame.Rotate((Vector3)normals[entry.Vertex].m_Normal).normalized;
-                                    var adjusted=MovableUvFrame.MixedTangent(frame,value,normalValue,handedness,
+                                    if(!MovableUvFrame.TryMixedTangent(frame,value,normalValue,handedness,
                                         face.Select(SourcePosition).ToArray(),face.Select(Uv2).ToArray(),
-                                        face.Select(v=>plan.Positions[v]).ToArray(),face.Select(v=>OutputUv(entry.Domain,v)).ToArray());
+                                        face.Select(v=>plan.Positions[v]).ToArray(),face.Select(v=>OutputUv(entry.Domain,v)).ToArray(),out var adjusted,out var tangentError))return Fail(tangentError!);
+                                    if(failure!=null)return false;
                                     value=new Vector3(adjusted.x,adjusted.y,adjusted.z);handedness=adjusted.w;
                                 }
                                 Buffer.BlockCopy(BitConverter.GetBytes(MathUtils.TangentToOctahedral(new float4((float3)value,handedness))),0,bytes,i*size,4);
                             }
-                            else throw new InvalidOperationException("Unsupported native direction encoding for structural UV retile.");
+                            else return Fail("Unsupported native direction encoding for structural UV retile.");
                         }
                     }
                     attributes.Add(new ModelImporter.Model.VertexData(attribute.attribute,format,attribute.dimension,
@@ -356,5 +382,7 @@ internal static class MovableStructureRetile
             }
         }
         Mod.Log.Info($"Structural native-density retile: {renderName}; mesh={meshIndex}; domains={frames.Count}; material units={groups.Count}; physical indices={emitted}; no period cuts.");
+        return true;
+        }
     }
 }

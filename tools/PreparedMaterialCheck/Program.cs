@@ -17,7 +17,7 @@ foreach(var style in styles) {
   var surface=Path.GetExtension(file)==".Surface";
   if(!surface)Texture(file,bytes);
   graph.Add(cid,new(){Extension=Path.GetExtension(file),Bytes=bytes,
-   SerializedReferences=surface?BridgeSurfaceReferences.Read(bytes,(_,_)=>throw new Exception("Paint unexpectedly uses VT")):null});
+   SerializedReferences=surface?(BridgeSurfaceReferences.TryRead(bytes,(_,_)=>throw new Exception("Paint unexpectedly uses VT"),out var surfaceRefs1,out var surfaceRefsError1)?surfaceRefs1:throw new System.IO.InvalidDataException(surfaceRefsError1)):null});
   files++;
  }
  var surfaceName=variant=="Paint"?"SkinnedPaint.Surface":variant=="Road"?"NativeAsphalt.Surface":"SkinnedCable.Surface";
@@ -46,7 +46,7 @@ foreach(var file in Directory.GetFiles(Path.Combine(root,style,"Lanes"),"*.Surfa
  var bytes=File.ReadAllBytes(file);var cid=File.ReadAllText(file+".cid");
  // These five properties are the measured 0/1/35 native VT stack slots;
  // offline preparation separately verifies every dependency against native archives.
- var references=BridgeSurfaceReferences.Read(bytes,(_,p)=>new[]{"_BaseColorMap","_NormalMap","_MaskMap","_ControlMask","_EmissiveColorMap"}.Contains(p));
+ var references=(BridgeSurfaceReferences.TryRead(bytes,(_,p)=>new[]{"_BaseColorMap","_NormalMap","_MaskMap","_ControlMask","_EmissiveColorMap"}.Contains(p),out var surfaceRefs2,out var surfaceRefsError2)?surfaceRefs2:throw new System.IO.InvalidDataException(surfaceRefsError2));
  var source=new BridgeDependencyCopies.Source{Extension=".Surface",Bytes=bytes,SerializedReferences=references};
  var hash=Convert.ToHexString(SHA256.HashData(bytes));
  if(digest.TryGetValue(cid,out var previous))Require(previous==hash,"lane same-CID bytes identical");

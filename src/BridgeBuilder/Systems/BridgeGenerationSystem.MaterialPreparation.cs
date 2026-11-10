@@ -16,17 +16,23 @@ public partial class BridgeGenerationSystem
 
     private void PrepareMaterialFiles(string style, Action ready, Action<Exception> failed, int? revision = null)
     {
-        if (_materialRead != null) throw new InvalidOperationException("Material preparation is already pending.");
-        string root;
-        try { root = BridgePreparedMaterials.SourceRoot; }
-        catch (Exception exception) { failed(exception); return; }
-        var cancellation = new CancellationTokenSource();
-        _materialCancellation = cancellation;
-        _materialReady = ready;
-        _materialFailed = failed;
-        _materialPreviewRevision = revision;
-        // Only strings and a cancellation token enter the worker; continuations stay in OnUpdate.
-        _materialRead = Task.Run(() => BridgeMaterialFileSnapshot.Read(root, style, cancellation.Token));
+        if (_materialRead != null)
+        {
+            NotifyMaterialFailure(failed, new InvalidOperationException("Material preparation is already pending."), revision);
+            return;
+        }
+        try
+        {
+            if(!BridgePreparedMaterials.TrySourceRoot(out var root,out var cause)){NotifyMaterialFailure(failed,new InvalidOperationException(cause),revision);return;}
+            var cancellation = new CancellationTokenSource();
+            _materialCancellation = cancellation;
+            _materialReady = ready;
+            _materialFailed = failed;
+            _materialPreviewRevision = revision;
+            // Only strings and a cancellation token enter the worker.
+            _materialRead = Task.Run(() => BridgeMaterialFileSnapshot.Read(root, style, cancellation.Token));
+        }
+        catch (Exception exception) { NotifyMaterialFailure(failed, exception, revision); }
     }
 
     private bool UpdateMaterialPreparation()
@@ -41,19 +47,35 @@ public partial class BridgeGenerationSystem
         var task = _materialRead;
         var ready = _materialReady!;
         var failed = _materialFailed!;
+        var revision = _materialPreviewRevision;
         _materialRead = null; _materialReady = null; _materialFailed = null; _materialPreviewRevision = null;
-        _materialCancellation!.Dispose(); _materialCancellation = null;
+        var cancellation = _materialCancellation;
+        _materialCancellation = null;
         try
         {
+            cancellation?.Dispose();
             // IsCompleted above is mandatory: this retrieval never waits on the game thread.
             using var snapshot = task.GetAwaiter().GetResult();
+            if(snapshot.Error!=null){NotifyMaterialFailure(failed,new System.IO.InvalidDataException(snapshot.Error),revision);return true;}
             Mod.Log.Info($"Prepared material IO: files={snapshot.FileCount}, bytes={snapshot.BytesHashed}, workerMs={snapshot.ElapsedMilliseconds}, workerThread={snapshot.WorkerThreadId}, applyThread={Thread.CurrentThread.ManagedThreadId}");
             BridgePreparedMaterials.RequestFiles = snapshot;
             try { ready(); }
             finally { BridgePreparedMaterials.RequestFiles = null; }
         }
-        catch (Exception exception) { failed(exception); }
+        catch (Exception exception) { NotifyMaterialFailure(failed, exception, revision); }
         return true;
+    }
+
+    private void NotifyMaterialFailure(Action<Exception> failed, Exception failure, int? revision)
+    {
+        try { failed(failure); }
+        catch (Exception callbackException)
+        {
+            Mod.Log.Error(failure, "Material preparation failed before its failure callback completed.");
+            Mod.Log.Error(callbackException, "Material preparation failure callback failed; publishing terminal failure.");
+            if (revision.HasValue) FailPreview(revision.Value, "PreviewFailed");
+            else BridgeRuntimeRequests.Complete("CreateFailed");
+        }
     }
 
     private void CancelMaterialPreparation()
@@ -78,7 +100,7 @@ public partial class BridgeGenerationSystem
     {
         var report = new ExportReport(logIssues: false);
         report.Failed("(prepared bridge materials)", exception);
-        Finish(report, ExportStateStore.Load(), "Create runtime bridge", showMessage: false);
-        BridgeRuntimeRequests.Complete("CreateFailed");
+        try { Finish(report, ExportStateStore.Load(), "Create runtime bridge", showMessage: false); }
+        finally { BridgeRuntimeRequests.Complete("CreateFailed"); }
     }
 }

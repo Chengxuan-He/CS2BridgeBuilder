@@ -9,7 +9,7 @@ namespace BridgeBuilder.Bridges;
 // input stage; complete road/structure replacement is required before publishing assets.
 internal static class Draw02RoadSampling
 {
-    internal static MovableRoadAssets.Level[] PrepareRenderLevels(MovableStraightSample sample, RenderPrefab[] nativeLevels, float halfWidthDelta, Matrix4x4 closedWorld, MovableRoadMaterial material, MovableSelectedRoadLayout layout)
+    internal static MovableRoadAssets.Level[]? PrepareRenderLevels(MovableStraightSample sample, RenderPrefab[] nativeLevels, float halfWidthDelta, Matrix4x4 closedWorld, MovableRoadMaterial material, MovableSelectedRoadLayout layout)
     {
         // Each LOD supplies measured domains below. An uncovered prototype area
         // preserves its selected input instead of entering a legacy bake recipe.

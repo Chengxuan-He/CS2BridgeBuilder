@@ -13,6 +13,23 @@ namespace BridgeBuilder.Runtime;
 // Disconnect disk-backed routes without rebuilding native stacks or changing live atlas coordinates.
 internal static class BridgeVirtualTextureRemoval
 {
+    internal static void Redirect(TextureStreamingSystem streaming,IReadOnlyDictionary<string,string> paths)
+    {
+        var canonical=paths.ToDictionary(p=>Path.GetFullPath(BridgeFileAccess.Logical(p.Key)),p=>p.Value,StringComparer.OrdinalIgnoreCase);
+        string? Next(string? path)=>path!=null && canonical.TryGetValue(Path.GetFullPath(BridgeFileAccess.Logical(path)),out var next)?next:null;
+        if(Field(streaming,"m_VtDatabase") is VTDatabase database)
+        {
+            foreach(var value in ((IDictionary)Field(database,"m_VTTexturePaths")!).Values)
+                if(Next((string?)Field(value!,"path")) is string next)
+                    value!.GetType().GetField("path",BindingFlags.Instance|BindingFlags.Public|BindingFlags.NonPublic)!.SetValue(value,next);
+            foreach(IDictionary slots in (IEnumerable)Field(database,"m_VTSurfaceTileInfo")!)
+                foreach(var key in slots.Keys.Cast<object>().ToArray())
+                    if(slots[key] is VTDatabase.VTSurfaceInfo info && Next(info.path) is string next)
+                        slots[key]=new VTDatabase.VTSurfaceInfo(next,info.tilesDataOffset,info.dataOffsets,info.dataSizes,
+                            info.tileCount,info.compressedTileOffsets,info.actualWidth,info.actualHeight);
+        }
+    }
+
     internal static void Disconnect(TextureStreamingSystem streaming, Func<string?,bool> owned, Func<SurfaceAsset,bool> ownedSurface)
     {
         var atlas = Field(streaming, "m_AtlasMaterialsDatabase");

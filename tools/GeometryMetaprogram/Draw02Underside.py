@@ -1,6 +1,6 @@
 from pathlib import Path
 import numpy as np,json
-R=Path('D:/CS2BridgeBuilder'); O=R/'artifacts/material-remap/Draw02/underside52';O.mkdir(exist_ok=True)
+R=Path('E:/CS2BridgeBuilder'); O=R/'artifacts/material-remap/Draw02/underside52';O.mkdir(exist_ok=True)
 for lod in range(3):
  d=np.load(R/f'artifacts/layer-decoupling/Draw02/outputs/native-repeat-mechanism/lod{lod}-native.npz');v=d['mesh0_positions'];f=d['mesh0_indices'].reshape(-1,3)
  with (O/f'lod{lod}-fixture.bin').open('wb') as h:

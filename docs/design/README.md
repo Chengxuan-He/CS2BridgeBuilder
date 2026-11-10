@@ -13,10 +13,15 @@ Use the [project contracts](../agent-contract/README.md) for requirements. These
 
 ## Materials
 
-- [Prepared Bridge Materials](materials/Prepared-Materials.md)
+- [Prepared Bridge Materials](materials/Prepared-Materials.md): current source-preserving
+  decal workflow, compatibility differences and the current multilayer implementation
+  blocker. Dynamic-shader work is archived feasibility evidence, not an active solution.
 
 ## Persistence and recovery
 
+- [Bridge deletion lifecycle](../agent-contract/BRIDGE_DELETION.md): authoritative single/bulk deletion design, durable tombstones, in-game unregistration and post-exit physical cleanup. Implementation status must be checked separately.
+
+- [Observed resource loading order](persistence/Resource-Loading-Order.md): historical startup observations, dependency readiness and independent-copy semantics; not a guaranteed global schedule.
 - [Permanent bridge identities](persistence/Bridge-Identity-Migration.md)
 - [Dependency persistence and self-check implementation](persistence/Dependency-Persistence-Implementation.md)
 - [Missing bridge save repair](persistence/missing-bridge-save-repair.md)
@@ -25,3 +30,17 @@ Use the [project contracts](../agent-contract/README.md) for requirements. These
 
 - [Bridge management and native asset pack membership](interface/Bridge-Management-Pack.md)
 - [Runtime UI localization](interface/Runtime-UI-Localization.md)
+
+## Canonical locations and delivery links
+
+Maintained shared designs belong in this directory's domain subdirectories. Normative
+requirements belong in `docs/agent-contract/`; link to them rather than maintaining a
+second design with conflicting rules. Observed loading order is a persistence reference,
+not an engine scheduling guarantee. Audit measurements, version-specific repair reports,
+benchmarks and single-style evidence remain research or historical records, not contracts.
+
+The deletion design has one canonical location: `docs/agent-contract/BRIDGE_DELETION.md`.
+The loading-order reference explains historical observations and does not duplicate that
+policy. Project navigation points directly to these documents; chat output duplicates
+and pointer documents are not maintained. Raw logs, images and deployment receipts are
+not design documents.

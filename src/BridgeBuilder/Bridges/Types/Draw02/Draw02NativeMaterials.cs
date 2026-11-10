@@ -51,17 +51,22 @@ internal static class Draw02NativeMaterials
 
     // The shared caller owns style-local loading and asset lifetime. These
     // descriptors require original source-atlas UVs rather than baked-page UVs.
-    internal static SurfaceAsset Resolve(SurfaceAsset original, Func<string, SurfaceAsset> load)
+    internal static MovableExistingRoadSurface.SurfaceResult Resolve(SurfaceAsset original, Func<string, MovableExistingRoadSurface.SurfaceResult> load)
     {
+        try
+        {
         var cid = ObjectDescriptor(original.id.guid.ToString());
         if (cid == null) return original;
         original.LoadHeader();
-        if (!original.isBuiltin)
-            throw new InvalidOperationException("Draw02 native network surface identity differs: " + original.id);
-        var converted = load(cid);
+        var loaded=load(cid);
+        if(!loaded.Success)return loaded;
+        var converted=loaded.Value;
+        if(converted==null)return new MovableExistingRoadSurface.SurfaceResult(null,"Required native object descriptor is absent.");
         converted.LoadHeader();
         if (converted.id.guid.ToString() != cid)
-            throw new InvalidOperationException("Draw02 native object descriptor differs: " + cid);
+            return new MovableExistingRoadSurface.SurfaceResult(null,"Draw02 native object descriptor differs: " + cid);
         return converted;
+            }
+        catch(Exception exception){return new MovableExistingRoadSurface.SurfaceResult(null,"Native prototype descriptor: "+exception.Message);}
     }
 }

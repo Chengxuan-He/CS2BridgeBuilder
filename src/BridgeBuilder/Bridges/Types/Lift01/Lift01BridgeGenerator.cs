@@ -27,10 +27,11 @@ internal sealed class Lift01BridgeGenerator : MovableBridgeGeneratorBase<Movable
     }
 
     protected override MovableStraightSample SampleRoad(string owner, Entity selectedRoad, RenderPrefab[] roots, ContentPrefab content, float halfDelta, RandomSeed seed) => Lift01RoadSampling.Create(owner, selectedRoad, roots, content, halfDelta, seed, NetPieceLayerMask.Bottom | NetPieceLayerMask.Side);
-    protected override RenderPrefab BuildMechanism(TowerFactory factory, string owner, MovableStraightSample road, RenderPrefab[] nativeLevels, float halfDelta, MovableRoadMaterial material)
+    protected override RenderPrefab? BuildMechanism(TowerFactory factory, string owner, MovableStraightSample road, RenderPrefab[] nativeLevels, float halfDelta, MovableRoadMaterial material)
     {
         var levels = Lift01RoadPreparation.PrepareRenderLevels(road, nativeLevels, halfDelta, Matrix4x4.Translate(new Vector3(Numeric_Types_Lift01_Lift01BridgeGenerator_cs.Values.F32[0], Numeric_Types_Lift01_Lift01BridgeGenerator_cs.Values.F32[1], Numeric_Types_Lift01_Lift01BridgeGenerator_cs.Values.F32[2])), material);
-        return Lift01RenderAssembly.CreateMechanism(factory, owner + " Mechanism", levels, halfDelta) ?? throw new InvalidOperationException("Lift01 moving render graph creation failed.");
+        if (levels == null) return null;
+        return Lift01RenderAssembly.CreateMechanism(factory, owner + " Mechanism", levels, halfDelta);
     }
 
     protected override void AssembleBridge(NetGeometryPrefab target, TowerFactory factory, RenderPrefab[] roots, ContentPrefab content, float halfDelta, MovableStraightSample road, RenderPrefab moving)
@@ -38,6 +39,7 @@ internal sealed class Lift01BridgeGenerator : MovableBridgeGeneratorBase<Movable
         var column = Lift01SupportAssembly.CreateColumn(factory, target.name + " Column", roots[Numeric_Types_Lift01_Lift01BridgeGenerator_cs.Values.I32[0]]) ?? throw new InvalidOperationException("Lift01 support render graph creation failed.");
         var footing = Lift01SupportAssembly.CreateFooting(factory, target.name + " Footing", roots[Numeric_Types_Lift01_Lift01BridgeGenerator_cs.Values.I32[1]], halfDelta) ?? throw new InvalidOperationException("Lift01 footing render graph creation failed.");
         var mechanism = Lift01ObjectAssembly.Create(factory, target.name, target.name + " Moving Object", moving, column, footing, content, halfDelta, road, Lift01RoadPartitions.Carriageway);
+        if(mechanism==null)return;
         var pillar = Lift01PillarAssembly.Create(factory, target.name + " Pillar", factory.ResolveOriginal<RenderPrefab>("Default_Base Mesh"), content, halfDelta) ?? throw new InvalidOperationException("Lift01 ordinary pillar creation failed.");
         Lift01ApproachAssembly.Apply(target, factory, content, halfDelta);
         Lift01NetworkAssembly.Apply(target, factory, Lift01SectionRoles.Resolve(target.m_Sections, BridgeRoadGeneration.Find(target)

@@ -146,7 +146,7 @@ remains a native prerequisite. Manager independence does not imply DLC independe
 | Resolve | Selected road and supported native state to sections, pieces, lanes and evaluated closed geometry | Preserve conditional alternatives and selected layout; no prototype-section whitelist. |
 | Prepare mechanism | Immutable prototype parts, motion domains, skeleton, materials and LOD data to width-adjusted structure | Preserve authored transforms, fixed platforms and native behavior. |
 | Convert surfaces | Evaluated road to object-local triangles clipped by motion and appearance domains | One native bone per triangle; fixed and moving regions remain distinct. |
-| Assign appearance | Native structural references, measured repeating road units, bounded local composites and separate skinned paint | Follow sections 17–19; no paint-driven road cuts or custom shaders; cuts solely for texture-period wraps are prohibited; use section 17's offline repeat materials. |
+| Assign appearance | Native structural references, measured repeating road units, bounded local composites and native rigid decal children | Follow sections 17–19; no paint-driven road cuts or unauthorized custom shaders; cuts solely for texture-period wraps are prohibited; use section 17's offline repeat materials. |
 | Assemble | Structure, converted road, native attachments and per-material models to the prototype's mechanism hierarchy | Correct material batch counts, bones, bounds and all LODs. |
 | Build network graph | Native crossing conditions plus selected-road sections to minimal changed Section/Piece nodes | Preserve lanes, signals, fees, upgrade logic and unlock AND/OR groups. |
 | Preview or save | Same generated graph to a temporary open-pose assembly or registered native assets | Preview writes no formal assets; saving preserves owned identity and original dependency references. |
@@ -491,8 +491,8 @@ selected-road heights, curbs, asymmetric sidewalks and bone ownership at every l
 
 Draw02 exception: moving road leaves carry no road markings. Suppress only paint polygons on original moving-leaf domains; fixed running caps and external connecting approaches retain selected-road markings. Preserve road receivers and bone ownership. Other styles retain the general paint rule below.
 
-Markings remain part of the native mechanism render graph but use a separate single-sided
-skinned mesh. Evaluate native selected-road marking footprints, partition only those polygons at
+Markings remain part of the native mechanism hierarchy through rigid native decal children
+as specified in sections 18–19. Evaluate native selected-road marking footprints, partition only those polygons at
 physical motion seams, match the evaluated upper road height and bind them to the original road
 bones. The authorized clearance is 0.001 m along the local upper normal. Do not cut road receiver
 triangles at marking edges, render projection boxes, create one child object per dash, or move
@@ -512,15 +512,14 @@ Select the required appearance by surface type under section 24. Reuse the corre
 original material directly when its vertex layout and native animated-object path are compatible.
 For a prototype-supported road type, preserve the required composite through section 17's
 native path. Other road types reuse compatible originals or the corresponding native
-animated-object road material under material contract section 4, including its accepted
-network-blend and dynamic-world-projection differences. Existing explicit track
+animated-object road material under material contract section 4, preserving complete source layers,
+blend semantics and dynamic worldspace projection. Existing explicit track
 descriptor conversions remain separate native representation rules. Carried non-road materials remain original by default; only section 17's narrow offline
 repeat derivation may replace an evidenced repeating domain to avoid new period-wrap seams. Only prototype-supported road types enter section 17's composition/precomposition plan;
 other road types follow that corresponding-material rule. Prepare known, preparable constant derived
 resources offline. Genuinely variable composition and necessary conversion of selected third-party
 road/track inputs unavailable before runtime follow the bounded exceptions in material contract
-section 4, with direct reuse and descriptor-only conversion considered first. Custom shaders and structural receiver-only descriptor rewrites
-are prohibited. Native marking layout is evaluated before producing the skinned paint described
+section 4, with direct reuse and descriptor-only conversion considered first. Dynamic shaders remain unavailable under the current independent-loading requirements in the material contract. Structural receiver-only descriptor rewrites remain prohibited. Native marking layout is evaluated before producing the native rigid decals described
 in section 18; this is not the native projector shader or a full reproduction of decal fading.
 
 For converted surfaces, derive UV axes, origin and physical scale from the applicable source
@@ -554,8 +553,8 @@ Do not mistake a missing rendered face for missing vertices or add an overlappin
 
 Emit material batches in the native importer layout: one generated model per used material slot,
 local material index zero and its matching surface reference. Registered mesh counts must cover
-all emitted batches at every LOD. Additional road/paint batches belong to existing mechanism render
-nodes, not additional per-marking Prefabs.
+all emitted batches at every LOD. Road batches belong to existing mechanism render nodes. Decals use the bounded native rigid
+child grouping in sections 18–19, not a separate Prefab per dash.
 
 Independent native render groups may select different LODs at the same view distance,
 even with identical bounds and skeletons: native thresholds also use geometry area and
@@ -584,10 +583,10 @@ native thresholds and arbitrary independent group LOD combinations. Legacy unmea
 capacity fallbacks are implementation limitations, not exceptions to this requirement.
 
 Never assume changing a shader keyword makes a network material a valid animated object material.
-Verify the native object vertex layout, skinning path and surface dependencies. If the original-source route
-cannot be realized persistently in its target context, report that separate representation failure
-with the source and context; do not throw merely because material matching returned no match; a preview-only workaround
-does not satisfy generation. Keep temporary ECS entities, meshes and texture leases disposable.
+Verify the native object vertex layout, skinning path and surface dependencies. The original-source route must be completely represented and persisted in its target context
+under the [non-throwing material pipeline](MATERIAL_GENERATION_CONTRACT.md#complete-material-processing-without-propagated-exceptions).
+An incomplete adapter for valid input requires implementation, and a preview-only workaround
+does not satisfy generation. Actual operation failures return explicit diagnostic failure results. Keep temporary ECS entities, meshes and texture leases disposable.
 
 ## 8. Skeletons, animation and attachments
 
@@ -617,6 +616,28 @@ the cycle. Fixed towers/supports remain fixed. Preserve bridge-specific lighting
 bridge generation contract section 15 and selected-road lighting as selected-road behavior. Avoid duplicate
 streetlights where network and object paths overlap. Verify every LOD and motion-dependent culling
 extent; a closed-pose bounding box alone does not establish correct open-pose rendering.
+
+### Attachment anchors in measured gaps
+
+For every movable style, evaluate each selected-road attachment's final mounting anchor
+in the correct deck/mechanism frame against its measured road-support and bone partition.
+A gap leaf means no attachment is generated at that position, for every attachment kind.
+This rule includes utility poles, streetlights and furniture without a type, road-name,
+prefab-name or CID whitelist. A measured gap is an ordinary omitted placement and must
+not fail preview or creation. Never invent a nearest supported position for a rejected anchor.
+
+Keep anchors in supported moving and fixed regions with their original native parent,
+rotation, probability, group and effects. An anchor exactly on a partition seam follows
+the positive-region convention used by road clipping. Apply each deck's own frame and
+partition independently, including opposite directions. The mounting decision is shared
+across rendering LODs. Authoritative malformed transforms or bone metadata remain explicit
+operation failures and cannot be treated as a measured gap.
+
+Apply this rule only to attachments assigned to the generated mechanism's physical support
+partition. Native external approach/network attachments and structural fixtures retain their
+existing owners and valid fixed mounts. Existing authored lamp stations and measured endpoint
+support additions still have to pass the same final geometric mounting test. They do not
+provide an exception permitting a placement inside a gap.
 
 ## 9. Waterway and traffic compatibility
 
@@ -672,7 +693,7 @@ motion or geometry conversion alone does not require new assets for those resour
 New or modified resources receive private identities only where an actual native conversion or
 materialization requires them. Record the changed data and reason. Unchanged external dependencies
 retain original bytes/CIDs in per-bridge snapshots; built-in resources remain native references.
-Never borrow another bridge's private Prefab, even when a CID matches. Do not mutate the selected
+Valid other-owner Prefabs may be read and independently snapshotted. Do not mutate the selected
 source road or original DLC objects. Preview-only material state is not a persisted native resource.
 
 ### Minimal native Prefab graph and unlocks
@@ -804,8 +825,8 @@ necessary subdivision and high-detail-derived LOD permissions do not waive this 
 Necessary subdivision of merged structural LOD triangles is permitted while preserving original
 vertices, material semantics and interpolated attributes. Deriving, simplifying or supplementing movable
 bridge LODs from the measured prototype's high-detail geometry is permitted under bridge generation
-contract section 5. Authored part classification and the prohibition on custom shaders remain unchanged. Marking
-approximation follows section 7; independent marking objects are prohibited.
+contract section 5. Authored part classification remains applicable; the material contract records dynamic shaders as unavailable under current independent-loading requirements. Marking
+approximation follows section 7; rigid native decal children are authorized under sections 18–19.
 
 Record results per variant and supported input class. The following checks are requirements for
 claiming support, not claims that they have already passed:
@@ -889,7 +910,7 @@ other bridge has passed acceptance.
 | Missing or asymmetric sidewalks became symmetric prototype strips | Lateral role selection used prototype curb positions | Use actual selected pedestrian occurrences and geometry; do not fabricate a missing side or mirror its width. |
 | Texture scale or direction differed from prototype | Network UV encoding and one global projection did not reproduce object-space atlas domains | Use measured UV-per-metre scale, separate side/leaf origins and mirrors, and verify all LODs. |
 | Projection caused invalid tangents | Per-vertex axis projection can vanish or disagree in handedness | Derive per-triangle frames, preserve one handedness, handle singular UV derivatives explicitly without suppressing validation. |
-| Paint looked like raised blocks and inflated the graph | Decal projection volumes were rendered as surface geometry; per-marking objects multiplied nodes | Use one compact single-sided skinned paint mesh on the original mechanism with 1 mm clearance; never cut road receivers for markings (sections 18–19). |
+| Paint looked like raised blocks and inflated the graph | Decal projection volumes were rendered as surface geometry; per-marking objects multiplied nodes | Use compact single-sided source-layer meshes on the original mechanism with bounded clearance; never cut road receivers for decals (sections 18–19). |
 | Generation took seconds to minutes and dependencies grew | Historical appearance baking incurred texture upload, mip and save work; redundant wrappers/marking nodes multiplied registration | Reuse structural materials, extract bounded repeat units, share appearance across LODs and remove redundant nodes; measure GPU, VT and persistence costs separately (section 22). |
 | Moving lights duplicated or failed at a seam | Network producers and moving visuals had separate ownership/placement | Preserve native traffic/light functions while suppressing duplicate stationary visuals; use measured native lamp mounts where approved, retaining selected model, lateral placement and orientation. |
 | Preview omitted ends, remained closed or was off-centre | Complete open-pose assembly and transformed bounds are required | Assemble fixed ends plus moving centre and fit the camera to all transformed bounds; inspect actual panel output. |
@@ -938,7 +959,7 @@ Follow this dependency order for a new mechanism:
 | Material/texture production | `MovableSurfaceAtlas`, `MovableRoadMaterial`, `MovableGpuBake` |
 | Render models and original structural references | `MovableRoadAssets`, `MovableRoadModel` |
 | Marking footprint and mesh generation | `MovableNativeDecals.Regions`, `TowerFactory.AttachMovablePaint` |
-| Marking material preparation and persistence | `tools/Prepare-Paint.ps1`, `BridgePreparedMaterials.Paint` and the owner-local dependency snapshot path |
+| Marking material preparation and persistence | `MovableMaterialConversion` with projected geometry, original source texture dependencies, and the owner-local dependency snapshot path |
 | Final attachment | `Draw01ObjectAssembly` and shared `TowerFactory` |
 
 These are source navigation references, not permission to copy Draw01 dimensions, atlas patches,
@@ -990,10 +1011,12 @@ representation; the latter keeps actual composed occurrence offsets/flags, nativ
 encoding and curve context. A deck descriptor must not be inserted into a network piece. Retain
 unmatched faces and source materials; never extend a match over an entire mixed piece.
 
-No-match handling does not suppress corrupt required data, native realization or persistence
-errors. Keep these errors distinct from the noexcept matching decision. Original-source object
-conversion follows material section 4's existing permission, with explicit source provenance and
-accepted blend/anchoring differences, never unrelated asphalt or a fabricated prototype match.
+The complete material pipeline returns explicit outcomes without propagated exceptions.
+Corrupt required data and native realization/persistence failures retain ERROR diagnostics and
+return failure rather than partial success. Original-source conversion preserves the complete
+source graph, blends and anchoring under material section 4. Unknown valid materials require
+compatible reuse, equivalent conversion, or visible processed compatibility output with
+non-blocking difference diagnostics, without per-source name/CID whitelist adapters.
 
 ### Non-road reuse and road composition
 
@@ -1037,7 +1060,7 @@ Unsupported road types follow material section 4's corresponding native object r
 Do not edit source pixels or global parameters, remove structural details, or change bones to
 separate materials. Physical location and a material-slot name alone do not identify road faces.
 Fixed structural platforms remain distinct from road-cap appearance domains. Selected track and
-attachment rules remain in section 24; marking layout and native skinned paint remain separate
+attachment rules remain in section 24; marking layout and native rigid decals remain separate
 under section 18. This scheme grants no new texture-period cuts; preserve necessary physical and actual material-domain boundaries.
 
 ### Preserve original UV projection and mapping mode
@@ -1062,17 +1085,16 @@ are satisfied. Descriptor-only conversions retain compatible pixels. Only
 material contract section 4's genuinely variable or unknown-selected-input cases permit bounded
 runtime composition/conversion. These runtime exceptions permit neither full-road rasterization nor structural rebaking;
 structural consumers retain native pixels at every LOD.
-Preserve independent owner snapshots, native loading and no custom shaders/runtime rebinding.
+Preserve independent owner snapshots, native loading and no runtime rebinding; dynamic shaders remain unavailable under the material contract’s current independent-loading requirements.
 
 ### Native network context and independent sampling axes
 
 Decouple distinct material layers under material generation contract section 3: retain independent
 coordinates, periods and phases for road, asphalt, worldspace detail and blend masks, while
 preserving each layer's authored channel alignment. Do not impose a common period on all layers.
-The corresponding native object road replacement in material section 4 is the narrow
-exception to exact network layer/world-projection reproduction; it preserves actual
-appearance category, physical density and native bone behavior instead of forcing
-an incompatible two-layer network shader onto the object.
+The corresponding native object road replacement in material section 4 must preserve
+complete network layers, world projection, physical density and native bone behavior.
+Binding an incompatible two-layer network shader onto an object is not conversion.
 Replace the universal 0.01-pixel phase cutoff with a measured, explicitly documented per-layer
 tolerance; its new numeric value remains pending validation. Verify the native skinned-object
 and persistence paths rather than inferring capability from network rendering.
@@ -1206,72 +1228,37 @@ Current feasibility and implementation must be verified separately from this spe
 
 ## 18. Marking layout, mesh and native material
 
-A selected bicycle or transit color decal carries its own textured coverage, including
-partial alpha and markings. Preserve its source albedo and native pre-lighting blend.
-White/yellow stroke extraction applies only to its measured line artwork. A distinct
-native projector for a color layer is eligible only when its evaluated footprint,
-UV interval, affected channels, receiver layer and bone motion are verified. Group
-such projections by physical connection and keep ordinary marking batches compact.
+Follow [source-preserving decals](MATERIAL_GENERATION_CONTRACT.md#source-preserving-selected-road-decals).
+Every retained selected-road decal, including line, rail and colored artwork, uses its original
+texture channels, alpha/blend behavior, native texture area and evaluated source UV density.
+There is no kind/name/CID whitelist and no unknown white-ribbon fallback. Existing prototype-owned
+wear exclusions still apply; this route does not reintroduce selected-road deterioration.
 
-The current implementation uses native **layout and texture input**, rendered by an object
-material that supports procedural skinning. It does not run native child decal projectors.
-
-1. Read selected-road lane/decal evaluation batches. `MovableNativeDecals.Regions` supplies the
-   supported white/yellow footprints in the road-to-object frame. Preserve spacing, direction,
-   color and supported footprint shape; do not derive lane positions from a fixed lane count.
-2. Partition marking polygons only at measured physical motion seams, discarding gap regions.
-   Find each footprint vertex's upper receiver height on the evaluated generated road. This is
-   not Boolean intersection with prototype geometry. A missing receiver intersection retains the original native placement; it must not become a structural rejection gate.
-3. Offset the paint by **0.001 m** along the local upper normal, then triangulate the paint
-   polygons and assign the same physical-domain bone as the road beneath them. This adds paint
-   triangles; it neither cuts receiver triangles nor moves the original road.
-4. Combine supported footprints into a compact paint model with the native object vertex layout,
-   UInt32 bone indices, valid normal/tangent channels and matching winding. Append one paint
-   RenderPrefab/ObjectMeshInfo to the mechanism rather than one StaticObjectPrefab per dash.
-5. Use the native `Default` object template with procedural skinning, opaque single-sided paint,
-   backface culling and decal reception disabled on **paint only**. Do not render projection
-   volume sidewalls or enable double-sided markings. The underside must remain unpainted.
-
-The current paint color source is the native No Parking surface. Prepare its actual decoded color texture offline and persist it at the source resolution (2048 x 2048 in the measured source),
-then sample measured white/yellow locations with constant UVs. Polygon outlines supply the
-marking shape. Prepare the neutral 1 x 1 control texture and native non-VT Surface with it.
-Preview and creation copy the finished constant resources without decoding or rebaking. This is
-not a textured dash atlas baked across the full bridge, nor complete native decal shading.
-Measured source identifiers/texel coordinates live in implementation data, not universal rules.
-Complex symbols, additional colors, fades or infoview semantics require explicit implementation
-and acceptance before claiming support; grouping metadata alone does not implement their shading.
-
-A native VT surface's original Texture CID may be provenance only and unavailable as a real
-.Texture asset. During offline preparation, resolve the actual VTSurface color layer or
-preprocessed VTTexture backing, decode it through the GPU path and persist the finished native
-resource. Runtime uses that packaged resource without decoding or rebaking it. Do not serialize a missing original color CID. Restore graphics state, balance texture leases
-and destroy only privately created resources on success and failure.
+Generate compact native decal projection volumes covering the evaluated receiver footprint,
+partitioned by actual physical motion domains. Omit unsupported gaps without moving decals to a
+nearby support. Group by source appearance and native parent connection rather than creating a
+Prefab per dash. Keep receiver topology unchanged and preserve distinct overlapping source layers.
+A curved-source descriptor may require a native static-decal protocol conversion after its curve
+coordinates have been evaluated. Preserve all applicable source appearance defaults and overrides,
+original textures and unmodified authored mips; record genuinely different fade behavior.
+Do not use hard/hashed cutout or rescale mip alpha to stand in for continuous source blending.
 
 ## 19. Common motion, stacking, visibility and underside
 
-The road retains the original mechanism skeleton and skinning path. Paint adapts to that road;
-never move road geometry onto marking child bones or history-driven transforms.
+The user authorizes native rigid decal child components attached to the mechanism's original
+bone connection IDs. This supersedes the earlier prohibition on independent marking objects and
+child projectors. It applies to all retained decals through the same shared path. The road keeps
+its existing skeleton; do not move it onto child transforms. Connection IDs, array indices and
+mesh slots are distinct. Persist closed-pose placement and let native relative-bone/object systems
+resolve the parent bind pose and animate the child. No Bridge Builder update loop, synchronization
+patch, custom shader or startup registration dependency may be required.
 
-The paint render must copy the original road's `ProceduralAnimationProperties`, use identical
-bone numbering/rest transforms/bind poses and match its `ObjectMeshInfo` position and rotation.
-Copy `StackProperties` when present and preserve the same authored root bounds. Matching bones
-alone is insufficient when the native object applies stack placement or scale. Do not substitute
-swept animation bounds for authored stacking bounds; preserve native animated culling behavior.
-
-Child projectors are prohibited because the inspected native update order let relative child objects
-read previous-frame BoneHistory while the skinned road used the current frame. The resulting
-misalignment occurred during movement and disappeared on pause. Increasing projection depth or
-moving the road into that delayed path does not meet the requirement. No Bridge Builder update
-loop, Harmony synchronization patch or custom shader may be required after generation.
-
-Keep paint single-sided and above its upper receiver under the same transform. Do not disable
-decal reception by cloning every structural Surface. Preserve the original structural references
-and their source projection under material contract sections 1 and 2; road composition must not rewrite them. The
-observed copying defect does not establish a universal engine defect or authorize built-in edits.
-
-The current compact paint mesh remains present across road LOD transitions rather than being
-culled dash by dash. Verify native group bounds and visibility at all distances and during motion.
-The previously measured 384 paint triangles are one sample, not a fixed count or future budget.
+Verify closed/open child transforms, leaf seams and gaps, stack placement, native receiver layers,
+bounds/culling and preview traversal. Historical previous-frame BoneHistory observations remain a
+motion-acceptance risk to test, not a prohibition on the newly authorized experiment. Do not claim
+zero lag from a closed-pose or paused test. Native material/Geometry serialization and parent fields
+must survive independent cold loading. Human in-game movement and mod-disabled acceptance remain
+separate from offline hierarchy and shader tests.
 
 ## 20. LOD, topology and prototype-specific extension
 
@@ -1317,6 +1304,9 @@ assets do not acquire new serialized materials just because the DLL was replaced
 unrelated bridges or native resources. Cold-load tests remain a separate acceptance requirement.
 
 ## 22. Performance and diagnostic requirements
+
+Selected-road clipping, rigid bone binding and vertex encoding follow the [generation-only double-precision GPU construction policy](BRIDGE_GENERATION_CONTRACT.md#generation-only-double-precision-gpu-road-construction). This does not move structural recipe planning to the GPU or change persisted rendering protocols. GPU failure requires a recorded complete CPU fallback, never float clipping or partial output.
+
 
 Structural coordinate generation follows the shared
 [CPU affine execution contract](BRIDGE_GENERATION_CONTRACT.md#cpu-affine-geometry-execution).
@@ -1441,7 +1431,7 @@ section containing the surface. These rows select road-composition inputs and no
 they do not impose preservation of the selected road's complete final appearance.
 Only prototype-supported appearance types enter prototype composition/precomposition; other
 types use compatible originals or corresponding native animated-object road materials under
-material section 4, with the accepted network-blend and world-projection differences. Asphalt, sidewalks and wheel-track/rut effects are classified
+material section 4, with complete source-layer and world-projection preservation. Asphalt, sidewalks and wheel-track/rut effects are classified
 separately, using each prototype's own measured support. Record prototype appearance from real source data;
 players need not possess the original files. Compare each deck separately.
 
@@ -1467,7 +1457,7 @@ use the absent-surface-type rule to replace the material of the entire mechanism
 
 Original appearance includes texture references, parameters, UV mapping, worldspace
 and atlas blending, and relevant upgrades. Retain native receiver UVs until the path
-is selected. Corresponding road replacements may differ in network-layer blending and dynamic
+is selected. Corresponding road replacements must preserve complete network-layer blending and dynamic
 world anchoring under material section 4. Supported road conversions follow source-density
 tiling, authored-repeat preparation and all-LOD marking removal under material section 3;
 other conversions retain their source semantics.
@@ -1503,7 +1493,7 @@ geometry, bones and LODs, and include external dependencies in the independent o
 Prototype-supported road appearances must tile at original resolution and physical texel density,
 never stretch, including fixed running caps, finite terminals and every LOD. Remove embedded road
 markings from every road-material channel and mip; preserve intended selected-road paint through
-the applicable native path (the separate skinned paint mesh for movable mechanisms). Necessary
+the applicable native path (native rigidly attached source decals for movable mechanisms). Necessary
 bounded offline repeats may be authored from pure original road content with aligned PBR donor
 coordinates and complete periodic mip chains; do not claim new periods as original evidence.
 Domains sharing the same evidenced prototype appearance require coherent source/PBR, density, orientation and phase; intentionally different physical-part materials remain distinct. Wear uses the
@@ -1511,7 +1501,7 @@ same complete measured source and matching same-source background; translate the
 measured visual center to actual native lane centers while preserving physical width, internal
 relationships and longitudinal density. No vehicle lane means no wear. Non-road finite/stretch
 modes retain their own source evidence. No full-span pixels, period cuts, arbitrary downsampling,
-custom shaders or a relaxed package byte limit are permitted.
+custom shaders that cannot independently cold-load or a relaxed package byte limit are permitted.
 
 Follow material contract [section 3](MATERIAL_GENERATION_CONTRACT.md#prototype-supported-road-surfaces-must-tile)
 and the [movable-road lane rule](BRIDGE_GENERATION_CONTRACT.md#wheel-track-placement-follows-actual-selected-lanes).
@@ -1542,7 +1532,7 @@ bone connections exclude stationary edge platforms from this path.
 
 Texture projection and repeated texture extraction must use independent horizontal
 and vertical dimensions. All LODs and saved assets use the same native material output;
-no runtime shader or synchronization dependency is introduced. Rebuild the generation
+no continuing synchronization dependency is introduced. Dynamically generated shader dependencies follow the material contract. Rebuild the generation
 GPU bundle when its kernels change. Game appearance and cold-load checks remain human
 acceptance items; compilation alone does not establish visual correctness.
 
@@ -1602,3 +1592,35 @@ Complete generated-output density, size and all-style build audits remain outsta
 Prior Draw01 underside seam checks and source-frame numerical tests do not substitute
 for those audits. Native near/far rendering, movement and cold-load observations are
 also pending. No blanket all-style acceptance is recorded.
+
+Dynamic material shaders are governed by [the scoped material requirements](MATERIAL_GENERATION_CONTRACT.md#dynamically-generated-and-independently-persisted-material-shaders): actual source generation, Player-capable loading and independent owner-local cold loading, without a continuing mod synchronization service. This permission does not relax geometry, texture-content or source-ownership rules.
+
+## Prototype-owned mechanism wear, including fixed ends
+
+The movable bridge mechanism includes its moving span and its stationary end caps.
+Generate wheel-track/wear appearance there only from the measured prototype's
+WheelTrack road representation. Do not overlay selected-road deterioration on any
+mechanism receiver, even when its bone is stationary or its substrate uses an
+Original fallback. Prototype-provided wear remains in the road material and must
+not be duplicated as a hashed-alpha object layer.
+
+The external fixed elevated approaches are separate native network assets. Keep
+their selected-road deterioration and original network rendering unchanged. Do not
+mistake a stationary cap within the mechanism for such an approach, or delete wear
+from external roads. Source line/rail artwork and bus/bicycle color coverage remain
+on the source-preserving decal route. Classify deterioration by native shader
+protocol identity, not road/material names or CIDs. No hard-alpha threshold,
+texture erasure, or replacement white ribbon is a wear-noise repair.
+
+The native static decal mesh pass reconstructs receiver positions from depth and samples
+object-local X/Z using MeshSize and TextureArea; vertex UVs do not replace that protocol.
+Use correctly oriented closed projection volumes, native receiver layers and source projection
+frames. Preserve the source sampling transform when clipping motion domains. Validate clipped
+volume boundaries separately, especially oblique seams; do not present an untested silhouette
+clip as an exact shader-space clipping predicate.
+
+Native decal projection hulls carry each face's plane normal through partition clipping.
+Clipping through an existing vertex or edge must not derive a zero normal from duplicate
+or collinear leading vertices. Thin valid volumes retain their source face frame rather
+than normalizing an area-scaled cross product through a fixed small-vector cutoff.
+This does not authorize suppressing invalid native vertex attributes or changing decal artwork.

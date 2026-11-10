@@ -57,6 +57,6 @@ public static class Draw02AtlasFilterProbe
         var b=File.ReadAllBytes(path);var f=(UnityEngine.Experimental.Rendering.GraphicsFormat)b[9];
         int bw=(int)UnityEngine.Experimental.Rendering.GraphicsFormatUtility.GetBlockWidth(f),bh=(int)UnityEngine.Experimental.Rendering.GraphicsFormatUtility.GetBlockHeight(f),bs=(int)UnityEngine.Experimental.Rendering.GraphicsFormatUtility.GetBlockSize(f),size=0;
         for(int m=0;m<b[8];m++)size+=((Math.Max(1,BitConverter.ToUInt16(b,2)>>m)+bw-1)/bw)*((Math.Max(1,BitConverter.ToUInt16(b,4)>>m)+bh-1)/bh)*bs;
-        using var s=new MemoryStream(b);return MovableTextureSource.Read(s,data=>PreparePaint.DecodeRaw(data,size));
+        using var s=new MemoryStream(b);return (MovableTextureSource.TryRead(s,data=>PreparePaint.DecodeRaw(data,size),out var parsedTexture1,out var textureReadError1)?parsedTexture1:throw new System.IO.InvalidDataException(textureReadError1));
     }
 }

@@ -19,7 +19,7 @@ internal static class PedestrianDraw02ObjectAssembly
         var attachments = new List<ObjectSubObjectInfo>(authored.Length);
         foreach (var item in authored)
         {
-            if (item.m_Object == null || BridgeAssetInfo.IsOtherBridgePrefab(item.m_Object.asset?.path, owner, imported))
+            if (item.m_Object == null)
                 throw new InvalidOperationException("PedestrianDraw02 requires its original rooftop attachment source.");
             // Both recorded vents belong to the fixed side control rooms. Their parent,
             // rotation, probability and vertical/longitudinal placement remain native.
@@ -42,7 +42,7 @@ internal static class PedestrianDraw02ObjectAssembly
         var partitions = new MovableRoadGeometry.Partition[objects.Placements.Length];
         Array.Fill(partitions, physical);
         factory.AttachMovableRoadObjects(result, objects.Placements, road.RoadToObject, partitions);
-        factory.AttachMovablePaint(result, road.Road.LaneGeometry.Decals, road.RoadToObject, physical, MovableRoadGeometry.InFrame(road.Road.Triangles, road.RoadToObject));
+        if(!factory.TryAttachMovablePaint(result, road.Road.LaneGeometry.Decals, road.RoadToObject, physical, MovableRoadGeometry.InFrame(road.Road.Triangles, road.RoadToObject),out _))return null!;
         return result;
     }
 }

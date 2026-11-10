@@ -20,10 +20,27 @@ internal static class MidMipSnapshotCheck
         Check(BridgeDependencyPersistence.CacheFileName(cache.Metadata.fileName,".MidMips",cache.Metadata.path)=="TS512_MB3.MidMips", "packaged cache uses native entry filename, not container path");
         Check(BridgeDependencyPersistence.CacheFileName("TS512_MB3",".MidMips","folder/TS512_MB3.MidMips")=="TS512_MB3.MidMips", "filesystem cache retains native filename");
         FixturePersistence.NativeEdges[surfaceCid] = new[] { cache };
+        var rejectedLookup = new BridgeCreationDependencies((AssetData asset, out IEnumerable<AssetData> found, out string? failure) => {
+            found=Array.Empty<AssetData>();failure="injected native cache protocol failure";return false;
+        });
+        AssetDatabase.global.Assets.Clear();AssetDatabase.global.Assets.Add(surface);
+        Check(!FixturePersistence.Save("b"+Guid.NewGuid(),new[]{surfaceCid},rejectedLookup,out _,out var rejectedError,out _)
+            && rejectedError.Contains("injected native cache protocol failure") && rejectedError.Contains(surfaceCid),
+            "native lookup failure retains diagnostic and cannot become an empty successful relation: "+rejectedError);
+
+        var rejectedLocal=new BridgeCreationDependencies((AssetData asset,out IEnumerable<AssetData> found,out string? failure)=>
+            {found=Array.Empty<AssetData>();failure="native lookup must not run after local failure";return false;},null,
+            (AssetData asset,out string? path,out string? failure)=>{path=null;failure="injected owned-cache parse failure";return false;});
+        Check(!FixturePersistence.Save("b"+Guid.NewGuid(),new[]{surfaceCid},rejectedLocal,out _,out var localError,out _)
+            && localError.Contains("injected owned-cache parse failure") && localError.Contains(surfaceCid),
+            "owned-cache failure cannot become an empty relation or fallback lookup");
+        Check(!BridgeMidMipReferences.TryRead(cacheBytes[..^1],out var invalidMembers,out var invalidCause)
+            && invalidMembers.Length==0 && !string.IsNullOrEmpty(invalidCause),"malformed membership result is empty with diagnostic");
+
         var unrelatedCache=Asset(new string('a',32),"Package/Other.cok",".MidMips",Cache(new string('b',32)));
         unrelatedCache.Metadata.fileName="unrelated-legacy-name";
-        var forbidden=new MidMipCacheAsset(cacheCid,()=>throw new Exception("Foreign cache read"));
-        forbidden.Metadata.extension=".MidMips";
+        var forbidden=new MidMipCacheAsset(cacheCid,()=>throw new FileNotFoundException("Deleted cache handle"));
+        forbidden.Metadata.extension=".MidMips";forbidden.Metadata.packaged=false;
         forbidden.Metadata.path=Path.Combine(imported,"b"+Guid.NewGuid(),"Dependencies",cacheCid,"TS512_MB3.MidMips");
         AssetDatabase.global.Assets.Clear(); AssetDatabase.global.Assets.AddRange(new AssetData[]{surface,forbidden,cache,unrelatedCache});
         var unrelated=new AssetData(new string('8',32),()=>throw new Exception("Unrelated transient opened"));
@@ -49,8 +66,7 @@ internal static class MidMipSnapshotCheck
         foreach(var saved in Directory.EnumerateFiles(folder,"*",SearchOption.AllDirectories))
             Check(File.ReadAllBytes(saved).SequenceEqual(File.ReadAllBytes(Path.Combine(destination,Path.GetRelativePath(folder,saved)))),
                 "generated/native persisted identical "+Path.GetRelativePath(folder,saved));
-        try { creation.Material(surface, Array.Empty<AssetData>()); throw new Exception("Expected conflicting declared edges"); }
-        catch(InvalidDataException e) when(e.Message.Contains("Conflicting")) {}
+        Check(!creation.Material(surface,Array.Empty<AssetData>()) && creation.ResolutionError?.Contains("Conflicting")==true,"Conflicting cache declarations return failure");
         var preparedGraph = new BridgeCreationDependencies(_ => throw new Exception("Unexpected prepared reverse lookup"));
         BridgePreparedMaterials.Assets[cacheCid] = cache;
         BridgePreparedMaterials.MidMips[surfaceCid] = new[]{cacheCid};
@@ -80,15 +96,15 @@ internal static class MidMipSnapshotCheck
         AssetDatabase.global.Assets.Add(Asset(surfaceCid,localSurface,".Surface",surfaceBytes,false));
         AssetDatabase.global.Assets.Add(forbidden);
         FixturePersistence.NativeEdges.Clear();
-        FixturePersistence.ReadRelations = true;
+        FixturePersistence.InspectSnapshots = true;
         Check(FixturePersistence.Save(owner,new[]{surfaceCid},out count,out error,out written)&&count==2&&written==0,
-            "unregistered current-owner cache resolved from persisted forward relation: "+error);
+            "unregistered current-owner cache resolved from shared ephemeral inventory: "+error);
         File.Delete(path+".cid");
         // A registered original can repair a missing sidecar; discovery must not hide the missing file.
         AssetDatabase.global.Assets.Add(cache);
         Check(FixturePersistence.Save(owner,new[]{surfaceCid},out count,out error,out written)&&written==1,
             "missing cache sidecar repaired additively: "+error);
-        FixturePersistence.ReadRelations = false;
+        FixturePersistence.InspectSnapshots = false;
         FixturePersistence.NativeEdges[surfaceCid] = new[] { cache };
         var changed=cacheBytes.ToArray(); changed[^1]^=1; File.WriteAllBytes(path,changed);
         Check(!FixturePersistence.Save(owner,new[]{surfaceCid},out count,out error)&&error.Contains("Different contents for dependency CID"),
@@ -113,13 +129,15 @@ internal static class MidMipSnapshotCheck
         for(int i=0;i<6;i++)writer.Write((byte)0);
         return stream.ToArray();
     }
-    internal static byte[] Cache(string surface)
+    internal static byte[] Cache(string surface,params string[] duplicates)
     {
         using var stream=new MemoryStream();using var writer=new BinaryWriter(stream);
         foreach(int n in new[]{512,3,64,1,1,1,1,512,512,1,0,3})writer.Write(n);
         writer.Write(false);writer.Write(0);
         for(int i=0;i<32;i+=2)writer.Write((byte)(Convert.ToInt32(surface[i].ToString(),16)|Convert.ToInt32(surface[i+1].ToString(),16)<<4));
-        writer.Write(1);writer.Write((short)0);writer.Write(0);
+        writer.Write(1);writer.Write((short)0);writer.Write(duplicates.Length);
+        foreach(string duplicate in duplicates)
+            for(int i=0;i<32;i+=2)writer.Write((byte)(Convert.ToInt32(duplicate[i].ToString(),16)|Convert.ToInt32(duplicate[i+1].ToString(),16)<<4));
         for(int level=0;level<3;level++){writer.Write(level);writer.Write(1);}
         writer.Write(3);writer.Write(stream.Position);writer.Write(new byte[528*528*5/4*3]);
         return stream.ToArray();

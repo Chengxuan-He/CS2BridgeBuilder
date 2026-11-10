@@ -1,2 +1,9 @@
 # The snapshot manifest hashes exact bytes; retain them across Windows/Linux checkouts.
 vendor/CS2ModShared/src/** -text
+
+# GPU bundle source fingerprints require exact checkout bytes.
+tools/RoadGpu/RoadClip.compute -text whitespace=cr-at-eol
+tools/RoadGpu/RoadEncode.compute -text whitespace=cr-at-eol
+tools/RoadGpu/RoadGpuBuild.Editor.cs -text whitespace=cr-at-eol
+# The empty second TSV field is significant fixture data.
+tools/NetworkStateCheck/Native132States.tsv whitespace=-blank-at-eol

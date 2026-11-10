@@ -51,13 +51,35 @@ internal static class MovableNativeDecals
         { Center = center; Right = rotation * Vector3.right; Up = rotation * Vector3.up;
           Forward = rotation * Vector3.forward; Half = half; Yellow = yellow; SourceColor = sourceColor; UvRect = uvRect; }
     }
+    // Native protocol identity, not a source material/name/CID allowlist. Other
+    // descriptors using the deterioration shader carry the same wear semantics.
+    // Prototype WheelTrack road composition already owns any permitted wear.
+    internal static bool IsSelectedRoadWear(MovableLaneVisuals.Batch batch)
+    {
+        if (!batch.Decal || batch.Surfaces.Length != 1) return false;
+        var source = batch.Surfaces[0];
+        source.LoadHeader();
+        var library = AssetDatabase.global.resources.materialLibrary;
+        var material = library.GetMaterial(source.materialTemplateHash);
+        var protocol = library.GetMaterial(19); // Native deterioration protocol.
+        if (material == null || material.shader == null || protocol == null || protocol.shader == null)
+            throw new InvalidOperationException("Native decal shader protocol is unavailable.");
+        return material.shader == protocol.shader;
+    }
+
     internal static bool IsLaneColor(MovableLaneVisuals.Batch batch)
     {
         if (!batch.Decal || batch.Surfaces.Length != 1) return false;
         batch.Surfaces[0].LoadHeader();
-        // CurvedDecalColorOnly is the actual color/marking presentation. Only
-        // evaluated native batches enter here, after requirements and upgrades.
-        return batch.Surfaces[0].materialTemplateHash == 32;
+        var source=batch.Surfaces[0];
+        try
+        {
+            source.LoadProperties(true);
+            var template=AssetDatabase.global.resources.materialLibrary.GetMaterial(source.materialTemplateHash);
+            bool Keyword(string name)=>template.IsKeywordEnabled(name)||source.keywords.Contains(name);
+            return Keyword("_MATERIAL_AFFECTS_ALBEDO") && !Keyword("_MATERIAL_AFFECTS_NORMAL") && !Keyword("_MATERIAL_AFFECTS_MASKMAP");
+        }
+        finally{source.UnloadProperties();}
     }
 
     internal static List<Region> Regions(MovableLaneVisuals.Batch batch, Pose roadToObject, float texelsPerMeter)
@@ -67,24 +89,15 @@ internal static class MovableNativeDecals
             throw new InvalidOperationException("Native marking conversion requires one decal surface and positive density.");
         var source = batch.Surfaces[0];
         source.LoadHeader();
-        if (source.materialTemplateHash is not (19 or 20 or 32))
-            throw new NotSupportedException($"Unmeasured native decal template {source.materialTemplateHash}: {source.name}.");
-        // Deterioration and pavement/rail-bed blends belong to road appearance. The
-        // selected existing bridge surface now supplies that appearance directly;
-        // they are not paint and must not become full-width white decal ribbons.
-        if (source.materialTemplateHash == 19 || source.name.StartsWith("RoadTransition", StringComparison.Ordinal)
-            || source.name.StartsWith("TiledTransition", StringComparison.Ordinal)
-            || source.name.StartsWith("GravelLane", StringComparison.Ordinal)
-            || source.name.StartsWith("TrainRails", StringComparison.Ordinal)
-            || source.name.StartsWith("TramRailsBase", StringComparison.Ordinal)
-            || source.name.StartsWith("SubwayRailsBase", StringComparison.Ordinal)) return result;
+        bool bounded = false;
         var curve = batch.CurveMatrix;
         var segments = new List<(Vector4 A, Vector4 D)>();
         Split(curve.GetColumn(0), curve.GetColumn(1), curve.GetColumn(2), curve.GetColumn(3), 0);
         var original = batch.Source.GetComponent<DecalProperties>();
-        bool textured = IsLaneColor(batch);
-        var strokes = textured ? segments.Select(s => new MovableExistingMarkings.Stroke(s.A,s.D,1f,0f,false))
-            : segments.SelectMany(s => MovableExistingMarkings.Strokes(source, s.A, s.D, original.m_TextureArea));
+        if(bounded)Mod.Log.Warn("Projected source color uses bounded curve sampling (at most 256 segments); local texture resolution retained.");
+        // Every native decal uses its own complete source texture interval. Pixel
+        // coverage is alpha, not a name-dependent white/yellow geometry mask.
+        var strokes = segments.Select(s => (A:s.A,D:s.D));
         foreach (var segment in strokes)
         {
             var direction = (Vector3)(segment.D - segment.A);
@@ -94,15 +107,13 @@ internal static class MovableNativeDecals
             var inverse = Quaternion.Inverse(rotation);
             var progress = curve.GetColumn(3).w == 0f ? 0f : (segment.A.w + segment.D.w) * .5f / curve.GetColumn(3).w;
             var width = batch.Size.x * Mathf.Lerp(batch.Scale.x, batch.Scale.z, progress);
-            var fullWidth = width;
-            width *= segment.Width;
             var height = batch.Size.y;
             if (!float.IsFinite(width) || !float.IsFinite(height)) throw new InvalidOperationException("Non-finite native decal dimensions.");
             var center = (Vector3)batch.Transform.GetColumn(3)
                 + (Vector3)(segment.A + segment.D) * .5f + Vector3.up * batch.Size.w
-                + rotation * Vector3.right * (fullWidth * segment.Offset);
+               ;
             result.Add(new Region(roadToObject.position + roadToObject.rotation * center,
-                roadToObject.rotation * rotation, new Vector3(Mathf.Abs(width), Mathf.Abs(height), length) * .5f, segment.Yellow, textured ? source : null,
+                roadToObject.rotation * rotation, new Vector3(Mathf.Abs(width), Mathf.Abs(height), length) * .5f, false, source,
                 new Vector4(original.m_TextureArea.min.x,
                     Mathf.LerpUnclamped(original.m_TextureArea.min.y,original.m_TextureArea.max.y,segment.A.w),
                     original.m_TextureArea.max.x,
@@ -122,7 +133,7 @@ internal static class MovableNativeDecals
             // density. This does not allocate textures or classify mechanism structure.
             if (error <= 1f / texelsPerMeter && widthChange <= 1f / texelsPerMeter)
             { segments.Add((a, d)); return; }
-            if (depth == 16 || (a.Equals(b) && b.Equals(c) && c.Equals(d))) { segments.Add((a,d)); return; }
+            if (depth == 8 || (a.Equals(b) && b.Equals(c) && c.Equals(d))) { if(depth==8)bounded=true; segments.Add((a,d)); return; }
             var ab = (a + b) * .5f; var bc = (b + c) * .5f; var cd = (c + d) * .5f;
             var abc = (ab + bc) * .5f; var bcd = (bc + cd) * .5f; var mid = (abc + bcd) * .5f;
             Split(a, ab, abc, mid, depth + 1); Split(mid, bcd, cd, d, depth + 1);

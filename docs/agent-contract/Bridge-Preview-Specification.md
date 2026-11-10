@@ -24,7 +24,7 @@ Follow the [project contract](PROJECT_CONTRACT.md) and
 [movable bridge contract](MOVABLE_BRIDGES_CONTRACT.md), and the
 [asset persistence policy](Bridge-Asset-Persistence.md). These contracts govern generation,
 source isolation, ownership, error handling and acceptance. This specification does not authorize
-new generation exceptions, custom shaders or changes to persisted bridge behavior.
+new generation exceptions or changes to persisted bridge behavior. The material contract records dynamic shaders as unavailable under current independent-loading requirements.
 
 ## 2. Preview identity and entry points
 
@@ -118,11 +118,12 @@ Reuse compatible native assets. Geometry motion alone does not justify creating 
 materials or shaders. Necessary native network-to-object conversions follow the persistence policy
 and must document the actual representation change. Material reuse, native conversions and
 offline-prepared resources follow the material generation contract. Moving markings follow
-the separate skinned-paint rules in movable contract sections 18–19.
+the native rigid-decal attachment rules in movable contract sections 18–19, including child
+placement through the actual parent bone in the open pose.
 
 Reuse original material instances when no state differs. Private Unity instances are permitted
 only when preview bindings, animation or rendering state must differ from shared game materials. Never mutate the game's shared instances. Such copies do
-not authorize new custom shaders or permanent asset export.
+not by themselves authorize dynamic shaders or permanent asset export; the shared material contract records why dynamic shaders are currently unavailable.
 
 Keep generated preview assets in their private temporary scope. Where serialized CID lookup cannot
 resolve a private asset, retain its direct object references and balanced property leases for the
@@ -202,3 +203,5 @@ a source change alone does not authorize deleting healthy bridges.
 ## 10. Supporting records
 
 - [Runtime UI and localization](../design/interface/Runtime-UI-Localization.md): selection, loading and dialog behavior.
+
+Dynamic material shaders are governed by [the scoped material requirements](MATERIAL_GENERATION_CONTRACT.md#dynamically-generated-and-independently-persisted-material-shaders): actual source generation, Player-capable loading and independent owner-local cold loading, without a continuing mod synchronization service. This permission does not relax geometry, texture-content or source-ownership rules.

@@ -14,7 +14,7 @@ internal static class AtlasWrapReproChecks
   G.Vertex Vertex(JsonElement e){var c=e.GetProperty("color");return new(V3(e.GetProperty("position")),V3(e.GetProperty("normal")),V4(e.GetProperty("tangent")),V4(e.GetProperty("uv")),new(c.GetProperty("r").GetSingle(),c.GetProperty("g").GetSingle(),c.GetProperty("b").GetSingle(),c.GetProperty("a").GetSingle()));}
   var vs=d.GetProperty("triangle").EnumerateArray().Select(Vertex).ToArray();
   var patch=new MovableExistingRoadSurface.Patch(V2(d.GetProperty("min")),V2(d.GetProperty("max")),V4(d.GetProperty("u")),V4(d.GetProperty("v")),surface,sourceUv:true,repeatU:d.GetProperty("repeatU").GetBoolean(),repeatV:d.GetProperty("repeatV").GetBoolean(),tangent:V4(d.GetProperty("tangent")),sourceAtlasRepeat:true);
-  var result=MovableRoadAtlasWrap.Apply(new(vs[0],vs[1],vs[2],0,13,102),patch);
+  var result=(MovableRoadAtlasWrap.TryApply(new(vs[0],vs[1],vs[2],0,13,102),patch,out var wrapApply1,out var wrapErrorApply1)?wrapApply1:throw new System.IO.InvalidDataException(wrapErrorApply1));
   var seam=result.SelectMany(t=>new[]{t.A,t.B,t.C}).Where(v=>v.Position.x>11&&(v.UV.y==patch.Min.y||v.UV.y==patch.Max.y)).GroupBy(v=>v.Position).ToArray();
   if(seam.Length!=2||seam.Any(g=>!g.Any(v=>v.UV.y==patch.Min.y)||!g.Any(v=>v.UV.y==patch.Max.y)))throw new Exception("Real Lift04 neighbouring wrap cells disagree on their original-edge intersection.");
   var plane=Matrix4x4.identity;plane[2,3]=80;

@@ -313,7 +313,7 @@ internal static class MovableRoadGeometry
         return values;
     }
 
-    private static bool Validate(Partition? node, int boneCount, HashSet<Partition> path)
+    internal static bool Validate(Partition? node, int boneCount, HashSet<Partition> path)
     {
         if (node == null || !path.Add(node)) return false;
         bool valid;

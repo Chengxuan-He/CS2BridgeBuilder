@@ -11,6 +11,13 @@ internal static class RuntimeBoundaryTests
 {
     internal static void Run(byte[] nativeCache, string sourceCid)
     {
+        foreach(var invalid in new[]{nativeCache[..^1],new byte[4]})
+        {
+            using var malformed=new MemoryStream(invalid,false);
+            if(MovableMidMipSubset.TryCopy(malformed,sourceCid,new string('b',32),512,3,out var partial,out var error) || partial!=null || error==null)throw new Exception("Malformed cache escaped explicit failed result");
+        }
+        using(var missing=new MemoryStream(nativeCache,false))
+            if(!MovableMidMipSubset.TryCopy(missing,new string('0',32),new string('b',32),512,3,out var partial,out var error) || partial!=null || error!=null)throw new Exception("Valid absent membership confused with malformed cache");
         const string owner = "b00000000-0000-0000-0000-000000000001";
         Unity.Entities.World.DefaultGameObjectInjectionWorld = new Unity.Entities.World();
         var db = new Database(); AssetDatabase.global = db; AssetDatabase.user = new Database();
@@ -30,7 +37,7 @@ internal static class RuntimeBoundaryTests
         foreach (var test in new[] { (0, 7), (3, 0) })
         {
             texture.Bytes = Header(test.Item1, test.Item2);
-            MovableLaneMidMips.Complete(source, target, owner, null, assets);
+            Complete(source, target, owner, null, assets);
             if (target.Reservations != 1 || target.Loads != 1 || target.LastLevels != 0 ||
                 !ReferenceEquals(target.PreReservedAtlassingInfos, target.VTAtlassingInfos)) throw new Exception("Zero-level VT initialization was lost or repeated.");
             if (assets.Count != 0 || forbidden.ReadCount != 0 || stale.ReadCount != 0)
@@ -38,23 +45,23 @@ internal static class RuntimeBoundaryTests
         }
         texture.Bytes = Header(0, 7);
         var prepared = new SurfaceAsset { isVTMaterial = true };
-        MovableLaneMidMips.CompletePrepared(source, prepared);
+        CompletePrepared(source, prepared);
         var reservation = prepared.PreReservedAtlassingInfos;
         prepared.VTAtlassingInfos = null; // Real native unload behavior is tested in Unity.
-        MovableLaneMidMips.CompletePrepared(source, prepared);
+        CompletePrepared(source, prepared);
         if (prepared.Reservations != 1 || prepared.Loads != 1 || !ReferenceEquals(reservation, prepared.PreReservedAtlassingInfos))
             throw new Exception("Prepared zero-mid retry replaced the native reservation.");
         texture.Bytes = Header(3, 7);
         var cached = new SurfaceAsset { isVTMaterial = true, PreReservedAtlassingInfos = Array.Empty<Colossal.IO.AssetDatabase.VirtualTexturing.VTAtlassingInfo>() };
-        MovableLaneMidMips.CompletePrepared(source, cached);
+        CompletePrepared(source, cached);
         if (cached.Reservations != 0 || cached.Loads != 0) throw new Exception("Prepared positive cache was reinitialized.");
-        ExpectFailure(() => MovableLaneMidMips.Complete(source, target, owner, null, assets));
+        ExpectFailure(() => Complete(source, target, owner, null, assets));
         if (forbidden.ReadCount != 0 || stale.ReadCount != 0) throw new Exception("Generated owner was opened.");
         var original = new MidMipCacheAsset { id = new(new string('e', 32)), database = db, isBuiltin = true, Bytes = nativeCache };
         source.uri = "assetdb://test/UK%20Pack.cok@Road/Real.Surface";
         original.uri = "assetdb://test/UK%20Pack.cok@StreamingData~/TS512_MB3.MidMips";
         original.tags.Add("TS512_MB3"); db.Items.Add(original);
-        MovableLaneMidMips.Complete(source, target, owner + " Moving Road Piece 2", null, assets);
+        Complete(source, target, owner + " Moving Road Piece 2", null, assets);
         if (assets.Count != 1 || !assets[0].Path.Contains(owner + "/Appearance/MidMips/" + target.id.guid) ||
             !assets[0].Path.EndsWith("/TS512_MB3") || forbidden.ReadCount != 0 || stale.ReadCount != 0)
             throw new Exception("Owner-local native cache output mismatch.");
@@ -65,16 +72,20 @@ internal static class RuntimeBoundaryTests
         source.PreReservedAtlassingInfos = new[]{new Colossal.IO.AssetDatabase.VirtualTexturing.VTAtlassingInfo(2,8)};
         streaming.Indexed[(2,20002)] = new Colossal.IO.AssetDatabase.VirtualTexturing.ObjectEntry(new Colossal.IO.AssetDatabase.VirtualTexturing.AtlasMaterialsGrouper{asset=original});
         var preview = new PreviewGeometry(); var previewAssets = new List<AssetData>();
-        MovableLaneMidMips.Complete(source, target, "tmp00000000-0000-0000-0000-000000000003 Moving Road Piece 2", preview, previewAssets);
+        Complete(source, target, "tmp00000000-0000-0000-0000-000000000003 Moving Road Piece 2", preview, previewAssets);
         if (previewAssets.Count != 1 || !ReferenceEquals(previewAssets[0].database, preview.NativeAssets) ||
             !ReferenceEquals(streaming.LastDatabase, preview.NativeAssets)) throw new Exception("Preview database isolation mismatch.");
         var zero = new AssetData { id = new(new string('f', 32)), database = db, isBuiltin = true, Bytes = Header(0, 7) };
         db.Items.Add(zero); source.preProcessedTextureGuids = new[] { texture.id.guid, zero.id.guid };
         int priorReads = original.ReadCount;
-        ExpectFailure(() => MovableLaneMidMips.Complete(source, target, owner, null, new()));
+        ExpectFailure(() => Complete(source, target, owner, null, new()));
         if (original.ReadCount != priorReads) throw new Exception("Mixed zero/3 source reached cache loading.");
         Console.WriteLine("PASS runtime boundary: zero/empty, mixed zero/3, missing original, current/other/stale-owner exclusion before read, permanent and private-preview refresh.");
     }
+    static void Complete(SurfaceAsset source,SurfaceAsset target,string owner,PreviewGeometry? preview,List<AssetData> assets)
+    {if(!MovableLaneMidMips.TryComplete(source,target,owner,preview,assets,out var error))throw new InvalidDataException(error);}
+    static void CompletePrepared(SurfaceAsset source,SurfaceAsset target)
+    {if(!MovableLaneMidMips.TryCompletePrepared(source,target,out var error))throw new InvalidDataException(error);}
     static void ExpectFailure(Action action) { try { action(); } catch (InvalidDataException) { return; } throw new Exception("Expected native boundary failure."); }
     static byte[] Header(int levels, int tail)
     {
@@ -86,7 +97,7 @@ internal static class RuntimeBoundaryTests
 
 namespace Colossal
 {
-    public readonly record struct Hash128(string Value) { public bool isValid => Value != null && Value.Any(c => c != '0'); public override string ToString() => Value; }
+    public readonly record struct Hash128(string Value) { public static Hash128 Parse(string value)=>new(value); public bool isValid => Value != null && Value.Any(c => c != '0'); public override string ToString() => Value; }
 }
 namespace Colossal.IO.AssetDatabase
 {
@@ -95,7 +106,7 @@ namespace Colossal.IO.AssetDatabase
     public record AssetDataPath(string Directory, string Name) { public static AssetDataPath Create(string d, string n, EscapeStrategy _) => new(d, n); }
     public class AssetData
     {
-        public string uri = ""; public Identifier id; public Database database = null!; public bool isBuiltin, ForbidRead; public string Path = "original";
+        public string name="fixture"; public string uri = ""; public Identifier id; public Database database = null!; public bool isBuiltin, ForbidRead; public string Path = "original";
         public byte[] Bytes = Array.Empty<byte>(); public int ReadCount; public readonly List<string> tags = new();
         public (string path, string subPath) GetMeta() => (Path, Path);
         public Stream GetReadStream() { ReadCount++; if (ForbidRead) throw new Exception("Forbidden source was read."); return new MemoryStream(Bytes, false); }
@@ -109,7 +120,7 @@ namespace Colossal.IO.AssetDatabase
         public readonly List<AssetData> Items = new();
         public IEnumerable<Database> databases => new[]{this};
         public bool TryGetAsset(string uri, out MidMipCacheAsset cache) { cache=Items.OfType<MidMipCacheAsset>().FirstOrDefault(c=>c.uri==uri)!;return cache!=null; }
-        public IEnumerable<T> GetAssets<T>() where T : AssetData => Items.OfType<T>();
+        public IEnumerable<T> GetAssets<T>() where T : AssetData => throw new Exception("Global asset enumeration forbidden");
         public bool TryGetAsset(Colossal.Hash128 cid, out AssetData asset) { asset = Items.FirstOrDefault(a => a.id.guid == cid)!; return asset != null; }
         public T AddAsset<T>(AssetDataPath path) where T : AssetData, new() { var asset = new T { database = this, Path = path.Directory + "/" + path.Name }; Items.Add(asset); return asset; }
     }
@@ -141,4 +152,4 @@ namespace BridgeBuilder.Bridges { internal sealed class PreviewGeometry { intern
 namespace BridgeBuilder.Runtime { internal static class BridgeFileAccess { internal static bool Exists(string p)=>File.Exists(p); internal static FileStream OpenRead(string p)=>File.OpenRead(p); internal static string Logical(string path) => path; } }
 namespace BridgeBuilder { internal static class Mod { internal static Logger Log = new(); internal sealed class Logger { internal void Info(string _) { } } } }
 
-namespace BridgeBuilder.Bridges { internal static class BridgeRoadGeneration { public static Dependencies? CurrentDependencies => null; internal class Dependencies {public void Material(SurfaceAsset s, IEnumerable<AssetData> a){} } } }
+namespace BridgeBuilder.Bridges { internal static class BridgeRoadGeneration { public static Dependencies? CurrentDependencies => null; internal class Dependencies {public string? ResolutionError=>null; public bool Material(SurfaceAsset s, IEnumerable<AssetData> a)=>true; } } }

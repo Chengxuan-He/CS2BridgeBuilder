@@ -32,8 +32,8 @@ foreach(var path in args.Skip(1))
         }
         if(u.TryGetProperty("key",out var declared) && !string.IsNullOrEmpty(declared.GetString()) && declared.GetString()!=key)throw new Exception("Offline/runtime key mismatch: "+path);
         if(!keys.Add((style,key)))throw new Exception("Duplicate inventory unit: "+style+"/"+key);
-        var inputs=BridgePreparedMaterialFiles.Read(Path.Combine(args[0],style),variant+"/"+key,variant+".Surface",
-            bytes=>BridgeSurfaceReferences.Read(bytes,(_,_)=>throw new Exception("Unexpected VT binding")),cid=>throw new Exception("Missing style-local dependency: "+cid));
+        var inputs=(BridgePreparedMaterialFiles.TryRead(Path.Combine(args[0],style),variant+"/"+key,variant+".Surface",out var preparedInputs1,out var preparedError1,
+            bytes=>(BridgeSurfaceReferences.TryRead(bytes,(_,_)=>throw new Exception("Unexpected VT binding"),out var surfaceRefs1,out var surfaceRefsError1)?surfaceRefs1:throw new System.IO.InvalidDataException(surfaceRefsError1)),cid=>throw new Exception("Missing style-local dependency: "+cid))?preparedInputs1:throw new System.IO.InvalidDataException(preparedError1));
         if(structure?inputs.Count<2:inputs.Count!=5)throw new Exception("Incomplete sampled graph: "+style+"/"+key);
         foreach(var input in inputs)
         {

@@ -267,8 +267,12 @@ These nodes have specific meanings:
   road and lane batches. Material conversion and grouping follow these actual batches. Native
   render creation links the resulting LOD graph; group ownership must not create visibility gaps
   when independent renderers select different LODs.
-- Paint is not a prototype texture-cleanup stage at runtime. The selected road's intended markings
-  use the style's existing mechanism paint path (including its explicit moving-paint exceptions).
+- Selected-road decals retain each original source's texture channels, alpha and evaluated
+  texture-area UVs. Clip each occurrence to existing receivers and bind their bones;
+  keep separate overlapping sources and deduplicate only one occurrence's segments.
+  A derived native hashed-alpha object Surface represents coverage, with explicit
+  differences from DBuffer channel blending. There is no name filter, unknown-source
+  white ribbon or constant white/yellow Paint replacement.
   Draw01 attaches paint through its object assembly; do not infer a universal paint call order
   inside road preparation. Fixed native approaches remain separate from moving receivers.
 - Bridge object/network assembly installs the style's measured mechanism/object/network behavior, not only a

@@ -65,7 +65,7 @@ try
         w.Write(source, middleStart, keywordStart - middleStart);
         w.Write((byte)255); w.Write(keywords.Count); foreach (var keyword in keywords) w.Write(keyword);
         w.Flush(); var bytes = output.ToArray();
-        string[] References(byte[] b) => BridgeSurfaceReferences.Read(b, (t, p) => Stack(t).Contains(p));
+        string[] References(byte[] b) => (BridgeSurfaceReferences.TryRead(b, (t, p) => Stack(t).Contains(p),out var surfaceRefs1,out var surfaceRefsError1)?surfaceRefs1:throw new System.IO.InvalidDataException(surfaceRefsError1));
         Require(References(bytes).Order().SequenceEqual(References(source).Order()), "Conversion changed native dependencies.");
         Require(References(bytes).All(builtins.Contains), "Missing built-in dependency: " + entry.FullName + ": " + string.Join(",", References(bytes).Where(cid => !builtins.Contains(cid))));
         string digest = Digest(source);

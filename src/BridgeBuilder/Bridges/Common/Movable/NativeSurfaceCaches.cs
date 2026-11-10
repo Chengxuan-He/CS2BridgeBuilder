@@ -15,18 +15,59 @@ internal static class NativeSurfaceCaches
     // its grouper accessor is internal in the installed game API.
     private static readonly FieldInfo? Grouper = typeof(ObjectEntry).GetField("m_Grouper", BindingFlags.NonPublic | BindingFlags.Instance);
 
-    internal static IEnumerable<MidMipCacheAsset> Find(SurfaceAsset source, TextureStreamingSystem streaming, int levels, string owner = "")
+    internal static bool TryFindIdentity(string cid, TextureStreamingSystem streaming,
+        out IEnumerable<MidMipCacheAsset> caches, out string? error)
     {
+        caches=Array.Empty<MidMipCacheAsset>();error=null;
+        try
+        {
+            var database=typeof(TextureStreamingSystem).GetField("m_AtlasMaterialsDatabase",BindingFlags.Instance|BindingFlags.NonPublic)?.GetValue(streaming);
+            var registrations=database?.GetType().GetField("m_RegisteredTextures",BindingFlags.Instance|BindingFlags.NonPublic)?.GetValue(database)
+                as Dictionary<Colossal.Hash128,VTAtlassingInfo>[];
+            if(registrations==null || Grouper==null){error="Native cache CID registrations are not ready.";return false;}
+            var found=new HashSet<MidMipCacheAsset>();
+            var attempted=new HashSet<MidMipCacheAsset>();
+            foreach(var stack in registrations)
+            {
+                if(stack==null || !stack.TryGetValue(Colossal.Hash128.Parse(cid),out var info))continue;
+                if(info.stackGlobalIndex<0 || info.indexInStack<0)continue;
+                var point=ZOrderer.GetCoords(info.indexInStack);
+                // Probe only the bounded ancestors of this exact registered tile.
+                // Cache header membership disambiguates neighbouring atlas regions.
+                for(int level=1;level<12;level++)
+                {
+                    int index=PVTTileIndexer.GetUniversalTileIndex(point.x>>level,point.y>>level,level);
+                    if(!streaming.TryGetMidMipMask(info.stackGlobalIndex,index,out var entry)
+                        || Grouper.GetValue(entry) is not AtlasMaterialsGrouper group || group.asset==null
+                        || !attempted.Add(group.asset))continue;
+                    using var input=group.asset.GetReadStream();
+                    if(!BridgeMidMipReferences.TryRead(input,out var members,out error))return false;
+                    if(members.Contains(cid,StringComparer.OrdinalIgnoreCase))found.Add(group.asset);
+                }
+            }
+            caches=found.ToArray();return true;
+        }
+        catch(Exception exception){error="Native cache CID lookup: "+exception.Message;return false;}
+    }
+
+    internal static bool TryFind(SurfaceAsset source, TextureStreamingSystem streaming, int levels,
+        out IEnumerable<MidMipCacheAsset> caches, out string? error, string owner = "")
+    {
+        caches = Array.Empty<MidMipCacheAsset>(); error = null;
+        try
+        {
         var found = new List<MidMipCacheAsset>();
         var attempted = new HashSet<MidMipCacheAsset>();
         string tag = AtlasMaterialsGrouper.GetAssetName(streaming.tileSize, levels);
         string cid = source.id.guid.ToString();
 
+        string? parseError=null;
         void Check(MidMipCacheAsset cache)
         {
-            if (!attempted.Add(cache) || !MovableLaneMidMips.Permitted(cache, owner) || cache.tags.Count != 1 || cache.tags[0] != tag) return;
+            if (!attempted.Add(cache) || cache.tags.Count != 1 || cache.tags[0] != tag) return;
             using var input = cache.GetReadStream();
-            if (BridgeMidMipReferences.Read(input).Contains(cid, StringComparer.OrdinalIgnoreCase)) found.Add(cache);
+            if(!BridgeMidMipReferences.TryRead(input,out var members,out var cause)){parseError??=cause;return;}
+            if(members.Contains(cid,StringComparer.OrdinalIgnoreCase))found.Add(cache);
         }
 
         var infos = source.PreReservedAtlassingInfos ?? source.VTAtlassingInfos;
@@ -72,7 +113,11 @@ internal static class NativeSurfaceCaches
             }
             else Lookup(directory + "StreamingData~/" + tag + ".MidMips");
         }
-        if (found.Count == 0) throw new InvalidDataException("Missing native MidMips membership for selected Surface " + cid);
-        return found;
+        if(parseError!=null){error=parseError;return false;}
+        if (found.Count == 0) { error = "Missing native MidMips membership for selected Surface " + cid; return false; }
+        caches = found; return true;
+        }
+        catch (Exception exception) { error = exception.GetType().Name + ": " + exception.Message; return false; }
+        finally { if (error != null) error = $"Native cache lookup: owner={owner}; source={source?.name}; levels={levels}; {error}"; }
     }
 }

@@ -106,11 +106,12 @@ public partial class BridgeStartupAssetSystem : GameSystemBase
         Mod.Log.Info($"Bridge self-check started: {(manual ? "manual" : "mod initialized + all native asset batches complete")}");
         try
         {
+            BridgeDeferredRemoval.Resume();
             var loadedIndex = new BridgeLoadedCidRecovery.LoadedIndex();
             var recoveries = new Dictionary<string, HashSet<string>>(StringComparer.Ordinal);
             var failures = new Dictionary<string, string>(StringComparer.Ordinal);
             var system = World.GetOrCreateSystemManaged<PrefabSystem>();
-            var assets = BridgeInspectionAssets.Read(owner => !_copiedOwners.Contains(owner) && !BridgeStartupRecovery.Retired.Contains(owner)).ToArray();
+            var assets = BridgeInspectionAssets.Read(owner => !_copiedOwners.Contains(owner) && !BridgeStartupRecovery.Retired.Contains(owner) && !BridgeDeferredRemoval.Excluded(owner)).ToArray();
             if (assets.Length != 0 && BridgeAssetPack.Ensure(system) == null)
                 Mod.Log.Error("Bridge pack icon could not be updated; existing bridge assets retained.");
             var owners = new HashSet<string>(assets.Select(a => a.Owner), StringComparer.Ordinal);
@@ -123,6 +124,11 @@ public partial class BridgeStartupAssetSystem : GameSystemBase
                 foreach (var asset in byOwner[owner]) { scope.Paths(owner).Add(asset.Path); scope.Paths(owner).Add(asset.Path + ".cid"); }
                 try { dependencies.Add(owner, scope.Dependencies(owner, byOwner[owner])); }
                 catch (Exception exception) { failures[owner] = "Cache relation read failed: " + exception.Message; }
+            }
+            if(owners.Count!=0 && !scope.PrepareCaches(out var cachePreparationError))
+            {
+                Mod.Log.Error("Bridge self-check aborted before owner inspection: cache relation preparation failed; "+cachePreparationError);
+                return;
             }
             var discoveryMs = timer.ElapsedMilliseconds;
             var stageStart = timer.ElapsedMilliseconds;
@@ -258,7 +264,13 @@ public partial class BridgeStartupAssetSystem : GameSystemBase
                     Mod.Log.Error($"Bridge file layout migration failed UUID={owner}; preserving assets for retry after restart: {layoutError}");
                     continue;
                 }
-                dependencies[owner].SaveRelations(owner);
+                if(!BridgeCreationDependencies.RemoveObsoleteRelations(owner,backup,out var relationsRemoved,out var relationError))
+                {
+                    report.Set(owner,BridgeSelfCheckReport.Outcome.Unfinished);migrationErrors++;_copiedOwners.Add(owner);
+                    Mod.Log.Error($"Bridge obsolete cache metadata cleanup failed UUID={owner}: {relationError}");
+                    continue;
+                }
+                if(relationsRemoved)migrationCandidates.Add(owner);
                 layoutMs += timer.ElapsedMilliseconds - stageStart;
                 _copiedOwners.UnionWith(relocated);
                 migrationCandidates.UnionWith(relocated);
@@ -312,7 +324,7 @@ public partial class BridgeStartupAssetSystem : GameSystemBase
             var retirementMs = timer.ElapsedMilliseconds - stageStart;
             var elapsedMs = timer.ElapsedMilliseconds;
             var otherMs = elapsedMs - discoveryMs - dependencyMs - validationMs - persistenceMs - portableMs - namesMs - layoutMs - retirementMs;
-            Mod.Log.Info($"Bridge self-check result: elapsedMs={elapsedMs}, validationMs={validationMs}, persistenceMs={persistenceMs}, retirementMs={retirementMs}, discoveryMs={discoveryMs}, dependencyMs={dependencyMs}, portableMs={portableMs}, namesMs={namesMs}, layoutMs={layoutMs}, otherMs={otherMs}, owners={owners.Count}, removed={removed}, migrated={report.Count(BridgeSelfCheckReport.Outcome.Migrated)}, copiedAwaitingRestart={_copiedOwners.Count}, removalErrors={removalErrors}, migrationErrors={migrationErrors}; cached assets include registration failures; live-reference mutation disabled.");
+            Mod.Log.Info($"Bridge self-check result: elapsedMs={elapsedMs}, validationMs={validationMs}, persistenceMs={persistenceMs}, retirementMs={retirementMs}, discoveryMs={discoveryMs}, dependencyMs={dependencyMs}, portableMs={portableMs}, namesMs={namesMs}, layoutMs={layoutMs}, otherMs={otherMs}, owners={owners.Count}, cacheTraversals={scope.CacheTraversals}, cacheHeaders={scope.CacheHeaders}, removed={removed}, migrated={report.Count(BridgeSelfCheckReport.Outcome.Migrated)}, copiedAwaitingRestart={_copiedOwners.Count}, removalErrors={removalErrors}, migrationErrors={migrationErrors}; cached assets include registration failures; live-reference mutation disabled.");
         }
         finally
         {

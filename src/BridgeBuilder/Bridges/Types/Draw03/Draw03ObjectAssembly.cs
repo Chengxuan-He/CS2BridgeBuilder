@@ -14,7 +14,7 @@ internal static class Draw03ObjectAssembly
         var imported = Path.Combine(Application.persistentDataPath, "ImportedData");
         foreach (var item in attachments)
         {
-            if (item.m_Object == null || BridgeAssetInfo.IsOtherBridgePrefab(item.m_Object.asset?.path, owner, imported))
+            if (item.m_Object == null)
                 throw new InvalidOperationException("Draw03 requires its original flagpole and wall-light sources.");
             item.m_Position.x += Math.Sign(item.m_Position.x) * halfWidthDelta;
         }
@@ -32,7 +32,7 @@ internal static class Draw03ObjectAssembly
         // Furniture stations are away from the domain-specific centre gaps.
         Array.Fill(partitions, Draw03RoadPartitions.Carriageway);
         factory.AttachMovableRoadObjects(result, objects.Placements, road.RoadToObject, partitions);
-        factory.AttachMovablePaint(result, road.Road.LaneGeometry.Decals, road.RoadToObject, Draw03RoadPartitions.Carriageway, MovableRoadGeometry.InFrame(road.Road.Triangles, road.RoadToObject));
+        if(!factory.TryAttachMovablePaint(result, road.Road.LaneGeometry.Decals, road.RoadToObject, Draw03RoadPartitions.Carriageway, MovableRoadGeometry.InFrame(road.Road.Triangles, road.RoadToObject),out _))return null!;
         return result;
     }
 }

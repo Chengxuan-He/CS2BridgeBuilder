@@ -1,0 +1,12 @@
+{
+  "editor": "2022.3.62f2",
+  "target": "StandaloneWindows64",
+  "precision": "double seam construction; float attributes",
+  "sources": {
+    "RoadGpuBuild.Editor.cs": "3F655D4C6C2848A8A81C97E6A3F6484D9015174C9AF1ECB84D5145F35ED914E3",
+    "RoadEncode.compute": "F7665A7CF3936A773DD75A0DC2511F82193EFA8C50D61183C4A7779D92676604",
+    "RoadClip.compute": "ACB58E74EC52BDE6DFDA35EE96ACFB78C76B9E162151CEC879F0755387D4E66F"
+  },
+  "fxc": "enable_d3d11_debug_symbols",
+  "bundleSha256": "4AD59B1762C762686409698A41EA0CBA80F1326380001C8652D30FE0A4BFF687"
+}

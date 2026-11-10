@@ -10,6 +10,8 @@ internal static class MovableParentUv
 {
     internal sealed class Result
     {
+        internal readonly string? Error;
+        internal Result(string error){Error=error;Points=Array.Empty<Vector2>();Exact=Array.Empty<double[]>();}
         internal readonly Vector2[] Points;
         internal readonly double[][] Exact;
         internal readonly double OffsetX,OffsetY;
@@ -68,9 +70,10 @@ internal static class MovableParentUv
         var targetOther=Difference(target[order[2]],target[order[0]]);
         var targetX=Normalize(targetEdge);
         var targetY=Cross(Normalize(Cross(targetEdge,targetOther)),targetX);
-        MovableUvFrame.PolarRotation(sourceLength,sourceCx,sourceCy,
+        if(!MovableUvFrame.TryPolarRotation(sourceLength,sourceCx,sourceCy,
             Math.Sqrt(Dot(targetEdge,targetEdge)),Dot(targetOther,targetX),Dot(targetOther,targetY),
-            out double cosine,out double sine);
+            out double cosine,out double sine,out var cause))return new Result(cause!);
+        string? failure=null;
         var sampleX=targetX.Zip(targetY,(x,y)=>x*cosine+y*sine).ToArray();
         var sampleY=targetY.Zip(targetX,(y,x)=>y*cosine-x*sine).ToArray();
         var n=Cross(e,f);double determinant=Dot(n,n);
@@ -91,12 +94,13 @@ internal static class MovableParentUv
             double dx=U(0)-parentUv[0].x,dy=U(1)-parentUv[0].y,uvDeterminant=ux*vy-uy*vx;
             if(uvDeterminant!=0)
                 return new[]{(dx*vy-dy*vx)/uvDeterminant,(ux*dy-uy*dx)/uvDeterminant};
-            if(retainedAxes!=0)throw new InvalidOperationException("Independent sampling axes require a measured nonsingular UV mapping.");
+            if(retainedAxes!=0){failure="Independent sampling axes require a measured nonsingular UV mapping.";return new double[2];}
             var r=Enumerable.Range(0,3).Select(i=>(double)source[order[0]][i]-parent[0][i]+
                 ((double)source[order[1]][i]-source[order[0]][i])*qx+
                 ((double)source[order[2]][i]-source[order[0]][i])*qy).ToArray();
             return new[]{Dot(Cross(r,f),n)/determinant,Dot(Cross(e,r),n)/determinant};
         }).ToArray();
+        if(failure!=null)return new Result(failure);
         // Compare equivalent integer Repeat phases before Float32 storage. A
         // blanket origin shift improves some thin faces but worsens others.
         // Choose the representation with the smallest physical gradient error;
@@ -126,6 +130,6 @@ internal static class MovableParentUv
             double error=gradient.Zip(expected,(a,b)=>(a-b)*(a-b)).Sum();
             if(error<bestError){best=candidate;bestError=error;bestX=ox;bestY=oy;}
         }
-        return new Result(best??throw new InvalidOperationException("Non-finite parent sampler mapping."),mapped,bestX,bestY);
+        return best==null?new Result("Non-finite parent sampler mapping."):new Result(best,mapped,bestX,bestY);
     }
 }

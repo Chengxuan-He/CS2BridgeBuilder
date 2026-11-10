@@ -45,7 +45,7 @@ public static class TextureSourceCheck
                     writer.Write(raw);
                 }
                 stream.Position = 0;
-                var decoded = MovableTextureSource.Read(stream, _ => throw new Exception("Unexpected compression."));
+                var decoded = (MovableTextureSource.TryRead(stream, _ => throw new Exception("Unexpected compression."),out var parsedTexture1,out var textureReadError1)?parsedTexture1:throw new System.IO.InvalidDataException(textureReadError1));
                 try
                 {
                     if (decoded.width != 16 || decoded.height != 8 || decoded.mipmapCount != 4 || decoded.graphicsFormat != source.graphicsFormat)
@@ -63,16 +63,30 @@ public static class TextureSourceCheck
                 }
                 finally { UnityEngine.Object.DestroyImmediate(decoded); }
                 var truncated = stream.ToArray(); Array.Resize(ref truncated, truncated.Length - 1);
-                try
+                int before=Resources.FindObjectsOfTypeAll<Texture2D>().Length;
+                using(var broken=new MemoryStream(truncated))
+                    if(MovableTextureSource.TryRead(broken,_=>throw new Exception("decode fault"),out var bad,out var cause)||bad!=null||string.IsNullOrEmpty(cause))
+                        throw new Exception("Truncated source did not return a clean failure.");
+                if(Resources.FindObjectsOfTypeAll<Texture2D>().Length!=before)throw new Exception("Truncated source leaked a texture.");
+                if(version==5)
                 {
-                    using var broken = new MemoryStream(truncated);
-                    var unexpected = MovableTextureSource.Read(broken, _ => throw new Exception());
-                    UnityEngine.Object.DestroyImmediate(unexpected);
-                    throw new Exception("Truncated source was accepted.");
+                    var packed=stream.ToArray();BitConverter.GetBytes(raw.Length).CopyTo(packed,14);
+                    // The callback contract is independently checked; native ZSTD decompression is exercised by material integration tests.
+                    using(var compressed=new MemoryStream(packed))
+                    {
+                        if(!MovableTextureSource.TryRead(compressed,_=>raw,out var ok,out var cause))throw new Exception(cause);
+                        UnityEngine.Object.DestroyImmediate(ok);
+                    }
+                    foreach(var kind in new[]{0,1})
+                    {
+                        using var compressed=new MemoryStream(packed);
+                        if(MovableTextureSource.TryRead(compressed,b=>kind==0?Array.Empty<byte>():throw new Exception("injected codec failure"),out var bad,out var cause)||bad!=null||string.IsNullOrEmpty(cause))
+                            throw new Exception("Codec fault did not return a clean failure.");
+                    }
+                    if(Resources.FindObjectsOfTypeAll<Texture2D>().Length!=before)throw new Exception("Codec failure leaked a texture.");
                 }
-                catch (EndOfStreamException) { }
             }
-            Debug.Log($"PASS native texture full-resolution reader: {samples} exact top-mip pixels; versions 1-5; quality limits 0/2; partial mip chain preserved; truncated sources rejected.");
+            Debug.Log($"PASS native texture full-resolution reader: {samples} exact top-mip pixels; versions 1-5; quality limits 0/2; partial mip chain preserved; truncated sources and codec faults return failures without retained private textures.");
         }
         finally
         {

@@ -9,9 +9,9 @@ internal static class FileChecks
         foreach (var style in Directory.GetDirectories(root))
         foreach (var variant in new[] { ("Paint", "SkinnedPaint.Surface", 3), ("Cable", "SkinnedCable.Surface", 2), ("Road", "NativeAsphalt.Surface", 2) })
         {
-            var files = BridgePreparedMaterialFiles.Read(style, variant.Item1, variant.Item2,
-                bytes => BridgeSurfaceReferences.Read(bytes, (_, _) => throw new Exception("Unexpected VT")),
-                cid => { if (!builtins.Contains(cid)) throw new Exception("Unexpected built-in dependency: " + cid); });
+            var files = (BridgePreparedMaterialFiles.TryRead(style, variant.Item1, variant.Item2,out var preparedInputs1,out var preparedError1,
+                bytes => (BridgeSurfaceReferences.TryRead(bytes, (_, _) => throw new Exception("Unexpected VT"),out var surfaceRefs1,out var surfaceRefsError1)?surfaceRefs1:throw new System.IO.InvalidDataException(surfaceRefsError1)),
+                cid => { if (!builtins.Contains(cid)) throw new Exception("Unexpected built-in dependency: " + cid); })?preparedInputs1:throw new System.IO.InvalidDataException(preparedError1));
             if (files.Count != variant.Item3) throw new Exception("Existing variant graph changed");
             variants++;
         }
@@ -32,7 +32,7 @@ internal static class FileChecks
         string surface = Path.Combine(style, "Variant", "Test.Surface");
         string shared = Path.Combine(style, "Shared", texture + ".Texture");
         void Missing(string cid) => throw new InvalidDataException("Missing: " + cid);
-        List<BridgePreparedMaterialFiles.Input> Read() => BridgePreparedMaterialFiles.Read(style, "Variant", "Test.Surface", _ => new[] { texture }, Missing);
+        List<BridgePreparedMaterialFiles.Input> Read() => _ = (BridgePreparedMaterialFiles.TryRead(style, "Variant", "Test.Surface",out var preparedInputs2,out var preparedError2, _ => new[] { texture }, Missing)?preparedInputs2:throw new System.IO.InvalidDataException(preparedError2));
         int checks = 0;
         void Require(bool value) { if (!value) throw new Exception("Prepared source preflight mismatch"); checks++; }
         void Reject(Action action)
@@ -62,9 +62,9 @@ internal static class FileChecks
             Write(Path.Combine(style, "Variant", "Conflict.Texture"), texture, 3);
             Reject(() => Read());
             File.Delete(Path.Combine(style, "Variant", "Conflict.Texture"));
-            Reject(() => BridgePreparedMaterialFiles.Read(style, "Variant", "Test.Surface", _ => new[] { "../Draw02" }, Missing));
-            Reject(() => BridgePreparedMaterialFiles.Read(style, "Variant", "Absent.Surface", _ => Array.Empty<string>(), Missing));
-            Require(BridgePreparedMaterialFiles.Read(style, "Variant", "Test.Surface", _ => new[] { "33333333333333333333333333333333" }, _ => { }).Count == 2);
+            Reject(() => _ = (BridgePreparedMaterialFiles.TryRead(style, "Variant", "Test.Surface",out var preparedInputs3,out var preparedError3, _ => new[] { "../Draw02" }, Missing)?preparedInputs3:throw new System.IO.InvalidDataException(preparedError3)));
+            Reject(() => _ = (BridgePreparedMaterialFiles.TryRead(style, "Variant", "Absent.Surface",out var preparedInputs4,out var preparedError4, _ => Array.Empty<string>(), Missing)?preparedInputs4:throw new System.IO.InvalidDataException(preparedError4)));
+            Require((BridgePreparedMaterialFiles.TryRead(style, "Variant", "Test.Surface",out var preparedInputs5,out var preparedError5, _ => new[] { "33333333333333333333333333333333" }, _ => { })?preparedInputs5:throw new System.IO.InvalidDataException(preparedError5)).Count == 2);
             Console.WriteLine($"PASS prepared source preflight: {checks} shared/local/built-in, isolation, conflict, missing-sidecar, identity and immutable-read checks.");
         }
         finally { Directory.Delete(root, recursive: true); }

@@ -16,6 +16,8 @@ internal sealed partial class MovableNetworkContext
 
     internal sealed class Surface
     {
+        internal readonly string? Error;
+        internal Surface(string error){Error=error;Triangles=Array.Empty<MovableRoadGeometry.Triangle>();Materials=Array.Empty<SurfaceAsset>();Pieces=Array.Empty<BridgePreviewComposition.Piece>();Composition=default;SourceFaces=Array.Empty<BridgePreviewNetMesh.SourceFace[]>();}
         internal readonly MovableRoadGeometry.Triangle[] Triangles;
         internal readonly SurfaceAsset[] Materials;
         internal readonly BridgePreviewComposition.Piece[] Pieces;
@@ -33,6 +35,10 @@ internal sealed partial class MovableNetworkContext
     internal Surface CompileSurface(int edgeIndex, SurfacePart part, float3 origin,
         NetPieceLayerMask replacedStructureLayers = 0, bool trackSourceFaces = true, int lod = 0)
     {
+        Surface Fail(string cause)=>new($"Native source surface: owner={_generationOwner}; edge={edgeIndex}; part={part}; LOD={lod}; {cause}");
+        try
+        {
+        if((uint)edgeIndex>=(uint)Edges.Length || part is not (SurfacePart.Edge or SurfacePart.StartNode or SurfacePart.EndNode))return Fail("Invalid native composition input.");
         var manager = World.EntityManager;
         var edge = Edges[edgeIndex];
         var identity = SurfaceComposition(edgeIndex, part);
@@ -66,18 +72,18 @@ internal sealed partial class MovableNetworkContext
             // consumed; evaluation uses the actual network parameters calculated above.
             if (!generator.Build(new[] { piece }, data, resources,
                     manager.GetComponentData<Curve>(edge).m_Length, out var mesh, out _, out _, slots, faces, lod))
-                throw new InvalidOperationException($"Native mesh generation failed for '{piece.Prefab.name}'.");
+                return Fail($"Native mesh generation failed for '{piece.Prefab.name}'.");
             foreach (var surface in slots)
                 if (surface == null || (surface.materialTemplateHash != 17 && surface.materialTemplateHash != 33))
-                    throw new InvalidOperationException($"'{piece.Prefab.name}' requires a different composition shader path.");
+                    return Fail($"'{piece.Prefab.name}' requires a different composition shader path.");
             if (!MovableStraightRoadEvaluation.TryEvaluate(mesh, parameters, origin, i, out var triangles, out var error))
-                throw new InvalidOperationException($"'{piece.Prefab.name}': {error}");
+                return Fail($"'{piece.Prefab.name}': {error}");
             sourceFaces[i] = faces?.ToArray() ?? Array.Empty<BridgePreviewNetMesh.SourceFace>();
             var first = surfaces.Count;
             foreach (var triangle in triangles)
             {
                 if ((uint)triangle.Material >= (uint)slots.Count)
-                    throw new InvalidOperationException("A native composition triangle has no matching surface slot.");
+                    return Fail("A native composition triangle has no matching surface slot.");
                 output.Add(new MovableRoadGeometry.Triangle(triangle.A, triangle.B, triangle.C,
                     first + triangle.Material, triangle.Occurrence, triangle.SourceTriangle));
             }
@@ -86,6 +92,8 @@ internal sealed partial class MovableNetworkContext
         // Node compositions have no NetCompositionLane buffer. Lane visuals are
         // extracted independently from native SubLane entities in CompileRoad.
         return new Surface(output.ToArray(), surfaces.ToArray(), pieces, data, sourceFaces);
+        }
+        catch(Exception exception){return Fail(exception.Message);}
     }
 
     // All contributions share one closed-pose coordinate frame. Compile lane visuals once over
@@ -94,6 +102,9 @@ internal sealed partial class MovableNetworkContext
         IReadOnlyList<OwnerIndex> laneOwners, float3 origin,
         NetPieceLayerMask replacedStructureLayers = 0, bool trackSourceFaces = true, int lod = 0)
     {
+        MovableClosedRoad.Result Fail(string cause)=>new($"Native closed road: owner={_generationOwner}; LOD={lod}; {cause}");
+        try
+        {
         var triangles = new List<MovableRoadGeometry.Triangle>();
         var materials = new List<SurfaceAsset>();
         var occurrences = new List<BridgePreviewComposition.Piece>();
@@ -105,6 +116,7 @@ internal sealed partial class MovableNetworkContext
         {
             var input = contributions[i];
             var surface = CompileSurface(input.Edge, input.Part, origin, replacedStructureLayers, trackSourceFaces, lod);
+            if(surface.Error!=null)return Fail(surface.Error);
             var firstMaterial = materials.Count;
             var firstOccurrence = occurrences.Count;
             occurrenceStarts[i] = firstOccurrence;
@@ -121,9 +133,10 @@ internal sealed partial class MovableNetworkContext
             rules[i] = ObjectRules(SurfaceComposition(input.Edge, input.Part));
         }
         if (triangles.Count == 0)
-            throw new InvalidOperationException("The selected closed-road contributions contain no visible surface.");
+            return Fail("The selected closed-road contributions contain no visible surface.");
         var result = new MovableClosedRoad.Result(triangles.ToArray(), materials.ToArray(), occurrences.ToArray(),
             compositions, occurrenceStarts, LaneVisuals(laneOwners, origin), rules, sourceFaces.ToArray(), lod);
+        if(result.Sidewalks.Error!=null)return Fail(result.Sidewalks.Error);
         var centers = new List<UnityEngine.Vector3>();
         var roadLanes = new List<RoadLane>();
         var laneSources = new HashSet<string>();
@@ -165,6 +178,8 @@ internal sealed partial class MovableNetworkContext
         result.RoadLanes = roadLanes.ToArray();
         result.LaneContext = "owner="+_generationOwner+"; sources="+string.Join("|",laneSources);
         return result;
+        }
+        catch(Exception exception){return Fail(exception.Message);}
     }
 
     private Entity SurfaceComposition(int edgeIndex, SurfacePart part)
@@ -175,7 +190,7 @@ internal sealed partial class MovableNetworkContext
             SurfacePart.Edge => composition.m_Edge,
             SurfacePart.StartNode => composition.m_StartNode,
             SurfacePart.EndNode => composition.m_EndNode,
-            _ => throw new ArgumentOutOfRangeException(nameof(part))
+            _ => Entity.Null
         };
     }
 }

@@ -12,6 +12,7 @@ namespace BridgeBuilder.Bridges;
 // occurrence domain intact for lane, object-rule and source-triangle provenance.
 internal sealed class MovableSidewalkFaces
 {
+    internal string? Error {get;private set;}
     private enum Role { Other, Walk, Curb }
     private readonly Dictionary<(int,int),Role> _faces = new();
 
@@ -30,7 +31,13 @@ internal sealed class MovableSidewalkFaces
             var t=faces[i];
             // The same native atlas curb strip can occur in medians and other sections.
             if (families[t.Occurrence]!=Role.Walk && materials[t.Material].id.guid.ToString()!="1d7dad9f64c9fe55a809f1080c39fb92") continue;
-            var source=sources[t.Material] ??= MovableRoadRoute.Read(materials[t.Material]);
+            if(!sources[t.Material].HasValue)
+            {
+                if(!MovableRoadRoute.TryRead(materials[t.Material],out var read,out var error))
+                {Error=error;Mod.Log.Error(error);return;}
+                sources[t.Material]=read;
+            }
+            var source=sources[t.Material]!.Value;
             kinds[i]=source.Receiver(t);
             if (kinds[i] is MovableRoadAppearance.Type.Sidewalk or MovableRoadAppearance.Type.Curb)
                 mixed[t.Occurrence]=true;

@@ -5,7 +5,16 @@ using Colossal.IO.AssetDatabase;
 internal static class FixturePersistence
 {
     internal static readonly Dictionary<string, AssetData[]> NativeEdges = new();
-    internal static bool ReadRelations;
+    internal static bool InspectSnapshots;
+    internal static void Inspect(BridgeCreationDependencies context,string owner)
+    {
+        var root=Path.Combine(UnityEngine.Application.persistentDataPath,"ImportedData",owner);
+        var inventory=new BridgeInspectionCaches(()=>AssetDatabase.global.Assets.OfType<MidMipCacheAsset>(),
+            ()=>Directory.Exists(root)?Directory.EnumerateFiles(root,"*.MidMips",SearchOption.AllDirectories):Array.Empty<string>());
+        if(!inventory.Prepare(out var error))throw new InvalidOperationException(error);
+        context.Inspect(inventory);
+    }
+
 
     internal static bool Save(string owner, IEnumerable<string> seeds, out int count, out string error)
         => Save(owner, seeds, out count, out error, out _);
@@ -13,8 +22,8 @@ internal static class FixturePersistence
     internal static bool Save(string owner, IEnumerable<string> seeds, out int count, out string error, out int written)
     {
         var context = new BridgeCreationDependencies(asset =>
-            NativeEdges.TryGetValue(asset.id.guid.ToString(), out var caches) ? caches : Array.Empty<AssetData>());
-        if (ReadRelations) context.ReadRelations(owner);
+            NativeEdges.TryGetValue(asset.id.guid.ToString(), out var caches) ? caches : InspectSnapshots ? throw new InvalidOperationException("Native registration unavailable") : Array.Empty<AssetData>());
+        if (InspectSnapshots) FixturePersistence.Inspect(context,owner);
         return Save(owner, seeds, context, out count, out error, out written);
     }
 

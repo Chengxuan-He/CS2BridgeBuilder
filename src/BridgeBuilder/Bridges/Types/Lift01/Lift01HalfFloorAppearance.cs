@@ -14,7 +14,7 @@ internal static class Lift01HalfFloorAppearance
     private static HardcodedNumbers Data => GenerationParameters.Get<HardcodedNumbers>("BridgeBuilder.Bridges.Lift01HalfFloorAppearance.Data", () => HardcodedNumbers.Load("Types_Lift01_HalfFloorDomains"));
     private static HardcodedNumbers UnitData => GenerationParameters.Get<HardcodedNumbers>("BridgeBuilder.Bridges.Lift01HalfFloorAppearance.UnitData", () => HardcodedNumbers.Load("Types_Lift01_ContinuousUnit"));
     internal static MovableRoadAppearance.Level Create(int lod, SurfaceAsset native, Pose roadToObject, float halfDelta) => Prepared(lod, native, BridgePreparedMaterials.RepeatUnit("Lift01", "7f727eeef2ad7c28df48e6200815357a780ac5636f83f82cd8d0ba46180e5f43"), roadToObject, halfDelta);
-    internal static MovableRoadAppearance.Level Prepared(int lod, SurfaceAsset native, SurfaceAsset unit, Pose roadToObject, float halfDelta)
+    internal static MovableRoadAppearance.Level Prepared(int lod, SurfaceAsset native, MovableExistingRoadSurface.SurfaceResult unit, Pose roadToObject, float halfDelta)
     {
         if (lod != Numeric_Types_Lift01_Lift01HalfFloorAppearance_cs.Values.I32[0] && lod != Numeric_Types_Lift01_Lift01HalfFloorAppearance_cs.Values.I32[1])
             throw new ArgumentOutOfRangeException(nameof(lod));

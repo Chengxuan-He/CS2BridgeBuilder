@@ -112,8 +112,8 @@ public static class PrepareStructure
                             program.SetVector("NativeCropDestination",new Vector4(0,0,cell.W,cell.H));
                             program.SetVector("NativeCropOrigin",cell.SampleOrigin);program.SetVector("NativeCropStepX",cell.SampleX);program.SetVector("NativeCropStepY",cell.SampleY);
                             program.Dispatch(kernel,(cell.W+7)/8,(cell.H+7)/8,1);
-                            using var channel=new MovableAtlasChannel(program,target,srgb?0:input.Key=="_NormalMap"?1:2,true);
-                            channel.Read();return PreparePaint.Texture(channel.Texture);
+                            using var channel=(MovableAtlasChannel.TryCreate(program,target,srgb?0:input.Key=="_NormalMap"?1:2,true,out var createdChannel1,out var channelError1)?createdChannel1:throw new InvalidOperationException(channelError1));
+                            if(!channel.TryRead(out var readError))throw new InvalidOperationException(readError);return PreparePaint.Texture(channel.Texture);
                         }
                         finally { target.Release();UnityEngine.Object.DestroyImmediate(target); }
                         });
@@ -180,7 +180,7 @@ public static class PrepareStructure
                     if(surfaceCid!=null)
                     {
                         using var input=new MemoryStream(read(surfaceCid));
-                        var layers=MovableVtTextureSource.ReadSurface(input,PreparePaint.Decompress);
+                        var layers=(MovableVtTextureSource.TryReadSurface(input,PreparePaint.Decompress,out var decodedVt1,out var errorVt1) ? decodedVt1 : throw new InvalidOperationException(errorVt1));
                         foreach(var image in layers.Values)images.Add(image);
                         foreach(var layer in layers)
                         {
@@ -194,7 +194,7 @@ public static class PrepareStructure
                         string cid=PreparePaint.HashText(header,76+channel.stack*136+channel.layer*16);
                         if(cid==new string('0',32))continue;
                         using var input=new MemoryStream(read(cid));
-                        var texture=MovableVtTextureSource.ReadTexture(input,PreparePaint.Decompress);
+                        var texture=(MovableVtTextureSource.TryReadTexture(input,PreparePaint.Decompress,out var decodedVt2,out var errorVt2) ? decodedVt2 : throw new InvalidOperationException(errorVt2));
                         images.Add(texture);Textures.Add(channel.name,texture);
                     }
                 }
@@ -204,7 +204,7 @@ public static class PrepareStructure
                     var payload=read(binding.Value);
                     int size=RawSize(payload);
                     using var input=new MemoryStream(payload);
-                    var texture=MovableTextureSource.Read(input,b=>PreparePaint.DecodeRaw(b,size));
+                    var texture=(MovableTextureSource.TryRead(input,b=>PreparePaint.DecodeRaw(b,size),out var parsedTexture1,out var textureReadError1)?parsedTexture1:throw new System.IO.InvalidDataException(textureReadError1));
                     images.Add(texture);Textures.Add(binding.Key,texture);
                 }
                 if(Textures.Count==0)throw new InvalidDataException("No structural source texture channels.");

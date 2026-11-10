@@ -13,6 +13,12 @@ internal static class Program
 
     private static void Main()
     {
+        foreach(var locale in RuntimeUiText.LocaleIds)
+        {
+            var success=RuntimeUiText.ForLocale(locale)["RemoveAllBridgesDone"];
+            Check(!string.IsNullOrWhiteSpace(success) && !success.Contains('\n'),"Concise bulk success: "+locale);
+        }
+        Check(RuntimeUiText.ForLocale("zh-HANS")["RemoveAllBridgesDone"]=="清理成功","Exact requested bulk success text");
         foreach(var id in new[]{"Extradosed01","Extradosed02","Extradosed03","ExtradosedLarge","CableStayed"})
             Check(BridgeBuilder.Bridges.BridgeStyleDefinitions.Family(id)=="CableStayed","Shared cable-stayed family: "+id);
         var names=new[]{(Name:"波",Id:"b"),(Name:"阿",Id:"z"),(Name:"阿",Id:"a")};

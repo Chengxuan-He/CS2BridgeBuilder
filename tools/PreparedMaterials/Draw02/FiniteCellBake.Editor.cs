@@ -31,7 +31,7 @@ public static class Draw02FiniteCellBake
             {
                 var bytes=File.ReadAllBytes(channel.path);
                 using var stream=new MemoryStream(bytes);
-                var source=MovableTextureSource.Read(stream,b=>PreparePaint.DecodeRaw(b,RawSize(bytes)));
+                var source=(MovableTextureSource.TryRead(stream,b=>PreparePaint.DecodeRaw(b,RawSize(bytes)),out var parsedTexture1,out var textureReadError1)?parsedTexture1:throw new System.IO.InvalidDataException(textureReadError1));
                 source.filterMode=FilterMode.Bilinear; source.wrapMode=TextureWrapMode.Clamp;
                 shader.SetTexture(kernel,"Source",source);
                 shader.SetInt("EncodeSrgb",GraphicsFormatUtility.IsSRGBFormat(source.graphicsFormat)?1:0);

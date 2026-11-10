@@ -40,8 +40,8 @@ public static class VtSourceCheck
                     QualitySettings.globalTextureMipmapLimit=quality;
                     using var stream=File.OpenRead(file);
                     var textures=file.EndsWith(".VTTexture")?
-                        new Dictionary<(int,int),Texture2D>{{(0,0),MovableVtTextureSource.ReadTexture(stream,Decompress)}}:
-                        MovableVtTextureSource.ReadSurface(stream,Decompress);
+                        new Dictionary<(int,int),Texture2D>{{(0,0),(MovableVtTextureSource.TryReadTexture(stream,Decompress,out var decodedVt1,out var errorVt1) ? decodedVt1 : throw new InvalidOperationException(errorVt1))}}:
+                        (MovableVtTextureSource.TryReadSurface(stream,Decompress,out var decodedVt2,out var errorVt2) ? decodedVt2 : throw new InvalidOperationException(errorVt2));
                     try
                     {
                         foreach(var item in textures)
@@ -82,8 +82,8 @@ public static class VtSourceCheck
         {
             Graphics.Blit(source,target);RenderTexture.active=previous;
             var shader=UnityEditor.AssetDatabase.LoadAssetAtPath<ComputeShader>("Assets/PackingProbe.compute");
-            using var channel=new MovableAtlasChannel(shader,target,2,false);
-            channel.Read();channel.Texture.ignoreMipmapLimit=true;channel.Texture.Apply(false,false);
+            using var channel=(MovableAtlasChannel.TryCreate(shader,target,2,false,out var createdChannel1,out var channelError1)?createdChannel1:throw new InvalidOperationException(channelError1));
+            if(!channel.TryRead(out var readError))throw new InvalidOperationException(readError);channel.Texture.ignoreMipmapLimit=true;channel.Texture.Apply(false,false);
             var expected=Sample(channel.Texture);
             var raw=channel.Texture.GetPixelData<byte>(0).ToArray();
             var tiles=new List<byte[]>();
@@ -126,8 +126,8 @@ public static class VtSourceCheck
                     }
                 }
                 stream.Position=0;
-                var images=surface?MovableVtTextureSource.ReadSurface(stream,b=>b):
-                    new Dictionary<(int,int),Texture2D>{{(0,0),MovableVtTextureSource.ReadTexture(stream,b=>b)}};
+                var images=surface?(MovableVtTextureSource.TryReadSurface(stream,b=>b,out var decodedVt3,out var errorVt3) ? decodedVt3 : throw new InvalidOperationException(errorVt3)):
+                    new Dictionary<(int,int),Texture2D>{{(0,0),(MovableVtTextureSource.TryReadTexture(stream,b=>b,out var decodedVt4,out var errorVt4) ? decodedVt4 : throw new InvalidOperationException(errorVt4))}};
                 try
                 {
                     if(images.Count!=(surface?2:1))throw new Exception("VT owned layer count changed.");
@@ -135,6 +135,20 @@ public static class VtSourceCheck
                         if(!Sample(texture).SequenceEqual(expected))throw new Exception("VT top-level tile placement or pixels changed.");
                 }
                 finally{foreach(var image in images.Values)UnityEngine.Object.DestroyImmediate(image);}
+                var valid=stream.ToArray();
+                var malformed=new List<byte[]> {valid.Take(16).ToArray()};
+                var badVersion=(byte[])valid.Clone();badVersion[0]=2;malformed.Add(badVersion);
+                if(surface){var late=(byte[])valid.Clone();Buffer.BlockCopy(BitConverter.GetBytes(2),0,late,490,4);Buffer.BlockCopy(BitConverter.GetBytes(5),0,late,90,4);malformed.Add(late);}
+                foreach(var broken in malformed)
+                {
+                    int before=Resources.FindObjectsOfTypeAll<Texture2D>().Length;
+                    using var input=new MemoryStream(broken,false);
+                    bool success;string error;
+                    if(surface){success=MovableVtTextureSource.TryReadSurface(input,b=>b,out var partial,out error);if(partial.Count!=0)throw new Exception("Partial VT layer result escaped");}
+                    else {success=MovableVtTextureSource.TryReadTexture(input,b=>b,out var partial,out error);if(partial!=null)throw new Exception("Partial VT texture escaped");}
+                    if(success || error==null)throw new Exception("Invalid VT input did not return diagnosed failure");
+                    if(Resources.FindObjectsOfTypeAll<Texture2D>().Length!=before)throw new Exception("Failed VT decode leaked private texture");
+                }
             }
             Debug.Log("PASS native VT tile layout: rectangular 4x2 tiles; unique block colors; tile borders; interleaved external/owned layers; both containers; quality 0/2.");
         }

@@ -25,7 +25,7 @@ public static class Lift01SharedSourceProbe {
    using var output=new ComputeBuffer(289,16);program.SetBuffer(kernel,"Results",output);
    foreach(var path in Directory.GetFiles(folder,"*.Texture")){
     var bytes=File.ReadAllBytes(path);using(var reader=new BinaryReader(new MemoryStream(bytes))){var asset=FormatterServices.GetUninitializedObject(t);t.GetMethod("ReadHeader",BindingFlags.Instance|BindingFlags.NonPublic).Invoke(asset,new object[]{reader});}
-    using var stream=new MemoryStream(bytes);var texture=MovableTextureSource.Read(stream,b=>(byte[])decode.Invoke(null,new[]{(object)b,zstd}));
+    using var stream=new MemoryStream(bytes);var texture=(MovableTextureSource.TryRead(stream,b=>(byte[])decode.Invoke(null,new[]{(object)b,zstd}),out var parsedTexture1,out var textureReadError1)?parsedTexture1:throw new System.IO.InvalidDataException(textureReadError1));
     try{
      Need(stream.Position==stream.Length,"Unconsumed original texture.");report.nativeTextures++;report.allMipBytes+=texture.GetRawTextureData<byte>().Length;program.SetTexture(kernel,"Source",texture);program.SetInt("Normal",Path.GetFileName(path).StartsWith("c292")?1:0);
      foreach(var u in units){program.SetInt("Triangle",u.triangle?1:0);program.SetVector("A",new Vector4(u.a[0],u.a[1],0,0));program.SetVector("B",new Vector4(u.b[0],u.b[1],0,0));program.SetVector("C",new Vector4(u.c[0],u.c[1],0,0));program.SetVector("Bounds",new Vector4(u.bounds[0],u.bounds[1],u.bounds[2],u.bounds[3]));

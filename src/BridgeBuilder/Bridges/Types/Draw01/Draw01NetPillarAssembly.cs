@@ -41,7 +41,7 @@ internal static class Draw01NetPillarAssembly
         };
         var imported = Path.Combine(Application.persistentDataPath, "ImportedData");
         for (var lod = Numeric_Types_Draw01_Draw01NetPillarAssembly_cs.Values.I32[3]; lod < sources.Length; lod++)
-            if (sources[lod] == null || !string.Equals(sources[lod].name, names[lod], StringComparison.Ordinal) || BridgeAssetInfo.IsOtherBridgePrefab(sources[lod].asset?.path, owner, imported))
+            if (sources[lod] == null || !string.Equals(sources[lod].name, names[lod], StringComparison.Ordinal))
                 throw new InvalidOperationException($"Draw01 ordinary cap LOD {lod} is not its permitted native source '{names[lod]}'.");
         var levels = new MovableRoadAssets.Level[sources.Length];
         for (var lod = Numeric_Types_Draw01_Draw01NetPillarAssembly_cs.Values.I32[4]; lod < sources.Length; lod++)
@@ -90,7 +90,7 @@ internal static class Draw01NetPillarAssembly
         };
         var imported = Path.Combine(Application.persistentDataPath, "ImportedData");
         for (var lod = Numeric_Types_Draw01_Draw01NetPillarAssembly_cs.Values.I32[15]; lod < sources.Length; lod++)
-            if (sources[lod] == null || !string.Equals(sources[lod].name, names[lod], StringComparison.Ordinal) || BridgeAssetInfo.IsOtherBridgePrefab(sources[lod].asset?.path, owner, imported))
+            if (sources[lod] == null || !string.Equals(sources[lod].name, names[lod], StringComparison.Ordinal))
                 throw new InvalidOperationException($"Draw01 ordinary footing LOD {lod} is not its permitted native source '{names[lod]}'.");
         var levels = new MovableRoadAssets.Level[sources.Length];
         for (var lod = Numeric_Types_Draw01_Draw01NetPillarAssembly_cs.Values.I32[16]; lod < sources.Length; lod++)
@@ -156,7 +156,7 @@ internal static class Draw01NetPillarAssembly
         };
         var imported = Path.Combine(Application.persistentDataPath, "ImportedData");
         for (var lod = Numeric_Types_Draw01_Draw01NetPillarAssembly_cs.Values.I32[33]; lod < sources.Length; lod++)
-            if (sources[lod] == null || !string.Equals(sources[lod].name, names[lod], StringComparison.Ordinal) || BridgeAssetInfo.IsOtherBridgePrefab(sources[lod].asset?.path, owner, imported))
+            if (sources[lod] == null || !string.Equals(sources[lod].name, names[lod], StringComparison.Ordinal))
                 throw new InvalidOperationException($"Draw01 ordinary column LOD {lod} is not its permitted native source '{names[lod]}'.");
         var levels = new MovableRoadAssets.Level[sources.Length];
         for (var lod = Numeric_Types_Draw01_Draw01NetPillarAssembly_cs.Values.I32[34]; lod < sources.Length; lod++)

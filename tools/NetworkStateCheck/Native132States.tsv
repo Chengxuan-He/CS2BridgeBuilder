@@ -1,0 +1,36 @@
+Draw01:Tiles:Edge	
+Draw01:Tiles:Node	Sidewalk,OppositeSidewalk////Both
+Draw01:Gravel:Edge	
+Draw01:Gravel:Node	Sidewalk,OppositeSidewalk////Both
+Draw01:Pavement:Edge	
+Draw01:Pavement:Node	Sidewalk,OppositeSidewalk////Both
+Draw02:Tiles:Edge	
+Draw02:Tiles:Node	Sidewalk,OppositeSidewalk////Both
+Draw02:Gravel:Edge	
+Draw02:Gravel:Node	Sidewalk,OppositeSidewalk////Both
+Draw02:Pavement:Edge	
+Draw02:Pavement:Node	Sidewalk,OppositeSidewalk////Both
+Draw03:Tiles:Edge	
+Draw03:Tiles:Node	Sidewalk,OppositeSidewalk////Both
+Draw03:Gravel:Edge	
+Draw03:Gravel:Node	Sidewalk,OppositeSidewalk////Both
+Draw03:Pavement:Edge	
+Draw03:Pavement:Node	Sidewalk,OppositeSidewalk////Both
+PedestrianDraw01:Tiles:Edge	
+PedestrianDraw01:Tiles:Node	
+PedestrianDraw01:Gravel:Edge	
+PedestrianDraw01:Gravel:Node	
+PedestrianDraw01:Pavement:Edge	
+PedestrianDraw01:Pavement:Node	
+PedestrianDraw02:Tiles:Edge	
+PedestrianDraw02:Tiles:Node	
+PedestrianDraw02:Gravel:Edge	
+PedestrianDraw02:Gravel:Node	
+PedestrianDraw02:Pavement:Edge	
+PedestrianDraw02:Pavement:Node	
+Lift03:Tiles:Edge	
+Lift03:Tiles:Node	
+Lift03:Gravel:Edge	
+Lift03:Gravel:Node	
+Lift03:Pavement:Edge	
+Lift03:Pavement:Node	

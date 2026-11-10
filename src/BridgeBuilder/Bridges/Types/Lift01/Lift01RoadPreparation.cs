@@ -4,7 +4,7 @@ using UnityEngine;
 namespace BridgeBuilder.Bridges;
 internal static class Lift01RoadPreparation
 {
-    internal static MovableRoadAssets.Level[] PrepareRenderLevels(MovableStraightSample sample, RenderPrefab[] nativeLevels, float halfWidthDelta, Matrix4x4 closedWorld, MovableRoadMaterial material)
+    internal static MovableRoadAssets.Level[]? PrepareRenderLevels(MovableStraightSample sample, RenderPrefab[] nativeLevels, float halfWidthDelta, Matrix4x4 closedWorld, MovableRoadMaterial material)
     {
         var layout = new MovableSelectedRoadLayout(sample.Road, sample.RoadToObject, "Lift01");
         var appearance = Lift01RoadAppearance.Regions(sample.RoadToObject);

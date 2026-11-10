@@ -4,7 +4,7 @@ using UnityEngine;
 namespace BridgeBuilder.Bridges;
 internal static class PedestrianDraw01RoadPreparation
 {
-    internal static MovableRoadAssets.Level[] Prepare(MovableStraightSample sample, RenderPrefab[] nativeLevels, float halfWidthDelta, Matrix4x4 closedWorld, MovableRoadMaterial material)
+    internal static MovableRoadAssets.Level[]? Prepare(MovableStraightSample sample, RenderPrefab[] nativeLevels, float halfWidthDelta, Matrix4x4 closedWorld, MovableRoadMaterial material)
     {
         var physical = PedestrianDraw01RoadPartitions.Carriageway;
         var originalAppearance = PedestrianDraw01RoadAppearance.Regions(physical, sample.RoadToObject);

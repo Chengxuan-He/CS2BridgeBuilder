@@ -342,7 +342,7 @@ public partial class BridgeGenerationSystem
             BridgeDeferredRemoval.Schedule(prefabName);
             return;
         }
-        var assetInfo = BridgeAssetCatalog.Find(prefabName) ?? new BridgeAssetInfo(prefabName, prefabName, "", null, "", "");
+        var assetInfo = BridgeAssetCatalog.Find(prefabName) ?? new BridgeAssetInfo(prefabName, BridgeDeferredRemoval.Result(prefabName).Name, "", null, "", "");
         if (!BridgeAssetInfo.IsPrefabName(prefabName))
         {
             FailDeletion(prefabName, "DeleteMissing", "Bridge UUID assetInfo is missing or invalid.");
@@ -351,6 +351,12 @@ public partial class BridgeGenerationSystem
 
         try
         {
+            if(!BridgePrefabRetirement.Ready(EntityManager,_prefabSystem))
+            {
+                BridgeDeferredRemoval.Remember(prefabName,assetInfo.DisplayName,0);
+                BridgeDeferredRemoval.Schedule(prefabName);
+                return;
+            }
             var roots = RemovalRoots(prefabName, PrefabCatalog.GetAll(_prefabSystem)).ToArray();
             var ids = new HashSet<Entity>();
             foreach (var root in roots)
@@ -381,7 +387,7 @@ public partial class BridgeGenerationSystem
             _removingAsset = assetInfo;
             _removalStartedUtc = DateTime.UtcNow;
             Mod.Log.Info($"Removing '{prefabName}': {plan.DeletedEntities.Count} network entities; "
-                + "waiting for native cleanup before deleting assets. Composition caches are retained.");
+                + "waiting for logical unregistration; physical files remain pending safe shutdown.");
             if (plan.IsComplete(EntityManager)) CompleteRuntimeDeletion();
         }
         catch (Exception exception)
@@ -404,7 +410,7 @@ public partial class BridgeGenerationSystem
         if (removed.Contains(prefabName))
         {
             BridgeDeferredRemoval.Remember(prefabName,assetInfo.DisplayName,placed);
-            Mod.Log.Info("Waiting for verified physical deletion: "+prefabName);
+            Mod.Log.Info("Waiting for verified logical deletion: "+prefabName);
         }
         else
         {
@@ -463,7 +469,7 @@ public partial class BridgeGenerationSystem
             report);
         if (removed.Count > 0)
         {
-            report.Warning("Bridge files will be removed after native readers finish within this session.");
+            report.Warning("Bridge files remain pending verified safe normal-shutdown cleanup.");
         }
 
         Finish(report, state, "Remove bridge");

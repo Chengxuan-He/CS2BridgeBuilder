@@ -25,14 +25,15 @@ internal static class BridgeBulkRemoval
     private static string[] _targets = Array.Empty<string>();
     internal static bool MapWasClearedFor(string owner) => _running && _mapReady && _outstanding.Contains(owner);
     private static bool _ask, _confirmed, _running, _mapReady;
-    private static bool Ready => GameManager.instance != null
+    internal static Func<bool>? NativeReady;
+    private static bool Ready => NativeReady?.Invoke()==true && GameManager.instance != null
         && GameManager.instance.state == GameManager.State.WorldReady
         && !GameManager.instance.isGameLoading && BridgeAssetLoading.Ready
         && !BridgeStartupAssetSystem.IsStartupInspection && !BridgeDeferredRemoval.Saving
         && (GameManager.instance.gameMode == GameMode.MainMenu || (GameManager.instance.gameMode & (GameMode.Game | GameMode.Editor)) != 0);
     // Include placed legacy instances without an owner directory, but exclude newly created owners.
-    internal static bool IncludesMapOwner(string owner) => Array.IndexOf(_targets,owner)>=0 ||
-        !BridgeFileAccess.Exists(System.IO.Path.Combine(UnityEngine.Application.persistentDataPath,"ImportedData",owner));
+    internal static bool IncludesMapOwner(string owner) => Array.IndexOf(_targets,owner)>=0;
+    internal static Func<IEnumerable<string>>? PlacedOwners;
 
     internal static void Stop()
     {
@@ -133,7 +134,9 @@ internal static class BridgeBulkRemoval
                     try
                     {
                         _targets=BridgeOwnedDirectoryRemoval.Owners(UnityEngine.Application.persistentDataPath)
-                            .OrderBy(owner=>owner,StringComparer.Ordinal).ToArray();
+                            .Concat(PlacedOwners?.Invoke() ?? Array.Empty<string>())
+                            .Distinct(StringComparer.Ordinal).OrderBy(owner=>owner,StringComparer.Ordinal).ToArray();
+                        foreach(var owner in _targets) BridgeDeferredRemoval.Prepare(owner);
                     }
                     catch(Exception e){ Failed("target discovery: "+e); return; }
                     _confirmed = true;
@@ -177,7 +180,7 @@ internal static class BridgeBulkRemoval
         try
         {
             var remaining=Remaining();
-            if(remaining.Length!=0) { Failed("final directory/index/management verification"); return; }
+            if(remaining.Length!=0) { Failed("final logical/index/management verification"); return; }
             FinishBatch("RemoveAllBridgesDone");
         }
         catch(Exception e){ Failed("terminal verification: "+e); }
@@ -188,7 +191,7 @@ internal static class BridgeBulkRemoval
         var root=System.IO.Path.Combine(UnityEngine.Application.persistentDataPath,"ImportedData");
         var visible=BridgeBuilder.UI.BridgeBuilderUISystem.SyncVerifiedRemoval(_targets);
         return _targets.Where(owner=>!BridgeDeferredRemoval.Verified.Contains(owner) ||
-            BridgeFileAccess.Exists(System.IO.Path.Combine(root,owner)) || visible.Contains(owner)).ToArray();
+            !BridgeDeferredRemoval.Excluded(owner) || visible.Contains(owner)).ToArray();
     }
 
     private static void LogFailure(string stage)
@@ -222,7 +225,8 @@ internal static class BridgeBulkRemoval
         _outstanding.Clear();
         _current = null;
         if (batch == 0) return;
-        bool sent = Mod.TryShowMessage(UiStringCatalog.Current.Title, RuntimeUiText.Get(key));
+        string messageKey = key == "RemoveAllBridgesEmpty" ? "RemoveAllBridgesDone" : key;
+        bool sent = Mod.TryShowMessage(UiStringCatalog.Current.Title, RuntimeUiText.Get(messageKey));
         Mod.Log.Info($"Remove-all batch {batch} finished: targets={count}, result={key}, nativeDialogSent={sent}");
         // An unavailable UI cannot receive this event. Never replay a terminal result.
     }

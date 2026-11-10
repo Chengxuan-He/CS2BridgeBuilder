@@ -42,7 +42,7 @@ public static class Draw02FiniteNativeCheck
                 foreach(var channel in unit.channels)
                 {
                     using var stream=File.OpenRead(channel.path);
-                    var texture=MovableTextureSource.Read(stream,b=>(byte[])decode.Invoke(null,new[]{(object)b,zstd}));
+                    var texture=(MovableTextureSource.TryRead(stream,b=>(byte[])decode.Invoke(null,new[]{(object)b,zstd}),out var parsedTexture1,out var textureReadError1)?parsedTexture1:throw new System.IO.InvalidDataException(textureReadError1));
                     if(stream.Position!=stream.Length||texture.width!=channel.width||texture.height!=channel.height||texture.mipmapCount!=channel.mips)throw new Exception("Native dimensions/mips differ.");
                     for(int mip=0;mip<texture.mipmapCount;mip++)
                     {

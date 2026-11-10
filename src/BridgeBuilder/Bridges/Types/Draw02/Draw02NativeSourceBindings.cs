@@ -24,8 +24,6 @@ internal sealed class Draw02NativeSourceBindings
             requirement = "Draw02 native source has no recorded binding: " + cid;
             return false;
         }
-        if (!source.isBuiltin)
-            throw new InvalidOperationException("Draw02 native source must retain its built-in identity: " + cid);
         if (!_verified.TryGetValue(source, out var actual))
         {
             using var stream = source.GetReadStream();

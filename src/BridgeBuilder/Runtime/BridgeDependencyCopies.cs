@@ -30,14 +30,17 @@ internal static class BridgeDependencyCopies
 
     // MidMipCacheAsset.PostCreate derives its streaming tag from the basename.
     // Scope that native name by CID; ordinary snapshots retain CID.ext filenames.
-    internal static string Destination(string gameRoot, string owner, string cid, Source source)
+    internal static bool TryDestination(string gameRoot,string owner,string cid,Source source,out string path,out string? error)
     {
-        var folder = Folder(gameRoot, owner);
-        if (!source.Extension.Equals(".MidMips", StringComparison.OrdinalIgnoreCase))
-            return Path.Combine(folder, cid + source.Extension);
-        if (!Regex.IsMatch(source.NativeFileName, @"\ATS[0-9]+_MB[0-9]+\.MidMips\z"))
-            throw new InvalidDataException("Missing native MidMips tag filename: " + cid);
-        return Path.Combine(folder, cid, source.NativeFileName);
+        path="";error=null;
+        try
+        {
+            var folder=Folder(gameRoot,owner);
+            if(!source.Extension.Equals(".MidMips",StringComparison.OrdinalIgnoreCase)) {path=Path.Combine(folder,cid+source.Extension);return true;}
+            if(!Regex.IsMatch(source.NativeFileName,@"\ATS[0-9]+_MB[0-9]+\.MidMips\z")){error="Missing native MidMips tag filename: "+cid;return false;}
+            path=Path.Combine(folder,cid,source.NativeFileName);return true;
+        }
+        catch(Exception exception){error="Dependency destination: "+exception.Message;return false;}
     }
 
     internal static IEnumerable<string> References(Source source) => source.SerializedReferences
@@ -112,7 +115,7 @@ internal static class BridgeDependencyCopies
                 foreach (var copy in copies)
                 {
                     activeCid = copy.Key; phase = "verify/copy destination";
-                    var path = Destination(gameRoot, owner, copy.Key, copy.Value);
+                    if(!TryDestination(gameRoot,owner,copy.Key,copy.Value,out var path,out var destinationError)){error=destinationError!;return false;}
                     if (timing != null) timing.PreflightCopies++;
                     var payloadExists = BridgeFileAccess.Exists(path);
                     var sidecarExists = BridgeFileAccess.Exists(path + ".cid");
@@ -131,7 +134,7 @@ internal static class BridgeDependencyCopies
                 // Preflight already verified these immutable destinations; no writes or second read.
                 if (verifiedExisting.Contains(copy.Key)) { count++; continue; }
                 activeCid = copy.Key; phase = "verify/copy destination";
-                var path = Destination(gameRoot, owner, copy.Key, copy.Value);
+                if(!TryDestination(gameRoot,owner,copy.Key,copy.Value,out var path,out var destinationError)){error=destinationError!;return false;}
                 Directory.CreateDirectory(BridgeFileAccess.Native(Path.GetDirectoryName(path)!));
                 if (!BridgeFileAccess.Exists(path))
                 {

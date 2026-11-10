@@ -22,7 +22,7 @@ public static class CheckLift04NativeBoundary
         foreach(string path in Directory.GetFiles(input,"*.Texture"))
         {
             using var file=File.OpenRead(path);
-            var texture=MovableTextureSource.Read(file,_=>throw new Exception("Unexpected compression."));
+            var texture=(MovableTextureSource.TryRead(file,_=>throw new Exception("Unexpected compression."),out var parsedTexture1,out var textureReadError1)?parsedTexture1:throw new System.IO.InvalidDataException(textureReadError1));
             var target=new RenderTexture(64,4,0,RenderTextureFormat.ARGBFloat,RenderTextureReadWrite.Linear);
             var read=new Texture2D(64,4,TextureFormat.RGBAFloat,false,true);
             texture.filterMode=FilterMode.Bilinear;texture.anisoLevel=0;

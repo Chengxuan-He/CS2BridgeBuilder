@@ -1,7 +1,7 @@
 from pathlib import Path
 import numpy as np,json
 from PIL import Image,ImageDraw
-R=Path('D:/CS2BridgeBuilder');O=R/'artifacts/material-remap/Draw02/closure53'
+R=Path('E:/CS2BridgeBuilder');O=R/'artifacts/material-remap/Draw02/closure53'
 for lod,cid in enumerate(['47331a7032e9c0eda9bdb8b522f40ca1','c401f6a114b090084d35c02325febc23','d8ef11a742ab332ffb7e583befeb21dd']):
  d=np.load(R/f'artifacts/layer-decoupling/Draw02/outputs/native-repeat-mechanism/lod{lod}-native.npz');v=d['mesh0_positions'];f=d['mesh0_indices'].reshape(-1,3);im=Image.new('RGB',(1300,600),'#eee');dr=ImageDraw.Draw(im)
  def plot(v,f,side):

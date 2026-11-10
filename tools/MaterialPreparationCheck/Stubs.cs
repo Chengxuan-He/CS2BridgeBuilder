@@ -1,7 +1,7 @@
 using BridgeBuilder.Runtime;
 namespace BridgeBuilder.Runtime
 {
-    internal static class BridgePreparedMaterials { internal static string SourceRoot = ""; internal static BridgeMaterialFileSnapshot? RequestFiles; }
+    internal static class BridgePreparedMaterials { internal static string SourceRoot = "";internal static bool TrySourceRoot(out string root,out string? error){root=SourceRoot;error=null;return true;} internal static BridgeMaterialFileSnapshot? RequestFiles; }
     internal static class BridgePreviewState { internal static int Revision; }
     internal static class BridgeRuntimeRequests { internal static void Complete(string text) { } }
 }
@@ -12,12 +12,13 @@ namespace CS2Mods.Shared.Infrastructure
 }
 namespace BridgeBuilder
 {
-    internal static class Mod { internal static readonly Logger Log = new(); internal sealed class Logger { internal void Info(string text) => Console.WriteLine(text); } }
+    internal static class Mod { internal static readonly Logger Log = new(); internal sealed class Logger { internal void Error(Exception error,string message)=>Console.WriteLine(message+": "+error.Message); internal void Info(string text) => Console.WriteLine(text); } }
 }
 namespace BridgeBuilder.Systems
 {
     public partial class BridgeGenerationSystem
     {
+        private void FailPreview(int revision,string key) { }
         internal bool Pending => _materialRead != null;
         internal void Begin(string style, Action ready, Action<Exception> failed, int? revision = null) => PrepareMaterialFiles(style, ready, failed, revision);
         internal bool Tick() => UpdateMaterialPreparation();

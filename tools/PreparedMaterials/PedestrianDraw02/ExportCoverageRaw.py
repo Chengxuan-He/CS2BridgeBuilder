@@ -1,6 +1,6 @@
 import json,struct,hashlib
 from pathlib import Path
-root=Path('D:/CS2BridgeBuilder');s=(root/'tools/GeometryMetaprogram/UvDensityAudit.py').read_text();a=s.index('        for attribute in range(14):');b=s.index('        return meshes',a)
+root=Path('E:/CS2BridgeBuilder');s=(root/'tools/GeometryMetaprogram/UvDensityAudit.py').read_text();a=s.index('        for attribute in range(14):');b=s.index('        return meshes',a)
 s=s[:a]+'''        widths={0:4,1:2,2:1,3:1,4:2,5:2,6:1,7:1,8:2,9:2,10:4,11:4}
         for attribute in range(14):
             for mesh,h in zip(meshes,headers):

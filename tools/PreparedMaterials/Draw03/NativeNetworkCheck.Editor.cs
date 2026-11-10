@@ -24,7 +24,14 @@ public static class Draw03NativeNetworkCheck
     static void Require(bool condition,string message){if(!condition)throw new Exception(message);}
     static byte[] Bytes(object a)=>((IEnumerable)Get(a,"data")).Cast<byte>().ToArray();
     static object Attr(object m,VertexAttribute a)=>((IEnumerable)m).Cast<object>().Single(x=>(VertexAttribute)Get(x,"attribute")==a);
-    static bool Bool(object o,string method,params object[] args)=>(bool)o.GetType().GetMethod(method,I).Invoke(o,args);
+    static bool Bool(object o,string method,params object[] args)
+    {
+        var typed=o.GetType().GetMethod("Try"+method,I);
+        if(typed==null)return (bool)o.GetType().GetMethod(method,I).Invoke(o,args);
+        var call=args.Concat(new object[]{false,null}).ToArray();bool success=(bool)typed.Invoke(o,call);
+        if(!success){Require(!(bool)call[args.Length]&&!string.IsNullOrEmpty((string)call[args.Length+1]),"Failure result lost diagnostic or exposed preservation");throw new TargetInvocationException(new InvalidOperationException((string)call[args.Length+1]));}
+        Require(call[args.Length+1]==null,"Successful preservation carries error");return (bool)call[args.Length];
+    }
     public static void Run()
     {
         try

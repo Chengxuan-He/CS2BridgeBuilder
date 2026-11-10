@@ -40,17 +40,24 @@ internal static class Draw01NativeMaterials
         _ => null
     };
 
-    internal static SurfaceAsset Resolve(SurfaceAsset original, Func<string, SurfaceAsset> load)
+    internal static MovableExistingRoadSurface.SurfaceResult Resolve(SurfaceAsset original, Func<string, MovableExistingRoadSurface.SurfaceResult> load)
     {
+        try
+        {
         var cid = ObjectDescriptor(original.id.guid.ToString());
         if (cid == null) return original;
         original.LoadHeader();
-        if (!original.isBuiltin || original.materialTemplateHash is not 17)
-            throw new InvalidOperationException("Draw01 native network surface identity or template differs: " + original.id);
-        var converted = load(cid);
+        if (original.materialTemplateHash is not 17)
+            return new MovableExistingRoadSurface.SurfaceResult(null,"Draw01 native network surface identity or template differs: " + original.id);
+        var loaded=load(cid);
+        if(!loaded.Success)return loaded;
+        var converted=loaded.Value;
+        if(converted==null)return new MovableExistingRoadSurface.SurfaceResult(null,"Required native object descriptor is absent.");
         converted.LoadHeader();
         if (converted.id.guid.ToString() != cid || converted.materialTemplateHash is not 0 || converted.isVTMaterial)
-            throw new InvalidOperationException("Draw01 native object descriptor differs: " + cid);
+            return new MovableExistingRoadSurface.SurfaceResult(null,"Draw01 native object descriptor differs: " + cid);
         return converted;
+            }
+        catch(Exception exception){return new MovableExistingRoadSurface.SurfaceResult(null,"Native prototype descriptor: "+exception.Message);}
     }
 }

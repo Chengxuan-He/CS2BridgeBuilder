@@ -21,7 +21,7 @@ foreach(var path in Directory.GetFiles(Path.Combine(args[1],"Content",family),"*
             {
                 using var stream=payload.Open();using var header=new BinaryReader(stream);
                 using var bytes=new MemoryStream(header.ReadBytes(498));
-                nativeLevels[cid]=BridgeMidMipReferences.RequiredLevels(bytes,payload.FullName.EndsWith(".VTSurface"));
+                nativeLevels[cid]=(BridgeMidMipReferences.TryRequiredLevels(bytes,payload.FullName.EndsWith(".VTSurface"),out var midResult2,out var midError2)?midResult2:throw new System.IO.InvalidDataException(midError2));
             }
         }
     }
@@ -34,7 +34,7 @@ if(Directory.GetFiles(Path.Combine(root,"Shared"),"*",SearchOption.AllDirectorie
 foreach(var file in Directory.GetFiles(Path.Combine(root,"Shared","MidMips"),"*.MidMips",SearchOption.AllDirectories))
 {
     var bytes=File.ReadAllBytes(file);string cid=File.ReadAllText(file+".cid").Trim();
-    if(!common.TryAdd(cid,(new(){Extension=".MidMips",NativeFileName=Path.GetFileName(file),Bytes=bytes},file,BridgeMidMipReferences.Read(bytes))))
+    if(!common.TryAdd(cid,(new(){Extension=".MidMips",NativeFileName=Path.GetFileName(file),Bytes=bytes},file,(BridgeMidMipReferences.TryRead(bytes,out var midResult1,out var midError1)?midResult1:throw new System.IO.InvalidDataException(midError1)))))
         throw new InvalidDataException("Duplicated physical common MidMips payload: "+cid);
     identities[cid]=Convert.ToHexString(SHA256.HashData(bytes));
 }
@@ -53,7 +53,7 @@ try
             string digest=Convert.ToHexString(SHA256.HashData(bytes));
             if(identities.TryGetValue(cid,out var previous)&&previous!=digest)throw new InvalidDataException("Conflicting CID bytes: "+cid);
             identities[cid]=digest;
-            var references=file.EndsWith(".Surface")?BridgeSurfaceReferences.Read(bytes,(_,p)=>new[]{"_BaseColorMap","_NormalMap","_MaskMap","_ControlMask","_EmissiveColorMap"}.Contains(p)):null;
+            var references=file.EndsWith(".Surface")?(BridgeSurfaceReferences.TryRead(bytes,(_,p)=>new[]{"_BaseColorMap","_NormalMap","_MaskMap","_ControlMask","_EmissiveColorMap"}.Contains(p),out var surfaceRefs1,out var surfaceRefsError1)?surfaceRefs1:throw new System.IO.InvalidDataException(surfaceRefsError1)):null;
             if(!graph.TryAdd(cid,new(){Extension=Path.GetExtension(file),Bytes=bytes,SerializedReferences=references}))throw new InvalidDataException("Duplicated physical payload within style: "+cid);
             locations.Add(cid,file);
         }
@@ -80,10 +80,10 @@ try
         {
             if(!BridgeDependencyCopies.Save(test,owner,seeds,cid=>graph.GetValueOrDefault(cid)??(builtins.Contains(cid)?new(){Builtin=true}:null),out int count,out string error,out _))throw new InvalidDataException(error);
             if(count!=graph.Count)throw new InvalidDataException("Incomplete owner snapshot.");
-            foreach(var p in graph)if(!File.ReadAllBytes(BridgeDependencyCopies.Destination(test,owner,p.Key,p.Value)).SequenceEqual(p.Value.Bytes))throw new InvalidDataException("Snapshot bytes changed.");
+            foreach(var p in graph)if(!File.ReadAllBytes((BridgeDependencyCopies.TryDestination(test,owner,p.Key,p.Value,out var destination1,out var destinationError1)?destination1:throw new System.IO.InvalidDataException(destinationError1))).SequenceEqual(p.Value.Bytes))throw new InvalidDataException("Snapshot bytes changed.");
         }
         Directory.Delete(BridgeDependencyCopies.Folder(test,first),true);
-        foreach(var p in graph)if(!File.ReadAllBytes(BridgeDependencyCopies.Destination(test,second,p.Key,p.Value)).SequenceEqual(p.Value.Bytes)||!File.ReadAllBytes(locations[p.Key]).SequenceEqual(p.Value.Bytes))throw new InvalidDataException("Deletion affected another owner/source.");
+        foreach(var p in graph)if(!File.ReadAllBytes((BridgeDependencyCopies.TryDestination(test,second,p.Key,p.Value,out var destination2,out var destinationError2)?destination2:throw new System.IO.InvalidDataException(destinationError2))).SequenceEqual(p.Value.Bytes)||!File.ReadAllBytes(locations[p.Key]).SequenceEqual(p.Value.Bytes))throw new InvalidDataException("Deletion affected another owner/source.");
         rows.Add(new{style,descriptors=seeds.Length,payloads=graph.Count,bytes=graph.Values.Sum(p=>(long)p.Bytes.Length+32),missingDependencies=0,orphanPayloads=0,independentSnapshots=true});
     }
     if(usedCommon.Count!=common.Count)throw new InvalidDataException("Unreferenced common MidMips payload.");

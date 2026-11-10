@@ -191,9 +191,8 @@ internal sealed partial class MovableNetworkPrefabs
 
     internal void CheckSource(PrefabBase prefab)
     {
-        if (prefab == null || BridgeAssetInfo.IsOtherBridgePrefab(prefab.asset?.path, _owner,
-            Path.Combine(Application.persistentDataPath, "ImportedData")))
-            throw new InvalidOperationException("Network conversion cannot read a missing or foreign bridge-owned source.");
+        if (prefab == null)
+            throw new InvalidOperationException("Network conversion cannot read a missing source.");
     }
 
     // All copied records have direct Entity/EntityArchetype fields. Numeric/nested geometric

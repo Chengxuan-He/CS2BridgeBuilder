@@ -141,7 +141,7 @@ public partial class BridgeBuilderUISystem : UISystemBase
         var ids=new HashSet<string>(targets,StringComparer.Ordinal);
         var current=ui._bridges.value;
         bool Gone(string owner)=>BridgeDeferredRemoval.Verified.Contains(owner) &&
-            !BridgeFileAccess.Exists(System.IO.Path.Combine(BridgeAssetCatalog.Root,owner));
+            BridgeDeferredRemoval.Excluded(owner);
         var kept=current.Where(row=>!ids.Contains(row.PrefabName) ||
             !Gone(row.PrefabName)).ToArray();
         if(kept.Length!=current.Length) ui._bridges.Update(kept);
@@ -260,6 +260,18 @@ public partial class BridgeBuilderUISystem : UISystemBase
             GameManager.instance.userInterface.appBindings.ShowConfirmationDialog(dialog, result =>
             {
                 if (result != 0 || removalContext!=BridgeBulkRemoval.Context) return;
+                try
+                {
+                    BridgeDeferredRemoval.Prepare(prefabName);
+                    BridgeDeferredRemoval.Remember(prefabName,assetInfo.DisplayName,0);
+                    BridgePreviewState.Clear();
+                }
+                catch(Exception exception)
+                {
+                    Mod.Log.Error(exception,"Could not persist confirmed deletion intent: "+prefabName);
+                    BridgeRuntimeRequests.Complete("DeleteIncomplete");
+                    return;
+                }
                 BridgeRuntimeRequests.Enqueue(new BridgeRuntimeRequest
                 {
                     Action = BridgeRuntimeAction.Delete,

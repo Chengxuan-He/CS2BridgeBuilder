@@ -83,7 +83,7 @@ internal static class Lift05NativeRoadAppearance
         }
     }
 
-    private static SurfaceAsset Resolve(int unit) => BridgePreparedMaterials.RepeatUnit("Lift05", unit switch
+    private static MovableExistingRoadSurface.SurfaceResult Resolve(int unit) => BridgePreparedMaterials.RepeatUnit("Lift05", unit switch
     {
         1 => "18d35ed1e221c7a1a1cad597b22896ce5146eb6050095b2b86fd3da7605cbd82",
         3 => "40d7c50979f1502da28972cacf93d06805317986a0d1b1cc6b1faba7ada71284",
@@ -106,9 +106,9 @@ internal static class Lift05NativeRoadAppearance
         var patches = new Patch[data.Patches.Length + Numeric_Types_Lift05_Lift05NativeRoadAppearance_cs.Values.I32[20]];
         var supported = new MovableRoadAppearance.Type[patches.Length];
         patches[Numeric_Types_Lift05_Lift05NativeRoadAppearance_cs.Values.I32[21]] = new Patch(Vector2.zero, Vector2.one);
-        var finished = new SurfaceAsset[Numeric_Types_Lift05_Lift05NativeRoadAppearance_cs.Values.I32[22]];
+        var finished = new MovableExistingRoadSurface.SurfaceResult[Numeric_Types_Lift05_Lift05NativeRoadAppearance_cs.Values.I32[22]];
         foreach (int unit in data.Units)
-            if (unit >= Numeric_Types_Lift05_Lift05NativeRoadAppearance_cs.Values.I32[23] && finished[unit] == null)
+            if (unit >= Numeric_Types_Lift05_Lift05NativeRoadAppearance_cs.Values.I32[23] && finished[unit].Value == null && finished[unit].Error == null)
                 finished[unit] = finishedUnits == null ? Resolve(unit) : finishedUnits[unit];
         double Scale(int band) => band == Numeric_Types_Lift05_Lift05NativeRoadAppearance_cs.Values.I32[24] ? Numeric_Types_Lift05_Lift05NativeRoadAppearance_cs.Values.F64[1] / (Numeric_Types_Lift05_Lift05NativeRoadAppearance_cs.Values.F64[2] + halfDelta) : Numeric_Types_Lift05_Lift05NativeRoadAppearance_cs.Values.F64[3];
         double Offset(int band) => band == Numeric_Types_Lift05_Lift05NativeRoadAppearance_cs.Values.I32[25] ? halfDelta : band == Numeric_Types_Lift05_Lift05NativeRoadAppearance_cs.Values.I32[26] ? -halfDelta : Numeric_Types_Lift05_Lift05NativeRoadAppearance_cs.Values.F64[4];

@@ -15,7 +15,7 @@ public static class Lift04PreparedBoundary {
   var config=JsonUtility.FromJson<Config>(File.ReadAllText(Arg("-boundaryConfig")));
   var module=PreparePaint.OpenCodec(Arg("-gameData"));var rows=new System.Collections.Generic.List<Row>();
   var shader=Shader.Find("Hidden/Lift04PreparedBoundary");var mat=new Material(shader);
-  Texture2D Load(string p){var bytes=File.ReadAllBytes(p);int size=(int)typeof(PrepareRepeatUnits).GetMethod("NativeRawSize",BindingFlags.Static|BindingFlags.NonPublic).Invoke(null,new object[]{bytes});using var s=new MemoryStream(bytes);return MovableTextureSource.Read(s,b=>PreparePaint.DecodeRaw(b,size));}
+  Texture2D Load(string p){var bytes=File.ReadAllBytes(p);int size=(int)typeof(PrepareRepeatUnits).GetMethod("NativeRawSize",BindingFlags.Static|BindingFlags.NonPublic).Invoke(null,new object[]{bytes});using var s=new MemoryStream(bytes);return (MovableTextureSource.TryRead(s,b=>PreparePaint.DecodeRaw(b,size),out var parsedTexture1,out var textureReadError1)?parsedTexture1:throw new System.IO.InvalidDataException(textureReadError1));}
   try {foreach(var item in config.items){var source=Load(item.source);var prepared=Load(item.prepared);
    mat.SetTexture("_Prepared",prepared);mat.SetVector("_Bounds",new Vector4(.4697265625f,.8251953125f,.62548828125f,.9814453125f));mat.SetVector("_Content",new Vector4(item.min[0],item.min[1],item.max[0],item.max[1]));
    var target=new RenderTexture(64,4,0,RenderTextureFormat.ARGBFloat,RenderTextureReadWrite.Linear);var read=new Texture2D(64,4,TextureFormat.RGBAFloat,false,true);

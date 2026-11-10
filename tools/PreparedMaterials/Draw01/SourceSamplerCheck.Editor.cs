@@ -22,7 +22,7 @@ public static class Draw01SourceSamplerCheck
                 if(digest!=channel.sha256)throw new Exception("Original source payload differs: "+channel.name);
                 int size=(int)typeof(PrepareRepeatUnits).GetMethod("NativeRawSize",BindingFlags.Static|BindingFlags.NonPublic).Invoke(null,new object[]{bytes});
                 using var stream=new MemoryStream(bytes);
-                var texture=BridgeBuilder.Bridges.MovableTextureSource.Read(stream,b=>PreparePaint.DecodeRaw(b,size));
+                var texture=(BridgeBuilder.Bridges.MovableTextureSource.TryRead(stream,b=>PreparePaint.DecodeRaw(b,size),out var parsedTexture1,out var textureReadError1)?parsedTexture1:throw new System.IO.InvalidDataException(textureReadError1));
                 try{rows.Add(new Row{channel=channel.name,path=channel.path,sha256=digest,format=texture.graphicsFormat.ToString(),width=texture.width,height=texture.height,mips=texture.mipmapCount,wrapU=texture.wrapModeU.ToString(),wrapV=texture.wrapModeV.ToString(),wrapW=texture.wrapModeW.ToString(),filter=texture.filterMode.ToString(),anisotropy=texture.anisoLevel});}
                 finally{UnityEngine.Object.DestroyImmediate(texture);}
             }

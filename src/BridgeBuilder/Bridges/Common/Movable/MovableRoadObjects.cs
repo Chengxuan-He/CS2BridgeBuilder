@@ -100,27 +100,9 @@ internal static partial class MovableRoadObjects
                 math.lengthsq(source.m_Rotation.value) == 0f)
                 throw new InvalidOperationException($"Road attachment {i} has an invalid prefab or transform.");
             var position = q * (Vector3)source.m_Position + roadToObject.position;
-            // Remove unsupported overhead-wire supports at the original station.
-            // Evaluate both sides independently with the same measured partition;
-            // never choose a nearest station and introduce an asymmetric pole row.
-            var utility = source.m_Object.GetComponent<UtilityObject>();
-            if (utility != null &&
-                (utility.m_UtilityType & (Game.Net.UtilityTypes.Catenary | Game.Net.UtilityTypes.LowVoltageLine)) != 0 &&
-                !MovableAttachmentStations.Supported(position, placementPartitions[i])) continue;
-            var region = placementPartitions[i];
-            while (region.Bone < 0 && !region.IsGap)
-            {
-                var distance = region.ObjectToSeam.MultiplyPoint3x4(position).z;
-                if (!float.IsFinite(distance))
-                    throw new InvalidOperationException($"Road attachment {i} has an invalid measured seam transform.");
-                // Coplanar anchors use the positive region, matching road triangle clipping.
-                region = distance < 0f ? region.Negative! : region.Positive!;
-            }
-            // Geometry gaps do not authorize deleting or moving a selected-road object.
-            // Its placement must be resolved explicitly before this binding stage.
-            if (region.IsGap)
-                throw new InvalidOperationException($"Road attachment {i} ('{source.m_Object.name}') lies in a measured road gap at {position}.");
-            var bone = bones[region.Bone];
+            int? mount = MountBone(position, placementPartitions[i], i);
+            if (!mount.HasValue) continue;
+            var bone = bones[mount.Value];
             var parent = bone.m_ConnectionID;
             if (parent == 0 && (bone.parentId != -1 || bone.m_Type != (BoneType)0))
                 throw new InvalidOperationException($"Road attachment {i} targets a moving bone without a native connection ID.");
@@ -130,7 +112,7 @@ internal static partial class MovableRoadObjects
                 // This main-graph binding must also be the first matching bone, as in native code.
                 if (parent < mechanism.m_Meshes.Length || parent >= 1000)
                     throw new InvalidOperationException($"Road attachment {i} has an ambiguous native parent ID {parent}.");
-                for (var j = 0; j < region.Bone; j++)
+                for (var j = 0; j < mount.Value; j++)
                     if (bones[j].m_ConnectionID == parent)
                         throw new InvalidOperationException($"Road attachment {i} targets a duplicate native connection ID {parent}.");
             }
@@ -147,6 +129,21 @@ internal static partial class MovableRoadObjects
         var bound = result.ToArray();
         MovableStreetLights.Bind(owner, mechanism, bound, created);
         return bound;
+    }
+
+    // Resolve every attachment against its measured physical support. A gap has
+    // no mounting bone, regardless of the object type or source asset identity.
+    internal static int? MountBone(Vector3 position,
+        MovableRoadGeometry.Partition region, int index)
+    {
+        while (region.Bone < 0 && !region.IsGap)
+        {
+            var distance = region.ObjectToSeam.MultiplyPoint3x4(position).z;
+            if (!float.IsFinite(distance))
+                throw new InvalidOperationException($"Road attachment {index} has an invalid measured seam transform.");
+            region = distance < 0f ? region.Negative! : region.Positive!;
+        }
+        return region.IsGap ? null : region.Bone;
     }
 
     internal readonly struct Rule

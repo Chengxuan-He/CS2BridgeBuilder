@@ -20,6 +20,7 @@ namespace BridgeBuilder.Bridges;
 internal sealed class MovableNetworkRoadMapping
 {
     internal readonly SurfaceAsset Surface;
+    internal readonly string? Error;
     internal readonly IReadOnlyDictionary<int, int[]> Faces;
     internal readonly Vector4 U;
     internal readonly float LongitudinalDensity, TangentSign;
@@ -31,41 +32,57 @@ internal sealed class MovableNetworkRoadMapping
         if (surface == null || faces == null || !float.IsFinite(longitudinalDensity) ||
             longitudinalDensity <= 0 || (tangentSign != 1 && tangentSign != -1) ||
             !float.IsFinite(u.x) || !float.IsFinite(u.y) || !float.IsFinite(u.z) || !float.IsFinite(u.w))
-            throw new ArgumentException("Invalid native network road projection.");
-        Surface = surface; Faces = faces.ToDictionary(p => p.Key, p => (int[])p.Value.Clone());
+            Error="Invalid native network road projection.";
+        Surface = surface!; Faces = faces==null?new Dictionary<int,int[]>():faces.ToDictionary(p => p.Key, p => (int[])p.Value.Clone());
         U = u; LongitudinalDensity = longitudinalDensity; TangentSign = tangentSign;
     }
 
-    internal void Append(string name, RenderPrefab source, List<ModelImporter.Model> owned,
-        List<ModelImporter.Model> batch, List<SurfaceAsset> surfaces)
+    internal MovableNetworkRoadMapping(MovableExistingRoadSurface.SurfaceResult surface,IReadOnlyDictionary<int,int[]> faces,
+        Vector4 u,float longitudinalDensity,float tangentSign):this(surface.Value!,faces,u,longitudinalDensity,tangentSign){Error=surface.Error??Error;}
+
+    internal bool TryAppend(string name, RenderPrefab source, List<ModelImporter.Model> owned,
+        List<ModelImporter.Model> batch, List<SurfaceAsset> surfaces,out string? error)
     {
+        string? failure=Error;
+        bool Fail(string message){failure=message;return false;}
+        bool Build()
+        {
+        if(failure!=null)return false;
         Surface.LoadHeader();
         if (Surface.materialTemplateHash != 17 || Surface.hasVTSurfaceAsset)
-            throw new InvalidOperationException("Native network road replacement requires its non-VT template 17 descriptor.");
+            return Fail("Native network road replacement requires its non-VT template 17 descriptor.");
         var piece = source as NetPiecePrefab;
         if (piece?.GetComponent<NetPieceTiling>()?.m_DisableTextureTiling == true)
-            throw new InvalidOperationException("Native longitudinal road projection requires texture tiling enabled.");
+            return Fail("Native longitudinal road projection requires texture tiling enabled.");
         var loaded = PrivateGeometryReader.Read(source);
         try
         {
             if (loaded.Length == 0 || Faces.Keys.Any(i => i < 0 || i >= loaded.Length))
-                throw new InvalidOperationException("Native network road membership has an invalid mesh.");
+                return Fail("Native network road membership has an invalid mesh.");
             int material = 0;
             for (int meshIndex = 0; meshIndex < loaded.Length; meshIndex++)
             {
                 var mesh = loaded[meshIndex];
                 if (mesh.subMeshCount != 1)
-                    throw new InvalidOperationException("Measured native road input requires one original surface per mesh.");
+                    return Fail("Measured native road input requires one original surface per mesh.");
                 var original = source.GetSurfaceAsset(material++);
-                AppendMesh(name, mesh, meshIndex, original, owned, batch, surfaces);
+                if(!TryAppendMesh(name, mesh, meshIndex, original, owned, batch, surfaces,out var cause))return Fail(cause!);
             }
         }
         finally { PrivateGeometryReader.Release(loaded); }
+        return true;
+        }
+        return Transaction(Build,owned,batch,surfaces,()=>failure,out error);
     }
 
-    internal void AppendMesh(string name, Mesh mesh, int meshIndex, SurfaceAsset original,
-        List<ModelImporter.Model> owned, List<ModelImporter.Model> batch, List<SurfaceAsset> surfaces)
+    internal bool TryAppendMesh(string name, Mesh mesh, int meshIndex, SurfaceAsset original,
+        List<ModelImporter.Model> owned, List<ModelImporter.Model> batch, List<SurfaceAsset> surfaces,out string? error)
     {
+        string? failure=Error;
+        bool Fail(string message){failure=message;return false;}
+        bool Build()
+        {
+        if(failure!=null)return false;
     var points = mesh.vertices;
     var indices = mesh.GetIndices(0);
     var selected = new bool[indices.Length / 3];
@@ -73,7 +90,7 @@ internal sealed class MovableNetworkRoadMapping
         foreach (var face in measured)
         {
             if (face < 0 || face >= selected.Length || selected[face])
-                throw new InvalidOperationException("Native road membership contains an invalid or duplicate face.");
+                return Fail("Native road membership contains an invalid or duplicate face.");
             selected[face] = true;
         }
     if (selected.Any(v => v))
@@ -82,34 +99,38 @@ internal sealed class MovableNetworkRoadMapping
         var corrections = points.Select((p, i) => new KeyValuePair<int, Vector2>(i,
             new Vector2(Vector4.Dot(new Vector4(p.x, p.y, p.z, 1), U),
                 (p.z - minimum) * LongitudinalDensity))).ToArray();
-        Add(selected.Select(v => !v).ToArray(), corrections, Surface, true);
+        if(!Add(selected.Select(v => !v).ToArray(), corrections, Surface, true))return false;
     }
-    if (selected.Any(v => !v)) Add(selected, null, original, false);
+    if (selected.Any(v => !v) && !Add(selected, null, original, false))return false;
+    return true;
 
-    void Add(bool[] remove, KeyValuePair<int, Vector2>[]? uv, SurfaceAsset surface, bool mapped)
+    bool Add(bool[] remove, KeyValuePair<int, Vector2>[]? uv, SurfaceAsset surface, bool mapped)
     {
         var plan = new MovableStructureModel.Plan(points, points, new[] { indices },
             new[] { remove }, uvCorrections: uv);
         if (!MovableStructureModel.TryBuild(name + " Network Material " + batch.Count,
             mesh, plan, 0, out var model, out var error))
-            throw new InvalidOperationException(error);
+            return Fail(error??"Native network geometry construction failed.");
         owned.Add(model!);
-        if (mapped && TangentSign < 0) ReverseUFrame(model!);
-        batch.Add(model!); surfaces.Add(surface);
+        if(mapped && TangentSign<0 && !TryReverseUFrame(model!,out var cause))return Fail(cause!);
+        batch.Add(model!); surfaces.Add(surface);return true;
     }
+        }
+        return Transaction(Build,owned,batch,surfaces,()=>failure,out error);
     }
 
     // Reversing U reverses T and its handedness, retaining the original V basis.
     // Native batching subsequently applies the original section flip/invert rules.
-    private static void ReverseUFrame(ModelImporter.Model model)
+    private static bool TryReverseUFrame(ModelImporter.Model model,out string? error)
     {
-        var attribute = model.FirstOrDefault(a => a.attribute == VertexAttribute.Tangent)
-            ?? throw new InvalidOperationException("Native road input has no tangent channel.");
+        error=null;
+        var attribute = model.FirstOrDefault(a => a.attribute == VertexAttribute.Tangent);
+        if(attribute==null){error="Native road input has no tangent channel.";return false;}
         using var tangents = new NativeArray<MeshTangent>(model.vertexCount, Allocator.Temp);
         MeshTangent.Unpack(new NativeSlice<byte>(attribute.data), tangents,
             model.vertexCount, attribute.format, attribute.dimension);
         if (attribute.format != VertexAttributeFormat.Float32 || attribute.dimension != 1)
-            throw new InvalidOperationException("Native road input has an unsupported packed tangent layout.");
+            {error="Native road input has an unsupported packed tangent layout.";return false;}
         var data = attribute.data;
         for (int i = 0; i < model.vertexCount; i++)
         {
@@ -117,5 +138,22 @@ internal sealed class MovableNetworkRoadMapping
             var bytes = BitConverter.GetBytes(MathUtils.TangentToOctahedral(value));
             for (int j = 0; j < bytes.Length; j++) data[i * 4 + j] = bytes[j];
         }
+        return true;
     }
+    private static bool Transaction(Func<bool> build,List<ModelImporter.Model> owned,List<ModelImporter.Model> batch,
+        List<SurfaceAsset> surfaces,Func<string?> failure,out string? error)
+    {
+        int o=owned.Count,b=batch.Count,s=surfaces.Count;bool success=false;error=null;
+        try{success=build();if(!success)error=failure();return success;}
+        catch(Exception exception){error="Native network mapping: "+exception;return false;}
+        finally
+        {
+            if(!success)
+            {
+                for(int i=owned.Count-1;i>=o;i--)try{owned[i].Dispose();}catch(Exception exception){error=(error??"Mapping failed")+"; cleanup: "+exception;}
+                owned.RemoveRange(o,owned.Count-o);batch.RemoveRange(b,batch.Count-b);surfaces.RemoveRange(s,surfaces.Count-s);
+            }
+        }
+    }
+
 }

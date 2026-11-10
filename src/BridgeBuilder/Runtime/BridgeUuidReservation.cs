@@ -29,7 +29,7 @@ internal static class BridgeUuidReservation
             string owner = next();
             if (owner.Length != 37 || !BridgeAssetInfo.IsPrefabName(owner))
                 throw new InvalidDataException("Invalid generated bridge UUID.");
-            if (occupied(owner) || locations.Any(directory => HasOwnerEntry(directory, owner))
+            if (occupied(owner) || BridgeDeletionIntent.Contains(gameRoot, owner) || locations.Any(directory => HasOwnerEntry(directory, owner))
                 || BridgeFileAccess.Exists(Path.Combine(gameRoot, "ModsData", "BridgeBuilder", "PendingRemoval", owner + ".ticket")))
                 continue;
             var path = BridgeFileAccess.Native(Path.Combine(imported, owner));

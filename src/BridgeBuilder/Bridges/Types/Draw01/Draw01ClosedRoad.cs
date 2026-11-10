@@ -15,10 +15,11 @@ namespace BridgeBuilder.Bridges;
 // Draw01's straight closed-pose sampling arrangement. The approaches supply native
 // connectivity; only the two central-node halves become the mechanism's road input.
 // This is not a city-construction request and does not persist the sampling entities.
-internal sealed class Draw01ClosedRoad : IDisposable
+internal sealed class Draw01ClosedRoad : IMovableRoadSample
 {
     internal readonly MovableNetworkContext Network;
     internal readonly MovableClosedRoad.Result Road;
+    public string? MaterialError=>Road.Error;
     internal readonly Pose RoadToObject;
     private readonly Entity _sourceTheme;
     private readonly float3 _roadOrigin;
@@ -74,6 +75,7 @@ internal sealed class Draw01ClosedRoad : IDisposable
         try
         {
             Road = Network.CompileRoad(new[] { (Numeric_Types_Draw01_Draw01ClosedRoad_cs.Values.I32[10], MovableNetworkContext.SurfacePart.EndNode), (Numeric_Types_Draw01_Draw01ClosedRoad_cs.Values.I32[11], MovableNetworkContext.SurfacePart.StartNode) }, new[] { centralNode }, roadOrigin, replacedStructureLayers: NetPieceLayerMask.Bottom | NetPieceLayerMask.Side, trackSourceFaces: false);
+            if(Road.Error!=null)return;
             RoadToObject = Network.RoadToMechanism(Numeric_Types_Draw01_Draw01ClosedRoad_cs.Values.I32[12], roadOrigin);
         }
         catch
@@ -89,7 +91,7 @@ internal sealed class Draw01ClosedRoad : IDisposable
     // The local render bounds describe the closed geometry. Native StandingObject
     // and StackProperties extend the object's culling bounds separately; a swept
     // animation volume must not be substituted for authored stacking metadata.
-    internal MovableRoadAssets.Level[] PrepareRenderLevels(IReadOnlyList<RenderPrefab> sources, float halfWidthDelta, Matrix4x4 closedWorld, MovableRoadMaterial roadMaterial)
+    internal MovableRoadAssets.Level[]? PrepareRenderLevels(IReadOnlyList<RenderPrefab> sources, float halfWidthDelta, Matrix4x4 closedWorld, MovableRoadMaterial roadMaterial)
     {
         if (sources.Count != Numeric_Types_Draw01_Draw01ClosedRoad_cs.Values.I32[14] || !math.isfinite(halfWidthDelta))
             throw new ArgumentException("Draw01 road preparation requires three render sources and a finite width delta.");
@@ -184,6 +186,7 @@ internal sealed class Draw01ClosedRoad : IDisposable
             // Each level starts with the selected road's corresponding native mesh.
             // Native pieces without a reduced mesh retain their authored last level.
             var levelRoad = i == Numeric_Types_Draw01_Draw01ClosedRoad_cs.Values.I32[57] ? Road : Network.CompileRoad(new[] { (Numeric_Types_Draw01_Draw01ClosedRoad_cs.Values.I32[58], MovableNetworkContext.SurfacePart.EndNode), (Numeric_Types_Draw01_Draw01ClosedRoad_cs.Values.I32[59], MovableNetworkContext.SurfacePart.StartNode) }, new[] { new MovableNetworkContext.OwnerIndex(false, Numeric_Types_Draw01_Draw01ClosedRoad_cs.Values.I32[60]) }, _roadOrigin, replacedStructureLayers: NetPieceLayerMask.Bottom | NetPieceLayerMask.Side, trackSourceFaces: false, lod: i);
+            if(levelRoad.Error!=null){roadMaterial.Fail("native-source",levelRoad.Error);return null;}
             var levelPatches = patches;
             var levelSupportedTypes = Draw01RoadAppearance.SupportedTypes;
             var levelNative = sources[0].GetSurfaceAsset(0);
@@ -234,6 +237,7 @@ internal sealed class Draw01ClosedRoad : IDisposable
         }
 
         var visibleLevels = MovableSurfaceAtlas.Compose(inputs, roadMaterial, Array.Empty<MovableNativeDecals.Region>(), out var materialLevels);
+        if (visibleLevels == null) return null;
         var levels = new MovableRoadAssets.Level[Numeric_Types_Draw01_Draw01ClosedRoad_cs.Values.I32[63]];
         for (var i = Numeric_Types_Draw01_Draw01ClosedRoad_cs.Values.I32[64]; i < levels.Length; i++)
         {

@@ -13,7 +13,7 @@ internal static class Lift01FarAppearance
 {
     private static HardcodedNumbers Data => GenerationParameters.Get<HardcodedNumbers>("BridgeBuilder.Bridges.Lift01FarAppearance.Data", () => HardcodedNumbers.Load("Types_Lift01_FarAppearance"));
     internal static MovableRoadAppearance.Level Create(SurfaceAsset native, Pose roadToObject, float halfDelta) => Prepared(BridgePreparedMaterials.RepeatUnit("Lift01", "aa572971f7048c8097d4756077cccd5bce76d15388d43755a5d8e80bf76fa8bf"), roadToObject, halfDelta);
-    internal static MovableRoadAppearance.Level Prepared(SurfaceAsset native, Pose roadToObject, float halfDelta)
+    internal static MovableRoadAppearance.Level Prepared(MovableExistingRoadSurface.SurfaceResult native, Pose roadToObject, float halfDelta)
     {
         var pose = Matrix4x4.TRS(roadToObject.position, roadToObject.rotation, Vector3.one);
         var f = Data.F32;

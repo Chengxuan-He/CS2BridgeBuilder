@@ -19,16 +19,21 @@ internal static class MovableRoadAtlasWrap
         internal double Axis(int axis) => axis==0?U:V;
     }
 
-    internal static Triangle[] Apply(Triangle source, MovableExistingRoadSurface.Patch patch)
+    internal static bool TryApply(Triangle source, MovableExistingRoadSurface.Patch patch,out Triangle[] triangles,out string? error)
     {
-        if(!patch.SourceAtlasRepeat)throw new ArgumentException("Atlas-wrap requires an explicitly evidenced mapping.");
+        triangles=Array.Empty<Triangle>();error=null;string? failure=null;
+        bool Fail(string cause){failure=cause;return false;}
+        try
+        {
+        if(patch.Error!=null)return Fail(patch.Error);
+        if(!patch.SourceAtlasRepeat)return Fail("Atlas-wrap requires an explicitly evidenced mapping.");
         Point Convert(Vertex v,int edges) => new(v,
             Coordinate(patch.U,v.Position,patch.Min.x,patch.Max.x,patch.RepeatU),
             Coordinate(patch.V,v.Position,patch.Min.y,patch.Max.y,patch.RepeatV),edges);
         var original=new List<Point>{Convert(source.A,3),Convert(source.B,5),Convert(source.C,6)};
         foreach(var p in original)
             if(!double.IsFinite(p.U) || !double.IsFinite(p.V))
-                throw new InvalidOperationException("Non-finite original-atlas projection.");
+                return Fail("Non-finite original-atlas projection.");
         var polygons=new List<(List<Point> Points,int U,int V)>{(original,0,0)};
         for(int axis=0;axis<2;axis++)
         {
@@ -59,7 +64,7 @@ internal static class MovableRoadAtlasWrap
                 var tangent=patch.Tangent ?? value.Tangent;
                 if(patch.ProjectTangent)
                 {
-                    tangent=ProjectedTangent(value.Normal,patch.U,patch.V);
+                    if(!TryProjectedTangent(value.Normal,patch.U,patch.V,out tangent,out var cause))failure??=cause;
                 }
                 return new Vertex(value.Position,value.Normal,tangent,uv,value.Color);
             }
@@ -71,7 +76,11 @@ internal static class MovableRoadAtlasWrap
                 result.Add(new Triangle(a,b,c,source.Material,source.Occurrence,source.SourceTriangle));
             }
         }
-        return result.ToArray();
+        if(failure!=null)return false;
+        triangles=result.ToArray();return true;
+        }
+        catch(Exception exception){return Fail("Original-atlas projection: "+exception.Message);}
+        finally{error=failure;if(failure!=null)triangles=Array.Empty<Triangle>();}
     }
 
     // Float32 dot products use three products and three sums. gamma(6) bounds their
@@ -93,14 +102,15 @@ internal static class MovableRoadAtlasWrap
         return q;
     }
 
-    internal static Vector4 ProjectedTangent(Vector3 normal,Vector4 u,Vector4 v)
+    internal static bool TryProjectedTangent(Vector3 normal,Vector4 u,Vector4 v,out Vector4 tangent,out string? error)
     {
+        tangent=default;error=null;
         var direction=Vector3.Cross((Vector3)v,normal);
         float determinant=Vector3.Dot((Vector3)u,direction);
         if(!float.IsFinite(determinant) || determinant==0f)
-            throw new InvalidOperationException("Evidenced projected atlas tangent has a singular receiver frame.");
+            {error="Evidenced projected atlas tangent has a singular receiver frame.";return false;}
         direction=(direction/determinant).normalized;
-        return new Vector4(direction.x,direction.y,direction.z,determinant>0?1:-1);
+        tangent=new Vector4(direction.x,direction.y,direction.z,determinant>0?1:-1);return true;
     }
 
     private static List<Point> Clip(List<Point> input,int axis,double boundary,bool greater,List<Point> source)

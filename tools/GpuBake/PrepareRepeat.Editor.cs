@@ -107,7 +107,7 @@ public static class PrepareRepeat
                                 if(args.Contains("-reuseTexturesOnly"))throw new InvalidOperationException("Texture-only reuse has no existing product: "+textureKey);
                                 bakedTextures++;
                                 if(targets==null)targets=Render(program,kernel,u,textures,width,height,missingControl);
-                                using var c=new MovableAtlasChannel(program,targets[index],index,true);c.Read();return PreparePaint.Texture(c.Texture);
+                                using var c=(MovableAtlasChannel.TryCreate(program,targets[index],index,true,out var createdChannel1,out var channelError1)?createdChannel1:throw new InvalidOperationException(channelError1));if(!c.TryRead(out var readError))throw new InvalidOperationException(readError);return PreparePaint.Texture(c.Texture);
                             }
                             var product=store.Get(textureKey,".Texture",Produce);
                             bindings.Add(name,product.Cid);products[name+".Texture"]=product;

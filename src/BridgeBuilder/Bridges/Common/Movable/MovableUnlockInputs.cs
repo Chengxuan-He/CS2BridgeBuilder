@@ -24,7 +24,7 @@ internal static class MovableUnlockInputs
             var result = new PrefabBase[ids.Length];
             for (var i = 0; i < ids.Length; i++)
             {
-                if (!prefabs.TryGetPrefab(ids[i], out result[i]) || result[i] == null || !result[i].isBuiltin)
+                if (!prefabs.TryGetPrefab(ids[i], out result[i]) || result[i] == null)
                     throw new InvalidOperationException("Recorded native unlock input unavailable: " + ids[i].ToUrlSegment());
             }
             return result;

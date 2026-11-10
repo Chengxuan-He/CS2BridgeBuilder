@@ -15,7 +15,7 @@ internal static class Lift05NetworkAssembly
         // Native spawnable pillars register against this exact placeholder identity.
         // Cloning it would sever the game's reverse replacement references.
         var pillar = factory.ResolveOriginal<ObjectPrefab>("Pillar Placeholder");
-        if (!pillar.isBuiltin || !pillar.Has<PlaceholderObject>())
+        if (!pillar.Has<PlaceholderObject>())
             throw new InvalidOperationException("Lift05 requires the built-in pillar placeholder.");
 
         var sections = Lift05NetworkData.ConvertSections(target.name, target.m_Sections,

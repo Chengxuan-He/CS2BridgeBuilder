@@ -76,6 +76,6 @@ public static class PedestrianRepeatAtlasCheck
         var bytes=File.ReadAllBytes(path);int w=BitConverter.ToUInt16(bytes,2),h=BitConverter.ToUInt16(bytes,4),size=0;
         var format=(GraphicsFormat)bytes[9];int bw=(int)GraphicsFormatUtility.GetBlockWidth(format),bh=(int)GraphicsFormatUtility.GetBlockHeight(format),block=(int)GraphicsFormatUtility.GetBlockSize(format);
         for(int mip=0;mip<bytes[8];mip++){size+=((w+bw-1)/bw)*((h+bh-1)/bh)*block;w=Math.Max(1,w/2);h=Math.Max(1,h/2);}
-        using var stream=new MemoryStream(bytes);return MovableTextureSource.Read(stream,b=>PreparePaint.DecodeRaw(b,size));
+        using var stream=new MemoryStream(bytes);return (MovableTextureSource.TryRead(stream,b=>PreparePaint.DecodeRaw(b,size),out var parsedTexture1,out var textureReadError1)?parsedTexture1:throw new System.IO.InvalidDataException(textureReadError1));
     }
 }

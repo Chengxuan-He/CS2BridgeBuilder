@@ -37,13 +37,15 @@ foreach (var entry in report.RootElement.GetProperty("roots").EnumerateArray())
     }
     var original = new SurfaceAsset(source, entry.GetProperty("sourceTemplate").GetInt32(), true);
     int calls = 0;
-    SurfaceAsset Load(string cid)
+    MovableExistingRoadSurface.SurfaceResult Load(string cid)
     {
         calls++;
         if (cid != entry.GetProperty("cid").GetString()) throw new Exception("CID differs from native producer.");
         return new SurfaceAsset(cid, entry.GetProperty("targetTemplate").GetInt32(), false);
     }
-    var result = Draw02NativeMaterials.Resolve(original, Load);
+    var resolved=Draw02NativeMaterials.Resolve(original,Load);
+    if(!resolved.Success||resolved.Value==null)throw new Exception(resolved.Error);
+    var result=resolved.Value;
     if (operation == "builtin-reference")
     {
         if (!ReferenceEquals(original, result) || calls != 0 || original.HeaderLoads != 0)
@@ -59,7 +61,7 @@ foreach (var entry in report.RootElement.GetProperty("roots").EnumerateArray())
         Reject(() => Draw02NativeMaterials.Resolve(new SurfaceAsset(source, 17, false), _ => throw new Exception("Invalid source reached loader.")));
         Reject(() => Draw02NativeMaterials.Resolve(original, _ => new SurfaceAsset("incorrect", 0, false)));
         foreach (var allowed in new[] { new SurfaceAsset(result.id.guid, 17, false), new SurfaceAsset(result.id.guid, 0, false, true) })
-            if (!ReferenceEquals(allowed, Draw02NativeMaterials.Resolve(new SurfaceAsset(source, 0, true), _ => allowed)))
+            if (!ReferenceEquals(allowed, Draw02NativeMaterials.Resolve(new SurfaceAsset(source, 0, true), _ => allowed).Value))
                 throw new Exception("Template or VT compatibility still gates generation.");
         converted++;
     }
@@ -67,11 +69,10 @@ foreach (var entry in report.RootElement.GetProperty("roots").EnumerateArray())
 if (converted != 6 || retained != 8) throw new Exception("Incomplete Draw02 inventory coverage.");
 Console.WriteLine($"PASS Draw02 native resolver: {converted} converted sources, {retained} exact retained sources; producer CIDs and descriptor sidecars match; invalid identity rejected, template and VT gates removed.");
 
-static void Reject(Action operation)
+static void Reject(Func<MovableExistingRoadSurface.SurfaceResult> operation)
 {
-    try { operation(); }
-    catch (InvalidOperationException) { return; }
-    throw new Exception("Invalid native descriptor was accepted.");
+    var result=operation();
+    if(result.Success||result.Value!=null||string.IsNullOrEmpty(result.Error))throw new Exception("Invalid native descriptor was accepted.");
 }
 
 namespace Colossal.IO.AssetDatabase

@@ -71,7 +71,7 @@ without requiring material conversion or a new material identity.
 
 | Part or data | Required saved representation | What must not be saved or duplicated |
 | --- | --- | --- |
-| Generated main road and modified auxiliary deck | Native Prefabs in the owned save plan, with serialized network configuration and references | Do not overwrite the selected road or reuse another bridge's private Prefab |
+| Generated main road and modified auxiliary deck | Native Prefabs in the owned save plan, with serialized network configuration and references | Do not overwrite the selected road or depend on another owner's unsnapshotted files |
 | Generated or modified sections, pieces, objects and render Prefabs | Save each owned node that actually needs saving; remap references to those nodes | Do not clone every source section, piece or lane merely because its type appears in the graph |
 | Derived tower, cable, deck or other mesh geometry | Save generated `Geometry` data and reference it from the corresponding render Prefab | Do not treat a temporary Unity mesh as an exported geometry asset |
 | LODs and bounds | Save required generated LOD geometry and native LOD references, counts and bounds with their owners | Do not assume a highest-detail mesh alone represents all LODs; unchanged referenced LOD resources follow provenance rules |
@@ -133,12 +133,12 @@ through `widened.surfaceAssets = surfaces`. Preview models take a temporary path
 
 During permanent creation the generator supplies the saver with the bridge roots and the actual sources and implicit dependency edges established while building that bridge. Traverse serialized forward CIDs recursively. Follow each prepared Surface's declared MidMips CIDs and each generated Surface's explicitly created owner cache. An explicitly empty cache set represents a Surface with no cache requirement. For an external material, follow its serialized texture and VT references and resolve required native cache membership using the selected material's exact provenance. Missing required sources, positive-level cache memberships or conflicting bytes are persistence errors.
 
-Resolve a requested CID through the recorded asset or an exact database lookup. Exclude foreign bridge snapshots before opening a stream. Normal creation, including lane conversion, must not enumerate all registered assets or MidMips caches, probe unrelated cache payloads, or scan owner directories to discover dependency edges. Keep the handoff scoped to the current generation. Startup self-check and historical migration also follow each bridge's serialized dependency chain and recorded explicit cache edges. Use current-owner direct paths, exact CID lookups and the selected native material's indexed cache provenance. A once-per-inspection discovery of registered bridge prefab identities and historical owner-file locations may establish roots and migration candidates. Reuse those candidates throughout the pass. Do not build a global asset/CID or MidMips reverse index, reread every Prefab per owner, or repeatedly scan all owner directories. Retain unowned shared legacy sources when their other consumers cannot be proven without a global reverse scan; migrate only the selected bridge closure. Preserve the separate discovery and handling of orphaned legacy components and the existing migration-first recovery and retirement semantics. Persist required generation cache relations in owner-local metadata when native serialized fields cannot represent them. Include dependency, validation, portable migration, name/layout migration and retirement costs in the self-check timings.
+Resolve a requested CID through the recorded asset or an exact database lookup. Valid other-owner snapshots are permitted source streams; copy required bytes into the target owner. Normal creation, including lane conversion, must not enumerate all registered assets or MidMips caches, probe unrelated cache payloads, or scan owner directories to discover dependency edges. Keep the handoff scoped to the current generation. Startup self-check and historical migration follow each bridge's serialized dependency chain and the native cache provenance described below. Use current-owner direct paths, exact CID lookups and the selected native material's indexed cache provenance. A once-per-inspection discovery of registered bridge prefab identities and historical owner-file locations may establish roots and migration candidates. Reuse those candidates throughout the pass. Do not build a global all-asset/CID index, reread every Prefab per owner, or repeatedly scan all owner directories. The bounded inspection-only MidMips fallback below is the sole cache-index exception. Retain unowned shared legacy sources when their other consumers cannot be proven without a global reverse scan; migrate only the selected bridge closure. Preserve the separate discovery and handling of orphaned legacy components and the existing migration-first recovery and retirement semantics. Do not persist cache relations or an inspection index. Include dependency, validation, portable migration, name/layout migration and retirement costs in the self-check timings.
 
 
 `src/BridgeBuilder/Runtime/BridgeDependencyPersistence.cs` resolves source assets and stops at
-built-in provenance. It excludes another bridge's private assets of every type before opening
-their streams, including materials and textures with identical CIDs.
+built-in provenance. Other-owner sources remain readable external dependencies and are
+snapshotted independently, including materials and textures with identical CIDs.
 
 `src/BridgeBuilder/Runtime/BridgeDependencyCopies.cs` traverses CIDs, deduplicates within each owner,
 preflights destination conflicts, and copies unchanged external bytes with original CID sidecars.
@@ -153,7 +153,7 @@ For native `.MidMips` only, retain the tag-bearing original `TS*_MB*.MidMips` ba
 under `Dependencies/<CID>/`, with the unchanged payload and original CID sidecar. The native
 cache records implicit Surface dependencies through primary and duplicate Surface CID memberships;
 traverse these alongside serialized references. Current-owner caches remain discoverable without
-the installed prepared-material map; other owners' files are never dependency sources.
+the installed prepared-material map; other owners' files may supply independent dependency copies.
 
 Prefab references are extracted from UTF-8 and UTF-16 serialized text views. Native `.Surface`
 and `.Material` resources use `BridgeSurfaceReferences`, which reads binary texture references,
@@ -194,13 +194,40 @@ is separate and cannot be inferred from file equality alone.
 The source-linked `tools/DependencySourceCheck` exercises the production resolver, surface parser
 and copy traversal with an owned root referencing an external material and texture. It verifies
 byte/CID preservation, missing-sidecar supplementation, no writes on repetition, resolution from
-current-owner snapshots with the source-mod registrations absent, and rejection of those snapshots
-for another owner. Foreign first-match and fallback streams are rejected for Prefab, Surface,
-Material, Texture, VTSurface, VTTexture, Geometry and MidMips assets. The `.Surface` case reproduced
-the former prefab-only source-filter defect before the generic asset guard was applied.
+current-owner snapshots with the source-mod registrations absent, and independent copies from other-owner sources, with missing data and destination conflicts
+remaining failures. Ownership classification does not reject source streams.
 `tools/SelfCheckLifecycleCheck` exercises the actual startup system with dependency-service doubles:
 healthy references still trigger supplementation, and the migration/restart notice survives a
 subsequent unchanged check. This lifecycle check does not itself verify native texture loading.
+
+### Self-check without a persisted cache ledger
+
+`BridgeCacheEdges.txt` must not be read or written by current dependency resolution.
+Remove an existing obsolete file only after that owner's complete inspection and migration
+succeed; preserve its original bytes in the normal backup area first. Failed or unfinished
+inspection retains the file without relying on its contents. No other relationship file,
+extra native payload copy, path alias, cache layout change or persisted index replaces it.
+
+Follow root Prefab CIDs and exact required Surface/VT dependencies. Prefer the game's
+already-built Surface-CID atlas index and exact native/prepared cache provenance. Reusing
+that native dictionary is not permission to enumerate all assets or rebuild it.
+When necessary, one inspection-scoped fallback may traverse MidMips caches **at most once
+for the entire self-check across all owners**. Parse native primary/duplicate membership
+headers into a shared ephemeral map; include relevant owner cache paths already discovered
+for inspection, without another directory scan per owner. Read no unrelated asset types
+for this fallback. Complete this shared cache-relation preparation at the inspection
+entry, after native asset-batch loading and before owner dependency migration or structural
+checks. Reuse the map for every owner and discard it after inspection. A failed preparation
+aborts the whole inspection with an ERROR before owner mutations; do not create a per-owner
+cache-not-ready/unfinished branch or infer damage from initialization failure.
+
+Original cache payloads and CIDs remain in their existing native paths, one dependency
+copy per owner. A snapshot Surface needs no live native handle to resolve its cache.
+Use native VT headers to distinguish a genuine zero-mid-mip material from unavailable
+cache provenance. After successful shared preparation, a required absent cache is an explicit
+missing-dependency diagnostic, not a per-owner readiness deferral. Missing
+required resources and corrupt payloads retain contextual failures. Creation continues
+using its explicit source handoff and must not invoke the inspection-wide fallback.
 
 ### Native presentation and manager independence
 
@@ -243,8 +270,8 @@ applies to fixed and movable bridges alike. Persist the required mapping and dep
 ownership copies do not justify replacement materials or texture baking.
 
 Known eligible road compositions are prepared offline. Bounded runtime exceptions do not widen
-the supported-type gate or authorize full-road rasterization. Custom shaders and manager-dependent
-rebinding remain prohibited. Preserve complete texture/VT/mip dependencies and unchanged source bytes.
+the supported-type gate or authorize full-road rasterization. Dynamic shaders remain unavailable under the current independent-loading requirements in the material contract; manager-dependent
+rebinding remains prohibited. Preserve complete texture/VT/mip dependencies and unchanged source bytes.
 Only native MidMips sources may share `Materials/Shared/MidMips/<cacheCID>/` across styles.
 Each owner independently snapshots its required cache dependencies with original CIDs and native
 filenames. Owner material bytes are informational, with no hard ceiling; the complete SDK ZIP limit is 55,000,000 bytes.
@@ -281,7 +308,7 @@ conversion helpers already implement material conversion, marking export or nati
   their intended identities.
 - Verify built-in resources are not copied and external snapshots retain exact bytes and CIDs.
 - Preserve existing ownership, missing-dependency failure, migration and manager-independence rules
-  in bridge generation contract sections 17 through 19. Never borrow another bridge's private Prefab.
+  in bridge generation contract sections 17 through 19. Other-owner input never substitutes for the target's required independent snapshot.
 - Use cold-start and save/load acceptance to establish native operation. A successful build, preview
   or file scan alone does not prove animation, road connectivity or shipping compatibility.
 
@@ -410,7 +437,8 @@ Apply rules in this order:
 
 `<short name>` follows section 6's owner-UUID removal rule. Resolve ownership using existing approved
 UUID/path rules plus the new UUID-directory context. Ambiguous or foreign ownership must not be
-guessed. References to another bridge's private resources remain disallowed. Legacy internal-name
+guessed for mutation. Reading another bridge's input is permitted; persist its required
+independent snapshot without modifying that source. Legacy internal-name
 conversion is a separate existing operation; this layout migration does not rename serialized objects.
 
 ### Transaction and collision rules
@@ -437,7 +465,7 @@ conversion is a separate existing operation; this layout migration does not rena
 ### Required implementation review and acceptance
 
 Before implementing this layout, update all producers and consumers together: Prefab/geometry/
-material/texture/locale writers, dependency writer and exclusions, source isolation, disk audit,
+material/texture/locale writers, dependency writer and exclusions, output ownership isolation, disk audit,
 legacy-name handling, file-layout migration, pending-creation cleanup, UUID deletion/backup, and
 pack/export discovery. Disk filename and internal Prefab name must be allowed to differ.
 
@@ -456,10 +484,10 @@ implementation, deployment and game acceptance as separate statuses.
   backed up; identical pairs may be reused. Conflicts preserve healthy bridges. Partial moves
   roll back, and successful reruns do nothing. Internal names and native references are unchanged.
 - Root lookup accepts `Prefabs/Bridge.Prefab` and the legacy UUID filename. Dependency provenance
-  and foreign-source isolation accept both layouts. Legacy-name migration recognizes short-named
+  and source reading and target ownership accept both layouts. Legacy-name migration recognizes short-named
   owned geometry, avoiding unnecessary new identities after layout migration.
 - Automated checks cover layout, resource relocation, self-check lifecycle, dependency copying,
-  source isolation, legacy conversion and scoped cleanup. Native VT discovery/tag handling was
+  output ownership isolation, legacy conversion and scoped cleanup. Native VT discovery/tag handling was
   inspected in the installed game code. This record does not assert in-game cold-load acceptance.
 
 ### Filename mapping examples
@@ -522,3 +550,5 @@ not the native rich-text message property: Windows backslashes must remain liter
 Open folder uses the parent directory of the completed export path held by the backend,
 not a path supplied by the click event. Failure to open that directory is reported as
 an open-folder failure without changing the successful export status.
+
+Dynamic material shaders are governed by [the scoped material requirements](MATERIAL_GENERATION_CONTRACT.md#dynamically-generated-and-independently-persisted-material-shaders): actual source generation, Player-capable loading and independent owner-local cold loading, without a continuing mod synchronization service. This permission does not relax geometry, texture-content or source-ownership rules.

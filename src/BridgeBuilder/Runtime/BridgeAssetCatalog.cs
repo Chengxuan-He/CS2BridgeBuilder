@@ -37,7 +37,7 @@ internal static class BridgeAssetCatalog
             foreach (var directory in Directory.GetDirectories(BridgeFileAccess.Native(Root)))
             {
                 var owner = Path.GetFileName(directory);
-                if (!BridgeAssetInfo.IsPrefabName(owner) || BridgeStartupRecovery.Retired.Contains(owner)) continue;
+                if (!BridgeAssetInfo.IsPrefabName(owner) || BridgeStartupRecovery.Retired.Contains(owner) || BridgeDeferredRemoval.Excluded(owner)) continue;
                 var entry = Read(owner);
                 if (entry != null) result.Add(entry);
             }
@@ -59,12 +59,12 @@ internal static class BridgeAssetCatalog
         catch (Exception exception) { Mod.Log.Warn(exception, "Could not read bridge metadata: " + owner); return null; }
     }
 
-    internal static BridgeAssetInfo? Find(string? owner) => owner == null || BridgeStartupRecovery.Retired.Contains(owner)
+    internal static BridgeAssetInfo? Find(string? owner) => owner == null || BridgeStartupRecovery.Retired.Contains(owner) || BridgeDeferredRemoval.Excluded(owner)
         ? null : Read(owner) is { Pending: false } entry ? entry : null;
 
     internal static bool CreatingOrRetiring(string owner) => Creating.ContainsKey(owner)
         || BridgeStartupRecovery.Retired.Contains(owner) || BridgeDeferredRemoval.Pending(owner)
-        || BridgeDeferredRemoval.Verified.Contains(owner);
+        || BridgeDeferredRemoval.Verified.Contains(owner) || BridgeDeferredRemoval.Excluded(owner);
 
     internal static bool Begin(BridgeAssetInfo entry) => Creating.TryAdd(entry.PrefabName, entry);
 

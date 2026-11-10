@@ -19,9 +19,9 @@ var references=new HashSet<string>();var roots=new List<object>();
 foreach(string file in Directory.GetFiles(style,"*.Surface",SearchOption.AllDirectories))
 {
     string relative=Path.GetRelativePath(style,file);
-    string[] References(byte[] bytes)=>BridgeSurfaceReferences.Read(bytes,(_,p)=>new[]{"_BaseColorMap","_NormalMap","_MaskMap","_ControlMask","_EmissiveColorMap"}.Contains(p));
-    var inputs=BridgePreparedMaterialFiles.Read(style,Path.GetDirectoryName(relative)!,Path.GetFileName(file),References,
-        cid=>{if(!builtins.Contains(cid))throw new Exception("Missing built-in dependency: "+cid);});
+    string[] References(byte[] bytes)=>(BridgeSurfaceReferences.TryRead(bytes,(_,p)=>new[]{"_BaseColorMap","_NormalMap","_MaskMap","_ControlMask","_EmissiveColorMap"}.Contains(p),out var surfaceRefs1,out var surfaceRefsError1)?surfaceRefs1:throw new System.IO.InvalidDataException(surfaceRefsError1));
+    var inputs=(BridgePreparedMaterialFiles.TryRead(style,Path.GetDirectoryName(relative)!,Path.GetFileName(file),out var preparedInputs1,out var preparedError1,References,
+        cid=>{if(!builtins.Contains(cid))throw new Exception("Missing built-in dependency: "+cid);})?preparedInputs1:throw new System.IO.InvalidDataException(preparedError1));
     foreach(var input in inputs){references.Add(input.Path);references.Add(input.Path+".cid");}
     roots.Add(new{relativePath=relative.Replace('\\','/'),reason="Fresh descriptor produced directly from verified native source"});
 }

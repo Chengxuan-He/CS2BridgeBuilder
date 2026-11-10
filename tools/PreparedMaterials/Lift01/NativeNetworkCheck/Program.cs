@@ -36,15 +36,11 @@ foreach (var source in sources.Values)
         isVTMaterial = bytes[6] != 0
     };
     original.id.guid = Str(source, "cid");
-    bool rejected = false;
-    try
-    {
-        var result = Lift01NativeMaterials.Resolve(original,
-            _ => throw new InvalidDataException("Non-road reuse invoked a replacement descriptor loader."));
-        Require(ReferenceEquals(result, original), "Non-road material identity was replaced.");
-    }
-    catch (InvalidOperationException error) when (error.Message.Contains("native NetPiece render context"))
-    { rejected = true; }
+    var result=Lift01NativeMaterials.Resolve(original,
+        _=>throw new InvalidDataException("Non-road reuse invoked a replacement descriptor loader."));
+    bool rejected=!result.Success;
+    if(rejected)Require(result.Value==null && result.Error!.Contains("native NetPiece render context"),"Missing native context diagnostic");
+    else Require(ReferenceEquals(result.Value,original),"Non-road material identity was replaced.");
     Require(rejected == (original.materialTemplateHash is 17 or 33),
         "Network materials must be rejected from the object-only resolver.");
 }

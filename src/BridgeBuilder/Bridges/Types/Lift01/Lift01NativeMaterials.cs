@@ -24,11 +24,15 @@ internal static class Lift01NativeMaterials
     // A prepared object descriptor is not original non-road material reuse.
     // Native network graphs bypass this object-only resolver through the exact
     // render/slot/CID predicate above; rejecting leakage preserves that boundary.
-    internal static SurfaceAsset Resolve(SurfaceAsset original, Func<string, SurfaceAsset> load)
+    internal static MovableExistingRoadSurface.SurfaceResult Resolve(SurfaceAsset original, Func<string, MovableExistingRoadSurface.SurfaceResult> load)
     {
+        try
+        {
         original.LoadHeader();
         if (original.materialTemplateHash is 17 or 33)
-            throw new InvalidOperationException("Lift01 network material requires its native NetPiece render context: " + original.id);
+            return new MovableExistingRoadSurface.SurfaceResult(null,"Lift01 network material requires its native NetPiece render context: " + original.id);
         return original;
+            }
+        catch(Exception exception){return new MovableExistingRoadSurface.SurfaceResult(null,"Native prototype descriptor: "+exception.Message);}
     }
 }
