@@ -8,6 +8,9 @@ namespace BridgeBuilder.Bridges;
 internal static class Lift01RenderAssembly
 {
     internal static RenderPrefab? CreateMechanism(TowerFactory factory, string name, IReadOnlyList<MovableRoadAssets.Level> roadLevels, float halfWidthDelta)
+        => GenerationWork.Synchronous(()=>CreateMechanismAsync(factory,name,roadLevels,halfWidthDelta));
+
+    internal static async System.Threading.Tasks.Task<RenderPrefab?> CreateMechanismAsync(TowerFactory factory, string name, IReadOnlyList<MovableRoadAssets.Level> roadLevels, float halfWidthDelta)
     {
         if (roadLevels.Count != Numeric_Types_Lift01_Lift01RenderAssembly_cs.Values.I32[0])
             throw new ArgumentException("Lift01 mechanism requires all three native road LODs.");
@@ -53,7 +56,7 @@ internal static class Lift01RenderAssembly
             PrivateGeometryReader.Release(meshes);
         }
 
-        return MovableRenderAssembly.CreateMechanism(factory, name, levels, new[] { Numeric_Types_Lift01_Lift01RenderAssembly_cs.Values.I32[16], Numeric_Types_Lift01_Lift01RenderAssembly_cs.Values.I32[17], Numeric_Types_Lift01_Lift01RenderAssembly_cs.Values.I32[18] }, (lod, mesh, source, indices) => mesh == Numeric_Types_Lift01_Lift01RenderAssembly_cs.Values.I32[19] ? Lift01Glass.Create(lod, source, indices, halfWidthDelta) : lod == Numeric_Types_Lift01_Lift01RenderAssembly_cs.Values.I32[20] ? Lift01FarStructure.Create(source, indices, halfWidthDelta) : Lift01DetailedStructure.Create(lod, source, indices, halfWidthDelta));
+        return await MovableRenderAssembly.CreateMechanismAsync(factory, name, levels, new[] { Numeric_Types_Lift01_Lift01RenderAssembly_cs.Values.I32[16], Numeric_Types_Lift01_Lift01RenderAssembly_cs.Values.I32[17], Numeric_Types_Lift01_Lift01RenderAssembly_cs.Values.I32[18] }, (lod, mesh, source, indices) => mesh == Numeric_Types_Lift01_Lift01RenderAssembly_cs.Values.I32[19] ? Lift01Glass.Create(lod, source, indices, halfWidthDelta) : lod == Numeric_Types_Lift01_Lift01RenderAssembly_cs.Values.I32[20] ? Lift01FarStructure.Create(source, indices, halfWidthDelta) : Lift01DetailedStructure.Create(lod, source, indices, halfWidthDelta));
     }
 }
 

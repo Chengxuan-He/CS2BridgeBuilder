@@ -10,8 +10,12 @@ internal static class PedestrianDraw01ObjectAssembly
 {
     // All render graphs and the selected-road sample must already be prepared. This stage does not
     // substitute prototype road geometry or publish a bridge with missing render inputs.
-    internal static StaticObjectPrefab Create(TowerFactory factory, string owner, string name, RenderPrefab mechanism, RenderPrefab column, RenderPrefab footing, ContentPrefab content, Func<string, ObjectPrefab> resolveOriginal, float halfWidthDelta, MovableStraightSample road)
+    internal static StaticObjectPrefab Create(TowerFactory factory, string owner, string name, RenderPrefab mechanism, RenderPrefab column, RenderPrefab footing, ContentPrefab content, Func<string, ObjectPrefab> resolveOriginal, float halfWidthDelta, MovableStraightSample road) =>
+        GenerationWork.Synchronous(() => CreateAsync(factory, owner, name, mechanism, column, footing, content, resolveOriginal, halfWidthDelta, road));
+
+    internal static async System.Threading.Tasks.Task<StaticObjectPrefab> CreateAsync(TowerFactory factory, string owner, string name, RenderPrefab mechanism, RenderPrefab column, RenderPrefab footing, ContentPrefab content, Func<string, ObjectPrefab> resolveOriginal, float halfWidthDelta, MovableStraightSample road)
     {
+        await GenerationWork.Next("support PedestrianDraw01ObjectAssembly.Create");
         if (mechanism == null || column == null || footing == null || content == null || !float.IsFinite(halfWidthDelta))
             throw new ArgumentException("PedestrianDraw01 object assembly requires all three render graphs, native content and a finite width change.");
         var authored = PedestrianDraw01MechanismData.AuthoredAttachments(resolveOriginal);
@@ -42,7 +46,7 @@ internal static class PedestrianDraw01ObjectAssembly
         var partitions = new MovableRoadGeometry.Partition[objects.Placements.Length];
         Array.Fill(partitions, physical);
         factory.AttachMovableRoadObjects(result, objects.Placements, road.RoadToObject, partitions);
-        if(!factory.TryAttachMovablePaint(result, road.Road.LaneGeometry.Decals, road.RoadToObject, physical, MovableRoadGeometry.InFrame(road.Road.Triangles, road.RoadToObject),out _))return null!;
+        if(!(await factory.AttachMovablePaintAsync(result, road.Road.LaneGeometry.Decals, road.RoadToObject, physical, MovableRoadGeometry.InFrame(road.Road.Triangles, road.RoadToObject))).Success)return null!;
         return result;
     }
 }

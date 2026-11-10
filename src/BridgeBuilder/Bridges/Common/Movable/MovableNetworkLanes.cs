@@ -23,17 +23,29 @@ internal sealed partial class MovableNetworkLanes : SystemBase
     // Input is a complete network-only context: no building/area owners, and all native
     // mechanism SubObject/PointOfInterest relationships already exist in this private world.
     internal void CalculateNetwork(TerrainHeightData terrain, Entity theme, bool leftHandTraffic,
+        RandomSeed randomSeed, BuildingConfigurationData buildingConfiguration, bool loaded) =>
+        GenerationWork.Synchronous(async () => { await CalculateNetworkAsync(terrain, theme, leftHandTraffic, randomSeed, buildingConfiguration, loaded); return true; });
+
+    internal async System.Threading.Tasks.Task CalculateNetworkAsync(TerrainHeightData terrain, Entity theme, bool leftHandTraffic,
         RandomSeed randomSeed, BuildingConfigurationData buildingConfiguration, bool loaded)
     {
         RequirePrivateWorld();
         var geometry = World.GetOrCreateSystemManaged<MovableNetworkGeometry>();
+        await GenerationWork.Next("native sampling composition selection");
         SelectCompositions(leftHandTraffic);
+        await GenerationWork.Next("native sampling composition initialization");
         InitializeCompositions();
+        await GenerationWork.Next("native sampling geometry calculation");
         geometry.Calculate(terrain, loaded);
+        await GenerationWork.Next("native sampling network initialization");
         InitializeNetworkComponents(loaded);
+        await GenerationWork.Next("native sampling primary lane calculation");
         CreatePrimary(terrain, theme, leftHandTraffic, randomSeed, buildingConfiguration);
+        await GenerationWork.Next("native sampling lane overlaps");
         CalculateOverlaps(leftHandTraffic);
+        await GenerationWork.Next("native sampling traffic signals");
         InitializeSignals();
+        await GenerationWork.Next("native sampling secondary lane calculation");
         CreateSecondary(theme, leftHandTraffic);
     }
 

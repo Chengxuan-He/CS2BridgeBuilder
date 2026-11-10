@@ -8,8 +8,12 @@ internal static class Draw03PillarAssembly
 {
     // Ordinary network supports are distinct from the mechanism's stacking supports.
     // Reconstruct native inputs privately; only factory-owned results escape this scope.
-    internal static StaticObjectPrefab? Create(TowerFactory factory, string name, RenderPrefab nativeDefaultBase, ContentPrefab content, float halfWidthDelta)
+    internal static StaticObjectPrefab? Create(TowerFactory factory, string name, RenderPrefab nativeDefaultBase, ContentPrefab content, float halfWidthDelta) =>
+        GenerationWork.Synchronous(() => CreateAsync(factory, name, nativeDefaultBase, content, halfWidthDelta));
+
+    internal static async System.Threading.Tasks.Task<StaticObjectPrefab?> CreateAsync(TowerFactory factory, string name, RenderPrefab nativeDefaultBase, ContentPrefab content, float halfWidthDelta)
     {
+        await GenerationWork.Next("support Draw03PillarAssembly.Create");
         using var sources = new Draw03PillarSources(nativeDefaultBase, content);
         var generated = new RenderPrefab[Numeric_Types_Draw03_Draw03PillarAssembly_cs.Values.I32[0]];
         var labels = new[]
@@ -39,7 +43,11 @@ internal static class Draw03PillarAssembly
                     if (meshes.Length != Numeric_Types_Draw03_Draw03PillarAssembly_cs.Values.I32[5] || meshes[Numeric_Types_Draw03_Draw03PillarAssembly_cs.Values.I32[6]].subMeshCount != Numeric_Types_Draw03_Draw03PillarAssembly_cs.Values.I32[7])
                         throw new InvalidOperationException("Draw03 ordinary pillar requires its recorded single native surface slot.");
                     var mesh = meshes[Numeric_Types_Draw03_Draw03PillarAssembly_cs.Values.I32[8]];
-                    var plan = lod == Numeric_Types_Draw03_Draw03PillarAssembly_cs.Values.I32[9] && part != Numeric_Types_Draw03_Draw03PillarAssembly_cs.Values.I32[10] ? Draw03FarNetPillars.Create(part, mesh.vertices, mesh.GetIndices(Numeric_Types_Draw03_Draw03PillarAssembly_cs.Values.I32[11]), halfWidthDelta) : Draw03NetPillarParts.Create(part, lod, mesh.vertices, mesh.GetIndices(Numeric_Types_Draw03_Draw03PillarAssembly_cs.Values.I32[12]), halfWidthDelta);
+                    var supportInput0 = mesh.vertices;
+                    var supportInput1 = mesh.GetIndices(Numeric_Types_Draw03_Draw03PillarAssembly_cs.Values.I32[11]);
+                    var supportInput2 = mesh.vertices;
+                    var supportInput3 = mesh.GetIndices(Numeric_Types_Draw03_Draw03PillarAssembly_cs.Values.I32[12]);
+                    var plan = await GenerationWork.Background("support structure plan", () => lod == Numeric_Types_Draw03_Draw03PillarAssembly_cs.Values.I32[9] && part != Numeric_Types_Draw03_Draw03PillarAssembly_cs.Values.I32[10] ? Draw03FarNetPillars.Create(part, supportInput0, supportInput1, halfWidthDelta) : Draw03NetPillarParts.Create(part, lod, supportInput2, supportInput3, halfWidthDelta));
                     var bounds = original.bounds;
                     bounds.min.x -= halfWidthDelta;
                     bounds.max.x += halfWidthDelta;
@@ -60,7 +68,7 @@ internal static class Draw03PillarAssembly
                 }
             }
 
-            var render = factory.CreateMovableRenderGraph($"{name} {labels[part]}", levels);
+            var render = await factory.CreateMovableRenderGraphAsync($"{name} {labels[part]}", levels);
             if (render == null)
                 return null;
             generated[part] = render;

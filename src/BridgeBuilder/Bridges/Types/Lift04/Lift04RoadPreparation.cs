@@ -4,11 +4,14 @@ using UnityEngine;
 namespace BridgeBuilder.Bridges;
 internal static class Lift04RoadPreparation
 {
-    internal static MovableRoadAssets.Level[]? PrepareRenderLevels(MovableStraightSample sample, RenderPrefab[] nativeLevels, float halfWidthDelta, Matrix4x4 closedWorld, MovableRoadMaterial material)
+    internal static MovableRoadAssets.Level[]? PrepareRenderLevels(MovableStraightSample sample, RenderPrefab[] nativeLevels, float halfWidthDelta, Matrix4x4 closedWorld, MovableRoadMaterial material) =>
+        GenerationWork.Synchronous(() => PrepareRenderLevelsAsync(sample, nativeLevels, halfWidthDelta, closedWorld, material));
+
+    internal static async System.Threading.Tasks.Task<MovableRoadAssets.Level[]?> PrepareRenderLevelsAsync(MovableStraightSample sample, RenderPrefab[] nativeLevels, float halfWidthDelta, Matrix4x4 closedWorld, MovableRoadMaterial material)
     {
         var layout = new MovableSelectedRoadLayout(sample.Road, sample.RoadToObject, "Lift04");
         var appearance = Lift04RoadAppearance.Regions(sample.RoadToObject);
-        return MovableRoadPreparation.Prepare(sample, nativeLevels, halfWidthDelta, closedWorld, material, Lift04RoadPartitions.Carriageway, Lift04RoadPartitions.Carriageway, appearance, appearance, Lift04RoadAppearance.Patches(sample.RoadToObject), Numeric_Types_Lift04_Lift04RoadPreparation_cs.Values.I32[0], layout,
+        return await MovableRoadPreparation.PrepareAsync(sample, nativeLevels, halfWidthDelta, closedWorld, material, Lift04RoadPartitions.Carriageway, Lift04RoadPartitions.Carriageway, appearance, appearance, Lift04RoadAppearance.Patches(sample.RoadToObject), Numeric_Types_Lift04_Lift04RoadPreparation_cs.Values.I32[0], layout,
             lod => Lift04RoadAppearance.ForLod(lod, nativeLevels[lod], sample.RoadToObject, halfWidthDelta));
     }
 }

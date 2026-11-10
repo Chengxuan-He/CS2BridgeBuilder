@@ -7,8 +7,12 @@ using UnityEngine;
 namespace BridgeBuilder.Bridges;
 internal static class Draw03ApproachAssembly
 {
-    internal static void Apply(NetGeometryPrefab target, TowerFactory factory, ContentPrefab content, float halfWidthDelta)
+    internal static void Apply(NetGeometryPrefab target, TowerFactory factory, ContentPrefab content, float halfWidthDelta) =>
+        GenerationWork.Synchronous(async () => { await ApplyAsync(target, factory, content, halfWidthDelta); return true; });
+
+    internal static async System.Threading.Tasks.Task ApplyAsync(NetGeometryPrefab target, TowerFactory factory, ContentPrefab content, float halfWidthDelta)
     {
+        await GenerationWork.Next("support Draw03ApproachAssembly.Apply");
         using var sources = new Draw03ApproachSources(content);
         var pieces = new NetPiecePrefab[sources.Roots.Length];
         var layoutRemainder = Numeric_Types_Draw03_Draw03ApproachAssembly_cs.Values.F32[0];
@@ -29,7 +33,9 @@ internal static class Draw03ApproachAssembly
                     meshes = PrivateGeometryReader.Read(original);
                     if (meshes.Length != Numeric_Types_Draw03_Draw03ApproachAssembly_cs.Values.I32[2] || meshes[Numeric_Types_Draw03_Draw03ApproachAssembly_cs.Values.I32[3]].subMeshCount != Numeric_Types_Draw03_Draw03ApproachAssembly_cs.Values.I32[4])
                         throw new InvalidOperationException("Draw03 approach requires its recorded single native surface slot.");
-                    var plan = Draw03ApproachGeometry.Create(family, lod, meshes[Numeric_Types_Draw03_Draw03ApproachAssembly_cs.Values.I32[5]].vertices, meshes[Numeric_Types_Draw03_Draw03ApproachAssembly_cs.Values.I32[6]].GetIndices(Numeric_Types_Draw03_Draw03ApproachAssembly_cs.Values.I32[7]), halfWidthDelta);
+                    var supportInput0 = meshes[Numeric_Types_Draw03_Draw03ApproachAssembly_cs.Values.I32[5]].vertices;
+                    var supportInput1 = meshes[Numeric_Types_Draw03_Draw03ApproachAssembly_cs.Values.I32[6]].GetIndices(Numeric_Types_Draw03_Draw03ApproachAssembly_cs.Values.I32[7]);
+                    var plan = await GenerationWork.Background("support structure plan", () => Draw03ApproachGeometry.Create(family, lod, supportInput0, supportInput1, halfWidthDelta));
                     var bounds = original.bounds;
                     bounds.min.x = plan.Positions.Min(position => position.x);
                     bounds.max.x = plan.Positions.Max(position => position.x);
@@ -41,7 +47,7 @@ internal static class Draw03ApproachAssembly
                 }
             }
 
-            var generated = factory.CreateMovableRenderGraph(target.name + " Fixed Approach " + family, levels) as NetPiecePrefab ?? throw new InvalidOperationException("Draw03 approach render creation failed.");
+            var generated = await factory.CreateMovableRenderGraphAsync(target.name + " Fixed Approach " + family, levels) as NetPiecePrefab ?? throw new InvalidOperationException("Draw03 approach render creation failed.");
             // Match local mesh scaling with every structural strip's native width.
             // This spreads the width change across the full truss rather than its centre.
             if (Draw03Truss.IsApproachStructure(family))

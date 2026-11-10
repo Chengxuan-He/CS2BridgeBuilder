@@ -16,7 +16,7 @@ internal static partial class AffineGeometry
         }
         var parameters = GenerationParameters.Capture();
         Parallel.For(0, count, new ParallelOptions
-        { MaxDegreeOfParallelism = Math.Max(1, Environment.ProcessorCount - 1) }, i =>
+        { MaxDegreeOfParallelism = Math.Min(2, Math.Max(1, Environment.ProcessorCount - 1)) }, i =>
         {
             using var parameterLease = GenerationParameters.Attach(parameters);
             var previous = _worker;

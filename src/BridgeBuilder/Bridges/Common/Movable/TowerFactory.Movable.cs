@@ -173,14 +173,13 @@ internal sealed partial class TowerFactory
     /// structure replacement, network mapping and compatible road/marking conversion.
     /// </summary>
     internal RenderPrefab? CreateMovableRenderGraph(string name, IReadOnlyList<MovableRoadAssets.Level> levels)
+        => GenerationWork.Synchronous(()=>CreateMovableRenderGraphAsync(name,levels));
+    internal async System.Threading.Tasks.Task<RenderPrefab?> CreateMovableRenderGraphAsync(string name, IReadOnlyList<MovableRoadAssets.Level> levels)
     {
-        if (!MovableRoadAssets.TryCreate(_bridgeName, name,
-                _styleId ?? throw new InvalidOperationException("Movable render graph requires a bridge style."), levels, _previewGeometry,
-                out var created, out var error))
-        {
-            _report.Defect($"'{name}': {error}");
-            return null;
-        }
+        var result=await MovableRoadAssets.CreateAsync(_bridgeName,name,
+            _styleId ?? throw new InvalidOperationException("Movable render graph requires a bridge style."),levels,_previewGeometry);
+        if(!result.Success){_report.Defect($"'{name}': {result.Error}");return null;}
+        var created=result.Created;
         _created.AddRange(created);
         if (created.Length > levels.Count)
         {

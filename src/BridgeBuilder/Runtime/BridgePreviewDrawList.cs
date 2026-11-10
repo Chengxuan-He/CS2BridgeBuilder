@@ -1,3 +1,4 @@
+using BridgeBuilder.Bridges;
 using System;
 using System.Collections.Generic;
 using Game.Prefabs;
@@ -52,6 +53,10 @@ internal sealed class BridgePreviewDrawList : IDisposable
     internal void RefreshMaterialBindings() => _resources.RefreshMaterialBindings();
 
     internal bool AddLanes(BridgePreviewComposition.Piece[] pieces, NetCompositionData data,
+        Matrix4x4 deckTransform, float start, float length) =>
+        GenerationWork.Synchronous(() => AddLanesAsync(pieces, data, deckTransform, start, length));
+
+    internal async System.Threading.Tasks.Task<bool> AddLanesAsync(BridgePreviewComposition.Piece[] pieces, NetCompositionData data,
         Matrix4x4 deckTransform, float start, float length)
     {
         using var composition = new BridgePreviewLanes();
@@ -61,7 +66,10 @@ internal sealed class BridgePreviewDrawList : IDisposable
         }
         var matrix = deckTransform * Matrix4x4.Translate(new Vector3(0f, 0f, start));
         foreach (var lane in lanes)
+        {
+            await GenerationWork.Checkpoint("preview native lane draw");
             if (!_lanes.Build(lane, composition.LeftHandTraffic, matrix, _resources, _draws)) return false;
+        }
         return true;
     }
 
@@ -78,7 +86,10 @@ internal sealed class BridgePreviewDrawList : IDisposable
         return true;
     }
 
-    internal bool AddRenderPrefab(RenderPrefab prefab, Matrix4x4 transform, BridgePreviewOpenPose? pose = null)
+    internal bool AddRenderPrefab(RenderPrefab prefab, Matrix4x4 transform, BridgePreviewOpenPose? pose = null) =>
+        GenerationWork.Synchronous(() => AddRenderPrefabAsync(prefab, transform, pose));
+
+    internal async System.Threading.Tasks.Task<bool> AddRenderPrefabAsync(RenderPrefab prefab, Matrix4x4 transform, BridgePreviewOpenPose? pose = null)
     {
         // Unity type-pattern matching accepts wrappers whose native object has
         // already been destroyed. Do not touch name/materials on those wrappers.
@@ -96,6 +107,7 @@ internal sealed class BridgePreviewDrawList : IDisposable
         var added = false;
         foreach (var mesh in meshes)
         {
+            await GenerationWork.Checkpoint("preview render mesh bounds");
             if (mesh == null) continue;
             var localBounds = mesh.bounds;
             if (pose != null)
@@ -121,6 +133,10 @@ internal sealed class BridgePreviewDrawList : IDisposable
     }
 
     internal bool AddObject(ObjectGeometryPrefab prefab, Matrix4x4 transform, ObjectStack? alignedStack = null,
+        float objectElevation = 0f) =>
+        GenerationWork.Synchronous(() => AddObjectAsync(prefab, transform, alignedStack, objectElevation));
+
+    internal async System.Threading.Tasks.Task<bool> AddObjectAsync(ObjectGeometryPrefab prefab, Matrix4x4 transform, ObjectStack? alignedStack = null,
         float objectElevation = 0f)
     {
         // Reject recursive ownership rather than walking a corrupt graph forever.
@@ -149,6 +165,7 @@ internal sealed class BridgePreviewDrawList : IDisposable
             // hence the bridge) when traversing mounted props/decorations.
             foreach (var part in prefab.m_Meshes ?? Array.Empty<ObjectMeshInfo>())
             {
+                await GenerationWork.Checkpoint("preview object mesh");
                 if (part?.m_Mesh is not RenderPrefab mesh || part.m_RequireState != 0) continue;
                 if (mesh.meshCount == 0) continue;
                 var flags = BridgePreviewObjectLayout.Flags(mesh);
@@ -176,7 +193,7 @@ internal sealed class BridgePreviewDrawList : IDisposable
                         }
                         _resources.EnableProceduralAnimation(mesh);
                     }
-                    if (!AddRenderPrefab(mesh, transform * local, pose)) return false;
+                    if (!await AddRenderPrefabAsync(mesh, transform * local, pose)) return false;
                 }
             }
             // Authored children are part of the created object, not independent
@@ -201,7 +218,7 @@ internal sealed class BridgePreviewDrawList : IDisposable
                     var local = Matrix4x4.TRS(position, child.m_Rotation, Vector3.one);
                     if (movable != null && movable.active)
                         local = AttachmentPose(prefab, child.m_ParentMesh) * local;
-                    if (!AddObject(geometry, transform * local, objectElevation: childElevation))
+                    if (!await AddObjectAsync(geometry, transform * local, objectElevation: childElevation))
                     {
                         return false;
                     }

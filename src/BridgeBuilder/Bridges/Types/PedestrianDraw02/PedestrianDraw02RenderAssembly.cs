@@ -11,10 +11,13 @@ namespace BridgeBuilder.Bridges;
 internal static class PedestrianDraw02RenderAssembly
 {
     internal static RenderPrefab? CreateMechanism(TowerFactory factory, string name, MovableRoadAssets.Level[] roadLevels, float halfWidthDelta)
+        => GenerationWork.Synchronous(()=>CreateMechanismAsync(factory,name,roadLevels,halfWidthDelta));
+
+    internal static async System.Threading.Tasks.Task<RenderPrefab?> CreateMechanismAsync(TowerFactory factory, string name, MovableRoadAssets.Level[] roadLevels, float halfWidthDelta)
     {
         if (roadLevels.Length != Numeric_Types_PedestrianDraw02_PedestrianDraw02RenderAssembly_cs.Values.I32[0])
             throw new ArgumentException("PedestrianDraw02 mechanism requires its two native LODs.");
-        return MovableRenderAssembly.CreateMechanism(factory, name, roadLevels, new[] { Numeric_Types_PedestrianDraw02_PedestrianDraw02RenderAssembly_cs.Values.I32[1], Numeric_Types_PedestrianDraw02_PedestrianDraw02RenderAssembly_cs.Values.I32[2] }, (lod, mesh, source, indices) => Structure(lod, mesh, source, indices, halfWidthDelta));
+        return await MovableRenderAssembly.CreateMechanismAsync(factory, name, roadLevels, new[] { Numeric_Types_PedestrianDraw02_PedestrianDraw02RenderAssembly_cs.Values.I32[1], Numeric_Types_PedestrianDraw02_PedestrianDraw02RenderAssembly_cs.Values.I32[2] }, (lod, mesh, source, indices) => Structure(lod, mesh, source, indices, halfWidthDelta));
     }
 
     private static MovableStructureModel.Plan Structure(int lod, int mesh, Vector3[] source, int[] indices, float delta)
@@ -48,8 +51,12 @@ internal static class PedestrianDraw02RenderAssembly
         return new MovableStructureModel.Plan(source, positions, new[] { indices }, new[] { new bool[Numeric_Types_PedestrianDraw02_PedestrianDraw02RenderAssembly_cs.Values.I32[15]] });
     }
 
-    internal static RenderPrefab? CreateColumn(TowerFactory factory, string owner, string name, RenderPrefab source, float halfWidthDelta)
+    internal static RenderPrefab? CreateColumn(TowerFactory factory, string owner, string name, RenderPrefab source, float halfWidthDelta) =>
+        GenerationWork.Synchronous(() => CreateColumnAsync(factory, owner, name, source, halfWidthDelta));
+
+    internal static async System.Threading.Tasks.Task<RenderPrefab?> CreateColumnAsync(TowerFactory factory, string owner, string name, RenderPrefab source, float halfWidthDelta)
     {
+        await GenerationWork.Next("support PedestrianDraw02RenderAssembly.CreateColumn");
         var imported = Path.Combine(Application.persistentDataPath, "ImportedData");
         if (source == null || !string.Equals(source.name, "PedestrianDrawBridge02Pillar Mesh", StringComparison.Ordinal))
             throw new InvalidOperationException("PedestrianDraw02 column requires its permitted native source.");
@@ -76,7 +83,11 @@ internal static class PedestrianDraw02RenderAssembly
                 if (meshes.Length != Numeric_Types_PedestrianDraw02_PedestrianDraw02RenderAssembly_cs.Values.I32[21] || meshes[Numeric_Types_PedestrianDraw02_PedestrianDraw02RenderAssembly_cs.Values.I32[22]] == null || meshes[Numeric_Types_PedestrianDraw02_PedestrianDraw02RenderAssembly_cs.Values.I32[23]].subMeshCount != Numeric_Types_PedestrianDraw02_PedestrianDraw02RenderAssembly_cs.Values.I32[24])
                     throw new InvalidOperationException("PedestrianDraw02 column requires one native mesh and surface slot per LOD.");
                 var mesh = meshes[Numeric_Types_PedestrianDraw02_PedestrianDraw02RenderAssembly_cs.Values.I32[25]];
-                var plan = lod == Numeric_Types_PedestrianDraw02_PedestrianDraw02RenderAssembly_cs.Values.I32[26] ? PedestrianDraw02FarColumn.CreatePlan(mesh.vertices, mesh.GetIndices(Numeric_Types_PedestrianDraw02_PedestrianDraw02RenderAssembly_cs.Values.I32[27]), halfWidthDelta) : PedestrianDraw02ColumnWideningData.CreateDetailedPlan(lod, mesh.vertices, mesh.GetIndices(Numeric_Types_PedestrianDraw02_PedestrianDraw02RenderAssembly_cs.Values.I32[28]), halfWidthDelta);
+                var supportInput0 = mesh.vertices;
+                var supportInput1 = mesh.GetIndices(Numeric_Types_PedestrianDraw02_PedestrianDraw02RenderAssembly_cs.Values.I32[27]);
+                var supportInput2 = mesh.vertices;
+                var supportInput3 = mesh.GetIndices(Numeric_Types_PedestrianDraw02_PedestrianDraw02RenderAssembly_cs.Values.I32[28]);
+                var plan = await GenerationWork.Background("support structure plan", () => lod == Numeric_Types_PedestrianDraw02_PedestrianDraw02RenderAssembly_cs.Values.I32[26] ? PedestrianDraw02FarColumn.CreatePlan(supportInput0, supportInput1, halfWidthDelta) : PedestrianDraw02ColumnWideningData.CreateDetailedPlan(lod, supportInput2, supportInput3, halfWidthDelta));
                 var bounds = original.bounds;
                 bounds.min.x -= halfWidthDelta;
                 bounds.max.x += halfWidthDelta;
@@ -88,12 +99,16 @@ internal static class PedestrianDraw02RenderAssembly
             }
         }
 
-        return factory.CreateMovableRenderGraph(name, levels);
+        return await factory.CreateMovableRenderGraphAsync(name, levels);
     }
 
     // The native stacked footing is a separate render graph from the column and mechanism.
-    internal static RenderPrefab? CreateFooting(TowerFactory factory, string owner, string name, RenderPrefab source, float halfWidthDelta)
+    internal static RenderPrefab? CreateFooting(TowerFactory factory, string owner, string name, RenderPrefab source, float halfWidthDelta) =>
+        GenerationWork.Synchronous(() => CreateFootingAsync(factory, owner, name, source, halfWidthDelta));
+
+    internal static async System.Threading.Tasks.Task<RenderPrefab?> CreateFootingAsync(TowerFactory factory, string owner, string name, RenderPrefab source, float halfWidthDelta)
     {
+        await GenerationWork.Next("support PedestrianDraw02RenderAssembly.CreateFooting");
         var imported = Path.Combine(Application.persistentDataPath, "ImportedData");
         if (source == null || !string.Equals(source.name, "PedestrianDrawBridge02PillarBase Mesh", StringComparison.Ordinal))
             throw new InvalidOperationException("PedestrianDraw02 footing requires its permitted native source.");
@@ -118,7 +133,9 @@ internal static class PedestrianDraw02RenderAssembly
                 if (meshes.Length != Numeric_Types_PedestrianDraw02_PedestrianDraw02RenderAssembly_cs.Values.I32[36] || meshes[Numeric_Types_PedestrianDraw02_PedestrianDraw02RenderAssembly_cs.Values.I32[37]] == null || meshes[Numeric_Types_PedestrianDraw02_PedestrianDraw02RenderAssembly_cs.Values.I32[38]].subMeshCount != Numeric_Types_PedestrianDraw02_PedestrianDraw02RenderAssembly_cs.Values.I32[39])
                     throw new InvalidOperationException($"PedestrianDraw02 footing LOD {lod} requires one native mesh and surface slot.");
                 var mesh = meshes[Numeric_Types_PedestrianDraw02_PedestrianDraw02RenderAssembly_cs.Values.I32[40]];
-                var plan = PedestrianDraw02FootingWideningData.CreatePlan(lod, mesh.vertices, halfWidthDelta, new[] { mesh.GetIndices(Numeric_Types_PedestrianDraw02_PedestrianDraw02RenderAssembly_cs.Values.I32[41]) });
+                var supportInput0 = mesh.vertices;
+                var supportInput1 = mesh.GetIndices(Numeric_Types_PedestrianDraw02_PedestrianDraw02RenderAssembly_cs.Values.I32[41]);
+                var plan = await GenerationWork.Background("support structure plan", () => PedestrianDraw02FootingWideningData.CreatePlan(lod, supportInput0, halfWidthDelta, new[] { supportInput1 }));
                 // Preserve native vertical stacking reach and longitudinal bounds.
                 var bounds = original.bounds;
                 var widened = new Bounds3(new float3(bounds.min.x - halfWidthDelta, bounds.min.y, bounds.min.z), new float3(bounds.max.x + halfWidthDelta, bounds.max.y, bounds.max.z));
@@ -130,7 +147,7 @@ internal static class PedestrianDraw02RenderAssembly
             }
         }
 
-        return factory.CreateMovableRenderGraph(name, levels);
+        return await factory.CreateMovableRenderGraphAsync(name, levels);
     }
 }
 

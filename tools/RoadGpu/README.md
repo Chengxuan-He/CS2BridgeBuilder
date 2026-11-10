@@ -1,8 +1,8 @@
 # Generation-only road GPU construction
 
 `RoadClip.compute` performs double-precision seam clipping and rigid bone assignment.
-`RoadEncode.compute` consumes that GPU buffer directly and encodes native object attributes.
-The runtime reads back complete bound geometry and encoded attributes; native publication
+`RoadEncode.compute` first evaluates material coordinate mappings and the measured pose on resident input, then consumes bound geometry directly to encode native object attributes. Quaternion evaluation preserves the native Mono expression order through double intermediates and float stores.
+The normal runtime path keeps bound geometry on the GPU and reads native attribute streams plus group metadata; explicit replay diagnostics and reference verification may additionally read bound triangles. GPU validation, stable material grouping, bounds and UV2/UV4 selection precede publication. Transfer counts and bytes distinguish these paths. Native publication
 and saved Geometry files have no compute-shader dependency. Request-local LOD reuse remains
 outside this operation. CPU fallback is explicit and reconstructs the complete result.
 
@@ -29,3 +29,6 @@ normals/tangents/UVs equal a CPU replay bit for bit. These checks use the record
 CPU captures. Position, provenance, material and bone equality are tested separately from
 small accepted floating attribute/quantization differences. Never label a CPU fallback as
 GPU acceptance. Offline checks do not establish game appearance or cold-load acceptance.
+
+- `RoadGpu155.Run`: same BRR1 arguments; `-frame` tests GPU mapping/frame from original source records, `-shared` supplies controlled adjacent Surface aliases, and `-capture` verifies the optional full-bound diagnostic readback. It compares six native attribute byte streams, indices and bounds with the existing GPU/CPU publication path. Timings exclude asset save and source-material creation; Surface aliases are test identities, not captured asset identities.
+- `RoadGpu155Cases.Run`: adds nonidentity pose and planar mapping, resident output/capture checks and compact UV dimension tests to the seam, empty, gap, invalid data and CPU fallback cases.

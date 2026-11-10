@@ -421,16 +421,19 @@ const masks=new Set();
 let cardWidth=120, nameWidth=300;
 const nameView={getBoundingClientRect:()=>({width:cardWidth}),classList:{
     toggle:(name,on)=>on?masks.add(name):masks.delete(name), remove:name=>masks.delete(name)}};
-const nameRun={parentElement:{getBoundingClientRect:()=>({width:cardWidth-20})},style:{},getBoundingClientRect:()=>({width:nameWidth,height:20})};
+const nameArea={style:{}};
+const nameRun={parentElement:nameArea,style:{},getBoundingClientRect:()=>({width:nameWidth,height:20})};
 const bindName=vm.runInContext("bindCardName",context);
 let stopName=bindName(nameView,nameRun,false);
 cardTick(0);
 assert.deepEqual([...masks],["bb-name-overflow","bb-fade-right"]);
 assert.equal(cardFrames.size,0,"idle overflow has no animation loop");
+assert.equal(parseFloat(nameArea.style.marginLeft),cardWidth*0.08,"idle long name reserves the full left fade band");
+assert.equal(parseFloat(nameArea.style.width),cardWidth*0.84);
 stopName();
 stopName=bindName(nameView,nameRun,true);
 cardTick(0);cardTick(100);
-const travel=nameWidth-(cardWidth-20), leg=1000*travel/23;
+const travel=nameWidth-cardWidth*0.84, leg=1000*travel/23;
 const offset=()=>-parseFloat(nameRun.style.transform.slice(11))||0;
 cardTick(116);
 assert(offset()>0,"starts moving on the first elapsed frame");
@@ -439,6 +442,7 @@ assert(Math.abs(offset()-travel/2)<0.01);
 assert(masks.has("bb-fade-left") && masks.has("bb-fade-right"));
 cardTick(100+leg+2999);
 assert.equal(offset(),travel,"last glyph holds at the inner right baseline");
+assert(Math.abs(parseFloat(nameArea.style.marginLeft)+nameWidth-offset()-cardWidth*0.92)<0.001);
 assert(masks.has("bb-fade-left") && !masks.has("bb-fade-right"));
 cardTick(100+3000+1.5*leg);
 assert(Math.abs(offset()-travel/2)<0.01,"returns toward the left baseline");
@@ -449,9 +453,25 @@ assert(offset()>0,"next traversal begins");
 nameWidth=cardWidth-10;
 cardEvents.get("resize")();cardTick(30000);
 assert(masks.has("bb-name-overflow"),"fits outer viewport but exceeds the normal text area");
-nameWidth=cardWidth-20;
+nameWidth=cardWidth*0.84;
 cardEvents.get("resize")();cardTick(31000);
 assert.equal(masks.size,0);assert.equal(cardFrames.size,0);assert.equal(nameRun.style.transform,"");
 stopName();assert.equal(cardEvents.size,0);
+for(const scale of [0.5,1,1.25,2,3]) {
+    cardWidth=237*scale;
+    for(const extra of [-40,0,0.125,200]) {
+        nameWidth=cardWidth*0.84+extra;
+        stopName=bindName(nameView,nameRun,false);cardTick(0);
+        const left=parseFloat(nameArea.style.marginLeft), width=parseFloat(nameArea.style.width);
+        assert(Math.abs(left-cardWidth*0.08)<1e-9);
+        assert(Math.abs(left+width-cardWidth*0.92)<1e-9);
+        assert.equal(masks.has('bb-name-overflow'),extra>0);
+        assert.equal(nameRun.style.transform,'');
+        assert.equal(cardFrames.size,0);
+        stopName();
+    }
+}
+assert(read('src/BridgeBuilder/UI/BridgeBuilder.css').includes('flex: 0 0 auto; min-width: 0; width: 84%; margin: 0 8%;'),
+    'inner area must not flex-shrink or lose the reserved margins');
 assert(uiSource.includes("const active = hovered || selected"));
 console.log("PASS measured card labels, endpoint holds, two-edge fades, reverse travel, resize and idle cleanup");

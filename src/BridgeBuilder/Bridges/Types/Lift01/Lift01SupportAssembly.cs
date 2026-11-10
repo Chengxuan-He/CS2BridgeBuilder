@@ -9,10 +9,13 @@ internal static class Lift01SupportAssembly
     // The two native pier columns span the centreline at Z +/-80.31 m.
     // They have no lateral placement offset: retain their authored shape rather
     // than treating these columns as the widened road-adjacent base/platform.
-    internal static RenderPrefab? CreateColumn(TowerFactory factory, string name, RenderPrefab source) => Create(factory, name, source, false, Numeric_Types_Lift01_Lift01SupportAssembly_cs.Values.F32[0]);
-    internal static RenderPrefab? CreateFooting(TowerFactory factory, string name, RenderPrefab source, float halfWidthDelta) => Create(factory, name, source, true, halfWidthDelta);
-    private static RenderPrefab? Create(TowerFactory factory, string name, RenderPrefab source, bool footing, float delta)
+    internal static RenderPrefab? CreateColumn(TowerFactory factory, string name, RenderPrefab source) => GenerationWork.Synchronous(() => CreateColumnAsync(factory, name, source));
+    internal static RenderPrefab? CreateFooting(TowerFactory factory, string name, RenderPrefab source, float halfWidthDelta) => GenerationWork.Synchronous(() => CreateFootingAsync(factory, name, source, halfWidthDelta));
+    internal static System.Threading.Tasks.Task<RenderPrefab?> CreateColumnAsync(TowerFactory factory, string name, RenderPrefab source) => CreateAsync(factory, name, source, false, Numeric_Types_Lift01_Lift01SupportAssembly_cs.Values.F32[0]);
+    internal static System.Threading.Tasks.Task<RenderPrefab?> CreateFootingAsync(TowerFactory factory, string name, RenderPrefab source, float halfWidthDelta) => CreateAsync(factory, name, source, true, halfWidthDelta);
+    private static async System.Threading.Tasks.Task<RenderPrefab?> CreateAsync(TowerFactory factory, string name, RenderPrefab source, bool footing, float delta)
     {
+        await GenerationWork.Next("support Lift01SupportAssembly.Create");
         var lods = source.GetComponent<LodProperties>()?.m_LodMeshes;
         if (lods == null || lods.Length != Numeric_Types_Lift01_Lift01SupportAssembly_cs.Values.I32[0])
             throw new InvalidOperationException("Lift01 support requires its three recorded native LODs.");
@@ -69,7 +72,7 @@ internal static class Lift01SupportAssembly
                 if (indices.Length != indexCounts[lod])
                     throw new InvalidOperationException("Lift01 support source index layout changed.");
                 var positions = mesh.vertices;
-                var plan = footing ? lod == Numeric_Types_Lift01_Lift01SupportAssembly_cs.Values.I32[25] ? Lift01FarFooting.Create(positions, indices, delta) : Lift01Footing.CreateDetailed(lod, positions, indices, delta) : new MovableStructureModel.Plan(positions, positions, new[] { indices }, new[] { new bool[indices.Length / Numeric_Types_Lift01_Lift01SupportAssembly_cs.Values.I32[26]] });
+                var plan = await GenerationWork.Background("support structure plan", () => footing ? lod == Numeric_Types_Lift01_Lift01SupportAssembly_cs.Values.I32[25] ? Lift01FarFooting.Create(positions, indices, delta) : Lift01Footing.CreateDetailed(lod, positions, indices, delta) : new MovableStructureModel.Plan(positions, positions, new[] { indices }, new[] { new bool[indices.Length / Numeric_Types_Lift01_Lift01SupportAssembly_cs.Values.I32[26]] }));
                 var bounds = original.bounds;
                 if (footing)
                 {
@@ -85,7 +88,7 @@ internal static class Lift01SupportAssembly
             }
         }
 
-        return factory.CreateMovableRenderGraph(name, levels);
+        return await factory.CreateMovableRenderGraphAsync(name, levels);
     }
 }
 

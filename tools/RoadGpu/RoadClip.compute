@@ -9,6 +9,7 @@ StructuredBuffer<uint2> Roots;
 StructuredBuffer<uint3> Paths;
 StructuredBuffer<Step> Steps;
 ByteAddressBuffer Input;
+ByteAddressBuffer OriginalInput;
 StructuredBuffer<uint> Offsets;
 RWStructuredBuffer<uint> Counts;
 RWByteAddressBuffer Output;
@@ -28,7 +29,15 @@ V Mix(V a,V b,double2 distances) { double da=distances.x;double db=distances.y;
  v.t=float4(Norm(tangent.xyz-v.n*dot(v.n,tangent.xyz)),a.t.w);
  v.uv=a.uv+(b.uv-a.uv)*f;v.c=a.c+(b.c-a.c)*f;return v;
 }
-void Run(uint id,bool emit){if(id>=TriangleCount)return;uint2 root=Roots[id];uint total=0;
+bool ValidInput(uint a)
+{
+ for(uint k=0;k<18;k++)if(!isfinite(asfloat(Input.Load(a+k*4)))||!isfinite(asfloat(OriginalInput.Load(a+k*4))))return false;
+ float3 n=asfloat(Input.Load3(a+12)),on=asfloat(OriginalInput.Load3(a+12));float4 t=asfloat(Input.Load4(a+24)),ot=asfloat(OriginalInput.Load4(a+24));
+ return dot(n,n)>0&&dot(on,on)>0&&dot(t.xyz,t.xyz)>0&&dot(ot.xyz,ot.xyz)>0&&(t.w==1||t.w==-1)&&(ot.w==1||ot.w==-1);
+}
+void Run(uint id,bool emit){if(id>=TriangleCount)return;
+ if(!emit&&(!ValidInput(id*228)||!ValidInput(id*228+72)||!ValidInput(id*228+144))){Errors[id]=5;Counts[id]=0;return;}
+ uint2 root=Roots[id];uint total=0;
  [loop] for(uint leaf=0;leaf<root.y;leaf++){
   uint3 path=Paths[root.x+leaf];V polygon[32];V next[32];double2 distances[32];uint n=3;
   polygon[0]=Load(id*228);polygon[1]=Load(id*228+72);polygon[2]=Load(id*228+144);

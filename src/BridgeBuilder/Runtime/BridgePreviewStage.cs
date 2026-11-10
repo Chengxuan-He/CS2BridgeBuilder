@@ -1,3 +1,4 @@
+using BridgeBuilder.Bridges;
 using System;
 using System.Collections.Generic;
 using UnityEngine;
@@ -25,7 +26,10 @@ internal sealed class BridgePreviewStage : IDisposable
     private bool _disposed;
     internal Vector3 Origin => _root.transform.position;
 
-    internal void Initialize(string prefix, Camera camera, BridgePreviewDrawList draws)
+    internal void Initialize(string prefix, Camera camera, BridgePreviewDrawList draws) =>
+        GenerationWork.Synchronous(async () => { await InitializeAsync(prefix, camera, draws); return true; });
+
+    internal async System.Threading.Tasks.Task InitializeAsync(string prefix, Camera camera, BridgePreviewDrawList draws)
     {
         _scene = SceneManager.CreateScene(prefix + "_preview_scene");
         _root = new GameObject(prefix + "_bridge_segment")
@@ -46,6 +50,7 @@ internal sealed class BridgePreviewStage : IDisposable
         var localBounds = new Dictionary<(Mesh, Matrix4x4), Bounds>();
         foreach (var draw in draws.Draws)
         {
+            await GenerationWork.Checkpoint("preview draw grouping");
             var key = (draw.Mesh, draw.Transform);
             if (!groups.TryGetValue(key, out var materials))
             {
@@ -57,6 +62,7 @@ internal sealed class BridgePreviewStage : IDisposable
         }
         foreach (var group in groups)
         {
+            await GenerationWork.Checkpoint("preview native renderer creation");
             var obj = new GameObject(prefix + "_part_" + _renderers.Count)
             { hideFlags = HideFlags.HideAndDontSave, layer = Layer };
             obj.transform.SetParent(_root.transform, false);

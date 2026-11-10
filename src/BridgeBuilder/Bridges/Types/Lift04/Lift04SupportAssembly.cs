@@ -7,8 +7,12 @@ using UnityEngine;
 namespace BridgeBuilder.Bridges;
 internal static class Lift04SupportAssembly
 {
-    internal static RenderPrefab? Create(TowerFactory factory, string name, RenderPrefab source, bool footing, float halfWidthDelta)
+    internal static RenderPrefab? Create(TowerFactory factory, string name, RenderPrefab source, bool footing, float halfWidthDelta) =>
+        GenerationWork.Synchronous(() => CreateAsync(factory, name, source, footing, halfWidthDelta));
+
+    internal static async System.Threading.Tasks.Task<RenderPrefab?> CreateAsync(TowerFactory factory, string name, RenderPrefab source, bool footing, float halfWidthDelta)
     {
+        await GenerationWork.Next("support Lift04SupportAssembly.Create");
         var lods = source.GetComponent<LodProperties>()?.m_LodMeshes;
         if (lods == null || lods.Length != Numeric_Types_Lift04_Lift04SupportAssembly_cs.Values.I32[0])
             throw new InvalidOperationException("Lift04 supports require their three recorded native LODs.");
@@ -31,7 +35,9 @@ internal static class Lift04SupportAssembly
                 meshes = PrivateGeometryReader.Read(original);
                 if (meshes.Length != Numeric_Types_Lift04_Lift04SupportAssembly_cs.Values.I32[6] || meshes[Numeric_Types_Lift04_Lift04SupportAssembly_cs.Values.I32[7]].subMeshCount != Numeric_Types_Lift04_Lift04SupportAssembly_cs.Values.I32[8])
                     throw new InvalidOperationException("Lift04 supports require their recorded single native surface slot.");
-                var plan = Lift04SupportGeometry.Create(footing, lod, meshes[Numeric_Types_Lift04_Lift04SupportAssembly_cs.Values.I32[9]].vertices, meshes[Numeric_Types_Lift04_Lift04SupportAssembly_cs.Values.I32[10]].GetIndices(Numeric_Types_Lift04_Lift04SupportAssembly_cs.Values.I32[11]), halfWidthDelta);
+                var supportInput0 = meshes[Numeric_Types_Lift04_Lift04SupportAssembly_cs.Values.I32[9]].vertices;
+                var supportInput1 = meshes[Numeric_Types_Lift04_Lift04SupportAssembly_cs.Values.I32[10]].GetIndices(Numeric_Types_Lift04_Lift04SupportAssembly_cs.Values.I32[11]);
+                var plan = await GenerationWork.Background("support structure plan", () => Lift04SupportGeometry.Create(footing, lod, supportInput0, supportInput1, halfWidthDelta));
                 var bounds = original.bounds;
                 bounds.min.x = plan.Positions.Min(p => p.x);
                 bounds.max.x = plan.Positions.Max(p => p.x);
@@ -44,7 +50,7 @@ internal static class Lift04SupportAssembly
             }
         }
 
-        return factory.CreateMovableRenderGraph(name, levels);
+        return await factory.CreateMovableRenderGraphAsync(name, levels);
     }
 }
 

@@ -12,10 +12,14 @@ internal static class Draw01FixedBase
     // sidewalk or traffic layout. Its two outer 3.5 m strips translate rigidly;
     // the two inner 3 m strips retain their common centre seam while widening.
     // Native node pieces close ordinary ends; the mechanism owns fixed-size nodes.
-    internal static void Apply(NetGeometryPrefab target, TowerFactory factory, float halfDelta)
+    internal static void Apply(NetGeometryPrefab target, TowerFactory factory, float halfDelta) =>
+        GenerationWork.Synchronous(async () => { await ApplyAsync(target, factory, halfDelta); return true; });
+
+    internal static async System.Threading.Tasks.Task ApplyAsync(NetGeometryPrefab target, TowerFactory factory, float halfDelta)
     {
-        var middle = Section("Middle", Piece(Numeric_Types_Draw01_Draw01FixedBase_cs.Values.I32[0]), Piece(Numeric_Types_Draw01_Draw01FixedBase_cs.Values.I32[1]));
-        var edge = Section("Edge", Piece(Numeric_Types_Draw01_Draw01FixedBase_cs.Values.I32[2]), Piece(Numeric_Types_Draw01_Draw01FixedBase_cs.Values.I32[3]));
+        await GenerationWork.Next("support Draw01FixedBase.Apply");
+        var middle = Section("Middle", await Piece(Numeric_Types_Draw01_Draw01FixedBase_cs.Values.I32[0]), await Piece(Numeric_Types_Draw01_Draw01FixedBase_cs.Values.I32[1]));
+        var edge = Section("Edge", await Piece(Numeric_Types_Draw01_Draw01FixedBase_cs.Values.I32[2]), await Piece(Numeric_Types_Draw01_Draw01FixedBase_cs.Values.I32[3]));
         var intersection = ScriptableObject.CreateInstance<NetSectionPrefab>();
         intersection.name = target.name + " Fixed Base Intersection";
         factory.AdoptMovableSections(new PrefabBase[] { intersection });
@@ -24,7 +28,7 @@ internal static class Draw01FixedBase
         {
             new NetPieceInfo
             {
-                m_Piece = Piece(Numeric_Types_Draw01_Draw01FixedBase_cs.Values.I32[4]),
+                m_Piece = await Piece(Numeric_Types_Draw01_Draw01FixedBase_cs.Values.I32[4]),
                 m_RequireAll = new[]
                 {
                     NetPieceRequirements.Elevated,
@@ -49,7 +53,7 @@ internal static class Draw01FixedBase
         // overlay. Appending would pack both structures along one overhead cursor.
         overhead.m_Sections = entries.ToArray();
         overhead.active = true;
-        NetPiecePrefab Piece(int family)
+        async System.Threading.Tasks.Task<NetPiecePrefab> Piece(int family)
         {
             var source = factory.ResolveOriginal<NetPiecePrefab>(Draw01FixedBaseData.Names[family]);
             var sources = new[]
@@ -65,7 +69,9 @@ internal static class Draw01FixedBase
                     meshes = PrivateGeometryReader.Read(sources[lod]);
                     if (meshes.Length != Numeric_Types_Draw01_Draw01FixedBase_cs.Values.I32[8] || meshes[Numeric_Types_Draw01_Draw01FixedBase_cs.Values.I32[9]].subMeshCount != Numeric_Types_Draw01_Draw01FixedBase_cs.Values.I32[10])
                         throw new InvalidOperationException("Draw01 fixed base requires its measured single-mesh layout.");
-                    var plan = Draw01FixedBaseData.Plan(family, lod, meshes[Numeric_Types_Draw01_Draw01FixedBase_cs.Values.I32[11]].vertices, meshes[Numeric_Types_Draw01_Draw01FixedBase_cs.Values.I32[12]].GetIndices(Numeric_Types_Draw01_Draw01FixedBase_cs.Values.I32[13]), halfDelta);
+                    var supportInput0 = meshes[Numeric_Types_Draw01_Draw01FixedBase_cs.Values.I32[11]].vertices;
+                    var supportInput1 = meshes[Numeric_Types_Draw01_Draw01FixedBase_cs.Values.I32[12]].GetIndices(Numeric_Types_Draw01_Draw01FixedBase_cs.Values.I32[13]);
+                    var plan = await GenerationWork.Background("support structure plan", () => Draw01FixedBaseData.Plan(family, lod, supportInput0, supportInput1, halfDelta));
                     var bounds = sources[lod].bounds;
                     bounds.min.x = plan.Positions.Min(p => p.x);
                     bounds.max.x = plan.Positions.Max(p => p.x);
@@ -79,7 +85,7 @@ internal static class Draw01FixedBase
 
             if (sources.Length != (family == Numeric_Types_Draw01_Draw01FixedBase_cs.Values.I32[14] ? Numeric_Types_Draw01_Draw01FixedBase_cs.Values.I32[15] : Numeric_Types_Draw01_Draw01FixedBase_cs.Values.I32[16]))
                 throw new InvalidOperationException("Draw01 fixed base is missing a measured LOD.");
-            var result = factory.CreateMovableRenderGraph(target.name + " Fixed Base " + family, levels) as NetPiecePrefab ?? throw new InvalidOperationException("Draw01 fixed base network-piece creation failed.");
+            var result = await factory.CreateMovableRenderGraphAsync(target.name + " Fixed Base " + family, levels) as NetPiecePrefab ?? throw new InvalidOperationException("Draw01 fixed base network-piece creation failed.");
             if (family < Numeric_Types_Draw01_Draw01FixedBase_cs.Values.I32[17])
                 result.m_Width = source.m_Width + halfDelta;
             return result;

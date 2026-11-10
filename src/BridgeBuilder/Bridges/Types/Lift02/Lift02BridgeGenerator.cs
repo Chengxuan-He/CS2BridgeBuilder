@@ -27,21 +27,22 @@ internal sealed class Lift02BridgeGenerator : MovableBridgeGeneratorBase<Movable
     }
 
     protected override MovableStraightSample SampleRoad(string owner, Entity selectedRoad, RenderPrefab[] roots, ContentPrefab content, float halfDelta, RandomSeed seed) => Lift02RoadSampling.Create(owner, selectedRoad, roots, content, halfDelta, seed, NetPieceLayerMask.Bottom | NetPieceLayerMask.Side);
-    protected override RenderPrefab? BuildMechanism(TowerFactory factory, string owner, MovableStraightSample road, RenderPrefab[] nativeLevels, float halfDelta, MovableRoadMaterial material)
+    protected override System.Threading.Tasks.Task<MovableStraightSample> SampleRoadAsync(string owner, Entity selectedRoad, RenderPrefab[] roots, ContentPrefab content, float halfDelta, RandomSeed seed) => Lift02RoadSampling.CreateAsync(owner, selectedRoad, roots, content, halfDelta, seed, NetPieceLayerMask.Bottom | NetPieceLayerMask.Side);
+    protected override async System.Threading.Tasks.Task<RenderPrefab?> BuildMechanismAsync(TowerFactory factory, string owner, MovableStraightSample road, RenderPrefab[] nativeLevels, float halfDelta, MovableRoadMaterial material)
     {
-        var levels = Lift02RoadPreparation.PrepareRenderLevels(road, nativeLevels, halfDelta, Matrix4x4.Translate(new Vector3(Numeric_Types_Lift02_Lift02BridgeGenerator_cs.Values.F32[0], Numeric_Types_Lift02_Lift02BridgeGenerator_cs.Values.F32[1], Numeric_Types_Lift02_Lift02BridgeGenerator_cs.Values.F32[2])), material);
+        var levels = await Lift02RoadPreparation.PrepareRenderLevelsAsync(road, nativeLevels, halfDelta, Matrix4x4.Translate(new Vector3(Numeric_Types_Lift02_Lift02BridgeGenerator_cs.Values.F32[0], Numeric_Types_Lift02_Lift02BridgeGenerator_cs.Values.F32[1], Numeric_Types_Lift02_Lift02BridgeGenerator_cs.Values.F32[2])), material);
         if (levels == null) return null;
-        return Lift02RenderAssembly.CreateMechanism(factory, owner + " Mechanism", levels, halfDelta);
+        return await Lift02RenderAssembly.CreateMechanismAsync(factory, owner + " Mechanism", levels, halfDelta);
     }
 
-    protected override void AssembleBridge(NetGeometryPrefab target, TowerFactory factory, RenderPrefab[] roots, ContentPrefab content, float halfDelta, MovableStraightSample road, RenderPrefab moving)
+    protected override async System.Threading.Tasks.Task AssembleBridgeAsync(NetGeometryPrefab target, TowerFactory factory, RenderPrefab[] roots, ContentPrefab content, float halfDelta, MovableStraightSample road, RenderPrefab moving)
     {
-        var column = Lift02ColumnAssembly.Create(factory, target.name + " Column", roots[Numeric_Types_Lift02_Lift02BridgeGenerator_cs.Values.I32[0]], halfDelta) ?? throw new InvalidOperationException("Lift02 support render graph creation failed.");
-        var footing = Lift02FootingAssembly.Create(factory, target.name + " Footing", roots[Numeric_Types_Lift02_Lift02BridgeGenerator_cs.Values.I32[1]], halfDelta) ?? throw new InvalidOperationException("Lift02 footing render graph creation failed.");
-        var mechanism = Lift02ObjectAssembly.Create(factory, target.name + " Moving Object", moving, column, footing, content, halfDelta, road);
+        var column = await Lift02ColumnAssembly.CreateAsync(factory, target.name + " Column", roots[Numeric_Types_Lift02_Lift02BridgeGenerator_cs.Values.I32[0]], halfDelta) ?? throw new InvalidOperationException("Lift02 support render graph creation failed.");
+        var footing = await Lift02FootingAssembly.CreateAsync(factory, target.name + " Footing", roots[Numeric_Types_Lift02_Lift02BridgeGenerator_cs.Values.I32[1]], halfDelta) ?? throw new InvalidOperationException("Lift02 footing render graph creation failed.");
+        var mechanism = await Lift02ObjectAssembly.CreateAsync(factory, target.name + " Moving Object", moving, column, footing, content, halfDelta, road);
         if(mechanism==null)return;
         using var pillarSources = new Lift02PillarSources(factory.ResolveOriginal<RenderPrefab>("Default_Base Mesh"), content);
-        var pillar = Lift02NetPillarAssembly.Create(factory, target.name + " Pillar", pillarSources, content, halfDelta) ?? throw new InvalidOperationException("Lift02 ordinary pillar creation failed.");
+        var pillar = await Lift02NetPillarAssembly.CreateAsync(factory, target.name + " Pillar", pillarSources, content, halfDelta) ?? throw new InvalidOperationException("Lift02 ordinary pillar creation failed.");
         Lift02NetworkAssembly.Apply(target, factory, Lift02SectionRoles.Resolve(target.m_Sections), pillar, mechanism);
     }
 }

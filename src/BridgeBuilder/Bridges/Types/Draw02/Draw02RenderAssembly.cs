@@ -6,6 +6,9 @@ namespace BridgeBuilder.Bridges;
 internal static class Draw02RenderAssembly
 {
     internal static RenderPrefab? CreateMechanism(TowerFactory factory, string name, IReadOnlyList<MovableRoadAssets.Level> roadLevels, float halfWidthDelta, MovableSelectedRoadLayout layout)
+        => GenerationWork.Synchronous(()=>CreateMechanismAsync(factory,name,roadLevels,halfWidthDelta,layout));
+
+    internal static async System.Threading.Tasks.Task<RenderPrefab?> CreateMechanismAsync(TowerFactory factory, string name, IReadOnlyList<MovableRoadAssets.Level> roadLevels, float halfWidthDelta, MovableSelectedRoadLayout layout)
     {
         if (roadLevels.Count != Numeric_Types_Draw02_Draw02RenderAssembly_cs.Values.I32[0])
             throw new ArgumentException("Draw02 mechanism requires all three native road LODs.");
@@ -24,7 +27,7 @@ internal static class Draw02RenderAssembly
                 throw new InvalidOperationException($"Draw02 LOD {lod} requires its reconstructed native source.");
         }
 
-        return MovableRenderAssembly.CreateMechanism(factory, name, Draw02LaneRailAssembly.Apply(roadLevels, layout), new[] { Numeric_Types_Draw02_Draw02RenderAssembly_cs.Values.I32[2], Numeric_Types_Draw02_Draw02RenderAssembly_cs.Values.I32[3], Numeric_Types_Draw02_Draw02RenderAssembly_cs.Values.I32[4] }, (lod, mesh, source, indices) => mesh == Numeric_Types_Draw02_Draw02RenderAssembly_cs.Values.I32[5] ? Draw02FixedSidewalks.Apply(lod, Draw02FixedCurbs.Remove(lod, Draw02WalkEndClosure.Apply(lod, Draw02EndClosure.Apply(lod, Draw02Underside.Apply(lod, Draw02MovingShell.Create(lod, source, source, indices, halfWidthDelta), layout), layout), layout)), layout) : Draw02RigidParts.Glass(lod, source, indices, halfWidthDelta));
+        return await MovableRenderAssembly.CreateMechanismAsync(factory, name, Draw02LaneRailAssembly.Apply(roadLevels, layout), new[] { Numeric_Types_Draw02_Draw02RenderAssembly_cs.Values.I32[2], Numeric_Types_Draw02_Draw02RenderAssembly_cs.Values.I32[3], Numeric_Types_Draw02_Draw02RenderAssembly_cs.Values.I32[4] }, (lod, mesh, source, indices) => mesh == Numeric_Types_Draw02_Draw02RenderAssembly_cs.Values.I32[5] ? Draw02FixedSidewalks.Apply(lod, Draw02FixedCurbs.Remove(lod, Draw02WalkEndClosure.Apply(lod, Draw02EndClosure.Apply(lod, Draw02Underside.Apply(lod, Draw02MovingShell.Create(lod, source, source, indices, halfWidthDelta), layout), layout), layout)), layout) : Draw02RigidParts.Glass(lod, source, indices, halfWidthDelta));
     }
 }
 

@@ -8,8 +8,12 @@ internal static class Draw02SupportAssembly
 {
     // Sources are privately reconstructed from the recorded Draw02 descriptors, not
     // borrowed prototype Prefabs. The factory owns the resulting persistent renders.
-    internal static RenderPrefab? Create(TowerFactory factory, string name, RenderPrefab root, bool column, float halfWidthDelta)
+    internal static RenderPrefab? Create(TowerFactory factory, string name, RenderPrefab root, bool column, float halfWidthDelta) =>
+        GenerationWork.Synchronous(() => CreateAsync(factory, name, root, column, halfWidthDelta));
+
+    internal static async System.Threading.Tasks.Task<RenderPrefab?> CreateAsync(TowerFactory factory, string name, RenderPrefab root, bool column, float halfWidthDelta)
     {
+        await GenerationWork.Next("support Draw02SupportAssembly.Create");
         var children = root.GetComponent<LodProperties>().m_LodMeshes;
         var originals = new[]
         {
@@ -28,7 +32,9 @@ internal static class Draw02SupportAssembly
                 if (meshes.Length != Numeric_Types_Draw02_Draw02SupportAssembly_cs.Values.I32[3] || meshes[Numeric_Types_Draw02_Draw02SupportAssembly_cs.Values.I32[4]].subMeshCount != Numeric_Types_Draw02_Draw02SupportAssembly_cs.Values.I32[5])
                     throw new InvalidOperationException("Draw02 support requires its recorded single native surface slot.");
                 var mesh = meshes[Numeric_Types_Draw02_Draw02SupportAssembly_cs.Values.I32[6]];
-                var plan = Draw02SupportWideningData.CreatePlan(column, lod, mesh.vertices, mesh.GetIndices(Numeric_Types_Draw02_Draw02SupportAssembly_cs.Values.I32[7]), halfWidthDelta);
+                var supportInput0 = mesh.vertices;
+                var supportInput1 = mesh.GetIndices(Numeric_Types_Draw02_Draw02SupportAssembly_cs.Values.I32[7]);
+                var plan = await GenerationWork.Background("support structure plan", () => Draw02SupportWideningData.CreatePlan(column, lod, supportInput0, supportInput1, halfWidthDelta));
                 var bounds = original.bounds;
                 bounds.min.x -= halfWidthDelta;
                 bounds.max.x += halfWidthDelta;
@@ -42,7 +48,7 @@ internal static class Draw02SupportAssembly
             }
         }
 
-        return factory.CreateMovableRenderGraph(name, levels);
+        return await factory.CreateMovableRenderGraphAsync(name, levels);
     }
 }
 

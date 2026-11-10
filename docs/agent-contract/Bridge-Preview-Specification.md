@@ -155,6 +155,92 @@ resources. No preview-only fallback may change appearance or texel density.
   Record measured timings when investigating stalls. This specification introduces no invented
   latency threshold and does not equate faster generation with visual correctness.
 
+### Cooperative generation and cancellation
+
+Preview generation must release the game main thread between bounded work units, not merely show a spinner before running the entire synchronous builder. Use the same geometric and material operations as formal creation, with an explicit request-owned asynchronous execution context. Yield between native preparation, per-LOD assembly, per-model publication and scene construction units. GPU dispatch stays on the main thread; poll asynchronous readback completion across updates instead of blocking that thread with full-pipeline readback waits. All CPU work that can be detached from Unity/ECS/native APIs must run on background workers using immutable owned inputs. Mixed helpers must separate native snapshots/publication from pure computation; never borrow mutable native request state on a worker.
+
+Every resumed step verifies request cancellation and world lifetime before accessing native state. A changed selection, closed preview or world change invalidates the old result immediately. Do not publish it, begin another request on its temporary state, or dispose resources while its GPU request still uses them. Complete required native cleanup, release its private graph and generation-parameter scope, then start the latest selection. Cancellation is not a generation error and must not display a failure for a superseded selection.
+
+Keep formal creation behavior and independently persisted output unchanged. A synchronous compatibility entry may use the same operations without frame yields; it must never synchronously wait for a continuation scheduled to the thread it blocks. Never run Unity/ECS generation wholesale through `Task.Run`, use nested player-loop pumping, or fake responsiveness with an unrelated animation.
+
+Record request identity, resumed-step count, total elapsed time, active main-thread time and maximum single main-thread work interval. Distinguish GPU queue waiting across frames from active work and separately identify indivisible native API calls that exceed the target frame budget. Total generation time alone does not demonstrate responsiveness. Offline tests must exercise cancellation before and during pending work, stale completion, cleanup and progression over multiple updates; human in-game input/render responsiveness remains a separate acceptance check.
+
+The request pump uses a private synchronization context and execution-context-local parameter, selected-road and prepared-file scopes. Restoring the outer context after each step is mandatory: another game system must not inherit the suspended request. Keep a retained prepared-file lease until request completion; the IO callback's shorter lifetime is insufficient. Pending GPU callbacks own only their buffer/shader lease and do not require the disposed ECS generation system to resume. Cancellation must unwind queued state machines without waiting for GPU completion; a callback releases the remaining native GPU lease on the main thread.
+
+Budget checkpoints currently target approximately 6 ms between checks, not a hard frame deadline. Native job execution, resource imports, one mesh upload/bounds operation remain indivisible main-thread operations; support-object assembly must expose its separable stages. Record their containing step; do not describe those calls as preemptible. Existing stage wall clocks include frame waits after this change. Use `activeMainThreadMs` and `maxMainThreadStepMs` to diagnose blocking rather than comparing an asynchronous stage's elapsed wall time with an older synchronous stage.
+
+### Ready-work budget and detached background computation
+
+Preview uses the same [complete three-LOD road/lane reuse contract](BRIDGE_GENERATION_CONTRACT.md#reuse-identical-selected-road-computation-across-lods)
+as formal generation, independently within each request rather than sharing mutable results
+between preview and creation. This includes applicable railway/lane/cable geometry and retained
+decal source/material plans, without changing their rendering protocols. Source identity resolution, extraction/unpacking, curve deformation,
+appearance/mapping, clipping/binding, grouping/encoding, bounds and final road results are
+shared within the request whenever their consumed inputs are identical. Reuse already-compiled
+sampling output instead of recompiling LOD1/LOD2 and relying on a later cache. Genuine road
+LOD, appearance or motion-domain differences remain distinct; structural LODs remain unchanged.
+
+Keep the main-thread portion minimal: required Unity/ECS/native reads and writes, immutable
+snapshots, native publication and GPU API submission. Move every separable pure CPU stage to
+bounded workers, including managed decoding, curve/coordinate arithmetic, appearance-domain
+calculations, clipping preparation, grouping, encoding preparation, bounds reductions and scene
+transform preparation where those operations do not require native APIs. A stage name alone
+is not proof of thread safety. Snapshot exact data and scalar semantics first; do not read live
+Mesh/Prefab/Surface objects, ECS or native asset registries from a worker. Preserve arithmetic,
+ordering and output ownership. Avoid redundant whole-array copies when an existing immutable
+snapshot already supplies the required lifetime.
+
+Bound concurrency and suppress nested fan-out so generation does not starve rendering or input.
+The current implementation permits one detached job at a time with whole-mesh work capped at
+two concurrent jobs; this is an implementation limit, not permission to leave other eligible
+calculations on the main thread. Independent pure-data stages may overlap within a measured
+bounded schedule. Dependent pure-data stages must continue on workers when their inputs become
+ready, without an unnecessary main-thread/frame round trip merely to schedule the next worker.
+
+A preview update drains ready main-thread continuations within one aggregate frame budget,
+rather than delaying each logical stage by a whole frame. Completed worker results are eligible
+at the next available main-thread dispatch point without an additional mandatory frame hold.
+Unfinished GPU requests or workers must not busy-poll in that budget. Use asynchronous completion
+or bounded later-update observation, never synchronous waits or joins on the game thread. GPU
+completion/publication still obeys native thread affinity and actual engine-frame ordering.
+Record maximum individual step time and maximum complete pump time; neither budget is preemption
+of an indivisible native API call.
+
+Acquire parameter/data leases before scheduling workers. Suppress unrelated execution-context
+propagation and attach only explicit request data; never expose the preview pump or native
+contexts to worker code. Cancellation invalidates publication immediately and does not wait for
+a running worker. Retain its arrays and leases until it finishes, observe faults and discard stale
+results. Native cleanup stays on a reachable main-thread path even after the original system is
+destroyed; a pure-data completion must not call into destroyed Unity/ECS state. One cancelled
+request must not clear another request's resources. Formal generation uses the same reusable
+stage results and semantics; a synchronous compatibility entry cannot block a continuation
+scheduled to its own thread.
+
+Support/network assembly and scene construction must separate source snapshots, pure numerical
+plans, bounds/transforms, native graph publication, attachments and composition. Do not classify
+an entire mixed helper as an indivisible native operation. Keep remaining native calls measured
+and make their surrounding loops cooperatively schedulable.
+
+Use the [generation timing boundaries](BRIDGE_GENERATION_CONTRACT.md#preview-background-execution-and-timing-boundaries):
+report wall time, active main-thread/worker work, queue wait, continuation/frame wait and GPU
+completion wait from their own observations. Label unmeasured or overlapping intervals. Do not
+present elapsed-minus-active time as separately measured scheduling or GPU latency. Test worker
+thread identity, bounded concurrency, same-frame ready progress, no polling spin, cancellation
+with pending work, lifetime after system destruction and stale-result suppression, alongside
+real-input output equivalence and manual game responsiveness.
+
+**Implementation status:** request-local source and appearance stage reuse now begins with the
+sampling result. Detached lane deformation/expansion, composition evaluation, receiver roles,
+coverage, appearance grouping/binding, chart projection, final UV output and bounds use worker
+jobs in preview. CPU completion posts ready work without mandatory next-frame polling; GPU
+completion retains asynchronous polling. Native mesh extraction, Surface snapshots, ECS work and native publication remain on the main
+thread. Packed vertex streams are copied once per native stream; channel gather and stateless
+`NativeMath` array decoding use pinned owned buffers on the worker, without Mesh/ECS access.
+The shared request cache does not connect a preview request to a later formal creation.
+Offline scheduler and geometry checks do not establish maximum game-frame time. Full live
+request stage counts and responsiveness must be checked from game diagnostics; unmeasured
+native preparation/publication remains explicit, rather than claimed as background work.
+
 ### Posed camera bounds
 
 For procedural moving geometry, camera framing must use indexed vertices transformed by their own native bone indices. Applying every bone to the entire mesh bounds creates nonexistent space and is forbidden. Aggregate framing bounds in the fixed camera basis, including both approaches and mounted objects. The existing bulk skin-transform and bound-reduction path uses the GPU; execution changes must follow measured cost and native API affinity.

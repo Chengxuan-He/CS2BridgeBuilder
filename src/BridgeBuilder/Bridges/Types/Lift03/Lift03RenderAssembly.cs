@@ -8,6 +8,9 @@ namespace BridgeBuilder.Bridges;
 internal static class Lift03RenderAssembly
 {
     internal static RenderPrefab? CreateMechanism(TowerFactory factory, string name, IReadOnlyList<MovableRoadAssets.Level> mainRoadLevels, IReadOnlyList<MovableRoadAssets.Level> auxiliaryRoadLevels, float structureDelta, float upperDelta, float lowerDelta)
+        => GenerationWork.Synchronous(()=>CreateMechanismAsync(factory,name,mainRoadLevels,auxiliaryRoadLevels,structureDelta,upperDelta,lowerDelta));
+
+    internal static async System.Threading.Tasks.Task<RenderPrefab?> CreateMechanismAsync(TowerFactory factory, string name, IReadOnlyList<MovableRoadAssets.Level> mainRoadLevels, IReadOnlyList<MovableRoadAssets.Level> auxiliaryRoadLevels, float structureDelta, float upperDelta, float lowerDelta)
     {
         IReadOnlyList<MovableRoadAssets.Level> roadLevels = Lift03RoadLevels.Combine(mainRoadLevels, auxiliaryRoadLevels);
         if (roadLevels.Count != Numeric_Types_Lift03_Lift03RenderAssembly_cs.Values.I32[0])
@@ -49,7 +52,7 @@ internal static class Lift03RenderAssembly
             PrivateGeometryReader.Release(meshes);
         }
 
-        return MovableRenderAssembly.CreateMechanism(factory, name, levels, new[] { Numeric_Types_Lift03_Lift03RenderAssembly_cs.Values.I32[16], Numeric_Types_Lift03_Lift03RenderAssembly_cs.Values.I32[17], Numeric_Types_Lift03_Lift03RenderAssembly_cs.Values.I32[18] }, (lod, mesh, source, indices) => mesh == Numeric_Types_Lift03_Lift03RenderAssembly_cs.Values.I32[19] ? Lift03Glass.Create(lod, source, indices, structureDelta) : lod == Numeric_Types_Lift03_Lift03RenderAssembly_cs.Values.I32[20] ? Lift03FarStructure.Create(source, indices, structureDelta) : Lift03DetailedStructure.Create(lod, source, indices, structureDelta, upperDelta, lowerDelta));
+        return await MovableRenderAssembly.CreateMechanismAsync(factory, name, levels, new[] { Numeric_Types_Lift03_Lift03RenderAssembly_cs.Values.I32[16], Numeric_Types_Lift03_Lift03RenderAssembly_cs.Values.I32[17], Numeric_Types_Lift03_Lift03RenderAssembly_cs.Values.I32[18] }, (lod, mesh, source, indices) => mesh == Numeric_Types_Lift03_Lift03RenderAssembly_cs.Values.I32[19] ? Lift03Glass.Create(lod, source, indices, structureDelta) : lod == Numeric_Types_Lift03_Lift03RenderAssembly_cs.Values.I32[20] ? Lift03FarStructure.Create(source, indices, structureDelta) : Lift03DetailedStructure.Create(lod, source, indices, structureDelta, upperDelta, lowerDelta));
     }
 }
 

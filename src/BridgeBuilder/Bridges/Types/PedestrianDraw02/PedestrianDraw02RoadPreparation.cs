@@ -4,7 +4,10 @@ using UnityEngine;
 namespace BridgeBuilder.Bridges;
 internal static class PedestrianDraw02RoadPreparation
 {
-    internal static MovableRoadAssets.Level[]? Prepare(MovableStraightSample sample, RenderPrefab[] nativeLevels, float halfWidthDelta, Matrix4x4 closedWorld, MovableRoadMaterial material)
+    internal static MovableRoadAssets.Level[]? Prepare(MovableStraightSample sample, RenderPrefab[] nativeLevels, float halfWidthDelta, Matrix4x4 closedWorld, MovableRoadMaterial material) =>
+        GenerationWork.Synchronous(() => PrepareAsync(sample, nativeLevels, halfWidthDelta, closedWorld, material));
+
+    internal static async System.Threading.Tasks.Task<MovableRoadAssets.Level[]?> PrepareAsync(MovableStraightSample sample, RenderPrefab[] nativeLevels, float halfWidthDelta, Matrix4x4 closedWorld, MovableRoadMaterial material)
     {
         var physical = PedestrianDraw02LocalAppearance.Physical(halfWidthDelta);
         var layout = new MovableSelectedRoadLayout(sample.Road, sample.RoadToObject, "PedestrianDraw02");
@@ -17,7 +20,7 @@ internal static class PedestrianDraw02RoadPreparation
         // not authorize substituting asphalt, sidewalks or wheel-track layers.
         // Resolve the Surface from this LOD even though these two original LODs
         // currently share its CID; never inherit a different LOD's descriptor.
-        return MovableRoadPreparation.Prepare(sample, nativeLevels, halfWidthDelta, closedWorld,
+        return await MovableRoadPreparation.PrepareAsync(sample, nativeLevels, halfWidthDelta, closedWorld,
             material, physical, physical, first.Carriageway!, first.Sidewalk!, first.Patches,
             Numeric_Types_PedestrianDraw02_PedestrianDraw02RoadPreparation_cs.Values.I32[0], layout,
             appearanceForLod: lod => levels[lod], combinePartitions: true);

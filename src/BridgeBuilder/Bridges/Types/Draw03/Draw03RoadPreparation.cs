@@ -4,7 +4,10 @@ using UnityEngine;
 namespace BridgeBuilder.Bridges;
 internal static class Draw03RoadPreparation
 {
-    internal static MovableRoadAssets.Level[]? PrepareRenderLevels(MovableStraightSample sample, RenderPrefab[] nativeLevels, float halfWidthDelta, Matrix4x4 closedWorld, MovableRoadMaterial material, MovableSelectedRoadLayout layout)
+    internal static MovableRoadAssets.Level[]? PrepareRenderLevels(MovableStraightSample sample, RenderPrefab[] nativeLevels, float halfWidthDelta, Matrix4x4 closedWorld, MovableRoadMaterial material, MovableSelectedRoadLayout layout) =>
+        GenerationWork.Synchronous(() => PrepareRenderLevelsAsync(sample, nativeLevels, halfWidthDelta, closedWorld, material, layout));
+
+    internal static async System.Threading.Tasks.Task<MovableRoadAssets.Level[]?> PrepareRenderLevelsAsync(MovableStraightSample sample, RenderPrefab[] nativeLevels, float halfWidthDelta, Matrix4x4 closedWorld, MovableRoadMaterial material, MovableSelectedRoadLayout layout)
     {
         // Appearance domains must cover actual selected geometry at every LOD,
         // including a far-LOD vertex outside the LOD0 layout's lateral span.
@@ -21,7 +24,7 @@ internal static class Draw03RoadPreparation
         }
         for (int lod = 0; lod < roads.Length; lod++)
         {
-            roads[lod] = sample.CompileLod(lod);
+            roads[lod] = await sample.CompileLodAsync(lod);
             if(roads[lod].Error!=null){material.Fail("native-source",roads[lod].Error);return null;}
             foreach (var triangle in roads[lod].Triangles)
             { Include(triangle.A.Position); Include(triangle.B.Position); Include(triangle.C.Position); }
@@ -32,7 +35,7 @@ internal static class Draw03RoadPreparation
                 ? Draw03PreparedRoad.Near(nativeLevels[lod].GetSurfaceAsset(0), layout, sample.RoadToObject, span)
                 : Draw03PreparedRoad.Far(nativeLevels[lod].GetSurfaceAsset(0), layout, sample.RoadToObject, span);
         var near = appearances[0];
-        return MovableRoadPreparation.Prepare(sample.Road, sample.RoadToObject, lod => roads[lod],
+        return await MovableRoadPreparation.PrepareAsync(sample.Road, sample.RoadToObject, lod => System.Threading.Tasks.Task.FromResult(roads[lod]),
             nativeLevels, halfWidthDelta, closedWorld, material,
             Draw03RoadPartitions.Carriageway, Draw03RoadPartitions.Sidewalk, near.Carriageway!, near.Sidewalk!,
             near.Patches, Numeric_Types_Draw03_Draw03RoadPreparation_cs.Values.I32[0], layout, lod => appearances[lod]);

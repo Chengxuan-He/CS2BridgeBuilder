@@ -10,8 +10,19 @@ namespace BridgeBuilder.Bridges;
 /// </summary>
 internal static class MovableLaneDeformation
 {
+    internal readonly struct Input
+    {
+        internal readonly bool Decal,GeometryTiling,Dilated;
+        internal readonly Matrix4x4 Transform,CurveMatrix;
+        internal readonly Vector4 Parameters,Dilation;
+        internal Input(MovableLaneVisuals.Batch batch)
+        {Decal=batch.Decal;GeometryTiling=batch.GeometryTiling;Dilated=batch.Dilated;Transform=batch.Transform;CurveMatrix=batch.CurveMatrix;Parameters=batch.Parameters;Dilation=batch.Dilation;}
+    }
     internal static MovableRoadGeometry.Vertex Evaluate(MovableLaneVisuals.Batch batch,
-        MovableRoadGeometry.Vertex vertex, Func<Vector3, float>? projectedHeight)
+        MovableRoadGeometry.Vertex vertex, Func<Vector3, float>? projectedHeight) => EvaluateInput(new Input(batch),vertex,projectedHeight);
+
+    internal static MovableRoadGeometry.Vertex EvaluateInput(Input batch,
+        MovableRoadGeometry.Vertex vertex, Func<Vector3,float>? projectedHeight)
     {
         if (batch.Decal) throw new InvalidOperationException("A decal volume requires surface projection, not mesh export.");
         // Native LaneSystem already puts static cable sag into Curve.m_Bezier.

@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using Game.Prefabs;
 using Game.Rendering;
 using Unity.Collections;
@@ -26,42 +27,85 @@ internal static class MovableStraightRoadEvaluation
         => TryEvaluate(mesh, 0f, 0f, occurrence, new MovableCompositionDeformation(parameters, origin),
             out triangles, out error);
 
-    private static bool TryEvaluate(Mesh mesh, float width, float length, int occurrence,
-        MovableCompositionDeformation? deformation, out MovableRoadGeometry.Triangle[] triangles, out string? error)
+    internal sealed class Evaluation
     {
-        triangles = Array.Empty<MovableRoadGeometry.Triangle>(); error = null;
+        internal readonly MovableRoadGeometry.Triangle[] Triangles;
+        internal readonly string? Error;
+        internal Evaluation(string error){Error=error;Triangles=Array.Empty<MovableRoadGeometry.Triangle>();}
+        internal Evaluation(MovableRoadGeometry.Triangle[] triangles){Triangles=triangles;}
+    }
+    internal static Task<Evaluation> EvaluateAsync(Mesh mesh, BatchDataHelpers.CompositionParameters parameters,
+        float3 origin,int occurrence)=>EvaluateAsync(mesh,0f,0f,occurrence,new MovableCompositionDeformation(parameters,origin));
+
+    private static bool TryEvaluate(Mesh mesh,float width,float length,int occurrence,
+        MovableCompositionDeformation? deformation,out MovableRoadGeometry.Triangle[] triangles,out string? error)
+    {
+        var evaluated=GenerationWork.Synchronous(()=>EvaluateAsync(mesh,width,length,occurrence,deformation));
+        triangles=evaluated.Triangles;error=evaluated.Error;return error==null;
+    }
+    private static async Task<Evaluation> EvaluateAsync(Mesh mesh,float width,float length,int occurrence,
+        MovableCompositionDeformation? deformation)
+    {
+        string? error;
         if (mesh == null || mesh.vertexCount == 0 || occurrence < 0 ||
             (deformation == null && (!Finite(width) || !Finite(length))))
-        { error = "Straight road evaluation requires a native mesh, finite span and source occurrence."; return false; }
+        { error = "Straight road evaluation requires a native mesh, finite span and source occurrence."; return new Evaluation(error); }
         if (!Layout(mesh, VertexAttribute.Position, VertexAttributeFormat.Float32, 3) ||
             !Layout(mesh, VertexAttribute.Normal, VertexAttributeFormat.SNorm16, 2) ||
             !Layout(mesh, VertexAttribute.Tangent, VertexAttributeFormat.Float32, 1) ||
             !Layout(mesh, VertexAttribute.TexCoord0, VertexAttributeFormat.Float16, 4) ||
             !Layout(mesh, VertexAttribute.Color, VertexAttributeFormat.UNorm8, 4))
-        { error = "The road mesh does not match the measured native composition vertex layout."; return false; }
+        { error = "The road mesh does not match the measured native composition vertex layout."; return new Evaluation(error); }
         try
         {
+            Vector3[] positions; Vector4[] textureCoordinates; MovablePackedFrame.Snapshot packedNormals,packedTangents;
+            Color32[] selectors; int[][] indices;
+            {
             using var raw = Mesh.AcquireReadOnlyMeshData(mesh);
-            using var normalBytes = Attribute(mesh, raw[0], VertexAttribute.Normal, 4);
-            using var tangentBytes = Attribute(mesh, raw[0], VertexAttribute.Tangent, 4);
-            using var normals = new NativeArray<MeshNormal>(mesh.vertexCount, Allocator.Temp);
-            using var tangents = new NativeArray<MeshTangent>(mesh.vertexCount, Allocator.Temp);
-            MeshNormal.Unpack(new NativeSlice<byte>(normalBytes), normals, mesh.vertexCount,
-                VertexAttributeFormat.SNorm16, 2);
-            MeshTangent.Unpack(new NativeSlice<byte>(tangentBytes), tangents, mesh.vertexCount,
-                VertexAttributeFormat.Float32, 1);
-            var positions = mesh.vertices; var selectors = mesh.colors32;
+            var streams=new Dictionary<int,byte[]>();
+            packedNormals=MovablePackedFrame.Read(mesh,raw[0],VertexAttribute.Normal,streams);
+            packedTangents=MovablePackedFrame.Read(mesh,raw[0],VertexAttribute.Tangent,streams);
+            positions = mesh.vertices; selectors = mesh.colors32;
             var uv = new List<Vector4>(); mesh.GetUVs(0, uv);
             if (positions.Length != mesh.vertexCount || selectors.Length != mesh.vertexCount || uv.Count != mesh.vertexCount)
-            { error = "The road composition mesh has incomplete vertex channels."; return false; }
-            var vertices = new MovableRoadGeometry.Vertex[mesh.vertexCount];
+            { error = "The road composition mesh has incomplete vertex channels."; return new Evaluation(error); }
+            indices = new int[mesh.subMeshCount][];
+            for(int slot=0;slot<indices.Length;slot++)
+            {
+                if(mesh.GetTopology(slot)!=MeshTopology.Triangles)
+                    return new Evaluation($"Road material slot {slot} uses unsupported primitive topology.");
+                indices[slot]=mesh.GetIndices(slot);
+            }
+            textureCoordinates=uv.ToArray();
+            }
+            return await GenerationWork.Background("road composition deform and expand",()=>
+            {
+                var decoded=MovablePackedFrame.DecodeSnapshots(packedNormals,packedTangents);
+                if(EvaluateData(positions,selectors,textureCoordinates,decoded.Normals,decoded.Tangents,indices,
+                    width,length,occurrence,deformation,out var triangles,out var failure))
+                    return new Evaluation(triangles);
+                return new Evaluation(failure ?? "Road composition evaluation failed.");
+            });
+        }
+        catch(OperationCanceledException){throw;}
+        catch(Exception exception){return new Evaluation("Straight road evaluation failed: "+exception.Message);}
+    }
+
+    private static bool EvaluateData(Vector3[] positions,Color32[] selectors,Vector4[] uv,
+        Vector3[] normals,Vector4[] tangents,int[][] indicesBySlot,float width,float length,int occurrence,
+        MovableCompositionDeformation? deformation,out MovableRoadGeometry.Triangle[] triangles,out string? error)
+    {
+        triangles=Array.Empty<MovableRoadGeometry.Triangle>();error=null;
+        try
+        {
+            var vertices = new MovableRoadGeometry.Vertex[positions.Length];
             for (var i = 0; i < vertices.Length; i++)
             {
                 var selector = selectors[i]; var p = positions[i]; var texture = uv[i];
                 if (deformation != null)
                 {
-                    vertices[i] = deformation.Evaluate(p, normals[i].m_Normal,
-                        tangents[i].m_Tangent, texture, selector);
+                    vertices[i] = deformation.Evaluate(p, normals[i],
+                        tangents[i], texture, selector);
                     if (!MovableRoadGeometry.Valid(vertices[i]))
                     {
                         var v = vertices[i];
@@ -86,18 +130,16 @@ internal static class MovableStraightRoadEvaluation
                 // conversion because the network fragment shader can consume it separately.
                 texture.y = texture.y >= 0f ? distance * texture.y : texture.y - Mathf.Floor(texture.y);
                 texture.z = 0f;
-                vertices[i] = new MovableRoadGeometry.Vertex(p, normals[i].m_Normal,
-                    tangents[i].m_Tangent, texture, Color.white);
+                vertices[i] = new MovableRoadGeometry.Vertex(p, normals[i],
+                    tangents[i], texture, Color.white);
                 if (!MovableRoadGeometry.Valid(vertices[i]))
                 { error = $"Road vertex {i} produced invalid evaluated attributes."; return false; }
             }
             var result = new List<MovableRoadGeometry.Triangle>();
             var sourceTriangle = 0;
-            for (var slot = 0; slot < mesh.subMeshCount; slot++)
+            for (var slot = 0; slot < indicesBySlot.Length; slot++)
             {
-                if (mesh.GetTopology(slot) != MeshTopology.Triangles)
-                { error = $"Road material slot {slot} uses unsupported primitive topology."; return false; }
-                var indices = mesh.GetIndices(slot);
+                var indices = indicesBySlot[slot];
                 if (indices.Length % 3 != 0)
                 { error = $"Road material slot {slot} has an incomplete triangle."; return false; }
                 foreach (var index in indices)
@@ -107,27 +149,14 @@ internal static class MovableStraightRoadEvaluation
                     result.Add(new MovableRoadGeometry.Triangle(vertices[indices[i]], vertices[indices[i + 1]],
                         vertices[indices[i + 2]], slot, occurrence, sourceTriangle++));
             }
-            triangles = result.ToArray(); return true;
+            triangles=result.ToArray();return true;
         }
-        catch (Exception exception)
-        { error = "Straight road evaluation failed: " + exception.Message; return false; }
+        catch(Exception exception){error="Straight road evaluation failed: "+exception.Message;return false;}
     }
 
     private static bool Layout(Mesh mesh, VertexAttribute attribute, VertexAttributeFormat format, int dimension)
         => mesh.HasVertexAttribute(attribute) && mesh.GetVertexAttributeFormat(attribute) == format &&
             mesh.GetVertexAttributeDimension(attribute) == dimension;
-
-    private static NativeArray<byte> Attribute(Mesh mesh, Mesh.MeshData data, VertexAttribute attribute, int bytes)
-    {
-        var stream = mesh.GetVertexAttributeStream(attribute);
-        var stride = mesh.GetVertexBufferStride(stream);
-        var offset = mesh.GetVertexAttributeOffset(attribute);
-        var source = data.GetVertexData<byte>(stream);
-        var output = new NativeArray<byte>(mesh.vertexCount * bytes, Allocator.Temp);
-        for (var i = 0; i < mesh.vertexCount; i++)
-            NativeArray<byte>.Copy(source, i * stride + offset, output, i * bytes, bytes);
-        return output;
-    }
 
     private static bool Finite(float value) => !float.IsNaN(value) && !float.IsInfinity(value);
 }

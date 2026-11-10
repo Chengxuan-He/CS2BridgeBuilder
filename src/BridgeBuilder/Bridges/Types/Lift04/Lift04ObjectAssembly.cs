@@ -7,8 +7,12 @@ using UnityEngine;
 namespace BridgeBuilder.Bridges;
 internal static class Lift04ObjectAssembly
 {
-    internal static StaticObjectPrefab Create(TowerFactory factory, string owner, string name, RenderPrefab mechanism, RenderPrefab column, RenderPrefab footing, ContentPrefab content, float halfWidthDelta, MovableStraightSample road)
+    internal static StaticObjectPrefab Create(TowerFactory factory, string owner, string name, RenderPrefab mechanism, RenderPrefab column, RenderPrefab footing, ContentPrefab content, float halfWidthDelta, MovableStraightSample road) =>
+        GenerationWork.Synchronous(() => CreateAsync(factory, owner, name, mechanism, column, footing, content, halfWidthDelta, road));
+
+    internal static async System.Threading.Tasks.Task<StaticObjectPrefab> CreateAsync(TowerFactory factory, string owner, string name, RenderPrefab mechanism, RenderPrefab column, RenderPrefab footing, ContentPrefab content, float halfWidthDelta, MovableStraightSample road)
     {
+        await GenerationWork.Next("support Lift04ObjectAssembly.Create");
         // Recorded fixed-tower attachments: two wall lights, two vents and forty ladder pieces.
         // All retain native parent connection 0, rotation, group and probability.
         var attachments = Lift04MechanismData.AuthoredAttachments(factory.ResolveOriginal<ObjectPrefab>);
@@ -30,7 +34,7 @@ internal static class Lift04ObjectAssembly
         var partitions = new MovableRoadGeometry.Partition[objects.Placements.Length];
         Array.Fill(partitions, physical);
         factory.AttachMovableRoadObjects(result, objects.Placements, road.RoadToObject, partitions);
-        if(!factory.TryAttachMovablePaint(result, road.Road.LaneGeometry.Decals, road.RoadToObject, physical, MovableRoadGeometry.InFrame(road.Road.Triangles, road.RoadToObject),out _))return null!;
+        if(!(await factory.AttachMovablePaintAsync(result, road.Road.LaneGeometry.Decals, road.RoadToObject, physical, MovableRoadGeometry.InFrame(road.Road.Triangles, road.RoadToObject))).Success)return null!;
         return result;
     }
 }

@@ -11,8 +11,12 @@ internal static class Lift01PillarAssembly
     // and its lateral braces follow the road width. Native standing/stacking data
     // and the network anchor remain unchanged.
     // Reconstruct native inputs privately; only factory-owned results escape this scope.
-    internal static StaticObjectPrefab? Create(TowerFactory factory, string name, RenderPrefab nativeDefaultBase, ContentPrefab content, float halfWidthDelta)
+    internal static StaticObjectPrefab? Create(TowerFactory factory, string name, RenderPrefab nativeDefaultBase, ContentPrefab content, float halfWidthDelta) =>
+        GenerationWork.Synchronous(() => CreateAsync(factory, name, nativeDefaultBase, content, halfWidthDelta));
+
+    internal static async System.Threading.Tasks.Task<StaticObjectPrefab?> CreateAsync(TowerFactory factory, string name, RenderPrefab nativeDefaultBase, ContentPrefab content, float halfWidthDelta)
     {
+        await GenerationWork.Next("support Lift01PillarAssembly.Create");
         using var sources = new Lift01PillarSources(nativeDefaultBase, content);
         var generated = new RenderPrefab[Numeric_Types_Lift01_Lift01PillarAssembly_cs.Values.I32[0]];
         var labels = new[]
@@ -42,7 +46,9 @@ internal static class Lift01PillarAssembly
                     if (meshes.Length != Numeric_Types_Lift01_Lift01PillarAssembly_cs.Values.I32[5] || meshes[Numeric_Types_Lift01_Lift01PillarAssembly_cs.Values.I32[6]].subMeshCount != Numeric_Types_Lift01_Lift01PillarAssembly_cs.Values.I32[7])
                         throw new InvalidOperationException("Lift01 ordinary pillar requires its recorded single native surface slot.");
                     var mesh = meshes[Numeric_Types_Lift01_Lift01PillarAssembly_cs.Values.I32[8]];
-                    var plan = Lift01NetPillarGeometry.Create(part, lod, mesh.vertices, mesh.GetIndices(Numeric_Types_Lift01_Lift01PillarAssembly_cs.Values.I32[9]), halfWidthDelta);
+                    var supportInput0 = mesh.vertices;
+                    var supportInput1 = mesh.GetIndices(Numeric_Types_Lift01_Lift01PillarAssembly_cs.Values.I32[9]);
+                    var plan = await GenerationWork.Background("support structure plan", () => Lift01NetPillarGeometry.Create(part, lod, supportInput0, supportInput1, halfWidthDelta));
                     var bounds = original.bounds;
                     if (part == Numeric_Types_Lift01_Lift01PillarAssembly_cs.Values.I32[10])
                     {
@@ -67,7 +73,7 @@ internal static class Lift01PillarAssembly
                 }
             }
 
-            var render = factory.CreateMovableRenderGraph($"{name} {labels[part]}", levels);
+            var render = await factory.CreateMovableRenderGraphAsync($"{name} {labels[part]}", levels);
             if (render == null)
                 return null;
             generated[part] = render;

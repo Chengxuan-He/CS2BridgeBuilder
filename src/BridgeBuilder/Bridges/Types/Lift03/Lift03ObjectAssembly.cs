@@ -10,8 +10,12 @@ internal static class Lift03ObjectAssembly
 {
     // Native authored order: four warning lights and twenty fixed-tower wall lights.
     private static int[] AttachmentSides => GenerationParameters.Get<int[]>("BridgeBuilder.Bridges.Lift03ObjectAssembly.AttachmentSides", () => ReadPackedAttachmentSides());
-    internal static StaticObjectPrefab Create(TowerFactory factory, string owner, string name, RenderPrefab mechanism, RenderPrefab column, RenderPrefab footing, ContentPrefab content, float structureHalfDelta, Lift03RoadSampling roads)
+    internal static StaticObjectPrefab Create(TowerFactory factory, string owner, string name, RenderPrefab mechanism, RenderPrefab column, RenderPrefab footing, ContentPrefab content, float structureHalfDelta, Lift03RoadSampling roads) =>
+        GenerationWork.Synchronous(() => CreateAsync(factory, owner, name, mechanism, column, footing, content, structureHalfDelta, roads));
+
+    internal static async System.Threading.Tasks.Task<StaticObjectPrefab> CreateAsync(TowerFactory factory, string owner, string name, RenderPrefab mechanism, RenderPrefab column, RenderPrefab footing, ContentPrefab content, float structureHalfDelta, Lift03RoadSampling roads)
     {
+        await GenerationWork.Next("support Lift03ObjectAssembly.Create");
         var attachments = Lift03MechanismData.AuthoredAttachments(factory.ResolveOriginal<ObjectPrefab>);
         if (attachments.Length != AttachmentSides.Length)
             throw new InvalidOperationException("Lift03 requires its recorded 24 tower attachments.");
@@ -39,7 +43,7 @@ internal static class Lift03ObjectAssembly
         factory.AttachMovableRoadObjects(result, objects, Pose.identity, partitions);
         // Each deck supplies only its own receivers. Merge the resulting paint once,
         // preserving shared bone 3 and fixed bone 0 without duplicate resource names.
-        if(!factory.TryAttachMovablePaint(result, new[] { new MovablePaintDeck(roads.MainRoad.LaneGeometry.Decals, roads.MainToObject, Lift03RoadPartitions.Carriageway, MovableRoadGeometry.InFrame(roads.MainRoad.Triangles, roads.MainToObject)), new MovablePaintDeck(roads.AuxiliaryRoad.LaneGeometry.Decals, roads.AuxiliaryToObject, Lift03RoadPartitions.Carriageway, MovableRoadGeometry.InFrame(roads.AuxiliaryRoad.Triangles, roads.AuxiliaryToObject)) },out _))return null!;
+        if(!(await factory.AttachMovablePaintAsync(result, new[] { new MovablePaintDeck(roads.MainRoad.LaneGeometry.Decals, roads.MainToObject, Lift03RoadPartitions.Carriageway, MovableRoadGeometry.InFrame(roads.MainRoad.Triangles, roads.MainToObject)), new MovablePaintDeck(roads.AuxiliaryRoad.LaneGeometry.Decals, roads.AuxiliaryToObject, Lift03RoadPartitions.Carriageway, MovableRoadGeometry.InFrame(roads.AuxiliaryRoad.Triangles, roads.AuxiliaryToObject)) })).Success)return null!;
         return result;
         void AddObjects(Lift03RoadSampling.Deck deck, Pose pose)
         {

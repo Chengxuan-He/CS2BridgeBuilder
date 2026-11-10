@@ -6,7 +6,8 @@ namespace BridgeBuilder.Bridges;
 // Decoded immutable inputs belong to one construction, never to the loaded mod.
 internal static class GenerationParameters
 {
-    [ThreadStatic] private static Session? _current;
+    private static readonly System.Threading.AsyncLocal<Session?> Current = new();
+    private static Session? _current { get => Current.Value; set => Current.Value=value; }
     internal sealed class Session
     {
         internal readonly Dictionary<object, object> Values = new();

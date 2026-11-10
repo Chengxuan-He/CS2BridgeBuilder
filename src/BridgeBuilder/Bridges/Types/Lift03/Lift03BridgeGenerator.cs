@@ -48,35 +48,43 @@ internal sealed class Lift03BridgeGenerator : MovableBridgeGeneratorBase<Lift03R
         return Lift03RoadSampling.Create(owner, selectedRoad, auxiliary, roots, content, halfDelta, seed, NetPieceLayerMask.Bottom | NetPieceLayerMask.Side, NetPieceLayerMask.Bottom | NetPieceLayerMask.Side, auxiliaryOpposite: Lower.Opposite);
     }
 
-    protected override RenderPrefab? BuildMechanism(TowerFactory factory, string owner, Lift03RoadSampling road, RenderPrefab[] nativeLevels, float halfDelta, MovableRoadMaterial material)
+    protected override System.Threading.Tasks.Task<Lift03RoadSampling> SampleRoadAsync(string owner, Entity selectedRoad, RenderPrefab[] roots, ContentPrefab content, float halfDelta, RandomSeed seed)
+    {
+        var prefabs = World.DefaultGameObjectInjectionWorld.GetExistingSystemManaged<PrefabSystem>();
+        if (!prefabs.TryGetEntity(Lower.Source, out var auxiliary))
+            throw new InvalidOperationException("Lift03 auxiliary road is not registered with the native prefab system.");
+        return Lift03RoadSampling.CreateAsync(owner, selectedRoad, auxiliary, roots, content, halfDelta, seed, NetPieceLayerMask.Bottom | NetPieceLayerMask.Side, NetPieceLayerMask.Bottom | NetPieceLayerMask.Side, auxiliaryOpposite: Lower.Opposite);
+    }
+
+    protected override async System.Threading.Tasks.Task<RenderPrefab?> BuildMechanismAsync(TowerFactory factory, string owner, Lift03RoadSampling road, RenderPrefab[] nativeLevels, float halfDelta, MovableRoadMaterial material)
     {
         // Recover the shared mechanism world frame from the sampled main road frame.
         var pose = road.MainToObject;
         var closedWorld = Matrix4x4.Translate(new Vector3(Numeric_Types_Lift03_Lift03BridgeGenerator_cs.Values.F32[2], Lift03NetworkData.MainElevation, Numeric_Types_Lift03_Lift03BridgeGenerator_cs.Values.F32[3])) * Matrix4x4.TRS(pose.position, pose.rotation, Vector3.one).inverse;
-        MovableRoadAssets.Level[]? Prepare(Lift03RoadSampling.Deck deck, float delta, Pose frame)
+        System.Threading.Tasks.Task<MovableRoadAssets.Level[]?> Prepare(Lift03RoadSampling.Deck deck, float delta, Pose frame)
         {
             var appearance = Lift03RoadAppearance.Regions(frame);
-            return road.PrepareDeck(deck, nativeLevels, delta, closedWorld, material, Lift03RoadPartitions.Carriageway, appearance, appearance, Lift03RoadAppearance.Patches(deck, frame));
+            return road.PrepareDeckAsync(deck, nativeLevels, delta, closedWorld, material, Lift03RoadPartitions.Carriageway, appearance, appearance, Lift03RoadAppearance.Patches(deck, frame));
         }
 
-        var upper = Prepare(Lift03RoadSampling.Deck.Main, halfDelta, road.MainToObject);
+        var upper = await Prepare(Lift03RoadSampling.Deck.Main, halfDelta, road.MainToObject);
         if (upper == null) return null;
-        var lower = Prepare(Lift03RoadSampling.Deck.Auxiliary, LowerDelta, road.AuxiliaryToObject);
+        var lower = await Prepare(Lift03RoadSampling.Deck.Auxiliary, LowerDelta, road.AuxiliaryToObject);
         if (lower == null) return null;
-        return Lift03RenderAssembly.CreateMechanism(factory, owner + " Mechanism", upper, lower, halfDelta, halfDelta, LowerDelta);
+        return await Lift03RenderAssembly.CreateMechanismAsync(factory, owner + " Mechanism", upper, lower, halfDelta, halfDelta, LowerDelta);
     }
 
-    protected override void AssembleBridge(NetGeometryPrefab target, TowerFactory factory, RenderPrefab[] roots, ContentPrefab content, float halfDelta, Lift03RoadSampling road, RenderPrefab moving)
+    protected override async System.Threading.Tasks.Task AssembleBridgeAsync(NetGeometryPrefab target, TowerFactory factory, RenderPrefab[] roots, ContentPrefab content, float halfDelta, Lift03RoadSampling road, RenderPrefab moving)
     {
         var delta = halfDelta;
-        var column = Lift03ColumnAssembly.Create(factory, target.name + " Column", roots[Numeric_Types_Lift03_Lift03BridgeGenerator_cs.Values.I32[0]], delta) ?? throw new InvalidOperationException("Lift03 support render graph creation failed.");
-        var footing = Lift03FootingAssembly.Create(factory, target.name + " Footing", roots[Numeric_Types_Lift03_Lift03BridgeGenerator_cs.Values.I32[1]], delta) ?? throw new InvalidOperationException("Lift03 footing render graph creation failed.");
-        var mechanism = Lift03ObjectAssembly.Create(factory, target.name, target.name + " Moving Object", moving, column, footing, content, delta, road);
+        var column = await Lift03ColumnAssembly.CreateAsync(factory, target.name + " Column", roots[Numeric_Types_Lift03_Lift03BridgeGenerator_cs.Values.I32[0]], delta) ?? throw new InvalidOperationException("Lift03 support render graph creation failed.");
+        var footing = await Lift03FootingAssembly.CreateAsync(factory, target.name + " Footing", roots[Numeric_Types_Lift03_Lift03BridgeGenerator_cs.Values.I32[1]], delta) ?? throw new InvalidOperationException("Lift03 footing render graph creation failed.");
+        var mechanism = await Lift03ObjectAssembly.CreateAsync(factory, target.name, target.name + " Moving Object", moving, column, footing, content, delta, road);
         if(mechanism==null)return;
         using var pillarSources = new Lift03PillarSources(factory.ResolveOriginal<RenderPrefab>("Default_Base Mesh"), content);
         var pillar = Lift03NetPillarAssembly.Create(factory, target.name + " Pillar", pillarSources, content, delta) ?? throw new InvalidOperationException("Lift03 ordinary pillar creation failed.");
         Lift03NetworkAssembly.Apply(target, Lower.Target, factory, pillar, mechanism, Lower.Opposite);
-        Lift03ApproachAssembly.Apply(target, factory, content, delta);
+        await Lift03ApproachAssembly.ApplyAsync(target, factory, content, delta);
     }
 }
 

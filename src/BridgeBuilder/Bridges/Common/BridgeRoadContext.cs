@@ -67,12 +67,13 @@ internal sealed class BridgeRoadContext
     }
 }
 
-// Native APIs and generation are synchronous on the main thread. A scoped map
+// Native APIs stay on the main thread; suspended requests retain an isolated scoped map
 // lets unchanged width/layout consumers reuse the resolved context without a
 // global prefab cache, source mutation or cross-request state.
 internal sealed class BridgeRoadGeneration : IDisposable
 {
-    [ThreadStatic] private static BridgeRoadGeneration? _current;
+    private static readonly System.Threading.AsyncLocal<BridgeRoadGeneration?> Current = new();
+    private static BridgeRoadGeneration? _current { get=>Current.Value;set=>Current.Value=value; }
     private readonly BridgeRoadGeneration? _previous;
     internal readonly BridgeBuilder.Runtime.BridgeCreationDependencies Dependencies = new(MovableLaneMidMips.TryRequiredCaches);
     internal static BridgeBuilder.Runtime.BridgeCreationDependencies? CurrentDependencies => _current?.Dependencies;

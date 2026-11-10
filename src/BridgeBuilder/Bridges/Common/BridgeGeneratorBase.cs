@@ -88,7 +88,13 @@ internal abstract partial class BridgeGeneratorBase
     internal virtual BridgeStyleVariant? Apply(
         NetGeometryPrefab target, BridgeStyle style, float roadWidth, BridgeOptions options,
         NetGeometryPrefab? measure = null, Func<BridgeStyleVariant, bool>? allow = null)
+        => GenerationWork.Synchronous(()=>ApplyAsync(target,style,roadWidth,options,measure,allow));
+
+    internal virtual async System.Threading.Tasks.Task<BridgeStyleVariant?> ApplyAsync(
+        NetGeometryPrefab target, BridgeStyle style, float roadWidth, BridgeOptions options,
+        NetGeometryPrefab? measure = null, Func<BridgeStyleVariant, bool>? allow = null)
     {
+        await GenerationWork.Next("fixed generator selection");
         // A routed generator must never silently compose another bridge family.
         if (!string.Equals(style.Id, StyleId, StringComparison.Ordinal))
         {
@@ -323,6 +329,7 @@ internal abstract partial class BridgeGeneratorBase
             + "structure={5:R}, towerArgument={6:R}, overheadExtra={7:R}, prototype='{8}'.",
             target.name, measuredDeck?.name ?? "(unavailable)", style.Id, roadWidth, targetWidth,
             structureWidth, towerWidth, overheadExtra, variant.Name));
+        await GenerationWork.Next("fixed tower construction");
         var fitted = FitTower(
             target, style, towerWidth, variant, chosen, primarySourceRoadWidth);
         if (!fitted) ReportTooNarrow(target.name, towerWidth, variant.StructureWidth);

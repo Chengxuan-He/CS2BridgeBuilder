@@ -1,3 +1,4 @@
+using BridgeBuilder.Bridges;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -22,7 +23,10 @@ internal static class BridgePreviewScene
         internal CompositionFlags Flags { get; }
     }
 
-    internal static bool Build(BridgePreviewSession session, BridgePreviewDrawList draws)
+    internal static bool Build(BridgePreviewSession session, BridgePreviewDrawList draws) =>
+        GenerationWork.Synchronous(() => BuildAsync(session, draws));
+
+    internal static async System.Threading.Tasks.Task<bool> BuildAsync(BridgePreviewSession session, BridgePreviewDrawList draws)
     {
         if (session.Root == null || !session.Root.TryGet<Bridge>(out var bridge))
             return false;
@@ -38,6 +42,7 @@ internal static class BridgePreviewScene
         {
             foreach (var item in mechanisms)
             {
+                await GenerationWork.Next("preview mechanism object");
                 var geometry = (ObjectGeometryPrefab)item.m_Object;
                 if (!draws.TryObjectLayout(geometry, out var layout)) return false;
                 var position = (Vector3)item.m_Position;
@@ -47,7 +52,7 @@ internal static class BridgePreviewScene
                 var anchorTop = item.m_AnchorTop || pillar != null &&
                     (pillar.m_Type == PillarType.Standalone || pillar.m_Type == PillarType.Vertical);
                 var stack = layout.Align(ref position, anchorTop, item.m_AnchorCenter, onGround, -PreviewElevation);
-                if (!draws.AddObject(geometry, Matrix4x4.TRS(position, item.m_Rotation, Vector3.one),
+                if (!await draws.AddObjectAsync(geometry, Matrix4x4.TRS(position, item.m_Rotation, Vector3.one),
                     stack, onGround ? 0f : BridgePreviewObjectLayout.ChildElevation(PreviewElevation, position.y)))
                     return false;
             }
@@ -67,7 +72,7 @@ internal static class BridgePreviewScene
                 new(extent, bridge.m_SegmentLength, -1, approachFlags)
             };
             using var approachComposition = new BridgePreviewComposition();
-            return AddDeck(session.Root, Matrix4x4.identity, approaches, session, draws,
+            return await AddDeckAsync(session.Root, Matrix4x4.identity, approaches, session, draws,
                 approachComposition, new HashSet<NetGeometryPrefab>(), PreviewElevation,
                 new HashSet<float> { -extent, extent }) && draws.Draws.Count != 0;
         }
@@ -114,11 +119,11 @@ internal static class BridgePreviewScene
         var path = new HashSet<NetGeometryPrefab>();
         // Main deck height is identical for every preview. Auxiliary decks
         // retain their authored offset relative to that main deck.
-        return AddDeck(session.Root, Matrix4x4.identity, spans, session, draws, composition, path, PreviewElevation)
+        return await AddDeckAsync(session.Root, Matrix4x4.identity, spans, session, draws, composition, path, PreviewElevation)
             && draws.Draws.Count != 0;
     }
 
-    private static bool AddDeck(NetGeometryPrefab deck, Matrix4x4 transform, List<Span> spans,
+    private static async System.Threading.Tasks.Task<bool> AddDeckAsync(NetGeometryPrefab deck, Matrix4x4 transform, List<Span> spans,
         BridgePreviewSession session, BridgePreviewDrawList draws,
         BridgePreviewComposition composition, HashSet<NetGeometryPrefab> path, float elevation,
         HashSet<float>? crossingEnds = null)
@@ -129,6 +134,7 @@ internal static class BridgePreviewScene
             var deckWidth = 0f;
             foreach (var span in spans)
             {
+                await GenerationWork.Next("preview approach composition");
                 var pieces = composition.Compose(deck, span.Flags, out var data,
                     selectedRoad: session.RoadContext(deck));
                 deckWidth = data.m_Width;
@@ -151,7 +157,8 @@ internal static class BridgePreviewScene
                 }
                 if (!draws.AddNetSpan(pieces, data, transform, span.Start, span.Length))
                     return false;
-                if (!draws.AddLanes(pieces, data, transform, span.Start, span.Length))
+                await GenerationWork.Next("preview approach lanes");
+                if (!await draws.AddLanesAsync(pieces, data, transform, span.Start, span.Length))
                     return false;
             }
             if (deck.TryGet<NetSubObjects>(out var objects))
@@ -167,6 +174,7 @@ internal static class BridgePreviewScene
                         return false;
                     foreach (var replacement in replacements)
                     {
+                        await GenerationWork.Checkpoint("preview support object");
                         var concrete = replacement.Prefab;
                         var anchorTop = item.m_AnchorTop;
                         var onGround = false;
@@ -186,7 +194,7 @@ internal static class BridgePreviewScene
                             var objectElevation = onGround ? 0f :
                                 BridgePreviewObjectLayout.ChildElevation(elevation, position.y);
                             position.z += z;
-                            if (!draws.AddObject(concrete, transform * Matrix4x4.TRS(position, item.m_Rotation, Vector3.one),
+                            if (!await draws.AddObjectAsync(concrete, transform * Matrix4x4.TRS(position, item.m_Rotation, Vector3.one),
                                     stack, objectElevation))
                                 return false;
                         }
@@ -216,7 +224,7 @@ internal static class BridgePreviewScene
                         childCrossingEnds = crossingEnds == null ? null :
                             new HashSet<float>(crossingEnds.Select(z => end - z));
                     }
-                    if (!AddDeck(other, transform * local, childSpans,
+                    if (!await AddDeckAsync(other, transform * local, childSpans,
                             session, draws, composition, path, elevation + item.m_Position.y, childCrossingEnds)) return false;
                 }
             return true;

@@ -7,8 +7,12 @@ using UnityEngine;
 namespace BridgeBuilder.Bridges;
 internal static class Lift01ObjectAssembly
 {
-    internal static StaticObjectPrefab Create(TowerFactory factory, string owner, string name, RenderPrefab mechanism, RenderPrefab column, RenderPrefab footing, ContentPrefab content, float halfWidthDelta, MovableStraightSample road, MovableRoadGeometry.Partition physical)
+    internal static StaticObjectPrefab Create(TowerFactory factory, string owner, string name, RenderPrefab mechanism, RenderPrefab column, RenderPrefab footing, ContentPrefab content, float halfWidthDelta, MovableStraightSample road, MovableRoadGeometry.Partition physical) =>
+        GenerationWork.Synchronous(() => CreateAsync(factory, owner, name, mechanism, column, footing, content, halfWidthDelta, road, physical));
+
+    internal static async System.Threading.Tasks.Task<StaticObjectPrefab> CreateAsync(TowerFactory factory, string owner, string name, RenderPrefab mechanism, RenderPrefab column, RenderPrefab footing, ContentPrefab content, float halfWidthDelta, MovableStraightSample road, MovableRoadGeometry.Partition physical)
     {
+        await GenerationWork.Next("support Lift01ObjectAssembly.Create");
         var attachments = Lift01MechanismData.AuthoredAttachments(factory.ResolveOriginal<ObjectPrefab>);
         var imported = Path.Combine(Application.persistentDataPath, "ImportedData");
         // Audited order: positive-X control-room wall light, negative-X control-room
@@ -30,7 +34,7 @@ internal static class Lift01ObjectAssembly
         var partitions = new MovableRoadGeometry.Partition[objects.Placements.Length];
         Array.Fill(partitions, physical);
         factory.AttachMovableRoadObjects(result, objects.Placements, road.RoadToObject, partitions);
-        if(!factory.TryAttachMovablePaint(result, road.Road.LaneGeometry.Decals, road.RoadToObject, physical, MovableRoadGeometry.InFrame(road.Road.Triangles, road.RoadToObject),out _))return null!;
+        if(!(await factory.AttachMovablePaintAsync(result, road.Road.LaneGeometry.Decals, road.RoadToObject, physical, MovableRoadGeometry.InFrame(road.Road.Triangles, road.RoadToObject))).Success)return null!;
         return result;
     }
 }

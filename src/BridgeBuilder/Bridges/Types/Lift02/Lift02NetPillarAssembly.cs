@@ -7,12 +7,16 @@ using UnityEngine;
 namespace BridgeBuilder.Bridges;
 internal static class Lift02NetPillarAssembly
 {
-    internal static StaticObjectPrefab? Create(TowerFactory factory, string name, Lift02PillarSources sources, ContentPrefab content, float halfWidthDelta)
+    internal static StaticObjectPrefab? Create(TowerFactory factory, string name, Lift02PillarSources sources, ContentPrefab content, float halfWidthDelta) =>
+        GenerationWork.Synchronous(() => CreateAsync(factory, name, sources, content, halfWidthDelta));
+
+    internal static async System.Threading.Tasks.Task<StaticObjectPrefab?> CreateAsync(TowerFactory factory, string name, Lift02PillarSources sources, ContentPrefab content, float halfWidthDelta)
     {
+        await GenerationWork.Next("support Lift02NetPillarAssembly.Create");
         var roots = new RenderPrefab[Numeric_Types_Lift02_Lift02NetPillarAssembly_cs.Values.I32[0]];
         for (var part = Numeric_Types_Lift02_Lift02NetPillarAssembly_cs.Values.I32[1]; part < roots.Length; part++)
         {
-            var root = CreatePart(factory, name + " Part " + part, sources.Roots[part], part, halfWidthDelta);
+            var root = await CreatePartAsync(factory, name + " Part " + part, sources.Roots[part], part, halfWidthDelta);
             if (root == null)
                 return null;
             roots[part] = root;
@@ -21,8 +25,12 @@ internal static class Lift02NetPillarAssembly
         return Lift02PillarSources.CreateObject(factory, name, roots[Numeric_Types_Lift02_Lift02NetPillarAssembly_cs.Values.I32[2]], roots[Numeric_Types_Lift02_Lift02NetPillarAssembly_cs.Values.I32[3]], roots[Numeric_Types_Lift02_Lift02NetPillarAssembly_cs.Values.I32[4]], content);
     }
 
-    private static RenderPrefab? CreatePart(TowerFactory factory, string name, RenderPrefab source, int part, float halfWidthDelta)
+    private static RenderPrefab? CreatePart(TowerFactory factory, string name, RenderPrefab source, int part, float halfWidthDelta) =>
+        GenerationWork.Synchronous(() => CreatePartAsync(factory, name, source, part, halfWidthDelta));
+
+    private static async System.Threading.Tasks.Task<RenderPrefab?> CreatePartAsync(TowerFactory factory, string name, RenderPrefab source, int part, float halfWidthDelta)
     {
+        await GenerationWork.Next("support Lift02NetPillarAssembly.CreatePart");
         var lods = source.GetComponent<LodProperties>()?.m_LodMeshes;
         if (lods == null || lods.Length != Numeric_Types_Lift02_Lift02NetPillarAssembly_cs.Values.I32[5])
             throw new InvalidOperationException("Lift02 ordinary pillars require their three recorded native LODs.");
@@ -51,7 +59,9 @@ internal static class Lift02NetPillarAssembly
                 meshes = PrivateGeometryReader.Read(original);
                 if (meshes.Length != Numeric_Types_Lift02_Lift02NetPillarAssembly_cs.Values.I32[11] || meshes[Numeric_Types_Lift02_Lift02NetPillarAssembly_cs.Values.I32[12]].subMeshCount != Numeric_Types_Lift02_Lift02NetPillarAssembly_cs.Values.I32[13])
                     throw new InvalidOperationException("Lift02 ordinary pillars require their recorded single native surface slot.");
-                var plan = Lift02NetPillarGeometry.Create(part, lod, meshes[Numeric_Types_Lift02_Lift02NetPillarAssembly_cs.Values.I32[14]].vertices, meshes[Numeric_Types_Lift02_Lift02NetPillarAssembly_cs.Values.I32[15]].GetIndices(Numeric_Types_Lift02_Lift02NetPillarAssembly_cs.Values.I32[16]), halfWidthDelta);
+                var supportInput0 = meshes[Numeric_Types_Lift02_Lift02NetPillarAssembly_cs.Values.I32[14]].vertices;
+                var supportInput1 = meshes[Numeric_Types_Lift02_Lift02NetPillarAssembly_cs.Values.I32[15]].GetIndices(Numeric_Types_Lift02_Lift02NetPillarAssembly_cs.Values.I32[16]);
+                var plan = await GenerationWork.Background("support structure plan", () => Lift02NetPillarGeometry.Create(part, lod, supportInput0, supportInput1, halfWidthDelta));
                 var bounds = original.bounds;
                 bounds.min.x = plan.Positions.Min(p => p.x);
                 bounds.max.x = plan.Positions.Max(p => p.x);
@@ -64,7 +74,7 @@ internal static class Lift02NetPillarAssembly
             }
         }
 
-        return factory.CreateMovableRenderGraph(name, levels);
+        return await factory.CreateMovableRenderGraphAsync(name, levels);
     }
 }
 

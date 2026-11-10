@@ -27,8 +27,12 @@ internal static class Lift03NetPillarAssembly
         return Lift03PillarSources.CreateObject(factory, name, roots[Numeric_Types_Lift03_Lift03NetPillarAssembly_cs.Values.I32[2]], roots[Numeric_Types_Lift03_Lift03NetPillarAssembly_cs.Values.I32[3]], roots[Numeric_Types_Lift03_Lift03NetPillarAssembly_cs.Values.I32[4]], content);
     }
 
-    private static RenderPrefab? CreatePart(TowerFactory factory, string name, RenderPrefab source, int part, float halfWidthDelta)
+    private static RenderPrefab? CreatePart(TowerFactory factory, string name, RenderPrefab source, int part, float halfWidthDelta) =>
+        GenerationWork.Synchronous(() => CreatePartAsync(factory, name, source, part, halfWidthDelta));
+
+    private static async System.Threading.Tasks.Task<RenderPrefab?> CreatePartAsync(TowerFactory factory, string name, RenderPrefab source, int part, float halfWidthDelta)
     {
+        await GenerationWork.Next("support Lift03NetPillarAssembly.CreatePart");
         var lods = source.GetComponent<LodProperties>()?.m_LodMeshes;
         if (lods == null || lods.Length != Numeric_Types_Lift03_Lift03NetPillarAssembly_cs.Values.I32[5])
             throw new InvalidOperationException("Lift03 ordinary pillars require their three recorded native LODs.");
@@ -57,7 +61,9 @@ internal static class Lift03NetPillarAssembly
                 meshes = PrivateGeometryReader.Read(original);
                 if (meshes.Length != Numeric_Types_Lift03_Lift03NetPillarAssembly_cs.Values.I32[11] || meshes[Numeric_Types_Lift03_Lift03NetPillarAssembly_cs.Values.I32[12]].subMeshCount != Numeric_Types_Lift03_Lift03NetPillarAssembly_cs.Values.I32[13])
                     throw new InvalidOperationException("Lift03 ordinary pillars require their recorded single native surface slot.");
-                var plan = CreatePlan(part, lod, meshes[Numeric_Types_Lift03_Lift03NetPillarAssembly_cs.Values.I32[14]].vertices, meshes[Numeric_Types_Lift03_Lift03NetPillarAssembly_cs.Values.I32[15]].GetIndices(Numeric_Types_Lift03_Lift03NetPillarAssembly_cs.Values.I32[16]), halfWidthDelta);
+                var supportInput0 = meshes[Numeric_Types_Lift03_Lift03NetPillarAssembly_cs.Values.I32[14]].vertices;
+                var supportInput1 = meshes[Numeric_Types_Lift03_Lift03NetPillarAssembly_cs.Values.I32[15]].GetIndices(Numeric_Types_Lift03_Lift03NetPillarAssembly_cs.Values.I32[16]);
+                var plan = await GenerationWork.Background("support structure plan", () => CreatePlan(part, lod, supportInput0, supportInput1, halfWidthDelta));
                 var bounds = original.bounds;
                 bounds.min.x = plan.Positions.Min(p => p.x);
                 bounds.max.x = plan.Positions.Max(p => p.x);
@@ -70,7 +76,7 @@ internal static class Lift03NetPillarAssembly
             }
         }
 
-        return factory.CreateMovableRenderGraph(name, levels);
+        return await factory.CreateMovableRenderGraphAsync(name, levels);
     }
 }
 

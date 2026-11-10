@@ -35,17 +35,17 @@ internal static class MovableClosedRoad
         internal UnityEngine.Vector3[] CarLaneCenters = Array.Empty<UnityEngine.Vector3>();
         internal MovableNetworkContext.RoadLane[] RoadLanes = Array.Empty<MovableNetworkContext.RoadLane>();
         internal string LaneContext = string.Empty;
-        internal readonly MovableLaneGeometry.Result LaneGeometry;
+        internal MovableLaneGeometry.Result LaneGeometry;
         internal readonly MovableRoadObjects.Rule[][] ObjectRules;
         internal Result(MovableRoadGeometry.Triangle[] triangles, SurfaceAsset[] surfaces,
             BridgePreviewComposition.Piece[] occurrences, NetCompositionData[] compositions,
             int[] occurrenceStarts, MovableLaneVisuals.Batch[] laneVisuals, MovableRoadObjects.Rule[][] objectRules,
-            BridgePreviewNetMesh.SourceFace[][]? sourceFaces = null, int lod = 0)
-        { Sidewalks = new MovableSidewalkFaces(triangles, surfaces, occurrences);
-            Triangles = MovableRoadCoverage.ResolveFaces(triangles, Sidewalks.Walk, Sidewalks.Curb); Surfaces = surfaces; Occurrences = occurrences; Compositions = compositions;
+            BridgePreviewNetMesh.SourceFace[][]? sourceFaces = null, int lod = 0, bool deferLanes = false, MovableSidewalkFaces? receiverRoles = null, bool resolvedFaces = false)
+        { Sidewalks = receiverRoles ?? new MovableSidewalkFaces(triangles, surfaces, occurrences);
+            Triangles = resolvedFaces ? triangles : MovableRoadCoverage.ResolveFaces(triangles, Sidewalks.Walk, Sidewalks.Curb); Surfaces = surfaces; Occurrences = occurrences; Compositions = compositions;
             OccurrenceStarts = occurrenceStarts;
             SourceFaces = sourceFaces;
-            LaneVisuals = laneVisuals; LaneGeometry = MovableLaneGeometry.Compile(laneVisuals, Triangles, lod);
+            LaneVisuals = laneVisuals; LaneGeometry = deferLanes ? null! : MovableLaneGeometry.Compile(laneVisuals, Triangles, lod);
             ObjectRules = objectRules; }
 
 

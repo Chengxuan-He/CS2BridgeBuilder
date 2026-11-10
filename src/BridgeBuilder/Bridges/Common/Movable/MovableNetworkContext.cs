@@ -86,6 +86,7 @@ internal sealed partial class MovableNetworkContext : IDisposable
     private readonly bool _leftHandTraffic;
     private readonly string _generationOwner;
     private bool _disposed;
+    private Func<System.Threading.Tasks.Task>? _calculate;
 
     // Terrain belongs to the caller, which must complete its producer before this synchronous call.
     // Consume entities and owner geometry only while this context is alive. Never persist them.
@@ -93,7 +94,7 @@ internal sealed partial class MovableNetworkContext : IDisposable
         IReadOnlyList<EdgeInput> edges, IReadOnlyList<MechanismInput> mechanisms,
         IReadOnlyList<MiddleInput> middleConnections, IReadOnlyList<ParentInput> parents,
         TerrainHeightData terrain, Entity sourceTheme, bool leftHandTraffic,
-        RandomSeed randomSeed, BuildingConfigurationData buildingConfiguration)
+        RandomSeed randomSeed, BuildingConfigurationData buildingConfiguration, bool deferCalculation = false)
     {
         World = new World("BridgeBuilder movable closed network");
         _generationOwner = owner;
@@ -135,14 +136,24 @@ internal sealed partial class MovableNetworkContext : IDisposable
                 Mechanisms[i] = lanes.CreateMechanism(Prefabs.StageMechanism(input.Prefab), Owner(input.Owner),
                     input.OwnerTransform, input.Placement, input.SignalState, input.Seed);
             }
-            lanes.CalculateNetwork(terrain, Prefabs.Import(sourceTheme), leftHandTraffic,
-                randomSeed, Prefabs.ImportConfiguration(buildingConfiguration), loaded: true);
+            var theme = Prefabs.Import(sourceTheme);
+            var configuration = Prefabs.ImportConfiguration(buildingConfiguration);
+            _calculate = () => lanes.CalculateNetworkAsync(terrain, theme, leftHandTraffic, randomSeed, configuration, loaded: true);
+            if (!deferCalculation) GenerationWork.Synchronous(async () => { await CompleteCalculationAsync(); return true; });
         }
         catch
         {
             World.Dispose();
             throw;
         }
+    }
+
+    internal async System.Threading.Tasks.Task CompleteCalculationAsync()
+    {
+        var calculate = _calculate;
+        if (calculate == null) return;
+        try { await calculate(); }
+        finally { _calculate = null; }
     }
 
     internal Entity Owner(OwnerIndex index) => index.IsEdge ? Edges[index.Index] : Nodes[index.Index];
@@ -159,12 +170,14 @@ internal sealed partial class MovableNetworkContext : IDisposable
 
     internal MovableLaneVisuals.Batch[] LaneVisuals(IReadOnlyList<OwnerIndex> owners, float3 origin)
     {
+        var snapshotKey=LaneSnapshotKey(owners,origin);
+        if(_laneSnapshots.TryGetValue(snapshotKey,out var existing))return existing;
         var entities = new Entity[owners.Count];
         for (var i = 0; i < entities.Length; i++) entities[i] = Owner(owners[i]);
         if (!MovableLaneVisuals.TryExtract(World, entities, Prefabs, _leftHandTraffic, origin,
                 out var batches, out var error))
             throw new InvalidOperationException(error);
-        return batches;
+        _laneSnapshots.Add(snapshotKey,batches);return batches;
     }
 
     internal MovableRoadObjects.Rule[] ObjectRules(Entity composition)
@@ -172,6 +185,7 @@ internal sealed partial class MovableNetworkContext : IDisposable
 
     internal BridgePreviewComposition.Piece[] Pieces(Entity composition, out NetCompositionData data)
     {
+        if(_pieceSnapshots.TryGetValue(composition,out var snapshot)){data=snapshot.Data;return snapshot.Pieces;}
         var manager = World.EntityManager;
         data = manager.GetComponentData<NetCompositionData>(composition);
         var source = manager.GetBuffer<NetCompositionPiece>(composition, true);
@@ -190,13 +204,16 @@ internal sealed partial class MovableNetworkContext : IDisposable
             result[i] = new BridgePreviewComposition.Piece(prefab, piece,
                 $"composition/section[{rootIndices[i]}]/piece[{i}]", root);
         }
-        return result;
+        _pieceSnapshots.Add(composition,(result,data));return result;
     }
 
     public void Dispose()
     {
         if (_disposed) return;
         _disposed = true;
+        _calculate = null;
+        Mod.Log.Info("Selected-road request stages: owner="+_generationOwner+"; "+_stages.Report()+"; "+_laneCompilation.Report());
+        _stages.Clear();_laneCompilation.Clear();_pieceSnapshots.Clear();_resolvedLods.Clear();_laneSnapshots.Clear();
         World.Dispose();
     }
 }

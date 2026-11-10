@@ -14,6 +14,11 @@ internal static class MovableRenderAssembly
     internal static RenderPrefab? CreateMechanism(TowerFactory factory, string name,
         IReadOnlyList<MovableRoadAssets.Level> roadLevels, IReadOnlyList<int> meshCounts,
         Func<int, int, Vector3[], int[], MovableStructureModel.Plan> buildStructure)
+        => GenerationWork.Synchronous(()=>CreateMechanismAsync(factory,name,roadLevels,meshCounts,buildStructure));
+
+    internal static async System.Threading.Tasks.Task<RenderPrefab?> CreateMechanismAsync(TowerFactory factory, string name,
+        IReadOnlyList<MovableRoadAssets.Level> roadLevels, IReadOnlyList<int> meshCounts,
+        Func<int, int, Vector3[], int[], MovableStructureModel.Plan> buildStructure)
     {
         if (roadLevels.Count != meshCounts.Count || roadLevels.Count == 0)
             throw new ArgumentException("Moving render assembly requires every measured road LOD.");
@@ -23,6 +28,7 @@ internal static class MovableRenderAssembly
         var indices = new int[roadLevels.Count][][];
         for (var lod = 0; lod < levels.Length; lod++)
         {
+            await GenerationWork.Next("structure snapshot LOD "+lod);
             Mesh[]? meshes = null;
             try
             {
@@ -50,11 +56,15 @@ internal static class MovableRenderAssembly
         var completedPlans = new MovableStructureModel.Plan[levels.Length][];
         var completedBounds = new Colossal.Mathematics.Bounds3[levels.Length];
         var snapshotMs = timer.ElapsedMilliseconds;
-        AffineGeometry.Groups(levels.Length, lod =>
+        var inputBounds = new Colossal.Mathematics.Bounds3[levels.Length];
+        for (int lod=0;lod<levels.Length;lod++) inputBounds[lod]=roadLevels[lod].RenderBounds;
+        int levelCount=levels.Length;
+        await GenerationWork.Background("structural plans and bounds", () =>
         {
-            var input = roadLevels[lod];
+        AffineGeometry.Groups(levelCount, lod =>
+        {
             var plans = new MovableStructureModel.Plan[vertices[lod].Length];
-            var bounds = input.RenderBounds;
+            var bounds = inputBounds[lod];
             for (var mesh = 0; mesh < plans.Length; mesh++)
             {
                 var plan = buildStructure(lod, mesh, vertices[lod][mesh], indices[lod][mesh]);
@@ -68,6 +78,8 @@ internal static class MovableRenderAssembly
             completedPlans[lod] = plans;
             completedBounds[lod] = bounds;
         });
+        return true;
+        });
         var planMs = timer.ElapsedMilliseconds - snapshotMs;
         for (int lod = 0; lod < levels.Length; lod++)
         {
@@ -79,7 +91,7 @@ internal static class MovableRenderAssembly
         }
         Mod.Log.Info($"{name}: structural geometry snapshotMs={snapshotMs}; parallelPlanMs={planMs}; levels={levels.Length}; totalMs={timer.ElapsedMilliseconds}.");
         var graphStart = timer.ElapsedMilliseconds;
-        var result = factory.CreateMovableRenderGraph(name, levels);
+        var result = await factory.CreateMovableRenderGraphAsync(name, levels);
         Mod.Log.Info($"{name}: native render graph assemblyMs={timer.ElapsedMilliseconds - graphStart}; structureAndGraphMs={timer.ElapsedMilliseconds}.");
         return result;
     }

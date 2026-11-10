@@ -21,21 +21,26 @@ internal sealed class Lift03RoadSampling : IMovableRoadSample
     }
 
     internal readonly MovableNetworkContext Network;
-    internal readonly MovableClosedRoad.Result MainRoad, AuxiliaryRoad;
+    internal MovableClosedRoad.Result MainRoad = null!, AuxiliaryRoad = null!;
     public string? MaterialError=>MainRoad.Error??AuxiliaryRoad.Error;
-    internal readonly Pose MainToObject, AuxiliaryToObject;
+    internal Pose MainToObject, AuxiliaryToObject;
     private readonly MovableSamplingMechanism _mechanism;
     private readonly Entity _theme;
     private readonly float3[] _origins;
     private readonly NetPieceLayerMask[] _replacedLayers;
     private readonly bool _auxiliaryOpposite;
-    internal static Lift03RoadSampling Create(string owner, Entity selectedMain, Entity selectedAuxiliary, RenderPrefab[] roots, ContentPrefab content, float halfWidthDelta, RandomSeed seed, NetPieceLayerMask mainReplacedLayers, NetPieceLayerMask auxiliaryReplacedLayers, Upgraded? mainUpgrade = null, Upgraded? auxiliaryUpgrade = null, bool auxiliaryOpposite = false)
+    internal static Lift03RoadSampling Create(string owner, Entity selectedMain, Entity selectedAuxiliary, RenderPrefab[] roots, ContentPrefab content, float halfWidthDelta, RandomSeed seed, NetPieceLayerMask mainReplacedLayers, NetPieceLayerMask auxiliaryReplacedLayers, Upgraded? mainUpgrade = null, Upgraded? auxiliaryUpgrade = null, bool auxiliaryOpposite = false) =>
+        GenerationWork.Synchronous(() => CreateAsync(owner, selectedMain, selectedAuxiliary, roots, content, halfWidthDelta, seed, mainReplacedLayers, auxiliaryReplacedLayers, mainUpgrade, auxiliaryUpgrade, auxiliaryOpposite));
+
+    internal static async System.Threading.Tasks.Task<Lift03RoadSampling> CreateAsync(string owner, Entity selectedMain, Entity selectedAuxiliary, RenderPrefab[] roots, ContentPrefab content, float halfWidthDelta, RandomSeed seed, NetPieceLayerMask mainReplacedLayers, NetPieceLayerMask auxiliaryReplacedLayers, Upgraded? mainUpgrade = null, Upgraded? auxiliaryUpgrade = null, bool auxiliaryOpposite = false)
     {
         using var environment = new MovableSamplingEnvironment(World.DefaultGameObjectInjectionWorld);
         var mechanism = new MovableSamplingMechanism(owner, roots, content, halfWidthDelta, new[] { "LiftBridge03 Mesh", "LiftBridge03Pillar Mesh", "LiftBridge03PillarBase Mesh" }, Lift03MechanismData.Meshes, Lift03MechanismData.ApplyComponents);
         try
         {
-            return new Lift03RoadSampling(owner, selectedMain, selectedAuxiliary, mechanism, environment, seed, mainReplacedLayers, auxiliaryReplacedLayers, mainUpgrade, auxiliaryUpgrade, auxiliaryOpposite);
+            var result = new Lift03RoadSampling(owner, selectedMain, selectedAuxiliary, mechanism, environment, seed, mainReplacedLayers, auxiliaryReplacedLayers, mainUpgrade, auxiliaryUpgrade, auxiliaryOpposite);
+            await result.InitializeRoadsAsync();
+            return result;
         }
         catch
         {
@@ -99,11 +104,17 @@ internal sealed class Lift03RoadSampling : IMovableRoadSample
         {
             new MovableNetworkContext.MechanismInput(mechanism.Prefab, new MovableNetworkContext.OwnerIndex(false, Numeric_Types_Lift03_Lift03RoadSampling_cs.Values.I32[23]), new Transform { m_Position = mainOrigin, m_Rotation = quaternion.identity }, Lift03NetworkData.MechanismPlacement(mechanism.Prefab), new TrafficLights { m_State = TrafficLightState.Ongoing, m_CurrentSignalGroup = (byte)(Numeric_Types_Lift03_Lift03RoadSampling_cs.Values.I32[24]), m_NextSignalGroup = (byte)(Numeric_Types_Lift03_Lift03RoadSampling_cs.Values.I32[25]), m_SignalGroupCount = (byte)(Numeric_Types_Lift03_Lift03RoadSampling_cs.Values.I32[26]) }, new PseudoRandomSeed(ref random))
         };
-        Network = new MovableNetworkContext(owner, nodes, edges, mechanisms, Array.Empty<MovableNetworkContext.MiddleInput>(), parents, environment.Terrain, environment.Theme, environment.LeftHandTraffic, seed, environment.BuildingConfiguration);
+        Network = new MovableNetworkContext(owner, nodes, edges, mechanisms, Array.Empty<MovableNetworkContext.MiddleInput>(), parents, environment.Terrain, environment.Theme, environment.LeftHandTraffic, seed, environment.BuildingConfiguration, deferCalculation: true);
+    }
+
+    private async System.Threading.Tasks.Task InitializeRoadsAsync()
+    {
         try
         {
-            MainRoad = Compile(Deck.Main, Numeric_Types_Lift03_Lift03RoadSampling_cs.Values.I32[27]);
-            AuxiliaryRoad = Compile(Deck.Auxiliary, Numeric_Types_Lift03_Lift03RoadSampling_cs.Values.I32[28]);
+            await Network.CompleteCalculationAsync();
+            await GenerationWork.Next("dual network road extraction");
+            MainRoad = await CompileAsync(Deck.Main, Numeric_Types_Lift03_Lift03RoadSampling_cs.Values.I32[27]);
+            AuxiliaryRoad = await CompileAsync(Deck.Auxiliary, Numeric_Types_Lift03_Lift03RoadSampling_cs.Values.I32[28]);
             if(MaterialError!=null)return;
             MainToObject = Network.RoadToMechanism(Numeric_Types_Lift03_Lift03RoadSampling_cs.Values.I32[29], _origins[Numeric_Types_Lift03_Lift03RoadSampling_cs.Values.I32[30]]);
             AuxiliaryToObject = Network.RoadToMechanism(Numeric_Types_Lift03_Lift03RoadSampling_cs.Values.I32[31], _origins[Numeric_Types_Lift03_Lift03RoadSampling_cs.Values.I32[32]]);
@@ -115,16 +126,18 @@ internal sealed class Lift03RoadSampling : IMovableRoadSample
         }
     }
 
-    internal MovableClosedRoad.Result CompileLod(Deck deck, int lod) => lod == Numeric_Types_Lift03_Lift03RoadSampling_cs.Values.I32[33] ? deck switch
+    internal MovableClosedRoad.Result CompileLod(Deck deck, int lod) => GenerationWork.Synchronous(() => CompileLodAsync(deck, lod));
+
+    internal async System.Threading.Tasks.Task<MovableClosedRoad.Result> CompileLodAsync(Deck deck, int lod) => lod == Numeric_Types_Lift03_Lift03RoadSampling_cs.Values.I32[33] ? deck switch
     {
         Deck.Main => MainRoad,
         Deck.Auxiliary => AuxiliaryRoad,
-        _ => throw new ArgumentOutOfRangeException(nameof(deck))} : Compile(deck, lod);
-    private MovableClosedRoad.Result Compile(Deck deck, int lod)
+        _ => throw new ArgumentOutOfRangeException(nameof(deck))} : await CompileAsync(deck, lod);
+    private System.Threading.Tasks.Task<MovableClosedRoad.Result> CompileAsync(Deck deck, int lod)
     {
         var index = DeckIndex(deck);
         var reversed = index == Numeric_Types_Lift03_Lift03RoadSampling_cs.Values.I32[34] && _auxiliaryOpposite;
-        return Network.CompileRoad(new[] { (index * Numeric_Types_Lift03_Lift03RoadSampling_cs.Values.I32[35], reversed ? MovableNetworkContext.SurfacePart.StartNode : MovableNetworkContext.SurfacePart.EndNode), (index * Numeric_Types_Lift03_Lift03RoadSampling_cs.Values.I32[36] + Numeric_Types_Lift03_Lift03RoadSampling_cs.Values.I32[37], reversed ? MovableNetworkContext.SurfacePart.EndNode : MovableNetworkContext.SurfacePart.StartNode) }, new[] { new MovableNetworkContext.OwnerIndex(false, index * Numeric_Types_Lift03_Lift03RoadSampling_cs.Values.I32[38] + Numeric_Types_Lift03_Lift03RoadSampling_cs.Values.I32[39]) }, _origins[index], replacedStructureLayers: _replacedLayers[index], trackSourceFaces: false, lod: lod);
+        return Network.CompileRoadAsync(new[] { (index * Numeric_Types_Lift03_Lift03RoadSampling_cs.Values.I32[35], reversed ? MovableNetworkContext.SurfacePart.StartNode : MovableNetworkContext.SurfacePart.EndNode), (index * Numeric_Types_Lift03_Lift03RoadSampling_cs.Values.I32[36] + Numeric_Types_Lift03_Lift03RoadSampling_cs.Values.I32[37], reversed ? MovableNetworkContext.SurfacePart.EndNode : MovableNetworkContext.SurfacePart.StartNode) }, new[] { new MovableNetworkContext.OwnerIndex(false, index * Numeric_Types_Lift03_Lift03RoadSampling_cs.Values.I32[38] + Numeric_Types_Lift03_Lift03RoadSampling_cs.Values.I32[39]) }, _origins[index], replacedStructureLayers: _replacedLayers[index], trackSourceFaces: false, lod: lod);
     }
 
     internal MovableNodeObjects.Result Objects(Deck deck)
@@ -133,7 +146,10 @@ internal sealed class Lift03RoadSampling : IMovableRoadSample
         return Network.NodeObjects(index * Numeric_Types_Lift03_Lift03RoadSampling_cs.Values.I32[40] + Numeric_Types_Lift03_Lift03RoadSampling_cs.Values.I32[41], _theme, _origins[index]);
     }
 
-    internal MovableRoadAssets.Level[]? PrepareDeck(Deck deck, IReadOnlyList<RenderPrefab> sources, float halfDelta, Matrix4x4 closedWorld, MovableRoadMaterial material, Partition sidewalk, Partition carriagewayAppearance, Partition sidewalkAppearance, MovableExistingRoadSurface.Patch[] patches)
+    internal MovableRoadAssets.Level[]? PrepareDeck(Deck deck, IReadOnlyList<RenderPrefab> sources, float halfDelta, Matrix4x4 closedWorld, MovableRoadMaterial material, Partition sidewalk, Partition carriagewayAppearance, Partition sidewalkAppearance, MovableExistingRoadSurface.Patch[] patches) =>
+        GenerationWork.Synchronous(() => PrepareDeckAsync(deck, sources, halfDelta, closedWorld, material, sidewalk, carriagewayAppearance, sidewalkAppearance, patches));
+
+    internal async System.Threading.Tasks.Task<MovableRoadAssets.Level[]?> PrepareDeckAsync(Deck deck, IReadOnlyList<RenderPrefab> sources, float halfDelta, Matrix4x4 closedWorld, MovableRoadMaterial material, Partition sidewalk, Partition carriagewayAppearance, Partition sidewalkAppearance, MovableExistingRoadSurface.Patch[] patches)
     {
         var index = DeckIndex(deck);
         var road = index == Numeric_Types_Lift03_Lift03RoadSampling_cs.Values.I32[42] ? MainRoad : AuxiliaryRoad;
@@ -150,7 +166,7 @@ internal sealed class Lift03RoadSampling : IMovableRoadSample
             }
             return family;
         }
-        return MovableRoadPreparation.Prepare(road, pose, lod => CompileLod(deck, lod), sources, halfDelta, closedWorld, material, Lift03RoadPartitions.Carriageway, sidewalk, carriagewayAppearance, sidewalkAppearance, patches, Numeric_Types_Lift03_Lift03RoadSampling_cs.Values.I32[44], layout,
+        return await MovableRoadPreparation.PrepareAsync(road, pose, lod => CompileLodAsync(deck, lod), sources, halfDelta, closedWorld, material, Lift03RoadPartitions.Carriageway, sidewalk, carriagewayAppearance, sidewalkAppearance, patches, Numeric_Types_Lift03_Lift03RoadSampling_cs.Values.I32[44], layout,
             lod => Lift03RoadAppearance.ForLevel(deck, lod, sources[lod], pose, halfDelta, layout),
             appearanceForReceiver: Appearance);
     }

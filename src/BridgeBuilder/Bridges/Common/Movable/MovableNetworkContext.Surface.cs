@@ -33,6 +33,19 @@ internal sealed partial class MovableNetworkContext
     // The requested composition must be the visible closed-road state before hiding the moving
     // network surface. The actual prepared edge/node geometry supplies its deformation frame.
     internal Surface CompileSurface(int edgeIndex, SurfacePart part, float3 origin,
+        NetPieceLayerMask replacedStructureLayers = 0, bool trackSourceFaces = true, int lod = 0) =>
+        GenerationWork.Synchronous(() => CompileSurfaceAsync(edgeIndex, part, origin, replacedStructureLayers, trackSourceFaces, lod));
+
+    internal async System.Threading.Tasks.Task<Surface> CompileSurfaceAsync(int edgeIndex, SurfacePart part, float3 origin,
+        NetPieceLayerMask replacedStructureLayers = 0, bool trackSourceFaces = true, int lod = 0)
+    {
+        try{return await _stages.Get("source-surface",SurfaceStageKey(edgeIndex,part,origin,replacedStructureLayers,trackSourceFaces,lod),
+            ()=>CompileSurfaceCoreAsync(edgeIndex,part,origin,replacedStructureLayers,trackSourceFaces,lod));}
+        catch(OperationCanceledException){throw;}
+        catch(Exception exception){return new Surface($"Native source surface: owner={_generationOwner}; edge={edgeIndex}; part={part}; LOD={lod}; {exception.Message}");}
+    }
+
+    private async System.Threading.Tasks.Task<Surface> CompileSurfaceCoreAsync(int edgeIndex, SurfacePart part, float3 origin,
         NetPieceLayerMask replacedStructureLayers = 0, bool trackSourceFaces = true, int lod = 0)
     {
         Surface Fail(string cause)=>new($"Native source surface: owner={_generationOwner}; edge={edgeIndex}; part={part}; LOD={lod}; {cause}");
@@ -58,6 +71,7 @@ internal sealed partial class MovableNetworkContext
         var sourceFaces = new BridgePreviewNetMesh.SourceFace[pieces.Length][];
         for (var i = 0; i < pieces.Length; i++)
         {
+            await GenerationWork.Checkpoint("native road surface extraction");
             sourceFaces[i] = Array.Empty<BridgePreviewNetMesh.SourceFace>();
             var piece = pieces[i];
             if (!BridgePreviewNetMesh.Visible(piece.Composition)) continue;
@@ -76,8 +90,9 @@ internal sealed partial class MovableNetworkContext
             foreach (var surface in slots)
                 if (surface == null || (surface.materialTemplateHash != 17 && surface.materialTemplateHash != 33))
                     return Fail($"'{piece.Prefab.name}' requires a different composition shader path.");
-            if (!MovableStraightRoadEvaluation.TryEvaluate(mesh, parameters, origin, i, out var triangles, out var error))
-                return Fail($"'{piece.Prefab.name}': {error}");
+            var evaluated = await MovableStraightRoadEvaluation.EvaluateAsync(mesh, parameters, origin, i);
+            if (evaluated.Error != null) return Fail($"'{piece.Prefab.name}': {evaluated.Error}");
+            var triangles = evaluated.Triangles;
             sourceFaces[i] = faces?.ToArray() ?? Array.Empty<BridgePreviewNetMesh.SourceFace>();
             var first = surfaces.Count;
             foreach (var triangle in triangles)
@@ -93,12 +108,28 @@ internal sealed partial class MovableNetworkContext
         // extracted independently from native SubLane entities in CompileRoad.
         return new Surface(output.ToArray(), surfaces.ToArray(), pieces, data, sourceFaces);
         }
+        catch(OperationCanceledException){throw;}
         catch(Exception exception){return Fail(exception.Message);}
     }
 
     // All contributions share one closed-pose coordinate frame. Compile lane visuals once over
     // the combined receivers, so a lane crossing an edge/node seam is not truncated to one part.
     internal MovableClosedRoad.Result CompileRoad(IReadOnlyList<(int Edge, SurfacePart Part)> contributions,
+        IReadOnlyList<OwnerIndex> laneOwners, float3 origin,
+        NetPieceLayerMask replacedStructureLayers = 0, bool trackSourceFaces = true, int lod = 0) =>
+        GenerationWork.Synchronous(() => CompileRoadAsync(contributions, laneOwners, origin, replacedStructureLayers, trackSourceFaces, lod));
+
+    internal async System.Threading.Tasks.Task<MovableClosedRoad.Result> CompileRoadAsync(IReadOnlyList<(int Edge, SurfacePart Part)> contributions,
+        IReadOnlyList<OwnerIndex> laneOwners, float3 origin,
+        NetPieceLayerMask replacedStructureLayers = 0, bool trackSourceFaces = true, int lod = 0)
+    {
+        try{return await _stages.Get("source-road",RoadStageKey(contributions,laneOwners,origin,replacedStructureLayers,trackSourceFaces,lod),
+            ()=>CompileRoadCoreAsync(contributions,laneOwners,origin,replacedStructureLayers,trackSourceFaces,lod));}
+        catch(OperationCanceledException){throw;}
+        catch(Exception exception){return new MovableClosedRoad.Result($"Native closed road: owner={_generationOwner}; LOD={lod}; {exception.Message}");}
+    }
+
+    private async System.Threading.Tasks.Task<MovableClosedRoad.Result> CompileRoadCoreAsync(IReadOnlyList<(int Edge, SurfacePart Part)> contributions,
         IReadOnlyList<OwnerIndex> laneOwners, float3 origin,
         NetPieceLayerMask replacedStructureLayers = 0, bool trackSourceFaces = true, int lod = 0)
     {
@@ -115,7 +146,7 @@ internal sealed partial class MovableNetworkContext
         for (var i = 0; i < contributions.Count; i++)
         {
             var input = contributions[i];
-            var surface = CompileSurface(input.Edge, input.Part, origin, replacedStructureLayers, trackSourceFaces, lod);
+            var surface = await CompileSurfaceAsync(input.Edge, input.Part, origin, replacedStructureLayers, trackSourceFaces, lod);
             if(surface.Error!=null)return Fail(surface.Error);
             var firstMaterial = materials.Count;
             var firstOccurrence = occurrences.Count;
@@ -134,8 +165,15 @@ internal sealed partial class MovableNetworkContext
         }
         if (triangles.Count == 0)
             return Fail("The selected closed-road contributions contain no visible surface.");
-        var result = new MovableClosedRoad.Result(triangles.ToArray(), materials.ToArray(), occurrences.ToArray(),
-            compositions, occurrenceStarts, LaneVisuals(laneOwners, origin), rules, sourceFaces.ToArray(), lod);
+        var packedTriangles=triangles.ToArray();var packedMaterials=materials.ToArray();var packedOccurrences=occurrences.ToArray();
+        var receiverRoles=await MovableSidewalkFaces.CreateAsync(packedTriangles,packedMaterials,packedOccurrences);
+        if(receiverRoles.Error!=null)return Fail(receiverRoles.Error);
+        var resolvedTriangles=await GenerationWork.Background("road receiver coverage",()=>
+            MovableRoadCoverage.ResolveFaces(packedTriangles,receiverRoles.Walk,receiverRoles.Curb));
+        var result = new MovableClosedRoad.Result(resolvedTriangles, packedMaterials, packedOccurrences,
+            compositions, occurrenceStarts, LaneVisuals(laneOwners, origin), rules, sourceFaces.ToArray(), lod, deferLanes: true,
+            receiverRoles:receiverRoles,resolvedFaces:true);
+        result.LaneGeometry = await MovableLaneGeometry.CompileAsync(result.LaneVisuals, result.Triangles, lod, _laneCompilation);
         if(result.Sidewalks.Error!=null)return Fail(result.Sidewalks.Error);
         var centers = new List<UnityEngine.Vector3>();
         var roadLanes = new List<RoadLane>();
@@ -179,6 +217,7 @@ internal sealed partial class MovableNetworkContext
         result.LaneContext = "owner="+_generationOwner+"; sources="+string.Join("|",laneSources);
         return result;
         }
+        catch(OperationCanceledException){throw;}
         catch(Exception exception){return Fail(exception.Message);}
     }
 

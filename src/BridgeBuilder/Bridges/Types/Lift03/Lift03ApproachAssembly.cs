@@ -7,8 +7,12 @@ using UnityEngine;
 namespace BridgeBuilder.Bridges;
 internal static class Lift03ApproachAssembly
 {
-    internal static void Apply(NetGeometryPrefab target, TowerFactory factory, ContentPrefab content, float halfWidthDelta)
+    internal static void Apply(NetGeometryPrefab target, TowerFactory factory, ContentPrefab content, float halfWidthDelta) =>
+        GenerationWork.Synchronous(async () => { await ApplyAsync(target, factory, content, halfWidthDelta); return true; });
+
+    internal static async System.Threading.Tasks.Task ApplyAsync(NetGeometryPrefab target, TowerFactory factory, ContentPrefab content, float halfWidthDelta)
     {
+        await GenerationWork.Next("support Lift03ApproachAssembly.Apply");
         using var sources = new Lift03ApproachSources(content);
         var root = (NetPiecePrefab)sources.Roots[Numeric_Types_Lift03_Lift03ApproachAssembly_cs.Values.I32[0]];
         var children = root.GetComponent<LodProperties>().m_LodMeshes;
@@ -28,7 +32,9 @@ internal static class Lift03ApproachAssembly
                 meshes = PrivateGeometryReader.Read(original);
                 if (meshes.Length != Numeric_Types_Lift03_Lift03ApproachAssembly_cs.Values.I32[4] || meshes[Numeric_Types_Lift03_Lift03ApproachAssembly_cs.Values.I32[5]].subMeshCount != Numeric_Types_Lift03_Lift03ApproachAssembly_cs.Values.I32[6])
                     throw new InvalidOperationException("Lift03 approach requires its recorded single native surface slot.");
-                var plan = Lift03ApproachStructure.Create(lod, meshes[Numeric_Types_Lift03_Lift03ApproachAssembly_cs.Values.I32[7]].vertices, meshes[Numeric_Types_Lift03_Lift03ApproachAssembly_cs.Values.I32[8]].GetIndices(Numeric_Types_Lift03_Lift03ApproachAssembly_cs.Values.I32[9]), halfWidthDelta);
+                var supportInput0 = meshes[Numeric_Types_Lift03_Lift03ApproachAssembly_cs.Values.I32[7]].vertices;
+                var supportInput1 = meshes[Numeric_Types_Lift03_Lift03ApproachAssembly_cs.Values.I32[8]].GetIndices(Numeric_Types_Lift03_Lift03ApproachAssembly_cs.Values.I32[9]);
+                var plan = await GenerationWork.Background("support structure plan", () => Lift03ApproachStructure.Create(lod, supportInput0, supportInput1, halfWidthDelta));
                 var bounds = original.bounds;
                 bounds.min.x = plan.Positions.Min(position => position.x);
                 bounds.max.x = plan.Positions.Max(position => position.x);
@@ -40,7 +46,7 @@ internal static class Lift03ApproachAssembly
             }
         }
 
-        var generated = factory.CreateMovableRenderGraph(target.name + " Fixed Approach", levels) as NetPiecePrefab ?? throw new InvalidOperationException("Lift03 approach render creation failed.");
+        var generated = await factory.CreateMovableRenderGraphAsync(target.name + " Fixed Approach", levels) as NetPiecePrefab ?? throw new InvalidOperationException("Lift03 approach render creation failed.");
         generated.m_Width = root.m_Width + Numeric_Types_Lift03_Lift03ApproachAssembly_cs.Values.F32[0] * halfWidthDelta;
         Lift03ApproachLayout.Apply(target, factory, new[] { generated }, content);
         factory.ExpandMovableNetworkAppearance();

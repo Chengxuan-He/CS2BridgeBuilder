@@ -6,8 +6,12 @@ using UnityEngine;
 namespace BridgeBuilder.Bridges;
 internal static class Draw03SupportAssembly
 {
-    internal static RenderPrefab? Create(TowerFactory factory, string name, RenderPrefab source, bool footing, float halfWidthDelta)
+    internal static RenderPrefab? Create(TowerFactory factory, string name, RenderPrefab source, bool footing, float halfWidthDelta) =>
+        GenerationWork.Synchronous(() => CreateAsync(factory, name, source, footing, halfWidthDelta));
+
+    internal static async System.Threading.Tasks.Task<RenderPrefab?> CreateAsync(TowerFactory factory, string name, RenderPrefab source, bool footing, float halfWidthDelta)
     {
+        await GenerationWork.Next("support Draw03SupportAssembly.Create");
         var lods = source.GetComponent<LodProperties>()?.m_LodMeshes;
         if (lods == null || lods.Length != Numeric_Types_Draw03_Draw03SupportAssembly_cs.Values.I32[0])
             throw new InvalidOperationException("Draw03 supports require their three recorded native LODs.");
@@ -30,7 +34,11 @@ internal static class Draw03SupportAssembly
                 meshes = PrivateGeometryReader.Read(original);
                 if (meshes.Length != Numeric_Types_Draw03_Draw03SupportAssembly_cs.Values.I32[6] || meshes[Numeric_Types_Draw03_Draw03SupportAssembly_cs.Values.I32[7]].subMeshCount != Numeric_Types_Draw03_Draw03SupportAssembly_cs.Values.I32[8])
                     throw new InvalidOperationException("Draw03 supports require their recorded single native surface slot.");
-                var plan = lod == Numeric_Types_Draw03_Draw03SupportAssembly_cs.Values.I32[9] ? Draw03FarSupports.Create(footing, meshes[Numeric_Types_Draw03_Draw03SupportAssembly_cs.Values.I32[10]].vertices, meshes[Numeric_Types_Draw03_Draw03SupportAssembly_cs.Values.I32[11]].GetIndices(Numeric_Types_Draw03_Draw03SupportAssembly_cs.Values.I32[12]), halfWidthDelta) : Draw03DetailedSupports.Create(footing, lod, meshes[Numeric_Types_Draw03_Draw03SupportAssembly_cs.Values.I32[13]].vertices, meshes[Numeric_Types_Draw03_Draw03SupportAssembly_cs.Values.I32[14]].GetIndices(Numeric_Types_Draw03_Draw03SupportAssembly_cs.Values.I32[15]), halfWidthDelta);
+                var supportInput0 = meshes[Numeric_Types_Draw03_Draw03SupportAssembly_cs.Values.I32[10]].vertices;
+                var supportInput1 = meshes[Numeric_Types_Draw03_Draw03SupportAssembly_cs.Values.I32[11]].GetIndices(Numeric_Types_Draw03_Draw03SupportAssembly_cs.Values.I32[12]);
+                var supportInput2 = meshes[Numeric_Types_Draw03_Draw03SupportAssembly_cs.Values.I32[13]].vertices;
+                var supportInput3 = meshes[Numeric_Types_Draw03_Draw03SupportAssembly_cs.Values.I32[14]].GetIndices(Numeric_Types_Draw03_Draw03SupportAssembly_cs.Values.I32[15]);
+                var plan = await GenerationWork.Background("support structure plan", () => lod == Numeric_Types_Draw03_Draw03SupportAssembly_cs.Values.I32[9] ? Draw03FarSupports.Create(footing, supportInput0, supportInput1, halfWidthDelta) : Draw03DetailedSupports.Create(footing, lod, supportInput2, supportInput3, halfWidthDelta));
                 var bounds = original.bounds;
                 bounds.min.x -= halfWidthDelta;
                 bounds.max.x += halfWidthDelta;
@@ -43,7 +51,7 @@ internal static class Draw03SupportAssembly
             }
         }
 
-        return factory.CreateMovableRenderGraph(name, levels);
+        return await factory.CreateMovableRenderGraphAsync(name, levels);
     }
 }
 

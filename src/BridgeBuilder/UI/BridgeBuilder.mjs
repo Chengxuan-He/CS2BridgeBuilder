@@ -162,7 +162,15 @@ function bindCardName(view, text, active) {
         frame = requestAnimationFrame(animate);
     };
     const measure = () => {
-        const width = text.parentElement.getBoundingClientRect().width;
+        // Use one measured coordinate system for the text baselines and fade bands.
+        // Cohtml flex percentage margins must not decide the reserved outer space.
+        const viewportWidth = Math.max(0, view.getBoundingClientRect().width);
+        const inset = viewportWidth * 0.08;
+        const width = viewportWidth - 2 * inset;
+        const area = text.parentElement;
+        area.style.width = `${width}px`;
+        area.style.marginLeft = `${inset}px`;
+        area.style.marginRight = `${inset}px`;
         const bounds = text.getBoundingClientRect();
         const excess = width > 0 ? Math.max(0, bounds.width - width) : 0;
         if (frame) cancelAnimationFrame(frame);

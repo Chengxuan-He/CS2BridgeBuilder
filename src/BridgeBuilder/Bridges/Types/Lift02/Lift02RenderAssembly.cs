@@ -6,6 +6,9 @@ namespace BridgeBuilder.Bridges;
 internal static class Lift02RenderAssembly
 {
     internal static RenderPrefab? CreateMechanism(TowerFactory factory, string name, IReadOnlyList<MovableRoadAssets.Level> roadLevels, float halfWidthDelta)
+        => GenerationWork.Synchronous(()=>CreateMechanismAsync(factory,name,roadLevels,halfWidthDelta));
+
+    internal static async System.Threading.Tasks.Task<RenderPrefab?> CreateMechanismAsync(TowerFactory factory, string name, IReadOnlyList<MovableRoadAssets.Level> roadLevels, float halfWidthDelta)
     {
         var expected = new[]
         {
@@ -22,7 +25,7 @@ internal static class Lift02RenderAssembly
                 throw new InvalidOperationException($"Lift02 LOD {lod} requires its reconstructed native source.");
         }
 
-        return MovableRenderAssembly.CreateMechanism(factory, name, roadLevels, new[] { Numeric_Types_Lift02_Lift02RenderAssembly_cs.Values.I32[1], Numeric_Types_Lift02_Lift02RenderAssembly_cs.Values.I32[2], Numeric_Types_Lift02_Lift02RenderAssembly_cs.Values.I32[3] }, (lod, mesh, source, indices) => mesh == Numeric_Types_Lift02_Lift02RenderAssembly_cs.Values.I32[4] ? Lift02Glass.Create(lod, source, indices, halfWidthDelta) : Lift02StructurePlan.Create(lod, source, indices, halfWidthDelta));
+        return await MovableRenderAssembly.CreateMechanismAsync(factory, name, roadLevels, new[] { Numeric_Types_Lift02_Lift02RenderAssembly_cs.Values.I32[1], Numeric_Types_Lift02_Lift02RenderAssembly_cs.Values.I32[2], Numeric_Types_Lift02_Lift02RenderAssembly_cs.Values.I32[3] }, (lod, mesh, source, indices) => mesh == Numeric_Types_Lift02_Lift02RenderAssembly_cs.Values.I32[4] ? Lift02Glass.Create(lod, source, indices, halfWidthDelta) : Lift02StructurePlan.Create(lod, source, indices, halfWidthDelta));
     }
 }
 

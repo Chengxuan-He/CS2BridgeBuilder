@@ -29,22 +29,23 @@ internal sealed class Draw02BridgeGenerator : MovableBridgeGeneratorBase<Movable
     }
 
     protected override MovableStraightSample SampleRoad(string owner, Entity selectedRoad, RenderPrefab[] roots, ContentPrefab content, float halfDelta, RandomSeed seed) => Draw02RoadSampling.Create(owner, selectedRoad, roots, content, halfDelta, seed);
-    protected override RenderPrefab? BuildMechanism(TowerFactory factory, string owner, MovableStraightSample road, RenderPrefab[] nativeLevels, float halfDelta, MovableRoadMaterial material)
+    protected override System.Threading.Tasks.Task<MovableStraightSample> SampleRoadAsync(string owner, Entity selectedRoad, RenderPrefab[] roots, ContentPrefab content, float halfDelta, RandomSeed seed) => Draw02RoadSampling.CreateAsync(owner, selectedRoad, roots, content, halfDelta, seed);
+    protected override async System.Threading.Tasks.Task<RenderPrefab?> BuildMechanismAsync(TowerFactory factory, string owner, MovableStraightSample road, RenderPrefab[] nativeLevels, float halfDelta, MovableRoadMaterial material)
     {
         var layout = new MovableSelectedRoadLayout(road.Road, road.RoadToObject, "Draw02");
-        var levels = Draw02RoadSampling.PrepareRenderLevels(road, nativeLevels, halfDelta, Matrix4x4.Translate(new Vector3(Numeric_Types_Draw02_Draw02BridgeGenerator_cs.Values.F32[0], Numeric_Types_Draw02_Draw02BridgeGenerator_cs.Values.F32[1], Numeric_Types_Draw02_Draw02BridgeGenerator_cs.Values.F32[2])), material, layout);
+        var levels = await Draw02RoadSampling.PrepareRenderLevelsAsync(road, nativeLevels, halfDelta, Matrix4x4.Translate(new Vector3(Numeric_Types_Draw02_Draw02BridgeGenerator_cs.Values.F32[0], Numeric_Types_Draw02_Draw02BridgeGenerator_cs.Values.F32[1], Numeric_Types_Draw02_Draw02BridgeGenerator_cs.Values.F32[2])), material, layout);
         if (levels == null) return null;
-        return Draw02RenderAssembly.CreateMechanism(factory, owner + " Mechanism", levels, halfDelta, layout);
+        return await Draw02RenderAssembly.CreateMechanismAsync(factory, owner + " Mechanism", levels, halfDelta, layout);
     }
 
-    protected override void AssembleBridge(NetGeometryPrefab target, TowerFactory factory, RenderPrefab[] roots, ContentPrefab content, float halfDelta, MovableStraightSample road, RenderPrefab moving)
+    protected override async System.Threading.Tasks.Task AssembleBridgeAsync(NetGeometryPrefab target, TowerFactory factory, RenderPrefab[] roots, ContentPrefab content, float halfDelta, MovableStraightSample road, RenderPrefab moving)
     {
-        var column = Draw02SupportAssembly.Create(factory, target.name + " Column", roots[Numeric_Types_Draw02_Draw02BridgeGenerator_cs.Values.I32[0]], true, halfDelta) ?? throw new InvalidOperationException("Draw02 support render graph creation failed.");
-        var footing = Draw02SupportAssembly.Create(factory, target.name + " Footing", roots[Numeric_Types_Draw02_Draw02BridgeGenerator_cs.Values.I32[1]], false, halfDelta) ?? throw new InvalidOperationException("Draw02 footing render graph creation failed.");
-        var mechanism = Draw02ObjectAssembly.Create(factory, target.name, target.name + " Moving Object", moving, column, footing, content, factory.ResolveOriginal<ObjectPrefab>, halfDelta, road);
+        var column = await Draw02SupportAssembly.CreateAsync(factory, target.name + " Column", roots[Numeric_Types_Draw02_Draw02BridgeGenerator_cs.Values.I32[0]], true, halfDelta) ?? throw new InvalidOperationException("Draw02 support render graph creation failed.");
+        var footing = await Draw02SupportAssembly.CreateAsync(factory, target.name + " Footing", roots[Numeric_Types_Draw02_Draw02BridgeGenerator_cs.Values.I32[1]], false, halfDelta) ?? throw new InvalidOperationException("Draw02 footing render graph creation failed.");
+        var mechanism = await Draw02ObjectAssembly.CreateAsync(factory, target.name, target.name + " Moving Object", moving, column, footing, content, factory.ResolveOriginal<ObjectPrefab>, halfDelta, road);
         if(mechanism==null)return;
-        var pillar = Draw02PillarAssembly.Create(factory, target.name + " Pillar", factory.ResolveOriginal<RenderPrefab>("Default_Base Mesh"), content, halfDelta) ?? throw new InvalidOperationException("Draw02 ordinary pillar creation failed.");
-        Draw02ApproachAssembly.Apply(target, factory, content, halfDelta);
+        var pillar = await Draw02PillarAssembly.CreateAsync(factory, target.name + " Pillar", factory.ResolveOriginal<RenderPrefab>("Default_Base Mesh"), content, halfDelta) ?? throw new InvalidOperationException("Draw02 ordinary pillar creation failed.");
+        await Draw02ApproachAssembly.ApplyAsync(target, factory, content, halfDelta);
         Draw02NetworkAssembly.Apply(target, factory, pillar, mechanism);
     }
 }

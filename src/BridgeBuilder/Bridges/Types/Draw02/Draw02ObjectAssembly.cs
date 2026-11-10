@@ -9,8 +9,12 @@ using UnityEngine;
 namespace BridgeBuilder.Bridges;
 internal static class Draw02ObjectAssembly
 {
-    internal static StaticObjectPrefab Create(TowerFactory factory, string owner, string name, RenderPrefab mechanism, RenderPrefab column, RenderPrefab footing, ContentPrefab content, Func<string, ObjectPrefab> resolveOriginal, float halfWidthDelta, MovableStraightSample road)
+    internal static StaticObjectPrefab Create(TowerFactory factory, string owner, string name, RenderPrefab mechanism, RenderPrefab column, RenderPrefab footing, ContentPrefab content, Func<string, ObjectPrefab> resolveOriginal, float halfWidthDelta, MovableStraightSample road) =>
+        GenerationWork.Synchronous(() => CreateAsync(factory, owner, name, mechanism, column, footing, content, resolveOriginal, halfWidthDelta, road));
+
+    internal static async System.Threading.Tasks.Task<StaticObjectPrefab> CreateAsync(TowerFactory factory, string owner, string name, RenderPrefab mechanism, RenderPrefab column, RenderPrefab footing, ContentPrefab content, Func<string, ObjectPrefab> resolveOriginal, float halfWidthDelta, MovableStraightSample road)
     {
+        await GenerationWork.Next("support Draw02ObjectAssembly.Create");
         var authored = Draw02MechanismData.StructuralAttachments(resolveOriginal);
         var attachments = new List<ObjectSubObjectInfo>(authored.Length);
         var imported = Path.Combine(Application.persistentDataPath, "ImportedData");
@@ -35,7 +39,7 @@ internal static class Draw02ObjectAssembly
         var partitions = new MovableRoadGeometry.Partition[objects.Placements.Length];
         Array.Fill(partitions, Draw02RoadPartitions.Carriageway);
         factory.AttachMovableRoadObjects(result, objects.Placements, road.RoadToObject, partitions);
-        if(!factory.TryAttachMovablePaint(result, road.Road.LaneGeometry.Decals, road.RoadToObject, Draw02RoadPartitions.FixedPaint, MovableRoadGeometry.InFrame(road.Road.Triangles, road.RoadToObject),out _))return null!;
+        if(!(await factory.AttachMovablePaintAsync(result, road.Road.LaneGeometry.Decals, road.RoadToObject, Draw02RoadPartitions.FixedPaint, MovableRoadGeometry.InFrame(road.Road.Triangles, road.RoadToObject))).Success)return null!;
         return result;
     }
 }

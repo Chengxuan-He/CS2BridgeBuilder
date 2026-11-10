@@ -8,8 +8,12 @@ using UnityEngine;
 namespace BridgeBuilder.Bridges;
 internal static class Draw03ObjectAssembly
 {
-    internal static StaticObjectPrefab Create(TowerFactory factory, string owner, string name, RenderPrefab mechanism, RenderPrefab column, RenderPrefab footing, ContentPrefab content, float halfWidthDelta, MovableStraightSample road)
+    internal static StaticObjectPrefab Create(TowerFactory factory, string owner, string name, RenderPrefab mechanism, RenderPrefab column, RenderPrefab footing, ContentPrefab content, float halfWidthDelta, MovableStraightSample road) =>
+        GenerationWork.Synchronous(() => CreateAsync(factory, owner, name, mechanism, column, footing, content, halfWidthDelta, road));
+
+    internal static async System.Threading.Tasks.Task<StaticObjectPrefab> CreateAsync(TowerFactory factory, string owner, string name, RenderPrefab mechanism, RenderPrefab column, RenderPrefab footing, ContentPrefab content, float halfWidthDelta, MovableStraightSample road)
     {
+        await GenerationWork.Next("support Draw03ObjectAssembly.Create");
         var attachments = Draw03MechanismData.StructuralAttachments(factory.ResolveOriginal<ObjectPrefab>);
         var imported = Path.Combine(Application.persistentDataPath, "ImportedData");
         foreach (var item in attachments)
@@ -32,7 +36,7 @@ internal static class Draw03ObjectAssembly
         // Furniture stations are away from the domain-specific centre gaps.
         Array.Fill(partitions, Draw03RoadPartitions.Carriageway);
         factory.AttachMovableRoadObjects(result, objects.Placements, road.RoadToObject, partitions);
-        if(!factory.TryAttachMovablePaint(result, road.Road.LaneGeometry.Decals, road.RoadToObject, Draw03RoadPartitions.Carriageway, MovableRoadGeometry.InFrame(road.Road.Triangles, road.RoadToObject),out _))return null!;
+        if(!(await factory.AttachMovablePaintAsync(result, road.Road.LaneGeometry.Decals, road.RoadToObject, Draw03RoadPartitions.Carriageway, MovableRoadGeometry.InFrame(road.Road.Triangles, road.RoadToObject))).Success)return null!;
         return result;
     }
 }

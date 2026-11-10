@@ -11,6 +11,8 @@ namespace BridgeBuilder.Bridges;
 internal static class Lift02RoadSampling
 {
     internal static MovableStraightSample Create(string owner, Entity selectedRoad, RenderPrefab[] roots, ContentPrefab content, float halfWidthDelta, RandomSeed seed, NetPieceLayerMask replacedLayers, Upgraded? upgrade = null) => MovableStraightSample.Create(owner, selectedRoad, roots, content, halfWidthDelta, seed, new[] { "LiftBridge02 Mesh", "LiftBridge02Pillar Mesh", "LiftBridge02PillarBase Mesh" }, Lift02MechanismData.Meshes, Lift02MechanismData.ApplyComponents, Lift02NetworkData.MechanismPlacement, Numeric_Types_Lift02_Lift02RoadSampling_cs.Values.F32[0], Numeric_Types_Lift02_Lift02RoadSampling_cs.Values.F32[1], replacedLayers, upgrade);
+
+    internal static System.Threading.Tasks.Task<MovableStraightSample> CreateAsync(string owner, Entity selectedRoad, RenderPrefab[] roots, ContentPrefab content, float halfWidthDelta, RandomSeed seed, NetPieceLayerMask replacedLayers, Upgraded? upgrade = null) => MovableStraightSample.CreateAsync(owner, selectedRoad, roots, content, halfWidthDelta, seed, new[] { "LiftBridge02 Mesh", "LiftBridge02Pillar Mesh", "LiftBridge02PillarBase Mesh" }, Lift02MechanismData.Meshes, Lift02MechanismData.ApplyComponents, Lift02NetworkData.MechanismPlacement, Numeric_Types_Lift02_Lift02RoadSampling_cs.Values.F32[0], Numeric_Types_Lift02_Lift02RoadSampling_cs.Values.F32[1], replacedLayers, upgrade);
 }
 
 // Embedded numerical arrays: Types_Lift02_Lift02RoadSampling_cs

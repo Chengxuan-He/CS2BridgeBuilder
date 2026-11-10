@@ -26,9 +26,46 @@ namespace BridgeBuilder.Systems;
 
 public partial class BridgeGenerationSystem
 {
+    private GenerationWork? _previewWork;
+
+    private bool UpdatePreviewWork()
+    {
+        var work = _previewWork;
+        if (work == null) return false;
+        if (_previewRevision != BridgePreviewState.Revision || BridgePreviewState.Selection == null)
+            work.Cancel();
+        else work.Tick();
+        if (work.IsComplete)
+        {
+            _previewWork = null;
+            try { work.Completion?.GetAwaiter().GetResult(); }
+            catch (OperationCanceledException) { _previewReleasePending = true; }
+            catch (Exception exception)
+            {
+                Mod.Log.Error(exception, "Bridge preview continuation failed.");
+                FailPreview(_previewRevision, "PreviewFailed");
+            }
+            work.Report();
+            if (_previewReleasePending) ClearPreview();
+        }
+        // Do not admit another request into the same update as an old continuation.
+        return true;
+    }
+
     private void ClearPreview()
     {
         if (_materialPreviewRevision.HasValue) CancelMaterialPreparation();
+        var work = _previewWork;
+        if (work != null)
+        {
+            work.Cancel();
+            if (!work.IsComplete) { _previewReleasePending = true; return; }
+            _previewWork = null;
+            try { work.Completion?.GetAwaiter().GetResult(); }
+            catch (OperationCanceledException) { }
+            catch (Exception exception) { Mod.Log.Error(exception, "Cancelled preview cleanup failed."); }
+            work.Report();
+        }
         _previewReleasePending = false;
         _previewRenderer?.Dispose();
         _previewRenderer = null;
@@ -52,6 +89,25 @@ public partial class BridgeGenerationSystem
                 }, revision);
                 return;
             }
+            var work = new GenerationWork("preview/" + revision,
+                () => World.IsCreated && revision == BridgePreviewState.Revision && BridgePreviewState.Selection != null);
+            _previewWork = work;
+            work.Start(() => BuildPreviewAsync(request, revision));
+        }
+        catch (Exception exception)
+        {
+            Mod.Log.Error(exception, "Bridge preview setup failed.");
+            FailPreview(revision, "PreviewFailed");
+        }
+    }
+
+    private async System.Threading.Tasks.Task BuildPreviewAsync(BridgeRuntimeRequest request, int revision)
+    {
+        // The material preparation callback releases its own reference as soon as it returns.
+        using var files = BridgePreparedMaterials.RequestFiles?.Retain();
+        try
+        {
+            await GenerationWork.Next("preview setup");
             if (!string.IsNullOrEmpty(request.PrefabName))
             {
                 var assetInfo = BridgeAssetCatalog.Find(request.PrefabName);
@@ -85,25 +141,28 @@ public partial class BridgeGenerationSystem
                 {
                     DoubleDeck = doubleDeck, LowerDeckId = lower?.Id, LowerDeckOpposite = request.LowerDeckOpposite
                 };
-                if (!TryBuildBridge(upper, lower, style, _previewSession.Name, options, false,
+                if (!await BuildBridgeCoreAsync(upper, lower, style, _previewSession.Name, options, false,
                         new ExportReport(), _previewSession))
                 {
                     FailPreview(revision, "PreviewBuildFailed");
-                    ClearPreview();
+                    _previewReleasePending = true;
                     return;
                 }
             }
+            await GenerationWork.Next("preview scene expansion");
             _previewDraws = new BridgePreviewDrawList(_previewSession);
-            if (!BridgePreviewScene.Build(_previewSession, _previewDraws))
+            if (!await BridgePreviewScene.BuildAsync(_previewSession, _previewDraws))
             {
                 FailPreview(revision, "PreviewAssemblyFailed");
-                ClearPreview();
+                _previewReleasePending = true;
                 return;
             }
             // Own the renderer before native allocation starts, so ClearPreview
             // also releases a partially initialized scene/camera after an error.
+            await GenerationWork.Next("preview renderer initialization");
             _previewRenderer = new BridgePreviewRenderer();
-            _previewRenderer.Initialize(_previewSession.Name, _previewDraws);
+            await _previewRenderer.InitializeAsync(_previewSession.Name, _previewDraws);
+            await GenerationWork.Next("preview renderer start");
             _previewRenderer.Start((image, error) =>
             {
                 if (revision != BridgePreviewState.Revision || BridgePreviewState.Selection == null) return;
@@ -113,11 +172,12 @@ public partial class BridgeGenerationSystem
                     BridgePreviewState.Publish(revision, image, "PreviewReady");
             });
         }
+        catch (OperationCanceledException) { throw; }
         catch (Exception exception)
         {
             Mod.Log.Error(exception, "Bridge preview failed.");
             FailPreview(revision, "PreviewFailed");
-            ClearPreview();
+            _previewReleasePending = true;
         }
     }
 

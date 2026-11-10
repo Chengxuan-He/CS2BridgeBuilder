@@ -6,3 +6,71 @@ uint VertexCount; uint VertexStart;
 precise float2 Oct(float3 n){precise float sum=abs(n.x)+abs(n.y)+abs(n.z);precise float r=sum==0?0:1.0f/sum;precise float x=n.x*r;precise float y=n.y*r;return float2(n.z>=0?x:(1-abs(y))*(x>=0?1:-1),n.z>=0?y:(1-abs(x))*(y>=0?1:-1));}
 int Q(float v,float m){precise float a=clamp(v,-1,1)*m;precise float b=a+(v>=0?0.5f:-0.5f);return (int)b;}
 [numthreads(64,1,1)]void Encode(uint3 id:SV_DispatchThreadID){uint i=id.x+VertexStart;if(i>=VertexCount)return;uint s=(i/3)*232+(i%3)*72;uint d=i*44;Encoded.Store3(d,Bound.Load3(s));float2 n=Oct(asfloat(Bound.Load3(s+12)));uint normal=(Q(n.x,32767)&65535)|((Q(n.y,32767)&65535)<<16);float4 t=asfloat(Bound.Load4(s+24));float2 o=Oct(t.xyz);uint tangent=(Q(o.x,16383)&32767)|((Q(o.y,16383)&32767)<<16)|(t.w<0?0x80000000:0);Encoded.Store(d+12,normal);Encoded.Store(d+16,tangent);Encoded.Store4(d+20,Bound.Load4(s+40));uint4 c=(uint4)round(saturate(asfloat(Bound.Load4(s+56)))*255);Encoded.Store(d+36,c.x|(c.y<<8)|(c.z<<16)|(c.w<<24));Encoded.Store(d+40,Bound.Load((i/3)*232+228));}
+#pragma kernel Summarize
+#pragma kernel EncodeNative
+#pragma kernel VerifyNative
+StructuredBuffer<uint2> Scatter;
+StructuredBuffer<uint4> Layouts;
+RWStructuredBuffer<uint> Summary;
+RWByteAddressBuffer NativeData;
+uint BoneCount; uint MaterialCount;
+uint Ordered(uint x){return (x&0x80000000)?~x:(x^0x80000000);}
+void Error(uint g,uint flag){InterlockedOr(Summary[g*8+7],flag);}
+[numthreads(64,1,1)]void Summarize(uint3 id:SV_DispatchThreadID)
+{
+ uint i=id.x+VertexStart;if(i>=VertexCount)return;
+ uint tri=i/3,s=tri*232+(i%3)*72,g=Scatter[tri].y;
+ bool valid=true;for(uint k=0;k<18;k++)valid=valid&&isfinite(asfloat(Bound.Load(s+k*4)));
+ float3 n=asfloat(Bound.Load3(s+12));float4 t=asfloat(Bound.Load4(s+24));
+ if(!valid||dot(n,n)<=0||dot(t.xyz,t.xyz)<=0||(t.w!=1&&t.w!=-1))Error(g,1);
+ if(Bound.Load(tri*232+216)>=MaterialCount||Bound.Load(tri*232+228)>=BoneCount)Error(g,2);
+ for(uint axis=0;axis<3;axis++){uint v=Ordered(Bound.Load(s+axis*4));InterlockedMin(Summary[g*8+axis],v);InterlockedMax(Summary[g*8+3+axis],v);}
+ float2 extra=asfloat(Bound.Load2(s+48));if(any(extra!=0))InterlockedOr(Summary[g*8+6],1);
+}
+[numthreads(64,1,1)]void EncodeNative(uint3 id:SV_DispatchThreadID)
+{
+ uint i=id.x+VertexStart;if(i>=VertexCount)return;
+ uint tri=i/3,s=tri*232+(i%3)*72;uint2 map=Scatter[tri];uint4 l=Layouts[map.y];uint v=map.x*3+i%3,N=l.y,D=l.z,b=l.x;
+ NativeData.Store3((b+v*3)*4,Bound.Load3(s));
+ float2 n=Oct(asfloat(Bound.Load3(s+12)));uint normal=(Q(n.x,32767)&65535)|((Q(n.y,32767)&65535)<<16);
+ float4 t=asfloat(Bound.Load4(s+24));float2 o=Oct(t.xyz);uint tangent=(Q(o.x,16383)&32767)|((Q(o.y,16383)&32767)<<16)|(t.w<0?0x80000000:0);
+ NativeData.Store((b+3*N+v)*4,normal);NativeData.Store((b+4*N+v)*4,tangent);
+ for(uint k=0;k<D;k++)NativeData.Store((b+5*N+v*D+k)*4,Bound.Load(s+40+k*4));
+ uint4 c=(uint4)round(saturate(asfloat(Bound.Load4(s+56)))*255);
+ NativeData.Store((b+(5+D)*N+v)*4,c.x|(c.y<<8)|(c.z<<16)|(c.w<<24));
+ NativeData.Store((b+(6+D)*N+v)*4,Bound.Load(tri*232+228));
+ NativeData.Store((b+(7+D)*N+v)*4,v);
+}
+[numthreads(64,1,1)]void VerifyNative(uint3 id:SV_DispatchThreadID)
+{
+ uint i=id.x+VertexStart;if(i>=VertexCount)return;
+ uint tri=i/3,s=tri*232+(i%3)*72;uint2 map=Scatter[tri];uint4 l=Layouts[map.y];uint v=map.x*3+i%3,N=l.y,D=l.z,b=l.x;
+ if(any(NativeData.Load3((b+v*3)*4)!=Bound.Load3(s)))Error(map.y,4);
+ for(uint k=0;k<D;k++)if(NativeData.Load((b+5*N+v*D+k)*4)!=Bound.Load(s+40+k*4))Error(map.y,8);
+ if(NativeData.Load((b+(6+D)*N+v)*4)!=Bound.Load(tri*232+228)||NativeData.Load((b+(7+D)*N+v)*4)!=v)Error(map.y,16);
+}
+#pragma kernel TransformInput
+ByteAddressBuffer SourceInput;
+RWByteAddressBuffer Transformed;
+StructuredBuffer<float2> Mappings;
+float4 Rotation0,Rotation1,Rotation2,FrameOffset;
+precise float3 RotateSource(float3 v)
+{
+ precise float3 r;
+ precise double x=(1.0-((double)Rotation0.y+(double)Rotation0.z))*(double)v.x+((double)Rotation0.w-(double)Rotation2.x)*(double)v.y+((double)Rotation1.x+(double)Rotation1.w)*(double)v.z;
+ precise double y=((double)Rotation0.w+(double)Rotation2.x)*(double)v.x+(1.0-((double)Rotation0.x+(double)Rotation0.z))*(double)v.y+((double)Rotation1.y-(double)Rotation1.z)*(double)v.z;
+ precise double z=((double)Rotation1.x-(double)Rotation1.w)*(double)v.x+((double)Rotation1.y+(double)Rotation1.z)*(double)v.y+(1.0-((double)Rotation0.x+(double)Rotation0.y))*(double)v.z;
+ r=float3((float)x,(float)y,(float)z);
+ return r;
+}
+[numthreads(64,1,1)]void TransformInput(uint3 id:SV_DispatchThreadID)
+{
+ uint i=id.x+VertexStart;if(i>=VertexCount)return;uint tri=i/3,s=tri*228+(i%3)*72;
+ for(uint k=0;k<18;k++)Transformed.Store(s+k*4,SourceInput.Load(s+k*4));
+ float3 p=asfloat(SourceInput.Load3(s));float2 mapping=Mappings[SourceInput.Load(tri*228+216)];
+ if(mapping.x!=0){precise float2 uv=p.xz*mapping.y;Transformed.Store4(s+40,uint4(asuint(uv),0,0));}
+ precise float3 position=RotateSource(p)+FrameOffset.xyz;Transformed.Store3(s,asuint(position));
+ Transformed.Store3(s+12,asuint(RotateSource(asfloat(SourceInput.Load3(s+12)))));
+ Transformed.Store3(s+24,asuint(RotateSource(asfloat(SourceInput.Load3(s+24)))));
+ if(i%3==0)Transformed.Store3(tri*228+216,SourceInput.Load3(tri*228+216));
+}

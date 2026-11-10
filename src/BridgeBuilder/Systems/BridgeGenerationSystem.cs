@@ -70,6 +70,7 @@ public partial class BridgeGenerationSystem : GameSystemBase
     protected override void OnGamePreload(Purpose purpose, GameMode mode)
     {
         base.OnGamePreload(purpose,mode);
+        ClearPreview();
         BridgeBulkRemoval.WorldChanging();
         BridgeRuntimeRequests.CancelDeletions();
         _pendingRemoval=null;
@@ -134,6 +135,7 @@ public partial class BridgeGenerationSystem : GameSystemBase
 
     protected override void OnUpdate()
     {
+        if (UpdatePreviewWork()) return;
         InspectPlacedRoadMaterials();
         InspectPlacedMotion();
         // A queued update may need the next outer PrefabSystem pass. Do not process another

@@ -66,8 +66,8 @@ public partial class BridgeGenerationSystem
         // Native failures in those stages must not escape preview or creation.
         try
         {
-            return BuildBridgeCore(upper, chosen, style, exportName, options, overwrite,
-                report, preview, onPublished);
+            return GenerationWork.Synchronous(()=>BuildBridgeCoreAsync(upper, chosen, style, exportName, options, overwrite,
+                report, preview, onPublished));
         }
         catch (Exception exception)
         {
@@ -76,7 +76,7 @@ public partial class BridgeGenerationSystem
         }
     }
 
-    private bool BuildBridgeCore(
+    private async System.Threading.Tasks.Task<bool> BuildBridgeCoreAsync(
         Deck upper,
         Deck? chosen,
         BridgeStyle style,
@@ -158,6 +158,7 @@ public partial class BridgeGenerationSystem
                 auxiliary = roles.Auxiliary;
             }
 
+            await GenerationWork.Next("clone selected deck");
             var clone = CloneDeck(cloner, main, exportName, report);
             if (clone == null) return false;
 
@@ -178,7 +179,7 @@ public partial class BridgeGenerationSystem
             // Grey double suspension owns the lower network, but its structure follows the upper
             // road. Network ownership must not choose the structural width measurement.
             var structuralDeck = options.DoubleDeck && composer.StructureFollowsUpperAuxiliary ? upper : main;
-            var variant = composer.Apply(
+            var variant = await composer.ApplyAsync(
                 clone, style, structuralDeck.Width, options, measure: structuralDeck.Prefab);
             if (variant == null) return false;
 
@@ -293,6 +294,7 @@ public partial class BridgeGenerationSystem
                 onPublished?.Invoke(ready);
             });
         }
+        catch (OperationCanceledException) { throw; }
         catch (Exception exception)
         {
             report.Failed(exportName, exception);

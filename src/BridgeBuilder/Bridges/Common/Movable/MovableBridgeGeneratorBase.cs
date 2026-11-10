@@ -36,12 +36,15 @@ internal abstract class MovableBridgeGeneratorBase<TSample> : BridgeGeneratorBas
     }
     protected abstract TSample SampleRoad(string owner, Entity selectedRoad, RenderPrefab[] roots,
         ContentPrefab content, float halfDelta, RandomSeed seed);
-    protected abstract RenderPrefab? BuildMechanism(TowerFactory factory, string owner, TSample road,
+    protected abstract System.Threading.Tasks.Task<RenderPrefab?> BuildMechanismAsync(TowerFactory factory, string owner, TSample road,
         RenderPrefab[] nativeLevels, float halfDelta, MovableRoadMaterial material);
-    protected abstract void AssembleBridge(NetGeometryPrefab target, TowerFactory factory,
+    protected virtual System.Threading.Tasks.Task<TSample> SampleRoadAsync(string owner, Entity selectedRoad, RenderPrefab[] roots,
+        ContentPrefab content, float halfDelta, RandomSeed seed)
+        => System.Threading.Tasks.Task.FromResult(SampleRoad(owner,selectedRoad,roots,content,halfDelta,seed));
+    protected abstract System.Threading.Tasks.Task AssembleBridgeAsync(NetGeometryPrefab target, TowerFactory factory,
         RenderPrefab[] roots, ContentPrefab content, float halfDelta, TSample road, RenderPrefab moving);
 
-    internal sealed override BridgeStyleVariant? Apply(NetGeometryPrefab target, BridgeStyle style,
+    internal sealed override async System.Threading.Tasks.Task<BridgeStyleVariant?> ApplyAsync(NetGeometryPrefab target, BridgeStyle style,
         float roadWidth, BridgeOptions options, NetGeometryPrefab? measure = null,
         Func<BridgeStyleVariant, bool>? allow = null)
     {
@@ -64,8 +67,9 @@ internal abstract class MovableBridgeGeneratorBase<TSample> : BridgeGeneratorBas
         if (!prefabs.TryGetEntity(selected, out var selectedEntity))
             throw new InvalidOperationException($"{StyleId} selected road is not registered with the native prefab system.");
 
+        await GenerationWork.Next("selected road sampling");
         var clock = Stopwatch.StartNew();
-        using var road = SampleRoad(target.name, selectedEntity, roots, content, halfDelta, RandomSeed.Next());
+        using var road = await SampleRoadAsync(target.name, selectedEntity, roots, content, halfDelta, RandomSeed.Next());
         if(road.MaterialError!=null){_report.Failed(target.name,new InvalidOperationException(road.MaterialError));return null;}
         var samplingMs = clock.ElapsedMilliseconds;
         // Shared native tileable asphalt source, independent of each structural atlas.
@@ -74,10 +78,12 @@ internal abstract class MovableBridgeGeneratorBase<TSample> : BridgeGeneratorBas
         if (!factory.TryCreateMovableRoadMaterial(surface, out var material)) return null;
         using var materialLifetime = material;
         var nativeLevels = new[] { main }.Concat(main.GetComponent<LodProperties>().m_LodMeshes).ToArray();
-        var moving = BuildMechanism(factory, target.name, road, nativeLevels, halfDelta, material);
+        await GenerationWork.Next("mechanism preparation");
+        var moving = await BuildMechanismAsync(factory, target.name, road, nativeLevels, halfDelta, material);
         if (moving == null) return null; // The owned graph factory already records the material failure.
         var mechanismMs = clock.ElapsedMilliseconds - samplingMs;
-        AssembleBridge(target, factory, roots, content, halfDelta, road, moving);
+        await GenerationWork.Next("supports and network assembly");
+        await AssembleBridgeAsync(target, factory, roots, content, halfDelta, road, moving);
         // These fields are measured style data, not runtime reads from the original
         // network Prefab. The shared native aggregate remains a required resource.
         target.m_AggregateType = factory.ResolveOriginal<AggregateNetPrefab>(NativeAggregateName);

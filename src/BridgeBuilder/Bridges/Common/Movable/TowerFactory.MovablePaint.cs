@@ -22,24 +22,37 @@ internal sealed partial class TowerFactory
         MovableRoadGeometry.Partition partition, IReadOnlyList<MovableRoadGeometry.Triangle> receivers,out string? error)
         => TryAttachMovablePaint(mechanism, new[] { new MovablePaintDeck(batches, roadToObject, partition, receivers) },out error);
 
+    internal sealed class PaintResult { internal bool Success; internal string? Error; }
+    internal System.Threading.Tasks.Task<PaintResult> AttachMovablePaintAsync(StaticObjectPrefab mechanism,
+        IReadOnlyList<MovableLaneVisuals.Batch> batches, Pose roadToObject,
+        MovableRoadGeometry.Partition partition, IReadOnlyList<MovableRoadGeometry.Triangle> receivers) =>
+        AttachMovablePaintAsync(mechanism,new[]{new MovablePaintDeck(batches,roadToObject,partition,receivers)});
+
     internal bool TryAttachMovablePaint(StaticObjectPrefab mechanism, IReadOnlyList<MovablePaintDeck> decks,out string? error)
     {
-        error=null;string? failure=null;bool success=false;
+        var output=GenerationWork.Synchronous(()=>AttachMovablePaintAsync(mechanism,decks));
+        error=output.Error;return output.Success;
+    }
+    internal async System.Threading.Tasks.Task<PaintResult> AttachMovablePaintAsync(StaticObjectPrefab mechanism, IReadOnlyList<MovablePaintDeck> decks)
+    {
+        var output=new PaintResult();bool cancelled=false;
+        string? failure=null;bool success=false;
         var assets=new List<AssetData>();
         bool Fail(string cause){failure??=cause;return false;}
-        try{success=Build();return success;}
-        catch(Exception exception){return Fail("Native paint assembly: "+exception);}
+        try{success=await Build();output.Success=success;return output;}
+        catch(OperationCanceledException){cancelled=true;throw;}
+        catch(Exception exception){Fail("Native paint assembly: "+exception);return output;}
         finally
         {
             if(!success)
             {
                 foreach(var asset in assets)try{asset.database.DeleteAsset(asset);}catch(Exception exception){failure=(failure??"Paint assembly failed")+"; cleanup: "+exception;}
-                try{_report.Failed(mechanism.name+" [paint material]",new InvalidOperationException(failure));}
+                try{if(!cancelled)_report.Failed(mechanism.name+" [paint material]",new InvalidOperationException(failure));}
                 catch(Exception exception){failure=(failure??"Paint assembly failed")+"; report: "+exception;}
             }
-            error=failure;
+            output.Error=failure;
         }
-        bool Build()
+        async System.Threading.Tasks.Task<bool> Build()
         {
         var root = (RenderPrefab)mechanism.m_Meshes[0].m_Mesh;
         var skeleton = root.GetComponent<ProceduralAnimationProperties>();
@@ -50,6 +63,7 @@ internal sealed partial class TowerFactory
         foreach(var deck in decks)
         foreach(var batch in deck.Batches.OrderBy(b=>b.Source.GetComponent<DecalProperties>()?.m_RendererPriority??0))
         {
+            await GenerationWork.Checkpoint("native decal source");
             if(!batch.Decal || batch.Surfaces.Length!=1 || batch.Source.GetComponent<DecalProperties>()==null)
                 return Fail("Native decal occurrence requires one source Surface and its projection properties.");
             var source=batch.Surfaces[0];
@@ -65,14 +79,17 @@ internal sealed partial class TowerFactory
                 materials.Add(source,surface);
             }
             var properties=batch.Source.GetComponent<DecalProperties>();
-            foreach(var region in MovableNativeDecals.Regions(batch,deck.RoadToObject,32f))
+            var regions=MovableNativeDecals.Regions(batch,deck.RoadToObject,32f).ToArray();
+            var receivers=deck.Receivers;
+            var visibleRegions=await GenerationWork.Background("decal receiver intersections",()=>regions.Where(region=>receivers.Any(region.Overlaps)).ToArray());
+            foreach(var region in visibleRegions)
             {
                 // Projection volumes are native DBuffer geometry, never opaque road
                 // faces. Native shader depth reconstruction supplies the receiver.
-                if(!deck.Receivers.Any(region.Overlaps))continue;
                 regionCount++;
                 foreach(var part in MovableRigidDecalVolume.Build(region,deck.Partition))
                 {
+                    await GenerationWork.Checkpoint("native decal child publication");
                     var bone=skeleton.m_Bones[part.Bone];
                     int parent=bone.m_ConnectionID;
                     if(parent==0 && (bone.parentId!=-1 || bone.m_Type!=(BoneType)0))return Fail("A moving decal bone has no native connection ID.");

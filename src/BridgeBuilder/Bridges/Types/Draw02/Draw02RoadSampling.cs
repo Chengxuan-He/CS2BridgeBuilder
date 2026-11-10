@@ -9,7 +9,10 @@ namespace BridgeBuilder.Bridges;
 // input stage; complete road/structure replacement is required before publishing assets.
 internal static class Draw02RoadSampling
 {
-    internal static MovableRoadAssets.Level[]? PrepareRenderLevels(MovableStraightSample sample, RenderPrefab[] nativeLevels, float halfWidthDelta, Matrix4x4 closedWorld, MovableRoadMaterial material, MovableSelectedRoadLayout layout)
+    internal static MovableRoadAssets.Level[]? PrepareRenderLevels(MovableStraightSample sample, RenderPrefab[] nativeLevels, float halfWidthDelta, Matrix4x4 closedWorld, MovableRoadMaterial material, MovableSelectedRoadLayout layout) =>
+        GenerationWork.Synchronous(() => PrepareRenderLevelsAsync(sample, nativeLevels, halfWidthDelta, closedWorld, material, layout));
+
+    internal static async System.Threading.Tasks.Task<MovableRoadAssets.Level[]?> PrepareRenderLevelsAsync(MovableStraightSample sample, RenderPrefab[] nativeLevels, float halfWidthDelta, Matrix4x4 closedWorld, MovableRoadMaterial material, MovableSelectedRoadLayout layout)
     {
         // Each LOD supplies measured domains below. An uncovered prototype area
         // preserves its selected input instead of entering a legacy bake recipe.
@@ -29,12 +32,14 @@ internal static class Draw02RoadSampling
             level = Draw02WalkAtlasAppearance.Apply(lod, level, layout, sample.RoadToObject);
             return Draw02LaneAppearance.Apply(level, layout, sample.RoadToObject);
         }
-        return MovableRoadPreparation.Prepare(sample, nativeLevels, halfWidthDelta, closedWorld, material,
+        return await MovableRoadPreparation.PrepareAsync(sample, nativeLevels, halfWidthDelta, closedWorld, material,
             Draw02RoadPartitions.Carriageway, Draw02RoadPartitions.Sidewalk, carriageway, sidewalk,
             patches, Numeric_Types_Draw02_Draw02RoadSampling_cs.Values.I32[0], layout, Appearance);
     }
 
     internal static MovableStraightSample Create(string owner, Entity selectedRoad, RenderPrefab[] roots, ContentPrefab content, float halfWidthDelta, RandomSeed seed, Upgraded? upgrade = null) => MovableStraightSample.Create(owner, selectedRoad, roots, content, halfWidthDelta, seed, new[] { "DrawBridge02 Mesh", "DrawBridge02Pillar Mesh", "DrawBridge02PillarBase Mesh" }, Draw02MechanismData.Meshes, Draw02MechanismData.ApplyComponents, Draw02NetworkData.MechanismPlacement, Numeric_Types_Draw02_Draw02RoadSampling_cs.Values.F32[0], Numeric_Types_Draw02_Draw02RoadSampling_cs.Values.F32[1], NetPieceLayerMask.Bottom | NetPieceLayerMask.Side, upgrade);
+
+    internal static System.Threading.Tasks.Task<MovableStraightSample> CreateAsync(string owner, Entity selectedRoad, RenderPrefab[] roots, ContentPrefab content, float halfWidthDelta, RandomSeed seed, Upgraded? upgrade = null) => MovableStraightSample.CreateAsync(owner, selectedRoad, roots, content, halfWidthDelta, seed, new[] { "DrawBridge02 Mesh", "DrawBridge02Pillar Mesh", "DrawBridge02PillarBase Mesh" }, Draw02MechanismData.Meshes, Draw02MechanismData.ApplyComponents, Draw02NetworkData.MechanismPlacement, Numeric_Types_Draw02_Draw02RoadSampling_cs.Values.F32[0], Numeric_Types_Draw02_Draw02RoadSampling_cs.Values.F32[1], NetPieceLayerMask.Bottom | NetPieceLayerMask.Side, upgrade);
 }
 
 // Embedded numerical arrays: Types_Draw02_Draw02RoadSampling_cs

@@ -175,6 +175,12 @@ the game before replacing loaded binaries, back up original installed files and 
 Preserve healthy generated assets unless a concrete incompatibility requires ownership-scoped recovery.
 Documentation-only changes require no build, game shutdown or deployment.
 
+Preview and formal creation follow [complete request-local road/lane LOD reuse](docs/agent-contract/BRIDGE_GENERATION_CONTRACT.md#reuse-identical-selected-road-computation-across-lods),
+from source resolution and sampling through final road output, not only a downstream GPU cache.
+Preview follows [background execution and ready-work scheduling](docs/agent-contract/Bridge-Preview-Specification.md#ready-work-budget-and-detached-background-computation):
+all safely detached pure CPU work belongs on bounded workers; native API boundaries remain on
+the main thread. These are required outcomes, not claims of current implementation completeness.
+
 ## Parallel agents for multi-bridge tasks
 
 For multi-bridge work, assign one independent sub-agent per bridge, batching when slots are full.

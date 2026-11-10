@@ -36,8 +36,19 @@ internal static class MovableRoadPreparation
         Func<int, MovableRoadAppearance.Level>? appearanceForLod = null, bool combinePartitions = false,
         AssignedAppearance? assignedAppearance = null,
         Action<int, IReadOnlyList<MovableRoadAppearanceBinding>>? captureAppearance = null,
+        Func<int, MovableRoadAppearance.Type, MovableRoadAppearance.Level?>? appearanceForReceiver = null) =>
+        GenerationWork.Synchronous(() => PrepareAsync(sample, sources, halfDelta, closedWorld, material, carriageway, sidewalk, carriagewayAppearance, sidewalkAppearance, patches, boneCount, layout, appearanceForLod, combinePartitions, assignedAppearance, captureAppearance, appearanceForReceiver));
+
+    internal static System.Threading.Tasks.Task<MovableRoadAssets.Level[]?> PrepareAsync(MovableStraightSample sample,
+        IReadOnlyList<RenderPrefab> sources, float halfDelta, Matrix4x4 closedWorld,
+        MovableRoadMaterial material, Partition carriageway, Partition sidewalk,
+        Partition carriagewayAppearance, Partition sidewalkAppearance,
+        MovableExistingRoadSurface.Patch[] patches, int boneCount, MovableSelectedRoadLayout layout,
+        Func<int, MovableRoadAppearance.Level>? appearanceForLod = null, bool combinePartitions = false,
+        AssignedAppearance? assignedAppearance = null,
+        Action<int, IReadOnlyList<MovableRoadAppearanceBinding>>? captureAppearance = null,
         Func<int, MovableRoadAppearance.Type, MovableRoadAppearance.Level?>? appearanceForReceiver = null)
-        => Prepare(sample.Road, sample.RoadToObject, sample.CompileLod, sources, halfDelta,
+        => PrepareAsync(sample.Road, sample.RoadToObject, sample.CompileLodAsync, sources, halfDelta,
             closedWorld, material, carriageway, sidewalk, carriagewayAppearance,
             sidewalkAppearance, patches, boneCount, layout, appearanceForLod, combinePartitions, assignedAppearance, captureAppearance, appearanceForReceiver);
 
@@ -45,6 +56,18 @@ internal static class MovableRoadPreparation
     // compiler for each deck. Never reuse the main deck's frame for the auxiliary.
     internal static MovableRoadAssets.Level[]? Prepare(MovableClosedRoad.Result road,
         Pose pose, Func<int, MovableClosedRoad.Result> compileLod,
+        IReadOnlyList<RenderPrefab> sources, float halfDelta, Matrix4x4 closedWorld,
+        MovableRoadMaterial material, Partition carriageway, Partition sidewalk,
+        Partition carriagewayAppearance, Partition sidewalkAppearance,
+        MovableExistingRoadSurface.Patch[] patches, int boneCount, MovableSelectedRoadLayout layout,
+        Func<int, MovableRoadAppearance.Level>? appearanceForLod = null, bool combinePartitions = false,
+        AssignedAppearance? assignedAppearance = null,
+        Action<int, IReadOnlyList<MovableRoadAppearanceBinding>>? captureAppearance = null,
+        Func<int, MovableRoadAppearance.Type, MovableRoadAppearance.Level?>? appearanceForReceiver = null) =>
+        GenerationWork.Synchronous(() => PrepareAsync(road, pose, lod => System.Threading.Tasks.Task.FromResult(compileLod(lod)), sources, halfDelta, closedWorld, material, carriageway, sidewalk, carriagewayAppearance, sidewalkAppearance, patches, boneCount, layout, appearanceForLod, combinePartitions, assignedAppearance, captureAppearance, appearanceForReceiver));
+
+    internal static async System.Threading.Tasks.Task<MovableRoadAssets.Level[]?> PrepareAsync(MovableClosedRoad.Result road,
+        Pose pose, Func<int, System.Threading.Tasks.Task<MovableClosedRoad.Result>> compileLod,
         IReadOnlyList<RenderPrefab> sources, float halfDelta, Matrix4x4 closedWorld,
         MovableRoadMaterial material, Partition carriageway, Partition sidewalk,
         Partition carriagewayAppearance, Partition sidewalkAppearance,
@@ -64,11 +87,28 @@ internal static class MovableRoadPreparation
         var lanes = new MovableLaneGeometry.Result[sources.Count];
         var bounds = new Bounds3[sources.Count];
         var routeSources = new Dictionary<Colossal.IO.AssetDatabase.SurfaceAsset, MovableRoadRoute.Source>();
+        var stageCache = new GenerationStageCache();
+        var canonicalLevels=new List<MovableRoadAppearance.Level>();
+        MovableRoadAppearance.Level? CanonicalLevel(MovableRoadAppearance.Level? value)
+        {
+            if(value==null)return null;
+            foreach(var previous in canonicalLevels)if(MovableAppearanceReuse.SameLevel(previous,value))return previous;
+            canonicalLevels.Add(value);return value;
+        }
+        var canonicalPartitions=new List<Partition>();
+        Partition Canonical(Partition value)
+        {
+            foreach(var previous in canonicalPartitions)if(MovableRoadLodCache.Tree(previous,value))return previous;
+            canonicalPartitions.Add(value);return value;
+        }
+        var movingBones=sources[0].GetComponent<ProceduralAnimationProperties>().m_Bones.Select(b=>b.m_ConnectionID!=0).ToArray();
+        var conversionCache=new Dictionary<MovableClosedRoad.Result,bool[]>();
         for (var lod = 0; lod < sources.Count; lod++)
         {
             var appearanceLevel = appearanceForLod?.Invoke(lod);
             if(appearanceLevel?.Error!=null){material.Fail("appearance-level",appearanceLevel.Error);return null;}
-            var source = compileLod(lod);
+            await GenerationWork.Next("road appearance LOD " + lod);
+            var source = await compileLod(lod);
             if(source.Error!=null){material.Fail("native-source",source.Error);return null;}
             if(source.Sidewalks.Error!=null){material.Fail("receiver-classification",source.Sidewalks.Error);return null;}
             if(appearanceForReceiver!=null)foreach(var face in source.Triangles)
@@ -79,29 +119,53 @@ internal static class MovableRoadPreparation
                 routeSources.Add(surface,identity);
             }
             var physical = physicalByLod[lod] = source.Sidewalks.Partitions(carriageway, sidewalk);
-            lanes[lod] = new MovableLaneGeometry.Result(source.LaneGeometry.Triangles.ToList(),
-                source.LaneGeometry.Surfaces.ToList(), new List<MovableLaneVisuals.Batch>());
-            var geometry = MovableRoadGeometry.InFrame(source.Triangles, pose);
-            var bones = sources[0].GetComponent<ProceduralAnimationProperties>().m_Bones;
-            // Classification chooses an appearance family, never a different road or
-            // motion partition. Unknown receivers keep the ordinary original route.
-            MovableRoadAppearance.Level? Family(MovableRoadGeometry.Triangle triangle)
+            lanes[lod] = new MovableLaneGeometry.Result(source.LaneGeometry.Triangles,
+                source.LaneGeometry.Surfaces, Array.Empty<MovableLaneVisuals.Batch>());
+            var sourceTriangles=source.Triangles;var laneTriangles=source.LaneGeometry.Triangles;
+            var selectedBounds = await stageCache.Get("selected-road-bounds",new object[]{source.Triangles,source.LaneGeometry.Triangles},
+                ()=>GenerationWork.Background("selected road and lane bounds",()=>
+                    FramedBounds(sourceTriangles,laneTriangles,pose)));
+            if(!conversionCache.TryGetValue(source,out var converted))
             {
-                if (appearanceForReceiver == null) return appearanceLevel;
-                var surface = source.Surfaces[triangle.Material];
-                var identity=routeSources[surface];
-                return appearanceForReceiver(lod, identity.Receiver(triangle)) ?? appearanceLevel;
+                converted=new bool[source.Surfaces.Length];
+                if(!combinePartitions)for(int i=0;i<converted.Length;i++)
+                { source.Surfaces[i].LoadHeader();converted[i]=!MovableSurfaceAssets.IsObjectSurface(source.Surfaces[i]); }
+                conversionCache.Add(source,converted);
             }
-            var allAssigned = new List<MovableRoadGeometry.BoundTriangle>();
+            var assignedGroups = new List<(MovableRoadGeometry.BoundTriangle[] Faces,uint Offset)>();
             var allPatches = new List<MovableExistingRoadSurface.Patch>();
             var allTypes = new List<MovableRoadAppearance.Type>();
             var allNatives = new List<Colossal.IO.AssetDatabase.SurfaceAsset>();
             // Preserve the default path's face order and single family, including an
             // empty road. Alternatives are grouped by the returned immutable level.
-            var families = appearanceForReceiver == null
-                ? new[] { (Level: appearanceLevel, Triangles: source.Triangles.ToArray()) }
-                : source.Triangles.GroupBy(Family).Select(group =>
-                    (Level: group.Key, Triangles: group.ToArray())).ToArray();
+            (MovableRoadAppearance.Level? Level,MovableRoadGeometry.Triangle[] Triangles)[] families;
+            if(appearanceForReceiver==null)families=new[]{(CanonicalLevel(appearanceLevel),sourceTriangles)};
+            else
+            {
+                var identities=source.Surfaces.Select(surface=>routeSources[surface]).ToArray();
+                var receivers=await stageCache.Get("appearance-receiver-kinds",new object[]{sourceTriangles},
+                    ()=>GenerationWork.Background("road receiver classification",()=>
+                        sourceTriangles.Select(t=>identities[t.Material].Receiver(t)).ToArray()));
+                var kinds=receivers.Distinct().ToArray();
+                var choices=kinds.Select(kind=>CanonicalLevel(appearanceForReceiver(lod,kind)??appearanceLevel)).ToArray();
+                var uniqueChoices=new List<MovableRoadAppearance.Level?>();var familyIndices=new Dictionary<MovableRoadAppearance.Type,int>();
+                for(int i=0;i<kinds.Length;i++)
+                {
+                    int index=uniqueChoices.FindIndex(level=>ReferenceEquals(level,choices[i]));
+                    if(index<0){index=uniqueChoices.Count;uniqueChoices.Add(choices[i]);}
+                    familyIndices.Add(kinds[i],index);
+                }
+                var groupKey=new List<object>{sourceTriangles};groupKey.AddRange(choices.Select(choice=>(object)choice!));
+                int familyCount=uniqueChoices.Count;
+                var grouped=await stageCache.Get("appearance-family-groups",groupKey.ToArray(),
+                    ()=>GenerationWork.Background("road receiver grouping",()=>
+                    {
+                        var lists=Enumerable.Range(0,familyCount).Select(_=>new List<MovableRoadGeometry.Triangle>()).ToArray();
+                        for(int i=0;i<sourceTriangles.Length;i++)lists[familyIndices[receivers[i]]].Add(sourceTriangles[i]);
+                        return lists.Select(list=>list.ToArray()).ToArray();
+                    }));
+                families=grouped.Select((triangles,index)=>(uniqueChoices[index],triangles)).ToArray();
+            }
             foreach (var family in families)
             {
                 var familyLevel = family.Level;
@@ -111,55 +175,52 @@ internal static class MovableRoadPreparation
                 var levelCarriageway = familyLevel?.Carriageway ?? carriagewayAppearance;
                 var levelSidewalk = familyLevel?.Sidewalk ?? sidewalkAppearance;
                 var levelAppearance = source.Sidewalks.Partitions(levelCarriageway, levelSidewalk);
-                var familyAssigned = Array.Empty<MovableRoadGeometry.BoundTriangle>();
+                var roles=source.Sidewalks;var surfaceCount=source.Surfaces.Length;var domainCount=familyPatches.Length;
+                var familyAssigned = await stageCache.Get("appearance-partition-bind",
+                    new object[]{familyTriangles,Canonical(levelCarriageway),Canonical(levelSidewalk),domainCount,converted},
+                    ()=>GenerationWork.Background("road appearance partition and bind",()=>
+                    {
+                var computed = Array.Empty<MovableRoadGeometry.BoundTriangle>();
                 if(combinePartitions)
                 {
-                    var movingBones=bones.Select(b=>b.m_ConnectionID!=0).ToArray();
                     var transform=Matrix4x4.TRS(pose.position,pose.rotation,Vector3.one);
                     var fallback=MovableRoadGeometry.CombinePartitions(carriageway,levelCarriageway,
-                        transform,movingBones,familyPatches.Length);
+                        transform,movingBones,domainCount);
                     var walking=MovableRoadGeometry.CombinePartitions(sidewalk,levelSidewalk,
-                        transform,movingBones,familyPatches.Length);
-                    var joint=source.Sidewalks.Partitions(fallback,walking);
-                    if(!MovableRoadGeometry.TryBind(familyTriangles,fallback,checked(familyPatches.Length*2),
-                        source.Surfaces.Length,out var combined,out var jointError,trianglePartitions:joint))
+                        transform,movingBones,domainCount);
+                    var joint=roles.Partitions(fallback,walking);
+                    if(!MovableRoadGeometry.TryBind(familyTriangles,fallback,checked(domainCount*2),
+                        surfaceCount,out var combined,out var jointError,trianglePartitions:joint))
                         throw new InvalidOperationException(jointError);
-                    familyAssigned=combined.Select(face=>new MovableRoadGeometry.BoundTriangle(face.Geometry,
-                        face.Bone>=(uint)familyPatches.Length
-                            ?(face.Bone-(uint)familyPatches.Length)|MovableSurfaceAtlas.MovingSurface:face.Bone)).ToArray();
+                    computed=combined.Select(face=>new MovableRoadGeometry.BoundTriangle(face.Geometry,
+                        face.Bone>=(uint)domainCount
+                            ?(face.Bone-(uint)domainCount)|MovableSurfaceAtlas.MovingSurface:face.Bone)).ToArray();
                 }
                 else
                 {
-                    if (!MovableRoadGeometry.TryBind(MovableRoadGeometry.InFrame(familyTriangles, pose), carriageway, boneCount, source.Surfaces.Length,
+                    if (!MovableRoadGeometry.TryBind(MovableRoadGeometry.InFrame(familyTriangles, pose), carriageway, boneCount, surfaceCount,
                         out var receivers, out var error, trianglePartitions: physical))
                         throw new InvalidOperationException(error);
-                    var converted = new bool[source.Surfaces.Length];
-                    for (var i = 0; i < converted.Length; i++)
-                    {
-                        source.Surfaces[i].LoadHeader();
-                        converted[i] = !MovableSurfaceAssets.IsObjectSurface(source.Surfaces[i]);
-                    }
-                    bool Original(MovableRoadGeometry.BoundTriangle face) => bones[face.Bone].m_ConnectionID != 0;
+                    bool Original(MovableRoadGeometry.BoundTriangle face) => movingBones[face.Bone];
                     var original = receivers.Where(Original).ToArray();
                     var prepared = MovableRoadTemplate.Prepare(receivers.Where(face => !Original(face)).ToArray(), converted);
                     var selected = MovableRoadGeometry.InFrame(prepared, inverse);
-                    if (selected.Length != 0 && !MovableRoadGeometry.TryBind(selected, levelCarriageway, familyPatches.Length,
-                        source.Surfaces.Length, out familyAssigned, out error, trianglePartitions: levelAppearance))
+                    if (selected.Length != 0 && !MovableRoadGeometry.TryBind(selected, levelCarriageway, domainCount,
+                        surfaceCount, out computed, out error, trianglePartitions: levelAppearance))
                         throw new InvalidOperationException(error);
                     var moving = MovableRoadGeometry.InFrame(original.Select(face => face.Geometry).ToArray(), inverse);
                     var movingAppearance = Array.Empty<MovableRoadGeometry.BoundTriangle>();
-                    if (moving.Length != 0 && !MovableRoadGeometry.TryBind(moving, levelCarriageway, familyPatches.Length,
-                        source.Surfaces.Length, out movingAppearance, out error, trianglePartitions: levelAppearance))
+                    if (moving.Length != 0 && !MovableRoadGeometry.TryBind(moving, levelCarriageway, domainCount,
+                        surfaceCount, out movingAppearance, out error, trianglePartitions: levelAppearance))
                         throw new InvalidOperationException(error);
-                    familyAssigned = familyAssigned.Concat(movingAppearance.Select(face => new MovableRoadGeometry.BoundTriangle(
+                    computed = computed.Concat(movingAppearance.Select(face => new MovableRoadGeometry.BoundTriangle(
                         face.Geometry, face.Bone | MovableSurfaceAtlas.MovingSurface))).ToArray();
                 }
+                        return computed;
+                    }));
                 var familyTypes = familyLevel?.SupportedTypes ?? Array.Empty<MovableRoadAppearance.Type>();
                 var domainOffset = checked((uint)allPatches.Count);
-                foreach (var face in familyAssigned)
-                    allAssigned.Add(new MovableRoadGeometry.BoundTriangle(face.Geometry,
-                        checked((face.Bone & ~MovableSurfaceAtlas.MovingSurface) + domainOffset)
-                        | (face.Bone & MovableSurfaceAtlas.MovingSurface)));
+                assignedGroups.Add((familyAssigned,domainOffset));
                 allPatches.AddRange(familyPatches);
                 for (var domain = 0; domain < familyPatches.Length; domain++)
                 {
@@ -168,7 +229,17 @@ internal static class MovableRoadPreparation
                         allNatives.Add(familyLevel?.Native ?? sources[0].GetSurfaceAsset(0));
                 }
             }
-            var assigned = allAssigned.ToArray();
+            var assignedKey=new List<object>();foreach(var group in assignedGroups){assignedKey.Add(group.Faces);assignedKey.Add(group.Offset);}
+            var assigned = await stageCache.Get("appearance-domain-offsets",assignedKey.ToArray(),
+                ()=>GenerationWork.Background("road appearance domain offsets",()=>
+            {
+                var output=new List<MovableRoadGeometry.BoundTriangle>();
+                foreach(var group in assignedGroups)foreach(var face in group.Faces)
+                    output.Add(new MovableRoadGeometry.BoundTriangle(face.Geometry,
+                        checked((face.Bone&~MovableSurfaceAtlas.MovingSurface)+group.Offset)|
+                        (face.Bone&MovableSurfaceAtlas.MovingSurface)));
+                return output.ToArray();
+            }));
             var levelPatches = allPatches.ToArray();
             var supportedTypes = appearanceForReceiver == null
                 ? appearanceLevel?.SupportedTypes ?? Array.Empty<MovableRoadAppearance.Type>()
@@ -187,28 +258,43 @@ internal static class MovableRoadPreparation
             bounds[lod] = sources[lod].bounds;
             bounds[lod].min.x -= halfDelta;
             bounds[lod].max.x += halfDelta;
-            Include(geometry, ref bounds[lod]);
-            Include(MovableRoadGeometry.InFrame(source.LaneGeometry.Triangles, pose), ref bounds[lod]);
+            bounds[lod].min=math.min(bounds[lod].min,selectedBounds.min);
+            bounds[lod].max=math.max(bounds[lod].max,selectedBounds.max);
         }
-        var visible = MovableSurfaceAtlas.Compose(inputs, material,
-            Array.Empty<MovableNativeDecals.Region>(), out var surfaces, captureAppearance);
+        var composed = await MovableSurfaceAtlas.ComposeAsync(inputs, material,
+            Array.Empty<MovableNativeDecals.Region>(), captureAppearance);
+        var visible = composed.Triangles; var surfaces = composed.Materials;
         if (visible == null) return null;
         var result = new MovableRoadAssets.Level[sources.Count];
         for (var lod = 0; lod < result.Length; lod++)
             result[lod] = new MovableRoadAssets.Level(sources[lod], visible[lod], surfaces[lod],
                 carriageway, bounds[lod], pose, lanes: lanes[lod], closedWorld: closedWorld,
                 roadTrianglePartitions: physicalByLod[lod], lanePartitions: lanePartitions);
+        Mod.Log.Info("Selected-road preparation stages: "+stageCache.Report());
         return result;
     }
 
-    private static void Include(IReadOnlyList<MovableRoadGeometry.Triangle> triangles, ref Bounds3 bounds)
+    // Same position operation order as InFrame, without constructing unused normals/UVs/triangles.
+    private static Bounds3 FramedBounds(IReadOnlyList<MovableRoadGeometry.Triangle> road,
+        IReadOnlyList<MovableRoadGeometry.Triangle> lanes,Pose pose)
     {
-        foreach (var triangle in triangles)
+        var offset=pose.position;var q=pose.rotation;
+        var lengthSquared=q.x*q.x+q.y*q.y+q.z*q.z+q.w*q.w;
+        if(!float.IsFinite(offset.x)||!float.IsFinite(offset.y)||!float.IsFinite(offset.z)||
+            !float.IsFinite(lengthSquared)||lengthSquared<=0f)
+            throw new InvalidOperationException("The measured road-to-object pose is invalid.");
+        q=q.normalized;
+        var bounds=new Bounds3(new float3(float.PositiveInfinity),new float3(float.NegativeInfinity));
+        void Include(IReadOnlyList<MovableRoadGeometry.Triangle> triangles)
         {
-            bounds.min = math.min(bounds.min, math.min((float3)triangle.A.Position,
-                math.min((float3)triangle.B.Position, (float3)triangle.C.Position)));
-            bounds.max = math.max(bounds.max, math.max((float3)triangle.A.Position,
-                math.max((float3)triangle.B.Position, (float3)triangle.C.Position)));
+            foreach(var t in triangles)
+            {
+                var a=(float3)(q*t.A.Position+offset);var b=(float3)(q*t.B.Position+offset);var c=(float3)(q*t.C.Position+offset);
+                bounds.min=math.min(bounds.min,math.min(a,math.min(b,c)));
+                bounds.max=math.max(bounds.max,math.max(a,math.max(b,c)));
+            }
         }
+        Include(road);Include(lanes);return bounds;
     }
+
 }

@@ -18,13 +18,16 @@ namespace BridgeBuilder.Bridges;
 internal sealed class Draw01ClosedRoad : IMovableRoadSample
 {
     internal readonly MovableNetworkContext Network;
-    internal readonly MovableClosedRoad.Result Road;
+    internal MovableClosedRoad.Result Road = null!;
     public string? MaterialError=>Road.Error;
-    internal readonly Pose RoadToObject;
+    internal Pose RoadToObject;
     private readonly Entity _sourceTheme;
     private readonly float3 _roadOrigin;
     private Draw01SamplingMechanism? _samplingMechanism;
-    internal static Draw01ClosedRoad Sample(string owner, Entity selectedRoad, IReadOnlyList<RenderPrefab> nativeRenderRoots, ContentPrefab content, float halfWidthDelta, RandomSeed seed, Upgraded? upgrade = null)
+    internal static Draw01ClosedRoad Sample(string owner, Entity selectedRoad, IReadOnlyList<RenderPrefab> nativeRenderRoots, ContentPrefab content, float halfWidthDelta, RandomSeed seed, Upgraded? upgrade = null) =>
+        GenerationWork.Synchronous(() => SampleAsync(owner, selectedRoad, nativeRenderRoots, content, halfWidthDelta, seed, upgrade));
+
+    internal static async System.Threading.Tasks.Task<Draw01ClosedRoad> SampleAsync(string owner, Entity selectedRoad, IReadOnlyList<RenderPrefab> nativeRenderRoots, ContentPrefab content, float halfWidthDelta, RandomSeed seed, Upgraded? upgrade = null)
     {
         using var environment = new MovableSamplingEnvironment(World.DefaultGameObjectInjectionWorld);
         // The recorded native bridge's water elevation is 10 m. This private
@@ -34,7 +37,9 @@ internal sealed class Draw01ClosedRoad : IMovableRoadSample
         var mechanism = new Draw01SamplingMechanism(owner, nativeRenderRoots, content, halfWidthDelta);
         try
         {
-            var result = new Draw01ClosedRoad(owner, selectedRoad, mechanism.Prefab, Draw01NetworkData.MechanismPlacement(mechanism.Prefab), new float3(Numeric_Types_Draw01_Draw01ClosedRoad_cs.Values.F32[0], Numeric_Types_Draw01_Draw01ClosedRoad_cs.Values.F32[1], Numeric_Types_Draw01_Draw01ClosedRoad_cs.Values.F32[2]), new Elevation(new float2(Numeric_Types_Draw01_Draw01ClosedRoad_cs.Values.F32[3])), environment.Terrain, environment.Theme, environment.LeftHandTraffic, seed, environment.BuildingConfiguration, upgrade);
+            var result = new Draw01ClosedRoad(owner, selectedRoad, mechanism.Prefab, Draw01NetworkData.MechanismPlacement(mechanism.Prefab), new float3(Numeric_Types_Draw01_Draw01ClosedRoad_cs.Values.F32[0], Numeric_Types_Draw01_Draw01ClosedRoad_cs.Values.F32[1], Numeric_Types_Draw01_Draw01ClosedRoad_cs.Values.F32[2]), new Elevation(new float2(Numeric_Types_Draw01_Draw01ClosedRoad_cs.Values.F32[3])), environment.Terrain, environment.Theme, environment.LeftHandTraffic, seed, environment.BuildingConfiguration, upgrade, deferRoad: true);
+            try { await result.InitializeRoadAsync(); }
+            catch { result.Network.Dispose(); throw; }
             result._samplingMechanism = mechanism;
             return result;
         }
@@ -45,7 +50,7 @@ internal sealed class Draw01ClosedRoad : IMovableRoadSample
         }
     }
 
-    internal Draw01ClosedRoad(string owner, Entity selectedRoad, StaticObjectPrefab mechanism, NetSubObjectInfo placement, float3 roadOrigin, Elevation elevation, TerrainHeightData terrain, Entity sourceTheme, bool leftHandTraffic, RandomSeed randomSeed, BuildingConfigurationData buildingConfiguration, Upgraded? upgrade = null)
+    internal Draw01ClosedRoad(string owner, Entity selectedRoad, StaticObjectPrefab mechanism, NetSubObjectInfo placement, float3 roadOrigin, Elevation elevation, TerrainHeightData terrain, Entity sourceTheme, bool leftHandTraffic, RandomSeed randomSeed, BuildingConfigurationData buildingConfiguration, Upgraded? upgrade = null, bool deferRoad = false)
     {
         _sourceTheme = sourceTheme;
         _roadOrigin = roadOrigin;
@@ -71,12 +76,19 @@ internal sealed class Draw01ClosedRoad : IMovableRoadSample
         {
             new MovableNetworkContext.MechanismInput(mechanism, centralNode, new Transform { m_Position = roadOrigin, m_Rotation = quaternion.identity }, placement, new TrafficLights { m_State = TrafficLightState.Ongoing, m_CurrentSignalGroup = (byte)(Numeric_Types_Draw01_Draw01ClosedRoad_cs.Values.I32[7]), m_NextSignalGroup = (byte)(Numeric_Types_Draw01_Draw01ClosedRoad_cs.Values.I32[8]), m_SignalGroupCount = (byte)(Numeric_Types_Draw01_Draw01ClosedRoad_cs.Values.I32[9]) }, new PseudoRandomSeed(ref random))
         };
-        Network = new MovableNetworkContext(owner, nodes, edges, mechanisms, Array.Empty<MovableNetworkContext.MiddleInput>(), Array.Empty<MovableNetworkContext.ParentInput>(), terrain, sourceTheme, leftHandTraffic, randomSeed, buildingConfiguration);
+        Network = new MovableNetworkContext(owner, nodes, edges, mechanisms, Array.Empty<MovableNetworkContext.MiddleInput>(), Array.Empty<MovableNetworkContext.ParentInput>(), terrain, sourceTheme, leftHandTraffic, randomSeed, buildingConfiguration, deferCalculation: true);
+        if (!deferRoad) GenerationWork.Synchronous(async () => { await InitializeRoadAsync(); return true; });
+    }
+
+    private async System.Threading.Tasks.Task InitializeRoadAsync()
+    {
         try
         {
-            Road = Network.CompileRoad(new[] { (Numeric_Types_Draw01_Draw01ClosedRoad_cs.Values.I32[10], MovableNetworkContext.SurfacePart.EndNode), (Numeric_Types_Draw01_Draw01ClosedRoad_cs.Values.I32[11], MovableNetworkContext.SurfacePart.StartNode) }, new[] { centralNode }, roadOrigin, replacedStructureLayers: NetPieceLayerMask.Bottom | NetPieceLayerMask.Side, trackSourceFaces: false);
+            await Network.CompleteCalculationAsync();
+            await GenerationWork.Next("native closed road extraction");
+            Road = await Network.CompileRoadAsync(new[] { (Numeric_Types_Draw01_Draw01ClosedRoad_cs.Values.I32[10], MovableNetworkContext.SurfacePart.EndNode), (Numeric_Types_Draw01_Draw01ClosedRoad_cs.Values.I32[11], MovableNetworkContext.SurfacePart.StartNode) }, new[] { new MovableNetworkContext.OwnerIndex(false, Numeric_Types_Draw01_Draw01ClosedRoad_cs.Values.I32[6]) }, _roadOrigin, replacedStructureLayers: NetPieceLayerMask.Bottom | NetPieceLayerMask.Side, trackSourceFaces: false);
             if(Road.Error!=null)return;
-            RoadToObject = Network.RoadToMechanism(Numeric_Types_Draw01_Draw01ClosedRoad_cs.Values.I32[12], roadOrigin);
+            RoadToObject = Network.RoadToMechanism(Numeric_Types_Draw01_Draw01ClosedRoad_cs.Values.I32[12], _roadOrigin);
         }
         catch
         {
@@ -91,7 +103,10 @@ internal sealed class Draw01ClosedRoad : IMovableRoadSample
     // The local render bounds describe the closed geometry. Native StandingObject
     // and StackProperties extend the object's culling bounds separately; a swept
     // animation volume must not be substituted for authored stacking metadata.
-    internal MovableRoadAssets.Level[]? PrepareRenderLevels(IReadOnlyList<RenderPrefab> sources, float halfWidthDelta, Matrix4x4 closedWorld, MovableRoadMaterial roadMaterial)
+    internal MovableRoadAssets.Level[]? PrepareRenderLevels(IReadOnlyList<RenderPrefab> sources, float halfWidthDelta, Matrix4x4 closedWorld, MovableRoadMaterial roadMaterial) =>
+        GenerationWork.Synchronous(() => PrepareRenderLevelsAsync(sources, halfWidthDelta, closedWorld, roadMaterial));
+
+    internal async System.Threading.Tasks.Task<MovableRoadAssets.Level[]?> PrepareRenderLevelsAsync(IReadOnlyList<RenderPrefab> sources, float halfWidthDelta, Matrix4x4 closedWorld, MovableRoadMaterial roadMaterial)
     {
         if (sources.Count != Numeric_Types_Draw01_Draw01ClosedRoad_cs.Values.I32[14] || !math.isfinite(halfWidthDelta))
             throw new ArgumentException("Draw01 road preparation requires three render sources and a finite width delta.");
@@ -185,7 +200,7 @@ internal sealed class Draw01ClosedRoad : IMovableRoadSample
         {
             // Each level starts with the selected road's corresponding native mesh.
             // Native pieces without a reduced mesh retain their authored last level.
-            var levelRoad = i == Numeric_Types_Draw01_Draw01ClosedRoad_cs.Values.I32[57] ? Road : Network.CompileRoad(new[] { (Numeric_Types_Draw01_Draw01ClosedRoad_cs.Values.I32[58], MovableNetworkContext.SurfacePart.EndNode), (Numeric_Types_Draw01_Draw01ClosedRoad_cs.Values.I32[59], MovableNetworkContext.SurfacePart.StartNode) }, new[] { new MovableNetworkContext.OwnerIndex(false, Numeric_Types_Draw01_Draw01ClosedRoad_cs.Values.I32[60]) }, _roadOrigin, replacedStructureLayers: NetPieceLayerMask.Bottom | NetPieceLayerMask.Side, trackSourceFaces: false, lod: i);
+            var levelRoad = i == Numeric_Types_Draw01_Draw01ClosedRoad_cs.Values.I32[57] ? Road : await Network.CompileRoadAsync(new[] { (Numeric_Types_Draw01_Draw01ClosedRoad_cs.Values.I32[58], MovableNetworkContext.SurfacePart.EndNode), (Numeric_Types_Draw01_Draw01ClosedRoad_cs.Values.I32[59], MovableNetworkContext.SurfacePart.StartNode) }, new[] { new MovableNetworkContext.OwnerIndex(false, Numeric_Types_Draw01_Draw01ClosedRoad_cs.Values.I32[60]) }, _roadOrigin, replacedStructureLayers: NetPieceLayerMask.Bottom | NetPieceLayerMask.Side, trackSourceFaces: false, lod: i);
             if(levelRoad.Error!=null){roadMaterial.Fail("native-source",levelRoad.Error);return null;}
             var levelPatches = patches;
             var levelSupportedTypes = Draw01RoadAppearance.SupportedTypes;
@@ -236,7 +251,8 @@ internal sealed class Draw01ClosedRoad : IMovableRoadSample
             inputs[i].SetReceiverRoles(levelRoad);
         }
 
-        var visibleLevels = MovableSurfaceAtlas.Compose(inputs, roadMaterial, Array.Empty<MovableNativeDecals.Region>(), out var materialLevels);
+        var composed = await MovableSurfaceAtlas.ComposeAsync(inputs, roadMaterial, Array.Empty<MovableNativeDecals.Region>());
+        var visibleLevels = composed.Triangles; var materialLevels = composed.Materials;
         if (visibleLevels == null) return null;
         var levels = new MovableRoadAssets.Level[Numeric_Types_Draw01_Draw01ClosedRoad_cs.Values.I32[63]];
         for (var i = Numeric_Types_Draw01_Draw01ClosedRoad_cs.Values.I32[64]; i < levels.Length; i++)

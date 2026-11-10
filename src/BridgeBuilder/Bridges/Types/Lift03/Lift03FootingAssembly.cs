@@ -7,8 +7,12 @@ using UnityEngine;
 namespace BridgeBuilder.Bridges;
 internal static class Lift03FootingAssembly
 {
-    internal static RenderPrefab? Create(TowerFactory factory, string name, RenderPrefab source, float halfWidthDelta)
+    internal static RenderPrefab? Create(TowerFactory factory, string name, RenderPrefab source, float halfWidthDelta) =>
+        GenerationWork.Synchronous(() => CreateAsync(factory, name, source, halfWidthDelta));
+
+    internal static async System.Threading.Tasks.Task<RenderPrefab?> CreateAsync(TowerFactory factory, string name, RenderPrefab source, float halfWidthDelta)
     {
+        await GenerationWork.Next("support Lift03FootingAssembly.Create");
         var lods = source.GetComponent<LodProperties>()?.m_LodMeshes;
         if (lods == null || lods.Length != Numeric_Types_Lift03_Lift03FootingAssembly_cs.Values.I32[0])
             throw new InvalidOperationException("Lift03 footings require their three recorded native LODs.");
@@ -31,7 +35,9 @@ internal static class Lift03FootingAssembly
                 meshes = PrivateGeometryReader.Read(original);
                 if (meshes.Length != Numeric_Types_Lift03_Lift03FootingAssembly_cs.Values.I32[6] || meshes[Numeric_Types_Lift03_Lift03FootingAssembly_cs.Values.I32[7]].subMeshCount != Numeric_Types_Lift03_Lift03FootingAssembly_cs.Values.I32[8])
                     throw new InvalidOperationException("Lift03 footings require their recorded single native surface slot.");
-                var plan = Lift03FootingGeometry.Create(lod, meshes[Numeric_Types_Lift03_Lift03FootingAssembly_cs.Values.I32[9]].vertices, meshes[Numeric_Types_Lift03_Lift03FootingAssembly_cs.Values.I32[10]].GetIndices(Numeric_Types_Lift03_Lift03FootingAssembly_cs.Values.I32[11]), halfWidthDelta);
+                var supportInput0 = meshes[Numeric_Types_Lift03_Lift03FootingAssembly_cs.Values.I32[9]].vertices;
+                var supportInput1 = meshes[Numeric_Types_Lift03_Lift03FootingAssembly_cs.Values.I32[10]].GetIndices(Numeric_Types_Lift03_Lift03FootingAssembly_cs.Values.I32[11]);
+                var plan = await GenerationWork.Background("support structure plan", () => Lift03FootingGeometry.Create(lod, supportInput0, supportInput1, halfWidthDelta));
                 var bounds = original.bounds;
                 bounds.min.x = plan.Positions.Min(p => p.x);
                 bounds.max.x = plan.Positions.Max(p => p.x);
@@ -44,7 +50,7 @@ internal static class Lift03FootingAssembly
             }
         }
 
-        return factory.CreateMovableRenderGraph(name, levels);
+        return await factory.CreateMovableRenderGraphAsync(name, levels);
     }
 }
 

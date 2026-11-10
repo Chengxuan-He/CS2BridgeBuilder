@@ -13,6 +13,9 @@ internal static class Draw01RenderAssembly
     // Road levels already contain the resolved selected-road geometry, pose, partitions,
     // native skeleton and local render bounds. Never replace that input with the prototype road.
     internal static RenderPrefab? CreateMechanism(TowerFactory factory, string owner, string name, IReadOnlyList<MovableRoadAssets.Level> roadLevels, float halfWidthDelta, Draw01UndersideLayout underside)
+        => GenerationWork.Synchronous(()=>CreateMechanismAsync(factory,owner,name,roadLevels,halfWidthDelta,underside));
+
+    internal static async System.Threading.Tasks.Task<RenderPrefab?> CreateMechanismAsync(TowerFactory factory, string owner, string name, IReadOnlyList<MovableRoadAssets.Level> roadLevels, float halfWidthDelta, Draw01UndersideLayout underside)
     {
         if (roadLevels.Count != Numeric_Types_Draw01_Draw01RenderAssembly_cs.Values.I32[0])
             throw new ArgumentException("Draw01 mechanism requires all three prepared road LODs.");
@@ -64,7 +67,7 @@ internal static class Draw01RenderAssembly
 
         for (int lod = 0; lod < meshCounts.Length; lod++)
             meshCounts[lod] = lod == Numeric_Types_Draw01_Draw01RenderAssembly_cs.Values.I32[2] ? Numeric_Types_Draw01_Draw01RenderAssembly_cs.Values.I32[3] : Numeric_Types_Draw01_Draw01RenderAssembly_cs.Values.I32[4];
-        return MovableRenderAssembly.CreateMechanism(factory, name, completedRoadLevels, meshCounts, (lod, mesh, source, indices) =>
+        return await MovableRenderAssembly.CreateMechanismAsync(factory, name, completedRoadLevels, meshCounts, (lod, mesh, source, indices) =>
         {
             if (mesh == Numeric_Types_Draw01_Draw01RenderAssembly_cs.Values.I32[5])
                 return Draw01RoadReplacement.CreateMainMeshPlan(lod, source, halfWidthDelta, new[] { indices }, underside);
@@ -77,8 +80,12 @@ internal static class Draw01RenderAssembly
     }
 
     // Native DrawBridge01's stacked middle render, not its ordinary network pillar.
-    internal static RenderPrefab? CreateColumn(TowerFactory factory, string owner, string name, RenderPrefab source, float halfWidthDelta)
+    internal static RenderPrefab? CreateColumn(TowerFactory factory, string owner, string name, RenderPrefab source, float halfWidthDelta) =>
+        GenerationWork.Synchronous(() => CreateColumnAsync(factory, owner, name, source, halfWidthDelta));
+
+    internal static async System.Threading.Tasks.Task<RenderPrefab?> CreateColumnAsync(TowerFactory factory, string owner, string name, RenderPrefab source, float halfWidthDelta)
     {
+        await GenerationWork.Next("support Draw01RenderAssembly.CreateColumn");
         var lods = source.GetComponent<LodProperties>()?.m_LodMeshes;
         if (lods == null || lods.Length != Numeric_Types_Draw01_Draw01RenderAssembly_cs.Values.I32[10])
             throw new InvalidOperationException("Draw01 column source requires its two native LOD renders.");
@@ -114,7 +121,9 @@ internal static class Draw01RenderAssembly
                 if (meshes.Length != Numeric_Types_Draw01_Draw01RenderAssembly_cs.Values.I32[15] || meshes[Numeric_Types_Draw01_Draw01RenderAssembly_cs.Values.I32[16]] == null || meshes[Numeric_Types_Draw01_Draw01RenderAssembly_cs.Values.I32[17]].subMeshCount != Numeric_Types_Draw01_Draw01RenderAssembly_cs.Values.I32[18])
                     throw new InvalidOperationException($"Draw01 column LOD {lod} requires its one native mesh and surface slot.");
                 var mesh = meshes[Numeric_Types_Draw01_Draw01RenderAssembly_cs.Values.I32[19]];
-                var plan = Draw01ColumnWideningData.CreatePlan(lod, mesh.vertices, halfWidthDelta, new[] { mesh.GetIndices(Numeric_Types_Draw01_Draw01RenderAssembly_cs.Values.I32[20]) });
+                var supportInput0 = mesh.vertices;
+                var supportInput1 = mesh.GetIndices(Numeric_Types_Draw01_Draw01RenderAssembly_cs.Values.I32[20]);
+                var plan = await GenerationWork.Background("support structure plan", () => Draw01ColumnWideningData.CreatePlan(lod, supportInput0, halfWidthDelta, new[] { supportInput1 }));
                 // Preserve the authored vertical stacking reach and depth; only X changes.
                 var bounds = original.bounds;
                 var widened = new Bounds3(new float3(bounds.min.x - halfWidthDelta, bounds.min.y, bounds.min.z), new float3(bounds.max.x + halfWidthDelta, bounds.max.y, bounds.max.z));
@@ -127,12 +136,16 @@ internal static class Draw01RenderAssembly
         }
 
         // The factory collects all three renders for the ordinary owned-prefab writer.
-        return factory.CreateMovableRenderGraph(name, levels);
+        return await factory.CreateMovableRenderGraphAsync(name, levels);
     }
 
     // Footing conversion retains the native far topology while its merged-part defect is deferred.
-    internal static RenderPrefab? CreateFooting(TowerFactory factory, string owner, string name, RenderPrefab source, float halfWidthDelta)
+    internal static RenderPrefab? CreateFooting(TowerFactory factory, string owner, string name, RenderPrefab source, float halfWidthDelta) =>
+        GenerationWork.Synchronous(() => CreateFootingAsync(factory, owner, name, source, halfWidthDelta));
+
+    internal static async System.Threading.Tasks.Task<RenderPrefab?> CreateFootingAsync(TowerFactory factory, string owner, string name, RenderPrefab source, float halfWidthDelta)
     {
+        await GenerationWork.Next("support Draw01RenderAssembly.CreateFooting");
         var lods = source.GetComponent<LodProperties>()?.m_LodMeshes;
         if (lods == null || lods.Length != Numeric_Types_Draw01_Draw01RenderAssembly_cs.Values.I32[21])
             throw new InvalidOperationException("Draw01 footing source requires its two native LOD renders.");
@@ -168,7 +181,9 @@ internal static class Draw01RenderAssembly
                 if (meshes.Length != Numeric_Types_Draw01_Draw01RenderAssembly_cs.Values.I32[26] || meshes[Numeric_Types_Draw01_Draw01RenderAssembly_cs.Values.I32[27]] == null || meshes[Numeric_Types_Draw01_Draw01RenderAssembly_cs.Values.I32[28]].subMeshCount != Numeric_Types_Draw01_Draw01RenderAssembly_cs.Values.I32[29])
                     throw new InvalidOperationException($"Draw01 footing LOD {lod} requires its one native mesh and surface slot.");
                 var mesh = meshes[Numeric_Types_Draw01_Draw01RenderAssembly_cs.Values.I32[30]];
-                var plan = Draw01FootingWideningData.CreatePlan(lod, mesh.vertices, mesh.GetIndices(Numeric_Types_Draw01_Draw01RenderAssembly_cs.Values.I32[31]), halfWidthDelta);
+                var supportInput0 = mesh.vertices;
+                var supportInput1 = mesh.GetIndices(Numeric_Types_Draw01_Draw01RenderAssembly_cs.Values.I32[31]);
+                var plan = await GenerationWork.Background("support structure plan", () => Draw01FootingWideningData.CreatePlan(lod, supportInput0, supportInput1, halfWidthDelta));
                 // Preserve the authored vertical stacking reach and depth; only X changes.
                 var bounds = original.bounds;
                 var widened = new Bounds3(new float3(bounds.min.x - halfWidthDelta, bounds.min.y, bounds.min.z), new float3(bounds.max.x + halfWidthDelta, bounds.max.y, bounds.max.z));
@@ -181,7 +196,7 @@ internal static class Draw01RenderAssembly
         }
 
         // The factory collects all three renders for the ordinary owned-prefab writer.
-        return factory.CreateMovableRenderGraph(name, levels);
+        return await factory.CreateMovableRenderGraphAsync(name, levels);
     }
 }
 

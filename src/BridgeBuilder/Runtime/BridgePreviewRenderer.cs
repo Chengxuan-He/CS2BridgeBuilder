@@ -1,3 +1,4 @@
+using BridgeBuilder.Bridges;
 using System;
 using UnityEngine;
 using UnityEngine.Rendering;
@@ -41,12 +42,16 @@ internal sealed class BridgePreviewRenderer : IDisposable
     private const int SampleScale = 2;
     private const int SubpixelSamples = 4;
 
-    internal void Initialize(string prefix, BridgePreviewDrawList draws)
+    internal void Initialize(string prefix, BridgePreviewDrawList draws) =>
+        GenerationWork.Synchronous(async () => { await InitializeAsync(prefix, draws); return true; });
+
+    internal async System.Threading.Tasks.Task InitializeAsync(string prefix, BridgePreviewDrawList draws)
     {
         _camera = new BridgePreviewCamera(prefix, ImageWidth * SampleScale, ImageHeight * SampleScale);
         _diagnosticId = prefix + "/camera=" + _camera.Camera.GetInstanceID();
         _stage = new BridgePreviewStage();
-        _stage.Initialize(prefix, _camera.Camera, draws);
+        await _stage.InitializeAsync(prefix, _camera.Camera, draws);
+        await GenerationWork.Next("preview camera configuration");
         var additional = _camera.Camera.gameObject.AddComponent<HDAdditionalCameraData>();
         additional.clearColorMode = HDAdditionalCameraData.ClearColorMode.Color;
         additional.backgroundColorHDR = Color.clear;

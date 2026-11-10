@@ -124,9 +124,21 @@ internal sealed class BridgeMaterialFileSnapshot : IDisposable
         finally{if(result.Error!=null)result.Dispose();}
     }
 
-    public void Dispose()
+    private int _references=1, _rootDisposed;
+    internal IDisposable Retain()
     {
-        foreach (var file in _files.Values) file.Lease.Dispose();
-        _files.Clear();
+        lock(_files){if(_references==0)throw new ObjectDisposedException(nameof(BridgeMaterialFileSnapshot));_references++;}
+        return new Reference(this);
     }
+    private sealed class Reference : IDisposable
+    {
+        private BridgeMaterialFileSnapshot? _owner;
+        internal Reference(BridgeMaterialFileSnapshot owner)=>_owner=owner;
+        public void Dispose()=>Interlocked.Exchange(ref _owner,null)?.Release();
+    }
+    private void Release()
+    {
+        lock(_files){if(--_references!=0)return;foreach(var file in _files.Values)file.Lease.Dispose();_files.Clear();}
+    }
+    public void Dispose(){if(Interlocked.Exchange(ref _rootDisposed,1)==0)Release();}
 }

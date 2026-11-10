@@ -1888,8 +1888,8 @@ completeness. This requirement applies to fixed and movable styles.
 The selected-road and lane path uses generation-only GPU computation for seam clipping,
 rigid bone assignment and native vertex encoding. Run count, prefix allocation, emission
 and attribute encoding as one connected operation: the encoder consumes the GPU's bound
-triangle buffer directly. Read back complete CPU-owned geometry for normal native asset
-publication. Saved bridges require neither the compute bundle nor a running manager.
+triangle buffer directly. Keep intermediate bound vertices resident while validating attributes, reducing per-material bounds, determining UV2/UV4 layout and distributing encoded attributes into stable material groups. Read back the CPU-owned native attribute streams and compact group metadata needed for normal native asset
+publication. Full bound-triangle readback is reserved for explicitly armed replay diagnostics or the reference verification API; normal generation must not read it back merely to split the same attributes again. Preserve within-material triangle order, canonical Surface identity, every vertex channel and one owner for each native allocation. Required validation may execute on the GPU with explicit error results, but must not be bypassed to improve timings. Record upload/readback byte counts and calls, CPU preparation/group offsets, dispatch, synchronization/readback, validation, native allocation/copy and native publication separately; a blocking readback includes pending GPU work and is not kernel-only time. Saved bridges require neither the compute bundle nor a running manager.
 Keep the exact request-local cross-LOD reuse rules below and each LOD's own skeleton.
 
 Seam distances, intersection parameters and constructed positions use double precision,
@@ -1916,19 +1916,85 @@ do not add nested encoding time twice. Benchmark the connected path on captured 
 then verify native geometry publication and persistence. Offline replay is not game visual acceptance.
 ### Reuse identical selected-road computation across LODs
 
-Within one render-graph request, compute identical selected-road or lane conversion work
-once and reuse its immutable result for the corresponding LOD consumers. Establish exact
-input equality, including ordered vertex attributes and provenance, material-slot bindings
-and compatibility mapping, road-to-object pose, motion partition trees and occurrence/face
-assignments, and bone-index encoding requirements. The current clipping/encoding routines consume the bone array count and partition indices, not skeleton names, transforms, bind poses or animation metadata. Keep that metadata on each LOD unchanged; differences in unused metadata must not invalidate otherwise identical computation. If a future encoder reads additional bone fields, include those exact inputs in its cache key and tests. Equal triangle counts or a common road
-name are insufficient. Different source LODs, mappings or motion domains continue through
-their own computation. Do not copy LOD0 structure or replace genuine reduced-detail geometry.
+Preview and formal generation must reuse the complete selected-road and lane pipeline across
+LOD0, LOD1 and LOD2 when its actual inputs and consumed semantics are identical. Reuse starts
+before source extraction, not only after GPU binding/encoding. Resolve the selected elevated
+context once, identify each required source representation and process each distinct stage input
+once within the request. All matching LOD consumers use the resulting immutable value. Cover road surfaces, railway
+and other lane geometry, cable geometry and the applicable source-input/material plans for
+retained decals through their common processing routes. Preserve each route's native semantics;
+this does not reintroduce excluded decals or force projection volumes into the road encoder.
 
-Keep cached outputs request-local. Each native model buffer has one disposal owner even if
-several LOD publications read it; publication must own its copies before the request releases
-the models. Preserve per-LOD references, bounds, materials, skeletons, source triangle order,
-all channels and failure cleanup. Report reuse/miss counts and equality-check overhead beside
-the existing exclusive stage timings. Reuse is not permission to merge adjacent triangles.
+The reuse boundary covers source identity resolution, resource extraction and unpacking,
+curve evaluation/deformation, road appearance selection/adaptation and coordinate mapping,
+clipping and bone binding, material grouping, vertex encoding, bounds, and the completed road
+result. Reuse common earlier stages even when a later stage genuinely differs. For example,
+one decoded source can feed two distinct appearance or motion-domain computations; a later
+miss must not force an identical source to be extracted and decoded again.
+
+If initial sampling already compiled the selected source for LOD0, retain that compiled result
+for LOD1/LOD2 with the same inputs. Calling `Compile` again for those consumers and detecting
+an identical result only in a downstream GPU/model cache does not meet this requirement.
+Resolve actual native LOD references and fallback identities before scheduling expensive work;
+a different requested LOD number alone is not a different input. Do not repeat the computation
+merely to establish equality of its results.
+
+Establish exact stage-input equivalence using immutable source identity/version and the complete
+semantics consumed by that stage: ordered attributes and provenance, native composition/state,
+curve/frame inputs, appearance and material-slot bindings, compatibility mapping, road-to-object
+pose, motion partitions, occurrence/face assignments and bone-index encoding requirements.
+Equal names, triangle counts or coincident bounds are insufficient. The current clipping/encoding
+routines consume bone-array count and partition indices, not skeleton names, transforms, bind
+poses or animation metadata. Keep that metadata on each LOD unchanged; unused metadata does
+not invalidate otherwise identical computation. If a stage starts consuming another field, its
+reuse key and tests must include that field.
+
+Different actual road/lane LOD geometry, appearance, source channels or motion domains remain
+distinct at the affected stages. Preserve genuine reduced-detail geometry and each LOD's native
+references and skeleton. This rule concerns selected-road/lane work, not the bridge prototype's
+structural LODs; it never authorizes copying LOD0 structure into every level.
+
+Own immutable stage results and in-flight computations within one generation request. Equivalent
+consumers share the same completed result or await the same in-flight work, rather than racing
+to produce duplicate values. Keep one disposal owner for each native allocation. Publication
+must own any required copy/reference before request resources are released; one LOD's disposal
+must not invalidate another consumer. Never reuse mutable native resources across owner UUIDs
+or retain generated preview results as a later formal-creation cache. Success, failure and
+cancellation release resources only after their active consumers have relinquished them.
+Independent persisted output and per-owner dependency copies remain unchanged.
+
+Report per-stage execution and reuse counts, consumer LODs, miss reasons and key-comparison
+cost. Verify actual expensive-stage execution counts of exactly one for identical three-LOD input,
+not merely final cache-hit counts. Cover all applicable routes above, including the
+already-compiled sampling case, and that distinct source/appearance/bone-domain cases remain
+separate. Compare all output channels, order, material/bone assignment, bounds and publication
+ownership offline. Reuse is not permission to merge triangles or bypass required validation.
+
+**Implementation status:** the request-local context records the initial sampling compilation
+and reuses source surfaces/roads by their actual resolved render inputs. Lane source snapshots,
+deformation and expansion, appearance receiver groups/partitions, bounds and equivalent complete
+appearance inputs have separate reuse stages. Final road/model reuse remains in place. Actual
+source differences remain distinct even when their triangle counts match. These mechanisms do
+not prove every live request executes each eligible stage once: stage counts, differing-input
+cases and final publication still require the stated checks, including manual game verification.
+
+### Preview background execution and timing boundaries
+
+The [preview execution requirements](Bridge-Preview-Specification.md#ready-work-budget-and-detached-background-computation)
+apply throughout sampling, appearance preparation, assembly and scene preparation. Every CPU
+calculation that can operate on detached immutable data must run on bounded background workers
+in preview. Keep only required Unity/ECS/native API access, minimal snapshots/publication and
+GPU API submission on the main thread. Split mixed helpers at that boundary rather than moving
+their native calls to a worker or treating the whole helper as necessarily synchronous.
+
+Measure request and stage wall time, active main-thread work, worker computation, worker queue
+wait, main-thread continuation/frame wait, GPU submission/completion wait, transfers and native
+publication separately where observable. Use explicit timestamps/events at those boundaries;
+wall time minus active work is only an unexplained residual, not a measured frame/GPU/queue wait.
+Overlapping CPU/GPU spans and nested stages cannot be added as exclusive elapsed time. State
+unmeasured components and the reconciliation basis. Include maximum individual main-thread
+step and whole-update pump times, stage execution/reuse counts, transfer bytes/calls and
+cancellation cleanup. A shorter total or isolated kernel result alone does not prove responsiveness.
 
 Compare CPU and GPU clipping, bone binding and vertex encoding on the same captured inputs
 and ordered output requirements. Include GPU allocation, upload, dispatch, synchronization and
@@ -2087,3 +2153,9 @@ with zero sidewalks, one sidewalk and unequal left/right sidewalk widths when cl
 When a native database cannot supply a dependency handle for the current owner, check its canonical CID-named snapshot and matching sidecar before classifying the bridge. Parse saved Surface/VT bytes and resolve cache membership from exact native/prepared provenance or the one-per-inspection ephemeral cache fallback defined in the asset persistence policy. No cache-edge file or additional persisted self-check data is allowed. Foreign-owner handles alone cannot establish that a dependency has disappeared. Complete shared cache-relation preparation before owner dependency migration and structural inspection; preparation failure aborts the whole inspection with an ERROR, without retiring owners or adding a per-owner cache-readiness deferral. A separately unresolved shadowed file identity retains its existing inaccessible-file handling. Confirmed corruption and genuinely missing dependencies retain the section 19 migration policy.
 
 Dynamic material shaders are governed by [the scoped material requirements](MATERIAL_GENERATION_CONTRACT.md#dynamically-generated-and-independently-persisted-material-shaders): actual source generation, Player-capable loading and independent owner-local cold loading, without a continuing mod synchronization service. This permission does not relax geometry, texture-content or source-ownership rules.
+
+### Generation input coordinate stage
+
+Selected-road planar material coordinates and the measured road-to-object pose are evaluated in the same generation-only GPU pipeline before FP64 clipping. Prepare the normalized quaternion float products once on the CPU. Preserve Unity/Mono expression ordering with double intermediate evaluation and the original float store boundaries for each position, normal and tangent. Preserve untouched UV channels and tangent handedness. Upload original triangle records once and keep transformed records resident. The complete CPU fallback performs the same mapping and frame conversion before binding; it must never bind untransformed input after a GPU failure. The strict cross-LOD reuse key continues to compare original inputs, mappings and pose.
+
+The count pass validates both original and evaluated GPU input attributes before clipping output can be published. Moving finite/frame checks to the GPU is not permission to remove them: independent error flags must fail the GPU attempt and invoke the complete CPU fallback or return the original failure.

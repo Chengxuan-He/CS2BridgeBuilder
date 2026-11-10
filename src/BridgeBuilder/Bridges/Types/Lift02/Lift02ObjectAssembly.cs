@@ -4,8 +4,12 @@ using Game.Prefabs;
 namespace BridgeBuilder.Bridges;
 internal static class Lift02ObjectAssembly
 {
-    internal static StaticObjectPrefab Create(TowerFactory factory, string name, RenderPrefab mechanism, RenderPrefab column, RenderPrefab footing, ContentPrefab content, float halfWidthDelta, MovableStraightSample road)
+    internal static StaticObjectPrefab Create(TowerFactory factory, string name, RenderPrefab mechanism, RenderPrefab column, RenderPrefab footing, ContentPrefab content, float halfWidthDelta, MovableStraightSample road) =>
+        GenerationWork.Synchronous(() => CreateAsync(factory, name, mechanism, column, footing, content, halfWidthDelta, road));
+
+    internal static async System.Threading.Tasks.Task<StaticObjectPrefab> CreateAsync(TowerFactory factory, string name, RenderPrefab mechanism, RenderPrefab column, RenderPrefab footing, ContentPrefab content, float halfWidthDelta, MovableStraightSample road)
     {
+        await GenerationWork.Next("support Lift02ObjectAssembly.Create");
         // The recorded Lift02 mechanism has no authored ObjectSubObjects.
         // Keep the native three render slots and original procedural skeleton.
         var result = factory.CreateMovableObject(name, false, Lift02MechanismData.Meshes(new[] { mechanism, column, footing }), Lift02MechanismData.AuthoredAttachments(factory.ResolveOriginal<ObjectPrefab>), target =>
@@ -18,7 +22,7 @@ internal static class Lift02ObjectAssembly
         var partitions = new MovableRoadGeometry.Partition[objects.Placements.Length];
         Array.Fill(partitions, physical);
         factory.AttachMovableRoadObjects(result, objects.Placements, road.RoadToObject, partitions);
-        if(!factory.TryAttachMovablePaint(result, road.Road.LaneGeometry.Decals, road.RoadToObject, physical, MovableRoadGeometry.InFrame(road.Road.Triangles, road.RoadToObject),out _))return null!;
+        if(!(await factory.AttachMovablePaintAsync(result, road.Road.LaneGeometry.Decals, road.RoadToObject, physical, MovableRoadGeometry.InFrame(road.Road.Triangles, road.RoadToObject))).Success)return null!;
         return result;
     }
 }

@@ -11,6 +11,8 @@ namespace BridgeBuilder.Bridges;
 internal static class PedestrianDraw02RoadSampling
 {
     internal static MovableStraightSample Create(string owner, Entity selectedRoad, RenderPrefab[] roots, ContentPrefab content, float halfWidthDelta, RandomSeed seed, NetPieceLayerMask replacedLayers, Upgraded? upgrade = null) => MovableStraightSample.Create(owner, selectedRoad, roots, content, halfWidthDelta, seed, new[] { "PedestrianDrawBridge02 Mesh", "PedestrianDrawBridge02Pillar Mesh", "PedestrianDrawBridge02PillarBase Mesh" }, PedestrianDraw02MechanismData.Meshes, PedestrianDraw02MechanismData.ApplyComponents, PedestrianDraw02NetworkData.MechanismPlacement, Numeric_Types_PedestrianDraw02_PedestrianDraw02RoadSampling_cs.Values.F32[0], Numeric_Types_PedestrianDraw02_PedestrianDraw02RoadSampling_cs.Values.F32[1], replacedLayers, upgrade);
+
+    internal static System.Threading.Tasks.Task<MovableStraightSample> CreateAsync(string owner, Entity selectedRoad, RenderPrefab[] roots, ContentPrefab content, float halfWidthDelta, RandomSeed seed, NetPieceLayerMask replacedLayers, Upgraded? upgrade = null) => MovableStraightSample.CreateAsync(owner, selectedRoad, roots, content, halfWidthDelta, seed, new[] { "PedestrianDrawBridge02 Mesh", "PedestrianDrawBridge02Pillar Mesh", "PedestrianDrawBridge02PillarBase Mesh" }, PedestrianDraw02MechanismData.Meshes, PedestrianDraw02MechanismData.ApplyComponents, PedestrianDraw02NetworkData.MechanismPlacement, Numeric_Types_PedestrianDraw02_PedestrianDraw02RoadSampling_cs.Values.F32[0], Numeric_Types_PedestrianDraw02_PedestrianDraw02RoadSampling_cs.Values.F32[1], replacedLayers, upgrade);
 }
 
 // Embedded numerical arrays: Types_PedestrianDraw02_PedestrianDraw02RoadSampling_cs

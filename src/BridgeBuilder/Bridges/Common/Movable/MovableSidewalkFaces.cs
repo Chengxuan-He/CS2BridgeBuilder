@@ -16,27 +16,37 @@ internal sealed class MovableSidewalkFaces
     private enum Role { Other, Walk, Curb }
     private readonly Dictionary<(int,int),Role> _faces = new();
 
-    internal MovableSidewalkFaces(IReadOnlyList<Triangle> faces, SurfaceAsset[] materials,
-        BridgePreviewComposition.Piece[] occurrences)
+    private MovableSidewalkFaces() {}
+    internal MovableSidewalkFaces(IReadOnlyList<Triangle> faces,SurfaceAsset[] materials,BridgePreviewComposition.Piece[] occurrences)
     {
-        var sources = new MovableRoadRoute.Source?[materials.Length];
-        var families = occurrences.Select(p => Family(p.RootSection?.name)).ToArray();
-        var mixed = new bool[occurrences.Length];
-        var walkingOnly = occurrences.Select(p => p.Prefab.TryGet<NetPieceLanes>(out var lanes)
-            && lanes.active && lanes.m_Lanes is { Length: > 0 }
-            && lanes.m_Lanes.All(e => e?.m_Lane != null && e.m_Lane.Has<PedestrianLane>())).ToArray();
+        var result=GenerationWork.Synchronous(()=>CreateAsync(faces,materials,occurrences));
+        _faces=result._faces;Error=result.Error;
+    }
+    internal static async System.Threading.Tasks.Task<MovableSidewalkFaces> CreateAsync(IReadOnlyList<Triangle> faces,
+        SurfaceAsset[] materials,BridgePreviewComposition.Piece[] occurrences)
+    {
+        var sources=new MovableRoadRoute.Source?[materials.Length];
+        var families=occurrences.Select(p=>Family(p.RootSection?.name)).ToArray();
+        var mixed=new bool[occurrences.Length];
+        var walkingOnly=occurrences.Select(p=>p.Prefab.TryGet<NetPieceLanes>(out var lanes)&&lanes.active&&
+            lanes.m_Lanes is {Length:>0}&&lanes.m_Lanes.All(e=>e?.m_Lane!=null&&e.m_Lane.Has<PedestrianLane>())).ToArray();
+        var special=materials.Select(m=>m.id.guid.ToString()=="1d7dad9f64c9fe55a809f1080c39fb92").ToArray();
+        foreach(var t in faces)
+        {
+            if(families[t.Occurrence]!=Role.Walk&&!special[t.Material]||sources[t.Material].HasValue)continue;
+            if(!MovableRoadRoute.TryRead(materials[t.Material],out var read,out var error))
+            {Mod.Log.Error(error);return new MovableSidewalkFaces{Error=error};}
+            sources[t.Material]=read;
+        }
+        return await GenerationWork.Background("road sidewalk receiver roles",()=>
+        {
+            var result=new MovableSidewalkFaces();
         var kinds = new MovableRoadAppearance.Type[faces.Count];
         for (int i=0;i<faces.Count;i++)
         {
             var t=faces[i];
             // The same native atlas curb strip can occur in medians and other sections.
-            if (families[t.Occurrence]!=Role.Walk && materials[t.Material].id.guid.ToString()!="1d7dad9f64c9fe55a809f1080c39fb92") continue;
-            if(!sources[t.Material].HasValue)
-            {
-                if(!MovableRoadRoute.TryRead(materials[t.Material],out var read,out var error))
-                {Error=error;Mod.Log.Error(error);return;}
-                sources[t.Material]=read;
-            }
+            if (families[t.Occurrence]!=Role.Walk && !special[t.Material]) continue;
             var source=sources[t.Material]!.Value;
             kinds[i]=source.Receiver(t);
             if (kinds[i] is MovableRoadAppearance.Type.Sidewalk or MovableRoadAppearance.Type.Curb)
@@ -45,9 +55,11 @@ internal sealed class MovableSidewalkFaces
         for (int i=0;i<faces.Count;i++)
         {
             var t=faces[i];
-            _faces[(t.Occurrence,t.SourceTriangle)] = Classify(families[t.Occurrence],kinds[i],
+            result._faces[(t.Occurrence,t.SourceTriangle)] = Classify(families[t.Occurrence],kinds[i],
                 walkingOnly[t.Occurrence],mixed[t.Occurrence],t.A.Normal.y,t.B.Normal.y,t.C.Normal.y);
         }
+            return result;
+        });
     }
 
     private static Role Classify(Role family, MovableRoadAppearance.Type source, bool pedestrianOnly,

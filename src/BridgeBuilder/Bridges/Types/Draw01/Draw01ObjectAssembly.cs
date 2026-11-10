@@ -8,8 +8,12 @@ using UnityEngine;
 namespace BridgeBuilder.Bridges;
 internal static class Draw01ObjectAssembly
 {
-    internal static StaticObjectPrefab Create(TowerFactory factory, string owner, string name, RenderPrefab mechanism, RenderPrefab column, RenderPrefab footing, ContentPrefab content, Func<string, ObjectPrefab> resolveOriginal, float halfWidthDelta, Draw01ClosedRoad road)
+    internal static StaticObjectPrefab Create(TowerFactory factory, string owner, string name, RenderPrefab mechanism, RenderPrefab column, RenderPrefab footing, ContentPrefab content, Func<string, ObjectPrefab> resolveOriginal, float halfWidthDelta, Draw01ClosedRoad road) =>
+        GenerationWork.Synchronous(() => CreateAsync(factory, owner, name, mechanism, column, footing, content, resolveOriginal, halfWidthDelta, road));
+
+    internal static async System.Threading.Tasks.Task<StaticObjectPrefab> CreateAsync(TowerFactory factory, string owner, string name, RenderPrefab mechanism, RenderPrefab column, RenderPrefab footing, ContentPrefab content, Func<string, ObjectPrefab> resolveOriginal, float halfWidthDelta, Draw01ClosedRoad road)
     {
+        await GenerationWork.Next("support Draw01ObjectAssembly.Create");
         if (mechanism == null || column == null || footing == null || content == null || !float.IsFinite(halfWidthDelta))
             throw new ArgumentException("Draw01 requires three prepared render graphs, native content and a finite width change.");
         // Resolve once from the same live sampling context that supplied the road
@@ -42,7 +46,7 @@ internal static class Draw01ObjectAssembly
             target.GetComponent<StandingObject>().m_LegSize.x += halfWidthDelta * Numeric_Types_Draw01_Draw01ObjectAssembly_cs.Values.F32[0];
         });
         factory.AttachMovableRoadObjects(result, roadObjects.Placements, road.RoadToObject, attachmentPartitions);
-        if(!factory.TryAttachMovablePaint(result, road.Road.LaneGeometry.Decals, road.RoadToObject, Draw01RoadPartitions.Carriageway, MovableRoadGeometry.InFrame(road.Road.Triangles, road.RoadToObject),out _))return null!;
+        if(!(await factory.AttachMovablePaintAsync(result, road.Road.LaneGeometry.Decals, road.RoadToObject, Draw01RoadPartitions.Carriageway, MovableRoadGeometry.InFrame(road.Road.Triangles, road.RoadToObject))).Success)return null!;
         return result;
     }
 }

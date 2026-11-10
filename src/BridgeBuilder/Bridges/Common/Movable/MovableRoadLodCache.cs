@@ -54,6 +54,8 @@ internal sealed class MovableRoadLodCache
             foreach(var t in triangles){Include(t.Geometry.A.Position);Include(t.Geometry.B.Position);Include(t.Geometry.C.Position);}
             Minimum=minimum;Maximum=maximum;
         }
+        internal Result(Key input,string name,ModelImporter.Model[] models,SurfaceAsset[] surfaces,int count,Vector3 minimum,Vector3 maximum)
+        { Input=input;Name=name;Models=models;Surfaces=surfaces;TriangleCount=count;Minimum=minimum;Maximum=maximum; }
         internal ModelImporter.Model[] NamedModels(string name) => Models.Select(m =>
             new ModelImporter.Model(name+m.name.Substring(Name.Length),m.transform,m.vertexCount,
                 m.indices,m.ToArray(),m.subMeshes,m.rootBoneIndex,m.bones)).ToArray();

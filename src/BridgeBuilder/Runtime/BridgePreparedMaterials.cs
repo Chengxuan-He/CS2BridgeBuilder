@@ -29,8 +29,9 @@ internal static class BridgePreparedMaterials
     }
 
     private static string? _root;
-    // Set and consumed on the game thread only, for the duration of one request.
-    internal static BridgeMaterialFileSnapshot? RequestFiles { get; set; }
+    // Main-thread request scope flows across its asynchronous continuations only.
+    private static readonly System.Threading.AsyncLocal<BridgeMaterialFileSnapshot?> Files = new();
+    internal static BridgeMaterialFileSnapshot? RequestFiles { get=>Files.Value;set=>Files.Value=value; }
     internal static bool TrySourceRoot(out string root,out string? error)
     {root=_root??"";error=_root==null?"Prepared material installation directory is unavailable.":null;return error==null;}
     private static ILocalAssetDatabase? _database;
