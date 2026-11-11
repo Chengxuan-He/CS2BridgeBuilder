@@ -50,6 +50,9 @@ public sealed class Mod : IMod
         BridgeBuilder.Runtime.BridgeRailSeamPatch.Start();
 
         Log.Info($"{Id} loaded (build {BuildStamp()})");
+        if (!Runtime.BridgeCustomShaderRestoration.TryRestore(out var materialPrograms, out var programError))
+            Log.Error("Generated material program registration: " + programError);
+        else if (materialPrograms != 0) Log.Info("Generated material programs restored: " + materialPrograms);
         try
         {
             RoadBuilderIconExporter.RegisterHost();

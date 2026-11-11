@@ -46,15 +46,13 @@ internal sealed class BridgePreviewDrawList : IDisposable
     internal Bounds ViewBounds { get; private set; }
     private bool _hasViewBounds;
     internal IReadOnlyList<Draw> Draws => _draws;
+    internal IEnumerable<KeyValuePair<RenderPrefab, BridgePreviewOpenPose>> DiagnosticPoses => _openPoses;
+    internal void WriteDiagnosticSources(System.IO.TextWriter text) => _resources.WriteDiagnosticSources(text);
 
     internal BridgePreviewDrawList(BridgePreviewSession session)
         => _resources = new BridgePreviewRenderResources(session);
 
     internal void RefreshMaterialBindings() => _resources.RefreshMaterialBindings();
-
-    internal bool AddLanes(BridgePreviewComposition.Piece[] pieces, NetCompositionData data,
-        Matrix4x4 deckTransform, float start, float length) =>
-        GenerationWork.Synchronous(() => AddLanesAsync(pieces, data, deckTransform, start, length));
 
     internal async System.Threading.Tasks.Task<bool> AddLanesAsync(BridgePreviewComposition.Piece[] pieces, NetCompositionData data,
         Matrix4x4 deckTransform, float start, float length)
@@ -85,9 +83,6 @@ internal sealed class BridgePreviewDrawList : IDisposable
         Encapsulate(mesh.bounds, matrix);
         return true;
     }
-
-    internal bool AddRenderPrefab(RenderPrefab prefab, Matrix4x4 transform, BridgePreviewOpenPose? pose = null) =>
-        GenerationWork.Synchronous(() => AddRenderPrefabAsync(prefab, transform, pose));
 
     internal async System.Threading.Tasks.Task<bool> AddRenderPrefabAsync(RenderPrefab prefab, Matrix4x4 transform, BridgePreviewOpenPose? pose = null)
     {
@@ -131,10 +126,6 @@ internal sealed class BridgePreviewDrawList : IDisposable
         }
         return added;
     }
-
-    internal bool AddObject(ObjectGeometryPrefab prefab, Matrix4x4 transform, ObjectStack? alignedStack = null,
-        float objectElevation = 0f) =>
-        GenerationWork.Synchronous(() => AddObjectAsync(prefab, transform, alignedStack, objectElevation));
 
     internal async System.Threading.Tasks.Task<bool> AddObjectAsync(ObjectGeometryPrefab prefab, Matrix4x4 transform, ObjectStack? alignedStack = null,
         float objectElevation = 0f)

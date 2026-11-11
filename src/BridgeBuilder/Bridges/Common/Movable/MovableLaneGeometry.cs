@@ -41,7 +41,7 @@ internal static class MovableLaneGeometry
     }
     internal sealed class Part
     {
-        internal readonly MovableRoadGeometry.Vertex[] Vertices;
+        internal MovableRoadGeometry.Vertex[] Vertices;
         internal readonly int[][] Indices;
         internal Part(MovableRoadGeometry.Vertex[] vertices,int[][] indices){Vertices=vertices;Indices=indices;}
     }
@@ -68,6 +68,7 @@ internal static class MovableLaneGeometry
         async System.Threading.Tasks.Task<Result> Build()
         {
             var surfaces=new List<SurfaceAsset>();var decals=new List<MovableLaneVisuals.Batch>();
+            var decoders=new List<(Part Part,Func<MovableRoadGeometry.Vertex[]> Decode)>();
             var jobs=new List<(MovableLaneDeformation.Input Input,Part[] Parts,int Material,int Occurrence)>();
             for(int occurrence=0;occurrence<batches.Count;occurrence++)
             {
@@ -91,7 +92,8 @@ internal static class MovableLaneGeometry
                                 indices[slot]=mesh.GetIndices(slot);
                                 if(indices[slot].Length%3!=0)throw new InvalidDataException("Incomplete lane triangle.");
                             }
-                            parts[m]=new Part(await ReadVerticesAsync(mesh),indices);
+                            parts[m]=new Part(Array.Empty<MovableRoadGeometry.Vertex>(),indices);
+                            decoders.Add((parts[m],SnapshotVertices(mesh)));
                         }
                         cache.Meshes.Add(render,parts);
                     }
@@ -105,6 +107,7 @@ internal static class MovableLaneGeometry
             // Only value snapshots and owned managed mesh/receiver arrays cross this boundary.
             var triangles=await GenerationWork.Background("lane deform and triangle expansion",()=>
             {
+                foreach(var decoder in decoders)decoder.Part.Vertices=decoder.Decode();
                 var output=new List<MovableRoadGeometry.Triangle>();
                 foreach(var job in jobs)
                 {
@@ -126,7 +129,7 @@ internal static class MovableLaneGeometry
         }
     }
 
-    private static System.Threading.Tasks.Task<MovableRoadGeometry.Vertex[]> ReadVerticesAsync(Mesh mesh)
+    private static Func<MovableRoadGeometry.Vertex[]> SnapshotVertices(Mesh mesh)
     {
         if(!mesh.HasVertexAttribute(VertexAttribute.Normal)||!mesh.HasVertexAttribute(VertexAttribute.Tangent))
             throw new InvalidDataException("Lane mesh has no normal/tangent frame: "+mesh.name);
@@ -140,7 +143,7 @@ internal static class MovableLaneGeometry
         var uv=new List<Vector4>();mesh.GetUVs(0,uv);
         if(uv.Count!=mesh.vertexCount)throw new InvalidDataException("Lane mesh has incomplete UVs: "+mesh.name);
         var positions=mesh.vertices;var colors=mesh.colors;var name=mesh.name;
-        return GenerationWork.Background("lane packed frame decode",()=>
+        return () =>
         {
             var decoded=MovablePackedFrame.DecodeSnapshots(packedNormals,packedTangents);
             var output=new MovableRoadGeometry.Vertex[positions.Length];
@@ -150,7 +153,7 @@ internal static class MovableLaneGeometry
                 if(!MovableRoadGeometry.Valid(output[i]))throw new InvalidDataException("Invalid lane vertex in "+name);
             }
             return output;
-        });
+        };
     }
 
     // Project onto the selected road's actual closed surface, never city terrain. This is a

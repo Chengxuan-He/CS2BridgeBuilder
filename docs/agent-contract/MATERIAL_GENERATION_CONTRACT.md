@@ -19,14 +19,12 @@ an atlas chart to fill that gap. This supersedes earlier structural repeat permi
 including the earlier Lift05 profile recipe. Independently persisted external owner
 copies remain governed by the dependency persistence contract.
 
-
 Follow [player-controlled generation](BRIDGE_GENERATION_CONTRACT.md#player-controlled-generation-without-structural-rejection-gates): do not reject a generation request
 because of structural shape, width, signed scale, degeneracy, overlap, clearance or appearance
 quality. Such checks belong to offline verification or non-blocking diagnostics. Material
 no-match selects Original. Preserve actual file/schema/index, nonrepresentable arithmetic,
 write and native API errors; never fabricate successful output. This applies to all bridge
 families and LODs without changing historical dependency recovery.
-
 
 ## Scope and authority
 
@@ -35,7 +33,6 @@ preview, creation, regeneration and export. Geometry and native behavior remain 
 [bridge generation](BRIDGE_GENERATION_CONTRACT.md); movable appearance roles are defined in
 [movable generation sections 17 and 24](MOVABLE_BRIDGES_CONTRACT.md#17-material-families-uv-density-and-texture-ownership).
 Persistence follows the [asset persistence policy](Bridge-Asset-Persistence.md).
-
 
 Road appearance processing (prototype composition, source-density tiling, embedded-marking
 removal and derived wear/background placement) applies only to movable bridges whose roads need
@@ -153,8 +150,9 @@ Full original reuse and equivalent conversion still mean all required source app
 retained. Compatibility output is explicitly a third, potentially lossy outcome. It may select
 available source layers, approximate transparent surfaces using native object alpha modes, and
 materialize source projected color on measured receivers using local source-resolution mappings.
-Projected color must produce visible source-derived output, not an unconditional skip or a white/
-yellow substitute. Avoid full-span texture baking, large GPU composition, arbitrary downsampling,
+Retained projected color must produce visible source-derived output, not a white/yellow
+substitute. The mechanism asphalt normalization rule below deliberately omits its selected-road
+color overlay; that requested appearance replacement is not an unsupported-material fallback. Avoid full-span texture baking, large GPU composition, arbitrary downsampling,
 repeated coplanar receiver faces and unbounded per-pixel work. Preserve bones, LODs and ownership.
 
 Genuinely missing/corrupt required resources, invalid descriptor data or a failed native write
@@ -195,9 +193,12 @@ its evaluated physical domain (fixed end or moving span). Plain asphalt on a
 pedestrian running surface takes the prototype sidewalk appearance where that
 physical part has a verified match. Replace the appearance on the same receiver
 exactly once. Do not lay a second sidewalk mesh over it. Preserve curbs, gaps,
-lane geometry and genuine markings. Dyed bicycle/bus asphalt and uncertain or
-mixed source triangles retain the selected source material, coordinates and color.
-A matching asphalt base texture alone does not establish plain asphalt. A single
+lane geometry and genuine markings. Treat dyed bicycle/bus asphalt as ordinary asphalt:
+use the same measured prototype/corresponding asphalt route on the existing receiver,
+including stationary mechanism caps, and do not reapply its lane-color projection.
+Color coverage does not disable prototype support or split an otherwise identical asphalt
+receiver. Unknown non-asphalt and genuinely mixed substrate coverage still follow the
+ordinary source-routing rules. A single
 selected piece can contain both walking and cycling strips. Neither a road's
 display name nor a sampled RGB threshold establishes the role of a strip.
 
@@ -243,11 +244,13 @@ Preview, generation and export use this same routing policy at every LOD.
 
 ### Source-preserving selected-road decals
 
-Every selected-road decal retains its source appearance identity: markings remain markings,
-rail graphics remain rail graphics, and colored coverage remains source-colored coverage.
+Every retained selected-road decal retains its source appearance identity: markings remain
+markings and rail graphics remain rail graphics. Mechanism asphalt normalization deliberately
+omits the selected road's albedo-only lane-color overlay; external native approaches retain it.
 Use the actual source Surface, texture/VT channels, alpha, native texture area and evaluated
-curve coordinates. No road, material-name, CID or semantic-kind whitelist may suppress a
-source or substitute a generic white/yellow ribbon. Do not extract symbols from a fixed atlas
+curve coordinates. Identify the lane-color role from native material effect semantics, not
+road/material names, CIDs or sampled colors. Apart from explicitly specified road appearance
+replacement rules, do not suppress a source or substitute a generic white/yellow ribbon. Do not extract symbols from a fixed atlas
 or replace unknown artwork with constant UV paint. Reuse compatible native descriptors;
 when an evaluated rigid object protocol requires conversion, retain original texture identities and sampling
 through the common source-driven conversion, with a distinct derived descriptor identity.
@@ -257,12 +260,19 @@ whole rectangle and must not erase another source layer underneath. Preserve nat
 between distinct sources and share a material only for the same resolved source/protocol.
 The receiving road mesh remains unchanged. Clip only the generated decal representation to
 its receiver and motion domain, retain source UVs through clipping, and bind it to the existing
-native bone connection IDs through rigid child components, with the actual stack/object frame.
-The user authorizes this native attachment route for every retained decal, not only markings.
+mechanism skeleton with the actual stack/object frame through the generated decal program.
+This target route applies to every retained decal, not only markings; the historical relative-child implementation remains to be replaced.
+Decals, ordinary merged moving meshes and their corresponding bridge-leaf receivers must use
+the same native motion module and motion sample. Conditional visibility, actual independent
+animation, instance-color/emissive attachments and native light effects retain the existing
+native attachment/BoneHistory route under movable contract section 19. Ordinary nested geometry
+is not such an exception. Truly fixed components remain fixed. Following the deck through a new mod-controlled current/previous-frame transform
+tracker or compensation controller is forbidden. A persisted parent connection alone is not
+proof of same-sample rendering; verify moving poses under the native update order.
 Static native decal materials retain continuous alpha blending; do not replace it by object
 cutout, hashed coverage or alpha-renormalized mip textures. Curved source inputs must be
 evaluated into the matching static decal protocol; merely rebinding a curved shader is invalid.
-No runtime synchronization, full-span baking or custom shader dependency is introduced. Persist all required original external dependencies
+No runtime synchronization or full-span baking is introduced. Custom programs follow the authorized scope below; native light effects retain native positioning. Persist all required original external dependencies
 independently. Record native alpha/blend limitations explicitly; a white replacement is not
 source reuse. Validate original rail, line and colored sources, overlapping transparent areas,
 both leaf bones and all render distances separately from human visual acceptance.
@@ -369,7 +379,7 @@ sharing, never omitted dependencies, downsampling or unauthorized pattern change
 
 ### Conversion preserves each sampled coordinate field
 
-The authorized dynamic-shader investigation under section 4 is concluded as not implementable under the current game and independent cold-load requirements. It is not an available production density repair. Preserve the original sampled coordinate fields, rather
+The two-program implementation below is authorized with a mod-enabled startup-registration requirement. It must restore both source sampling fields rather than claim that a successful shader-function probe alone repairs production density. Preserve the original sampled coordinate fields, rather
 than changing the retained base UV by a ratio between different source layers.
 No receiver baking, mask/domain approximation, texture replacement or automatic
 uniform multiplier is authorized by this shader experiment.
@@ -471,11 +481,10 @@ Do not modify a shared source atlas used by structure. Bind a new road-only deri
 with its own CID and complete dependency graph. A finite original-road binding is not an exception.
 
 Continue generating the selected road's intended markings from its actual layout through that
-bridge's native decal path. Movable bridges use native rigid decal children attached through
-the mechanism's persisted connection IDs, preserving source continuous alpha.
+bridge's decal path. Movable bridges use the authorized direct-skeleton decal program
+on the mechanism's current motion sample, preserving source continuous alpha.
 Do not delete this paint, change its layout or duplicate it with texture markings. Check near,
 middle and far output: removing a line from one LOD or one cap is not completion.
-
 
 ### Integer-grid mip resampling and bounded two-period storage
 
@@ -538,7 +547,7 @@ arbitrary crops, lower resolution, full-span baking or a global error-threshold 
 Leave original atlas, Surface and dependency files unchanged. Derived Surface/texture/VT resources
 receive independent identities, never the original source CID for changed bytes. Unchanged shared
 dependencies and byte-identical owner copies retain their own CIDs. Package the complete finished
-native resource graph once; runtime only copies/binds it, without baking or a continuing runtime controller. The unavailable dynamic-shader route below does not authorize a production exception to this offline texture route.
+native resource graph once; runtime only copies/binds it, without baking or a continuing runtime controller. The authorized generated-program route below does not authorize runtime texture baking or an exception to this offline texture route.
 Verify independent native loading and all affected LODs, and count the complete dependency graph
 as an informational owner measurement and against the 55,000,000-byte package limit. This rule specifies the required
 route; it does not assert current feasibility, implementation or acceptance.
@@ -578,7 +587,7 @@ equivalent material blending. Keep marking geometry/layout separate from road-ba
 
 Apply the mapping and blend through a verified native, persistable rendering path. Metadata alone,
 a shader keyword, a diagnostic shader or network-template support does not prove skinned-object
-capability. Dynamic shaders remain unavailable under the current independent-loading requirements in section 4; manager-dependent runtime rebinding remains prohibited. An unresolved
+capability. The two generated programs follow section 4's mod-enabled startup-registration requirement; per-frame manager-dependent runtime rebinding remains prohibited. An unresolved
 native layer representation is incomplete work, not permission to flatten the road into pixels.
 
 ### Period-detection error tolerance
@@ -626,23 +635,17 @@ An equivalent representation preserves required source layers, blends and dynami
 When that cannot be expressed, use the authorized compatibility-output outcome above instead of
 rejecting valid input. Select or map source channels by semantic property, retain original local
 texture resolution, and diagnose omitted/blended/frozen behavior without claiming equivalence.
-Preserve geometry, bones, all LODs and independent native loading. No full-span baking or runtime animation/renderer synchronization is authorized. Dynamic production shaders require the independent persistence route below. Source assets
+Preserve geometry, bones and all LODs. Owner-local persistence and mod-enabled cold loading follow the registration requirements below. No full-span baking or runtime animation/renderer synchronization is authorized. Source assets
 remain unchanged; changed derivatives receive their own identity and complete dependencies.
 Informational owner measurements, the 55 MB package limit and other quality requirements remain required.
 
 ### Independent persisted rendering without runtime synchronization
 
-Independent loading, rendering and native operation with Bridge Builder disabled
-or uninstalled is a non-negotiable project constraint at all times. It must not be
-ignored, relaxed or offered as a trade-off for material fidelity or implementation
-convenience. A startup-only loader/registration service is still a dependency and
-is not an admissible alternative. Experiments and partial successes do not waive
-this constraint or establish a deliverable solution.
+Generated programs follow the [startup-registration requirements](#dynamically-generated-and-independently-persisted-material-shaders). The following native lifecycle restrictions also apply.
 
-The complete original-material representation must be expressed by the saved native asset,
-component and dependency graph. After generation, its loading, rendering and motion must not
-require Bridge Builder to keep running. A creation-time native registration or initialization
-step does not authorize a continuing mod-owned renderer service.
+Save the complete material representation and generated program dependencies with the
+owning bridge. Native rendering and motion operate after registration without a mod-owned
+transform controller. Saving files alone does not prove successful startup registration.
 
 Do not synchronize native network rendering data as bridge leaves move. This prohibition
 includes per-frame or event-driven network-buffer updates, material/renderer rebinding,
@@ -653,59 +656,39 @@ remains permitted; a mod-dependent synchronization layer does not.
 
 The output must be a native persistable representation. Prefer complete source retention;
 otherwise produce the authorized compatibility representation with explicit differences. Validate
-motion, every LOD and cold loading without Bridge Builder. Record missing equivalence and
-evidence limits without converting compatibility shortcomings into generation failure. An
+motion, every LOD and mod-enabled cold loading for this implementation. Record the startup-registration dependency, missing equivalence and evidence limits without converting compatibility shortcomings into generation failure. An
 approximation is not completion of exact original-material fidelity.
-Dynamic-shader investigation is retained only as archived feasibility evidence under the constraints below. These constraints do not relax the open-ended source-material
+The earlier independent-loading experiment is historical evidence, not a current acceptance gate;
+the authorized two-program implementation below is now active. These constraints do not relax the open-ended source-material
 and non-throwing pipeline requirements above.
 
 ## Current multilayer compatibility limit
 
-**Complete multilayer adaptation is not implementable under the current game and
-project requirements.** The available persisted native object protocols do not
-express the required independent base/world-coordinate sampling and source-mask
-PBR mixture in full. A dynamically generated shader can perform that computation,
-but restoring its shader/template registration currently depends on Bridge Builder.
-That dependency cannot coexist with the non-negotiable requirement that saved
-bridges cold-load with Bridge Builder disabled or uninstalled.
+The investigated persisted native object protocols do not fully express independent base/world-coordinate sampling and source-mask PBR blending. The two authorized generated programs supply these computations and require Bridge Builder to restore shader/template registration. This permitted startup dependency does not authorize a transform-tracking controller.
 
 Compatibility materials remain usable approximations with diagnosed differences;
 they are not a complete multilayer repair. Keeping texture dimensions or changing
 one UV scale does not restore an omitted layer, its coordinate system or blend
-weights. Dynamic-shader experiments are archived evidence, not an active production
-route. This conclusion is bounded to the investigated current game interfaces and
-unchanged project constraints, not every possible future engine implementation.
+weights. The two custom programs must preserve those computations through actual production
+and preview consumers. Earlier shader experiments alone do not establish completion.
+The loading limitation is bounded to the investigated current game interfaces, not every
+possible future engine implementation.
 
 ### Dynamically generated and independently persisted material shaders
 
-**Status: Not implementable under current requirements.** With the current game
-version, the complete custom-shader solution cannot meet independent cold loading
-with Bridge Builder disabled or uninstalled. Dynamic compilation and bounded GPU
-sampling have succeeded, but the native Surface stores a global template hash and
-Prefab Shader/Material references depend on the global UnityObjectsMap. Owner-local
-shader files do not independently restore these registrations. A startup registration
-service is disallowed by the retained independence requirement.
+Implementation of two dynamically generated custom material programs is authorized: direct-skeleton decals preserving source continuous alpha and PBR, and multilayer base-UV/world-coordinate PBR preserving independent coordinates and mask semantics. Ordinary moving mesh attachments, including recursively selected nested meshes, join the mechanism render graph with unit-weight mounting bones. Conditional visibility, actual independent animation, instance-color and emissive attachments, and native light effects explicitly retain their existing native attachment/BoneHistory behavior. These exceptions do not authorize a new Bridge Builder transform-tracking controller or per-frame synchronization service. Mere presence of an animation component does not establish actual independent motion.
 
-Do not deploy this route, treat it as an active production implementation plan, or
-claim that it fixes density. The user's authorization to investigate dynamic shaders
-is not revoked. The current route is not deliverable. Only a change in evidenced native
-loading capability can justify a new feasibility assessment under the unchanged
-independent-loading constraint; this is not a pending implementation plan.
-A mod-dependent loader is not a candidate.
+Bridge Builder must remain installed and enabled for generated-program registration. Operation after disabling or uninstalling it is not a project requirement. Creation-time and mod-startup loading/registration of owner-local generated shader/template assets are permitted. No per-frame transform synchronization is permitted. Preserve shader source/program dependencies with each saved bridge and report that Bridge Builder must remain enabled to restore their registration. Current native Surface/template and UnityObjectsMap discovery does not restore these owner-local custom programs automatically. Complete mod-enabled creation, preview and cold-load behavior must be tested separately; shader-function success alone is insufficient. Do not mutate shared game resources, install an external bootstrap, or launch/close the game or launcher.
 
-The archived experiment demonstrated dynamic source compilation, container loading
-and bounded dual-coordinate/mask sampling, not independent native cold loading.
-Any future reconsideration requires new evidence of a native owner-local loading
-capability under the same independence requirement; there is no active shader
-implementation checklist or mod-dependent registration-service alternative.
+The decal program consumes the same current procedural skeleton addressing as its mechanism. Preserve source alpha blending, PBR, priority, texture identities and evaluated UVs; no hard/hashed cutout substitution. The multilayer program samples base UV and world coordinates independently and blends corresponding PBR channels by the original mask. Use source defaults and overrides through semantic recipes, not name/CID exceptions. Save generated dependencies with the owner; files alone do not prove native discovery.
 
-
-The saved bridge must not need Bridge Builder, a per-frame synchronizer or a
-custom bootstrap service to recreate shader/template registration after loading.
-Creation-time compilation/registration is allowed. Independent native loading must
-consume the saved dependencies through an evidenced native loading mechanism.
-A user-controlled game launch is required for game acceptance; agents never launch
-or close the game. Keep the existing GPU geometry and cross-LOD reuse unchanged.
+Treat each custom program as its native source shader plus the necessary current-skeleton
+binding. Preserve the native material computation, fragment programs, pass behavior and
+vertex-channel decoding; change position, direction and projection inputs only as required
+to bind the evaluated geometry to that skeleton. A keyword name alone does not establish
+an alternative vertex layout. Verify the actual source variants and generated mesh format,
+including packed normal and tangent channels. Test finite tangent frames and shaded output
+at closed and opened poses through both native batching and the ordinary preview renderer.
 
 ### Prototype appearance composition
 
@@ -935,7 +918,7 @@ texture count or an eligibility flag. Required evidence includes:
    dimensions and reason; hardware limits or small pages are not acceptance evidence.
 6. **Reuse and lifetime:** known resources are prepared once offline; identical sampling uses share
    payloads. All preview/create/regenerate/export paths use the same representations. Verify cold
-   loading without Bridge Builder, complete current-owner dependency closure, and independence
+   loading with Bridge Builder enabled, complete current-owner dependency closure, and independence
    from other generated bridges or deleted sources. Preserve healthy existing assets.
 7. **Size reporting and package budget:** report prepared bytes and the complete persisted owner
    material graph separately, with no per-owner ceiling. The actual official SDK package must be
@@ -950,6 +933,8 @@ Changing this specification does not change installed code or certify current ge
 ## Prototype-owned mechanism wear, including fixed ends
 
 The movable bridge mechanism includes its moving span and its stationary end caps.
+Colored asphalt follows the same ordinary-asphalt and actual-vehicle-lane rules;
+it neither blocks supported prototype wear nor grants a missing wear capability.
 Generate wheel-track/wear appearance there only from the measured prototype's
 WheelTrack road representation. Do not overlay selected-road deterioration on any
 mechanism receiver, even when its bone is stationary or its substrate uses an
@@ -959,8 +944,8 @@ not be duplicated as a hashed-alpha object layer.
 The external fixed elevated approaches are separate native network assets. Keep
 their selected-road deterioration and original network rendering unchanged. Do not
 mistake a stationary cap within the mechanism for such an approach, or delete wear
-from external roads. Source line/rail artwork and bus/bicycle color coverage remain
-on the source-preserving decal route. Classify deterioration by native shader
+from external roads. Source line/rail artwork remains on the source-preserving decal
+route; colored asphalt follows ordinary asphalt replacement without its color overlay. Classify deterioration by native shader
 protocol identity, not road/material names or CIDs. No hard-alpha threshold,
 texture erasure, or replacement white ribbon is a wear-noise repair.
 

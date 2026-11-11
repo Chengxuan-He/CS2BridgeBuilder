@@ -322,15 +322,18 @@ function ModelPreview({ upperId = "", lowerId = "", styleId = "", prefabName = "
     const [loadedImage, setLoadedImage] = React.useState("");
     const [imageSize, setImageSize] = React.useState({ width: 0, height: 0 });
     const frameRef = React.useRef(null);
+    const [physicalWidth, setPhysicalWidth] = React.useState(0);
     React.useEffect(() => setImageError(false), [image]);
     React.useEffect(() => {
         let frame = null;
         const measure = () => {
             const width = frameRef.current?.getBoundingClientRect().width;
-            if (!(width > 0) || !Number.isFinite(width)) return;
+            if (!(width > 0) || !Number.isFinite(width)) { setPhysicalWidth(0); return; }
             // Cohtml resolves absolute percentage heights against the content
             // box, not the padding box. Give both frame and image a REAL height;
             // do not reserve space with height:0 + padding-top and a 100% image.
+            const ratio = Number.isFinite(window.devicePixelRatio) && window.devicePixelRatio > 0 ? window.devicePixelRatio : 1;
+            setPhysicalWidth(Math.max(64, Math.min(2048, Math.ceil(width * ratio / 2) * 2)));
             setImageSize(previous => previous.width === width ? previous :
                 { width, height: width * 512 / 1024 });
         };
@@ -353,11 +356,17 @@ function ModelPreview({ upperId = "", lowerId = "", styleId = "", prefabName = "
             observer?.disconnect();
         };
     }, [image, ready]);
+    React.useEffect(() => {
+        if (!physicalWidth) return;
+        const timer = setTimeout(() => trigger("PreviewViewportWidth", String(physicalWidth)), 150);
+        return () => clearTimeout(timer);
+    }, [physicalWidth]);
+    const hasViewport = physicalWidth > 0;
     const key = prefabName ? `existing\n${prefabName}` : `${upperId}\n${lowerId}\n${styleId}\n${lowerDeckOpposite ? "opposite" : "same"}`;
     React.useEffect(() => {
         // Invalidate the old render immediately; debounce only the expensive build.
         trigger("ClearPreview");
-        const timer = ready ? setTimeout(() => prefabName
+        const timer = ready && hasViewport ? setTimeout(() => prefabName
             ? trigger("PreviewExistingBridge", prefabName)
             : trigger("PreviewBridge", { upperDeckId: upperId, lowerDeckId: lowerId, styleId,
                 displayName: "", lowerDeckOpposite }), 250) : null;
@@ -365,7 +374,7 @@ function ModelPreview({ upperId = "", lowerId = "", styleId = "", prefabName = "
             if (timer !== null) clearTimeout(timer);
             trigger("ClearPreview");
         };
-    }, [upperId, lowerId, styleId, prefabName, lowerDeckOpposite, ready]);
+    }, [upperId, lowerId, styleId, prefabName, lowerDeckOpposite, ready, hasViewport]);
     const current = ready && resultKey === key;
     const imageReady = current && !!image && loadedImage === image && imageSize.width > 0;
     // No text (including a broken image's alt text) is drawn in the frame.

@@ -7,3 +7,11 @@ tools/RoadGpu/RoadEncode.compute -text whitespace=cr-at-eol
 tools/RoadGpu/RoadGpuBuild.Editor.cs -text whitespace=cr-at-eol
 # The empty second TSV field is significant fixture data.
 tools/NetworkStateCheck/Native132States.tsv whitespace=-blank-at-eol
+
+# Generated material program manifests fingerprint exact authoring-source bytes.
+tools/MaterialShaders/BuildNativeDecal.py -text whitespace=cr-at-eol,-blank-at-eof
+tools/MaterialShaders/MaterialFunctions.hlsl -text whitespace=cr-at-eol,-blank-at-eof
+tools/MaterialShaders/NativeDecalTranscription.py -text whitespace=cr-at-eol,-blank-at-eof
+tools/MaterialShaders/NativeDecalVertex.hlsl -text whitespace=cr-at-eol,-blank-at-eof
+tools/MaterialShaders/NativeInstanceSkeleton.hlsl -text whitespace=cr-at-eol,-blank-at-eof
+tools/MaterialShaders/NativeNetworkVertex.hlsl -text whitespace=cr-at-eol,-blank-at-eof

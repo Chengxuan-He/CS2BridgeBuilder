@@ -32,6 +32,12 @@ internal sealed class Lift05BridgeGenerator : MovableBridgeGeneratorBase<Movable
     {
         var levels = await Lift05RoadPreparation.PrepareRenderLevelsAsync(road, nativeLevels, halfDelta, Matrix4x4.Translate(new Vector3(Numeric_Types_Lift05_Lift05BridgeGenerator_cs.Values.F32[0], Numeric_Types_Lift05_Lift05BridgeGenerator_cs.Values.F32[1], Numeric_Types_Lift05_Lift05BridgeGenerator_cs.Values.F32[2])), material);
         if (levels == null) return null;
+        var objects = road.Objects();
+        var objectPartitions = new MovableRoadGeometry.Partition[objects.Placements.Length];
+        Array.Fill(objectPartitions, Lift05RoadPartitions.Carriageway);
+        levels = factory.PrepareDirectRoadMeshes(levels, objects.Placements, road.RoadToObject, objectPartitions);
+        levels = factory.PrepareBoneDecals(levels, new MovablePaintDeck(road.Road.LaneGeometry.Decals, road.RoadToObject, Lift05RoadPartitions.Carriageway,
+            MovableRoadGeometry.InFrame(road.Road.Triangles, road.RoadToObject)));
         return await Lift05RenderAssembly.CreateMechanismAsync(factory, owner + " Mechanism", levels, halfDelta);
     }
 

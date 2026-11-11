@@ -607,6 +607,9 @@ Set(d,"m_Material",material);list.Add(d);return material;}
  var load=surfaceType.GetMethod("Load",I);var ma=load.GetParameters().Select(x=>x.DefaultValue).ToArray();ma[1]=true;var material=(Material)load.Invoke(output,ma);Need(material.shader==target.shader,"wrong native shader");Need(!material.IsKeywordEnabled("_ALPHATEST_ON")&&!material.IsKeywordEnabled("_HASHED_ALPHATEST"),"cutout retained");Need(material.FindPass("DBufferMesh")>=0,"missing native blend pass");
  Debug.Log("PASS original "+family+" native Surface save/load template="+Get(output,"materialTemplateHash")+" shader="+material.shader.name+" textures="+after.Count+" alphaCutoffEnable="+material.GetFloat("_AlphaCutoffEnable"));
  }
+ var sourceKind=T("MovableRoadAppearance+Type");var sourceRoute=T("MovableRoadRoute+Source");var routeMethod=T("MovableRoadRoute").GetMethod("Select",S);
+ var asphalt=Enum.Parse(sourceKind,"Asphalt");var noSupport=Enum.Parse(sourceKind,"None");
+ var roadIdentity=Activator.CreateInstance(sourceRoute,I,null,new object[]{"1d7dad9f64c9fe55a809f1080c39fb92",true,"9a6506aaede935752b5c4c0362c95f6e","a142c18b42577de52815d1afd054660b","37ceea0e8c2bd24599e237236e6ae338",asphalt},null);
  var vertex=T("MovableRoadGeometry+Vertex");var triangle=T("MovableRoadGeometry+Triangle");var partition=T("MovableRoadGeometry+Partition");var region=T("MovableNativeDecals+Region");
  object New(Type t,params object[] values)=>Activator.CreateInstance(t,I,null,values,null);
  var split=New(partition,Matrix4x4.identity,New(partition,0),New(partition,1));
@@ -632,6 +635,16 @@ Set(d,"m_Material",material);list.Add(d);return material;}
  Debug.Log("PASS thin/vertex/edge/oblique projection face frames: "+frameCases+" cases");
  var batchType=T("MovableLaneVisuals+Batch");var game=Assembly.LoadFrom(Path.Combine(managed,"Game.dll"));var renderType=game.GetType("Game.Prefabs.RenderPrefab",true);var decalType=game.GetType("Game.Prefabs.DecalProperties",true);
  object V(float x,float z)=>New(vertex,new Vector3(x,0,z),Vector3.up,new Vector4(1,0,0,1),Vector4.zero,Color.white);var receivers=Array.CreateInstance(triangle,2);receivers.SetValue(New(triangle,V(-1,-2),V(1,-2),V(1,2),0,0,0),0);receivers.SetValue(New(triangle,V(-1,-2),V(1,2),V(-1,2),0,0,1),1);
+ foreach(var uv in new[]{.125f,.289f,.5f}){
+  object RV(float x,float z)=>New(vertex,new Vector3(x,0,z),Vector3.up,new Vector4(1,0,0,1),new Vector4(uv,0,0,0),Color.white);
+  var face=New(triangle,RV(-1,-2),RV(1,-2),RV(1,2),0,0,0);
+  foreach(var support in new[]{asphalt,Enum.Parse(sourceKind,"Asphalt, WheelTrack"),noSupport}){
+   var route=routeMethod.Invoke(null,new[]{roadIdentity,face,support,(object)true,false}).ToString();
+   Need(route==(uv==.125f&&!support.Equals(noSupport)?"Prototype":"Original"),"asphalt/support/curb classification changed");
+  }
+ }
+ Need(T("MovableSurfaceAtlas+Input").GetField("LaneColors",I)==null,"unused color coverage still changes appearance/LOD identity");
+ Debug.Log("PASS ordinary and colored asphalt share source/domain route; prototype wear capability retained; missing support/curb/paving remain separate");
  // Execute the actual final production attachment consumer, including native
  // Model encoding, ToUnityMesh capture and retained private Surface identities.
  var factoryType=T("TowerFactory");var factory=System.Runtime.Serialization.FormatterServices.GetUninitializedObject(factoryType);
@@ -642,17 +655,23 @@ Set(d,"m_Material",material);list.Add(d);return material;}
  for(int i=0;i<3;i++){var b=Activator.CreateInstance(boneType);Set(b,"position",Vector3.zero);Set(b,"rotation",Quaternion.identity);Set(b,"scale",Vector3.one);Set(b,"bindPose",Matrix4x4.identity);Set(b,"m_Speed",1f);Set(b,"m_ConnectionID",i==0?0:100+i);Set(b,"parentId",i==0?-1:i==1?0:1);Set(b,"m_Type",Enum.Parse(boneType.GetField("m_Type",I).FieldType,i==1?"LookAtMovementY":"None"));bones.SetValue(b,i);}boneField.SetValue(animation,bones);
  var addComponent=renderType.GetMethods(I).Single(m=>m.Name=="AddComponentFrom"&&m.GetParameters().Length==1&&!m.IsGenericMethod);var attachedAnimation=addComponent.Invoke(rootRender,new object[]{animation});boneField.SetValue(attachedAnimation,boneField.GetValue(animation));
  var meshField=mechanism.GetType().GetField("m_Meshes",I);var infoType=meshField.FieldType.GetElementType();var info=Activator.CreateInstance(infoType);Set(info,"m_Mesh",rootRender);Set(info,"m_Rotation",infoType.GetField("m_Rotation",I).FieldType.GetField("identity",S).GetValue(null));var infoArray=Array.CreateInstance(infoType,1);infoArray.SetValue(info,0);meshField.SetValue(mechanism,infoArray);
- var batches=Array.CreateInstance(batchType,2);
- for(int j=0;j<2;j++){
+ var batches=Array.CreateInstance(batchType,4);
+ for(int j=0;j<4;j++){
   var batch=System.Runtime.Serialization.FormatterServices.GetUninitializedObject(batchType);var render=ScriptableObject.CreateInstance(renderType);var prop=ScriptableObject.CreateInstance(decalType);Set(prop,"m_RendererPriority",j);var attachedDecal=addComponent.Invoke(render,new object[]{prop});Set(attachedDecal,"m_RendererPriority",j);
   Set(batch,"Source",render);var sf=Array.CreateInstance(surfaceType,1);sf.SetValue(originalSources[j],0);Set(batch,"Surfaces",sf);Set(batch,"Decal",true);Set(batch,"Transform",Matrix4x4.identity);
   var curve=Matrix4x4.zero;curve.SetColumn(0,new Vector4(0,0,-2,0));curve.SetColumn(1,new Vector4(0,0,-.6666667f,1f/3));curve.SetColumn(2,new Vector4(0,0,.6666667f,2f/3));curve.SetColumn(3,new Vector4(0,0,2,1));Set(batch,"CurveMatrix",curve);Set(batch,"Size",new Vector4(2,1,0,0));Set(batch,"Scale",Vector4.one);batches.SetValue(batch,j);
  }
+ for(int j=0;j<4;j++) Need((bool)T("MovableNativeDecals").GetMethod("IsLaneColor",S).Invoke(null,new[]{batches.GetValue(j)})==(j==3),"actual source lane-color classification "+j);
+ var renamed=Template(991159,572);renamed.CopyPropertiesFromMaterial(library.GetType().GetMethods(I).Single(m=>m.Name=="GetMaterial"&&m.GetParameters().Length==1&&m.GetParameters()[0].ParameterType==typeof(int)).Invoke(library,new object[]{32}) as Material);
+ listField.SetValue(library,list);
+ var alternate=Source(991159,"unknown-source-label");var saved=(Array)Get(batches.GetValue(3),"Surfaces");var alternateArray=Array.CreateInstance(surfaceType,1);alternateArray.SetValue(alternate,0);Set(batches.GetValue(3),"Surfaces",alternateArray);
+ Need((bool)T("MovableNativeDecals").GetMethod("IsLaneColor",S).Invoke(null,new[]{batches.GetValue(3)}),"same native color effects under unknown template identity");Set(batches.GetValue(3),"Surfaces",saved);
+ Debug.Log("PASS actual TramRails/TramRailsBase/LaneLine retained; BusLane color-only recognized; unknown template/CID same effects recognized");
 
  object[] attach={mechanism,batches,new Pose(Vector3.zero,Quaternion.identity),split,receivers,null};Need((bool)factoryType.GetMethods(I).Single(m=>m.Name=="TryAttachMovablePaint"&&m.GetParameters().Length==6).Invoke(factory,attach),"actual consumer: "+attach[5]);
- Need(((Array)meshField.GetValue(mechanism)).Length==1,"decal appended to skinned graph");var subType=game.GetType("Game.Prefabs.ObjectSubObjects",true);var get=mechanism.GetType().GetMethods(I).Single(m=>m.Name=="GetComponent"&&m.IsGenericMethod&&m.GetParameters().Length==0).MakeGenericMethod(subType);var subs=(Array)Get(get.Invoke(mechanism,null),"m_SubObjects");Need(subs.Length==4,"source x leaf grouping wrong: "+subs.Length);
+ Need(((Array)meshField.GetValue(mechanism)).Length==1,"decal appended to skinned graph");var subType=game.GetType("Game.Prefabs.ObjectSubObjects",true);var get=mechanism.GetType().GetMethods(I).Single(m=>m.Name=="GetComponent"&&m.IsGenericMethod&&m.GetParameters().Length==0).MakeGenericMethod(subType);var subs=(Array)Get(get.Invoke(mechanism,null),"m_SubObjects");Need(subs.Length==6,"source x leaf grouping wrong: "+subs.Length);
  foreach(var entry in subs){Need((int)Get(entry,"m_ParentMesh")==0||(int)Get(entry,"m_ParentMesh")==101,"parent array index mistaken as connection");var obj=Get(entry,"m_Object");var mesh=Get(((Array)Get(obj,"m_Meshes")).GetValue(0),"m_Mesh");object[] captured={mesh,null};Need((bool)T("PreviewGeometry").GetMethod("TryGetMeshes",I).Invoke(preview,captured),"native geometry capture missing");Need(((Mesh[])captured[1]).All(m=>m.triangles.Length>=36),"closed native projector volume missing");}
- Debug.Log("PASS actual production consumer: 2 original rail sources x 2 native parents =4 rigid children; original mechanism meshes unchanged; native Model disposed after capture");
+ Debug.Log("PASS actual production consumer: 3 original rail/line sources x 2 native parents =6 rigid children; color-only source emits zero children; original mechanism meshes unchanged; native Model disposed after capture");
 
  var poseType=mod.GetType("BridgeBuilder.Runtime.BridgePreviewOpenPose",true);var pose=New(poseType,attachedAnimation,new Vector3(0,3,0));
  var drawType=mod.GetType("BridgeBuilder.Runtime.BridgePreviewDrawList",true);var draw=System.Runtime.Serialization.FormatterServices.GetUninitializedObject(drawType);var poses=(IDictionary)Activator.CreateInstance(drawType.GetField("_openPoses",I).FieldType);poses.Add(rootRender,pose);Set(draw,"_openPoses",poses);var transform=(Matrix4x4)drawType.GetMethod("AttachmentPose",I).Invoke(draw,new object[]{mechanism,101});Need(Vector3.Distance(transform.MultiplyPoint3x4(new Vector3(1,0,2)),new Vector3(1,3,2))<1e-6,"preview child fails native parent pose");((IDisposable)pose).Dispose();Debug.Log("PASS actual preview AttachmentPose: native connection101 raises original child frame by3m, no child skinning");
@@ -665,7 +684,7 @@ Set(d,"m_Material",material);list.Add(d);return material;}
 
  foreach(var asset in prefabAssets)prefabType.GetMethod("Unload",I).Invoke(asset,new object[]{true});
  ((System.Threading.Tasks.Task)global.GetType().GetMethod("RegisterDatabase",I).Invoke(global,new[]{db})).GetAwaiter().GetResult();
- var excluded=Array.CreateInstance(N("IAssetDatabase"),0);var cold=prefabType.GetMethods(I).Single(m=>m.Name=="Load"&&!m.IsGenericMethod&&m.GetParameters().Length==1).Invoke(ownerAsset,new object[]{excluded});Need(cold!=null&&!ReferenceEquals(cold,mechanism),"native root was not reloaded");var restored=(Array)Get(get.Invoke(cold,null),"m_SubObjects");Need(restored.Length==4,"native child list cold load lost");foreach(var entry in restored){Need(Get(entry,"m_Object")!=null,"native child reference unresolved");Need((int)Get(entry,"m_ParentMesh")==0||(int)Get(entry,"m_ParentMesh")==101,"parent lost after native reload");}Debug.Log("PASS native Prefab unload/reload:4 children resolved with native connection IDs; no Bridge Builder post-load repair called");
+ var excluded=Array.CreateInstance(N("IAssetDatabase"),0);var cold=prefabType.GetMethods(I).Single(m=>m.Name=="Load"&&!m.IsGenericMethod&&m.GetParameters().Length==1).Invoke(ownerAsset,new object[]{excluded});Need(cold!=null&&!ReferenceEquals(cold,mechanism),"native root was not reloaded");var restored=(Array)Get(get.Invoke(cold,null),"m_SubObjects");Need(restored.Length==6,"native child list cold load lost");foreach(var entry in restored){Need(Get(entry,"m_Object")!=null,"native child reference unresolved");Need((int)Get(entry,"m_ParentMesh")==0||(int)Get(entry,"m_ParentMesh")==101,"parent lost after native reload");}Debug.Log("PASS native Prefab unload/reload:6 children resolved with native connection IDs; no Bridge Builder post-load repair called");
  EditorApplication.Exit(0);
  }catch(Exception e){Debug.LogException(e is TargetInvocationException?e.InnerException:e);EditorApplication.Exit(1);}}
 }

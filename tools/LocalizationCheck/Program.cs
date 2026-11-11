@@ -112,6 +112,15 @@ internal static class Program
             _ = BridgeRuntimeRequests.Status;
             Check(BridgeBuilder.Mod.Log.Messages.Count == count + 1, "Footer reads duplicated error logs");
         }
+        var beforeResizeRevision = BridgePreviewState.Revision;
+        BridgePreviewState.SetViewportWidth("701");
+        Check(BridgePreviewState.ViewportWidth == 702 && BridgePreviewState.Revision == beforeResizeRevision, "viewport resize regenerated geometry");
+        BridgePreviewState.SetViewportWidth("2147483647");
+        Check(BridgePreviewState.ViewportWidth == 2048, "viewport allocation not bounded");
+        BridgePreviewState.SetViewportWidth("NaN"); BridgePreviewState.SetViewportWidth("0");
+        Check(BridgePreviewState.ViewportWidth == 2048, "invalid viewport changed target");
+        BridgePreviewState.SetViewportWidth("1");
+        Check(BridgePreviewState.ViewportWidth == 64, "viewport minimum not bounded");
         BridgePreviewState.Select("Road", "", "Suspension");
         var errorRevision = BridgePreviewState.Revision;
         var errorsBefore = BridgeBuilder.Mod.Log.Messages.Count;

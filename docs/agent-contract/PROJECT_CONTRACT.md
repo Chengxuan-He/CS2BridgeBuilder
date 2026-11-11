@@ -217,7 +217,7 @@ The current requirements are defined in the numbered contract sections:
   fee rewrites, multipliers, offsets, floors or pricing-only copies. Legacy conversion removes the
   custom cost component without guessing original fees or deleting referenced native copies.
 - Sections 17 and 19: generated bridges are independent native assets; Bridge Builder is their
-  manager, not a required runtime dependency. Preserve native unlocks, locales, thumbnails and fees.
+  manager and generated-program registrar. Preserve native unlocks, locales, thumbnails and fees.
   The known double-deck rail-seam limitation remains unfinished compatibility work.
 - Section 19: legacy conversion is additive and preserves bridge/deck identity and geometry.
   Generation and migration share naming/layout helpers; migration is backed up and idempotent.
@@ -229,12 +229,7 @@ The current requirements are defined in the numbered contract sections:
 
 Deployment cleanup is governed by section 13, not by migration or manual deletion rules.
 
-Every modification requires a compatibility review across the entire codebase, not only the edited
-files. Trace all affected producers, consumers, callers and alternate branches; update incompatible
-paths together. Check existing assets, persistence, loading, migration, cleanup and diagnostics when
-affected. For example, changing bridge identification must also check every generated asset naming
-and saving path. Compilation or preview success alone does not prove compatibility: perform the
-relevant end-to-end checks and explicitly report any unverified in-game behavior.
+Follow [Compatibility review](PROJECT_CONTRACT.md#compatibility-review) for this requirement.
 
 Prefer the simplest implementation that satisfies the request. Overengineering is prohibited:
 unnecessary complexity becomes a primary source of bugs that are only discovered through player

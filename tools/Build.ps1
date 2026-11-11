@@ -8,6 +8,7 @@ param(
 $ErrorActionPreference = 'Stop'
 $projectRoot = Split-Path -Parent $PSScriptRoot
 & (Join-Path $projectRoot 'tools/RoadGpu/VerifyBundle.ps1')
+& (Join-Path $projectRoot 'tools/MaterialShaders/VerifyPrograms.ps1')
 # Regenerated mechanism recipes must use the shared selected-road appearance merge.
 foreach ($file in Get-ChildItem -Path (Join-Path $projectRoot 'src/BridgeBuilder/Bridges/Types/*/*NetworkData.g.cs')) {
     if ([IO.File]::ReadAllText($file.FullName) -match 'target\.m_(Edge|Node)States\s*=.*\.Concat\(') {
@@ -168,7 +169,9 @@ $arguments = @(
     '/langversion:latest',
     ('/out:' + (Join-Path $output 'BridgeBuilder.dll'))
 ) + @(Get-ChildItem -LiteralPath (Join-Path $projectRoot 'assets\HardcodedNumbers') -Recurse -Filter '*.bin' |
-    Sort-Object Name | ForEach-Object { '/resource:' + $_.FullName + ',BridgeBuilder.Numbers.' + $_.Name }) + $references + $sources
+    Sort-Object Name | ForEach-Object { '/resource:' + $_.FullName + ',BridgeBuilder.Numbers.' + $_.Name }) + @(Get-ChildItem -LiteralPath (Join-Path $projectRoot 'tools\MaterialShaders') -Filter '*.hlsl' |
+    Sort-Object Name | ForEach-Object { '/resource:' + $_.FullName + ',BridgeBuilder.MaterialProgram.' + $_.Name }) + @(Get-ChildItem -LiteralPath (Join-Path $projectRoot 'assets\MaterialPrograms') -Filter '*.bbs1' |
+    Sort-Object Name | ForEach-Object { '/resource:' + $_.FullName + ',BridgeBuilder.MaterialProgram.' + $_.Name }) + $references + $sources
 
 # Source paths grow as bridge implementations are split into individual directories.
 # Use a compiler response file instead of exceeding Windows' process command-line limit.

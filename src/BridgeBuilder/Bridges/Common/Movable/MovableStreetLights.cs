@@ -40,7 +40,7 @@ internal static class MovableStreetLights
             if (!source.TryGet<StreetLightObject>(out var light)) continue;
             firstLight ??= light;
             if (source.Has<ObjectSubObjects>())
-                throw new NotSupportedException("Moving streetlight contains nested object placements: " + source.name);
+                continue; // Retained hierarchy owns its native effects; do not duplicate them on the mechanism.
             if (!source.TryGet<EffectSource>(out var lighting) || lighting.m_Effects == null) continue;
             foreach (var effect in lighting.m_Effects)
             {

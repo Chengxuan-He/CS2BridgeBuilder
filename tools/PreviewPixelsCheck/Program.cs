@@ -2,7 +2,8 @@ using BridgeBuilder.Runtime;
 using UnityEngine;
 using System.Diagnostics;
 
-const int width = 1536, height = 768, scale = 2;
+int width = args.Length == 0 ? 1536 : int.Parse(args[0]);
+int height = width / 2; const int scale = 2;
 var random = new Random(21);
 var pixels = new Color[width * height * scale * scale];
 var mask = new Color32[pixels.Length];

@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using CS2Mods.Shared.Infrastructure;
 using Game.Common;
 using Game.Prefabs;
@@ -35,6 +36,12 @@ internal sealed class Draw03BridgeGenerator : MovableBridgeGeneratorBase<Movable
         var layout = new MovableSelectedRoadLayout(road.Road, road.RoadToObject, "Draw03");
         var levels = await Draw03RoadPreparation.PrepareRenderLevelsAsync(road, nativeLevels, halfDelta, Matrix4x4.Translate(new Vector3(Numeric_Types_Draw03_Draw03BridgeGenerator_cs.Values.F32[0], Numeric_Types_Draw03_Draw03BridgeGenerator_cs.Values.F32[1], Numeric_Types_Draw03_Draw03BridgeGenerator_cs.Values.F32[2])), material, layout);
         if (levels == null) return null;
+        var objects = MovableRoadLights.Place(road.Objects(), road.RoadToObject, Draw03MechanismData.RoadAttachments(_ => null!).Select(item => item.m_Position.z).Distinct().ToArray());
+        var objectPartitions = new MovableRoadGeometry.Partition[objects.Placements.Length];
+        Array.Fill(objectPartitions, Draw03RoadPartitions.Carriageway);
+        levels = factory.PrepareDirectRoadMeshes(levels, objects.Placements, road.RoadToObject, objectPartitions);
+        levels = factory.PrepareBoneDecals(levels, new MovablePaintDeck(road.Road.LaneGeometry.Decals, road.RoadToObject, Draw03RoadPartitions.Carriageway,
+            MovableRoadGeometry.InFrame(road.Road.Triangles, road.RoadToObject)));
         return await Draw03RenderAssembly.CreateMechanismAsync(factory, owner + " Mechanism", levels, halfDelta, layout);
     }
 

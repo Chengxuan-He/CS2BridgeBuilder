@@ -33,6 +33,12 @@ internal sealed class PedestrianDraw02BridgeGenerator : MovableBridgeGeneratorBa
     {
         var levels = await PedestrianDraw02RoadPreparation.PrepareAsync(road, nativeLevels, halfDelta, Matrix4x4.Translate(new Vector3(Numeric_Types_PedestrianDraw02_PedestrianDraw02BridgeGenerator_cs.Values.F32[0], Numeric_Types_PedestrianDraw02_PedestrianDraw02BridgeGenerator_cs.Values.F32[1], Numeric_Types_PedestrianDraw02_PedestrianDraw02BridgeGenerator_cs.Values.F32[2])), material);
         if (levels == null) return null;
+        var objects = road.Objects();
+        var objectPartitions = new MovableRoadGeometry.Partition[objects.Placements.Length];
+        Array.Fill(objectPartitions, PedestrianDraw02RoadPartitions.Create(halfDelta));
+        levels = factory.PrepareDirectRoadMeshes(levels, objects.Placements, road.RoadToObject, objectPartitions);
+        levels = factory.PrepareBoneDecals(levels, new MovablePaintDeck(road.Road.LaneGeometry.Decals, road.RoadToObject, PedestrianDraw02RoadPartitions.Create(halfDelta),
+            MovableRoadGeometry.InFrame(road.Road.Triangles, road.RoadToObject)));
         return await PedestrianDraw02RenderAssembly.CreateMechanismAsync(factory, owner + " Mechanism", levels, halfDelta);
     }
 

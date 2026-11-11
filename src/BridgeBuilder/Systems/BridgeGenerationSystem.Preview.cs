@@ -157,20 +157,7 @@ public partial class BridgeGenerationSystem
                 _previewReleasePending = true;
                 return;
             }
-            // Own the renderer before native allocation starts, so ClearPreview
-            // also releases a partially initialized scene/camera after an error.
-            await GenerationWork.Next("preview renderer initialization");
-            _previewRenderer = new BridgePreviewRenderer();
-            await _previewRenderer.InitializeAsync(_previewSession.Name, _previewDraws);
-            await GenerationWork.Next("preview renderer start");
-            _previewRenderer.Start((image, error) =>
-            {
-                if (revision != BridgePreviewState.Revision || BridgePreviewState.Selection == null) return;
-                if (error.Length != 0 || string.IsNullOrEmpty(image))
-                    FailPreview(revision, error.Length != 0 ? error : "RenderEmpty");
-                else
-                    BridgePreviewState.Publish(revision, image, "PreviewReady");
-            });
+            await RenderPreviewAsync(revision);
         }
         catch (OperationCanceledException) { throw; }
         catch (Exception exception)
@@ -179,6 +166,38 @@ public partial class BridgeGenerationSystem
             FailPreview(revision, "PreviewFailed");
             _previewReleasePending = true;
         }
+    }
+
+    private void ResizePreviewIfNeeded()
+    {
+        if (_previewWork != null || _previewRenderer == null || _previewDraws == null || _previewSession == null ||
+            BridgePreviewState.Selection == null || _previewRevision != BridgePreviewState.Revision ||
+            _previewRenderer.OutputWidth == BridgePreviewState.ViewportWidth) return;
+        int revision = _previewRevision;
+        var work = new GenerationWork("preview resize/" + revision,
+            () => World.IsCreated && revision == BridgePreviewState.Revision && BridgePreviewState.Selection != null);
+        _previewWork = work;
+        work.Start(() => RenderPreviewAsync(revision));
+    }
+
+    private async System.Threading.Tasks.Task RenderPreviewAsync(int revision)
+    {
+            // Own the renderer before native allocation starts, so ClearPreview
+            // also releases a partially initialized scene/camera after an error.
+            await GenerationWork.Next("preview renderer initialization");
+            _previewRenderer?.Dispose();
+            _previewRenderer = new BridgePreviewRenderer(BridgePreviewState.ViewportWidth);
+            int renderWidth = _previewRenderer.OutputWidth;
+            await _previewRenderer.InitializeAsync(_previewSession!.Name, _previewDraws!);
+            await GenerationWork.Next("preview renderer start");
+            _previewRenderer.Start((image, error) =>
+            {
+                if (revision != BridgePreviewState.Revision || BridgePreviewState.Selection == null || renderWidth != BridgePreviewState.ViewportWidth) return;
+                if (error.Length != 0 || string.IsNullOrEmpty(image))
+                    FailPreview(revision, error.Length != 0 ? error : "RenderEmpty");
+                else
+                    BridgePreviewState.Publish(revision, image, "PreviewReady");
+            });
     }
 
     private void FailPreview(int revision, string stage)

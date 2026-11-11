@@ -16,7 +16,7 @@ internal static class BridgeDependencyPersistence
         if(creation.ResolutionError!=null){error=creation.ResolutionError;return false;}
         var timing = new DependencySaveTimings();
         var footprint = new BridgeMaterialFootprint();
-        var result = BridgeDependencyCopies.Save(UnityEngine.Application.persistentDataPath, owner, seeds,
+        var result = BridgeDependencyCopies.Save(UnityEngine.Application.persistentDataPath, owner, seeds.Concat(creation.ProgramRoots),
             cid => creation.Resolve(cid, owner, timing), out count, out error, out writtenFiles,
             (cid, source) => { footprint.Observe(cid, source); creation.ObservePath(owner, cid, source); }, exception => Mod.Log.Error(exception), timing);
         if (!result && creation.ResolutionError != null) error = creation.ResolutionError;
@@ -94,6 +94,16 @@ internal static class BridgeDependencyPersistence
 // on disk, so their producers declare them in the forward direction here.
 internal sealed class BridgeCreationDependencies
 {
+    private readonly Dictionary<string, (FileAsset Asset, int Template)> _programs = new(StringComparer.Ordinal);
+    internal IEnumerable<string> ProgramRoots => _programs.Values.Select(entry => entry.Asset.id.guid.ToString()).Distinct(StringComparer.OrdinalIgnoreCase);
+    internal bool TryProgram(string identity, out FileAsset asset, out int template)
+    {
+        bool found = _programs.TryGetValue(identity, out var entry);
+        if (found && !entry.Asset.database.dataSource.Contains(entry.Asset.id))
+        { _programs.Remove(identity); _sources.Remove(entry.Asset.id.guid.ToString()); found = false; }
+        asset = found ? entry.Asset : null!; template = found ? entry.Template : -1; return found;
+    }
+    internal void Program(string identity, FileAsset asset, int template) { _programs[identity] = (asset, template); Record(asset); }
     private readonly Dictionary<string, AssetData> _sources = new(StringComparer.OrdinalIgnoreCase);
     private readonly Dictionary<string, string[]> _cacheEdges = new(StringComparer.OrdinalIgnoreCase);
     internal delegate bool NativeCacheLookup(AssetData asset, out IEnumerable<AssetData> caches, out string? error);

@@ -29,8 +29,11 @@ internal static class MovableRoadAssets
         internal readonly int Mesh;
         internal readonly MovableStructureModel.Plan Plan;
         internal readonly string? SemanticKey;
-        internal Supplement(RenderPrefab source, int mesh, MovableStructureModel.Plan plan, string? semanticKey = null)
-        { Source = source; Mesh = mesh; Plan = plan; SemanticKey = semanticKey; }
+        internal readonly int? RigidBone;
+        internal readonly int SubMesh;
+        internal Supplement(RenderPrefab source, int mesh, MovableStructureModel.Plan plan, string? semanticKey = null,
+            int? rigidBone = null, int subMesh = 0)
+        { Source = source; Mesh = mesh; Plan = plan; SemanticKey = semanticKey; RigidBone = rigidBone; SubMesh = subMesh; }
     }
 
     internal sealed class Level
@@ -50,6 +53,7 @@ internal static class MovableRoadAssets
         internal readonly MovableStructureModel.Plan[]? Structure;
         internal readonly ProceduralAnimationProperties? Skeleton;
         internal readonly MovableLaneGeometry.Result? Lanes;
+        internal readonly IReadOnlyList<MovablePaintDeck> Decals = Array.Empty<MovablePaintDeck>();
         internal readonly Matrix4x4 ClosedWorld;
         internal readonly Pose RoadToObject;
         internal readonly int AppearancePageSize;
@@ -74,6 +78,7 @@ internal static class MovableRoadAssets
 
         private Level(RenderPrefab source, Bounds3 bounds)
         {
+            Decals = Array.Empty<MovablePaintDeck>();
             Source = source; RenderBounds = bounds; PreserveNativeOriginal = true;
             Skeleton = source.GetComponent<ProceduralAnimationProperties>();
             Triangles = Array.Empty<MovableRoadGeometry.Triangle>();
@@ -84,6 +89,7 @@ internal static class MovableRoadAssets
 
         internal Level(RenderPrefab source, Bounds3 bounds, MovableNetworkRoadMapping mapping)
         {
+            Decals = Array.Empty<MovablePaintDeck>();
             Source = source; RenderBounds = bounds; NetworkRoad = mapping;
             Triangles = Array.Empty<MovableRoadGeometry.Triangle>();
             Surfaces = Array.Empty<SurfaceAsset>();
@@ -100,10 +106,11 @@ internal static class MovableRoadAssets
             IReadOnlyList<MovableRoadGeometry.Partition>? roadPartitions = null,
             IReadOnlyList<MovableRoadGeometry.Partition>? lanePartitions = null,
             IReadOnlyDictionary<(int Occurrence, int SourceTriangle), MovableRoadGeometry.Partition>? roadTrianglePartitions = null,
-            Supplement? extraStructure = null, IReadOnlyList<Supplement>? additionalStructures = null)
+            Supplement? extraStructure = null, IReadOnlyList<Supplement>? additionalStructures = null,
+            IReadOnlyList<MovablePaintDeck>? decals = null)
             : this(source, road.Triangles, road.Surfaces, partition, renderBounds, roadToObject,
                 structure, skeleton, road.LaneGeometry, closedWorld, appearancePageSize, texelsPerMeter,
-                roadPartitions, lanePartitions, roadTrianglePartitions, extraStructure, additionalStructures) { }
+                roadPartitions, lanePartitions, roadTrianglePartitions, extraStructure, additionalStructures, decals) { }
 
         internal Level(RenderPrefab source, IReadOnlyList<MovableRoadGeometry.Triangle> triangles,
             SurfaceAsset[] surfaces, MovableRoadGeometry.Partition partition, Bounds3 renderBounds, Pose roadToObject,
@@ -113,7 +120,8 @@ internal static class MovableRoadAssets
             IReadOnlyList<MovableRoadGeometry.Partition>? roadPartitions = null,
             IReadOnlyList<MovableRoadGeometry.Partition>? lanePartitions = null,
             IReadOnlyDictionary<(int Occurrence, int SourceTriangle), MovableRoadGeometry.Partition>? roadTrianglePartitions = null,
-            Supplement? extraStructure = null, IReadOnlyList<Supplement>? additionalStructures = null)
+            Supplement? extraStructure = null, IReadOnlyList<Supplement>? additionalStructures = null,
+            IReadOnlyList<MovablePaintDeck>? decals = null)
         {
             HasRoad = true;
             Source = source; Triangles = triangles; Surfaces = (SurfaceAsset[])surfaces.Clone();
@@ -123,6 +131,7 @@ internal static class MovableRoadAssets
             Structure = structure == null ? null : (MovableStructureModel.Plan[])structure.Clone();
             Skeleton = skeleton ?? source.GetComponent<ProceduralAnimationProperties>();
             Lanes = lanes;
+            Decals = decals ?? Array.Empty<MovablePaintDeck>();
             ClosedWorld = closedWorld ?? Matrix4x4.identity;
             RoadToObject = roadToObject;
             AppearancePageSize = appearancePageSize; TexelsPerMeter = texelsPerMeter;
@@ -200,6 +209,7 @@ internal static class MovableRoadAssets
         var replayCapture=MovableRoadReplayCapture.Begin(styleId,name,preview!=null);
         var roadReuse = new MovableRoadLodCache();
         var laneReuse = new MovableRoadLodCache();
+        var decalReuse = new Dictionary<(IReadOnlyList<MovablePaintDeck> Decks, int Bones), MovableBoneDecals.Result>();
         var convertedMaterials = new Dictionary<SurfaceAsset, SurfaceAsset>();
         var materialMappings = new Dictionary<SurfaceAsset, MovableMaterialCompatibility.Mapping>();
         try
@@ -383,12 +393,12 @@ internal static class MovableRoadAssets
                         timing.Stage("supplementRead");
                         loaded = PrivateGeometryReader.Read(extra.Source);
                         timing.Stage("supplementBuild");
-                        if (extra.Mesh < 0 || extra.Mesh >= loaded.Length || loaded[extra.Mesh].subMeshCount != 1)
-                            throw new InvalidOperationException("Supplemental structure requires its measured single-surface mesh.");
+                        if (extra.Mesh < 0 || extra.Mesh >= loaded.Length || extra.SubMesh < 0 || extra.SubMesh >= loaded[extra.Mesh].subMeshCount)
+                            throw new InvalidOperationException("Supplemental structure requires its measured source material slot.");
                         if (!MovableStructureModel.TryBuild(levelName + " Underside", loaded[extra.Mesh],
-                                extra.Plan, boneCount, out var model, out error)) return false;
+                                extra.Plan, boneCount, out var model, out error, rigidBone: extra.RigidBone, sourceSubMesh: extra.SubMesh)) return false;
                         models.Add(model!);
-                        var slot = loaded.Take(extra.Mesh).Sum(mesh => mesh.subMeshCount);
+                        var slot = loaded.Take(extra.Mesh).Sum(mesh => mesh.subMeshCount) + extra.SubMesh;
                         var extraSurface = extra.Source.GetSurfaceAsset(slot);
                         timing.Stage("supplementRetile");
                         if(!MovableStructureRetile.TryAppend(levelName + " Underside", extra.Source.name, extra.Mesh,
@@ -490,6 +500,21 @@ internal static class MovableRoadAssets
                             Array.Empty<ModelImporter.Model>(),Array.Empty<SurfaceAsset>(),boundLanes));
                         }
                     }
+                }
+                timing.Stage("decalModels");
+                if (level.Decals.Count != 0)
+                {
+                    var decalKey = (level.Decals, level.Skeleton!.m_Bones.Length);
+                    if (!decalReuse.TryGetValue(decalKey, out var decalResult))
+                    {
+                        decalResult = await MovableBoneDecals.BuildAsync(name, level.Decals,
+                            level.Skeleton!.m_Bones.Length, preview, assets, models);
+                        if (!decalResult.Success) { error = decalResult.Error; return false; }
+                        decalReuse.Add(decalKey, decalResult);
+                    }
+                    batch.AddRange(decalResult.Models); surfaces.AddRange(decalResult.Surfaces);
+                    if (decalResult.Models.Length != 0)
+                    { Include(ref bounds, decalResult.Bounds.min); Include(ref bounds, decalResult.Bounds.max); }
                 }
                 timing.Stage("lodFinalize");
                 roles.AddRange(Enumerable.Repeat(int.MaxValue, batch.Count - roles.Count));

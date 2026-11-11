@@ -75,7 +75,9 @@ internal static partial class MovableRoadObjects
     // nominal road width or bone names to decide which longitudinal leaf carries an object.
     internal static ObjectSubObjectInfo[] Bind(IReadOnlyList<ObjectSubObjectInfo> placements,
         Pose roadToObject, IReadOnlyList<MovableRoadGeometry.Partition> placementPartitions,
-        StaticObjectPrefab mechanism, string owner, List<PrefabBase> created)
+        StaticObjectPrefab mechanism, string owner, List<PrefabBase> created,
+        Func<ObjectSubObjectInfo, bool>? meshInMechanism = null, bool endSupportsPrepared = false,
+        Func<ObjectSubObjectInfo, ObjectPrefab?>? nestedCarrier = null)
     {
         if (placementPartitions.Count != placements.Count)
             throw new ArgumentException("Road attachment partitions must match the placement list.");
@@ -83,8 +85,13 @@ internal static partial class MovableRoadObjects
         // native connection IDs, not indices into its ProceduralAnimationProperties array.
         var bones = mechanism.m_Meshes[0].m_Mesh
             .GetComponent<ProceduralAnimationProperties>().m_Bones;
-        AddEndSupports(ref placements, roadToObject, ref placementPartitions,
-            index => bones[index].m_ConnectionID != 0);
+        if (!endSupportsPrepared)
+            AddEndSupports(ref placements, roadToObject, ref placementPartitions, index =>
+            {
+                for (int bone = index; bone >= 0; bone = bones[bone].parentId)
+                    if (bones[bone].m_Type != (BoneType)0) return true;
+                return false;
+            });
         var result = new List<ObjectSubObjectInfo>(placements.Count);
         var q = roadToObject.rotation;
         if (!math.all(math.isfinite((float3)roadToObject.position)) ||
@@ -127,8 +134,30 @@ internal static partial class MovableRoadObjects
         // Positions remain closed-pose object-space values. Native FindBoneIndex performs the
         // inverse bind conversion itself; applying bindPose here would transform children twice.
         var bound = result.ToArray();
+        var merged = new bool[bound.Length];
+        for (int i = 0; i < bound.Length; i++) merged[i] = meshInMechanism?.Invoke(bound[i]) == true;
+        for (int i = 0; i < bound.Length; i++)
+        {
+            if (!merged[i]) continue;
+            var carrier = nestedCarrier?.Invoke(bound[i]);
+            if (carrier == null) continue;
+            bound[i].m_Object = carrier;
+            merged[i] = false; // Metadata-only hierarchy retains native exceptional descendants.
+        }
         MovableStreetLights.Bind(owner, mechanism, bound, created);
-        return bound;
+        // Merged geometry already consumes the mechanism skeleton. Do not instantiate
+        // a second Relative/BoneHistory-driven visual child for that geometry.
+        var children = new List<ObjectSubObjectInfo>();
+        for (int i = 0; i < bound.Length; i++)
+        {
+            if (!merged[i]) { children.Add(bound[i]); continue; }
+            if (bound[i].m_Object is StaticObjectPrefab source && source.Has<UtilityObject>())
+            {
+                bound[i].m_Object = MovableRoadObjectCarrier.Create(owner, source, created);
+                children.Add(bound[i]);
+            }
+        }
+        return children.ToArray();
     }
 
     // Resolve every attachment against its measured physical support. A gap has

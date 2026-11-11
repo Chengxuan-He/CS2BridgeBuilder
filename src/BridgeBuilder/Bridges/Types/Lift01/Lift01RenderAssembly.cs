@@ -49,7 +49,7 @@ internal static class Lift01RenderAssembly
             // moving lips use road bone 4. Both recorded transforms and motion settings
             // are identical in the middle and far skeletons.
             var extra = new MovableRoadAssets.Supplement(levels[Numeric_Types_Lift01_Lift01RenderAssembly_cs.Values.I32[13]].Source, Numeric_Types_Lift01_Lift01RenderAssembly_cs.Values.I32[14], plan);
-            levels[Numeric_Types_Lift01_Lift01RenderAssembly_cs.Values.I32[15]] = new MovableRoadAssets.Level(far.Source, far.Triangles, far.Surfaces, far.Partition!, far.RenderBounds, far.RoadToObject, far.Structure, far.Skeleton, far.Lanes, far.ClosedWorld, far.AppearancePageSize, far.TexelsPerMeter, far.RoadPartitions, far.LanePartitions, far.RoadTrianglePartitions, extra);
+            levels[Numeric_Types_Lift01_Lift01RenderAssembly_cs.Values.I32[15]] = new MovableRoadAssets.Level(far.Source, far.Triangles, far.Surfaces, far.Partition!, far.RenderBounds, far.RoadToObject, far.Structure, far.Skeleton, far.Lanes, far.ClosedWorld, far.AppearancePageSize, far.TexelsPerMeter, far.RoadPartitions, far.LanePartitions, far.RoadTrianglePartitions, extra, far.AdditionalStructures, far.Decals);
         }
         finally
         {

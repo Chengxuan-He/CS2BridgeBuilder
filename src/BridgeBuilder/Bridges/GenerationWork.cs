@@ -20,8 +20,11 @@ internal sealed class GenerationWork
     private readonly long _started = Stopwatch.GetTimestamp();
     private readonly System.Collections.Generic.Queue<Action> _pending = new();
     private readonly PumpContext _context;
+    private readonly SynchronizationContext? _hostContext;
+    private int _dispatchPosted;
+    private bool _draining;
     private readonly System.Collections.Generic.Queue<Action> _nextFrame = new();
-    private long _frameStarted, _maximumFrameTicks, _workerTicks;
+    private long _maximumFrameTicks, _workerTicks;
     private int _frames, _workerJobs;
     private long _workerQueueTicks, _readyQueueTicks, _frameQueueTicks;
     private readonly System.Collections.Generic.HashSet<Action> _workerWaits=new();
@@ -34,16 +37,31 @@ internal sealed class GenerationWork
             long queued=Stopwatch.GetTimestamp();
             lock (_owner._pending) _owner._pending.Enqueue(() =>
             { _owner._readyQueueTicks+=Stopwatch.GetTimestamp()-queued;callback(state); });
+            _owner.WakeNativeDispatcher();
         }
         public override SynchronizationContext CreateCopy() => this;
     }
     private string _stage="start", _maximumStage="start";
     private bool _cancelled, _reported;
-    private long _activeTicks, _maximumTicks, _stepStarted;
+    private long _activeTicks, _maximumTicks;
     private int _steps;
     internal Task? Completion {get;private set;}
     internal bool IsComplete=>Completion?.IsCompleted??true;
-    internal GenerationWork(string identity,Func<bool> valid){_identity=identity;_valid=valid;_context=new PumpContext(this);}
+    internal GenerationWork(string identity,Func<bool> valid)
+    {
+        _identity=identity;_valid=valid;_context=new PumpContext(this);
+        var host=SynchronizationContext.Current;
+        if(host!=null && host.GetType()!=typeof(SynchronizationContext) && host is not PumpContext) _hostContext=host;
+    }
+    private void WakeNativeDispatcher()
+    {
+        if(_hostContext==null || Interlocked.Exchange(ref _dispatchPosted,1)!=0)return;
+        using(ExecutionContext.SuppressFlow()) _hostContext.Post(_=>
+        {
+            Interlocked.Exchange(ref _dispatchPosted,0);
+            DrainReady();
+        },null);
+    }
     internal void Start(Func<Task> build)
     {
         if(Completion!=null)throw new InvalidOperationException("Generation work already started.");
@@ -51,18 +69,30 @@ internal sealed class GenerationWork
     }
     internal void Tick()
     {
-        CheckThread(); _frameStarted=Stopwatch.GetTimestamp(); _frames++;
+        CheckThread(); _frames++;
         lock (_pending) while (_nextFrame.Count != 0) _pending.Enqueue(_nextFrame.Dequeue());
+        DrainReady();
+    }
+    private void DrainReady()
+    {
+        CheckThread();
+        if(_draining)return;
+        _draining=true;
+        long dispatchStarted=Stopwatch.GetTimestamp();
         try
         {
-            do
+            while(!IsComplete)
             {
                 Action step;
-                lock (_pending) { if (_pending.Count == 0) break; step = _pending.Dequeue(); }
+                lock(_pending){if(_pending.Count==0)break;step=_pending.Dequeue();}
                 Invoke(step);
-            } while (!IsComplete && (_cancelled || Stopwatch.GetTimestamp()-_frameStarted < Stopwatch.Frequency*6/1000));
+            }
         }
-        finally { _maximumFrameTicks=Math.Max(_maximumFrameTicks,Stopwatch.GetTimestamp()-_frameStarted); }
+        finally
+        {
+            _draining=false;
+            _maximumFrameTicks=Math.Max(_maximumFrameTicks,Stopwatch.GetTimestamp()-dispatchStarted);
+        }
     }
     internal void Cancel()
     {
@@ -79,7 +109,7 @@ internal sealed class GenerationWork
     }
     private void Invoke(Action action)
     {
-        CheckThread();var previous=Active.Value;Active.Value=this;long start=Stopwatch.GetTimestamp();_stepStarted=start;var stage=_stage;
+        CheckThread();var previous=Active.Value;Active.Value=this;long start=Stopwatch.GetTimestamp();var stage=_stage;
         var previousContext = SynchronizationContext.Current;
         SynchronizationContext.SetSynchronizationContext(_context);
         try{action();}
@@ -95,16 +125,16 @@ internal sealed class GenerationWork
     {if(Thread.CurrentThread.ManagedThreadId!=_thread)throw new InvalidOperationException("Generation native continuation left the game thread.");}
     private void Check()
     {CheckThread();if(_cancelled||!_valid())throw new OperationCanceledException("Preview generation superseded or world unavailable.");}
-    internal static Step Next(string stage)=>new(Current,stage,true,false);
-    internal static Step NextFrame(string stage)=>new(Current,stage,true,true);
-    internal static Step Checkpoint(string stage)=>new(Current,stage,false,false);
+    internal static Step Next(string stage)=>new(Current,stage,false);
+    internal static Step NextFrame(string stage)=>new(Current,stage,true);
+    internal static Step Checkpoint(string stage)=>new(Current,stage,false);
     internal readonly struct Step : ICriticalNotifyCompletion
     {
-        private readonly GenerationWork? _work;private readonly string _stage;private readonly bool _force, _nextFrame;
-        internal Step(GenerationWork? work,string stage,bool force,bool nextFrame){_work=work;_stage=stage;_force=force;_nextFrame=nextFrame;}
+        private readonly GenerationWork? _work;private readonly string _stage;private readonly bool _nextFrame;
+        internal Step(GenerationWork? work,string stage,bool nextFrame){_work=work;_stage=stage;_nextFrame=nextFrame;}
         public Step GetAwaiter()=>this;
-        public bool IsCompleted=>_work==null||(!_force&&Stopwatch.GetTimestamp()-_work._frameStarted<Stopwatch.Frequency*6/1000);
-        public void GetResult()=>_work?.Check();
+        public bool IsCompleted=>_work==null||!_nextFrame;
+        public void GetResult(){if(_work!=null){_work._stage=_stage;_work.Check();}}
         public void OnCompleted(Action continuation)=>UnsafeOnCompleted(continuation);
         public void UnsafeOnCompleted(Action continuation)
         {
@@ -160,7 +190,7 @@ internal sealed class GenerationWork
                     using(ExecutionContext.SuppressFlow())
                     _=task.ContinueWith(completed=>
                     {
-                        // Ready CPU work is eligible for this frame's remaining budget.
+                        // Wake the native dispatcher immediately after detached computation.
                         // No native API or request publication runs on the worker.
                         work._context.Post(_=>ready.TrySetResult(true),null);
                     },CancellationToken.None,TaskContinuationOptions.ExecuteSynchronously,TaskScheduler.Default);
@@ -198,6 +228,6 @@ internal sealed class GenerationWork
     {
         if(_reported)return;_reported=true;
         double Ms(long value)=>value*1000.0/Stopwatch.Frequency;
-        Mod.Log.Info($"Preview generation scheduling: request={_identity}; steps={_steps}; cancelled={_cancelled}; elapsedMs={Ms(Stopwatch.GetTimestamp()-_started):F3}; activeMainThreadMs={Ms(_activeTicks):F3}; maxMainThreadStepMs={Ms(_maximumTicks):F3}; maxStage={_maximumStage}; frames={_frames}; maxPumpMs={Ms(_maximumFrameTicks):F3}; workerJobs={_workerJobs}; mainThread={_thread}; lastWorkerThread={_lastWorkerThread}; workerMs={Ms(Interlocked.Read(ref _workerTicks)):F3}; workerQueueMs={Ms(Interlocked.Read(ref _workerQueueTicks)):F3}; readyQueueAggregateMs={Ms(_readyQueueTicks):F3}; explicitFrameQueueAggregateMs={Ms(_frameQueueTicks):F3}.");
+        Mod.Log.Info($"Preview generation scheduling: request={_identity}; dispatcher={_hostContext?.GetType().FullName ?? "update-fallback"}; steps={_steps}; cancelled={_cancelled}; elapsedMs={Ms(Stopwatch.GetTimestamp()-_started):F3}; activeMainThreadMs={Ms(_activeTicks):F3}; maxMainThreadStepMs={Ms(_maximumTicks):F3}; maxStage={_maximumStage}; frames={_frames}; maxPumpMs={Ms(_maximumFrameTicks):F3}; workerJobs={_workerJobs}; mainThread={_thread}; lastWorkerThread={_lastWorkerThread}; workerMs={Ms(Interlocked.Read(ref _workerTicks)):F3}; workerQueueMs={Ms(Interlocked.Read(ref _workerQueueTicks)):F3}; readyQueueAggregateMs={Ms(_readyQueueTicks):F3}; explicitFrameQueueAggregateMs={Ms(_frameQueueTicks):F3}.");
     }
 }

@@ -24,12 +24,12 @@ they do not override these contracts or establish acceptance of a later material
 
 ## Current material capability boundary
 
-Complete multilayer adaptation is [not implementable under current requirements](MATERIAL_GENERATION_CONTRACT.md#current-multilayer-compatibility-limit).
-Compatibility output does not establish complete fidelity. Saved bridges must remain
-independent of Bridge Builder; dynamic-shader registration dependencies are not an
-alternative. [Selected-road decals](MATERIAL_GENERATION_CONTRACT.md#source-preserving-selected-road-decals)
-retain original artwork/UVs through derived native objects, with explicit hashed-alpha
-blend differences rather than the removed shared white/yellow paint substitution.
+The [material capability boundary](MATERIAL_GENERATION_CONTRACT.md#current-multilayer-compatibility-limit)
+distinguishes incomplete native compatibility output from the authorized two custom programs.
+This implementation requires Bridge Builder to remain enabled and permits startup
+program registration. Direct-skeleton decals preserve continuous source alpha; the layered
+program preserves independent base/world coordinates and PBR mask blending. Shader-function
+tests alone do not establish working production consumers or independent loading.
 
 ## Shared sidewalk requirements
 
@@ -45,16 +45,9 @@ This is a general contract routing requirement, not a movable-bridge-only rule.
 
 ## Specialist contracts
 
-Road appearance processing (prototype composition, source-density tiling, embedded-marking
-removal and derived wear/background placement) applies only to movable bridges whose roads need
-that processing. Fixed/non-movable bridges retain the selected native road materials, UVs and
-markings; they require no prototype road-support table, road-material replacement or marking
-cleanup under these rules. Structural source-UV/density rules still apply to every bridge.
-A fixed running cap within a movable bridge remains part of that movable road-processing scope.
+Follow [Scope and authority](MATERIAL_GENERATION_CONTRACT.md#scope-and-authority) for this requirement.
 
-The [general source-mapping rule](BRIDGE_GENERATION_CONTRACT.md#preserve-original-uv-projection-and-mapping-mode) preserves non-road source modes for all bridges. Movable roads requiring processing use
-prototype-supported appearances tiled at original resolution/physical density without stretching
-in every LOD. Fixed bridges retain selected native road materials and markings.
+Follow [Runtime invariants](MOVABLE_RUNTIME_INVARIANTS.md#runtime-invariants) for this requirement.
 
 For movable bridges, reuse original non-road materials. Road composition/precomposition (offline material baking outside the game) has
 two necessary correspondence conditions: verified actual receiver appearance and matching measured
@@ -78,7 +71,7 @@ same complete measured source and matching same-source background; translate the
 measured visual center to actual native lane centers while preserving physical width, internal
 relationships and longitudinal density. No vehicle lane means no wear. Non-road finite/stretch
 modes retain their own source evidence. No full-span pixels, period cuts, arbitrary downsampling,
-custom shaders that cannot independently cold-load or a relaxed package byte limit are permitted.
+custom shaders outside the two authorized programs or a relaxed package byte limit are permitted.
 
 [Material generation](MATERIAL_GENERATION_CONTRACT.md) governs every bridge material path,
 including preview, creation, export and all LODs. Its first rule prohibits creating new materials
@@ -146,4 +139,4 @@ places owned resources and dependency snapshots below each UUID. Creation and mi
 that layout, including VT and mid-mip resources. Native cold-load acceptance requires separate
 in-game verification. Section 7 defines migration safeguards.
 
-Dynamic material shaders are governed by [the scoped material requirements](MATERIAL_GENERATION_CONTRACT.md#dynamically-generated-and-independently-persisted-material-shaders): actual source generation, Player-capable loading and independent owner-local cold loading, without a continuing mod synchronization service. This permission does not relax geometry, texture-content or source-ownership rules.
+Follow [generated material program requirements](MATERIAL_GENERATION_CONTRACT.md#dynamically-generated-and-independently-persisted-material-shaders) for program persistence, Player loading and mod-enabled registration; geometry, texture and source ownership rules remain unchanged.

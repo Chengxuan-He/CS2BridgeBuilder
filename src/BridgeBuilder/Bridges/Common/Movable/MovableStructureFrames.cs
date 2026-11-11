@@ -32,7 +32,7 @@ internal static class MovableStructureFrames
     }
 
     internal static void Apply(List<ModelImporter.Model.VertexData> attributes,
-        KeyValuePair<int, Matrix4x4>[] transforms, int[]? used, int count)
+        KeyValuePair<int, Matrix4x4>[] transforms, int[]? used, int count, bool nativeBone = false)
     {
         if (transforms.Length == 0) return;
         var normal = attributes.SingleOrDefault(a => a.attribute == VertexAttribute.Normal);
@@ -51,13 +51,13 @@ internal static class MovableStructureFrames
             if (remap != null && !remap.TryGetValue(pair.Key, out index)) continue;
             var sourceT = tangents[index].m_Tangent;
             var originalNormal = (Vector3)normals[index].m_Normal;
-            var n = pair.Value.determinant == 0f ? originalNormal :
+            var n = nativeBone ? Unit(pair.Value.MultiplyVector(originalNormal), originalNormal) : pair.Value.determinant == 0f ? originalNormal :
                 Unit(pair.Value.inverse.transpose.MultiplyVector(originalNormal), originalNormal);
             var forwardT = pair.Value.MultiplyVector((Vector3)sourceT.xyz);
-            var t = Unit(forwardT - n * Vector3.Dot(n, forwardT), (Vector3)sourceT.xyz);
+            var t = Unit(nativeBone ? forwardT : forwardT - n * Vector3.Dot(n, forwardT), (Vector3)sourceT.xyz);
             Write(normal.data, index, MathUtils.NormalToOctahedral((float3)n));
             Write(tangent.data, index, MathUtils.TangentToOctahedral(new float4((float3)t,
-                pair.Value.determinant < 0f ? -sourceT.w : sourceT.w)));
+                !nativeBone && pair.Value.determinant < 0f ? -sourceT.w : sourceT.w)));
         }
     }
 

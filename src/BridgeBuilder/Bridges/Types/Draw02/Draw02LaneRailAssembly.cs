@@ -70,7 +70,7 @@ internal static class Draw02LaneRailAssembly
                 }
             }
 
-            result[lod] = new MovableRoadAssets.Level(source.Source, source.Triangles, source.Surfaces, source.Partition!, source.RenderBounds, source.RoadToObject, source.Structure, source.Skeleton, source.Lanes, source.ClosedWorld, source.AppearancePageSize, source.TexelsPerMeter, source.RoadPartitions, source.LanePartitions, source.RoadTrianglePartitions, source.ExtraStructure, extra);
+            result[lod] = new MovableRoadAssets.Level(source.Source, source.Triangles, source.Surfaces, source.Partition!, source.RenderBounds, source.RoadToObject, source.Structure, source.Skeleton, source.Lanes, source.ClosedWorld, source.AppearancePageSize, source.TexelsPerMeter, source.RoadPartitions, source.LanePartitions, source.RoadTrianglePartitions, source.ExtraStructure, extra, source.Decals);
         }
 
         return result;

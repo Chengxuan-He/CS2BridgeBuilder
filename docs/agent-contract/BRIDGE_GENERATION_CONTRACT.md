@@ -2,23 +2,7 @@
 
 ### Packaged textures belong to road running surfaces
 
-A packaged `.Texture` must have a measured road-surface consumer. Check the actual
-faces, appearance type, LOD and native Surface channel that references it. Asphalt,
-walkable sidewalk paving, running grating, running caps and selected-road paint
-qualify only on their measured road-facing domains. A structural platform, curb
-sidewall, truss, cable or underside uses its original game or DLC texture references.
-This requirement also applies when a road and a structural face share the same atlas.
-A descriptor conversion needed for native rendering may bind original native channels.
-It must never give a non-road consumer a dependency on a packaged texture.
-
-Retain valid native UV projection, sampling and mip identities. A local repeating
-atlas island that cannot be sampled at a requested width through its original
-representation retains its authored coordinates. Record any resulting change in
-physical density. Do not bake a structural repeat or wrap individual vertices into
-an atlas chart to fill that gap. This supersedes earlier structural repeat permissions,
-including the earlier Lift05 profile recipe. Independently persisted external owner
-copies remain governed by the dependency persistence contract.
-
+Follow [Packaged textures belong to road running surfaces](MATERIAL_GENERATION_CONTRACT.md#packaged-textures-belong-to-road-running-surfaces) for this requirement.
 
 ## Movable bridges: no special road-width adaptation
 
@@ -125,13 +109,7 @@ This is a mandatory rule for **all bridge generators, fixed/non-movable and mova
 It covers every component and every LOD in preview, creation, regeneration and export.
 Material-specific requirements supplement this rule; they cannot restrict it to movable bridges.
 
-
-Road appearance processing (prototype composition, source-density tiling, embedded-marking
-removal and derived wear/background placement) applies only to movable bridges whose roads need
-that processing. Fixed/non-movable bridges retain the selected native road materials, UVs and
-markings; they require no prototype road-support table, road-material replacement or marking
-cleanup under these rules. Structural source-UV/density rules still apply to every bridge.
-A fixed running cap within a movable bridge remains part of that movable road-processing scope.
+Follow [Scope and authority](MATERIAL_GENERATION_CONTRACT.md#scope-and-authority) for this requirement.
 
 Resolve the elevated road-level branch once at the common generation entry, before width
 measurement, cloning or style construction. Every fixed and movable bridge uses that elevated
@@ -150,7 +128,6 @@ Branch mechanism decks and native network bridgeheads
 by their own source/domain and render context; do not classify a mixed piece from a section name.
 Resource corruption and native realization failures return explicit non-exception failure results. Follow
 [the material routing rule](MATERIAL_GENERATION_CONTRACT.md#total-material-routing-by-part-and-actual-source).
-
 
 For non-road materials, preserve original projection and tiling/stretch mode per source part,
 material domain, LOD, layer and axis. Unsupported selected-road appearances retain their own
@@ -181,7 +158,7 @@ does not change structural material modes or authorize structural rebaking.
 For processed movable roads, [remove embedded road markings at every LOD](MATERIAL_GENERATION_CONTRACT.md#remove-embedded-road-markings-at-every-lod),
 including all road material channels/mips, caps, transitions and merged far atlases. Keep the
 selected road's intended paint generated from its actual layout through the applicable native
-path; movable mechanisms retain their native rigid decal children. Shared original
+path; movable mechanisms use the authorized current-skeleton decal program. Shared original
 atlases remain unchanged for structure; changed road derivatives have new identities.
 
 Record source/version, Surface/texture identities, slots, domain membership, LOD, coordinate
@@ -222,7 +199,6 @@ full-span pixels are permitted. Preserve source assets, selected-road shape and 
 Changed derivatives receive new CIDs and complete native dependencies. Validate PBR, frames,
 filtering/aniso, every mip/LOD, independent loading, informational owner measurements and the 55 MB package limit.
 
-
 ## Current implementation policy
 
 Implement the remaining movable generators incrementally using hardcoded data from real
@@ -245,7 +221,7 @@ a developer-local path or the original prototype Prefab is not a distribution st
 that hardcoded numeric parameters alone make absent geometry or textures available. Retain native
 content prerequisites where applicable, output ownership isolation, resource identity and lawful resource use.
 Verify the graph without access to the original prototype files; this is distinct from cold loading
-without Bridge Builder. Both independence properties must be reported accurately.
+with Bridge Builder enabled. Report source-file independence and mod-enabled cold-load evidence separately.
 
 ### Incremental implementation
 
@@ -658,7 +634,7 @@ scoped index/topology change does not authorize runtime part discovery or excess
 
 Integrate paint into the same mechanism using a separate skinned mesh under movable contract
 sections 7 and 18–19. Independent marking decal
-objects are prohibited. Dynamic shaders cannot satisfy the current independent persistence requirements; mod-dependent runtime controllers remain prohibited.
+objects must not follow historical bone matrices. The material contract authorizes direct-skeleton custom decals and scoped mod-enabled registration; transform-tracking runtime controllers remain prohibited.
 
 ### High-detail-derived movable LODs permitted
 
@@ -666,7 +642,7 @@ Deriving, simplifying or supplementing movable LODs from the measured prototype'
 high-detail geometry is permitted; it is not limited to subdividing existing coarse triangles.
 Vertex/index/topology changes are limited to that measured LOD derivation. It does not change authored-part classification and width
 transforms, native skeleton/bone ownership, existing-material reuse, UV projection requirements,
-all-LOD coverage or human visual acceptance. Dynamic shaders are not a deliverable route under the current independent-loading requirements. Material preparation follows the material generation contract.
+all-LOD coverage or human visual acceptance. The material contract defines the two authorized custom programs and mod-enabled startup-registration requirement. Material preparation follows that contract.
 
 ### Measured exceptions to tower width mapping
 
@@ -682,7 +658,7 @@ per prototype and physical domain. Other road types reuse compatible input mater
 animated-object road material under material contract section 4; this replacement must preserve complete network-layer blending and dynamic worldspace projection, together with the actual
 appearance category, sampling density and tiling/stretch behavior. Prototype-supported road surfaces instead follow mandatory fixed-density tiling and
 all-LOD embedded-marking removal; non-road source modes remain unchanged. This is a generation rule, not a reverse-engineering finding or proof that the
-current implementation complies. Complete multilayer adaptation is unavailable under the current game/project constraints; authorized compatibility output must disclose lost layer/blend semantics and is not a full repair. Road processing must not mutate a shared structural Surface.
+current implementation complies. Authorized compatibility output must disclose lost layer/blend semantics and is not a full repair. The custom multilayer program is the active implementation direction, with mod-enabled registration and unresolved independent loading disclosed. Road processing must not mutate a shared structural Surface.
 
 Follow the [material generation contract](MATERIAL_GENERATION_CONTRACT.md). Fully compatible
 original materials remain direct references without new descriptors or texture payloads. Required
@@ -699,21 +675,21 @@ material contract sections 3–4 while preserving its source mapping. Selected t
 are unavailable before runtime may receive necessary descriptor or bounded texture conversion
 under material contract section 4, after direct reuse and descriptor-only options are considered.
 Missing known prepared resources do not qualify; no per-sampler bake or cross-bridge generated-result
-cache is permitted. Do not modify original assets. The material contract records dynamic shaders as unavailable under current independent-loading requirements. Preserve independent per-owner external dependency snapshots.
+cache is permitted. Do not modify original assets. Follow the material contract's scoped custom-program authorization and loading limitation. Preserve independent per-owner external dependency snapshots.
 
 ### Moving-road marking representation
 
 Use compact single-sided native skinned source-layer meshes on the same mechanism object, with
 0.001 m upper-normal clearance and the original road bones, transforms and stacking metadata.
-Preserve original selected-road decal texture identities, texture-area UVs, alpha and source ordering. Native hashed-alpha coverage differs from DBuffer blending; disclose that difference. Do not substitute shared white/yellow paint. Marking polygons may split at motion seams; receiver
-triangles must not be cut for paint. Cuts solely for texture-period wraps are prohibited; use qualifying offline source-atlas repeat materials. Use the native rigid decal-child route; do not create one object per dash.
+Preserve original selected-road decal texture identities, texture-area UVs, continuous alpha and source ordering. Use the authorized direct-skeleton decal program; hashed-alpha or hard-cutout output is not the requested representation. Do not substitute shared white/yellow paint. Marking polygons may split at motion seams; receiver
+triangles must not be cut for paint. Cuts solely for texture-period wraps are prohibited; use qualifying offline source-atlas repeat materials. Do not create one object per dash or a child that follows historical bone matrices.
 See movable contract sections 18–19 for material, binding, visibility and persistence requirements.
 
 ### Approved native marking approximation
 
 Curve segmentation and endpoint-fade differences remain accepted for converted markings, together
 with no permission to replace original decal artwork by another atlas. Independent marking objects are prohibited.
-Use native rigid decal children with source-compatible native decal materials; persist measured parent connection IDs. Dynamic shader additions remain unavailable under the material contract's current independent-loading requirements. Material descriptors and offline texture preparation follow the material generation contract. Structural rules, traffic lanes and human
+Use the same current native motion module as the receiving mechanism through the authorized custom decal program. The material contract defines scoped mod-enabled registration and the deferred independent-loading requirement. Material descriptors and offline texture preparation follow that contract. Structural rules, traffic lanes and human
 visual acceptance remain unchanged. See the movable generation contract sections 7 and 15.
 
 ## 6. Nothing is claimed as fixed until it has been seen working
@@ -1295,8 +1271,8 @@ cherry-picking must not replace implementation work.
 
 Build and deploy each coherent, buildable code increment before delivering it. Intermediate source
 edits within that increment do not each require shutdown or deployment. Before replacing game-loaded
-binaries, invoke `taskkill /IM Cities2.exe /F` and verify the process is absent. Existing user
-authorization for that shutdown remains in force. Back up only original installed files, copy the
+binaries, ask the user to close the game and verify the process is absent; do not terminate a
+player-started instance. Back up only original installed files, copy the
 build outputs and verify their hashes. Documentation-only changes require none of these operations.
 
 A new style or uncalled generation stage does not invalidate existing assets. Do not delete healthy
@@ -1611,26 +1587,15 @@ resources follow [the shared owner lifecycle](BRIDGE_DELETION.md#normal-shutdown
 
 ## 19. Independent native persistence and additive legacy conversion
 
-### Manager independence and additive conversion
+Here, independent persistence means each bridge owns its required snapshots and does not borrow another generated bridge’s private data. It does not require operation with Bridge Builder disabled or uninstalled.
 
-**Generated bridges must not depend on Bridge Builder. Bridge Builder is only the bridge asset manager.**
-This is an architectural requirement for generation, persistence and legacy conversion. Disabling,
-unsubscribing from or uninstalling Bridge Builder must not make persisted bridges unavailable or
-prevent their loading, display, native unlocking, construction, pricing or save/load operation.
-These behaviors must work after a cold start without the Bridge Builder assembly, runtime callbacks,
-patches, custom UI hosts or cached mod objects. Required base-game/DLC resources remain native
-dependencies; external asset snapshots still follow section 17. Acceptance must include a cold start
-with Bridge Builder absent and loading an existing save; a warm-session cache is not evidence.
+<a id="manager-independence-and-additive-conversion"></a>
 
-Bridge Builder manages assets; new/converted saved prefabs must not depend on its assembly,
-runtime unlocking, price overrides, localization source or custom UI host. Persist nested native
-Unlockable AND/OR conditions, unchanged native construction fees, native LocaleAsset
-names and native thumbnail presentation. The double-deck railway seam work remains
-an outstanding compatibility limitation, not permission to persist a mod dependency or to declare
-complete independence.
-Follow section 16: do not rewrite native fees or create pricing-only copies. Preserve original
-donors and shared component fees. Keep recursive byte-identical external dependency persistence
-with original CIDs.
+### Native lifecycle and additive conversion
+
+Generated bridges must cold-load and operate with Bridge Builder enabled. Disabling, unsubscribing from or uninstalling Bridge Builder is not a supported-operation acceptance requirement. Bridge Builder may restore owner-local generated shader/template registration at startup; no per-frame transform or renderer synchronization service is authorized. Required game/DLC content remains a prerequisite, and external snapshots follow section 17. Verify a cold start and existing save with Bridge Builder enabled; warm-session caches are not evidence.
+
+Persist native Unlockable AND/OR conditions, unchanged native fees, LocaleAsset names and thumbnails. Do not substitute runtime unlocking, price overrides, mod-only localization or a custom UI host for these native payloads. The double-deck railway seam remains an unresolved compatibility limitation. Section 16 prohibits fee rewrites and pricing-only copies; preserve donors, shared component fees and byte-identical external dependencies with original CIDs.
 
 Legacy migration during post-load self-check is **additive**: preserve bridge and carried-deck UUID,
 CID, native prefab version, name and geometry. Save into the existing asset, never a new bridge identity.
@@ -1640,6 +1605,10 @@ log ERROR and remove the affected bridge. If backup/move fails, permanently dele
 source paths. Restart after successful migration; do not replace live
 network registrations. Healthy already converted assets need no rewrite. The explicitly
 authorized shared legacy-name cleanup still requires reference checks before retiring old files.
+
+### Exact owner snapshot resolution during inspection
+
+When a native database cannot supply a dependency handle for the current owner, check its canonical CID-named snapshot and matching sidecar before classifying the bridge. Parse saved Surface/VT bytes and resolve cache membership from exact native/prepared provenance or the one-per-inspection ephemeral cache fallback defined in the asset persistence policy. No cache-edge file or additional persisted self-check data is allowed. Foreign-owner handles alone cannot establish that a dependency has disappeared. Complete shared cache-relation preparation before owner dependency migration and structural inspection; preparation failure aborts the whole inspection with an ERROR, without retiring owners or adding a per-owner cache-readiness deferral. A separately unresolved shadowed file identity retains its existing inaccessible-file handling. Confirmed corruption and genuinely missing dependencies retain the section 19 migration policy.
 
 ### Self-check order: migrate, back up/move, delete
 
@@ -1813,7 +1782,7 @@ Its sections 2–12 define the general generation, rendering, graph and persiste
 records encountered failures and mandatory solutions. The method derives from the implemented
 pipeline; per-style dimensions and historical section tables are evidence, not universal rules.
 Section 7 requires source-faithful materials, measured UV projection and paint integrated into
-mechanism geometry, with native rigid decal children under sections 18–19 of the movable contract.
+mechanism geometry, with direct-skeleton decals under sections 18–19 of the movable contract.
 Material preparation follows the material generation contract. Section 11 requires
 selective Section/Piece persistence, native unlock semantics and native-format reader compatibility.
 
@@ -1978,7 +1947,19 @@ source differences remain distinct even when their triangle counts match. These 
 not prove every live request executes each eligible stage once: stage counts, differing-input
 cases and final publication still require the stated checks, including manual game verification.
 
+### Generation input coordinate stage
+
+Selected-road planar material coordinates and the measured road-to-object pose are evaluated in the same generation-only GPU pipeline before FP64 clipping. Prepare the normalized quaternion float products once on the CPU. Preserve Unity/Mono expression ordering with double intermediate evaluation and the original float store boundaries for each position, normal and tangent. Preserve untouched UV channels and tangent handedness. Upload original triangle records once and keep transformed records resident. The complete CPU fallback performs the same mapping and frame conversion before binding; it must never bind untransformed input after a GPU failure. The strict cross-LOD reuse key continues to compare original inputs, mappings and pose.
+
+The count pass validates both original and evaluated GPU input attributes before clipping output can be published. Moving finite/frame checks to the GPU is not permission to remove them: independent error flags must fail the GPU attempt and invoke the complete CPU fallback or return the original failure.
+
 ### Preview background execution and timing boundaries
+
+Preview lane preparation must batch owned mesh snapshots and keep packed-frame decoding with dependent deformation in one worker dispatch under the preview specification, preserving native affinity, cancellation and output ordering.
+
+Preview capture follows the viewport-sized capture section of the preview specification: use measured physical viewport pixels, preserve supersampling and full framing, and rerender existing draw data on resize without bridge regeneration.
+
+Preview generation uses continuous detached background computation and asynchronous engine-thread dispatch under the preview specification. Ordinary generation stages must not force frame yields or use a 6 ms frame budget; only genuine GPU/render completion waits require later engine updates. Preserve cancellation, native affinity and owned input lifetimes.
 
 The [preview execution requirements](Bridge-Preview-Specification.md#ready-work-budget-and-detached-background-computation)
 apply throughout sampling, appearance preparation, assembly and scene preparation. Every CPU
@@ -2023,7 +2004,6 @@ Thread allocation deltas, when supported, exclude native/GPU allocations and oth
 threads. GC collection deltas are process-wide observations, not proof that the measured
 stage caused a collection. Instrumentation overhead remains part of observed elapsed
 time. These logs diagnose generation; they are not a replacement for visual acceptance.
-
 
 Use CPU or vendor-compatible GPU APIs as appropriate. Prefer GPU execution for large pixel workloads
 and parallelize independent work when beneficial. A correct bounded CPU path is permitted; GPU
@@ -2094,7 +2074,12 @@ Only sections in the `Sidewalk` family count as sidewalks. Curbs and all other s
 families are not sidewalks and must not be classified as sidewalks when resolving either side's
 sidewalk presence, position or width.
 
-A template-32 colored lane keeps the selected road substrate and native footprint routing. Skip its projected color layer on the bridge and record that limitation. Do not substitute marking paint or bake an additional lane-color atlas.
+Within the movable mechanism, including its stationary running caps, colored asphalt uses
+the same ordinary-asphalt appearance route as its uncolored substrate. Do not preserve or
+reapply a lane-color overlay after that replacement. Identify the color-overlay role from
+native material semantics rather than a template number, source name, CID or sampled RGB.
+Keep genuine markings and rail artwork separate. External native approaches remain unchanged;
+Sidewalk and curb ownership rules below still apply.
 
 Use the selected root section and the source triangle together. In mixed sections only confirmed walking pavement contributes to the lateral span, walking motion, coverage subtraction and walking material. Keep the original curb faces, including flat tops, slopes and sidewalls. Preserve source triangle identity through clipping and all LODs. Pedestrian lane metadata alone does not establish sidewalk ownership.
 
@@ -2147,15 +2132,3 @@ with zero sidewalks, one sidewalk and unequal left/right sidewalk widths when cl
 5. Integrate routing, UI and all supported languages; preserve fees, unlocks and identities.
 6. Build/deploy coherent increments and scope any necessary recovery to affected owned assets.
 7. Verify actual geometry, saved references and native behavior; label pending visual/cold-load checks.
-
-### Exact owner snapshot resolution during inspection
-
-When a native database cannot supply a dependency handle for the current owner, check its canonical CID-named snapshot and matching sidecar before classifying the bridge. Parse saved Surface/VT bytes and resolve cache membership from exact native/prepared provenance or the one-per-inspection ephemeral cache fallback defined in the asset persistence policy. No cache-edge file or additional persisted self-check data is allowed. Foreign-owner handles alone cannot establish that a dependency has disappeared. Complete shared cache-relation preparation before owner dependency migration and structural inspection; preparation failure aborts the whole inspection with an ERROR, without retiring owners or adding a per-owner cache-readiness deferral. A separately unresolved shadowed file identity retains its existing inaccessible-file handling. Confirmed corruption and genuinely missing dependencies retain the section 19 migration policy.
-
-Dynamic material shaders are governed by [the scoped material requirements](MATERIAL_GENERATION_CONTRACT.md#dynamically-generated-and-independently-persisted-material-shaders): actual source generation, Player-capable loading and independent owner-local cold loading, without a continuing mod synchronization service. This permission does not relax geometry, texture-content or source-ownership rules.
-
-### Generation input coordinate stage
-
-Selected-road planar material coordinates and the measured road-to-object pose are evaluated in the same generation-only GPU pipeline before FP64 clipping. Prepare the normalized quaternion float products once on the CPU. Preserve Unity/Mono expression ordering with double intermediate evaluation and the original float store boundaries for each position, normal and tangent. Preserve untouched UV channels and tangent handedness. Upload original triangle records once and keep transformed records resident. The complete CPU fallback performs the same mapping and frame conversion before binding; it must never bind untransformed input after a GPU failure. The strict cross-LOD reuse key continues to compare original inputs, mappings and pose.
-
-The count pass validates both original and evaluated GPU input attributes before clipping output can be published. Moving finite/frame checks to the GPU is not permission to remove them: independent error flags must fail the GPU attempt and invoke the complete CPU fallback or return the original failure.

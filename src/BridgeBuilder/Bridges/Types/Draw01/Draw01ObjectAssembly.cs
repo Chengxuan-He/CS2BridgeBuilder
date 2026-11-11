@@ -46,7 +46,6 @@ internal static class Draw01ObjectAssembly
             target.GetComponent<StandingObject>().m_LegSize.x += halfWidthDelta * Numeric_Types_Draw01_Draw01ObjectAssembly_cs.Values.F32[0];
         });
         factory.AttachMovableRoadObjects(result, roadObjects.Placements, road.RoadToObject, attachmentPartitions);
-        if(!(await factory.AttachMovablePaintAsync(result, road.Road.LaneGeometry.Decals, road.RoadToObject, Draw01RoadPartitions.Carriageway, MovableRoadGeometry.InFrame(road.Road.Triangles, road.RoadToObject))).Success)return null!;
         return result;
     }
 }

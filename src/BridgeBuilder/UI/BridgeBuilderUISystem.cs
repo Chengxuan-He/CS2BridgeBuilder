@@ -69,6 +69,7 @@ public partial class BridgeBuilderUISystem : UISystemBase
         AddBinding(new TriggerBinding<string>(Group, "PreviewExistingBridge", PreviewExistingBridge,
             new BridgeStringReader()));
         AddBinding(new TriggerBinding(Group, "ClearPreview", BridgePreviewState.Clear));
+        AddBinding(new TriggerBinding<string>(Group, "PreviewViewportWidth", BridgePreviewState.SetViewportWidth, new BridgeStringReader()));
         AddBinding(new TriggerBinding<string, string>(Group, "PreviewImageFailed", BridgePreviewState.ImageFailed,
             new BridgeStringReader(), new BridgeStringReader()));
 

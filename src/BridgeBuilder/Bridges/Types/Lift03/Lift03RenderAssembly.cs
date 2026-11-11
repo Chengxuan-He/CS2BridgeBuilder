@@ -45,7 +45,7 @@ internal static class Lift03RenderAssembly
                 throw new InvalidOperationException("Lift03 support supplement requires its recorded middle main surface.");
             var supportPlan = Lift03FarSupports.CreateSupplement(meshes[Numeric_Types_Lift03_Lift03RenderAssembly_cs.Values.I32[10]].vertices, meshes[Numeric_Types_Lift03_Lift03RenderAssembly_cs.Values.I32[11]].GetIndices(Numeric_Types_Lift03_Lift03RenderAssembly_cs.Values.I32[12]), structureDelta, upperDelta, lowerDelta);
             var extra = new MovableRoadAssets.Supplement(levels[Numeric_Types_Lift03_Lift03RenderAssembly_cs.Values.I32[13]].Source, Numeric_Types_Lift03_Lift03RenderAssembly_cs.Values.I32[14], supportPlan);
-            levels[Numeric_Types_Lift03_Lift03RenderAssembly_cs.Values.I32[15]] = new MovableRoadAssets.Level(far.Source, far.Triangles, far.Surfaces, far.Partition!, far.RenderBounds, far.RoadToObject, far.Structure, far.Skeleton, far.Lanes, far.ClosedWorld, far.AppearancePageSize, far.TexelsPerMeter, far.RoadPartitions, far.LanePartitions, far.RoadTrianglePartitions, extra);
+            levels[Numeric_Types_Lift03_Lift03RenderAssembly_cs.Values.I32[15]] = new MovableRoadAssets.Level(far.Source, far.Triangles, far.Surfaces, far.Partition!, far.RenderBounds, far.RoadToObject, far.Structure, far.Skeleton, far.Lanes, far.ClosedWorld, far.AppearancePageSize, far.TexelsPerMeter, far.RoadPartitions, far.LanePartitions, far.RoadTrianglePartitions, extra, far.AdditionalStructures, far.Decals);
         }
         finally
         {

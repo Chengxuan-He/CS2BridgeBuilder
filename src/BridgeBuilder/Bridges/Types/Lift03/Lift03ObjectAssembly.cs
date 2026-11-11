@@ -43,7 +43,6 @@ internal static class Lift03ObjectAssembly
         factory.AttachMovableRoadObjects(result, objects, Pose.identity, partitions);
         // Each deck supplies only its own receivers. Merge the resulting paint once,
         // preserving shared bone 3 and fixed bone 0 without duplicate resource names.
-        if(!(await factory.AttachMovablePaintAsync(result, new[] { new MovablePaintDeck(roads.MainRoad.LaneGeometry.Decals, roads.MainToObject, Lift03RoadPartitions.Carriageway, MovableRoadGeometry.InFrame(roads.MainRoad.Triangles, roads.MainToObject)), new MovablePaintDeck(roads.AuxiliaryRoad.LaneGeometry.Decals, roads.AuxiliaryToObject, Lift03RoadPartitions.Carriageway, MovableRoadGeometry.InFrame(roads.AuxiliaryRoad.Triangles, roads.AuxiliaryToObject)) })).Success)return null!;
         return result;
         void AddObjects(Lift03RoadSampling.Deck deck, Pose pose)
         {

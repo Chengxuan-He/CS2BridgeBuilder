@@ -4,14 +4,7 @@ Selected-road attachments use the [common measured-gap rule](MOVABLE_BRIDGES_CON
 omit every kind of attachment at an unsupported gap anchor, preserve supported moving/fixed
 mounts, and keep external native approach ownership separate. No type/name/CID gap exceptions.
 
-
-Follow [player-controlled generation](BRIDGE_GENERATION_CONTRACT.md#player-controlled-generation-without-structural-rejection-gates): do not reject a generation request
-because of structural shape, width, signed scale, degeneracy, overlap, clearance or appearance
-quality. Such checks belong to offline verification or non-blocking diagnostics. Material
-no-match selects Original. Preserve actual file/schema/index, nonrepresentable arithmetic,
-write and native API errors; never fabricate successful output. This applies to all bridge
-families and LODs without changing historical dependency recovery.
-
+Follow [Packaged textures belong to road running surfaces](MATERIAL_GENERATION_CONTRACT.md#packaged-textures-belong-to-road-running-surfaces) for this requirement.
 
 These runtime requirements supplement the [movable bridge contract](MOVABLE_BRIDGES_CONTRACT.md)
 and [material generation contract](MATERIAL_GENERATION_CONTRACT.md). Read their detailed rules
@@ -19,16 +12,7 @@ for source independence, geometry, native rendering and per-owner persistence.
 
 ## Runtime invariants
 
-Lift01 and Lift02 central-truss memberships follow the explicit complete-assembly rule in
-bridge generation contract section 8, overriding default own-span stretching,
-side-part translation and base mapping for those measured members. Internal
-braces and narrow connectors share their complete assembly's `x -> k*x`; only the outermost
-edge trusses retain their original mapping. Record assembly spans and connection
-residuals offline, apply the rule at every LOD including far supplements, and
-preserve bones/material modes with the corresponding affine normal/tangent frame.
-Measure each style's complete source and target assembly spans; never use a small
-connector's thickness or another style's span as its scale denominator.
-
+Follow [3. Archetype evidence and immutable mechanism data](MOVABLE_BRIDGES_CONTRACT.md#3-archetype-evidence-and-immutable-mechanism-data) for this requirement.
 
 Apply [source-face coverage](MOVABLE_BRIDGES_CONTRACT.md#source-face-coverage-and-prevention-of-missing-structure):
 use measured retained/replaced/intentionally-omitted memberships, never coarse height or bounds
@@ -53,31 +37,9 @@ capacity fallbacks are implementation limitations, not exceptions to this requir
 
 See [material batches](MOVABLE_BRIDGES_CONTRACT.md#material-selection-projection-and-render-batches).
 
-Road appearance processing (prototype composition, source-density tiling, embedded-marking
-removal and derived wear/background placement) applies only to movable bridges whose roads need
-that processing. Fixed/non-movable bridges retain the selected native road materials, UVs and
-markings; they require no prototype road-support table, road-material replacement or marking
-cleanup under these rules. Structural source-UV/density rules still apply to every bridge.
-A fixed running cap within a movable bridge remains part of that movable road-processing scope.
+Follow [Scope and authority](MATERIAL_GENERATION_CONTRACT.md#scope-and-authority) for this requirement.
 
-Resolve the elevated road-level branch once at the common generation entry, before width
-measurement, cloning or style construction. Every fixed and movable bridge uses that elevated
-context for geometry, bridgeheads, decks, materials and every LOD. Do not enumerate, rank or
-fall back to ground/other road-level branches; no downstream re-selection.
-Keep all physical contributions and section-local branches within the selected road branch.
-Material matching within it is noexcept: a corresponding match selects that route; no match
-selects the original source-material route, without selecting a different road branch.
-The [complete material pipeline](MATERIAL_GENERATION_CONTRACT.md#complete-material-processing-without-propagated-exceptions) must return explicit outcomes through
-resolution, adaptation, assembly, persistence, preview and creation without propagated exceptions.
-Valid unknown materials use compatible originals, equivalent conversion, or a visible processed
-native compatibility material with non-blocking difference diagnostics. Compatibility gaps must
-not reject valid input. Name/CID whitelist adapters, incompatible blind shader binding and
-unreported appearance losses are prohibited; genuine resource/IO failures remain explicit.
-Branch mechanism decks and native network bridgeheads
-by their own source/domain and render context; do not classify a mixed piece from a section name.
-Resource corruption and native realization failures return explicit non-exception failure results. Follow
-[the material routing rule](MATERIAL_GENERATION_CONTRACT.md#total-material-routing-by-part-and-actual-source).
-
+Follow [Preserve original UV projection and mapping mode](BRIDGE_GENERATION_CONTRACT.md#preserve-original-uv-projection-and-mapping-mode) for this requirement.
 
 The [general source-mapping rule](BRIDGE_GENERATION_CONTRACT.md#preserve-original-uv-projection-and-mapping-mode) preserves non-road source modes for all bridges. Movable roads requiring processing use
 prototype-supported appearances tiled at original resolution/physical density without stretching
@@ -100,18 +62,7 @@ Bridge generation contract section 2 prohibits all Boolean operations with proto
 including hardcoded copies of prototype faces. Apply immutable measured construction coordinates
 and rules directly; offline prototype inspection does not authorize runtime mesh intersection.
 
-Prototype-supported road appearances must tile at original resolution and physical texel density,
-never stretch, including fixed running caps, finite terminals and every LOD. Remove embedded road
-markings from every road-material channel and mip; preserve intended selected-road paint through
-the applicable native path (native rigidly attached source decals for movable mechanisms). Necessary
-bounded offline repeats may be authored from pure original road content with aligned PBR donor
-coordinates and complete periodic mip chains; do not claim new periods as original evidence.
-Domains sharing the same evidenced prototype appearance require coherent source/PBR, density, orientation and phase; intentionally different physical-part materials remain distinct. Wear uses the
-same complete measured source and matching same-source background; translate the whole pattern's
-measured visual center to actual native lane centers while preserving physical width, internal
-relationships and longitudinal density. No vehicle lane means no wear. Non-road finite/stretch
-modes retain their own source evidence. No full-span pixels, period cuts, arbitrary downsampling,
-custom shaders that cannot independently cold-load or a relaxed package byte limit are permitted.
+Follow [Native track material conversion](MOVABLE_BRIDGES_CONTRACT.md#native-track-material-conversion) for this requirement.
 
 - Meshes must use the prototype bridge's corresponding LOD meshes as their shape and complexity
   reference; derived geometry must not retain an unchanged prototype geometry reference. Excessive subdivision
@@ -144,10 +95,7 @@ on legacy conversion and fee restoration. The complete policy remains in the con
   layout migration. Localized notices distinguish migration from damage repair and report both
   when both occurred. Relocation is backed up, collision-safe and idempotent.
 
-- Generated bridges must not depend on Bridge Builder; it is only the bridge asset manager.
-  Persisted assets must remain loadable and usable after a cold start with the mod disabled or
-  uninstalled, without its assembly, callbacks, patches or cached objects. Follow contract section 19;
-  the deferred rail-seam limitation is unfinished compatibility work, not proof of independence.
+- Generated bridges must cold-load with Bridge Builder enabled. Startup registration of owner-local shader/template programs is permitted; per-frame transform tracking is prohibited. Follow contract section 19. The deferred rail seam remains unfinished compatibility work.
 
 - Apply the root independent-persistence policy: legacy conversion is additive; root and deck
   CID, UUID, version and geometry stay unchanged. Persist native unlocking, unchanged native fees,
@@ -221,4 +169,4 @@ on legacy conversion and fee restoration. The complete policy remains in the con
   Do not replace the selected road's ordinary street lighting with the
   archetype road's street lighting.
 
-Dynamic material shaders are governed by [the scoped material requirements](MATERIAL_GENERATION_CONTRACT.md#dynamically-generated-and-independently-persisted-material-shaders): actual source generation, Player-capable loading and independent owner-local cold loading, without a continuing mod synchronization service. This permission does not relax geometry, texture-content or source-ownership rules.
+Follow [generated material program requirements](MATERIAL_GENERATION_CONTRACT.md#dynamically-generated-and-independently-persisted-material-shaders) for program persistence, Player loading and mod-enabled registration; geometry, texture and source ownership rules remain unchanged.

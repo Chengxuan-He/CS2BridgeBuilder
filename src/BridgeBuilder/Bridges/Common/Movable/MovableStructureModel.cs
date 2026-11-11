@@ -105,6 +105,7 @@ internal static class MovableStructureModel
         // as SourcePositions/Positions. Indices address final Plan.Positions, including
         // explicitly constructed vertices; their raw source attributes interpolate first.
         internal readonly KeyValuePair<int, Matrix4x4>[] FrameTransforms;
+        internal readonly bool NativeBoneFrames;
         internal readonly PreparedDomain[] PreparedDomains;
         // Only measured LOD reconstruction opts in; ordinary width plans preserve Y/Z.
         internal readonly bool ReconstructsAuthoredPositions;
@@ -127,8 +128,10 @@ internal static class MovableStructureModel
             TriangleVertex[]? interiorVertices = null, float[]? constructedX = null,
             bool reconstructsAuthoredPositions = false, KeyValuePair<int, Vector2>[]? uvCorrections = null,
             PreparedDomain[]? preparedDomains = null,
-            KeyValuePair<int, Matrix4x4>[]? frameTransforms = null, int[]? sourceCopies = null)
+            KeyValuePair<int, Matrix4x4>[]? frameTransforms = null, int[]? sourceCopies = null,
+            bool nativeBoneFrames = false)
         {
+            NativeBoneFrames = nativeBoneFrames;
             SourceCopies = sourceCopies == null ? Array.Empty<int>() : (int[])sourceCopies.Clone();
             foreach (int source in SourceCopies)
                 if (source < 0 || source >= sourcePositions.Length)
@@ -245,7 +248,7 @@ internal static class MovableStructureModel
     }
 
     internal static bool TryBuild(string name, Mesh source, Plan plan, int boneCount,
-        out ModelImporter.Model? model, out string? error, bool compact = false)
+        out ModelImporter.Model? model, out string? error, bool compact = false, int? rigidBone = null, int? sourceSubMesh = null)
     {
         model = null; error = null;
         // Native fixed supports have no skinning channel and legitimately use zero bones.
@@ -253,8 +256,13 @@ internal static class MovableStructureModel
         if (source == null || plan == null || source.vertexCount == 0 || boneCount < 0 ||
             plan.SourcePositions.Length != source.vertexCount ||
             plan.Positions.Length != source.vertexCount + plan.ConstructedCount ||
-            plan.SourceIndices.Length != source.subMeshCount || plan.RemoveTriangles.Length != source.subMeshCount)
+            plan.SourceIndices.Length != (sourceSubMesh.HasValue ? 1 : source.subMeshCount) ||
+            plan.RemoveTriangles.Length != plan.SourceIndices.Length)
         { error = "Structure replacement requires complete per-mesh, per-vertex and per-slot measurements."; return false; }
+        if (sourceSubMesh.HasValue && (sourceSubMesh.Value < 0 || sourceSubMesh.Value >= source.subMeshCount))
+        { error = "Rigid attachment source material slot is unavailable."; return false; }
+        if (rigidBone.HasValue && (rigidBone.Value < 0 || rigidBone.Value >= boneCount))
+        { error = "Rigid attachment requires an existing mechanism bone index."; return false; }
         var attributes = new List<ModelImporter.Model.VertexData>();
         NativeArray<int> nativeIndices = default;
         try
@@ -276,13 +284,14 @@ internal static class MovableStructureModel
                     !float.IsFinite(plan.Positions[i].z))
                 { error = $"Constructed structural vertex {i} is non-finite."; return false; }
             var indices = new List<int>();
-            var submeshes = new SubMeshDescriptor[source.subMeshCount];
-            for (var slot = 0; slot < source.subMeshCount; slot++)
+            var submeshes = new SubMeshDescriptor[plan.SourceIndices.Length];
+            for (var slot = 0; slot < plan.SourceIndices.Length; slot++)
             {
                 var recorded = plan.SourceIndices[slot];
                 var removed = plan.RemoveTriangles[slot];
-                var actual = source.GetIndices(slot);
-                if (source.GetTopology(slot) != MeshTopology.Triangles || actual.Length % 3 != 0 ||
+                var sourceSlot = sourceSubMesh ?? slot;
+                var actual = source.GetIndices(sourceSlot);
+                if (source.GetTopology(sourceSlot) != MeshTopology.Triangles || actual.Length % 3 != 0 ||
                     removed.Length != actual.Length / 3 || !actual.SequenceEqual(recorded))
                 { error = $"Structural slot {slot} does not match its measured triangle stream."; return false; }
                 var start = indices.Count;
@@ -344,6 +353,8 @@ internal static class MovableStructureModel
             using var read = Mesh.AcquireReadOnlyMeshData(source);
             foreach (var declaration in declared)
             {
+                if (rigidBone.HasValue && (declaration.attribute == VertexAttribute.BlendIndices ||
+                    declaration.attribute == VertexAttribute.BlendWeight)) continue;
                 // Constructed UVs need sub-texel interpolation; quantizing them
                 // back to Half can erase the gradient on narrow authored fragments.
                 var attribute=declaration;
@@ -460,7 +471,18 @@ internal static class MovableStructureModel
                 attributes.Add(new ModelImporter.Model.VertexData(attribute.attribute, attribute.format,
                     attribute.dimension, new NativeArray<byte>(bytes, Allocator.Persistent), false));
             }
-            MovableStructureFrames.Apply(attributes, plan.FrameTransforms, used, used?.Length ?? outputCount);
+            if (rigidBone.HasValue)
+            {
+                // Native rigid procedural skinning uses one UInt32 index, with implicit
+                // weight one. This is the existing mechanism skeleton, not a child pose.
+                var bound = new uint[used?.Length ?? outputCount];
+                for (int i = 0; i < bound.Length; i++) bound[i] = (uint)rigidBone.Value;
+                var bytes = new byte[checked(bound.Length * sizeof(uint))];
+                Buffer.BlockCopy(bound, 0, bytes, 0, bytes.Length);
+                attributes.Add(new ModelImporter.Model.VertexData(VertexAttribute.BlendIndices,
+                    VertexAttributeFormat.UInt32, 1, new NativeArray<byte>(bytes, Allocator.Persistent), false));
+            }
+            MovableStructureFrames.Apply(attributes, plan.FrameTransforms, used, used?.Length ?? outputCount, plan.NativeBoneFrames);
             nativeIndices = new NativeArray<int>(indices.ToArray(), Allocator.Persistent);
             model = new ModelImporter.Model(name, Matrix4x4.identity, used?.Length ?? outputCount, nativeIndices,
                 attributes.ToArray(), submeshes, -1, Array.Empty<ModelImporter.Model.BoneInfo>());

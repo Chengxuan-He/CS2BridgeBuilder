@@ -1,0 +1,20 @@
+{
+  "schema": 1,
+  "program": "BoneDecal",
+  "producer": "BuildNativeDecal.py",
+  "producerSha256": "bb69c78c60a05d91af41df10de50abbec10bba9cfe26d9afb959d1838d4fc154",
+  "packageBytes": 323709,
+  "packageSha256": "5793989f8fbb85176c16f2887dd2c7ec0d9524a34af15b46d9c69e9de30c2384",
+  "sources": {
+    "tools/MaterialShaders/BuildNativeDecal.py": "bb69c78c60a05d91af41df10de50abbec10bba9cfe26d9afb959d1838d4fc154",
+    "tools/MaterialShaders/NativeDecalTranscription.py": "0eae148c076222ad4b732ccd8b27ffdea77c3fc2b94aba8e8964a26bce6ba9a1",
+    "tools/MaterialShaders/NativeDecalVertex.hlsl": "d4bdd6589fe7eb514187634921cc2e6e487ce4b1e288e76edd9cb0741b8084d6",
+    "tools/MaterialShaders/MaterialFunctions.hlsl": "e1cca024b3d0bd33efba7bc2cf8b4dd534dc00a7e226fa7df8db91a03617b24c",
+    "tools/MaterialShaders/NativeInstanceSkeleton.hlsl": "23e3a8544bc27f91a6300a6abe11f958d9e157a7efbe18dc16f4cfb3452d24bb"
+  },
+  "nativeInputs": {
+    "objectShader": "d07d2bda08a5aa49e2d2f8b41a1a786cb16cb13ef593e109aa04df3dceb57ba6",
+    "decalShader": "ad4a6779f86eeb3a69955aee50e87e122b657bd6427d9547e54f8f23d7a7f62e",
+    "containerSeed": "71154657f4b026f0308c8efa2a9f09d9e15f162cd95e30870f9d19e709bca119"
+  }
+}

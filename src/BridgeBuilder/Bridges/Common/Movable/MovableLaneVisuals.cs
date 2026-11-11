@@ -33,6 +33,7 @@ internal static class MovableLaneVisuals
         internal readonly Matrix4x4 Transform, CurveMatrix;
         internal readonly Vector4 Size, Scale, Parameters;
         internal readonly float SmoothingDistance;
+        internal readonly float DecalDistanceFactor;
         internal readonly bool GeometryTiling, HangingSwaying;
         internal readonly Vector4 Dilation;
         internal readonly bool Dilated;
@@ -47,6 +48,7 @@ internal static class MovableLaneVisuals
             Decal = (data.m_State & MeshFlags.Decal) != 0;
             Size = size; Scale = scale; Parameters = parameters;
             SmoothingDistance = data.m_SmoothingDistance;
+            DecalDistanceFactor = RenderingUtils.CalculateDistanceFactor(data.m_MinLod);
             var properties = source.GetComponent<CurveProperties>();
             GeometryTiling = properties?.m_GeometryTiling == true;
             HangingSwaying = properties?.m_HangingSwaying == true;

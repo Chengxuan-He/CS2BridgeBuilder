@@ -10,22 +10,22 @@ namespace BridgeBuilder.Bridges;
 
 internal static partial class MovableRoadObjects
 {
-    private static void AddEndSupports(ref IReadOnlyList<ObjectSubObjectInfo> placements,
+    internal static void AddEndSupports(ref IReadOnlyList<ObjectSubObjectInfo> placements,
         Pose frame, ref IReadOnlyList<MovableRoadGeometry.Partition> partitions, Func<int, bool> moving)
     {
         var output = new List<ObjectSubObjectInfo>(placements);
         var domains = new List<MovableRoadGeometry.Partition>(partitions);
         var rotation = frame.rotation.normalized;
         var inverse = Quaternion.Inverse(rotation);
-        var world = World.DefaultGameObjectInjectionWorld;
-        var prefabs = world.GetExistingSystemManaged<PrefabSystem>();
-        var manager = world.EntityManager;
         for (var i = 0; i < placements.Count; i++)
         {
             var source = placements[i];
             var utility = source.m_Object.GetComponent<UtilityObject>();
             if (utility == null || (utility.m_UtilityType &
                 (UtilityTypes.Catenary | UtilityTypes.LowVoltageLine)) == 0) continue;
+            var world = World.DefaultGameObjectInjectionWorld;
+            var prefabs = world.GetExistingSystemManaged<PrefabSystem>();
+            var manager = world.EntityManager;
             var point = rotation * (Vector3)source.m_Position + frame.position;
             var facing = rotation * (Quaternion)source.m_Rotation;
             if (!prefabs.TryGetEntity(source.m_Object, out var entity) ||

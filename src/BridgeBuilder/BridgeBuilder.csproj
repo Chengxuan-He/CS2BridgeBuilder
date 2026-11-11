@@ -25,6 +25,8 @@
   <ItemGroup>
     <EmbeddedResource Include="..\..\assets\bridgebake" LogicalName="BridgeBuilder.GpuBake" />
     <EmbeddedResource Include="..\..\assets\roadgpu" LogicalName="BridgeBuilder.RoadGpu" />
+    <EmbeddedResource Include="..\..\tools\MaterialShaders\*.hlsl" LogicalName="BridgeBuilder.MaterialProgram.%(Filename)%(Extension)" />
+    <EmbeddedResource Include="..\..\assets\MaterialPrograms\*.bbs1" LogicalName="BridgeBuilder.MaterialProgram.%(Filename)%(Extension)" />
     <EmbeddedResource Include="..\..\assets\BridgeBuilderPack.svg" LogicalName="BridgeBuilderPack.svg" />
     <EmbeddedResource Include="..\..\assets\HardcodedNumbers\**\*.bin" LogicalName="BridgeBuilder.Numbers.%(Filename)%(Extension)" WithCulture="false" />
     <None Include="..\..\assets\BridgeBuilder.svg" Link="BridgeBuilder.svg" CopyToOutputDirectory="PreserveNewest" />
@@ -64,6 +66,9 @@
   </ItemGroup>
   <Target Name="VerifyRoadGpuBundle" BeforeTargets="CoreCompile">
     <Exec Command="powershell -NoProfile -ExecutionPolicy Bypass -File &quot;$(MSBuildProjectDirectory)\..\..\tools\RoadGpu\VerifyBundle.ps1&quot;" />
+  </Target>
+  <Target Name="VerifyMaterialPrograms" BeforeTargets="CoreCompile">
+    <Exec Command="powershell -NoProfile -File &quot;$(MSBuildProjectDirectory)\..\..\tools\MaterialShaders\VerifyPrograms.ps1&quot;" />
   </Target>
   <Target Name="VerifyHardcodedArrays" BeforeTargets="CoreCompile">
     <Exec Command="dotnet run --project &quot;$(MSBuildProjectDirectory)\..\..\tools\HardcodedDataPack\HardcodedDataPack.csproj&quot; -- &quot;$(MSBuildProjectDirectory)\..\..&quot; --check" />

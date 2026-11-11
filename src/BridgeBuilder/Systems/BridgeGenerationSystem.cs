@@ -197,7 +197,8 @@ public partial class BridgeGenerationSystem : GameSystemBase
         if (_materialRead != null) return;
         try
         {
-            _previewRenderer?.Tick();
+            ResizePreviewIfNeeded();
+            if (_previewWork == null) _previewRenderer?.Tick();
         }
         catch (Exception)
         {

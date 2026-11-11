@@ -45,7 +45,7 @@ that any unfinished movable generator has passed acceptance.
 The owner-directory layout in sections 6–7 applies to creation and self-check migration.
 Sibling `_Dependencies` and per-component LOD directories are legacy migration inputs.
 Section 3 documents the creation and dependency paths. VT and mid-mip caches are included in the owner
-folder; native cold loading and packaging without Bridge Builder still require game acceptance.
+folder; native cold loading and packaging with Bridge Builder enabled still require game acceptance.
 
 ## 1. Four distinct operations
 
@@ -134,7 +134,6 @@ through `widened.surfaceAssets = surfaces`. Preview models take a temporary path
 During permanent creation the generator supplies the saver with the bridge roots and the actual sources and implicit dependency edges established while building that bridge. Traverse serialized forward CIDs recursively. Follow each prepared Surface's declared MidMips CIDs and each generated Surface's explicitly created owner cache. An explicitly empty cache set represents a Surface with no cache requirement. For an external material, follow its serialized texture and VT references and resolve required native cache membership using the selected material's exact provenance. Missing required sources, positive-level cache memberships or conflicting bytes are persistence errors.
 
 Resolve a requested CID through the recorded asset or an exact database lookup. Valid other-owner snapshots are permitted source streams; copy required bytes into the target owner. Normal creation, including lane conversion, must not enumerate all registered assets or MidMips caches, probe unrelated cache payloads, or scan owner directories to discover dependency edges. Keep the handoff scoped to the current generation. Startup self-check and historical migration follow each bridge's serialized dependency chain and the native cache provenance described below. Use current-owner direct paths, exact CID lookups and the selected native material's indexed cache provenance. A once-per-inspection discovery of registered bridge prefab identities and historical owner-file locations may establish roots and migration candidates. Reuse those candidates throughout the pass. Do not build a global all-asset/CID index, reread every Prefab per owner, or repeatedly scan all owner directories. The bounded inspection-only MidMips fallback below is the sole cache-index exception. Retain unowned shared legacy sources when their other consumers cannot be proven without a global reverse scan; migrate only the selected bridge closure. Preserve the separate discovery and handling of orphaned legacy components and the existing migration-first recovery and retirement semantics. Do not persist cache relations or an inspection index. Include dependency, validation, portable migration, name/layout migration and retirement costs in the self-check timings.
-
 
 `src/BridgeBuilder/Runtime/BridgeDependencyPersistence.cs` resolves source assets and stops at
 built-in provenance. Other-owner sources remain readable external dependencies and are
@@ -229,7 +228,9 @@ missing-dependency diagnostic, not a per-owner readiness deferral. Missing
 required resources and corrupt payloads retain contextual failures. Creation continues
 using its explicit source handoff and must not invoke the inspection-wide fallback.
 
-### Native presentation and manager independence
+<a id="native-presentation-and-manager-independence"></a>
+
+### Native presentation and startup registration
 
 `src/BridgeBuilder/Runtime/BridgeNativePresentation.cs` prepares native presentation, saves native
 locale data and validates existing/migrated serialized references for manager-dependent types and UI paths.
@@ -238,7 +239,7 @@ existing-asset validator after successful dependency persistence.
 `src/BridgeBuilder/Runtime/BridgeAssetCatalog.cs` invokes the native presentation save path when
 writing catalog metadata. These responsibilities are separate from material export.
 
-Manager independence means the saved bridge operates without Bridge Builder callbacks. Required
+Native persisted presentation must survive mod-enabled cold loading; generated programs use Bridge Builder startup registration. Required
 game/DLC content remains a prerequisite. Copying an external file also does not supply a missing
 runtime class or an unsupported third-party behavior.
 
@@ -251,12 +252,7 @@ There is no blanket requirement to create new material, texture, marking or anim
 
 ### Native material resources
 
-Road appearance processing (prototype composition, source-density tiling, embedded-marking
-removal and derived wear/background placement) applies only to movable bridges whose roads need
-that processing. Fixed/non-movable bridges retain the selected native road materials, UVs and
-markings; they require no prototype road-support table, road-material replacement or marking
-cleanup under these rules. Structural source-UV/density rules still apply to every bridge.
-A fixed running cap within a movable bridge remains part of that movable road-processing scope.
+Follow [Scope and authority](MATERIAL_GENERATION_CONTRACT.md#scope-and-authority) for this requirement.
 
 Follow the [material generation contract](MATERIAL_GENERATION_CONTRACT.md).
 Movable non-road materials retain original identities and dependencies. Only prototype-supported
@@ -270,8 +266,7 @@ applies to fixed and movable bridges alike. Persist the required mapping and dep
 ownership copies do not justify replacement materials or texture baking.
 
 Known eligible road compositions are prepared offline. Bounded runtime exceptions do not widen
-the supported-type gate or authorize full-road rasterization. Dynamic shaders remain unavailable under the current independent-loading requirements in the material contract; manager-dependent
-rebinding remains prohibited. Preserve complete texture/VT/mip dependencies and unchanged source bytes.
+the supported-type gate or authorize full-road rasterization. The material contract authorizes two generated shader programs with owner-local dependencies and mod-enabled startup registration; per-frame manager-driven rebinding remains prohibited. Preserve complete texture/VT/mip dependencies and unchanged source bytes.
 Only native MidMips sources may share `Materials/Shared/MidMips/<cacheCID>/` across styles.
 Each owner independently snapshots its required cache dependencies with original CIDs and native
 filenames. Owner material bytes are informational, with no hard ceiling; the complete SDK ZIP limit is 55,000,000 bytes.
@@ -412,7 +407,7 @@ operation only; saved bridges require no manager updates or patches to resolve t
 The intended packaging boundary is the complete UUID directory, with required game/DLC resources
 present. External non-built-in dependencies retain their byte-identical CID snapshots under
 `Dependencies`. File-layout and native API inspection are not cold-load acceptance: verify loading
-and packaging without Bridge Builder in game before claiming that acceptance.
+and packaging with Bridge Builder enabled in game before claiming that acceptance.
 
 ## 7. Legacy-to-owner-directory migration
 
@@ -472,7 +467,7 @@ pack/export discovery. Disk filename and internal Prefab name must be allowed to
 Verify migrations from both the old per-Prefab layout and the grouped-LOD layout, already-migrated
 inputs, identical and conflicting destinations, missing sidecars, rollback after partial IO failure,
 unknown types, dependency Prefabs with unrelated internal names, and preservation of other owners.
-Then verify native cold loading and packaging without Bridge Builder. Keep documentation approval,
+Then verify native cold loading and packaging with Bridge Builder enabled. Keep documentation approval,
 implementation, deployment and game acceptance as separate statuses.
 
 ### Shared implementation responsibilities
@@ -551,4 +546,4 @@ Open folder uses the parent directory of the completed export path held by the b
 not a path supplied by the click event. Failure to open that directory is reported as
 an open-folder failure without changing the successful export status.
 
-Dynamic material shaders are governed by [the scoped material requirements](MATERIAL_GENERATION_CONTRACT.md#dynamically-generated-and-independently-persisted-material-shaders): actual source generation, Player-capable loading and independent owner-local cold loading, without a continuing mod synchronization service. This permission does not relax geometry, texture-content or source-ownership rules.
+Follow [generated material program requirements](MATERIAL_GENERATION_CONTRACT.md#dynamically-generated-and-independently-persisted-material-shaders) for program persistence, Player loading and mod-enabled registration; geometry, texture and source ownership rules remain unchanged.

@@ -48,8 +48,7 @@ Use a genuine double-deck archetype. Preserve its `AuxiliaryNets` positions, `m_
 deck is physically above the other. Both selected decks receive bridge-owned network copies.
 
 Auxiliary networks follow native editing and connection behavior. The double-deck rail-seam
-compatibility limitation remains subject to explicit testing, including a cold start without
-Bridge Builder. Successful generation alone does not establish independent operation.
+compatibility limitation remains subject to explicit testing, including a cold start with Bridge Builder enabled. Successful generation alone does not establish native operation.
 
 ## Movable bridges
 
@@ -90,7 +89,7 @@ own dependency directory. Built-in game/DLC resources remain native prerequisite
 and other bridges' private Prefabs are not modified or borrowed. Asset licenses remain applicable.
 
 Persist native unlock conditions, pricing and presentation. Bridge Builder is the asset manager,
-not a required runtime dependency; cold-start acceptance must verify that requirement.
+and generated-program registrar; cold-start acceptance requires Bridge Builder enabled.
 Deployment follows bridge generation contract section 13: preserve healthy bridges. Recovery
 requires a demonstrated incompatibility and is limited to the affected UUID-owned assets.
 A source change alone does not authorize deleting every bridge of a style.

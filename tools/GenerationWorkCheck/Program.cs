@@ -26,7 +26,7 @@ public static class GenerationWorkCheck
         work.Start(async()=>
         {
             using var lease=GenerationParameters.Begin(); session=GenerationParameters.Capture();context.Value="inside";
-            try { await Child(); await GenerationWork.Next("parent"); progress++; }
+            try { await GenerationWork.NextFrame("initial external wait"); await Child(); await GenerationWork.Next("parent"); progress++; }
             finally { disposed=true; }
         });
         Check(progress==0&&!work.IsComplete,"initial yield");
@@ -41,7 +41,7 @@ public static class GenerationWorkCheck
         {
             disposed=false;var cancelled=new GenerationWork("cancel",()=>true);
             cancelled.Start(async()=> { using var lease=GenerationParameters.Begin();session=GenerationParameters.Capture();
-                try { await GenerationWork.Next("before failure"); if(failure)throw new InvalidOperationException("injected"); await Child(); }
+                try { await GenerationWork.NextFrame("before failure"); if(failure)throw new InvalidOperationException("injected"); await Child(); }
                 finally{disposed=true;} });
             if(failure)cancelled.Tick();else cancelled.Cancel();
             for(int i=0;i<20&&!cancelled.IsComplete;i++)cancelled.Tick();
@@ -53,11 +53,11 @@ public static class GenerationWorkCheck
         }
         bool valid=true, published=false; disposed=false;
         var stale=new GenerationWork("stale revision",()=>valid);
-        stale.Start(async()=>{try{await GenerationWork.Next("stale output");published=true;}finally{disposed=true;}});
+        stale.Start(async()=>{try{await GenerationWork.NextFrame("stale output");published=true;}finally{disposed=true;}});
         valid=false;stale.Tick();Check(stale.IsComplete&&disposed&&!published,"stale selection published");
         try{stale.Completion!.GetAwaiter().GetResult();throw new Exception("Expected stale cancellation");}catch(OperationCanceledException){}
         var fresh=new GenerationWork("new revision",()=>true);
-        fresh.Start(async()=>{await GenerationWork.Next("new output");published=true;});
+        fresh.Start(async()=>{await GenerationWork.NextFrame("new output");published=true;});
         stale.Cancel();Check(!published&&!fresh.IsComplete,"old cancellation changed new request");
         fresh.Tick();fresh.Completion!.GetAwaiter().GetResult();Check(published,"new request blocked by old cancellation");
         int sync=GenerationWork.Synchronous(async()=>{await GenerationWork.Next("sync");return 42;});
@@ -76,7 +76,7 @@ public static class GenerationWorkCheck
         polling.Tick();Check(polled==1,"busy polled in same frame");polling.Tick();Check(polled==2,"poll cadence");polling.Tick();Check(polled==3,"poll completion");
         int budgetSteps=0;var budget=new GenerationWork("aggregate budget",()=>true);
         budget.Start(async()=>{for(int i=0;i<10;i++){await GenerationWork.Next("cost");Thread.Sleep(3);budgetSteps++;}});
-        budget.Tick();Check(budgetSteps>0&&budgetSteps<10,"budget reset per invocation");budget.Cancel();
+        Check(budgetSteps==10 && budget.IsComplete,"ready generation artificially split over frames");
         foreach(bool fault in new[]{false,true})
         {
             using var entered=new ManualResetEventSlim();using var release=new ManualResetEventSlim();using var finished=new ManualResetEventSlim();
@@ -105,6 +105,67 @@ public static class GenerationWorkCheck
             Check(Thread.CurrentThread.ManagedThreadId==thread,"worker result published off main thread");});
         var until=DateTime.UtcNow.AddSeconds(5);while(!successful.IsComplete&&DateTime.UtcNow<until){successful.Tick();Thread.Sleep(1);}
         successful.Completion!.GetAwaiter().GetResult();Check(workerResult==42,"worker result lost");successful.Report();
+        // Batched dependent stages keep native publication out of the worker and retain stable order.
+        int[]? batchOutput=null;int dispatches=0;var batched=new GenerationWork("batched snapshots",()=>true);
+        var snapshots=new[]{new[]{3,1},new[]{9,2},new[]{4,7}};
+        batched.Start(async()=>{
+            batchOutput=await GenerationWork.Background("decode and expand",()=>{
+                Interlocked.Increment(ref dispatches);
+                Check(Thread.CurrentThread.ManagedThreadId!=thread,"batch calculated on native thread");
+                var output=new int[6];int index=0;
+                foreach(var snapshot in snapshots)foreach(var value in snapshot)output[index++]=value*2+1;
+                return output;
+            });
+            Check(Thread.CurrentThread.ManagedThreadId==thread,"batch publication off native thread");
+        });
+        var batchDeadline=DateTime.UtcNow.AddSeconds(5);
+        while(!batched.IsComplete&&DateTime.UtcNow<batchDeadline){batched.Tick();Thread.Sleep(1);}
+        batched.Completion!.GetAwaiter().GetResult();
+        Check(dispatches==1&&batchOutput!=null&&string.Join(",",batchOutput)=="7,3,19,5,9,15","batch ordering or dispatch count changed");
+        // Engine context dispatch resumes native work without a GenerationWork.Tick.
+        var host = new NativeDispatchContext(); SynchronizationContext.SetSynchronizationContext(host);
+        var continuous = new GenerationWork("host-dispatch",()=>true);
+        using(var workerReady=new ManualResetEventSlim())
+        {
+            int nativeSteps=0;
+            continuous.Start(async()=>{
+                var value=await GenerationWork.Background("continuous pipeline",()=>{
+                    int total=0;
+                    for(int i=0;i<100;i++)total+=i;
+                    workerReady.Set();return total;
+                });
+                Check(Thread.CurrentThread.ManagedThreadId==thread,"host dispatched native work on worker");
+                Check(value==4950,"continuous worker result");
+                for(int i=0;i<8;i++){await GenerationWork.Next("native stage");nativeSteps++;}
+            });
+            Check(workerReady.Wait(5000),"continuous worker never ran");
+            var limit=DateTime.UtcNow.AddSeconds(5);
+            while(!continuous.IsComplete&&DateTime.UtcNow<limit){host.Drain();Thread.Sleep(1);}
+            continuous.Completion!.GetAwaiter().GetResult();
+            Check(nativeSteps==8,"native dispatch required per-frame pumping");
+        }
+        using(var enteredHost=new ManualResetEventSlim())
+        using(var releaseHost=new ManualResetEventSlim())
+        using(var finishedHost=new ManualResetEventSlim())
+        {
+            bool staleNative=false;
+            var cancelledHost=new GenerationWork("cancel host callback",()=>true);
+            cancelledHost.Start(async()=>{
+                await GenerationWork.Background("pending host worker",()=>{
+                    enteredHost.Set();releaseHost.Wait();finishedHost.Set();return 7;
+                });
+                staleNative=true;
+            });
+            Check(enteredHost.Wait(5000),"host cancel worker not started");
+            cancelledHost.Cancel();
+            Check(cancelledHost.IsComplete&&!staleNative,"host cancellation waited for worker");
+            releaseHost.Set();Check(finishedHost.Wait(5000),"host abandoned worker not finished");
+            for(int i=0;i<10;i++){host.Drain();Thread.Sleep(1);}
+            Check(!staleNative,"late host callback published cancelled work");
+            try{cancelledHost.Completion!.GetAwaiter().GetResult();throw new Exception("Expected host cancellation");}
+            catch(OperationCanceledException){}
+        }
+        SynchronizationContext.SetSynchronizationContext(outside);
         var stages=new GenerationStageCache();var immutableInput=new object();int executions=0;
         var pending=new TaskCompletionSource<int>();
         Task<int> Create(){executions++;return pending.Task;}
@@ -123,4 +184,10 @@ public static class GenerationWorkCheck
         SynchronizationContext.SetSynchronizationContext(null);
         return "PASS GenerationWork checks="+_checks+" runtime="+Environment.Version;
     }
+}
+internal sealed class NativeDispatchContext : SynchronizationContext
+{
+    private readonly System.Collections.Concurrent.ConcurrentQueue<(SendOrPostCallback Callback,object? State)> _queue=new();
+    public override void Post(SendOrPostCallback callback,object? state)=>_queue.Enqueue((callback,state));
+    internal void Drain(){while(_queue.TryDequeue(out var item))item.Callback(item.State);}
 }

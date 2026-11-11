@@ -7,7 +7,30 @@ deck, a bridge style to wear, and optionally something hung underneath.
 
 Read about [available inputs](#what-you-can-pick), [using the builder](#in-game-builder-and-identity),
 the [generation flow](#generation-flow), [technical details](#geometry-calculation), or
-[building and contributing](#building).
+[building and contributing](#building). See [custom bridge and automation limits](#custom-bridges-and-automation-limits) before requesting a new style.
+
+## Custom bridges and automation limits
+
+Bridge Builder supports explicitly implemented bridge styles. It does not provide a supported,
+reliable, fully automated importer for arbitrary custom bridges. Installing a third-party bridge
+asset does not make it a supported style, and compatibility with every asset is not promised.
+No coding agent in the current Bridge Builder workflow can be relied upon to import an arbitrary
+bridge correctly in one pass, even when using the most capable models available to the maintainer.
+
+The difficult work is understanding complex 3D structure and appearance: identifying parts and
+connections, deciding what moves or stretches, and preserving materials, bone binding, motion and every LOD.
+Scripts and formulas can execute measured transformation rules; they do not supply missing
+structural meaning or establish visual correctness from a mesh alone. A simple formula or one
+code-generation pass cannot replace source inspection, bridge-specific measurements and human
+in-game acceptance. More capable models do not guarantee a correct first attempt.
+
+In the maintainer's project experience, adapting one bridge can take tens of minutes to hours,
+and iterative work with a high-capability coding agent can reach the million-token scale.
+These are reported project costs across analysis, implementation, testing and corrections, not
+a universal benchmark, fixed price or minimum for every bridge.
+
+To add an unsupported style, follow [Adding a bridge style with a coding agent](#adding-a-bridge-style-with-a-coding-agent).
+This is an iterative development and verification workflow, not a plug-and-play import operation.
 
 ## What you can pick
 
@@ -109,7 +132,7 @@ Construction inputs are read-only after creation; changing them means creating a
 bridge. Confirm deletion in the management tab to remove that bridge and its placed instances.
 The settings action **Remove all bridges** removes local Bridge Builder bridges in the current session after confirmation. In a city or editor, it clears their placed instances first. See [Bridge deletion](docs/agent-contract/BRIDGE_DELETION.md) for the single and bulk workflows.
 
-It is the parallel of [Road Prefab Exporter](../CS2RoadPrefabExporter) and shares its code — see
+It is the parallel of Road Prefab Exporter (`../CS2RoadPrefabExporter`, a separate checkout) and shares its code — see
 [Layout](#layout).
 
 ## One bridge at a time
@@ -405,6 +428,12 @@ catalogue entry alone is not sufficient. You provide the design and test it in g
 agent handles implementation and reads the repository instructions. Local delivery is sufficient;
 GitHub publication is optional and does not require upstream write access when using a fork.
 
+This workflow does not automate arbitrary bridge import end to end. It requires bridge-specific
+3D interpretation, measured rules and repeated visual checks; scripts and formulas do not replace
+that work. Do not expect a coding agent, regardless of model capability, to produce a correct
+arbitrary style in one attempt. Plan for investigation and correction rather than universal
+third-party asset compatibility.
+
 ### Contribution workflow
 
 ```mermaid
@@ -475,7 +504,7 @@ Read AGENTS.md, the complete project contract and applicable nested instructions
 Inspect the existing generation, preview, localization, persistence and migration paths.
 Use the simplest existing extension points. Record measured parameters for this archetype;
 do not copy another style's constants or infer part identity in runtime code.
-Keep generated bridges independent of Bridge Builder and preserve native pricing/unlocks.
+Keep each bridge’s persisted dependencies owner-local and preserve native pricing/unlocks; require Bridge Builder for generated-program registration.
 Do not use other bridges' ImportedData Prefabs as creation or copy sources.
 
 Follow contract section 12's optional branch policy and keep the style ID stable.
@@ -637,7 +666,7 @@ Test the following in your local game and give the results to your agent:
 3. Towers, deck, cables, railings, lights and materials remain correct up close and through LOD changes.
 4. Native unlock conditions, construction cost, labels, descriptions and icons are correct.
 5. Saving, exiting and cold-start loading preserve geometry and references; healthy self-check is inert.
-6. With Bridge Builder disabled, persisted bridges remain available and usable; retain required native
+6. With Bridge Builder enabled, persisted bridges must cold-load and remain available and usable; retain required native
    game/DLC resources. Separately test any known rail-seam limitation.
 7. When applicable, legacy migration preserves identity and a second check makes no further changes.
 

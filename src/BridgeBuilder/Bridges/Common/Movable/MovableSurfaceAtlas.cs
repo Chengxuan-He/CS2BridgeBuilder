@@ -26,12 +26,9 @@ internal sealed class MovableSurfaceAtlas
         internal Input(bool selectedInput) { SelectedInput = selectedInput; }
         internal bool PrototypeRoad;
         internal MovableSidewalkFaces? Sidewalks;
-        internal MovableNativeDecals.Region[] LaneColors = Array.Empty<MovableNativeDecals.Region>();
         internal void SetReceiverRoles(MovableClosedRoad.Result road)
         {
             Sidewalks = road.Sidewalks;
-            LaneColors = road.LaneGeometry.Decals.Where(MovableNativeDecals.IsLaneColor)
-                .SelectMany(batch => MovableNativeDecals.Regions(batch, Pose.identity, 32f)).ToArray();
         }
         // Indexed by physical appearance domain, independently for each LOD.
         // A supported layer never authorizes composing unsupported neighbours.
@@ -179,9 +176,7 @@ internal sealed class MovableSurfaceAtlas
             var input = inputs[level]; panels[level] = new();
             foreach(var patch in input.Patches)if(patch.Error!=null)return "Material patch: "+patch.Error;
             if(input.Sidewalks?.Error!=null)return input.Sidewalks.Error;
-            foreach (var incoming in input.Faces)
-            foreach (var (face,tinted) in MovableRoadCoverage.SplitColors(incoming,
-                input.Sidewalks?.Curb(incoming.Geometry)==true ? Array.Empty<MovableNativeDecals.Region>() : input.LaneColors))
+            foreach (var face in input.Faces)
             {
                 var t = face.Geometry;
                 var panel = (Source: face, Vertices: new[] { t.A, t.B, t.C });
@@ -212,17 +207,17 @@ internal sealed class MovableSurfaceAtlas
                 {
                     var routeSource=routeSources[original];
                     bool walk = input.Sidewalks?.Walk(t) == true;
-                    // A matched walking patch accepts its plain asphalt running strip as
+                    // A matched walking patch accepts its asphalt running strip as
                     // well as paving. Pass the source kind to both routing and realization.
                     if (walk && (supported & MovableRoadAppearance.Type.Sidewalk) != 0 &&
                         t.A.Normal.y > .7f && t.B.Normal.y > .7f && t.C.Normal.y > .7f)
                         supported |= MovableRoadAppearance.Type.Asphalt;
-                    // Never install a prototype on a selected color decal receiver. The
-                    // native road substrate still needs a skinnable object material.
+                    // Lane-color overlays do not change the asphalt substrate route.
+                    // Curbs remain outside the walking/prototype receiver domain.
                     bool curb=input.Sidewalks?.Curb(t)==true;
                     if(!walk) supported &= ~MovableRoadAppearance.Type.Sidewalk;
-                    if (tinted || curb) supported=MovableRoadAppearance.Type.None;
-                    var route=curb ? MovableRoadRoute.Kind.Original : MovableRoadRoute.Select(routeSource,t,supported,!tinted && hasPatch && native!=null,
+                    if (curb) supported=MovableRoadAppearance.Type.None;
+                    var route=curb ? MovableRoadRoute.Kind.Original : MovableRoadRoute.Select(routeSource,t,supported,hasPatch && native!=null,
                         false);
                     selectedRoute = route;
                     if (captureBindings)

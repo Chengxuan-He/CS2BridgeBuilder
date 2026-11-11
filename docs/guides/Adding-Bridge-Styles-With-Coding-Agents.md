@@ -6,6 +6,12 @@ catalogue entry alone is not sufficient. You provide the design and test it in g
 agent handles implementation and reads the repository instructions. Local delivery is sufficient;
 GitHub publication is optional and does not require upstream write access when using a fork.
 
+This workflow does not automate arbitrary bridge import end to end. It requires bridge-specific
+3D interpretation, measured rules and repeated visual checks; scripts and formulas do not replace
+that work. Do not expect a coding agent, regardless of model capability, to produce a correct
+arbitrary style in one attempt. Plan for investigation and correction rather than universal
+third-party asset compatibility.
+
 ## Contribution workflow
 
 ```mermaid
@@ -76,7 +82,7 @@ Read AGENTS.md, the complete project contract and applicable nested instructions
 Inspect the existing generation, preview, localization, persistence and migration paths.
 Use the simplest existing extension points. Record measured parameters for this archetype;
 do not copy another style's constants or infer part identity in runtime code.
-Keep generated bridges independent of Bridge Builder and preserve native pricing/unlocks.
+Keep each bridge’s persisted dependencies owner-local and preserve native pricing/unlocks; require Bridge Builder for generated-program registration.
 Do not use other bridges' ImportedData Prefabs as creation or copy sources.
 
 Follow contract section 12's optional branch policy and keep the style ID stable.
@@ -130,23 +136,27 @@ for every style's coordinate stage:
 
 1. Extract measured origins, coefficient rows, parameter domains and part membership offline.
    Each of X, Y and Z may depend on width; a constant axis has zero coefficients.
-2. Store numerical values in DLL-embedded, uncompressed BBN1 typed-array resources under
-   `assets/HardcodedNumbers/<BridgeType>/`. Sparse vertex weights and part ranges remain valid
-   matrix representations. Validate and read only demanded embedded streams into static arrays,
-   without extraction files. The complete Paradox Mods package provides transport compression.
-   Preserve float bits, anchors
-   and evaluation order; never initialize unused numerical holders eagerly.
-3. Snapshot native mesh inputs on the main thread. Evaluate independent coordinate ranges with
-   `AffineGeometry.For`, source-only sparse assignments with `Scatter`, and repeated additive
-   index recipes with `Indices`. Use `Row`/`Matrix` for general XYZ parameter mappings and the
-   specialized scalar kernels where appropriate. Retain dependent stage ordering.
-4. Shared movable assembly schedules independent LOD plans with `Groups`, waits for completion,
-   then creates native render assets on the main thread. Do not put Mesh, Prefab, material or
-   persistence API calls into numerical workers. Small batches and nested work stay serial.
-5. After regenerating recipes, review the [offline lowering pass](../../tools/AffineGeometryMigration/README.md)
-   and preserve manual coefficient caches and snapshot boundaries. Run `AffineGeometryCheck`,
-   resource integrity checks, affected geometry/LOD regressions and localization checks.
-   Compare actual cold/warm preview and creation timings before claiming an acceleration.
+2. Store numerical values in the existing DLL-embedded typed arrays. Sparse vertex weights and
+   part ranges are valid matrix representations; the BBN1 format need not change or expand to
+   dense matrices. Preserve float bits, anchors and evaluation order.
+3. Load only demanded binary resources into the current generation's parameter session. Reuse
+   decoded arrays, membership records and SIMD programs within that request and its joined LOD
+   workers. Release references on completion, failure or cancellation; no catalogue preload,
+   permanent static parameter arrays or forced garbage collection.
+4. Snapshot native inputs on the main thread. `AffineGeometry.Execute` consumes offline APF2
+   stages with actual interleaved `x0,y0,z0,x1,...` storage. Load/bind operands, execute ordered
+   SIMD operations, and store/scatter results with unchanged-axis masks and alias snapshots.
+   Expression-recognition paths and per-axis register columns are prohibited. Scalar coefficient
+   and frame programs remain distinct from vertex storage.
+5. `Groups` joins independent LOD plans before main-thread native construction. Offline row-dependency
+   proof permits bounded blocks; dependent stages keep their order. Native position bytes consume
+   the completed owned array directly, without scalar XYZ repacking. Later preview/publication
+   must not retain parameter sessions or borrowed parameter arrays.
+6. Run the [offline lowering pass](../../tools/AffineGeometryMigration/README.md), resource/lifetime guards,
+   numerical/LOD checks and localization checks after regeneration. Report initial checksum/decode
+   separately from within-request cached execution. Measure preparation, operand loads, arithmetic,
+   output stores and final byte copy separately before claiming an acceleration; arithmetic stages
+   include memory traffic, not just pure ALU work.
 
 The implementation entry points are [AffineGeometry.cs](../../src/BridgeBuilder/Bridges/AffineGeometry.cs),
 [HardcodedNumbers.cs](../../src/BridgeBuilder/Bridges/HardcodedNumbers.cs) and
@@ -165,7 +175,7 @@ from bounds, topology, thresholds or name resemblance.
   reaching or crossing `x = 0` stretches against its own span and a side part translates rigidly.
 - Preserve tower height/depth outside the measured Golden ornament exception, side-part thickness
   and native behavior. Apply only the contracts' scoped topology, native representation and
-  density-preserving UV/material conversions.
+  UV/material rules, including the verified prototype non-tiling exception.
 - Carry the highest-detail classification to all LODs. Repoint derived LOD references to derived meshes.
 - Preserve prototype placement, stacking, tiling, lights and their parent relationships.
 - Apply the contract's separate base and pier rules using structural evidence, not names.
@@ -234,7 +244,7 @@ Test the following in your local game and give the results to your agent:
 3. Towers, deck, cables, railings, lights and materials remain correct up close and through LOD changes.
 4. Native unlock conditions, construction cost, labels, descriptions and icons are correct.
 5. Saving, exiting and cold-start loading preserve geometry and references; healthy self-check is inert.
-6. With Bridge Builder disabled, persisted bridges remain available and usable; retain required native
+6. With Bridge Builder enabled, persisted bridges must cold-load and remain available and usable; retain required native
    game/DLC resources. Separately test any known rail-seam limitation.
 7. When applicable, legacy migration preserves identity and a second check makes no further changes.
 

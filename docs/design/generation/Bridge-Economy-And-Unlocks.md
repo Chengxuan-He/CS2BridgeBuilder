@@ -53,4 +53,4 @@ Relevant existing checks include `tools/CheckNativePricing.mjs`, `tools/UnlockSn
 `tools/UnlockRepairCheck`, `tools/NativeLocaleCheck` and `tools/SelfCheckLifecycleCheck`.
 These checks do not establish in-game billing or unlock behavior. Human acceptance covers
 single- and double-deck placement, locked/unlocked requirements, save/load, and a cold start with
-Bridge Builder disabled while required native content remains installed.
+Bridge Builder enabled while required native content remains installed.

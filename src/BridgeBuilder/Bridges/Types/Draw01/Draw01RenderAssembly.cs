@@ -58,7 +58,7 @@ internal static class Draw01RenderAssembly
             Draw01OuterFrameData.Apply(1, halfWidthDelta, positions, mapped, removed);
             var supplement = new MovableRoadAssets.Supplement(source, 0, new MovableStructureModel.Plan(positions, mapped, new[] { indices }, new[] { removed }, uvCorrections: Draw01UndersideUv.ForLod(1)));
             var far = roadLevels[2];
-            completedRoadLevels[2] = new MovableRoadAssets.Level(far.Source, far.Triangles, far.Surfaces, far.Partition!, far.RenderBounds, far.RoadToObject, far.Structure, far.Skeleton, far.Lanes, far.ClosedWorld, far.AppearancePageSize, far.TexelsPerMeter, far.RoadPartitions, far.LanePartitions, far.RoadTrianglePartitions, supplement);
+            completedRoadLevels[2] = new MovableRoadAssets.Level(far.Source, far.Triangles, far.Surfaces, far.Partition!, far.RenderBounds, far.RoadToObject, far.Structure, far.Skeleton, far.Lanes, far.ClosedWorld, far.AppearancePageSize, far.TexelsPerMeter, far.RoadPartitions, far.LanePartitions, far.RoadTrianglePartitions, supplement, far.AdditionalStructures, far.Decals);
         }
         finally
         {

@@ -87,7 +87,7 @@ internal static class MovableRenderAssembly
             levels[lod] = new MovableRoadAssets.Level(input.Source, input.Triangles, input.Surfaces,
                 input.Partition!, completedBounds[lod], input.RoadToObject, completedPlans[lod], input.Skeleton, input.Lanes,
                 input.ClosedWorld, input.AppearancePageSize, input.TexelsPerMeter, input.RoadPartitions,
-                input.LanePartitions, input.RoadTrianglePartitions, input.ExtraStructure, input.AdditionalStructures);
+                input.LanePartitions, input.RoadTrianglePartitions, input.ExtraStructure, input.AdditionalStructures, input.Decals);
         }
         Mod.Log.Info($"{name}: structural geometry snapshotMs={snapshotMs}; parallelPlanMs={planMs}; levels={levels.Length}; totalMs={timer.ElapsedMilliseconds}.");
         var graphStart = timer.ElapsedMilliseconds;

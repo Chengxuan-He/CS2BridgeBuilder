@@ -59,8 +59,11 @@ internal sealed partial class TowerFactory
         var created = new List<PrefabBase>();
         try
         {
-            var bound = MovableRoadObjects.Bind(placements, roadToObject,
-                placementPartitions, mechanism, _bridgeName, created);
+            var prepared = PrepareRoadPlacements(placements, roadToObject, placementPartitions,
+                mechanism.m_Meshes[0].m_Mesh.GetComponent<ProceduralAnimationProperties>());
+            var bound = MovableRoadObjects.Bind(prepared.Placements, roadToObject,
+                prepared.Partitions, mechanism, _bridgeName, created, IsDirectRoadMesh, endSupportsPrepared: true,
+                nestedCarrier: placement => NestedRoadCarrier(placement, created));
             var objects = mechanism.GetComponent<ObjectSubObjects>() ?? mechanism.AddComponent<ObjectSubObjects>();
             var combined = new List<ObjectSubObjectInfo>(objects.m_SubObjects ?? Array.Empty<ObjectSubObjectInfo>());
             combined.AddRange(bound);

@@ -16,7 +16,6 @@ namespace BridgeBuilder.Bridges;
 internal sealed class MovableSurfaceReader : IDisposable
 {
     internal Material Material { get; private set; } = null!;
-    internal IEnumerable<string> TextureProperties => _textureProperties;
     private readonly HashSet<Texture> _textures = new();
     private readonly HashSet<string> _textureProperties = new(StringComparer.Ordinal);
 

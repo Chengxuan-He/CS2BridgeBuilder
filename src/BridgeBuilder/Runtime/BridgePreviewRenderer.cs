@@ -27,6 +27,7 @@ internal sealed class BridgePreviewRenderer : IDisposable
     private Color[]? _accumulated;
     private Texture2D? _readbackPixels;
     private Texture2D? _readbackCoverage;
+    private BridgePreviewMaterialCapture? _materialCapture;
     private readonly System.Diagnostics.Stopwatch _timer = new();
     private double _readbackMs, _accumulateMs, _resolveMs, _encodeMs;
     private const int TextureWarmupFrames = 8;
@@ -37,10 +38,18 @@ internal sealed class BridgePreviewRenderer : IDisposable
     // then combine four quarter-pixel projection offsets. This gives a 4x4 grid
     // (16 samples per output pixel) without allocating a 6144x3072 HDR target.
     // Both native colour and the transparent coverage pass use the same projection.
-    private const int ImageWidth = 1536;
-    private const int ImageHeight = 768;
+    private readonly int ImageWidth;
+    private readonly int ImageHeight;
     private const int SampleScale = 2;
     private const int SubpixelSamples = 4;
+
+    internal int OutputWidth => ImageWidth;
+    internal BridgePreviewRenderer(int width = 768)
+    {
+        width = Math.Max(64, Math.Min(2048, width));
+        ImageWidth = width + (width & 1);
+        ImageHeight = ImageWidth / 2;
+    }
 
     internal void Initialize(string prefix, BridgePreviewDrawList draws) =>
         GenerationWork.Synchronous(async () => { await InitializeAsync(prefix, draws); return true; });
@@ -140,6 +149,7 @@ internal sealed class BridgePreviewRenderer : IDisposable
         _pass = new PreviewPass { PreviewCamera = _camera.Camera, Draws = draws,
             Target = _capture, ShadedTarget = _shadedHandle };
         volume.customPasses.Add(_pass);
+        _materialCapture = BridgePreviewMaterialCapture.Begin(prefix, draws);
     }
 
     private static void ConfigureFrame(HDAdditionalCameraData camera, FrameSettingsField field, bool enabled)
@@ -158,7 +168,7 @@ internal sealed class BridgePreviewRenderer : IDisposable
         _sampleIndex = 0;
         _accumulated = new Color[ImageWidth * ImageHeight];
         Mod.Log.Info($"Preview render start: {_diagnosticId}; frame={_startedFrame}; "
-            + $"lights=8 shadowless Directional (front/top key); cityEnvironment=off; samples={SubpixelSamples}; "
+            + $"output={ImageWidth}x{ImageHeight}; raster={ImageWidth * SampleScale}x{ImageHeight * SampleScale}; lights=8 shadowless Directional (front/top key); cityEnvironment=off; samples={SubpixelSamples}; "
             + $"HDRP={typeof(HDAdditionalLightData).Module.ModuleVersionId}");
         BeginSample();
     }
@@ -220,6 +230,7 @@ internal sealed class BridgePreviewRenderer : IDisposable
             { hideFlags = HideFlags.HideAndDontSave };
             coverage.ReadPixels(new Rect(0, 0, target.width, target.height), 0, 0, false);
             var mask = coverage.GetPixels32();
+            _materialCapture?.Write(_pass.Draws, _camera.Camera, _stage.Origin, pixels, coverage);
             _readbackMs += _timer.Elapsed.TotalMilliseconds - phase;
             phase = _timer.Elapsed.TotalMilliseconds;
             bool visible = BridgePreviewPixels.Accumulate(linear, mask, _accumulated!, ImageWidth, ImageHeight, SampleScale);

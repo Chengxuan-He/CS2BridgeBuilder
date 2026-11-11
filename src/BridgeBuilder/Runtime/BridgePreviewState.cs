@@ -5,6 +5,14 @@ namespace BridgeBuilder.Runtime;
 /// <summary>Latest selection only; unlike creation, preview changes are not a queue.</summary>
 internal static class BridgePreviewState
 {
+    internal static int ViewportWidth { get; private set; } = 768;
+    internal static void SetViewportWidth(string physicalWidth)
+    {
+        if (!int.TryParse(physicalWidth, out var width) || width <= 0) return;
+        width = System.Math.Max(64, System.Math.Min(2048, width));
+        ViewportWidth = width + (width & 1);
+    }
+
     internal static int Revision { get; private set; }
     internal static int ResultRevision { get; private set; }
     internal static BridgeRuntimeRequest? Selection { get; private set; }

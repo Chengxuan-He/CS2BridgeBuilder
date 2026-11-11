@@ -14,8 +14,11 @@ Use the [project contracts](../agent-contract/README.md) for requirements. These
 ## Materials
 
 - [Prepared Bridge Materials](materials/Prepared-Materials.md): current source-preserving
-  decal workflow, compatibility differences and the current multilayer implementation
-  blocker. Dynamic-shader work is archived feasibility evidence, not an active solution.
+  decal workflow, compatibility differences and the authorized generated-program work.
+- [Generated material programs](materials/Generated-Material-Programs.md#shader-definition-and-scope):
+  custom shader = native shader + bone binding; native pass
+  packaging, generation-time compilation, owner dependencies and registration boundaries.
+  Implementation is in progress; startup registration requires Bridge Builder.
 
 ## Persistence and recovery
 

@@ -1,0 +1,17 @@
+{
+  "schema": 1,
+  "program": "WorldLayeredPbr",
+  "packageSha256": "349d959d0823c298a291c3cdad28143956698d7a99812de3eb68b7e50f3684cf",
+  "packageBytes": 3772996,
+  "producerSha256": "0349d5275a34f642bfee6247f20f53d4247d808540c858984bf099603f0796e4",
+  "sources": {
+    "tools/MaterialShaders/MaterialFunctions.hlsl": "e1cca024b3d0bd33efba7bc2cf8b4dd534dc00a7e226fa7df8db91a03617b24c",
+    "tools/MaterialShaders/NativeInstanceSkeleton.hlsl": "23e3a8544bc27f91a6300a6abe11f958d9e157a7efbe18dc16f4cfb3452d24bb",
+    "tools/MaterialShaders/NativeNetworkVertex.hlsl": "52d408dffa541468d1ab22ee4eafa112032bb8f1ede146403fa94f52aa9ec2eb"
+  },
+  "nativeInputs": {
+    "objectShader": "d07d2bda08a5aa49e2d2f8b41a1a786cb16cb13ef593e109aa04df3dceb57ba6",
+    "layeredShader": "6804ad98a135a2e40a5fa417ff0a3f0abbe6c1390979c38c554c178ed29dd66f",
+    "containerSeed": "28383c7f70707fdfe7a7f22f7ddf9a2ae591b39760fd601eff3b7c1c9c8e0307"
+  }
+}

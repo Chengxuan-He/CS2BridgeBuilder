@@ -28,6 +28,11 @@ internal sealed class Draw01BridgeGenerator : MovableBridgeGeneratorBase<Draw01C
         // The recorded closed sampling pose has identity rotation and 10 m elevation.
         var levels = await road.PrepareRenderLevelsAsync(nativeLevels, halfDelta, Matrix4x4.Translate(new Vector3(Numeric_Types_Draw01_Draw01BridgeGenerator_cs.Values.F32[1], Numeric_Types_Draw01_Draw01BridgeGenerator_cs.Values.F32[2], Numeric_Types_Draw01_Draw01BridgeGenerator_cs.Values.F32[3])), material);
         if (levels == null) return null;
+        var objects = Draw01RoadLights.Place(road.Objects(), road.RoadToObject, halfDelta);
+        levels = factory.PrepareDirectRoadMeshes(levels, objects.Placements, road.RoadToObject,
+            Draw01RoadPartitions.ForObjects(objects, halfDelta));
+        levels = factory.PrepareBoneDecals(levels, new MovablePaintDeck(road.Road.LaneGeometry.Decals, road.RoadToObject, Draw01RoadPartitions.Carriageway,
+            MovableRoadGeometry.InFrame(road.Road.Triangles, road.RoadToObject)));
         return await Draw01RenderAssembly.CreateMechanismAsync(factory, owner, owner + " Mechanism", levels, halfDelta, new Draw01UndersideLayout(road.Road, road.RoadToObject));
     }
 

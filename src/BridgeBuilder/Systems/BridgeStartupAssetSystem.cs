@@ -73,6 +73,10 @@ public partial class BridgeStartupAssetSystem : GameSystemBase
     protected override void OnGameLoadingComplete(Purpose purpose, GameMode mode)
     {
         base.OnGameLoadingComplete(purpose, mode);
+        // Native loading may finish after Mod.OnLoad. Restore owner programs here,
+        // before GameManager transitions to WorldReady and starts MeshSystem updates.
+        if (_modLoaded && !BridgeCustomShaderRestoration.TryRestore(out _, out var materialError))
+            Mod.Log.Error("Generated material program loading: " + materialError);
         // GameManager sets WorldReady only AFTER returning from this event.
         // Wake the next UI update; never move files inside the loading callback.
         Enabled = _modLoaded && mode == GameMode.MainMenu;
@@ -106,6 +110,11 @@ public partial class BridgeStartupAssetSystem : GameSystemBase
         Mod.Log.Info($"Bridge self-check started: {(manual ? "manual" : "mod initialized + all native asset batches complete")}");
         try
         {
+            if (!BridgeCustomShaderRestoration.TryRestore(out _, out var programError))
+            {
+                Mod.Log.Error("Bridge self-check retained owners: generated material registration failed; " + programError);
+                return;
+            }
             BridgeDeferredRemoval.Resume();
             var loadedIndex = new BridgeLoadedCidRecovery.LoadedIndex();
             var recoveries = new Dictionary<string, HashSet<string>>(StringComparer.Ordinal);

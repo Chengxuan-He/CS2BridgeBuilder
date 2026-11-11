@@ -15,11 +15,15 @@ internal static class Lift03RoadLevels
     {
         if (main.Count != Numeric_Types_Lift03_Lift03RoadLevels_cs.Values.I32[0] || auxiliary.Count != Numeric_Types_Lift03_Lift03RoadLevels_cs.Values.I32[1])
             throw new ArgumentException("Lift03 requires both decks at all three LODs.");
+        var decalGroups = new Dictionary<(IReadOnlyList<MovablePaintDeck>, IReadOnlyList<MovablePaintDeck>), MovablePaintDeck[]>();
         var result = new Level[Numeric_Types_Lift03_Lift03RoadLevels_cs.Values.I32[2]];
         for (var lod = Numeric_Types_Lift03_Lift03RoadLevels_cs.Values.I32[3]; lod < result.Length; lod++)
         {
             var upper = main[lod];
             var lower = auxiliary[lod];
+            var decalKey = (upper.Decals, lower.Decals);
+            if (!decalGroups.TryGetValue(decalKey, out var decals))
+                decalGroups.Add(decalKey, decals = upper.Decals.Concat(lower.Decals).ToArray());
             Validate(upper);
             Validate(lower);
             if (!ReferenceEquals(upper.Source, lower.Source) || upper.ClosedWorld != lower.ClosedWorld)
@@ -48,7 +52,7 @@ internal static class Lift03RoadLevels
             var bounds = upper.RenderBounds;
             bounds.min = math.min(bounds.min, lower.RenderBounds.min);
             bounds.max = math.max(bounds.max, lower.RenderBounds.max);
-            result[lod] = new Level(upper.Source, triangles, upper.Surfaces.Concat(lower.Surfaces).ToArray(), upper.Partition!, bounds, new Pose(Vector3.zero, Quaternion.identity), skeleton: upper.Skeleton, lanes: laneResult, closedWorld: upper.ClosedWorld, appearancePageSize: upper.AppearancePageSize, texelsPerMeter: upper.TexelsPerMeter, roadTrianglePartitions: motion, lanePartitions: upper.LanePartitions.Concat(lower.LanePartitions!).ToArray());
+            result[lod] = new Level(upper.Source, triangles, upper.Surfaces.Concat(lower.Surfaces).ToArray(), upper.Partition!, bounds, new Pose(Vector3.zero, Quaternion.identity), skeleton: upper.Skeleton, lanes: laneResult, closedWorld: upper.ClosedWorld, appearancePageSize: upper.AppearancePageSize, texelsPerMeter: upper.TexelsPerMeter, roadTrianglePartitions: motion, lanePartitions: upper.LanePartitions.Concat(lower.LanePartitions!).ToArray(), additionalStructures: upper.AdditionalStructures.Concat(lower.AdditionalStructures).ToArray(), decals: decals);
         }
 
         return result;

@@ -128,3 +128,42 @@ including renamed third-party template identities, fixed/moving mixed projection
 ancestor motion, and final native meshes with no wear bound to a moving bone.
 Line/rail layers remain intact. Shader fixtures are protocol stand-ins, not game
 visual acceptance; source descriptor and original rail texture payloads are real.
+
+## Ordinary asphalt normalization (native159)
+
+`RigidDecal145Check.Run` now checks the current shared attachment policy using real
+TramRails, TramRailsBase, LaneLine and BusLane descriptors, native decal shaders and
+source texture payloads. Line/rail layers emit six children across two parents; the
+albedo-only lane-color source emits none. An unknown template identity with the
+same material effects follows the same decision. Native Prefab save/unload/reload
+preserves those six children and their connections. Routing controls retain
+prototype WheelTrack capability, no-match and curb behavior. The source wear
+exclusion remains unchanged: dyed asphalt does not grant missing prototype wear.
+The fixture CID allocator remains an Editor-host accommodation; these tests do
+not claim new game screenshots or full city visual acceptance.
+
+## Current-skeleton source decals (native160 work in progress)
+
+`BoneDecal160SourceCheck.Run` uses the same captured TramRails, TramRailsBase,
+LaneLine and BusLane source descriptors and native texture payloads with the new
+production conversion. It checks persisted source texture CIDs, continuous-alpha
+state, generated bone shader identity, explicit draw priority and native distance
+factor after Surface loading. BusLane is a material-adapter capability fixture;
+production ordinary-asphalt normalization still omits its colored layer.
+
+The probe also exercises one program payload across multiple Surfaces, a locked
+envelope update retaining the successful file, retry preserving both priorities,
+and a single current dependency root. Its isolated native database substitutes
+only CID allocation for the Editor ABI, as the earlier fixture does. It does not
+test a live city, complete VT stacks, or the remaining complex attachment cases.
+The older child-attachment assertions above describe the native159 baseline,
+not the current-skeleton target. Do not run them as acceptance of native160.
+
+`World160SourceCheck.Run` separately exercises the captured TiledRoad descriptor
+and all six original native texture payloads through `MovableMaterialConversion`.
+The resulting native Surface loads the generated layered shader and retains the
+six channel CIDs, identity base texture transform and source world-coordinate
+scale of 0.4. Its captured template defaults and fixture-only CID allocator are
+explicit test inputs. This is production material-conversion evidence, separate
+from the rotating GPU pixel probe; it is not a live scene or a complete saved
+bridge acceptance test.

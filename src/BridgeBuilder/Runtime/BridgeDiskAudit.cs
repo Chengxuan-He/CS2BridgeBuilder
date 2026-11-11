@@ -50,8 +50,6 @@ internal sealed class BridgeDiskAudit
         return audit;
     }
 
-    internal static BridgeDiskAudit ForAllBridges(string gameRoot) => SelectPaths(gameRoot, null);
-
     private static BridgeDiskAudit SelectPaths(string gameRoot, IDictionary<string, string>? failures)
     {
         var audit = new BridgeDiskAudit(Path.Combine(gameRoot, "ImportedData"));

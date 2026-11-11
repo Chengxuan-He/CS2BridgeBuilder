@@ -39,6 +39,19 @@ internal sealed class BridgePreviewRenderResources : IDisposable
 
     internal BridgePreviewRenderResources(BridgePreviewSession session) => _session = session;
 
+    internal void WriteDiagnosticSources(System.IO.TextWriter text)
+    {
+        foreach (var pair in _surfaceMaterials)
+        {
+            var surface = pair.Key.Surface;
+            text.WriteLine($"surface={surface.id} name={surface.name} template={surface.materialTemplateHash} VT={surface.isVTMaterial} privateMaterial={pair.Value.GetInstanceID()} network={pair.Key.Network} packed={pair.Key.Packed} lane={pair.Key.Lane?.name} nativeLane={pair.Key.NativeLane}");
+            var atlases = surface.VTAtlassingInfos ?? surface.PreReservedAtlassingInfos;
+            if (atlases == null) continue;
+            for (int i = 0; i < atlases.Length; i++)
+                text.WriteLine($"surfaceStack={i} global={atlases[i].stackGlobalIndex} index={atlases[i].indexInStack}");
+        }
+    }
+
     internal MaterialPropertyBlock Properties(RenderPrefab prefab)
     {
         if (_properties.TryGetValue(prefab, out var block)) return block;
@@ -312,7 +325,8 @@ internal sealed class BridgePreviewRenderResources : IDisposable
         // ThumbnailCustomPass LessEqual test on PRIVATE materials, including after
         // each native property refresh; never alter the shared city material.
         // Decal volume meshes must retain their native depth/blend state.
-        if (lane != null && lane.Has<DecalProperties>()) return;
+        if ((lane != null && lane.Has<DecalProperties>()) ||
+            (material.FindPass("DBufferMesh") >= 0 && material.GetShaderPassEnabled("DBufferMesh"))) return;
         var opaque = !material.HasProperty("_SurfaceType") || material.GetFloat("_SurfaceType") == 0f;
         if (!opaque) return;
         if (material.HasProperty("_ZTestDepthEqualForOpaque"))

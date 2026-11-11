@@ -71,6 +71,18 @@ internal sealed class Lift03BridgeGenerator : MovableBridgeGeneratorBase<Lift03R
         if (upper == null) return null;
         var lower = await Prepare(Lift03RoadSampling.Deck.Auxiliary, LowerDelta, road.AuxiliaryToObject);
         if (lower == null) return null;
+        var upperObjects = road.Objects(Lift03RoadSampling.Deck.Main).Placements;
+        var lowerObjects = road.Objects(Lift03RoadSampling.Deck.Auxiliary).Placements;
+        var upperDomains = new MovableRoadGeometry.Partition[upperObjects.Length];
+        var lowerDomains = new MovableRoadGeometry.Partition[lowerObjects.Length];
+        Array.Fill(upperDomains, Lift03RoadPartitions.Carriageway);
+        Array.Fill(lowerDomains, Lift03RoadPartitions.Carriageway);
+        upper = factory.PrepareDirectRoadMeshes(upper, upperObjects, road.MainToObject, upperDomains);
+        lower = factory.PrepareDirectRoadMeshes(lower, lowerObjects, road.AuxiliaryToObject, lowerDomains);
+        upper = factory.PrepareBoneDecals(upper, new MovablePaintDeck(road.MainRoad.LaneGeometry.Decals, road.MainToObject, Lift03RoadPartitions.Carriageway,
+            MovableRoadGeometry.InFrame(road.MainRoad.Triangles, road.MainToObject)));
+        lower = factory.PrepareBoneDecals(lower, new MovablePaintDeck(road.AuxiliaryRoad.LaneGeometry.Decals, road.AuxiliaryToObject, Lift03RoadPartitions.Carriageway,
+            MovableRoadGeometry.InFrame(road.AuxiliaryRoad.Triangles, road.AuxiliaryToObject)));
         return await Lift03RenderAssembly.CreateMechanismAsync(factory, owner + " Mechanism", upper, lower, halfDelta, halfDelta, LowerDelta);
     }
 

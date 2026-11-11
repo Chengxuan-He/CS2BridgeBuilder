@@ -24,7 +24,7 @@ Follow the [project contract](PROJECT_CONTRACT.md) and
 [movable bridge contract](MOVABLE_BRIDGES_CONTRACT.md), and the
 [asset persistence policy](Bridge-Asset-Persistence.md). These contracts govern generation,
 source isolation, ownership, error handling and acceptance. This specification does not authorize
-new generation exceptions or changes to persisted bridge behavior. The material contract records dynamic shaders as unavailable under current independent-loading requirements.
+new generation exceptions or changes to persisted bridge behavior. The material contract governs the two authorized custom programs and their mod-enabled startup-registration requirement.
 
 ## 2. Preview identity and entry points
 
@@ -81,17 +81,19 @@ leaves around their authored hinges; translate lift spans according to their nat
 Fixed towers, supports and control buildings remain fixed. Attachments follow their correct
 parent transforms. Expand render and camera bounds to include the open pose.
 
+Ordinary nested attachment meshes use the same request-owned recursive placement plan and
+mechanism skeleton as formal creation. Metadata-only native carriers must not draw the merged
+visuals again, but traversal must retain their exceptional descendants. Conditional visibility,
+actual independent animation, instance-color/emissive attachments and light effects retain their
+native attachment behavior under movable contract section 19. Do not preselect probabilistic
+branches permanently merely to make preview deterministic.
+
 Opening is temporary presentation state. It must not rewrite the generated prefab, drive city
 traffic signals, open placed bridges, or imply that shipping compatibility has been verified.
 
 ## 5. Geometry and appearance fidelity
 
-Road appearance processing (prototype composition, source-density tiling, embedded-marking
-removal and derived wear/background placement) applies only to movable bridges whose roads need
-that processing. Fixed/non-movable bridges retain the selected native road materials, UVs and
-markings; they require no prototype road-support table, road-material replacement or marking
-cleanup under these rules. Structural source-UV/density rules still apply to every bridge.
-A fixed running cap within a movable bridge remains part of that movable road-processing scope.
+Follow [Scope and authority](MATERIAL_GENERATION_CONTRACT.md#scope-and-authority) for this requirement.
 
 Use the generated bridge's geometry and native material behavior. Preserve source vertex formats,
 material-slot semantics, normals, transparency and required LOD relationships except for the
@@ -118,12 +120,13 @@ Reuse compatible native assets. Geometry motion alone does not justify creating 
 materials or shaders. Necessary native network-to-object conversions follow the persistence policy
 and must document the actual representation change. Material reuse, native conversions and
 offline-prepared resources follow the material generation contract. Moving markings follow
-the native rigid-decal attachment rules in movable contract sections 18–19, including child
-placement through the actual parent bone in the open pose.
+the direct-skeleton rules in movable contract sections 18–19. Their shader consumes the same
+current mechanism bones in the open pose, without a historical parent-transform follower.
 
 Reuse original material instances when no state differs. Private Unity instances are permitted
 only when preview bindings, animation or rendering state must differ from shared game materials. Never mutate the game's shared instances. Such copies do
-not by themselves authorize dynamic shaders or permanent asset export; the shared material contract records why dynamic shaders are currently unavailable.
+not by themselves authorize dynamic shaders or permanent asset export. The material contract
+separately authorizes the two custom programs and mod-enabled registration, with mod-enabled startup registration required. Preview must exercise their actual shaders and binding protocols.
 
 Keep generated preview assets in their private temporary scope. Where serialized CID lookup cannot
 resolve a private asset, retain its direct object references and balanced property leases for the
@@ -155,19 +158,18 @@ resources. No preview-only fallback may change appearance or texel density.
   Record measured timings when investigating stalls. This specification introduces no invented
   latency threshold and does not equate faster generation with visual correctness.
 
-### Cooperative generation and cancellation
+### Continuous background generation and asynchronous native dispatch
 
-Preview generation must release the game main thread between bounded work units, not merely show a spinner before running the entire synchronous builder. Use the same geometric and material operations as formal creation, with an explicit request-owned asynchronous execution context. Yield between native preparation, per-LOD assembly, per-model publication and scene construction units. GPU dispatch stays on the main thread; poll asynchronous readback completion across updates instead of blocking that thread with full-pipeline readback waits. All CPU work that can be detached from Unity/ECS/native APIs must run on background workers using immutable owned inputs. Mixed helpers must separate native snapshots/publication from pure computation; never borrow mutable native request state on a worker.
-
+Preview generation runs continuously on detached background computation and asynchronously dispatched native operations. Do not split ready generation work across frames or impose a 6 ms generation pump budget. Ordinary stage boundaries check cancellation and record diagnostics without forcing a frame yield. Keep dependent pure CPU computations together on workers; native snapshots, Unity/ECS calls and publication remain on the game thread through the engine synchronization context. Worker completion wakes the native dispatcher asynchronously; do not wait for the mod generation system's next tick solely to consume a ready result. A fallback update drain may support environments without a host context. Only actual GPU/render completion that requires engine frame progress may wait for later updates. Never block or busy-wait the game thread for workers. Never run the complete mixed native generation routine through Task.Run.
 Every resumed step verifies request cancellation and world lifetime before accessing native state. A changed selection, closed preview or world change invalidates the old result immediately. Do not publish it, begin another request on its temporary state, or dispose resources while its GPU request still uses them. Complete required native cleanup, release its private graph and generation-parameter scope, then start the latest selection. Cancellation is not a generation error and must not display a failure for a superseded selection.
 
 Keep formal creation behavior and independently persisted output unchanged. A synchronous compatibility entry may use the same operations without frame yields; it must never synchronously wait for a continuation scheduled to the thread it blocks. Never run Unity/ECS generation wholesale through `Task.Run`, use nested player-loop pumping, or fake responsiveness with an unrelated animation.
 
-Record request identity, resumed-step count, total elapsed time, active main-thread time and maximum single main-thread work interval. Distinguish GPU queue waiting across frames from active work and separately identify indivisible native API calls that exceed the target frame budget. Total generation time alone does not demonstrate responsiveness. Offline tests must exercise cancellation before and during pending work, stale completion, cleanup and progression over multiple updates; human in-game input/render responsiveness remains a separate acceptance check.
+Record request identity, resumed-step count, total elapsed time, active main-thread time and maximum single main-thread work interval. Distinguish GPU queue waiting across frames from active work and separately identify indivisible native API calls that cause long main-thread blocking. Total generation time alone does not demonstrate responsiveness. Offline tests must exercise cancellation before and during pending work, stale completion, cleanup and progression over multiple updates; human in-game input/render responsiveness remains a separate acceptance check.
 
 The request pump uses a private synchronization context and execution-context-local parameter, selected-road and prepared-file scopes. Restoring the outer context after each step is mandatory: another game system must not inherit the suspended request. Keep a retained prepared-file lease until request completion; the IO callback's shorter lifetime is insufficient. Pending GPU callbacks own only their buffer/shader lease and do not require the disposed ECS generation system to resume. Cancellation must unwind queued state machines without waiting for GPU completion; a callback releases the remaining native GPU lease on the main thread.
 
-Budget checkpoints currently target approximately 6 ms between checks, not a hard frame deadline. Native job execution, resource imports, one mesh upload/bounds operation remain indivisible main-thread operations; support-object assembly must expose its separable stages. Record their containing step; do not describe those calls as preemptible. Existing stage wall clocks include frame waits after this change. Use `activeMainThreadMs` and `maxMainThreadStepMs` to diagnose blocking rather than comparing an asynchronous stage's elapsed wall time with an older synchronous stage.
+Native operations remain indivisible; measure their blocking duration rather than pretending a frame budget can preempt them. Stage elapsed times include actual worker/GPU/native dispatch waits. Report active execution and dispatch latency separately.
 
 ### Ready-work budget and detached background computation
 
@@ -197,14 +199,15 @@ calculations on the main thread. Independent pure-data stages may overlap within
 bounded schedule. Dependent pure-data stages must continue on workers when their inputs become
 ready, without an unnecessary main-thread/frame round trip merely to schedule the next worker.
 
-A preview update drains ready main-thread continuations within one aggregate frame budget,
+Batch request-owned lane mesh snapshots before scheduling packed-frame decoding and deformation. Keep dependent decoding and triangle expansion in one bounded worker job instead of returning to the main thread between source meshes. Native reads and releases remain on the main thread; workers receive owned arrays. Preserve source-cache reuse, cancellation leases and exact output ordering. Batch independent decal occurrence volume calculations into one worker dispatch after native source-policy and priority snapshots; apply returned parts in the original stable order on the main thread. Measure dispatch counts and live latency separately.
+
+The asynchronous native dispatcher drains ready main-thread continuations without an artificial frame budget,
 rather than delaying each logical stage by a whole frame. Completed worker results are eligible
 at the next available main-thread dispatch point without an additional mandatory frame hold.
-Unfinished GPU requests or workers must not busy-poll in that budget. Use asynchronous completion
+Unfinished GPU requests or workers must not busy-poll. Use asynchronous completion
 or bounded later-update observation, never synchronous waits or joins on the game thread. GPU
 completion/publication still obeys native thread affinity and actual engine-frame ordering.
-Record maximum individual step time and maximum complete pump time; neither budget is preemption
-of an indivisible native API call.
+Record maximum individual native-step and complete dispatch times; neither measurement implies preemption of native calls.
 
 Acquire parameter/data leases before scheduling workers. Suppress unrelated execution-context
 propagation and attach only explicit request data; never expose the preview pump or native
@@ -219,20 +222,20 @@ scheduled to its own thread.
 Support/network assembly and scene construction must separate source snapshots, pure numerical
 plans, bounds/transforms, native graph publication, attachments and composition. Do not classify
 an entire mixed helper as an indivisible native operation. Keep remaining native calls measured
-and make their surrounding loops cooperatively schedulable.
+and execute their ready stages continuously through the appropriate worker or native dispatcher.
 
 Use the [generation timing boundaries](BRIDGE_GENERATION_CONTRACT.md#preview-background-execution-and-timing-boundaries):
 report wall time, active main-thread/worker work, queue wait, continuation/frame wait and GPU
 completion wait from their own observations. Label unmeasured or overlapping intervals. Do not
 present elapsed-minus-active time as separately measured scheduling or GPU latency. Test worker
-thread identity, bounded concurrency, same-frame ready progress, no polling spin, cancellation
+thread identity, bounded concurrency, continuous ready-stage progress and asynchronous host-context dispatch, no polling spin, cancellation
 with pending work, lifetime after system destruction and stale-result suppression, alongside
 real-input output equivalence and manual game responsiveness.
 
 **Implementation status:** request-local source and appearance stage reuse now begins with the
 sampling result. Detached lane deformation/expansion, composition evaluation, receiver roles,
 coverage, appearance grouping/binding, chart projection, final UV output and bounds use worker
-jobs in preview. CPU completion posts ready work without mandatory next-frame polling; GPU
+jobs in preview. CPU completion wakes the native engine-context dispatcher without artificial frame slicing; the update drain is explicitly logged as fallback when no host context is available. GPU
 completion retains asynchronous polling. Native mesh extraction, Surface snapshots, ECS work and native publication remain on the main
 thread. Packed vertex streams are copied once per native stream; channel gather and stateless
 `NativeMath` array decoding use pinned owned buffers on the worker, without Mesh/ECS access.
@@ -240,6 +243,10 @@ The shared request cache does not connect a preview request to a later formal cr
 Offline scheduler and geometry checks do not establish maximum game-frame time. Full live
 request stage counts and responsiveness must be checked from game diagnostics; unmeasured
 native preparation/publication remains explicit, rather than claimed as background work.
+
+### Viewport-sized capture
+
+Render only the isolated preview viewport. Measure its visible CSS width and device pixel ratio in the UI and report a debounced physical-pixel width to the native renderer. The existing viewport aspect is 2:1. Round width upward to an even pixel and bound it to 64–2048 pixels; derive height as half the width. Before measurement use a bounded 768x384 fallback. Do not allocate a full-screen capture or crop away bridge geometry. Retain full posed camera framing and the existing 2x spatial supersampling plus four subpixel projections, including matching transparent coverage. Resolution changes rerender the existing request-owned draw list without regenerating the bridge. Release the old camera, render targets and stage before replacing them; discard obsolete sizes and preserve cancellation, panel closure and native frame ordering. Report output and raster sizes in render diagnostics. No global city rendering or antialiasing settings may change.
 
 ### Posed camera bounds
 
@@ -290,4 +297,4 @@ a source change alone does not authorize deleting healthy bridges.
 
 - [Runtime UI and localization](../design/interface/Runtime-UI-Localization.md): selection, loading and dialog behavior.
 
-Dynamic material shaders are governed by [the scoped material requirements](MATERIAL_GENERATION_CONTRACT.md#dynamically-generated-and-independently-persisted-material-shaders): actual source generation, Player-capable loading and independent owner-local cold loading, without a continuing mod synchronization service. This permission does not relax geometry, texture-content or source-ownership rules.
+Follow [generated material program requirements](MATERIAL_GENERATION_CONTRACT.md#dynamically-generated-and-independently-persisted-material-shaders) for program persistence, Player loading and mod-enabled registration; geometry, texture and source ownership rules remain unchanged.
