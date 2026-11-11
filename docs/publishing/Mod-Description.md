@@ -2,40 +2,34 @@
 
 ## English
 
-### Overview
+### Your roads. Your bridges.
 
-Bridge Builder lets you combine available roads or tracks with bridge styles in Cities: Skylines II. Choose a deck and a bridge style, inspect the combination in an isometric 3D preview, then place the generated bridge using the game's network construction tool. Supported double-deck styles let you choose the upper and lower networks independently and reverse the direction of one deck relative to the other.
+Combine available roads or tracks with supported bridge styles in Cities: Skylines II. Choose a network and bridge style, inspect the live 3D preview, then save your bridge or place it with the game's network construction tool.
 
 ### Features
 
-- Choose from available suspension, cable-stayed, truss-arch, tied-arch and covered wooden bridge styles. The selection depends on installed content and supported prototypes.
-- Search roads and tracks, filter them by network type, and search bridge styles.
-- Use **Create** to save a bridge, or **Create and build** to close the mod panel and enter construction mode when the bridge is unlocked.
-- Search, filter, preview, rename, build and delete previously created bridges.
-- Generated bridges belong to the Bridge Builder asset pack. The interface supports multiple languages.
+- Fixed suspension, cable-stayed, truss-arch, tied-arch and covered wooden styles, depending on installed content and supported prototypes.
+- Custom movable bridges: drawbridges, lift bridges and pedestrian movable styles from Bridges & Ports. Required DLC/content must be available.
+- Independent upper and lower roads or tracks on supported double-deck styles, including opposite deck directions.
+- Search and filter networks and bridge styles. Use Create to save a bridge, or Create and build to enter construction mode when it is unlocked.
+- Preview, rename, export, build and delete saved bridges from the management panel.
+- Continuous asynchronous preview generation and viewport-sized rendering with antialiasing. Actual waiting time depends on the selected content and hardware.
+- Native-material-based shaders with current-skeleton binding for supported movable surfaces and decals, with owner-local persisted dependencies.
+- A multilingual interface and configurable shortcut (Ctrl+B by default). Bridges normally inherit their source unlock requirements; the settings can bypass development-point restrictions.
 
-### Getting started
+### Compatibility and requirements
 
-Load a city and open Bridge Builder from its toolbar icon. Select a road or track and a bridge style. For a double-deck bridge, choose the second network and the deck-direction option. Review the preview and bridge name, then select Create or Create and build.
+[Road Builder](https://mods.paradoxplaza.com/mods/87190/Windows), [Bridge Expansion Pack](https://mods.paradoxplaza.com/mods/92245/Windows) and [Node Controller](https://mods.paradoxplaza.com/mods/138523/Windows) are optional integrations, not mandatory dependencies. Install the content needed for the roads or supported styles you select. The double-deck Golden Gate style comes from Bridge Expansion Pack, not the base single-deck Golden Gate prototype.
 
-- **If the bridge self-check is triggered, please restart the game.**
-- Uninstalling Bridge Builder does not remove bridges you have already created. These saved bridges remain available for placement and use. To remove them, use Bridge Builder’s bridge management tools.
+Keep Bridge Builder installed and enabled. Generated shader programs require its startup registration; operation after disabling or uninstalling the mod is not supported. Required game/DLC resources remain prerequisites. Saved bridges have their own dependency snapshots; updating the mod does not regenerate their geometry.
 
-### Compatibility
+There is no reliable fully automatic importer for arbitrary custom bridge assets. Supporting a new style requires bridge-specific measurements, implementation and visual checks. A coding agent does not guarantee a correct result in one attempt. See [Adding a bridge style with a coding agent](https://github.com/Chengxuan-He/CS2BridgeBuilder#adding-a-bridge-style-with-a-coding-agent). Compatibility with every third-party asset or network/style combination is not promised.
 
-- Compatible with [Bridge Engineer](https://mods.paradoxplaza.com/mods/164700/Windows).
-
-- Use Road Builder to create custom roads for your bridges. Once a bridge has been generated, deleting its source road in Road Builder does not prevent you from placing that saved bridge again. This does not mean required DLC, content mods or shared assets can be uninstalled.
-
-- Compatible with [Road Builder](https://mods.paradoxplaza.com/mods/87190/Windows) and [Bridge Expansion Pack](https://mods.paradoxplaza.com/mods/92245/Windows). **Both mods are optional, not required dependencies of Bridge Builder.** Install them only to use their roads or supported bridge styles.
-- Some bridge styles require their corresponding DLC or content mod. The double-deck Golden Gate style comes from **Bridge Expansion Pack**; it is not a double-deck mode of the base single-deck Golden Gate prototype.
-- Compatible with [Node Controller](https://mods.paradoxplaza.com/mods/138523/Windows). **Node Controller is optional, not a required dependency.** The double-deck lower-railway seam fix also supports its geometry pipeline without overriding its node settings.
 ### Important notes
 
-- **After updating to a version that fixes a bridge-generation problem, delete and recreate affected bridges created with older versions.** Updating the mod does not regenerate existing bridge assets. Back up your save first; deleting a bridge also removes its placed instances.
-- Settings provide a configurable shortcut (Ctrl+B by default) and an option to remove development-point restrictions. Bridges normally inherit their prototypes' unlock requirements; enabling the option bypasses development unlock restrictions when building.
-- Bascule bridges, pedestrian bascule bridges and lift bridges are not currently supported. Not every network/style combination is supported.
-- **Deleting a generated bridge also removes its placed instances from the map. Back up your save first.** This is not simply removing a catalogue entry.
-- When reporting a problem, include game and mod versions, the bridge style, selected networks, screenshots and relevant mod logs.
+- Back up your city before removing a bridge. **Deleting a generated bridge also removes its placed instances.**
+- If a self-check reports changes and requests a restart, restart the game before continuing.
+- Recreate older bridges affected by a generation fix when needed; preserve unaffected bridges and back up your save first.
+- Report the game/mod versions, bridge style, selected networks, screenshots and relevant logs when something goes wrong. Rendering and motion can require further verification for particular combinations.
 
 Source: [GitHub](https://github.com/Chengxuan-He/CS2BridgeBuilder). Original project code is MIT-licensed; game and third-party assets retain their respective licenses.
