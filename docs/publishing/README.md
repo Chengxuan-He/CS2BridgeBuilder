@@ -9,6 +9,7 @@ Publishing instructions, package reporting and historical release notes. Changel
 - [Bridge Builder — publishing information entry](Information-Entry.md)
 - [Bridge Builder](Mod-Description.md)
 - [Paradox Mods Package Size](Paradox-Package-Size.md)
+- [Bridge Builder 26.11.12a](Release-26.11.12a.md)
 - [Bridge Builder 26.11.12](Release-26.11.12.md)
 - [Bridge Builder 26.10.13](Release-26.10.13.md)
 - [Bridge Builder 26.10.2](Release-26.10.2.md)

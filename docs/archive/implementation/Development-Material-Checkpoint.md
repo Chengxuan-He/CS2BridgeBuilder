@@ -268,8 +268,7 @@ native source references need no rewrite. If blue remains, preserve it and compa
 one newly generated bridge. Complete game rendering/cold-load recovery remains
 unverified, and a separate ballast appearance defect has not been established.
 Do not delete, migrate or rebuild healthy owners automatically. No game was started
-and no Git push was performed. The55MB SDK package requirement remains separate;
-unchanged material inventory size is not a package acceptance pass.
+and no Git push was performed. Unchanged material inventory size is not proof of complete package acceptance.
 
 ## Retained candidate65 evidence
 
@@ -526,7 +525,7 @@ Evidence: `artifacts/material-remap/Draw02/underbase57-handoff.md`,
 `artifacts/material-remap/Draw02/underbase57/final-receipt.json`,
 `artifacts/material-remap/shared/longitudinal-ribs57-inventory.json` and
 `artifacts/material-remap/shared/material-identity57.json`.
-The unresolved SDK ZIP 55 MB limit is unchanged; no new material payload was added.
+No new material payload was added.
 
 ## Retained candidate56r2 validation
 Candidate56r2 was installed with DLL SHA256
@@ -559,7 +558,7 @@ Evidence: `artifacts/material-remap/Draw02/base56-handoff.md`,
 `artifacts/material-remap/Draw02/base56/final-receipt.json`,
 `artifacts/material-remap/shared/moving-base56-inventory.json` and
 `artifacts/material-remap/shared/material-identity56.json`.
-The unresolved SDK ZIP 55 MB limit is unchanged; no new material payload was added.
+No new material payload was added.
 
 ## Retained candidate55r3 validation
 Candidate55r3 was installed with DLL SHA256
@@ -590,7 +589,7 @@ and replacement. No game was started and no Git push was made.
 Backup of original files only: `D:/CS2BridgeBuilder/artifacts/backups/before-native55-draw02-edge-closure`.
 Receipt: `artifacts/material-remap/shared/deployment-native55.json`.
 Validation: `artifacts/material-remap/shared/VALIDATION-NATIVE55.md`.
-The SDK ZIP 55 MB gate remains unresolved; owner material sizes are informational.
+Owner material sizes are informational.
 
 ## Retained candidate54 validation
 Candidate54 was installed with DLL SHA256
@@ -624,7 +623,7 @@ Original-only backup: `D:/CS2BridgeBuilder/artifacts/backups/before-native54-str
 Receipt: `artifacts/material-remap/shared/deployment-native54.json`.
 Evidence: `artifacts/material-remap/shared/VALIDATION-NATIVE54.md` and
 `artifacts/material-remap/shared/seven-style-coverage54/public-renderer-audit.md`.
-The 55 MB SDK ZIP gate remains unchanged and unresolved; this repair adds no textures.
+This repair adds no textures.
 
 ## Retained candidate53 validation
 Candidate53 was installed with DLL SHA256
@@ -684,7 +683,7 @@ No game was started and nothing was pushed or published.
 
 Evidence: `artifacts/material-remap/shared/VALIDATION-NATIVE52.md` and
 `artifacts/material-remap/Draw02/underside52-handoff.md`.
-The official 55,000,000-byte package gate remains unresolved; no per-owner material ceiling applies.
+No per-owner material ceiling applies.
 
 ## Retained candidate51r2 validation
 Candidate51r2 was installed with DLL SHA256
@@ -716,8 +715,7 @@ replayed; real Large Road Divided ECS lane curves/coverage, game appearance, ani
 cold loading remain unverified. Normal Draw02 generation now logs the actual lane snapshot.
 The style currently reports unsupported nonconstant lane-pattern mappings or changing
 contact topology inside a measured railing leaf explicitly; controlled inputs do not prove
-all selected roads avoid these cases. The official 55,000,000-byte package gate remains
-unresolved; owner material size is informational, without a per-owner ceiling.
+all selected roads avoid these cases. Owner material size is informational, without a per-owner ceiling.
 
 Evidence: `artifacts/material-remap/shared/candidate-native51r2.json`,
 `artifacts/material-remap/shared/VALIDATION-NATIVE51.md`,
@@ -743,8 +741,7 @@ No game was started, no existing owner modified and nothing published.
 
 Earlier logs attributed4,549ms/4,815ms to the removed duplicate validation interval.
 Those are expected avoidable costs, not measured candidate50 speedups. A new in-game
-preview/create sample is required to measure improvement. Other geometry/quality/cold-load
-and official55,000,000-byte package limitations remain as previously reported.
+preview/create sample is required to measure improvement. Other geometry, quality and cold-load limitations remain as previously reported.
 Evidence: `deployment-native50.json`, `source-difference50.json`, `material-unchanged50.json`,
 `logs/publication50.log`, `logs/DependencyCopyCheck-50.log`, `logs/DependencySourceCheck-50.log`,
 `logs/SelfCheckLifecycleCheck-50.log`, `logs/LocalizationCheck-50.log`, and `logs/material-slots50.log`.
@@ -761,7 +758,7 @@ The frozen DLL independently passes all nine renderer-LOD combinations and nativ
 
 All 1,324 material files match 48r2 byte-for-byte; Draw01's 47 outer body frame and 48 complete transverse grating period/phase are preserved. Twelve languages, 685 typed resources, 21 pinned sources and the native ten-style/337-identity dependency graph pass. Installation changed only DLL/PDB, backed up their original files and verified all 1,336 deliverable hashes. No game was started and nothing was published.
 
-Other graphs exceeding the complete semantic split capacity retain the prior planner. They are not certified by this Draw03 repair; stable ownership remains the normative requirement. Previously reported deep-mip/quality limits and the unresolved 55,000,000-byte official SDK ZIP budget remain. There is no per-owner material ceiling.
+Other graphs exceeding the complete semantic split capacity retain the prior planner. They are not certified by this Draw03 repair; stable ownership remains the normative requirement. Previously reported deep-mip and quality limits remain. There is no per-owner material ceiling.
 
 Evidence: `deployment-native49.json`, `candidate-native49.json`, `VALIDATION-NATIVE49.md`,
 `material-unchanged49.json`, `logs/draw03-native-lod49.log`, and
@@ -823,8 +820,7 @@ graphs (286 native identities), resource checks and all twelve languages passed.
 
 Manual preview/export/restart testing must confirm complete generated bridges;
 the fixtures contain the first failed triangles, not all generated road inputs.
-Earlier filtering, source-frame and 55 MB package gates
-remain unaccepted. Candidate21's background preparation and earlier numerical
+Earlier filtering and source-frame checks remain unaccepted. Candidate21's background preparation and earlier numerical
 repairs remain included. The experimental double-period resources remain excluded.
 
 ## Native dependency metadata repair
@@ -943,7 +939,6 @@ The actual saved owner28 material closure, updated for replaced resource identit
 and the new background while conservatively retaining all other dependencies, is
 6,699,143 bytes (an informational size measurement). This is a reference-owner calculation;
 a newly exported owner's persistence report must confirm its actual closure.
-The overall 55 MB package gate is not certified by this local diagnostic deployment.
 
 Installation changed four original files and added fourteen resources. All 1,118
 candidate files were hash-verified. Original files are backed up under

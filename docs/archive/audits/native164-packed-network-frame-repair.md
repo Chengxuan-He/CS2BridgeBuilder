@@ -106,8 +106,7 @@ added or removed files. Installed DLL SHA-256:
 
 `5C96074B33084598BCD671B477A50802AA7586424782E940C2E7170E170FF23C`
 
-The official SDK ZIP is 77,898,616 bytes. It remains above the existing
-55,000,000-byte publication budget. No publication or GitHub push was performed.
+The official SDK ZIP is 77,898,616 bytes. No publication or GitHub push was performed.
 
 New previews and newly created bridges use the repaired program. Existing saved
 owners retain their own persisted old program and are not silently rewritten.

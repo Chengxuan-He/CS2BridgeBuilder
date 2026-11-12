@@ -197,7 +197,7 @@ Keep existing seams and necessary actual shape, motion and material-domain bound
 cuts solely to reset periods, prototype-triangle Boolean operations, per-use texture copies or
 full-span pixels are permitted. Preserve source assets, selected-road shape and original bones.
 Changed derivatives receive new CIDs and complete native dependencies. Validate PBR, frames,
-filtering/aniso, every mip/LOD, independent loading, informational owner measurements and the 55 MB package limit.
+filtering/aniso, every mip/LOD, independent loading, informational owner measurements and complete package-size reporting.
 
 ## Current implementation policy
 
@@ -1535,8 +1535,7 @@ permitted unchanged dependency sources under the owning bridge UUID. Keep live r
 and require restart; never serialize a still-null live reference over the recovered disk data.
 
 Follow section 19 to complete missing fields and dependencies while preserving UUID/CID and valid
-values. Do not invent historical recipe data. Healthy current assets remain unchanged. Unavailable
-required content, explicit nulls without recoverable CIDs, failed registration, unknown required
+values. Do not invent historical recipe data. Healthy current assets remain unchanged. Temporarily unavailable optional content defers inspection without migration or retirement, as defined by the material contract. With required content available, explicit nulls without recoverable CIDs, failed registration, unknown required
 serialization, or migration/copy failures enter removal when migration fails or is impossible.
 Process each bridge independently. File ownership is determined by section 18, not an additional
 content, hash or concurrent-snapshot verdict. Actual filesystem failures must be reported.
@@ -2028,12 +2027,10 @@ out of source publication and compiled output, and do not describe their size as
 
 Keep the generated bridge's material footprint as small as possible without compromising
 material resolution. Material generation contract sections 2 and 5 require informational complete-owner material
-measurements without a hard ceiling, and retain a 55,000,000-byte limit for the complete compressed
-official SDK content package. A prepared style-directory subtotal is neither a complete-owner
-measurement nor proof of package compliance. Mark unavailable measurements explicitly.
-The package limit does not define a byte ceiling for geometry or the entire generated Prefab graph;
-the complete-graph comparison below remains independently required. An oversized package is not
-a final deliverable or ready for human acceptance. Reduce redundant storage through original-resource
+measurements and complete compressed official SDK package measurements without hard byte ceilings.
+A prepared style-directory subtotal is neither a complete-owner nor a complete-package measurement.
+Mark unavailable measurements explicitly. The complete-graph comparison below remains independently
+required. Reduce redundant storage through original-resource
 reuse, identical-resource sharing and source-density tiling, not resolution loss. Continue to
 report the exact complete bridge footprint, including geometry, every LOD, materials, texture
 and VT/mip payloads, dependency snapshots, presentation resources and CID sidecars. Control

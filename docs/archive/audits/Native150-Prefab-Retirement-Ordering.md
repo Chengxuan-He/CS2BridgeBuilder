@@ -32,7 +32,7 @@ No Road Builder code, game assets, material conversion or player bridge payloads
 - Self-check lifecycle, map instance removal and all twelve language checks passed. `git diff --check` passed.
 - Native150 was installed with Cities2 absent. All 964 installed manifest files were verified; only DLL/PDB changed, with their native149 originals backed up.
 - Installed DLL SHA256: `4CD157A091AEF4FD8C357EA3F2421028FCB4EC90B4AF18DF5188CE8C7DAF0635`.
-- Official SDK ZIP: 77,172,799 bytes; SHA256 `9845E258DCF1D6849B6F28FA8D84A5CBF6D64270C78F3B7C6529B1451E6FD532`. This remains above the pre-existing 55 MB publication limit. No publication or GitHub push occurred.
+- Official SDK ZIP: 77,172,799 bytes; SHA256 `9845E258DCF1D6849B6F28FA8D84A5CBF6D64270C78F3B7C6529B1451E6FD532`. No publication or GitHub push occurred.
 
 Evidence, frozen source, logs and receipts are in `artifacts/material-remap/shared/native150`; the deployment receipt is `deployment-native150.json`. Original affected source files are backed up in `artifacts/backups/before-native150-prefab-readiness`.
 

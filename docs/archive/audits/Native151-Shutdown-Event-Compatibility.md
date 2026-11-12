@@ -26,7 +26,7 @@ Native151 was installed with Cities2 absent. All 964 manifest files were verifie
 
 `38F18727B4ACD164E15339DE144AF4974B462E2D5E8835362056063148FF920A`
 
-Receipts, logs and frozen source are under `artifacts/material-remap/shared/native151`. Official SDK ZIP size is 77,173,036 bytes, above the pre-existing 55 MB publication limit. No publication, GitHub push, game launch or game shutdown was performed.
+Receipts, logs and frozen source are under `artifacts/material-remap/shared/native151`. Official SDK ZIP size is 77,173,036 bytes. No publication, GitHub push, game launch or game shutdown was performed.
 
 The authorized fixture `b420d211e-bc19-4b25-b669-843046dd4aff` remains installed with its zero-byte marker. All 246 original payload/sidecar hashes are unchanged. It was not deleted or reinstalled by the agent.
 

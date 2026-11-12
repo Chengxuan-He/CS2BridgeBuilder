@@ -9,9 +9,9 @@ corresponding prototype; retain original input materials for unsupported types. 
 to all fixed and movable bridges, per part, LOD, layer and axis. Source tiling stays tiling;
 source stretching stays stretching. No full-road pixel expansion, even across multiple pages.
 
-The package limit is 55,000,000 bytes. Report complete persisted owner material bytes for
+Report the complete package size without a hard ceiling. Report complete persisted owner material bytes for
 information; no per-owner hard ceiling applies. The sole cross-style source exception is read-only native MidMips under
-`Materials/Shared/MidMips/<cacheCID>/`; every bridge retains its independent dependency snapshot.
+`~Materials/Shared/MidMips/<cacheCID>/`; every bridge retains its independent dependency snapshot.
 
 Producer commands, fixtures, counts and conversion recipes below describe retained implementation
 stages and tools. They are not a current complete-library inventory or permission to remake
@@ -234,7 +234,7 @@ filtering differences, including repeat seams, remain part of native and manual 
 Reports include original fractional spans, output dimensions and both density ratios. All output
 levels sample their corresponding authored source mips, not a mip-zero-generated chain. Every
 complete generated owner has an informational material measurement, and the complete deliverable must
-meet the 55 MB package gate. Prepared-directory size is reported separately.
+have its size reported without a hard byte ceiling. Prepared-directory size is reported separately.
 An evidenced composite unit may provide `bands`, each with `start`, `end`, `min`, `max` and
 integer `repeatY`. Bands cover the horizontal unit interval continuously from zero to one;
 their original proportions and source regions are retained. The output grid meets the highest
@@ -388,8 +388,8 @@ defaults; matching a CID or a resource name alone is insufficient. Compatible ob
 remain direct original references. Unknown custom sources retain their distinct appearance while
 their conversion coverage is unfinished. This does not make runtime descriptor conversion compliant.
 
-Prepared descriptors may reference built-in VT resources. Validate those references before native
-loading and never resolve them through another generated bridge's resources. Persist only the
+Prepared descriptors may reference DLC or mod-provided VT resources that a player does not have.
+Follow the [dependency availability and discovery boundary](../../agent-contract/MATERIAL_GENERATION_CONTRACT.md#prepared-material-discovery-boundary): ship under `~Materials`, register only selected resources, and validate the complete native dependency closure before reading or loading. Missing content is explicitly unavailable; never fabricate textures or borrow another generated bridge's resources. Preserve saved owners while their content is unavailable, without migration, deletion or a restart notice when nothing changed. Persist only the
 prepared descriptor into each bridge's dependency snapshot; built-in dependencies remain references.
 
 `tools/PrepareLanes` performs the conversion from installed archives and the extracted template

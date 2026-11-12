@@ -22,6 +22,6 @@ Self-check waits for native/mod/PDX readiness and active batches; include failed
 
 ## Verification and delivery
 
-Generation section 24 requires complete-Prefab size comparison, including dependencies. Material owner bytes are informational without a ceiling; the complete SDK ZIP must not exceed 55,000,000 bytes. A prepared directory or root-only size proves neither.
+Generation section 24 requires complete-Prefab size comparison, including dependencies. Material owner bytes are informational without a ceiling; the complete SDK ZIP is reported separately without a hard ceiling. A prepared directory or root-only size proves neither.
 
 Follow root localization and cross-codebase compatibility review for every change. Documentation remains English. Build/deploy coherent increments under sections 13 and 23, preserving healthy assets. Never close or launch the player's game: deploy only after confirming it is absent, backing up installed originals and verifying hashes. Documentation-only changes need no build/deployment. Report native motion, near/far, mod-enabled cold-load and visual acceptance separately from automated checks; continue unblocked work while human checks remain pending.

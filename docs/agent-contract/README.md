@@ -17,7 +17,7 @@ bridges alike, then follow its links to the applicable specialist contracts.
 Apply the latest explicit user requirements within their stated scope and keep overlapping
 normative paragraphs and AGENTS.md summaries synchronized. File modification time alone does
 not establish a new requirement. The material contract governs material reuse, preparation,
-bounded runtime conversion and owner size reporting and the package byte limit; the general bridge contract retains
+bounded runtime conversion and owner size reporting and complete package-size reporting; the general bridge contract retains
 geometry, ownership and complete-Prefab comparison requirements. Implementation reports, handoffs,
 candidate inventories and old acceptance records are evidence for their recorded build/input only;
 they do not override these contracts or establish acceptance of a later material migration.
@@ -71,7 +71,7 @@ same complete measured source and matching same-source background; translate the
 measured visual center to actual native lane centers while preserving physical width, internal
 relationships and longitudinal density. No vehicle lane means no wear. Non-road finite/stretch
 modes retain their own source evidence. No full-span pixels, period cuts, arbitrary downsampling,
-custom shaders outside the two authorized programs or a relaxed package byte limit are permitted.
+custom shaders outside the two authorized programs or reduced material quality are permitted.
 
 [Material generation](MATERIAL_GENERATION_CONTRACT.md) governs every bridge material path,
 including preview, creation, export and all LODs. Its first rule prohibits creating new materials
@@ -82,7 +82,7 @@ Section 4 separately permits bounded variable-content composition and necessary 
 selected third-party road/track inputs unavailable before runtime, prioritizing direct reuse and
 descriptor-only conversion. These exceptions never cover missing known prepared assets.
 Sections 2 and 5 require informational complete-owner material measurements without a per-bridge
-ceiling and at most 55,000,000 bytes for the complete official SDK content ZIP. Prepared-directory
+ceiling and separate reporting of the complete official SDK content ZIP without a hard ceiling. Prepared-directory
 size, complete bridge size and package size are separate measurements. Native rendering
 and persistence remain governed by their corresponding contracts.
 

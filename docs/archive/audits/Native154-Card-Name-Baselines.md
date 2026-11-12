@@ -18,4 +18,4 @@ Native154 was installed with Cities2 absent. All 964 manifest files were verifie
 
 DLL SHA256: `29B526BBE695DFAB02732B598B6084F8BB61EF1BA173969798D2EF62D78D9BD5`.
 
-Evidence: `artifacts/material-remap/shared/native154/` contains frozen source, build/UI logs, candidate and deployment receipts. The official SDK ZIP is 77,172,057 bytes; the existing 55 MB publication gate remains unmet. This task did not publish the mod.
+Evidence: `artifacts/material-remap/shared/native154/` contains frozen source, build/UI logs, candidate and deployment receipts. The official SDK ZIP is 77,172,057 bytes. This task did not publish the mod.

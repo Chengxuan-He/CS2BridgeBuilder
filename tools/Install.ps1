@@ -5,6 +5,7 @@ param(
 )
 
 $ErrorActionPreference = 'Stop'
+if (Get-Process Cities2 -ErrorAction SilentlyContinue) { throw 'Close the game manually before installation.' }
 $projectRoot = Split-Path -Parent $PSScriptRoot
 if (-not $SkipBuild) {
     & (Join-Path $PSScriptRoot 'Build.ps1') -GameDir $GameDir -Configuration Release
@@ -44,5 +45,5 @@ foreach ($fieldIcon in @('BridgeBuilderSearch.svg', 'BridgeBuilderFilter.svg', '
 }
 Copy-Item -LiteralPath (Join-Path $source 'BridgeBuilder.mjs') -Destination $target -Force
 Copy-Item -LiteralPath (Join-Path $source 'BridgeBuilder.css') -Destination $target -Force
-& (Join-Path $PSScriptRoot 'Copy-PreparedMaterials.ps1') -Source (Join-Path $source 'Materials') -DestinationRoot $target
+& (Join-Path $PSScriptRoot 'Copy-PreparedMaterials.ps1') -Source (Join-Path $source '~Materials') -DestinationRoot $target
 Write-Host "Installed local code mod: $target"

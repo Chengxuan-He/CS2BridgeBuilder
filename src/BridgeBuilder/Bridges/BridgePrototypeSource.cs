@@ -103,7 +103,7 @@ internal sealed class BridgePrototypeSource
             try
             {
                 if (!_metadataReadable || _prefab == null || !_prefab.active) return false;
-                if (_prerequisite != null && !_prerequisite.IsAvailable()) return false;
+                if (_prerequisite != null && !ContentAvailable(_prerequisite)) return false;
                 // DLC ownership and mod ownership are independent gates, not alternatives.
                 if (_packs.Length > 0 && !_packs.All(pack => PackAvailable(pack,
                     IsBxp(_modId) && pack.name == "Bridge Asset Pack Filter"))) return false;
@@ -119,12 +119,23 @@ internal sealed class BridgePrototypeSource
         }
     }
 
+    internal static bool ContentAvailable(ContentPrefab? content)
+    {
+        if (content == null || !content.active || !content.IsAvailable()) return false;
+        var requirement = content.GetComponent<DlcRequirement>();
+        // Same exact database name/ID lookup used by native DlcRequirement.
+        // Optional prepared assets need the database, even when ownership alone
+        // satisfies a content prefab's m_BaseGameRequiresDatabase setting.
+        return requirement == null || (AssetDatabase.global.TryGetDatabase(content.name, out var database)
+            && database.dlcId == requirement.m_Dlc);
+    }
+
     private static bool PackAvailable(AssetPackPrefab pack, bool sharedBxpCategory)
     {
         if (pack == null || !pack.active) return false;
         var requirement = pack.GetComponent<ContentPrerequisite>();
         if (requirement != null && (requirement.m_ContentPrerequisite == null
-            || !requirement.m_ContentPrerequisite.IsAvailable())) return false;
+            || !ContentAvailable(requirement.m_ContentPrerequisite))) return false;
         // Both BXP downloads ship this same category asset. The registered copy can belong to
         // either package; it is not an extra mod dependency. The donor's own platform ID is gated.
         return sharedBxpCategory || pack.isBuiltin || OwnerAvailable(pack);

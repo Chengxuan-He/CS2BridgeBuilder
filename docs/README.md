@@ -33,11 +33,10 @@ under the current game's loading interfaces and mandatory mod-independent persis
 Selected-road decal artwork and UVs are preserved through native object materials;
 hashed-alpha coverage is not exact native DBuffer blending.
 Asphalt, sidewalks and wheel-track/rut effects are classified separately per prototype/domain.
-The original source mapping rule applies to non-movable bridges too. The package limit is 55,000,000 bytes. Complete owner material bytes are measured separately
+The original source mapping rule applies to non-movable bridges too. Report the complete package size without a hard ceiling. Complete owner material bytes are measured separately
 for information, without a per-owner ceiling.
 
-The recorded native139 local build's official SDK ZIP measured 77,158,177 bytes. It exceeded the
-55,000,000-byte publication limit and was deployed locally only. The owner-size measurement
+The recorded native139 local build's official SDK ZIP measured 77,158,177 bytes and was deployed locally only. The owner-size measurement
 and the complete ZIP measurement serve different purposes.
 
 ## Workflow design

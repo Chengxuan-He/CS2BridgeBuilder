@@ -6,8 +6,8 @@ param(
 $ErrorActionPreference = 'Stop'
 $sourceRoot = [IO.Path]::GetFullPath($Source).TrimEnd('\', '/')
 $destination = [IO.Path]::GetFullPath($DestinationRoot).TrimEnd('\', '/')
-$target = [IO.Path]::GetFullPath((Join-Path $destination 'Materials'))
-if ((Split-Path -Parent $target) -ne $destination -or (Split-Path -Leaf $target) -ne 'Materials' `
+$target = [IO.Path]::GetFullPath((Join-Path $destination '~Materials'))
+if ((Split-Path -Parent $target) -ne $destination -or (Split-Path -Leaf $target) -ne '~Materials' `
     -or $target -eq $sourceRoot -or $sourceRoot.StartsWith($target + '\', [StringComparison]::OrdinalIgnoreCase) `
     -or $target.StartsWith($sourceRoot + '\', [StringComparison]::OrdinalIgnoreCase)) {
     throw 'Prepared-material source and destination must be separate directories.'
@@ -47,6 +47,23 @@ foreach ($payload in $payloads) {
     }
     $copies.Add([pscustomobject]@{ Source = $payload.FullName; Relative = $relative })
     $copies.Add([pscustomobject]@{ Source = $cid; Relative = $relative + '.cid' })
+}
+# Exposed legacy inputs are unsafe even when no bridge is generated. Preserve originals
+# outside the game and build trees before removing their automatic discovery path.
+$legacy = [IO.Path]::GetFullPath((Join-Path $destination 'Materials'))
+if ((Split-Path -Parent $legacy) -ne $destination) { throw 'Invalid legacy material path.' }
+if (Test-Path -LiteralPath $legacy) {
+    if ($legacy -eq $sourceRoot -or $sourceRoot.StartsWith($legacy + '\', [StringComparison]::OrdinalIgnoreCase)) {
+        throw 'Legacy output is the requested source; cannot relocate it.'
+    }
+    $legacyEntries = @(Get-Item -LiteralPath $legacy) + @(Get-ChildItem -LiteralPath $legacy -Recurse -Force)
+    if ($legacyEntries | Where-Object { $_.Attributes -band [IO.FileAttributes]::ReparsePoint }) { throw 'Legacy materials contain reparse points.' }
+    $backupRoot = Join-Path ([Environment]::GetFolderPath('LocalApplicationData')) 'BridgeBuilder/MaterialBackups'
+    $backup = [IO.Path]::GetFullPath((Join-Path $backupRoot ([Guid]::NewGuid().ToString('N'))))
+    if ((Split-Path -Parent $backup) -ne [IO.Path]::GetFullPath($backupRoot)) { throw 'Invalid backup path.' }
+    [IO.Directory]::CreateDirectory($backupRoot) | Out-Null
+    Move-Item -LiteralPath $legacy -Destination $backup
+    Write-Host "Legacy exposed materials moved to original-only backup: $backup"
 }
 if (Test-Path -LiteralPath $target) {
     $existing = @(Get-Item -LiteralPath $target) + @(Get-ChildItem -LiteralPath $target -Recurse -Force)

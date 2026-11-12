@@ -48,8 +48,7 @@ Every archived entry is compared byte-for-byte with its staged input. The SDK SH
 That stage used its recorded standard build, matching PDB, Harmony, UI, icons, license and
 the rebuilt ten-style material catalogue. No installed mod or user bridge was replaced.
 
-This is a **partial, non-deliverable diagnostic package**. The verified byte length falls
-below 55,000,000, but missing local-region repeat implementations prevent full generation.
+This is a **partial, non-deliverable diagnostic package**. Missing local-region repeat implementations prevent full generation.
 It does not pass the complete deliverable acceptance gate and must not be deployed or used
 as evidence that all bridge materials are finished. The exact baseline rejected package
 was 1,625,470,821 bytes; comparison with this partial archive measures changed payload cost,

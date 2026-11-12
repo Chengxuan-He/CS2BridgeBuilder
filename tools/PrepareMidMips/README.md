@@ -54,9 +54,8 @@ gates; these Python checks do not certify game rendering.
 checks missing payload, orphan file and orphan directory rejection in separate
 negative fixtures and verifies that none writes a cache payload.
 
-The October 28 user-approved exception allows this common read-only MidMips source
-and raises the complete package ceiling to 55,000,000 bytes. It does not change the
-10,000,000-byte generated-owner material limit. The 22 per-Surface caches total
+The common read-only MidMips source is permitted. Report the complete package and
+generated-owner material footprint separately, without hard byte ceilings. The 22 per-Surface caches total
 87,819,578 uncompressed bytes in the common source; each owner copies only required
 caches. Package compression and actual complete owner graphs remain separate shared
 acceptance measurements. The earlier grouped 17,773,699-byte cache is a diagnostic

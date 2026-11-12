@@ -76,7 +76,6 @@ No game was started, no saved bridge files were changed, and nothing was publish
 
 DLL SHA256: `A63C815D899649E6513ED2A1D706E2728B02FC47D892AD6D4C41413C678803DB`.
 
-Official SDK ZIP: **77,170,919 bytes**, versus **77,167,231 bytes** for native147. The existing
-55 MB publication gate remains unmet; this was local deployment, not publication.
+Official SDK ZIP: **77,170,919 bytes**, versus **77,167,231 bytes** for native147. This was local deployment, not publication.
 
 The separately edited deletion design is not implemented by this change.

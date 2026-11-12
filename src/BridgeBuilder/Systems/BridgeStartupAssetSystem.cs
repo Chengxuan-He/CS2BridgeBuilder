@@ -125,6 +125,17 @@ public partial class BridgeStartupAssetSystem : GameSystemBase
                 Mod.Log.Error("Bridge pack icon could not be updated; existing bridge assets retained.");
             var owners = new HashSet<string>(assets.Select(a => a.Owner), StringComparer.Ordinal);
             var byOwner = assets.GroupBy(a => a.Owner).ToDictionary(g => g.Key, g => g.ToArray(), StringComparer.Ordinal);
+            var contentAvailable = BridgePreparedMaterials.RefreshContent(system);
+            var unfinished = new HashSet<string>(StringComparer.Ordinal);
+            foreach (var owner in owners.ToArray())
+            {
+                if (!byOwner[owner].Any(asset => asset.Prefab == null ? !contentAvailable : (!system.IsAvailable(asset.Prefab) || BridgePreparedMaterials.HasUnavailableRequirement(asset.Prefab)))) continue;
+                unfinished.Add(owner);
+                // No mutation occurred: restoring the DLC, not a restart loop, is required.
+                // Keep this deferred owner out of the repair-result notification.
+                owners.Remove(owner);
+                Mod.Log.Warn("Bridge inspection deferred; required content unavailable or unresolved UUID=" + owner);
+            }
             var scope = new BridgeInspectionScope(UnityEngine.Application.persistentDataPath, owners);
             var dependencies = new Dictionary<string, BridgeCreationDependencies>(StringComparer.Ordinal);
             foreach (var owner in owners)
@@ -141,7 +152,6 @@ public partial class BridgeStartupAssetSystem : GameSystemBase
             }
             var discoveryMs = timer.ElapsedMilliseconds;
             var stageStart = timer.ElapsedMilliseconds;
-            var unfinished = new HashSet<string>(StringComparer.Ordinal);
             var migrationCandidates = new HashSet<string>(StringComparer.Ordinal);
             var migrationErrors = 0;
             // Missing material snapshots can be hidden by a currently installed source mod.
@@ -181,8 +191,8 @@ public partial class BridgeStartupAssetSystem : GameSystemBase
                     failures[asset.Owner] = "Prefab did not load: " + asset.Path;
                     continue;
                 }
-                // A bridge whose required content cannot run is retired under the repair-or-remove policy.
-                if (!system.IsAvailable(prefab)) { failures[asset.Owner] = "Required bridge content unavailable: " + prefab.name; continue; }
+                // Availability can change after discovery; preserve rather than retire the owner.
+                if (!system.IsAvailable(prefab)) { unfinished.Add(asset.Owner); continue; }
                 if (BridgeNetworkValidation.IsInvalid(prefab, out reason))
                 {
                     var result = BridgeLoadedCidRecovery.Inspect(prefab, out var cids, out var detail, loadedIndex);

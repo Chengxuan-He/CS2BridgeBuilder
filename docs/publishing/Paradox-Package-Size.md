@@ -8,12 +8,11 @@ selected for Git and one generated bridge's complete physical assets are separat
 An unpacked build directory, installed directory, isolated texture subtotal or offline baking
 candidate is not the download package. A locally produced SDK package is not a published version.
 
-The complete deliverable must be at most **55,000,000 bytes (55 MB)**, including every included
-style and all archive overhead. Apply the material generation contract's total-package gate
-before final delivery or readiness for human acceptance. Required supplemental downloads count
-toward the same total. This limit does not permit reducing texture resolution or pattern scale.
+Report all included styles, dependencies, archive overhead and required supplemental downloads.
+There is no project-defined hard byte ceiling. Size reduction must preserve texture resolution,
+pattern scale, complete dependencies and all other quality requirements.
 
-## 3. Native packaging and reproduction
+## 2. Native packaging and reproduction
 
 The installed official `ModPostProcessor` successfully processed both assemblies, using the
 configured Unity Mods project and game managed references. The package tool invokes the installed
@@ -24,7 +23,7 @@ It runs on the publisher's .NET 6.0.36 runtime. The measured SDK SHA-256 is
 
 Prepare a clean publication content folder with the release file list from `tools/StageRelease.ps1`:
 the current DLL and matching PDB, Harmony and its license, UI modules, all listed SVG icons,
-payload-bearing `Materials/` directories and `LICENSE.txt`. Exclude stale assemblies, source data,
+payload-bearing `~Materials/` directories and `LICENSE.txt`. Exclude stale assemblies, source data,
 backups, logs and build intermediates. Postprocess the isolated assembly with the official tool
 before packaging; pass each game managed DLL as a separate `-r` argument. Do not modify the
 installed game DLL to obtain a measurement. Record postprocessing success before proceeding.

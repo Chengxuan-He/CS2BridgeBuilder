@@ -254,8 +254,7 @@ native rendering. Old per-triangle reflection is not an authored requirement.
 Merely binding the original atlas with an unchecked affine map is insufficient.
 Public sampler/loader/baker changes
 belong to the coordinator; this style's inventory is ready for that interface.
-Do not remove existing resources, alias unequal CIDs or report the 55 MB package
-gate passed before the replacement path and full package have been verified.
+Do not remove existing resources, alias unequal CIDs or report package acceptance before the replacement path and full package have been verified.
 
 `ExportSharedSampling.py` also produces `native-bindings.json`, an executable
 authoring result covering all nine native mechanism/column/footing render inputs

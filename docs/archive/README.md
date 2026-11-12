@@ -2,6 +2,8 @@
 
 These records retain the input, revision and limitations of each investigation. The [bridge-style archive](bridge-styles/README.md) indexes style-specific records and tool notes.
 
+Historical package-gate and owner-ceiling statements describe the policy at the time of each investigation, not current requirements. Current size reporting has no hard byte ceiling; see the [package reporting policy](../publishing/Paradox-Package-Size.md). Recorded measurements and test outcomes remain historical evidence.
+
 ## Audits and measurements
 
 - [Documentation classification inventory](audits/Documentation-Classification.md): historical organization scope and canonical design locations.

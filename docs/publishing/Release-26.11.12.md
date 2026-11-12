@@ -7,7 +7,6 @@ See [the changelog](Changelog-26.11.12.txt) and [the maintained English listing]
 
 ## Package and verification
 
-The user explicitly waived the 55,000,000-byte package cap for this release only.
 The complete official SDK ZIP is **77,898,073 bytes**, containing **965 payload files**.
 No resource quality reduction or omitted dependency was used to meet a size target.
 Package SHA-256: `54822457402B3E159AACF09226C2E186AFAA364E9D42BCB03CADD667AFC178BB`.

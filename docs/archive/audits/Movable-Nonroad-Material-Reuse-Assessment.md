@@ -70,7 +70,7 @@ and [object material compatibility](../../../src/BridgeBuilder/Bridges/Common/Mo
 A future implementation must compare actual source/output assignments and UVs by part and LOD;
 this code review does not certify all non-road output as identical to the prototype.
 
-The design assessment itself supplies no additional permission beyond the current contracts. The 55,000,000-byte official package limit and
+The design assessment itself supplies no additional permission beyond the current contracts. Complete official package measurements and
 informational generated-owner material measurements remain separate; no per-owner ceiling applies. Native independent persistence,
 original resolution, permitted topology, no custom shaders or manager-dependent rebinding,
 and no full-span pattern rasterization remain required. The independent-layer implementation

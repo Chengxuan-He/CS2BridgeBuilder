@@ -32,7 +32,7 @@ foreach ($file in $files) {
 $content = Join-Path $destinationRoot 'content'
 [IO.Directory]::CreateDirectory($content) | Out-Null
 foreach ($file in $files) { Copy-Item -LiteralPath (Join-Path $output $file) -Destination $content }
-& (Join-Path $PSScriptRoot 'Copy-PreparedMaterials.ps1') -Source (Join-Path $output 'Materials') -DestinationRoot $content
+& (Join-Path $PSScriptRoot 'Copy-PreparedMaterials.ps1') -Source (Join-Path $output '~Materials') -DestinationRoot $content
 Copy-Item -LiteralPath (Join-Path $projectRoot 'LICENSE') -Destination (Join-Path $content 'LICENSE.txt')
 foreach ($file in @('Mod-Description.md', 'PublishConfiguration.draft.xml', 'Thumbnail.png')) {
     Copy-Item -LiteralPath (Join-Path $docs $file) -Destination $destinationRoot

@@ -62,7 +62,7 @@ New uploads total 97,450,684 bytes: 94,384,604 bytes of source/partition/count/p
 Native155 was installed after confirming Cities2 was absent. Only DLL and PDB changed; both originals were backed up, all 964 installed manifest files were verified, and no player bridge files were modified.
 
 - Installed DLL SHA256: `DE71FCCC0BF11F05155C3207E0602A1E5C15213E01FF2800DE2570CF666BE17E`.
-- Official SDK ZIP: 77,182,814 bytes; the existing 55 MB publication limit remains exceeded. No publication or GitHub push occurred.
+- Official SDK ZIP: 77,182,814 bytes. No publication or GitHub push occurred.
 - Receipt: `artifacts/material-remap/shared/native155/deployment-native155.json`.
 - Final trace: `work/gpu155/candidate-lane.txt` and `candidate-lane.log`.
 - Regression traces: `work/gpu155/cases-final.log` and `capture-lane.txt`.

@@ -10,4 +10,4 @@ Native153 was installed with Cities2 absent. All 964 installed manifest files we
 
 `E96BA65AAA08C4F54F07D54CDB340CF4E9AF125C5C714D922382FC0DA655577B`
 
-Receipts and frozen source: `artifacts/material-remap/shared/native153`. Official SDK ZIP: 77,171,895 bytes, above the pre-existing 55 MB publication ceiling. No game launch, player-asset deletion, publication or GitHub push occurred. Actual in-game popup presentation remains subject to human acceptance.
+Receipts and frozen source: `artifacts/material-remap/shared/native153`. Official SDK ZIP: 77,171,895 bytes. No game launch, player-asset deletion, publication or GitHub push occurred. Actual in-game popup presentation remains subject to human acceptance.

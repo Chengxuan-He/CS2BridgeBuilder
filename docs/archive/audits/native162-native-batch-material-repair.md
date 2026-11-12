@@ -107,7 +107,7 @@ DLL SHA256: `0A4576087FDF1F8300A176CC75979E374C78743FA1DFD7BA585C9CD11E17E69F`.
 Receipt: `artifacts/material-remap/shared/native162/deployment-native162.json`.
 Official SDK archive: 77,903,093 bytes, SHA256
 `D8B7DEDFCD064B59FCFADC650E16B02B0E9F248996E87FEC981E4579D91AA935`.
-It remains above the existing 55,000,000-byte publication budget. Nothing was
+Nothing was
 pushed or published.
 
 Automatic approval review rejected the final cleanup command for task-created

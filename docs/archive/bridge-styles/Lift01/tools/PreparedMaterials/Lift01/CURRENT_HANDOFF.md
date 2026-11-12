@@ -18,7 +18,7 @@ The runtime DLL recorded by that continuation is
 The shared schema-3 numeric migration preserves decoded arrays and scenario plans.
 The common decoder is now used by `BuildUvCharts.py`; the shared agent owns that
 consumer adaptation. The shared official SDK package measurement is 47,521,306
-bytes, below 55,000,000 bytes. See `../../../../../../../tools/PreparedMaterials/SharedCurrent.md` and
+bytes. See `../../../../../../../tools/PreparedMaterials/SharedCurrent.md` and
 `artifacts/prepared-materials/shared-numeric-recipe/` for authoritative shared
 verification. Package compliance does not establish Lift01 material coverage.
 

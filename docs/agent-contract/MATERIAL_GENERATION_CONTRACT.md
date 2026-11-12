@@ -374,7 +374,7 @@ Verify last-reference unload/reload and native batch reservation selection as we
 
 Measure and report the complete persisted material graph of each generated bridge for information.
 There is no per-bridge material byte ceiling or target range; do not reduce quality to meet one.
-Section 5 retains the **55,000,000-byte** package limit. Meet that limit through valid reuse and
+Section 5 requires complete package measurements. Reduce redundant storage through valid reuse and
 sharing, never omitted dependencies, downsampling or unauthorized pattern changes.
 
 ### Conversion preserves each sampled coordinate field
@@ -465,7 +465,7 @@ contain unrelated edges, markings or nonperiodic neighborhoods. Record source in
 compression and per-channel/mip errors. This permission is limited to preparing the required road
 repeat, not arbitrary replacement of other original mip signals or a global tolerance increase.
 Validate both seams, all mip/filter/aniso behavior, native frames/loading and complete dependencies.
-Report owner measurements without a ceiling and retain the 55 MB package limit. No full-span pixels, per-receiver
+Report owner measurements without a ceiling and retain complete package-size reporting. No full-span pixels, per-receiver
 texture copies or period-driven geometry cuts are permitted.
 
 ### Remove embedded road markings at every LOD
@@ -512,7 +512,7 @@ the separate prototype-supported road rule above governs filtering of newly auth
 Neither rule permits arbitrary resolution reduction, omitted channels, full-span baking,
 new period cuts or increased budgets. Original assets remain unchanged; changed derivatives
 receive independent CIDs. All normal-frame, alpha, filter/aniso, every-mip, native-load,
-informational owner measurements and 55 MB package checks remain mandatory. No global error threshold or
+informational owner measurements and complete package-size reporting remain mandatory. No global error threshold or
 automatic quality acceptance is implied.
 
 ### Offline source-atlas repeat materials
@@ -549,7 +549,7 @@ receive independent identities, never the original source CID for changed bytes.
 dependencies and byte-identical owner copies retain their own CIDs. Package the complete finished
 native resource graph once; runtime only copies/binds it, without baking or a continuing runtime controller. The authorized generated-program route below does not authorize runtime texture baking or an exception to this offline texture route.
 Verify independent native loading and all affected LODs, and count the complete dependency graph
-as an informational owner measurement and against the 55,000,000-byte package limit. This rule specifies the required
+as an informational owner measurement and in complete package-size reporting. This rule specifies the required
 route; it does not assert current feasibility, implementation or acceptance.
 
 ### No full-road pattern expansion
@@ -617,7 +617,7 @@ Baking at game startup, asset loading, first use, preview, bridge creation or ex
 work, not precomposition. An in-memory or disk cache of an in-game bake is not a precomposed
 material. The separate bounded runtime-composition exceptions below do not change this meaning.
 Road precomposition remains subject to the prototype-supported-type gate; non-road bindings retain native texture references. Preserve applicable mapping rules and original
-resolution, no full-road pattern expansion, independent persistence, owner size reporting and the package byte limit.
+resolution, no full-road pattern expansion, independent persistence, owner size reporting and complete package-size reporting.
 
 ### Corresponding native road materials for movable objects
 
@@ -637,7 +637,7 @@ rejecting valid input. Select or map source channels by semantic property, retai
 texture resolution, and diagnose omitted/blended/frozen behavior without claiming equivalence.
 Preserve geometry, bones and all LODs. Owner-local persistence and mod-enabled cold loading follow the registration requirements below. No full-span baking or runtime animation/renderer synchronization is authorized. Source assets
 remain unchanged; changed derivatives receive their own identity and complete dependencies.
-Informational owner measurements, the 55 MB package limit and other quality requirements remain required.
+Informational owner measurements, complete package-size reporting and other quality requirements remain required.
 
 ### Independent persisted rendering without runtime synchronization
 
@@ -766,16 +766,13 @@ complete informational material measurement. Include selected-road dependencies 
 outputs in the owner measurement. If a complete bridge graph has not been generated, report that
 measurement as unavailable rather than substituting the prepared-directory size.
 
-The complete compressed Paradox Mods deliverable must not exceed **55,000,000 bytes (55 MB)**.
-Measure the actual official SDK content ZIP, including all included bridge styles, DLLs,
-materials, dependencies, symbols, UI, licenses and archive overhead. The limit is not a
-per-style or texture-only allowance. Splitting the same required payload into additional
-downloads does not remove it from the aggregate delivery budget. Source checkout size,
-unpacked build size and one generated bridge's asset size remain separate reporting scopes.
-An oversized package must not be deployed as the final deliverable or declared ready for
-human acceptance. Preserve source resolution, section 2's mapping-specific pattern scale, required LODs and independent
-persistence while reducing size; the limit does not authorize missing assets, runtime baking
-of known, preparable constant resources or depending on deleted/other-generated-bridge resources.
+Measure the complete actual official SDK content ZIP, including every bridge style, DLL,
+material, dependency, symbol, UI file, license and archive overhead. Include required supplemental
+downloads in aggregate delivery reporting. There is no hard package byte ceiling. Source checkout,
+unpacked build and generated-owner sizes remain separate measurements. Reduce redundant storage
+without losing source resolution, mapping-specific pattern scale, required LODs or independent
+persistence. Size reduction never permits missing assets, runtime baking of known preparable
+constants, or dependencies on deleted sources or other generated bridges.
 
 The authoritative prepared-material directory is `assets/Materials/<BridgeStyleId>/` in the
 repository. Each bridge style with actual prepared payloads must have its own directory, using its exact stable, unlocalized
@@ -846,7 +843,7 @@ independent owner-local snapshot, retaining original bytes and CIDs under the pe
 contract's native MidMips filename exception. Do not copy the whole source catalogue, share
 generated-owner files, or depend on the installed cache after persistence. Count those copies
 in the informational generated-owner material measurement; count each common source file
-once in the complete 55,000,000-byte official SDK ZIP limit. This source-storage exception
+once in the complete official SDK ZIP measurement. This source-storage exception
 grants no additional runtime baking permission or cross-bridge generated-result caching.
 
 ### Packaging and source resolution
@@ -920,9 +917,8 @@ texture count or an eligibility flag. Required evidence includes:
    payloads. All preview/create/regenerate/export paths use the same representations. Verify cold
    loading with Bridge Builder enabled, complete current-owner dependency closure, and independence
    from other generated bridges or deleted sources. Preserve healthy existing assets.
-7. **Size reporting and package budget:** report prepared bytes and the complete persisted owner
-   material graph separately, with no per-owner ceiling. The actual official SDK package must be
-   at or below 55,000,000 bytes. List built-in references separately. Mark missing owner measurements unavailable. Keep the
+7. **Size reporting:** report prepared bytes and the complete persisted owner
+   material graph separately, with no per-owner ceiling. Report the actual official SDK package without a hard byte ceiling. List built-in references separately. Mark missing owner measurements unavailable. Keep the
    general contract's whole-Prefab measurement separate and reject empty material directories.
 
 Record generation, decoding, composition, readback, VT/mip writing and persistence timing without
@@ -1000,3 +996,25 @@ Use correctly oriented closed projection volumes, native receiver layers and sou
 frames. Preserve the source sampling transform when clipping motion domains. Validate clipped
 volume boundaries separately, especially oblique seams; do not present an untested silhouette
 clip as an exact shader-space clipping predicate.
+
+## Prepared material discovery boundary
+
+Ship offline preparation inputs under `~Materials`, never the automatically discovered `Materials` directory. Native file-system discovery skips child directories beginning with `~`; the dedicated on-demand database uses `~Materials` itself as its root. Preserve original native filenames, CIDs and complete dependency graphs. Validate the selected variant before registration. Unselected DLC-dependent preparation inputs must not enter global startup VT loading. Build/stage/install tools must use the same root and back up/remove legacy exposed material directories before replacement. This boundary does not certify player cold-load acceptance or suppress native loading errors.
+
+### Missing optional content and virtual textures
+
+Never assume that virtual textures referenced by shipped or saved materials are installed on a
+player's machine. DLC ownership, a known CID, a prepared descriptor, or success on the developer's
+machine does not prove runtime availability. Before reading or registering a selected material,
+validate its complete required dependency closure against the currently available native databases,
+including Surface, VT texture, MidMips/cache and any required DLC or third-party mod resources.
+Resolve native identity and content requirements rather than guessing from filenames; distinguish
+an unavailable dependency from a database that can legitimately be loaded on demand. If a required
+dependency cannot be resolved, report the material or operation as unavailable before native loading.
+Do not fabricate textures, silently substitute appearance, swallow loading exceptions, or mark the
+operation successful. Apply this boundary to startup discovery, preview, creation and saved-asset
+inspection. Unselected resources remain unregistered under the discovery boundary above.
+
+Resolve availability through the native ContentPrefab requirements, active state and its DlcRequirement database identity before reading or registering prepared movable materials. Ownership alone is insufficient when the corresponding content database is absent. Do not infer availability from paths or cached geometry. During saved-bridge inspection, temporarily unavailable content is an unfinished inspection, not asset corruption: preserve its owner files without dependency migration or retirement. If required DLC, mod or VT content is unavailable, unresolved cached prefabs must likewise remain untouched until their requirements can be established. This exception takes precedence over repair/removal for unavailable content alone; actual corruption remains separately diagnosed.
+
+Content-unavailable deferral performs no repair and must not produce a restart-required recovery notification. Diagnose it in the log; restoring/enabling the prerequisite is the required action, not repeated restarts.

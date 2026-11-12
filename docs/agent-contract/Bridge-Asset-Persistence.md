@@ -269,7 +269,7 @@ Known eligible road compositions are prepared offline. Bounded runtime exception
 the supported-type gate or authorize full-road rasterization. The material contract authorizes two generated shader programs with owner-local dependencies and mod-enabled startup registration; per-frame manager-driven rebinding remains prohibited. Preserve complete texture/VT/mip dependencies and unchanged source bytes.
 Only native MidMips sources may share `Materials/Shared/MidMips/<cacheCID>/` across styles.
 Each owner independently snapshots its required cache dependencies with original CIDs and native
-filenames. Owner material bytes are informational, with no hard ceiling; the complete SDK ZIP limit is 55,000,000 bytes.
+filenames. Owner material bytes are informational, with no hard ceiling; the complete SDK ZIP is measured separately without a hard ceiling.
 
 ### Resource decision procedure
 

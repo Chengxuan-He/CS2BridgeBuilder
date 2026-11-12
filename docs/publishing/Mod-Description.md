@@ -22,11 +22,16 @@ These integrations are optional; select only content you use.
 **Network creation**
 
 - [Road Builder](https://mods.paradoxplaza.com/mods/87190/Windows)
+- [Street Studio Public V2](https://mods.paradoxplaza.com/mods/165677/Windows)
 
 **Bridge content**
 
 - [Bridge Expansion Pack](https://mods.paradoxplaza.com/mods/92245/Windows)
 - [Bridge Expansion Pack: B&P](https://mods.paradoxplaza.com/mods/124160/Windows)
+
+**Bridge generation**
+
+- [Bridge Engineer](https://mods.paradoxplaza.com/mods/164700/Windows)
 
 **Node editing**
 
@@ -34,9 +39,11 @@ These integrations are optional; select only content you use.
 
 ### Notes
 
+Follow Street Studio’s own guidance: disable Road Builder when using its independent fork.
+
 Install the game/DLC and optional mod content required by the roads or supported bridge styles you select. The double-deck Golden Gate style comes from Bridge Expansion Pack, not the base single-deck Golden Gate prototype.
 
-Keep Bridge Builder installed and enabled. Generated shader programs require its startup registration; operation after disabling or uninstalling the mod is not supported. Required game/DLC resources remain prerequisites. Saved bridges have their own dependency snapshots; updating the mod does not regenerate their geometry.
+Keep Bridge Builder installed and enabled. Generated shader programs require its startup registration; operation after disabling or uninstalling the mod is not supported. Required game/DLC and third-party material resources remain prerequisites, including virtual textures. A resource available on the author's machine is not necessarily installed on every player's machine. Saved bridges have their own dependency snapshots; updating the mod does not regenerate their geometry.
 
 There is no reliable fully automatic importer for arbitrary custom bridge assets. Supporting a new style requires bridge-specific measurements, implementation and visual checks. A coding agent does not guarantee a correct result in one attempt. See [Adding a bridge style with a coding agent](https://github.com/Chengxuan-He/CS2BridgeBuilder#adding-a-bridge-style-with-a-coding-agent). Compatibility with every third-party asset or network/style combination is not promised.
 

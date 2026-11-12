@@ -29,11 +29,25 @@ internal static class BridgePreparedMaterials
     }
 
     private static string? _root;
+    private static Game.Prefabs.ContentPrefab? _content;
+    internal static void SetContent(Game.Prefabs.ContentPrefab? content) => _content = content;
+    internal static bool HasUnavailableRequirement(Game.Prefabs.PrefabBase prefab)
+    {
+        var prerequisite = prefab.GetComponent<Game.Prefabs.ContentPrerequisite>();
+        return prerequisite != null && !Bridges.BridgePrototypeSource.ContentAvailable(prerequisite.m_ContentPrerequisite);
+    }
+    internal static bool RefreshContent(Game.Prefabs.PrefabSystem system)
+    {
+        _content = CS2Mods.Shared.Infrastructure.PrefabCatalog.GetAll(system).OfType<Game.Prefabs.ContentPrefab>()
+            .FirstOrDefault(content => content.isBuiltin && content.name == "BridgesAndPorts");
+        return ContentAvailable;
+    }
+    private static bool ContentAvailable => Bridges.BridgePrototypeSource.ContentAvailable(_content);
     // Main-thread request scope flows across its asynchronous continuations only.
     private static readonly System.Threading.AsyncLocal<BridgeMaterialFileSnapshot?> Files = new();
     internal static BridgeMaterialFileSnapshot? RequestFiles { get=>Files.Value;set=>Files.Value=value; }
     internal static bool TrySourceRoot(out string root,out string? error)
-    {root=_root??"";error=_root==null?"Prepared material installation directory is unavailable.":null;return error==null;}
+    {root=_root??"";error=!ContentAvailable?"Prepared material content is unavailable.":_root==null?"Prepared material installation directory is unavailable.":null;return error==null;}
     private static ILocalAssetDatabase? _database;
     private static bool _pendingCacheRefresh;
     private static readonly Dictionary<string, (AssetData Asset, string Digest)> Assets = new(StringComparer.OrdinalIgnoreCase);
@@ -44,8 +58,10 @@ internal static class BridgePreparedMaterials
     internal static bool TryMidMipDependencies(string surfaceCid, out string[] caches)
         => MidMipEdges.TryGetValue(surfaceCid, out caches!);
 
+    // Native parent discovery skips this directory; explicit AddAsset below registers only
+    // preflighted inputs. RegisterDatabase itself does not populate the data source.
     internal static void Initialize(string installationDirectory)
-        => _root = Path.GetFullPath(Path.Combine(installationDirectory, "Materials"));
+        => _root = Path.GetFullPath(Path.Combine(installationDirectory, "~Materials"));
 
     internal static SurfaceResult Paint(string styleId) => Surface(styleId, "Paint", "SkinnedPaint.Surface");
     internal static SurfaceResult Cable(string styleId) => Surface(styleId, "Cable", "SkinnedCable.Surface");
@@ -71,6 +87,7 @@ internal static class BridgePreparedMaterials
     {
         try
         {
+        if (!ContentAvailable)return new SurfaceResult(null,"Required native content is unavailable.");
         if (_root == null)return new SurfaceResult(null,"Prepared material installation directory is unavailable.");
         var unit=Bridges.MovableRepeatUnits.For(styleId,samplerKey);
         if(unit!=null)return Surface(styleId,"RepeatUnits/"+unit,"Repeat.Surface");
@@ -99,6 +116,7 @@ internal static class BridgePreparedMaterials
     {
         try
         {
+        if (!ContentAvailable)return new SurfaceResult(null,"Required native content is unavailable.");
         if (_root == null)return new SurfaceResult(null,"Prepared material installation directory is unavailable.");
         using var sha = SHA256.Create();
         var digest = BitConverter.ToString(sha.ComputeHash(source)).Replace("-", "").ToLowerInvariant();
@@ -114,6 +132,7 @@ internal static class BridgePreparedMaterials
         SurfaceResult Fail(string message)=>new SurfaceResult(null,$"Prepared material: style={styleId}; variant={variant}; name={name}; {message}");
         try
         {
+        if (!ContentAvailable)return new SurfaceResult(null,"Required native content is unavailable.");
         if (_root == null)return new SurfaceResult(null,"Prepared material installation directory is unavailable.");
         if (string.IsNullOrEmpty(styleId) || styleId.Any(c => !char.IsLetterOrDigit(c)))
             return Fail("Prepared material requires a stable style ID.");

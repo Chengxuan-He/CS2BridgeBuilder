@@ -49,6 +49,7 @@ records describe past actions only, not additional future obligations.
 - [20. Immutable mod metadata name](#20-immutable-mod-metadata-name)
 - [All documentation is written in English](#all-documentation-is-written-in-english)
 - [Default documentation format](#default-documentation-format)
+- [Costly operations](#costly-operations)
 - [Implementation requirements](#implementation-requirements)
 
 ## Contract routing and scope
@@ -158,6 +159,32 @@ branch/HEAD baselines and rollback references. Synchronize routing summaries and
 when their requirements overlap. Preserve source measurements, resource identities and verification
 limits; evidence timestamps are not specification revision dates. Operational code/deployment backups
 and failed asset-transaction recovery remain governed by their respective rules.
+
+## Costly operations
+
+Before recommending that the developer perform an operation, or performing it yourself, explicitly
+disclose material cost and risk when the operation can be expensive to reverse. This includes
+unchecking or uninstalling DLC, deleting or moving files, removing caches, and discarding build
+inputs when recovery requires substantial downloading, reconstruction, time or storage.
+
+Explain the actual affected scope and side effects, including possible permanent loss, remote
+redownloads and expensive rebuilds. Report known sizes and expected time, bandwidth and storage
+costs with their evidence; label unknowns as unknown rather than inventing estimates. Verify whether
+a complete, recoverable backup exists, identify its location and validation status, and explain the
+restoration steps and prerequisites. Partial extracts, manifests and preallocated download files
+are not complete backups. Never describe restoration as easy or immediate without evidence.
+
+In particular, unchecking DLC in Steam can uninstall its local files. Rechecking it may require a
+remote download; do not present this as a harmless availability toggle. Before suggesting it for
+a test, compare lower-cost reversible alternatives and state their limitations: hiding files or
+changing a mod setting may not reproduce the same native ownership, database or loading state.
+Do not claim equivalent test coverage without evidence.
+
+Prefer a suitable low-cost reversible alternative when it satisfies the intended test. Request
+confirmation only for material side effects outside the developer's informed authorization; do
+not repeat approval requests for a scope whose risks were already disclosed and authorized.
+This rule does not add approval gates to ordinary low-impact operations. Existing process,
+ownership, backup and manual game-start rules continue to apply.
 
 ## Implementation requirements
 

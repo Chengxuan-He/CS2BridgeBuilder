@@ -17,6 +17,6 @@ Native152 was installed with Cities2 absent. All 964 installed manifest files we
 
 `E2D5A4AEFFBD9D4EAA2700714C8B30583243569869DDF2C767BC4CA92FD45A82`
 
-Receipts and logs are in `artifacts/material-remap/shared/native152`. The official SDK ZIP is 77,171,451 bytes, still above the pre-existing 55 MB publication ceiling. Nothing was published or pushed.
+Receipts and logs are in `artifacts/material-remap/shared/native152`. The official SDK ZIP is 77,171,451 bytes. Nothing was published or pushed.
 
 The authorized tombstoned fixture remains for a user-run normal-exit test; no player bridge was manually removed. Its native151 failure retained the marker and original files as designed. Full physical cleanup with native152 remains to be verified in a real normal shutdown through `Logs/BridgeBuilder.Deletion.Shutdown.log`.

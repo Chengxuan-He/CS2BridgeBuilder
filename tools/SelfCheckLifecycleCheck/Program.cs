@@ -5,6 +5,7 @@ using Game.SceneFlow;
 static void Check(bool ok, string text) { if (!ok) throw new Exception(text); }
 static Probe Fresh()
 {
+    BridgePreparedMaterials.Available = true;
     BridgeDeferredRemoval.Hidden.Clear(); BridgeStartupAssetSystem.StopInspection();
     GameManager.instance = new() { state = GameManager.State.Booting, isGameLoading = true };
     BridgeDiskAudit.Calls = 0; BridgeDiskAudit.Incomplete = false; BridgeDiskAudit.Raise = false; BridgeDiskAudit.BackupFailed = false; BridgeDiskAudit.DeleteFailed = false; BridgeDiskAudit.Retirement = null;
@@ -67,7 +68,7 @@ Check(BridgeStartupRecovery.Retired.Contains("bridge") && BridgeDependencyPersis
     "Dependency migration is attempted before retiring an unregistered cached prefab (case 03)");
 p = Fresh(); Game.Prefabs.PrefabSystem.Loaded[0].Available = false;
 p.ScheduleInspectionAfterLoad(); Menu(p);
-Check(BridgeStartupRecovery.Retired.Contains("bridge") && BridgeDependencyPersistence.MigrationCalls == 1, "Unavailable bridge content is retired after attempted dependency migration");
+Check(BridgeStartupRecovery.Retired.Count == 0 && BridgeDependencyPersistence.MigrationCalls == 0, "Unavailable bridge content is deferred without dependency migration");
 p = Fresh(); Colossal.IO.AssetDatabase.AssetDatabase.user.Assets[0].Instance = null;
 p.ScheduleInspectionAfterLoad(); Menu(p);
 Check(BridgeStartupRecovery.Retired.Contains("bridge") && BridgeBuilder.Mod.Messages.Single() == "BridgeSelfCheckRemoved(1)\n\nBridgeSelfCheckRestart", "Failed loading retires owner");
@@ -207,7 +208,7 @@ foreach (var i in Enumerable.Range(0, 4))
 {
     var owner = "bridge-" + i;
     assets.Add(new() { path = Path.Combine(BridgeAssetCatalog.Root, owner, owner + ".Prefab"),
-        Instance = new Game.Prefabs.NetGeometryPrefab { name = owner, Available = i == 0 } });
+        Instance = new Game.Prefabs.NetGeometryPrefab { name = owner, Registered = i == 0 } });
     assets.Add(assets.Last()); // Multiple cached assets never multiply UUID counts.
 }
 BridgeDiskAudit.Retirement = owner => owner == "bridge-1" ? (true, true) : owner == "bridge-2" ? (true, false) : (false, false);
@@ -240,6 +241,16 @@ Console.WriteLine("PASS memory lifecycle, native conversion, repair-or-remove, b
 p=Fresh();BridgeDeferredRemoval.Hidden.Add("bridge");p.ScheduleInspectionAfterLoad();Menu(p);
 Check(BridgeDeferredRemoval.Resumes>0 && BridgeNetworkValidation.Calls==0 && BridgeDependencyPersistence.Calls==0 && BridgeBuilder.Mod.Messages.Count==0,"Tombstoned owners resume silently and never enter structural inspection or its result counts");
 Console.WriteLine("PASS tombstoned startup exclusion and silent inspection result");
+
+p = Fresh(); Game.Prefabs.PrefabSystem.Loaded[0].Available = false;
+p.ScheduleInspectionAfterLoad(); Menu(p);
+Check(BridgeDependencyPersistence.MigrationCalls == 0 && BridgeDiskAudit.Calls == 0 && BridgeStartupRecovery.Retired.Count == 0, "Unavailable content is preserved before dependency mutation");
+p = Fresh(); BridgePreparedMaterials.Available = false;
+Colossal.IO.AssetDatabase.AssetDatabase.user.Assets[0].Instance = null;
+p.ScheduleInspectionAfterLoad(); Menu(p);
+Check(BridgeDependencyPersistence.MigrationCalls == 0 && BridgeDiskAudit.Calls == 0 && BridgeStartupRecovery.Retired.Count == 0, "Unresolved prefab with absent optional content is preserved");
+
+Check(BridgeBuilder.Mod.Messages.Count == 0, "Unavailable content without changes does not demand a futile restart");
 class Probe : BridgeStartupAssetSystem
 {
     public void Create() => OnCreate();

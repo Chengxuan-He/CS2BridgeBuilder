@@ -79,7 +79,7 @@ source UVs where density is preserved. Remaining receivers need a verified regio
 representation. A full atlas reference outside its actual chart, a bounding-box-only test,
 vertex-only modulo, and an old per-triangle folded bake are not accepted replacements.
 Neither a small incomplete private output nor a build without prepared resources establishes
-the 55,000,000-byte complete Paradox Mods package gate.
+complete Paradox Mods package acceptance.
 
 ## Implementation verification
 
@@ -125,4 +125,4 @@ checks. No successful legacy fixture authorizes restoring the removed material l
 
 Only a complete native material graph bound by every required preview/create/regenerate/export
 branch can qualify for final package acceptance. An official SDK archive of the partial
-integration is a diagnostic measurement, even when its byte length is below 55,000,000.
+integration is a diagnostic measurement.

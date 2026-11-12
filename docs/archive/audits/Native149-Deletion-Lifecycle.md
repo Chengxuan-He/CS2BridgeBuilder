@@ -29,7 +29,7 @@ Frozen source: `artifacts/material-remap/shared/native149/source`, copied from n
 - Existing source-linked instance-removal tests passed, including ordinary-road/shared-junction preservation, editor handling and repeated removal.
 - Self-check lifecycle tests passed, including the new marked-owner exclusion: no structural inspection, dependency migration, popup or repair count for that owner.
 - All twelve localization suites passed. `git diff --check` passed.
-- Official SDK package: **77,172,761 bytes**, 964 files. The existing 55 MB publication gate remains exceeded; this task only installed locally and did not publish.
+- Official SDK package: **77,172,761 bytes**, 964 files. This task only installed locally and did not publish.
 
 Logs and receipts are in `artifacts/material-remap/shared/native149/`. No surrogate test result is presented as an in-game visual or shutdown result.
 

@@ -101,6 +101,7 @@ internal static class BridgeStyleCatalog
         var recorded = new HashSet<string>(StringComparer.Ordinal);
         var movableContent = PrefabCatalog.GetAll(prefabSystem).OfType<ContentPrefab>()
             .FirstOrDefault(content => content.name == "BridgesAndPorts" && content.isBuiltin);
+        Runtime.BridgePreparedMaterials.SetContent(movableContent);
         if (movableContent != null)
         {
             var source = BridgePrototypeSource.RecordedContent(movableContent);

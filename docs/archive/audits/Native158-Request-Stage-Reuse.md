@@ -42,5 +42,5 @@ The game process was absent at installation. The installer verified all 964 mani
 replaced only DLL/PDB, backed up their two original installed files, and removed/added no files.
 No saved bridge or player asset was changed. Candidate and installed DLL SHA256:
 `D7FFCDB195E7E710B69B6838D54AE50933B47654909DDB748B8F93C39EF25E0C`.
-The official SDK ZIP is 77,305,331 bytes; the existing 55 MB publication gate remains exceeded.
+The official SDK ZIP is 77,305,331 bytes.
 This was a local installation only; no publication or GitHub push occurred.

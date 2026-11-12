@@ -190,3 +190,7 @@ namespace BridgeBuilder.Runtime {
 }
 
 namespace BridgeBuilder.Runtime { internal static class BridgeDeferredRemoval { internal static HashSet<string> Hidden=new(); internal static int Resumes; internal static void Resume(){Resumes++;} internal static bool Excluded(string owner)=>Hidden.Contains(owner); } }
+
+namespace BridgeBuilder.Runtime { internal static class BridgePreparedMaterials { internal static bool HasUnavailableRequirement(Game.Prefabs.PrefabBase prefab)=>!prefab.Available; internal static bool Available=true; internal static bool RefreshContent(Game.Prefabs.PrefabSystem system)=>Available; } }
+
+namespace BridgeBuilder.Runtime { internal static class BridgeCustomShaderRestoration { internal static bool TryRestore(out int restored,out string? error) {restored=0;error=null;return true;} } }

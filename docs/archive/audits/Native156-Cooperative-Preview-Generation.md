@@ -36,4 +36,4 @@ Native156 was installed after confirming the game was absent. The deployment ver
 
 `87506F724DBDDC68C393851C20821495039C0552487160BCE8448464B20B200D`
 
-The postprocessed candidate also passed the actual captured-input and prepared-snapshot tests. The official SDK local ZIP is 77,242,551 bytes. The existing 55 MB publication budget is still not met; there was no publication. Candidate manifest, original-file backup and installation receipt are under `artifacts/material-remap/shared/native156/`. `git diff --check` passed. No game, launcher or player bridge asset was modified or started for verification.
+The postprocessed candidate also passed the actual captured-input and prepared-snapshot tests. The official SDK local ZIP is 77,242,551 bytes. There was no publication. Candidate manifest, original-file backup and installation receipt are under `artifacts/material-remap/shared/native156/`. `git diff --check` passed. No game, launcher or player bridge asset was modified or started for verification.

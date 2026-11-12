@@ -62,7 +62,7 @@ Follow [Scope and authority](MATERIAL_GENERATION_CONTRACT.md#scope-and-authority
 Sections 16–24 define the generation, material, marking and track requirements.
 The material generation contract governs original non-road reuse, source-density road tiling, all-LOD marking removal,
 lane-aligned wear, offline preparation,
-bounded runtime conversion and informational generated-owner material measurements and the total-package limit.
+bounded runtime conversion and informational generated-owner material measurements and complete package-size reporting.
 Implementation evidence and human acceptance remain specific to the tested style and input.
 
 This is the normative supplement to [BRIDGE_GENERATION_CONTRACT.md](BRIDGE_GENERATION_CONTRACT.md) for bascule/draw
@@ -736,7 +736,7 @@ appearance must remain intact. Record a complete, same-basis dependency comparis
 texture-only and incomplete reference graphs are insufficient evidence.
 Material generation contract sections 2 and 5 require informational measurement of the complete
 persisted material graph of each owner without a hard ceiling. The complete official SDK content
-ZIP remains limited to 55,000,000 bytes. Neither a prepared-directory subtotal nor an incomplete graph proves
+ZIP is measured separately without a hard ceiling. Neither a prepared-directory subtotal nor an incomplete graph proves
 compliance; report unavailable generated-owner measurements explicitly.
 
 ## 12. Integration and update scope
@@ -1191,7 +1191,7 @@ axes/layers, phase, original density, physical terminal bounds, original attribu
 Supported road patterns tile within terminal bounds without stretching. Fully reusable
 original materials remain unchanged; this is not general structural rebaking. Derived assets have
 new identities while source assets stay unchanged. Complete all PBR/filter/mip, native persistence
-and informational owner measurements / 55 MB package checks; no full-span bake or relaxed global tolerance is allowed.
+and informational owner measurements / complete package-size reporting; no full-span bake or relaxed global tolerance is allowed.
 Current feasibility and implementation must be verified separately from this specification.
 
 ## 18. Marking layout, mesh and native material
@@ -1531,7 +1531,7 @@ same complete measured source and matching same-source background; translate the
 measured visual center to actual native lane centers while preserving physical width, internal
 relationships and longitudinal density. No vehicle lane means no wear. Non-road finite/stretch
 modes retain their own source evidence. No full-span pixels, period cuts, arbitrary downsampling,
-custom shaders outside the two authorized programs or a relaxed package byte limit are permitted.
+custom shaders outside the two authorized programs or reduced material quality are permitted.
 
 Follow material contract [section 3](MATERIAL_GENERATION_CONTRACT.md#prototype-supported-road-surfaces-must-tile)
 and the [movable-road lane rule](BRIDGE_GENERATION_CONTRACT.md#wheel-track-placement-follows-actual-selected-lanes).

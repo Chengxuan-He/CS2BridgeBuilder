@@ -37,4 +37,4 @@ After fresh process checks confirmed Cities2 was absent, deployment verified all
 
 `58619BF5D41BB0DB6E2247F6B7B14F9FF42F088610CE007954D1399C18135453`
 
-The official SDK ZIP is 77,281,435 bytes. The existing 55 MB publication gate still fails; this is a local installation, not a publication. Receipt: `artifacts/material-remap/shared/native157/deployment-native157.json`.
+The official SDK ZIP is 77,281,435 bytes. This is a local installation, not a publication. Receipt: `artifacts/material-remap/shared/native157/deployment-native157.json`.

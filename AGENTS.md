@@ -108,9 +108,16 @@ shells or substitute operating-system dialogs. Compose mod-specific content with
 containers and preserve native focus, input and modal behavior. Follow
 [Project contract: Native game UI windows](docs/agent-contract/PROJECT_CONTRACT.md#native-game-ui-windows).
 
+## Costly operations require advance disclosure
+
+Before recommending or performing costly operations, disclose risks to the developer under
+[the project policy](docs/agent-contract/PROJECT_CONTRACT.md#costly-operations): actual side effects,
+recovery costs, verified backups and reversible alternatives. Unchecking Steam DLC can uninstall
+files and require remote downloads; it is not merely a toggle. Respect existing informed authorization.
+
 ## Performance and deployment
 
-Read the complete [material contract](docs/agent-contract/MATERIAL_GENERATION_CONTRACT.md): elevated branch selection, noexcept source/receiver routing, original non-road references, prototype-supported road processing, all-LOD PBR/alpha/mips, source-density tiling, marking removal and wear, allowed runtime conversions, packaged/shared resources and owner-local snapshots are mandatory. Do not replace this contract with source-name/CID adapters or geometry-only checks. Its owner-byte reporting has no ceiling; the official SDK ZIP limit remains 55,000,000 bytes.
+Read the complete [material contract](docs/agent-contract/MATERIAL_GENERATION_CONTRACT.md): elevated branch selection, noexcept source/receiver routing, original non-road references, prototype-supported road processing, all-LOD PBR/alpha/mips, source-density tiling, marking removal and wear, allowed runtime conversions, packaged/shared resources and owner-local snapshots are mandatory. Do not replace this contract with source-name/CID adapters or geometry-only checks. Report owner bytes and the complete official SDK ZIP separately; neither has a hard byte ceiling.
 
 Follow [CPU affine execution](docs/agent-contract/BRIDGE_GENERATION_CONTRACT.md#cpu-affine-geometry-execution): shared interleaved XYZ SIMD, measured binary coefficients/memberships, direct owned buffers, original arithmetic/rounding and all-LOD equivalence. No runtime expression recognition, axis-column execution or per-style numerical adapters. Native asset access stays on the main thread; measured cost and correctness govern CPU/GPU placement and bounded parallelism. GPU conversion and style branches are not implementation gates.
 
@@ -305,7 +312,7 @@ Follow [supported-road tiling](docs/agent-contract/MATERIAL_GENERATION_CONTRACT.
 and [offline source-atlas derivation](docs/agent-contract/MATERIAL_GENERATION_CONTRACT.md#offline-source-atlas-repeat-materials).
 Road repeats may be authored from pure prototype road content at original texel density;
 structural surfaces retain original native texture references.
-Preserve actual shape/motion/material boundaries, native loading, complete PBR/mips, informational owner measurements and the package byte limit.
+Preserve actual shape/motion/material boundaries, native loading, complete PBR/mips, informational owner measurements and complete package-size reporting.
 Keep original assets unchanged and assign new identities to changed derivatives. This specification
 does not certify implementation, quality or acceptance. No runtime strings change with these rules.
 

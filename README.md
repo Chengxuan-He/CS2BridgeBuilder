@@ -108,6 +108,12 @@ when their providing DLC or mod is not installed. Creating a bridge publishes it
 prefab world. Create-and-build also activates the ordinary network construction tool; neither action
 places a bridge automatically.
 
+Material safety requirements cover missing virtual textures as well as missing DLC or mods: validate
+the complete dependency graph before reading or registering selected resources. Prepared inputs
+belong under `~Materials` for on-demand registration. Missing content must be reported as unavailable,
+without fabricated textures or removal of saved bridges; unchanged deferred assets do not require
+a recovery restart. See the [material availability contract](docs/agent-contract/MATERIAL_GENERATION_CONTRACT.md#prepared-material-discovery-boundary). These requirements do not certify every dependency path in the published release.
+
 Every bridge created there has two deliberately separate names:
 
 - `PrefabName`: immutable `b<UUID>` identity, for example

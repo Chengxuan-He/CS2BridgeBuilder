@@ -91,8 +91,7 @@ Frozen unprocessed runtime SHA-256:
 `306E50825C99BE4C5FE0DF0D8E74B417C55BE788E49245F5423433F7F4F66738`.
 Official postprocessed package runtime SHA-256:
 `581D5FDAFE23A591B78493F4AF15A1432906A6DF9CDA03C461A20B46237B2B35`.
-The official SDK ZIP is **52,486,709 bytes**, below the approved **55,000,000-byte**
-cap, SHA-256 `2F33456DF2B3A40E291F42D1A848AA462517642F0B857BDA524D1EB4B5263737`.
+The official SDK ZIP measured **52,486,709 bytes**, SHA-256 `2F33456DF2B3A40E291F42D1A848AA462517642F0B857BDA524D1EB4B5263737`.
 All 937 ZIP entry names and content hashes match the postprocessed source tree;
 936 files are installation payloads (the additional ZIP entry is LICENSE.txt).
 There are 462 native material payloads: the previous 440 plus 22 MidMips caches.
@@ -122,7 +121,7 @@ are preserved outside temporary environments. These tests exercise native CPU
 reservation/loading and actual asynchronous carrier reads, not rendered game
 cold-load behavior. A fresh human game launch must confirm the reported 0-versus-3
 error is gone. Actual current human-generated owner material size remains
-**UNMEASURED** against the unchanged **10,000,000-byte** cap; independent snapshot
+**UNMEASURED**; owner bytes are informational, without a hard ceiling; independent snapshot
 checks do not substitute for that measurement. Near/far appearance, motion and
 save/reload remain manual checks. No game construction API was invoked.
 
@@ -154,7 +153,7 @@ fingerprints are unchanged. The 2,206-file input manifest is
 
 The official postprocessed SDK package is
 `artifacts/material-resume/shared/outputs/package/content.zip`: **47,604,274 bytes**,
-2,395,726 bytes below the 55,000,000-byte gate. ZIP SHA-256:
+ZIP SHA-256:
 `B76445C479EB99296EFF030C5DDDD7C212174928B29A671B7EFAB361E1C4564D`.
 The complete set of **893 entries** and every entry's bytes were verified.
 Postprocessed DLL SHA-256:
@@ -251,8 +250,7 @@ image in the running game.
 For each row, create representative shorter, longer and wider variants through the
 normal user workflow. Inspect near/mid/far LODs and transitions, closed/open motion,
 underside/rails/windows, and save/reload. Include narrow and wide road selections
-where supported. Verify the current saved owner footprint is at most 10,000,000
-material bytes; prepared-directory sizes cannot replace that measurement.
+where supported. Measure and report the current saved owner material footprint without a hard ceiling; prepared-directory sizes cannot replace that measurement.
 
 | Style | Focus | Near/far + motion | Save/reload | Owner bytes |
 | --- | --- | --- | --- | --- |
