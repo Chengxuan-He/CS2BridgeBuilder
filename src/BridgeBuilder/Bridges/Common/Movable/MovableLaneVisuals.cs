@@ -73,8 +73,6 @@ internal static class MovableLaneVisuals
         float span, out Batch[] batches, out string? error)
     {
         batches = Array.Empty<Batch>(); error = null;
-        if (!math.isfinite(span) || span <= 0f)
-        { error = "Lane visual extraction requires a finite positive span."; return false; }
         try
         {
             using var composition = new BridgePreviewLanes();
@@ -90,8 +88,6 @@ internal static class MovableLaneVisuals
         bool leftHandTraffic, float3 origin, out Batch[] batches, out string? error)
     {
         batches = Array.Empty<Batch>(); error = null;
-        if (context == World.DefaultGameObjectInjectionWorld)
-            throw new InvalidOperationException("Moving lane extraction requires a private network context.");
         try
         {
             var manager = context.EntityManager;
@@ -105,18 +101,13 @@ internal static class MovableLaneVisuals
                     if (!visited.Add(entity) || manager.HasComponent<Game.Common.Deleted>(entity) ||
                         manager.HasComponent<Game.Net.MasterLane>(entity) || manager.HasComponent<Game.Tools.Hidden>(entity)) continue;
                     var original = imported.Original(manager.GetComponentData<PrefabRef>(entity).m_Prefab);
-                    imported.CheckSource(original);
-                    if (original is not NetLanePrefab lane)
-                        throw new InvalidOperationException("A generated lane references a non-lane prefab.");
+                    var lane = (NetLanePrefab)original;
                     if (lane is not NetLaneGeometryPrefab geometry)
                     {
                         var native = World.DefaultGameObjectInjectionWorld;
                         var system = native.GetExistingSystemManaged<PrefabSystem>();
                         if (!system.TryGetEntity(lane, out var source))
                             throw new InvalidOperationException("A generated lane has no original prefab entity.");
-                        if (native.EntityManager.HasBuffer<SubMesh>(source) &&
-                            native.EntityManager.GetBuffer<SubMesh>(source, true).Length != 0)
-                            throw new InvalidOperationException("A non-geometry lane has render data requiring conversion: " + lane.name);
                         continue;
                     }
                     lanes.Add(new BridgePreviewLanes.Lane(geometry, manager.GetComponentData<Curve>(entity),
@@ -150,11 +141,8 @@ internal static class MovableLaneVisuals
                 for (var partIndex = 0; partIndex < parts.Length; partIndex++)
                 {
                     var part = parts[partIndex];
-                    if (part?.m_Mesh == null)
-                    { error = $"Lane {laneIndex} part {partIndex} has no render Prefab."; return false; }
                     if ((Requirements(part) & lane.RejectedSubMeshes) != 0) continue;
                     var source = part.m_Mesh;
-                    imported?.CheckSource(source);
                     // Native MeshSystem puts these meshes on Pipeline/SubPipeline,
                     // not the visible road layer. Keep utility lanes in the native
                     // network; do not bake their underground-view representation
@@ -172,12 +160,7 @@ internal static class MovableLaneVisuals
                     curve.m_Bezier.c -= offset; curve.m_Bezier.d -= offset;
                     if ((meshData.m_State & MeshFlags.Invert) != 0)
                         curve.m_Bezier = MathUtils.Invert(curve.m_Bezier);
-                    if (!math.isfinite(curve.m_Length) || curve.m_Length <= 0f ||
-                        !math.all(math.isfinite(size)) || size.z <= 0f)
-                    { error = $"Lane visual '{source.name}' has invalid native curve/mesh dimensions."; return false; }
                     var surfaces = source.surfaceAssets?.ToArray() ?? Array.Empty<SurfaceAsset>();
-                    if (surfaces.Length == 0 || surfaces.Any(surface => surface == null))
-                    { error = $"Lane visual '{source.name}' has unresolved surface references."; return false; }
                     var scale = lane.CurveScale();
                     var parameters = lane.CurveParameters(size);
                     var count = BatchDataHelpers.GetTileCount(curve, size.z, meshData.m_TilingCount,
@@ -204,7 +187,7 @@ internal static class MovableLaneVisuals
         { error = "Lane visual extraction failed: " + exception.Message; return false; }
     }
 
-    private static SubMeshFlags Requirements(NetLaneMeshInfo part)
+    internal static SubMeshFlags Requirements(NetLaneMeshInfo part)
     {
         SubMeshFlags flags = 0;
         if (part.m_RequireSafe) flags |= SubMeshFlags.RequireSafe;

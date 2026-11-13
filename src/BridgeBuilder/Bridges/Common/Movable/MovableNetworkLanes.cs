@@ -22,10 +22,6 @@ internal sealed partial class MovableNetworkLanes : SystemBase
 
     // Input is a complete network-only context: no building/area owners, and all native
     // mechanism SubObject/PointOfInterest relationships already exist in this private world.
-    internal void CalculateNetwork(TerrainHeightData terrain, Entity theme, bool leftHandTraffic,
-        RandomSeed randomSeed, BuildingConfigurationData buildingConfiguration, bool loaded) =>
-        GenerationWork.Synchronous(async () => { await CalculateNetworkAsync(terrain, theme, leftHandTraffic, randomSeed, buildingConfiguration, loaded); return true; });
-
     internal async System.Threading.Tasks.Task CalculateNetworkAsync(TerrainHeightData terrain, Entity theme, bool leftHandTraffic,
         RandomSeed randomSeed, BuildingConfigurationData buildingConfiguration, bool loaded)
     {
@@ -61,10 +57,6 @@ internal sealed partial class MovableNetworkLanes : SystemBase
     internal void CreatePrimary(TerrainHeightData terrain, Entity theme, bool leftHandTraffic,
         RandomSeed randomSeed, BuildingConfigurationData buildingConfiguration)
     {
-        if (World == World.DefaultGameObjectInjectionWorld)
-            throw new InvalidOperationException("Movable lanes require a private network world.");
-        if (!terrain.isCreated)
-            throw new ArgumentException("Movable lanes require initialized terrain data.", nameof(terrain));
         EntityManager.CompleteAllTrackedJobs();
         using var owners = EntityManager.CreateEntityQuery(new EntityQueryDesc
         {

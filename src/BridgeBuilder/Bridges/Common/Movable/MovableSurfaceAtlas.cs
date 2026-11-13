@@ -245,8 +245,7 @@ internal sealed class MovableSurfaceAtlas
                     var directSource = directPatch.Surface ?? native;
                     if ((directPatch.PreparedUnit || directPatch.SourceUv) && directSource != null)
                     {
-                        if (!objectSurfaces[directSource] || directPatch.Bands != null)
-                            return "Original-atlas projection requires an unchanged native object surface without repeat bands.";
+
                         var direct = charts.FirstOrDefault(c => c.Prepared == directSource &&
                             c.Repeat && c.Patch.Equals(directPatch));
                         if (direct == null)
@@ -316,8 +315,7 @@ internal sealed class MovableSurfaceAtlas
                     chart.RepeatCutout=repeatCutout;
                     if (!nativeRoad && (patch.SourceUv || patch.PreparedUnit))
                     {
-                        if (!objectSurfaces[source] || patch.Bands != null)
-                            return "Original-atlas projection requires an unchanged native object surface without repeat bands.";
+
                         chart.Prepared=source;
                     }
                     charts.Add(chart);
@@ -498,8 +496,7 @@ internal sealed class MovableSurfaceAtlas
                         {
                             var direct=c.RoadPatch.Surface ?? c.RoadSource!;
                             direct.LoadHeader();
-                            if (!MovableSurfaceAssets.IsObjectSurface(direct) || c.RoadPatch.Bands != null)
-                                return Reject("Original-atlas road projection requires an unchanged native object surface without repeat bands.");
+
                             tile.Prepared=direct;
                         }
                         repeating.Add(c,tile);charts.Add(tile);
@@ -746,22 +743,18 @@ internal sealed class MovableSurfaceAtlas
                     var bands=c.Patch.Bands;
                     if(bands!=null)
                     {
-                        float previous=0f,requiredWidth=0f,requiredHeight=0f;
+                        float requiredWidth=0f,requiredHeight=0f;
                         foreach(var band in bands)
                         {
-                            if(band.Start!=previous || band.End<=band.Start || band.End>1f ||
-                                band.Max.x<=band.Min.x || band.Max.y<=band.Min.y || !float.IsFinite(band.RepeatY) || band.RepeatY<=0f)
-                                return Reject("A repeating surface requires contiguous, non-empty texture bands.");
                             requiredWidth=Mathf.Max(requiredWidth,(band.Max.x-band.Min.x)*nativeWidth/(c.Patch.BandRows?1f:band.End-band.Start));
                             requiredHeight=Mathf.Max(requiredHeight,(band.Max.y-band.Min.y)*band.RepeatY*nativeHeight/(c.Patch.BandRows?band.End-band.Start:1f));
-                            previous=band.End;
+
                         }
-                        if(previous!=1f)return Reject("Repeating surface bands must cover the complete unit.");
+
                         width=4*Mathf.CeilToInt(requiredWidth/4f);
                         height=4*Mathf.CeilToInt(requiredHeight/4f);
                     }
-                    if(width>SystemInfo.maxTextureSize || height>SystemInfo.maxTextureSize)
-                        return Reject("Native repeating surface exceeds supported texture dimensions.");
+
                     tilePage=pages.Count;repeatPages.Add(key,tilePage);
                     var tile=new List<Chart>();
                     bool AddBand(int x,int end,Vector2 min,Vector2 max,float repeatY=1f)
@@ -797,8 +790,7 @@ internal sealed class MovableSurfaceAtlas
                 int minimum=Math.Min(1024,pageSize);
                 pageWidths[page]=repeat?entries[0].Width:Math.Min(pageSize,Math.Max(minimum,Mathf.NextPowerOfTwo(entries.Max(c=>c.X+c.W))));
                 pageHeights[page]=repeat?entries[0].Height:Math.Min(pageSize,Math.Max(minimum,Mathf.NextPowerOfTwo(entries.Max(c=>c.Y+c.H))));
-                if(entries.Any(c=>c.X+c.W>pageWidths[page] || c.Y+c.H>pageHeights[page]))
-                    return Reject("Appearance chart exceeds its allocated page.");
+
             }
             // Aliases across LODs are not necessarily members of the page's draw list.
             // They must use the same new UV denominator as their representative chart.
@@ -1023,18 +1015,13 @@ internal sealed class MovableSurfaceAtlas
                     }
                     if(c?.Patch.SourceAtlasRepeat==true)
                     {
-                        if(c.Prepared==null)return "Original-atlas wrap seams require an unchanged native Surface.";
+
                         if(!MovableRoadAtlasWrap.TryApply(new Triangle(v[0],v[1],v[2],material,t.Occurrence,t.SourceTriangle),c.Patch,out var wrapped,out var wrapError))return wrapError!;
                         foreach(var triangle in wrapped) AddOutput(triangle);wrapAdded+=wrapped.Length-1;
                         continue;
                     }
                     if(c?.Repeat==true)
                     {
-                        if(c.Patch.SourceTangent.HasValue)foreach(var vertex in v)
-                        {
-                            var tangent=c.Patch.SourceTangent.Value*new Vector4(vertex.Position.x,vertex.Position.y,vertex.Position.z,1);
-                            if(!float.IsFinite(tangent.x)||!float.IsFinite(tangent.y)||!float.IsFinite(tangent.z))return "Source tangent field produced an invalid direction.";
-                        }
                         string? projectionError=null;
                         Vertex Asphalt(Vertex vertex)
                         {
@@ -1103,7 +1090,7 @@ internal sealed class MovableSurfaceAtlas
         result=default;error=null;
         var a=triangle.A.Position; var b=triangle.B.Position; var c=triangle.C.Position;
         var normal=Vector3.Cross(b-a,c-a).normalized;
-        if(float.IsFinite(normal.x)&&float.IsFinite(normal.y)&&float.IsFinite(normal.z)&&normal != Vector3.zero){result=normal;return true;}
+        if(normal != Vector3.zero){result=normal;return true;}
         // Unity Normalize deliberately returns zero below its magnitude cutoff.
         // A construction fragment can be smaller while retaining nonzero area.
         // Normalize its actual plane, without deleting it or relaxing UV tests.
@@ -1111,8 +1098,6 @@ internal sealed class MovableSurfaceAtlas
         double fx=(double)c.x-a.x, fy=(double)c.y-a.y, fz=(double)c.z-a.z;
         double x=ey*fz-ez*fy, y=ez*fx-ex*fz, z=ex*fy-ey*fx;
         double length=Math.Sqrt(x*x+y*y+z*z);
-        if(!(length>0d) || double.IsInfinity(length))
-            {error="Native road chart has no finite geometric plane.";return false;}
         result=new Vector3((float)(x/length),(float)(y/length),(float)(z/length));return true;
     }
 

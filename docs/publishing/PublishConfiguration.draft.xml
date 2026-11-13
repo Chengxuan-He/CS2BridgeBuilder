@@ -21,7 +21,7 @@ Source: https://github.com/Chengxuan-He/CS2BridgeBuilder
   </LongDescription>
   <Thumbnail Value="Thumbnail.png" />
   <!-- Proposed project version; confirm against the final release assembly. -->
-  <ModVersion Value="26.11.12a" />
+  <ModVersion Value="26.11.14" />
   <!-- User-selected suggested game-version range; confirm before a future release. -->
   <GameVersion Value="1.6.*" />
   <!-- Do not add Road Builder as a required dependency. Audit other requirements before release. -->

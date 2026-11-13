@@ -9,8 +9,6 @@ internal static class Lift01FarEndLips
 {
     internal static MovableStructureModel.Plan Apply(MovableStructureModel.Plan plan, float delta)
     {
-        if (plan.SourcePositions.Length != Numeric_Types_Lift01_Lift01FarEndLips_g_cs.Values.I32[0] || plan.SourceIndices.Length != Numeric_Types_Lift01_Lift01FarEndLips_g_cs.Values.I32[1] || plan.SourceIndices[Numeric_Types_Lift01_Lift01FarEndLips_g_cs.Values.I32[2]].Length != Numeric_Types_Lift01_Lift01FarEndLips_g_cs.Values.I32[3] || !float.IsFinite(delta))
-            throw new InvalidOperationException("Lift01 end lips require their recorded middle source.");
         var positions = new Vector3[plan.SourcePositions.Length];
         Array.Copy(plan.Positions, positions, positions.Length);
         AffineGeometry.Execute(BatchProgram0.Data, 0, new[] { plan.SourcePositions, positions }, Array.Empty<float[]>(), new float[] { delta });

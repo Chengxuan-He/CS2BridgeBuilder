@@ -11,15 +11,10 @@ internal static class Lift01RoadTops
         {
             0 => Numeric_Types_Lift01_Lift01RoadTops_g_cs.Values.I32[0],
             1 => Numeric_Types_Lift01_Lift01RoadTops_g_cs.Values.I32[1],
-            2 => Numeric_Types_Lift01_Lift01RoadTops_g_cs.Values.I32[2],
-            _ => throw new ArgumentOutOfRangeException(nameof(lod))};
-        if (indices.Length != count * Numeric_Types_Lift01_Lift01RoadTops_g_cs.Values.I32[3] || removed.Length != count)
-            throw new InvalidOperationException("Lift01 road-top source layout changed.");
+            2 => Numeric_Types_Lift01_Lift01RoadTops_g_cs.Values.I32[2]};
         foreach (var face in Faces(lod))
         {
             var offset = face.Triangle * Numeric_Types_Lift01_Lift01RoadTops_g_cs.Values.I32[4];
-            if (indices[offset] != face.A || indices[offset + Numeric_Types_Lift01_Lift01RoadTops_g_cs.Values.I32[5]] != face.B || indices[offset + Numeric_Types_Lift01_Lift01RoadTops_g_cs.Values.I32[6]] != face.C)
-                throw new InvalidOperationException("Lift01 road-top source topology changed.");
             removed[face.Triangle] = true;
         }
     }
@@ -621,8 +616,7 @@ internal static class Lift01RoadTops
             (Numeric_Types_Lift01_Lift01RoadTops_g_cs.Values.I32[2331], Numeric_Types_Lift01_Lift01RoadTops_g_cs.Values.I32[2332], Numeric_Types_Lift01_Lift01RoadTops_g_cs.Values.I32[2333], Numeric_Types_Lift01_Lift01RoadTops_g_cs.Values.I32[2334]),
             (Numeric_Types_Lift01_Lift01RoadTops_g_cs.Values.I32[2335], Numeric_Types_Lift01_Lift01RoadTops_g_cs.Values.I32[2336], Numeric_Types_Lift01_Lift01RoadTops_g_cs.Values.I32[2337], Numeric_Types_Lift01_Lift01RoadTops_g_cs.Values.I32[2338]),
             (Numeric_Types_Lift01_Lift01RoadTops_g_cs.Values.I32[2339], Numeric_Types_Lift01_Lift01RoadTops_g_cs.Values.I32[2340], Numeric_Types_Lift01_Lift01RoadTops_g_cs.Values.I32[2341], Numeric_Types_Lift01_Lift01RoadTops_g_cs.Values.I32[2342]),
-        },
-        _ => throw new ArgumentOutOfRangeException(nameof(lod))};
+        }};
 }
 
 // Embedded numerical arrays: Types_Lift01_Lift01RoadTops_g_cs

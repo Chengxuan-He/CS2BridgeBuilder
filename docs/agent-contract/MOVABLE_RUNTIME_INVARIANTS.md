@@ -134,12 +134,10 @@ on legacy conversion and fee restoration. The complete policy remains in the con
 - Translate bridge-pier columns. Do not stretch them.
 - Apply every part classification and transform to the highest-detail mesh and every LOD. Do not allow
   reduced LOD topology to reclassify a part.
-- Do not over-defend internal mod logic. Internal invariant failures must surface as explicit ERROR,
-  with exceptions where appropriate, rather than being hidden by special cases, silent returns or
-  fallback values. Defend external boundaries, including generated Prefabs that can be damaged and
-  failures originating in game or third-party APIs. Do not report failed I/O, resource decoding or
-  native registration as success. Structural or appearance quality is not an internal invariant
-  failure and must not block generation or publication.
+- Follow [trusted internal execution](../../AGENTS.md#trusted-internal-execution). These invariants
+  describe required construction and offline verification, not runtime assertions. Trust memory and
+  computed results; retain validation only at external file/network IO boundaries. Preserve actual
+  failure handling, native business rules, cancellation and disposal.
 - Preserve the archetype's complete prefab behavior. A generated bridge changes requested
   geometry and the selected road structure, together with the native representation, UV-density,
   LOD and persistence conversions explicitly required by the general and specialist contracts.

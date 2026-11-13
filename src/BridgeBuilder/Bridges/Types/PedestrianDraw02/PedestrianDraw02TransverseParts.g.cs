@@ -11,10 +11,7 @@ internal static class PedestrianDraw02TransverseParts
         var data = lod switch
         {
             0 => (Count: Numeric_Types_PedestrianDraw02_PedestrianDraw02TransverseParts_g_cs.Values.I32[0], Parts: Near),
-            1 => (Count: Numeric_Types_PedestrianDraw02_PedestrianDraw02TransverseParts_g_cs.Values.I32[1], Parts: Middle),
-            _ => throw new ArgumentOutOfRangeException(nameof(lod))};
-        if (!float.IsFinite(delta) || source.Length != data.Count || positions.Length != data.Count)
-            throw new InvalidOperationException("PedestrianDraw02 transverse parts require their recorded main mesh.");
+            1 => (Count: Numeric_Types_PedestrianDraw02_PedestrianDraw02TransverseParts_g_cs.Values.I32[1], Parts: Middle)};
         foreach (var part in data.Parts)
         {
             var span = part.Max - part.Min;

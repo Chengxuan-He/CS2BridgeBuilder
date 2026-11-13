@@ -35,15 +35,10 @@ internal sealed partial class MovableNetworkLanes
             if (selected.Length == 0) continue;
             for (var j = 0; j < selected.Length; j++, cursor++)
             {
-                if (cursor >= pieces.Length || pieces[cursor].m_Piece != selected[j].m_Piece ||
-                    pieces[cursor].m_SectionIndex != sectionIndex)
-                    throw new InvalidOperationException("Native section provenance does not match the initialized composition.");
                 result[cursor] = root;
             }
             sectionIndex++;
         }
-        if (cursor != pieces.Length)
-            throw new InvalidOperationException("Native section provenance did not cover every composition piece.");
         return result;
     }
 }

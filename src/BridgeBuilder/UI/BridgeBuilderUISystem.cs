@@ -385,6 +385,7 @@ internal sealed class BridgeDeckUiItem : IJsonWritable
         Property(writer, "id", Id);
         Property(writer, "name", Name);
         Property(writer, "icon", Icon);
+        writer.PropertyName("iconRatio"); writer.Write(BridgeCardIcon.Ratio(Icon));
         Property(writer, "networkType", NetworkType);
         writer.PropertyName("width"); writer.Write(Width);
         writer.TypeEnd();
@@ -412,6 +413,7 @@ internal sealed class BridgeStyleUiItem : IJsonWritable
         Property(writer, "id", Id);
         Property(writer, "name", Name);
         Property(writer, "icon", Icon);
+        writer.PropertyName("iconRatio"); writer.Write(BridgeCardIcon.Ratio(Icon));
         Property(writer, "family", Family);
         Property(writer, "source", Source);
         writer.PropertyName("supportsSingle"); writer.Write(SupportsSingle);
@@ -445,6 +447,7 @@ internal sealed class BridgeAssetInfoUiItem : IJsonWritable
         Property(writer, "lowerDeckId", LowerDeckId);
         Property(writer, "styleId", StyleId);
         Property(writer, "icon", Icon);
+        writer.PropertyName("iconRatio"); writer.Write(BridgeCardIcon.Ratio(Icon));
         writer.PropertyName("isDoubleDeck"); writer.Write(IsDoubleDeck);
         writer.PropertyName("available"); writer.Write(Available);
         writer.TypeEnd();

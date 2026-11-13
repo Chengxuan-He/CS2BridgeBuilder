@@ -3400,7 +3400,6 @@ internal static class Draw01ControlBuildingData
             Numeric_Types_Draw01_Draw01ControlBuildingData_g_cs.Values.I32[3370],
             Numeric_Types_Draw01_Draw01ControlBuildingData_g_cs.Values.I32[3371],
         },
-        _ => throw new ArgumentOutOfRangeException(nameof(lod), "No control-building face map for this native mesh/LOD."),
     };
 }
 

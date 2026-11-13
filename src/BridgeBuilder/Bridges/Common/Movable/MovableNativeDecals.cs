@@ -102,13 +102,11 @@ internal static class MovableNativeDecals
         {
             var direction = (Vector3)(segment.D - segment.A);
             var length = direction.magnitude;
-            if (!float.IsFinite(length)) throw new InvalidOperationException("Native marking curve is non-finite.");
             var rotation = length == 0f ? batch.Transform.rotation : Quaternion.LookRotation(direction, Vector3.up);
             var inverse = Quaternion.Inverse(rotation);
             var progress = curve.GetColumn(3).w == 0f ? 0f : (segment.A.w + segment.D.w) * .5f / curve.GetColumn(3).w;
             var width = batch.Size.x * Mathf.Lerp(batch.Scale.x, batch.Scale.z, progress);
             var height = batch.Size.y;
-            if (!float.IsFinite(width) || !float.IsFinite(height)) throw new InvalidOperationException("Non-finite native decal dimensions.");
             var center = (Vector3)batch.Transform.GetColumn(3)
                 + (Vector3)(segment.A + segment.D) * .5f + Vector3.up * batch.Size.w
                ;

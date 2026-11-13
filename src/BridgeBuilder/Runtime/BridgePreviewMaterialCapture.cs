@@ -23,11 +23,14 @@ internal sealed class BridgePreviewMaterialCapture
         try
         {
             if (!File.Exists(request)) return null;
-            // The first catalogue preview can be a fixed bridge. Leave the arm
-            // pending until the requested generated-material mechanism appears.
+            // A source-name filter can target native fixed geometry. Empty requests retain
+            // the historical generated-material filter; unrelated catalogue previews do not consume it.
+            var match = File.ReadAllText(request).Trim();
             bool generated = false;
             foreach (var draw in draws.Draws)
-                generated |= draw.Material.shader.name.StartsWith("BridgeBuilder/", StringComparison.Ordinal);
+                generated |= match.Length != 0
+                    ? draw.Source.IndexOf(match, StringComparison.OrdinalIgnoreCase) >= 0
+                    : draw.Material.shader.name.StartsWith("BridgeBuilder/", StringComparison.Ordinal);
             if (!generated) return null;
             var folder = Path.Combine(root, "PreviewMaterialCaptures", Guid.NewGuid().ToString("N"));
             Directory.CreateDirectory(folder);
@@ -76,6 +79,7 @@ internal sealed class BridgePreviewMaterialCapture
                     Material(text, draw.Material, materialId);
                 }
                 text.WriteLine($"draw={drawIndex++} mesh={meshId} material={materialId} submesh={draw.SubMesh} meshName={draw.Mesh.name}");
+                text.WriteLine("source=" + draw.Source);
                 Matrix(text, "drawTransform", draw.Transform);
                 text.WriteLine("boundsCenter=" + Vector(draw.LocalBounds.center) + " boundsSize=" + Vector(draw.LocalBounds.size));
                 var shader = draw.Material.shader;
@@ -91,6 +95,13 @@ internal sealed class BridgePreviewMaterialCapture
                         Vector(draw.Properties.GetVector(name))));
                 }
                 text.WriteLine("block colossal_BoneParameters=" + Vector(draw.Properties.GetVector("colossal_BoneParameters")));
+                for (var i = 0; i < 8; i++)
+                {
+                    var name = "colossal_CompositionMatrix" + i;
+                    if (draw.Properties.HasProperty(Shader.PropertyToID(name))) Matrix(text, name, draw.Properties.GetMatrix(name));
+                }
+                for (var i = 0; i < 4; i++)
+                    text.WriteLine("block colossal_CompositionSync" + i + "=" + Vector(draw.Properties.GetVector("colossal_CompositionSync" + i)));
             }
             foreach (var pose in draws.DiagnosticPoses)
             {

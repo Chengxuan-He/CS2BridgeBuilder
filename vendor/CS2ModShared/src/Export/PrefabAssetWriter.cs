@@ -17,8 +17,7 @@ internal sealed class PrefabAssetWriter
         PathFor(name).ToPath(new FileSystemDataSource.PathEscapePolicy()) + ".Prefab";
     private static readonly MethodInfo SetUninitializedInstanceMethod = typeof(PrefabAsset).GetMethod(
         "SetUninitializedInstance",
-        BindingFlags.Instance | BindingFlags.NonPublic)
-        ?? throw new MissingMethodException(typeof(PrefabAsset).FullName, "SetUninitializedInstance");
+        BindingFlags.Instance | BindingFlags.NonPublic)!;
 
     /// <summary>
     /// Saves the cloned graph to disk and returns how many runtime dependencies were written. Registering

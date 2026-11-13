@@ -36,8 +36,7 @@ internal static class MovableRoadAppearance
             Type[] supportedTypes, MovableRoadGeometry.Partition? carriageway = null,
             MovableRoadGeometry.Partition? sidewalk = null)
         {
-            if (patches.Length != supportedTypes.Length)
-                Error="Road appearance support must match the LOD's physical domains.";
+
             Native = native;
             Patches = patches;
             SupportedTypes = supportedTypes;

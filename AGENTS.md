@@ -26,6 +26,7 @@ session.
 | Geometry identification or metadata generation under `tools/GeometryMetaprogram` | This file, contract sections 1–9 and 13, and [`tools/GeometryMetaprogram/AGENTS.md`](tools/GeometryMetaprogram/AGENTS.md) |
 | Diagnosis or visual validation | Contract sections 1 and 6–9, plus the nearest directory-level `AGENTS.md` |
 | Double-deck bridge work | The complete project and bridge generation contracts, especially section 11 |
+| Non-Network virtual bridge prototypes | The complete project and bridge generation contracts and [virtual prototype preparation before generation](docs/agent-contract/NON_NETWORK_BRIDGES_CONTRACT.md) |
 | Movable bridge work (draw, lift, pedestrian or other mechanisms) | The complete project and bridge generation contracts and [MOVABLE_BRIDGES_CONTRACT.md](docs/agent-contract/MOVABLE_BRIDGES_CONTRACT.md) |
 | Git, branching, commit or integration work | Contract section 12 before changing files or branches |
 | Build, install or generated-asset cleanup after a source update | Contract sections 6 and 13 |
@@ -42,15 +43,31 @@ They remain normative; section 20 stays in the project contract.
 
 All documentation must be written in English.
 
+### Trusted internal execution
+
+All steps and results that do not involve external-device IO are trusted, including memory
+operations, pure computation, native in-memory calls and compiler output. Do not add or retain
+runtime assertions, input/result verification, finite-value checks, shape/count/range consistency
+gates or repeated validation of already accepted owned data for those operations. This is the
+project's requested execution/performance policy, not a measured claim about the cause of crashes.
+Validate actual file/network input once at its IO boundary; preserve file ownership/containment,
+serialized format and dependency checks there, and report actual IO/API/compilation failures.
+After data becomes owned internal state, do not revalidate it downstream. Business selection,
+algorithmic branches, native game rules, cancellation, locking, scheduling and disposal remain
+required behavior, not result validation. Preserve ordinary failure propagation without fabricating
+success or adding proactive invariant checks. Independent offline development tests may assert
+results; their checks must not enter the mod's execution path. Tools embedded in or invoked by the
+runtime follow the runtime rule, regardless of their repository directory.
+
 ### Packaged textures belong to road running surfaces
 
 Follow [Packaged textures belong to road running surfaces](docs/agent-contract/MATERIAL_GENERATION_CONTRACT.md#packaged-textures-belong-to-road-running-surfaces) for this requirement.
 
 Follow [player-controlled generation](docs/agent-contract/BRIDGE_GENERATION_CONTRACT.md#player-controlled-generation-without-structural-rejection-gates): do not reject a generation request
 because of structural shape, width, signed scale, degeneracy, overlap, clearance or appearance
-quality. Such checks belong to offline verification or non-blocking diagnostics. Material
-no-match selects Original. Preserve actual file/schema/index, nonrepresentable arithmetic,
-write and native API errors; never fabricate successful output. This applies to all bridge
+quality. Such checks belong to offline verification. Material
+no-match selects Original. Preserve external file/schema/index validation at IO boundaries and
+actual write/native API failures; trust internal arithmetic under the execution policy. This applies to all bridge
 families and LODs without changing historical dependency recovery.
 
 Unless otherwise specified, all project documentation must be saved as Markdown (.md).
@@ -68,6 +85,8 @@ and alternate/error paths, preserve format placeholders, and run the applicable 
 before delivery. Changes with no user-visible text must still verify that existing localization
 behavior is preserved. Keep technical identifiers and asset identities unlocalized; project
 documentation remains in English as required above.
+
+Source-mod display follows [full published source names](docs/agent-contract/BRIDGE_GENERATION_CONTRACT.md#full-published-source-mod-names): use the complete Paradox Mods title, verify it through web search and the official page/API, and retain technical IDs only for binding. Apply this to every source, localize the prefix, preserve access to the full long title, and never replace a missing name with a numeric ID or guessed abbreviation.
 
 ## Current implementation policy
 
@@ -319,6 +338,12 @@ does not certify implementation, quality or acceptance. No runtime strings chang
 ## Dynamically generated persistent material shaders
 
 Follow [dynamic material shaders](docs/agent-contract/MATERIAL_GENERATION_CONTRACT.md#dynamically-generated-and-independently-persisted-material-shaders).
+
+Compiled outputs, including shaders, may have different byte lengths across architectures,
+compiler versions and compilation options. Never reserve fixed-length slots or require the new
+output to equal an author's sample length. Rebuild the containing format with the actual output
+lengths, offsets and alignment. Do not truncate, pad to disguise compatibility, or retain old
+bytecode as a silent fallback. Preserve real format, range and seed-integrity validation.
 
 Selected-road decals follow [source identity and coverage](docs/agent-contract/MATERIAL_GENERATION_CONTRACT.md#source-preserving-selected-road-decals): preserve each original texture, alpha and evaluated UV; no name/type/CID filtering or generic white/yellow replacement. Distinct transparent layers cannot erase each other by footprint alone.
 

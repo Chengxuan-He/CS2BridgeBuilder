@@ -187,6 +187,11 @@ namespace BridgeBuilder
 
 namespace BridgeBuilder.Runtime
 {
+    internal static class BridgeRuntimeRequests
+    {
+        internal static readonly List<string> Completions = new();
+        internal static void Complete(string status) => Completions.Add(status);
+    }
     internal static class BridgeLoadFailures
     {
         internal static readonly HashSet<Game.Prefabs.PrefabBase> Quarantined = new();

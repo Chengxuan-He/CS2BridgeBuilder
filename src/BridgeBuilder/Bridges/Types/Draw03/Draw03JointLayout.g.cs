@@ -11,8 +11,7 @@ internal static class Draw03JointLayout
         var data = lod switch
         {
             0 => Near,
-            1 => Middle,
-            _ => throw new ArgumentOutOfRangeException(nameof(lod))};
+            1 => Middle};
         var positions = new Vector3[plan.SourcePositions.Length];
         Array.Copy(plan.Positions, positions, positions.Length);
         var removed = (bool[])plan.RemoveTriangles[Numeric_Types_Draw03_Draw03JointLayout_g_cs.Values.I32[0]].Clone();

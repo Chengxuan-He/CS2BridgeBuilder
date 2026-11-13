@@ -16,8 +16,6 @@ internal static class Draw02MovingAtlasAppearance
         float halfDelta, Pose pose, Patch[] otherPatches, Type[] otherSupport,
         Partition otherCarriageway, Partition sidewalk)
     {
-        if (lod < 0 || lod > 1 || native.id.guid.ToString() != "8a28ab8d9526e258efbcb81c3bbc936b")
-            throw new InvalidOperationException("Draw02 moving atlas requires its measured near or middle Surface.");
         var data = Numeric_Types_Draw02_Draw02MovingAtlasAppearance_cs.Values;
         var ints = data.I32; var values = data.F32; var header = lod * 9;
         var count = ints[header]; var slabs = ints[header + 1];

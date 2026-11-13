@@ -13,10 +13,7 @@ internal static class Draw02FixedBodies
         {
             0 => (Count: Numeric_Types_Draw02_Draw02FixedBodies_g_cs.Values.I32[0], Left: Left0, Centre: Centre0, Right: Right0),
             1 => (Count: Numeric_Types_Draw02_Draw02FixedBodies_g_cs.Values.I32[1], Left: Left1, Centre: Centre1, Right: Right1),
-            2 => (Count: Numeric_Types_Draw02_Draw02FixedBodies_g_cs.Values.I32[2], Left: Left2, Centre: Centre2, Right: Right2),
-            _ => throw new ArgumentOutOfRangeException(nameof(lod))};
-        if (source.Length != data.Count || positions.Length != data.Count)
-            throw new InvalidOperationException("Draw02 fixed-body mapping requires its recorded main mesh.");
+            2 => (Count: Numeric_Types_Draw02_Draw02FixedBodies_g_cs.Values.I32[2], Left: Left2, Centre: Centre2, Right: Right2)};
         foreach (var coordinateRows in StructureRows.Stages(data.Left))
             AffineGeometry.Execute(RangePrograms.Data, 0, new[] { source, positions }, Array.Empty<float[]>(), new float[] { delta }, count: coordinateRows.Length, indices: new[] { coordinateRows });
         foreach (var coordinateRows in StructureRows.Stages(data.Centre))

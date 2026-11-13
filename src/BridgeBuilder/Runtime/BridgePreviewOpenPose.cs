@@ -30,9 +30,7 @@ internal sealed class BridgePreviewOpenPose : IDisposable
 
         void Evaluate(int i)
         {
-            if (i < 0 || i >= count) throw new InvalidOperationException("Invalid preview bone reference.");
             if (state[i] == 2) return;
-            if (state[i] == 1) throw new InvalidOperationException("Cyclic preview bone dependency.");
             state[i] = 1;
             var b = bones[i];
             var parent = Matrix4x4.identity; var restParent = Matrix4x4.identity;
@@ -65,9 +63,7 @@ internal sealed class BridgePreviewOpenPose : IDisposable
                 case BoneType.ScaledMovement:
                 case BoneType.ScaledRotation:
                     var sourceIndex = Array.FindIndex(bones, candidate => candidate.m_ConnectionID == b.m_SourceID);
-                    if (b.m_SourceID == 0 || sourceIndex < 0)
-                        throw new InvalidOperationException("Missing movable preview source bone.");
-                    Evaluate(sourceIndex);
+;                    Evaluate(sourceIndex);
                     var source = bones[sourceIndex];
                     if (b.m_Type == BoneType.ScaledMovement)
                         p += (positions[sourceIndex] - source.position) * b.m_Speed;

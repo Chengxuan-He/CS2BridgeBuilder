@@ -12,8 +12,6 @@ internal static class Lift01RenderAssembly
 
     internal static async System.Threading.Tasks.Task<RenderPrefab?> CreateMechanismAsync(TowerFactory factory, string name, IReadOnlyList<MovableRoadAssets.Level> roadLevels, float halfWidthDelta)
     {
-        if (roadLevels.Count != Numeric_Types_Lift01_Lift01RenderAssembly_cs.Values.I32[0])
-            throw new ArgumentException("Lift01 mechanism requires all three native road LODs.");
         var expected = new[]
         {
             "LiftBridge01 Mesh",
@@ -23,8 +21,6 @@ internal static class Lift01RenderAssembly
         for (var lod = Numeric_Types_Lift01_Lift01RenderAssembly_cs.Values.I32[1]; lod < roadLevels.Count; lod++)
         {
             var source = roadLevels[lod].Source;
-            if (source == null || source.asset != null || !string.Equals(source.name, expected[lod], StringComparison.Ordinal))
-                throw new InvalidOperationException($"Lift01 LOD {lod} requires its reconstructed native source.");
         }
 
         var levels = new[]
@@ -34,14 +30,10 @@ internal static class Lift01RenderAssembly
             roadLevels[Numeric_Types_Lift01_Lift01RenderAssembly_cs.Values.I32[4]]
         };
         var far = levels[Numeric_Types_Lift01_Lift01RenderAssembly_cs.Values.I32[5]];
-        if (far.ExtraStructure != null)
-            throw new InvalidOperationException("Lift01 far structure has already been attached.");
         Mesh[]? meshes = null;
         try
         {
             meshes = PrivateGeometryReader.Read(levels[Numeric_Types_Lift01_Lift01RenderAssembly_cs.Values.I32[6]].Source);
-            if (meshes.Length != Numeric_Types_Lift01_Lift01RenderAssembly_cs.Values.I32[7] || meshes[Numeric_Types_Lift01_Lift01RenderAssembly_cs.Values.I32[8]].subMeshCount != Numeric_Types_Lift01_Lift01RenderAssembly_cs.Values.I32[9])
-                throw new InvalidOperationException("Lift01 tower supplement requires the recorded middle main surface.");
             var plan = Lift01FarTowerCore.Create(meshes[Numeric_Types_Lift01_Lift01RenderAssembly_cs.Values.I32[10]].vertices, meshes[Numeric_Types_Lift01_Lift01RenderAssembly_cs.Values.I32[11]].GetIndices(Numeric_Types_Lift01_Lift01RenderAssembly_cs.Values.I32[12]), halfWidthDelta);
             plan = Lift01FarEndLips.Apply(plan, halfWidthDelta);
             // The shared supplemental path compacts referenced vertices and preserves

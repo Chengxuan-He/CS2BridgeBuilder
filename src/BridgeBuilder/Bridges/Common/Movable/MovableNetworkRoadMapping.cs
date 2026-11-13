@@ -29,11 +29,7 @@ internal sealed class MovableNetworkRoadMapping
         IReadOnlyDictionary<int, int[]> faces, Vector4 u, float longitudinalDensity,
         float tangentSign)
     {
-        if (surface == null || faces == null || !float.IsFinite(longitudinalDensity) ||
-            longitudinalDensity <= 0 || (tangentSign != 1 && tangentSign != -1) ||
-            !float.IsFinite(u.x) || !float.IsFinite(u.y) || !float.IsFinite(u.z) || !float.IsFinite(u.w))
-            Error="Invalid native network road projection.";
-        Surface = surface!; Faces = faces==null?new Dictionary<int,int[]>():faces.ToDictionary(p => p.Key, p => (int[])p.Value.Clone());
+        Surface = surface; Faces = faces.ToDictionary(p => p.Key, p => (int[])p.Value.Clone());
         U = u; LongitudinalDensity = longitudinalDensity; TangentSign = tangentSign;
     }
 
@@ -125,12 +121,9 @@ internal sealed class MovableNetworkRoadMapping
     {
         error=null;
         var attribute = model.FirstOrDefault(a => a.attribute == VertexAttribute.Tangent);
-        if(attribute==null){error="Native road input has no tangent channel.";return false;}
         using var tangents = new NativeArray<MeshTangent>(model.vertexCount, Allocator.Temp);
         MeshTangent.Unpack(new NativeSlice<byte>(attribute.data), tangents,
             model.vertexCount, attribute.format, attribute.dimension);
-        if (attribute.format != VertexAttributeFormat.Float32 || attribute.dimension != 1)
-            {error="Native road input has an unsupported packed tangent layout.";return false;}
         var data = attribute.data;
         for (int i = 0; i < model.vertexCount; i++)
         {

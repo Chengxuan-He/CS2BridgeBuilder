@@ -21,12 +21,17 @@ copies remain governed by the dependency persistence contract.
 
 Follow [player-controlled generation](BRIDGE_GENERATION_CONTRACT.md#player-controlled-generation-without-structural-rejection-gates): do not reject a generation request
 because of structural shape, width, signed scale, degeneracy, overlap, clearance or appearance
-quality. Such checks belong to offline verification or non-blocking diagnostics. Material
-no-match selects Original. Preserve actual file/schema/index, nonrepresentable arithmetic,
-write and native API errors; never fabricate successful output. This applies to all bridge
+quality. Such checks belong to offline verification. Material
+no-match selects Original. Preserve external file/schema/index validation at IO boundaries and
+actual write/native API failures; trust internal arithmetic under the execution policy. This applies to all bridge
 families and LODs without changing historical dependency recovery.
 
 ## Scope and authority
+
+[Trusted internal execution](../../AGENTS.md#trusted-internal-execution) applies throughout this
+pipeline, including native memory calls, compilation and texture/GPU computation. Verification
+requirements below are offline development evidence or actual file/network IO boundary checks;
+they do not authorize runtime validation of internal results or repeated owned-data checks.
 
 This contract governs materials for fixed and movable bridges, every part and LOD, and
 preview, creation, regeneration and export. Geometry and native behavior remain governed by
@@ -159,7 +164,7 @@ Genuinely missing/corrupt required resources, invalid descriptor data or a faile
 may return a clear non-exception failure. Include request, stage, source identity, affected
 part/LOD, dependency and cause. Release owned partial output and preserve sources. Localized
 preview/creation failure applies to these fatal operations; compatibility differences are
-non-blocking diagnostics attached to successful processed output, not ERROR failures.
+offline diagnostics; do not add runtime internal-result checks or ERROR failures.
 
 **Historical implementation status (not the current compatibility decision policy):** native118 does not satisfy this contract. Its CID-specific
 TiledRoad conversion and omitted network worldspace blend require a general complete
@@ -675,6 +680,14 @@ The loading limitation is bounded to the investigated current game interfaces, n
 possible future engine implementation.
 
 ### Dynamically generated and independently persisted material shaders
+
+Compiled program sizes may vary across architectures, compiler versions and options. An authoring
+sample is not a fixed-capacity slot: accept the complete compiler output and rebuild shader program
+records, compressed segments, serialized-object sizes/offsets and bundle block/directory lengths
+with their required alignment. Never require equal byte counts, truncate output, pad it to conceal
+a mismatch, or silently retain the seed program. Keep actual schema, range, seed-identity and native
+compilation failures explicit. Verify shorter and longer programs, multiple/repeated occurrences,
+unchanged unrelated programs and repeated loading through the same creation/startup path.
 
 Implementation of two dynamically generated custom material programs is authorized: direct-skeleton decals preserving source continuous alpha and PBR, and multilayer base-UV/world-coordinate PBR preserving independent coordinates and mask semantics. Ordinary moving mesh attachments, including recursively selected nested meshes, join the mechanism render graph with unit-weight mounting bones. Conditional visibility, actual independent animation, instance-color and emissive attachments, and native light effects explicitly retain their existing native attachment/BoneHistory behavior. These exceptions do not authorize a new Bridge Builder transform-tracking controller or per-frame synchronization service. Mere presence of an animation component does not establish actual independent motion.
 

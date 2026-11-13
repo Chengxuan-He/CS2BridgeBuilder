@@ -15,8 +15,7 @@ internal static class Draw02FixedSidewalks
         var groups = lod switch
         {
             0 => Near,
-            1 => Middle,
-            _ => throw new ArgumentOutOfRangeException(nameof(lod))};
+            1 => Middle};
         var positions = new Vector3[plan.SourcePositions.Length];
         Array.Copy(plan.Positions, positions, positions.Length);
         var removed = (bool[])plan.RemoveTriangles[Numeric_Types_Draw02_Draw02FixedSidewalks_g_cs.Values.I32[1]].Clone();

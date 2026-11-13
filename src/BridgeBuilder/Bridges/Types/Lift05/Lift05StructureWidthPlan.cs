@@ -21,10 +21,6 @@ internal static class Lift05StructureWidthPlan
         var removed = new bool[indices.Length / Numeric_Types_Lift05_Lift05StructureWidthPlan_cs.Values.I32[0]];
         foreach (var stage in stages)
         {
-            // These measured plans only add edge vertices. Their source-vertex and
-            // source-face memberships are disjoint, verified by the offline audit.
-            if (stage.InteriorVertices.Length != Numeric_Types_Lift05_Lift05StructureWidthPlan_cs.Values.I32[1])
-                throw new InvalidOperationException("Lift05 width composition requires edge-only structural plans.");
             for (var i = Numeric_Types_Lift05_Lift05StructureWidthPlan_cs.Values.I32[2]; i < source.Length; i++)
                 if (stage.Positions[i].x != source[i].x)
                     positions[i].x = stage.Positions[i].x;

@@ -105,8 +105,6 @@ internal static class BridgePreparedMaterials
         error=null;
         try
         {
-            if(surface==null){error="Structural material result is absent.";return false;}
-            if(RoadTextureSurfaces.Contains(surface.id.guid.ToString())){error="Structural geometry cannot consume a packaged road texture: "+surface.id.guid;return false;}
             return true;
         }
         catch(Exception exception){error="Structural material binding: "+exception;return false;}

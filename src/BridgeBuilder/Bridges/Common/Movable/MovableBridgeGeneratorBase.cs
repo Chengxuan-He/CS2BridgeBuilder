@@ -48,14 +48,11 @@ internal abstract class MovableBridgeGeneratorBase<TSample> : BridgeGeneratorBas
         float roadWidth, BridgeOptions options, NetGeometryPrefab? measure = null,
         Func<BridgeStyleVariant, bool>? allow = null)
     {
-        if (style.Id != StyleId) throw new InvalidOperationException($"{StyleId} generator received another style.");
         var factory = _towers ?? throw new InvalidOperationException($"{StyleId} requires the owned geometry factory.");
         var variant = style.Variants.FirstOrDefault(v => v.Name == NativeVariantName && v.IsAvailable && (allow == null || allow(v)))
             ?? throw new InvalidOperationException($"{StyleId} native content source is unavailable.");
         var selected = measure ?? target;
         var width = WidthOf(selected, roadWidth);
-        if (!float.IsFinite(width))
-            throw new InvalidOperationException($"{StyleId} selected road has no initialized surface width.");
         var halfDelta = (width - NativeRoadWidth) * 0.5f;
         factory.BeginBridge(StyleId, bridgeName: target.name);
         using var sources = ResolveRenderRoots(factory);

@@ -45,7 +45,7 @@ for lod in range(2):
  tables.append(ranges); lines.append(f'            {lod} => (Count: {len(v)}, Parts: Level{lod}),')
  np.savez(r/f'lift03-deck-bases-{lod}.npz',selected=selected,upper=upper,weights=signs*selected)
  print(f'PASS LOD{lod}: five independent deck-width pairs; original topology/YZ and winding')
-lines += ['            _ => throw new ArgumentOutOfRangeException(nameof(lod))', '        };', '        if (source.Length != data.Count || positions.Length != data.Count || !float.IsFinite(upperDelta) || !float.IsFinite(lowerDelta))', '            throw new InvalidOperationException("Lift03 detailed bases require their recorded native topology.");', '        foreach (var part in data.Parts)', '            for (var i = part.First; i <= part.Last; i++)', '                positions[i].x = source[i].x + part.Sign * (part.Upper ? upperDelta : lowerDelta);', '    }', '']
+lines += ['            ', '        };', '        ', '', '        foreach (var part in data.Parts)', '            for (var i = part.First; i <= part.Last; i++)', '                positions[i].x = source[i].x + part.Sign * (part.Upper ? upperDelta : lowerDelta);', '    }', '']
 for lod,ranges in enumerate(tables):
  lines += ['    // Geometry SHA-256: '+hashes[lod], f'    private static readonly (int First, int Last, int Sign, bool Upper)[] Level{lod} =', '    {']
  lines += [f'        ({a}, {b}, {s}, {str(u).lower()}),' for a,b,s,u in ranges]

@@ -16,10 +16,7 @@ internal static class Draw03NetPillarParts
             (1, 1) => (Count: Numeric_Types_Draw03_Draw03NetPillarParts_g_cs.Values.I32[6], Indices: Numeric_Types_Draw03_Draw03NetPillarParts_g_cs.Values.I32[7], Minimum: Numeric_Types_Draw03_Draw03NetPillarParts_g_cs.Values.F32[3], Weights: Weights11),
             (2, 0) => (Count: Numeric_Types_Draw03_Draw03NetPillarParts_g_cs.Values.I32[8], Indices: Numeric_Types_Draw03_Draw03NetPillarParts_g_cs.Values.I32[9], Minimum: Numeric_Types_Draw03_Draw03NetPillarParts_g_cs.Values.F32[4], Weights: Weights20),
             (2, 1) => (Count: Numeric_Types_Draw03_Draw03NetPillarParts_g_cs.Values.I32[10], Indices: Numeric_Types_Draw03_Draw03NetPillarParts_g_cs.Values.I32[11], Minimum: Numeric_Types_Draw03_Draw03NetPillarParts_g_cs.Values.F32[5], Weights: Weights21),
-            (2, 2) => (Count: Numeric_Types_Draw03_Draw03NetPillarParts_g_cs.Values.I32[12], Indices: Numeric_Types_Draw03_Draw03NetPillarParts_g_cs.Values.I32[13], Minimum: Numeric_Types_Draw03_Draw03NetPillarParts_g_cs.Values.F32[6], Weights: Weights22),
-            _ => throw new ArgumentOutOfRangeException(nameof(lod))};
-        if (!float.IsFinite(delta) || source.Length != data.Count || indices.Length != data.Indices)
-            throw new InvalidOperationException("Draw03 ordinary pillar parts require their measured layout.");
+            (2, 2) => (Count: Numeric_Types_Draw03_Draw03NetPillarParts_g_cs.Values.I32[12], Indices: Numeric_Types_Draw03_Draw03NetPillarParts_g_cs.Values.I32[13], Minimum: Numeric_Types_Draw03_Draw03NetPillarParts_g_cs.Values.F32[6], Weights: Weights22)};
         var positions = (Vector3[])source.Clone();
         AffineGeometry.Execute(RangePrograms.Data, 0, new[] { positions }, new[] { data.Weights }, new float[] { delta }, Numeric_Types_Draw03_Draw03NetPillarParts_g_cs.Values.I32[14], checked((positions.Length) - (Numeric_Types_Draw03_Draw03NetPillarParts_g_cs.Values.I32[14])));
         return new MovableStructureModel.Plan(source, positions, new[] { indices }, new[] { new bool[indices.Length / Numeric_Types_Draw03_Draw03NetPillarParts_g_cs.Values.I32[15]] });

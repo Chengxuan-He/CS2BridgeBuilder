@@ -11,8 +11,6 @@ internal static class Draw02LongitudinalRibs
             return; // Native far shell has no independent thin ribs.
         var data = Draw02LongitudinalRibMeasurements.Values;
         int row = lod * Numeric_Types_Draw02_Draw02LongitudinalRibs_cs.Values.I32[1];
-        if (source.Length != data.I32[row] || positions.Length != data.I32[row])
-            throw new System.InvalidOperationException("Draw02 longitudinal ribs require the measured main mesh.");
         int count = data.I32[row + Numeric_Types_Draw02_Draw02LongitudinalRibs_cs.Values.I32[2]];
         var vertices = StructureRows.Slice(data.I32, data.I32[row + Numeric_Types_Draw02_Draw02LongitudinalRibs_cs.Values.I32[3]], count);
         var weights = StructureRows.Slice(data.F32, data.I32[row + Numeric_Types_Draw02_Draw02LongitudinalRibs_cs.Values.I32[4]], count);

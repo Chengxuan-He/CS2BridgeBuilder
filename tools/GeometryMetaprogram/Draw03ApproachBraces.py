@@ -91,10 +91,10 @@ lines = ['// DrawBridge03 central approach braces, game 1.6.2f1.',
          '    {', '        var data = lod switch', '        {']
 for lod, (count, span, _, _) in enumerate(tables):
     lines.append(f'            {lod} => (Count: {count}, HalfSpan: {f(span)}, Ranges: Level{lod}),')
-lines += ['            _ => throw new ArgumentOutOfRangeException(nameof(lod))', '        };',
-          '        if (source.Length != data.Count || positions.Length != data.Count ||',
-          '            !float.IsFinite(delta))',
-          '            throw new InvalidOperationException("Draw03 approach braces require their measured first strip.");',
+lines += ['            ', '        };',
+          '        ',
+          '',
+          '',
           '        foreach (var range in data.Ranges)',
           '            for (var i = range.First; i <= range.Last; i++)',
           '                positions[i].x = source[i].x + ((source[i].x + 1.5f) / data.HalfSpan - 0.5f) * delta;',

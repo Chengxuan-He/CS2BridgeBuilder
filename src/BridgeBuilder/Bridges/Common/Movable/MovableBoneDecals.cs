@@ -33,8 +33,7 @@ internal static class MovableBoneDecals
             foreach (var batch in deck.Batches.OrderBy(batch => batch.Source.GetComponent<DecalProperties>()?.m_RendererPriority ?? 0))
             {
                 await GenerationWork.Checkpoint("current-bone decal source");
-                if (!batch.Decal || batch.Surfaces.Length != 1 || batch.Source.GetComponent<DecalProperties>() is not DecalProperties properties)
-                { result.Error = "Decal occurrence requires its source Surface and native projection properties."; return result; }
+                var properties = batch.Source.GetComponent<DecalProperties>();
                 if (MovableNativeDecals.IsLaneColor(batch) || MovableNativeDecals.IsSelectedRoadWear(batch))
                 {
                     Mod.Log.Info($"Selected-road decal omitted by mechanism appearance policy: owner={owner}; source={batch.Surfaces[0].id}; ordinary asphalt and prototype-owned wear.");

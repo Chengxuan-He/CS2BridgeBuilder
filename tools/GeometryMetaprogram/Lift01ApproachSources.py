@@ -98,8 +98,8 @@ layout = ['// Native LiftBridge01 structural approach layout, game 1.6.2f1.',
           '    // The caller supplies widened, factory-owned pieces in recorded family order.',
           '    internal static void Apply(NetGeometryPrefab target, TowerFactory factory, NetPiecePrefab[] pieces, ContentPrefab content)',
           '    {',
-          '        if (pieces.Length != 1 || pieces.Any(piece => piece == null || !factory.Created.Contains(piece)))',
-          '            throw new InvalidOperationException("Lift01 approaches require one owned structural piece.");']
+          '        ',
+          '']
 for i, identity in enumerate(section_ids):
     d = records[str(identity)]['data']
     structural = [p for p in d['m_Pieces'] if p['m_Piece']['m_PathID'] in roots]

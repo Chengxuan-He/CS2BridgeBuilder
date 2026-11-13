@@ -55,9 +55,6 @@ internal static class MovableRoadObjectPlacement
         NetCompositionData start, NetCompositionData end, EdgeNodeGeometry startGeometry,
         EdgeNodeGeometry endGeometry, ref Random random, ResolveCandidate resolve)
     {
-        if (!math.isfinite(geometry.m_EdgeLengthRange.max) || geometry.m_EdgeLengthRange.max <= 0f ||
-            !math.isfinite(composition.m_Width) || composition.m_Width <= 0f)
-            throw new ArgumentException("Road object placement requires initialized native network dimensions.");
         for (var ruleIndex = 0; ruleIndex < rules.Count; ruleIndex++)
         {
             var rule = rules[ruleIndex];

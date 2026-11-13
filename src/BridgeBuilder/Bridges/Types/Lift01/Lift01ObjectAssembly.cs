@@ -20,8 +20,6 @@ internal static class Lift01ObjectAssembly
         for (var i = Numeric_Types_Lift01_Lift01ObjectAssembly_cs.Values.I32[0]; i < attachments.Length; i++)
         {
             var item = attachments[i];
-            if (item.m_Object == null)
-                throw new InvalidOperationException("Lift01 requires its original control-room light sources.");
             item.m_Position.x += i == Numeric_Types_Lift01_Lift01ObjectAssembly_cs.Values.I32[1] ? halfWidthDelta : -halfWidthDelta;
         }
 

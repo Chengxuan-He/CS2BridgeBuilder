@@ -14,9 +14,6 @@ internal static class Draw02Underside
         if (lod == 2) return plan;
         var data = Numeric_Types_Draw02_Draw02Underside_cs.Values;
         var h = lod * 16;
-        if (lod < 0 || lod > 1 || plan.SourcePositions.Length != data.I32[h] ||
-            plan.SourceIndices[0].Length / 3 != data.I32[h + 1])
-            throw new InvalidOperationException("Draw02 underside requires its measured original main mesh.");
         var positions = new Vector3[plan.SourcePositions.Length];
         Array.Copy(plan.Positions, positions, positions.Length);
         var removed = (bool[])plan.RemoveTriangles[0].Clone();

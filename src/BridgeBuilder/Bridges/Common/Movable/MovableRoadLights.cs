@@ -26,8 +26,6 @@ internal static class MovableRoadLights
             {
                 placements.Add(placement); origins.Add(origin); continue;
             }
-            if (!origin.HasValue)
-                throw new InvalidOperationException("A selected road lamp has no producer identity.");
             var point = q * (Vector3)placement.m_Position + roadToObject.position;
             // The two incident node halves can select the same lateral lamp row.
             // Retain the first selected variant for that producer/row, in native order.

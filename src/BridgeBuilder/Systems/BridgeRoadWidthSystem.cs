@@ -70,13 +70,6 @@ internal sealed partial class BridgeRoadWidthSystem : SystemBase
             {
                 var width = widths[selected.m_Piece].m_Width;
                 var pieceName = prefabs.GetPrefab<NetPiecePrefab>(selected.m_Piece).name;
-                if (float.IsNaN(width) || float.IsInfinity(width) || width < 0f)
-                {
-                    diagnostic.Add("RESULT unavailable: invalid selected component width.");
-                    allocations?.Clear();
-                    Publish();
-                    return 0f;
-                }
                 if (!slotWidths.TryGetValue(selected.m_SectionIndex, out var previous) || width > previous)
                 {
                     slotWidths[selected.m_SectionIndex] = width;

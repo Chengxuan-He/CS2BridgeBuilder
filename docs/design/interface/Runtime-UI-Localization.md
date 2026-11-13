@@ -30,7 +30,22 @@ Every double-deck style exposes the localized `LowerDeckOpposite` toggle. It def
 - `BridgeBuilderUISystem` publishes the current text dictionary and refreshes asset labels on a game-language change. Road Builder names, custom bridge display names, deck IDs and prefab UUIDs are preserved.
 - Operation status retains a translation key and its original arguments. Preview status retains its key. Language changes translate existing messages without requesting another preview or rebuilding geometry.
 - The JavaScript panel uses translated labels, empty states, accessibility labels and tooltips. Its English fallback must match the C# table. Long header labels are bounded, with full text in tooltips.
-- Content-source labels are translated only for presentation; prerequisite checks and ownership rules are unchanged. Names of third-party content follow the available game dictionary.
+- Content-source labels are translated only for presentation; prerequisite checks and ownership rules are unchanged. Third-party mod titles follow the full published source-name policy below.
+
+## Source mod names
+
+Follow [full published source mod names](../../agent-contract/BRIDGE_GENERATION_CONTRACT.md#full-published-source-mod-names)
+for all catalogue and saved-source presentation. Resolve the complete publisher title from the
+matching native Paradox Mods metadata; retain verified official titles for known sources when
+metadata is unavailable. A missing title is explicitly localized as unavailable without substituting
+its ID, technical alias, prefab name or directory. Source ownership/availability remains keyed by
+IDs and native prerequisites; a display-name failure must not block generation.
+
+Verify titles during development through Paradox Mods web search and official page/API evidence.
+Keep authored abbreviations that are part of the actual full title. Translate only the surrounding
+source label. Compact source subtitles may truncate visually, but their existing card tooltip and
+subtitle tooltip must expose the complete title. Preserve user-entered saved bridge names and the
+normal localized native DLC labels; no healthy-asset rewrite is needed for this UI correction.
 
 ## Checks
 
@@ -59,6 +74,26 @@ Release compilation, JavaScript syntax, and nonvisual localization/filter/select
 - Offline checks exercise both UI handlers, missing selections, existing-UUID activation, fixed action placement and request intent. Native tool switching and panel layout still require human verification after restarting the game.
 
 ## Native fields and vector icons
+
+Catalogue card images use a fixed appropriate display height and an explicit width calculated
+as height multiplied by the source image's intrinsic width/height ratio. Resolve the intrinsic
+dimensions from the actual native image resource or vector dimensions/viewBox in the backend,
+accepting SVG files with an XML declaration, UTF-8 BOM and standard DOCTYPE such as Road Builder
+thumbnails. Ignore the DTD when reading dimensions and disable external resolution; reading the
+canvas must not fetch a DTD or expand declared entities. Preserve the original source URI and bytes,
+and send the ratio with the icon URI. Set both numeric display dimensions; do not rely on Cohtml
+`width:auto`, `object-fit`, browser `onLoad` events or `naturalWidth`/`naturalHeight` behavior.
+Apply the same rule to network, bridge-style and management cards, including fallback images and
+subsequent source changes. Do not gate visibility or assign
+zero width while waiting for JavaScript image-load events or intrinsic-size properties;
+cached images and Cohtml event differences must not leave every card blank. Do not clamp
+width independently of the fixed height or stretch images into a fixed rectangular box.
+Preserve original image content and transparent margins: a wide drawing inside a square image
+does not authorize cropping or changing the canvas ratio. If source dimensions cannot be resolved,
+show the existing fallback image at its known ratio rather than guessing the source's dimensions.
+Preserve the error path. Tests must include square, wide and tall resources and rendering with no
+load callback at all; offline
+JavaScript checks do not establish actual Cohtml layout acceptance.
 
 Find It's installed UI module uses `game-ui/common/input/text/text-input.tsx` (`TextInput`), the
 `editor-item.module.scss` input class and `FOCUS_DISABLED`. All BridgeBuilder search/name fields

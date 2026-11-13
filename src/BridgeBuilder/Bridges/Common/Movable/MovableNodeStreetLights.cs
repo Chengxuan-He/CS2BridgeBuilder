@@ -16,6 +16,7 @@ internal sealed class MovableNodeStreetLights
 {
     private readonly EntityManager _source;
     private readonly PrefabSystem _prefabs;
+    private readonly bool _allowUnregistered;
     private readonly List<Entry> _pending = new();
     private float _length;
     private float3 _center;
@@ -33,8 +34,8 @@ internal sealed class MovableNodeStreetLights
         { Candidate = candidate; Layer = layer; Spacing = spacing; Priority = priority; Lowered = lowered; }
     }
 
-    internal MovableNodeStreetLights(EntityManager source, PrefabSystem prefabs)
-    { _source = source; _prefabs = prefabs; }
+    internal MovableNodeStreetLights(EntityManager source, PrefabSystem prefabs, bool allowUnregistered = false)
+    { _source = source; _prefabs = prefabs; _allowUnregistered = allowUnregistered; }
 
     // Non-light candidates continue through the caller's native sign/utility pipeline.
     // Random phase consumption therefore retains its position in connected-edge traversal;
@@ -59,7 +60,10 @@ internal sealed class MovableNodeStreetLights
             bool lowered, ref Random state)
         {
             if (!_prefabs.TryGetEntity(candidate.Prefab, out var entity))
+            {
+                if (_allowUnregistered) { other(candidate, priority, lowered, ref state); return; }
                 throw new InvalidOperationException($"Node object '{candidate.Prefab.name}' has no native classification.");
+            }
             if (!_source.HasComponent<StreetLightData>(entity))
             {
                 other(candidate, priority, lowered, ref state);

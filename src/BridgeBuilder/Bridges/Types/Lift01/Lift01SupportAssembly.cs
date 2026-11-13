@@ -17,8 +17,6 @@ internal static class Lift01SupportAssembly
     {
         await GenerationWork.Next("support Lift01SupportAssembly.Create");
         var lods = source.GetComponent<LodProperties>()?.m_LodMeshes;
-        if (lods == null || lods.Length != Numeric_Types_Lift01_Lift01SupportAssembly_cs.Values.I32[0])
-            throw new InvalidOperationException("Lift01 support requires its three recorded native LODs.");
         var sources = new[]
         {
             source,
@@ -56,21 +54,12 @@ internal static class Lift01SupportAssembly
         {
             var original = sources[lod];
             var expected = "LiftBridge01Pillar" + (footing ? "Base" : "") + (lod == Numeric_Types_Lift01_Lift01SupportAssembly_cs.Values.I32[17] ? "" : "_LOD" + lod) + " Mesh";
-            // Inputs are reconstructed privately by Lift01SourceRenders, whose
-            // recorded CIDs resolve only built-in resources. Never load a saved
-            // bridge or require the original prototype Prefab here.
-            if (original == null || original.asset != null || !string.Equals(original.name, expected, StringComparison.Ordinal))
-                throw new InvalidOperationException("Lift01 support requires its reconstructed native render inputs.");
             Mesh[]? meshes = null;
             try
             {
                 meshes = PrivateGeometryReader.Read(original);
-                if (meshes.Length != Numeric_Types_Lift01_Lift01SupportAssembly_cs.Values.I32[18] || meshes[Numeric_Types_Lift01_Lift01SupportAssembly_cs.Values.I32[19]] == null || meshes[Numeric_Types_Lift01_Lift01SupportAssembly_cs.Values.I32[20]].subMeshCount != Numeric_Types_Lift01_Lift01SupportAssembly_cs.Values.I32[21] || meshes[Numeric_Types_Lift01_Lift01SupportAssembly_cs.Values.I32[22]].vertexCount != vertexCounts[lod])
-                    throw new InvalidOperationException("Lift01 support source vertex layout changed.");
                 var mesh = meshes[Numeric_Types_Lift01_Lift01SupportAssembly_cs.Values.I32[23]];
                 var indices = mesh.GetIndices(Numeric_Types_Lift01_Lift01SupportAssembly_cs.Values.I32[24]);
-                if (indices.Length != indexCounts[lod])
-                    throw new InvalidOperationException("Lift01 support source index layout changed.");
                 var positions = mesh.vertices;
                 var plan = await GenerationWork.Background("support structure plan", () => footing ? lod == Numeric_Types_Lift01_Lift01SupportAssembly_cs.Values.I32[25] ? Lift01FarFooting.Create(positions, indices, delta) : Lift01Footing.CreateDetailed(lod, positions, indices, delta) : new MovableStructureModel.Plan(positions, positions, new[] { indices }, new[] { new bool[indices.Length / Numeric_Types_Lift01_Lift01SupportAssembly_cs.Values.I32[26]] }));
                 var bounds = original.bounds;

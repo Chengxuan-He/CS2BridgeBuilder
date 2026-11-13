@@ -16,8 +16,6 @@ internal static class Draw01NetPillarAssembly
     internal static async System.Threading.Tasks.Task<StaticObjectPrefab> CreateAsync(TowerFactory factory, string owner, string name, RenderPrefab nativeTop, RenderPrefab nativeColumn, RenderPrefab nativeFooting, ContentPrefab content, float halfWidthDelta)
     {
         await GenerationWork.Next("support Draw01NetPillarAssembly.Create");
-        if (content == null || !float.IsFinite(halfWidthDelta))
-            throw new ArgumentException("Draw01 ordinary pillar requires native content and a finite width change.");
         var top = await CreateTopAsync(factory, owner, name + " Top", nativeTop, halfWidthDelta) ?? throw new InvalidOperationException("Draw01 ordinary cap render creation failed.");
         var column = await CreateColumnAsync(factory, owner, name + " Column", nativeColumn) ?? throw new InvalidOperationException("Draw01 ordinary column render creation failed.");
         var footing = await CreateFootingAsync(factory, owner, name + " Footing", nativeFooting, halfWidthDelta) ?? throw new InvalidOperationException("Draw01 ordinary footing render creation failed.");
@@ -33,8 +31,6 @@ internal static class Draw01NetPillarAssembly
     {
         await GenerationWork.Next("support Draw01NetPillarAssembly.CreateTop");
         var lods = source.GetComponent<LodProperties>()?.m_LodMeshes;
-        if (lods == null || lods.Length != Numeric_Types_Draw01_Draw01NetPillarAssembly_cs.Values.I32[0])
-            throw new InvalidOperationException("Draw01 ordinary cap requires both native LODs.");
         var sources = new[]
         {
             source,
@@ -48,9 +44,6 @@ internal static class Draw01NetPillarAssembly
             "DrawBridge01NetPillarTop_LOD2 Mesh"
         };
         var imported = Path.Combine(Application.persistentDataPath, "ImportedData");
-        for (var lod = Numeric_Types_Draw01_Draw01NetPillarAssembly_cs.Values.I32[3]; lod < sources.Length; lod++)
-            if (sources[lod] == null || !string.Equals(sources[lod].name, names[lod], StringComparison.Ordinal))
-                throw new InvalidOperationException($"Draw01 ordinary cap LOD {lod} is not its permitted native source '{names[lod]}'.");
         var levels = new MovableRoadAssets.Level[sources.Length];
         for (var lod = Numeric_Types_Draw01_Draw01NetPillarAssembly_cs.Values.I32[4]; lod < sources.Length; lod++)
         {
@@ -58,8 +51,6 @@ internal static class Draw01NetPillarAssembly
             try
             {
                 meshes = PrivateGeometryReader.Read(sources[lod]);
-                if (meshes.Length != Numeric_Types_Draw01_Draw01NetPillarAssembly_cs.Values.I32[5] || meshes[Numeric_Types_Draw01_Draw01NetPillarAssembly_cs.Values.I32[6]] == null || meshes[Numeric_Types_Draw01_Draw01NetPillarAssembly_cs.Values.I32[7]].subMeshCount != Numeric_Types_Draw01_Draw01NetPillarAssembly_cs.Values.I32[8])
-                    throw new InvalidOperationException($"Draw01 ordinary cap LOD {lod} requires its native mesh and surface slot.");
                 var supportInput0 = meshes[Numeric_Types_Draw01_Draw01NetPillarAssembly_cs.Values.I32[9]].vertices;
                 var supportInput1 = meshes[Numeric_Types_Draw01_Draw01NetPillarAssembly_cs.Values.I32[10]].GetIndices(Numeric_Types_Draw01_Draw01NetPillarAssembly_cs.Values.I32[11]);
                 var plan = await GenerationWork.Background("support structure plan", () => Draw01NetTopData.CreatePlan(lod, supportInput0, supportInput1, halfWidthDelta));
@@ -88,8 +79,6 @@ internal static class Draw01NetPillarAssembly
     {
         await GenerationWork.Next("support Draw01NetPillarAssembly.CreateFooting");
         var lods = source.GetComponent<LodProperties>()?.m_LodMeshes;
-        if (lods == null || lods.Length != Numeric_Types_Draw01_Draw01NetPillarAssembly_cs.Values.I32[12])
-            throw new InvalidOperationException("Draw01 ordinary footing requires both native LODs.");
         var sources = new[]
         {
             source,
@@ -103,9 +92,6 @@ internal static class Draw01NetPillarAssembly
             "DrawBridge01NetPillarBase_LOD2 Mesh"
         };
         var imported = Path.Combine(Application.persistentDataPath, "ImportedData");
-        for (var lod = Numeric_Types_Draw01_Draw01NetPillarAssembly_cs.Values.I32[15]; lod < sources.Length; lod++)
-            if (sources[lod] == null || !string.Equals(sources[lod].name, names[lod], StringComparison.Ordinal))
-                throw new InvalidOperationException($"Draw01 ordinary footing LOD {lod} is not its permitted native source '{names[lod]}'.");
         var levels = new MovableRoadAssets.Level[sources.Length];
         for (var lod = Numeric_Types_Draw01_Draw01NetPillarAssembly_cs.Values.I32[16]; lod < sources.Length; lod++)
         {
@@ -113,8 +99,6 @@ internal static class Draw01NetPillarAssembly
             try
             {
                 meshes = PrivateGeometryReader.Read(sources[lod]);
-                if (meshes.Length != Numeric_Types_Draw01_Draw01NetPillarAssembly_cs.Values.I32[17] || meshes[Numeric_Types_Draw01_Draw01NetPillarAssembly_cs.Values.I32[18]] == null || meshes[Numeric_Types_Draw01_Draw01NetPillarAssembly_cs.Values.I32[19]].subMeshCount != Numeric_Types_Draw01_Draw01NetPillarAssembly_cs.Values.I32[20])
-                    throw new InvalidOperationException($"Draw01 ordinary footing LOD {lod} requires its native mesh and surface slot.");
                 var supportInput0 = meshes[Numeric_Types_Draw01_Draw01NetPillarAssembly_cs.Values.I32[21]].vertices;
                 var supportInput1 = meshes[Numeric_Types_Draw01_Draw01NetPillarAssembly_cs.Values.I32[22]].GetIndices(Numeric_Types_Draw01_Draw01NetPillarAssembly_cs.Values.I32[23]);
                 var plan = await GenerationWork.Background("support structure plan", () => Draw01NetFootingData.CreatePlan(lod, supportInput0, supportInput1, halfWidthDelta));
@@ -148,8 +132,6 @@ internal static class Draw01NetPillarAssembly
     {
         await GenerationWork.Next("support Draw01NetPillarAssembly.CreateColumn");
         var lods = source.GetComponent<LodProperties>()?.m_LodMeshes;
-        if (lods == null || lods.Length != Numeric_Types_Draw01_Draw01NetPillarAssembly_cs.Values.I32[24])
-            throw new InvalidOperationException("Draw01 ordinary column requires both native LODs.");
         var sources = new[]
         {
             source,
@@ -175,9 +157,6 @@ internal static class Draw01NetPillarAssembly
             Numeric_Types_Draw01_Draw01NetPillarAssembly_cs.Values.I32[32]
         };
         var imported = Path.Combine(Application.persistentDataPath, "ImportedData");
-        for (var lod = Numeric_Types_Draw01_Draw01NetPillarAssembly_cs.Values.I32[33]; lod < sources.Length; lod++)
-            if (sources[lod] == null || !string.Equals(sources[lod].name, names[lod], StringComparison.Ordinal))
-                throw new InvalidOperationException($"Draw01 ordinary column LOD {lod} is not its permitted native source '{names[lod]}'.");
         var levels = new MovableRoadAssets.Level[sources.Length];
         for (var lod = Numeric_Types_Draw01_Draw01NetPillarAssembly_cs.Values.I32[34]; lod < sources.Length; lod++)
         {
@@ -185,12 +164,8 @@ internal static class Draw01NetPillarAssembly
             try
             {
                 meshes = PrivateGeometryReader.Read(sources[lod]);
-                if (meshes.Length != Numeric_Types_Draw01_Draw01NetPillarAssembly_cs.Values.I32[35] || meshes[Numeric_Types_Draw01_Draw01NetPillarAssembly_cs.Values.I32[36]] == null || meshes[Numeric_Types_Draw01_Draw01NetPillarAssembly_cs.Values.I32[37]].subMeshCount != Numeric_Types_Draw01_Draw01NetPillarAssembly_cs.Values.I32[38] || meshes[Numeric_Types_Draw01_Draw01NetPillarAssembly_cs.Values.I32[39]].vertexCount != vertexCounts[lod])
-                    throw new InvalidOperationException($"Draw01 ordinary column LOD {lod} differs from its recorded mesh layout.");
                 var positions = meshes[Numeric_Types_Draw01_Draw01NetPillarAssembly_cs.Values.I32[40]].vertices;
                 var indices = meshes[Numeric_Types_Draw01_Draw01NetPillarAssembly_cs.Values.I32[41]].GetIndices(Numeric_Types_Draw01_Draw01NetPillarAssembly_cs.Values.I32[42]);
-                if (indices.Length != triangleCounts[lod] * Numeric_Types_Draw01_Draw01NetPillarAssembly_cs.Values.I32[43])
-                    throw new InvalidOperationException($"Draw01 ordinary column LOD {lod} differs from its recorded topology.");
                 var plan = await GenerationWork.Background("support structure plan", () => new MovableStructureModel.Plan(positions, (Vector3[])positions.Clone(), new[] { indices }, new[] { new bool[triangleCounts[lod]] }));
                 levels[lod] = new MovableRoadAssets.Level(sources[lod], sources[lod].bounds, new[] { plan });
             }

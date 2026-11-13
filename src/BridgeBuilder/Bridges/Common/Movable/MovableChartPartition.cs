@@ -29,8 +29,6 @@ internal static class MovableChartPartition
 
     internal static List<Group> Build(IReadOnlyList<Bounds> faces,float dx,float dy,int capacity)
     {
-        if(!float.IsFinite(dx) || !float.IsFinite(dy) || dx<=0 || dy<=0 || capacity<1)
-            throw new ArgumentOutOfRangeException(nameof(capacity),"Invalid native chart density or image capacity.");
         var groups=new List<Group>();
         foreach(int id in Enumerable.Range(0,faces.Count).OrderBy(i=>faces[i].MinY).ThenBy(i=>faces[i].MinX))
         {

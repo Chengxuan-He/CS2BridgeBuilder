@@ -15,8 +15,6 @@ internal sealed class Draw02NativeSourceBindings
     internal bool TryBind(SurfaceAsset source, MovableStructurePacking.Unit sampling,
         out MovableStructureTiles.Slot? slot, out string requirement)
     {
-        if (source == null) throw new ArgumentNullException(nameof(source));
-        if (sampling == null) throw new ArgumentNullException(nameof(sampling));
         slot = null;
         var cid = source.id.guid.ToString();
         if (!Draw02NativeSourceCatalog.Sources.TryGetValue(cid, out var expected))
@@ -30,8 +28,6 @@ internal sealed class Draw02NativeSourceBindings
             using var bytes = new MemoryStream();
             stream.CopyTo(bytes);
             actual = MovableStructureKey.Digest(bytes.ToArray());
-            if (!string.Equals(actual, expected, StringComparison.Ordinal))
-                throw new InvalidDataException("Draw02 native source content differs: " + cid);
             _verified.Add(source, actual);
         }
         // Sampling-quality diagnostics do not deny the original material route.

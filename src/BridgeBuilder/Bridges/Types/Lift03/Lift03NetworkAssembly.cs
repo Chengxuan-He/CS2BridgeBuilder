@@ -11,10 +11,6 @@ internal static class Lift03NetworkAssembly
     // The main network owns the sole mechanism; the auxiliary carries no duplicate supports.
     internal static void Apply(NetGeometryPrefab main, NetGeometryPrefab auxiliary, TowerFactory factory, StaticObjectPrefab pillar, StaticObjectPrefab mechanism, bool auxiliaryOpposite = false)
     {
-        if (ReferenceEquals(main, auxiliary))
-            throw new InvalidOperationException("Lift03 requires distinct main and auxiliary networks.");
-        if (!factory.Created.Contains(pillar) || !factory.Created.Contains(mechanism))
-            throw new InvalidOperationException("Lift03 network assembly requires owned pillar and mechanism objects.");
         var mainRoles = Lift03SectionRoles.ResolveMain(main.m_Sections, BridgeRoadGeneration.Find(main)
             ?? throw new InvalidOperationException("Lift03 main network has no elevated road context."));
         var auxiliaryRoles = Lift03SectionRoles.ResolveAuxiliary(auxiliary.m_Sections, BridgeRoadGeneration.Find(auxiliary)

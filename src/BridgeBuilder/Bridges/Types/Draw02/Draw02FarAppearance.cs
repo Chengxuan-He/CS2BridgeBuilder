@@ -14,8 +14,6 @@ internal static class Draw02FarAppearance
 {
     internal static MovableRoadAppearance.Level Create(SurfaceAsset native, float halfDelta, Pose pose)
     {
-        if (native.id.guid.ToString() != "436d1828c36d1336cf115c85def2c62c")
-            throw new InvalidOperationException("Draw02 far appearance requires its original LOD2 Surface.");
         var d = Numeric_Types_Draw02_Draw02FarAppearance_cs.Values.F32;
         var transform = Matrix4x4.TRS(pose.position, pose.rotation, Vector3.one);
         var projection = transform.transpose;

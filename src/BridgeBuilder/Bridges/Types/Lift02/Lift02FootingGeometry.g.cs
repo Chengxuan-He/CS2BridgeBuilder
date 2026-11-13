@@ -12,10 +12,7 @@ internal static class Lift02FootingGeometry
         {
             0 => (Count: Numeric_Types_Lift02_Lift02FootingGeometry_g_cs.Values.I32[0], Indices: Numeric_Types_Lift02_Lift02FootingGeometry_g_cs.Values.I32[1], Weights: Weights0),
             1 => (Count: Numeric_Types_Lift02_Lift02FootingGeometry_g_cs.Values.I32[2], Indices: Numeric_Types_Lift02_Lift02FootingGeometry_g_cs.Values.I32[3], Weights: Weights1),
-            2 => (Count: Numeric_Types_Lift02_Lift02FootingGeometry_g_cs.Values.I32[4], Indices: Numeric_Types_Lift02_Lift02FootingGeometry_g_cs.Values.I32[5], Weights: Weights2),
-            _ => throw new ArgumentOutOfRangeException(nameof(lod))};
-        if (!float.IsFinite(delta) || source.Length != data.Count || indices.Length != data.Indices)
-            throw new InvalidOperationException("Lift02 foundation requires its recorded layout.");
+            2 => (Count: Numeric_Types_Lift02_Lift02FootingGeometry_g_cs.Values.I32[4], Indices: Numeric_Types_Lift02_Lift02FootingGeometry_g_cs.Values.I32[5], Weights: Weights2)};
         var positions = (Vector3[])source.Clone();
         AffineGeometry.Execute(RangePrograms.Data, 0, new[] { positions }, new[] { data.Weights }, new float[] { delta }, Numeric_Types_Lift02_Lift02FootingGeometry_g_cs.Values.I32[6], checked((positions.Length) - (Numeric_Types_Lift02_Lift02FootingGeometry_g_cs.Values.I32[6])));
         return new MovableStructureModel.Plan(source, positions, new[] { indices }, new[] { new bool[indices.Length / Numeric_Types_Lift02_Lift02FootingGeometry_g_cs.Values.I32[7]] });

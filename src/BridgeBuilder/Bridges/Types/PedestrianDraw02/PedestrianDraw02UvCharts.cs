@@ -34,7 +34,6 @@ internal static class PedestrianDraw02UvCharts
         {
             var data = HardcodedNumbers.Load("PedestrianDraw02UvCharts");
             var ints = data.I32;
-            if (ints[0] != 1) throw new InvalidOperationException("Unsupported PedestrianDraw02 UV chart data.");
             int streams = ints[1], count = ints[2 + streams];
             var charts = new MovableUvChart[count];
             for (int i = 0; i < count; i++)

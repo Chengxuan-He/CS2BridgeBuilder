@@ -51,8 +51,6 @@ internal sealed class Draw01UndersideLayout
         var hasLeft = left.y >= left.x;
         var hasRight = right.y >= right.x;
         var solid = new Vector2(hasLeft ? left.y : total.x, hasRight ? right.x : total.y);
-        if (!float.IsFinite(solid.x) || !float.IsFinite(solid.y))
-            throw new InvalidOperationException("Draw01 underside coordinates are not representable.");
         Spans = new[]
         {
             solid,

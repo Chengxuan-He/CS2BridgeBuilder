@@ -10,6 +10,7 @@ using UnityEngine.Rendering;
 
 public static class StructuralFrameCheck
 {
+    [System.Runtime.InteropServices.DllImport("kernel32", CharSet = System.Runtime.InteropServices.CharSet.Unicode)] private static extern IntPtr LoadLibraryW(string path);
     [System.Runtime.InteropServices.StructLayout(System.Runtime.InteropServices.LayoutKind.Sequential)]
     struct PositionColorBone { public Vector3 Position; public uint Color, Bone; }
     const BindingFlags I = BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic;
@@ -22,6 +23,7 @@ public static class StructuralFrameCheck
         {
             var args=Environment.GetCommandLineArgs(); string Arg(string n)=>args[Array.IndexOf(args,n)+1];
             var managed=Arg("-gameManaged");
+            Need(LoadLibraryW(Path.GetFullPath(Path.Combine(managed,"../Plugins/x86_64/PipelinePlugin.dll"))) != IntPtr.Zero, "Native geometry codec unavailable");
             AppDomain.CurrentDomain.AssemblyResolve+=(_,e)=>{var p=Path.Combine(managed,new AssemblyName(e.Name).Name+".dll");return File.Exists(p)?Assembly.LoadFrom(p):null;};
             var mod=Assembly.LoadFrom(Arg("-modAssembly"));
             var type=mod.GetType("BridgeBuilder.Bridges.MovableStructureModel",true);
@@ -79,13 +81,40 @@ public static class StructuralFrameCheck
                 }
                 object Build(object plan)
                 {
-                    object[] a={"frame fixture",mesh,plan,2,null,null,compact};
+                    object[] a={"frame fixture",mesh,plan,2,null,null,compact,null,null};
                     Need((bool)build.Invoke(null,a),"Native Build failed: "+a[5]);return a[4];
                 }
                 var corrections=new List<KeyValuePair<int,Matrix4x4>>{new KeyValuePair<int,Matrix4x4>(1,jac),new KeyValuePair<int,Matrix4x4>(2,jac)};
                 if(constructed){corrections.Add(new KeyValuePair<int,Matrix4x4>(4,mode==2?Matrix4x4.identity:jac));corrections.Add(new KeyValuePair<int,Matrix4x4>(5,Matrix4x4.identity));}
                 var baseline=Build(Plan(null));var changed=Build(Plan(corrections.ToArray()));
                 byte[] Raw(object model,VertexAttribute kind)=>((IEnumerable)Get(((IEnumerable)model).Cast<object>().Single(a=>(VertexAttribute)Get(a,"attribute")==kind),"data")).Cast<byte>().ToArray();
+                if (mode == 0 && !compact)
+                {
+                    var fixedBuild=mod.GetType("BridgeBuilder.Bridges.TowerFactory",true).GetMethod("BuildModel",S);
+                    var pointType=fixedBuild.GetParameters()[2].ParameterType.GetElementType();
+                    var points=Array.CreateInstance(pointType,positions.Length);
+                    for(int k=0;k<positions.Length;k++) points.SetValue(Activator.CreateInstance(pointType,new object[]{positions[k].x,positions[k].y,positions[k].z}),k);
+                    var fixedArgs = new object[fixedBuild.GetParameters().Length];
+                    fixedArgs[0]="fixed frame fixture";fixedArgs[1]=mesh;fixedArgs[2]=points;fixedArgs[5]=corrections.ToArray();
+                    var fixedModel=fixedBuild.Invoke(null,fixedArgs); Need(fixedModel!=null,"Fixed model build failed: "+fixedArgs[3]);
+                    foreach(var attr in new[]{VertexAttribute.Position,VertexAttribute.Normal,VertexAttribute.Tangent,VertexAttribute.TexCoord0,VertexAttribute.Color,VertexAttribute.BlendIndices})
+                        Need(Raw(fixedModel,attr).SequenceEqual(Raw(changed,attr)),"Fixed/native frame mismatch: "+attr);
+                    ((IDisposable)fixedModel).Dispose();
+                    var remappedPoints=Array.CreateInstance(pointType,5);
+                    for(int k=0;k<5;k++)remappedPoints.SetValue(points.GetValue(k==4?1:k),k);
+                    var remappedFrames=corrections.Concat(new[]{new KeyValuePair<int,Matrix4x4>(4,jac)}).ToArray();
+                    fixedArgs[2]=remappedPoints;fixedArgs[5]=remappedFrames;
+                    fixedArgs[7]=new[]{0,1,2,3,1};fixedArgs[8]=new[]{4,2,3};
+                    var remapped=fixedBuild.Invoke(null,fixedArgs);Need(remapped!=null,"Recorded provenance build failed");
+                    foreach(var attr in new[]{VertexAttribute.Position,VertexAttribute.Normal,VertexAttribute.Tangent,VertexAttribute.TexCoord0,VertexAttribute.Color,VertexAttribute.BlendIndices})
+                    {
+                        var bytes=Raw(remapped,attr);var stride=bytes.Length/5;
+                        Need(bytes.Skip(stride).Take(stride).SequenceEqual(bytes.Skip(4*stride).Take(stride)),"Recorded source twin channel mismatch: "+attr);
+                    }
+                    var remappedMesh=(Mesh)remapped.GetType().GetMethod("ToUnityMesh",I).Invoke(remapped,new object[]{true});
+                    Need(remappedMesh.triangles.SequenceEqual(new[]{4,2,3}),"Recorded corner topology changed");
+                    UnityEngine.Object.DestroyImmediate(remappedMesh);((IDisposable)remapped).Dispose();
+                }
                 foreach(var attr in new[]{VertexAttribute.Position,VertexAttribute.TexCoord0,VertexAttribute.Color,VertexAttribute.BlendIndices})Need(Raw(baseline,attr).SequenceEqual(Raw(changed,attr)),"Unrelated channel changed");
                 var nn=scale==0?Vector3.right:new Vector3(1/scale,-shear/scale,0).normalized;var tt=scale==0?Vector3.up:new Vector3(shear,1,0).normalized;
                 uint expectedN=Pack("NormalToOctahedral",nn.x,nn.y,nn.z),expectedT=Pack("TangentToOctahedral",tt.x,tt.y,tt.z,scale<0?-hand:hand);

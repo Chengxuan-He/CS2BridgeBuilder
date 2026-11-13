@@ -59,12 +59,6 @@ internal sealed partial class MovableNetworkLanes
         NetSubObjectInfo placement, TrafficLights signalState, PseudoRandomSeed seed)
     {
         RequirePrivateWorld();
-        // All ten measured B&P mechanisms are aligned Standalone pillars. Native
-        // SubObjectSystem enables AnchorTop for these even when m_AnchorTop is false.
-        // Use initialized object bounds (including StandingObject), not raw mesh bounds
-        // or a universal road-height subtraction. This is instance placement only.
-        if (EntityManager.GetComponentData<PillarData>(prefab).m_Type != PillarType.Standalone)
-            throw new InvalidOperationException("The measured mechanism placement requires a standalone pillar.");
         var transform = Game.Objects.ObjectUtils.LocalToWorld(ownerTransform,
             placement.m_Position, placement.m_Rotation);
         var geometry = EntityManager.GetComponentData<ObjectGeometryData>(prefab);

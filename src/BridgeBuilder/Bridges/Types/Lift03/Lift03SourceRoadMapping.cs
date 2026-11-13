@@ -15,12 +15,10 @@ internal static class Lift03SourceRoadMapping
     internal static MovableRoadAppearance.Level Create(Lift03RoadSampling.Deck deck,
         int lod, SurfaceAsset source, Pose roadToObject, float halfDelta, SurfaceAsset? preparedSurface = null)
     {
-        if ((uint)lod >= 2u) throw new ArgumentOutOfRangeException(nameof(lod));
         var values = Data.Values;
         int caseBase = (lod * 2 + (deck == Lift03RoadSampling.Deck.Main ? 0 : 1)) * 4;
         var patches = new List<Patch> { new Patch(Vector2.zero, Vector2.one) };
         var outside = new Partition(0);
-        if (!float.IsFinite(halfDelta)) throw new ArgumentOutOfRangeException(nameof(halfDelta));
         float width = -values.F32[values.I32[values.I32[2 + caseBase * 2]] * 35 + 2];
         // A collapsed transverse span has no inverse appearance projection.
         // Keep the receiver and its original material instead of dividing by zero.
@@ -34,7 +32,6 @@ internal static class Lift03SourceRoadMapping
         var projection = pose.transpose;
 
         float scale = width / (width + halfDelta);
-        if (!float.IsFinite(scale)) throw new InvalidOperationException("Invalid Lift03 finite road width.");
         Partition Plane(float a, float b, float c, Partition negative, Partition positive)
         {
             var frame = Matrix4x4.identity;
@@ -48,7 +45,6 @@ internal static class Lift03SourceRoadMapping
         Partition Transverse(int start, int count, int xSign, Partition[] leaves)
         {
             if (count == 1) return leaves[0];
-            if (count != 2) throw new InvalidOperationException("Invalid Lift03 transverse source domains.");
             float seam = values.F32[(start + 1) * 35 + 2] / scale;
             return xSign > 0 ? Plane(1, 0, -seam, leaves[0], leaves[1])
                 : Plane(1, 0, seam, leaves[1], leaves[0]);
@@ -126,8 +122,6 @@ internal static class Lift03SourceRoadMapping
         internal static HardcodedNumbers Values => GenerationParameters.Get<HardcodedNumbers>("BridgeBuilder.Bridges.Lift03SourceRoadMapping.Data.Values", () => HardcodedNumbers.Load("Types_Lift03_Lift03SourceRoadMapping_cs"));
         static Data()
         {
-            if (Values.I32.Length < 34 || Values.I32[0] != 6 || Values.I32[1] != 16 || Values.F32.Length % 35 != 0)
-                throw new InvalidOperationException("Invalid Lift03 source-road mapping schema.");
         }
     }
 }

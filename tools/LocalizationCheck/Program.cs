@@ -13,6 +13,13 @@ internal static class Program
 
     private static void Main()
     {
+        Check(!BridgeBuilder.Bridges.BridgeStyleDefinitions.CanList("GOViaduct"), "Deferred GO must not appear in creation");
+        Check(!BridgeBuilder.Bridges.BridgeStyleDefinitions.CanGenerate("GOViaduct"), "Deferred GO must not generate");
+        Check(BridgeBuilder.Bridges.BridgeStyleDefinitions.Match("GO-224m-ViaductBridge") == null, "Source discovery must not re-admit GO");
+        Check(BridgeBuilder.Bridges.BridgeStyleDefinitions.All.All(x => x.Id != "GOViaduct"), "Deferred GO excluded from active definitions");
+        Check(BridgeBuilder.Bridges.BridgeStyleDefinitions.Family("GOViaduct") == "Arch", "Saved GO retains display family");
+        foreach (var locale in RuntimeUiText.LocaleIds)
+            Check(UiStringCatalog.ForLocale(locale).StyleName("GOViaduct") != "GOViaduct", "Saved GO retains localized name: " + locale);
         foreach(var locale in RuntimeUiText.LocaleIds)
         {
             var success=RuntimeUiText.ForLocale(locale)["RemoveAllBridgesDone"];
@@ -47,6 +54,25 @@ internal static class Program
                     Check(label != table.StyleName(family.Item1+previous.ToString("00")), "Ambiguous structural name: "+locale+"/"+id);
             }
         }
+        foreach (var item in new[] {
+            ("ArtDecoViaduct", "BXP Art Deco Viaduct - 6 Lanes"),
+            ("ArtDecoViaduct", "BXP Art Deco Viaduct - Train - 4 Tracks"),
+            ("TrussViaduct", "BXP Truss Viaduct - Highway Twoway - 2 lanes"),
+            ("TrussViaduct", "BXP Truss Viaduct - Subway"),
+            ("ArcPedestrian", "Arc Pedestrian Bridge"),
+            ("ArcPedestrian", "BXP Arc Pedestrian Bridge Revised"),
+            ("CoveredPedestrian", "Covered Pedestrian Bridge"),
+            ("CoveredPedestrian", "BXP Covered Pedestrian Bridge Revised") })
+        {
+            Check(BridgeBuilder.Bridges.BridgeStyleDefinitions.Match(item.Item2)?.Id == item.Item1,
+                "Same-style variant grouping: " + item.Item2);
+            Check(BridgeBuilder.Bridges.BridgeStyleDefinitions.CanGenerate(item.Item1), "Fixed generation entry: " + item.Item1);
+            Check(!BridgeBuilder.Bridges.BridgeStyleDefinitions.SupportsDeckMode(item.Item1, true), "No invented second deck: " + item.Item1);
+            foreach (var locale in RuntimeUiText.LocaleIds)
+                Check(UiStringCatalog.ForLocale(locale).StyleName(item.Item1) != item.Item1, "Missing fixed name: " + locale + "/" + item.Item1);
+        }
+        Check(BridgeBuilder.Bridges.BridgeStyleDefinitions.Match("BXP PedestrianBridgeCoveredWood01 Revised")?.Id == "CoveredWood",
+            "Covered pedestrian roof must not absorb the wooden covered style");
         var freshPrefabName = BridgeAssetInfo.NewPrefabName();
         Check(freshPrefabName.StartsWith("b", StringComparison.Ordinal)
             && Guid.TryParseExact(freshPrefabName.Substring(1), "D", out _), "New prefab must be b{uuid}");

@@ -149,8 +149,6 @@ internal sealed class BridgePreviewRenderResources : IDisposable
             materials = new Material[surfaces?.Length ?? 0];
             for (var i = 0; i < materials.Length; i++)
             {
-                if (surfaces![i] == null)
-                    throw new InvalidOperationException($"Preview surface slot {i} is unresolved for {prefab.name}.");
                 var material = MaterialFor(surfaces[i], network, packed,
                     lane || prefab.Has<DecalProperties>() || _animated.Contains(prefab) ? prefab : null, lane);
                 if (material == null) return Array.Empty<Material>();

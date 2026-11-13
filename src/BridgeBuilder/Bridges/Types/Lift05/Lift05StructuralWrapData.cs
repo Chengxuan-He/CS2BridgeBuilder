@@ -34,8 +34,7 @@ internal static class Lift05StructuralWrapData
         {
             var d = Numeric_Types_Lift05_StructuralWrap.Values;
             int at = 0, fp = 0, dp = 0;
-            if (d.I32[at++] != 1 || d.I32[at++] != 2)
-                throw new InvalidOperationException("Invalid Lift05 structural wrap schema.");
+            at += 2;
             var levels = new Level[2];
             for (int lod = 0; lod < levels.Length; lod++)
             {
@@ -56,8 +55,6 @@ internal static class Lift05StructuralWrapData
                     for (int k = 0; k < 3; k++) face.UV[k] = new Vector2(d.F32[fp++], d.F32[fp++]);
                 }
             }
-            if (at != d.I32.Length || fp != d.F32.Length || dp != d.F64.Length)
-                throw new InvalidOperationException("Invalid Lift05 structural wrap payload length.");
             return levels;
         }
     }

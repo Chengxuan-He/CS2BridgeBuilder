@@ -23,8 +23,6 @@ internal static class Draw01CurbAppearance
             if (part != Numeric_Types_Draw01_Draw01CurbAppearance_cs.Values.I32[2] && part != Numeric_Types_Draw01_Draw01CurbAppearance_cs.Values.I32[3] && part != Numeric_Types_Draw01_Draw01CurbAppearance_cs.Values.I32[4])
                 continue;
             var section = road.Occurrences[triangle.Occurrence].RootSection;
-            if (section == null)
-                throw new InvalidOperationException("Draw01 curb has no section provenance.");
             if (section.name != "Sidewalk" && !section.name.StartsWith("Sidewalk ", StringComparison.Ordinal))
                 continue;
             if(!sources[triangle.Material].HasValue)

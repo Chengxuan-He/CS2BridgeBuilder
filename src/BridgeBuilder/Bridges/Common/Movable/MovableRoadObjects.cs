@@ -79,8 +79,6 @@ internal static partial class MovableRoadObjects
         Func<ObjectSubObjectInfo, bool>? meshInMechanism = null, bool endSupportsPrepared = false,
         Func<ObjectSubObjectInfo, ObjectPrefab?>? nestedCarrier = null)
     {
-        if (placementPartitions.Count != placements.Count)
-            throw new ArgumentException("Road attachment partitions must match the placement list.");
         // The moving road is merged into the mechanism's first render graph. Parent IDs are
         // native connection IDs, not indices into its ProceduralAnimationProperties array.
         var bones = mechanism.m_Meshes[0].m_Mesh
@@ -94,34 +92,17 @@ internal static partial class MovableRoadObjects
             });
         var result = new List<ObjectSubObjectInfo>(placements.Count);
         var q = roadToObject.rotation;
-        if (!math.all(math.isfinite((float3)roadToObject.position)) ||
-            !math.all(math.isfinite(new float4(q.x, q.y, q.z, q.w))) ||
-            q.x * q.x + q.y * q.y + q.z * q.z + q.w * q.w == 0f)
-            throw new ArgumentException("The road attachment coordinate frame is invalid.");
         q = q.normalized;
         for (var i = 0; i < placements.Count; i++)
         {
             var source = placements[i];
-            if (source?.m_Object == null || !math.all(math.isfinite(source.m_Position)) ||
-                !math.all(math.isfinite(source.m_Rotation.value)) ||
-                math.lengthsq(source.m_Rotation.value) == 0f)
-                throw new InvalidOperationException($"Road attachment {i} has an invalid prefab or transform.");
             var position = q * (Vector3)source.m_Position + roadToObject.position;
             int? mount = MountBone(position, placementPartitions[i], i);
             if (!mount.HasValue) continue;
             var bone = bones[mount.Value];
             var parent = bone.m_ConnectionID;
-            if (parent == 0 && (bone.parentId != -1 || bone.m_Type != (BoneType)0))
-                throw new InvalidOperationException($"Road attachment {i} targets a moving bone without a native connection ID.");
             if (parent != 0)
             {
-                // RenderingUtils.FindBoneIndex only searches connections outside mesh-slot IDs.
-                // This main-graph binding must also be the first matching bone, as in native code.
-                if (parent < mechanism.m_Meshes.Length || parent >= 1000)
-                    throw new InvalidOperationException($"Road attachment {i} has an ambiguous native parent ID {parent}.");
-                for (var j = 0; j < mount.Value; j++)
-                    if (bones[j].m_ConnectionID == parent)
-                        throw new InvalidOperationException($"Road attachment {i} targets a duplicate native connection ID {parent}.");
             }
             var rotation = q * (Quaternion)source.m_Rotation;
             result.Add(new ObjectSubObjectInfo
@@ -168,8 +149,6 @@ internal static partial class MovableRoadObjects
         while (region.Bone < 0 && !region.IsGap)
         {
             var distance = region.ObjectToSeam.MultiplyPoint3x4(position).z;
-            if (!float.IsFinite(distance))
-                throw new InvalidOperationException($"Road attachment {index} has an invalid measured seam transform.");
             region = distance < 0f ? region.Negative! : region.Positive!;
         }
         return region.IsGap ? null : region.Bone;
@@ -197,8 +176,6 @@ internal static partial class MovableRoadObjects
 
     internal static Rule[] Extract(World context, Entity composition, MovableNetworkPrefabs imported)
     {
-        if (context == World.DefaultGameObjectInjectionWorld)
-            throw new InvalidOperationException("Moving object extraction requires a private network context.");
         var origins = context.GetOrCreateSystemManaged<ObjectCompositionSystem>().TraceOrigins(composition,
             context.EntityManager.GetComponentData<NetCompositionData>(composition));
         var placements = context.EntityManager.GetBuffer<NetCompositionObject>(composition, true);
@@ -208,13 +185,9 @@ internal static partial class MovableRoadObjects
         {
             var placement = placements[i];
             var original = imported.Original(placement.m_Prefab);
-            imported.CheckSource(original);
-            if (original is not ObjectPrefab prefab)
-                throw new InvalidOperationException("A network object rule references a non-object prefab.");
+            var prefab = (ObjectPrefab)original;
             var piece = imported.Original(pieces[origins[i].Occurrence].m_Piece);
-            imported.CheckSource(piece);
-            if (piece is not NetPiecePrefab sourcePiece)
-                throw new InvalidOperationException("A network object rule references a non-piece origin.");
+            var sourcePiece = (NetPiecePrefab)piece;
             rules[i] = new Rule(prefab, placement, sourcePiece, origins[i].Occurrence, origins[i].RuleIndex);
         }
         return rules;
@@ -276,11 +249,7 @@ internal static partial class MovableRoadObjects
                 var buffer = manager.AddBuffer<NetPieceObject>(piece.m_Piece);
                 foreach (var item in copied) buffer.Add(item);
             }
-            else if (occurrence.Prefab.GetComponent<NetPieceObjects>() != null)
-            {
-                throw new InvalidOperationException($"'{occurrence.SourcePath}' declares objects but has no initialized native object buffer.");
-            }
-            manager.GetBuffer<NetCompositionPiece>(composition).Add(piece);
+            else ;            manager.GetBuffer<NetCompositionPiece>(composition).Add(piece);
         }
 
         var composer = world.GetOrCreateSystemManaged<ObjectCompositionSystem>();

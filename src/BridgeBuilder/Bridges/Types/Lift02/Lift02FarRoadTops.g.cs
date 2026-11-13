@@ -7,13 +7,9 @@ internal static class Lift02FarRoadTops
 {
     internal static void Remove(int[] indices, bool[] removed)
     {
-        if (indices.Length != Numeric_Types_Lift02_Lift02FarRoadTops_g_cs.Values.I32[0] || removed.Length != Numeric_Types_Lift02_Lift02FarRoadTops_g_cs.Values.I32[1])
-            throw new InvalidOperationException("Lift02 far road-top source layout changed.");
         foreach (var face in Faces)
         {
             var offset = face.Triangle * Numeric_Types_Lift02_Lift02FarRoadTops_g_cs.Values.I32[2];
-            if (indices[offset] != face.A || indices[offset + Numeric_Types_Lift02_Lift02FarRoadTops_g_cs.Values.I32[3]] != face.B || indices[offset + Numeric_Types_Lift02_Lift02FarRoadTops_g_cs.Values.I32[4]] != face.C)
-                throw new InvalidOperationException("Lift02 far road-top topology changed.");
             removed[face.Triangle] = true;
         }
     }

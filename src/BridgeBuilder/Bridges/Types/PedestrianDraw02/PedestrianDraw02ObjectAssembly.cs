@@ -16,15 +16,11 @@ internal static class PedestrianDraw02ObjectAssembly
     internal static async System.Threading.Tasks.Task<StaticObjectPrefab> CreateAsync(TowerFactory factory, string owner, string name, RenderPrefab mechanism, RenderPrefab column, RenderPrefab footing, ContentPrefab content, Func<string, ObjectPrefab> resolveOriginal, float halfWidthDelta, MovableStraightSample road)
     {
         await GenerationWork.Next("support PedestrianDraw02ObjectAssembly.Create");
-        if (mechanism == null || column == null || footing == null || content == null || !float.IsFinite(halfWidthDelta))
-            throw new ArgumentException("PedestrianDraw02 object assembly requires all three render graphs, native content and a finite width change.");
         var authored = PedestrianDraw02MechanismData.AuthoredAttachments(resolveOriginal);
         var imported = Path.Combine(Application.persistentDataPath, "ImportedData");
         var attachments = new List<ObjectSubObjectInfo>(authored.Length);
         foreach (var item in authored)
         {
-            if (item.m_Object == null)
-                throw new InvalidOperationException("PedestrianDraw02 requires its original rooftop attachment source.");
             // Both recorded vents belong to the fixed side control rooms. Their parent,
             // rotation, probability and vertical/longitudinal placement remain native.
             var position = item.m_Position;

@@ -27,8 +27,8 @@ lines = ['// Native DrawBridge03 structural approach layout, game 1.6.2f1.',
          'namespace BridgeBuilder.Bridges;', '', 'internal static class Draw03ApproachLayout', '{',
          '    internal static void Apply(NetGeometryPrefab target, TowerFactory factory, NetPiecePrefab[] pieces, float layoutRemainder)',
          '    {',
-         '        if (pieces.Length != 5 || pieces.Any(piece => piece == null || !factory.Created.Contains(piece)))',
-         '            throw new InvalidOperationException("Draw03 approaches require five owned structural pieces.");',
+         '        ',
+         '',
          '        var median = factory.ResolveOriginal<NetPiecePrefab>("Elevated Bottom Piece 0 - Intersection Middle");']
 for i, identity in enumerate(sections):
     d = records[str(identity)]['data']

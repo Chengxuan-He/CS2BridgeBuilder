@@ -18,8 +18,7 @@ internal static class MovableRoadRoute
         internal bool RepeatV => true;
         internal SourceDomain(float minU, float maxU, MovableRoadAppearance.Type type)
         { MinU=minU; MaxU=maxU; Type=type; }
-        internal bool Contains(Vector2 uv) => float.IsFinite(uv.x) && float.IsFinite(uv.y) &&
-            uv.x>=MinU && uv.x<=MaxU;
+        internal bool Contains(Vector2 uv) => uv.x>=MinU && uv.x<=MaxU;
     }
     internal readonly struct Source
     {
@@ -54,15 +53,13 @@ internal static class MovableRoadRoute
             // Exact RoadEU base-region columns 546..2047, measured over every source row.
             // Coarse mips contain network blending. This is classification evidence only,
             // never authorization to discard that layer during realization.
-            bool Inside(MovableRoadGeometry.Vertex vertex) => float.IsFinite(vertex.UV.x) &&
-                float.IsFinite(vertex.UV.y) && vertex.UV.x>=547f/2048f && vertex.UV.x<=1f;
+            bool Inside(MovableRoadGeometry.Vertex vertex) => vertex.UV.x>=547f/2048f && vertex.UV.x<=1f;
             return Inside(triangle.A)&&Inside(triangle.B)&&Inside(triangle.C);
         }
 
         internal MovableRoadAppearance.Type Receiver(MovableRoadGeometry.Triangle triangle)
         {
             float a=triangle.A.UV.x,b=triangle.B.UV.x,c=triangle.C.UV.x;
-            if (!float.IsFinite(a)||!float.IsFinite(b)||!float.IsFinite(c)) return MovableRoadAppearance.Type.None;
             return MovableRoadLayerIdentity.WholeReceiver(Surface,Builtin,Color,Normal,Mask,Worldspace,
                 Math.Min(a,Math.Min(b,c)),Math.Max(a,Math.Max(b,c)));
         }

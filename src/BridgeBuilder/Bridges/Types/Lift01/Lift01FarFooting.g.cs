@@ -9,8 +9,6 @@ internal static class Lift01FarFooting
 {
     internal static MovableStructureModel.Plan Create(Vector3[] source, int[] indices, float delta)
     {
-        if (source.Length != Numeric_Types_Lift01_Lift01FarFooting_g_cs.Values.I32[0] || indices.Length != Numeric_Types_Lift01_Lift01FarFooting_g_cs.Values.I32[1] || !float.IsFinite(delta))
-            throw new InvalidOperationException("Lift01 far footing requires its measured source.");
         var positions = (Vector3[])source.Clone();
         AffineGeometry.Execute(RangePrograms.Data, 0, new[] { positions }, new[] { Weights }, new float[] { delta }, Numeric_Types_Lift01_Lift01FarFooting_g_cs.Values.I32[2], checked((positions.Length) - (Numeric_Types_Lift01_Lift01FarFooting_g_cs.Values.I32[2])));
         return new MovableStructureModel.Plan(source, positions, new[] { indices }, new[] { new bool[Numeric_Types_Lift01_Lift01FarFooting_g_cs.Values.I32[3]] });

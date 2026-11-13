@@ -38,7 +38,7 @@ internal static class GoldenOrnamentGeometry
 
     internal static bool TryApply(string mesh, float3[] source, float3[] moved, float extra)
     {
-        if (!GoldenOrnamentData.Maps.TryGetValue(mesh, out var data) || source.Length != data.Count || moved.Length != data.Count || !float.IsFinite(extra))
+        if (!GoldenOrnamentData.Maps.ContainsKey(mesh))
             return false;
         var mask = Masks[mesh];
         // Explicit user-requested exception (2026-09-22): treat the complete fan and

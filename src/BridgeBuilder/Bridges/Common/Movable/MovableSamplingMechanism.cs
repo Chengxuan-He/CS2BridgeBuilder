@@ -18,8 +18,6 @@ internal sealed class MovableSamplingMechanism : IDisposable
         ContentPrefab content, float halfWidthDelta, IReadOnlyList<string> names,
         Func<RenderPrefab[], ObjectMeshInfo[]> meshes, Action<StaticObjectPrefab, ContentPrefab> applyComponents)
     {
-        if (sources.Count != names.Count || sources.Count == 0 || !float.IsFinite(halfWidthDelta) || content == null)
-            throw new ArgumentException("Movable sampling requires matching native render roots, content and a finite width change.");
         var imported = Path.Combine(Application.persistentDataPath, "ImportedData");
         var copies = new Dictionary<RenderPrefab, RenderPrefab>();
         try
@@ -27,8 +25,6 @@ internal sealed class MovableSamplingMechanism : IDisposable
             var prepared = new RenderPrefab[sources.Count];
             for (var i = 0; i < prepared.Length; i++)
             {
-                if (sources[i] == null || sources[i].name != names[i])
-                    throw new InvalidOperationException("Movable sampling requires recorded render source: " + names[i]);
                 prepared[i] = Copy(sources[i]);
             }
             Prefab = ScriptableObject.CreateInstance<StaticObjectPrefab>();
@@ -47,8 +43,6 @@ internal sealed class MovableSamplingMechanism : IDisposable
 
         RenderPrefab Copy(RenderPrefab source)
         {
-            if (source == null)
-                throw new InvalidOperationException("Movable sampling cannot use missing render metadata.");
             if (copies.TryGetValue(source, out var existing)) return existing;
             var copy = ScriptableObject.CreateInstance<RenderPrefab>();
             _owned.Add(copy);

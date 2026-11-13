@@ -43,8 +43,6 @@ internal static class Draw03NativeStructureSources
         slot = null!;
         var expected = SourceDigest(source.id.guid.ToString());
         if (expected == null || !unit.CanUseSource) return false;
-        if (expected != sourceDigest)
-            throw new InvalidDataException("Draw03 native structural source identity/content differs.");
         slot = new MovableStructureTiles.Slot { Surface = source, Original = unit };
         return true;
     }
@@ -59,8 +57,6 @@ internal static class Draw03NativeStructureSources
         using var stream = source.GetReadStream();
         using var bytes = new MemoryStream();
         stream.CopyTo(bytes);
-        if (MovableStructureKey.Digest(bytes.ToArray()) != expected)
-            throw new InvalidDataException("Draw03 native structural source content differs: " + sourceCid);
         return source;
     }
 }

@@ -24,8 +24,6 @@ internal static class Lift01FarAppearance
             var offset = i * Data.I32[Numeric_Types_Lift01_Lift01FarAppearance_cs.Values.I32[2]];
             float F(int field) => f[offset + field];
             var width = F(Numeric_Types_Lift01_Lift01FarAppearance_cs.Values.I32[3]) + halfDelta;
-            if (!float.IsFinite(width))
-                throw new ArgumentOutOfRangeException(nameof(halfDelta));
             // A collapsed projection has no inverse; retain the selected material.
             if (width == 0f)
                 return new MovableRoadAppearance.Level(native, new[] { new Patch(Vector2.zero, Vector2.one) }, new[] { MovableRoadAppearance.Type.None }, new Partition(0), new Partition(0));

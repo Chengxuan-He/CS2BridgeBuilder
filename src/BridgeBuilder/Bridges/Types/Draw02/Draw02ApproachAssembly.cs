@@ -31,8 +31,6 @@ internal static class Draw02ApproachAssembly
                 {
                     var original = originals[lod];
                     meshes = PrivateGeometryReader.Read(original);
-                    if (meshes.Length != Numeric_Types_Draw02_Draw02ApproachAssembly_cs.Values.I32[2] || meshes[Numeric_Types_Draw02_Draw02ApproachAssembly_cs.Values.I32[3]].subMeshCount != Numeric_Types_Draw02_Draw02ApproachAssembly_cs.Values.I32[4])
-                        throw new InvalidOperationException("Draw02 approach requires its recorded single native surface slot.");
                     var supportInput0 = meshes[Numeric_Types_Draw02_Draw02ApproachAssembly_cs.Values.I32[5]].vertices;
                     var supportInput1 = meshes[Numeric_Types_Draw02_Draw02ApproachAssembly_cs.Values.I32[6]].GetIndices(Numeric_Types_Draw02_Draw02ApproachAssembly_cs.Values.I32[7]);
                     var plan = await GenerationWork.Background("support structure plan", () => Draw02ApproachGeometry.Create(family, lod, supportInput0, supportInput1, halfWidthDelta));

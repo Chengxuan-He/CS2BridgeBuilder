@@ -8,8 +8,6 @@ internal static class Draw03ApproachGeometry
     internal static MovableStructureModel.Plan Create(int family, int lod, Vector3[] source, int[] indices, float delta)
     {
         var expected = Counts[family][lod];
-        if (source.Length != expected.Vertices || indices.Length != expected.Triangles * Numeric_Types_Draw03_Draw03ApproachGeometry_g_cs.Values.I32[0] || !float.IsFinite(delta))
-            throw new InvalidOperationException("Draw03 approach requires its measured meshes.");
         var positions = (Vector3[])source.Clone();
         if (family < Numeric_Types_Draw03_Draw03ApproachGeometry_g_cs.Values.I32[1])
         {

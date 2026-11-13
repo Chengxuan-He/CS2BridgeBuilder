@@ -17,8 +17,6 @@ internal static class Lift05NetworkData
 
     internal static NetSectionInfo[] ConvertSections(string owner, NetSectionInfo[] source, IReadOnlyList<Role> roles, out PrefabBase[] created)
     {
-        if (roles.Count != source.Length)
-            throw new InvalidOperationException("Lift05 requires a measured role for each source occurrence.");
         var rules = new MovableSectionConversion.Branch[source.Length][];
         for (var i = Numeric_Types_Lift05_Lift05NetworkData_g_cs.Values.I32[0]; i < source.Length; i++)
             rules[i] = roles[i] switch

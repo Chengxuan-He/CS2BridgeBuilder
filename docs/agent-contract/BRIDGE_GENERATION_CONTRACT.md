@@ -11,7 +11,8 @@ ordinary measured target-minus-prototype width mapping; do not add narrow-road
 compensation, clamps, replacement geometry, special bone precedence or dedicated
 width thresholds. Remove narrow-road-specific generation branches and diagnostics.
 Narrow-road compatibility is no longer a completion gate for the movable batch.
-Finite input checks and validity of the native geometry/skeleton remain required.
+Trust internal numerical and geometry/skeleton data under the repository execution policy;
+retain actual external IO boundary validation and native operation failure handling.
 This is not a claim that every arbitrarily narrow input produces a valid bridge.
 
 This rule applies only to movable bridges. Do not change non-movable bridge
@@ -65,6 +66,7 @@ are owned here; they are not optional appendices of the movable-bridge contract.
 - All bridge work: this contract and the [project contract](PROJECT_CONTRACT.md).
 - Implemented request, generation and publication sequence: [bridge generation workflow design](../design/generation/Bridge-Generation-Workflow.md). The design explains execution; this contract retains normative requirements.
 - Generator implementation and refactoring: additionally [generator code organization](GENERATOR_CODE_CONTRACT.md).
+- Non-Network source bridges: additionally [virtual prototype preparation before Bridge Builder generation](NON_NETWORK_BRIDGES_CONTRACT.md).
 - Movable bridges: additionally [movable bridge generation](MOVABLE_BRIDGES_CONTRACT.md), incorporated by section 21.
 - Persistence: additionally [asset persistence policy](Bridge-Asset-Persistence.md), incorporated by section 17.
 - Previews: additionally [preview specification](Bridge-Preview-Specification.md).
@@ -300,9 +302,10 @@ sizes are similar. Compare identical publication file lists after official postp
 
 Load each resource only when its owning bridge/data class actually needs it.
 Do not load all resources at startup, catalogue enumeration or style selection. Prevent
-eager static initialization of unused numerical resource holders. Validate the resource format,
-array lengths, complete payload and checksum directly from the embedded stream and read its
-typed arrays. Uncompressed loading needs no extraction file. If a development conversion needs
+eager static initialization of unused numerical resource holders. Read the trusted embedded
+typed arrays directly; resource format, array lengths, complete payload and checksum are checked
+by offline build/development tools, not repeated during runtime memory decoding. Uncompressed
+loading needs no extraction file. If a development conversion needs
 decompression, its decoded file must be temporary and deleted on success or failure, never a
 persistent extraction cache or installed/generated bridge asset. Load numerical resources only on demand within the current generation request. Reuse decoded
 BBN arrays, SIMD programs and reconstructed parameter/membership records across that request's
@@ -1040,14 +1043,12 @@ in development tests; it is not a runtime structural rejection gate.
 
 ### Runtime error boundaries
 
-Runtime failure contract: excessive defensive programming is prohibited.
-Defend external logic and data outside the mod's control, including generated bridge Prefabs that
-can subsequently be damaged. Validate external input and contain game or third-party API failures
-at their boundaries. Internal mod logic should not fail during correct operation: violated internal
-invariants must surface as explicit ERROR, with exceptions where appropriate and diagnostic context
-preserved. Do not add special cases, silent returns, fallback values or exception swallowing merely
-to suppress an internal error. Fix the underlying defect. Actual failed computation, I/O or native
-registration must not be reported as success; structural or appearance quality is not such a failure.
+Follow [trusted internal execution](../../AGENTS.md#trusted-internal-execution). Validate external
+file/network data once at its IO boundary; trust subsequent owned data and in-memory computation.
+Do not introduce or retain internal invariant assertions, numerical/structural result gates or
+repeated input checks. Preserve actual operation failure propagation, native business rules,
+cancellation and ownership cleanup. Offline tests may verify the construction; runtime must not
+repeat their assertions. Structural or appearance quality cannot gate generation.
 
 ### Authored-part measurement
 
@@ -1200,7 +1201,7 @@ an active structural or appearance acceptance gate. Width compatibility, negativ
 collapsed or degenerate shapes, intersections, overlap, clearance, topology quality, visual
 material fit and sampling-range quality must not reject preview, creation or publication.
 The player decides whether the resulting structure is suitable. Keep useful measurements in
-offline tests or non-blocking diagnostics; do not turn them into runtime permission checks.
+offline tests; do not run internal result validation in the runtime path.
 This rule applies to every LOD, component, geometry/material stage and bridge family.
 
 Continue applying the documented construction and material rules; removing a gate does not
@@ -1211,8 +1212,7 @@ fabricated successful output. The material pipeline contains native/external exc
 returns explicit failure results under its complete non-throwing contract.
 
 Keep actual operational errors explicit: missing/corrupt required files, invalid serialized
-indices or resource schemas, unavailable native APIs, non-finite arithmetic that cannot be
-represented, failed writes and native registration failures. Such errors describe a failed
+indices or resource schemas, unavailable native APIs, failed writes and native registration failures. Such errors describe a failed
 operation, not a judgement that the player's bridge shape or appearance is unacceptable.
 Persistence must still write required resources before reading/publishing them and preserve
 healthy owners. Historical asset self-check and missing dependency recovery remain separate.
@@ -1686,6 +1686,31 @@ the All option where present. Short lists shrink to their contents; longer lists
 container to reach all remaining options. Row and viewport dimensions use the same scaling units.
 Popup padding and borders sit outside the seven-row viewport.
 
+### Full published source mod names
+
+Every user-visible source-mod label must use the full official title published on Paradox Mods.
+This applies to all bridge styles and source assets, including native-network and non-Network
+prototypes, catalogue cards, details/settings, saved-bridge source presentation and alternate/error
+paths. Never substitute a numeric mod ID, package/folder/prefab name, technical alias or shortened
+name. Preserve an author's abbreviation when it is part of the published full title; do not invent
+its expansion. Localize the surrounding Mod/source prefix in every supported language, not the
+publisher's title. Preserve user-entered bridge names and existing native DLC localization.
+
+Verify known source titles by web search on Paradox Mods and the official mod page/API. Record the
+exact title, mod ID, URL and verification date as evidence; when search indexing fails, record that
+fact and the successful official-page/API verification separately. Local SDK/cache metadata may
+supply the published title at runtime, but is not a substitute for the required development-time
+web verification. Do not claim a local name has been externally verified when it has not.
+
+Keep IDs for ownership, prerequisites, binding and persistence; display names must never become
+source-selection keys. Use the full official title from the matched native mod metadata, with
+verified recorded titles when required metadata is unavailable. An unresolved title uses an explicit
+localized name-unavailable label, not the ID or a guessed expansion, and does not add a generation
+or availability gate. Preserve the complete title in existing tooltips or equivalent accessible
+full-text presentation when the compact card truncates it. Audit all source-label producers and
+consumers together; do not repair only one bridge's card or rewrite healthy assets merely to update
+a display label. Follow the [UI source presentation design](../design/interface/Runtime-UI-Localization.md#source-mod-names).
+
 ### Permanent creation identity
 
 All permanent creation entry points claim a new UUID directory atomically before writing any
@@ -1856,8 +1881,8 @@ completeness. This requirement applies to fixed and movable styles.
 The selected-road and lane path uses generation-only GPU computation for seam clipping,
 rigid bone assignment and native vertex encoding. Run count, prefix allocation, emission
 and attribute encoding as one connected operation: the encoder consumes the GPU's bound
-triangle buffer directly. Keep intermediate bound vertices resident while validating attributes, reducing per-material bounds, determining UV2/UV4 layout and distributing encoded attributes into stable material groups. Read back the CPU-owned native attribute streams and compact group metadata needed for normal native asset
-publication. Full bound-triangle readback is reserved for explicitly armed replay diagnostics or the reference verification API; normal generation must not read it back merely to split the same attributes again. Preserve within-material triangle order, canonical Surface identity, every vertex channel and one owner for each native allocation. Required validation may execute on the GPU with explicit error results, but must not be bypassed to improve timings. Record upload/readback byte counts and calls, CPU preparation/group offsets, dispatch, synchronization/readback, validation, native allocation/copy and native publication separately; a blocking readback includes pending GPU work and is not kernel-only time. Saved bridges require neither the compute bundle nor a running manager.
+triangle buffer directly. Keep intermediate bound vertices resident while reducing per-material bounds, determining UV2/UV4 layout and distributing encoded attributes into stable material groups. Read back the CPU-owned native attribute streams and compact group metadata needed for normal native asset
+publication. Full bound-triangle readback is reserved for explicitly armed replay diagnostics or the reference verification API; normal generation must not read it back merely to split the same attributes again. Preserve within-material triangle order, canonical Surface identity, every vertex channel and one owner for each native allocation. Trust internal GPU inputs and results under the execution policy; do not dispatch attribute-validation passes. Record upload/readback byte counts and calls, CPU preparation/group offsets, dispatch, synchronization/readback, validation, native allocation/copy and native publication separately; a blocking readback includes pending GPU work and is not kernel-only time. Saved bridges require neither the compute bundle nor a running manager.
 Keep the exact request-local cross-LOD reuse rules below and each LOD's own skeleton.
 
 Seam distances, intersection parameters and constructed positions use double precision,
@@ -1870,9 +1895,8 @@ identity of every attribute. Preserve source colors, complete channels and UV2/U
 
 Use a version-compatible Unity compute AssetBundle and preserve compiler settings required
 by the validated double implementation. Creation, dispatch, synchronization and cleanup run
-through Unity main-thread APIs, which submit work to the graphics backend. Bound dispatch sizes, checked output capacity and local polygon
-limits prevent partial writes from becoming assets. Validate all required inputs and output
-before publishing any model. Release every temporary GPU buffer and program on success and
+through Unity main-thread APIs, which submit work to the graphics backend. Compute dispatch sizes and output allocation from the construction algorithm. Do not validate
+internal inputs or output before publishing a model. Release every temporary GPU buffer and program on success and
 failure. This is a construction tool, not a custom runtime rendering shader or synchronizer.
 
 Unavailable double-capable compute, unsupported graphics backends, exceeded GPU working
@@ -1936,7 +1960,7 @@ cost. Verify actual expensive-stage execution counts of exactly one for identica
 not merely final cache-hit counts. Cover all applicable routes above, including the
 already-compiled sampling case, and that distinct source/appearance/bone-domain cases remain
 separate. Compare all output channels, order, material/bone assignment, bounds and publication
-ownership offline. Reuse is not permission to merge triangles or bypass required validation.
+ownership offline. Reuse is not permission to merge triangles; offline tests verify output without runtime result checks.
 
 **Implementation status:** the request-local context records the initial sampling compilation
 and reuses source surfaces/roads by their actual resolved render inputs. Lane source snapshots,
@@ -1950,7 +1974,7 @@ cases and final publication still require the stated checks, including manual ga
 
 Selected-road planar material coordinates and the measured road-to-object pose are evaluated in the same generation-only GPU pipeline before FP64 clipping. Prepare the normalized quaternion float products once on the CPU. Preserve Unity/Mono expression ordering with double intermediate evaluation and the original float store boundaries for each position, normal and tangent. Preserve untouched UV channels and tangent handedness. Upload original triangle records once and keep transformed records resident. The complete CPU fallback performs the same mapping and frame conversion before binding; it must never bind untransformed input after a GPU failure. The strict cross-LOD reuse key continues to compare original inputs, mappings and pose.
 
-The count pass validates both original and evaluated GPU input attributes before clipping output can be published. Moving finite/frame checks to the GPU is not permission to remove them: independent error flags must fail the GPU attempt and invoke the complete CPU fallback or return the original failure.
+The count pass computes allocation sizes; it must not validate original or evaluated internal GPU attributes. Finite/frame checks and result error flags for pure computation are prohibited. Preserve actual dispatch/readback failures and the complete CPU fallback.
 
 ### Preview background execution and timing boundaries
 

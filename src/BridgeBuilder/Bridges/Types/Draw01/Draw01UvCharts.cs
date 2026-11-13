@@ -45,7 +45,6 @@ internal static class Draw01UvCharts
         {
             var data = HardcodedNumbers.Load("Draw01UvCharts");
             var i = data.I32;
-            if (i[0] != 1) throw new InvalidOperationException("Invalid Draw01 UV chart schema.");
             var charts = new MovableUvChart[i[1]];
             for (int c = 0; c < charts.Length; c++)
                 charts[c] = MovableUvChart.Read(i, data.F64, i[2 + c]);

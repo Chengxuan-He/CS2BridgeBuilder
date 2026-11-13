@@ -15,8 +15,7 @@ internal static class Draw01RoadFragmentData
             new MovableStructureModel.EdgeVertex(Numeric_Types_Draw01_Draw01RoadFragmentData_g_cs.Values.I32[2], Numeric_Types_Draw01_Draw01RoadFragmentData_g_cs.Values.I32[3], Numeric_Types_Draw01_Draw01RoadFragmentData_g_cs.Values.F32[1]), // face 193
             new MovableStructureModel.EdgeVertex(Numeric_Types_Draw01_Draw01RoadFragmentData_g_cs.Values.I32[4], Numeric_Types_Draw01_Draw01RoadFragmentData_g_cs.Values.I32[5], Numeric_Types_Draw01_Draw01RoadFragmentData_g_cs.Values.F32[2]), // face 351
             new MovableStructureModel.EdgeVertex(Numeric_Types_Draw01_Draw01RoadFragmentData_g_cs.Values.I32[6], Numeric_Types_Draw01_Draw01RoadFragmentData_g_cs.Values.I32[7], Numeric_Types_Draw01_Draw01RoadFragmentData_g_cs.Values.F32[3]), // face 516
-        },
-        _ => throw new ArgumentOutOfRangeException(nameof(lod))};
+        }};
     // firstAddedVertex is the original vertex count plus any earlier constructed vertices.
     internal static MovableStructureModel.Fragment[] MovingFaces(int lod, int firstAddedVertex) => lod switch
     {
@@ -27,8 +26,7 @@ internal static class Draw01RoadFragmentData
             new MovableStructureModel.Fragment(Numeric_Types_Draw01_Draw01RoadFragmentData_g_cs.Values.I32[13], Numeric_Types_Draw01_Draw01RoadFragmentData_g_cs.Values.I32[14], Numeric_Types_Draw01_Draw01RoadFragmentData_g_cs.Values.I32[15], Numeric_Types_Draw01_Draw01RoadFragmentData_g_cs.Values.I32[16], firstAddedVertex + Numeric_Types_Draw01_Draw01RoadFragmentData_g_cs.Values.I32[17]),
             new MovableStructureModel.Fragment(Numeric_Types_Draw01_Draw01RoadFragmentData_g_cs.Values.I32[18], Numeric_Types_Draw01_Draw01RoadFragmentData_g_cs.Values.I32[19], Numeric_Types_Draw01_Draw01RoadFragmentData_g_cs.Values.I32[20], Numeric_Types_Draw01_Draw01RoadFragmentData_g_cs.Values.I32[21], firstAddedVertex + Numeric_Types_Draw01_Draw01RoadFragmentData_g_cs.Values.I32[22]),
             new MovableStructureModel.Fragment(Numeric_Types_Draw01_Draw01RoadFragmentData_g_cs.Values.I32[23], Numeric_Types_Draw01_Draw01RoadFragmentData_g_cs.Values.I32[24], Numeric_Types_Draw01_Draw01RoadFragmentData_g_cs.Values.I32[25], Numeric_Types_Draw01_Draw01RoadFragmentData_g_cs.Values.I32[26], firstAddedVertex + Numeric_Types_Draw01_Draw01RoadFragmentData_g_cs.Values.I32[27]),
-        },
-        _ => throw new ArgumentOutOfRangeException(nameof(lod))};
+        }};
 }
 
 // Embedded numerical arrays: Types_Draw01_Draw01RoadFragmentData_g_cs

@@ -13,8 +13,7 @@ internal static class Draw01RoadSurfaceData
     {
         0 => Numeric_Types_Draw01_Draw01RoadSurfaceData_g_cs.Values.I32[0],
         1 => Numeric_Types_Draw01_Draw01RoadSurfaceData_g_cs.Values.I32[1],
-        2 => Numeric_Types_Draw01_Draw01RoadSurfaceData_g_cs.Values.I32[2],
-        _ => throw new ArgumentOutOfRangeException(nameof(lod))};
+        2 => Numeric_Types_Draw01_Draw01RoadSurfaceData_g_cs.Values.I32[2]};
     internal static int[] TopTriangles(int lod) => lod switch
     {
         0 => new[]
@@ -823,8 +822,7 @@ internal static class Draw01RoadSurfaceData
             Numeric_Types_Draw01_Draw01RoadSurfaceData_g_cs.Values.I32[798],
             Numeric_Types_Draw01_Draw01RoadSurfaceData_g_cs.Values.I32[799],
             Numeric_Types_Draw01_Draw01RoadSurfaceData_g_cs.Values.I32[800],
-        },
-        _ => throw new ArgumentOutOfRangeException(nameof(lod))};
+        }};
     internal static int[] FixedInnerCurbTriangles(int lod) => lod switch
     {
         0 => new[]
@@ -887,8 +885,7 @@ internal static class Draw01RoadSurfaceData
             Numeric_Types_Draw01_Draw01RoadSurfaceData_g_cs.Values.I32[850],
             Numeric_Types_Draw01_Draw01RoadSurfaceData_g_cs.Values.I32[851],
             Numeric_Types_Draw01_Draw01RoadSurfaceData_g_cs.Values.I32[852],
-        },
-        _ => throw new ArgumentOutOfRangeException(nameof(lod))};
+        }};
 }
 
 // Embedded numerical arrays: Types_Draw01_Draw01RoadSurfaceData_g_cs

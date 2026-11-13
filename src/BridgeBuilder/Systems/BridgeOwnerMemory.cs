@@ -239,9 +239,6 @@ internal static class BridgeOwnerMemory
             }
             if(asset is SurfaceAsset surface)surface.UnloadProperties(true);
             asset.Unload(true);
-            if(asset.state!=LoadState.Untracked && asset.state!=LoadState.NotLoaded ||
-                asset is GeometryAsset g && g.data.IsValid)
-                throw new IOException("Owner asset retained native payloads after unload: "+asset.name);
         }
     }
 }

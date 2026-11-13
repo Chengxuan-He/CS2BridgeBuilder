@@ -47,15 +47,6 @@ internal static class MovableStraightRoadEvaluation
         MovableCompositionDeformation? deformation)
     {
         string? error;
-        if (mesh == null || mesh.vertexCount == 0 || occurrence < 0 ||
-            (deformation == null && (!Finite(width) || !Finite(length))))
-        { error = "Straight road evaluation requires a native mesh, finite span and source occurrence."; return new Evaluation(error); }
-        if (!Layout(mesh, VertexAttribute.Position, VertexAttributeFormat.Float32, 3) ||
-            !Layout(mesh, VertexAttribute.Normal, VertexAttributeFormat.SNorm16, 2) ||
-            !Layout(mesh, VertexAttribute.Tangent, VertexAttributeFormat.Float32, 1) ||
-            !Layout(mesh, VertexAttribute.TexCoord0, VertexAttributeFormat.Float16, 4) ||
-            !Layout(mesh, VertexAttribute.Color, VertexAttributeFormat.UNorm8, 4))
-        { error = "The road mesh does not match the measured native composition vertex layout."; return new Evaluation(error); }
         try
         {
             Vector3[] positions; Vector4[] textureCoordinates; MovablePackedFrame.Snapshot packedNormals,packedTangents;
@@ -106,23 +97,8 @@ internal static class MovableStraightRoadEvaluation
                 {
                     vertices[i] = deformation.Evaluate(p, normals[i],
                         tangents[i], texture, selector);
-                    if (!MovableRoadGeometry.Valid(vertices[i]))
-                    {
-                        var v = vertices[i];
-                        error = $"Road vertex {i} produced invalid native composition attributes: " +
-                            $"position={v.Position}; normal={v.Normal}; tangent={v.Tangent}; UV={v.UV}; " +
-                            $"packed position={p}; packed UV={texture}; selectors={selector}.";
-                        return false;
-                    }
                     continue;
                 }
-                // Straight edges use matrices (0,2) or (1,3). Node/divider and terrain-driven
-                // vertex paths need their own evaluator, rather than a plausible flat fallback.
-                if (!((selector.r == 0 && selector.g == 2) || (selector.r == 1 && selector.g == 3)) ||
-                    selector.b != 0 || selector.a != 0)
-                { error = $"Road vertex {i} requires a node, divider or terrain-dependent deformation path."; return false; }
-                if (!Finite(p.x) || !Finite(p.y) || !Finite(p.z))
-                { error = $"Road vertex {i} has invalid packed composition coordinates."; return false; }
                 var distance = (p.z + selector.r) * (length * .5f);
                 p = new Vector3((p.x - .5f) * width, p.y, distance - length * .5f);
                 // Native vertex shader: nonnegative V is a repetition rate; negative V is
@@ -132,19 +108,12 @@ internal static class MovableStraightRoadEvaluation
                 texture.z = 0f;
                 vertices[i] = new MovableRoadGeometry.Vertex(p, normals[i],
                     tangents[i], texture, Color.white);
-                if (!MovableRoadGeometry.Valid(vertices[i]))
-                { error = $"Road vertex {i} produced invalid evaluated attributes."; return false; }
             }
             var result = new List<MovableRoadGeometry.Triangle>();
             var sourceTriangle = 0;
             for (var slot = 0; slot < indicesBySlot.Length; slot++)
             {
                 var indices = indicesBySlot[slot];
-                if (indices.Length % 3 != 0)
-                { error = $"Road material slot {slot} has an incomplete triangle."; return false; }
-                foreach (var index in indices)
-                    if (index < 0 || index >= vertices.Length)
-                    { error = $"Road material slot {slot} has an invalid vertex index."; return false; }
                 for (var i = 0; i < indices.Length; i += 3)
                     result.Add(new MovableRoadGeometry.Triangle(vertices[indices[i]], vertices[indices[i + 1]],
                         vertices[indices[i + 2]], slot, occurrence, sourceTriangle++));
@@ -158,5 +127,5 @@ internal static class MovableStraightRoadEvaluation
         => mesh.HasVertexAttribute(attribute) && mesh.GetVertexAttributeFormat(attribute) == format &&
             mesh.GetVertexAttributeDimension(attribute) == dimension;
 
-    private static bool Finite(float value) => !float.IsNaN(value) && !float.IsInfinity(value);
+
 }

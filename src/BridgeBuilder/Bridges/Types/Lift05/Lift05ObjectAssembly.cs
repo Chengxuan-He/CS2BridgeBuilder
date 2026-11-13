@@ -19,8 +19,6 @@ internal static class Lift05ObjectAssembly
         var imported = Path.Combine(Application.persistentDataPath, "ImportedData");
         foreach (var item in attachments)
         {
-            if (item.m_Object == null)
-                throw new InvalidOperationException("Lift05 requires its original wall-light and roof-vent sources.");
             // Contract attachment rule: nonzero X follows its parent's side displacement.
             item.m_Position.x += Math.Sign(item.m_Position.x) * halfWidthDelta;
         }

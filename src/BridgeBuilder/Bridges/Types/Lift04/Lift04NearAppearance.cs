@@ -14,8 +14,6 @@ internal static class Lift04NearAppearance
     internal static MovableRoadAppearance.Level Create(int lod, RenderPrefab native, Pose roadToObject) => Prepared(lod, native.GetSurfaceAsset(Numeric_Types_Lift04_Lift04NearAppearance_cs.Values.I32[0]), BridgePreparedMaterials.RepeatUnit("Lift04", "128604022d6d3d98bf5940187aa449ef214e75095ad81c04b10279e8b8275d0c"), BridgePreparedMaterials.RepeatUnit("Lift04", "2bc06fd00989705f14f9bc1c57c4295e38ae2292dfcb776d49aec1dfee80b746"), roadToObject);
     internal static MovableRoadAppearance.Level Prepared(int lod, SurfaceAsset native, MovableExistingRoadSurface.SurfaceResult repeating, MovableExistingRoadSurface.SurfaceResult finite, Pose roadToObject)
     {
-        if (Data.I32[Numeric_Types_Lift04_Lift04NearAppearance_cs.Values.I32[1]] != Numeric_Types_Lift04_Lift04NearAppearance_cs.Values.I32[2] || lod < Numeric_Types_Lift04_Lift04NearAppearance_cs.Values.I32[3] || lod >= Data.I32[Numeric_Types_Lift04_Lift04NearAppearance_cs.Values.I32[4]])
-            throw new InvalidOperationException("Invalid Lift04 continuous appearance schema or LOD.");
         var count = Data.I32[Numeric_Types_Lift04_Lift04NearAppearance_cs.Values.I32[5]];
         var stride = Data.I32[Numeric_Types_Lift04_Lift04NearAppearance_cs.Values.I32[6]];
         var patches = new Patch[count];

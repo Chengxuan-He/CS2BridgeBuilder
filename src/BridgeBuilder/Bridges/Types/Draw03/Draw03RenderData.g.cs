@@ -21,8 +21,6 @@ internal static class Draw03RenderData
         {
             case Part.Mechanism:
             {
-                if (levels.Length != Numeric_Types_Draw03_Draw03RenderData_g_cs.Values.I32[0])
-                    throw new ArgumentException("Draw03 Mechanism requires 3 prepared render levels.");
                 var c0_StackProperties = levels[Numeric_Types_Draw03_Draw03RenderData_g_cs.Values.I32[1]].AddComponent<StackProperties>();
                 c0_StackProperties.m_Direction = (StackDirection)Numeric_Types_Draw03_Draw03RenderData_g_cs.Values.I32[2];
                 c0_StackProperties.m_Order = (StackOrder)Numeric_Types_Draw03_Draw03RenderData_g_cs.Values.I32[3];
@@ -48,8 +46,6 @@ internal static class Draw03RenderData
 
             case Part.Column:
             {
-                if (levels.Length != Numeric_Types_Draw03_Draw03RenderData_g_cs.Values.I32[10])
-                    throw new ArgumentException("Draw03 Column requires 3 prepared render levels.");
                 var c0_StackProperties = levels[Numeric_Types_Draw03_Draw03RenderData_g_cs.Values.I32[11]].AddComponent<StackProperties>();
                 c0_StackProperties.m_Direction = (StackDirection)Numeric_Types_Draw03_Draw03RenderData_g_cs.Values.I32[12];
                 c0_StackProperties.m_Order = (StackOrder)Numeric_Types_Draw03_Draw03RenderData_g_cs.Values.I32[13];
@@ -75,8 +71,6 @@ internal static class Draw03RenderData
 
             case Part.Footing:
             {
-                if (levels.Length != Numeric_Types_Draw03_Draw03RenderData_g_cs.Values.I32[20])
-                    throw new ArgumentException("Draw03 Footing requires 3 prepared render levels.");
                 var c0_StackProperties = levels[Numeric_Types_Draw03_Draw03RenderData_g_cs.Values.I32[21]].AddComponent<StackProperties>();
                 c0_StackProperties.m_Direction = (StackDirection)Numeric_Types_Draw03_Draw03RenderData_g_cs.Values.I32[22];
                 c0_StackProperties.m_Order = (StackOrder)Numeric_Types_Draw03_Draw03RenderData_g_cs.Values.I32[23];

@@ -8,25 +8,24 @@ namespace BridgeBuilder.Runtime;
 
 internal static class BridgeNativeUnlock
 {
-    // Publication can finish while paused, before UnlockSystem updates the new group entities.
-    // Evaluate their persisted AND/OR rules, using native progression state only at the leaves.
+    // Owned explicit groups can be evaluated from their persisted AND/OR rules. Carried native
+    // gates use initialized dependency buffers and the same current-state test as UnlockSystem.
     internal static bool? Evaluate(PrefabBase root, PrefabSystem system, Unity.Entities.EntityManager manager)
     {
         var path = new HashSet<PrefabBase>();
-        var budget = 4096;
         bool? Visit(PrefabBase prefab)
         {
-            if (prefab == null || --budget < 0 || path.Count >= 64 || !path.Add(prefab)) return null;
+            if (!path.Add(prefab)) return null;
             try
             {
                 var gate = prefab.GetComponent<Unlockable>();
                 if (gate == null)
                     return BridgeUnlockSnapshot.IsUnlocked(prefab.GetPrefabID().ToUrlSegment(), system, manager);
-                // Our persisted groups explicitly enumerate every dependency. Other native gates
-                // may have implicit requirements, so use their initialized native snapshot.
+                // Other native gates include implicit dependencies in their initialized buffer.
+                // A current-state query is not a portable snapshot: expanding that graph rejects
+                // Created/self/cyclic nodes which the native UnlockSystem simply keeps locked.
                 if (!gate.m_IgnoreDependencies)
-                    return BridgeUnlockSnapshot.Capture(prefab, system, manager, out var rule)
-                        ? rule.Evaluate(id => BridgeUnlockSnapshot.IsUnlocked(id, system, manager)) : null;
+                    return EvaluateInitialized(prefab, system, manager);
                 var all = true;
                 var any = false;
                 foreach (var child in gate.m_RequireAll ?? Array.Empty<PrefabBase>())
@@ -48,6 +47,38 @@ internal static class BridgeNativeUnlock
         return Visit(root);
     }
 
+    private static bool? EvaluateInitialized(PrefabBase prefab, PrefabSystem system,
+        Unity.Entities.EntityManager manager)
+    {
+        if (!system.TryGetEntity(prefab, out var entity) || !manager.Exists(entity)
+            || !manager.HasBuffer<UnlockRequirement>(entity))
+        {
+            Mod.Log.Warn($"Bridge unlock requirements unavailable: '{prefab.name}' has no initialized native buffer.");
+            return null;
+        }
+        var requirements = manager.GetBuffer<UnlockRequirement>(entity, true);
+        var all = true;
+        var any = false;
+        var hasAny = false;
+        for (var i = 0; i < requirements.Length; i++)
+        {
+            var requirement = requirements[i];
+            if (!manager.Exists(requirement.m_Prefab))
+            {
+                Mod.Log.Warn($"Bridge unlock requirements unavailable: '{prefab.name}' requirement {i} has no live entity.");
+                return null;
+            }
+            var unlocked = !manager.HasComponent<Locked>(requirement.m_Prefab)
+                || !manager.IsComponentEnabled<Locked>(requirement.m_Prefab);
+            if ((requirement.m_Flags & UnlockFlags.RequireAll) != 0) all &= unlocked;
+            if ((requirement.m_Flags & UnlockFlags.RequireAny) != 0)
+            { hasAny = true; any |= unlocked; }
+        }
+        // Mirrors Game.Prefabs.UnlockSystem.CheckUnlockRequirementsJob. No graph mutation,
+        // guessed progression state, Created-marker bypass in snapshotting, or disk rewrite.
+        return all && (!hasAny || any);
+    }
+
     internal static bool Apply(NetGeometryPrefab root, BridgeUnlockExpression rule, PrefabSystem system,
         List<PrefabBase> created, out string error, bool includeAuxiliary = true)
     {
@@ -59,7 +90,6 @@ internal static class BridgeNativeUnlock
             if (expression.Kind == 1)
             {
                 var parts = expression.Identity.Split('/');
-                if (parts.Length < 2 || parts.Length > 3) { failure = "Invalid unlock identity"; return null; }
                 var id = new PrefabID(Uri.UnescapeDataString(parts[0]), Uri.UnescapeDataString(parts[1]),
                     parts.Length == 3 ? Colossal.Hash128.Parse(parts[2]) : default);
                 if (!system.TryGetPrefab(id, out var leaf) || leaf == null || leaf is NetPrefab)

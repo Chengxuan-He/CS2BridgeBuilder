@@ -15,10 +15,7 @@ internal static class Lift05SupportGeometry
             (false, 2) => (Count: Numeric_Types_Lift05_Lift05SupportGeometry_g_cs.Values.I32[4], Indices: Numeric_Types_Lift05_Lift05SupportGeometry_g_cs.Values.I32[5], Parts: Parts02),
             (true, 0) => (Count: Numeric_Types_Lift05_Lift05SupportGeometry_g_cs.Values.I32[6], Indices: Numeric_Types_Lift05_Lift05SupportGeometry_g_cs.Values.I32[7], Parts: Parts10),
             (true, 1) => (Count: Numeric_Types_Lift05_Lift05SupportGeometry_g_cs.Values.I32[8], Indices: Numeric_Types_Lift05_Lift05SupportGeometry_g_cs.Values.I32[9], Parts: Parts11),
-            (true, 2) => (Count: Numeric_Types_Lift05_Lift05SupportGeometry_g_cs.Values.I32[10], Indices: Numeric_Types_Lift05_Lift05SupportGeometry_g_cs.Values.I32[11], Parts: Parts12),
-            _ => throw new ArgumentOutOfRangeException(nameof(lod))};
-        if (!float.IsFinite(delta) || source.Length != data.Count || indices.Length != data.Indices)
-            throw new InvalidOperationException("Lift05 support requires its measured layout.");
+            (true, 2) => (Count: Numeric_Types_Lift05_Lift05SupportGeometry_g_cs.Values.I32[10], Indices: Numeric_Types_Lift05_Lift05SupportGeometry_g_cs.Values.I32[11], Parts: Parts12)};
         var positions = (Vector3[])source.Clone();
         foreach (var part in data.Parts)
             AffineGeometry.Execute(RangePrograms.Data, 0, new[] { positions }, Array.Empty<float[]>(), new float[] { part.Sign, delta }, part.First, checked((checked((part.Last) + 1)) - (part.First)));

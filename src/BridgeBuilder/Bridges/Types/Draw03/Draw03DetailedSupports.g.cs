@@ -13,10 +13,7 @@ internal static class Draw03DetailedSupports
             (false, 0) => (Count: Numeric_Types_Draw03_Draw03DetailedSupports_g_cs.Values.I32[0], Indices: Numeric_Types_Draw03_Draw03DetailedSupports_g_cs.Values.I32[1], Minimum: Numeric_Types_Draw03_Draw03DetailedSupports_g_cs.Values.F32[0], Parts: Parts00),
             (false, 1) => (Count: Numeric_Types_Draw03_Draw03DetailedSupports_g_cs.Values.I32[2], Indices: Numeric_Types_Draw03_Draw03DetailedSupports_g_cs.Values.I32[3], Minimum: Numeric_Types_Draw03_Draw03DetailedSupports_g_cs.Values.F32[1], Parts: Parts01),
             (true, 0) => (Count: Numeric_Types_Draw03_Draw03DetailedSupports_g_cs.Values.I32[4], Indices: Numeric_Types_Draw03_Draw03DetailedSupports_g_cs.Values.I32[5], Minimum: Numeric_Types_Draw03_Draw03DetailedSupports_g_cs.Values.F32[2], Parts: Parts10),
-            (true, 1) => (Count: Numeric_Types_Draw03_Draw03DetailedSupports_g_cs.Values.I32[6], Indices: Numeric_Types_Draw03_Draw03DetailedSupports_g_cs.Values.I32[7], Minimum: Numeric_Types_Draw03_Draw03DetailedSupports_g_cs.Values.F32[3], Parts: Parts11),
-            _ => throw new ArgumentOutOfRangeException(nameof(lod))};
-        if (!float.IsFinite(delta) || source.Length != data.Count || indices.Length != data.Indices)
-            throw new InvalidOperationException("Draw03 detailed supports require their measured layout.");
+            (true, 1) => (Count: Numeric_Types_Draw03_Draw03DetailedSupports_g_cs.Values.I32[6], Indices: Numeric_Types_Draw03_Draw03DetailedSupports_g_cs.Values.I32[7], Minimum: Numeric_Types_Draw03_Draw03DetailedSupports_g_cs.Values.F32[3], Parts: Parts11)};
         var positions = (Vector3[])source.Clone();
         foreach (var part in data.Parts)
             AffineGeometry.Execute(RangePrograms.Data, 0, new[] { positions }, Array.Empty<float[]>(), new float[] { part.Sign, delta }, part.First, checked((checked((part.Last) + 1)) - (part.First)));

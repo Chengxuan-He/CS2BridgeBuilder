@@ -55,8 +55,8 @@ internal static class BridgeUnlockSnapshot
         HashSet<Entity> path, ref int budget, out BridgeUnlockExpression rule)
     {
         rule = new();
-        if (--budget < 0 || path.Count >= 64 || !manager.Exists(entity)
-            || !prefabs.TryGetPrefab<PrefabBase>(entity, out var source) || source == null
+        if (!manager.Exists(entity)
+            || !prefabs.TryGetPrefab<PrefabBase>(entity, out var source)
             || manager.HasComponent<Game.Common.Created>(entity)) return false;
         if (!manager.HasComponent<Locked>(entity)) return true;
         if (!manager.HasBuffer<UnlockRequirement>(entity)) return false;
@@ -79,7 +79,6 @@ internal static class BridgeUnlockSnapshot
         {
             var edge = requirements[i];
             var flags = (uint)edge.m_Flags;
-            if (flags < 1 || flags > 3) { path.Remove(entity); return false; }
             rule.Flags[i] = (byte)flags;
             if (!Capture(edge.m_Prefab, prefabs, manager, path, ref budget, out rule.Children[i]))
             { path.Remove(entity); return false; }
@@ -94,7 +93,7 @@ internal static class BridgeUnlockSnapshot
         if (parts.Length < 2 || parts.Length > 3) return null;
         var id = new PrefabID(Uri.UnescapeDataString(parts[0]), Uri.UnescapeDataString(parts[1]),
             parts.Length == 3 ? Colossal.Hash128.Parse(parts[2]) : default);
-        if (!prefabs.TryGetPrefab(id, out var source) || source == null || source is NetPrefab
+        if (!prefabs.TryGetPrefab(id, out var source) || source is NetPrefab
             || !prefabs.TryGetEntity(source, out var entity) || !manager.Exists(entity)
             || manager.HasComponent<Game.Common.Created>(entity)) return null;
         return !manager.HasComponent<Locked>(entity) || !manager.IsComponentEnabled<Locked>(entity);

@@ -12,10 +12,7 @@ internal static class Lift04MovingEndFrames
         {
             0 => (Count: Numeric_Types_Lift04_Lift04MovingEndFrames_g_cs.Values.I32[0], Indices: Numeric_Types_Lift04_Lift04MovingEndFrames_g_cs.Values.I32[1], Edges: Edges0, Fragments: Fragments0),
             1 => (Count: Numeric_Types_Lift04_Lift04MovingEndFrames_g_cs.Values.I32[2], Indices: Numeric_Types_Lift04_Lift04MovingEndFrames_g_cs.Values.I32[3], Edges: Edges1, Fragments: Fragments1),
-            2 => (Count: Numeric_Types_Lift04_Lift04MovingEndFrames_g_cs.Values.I32[4], Indices: Numeric_Types_Lift04_Lift04MovingEndFrames_g_cs.Values.I32[5], Edges: Edges2, Fragments: Fragments2),
-            _ => throw new ArgumentOutOfRangeException(nameof(lod))};
-        if (!float.IsFinite(delta) || source.Length != data.Count || positions.Length != data.Count || indices.Length != data.Indices)
-            throw new InvalidOperationException("Lift04 moving end frames require their measured layout.");
+            2 => (Count: Numeric_Types_Lift04_Lift04MovingEndFrames_g_cs.Values.I32[4], Indices: Numeric_Types_Lift04_Lift04MovingEndFrames_g_cs.Values.I32[5], Edges: Edges2, Fragments: Fragments2)};
         AffineGeometry.Execute(CoordinatePrograms.Data, lod, new[] { source, positions }, Array.Empty<float[]>(), new[] { delta });
         var x = new float[data.Edges.Length];
         AffineGeometry.Execute(InterpolationProgram0.Data, lod, new[] { source }, new[] { x }, new float[] { delta });

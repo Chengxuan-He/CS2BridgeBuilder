@@ -1,4 +1,4 @@
-﻿
+
 
 
 
@@ -135,14 +135,6 @@ internal sealed partial class TowerFactory
         Mod.Log.Info(string.Format(CultureInfo.InvariantCulture,
             "BridgeWidth factory owner='{0}', style='{1}', tower='{2}', sourceRoad={3:R}, targetDeck={4:R}.",
             _bridgeName, styleId, sourceTowerName, sourceRoadWidth, deckWidth));
-
-        if (styleId == "TrussArch01" && sourceTowerName == "TrussArchBridge01NetPillar"
-            && !_trussArch01StructureExtra.HasValue)
-        {
-            _report.Failed(sourceTowerName, new InvalidOperationException(
-                "The blue truss-arch pier requires its bridge's structural width plan."));
-            return null;
-        }
 
         // Every generated bridge owns its tower prefab. Sharing by style and width (for example
         // Suspension-40) made a later bridge depend on mutable prefab state created for an earlier

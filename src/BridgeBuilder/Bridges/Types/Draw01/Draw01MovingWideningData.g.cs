@@ -16,16 +16,12 @@ internal static class Draw01MovingWideningData
         {
             0 => Numeric_Types_Draw01_Draw01MovingWideningData_g_cs.Values.I32[0],
             1 => Numeric_Types_Draw01_Draw01MovingWideningData_g_cs.Values.I32[1],
-            2 => Numeric_Types_Draw01_Draw01MovingWideningData_g_cs.Values.I32[2],
-            _ => throw new ArgumentOutOfRangeException(nameof(lod))};
-        if (positions.Length != expected)
-            throw new ArgumentException("Draw01 moving widening requires the original main-mesh vertex layout.");
+            2 => Numeric_Types_Draw01_Draw01MovingWideningData_g_cs.Values.I32[2]};
         var groups = lod switch
         {
             0 => Near,
             1 => Middle,
-            2 => Far,
-            _ => throw new ArgumentOutOfRangeException(nameof(lod))};
+            2 => Far};
         foreach (var group in groups)
         {
             // Preserve native center residues and signed zero without adding a zero displacement.

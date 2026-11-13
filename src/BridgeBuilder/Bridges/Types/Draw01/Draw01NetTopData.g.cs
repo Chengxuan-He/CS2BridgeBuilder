@@ -13,10 +13,7 @@ internal static class Draw01NetTopData
         {
             0 => Numeric_Types_Draw01_Draw01NetTopData_g_cs.Values.I32[0],
             1 => Numeric_Types_Draw01_Draw01NetTopData_g_cs.Values.I32[1],
-            2 => Numeric_Types_Draw01_Draw01NetTopData_g_cs.Values.I32[2],
-            _ => throw new ArgumentOutOfRangeException(nameof(lod))};
-        if (source.Length != weights.Length || indices.Length != count * Numeric_Types_Draw01_Draw01NetTopData_g_cs.Values.I32[3])
-            throw new InvalidOperationException("Draw01 ordinary cap differs from its recorded topology.");
+            2 => Numeric_Types_Draw01_Draw01NetTopData_g_cs.Values.I32[2]};
         var positions = (Vector3[])source.Clone();
         AffineGeometry.Execute(RangePrograms.Data, 0, new[] { positions }, new[] { weights }, new float[] { halfWidthDelta }, Numeric_Types_Draw01_Draw01NetTopData_g_cs.Values.I32[4], checked((positions.Length) - (Numeric_Types_Draw01_Draw01NetTopData_g_cs.Values.I32[4])));
         return new MovableStructureModel.Plan(source, positions, new[] { indices }, new[] { new bool[count] });
@@ -508,8 +505,7 @@ internal static class Draw01NetTopData
             Numeric_Types_Draw01_Draw01NetTopData_g_cs.Values.F32[470],
             Numeric_Types_Draw01_Draw01NetTopData_g_cs.Values.F32[471],
             Numeric_Types_Draw01_Draw01NetTopData_g_cs.Values.F32[472],
-        },
-        _ => throw new ArgumentOutOfRangeException(nameof(lod))};
+        }};
     private static class RangePrograms
     {
         static RangePrograms()

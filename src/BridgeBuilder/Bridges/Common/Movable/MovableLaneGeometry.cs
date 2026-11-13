@@ -150,7 +150,6 @@ internal static class MovableLaneGeometry
             for(int i=0;i<output.Length;i++)
             {
                 output[i]=new MovableRoadGeometry.Vertex(positions[i],decoded.Normals[i],decoded.Tangents[i],uv[i],colors.Length==0?Color.white:colors[i]);
-                if(!MovableRoadGeometry.Valid(output[i]))throw new InvalidDataException("Invalid lane vertex in "+name);
             }
             return output;
         };

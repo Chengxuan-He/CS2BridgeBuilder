@@ -13,7 +13,7 @@ internal static class APylonCableGeometry
     internal static bool IsRecorded(string? style, string name) => style == "Extradosed02" && APylonCableData.Maps.ContainsKey(name);
     internal static bool TryApply(string name, float3[] source, float extra, float3[] moved)
     {
-        if (!APylonCableData.Maps.TryGetValue(name, out var map) || map.Count != source.Length || moved.Length != source.Length)
+        if (!APylonCableData.Maps.TryGetValue(name, out var map))
             return false;
         (int[] Vertices, float[] Coefficients) rows;
         lock (Decoded)
@@ -25,16 +25,12 @@ internal static class APylonCableGeometry
                 using var output = new MemoryStream();
                 gzip.CopyTo(output);
                 var data = output.ToArray();
-                if (data.Length % Numeric_Types_Extradosed02_APylonCableGeometry_cs.Values.I32[0] != Numeric_Types_Extradosed02_APylonCableGeometry_cs.Values.I32[1])
-                    return false;
                 var last = new Dictionary<int, int>();
                 var coefficients = new float[source.Length];
                 for (int row = 0; row < data.Length / 8; row++)
                 {
                     int vertex = BitConverter.ToInt32(data, row * 8);
                     float coefficient = BitConverter.ToSingle(data, row * 8 + 4);
-                    if (vertex < 0 || vertex >= source.Length || !float.IsFinite(coefficient))
-                        return false;
                     last[vertex] = row;
                     coefficients[vertex] = coefficient;
                 }

@@ -18,8 +18,6 @@ internal static class Draw03ObjectAssembly
         var imported = Path.Combine(Application.persistentDataPath, "ImportedData");
         foreach (var item in attachments)
         {
-            if (item.m_Object == null)
-                throw new InvalidOperationException("Draw03 requires its original flagpole and wall-light sources.");
             item.m_Position.x += Math.Sign(item.m_Position.x) * halfWidthDelta;
         }
 

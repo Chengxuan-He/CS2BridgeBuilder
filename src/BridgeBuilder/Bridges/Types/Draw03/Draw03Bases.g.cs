@@ -11,10 +11,7 @@ internal static class Draw03Bases
         var data = lod switch
         {
             0 => (Count: Numeric_Types_Draw03_Draw03Bases_g_cs.Values.I32[0], Left: Left0, Centre: Centre0, Right: Right0, Moving: Moving0),
-            1 => (Count: Numeric_Types_Draw03_Draw03Bases_g_cs.Values.I32[1], Left: Left1, Centre: Centre1, Right: Right1, Moving: Moving1),
-            _ => throw new ArgumentOutOfRangeException(nameof(lod))};
-        if (!float.IsFinite(delta) || source.Length != data.Count || positions.Length != data.Count)
-            throw new InvalidOperationException("Draw03 bases require their recorded main mesh.");
+            1 => (Count: Numeric_Types_Draw03_Draw03Bases_g_cs.Values.I32[1], Left: Left1, Centre: Centre1, Right: Right1, Moving: Moving1)};
         foreach (var range in data.Left)
             AffineGeometry.Execute(RangePrograms.Data, 0, new[] { source, positions }, Array.Empty<float[]>(), new float[] { delta }, checked((Numeric_Types_Draw03_Draw03Bases_g_cs.Values.I32[2]) + (range.First)), Math.Max(0, checked((range.Last - range.First + Numeric_Types_Draw03_Draw03Bases_g_cs.Values.I32[3]) - (Numeric_Types_Draw03_Draw03Bases_g_cs.Values.I32[2]))));
         foreach (var range in data.Centre)

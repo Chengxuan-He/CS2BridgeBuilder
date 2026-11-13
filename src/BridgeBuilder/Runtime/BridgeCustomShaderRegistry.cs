@@ -62,8 +62,6 @@ internal static class BridgeCustomShaderRegistry
             foreach (var entry in CompiledPackages)
                 if (ReferenceEquals(entry.Library, library) && entry.Identity == identity)
                 {
-                    if (!ReferenceEquals(library.GetMaterialDescription(entry.Description.m_Hash), entry.Description))
-                    { error = "Generated program template was replaced after registration."; return false; }
                     template = entry.Description.m_Hash; return true;
                 }
             if (!CompiledContainers.TryGetValue(packageIdentity, out var container))
@@ -96,8 +94,6 @@ internal static class BridgeCustomShaderRegistry
         string? pendingProgram = null;
         try
         {
-            if (library == null || container == null || container.Length == 0)
-            { error = "Generated material registration has no library or program container."; return false; }
             var source = library.GetMaterialDescription(sourceTemplate);
             if (source == null || source.m_Material == null)
             { error = "Generated material source template is unavailable: " + sourceTemplate; return false; }
@@ -107,8 +103,6 @@ internal static class BridgeCustomShaderRegistry
             foreach (var entry in Entries)
                 if (ReferenceEquals(entry.Library, library) && entry.Identity == identity)
                 {
-                    if (!ReferenceEquals(library.GetMaterialDescription(entry.Description.m_Hash), entry.Description))
-                    { error = "Generated material registration was replaced by another library entry."; return false; }
                     template = entry.Description.m_Hash; return true;
                 }
             // Reserved positive content-derived identity; collisions are errors, never replacement.
@@ -123,8 +117,6 @@ internal static class BridgeCustomShaderRegistry
                 if (pendingBundle == null)
                 { error = "Generated material Unity container could not be loaded."; return false; }
                 var shaders = pendingBundle.LoadAllAssets<Shader>();
-                if (shaders.Length != 1 || shaders[0] == null || !shaders[0].isSupported)
-                { error = "Generated material container has no unique supported shader."; return false; }
                 program = new Program(pendingBundle, shaders[0]);
                 pendingProgram = digest;
             }

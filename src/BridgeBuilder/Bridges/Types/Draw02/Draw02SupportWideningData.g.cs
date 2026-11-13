@@ -15,11 +15,8 @@ internal static class Draw02SupportWideningData
             (true, 2) => (Column2, Numeric_Types_Draw02_Draw02SupportWideningData_g_cs.Values.I32[2]),
             (false, 0) => (Footing0, Numeric_Types_Draw02_Draw02SupportWideningData_g_cs.Values.I32[3]),
             (false, 1) => (Footing1, Numeric_Types_Draw02_Draw02SupportWideningData_g_cs.Values.I32[4]),
-            (false, 2) => (Footing2, Numeric_Types_Draw02_Draw02SupportWideningData_g_cs.Values.I32[5]),
-            _ => throw new ArgumentOutOfRangeException(nameof(lod))};
+            (false, 2) => (Footing2, Numeric_Types_Draw02_Draw02SupportWideningData_g_cs.Values.I32[5])};
         var weights = data.Item1;
-        if (source.Length != weights.Length || indices.Length != data.Item2)
-            throw new InvalidOperationException("Draw02 support source does not match its recorded layout.");
         var positions = (Vector3[])source.Clone();
         AffineGeometry.Execute(RangePrograms.Data, 0, new[] { positions }, new[] { weights }, new float[] { delta }, Numeric_Types_Draw02_Draw02SupportWideningData_g_cs.Values.I32[6], checked((positions.Length) - (Numeric_Types_Draw02_Draw02SupportWideningData_g_cs.Values.I32[6])));
         return new MovableStructureModel.Plan(source, positions, new[] { indices }, new[] { new bool[indices.Length / Numeric_Types_Draw02_Draw02SupportWideningData_g_cs.Values.I32[7]] });

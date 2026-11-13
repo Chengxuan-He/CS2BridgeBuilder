@@ -12,9 +12,6 @@ internal static class BridgePreviewSkinBounds
 {
     internal static (Bounds Local, Bounds View) Measure(Mesh mesh, Matrix4x4[] skin, Matrix4x4 view)
     {
-        if (mesh.GetVertexAttributeFormat(VertexAttribute.BlendIndices) != VertexAttributeFormat.UInt32 ||
-            mesh.GetVertexAttributeDimension(VertexAttribute.BlendIndices) != 1)
-            throw new InvalidOperationException("Preview requires native single-index procedural skinning.");
         var vertices = mesh.vertices;
         var bones = new uint[vertices.Length];
         using (var data = Mesh.AcquireReadOnlyMeshData(mesh))
@@ -27,12 +24,10 @@ internal static class BridgePreviewSkinBounds
             {
                 var k = i * stride + offset;
                 bones[i] = (uint)(bytes[k] | bytes[k+1] << 8 | bytes[k+2] << 16 | bytes[k+3] << 24);
-                if (bones[i] >= skin.Length) throw new InvalidOperationException("Preview vertex references a missing bone.");
             }
         }
         var indices = new List<int>();
         for (var slot = 0; slot < mesh.subMeshCount; slot++) indices.AddRange(mesh.GetIndices(slot));
-        if (indices.Count == 0) throw new InvalidOperationException("Preview skin has no indexed geometry.");
         using var positions = new ComputeBuffer(vertices.Length, 12);
         using var boneBuffer = new ComputeBuffer(bones.Length, 4);
         using var indexBuffer = new ComputeBuffer(indices.Count, 4);
@@ -65,7 +60,6 @@ internal static class BridgePreviewSkinBounds
             {
                 var b = values[start+i]; b = (b & 0x80000000) != 0 ? b ^ 0x80000000 : ~b;
                 var f = BitConverter.ToSingle(BitConverter.GetBytes(b), 0);
-                if (float.IsNaN(f) || float.IsInfinity(f)) throw new InvalidOperationException("Invalid posed preview bounds.");
                 return f;
             }
             var bounds = new Bounds();

@@ -10,15 +10,10 @@ internal static class Lift04RoadTops
         var data = lod switch
         {
             0 => (Count: Numeric_Types_Lift04_Lift04RoadTops_g_cs.Values.I32[0], Faces: Level0),
-            1 => (Count: Numeric_Types_Lift04_Lift04RoadTops_g_cs.Values.I32[1], Faces: Level1),
-            _ => throw new ArgumentOutOfRangeException(nameof(lod))};
-        if (indices.Length != data.Count * Numeric_Types_Lift04_Lift04RoadTops_g_cs.Values.I32[2] || removed.Length != data.Count)
-            throw new InvalidOperationException("Lift04 detailed road-top layout changed.");
+            1 => (Count: Numeric_Types_Lift04_Lift04RoadTops_g_cs.Values.I32[1], Faces: Level1)};
         foreach (var face in data.Faces)
         {
             var offset = face.Triangle * Numeric_Types_Lift04_Lift04RoadTops_g_cs.Values.I32[3];
-            if (indices[offset] != face.A || indices[offset + Numeric_Types_Lift04_Lift04RoadTops_g_cs.Values.I32[4]] != face.B || indices[offset + Numeric_Types_Lift04_Lift04RoadTops_g_cs.Values.I32[5]] != face.C)
-                throw new InvalidOperationException("Lift04 detailed road-top topology changed.");
             removed[face.Triangle] = true;
         }
     }

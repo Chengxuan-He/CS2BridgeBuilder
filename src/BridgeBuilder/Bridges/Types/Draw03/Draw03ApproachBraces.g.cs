@@ -15,10 +15,7 @@ internal static class Draw03ApproachBraces
         {
             0 => (Count: Numeric_Types_Draw03_Draw03ApproachBraces_g_cs.Values.I32[0], HalfSpan: Numeric_Types_Draw03_Draw03ApproachBraces_g_cs.Values.F32[0]),
             1 => (Count: Numeric_Types_Draw03_Draw03ApproachBraces_g_cs.Values.I32[1], HalfSpan: Numeric_Types_Draw03_Draw03ApproachBraces_g_cs.Values.F32[1]),
-            2 => (Count: Numeric_Types_Draw03_Draw03ApproachBraces_g_cs.Values.I32[2], HalfSpan: Numeric_Types_Draw03_Draw03ApproachBraces_g_cs.Values.F32[2]),
-            _ => throw new ArgumentOutOfRangeException(nameof(lod))};
-        if (source.Length != data.Count || positions.Length != data.Count || !float.IsFinite(delta))
-            throw new InvalidOperationException("Draw03 approach braces require their measured first strip.");
+            2 => (Count: Numeric_Types_Draw03_Draw03ApproachBraces_g_cs.Values.I32[2], HalfSpan: Numeric_Types_Draw03_Draw03ApproachBraces_g_cs.Values.F32[2])};
         AffineGeometry.Execute(BatchProgram0.Data, lod, new[] { source, positions }, Array.Empty<float[]>(), new float[] { Numeric_Types_Draw03_Draw03ApproachBraces_g_cs.Values.F32[3], data.HalfSpan, Numeric_Types_Draw03_Draw03ApproachBraces_g_cs.Values.F32[4], delta });
     }
 

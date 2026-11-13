@@ -12,10 +12,7 @@ internal static class Lift05TowerShells
         {
             0 => (Count: Numeric_Types_Lift05_Lift05TowerShells_g_cs.Values.I32[0], Faces: Numeric_Types_Lift05_Lift05TowerShells_g_cs.Values.I32[1], Edges: Edges0, Fragments: Fragments0),
             1 => (Count: Numeric_Types_Lift05_Lift05TowerShells_g_cs.Values.I32[2], Faces: Numeric_Types_Lift05_Lift05TowerShells_g_cs.Values.I32[3], Edges: Edges1, Fragments: Fragments1),
-            2 => (Count: Numeric_Types_Lift05_Lift05TowerShells_g_cs.Values.I32[4], Faces: Numeric_Types_Lift05_Lift05TowerShells_g_cs.Values.I32[5], Edges: Edges2, Fragments: Fragments2),
-            _ => throw new ArgumentOutOfRangeException(nameof(lod))};
-        if (source.Length != data.Count || indices.Length != data.Faces * Numeric_Types_Lift05_Lift05TowerShells_g_cs.Values.I32[6] || !float.IsFinite(delta))
-            throw new InvalidOperationException("Lift05 tower shells require their native source.");
+            2 => (Count: Numeric_Types_Lift05_Lift05TowerShells_g_cs.Values.I32[4], Faces: Numeric_Types_Lift05_Lift05TowerShells_g_cs.Values.I32[5], Edges: Edges2, Fragments: Fragments2)};
         var positions = (Vector3[])source.Clone();
         AffineGeometry.Execute(BatchProgram0.Data, lod, new[] { source, positions }, Array.Empty<float[]>(), new float[] { delta });
         var edges = new MovableStructureModel.EdgeVertex[data.Edges.Length];

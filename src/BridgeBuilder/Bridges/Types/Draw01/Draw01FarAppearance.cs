@@ -99,8 +99,6 @@ internal static class Draw01FarAppearance
                 if (!bounds.TryGetValue(((object)section, right, positive), out var b))
                     return Partition.Gap;
                 var extent = new Extent(b.Min.x, b.Max.x, positive ? b.Max.z : -b.Min.z);
-                if (!float.IsFinite(extent.MinX) || !float.IsFinite(extent.MaxX) || !float.IsFinite(extent.EndZ))
-                    throw new InvalidOperationException("Draw01 finite mapping coordinates are not representable.");
                 if (!(extent.MaxX > extent.MinX) || !(extent.EndZ > Numeric_Types_Draw01_Draw01FarAppearance_cs.Values.I32[25]))
                     return new Partition(Original());
                 int quarter = (positive ? Numeric_Types_Draw01_Draw01FarAppearance_cs.Values.I32[26] : Numeric_Types_Draw01_Draw01FarAppearance_cs.Values.I32[27]) + (right ? Numeric_Types_Draw01_Draw01FarAppearance_cs.Values.I32[28] : Numeric_Types_Draw01_Draw01FarAppearance_cs.Values.I32[29]);

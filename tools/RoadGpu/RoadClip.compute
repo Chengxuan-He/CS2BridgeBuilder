@@ -1,6 +1,5 @@
 #pragma kernel Count
 #pragma kernel Emit
-#pragma kernel Probe
 #pragma target 5.0
 #pragma enable_d3d11_debug_symbols
 struct V { uint4 xy;uint2 zz; precise float3 n; precise float4 t,uv,c;float padding; };
@@ -9,13 +8,10 @@ StructuredBuffer<uint2> Roots;
 StructuredBuffer<uint3> Paths;
 StructuredBuffer<Step> Steps;
 ByteAddressBuffer Input;
-ByteAddressBuffer OriginalInput;
 StructuredBuffer<uint> Offsets;
 RWStructuredBuffer<uint> Counts;
 RWByteAddressBuffer Output;
-RWStructuredBuffer<uint> Errors;
 uint TriangleCount;uint RowStart;
-[numthreads(1,1,1)]void Probe(uint3 id:SV_DispatchThreadID){precise double x=(double)asfloat(Input.Load(0));precise double y=x+0.0000000000009094947017729282379150390625;precise double z=y-x;Output.Store(0,asuint((float)z));}
 double3 Pos(V v){return double3(asdouble(v.xy.x,v.xy.y),asdouble(v.xy.z,v.xy.w),asdouble(v.zz.x,v.zz.y));}
 V SetPos(V v,double3 p){asuint(p.x,v.xy.x,v.xy.y);asuint(p.y,v.xy.z,v.xy.w);asuint(p.z,v.zz.x,v.zz.y);return v;}
 V Load(uint a) { V v;v.padding=0;v=SetPos(v,(double3)asfloat(Input.Load3(a)));v.n=asfloat(Input.Load3(a+12));v.t=asfloat(Input.Load4(a+24));v.uv=asfloat(Input.Load4(a+40));v.c=asfloat(Input.Load4(a+56));return v; }
@@ -29,14 +25,7 @@ V Mix(V a,V b,double2 distances) { double da=distances.x;double db=distances.y;
  v.t=float4(Norm(tangent.xyz-v.n*dot(v.n,tangent.xyz)),a.t.w);
  v.uv=a.uv+(b.uv-a.uv)*f;v.c=a.c+(b.c-a.c)*f;return v;
 }
-bool ValidInput(uint a)
-{
- for(uint k=0;k<18;k++)if(!isfinite(asfloat(Input.Load(a+k*4)))||!isfinite(asfloat(OriginalInput.Load(a+k*4))))return false;
- float3 n=asfloat(Input.Load3(a+12)),on=asfloat(OriginalInput.Load3(a+12));float4 t=asfloat(Input.Load4(a+24)),ot=asfloat(OriginalInput.Load4(a+24));
- return dot(n,n)>0&&dot(on,on)>0&&dot(t.xyz,t.xyz)>0&&dot(ot.xyz,ot.xyz)>0&&(t.w==1||t.w==-1)&&(ot.w==1||ot.w==-1);
-}
 void Run(uint id,bool emit){if(id>=TriangleCount)return;
- if(!emit&&(!ValidInput(id*228)||!ValidInput(id*228+72)||!ValidInput(id*228+144))){Errors[id]=5;Counts[id]=0;return;}
  uint2 root=Roots[id];uint total=0;
  [loop] for(uint leaf=0;leaf<root.y;leaf++){
   uint3 path=Paths[root.x+leaf];V polygon[32];V next[32];double2 distances[32];uint n=3;
@@ -48,13 +37,13 @@ void Run(uint id,bool emit){if(id>=TriangleCount)return;
    if(!negative&&!positive){if(!s.positive)n=0;continue;}
    if((s.positive&&!positive)||(!s.positive&&!negative)){n=0;break;}
    uint m=0;[loop] for(uint k=0;k<n;k++){uint b=(k+1)%n;double da=distances[k].x,db=distances[b].x;
-    if(s.positive?da>=0:da<=0){if(m>=32){Errors[id]=1;return;}next[m]=polygon[k];m=m+1;}
-    if((da<0&&db>0)||(da>0&&db<0)){if(m>=32){Errors[id]=2;return;}next[m]=Mix(polygon[k],polygon[b],double2(da,db));m=m+1;}}
+    if(s.positive?da>=0:da<=0){next[m]=polygon[k];m=m+1;}
+    if((da<0&&db>0)||(da>0&&db<0)){next[m]=Mix(polygon[k],polygon[b],double2(da,db));m=m+1;}}
    n=m;[loop] for(uint k=0;k<n;k++)polygon[k]=next[k];
   }
-  if(n>=3)[loop] for(uint k=1;k+1<n;k++){if(emit){if(total>=Counts[id]){Errors[id]=3;return;}uint a=(Offsets[id]+total)*232;Save(a,polygon[0]);Save(a+72,polygon[k]);Save(a+144,polygon[k+1]);Output.Store3(a+216,Input.Load3(id*228+216));Output.Store(a+228,path.z);}total++;}
+  if(n>=3)[loop] for(uint k=1;k+1<n;k++){if(emit){uint a=(Offsets[id]+total)*232;Save(a,polygon[0]);Save(a+72,polygon[k]);Save(a+144,polygon[k+1]);Output.Store3(a+216,Input.Load3(id*228+216));Output.Store(a+228,path.z);}total++;}
  }
- if(!emit)Counts[id]=total;else if(total!=Counts[id])Errors[id]=4;
+ if(!emit)Counts[id]=total;
 }
 [numthreads(32,1,1)]void Count(uint3 id:SV_DispatchThreadID){Run(id.x+RowStart,false);}
 [numthreads(32,1,1)]void Emit(uint3 id:SV_DispatchThreadID){Run(id.x+RowStart,true);}

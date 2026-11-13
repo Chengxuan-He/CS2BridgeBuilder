@@ -48,7 +48,7 @@ internal static class MovableDecalMipCoverage
             foreach(var value in channels.Values)if(!value.Constant)grid=Gcd(grid,value.Pixels.width);
             float a=chart.x*priorScale.x+priorOffset.x,b=chart.z*priorScale.x+priorOffset.x;
             float min=Math.Min(a,b),max=Math.Max(a,b);
-            if(!float.IsFinite(min)||!float.IsFinite(max)||min<0||max>1||max<=min||grid==0)
+            if(min<0||max>1||max<=min||grid==0)
             {Mod.Log.Warn("Projected coverage derivative retained source: chart is not a bounded horizontal interval.");return true;}
             int left=Math.Max(0,(int)Math.Floor(min*grid)-2);
             int right=Math.Min(grid,(int)Math.Ceiling(max*grid)+2);

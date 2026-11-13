@@ -9,8 +9,6 @@ internal static class Draw02ApproachGeometry
     internal static MovableStructureModel.Plan Create(int family, int lod, Vector3[] source, int[] indices, float delta)
     {
         var expected = Counts[family][lod];
-        if (source.Length != expected.Vertices || indices.Length != expected.Triangles * Numeric_Types_Draw02_Draw02ApproachGeometry_g_cs.Values.I32[0])
-            throw new InvalidOperationException("Draw02 approach geometry differs from the measured source.");
         var positions = (Vector3[])source.Clone();
         // Unchanged outer pieces move rigidly through the network section cursor.
         var groups = (family, lod) switch

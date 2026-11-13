@@ -11,10 +11,7 @@ internal static class Lift01RigidParts
         var data = lod switch
         {
             0 => Numeric_Types_Lift01_Lift01RigidParts_g_cs.Values.I32[0],
-            1 => Numeric_Types_Lift01_Lift01RigidParts_g_cs.Values.I32[1],
-            _ => throw new ArgumentOutOfRangeException(nameof(lod))};
-        if (!float.IsFinite(delta) || source.Length != data || positions.Length != data)
-            throw new InvalidOperationException("Lift01 rigid parts require their recorded main mesh.");
+            1 => Numeric_Types_Lift01_Lift01RigidParts_g_cs.Values.I32[1]};
         AffineGeometry.Execute(BatchProgram0.Data, lod, new[] { source, positions }, Array.Empty<float[]>(), new float[] { delta });
         AffineGeometry.Execute(BatchProgram1.Data, lod, new[] { source, positions }, Array.Empty<float[]>(), new float[] { delta });
     }

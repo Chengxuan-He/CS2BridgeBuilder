@@ -11,10 +11,7 @@ internal static class PedestrianDraw01Ropes
         {
             0 => Numeric_Types_PedestrianDraw01_PedestrianDraw01Ropes_g_cs.Values.I32[0],
             1 => Numeric_Types_PedestrianDraw01_PedestrianDraw01Ropes_g_cs.Values.I32[1],
-            2 => Numeric_Types_PedestrianDraw01_PedestrianDraw01Ropes_g_cs.Values.I32[2],
-            _ => throw new ArgumentOutOfRangeException(nameof(lod))};
-        if (source.Length != count || positions.Length != count || !float.IsFinite(delta))
-            throw new InvalidOperationException("PedestrianDraw01 rope source layout changed.");
+            2 => Numeric_Types_PedestrianDraw01_PedestrianDraw01Ropes_g_cs.Values.I32[2]};
         // Detailed ropes are covered by RigidParts. The far mesh omits ropes.
         if (lod != Numeric_Types_PedestrianDraw01_PedestrianDraw01Ropes_g_cs.Values.I32[3])
             return;

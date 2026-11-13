@@ -65,7 +65,6 @@ internal static class Draw02UvCharts
         if (mesh < 0) return Array.Empty<MovableUvChart>();
         var data = Data.Values;
         int table = data.I32[mesh + 1];
-        if (domain < 0 || domain >= data.I32[table]) throw new ArgumentOutOfRangeException(nameof(domain));
         int list = data.I32[table + 1 + domain];
         if (!Data.Loaded.TryGetValue(list, out var result))
         {

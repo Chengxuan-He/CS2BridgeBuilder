@@ -121,6 +121,25 @@ internal static class BridgeStyleCatalog
             }
         }
 
+        // These fixed generators reconstruct their network and geometry plans from measured data.
+        // An available native resource supplies provenance; the original network is not needed.
+        var resources = PrefabCatalog.GetAll(prefabSystem).ToArray();
+        AddRecordedFixed("ArtDecoViaduct", true, ArtDecoViaductConstruction.NativeName, ArtDecoViaductConstruction.ResourceAnchorName,
+            ArtDecoViaductConstruction.Icon, ArtDecoViaductConstruction.RoadWidth, ArtDecoViaductConstruction.StructureWidth);
+        AddRecordedFixed("TrussViaduct", false, TrussViaductConstruction.NativeName, TrussViaductConstruction.ResourceAnchorName,
+            TrussViaductConstruction.Icon, TrussViaductConstruction.RoadWidth, TrussViaductConstruction.StructureWidth);
+        AddRecordedFixed("ArcPedestrian", false, ArcPedestrianConstruction.NativeName, ArcPedestrianConstruction.ResourceAnchorName,
+            ArcPedestrianConstruction.Icon, ArcPedestrianConstruction.RoadWidth, ArcPedestrianConstruction.StructureWidth);
+        AddRecordedFixed("CoveredPedestrian", false, CoveredPedestrianConstruction.NativeName, CoveredPedestrianConstruction.ResourceAnchorName,
+            CoveredPedestrianConstruction.Icon, CoveredPedestrianConstruction.RoadWidth, CoveredPedestrianConstruction.StructureWidth);
+        void AddRecordedFixed(string id, bool road, string name, string anchorName, string icon, float roadWidth, float structureWidth)
+        {
+            var anchor = resources.FirstOrDefault(prefab => prefab.name == anchorName);
+            if (anchor == null) return;
+            byId[id].Add(new BridgeStyleVariant(name, road, icon, BridgePrototypeSource.Inspect(anchor), roadWidth, structureWidth));
+            recorded.Add(id);
+        }
+
         // Every net that some other prefab hangs underneath itself. Collected before anything is
         // offered, because a lower deck is not a bridge to build from - it is half of one.
         //

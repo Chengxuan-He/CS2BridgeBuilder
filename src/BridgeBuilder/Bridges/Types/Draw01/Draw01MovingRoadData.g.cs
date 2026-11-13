@@ -10,8 +10,7 @@ internal static class Draw01MovingRoadData
     {
         0 => Numeric_Types_Draw01_Draw01MovingRoadData_g_cs.Values.I32[0],
         1 => Numeric_Types_Draw01_Draw01MovingRoadData_g_cs.Values.I32[1],
-        2 => Numeric_Types_Draw01_Draw01MovingRoadData_g_cs.Values.I32[2],
-        _ => throw new ArgumentOutOfRangeException(nameof(lod))};
+        2 => Numeric_Types_Draw01_Draw01MovingRoadData_g_cs.Values.I32[2]};
     // Removes complete near/middle carriageway and sidewalk slabs, including their
     // raised profiles and closures. Far LOD keeps the shared structural underbody.
     internal static int[] RemovalFaces(int lod) => lod switch
@@ -3459,8 +3458,7 @@ internal static class Draw01MovingRoadData
             Numeric_Types_Draw01_Draw01MovingRoadData_g_cs.Values.I32[3432],
             Numeric_Types_Draw01_Draw01MovingRoadData_g_cs.Values.I32[3433],
             Numeric_Types_Draw01_Draw01MovingRoadData_g_cs.Values.I32[3434],
-        },
-        _ => throw new ArgumentOutOfRangeException(nameof(lod))};
+        }};
     // This coarse surface represents the retained under-deck frame. It is not
     // part of RemovalFaces even though it shares vertices with the old road.
     internal static int[] CoarseUnderbodyFaces => new[]

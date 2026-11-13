@@ -21,8 +21,6 @@ internal static class Draw01HeadSections
             var visiting = new HashSet<NetSectionPrefab>();
             NetSectionPrefab Visit(NetSectionPrefab section, string path)
             {
-                if (section == null || !visiting.Add(section))
-                    throw new InvalidOperationException("Draw01 head has a missing or cyclic native section.");
                 try
                 {
                     bool changed = false;
@@ -30,8 +28,6 @@ internal static class Draw01HeadSections
                     for (int p = Numeric_Types_Draw01_Draw01HeadSections_cs.Values.I32[3]; pieces != null && p < pieces.Length; p++)
                     {
                         var original = section.m_Pieces![p];
-                        if (original?.m_Piece == null)
-                            throw new InvalidOperationException("Draw01 head has a missing native piece.");
                         var piece = adapt(path + "/pieces/" + p, root, original) ?? throw new InvalidOperationException("Draw01 head adapter returned no piece.");
                         changed |= piece != original.m_Piece;
                         pieces[p] = new NetPieceInfo
@@ -48,8 +44,6 @@ internal static class Draw01HeadSections
                     for (int child = Numeric_Types_Draw01_Draw01HeadSections_cs.Values.I32[4]; children != null && child < children.Length; child++)
                     {
                         var original = section.m_SubSections![child];
-                        if (original == null)
-                            throw new InvalidOperationException("Draw01 head has a missing native subsection.");
                         var replacement = Visit(original.m_Section, path + "/subsections/" + child);
                         changed |= replacement != original.m_Section;
                         children[child] = new NetSubSectionInfo

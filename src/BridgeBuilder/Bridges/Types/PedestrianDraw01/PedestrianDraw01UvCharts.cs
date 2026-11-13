@@ -36,8 +36,6 @@ internal static class PedestrianDraw01UvCharts
             "PedestrianDrawBridge01PillarBase_LOD2 Mesh|0",
         };
         int meshCount = data.I32[0], chartCount = data.I32[1];
-        if (meshCount != keys.Length)
-            throw new InvalidOperationException("Invalid PedestrianDraw01 UV chart mesh count.");
         var charts = new MovableUvChart[chartCount];
         for (int i = 0; i < charts.Length; i++)
             charts[i] = MovableUvChart.Read(data.I32, data.F64, data.I32[2 + i]);

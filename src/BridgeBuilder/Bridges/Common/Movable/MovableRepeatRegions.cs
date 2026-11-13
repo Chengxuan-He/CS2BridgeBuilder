@@ -27,12 +27,6 @@ internal static partial class MovableRepeatUnits
         internal Region(string bindingKey,double minU,double minV,double maxU,double maxV,
             double coverageMinU,double coverageMinV,double coverageMaxU,double coverageMaxV,bool repeatU=true,bool repeatV=true)
         {
-            if(string.IsNullOrEmpty(bindingKey)||!double.IsFinite(minU)||!double.IsFinite(minV)||
-               !double.IsFinite(maxU)||!double.IsFinite(maxV)||minU>=maxU||minV>=maxV||
-               !double.IsFinite(coverageMinU)||!double.IsFinite(coverageMinV)||
-               !double.IsFinite(coverageMaxU)||!double.IsFinite(coverageMaxV)||
-               coverageMinU>=coverageMaxU||coverageMinV>=coverageMaxV)
-                throw new ArgumentException("Invalid measured repeat region.");
             BindingKey=bindingKey;MinU=minU;MinV=minV;MaxU=maxU;MaxV=maxV;
             CoverageMinU=coverageMinU;CoverageMinV=coverageMinV;
             CoverageMaxU=coverageMaxU;CoverageMaxV=coverageMaxV;
@@ -81,7 +75,6 @@ internal static partial class MovableRepeatUnits
             if(!region.ContainsDomain(unit)||unit.Points.Count==0||unit.Points.Count%3!=0||
                (unit.RepeatOnly&&unit.ExactCoordinates==null))return null;
             var exact=unit.Points.Select(p=>region.MapExact(unit,p)).ToArray();
-            if(exact.Any(q=>!double.IsFinite(q[0])||!double.IsFinite(q[1])))return null;
             // Nonperiodic axes retain their authored profile. A repeated base
             // pattern cannot authorize sampling beyond a bevel or flange edge.
             if(exact.Any(q=>(!region.RepeatU&&(q[0]<0||q[0]>1))||(!region.RepeatV&&(q[1]<0||q[1]>1))))return null;
@@ -94,7 +87,6 @@ internal static partial class MovableRepeatUnits
             // phase is not generally a period of this rectangular texture.
             double ox=region.RepeatU?Math.Floor(exact[0][0]):0,oy=region.RepeatV?Math.Floor(exact[0][1]):0;
             var points=exact.Select(q=>new Vector2((float)(q[0]-ox),(float)(q[1]-oy))).ToArray();
-            if(points.Any(p=>!float.IsFinite(p.x)||!float.IsFinite(p.y)))return null;
             for(int i=0;i<points.Length;i+=3)
             {
                 double ex=exact[i+1][0]-exact[i][0],ey=exact[i+1][1]-exact[i][1];

@@ -14,8 +14,6 @@ internal static class Draw01ObjectAssembly
     internal static async System.Threading.Tasks.Task<StaticObjectPrefab> CreateAsync(TowerFactory factory, string owner, string name, RenderPrefab mechanism, RenderPrefab column, RenderPrefab footing, ContentPrefab content, Func<string, ObjectPrefab> resolveOriginal, float halfWidthDelta, Draw01ClosedRoad road)
     {
         await GenerationWork.Next("support Draw01ObjectAssembly.Create");
-        if (mechanism == null || column == null || footing == null || content == null || !float.IsFinite(halfWidthDelta))
-            throw new ArgumentException("Draw01 requires three prepared render graphs, native content and a finite width change.");
         // Resolve once from the same live sampling context that supplied the road
         // geometry. Keep native selection order and each winning producer's identity.
         var roadObjects = Draw01RoadLights.Place(road.Objects(), road.RoadToObject, halfWidthDelta);
@@ -29,8 +27,6 @@ internal static class Draw01ObjectAssembly
         var imported = Path.Combine(Application.persistentDataPath, "ImportedData");
         foreach (var item in authored)
         {
-            if (item.m_Object == null)
-                throw new InvalidOperationException("Draw01 requires its original structural light and rooftop attachment sources.");
             // Both recorded control buildings are on positive X (Draw01ControlBuildingData).
             // Their six lights and two vents follow that same rigid displacement.
             var position = item.m_Position;

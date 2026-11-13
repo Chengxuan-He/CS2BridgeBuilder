@@ -15,8 +15,6 @@ internal static class PedestrianDraw02RenderAssembly
 
     internal static async System.Threading.Tasks.Task<RenderPrefab?> CreateMechanismAsync(TowerFactory factory, string name, MovableRoadAssets.Level[] roadLevels, float halfWidthDelta)
     {
-        if (roadLevels.Length != Numeric_Types_PedestrianDraw02_PedestrianDraw02RenderAssembly_cs.Values.I32[0])
-            throw new ArgumentException("PedestrianDraw02 mechanism requires its two native LODs.");
         return await MovableRenderAssembly.CreateMechanismAsync(factory, name, roadLevels, new[] { Numeric_Types_PedestrianDraw02_PedestrianDraw02RenderAssembly_cs.Values.I32[1], Numeric_Types_PedestrianDraw02_PedestrianDraw02RenderAssembly_cs.Values.I32[2] }, (lod, mesh, source, indices) => Structure(lod, mesh, source, indices, halfWidthDelta));
     }
 
@@ -31,11 +29,6 @@ internal static class PedestrianDraw02RenderAssembly
             var structure = PedestrianDraw02JoinedSupports.Complete(lod, source, positions, indices, delta);
             return PedestrianDraw02TrussMapping.Apply(lod, PedestrianDraw02RoadReplacement.WithTopRemoved(lod, structure), delta);
         }
-
-        // Mesh 1 is the six authored control-room glass quads. Native LOD1
-        // reorders them: its right-room vertices are 3..14 instead of 12..23.
-        if (mesh != Numeric_Types_PedestrianDraw02_PedestrianDraw02RenderAssembly_cs.Values.I32[4] || (lod != Numeric_Types_PedestrianDraw02_PedestrianDraw02RenderAssembly_cs.Values.I32[5] && lod != Numeric_Types_PedestrianDraw02_PedestrianDraw02RenderAssembly_cs.Values.I32[6]) || source.Length != Numeric_Types_PedestrianDraw02_PedestrianDraw02RenderAssembly_cs.Values.I32[7] || indices.Length != Numeric_Types_PedestrianDraw02_PedestrianDraw02RenderAssembly_cs.Values.I32[8])
-            throw new InvalidOperationException("PedestrianDraw02 glass requires its recorded six-quad mesh.");
         var rightStart = lod == Numeric_Types_PedestrianDraw02_PedestrianDraw02RenderAssembly_cs.Values.I32[9] ? Numeric_Types_PedestrianDraw02_PedestrianDraw02RenderAssembly_cs.Values.I32[10] : Numeric_Types_PedestrianDraw02_PedestrianDraw02RenderAssembly_cs.Values.I32[11];
         var rightEnd = lod == Numeric_Types_PedestrianDraw02_PedestrianDraw02RenderAssembly_cs.Values.I32[12] ? Numeric_Types_PedestrianDraw02_PedestrianDraw02RenderAssembly_cs.Values.I32[13] : Numeric_Types_PedestrianDraw02_PedestrianDraw02RenderAssembly_cs.Values.I32[14];
         var rightGlass = new List<int>();
@@ -58,11 +51,7 @@ internal static class PedestrianDraw02RenderAssembly
     {
         await GenerationWork.Next("support PedestrianDraw02RenderAssembly.CreateColumn");
         var imported = Path.Combine(Application.persistentDataPath, "ImportedData");
-        if (source == null || !string.Equals(source.name, "PedestrianDrawBridge02Pillar Mesh", StringComparison.Ordinal))
-            throw new InvalidOperationException("PedestrianDraw02 column requires its permitted native source.");
         var lods = source.GetComponent<LodProperties>()?.m_LodMeshes;
-        if (lods == null || lods.Length != Numeric_Types_PedestrianDraw02_PedestrianDraw02RenderAssembly_cs.Values.I32[16])
-            throw new InvalidOperationException("PedestrianDraw02 column requires both native LOD renders.");
         var sources = new[]
         {
             source,
@@ -74,14 +63,10 @@ internal static class PedestrianDraw02RenderAssembly
         {
             var original = sources[lod];
             var expected = "PedestrianDrawBridge02Pillar" + (lod == Numeric_Types_PedestrianDraw02_PedestrianDraw02RenderAssembly_cs.Values.I32[20] ? "" : "_LOD" + lod) + " Mesh";
-            if (original == null || !string.Equals(original.name, expected, StringComparison.Ordinal))
-                throw new InvalidOperationException("PedestrianDraw02 column LOD is not its permitted native source.");
             Mesh[]? meshes = null;
             try
             {
                 meshes = PrivateGeometryReader.Read(original);
-                if (meshes.Length != Numeric_Types_PedestrianDraw02_PedestrianDraw02RenderAssembly_cs.Values.I32[21] || meshes[Numeric_Types_PedestrianDraw02_PedestrianDraw02RenderAssembly_cs.Values.I32[22]] == null || meshes[Numeric_Types_PedestrianDraw02_PedestrianDraw02RenderAssembly_cs.Values.I32[23]].subMeshCount != Numeric_Types_PedestrianDraw02_PedestrianDraw02RenderAssembly_cs.Values.I32[24])
-                    throw new InvalidOperationException("PedestrianDraw02 column requires one native mesh and surface slot per LOD.");
                 var mesh = meshes[Numeric_Types_PedestrianDraw02_PedestrianDraw02RenderAssembly_cs.Values.I32[25]];
                 var supportInput0 = mesh.vertices;
                 var supportInput1 = mesh.GetIndices(Numeric_Types_PedestrianDraw02_PedestrianDraw02RenderAssembly_cs.Values.I32[27]);
@@ -110,18 +95,12 @@ internal static class PedestrianDraw02RenderAssembly
     {
         await GenerationWork.Next("support PedestrianDraw02RenderAssembly.CreateFooting");
         var imported = Path.Combine(Application.persistentDataPath, "ImportedData");
-        if (source == null || !string.Equals(source.name, "PedestrianDrawBridge02PillarBase Mesh", StringComparison.Ordinal))
-            throw new InvalidOperationException("PedestrianDraw02 footing requires its permitted native source.");
         var lods = source.GetComponent<LodProperties>()?.m_LodMeshes;
-        if (lods == null || lods.Length != Numeric_Types_PedestrianDraw02_PedestrianDraw02RenderAssembly_cs.Values.I32[29])
-            throw new InvalidOperationException("PedestrianDraw02 footing requires its one native LOD render.");
         var sources = new[]
         {
             source,
             lods[Numeric_Types_PedestrianDraw02_PedestrianDraw02RenderAssembly_cs.Values.I32[30]]
         };
-        if (sources[Numeric_Types_PedestrianDraw02_PedestrianDraw02RenderAssembly_cs.Values.I32[31]] == null || !string.Equals(sources[Numeric_Types_PedestrianDraw02_PedestrianDraw02RenderAssembly_cs.Values.I32[32]].name, "PedestrianDrawBridge02PillarBase_LOD1 Mesh", StringComparison.Ordinal))
-            throw new InvalidOperationException("PedestrianDraw02 footing LOD1 is not its permitted native source.");
         var levels = new MovableRoadAssets.Level[Numeric_Types_PedestrianDraw02_PedestrianDraw02RenderAssembly_cs.Values.I32[34]];
         for (var lod = Numeric_Types_PedestrianDraw02_PedestrianDraw02RenderAssembly_cs.Values.I32[35]; lod < levels.Length; lod++)
         {
@@ -130,8 +109,6 @@ internal static class PedestrianDraw02RenderAssembly
             {
                 var original = sources[lod];
                 meshes = PrivateGeometryReader.Read(original);
-                if (meshes.Length != Numeric_Types_PedestrianDraw02_PedestrianDraw02RenderAssembly_cs.Values.I32[36] || meshes[Numeric_Types_PedestrianDraw02_PedestrianDraw02RenderAssembly_cs.Values.I32[37]] == null || meshes[Numeric_Types_PedestrianDraw02_PedestrianDraw02RenderAssembly_cs.Values.I32[38]].subMeshCount != Numeric_Types_PedestrianDraw02_PedestrianDraw02RenderAssembly_cs.Values.I32[39])
-                    throw new InvalidOperationException($"PedestrianDraw02 footing LOD {lod} requires one native mesh and surface slot.");
                 var mesh = meshes[Numeric_Types_PedestrianDraw02_PedestrianDraw02RenderAssembly_cs.Values.I32[40]];
                 var supportInput0 = mesh.vertices;
                 var supportInput1 = mesh.GetIndices(Numeric_Types_PedestrianDraw02_PedestrianDraw02RenderAssembly_cs.Values.I32[41]);

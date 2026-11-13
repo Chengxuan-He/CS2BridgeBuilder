@@ -11,10 +11,7 @@ internal static class Lift03NetFootingGeometry
         {
             0 => (Count: Numeric_Types_Lift03_Lift03NetFootingGeometry_g_cs.Values.I32[0], Faces: Numeric_Types_Lift03_Lift03NetFootingGeometry_g_cs.Values.I32[1], Edges: Edges20, Fragments: Fragments20),
             1 => (Count: Numeric_Types_Lift03_Lift03NetFootingGeometry_g_cs.Values.I32[2], Faces: Numeric_Types_Lift03_Lift03NetFootingGeometry_g_cs.Values.I32[3], Edges: Edges21, Fragments: Fragments21),
-            2 => (Count: Numeric_Types_Lift03_Lift03NetFootingGeometry_g_cs.Values.I32[4], Faces: Numeric_Types_Lift03_Lift03NetFootingGeometry_g_cs.Values.I32[5], Edges: Edges22, Fragments: Fragments22),
-            _ => throw new ArgumentOutOfRangeException(nameof(lod))};
-        if (source.Length != data.Count || indices.Length != data.Faces * Numeric_Types_Lift03_Lift03NetFootingGeometry_g_cs.Values.I32[6] || !float.IsFinite(delta))
-            throw new InvalidOperationException("Lift03 ordinary pillar requires its measured native layout.");
+            2 => (Count: Numeric_Types_Lift03_Lift03NetFootingGeometry_g_cs.Values.I32[4], Faces: Numeric_Types_Lift03_Lift03NetFootingGeometry_g_cs.Values.I32[5], Edges: Edges22, Fragments: Fragments22)};
         var positions = (Vector3[])source.Clone();
         AffineGeometry.Execute(BatchProgram0.Data, lod, new[] { source, positions }, Array.Empty<float[]>(), new float[] { delta });
         var edges = new MovableStructureModel.EdgeVertex[data.Edges.Length];

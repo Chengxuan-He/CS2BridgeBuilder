@@ -20,8 +20,6 @@ internal static class MovableRenderAssembly
         IReadOnlyList<MovableRoadAssets.Level> roadLevels, IReadOnlyList<int> meshCounts,
         Func<int, int, Vector3[], int[], MovableStructureModel.Plan> buildStructure)
     {
-        if (roadLevels.Count != meshCounts.Count || roadLevels.Count == 0)
-            throw new ArgumentException("Moving render assembly requires every measured road LOD.");
         var levels = new MovableRoadAssets.Level[roadLevels.Count];
         var timer = System.Diagnostics.Stopwatch.StartNew();
         var vertices = new Vector3[roadLevels.Count][][];
@@ -33,18 +31,12 @@ internal static class MovableRenderAssembly
             try
             {
                 var input = roadLevels[lod];
-                if (!input.HasRoad || input.Partition == null || input.Structure != null)
-                    throw new ArgumentException($"Moving render LOD {lod} requires prepared road input without structure.");
                 meshes = PrivateGeometryReader.Read(input.Source);
-                if (meshes.Length != meshCounts[lod])
-                    throw new InvalidOperationException($"Moving render LOD {lod} has a different native mesh count.");
                 vertices[lod] = new Vector3[meshes.Length][];
                 indices[lod] = new int[meshes.Length][];
                 for (var mesh = 0; mesh < meshes.Length; mesh++)
                 {
                     var source = meshes[mesh];
-                    if (source == null || source.subMeshCount != 1)
-                        throw new InvalidOperationException($"Moving render LOD {lod} mesh {mesh} has a different native surface layout.");
                     vertices[lod][mesh] = source.vertices;
                     indices[lod][mesh] = source.GetIndices(0);
                 }

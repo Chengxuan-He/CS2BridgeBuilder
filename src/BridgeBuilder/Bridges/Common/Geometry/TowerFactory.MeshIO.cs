@@ -1,4 +1,4 @@
-﻿
+
 
 using Colossal.AssetPipeline.Importers;
 
@@ -43,7 +43,9 @@ internal sealed partial class TowerFactory
     /// </summary>
     private static ModelImporter.Model? BuildModel(
         string name, Mesh mesh, float3[] vertices, out string? error,
-        bool[]? dropped = null)
+        bool[]? dropped = null, KeyValuePair<int, Matrix4x4>[]? frameTransforms = null,
+        bool[]? omittedTriangles = null, int[]? sourceVertexIndices = null,
+        int[]? recordedCornerIndices = null)
     {
         error = null;
         var attributes = new List<ModelImporter.Model.VertexData>();
@@ -107,17 +109,13 @@ internal sealed partial class TowerFactory
                 var bytes = new byte[size * vertices.Length];
                 if (attribute.attribute == VertexAttribute.Position)
                 {
-                    // The one channel that changes. Written in the format the mesh declares for it -
-                    // three floats on every mesh seen so far, preflighted above rather than assumed.
-                    if (Marshal.SizeOf<float3>() != 12 || bytes.Length != checked(vertices.Length * 12))
-                        throw new InvalidOperationException("Position output requires native packed Float32 XYZ.");
                     MemoryMarshal.AsBytes(vertices.AsSpan()).CopyTo(bytes);
                 }
                 else
                 {
                     for (var index = 0; index < vertices.Length; index++)
                     {
-                        var from = (index * stride) + offset;
+                    var from = ((sourceVertexIndices?[index] ?? index) * stride) + offset;
                         if (from + size > stream.Length) break;
                         Buffer.BlockCopy(stream, from, bytes, index * size, size);
                     }
@@ -137,6 +135,19 @@ internal sealed partial class TowerFactory
             if (read.Length > 0) read.Dispose();
         }
 
+        if (frameTransforms != null && frameTransforms.Length != 0)
+        {
+            try
+            {
+                MovableStructureFrames.Apply(attributes, frameTransforms, null, vertices.Length);
+            }
+            catch
+            {
+                foreach (var attribute in attributes) attribute.data.Dispose();
+                throw;
+            }
+        }
+
         // The bounds every generated mesh was missing.
         //
         // ModelImporter.Model.ToUnityMesh calls Mesh.SetSubMesh with flags 15, which includes
@@ -149,6 +160,7 @@ internal sealed partial class TowerFactory
         var points = vertices;
         var indices = new List<int>();
         var subMeshes = new List<SubMeshDescriptor>();
+        var sourceTriangle = 0;
         for (var sub = 0; sub < mesh.subMeshCount; sub++)
         {
             var start = indices.Count;
@@ -163,6 +175,8 @@ internal sealed partial class TowerFactory
             var corners = mesh.GetTriangles(sub);
             for (var corner = 0; corner + 2 < corners.Length; corner += 3)
             {
+                var triangle = sourceTriangle++;
+                if (omittedTriangles != null && omittedTriangles[triangle]) continue;
                 if (dropped != null
                     && corners[corner] < dropped.Length
                     && corners[corner + 1] < dropped.Length
@@ -174,9 +188,9 @@ internal sealed partial class TowerFactory
                     continue;
                 }
 
-                indices.Add(corners[corner]);
-                indices.Add(corners[corner + 1]);
-                indices.Add(corners[corner + 2]);
+                indices.Add(recordedCornerIndices?[triangle * 3] ?? corners[corner]);
+                indices.Add(recordedCornerIndices?[triangle * 3 + 1] ?? corners[corner + 1]);
+                indices.Add(recordedCornerIndices?[triangle * 3 + 2] ?? corners[corner + 2]);
             }
 
             var count = indices.Count - start;

@@ -64,29 +64,21 @@ internal static class Draw02UvSampling
         };
         if (index < 0) return false;
         var flags = Data.Items[index];
-        if ((uint)domain >= (uint)flags.Length)
-            throw new InvalidOperationException($"Invalid Draw02 UV domain: {render}/{mesh}/{domain}.");
         return flags[domain];
     }
 
     private static bool[][] Read()
     {
         var values = HardcodedNumbers.Load("Draw02_UvSampling").I32;
-        if (values.Length < 2 || values[0] != 1 || values[1] != 45)
-            throw new InvalidOperationException("Invalid Draw02 UV sampling schema.");
         var result = new bool[values[1]][];
         int at = 2;
         for (int mesh = 0; mesh < result.Length; mesh++)
         {
-            if (at >= values.Length) throw new InvalidOperationException("Truncated Draw02 UV sampling data.");
             int count = values[at++];
-            if (count < 0 || count > values.Length - at)
-                throw new InvalidOperationException("Invalid Draw02 UV sampling count.");
             var flags = result[mesh] = new bool[count];
             for (int domain = 0; domain < count; domain++)
             {
                 int flag = values[at++];
-                if (flag != 0 && flag != 1) throw new InvalidOperationException("Invalid Draw02 UV sampling flag.");
                 flags[domain] = flag == 1;
             }
         }

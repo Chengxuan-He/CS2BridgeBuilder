@@ -21,8 +21,6 @@ internal static class PedestrianDraw02RenderData
         {
             case Part.Mechanism:
             {
-                if (levels.Length != Numeric_Types_PedestrianDraw02_PedestrianDraw02RenderData_g_cs.Values.I32[0])
-                    throw new ArgumentException("PedestrianDraw02 Mechanism requires 2 prepared render levels.");
                 var c0_LodProperties = levels[Numeric_Types_PedestrianDraw02_PedestrianDraw02RenderData_g_cs.Values.I32[1]].AddComponent<LodProperties>();
                 c0_LodProperties.m_Bias = Numeric_Types_PedestrianDraw02_PedestrianDraw02RenderData_g_cs.Values.F32[0];
                 c0_LodProperties.m_ShadowBias = Numeric_Types_PedestrianDraw02_PedestrianDraw02RenderData_g_cs.Values.F32[1];
@@ -45,8 +43,6 @@ internal static class PedestrianDraw02RenderData
 
             case Part.Column:
             {
-                if (levels.Length != Numeric_Types_PedestrianDraw02_PedestrianDraw02RenderData_g_cs.Values.I32[8])
-                    throw new ArgumentException("PedestrianDraw02 Column requires 3 prepared render levels.");
                 var c0_LodProperties = levels[Numeric_Types_PedestrianDraw02_PedestrianDraw02RenderData_g_cs.Values.I32[9]].AddComponent<LodProperties>();
                 c0_LodProperties.m_Bias = Numeric_Types_PedestrianDraw02_PedestrianDraw02RenderData_g_cs.Values.F32[4];
                 c0_LodProperties.m_ShadowBias = Numeric_Types_PedestrianDraw02_PedestrianDraw02RenderData_g_cs.Values.F32[5];
@@ -72,8 +68,6 @@ internal static class PedestrianDraw02RenderData
 
             case Part.Footing:
             {
-                if (levels.Length != Numeric_Types_PedestrianDraw02_PedestrianDraw02RenderData_g_cs.Values.I32[18])
-                    throw new ArgumentException("PedestrianDraw02 Footing requires 2 prepared render levels.");
                 var c0_LodProperties = levels[Numeric_Types_PedestrianDraw02_PedestrianDraw02RenderData_g_cs.Values.I32[19]].AddComponent<LodProperties>();
                 c0_LodProperties.m_Bias = Numeric_Types_PedestrianDraw02_PedestrianDraw02RenderData_g_cs.Values.F32[8];
                 c0_LodProperties.m_ShadowBias = Numeric_Types_PedestrianDraw02_PedestrianDraw02RenderData_g_cs.Values.F32[9];

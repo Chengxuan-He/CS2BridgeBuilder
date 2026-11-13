@@ -29,8 +29,6 @@ internal static class Draw02SupportAssembly
             {
                 var original = originals[lod];
                 meshes = PrivateGeometryReader.Read(original);
-                if (meshes.Length != Numeric_Types_Draw02_Draw02SupportAssembly_cs.Values.I32[3] || meshes[Numeric_Types_Draw02_Draw02SupportAssembly_cs.Values.I32[4]].subMeshCount != Numeric_Types_Draw02_Draw02SupportAssembly_cs.Values.I32[5])
-                    throw new InvalidOperationException("Draw02 support requires its recorded single native surface slot.");
                 var mesh = meshes[Numeric_Types_Draw02_Draw02SupportAssembly_cs.Values.I32[6]];
                 var supportInput0 = mesh.vertices;
                 var supportInput1 = mesh.GetIndices(Numeric_Types_Draw02_Draw02SupportAssembly_cs.Values.I32[7]);

@@ -30,7 +30,7 @@ internal static class MovableMaterialConversion
         else if (preview != null && owner.StartsWith("tmp", StringComparison.Ordinal) && owner.Length >= 39) ownership = owner.Substring(0, 39);
             identity = source.id.ToString();
             source.LoadHeader();
-            if (assets == null) { error = "Material output ownership is unavailable."; return false; }
+
             if (!MovableSurfaceAssets.TryReadSource(source, out _, out error)) return false;
             var library = AssetDatabase.global.resources.materialLibrary;
             int existingProgram = -1;
@@ -39,8 +39,6 @@ internal static class MovableMaterialConversion
                 !MovableCustomShaderAsset.TryPrepare(program, originalTemplate, owner, preview, assets,
                     out existingProgram, out error, programQueue)) return false;
             if (geometry.UnchangedNetworkInputs) { material = source; return true; }
-            if (!geometry.EvaluatedPositions || !geometry.PackedNormals || geometry.BoneCount <= 0)
-            { error = "Invalid receiving geometry: evaluated positions, packed normals and native procedural bones are required."; return false; }
             if (MovableSurfaceAssets.IsObjectSurface(source))
             {
                 stage = "object-vertex-protocol";

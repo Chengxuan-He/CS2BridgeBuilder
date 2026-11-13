@@ -22,7 +22,6 @@ internal sealed partial class MovableNetworkPrefabs
 
     private Entity StageRenderCore(RenderPrefab prefab)
     {
-        CheckSource(prefab);
         if (_renders.TryGetValue(prefab, out var existing)) return existing;
         var components = new List<ComponentBase>();
         prefab.GetComponents(components);
@@ -47,7 +46,6 @@ internal sealed partial class MovableNetworkPrefabs
                 var ordered = new List<RenderPrefab>();
                 foreach (var lod in lods)
                 {
-                    CheckSource(lod);
                     var index = ordered.Count;
                     while (index > 0 && lod.indexCount > ordered[index - 1].indexCount) index--;
                     ordered.Insert(index, lod);

@@ -16,12 +16,8 @@ internal static class Lift01HalfFloorAppearance
     internal static MovableRoadAppearance.Level Create(int lod, SurfaceAsset native, Pose roadToObject, float halfDelta) => Prepared(lod, native, BridgePreparedMaterials.RepeatUnit("Lift01", "7f727eeef2ad7c28df48e6200815357a780ac5636f83f82cd8d0ba46180e5f43"), roadToObject, halfDelta);
     internal static MovableRoadAppearance.Level Prepared(int lod, SurfaceAsset native, MovableExistingRoadSurface.SurfaceResult unit, Pose roadToObject, float halfDelta)
     {
-        if (lod != Numeric_Types_Lift01_Lift01HalfFloorAppearance_cs.Values.I32[0] && lod != Numeric_Types_Lift01_Lift01HalfFloorAppearance_cs.Values.I32[1])
-            throw new ArgumentOutOfRangeException(nameof(lod));
         var f = Data.F32;
         var halfWidth = f[Numeric_Types_Lift01_Lift01HalfFloorAppearance_cs.Values.I32[2]] + halfDelta;
-        if (!float.IsFinite(halfWidth))
-            throw new ArgumentOutOfRangeException(nameof(halfDelta));
         // A collapsed projection has no inverse; retain the selected material.
         if (halfWidth == 0f)
             return new MovableRoadAppearance.Level(native, new[] { new Patch(Vector2.zero, Vector2.one) }, new[] { MovableRoadAppearance.Type.None }, new Partition(0), new Partition(0));

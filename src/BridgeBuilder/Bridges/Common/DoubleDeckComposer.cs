@@ -1,4 +1,4 @@
-﻿using CS2Mods.Shared.Infrastructure;
+using CS2Mods.Shared.Infrastructure;
 using Game.Prefabs;
 using System;
 using System.Globalization;
@@ -23,19 +23,6 @@ namespace BridgeBuilder.Bridges;
 /// </summary>
 internal sealed class DoubleDeckComposer
 {
-    /// <summary>
-    /// The separation is the archetype's and is not adjustable, so there is nothing to clamp.
-    ///
-    /// It used to be a setting bounded by these two numbers. Kept as a record of what was tried: a
-    /// double deck bridge's structure is drawn around two decks at one separation, so every value in
-    /// that range except the archetype's own put the second deck through geometry modelled to clear
-    /// it. The bound that mattered was not four metres or twenty-four, it was the one the archetype
-    /// already states.
-    /// </summary>
-    internal const float FormerMinimumSpacing = 4f;
-
-    internal const float FormerMaximumSpacing = 24f;
-
     private readonly ExportReport _report;
 
     internal DoubleDeckComposer(ExportReport report)

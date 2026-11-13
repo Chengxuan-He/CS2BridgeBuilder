@@ -10,8 +10,6 @@ internal static class Lift01FarTowerCore
 {
     internal static MovableStructureModel.Plan Create(Vector3[] source, int[] indices, float delta)
     {
-        if (source.Length != Numeric_Types_Lift01_Lift01FarTowerCore_g_cs.Values.I32[0] || indices.Length != Numeric_Types_Lift01_Lift01FarTowerCore_g_cs.Values.I32[1] || !float.IsFinite(delta))
-            throw new InvalidOperationException("Lift01 far tower core requires its recorded middle source.");
         var positions = (Vector3[])source.Clone();
         AffineGeometry.Execute(BatchProgram0.Data, 0, new[] { source, positions }, Array.Empty<float[]>(), new float[] { delta });
         var remove = new bool[Numeric_Types_Lift01_Lift01FarTowerCore_g_cs.Values.I32[2]];

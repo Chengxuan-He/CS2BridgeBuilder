@@ -96,8 +96,6 @@ internal sealed partial class MovableNetworkLanes
 
     private void RequirePrivateWorld()
     {
-        if (World == World.DefaultGameObjectInjectionWorld)
-            throw new InvalidOperationException("Movable lane calculation requires a private network world.");
         EntityManager.CompleteAllTrackedJobs();
     }
 

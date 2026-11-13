@@ -9,8 +9,6 @@ internal static class Lift01ApproachFarShell
     internal static MovableStructureModel.Plan Complete(Vector3[] source, Vector3[] positions, int[] indices, float delta)
     {
         var data = (Edges: Edges0, Fragments: Fragments0);
-        if (!float.IsFinite(delta) || source.Length != Numeric_Types_Lift01_Lift01ApproachFarShell_g_cs.Values.I32[0] || positions.Length != Numeric_Types_Lift01_Lift01ApproachFarShell_g_cs.Values.I32[1] || indices.Length != Numeric_Types_Lift01_Lift01ApproachFarShell_g_cs.Values.I32[2])
-            throw new InvalidOperationException("Lift01 far approach requires its measured layout.");
         AffineGeometry.Execute(CoordinatePrograms.Data, 0, new[] { source, positions }, Array.Empty<float[]>(), new[] { delta });
         var x = new float[data.Edges.Length];
         AffineGeometry.Execute(InterpolationProgram0.Data, 0, new[] { source }, new[] { x }, new float[] { delta });

@@ -58,15 +58,6 @@ internal static class RoadBuilderDiscovery
         var unnameable = 0;
         foreach (var prefab in candidates)
         {
-            if (HasBrokenConfiguration(prefab))
-            {
-                broken++;
-                warnings.Add(
-                    $"Skipping '{prefab.name}': Road Builder has no configuration for it, so the prefab is "
-                    + "incomplete. Road Builder logs this as 'NULL CONFIG WHILE GENERATING'.");
-                continue;
-            }
-
             var road = Describe(prefab, warnings);
             if (road == null)
             {
@@ -134,18 +125,6 @@ internal static class RoadBuilderDiscovery
             .Where(prefab => !IsRoadBuilderRoad(prefab))
             .Select(prefab => prefab.name)
             .Where(name => !string.IsNullOrEmpty(name) && !ownedExportNames.Contains(name));
-    }
-
-    /// <summary>
-    /// True when Road Builder exposes a configuration for this road but it is null, which is how a
-    /// road whose generation failed looks. Such a prefab is half built - Road Builder's own thumbnail
-    /// step throws on it - and exporting it would write out a broken asset. A missing property means a
-    /// different Road Builder version instead, which the fingerprint fallback already covers.
-    /// </summary>
-    private static bool HasBrokenConfiguration(RoadPrefab prefab)
-    {
-        var property = prefab.GetType().GetProperty("Config", BindingFlags.Instance | BindingFlags.Public);
-        return property != null && property.GetValue(prefab) == null;
     }
 
     private static bool IsRoadBuilderRoad(RoadPrefab prefab)

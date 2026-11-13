@@ -14,8 +14,6 @@ internal static class Lift02FootingAssembly
     {
         await GenerationWork.Next("support Lift02FootingAssembly.Create");
         var lods = source.GetComponent<LodProperties>()?.m_LodMeshes;
-        if (lods == null || lods.Length != Numeric_Types_Lift02_Lift02FootingAssembly_cs.Values.I32[0])
-            throw new InvalidOperationException("Lift02 supports require their three recorded native LODs.");
         var originals = new[]
         {
             source,
@@ -27,14 +25,10 @@ internal static class Lift02FootingAssembly
         {
             var original = originals[lod];
             var expected = "LiftBridge02PillarBase" + (lod == Numeric_Types_Lift02_Lift02FootingAssembly_cs.Values.I32[5] ? "" : "_LOD" + lod) + " Mesh";
-            if (original == null || original.asset != null || original.name != expected)
-                throw new InvalidOperationException("Lift02 supports require their reconstructed native render inputs.");
             Mesh[]? meshes = null;
             try
             {
                 meshes = PrivateGeometryReader.Read(original);
-                if (meshes.Length != Numeric_Types_Lift02_Lift02FootingAssembly_cs.Values.I32[6] || meshes[Numeric_Types_Lift02_Lift02FootingAssembly_cs.Values.I32[7]].subMeshCount != Numeric_Types_Lift02_Lift02FootingAssembly_cs.Values.I32[8])
-                    throw new InvalidOperationException("Lift02 supports require their recorded single native surface slot.");
                 var supportInput0 = meshes[Numeric_Types_Lift02_Lift02FootingAssembly_cs.Values.I32[9]].vertices;
                 var supportInput1 = meshes[Numeric_Types_Lift02_Lift02FootingAssembly_cs.Values.I32[10]].GetIndices(Numeric_Types_Lift02_Lift02FootingAssembly_cs.Values.I32[11]);
                 var plan = await GenerationWork.Background("support structure plan", () => Lift02FootingGeometry.Create(lod, supportInput0, supportInput1, halfWidthDelta));

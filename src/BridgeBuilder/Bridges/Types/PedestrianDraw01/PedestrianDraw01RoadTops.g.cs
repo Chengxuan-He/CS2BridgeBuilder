@@ -10,15 +10,10 @@ internal static class PedestrianDraw01RoadTops
         {
             0 => (IndexCount: Numeric_Types_PedestrianDraw01_PedestrianDraw01RoadTops_g_cs.Values.I32[0], Faces: Faces0),
             1 => (IndexCount: Numeric_Types_PedestrianDraw01_PedestrianDraw01RoadTops_g_cs.Values.I32[1], Faces: Faces1),
-            2 => (IndexCount: Numeric_Types_PedestrianDraw01_PedestrianDraw01RoadTops_g_cs.Values.I32[2], Faces: Faces2),
-            _ => throw new ArgumentOutOfRangeException(nameof(lod))};
-        if (indices.Length != data.IndexCount || removed.Length * Numeric_Types_PedestrianDraw01_PedestrianDraw01RoadTops_g_cs.Values.I32[3] != data.IndexCount)
-            throw new InvalidOperationException("PedestrianDraw01 road topology changed.");
+            2 => (IndexCount: Numeric_Types_PedestrianDraw01_PedestrianDraw01RoadTops_g_cs.Values.I32[2], Faces: Faces2)};
         foreach (var face in data.Faces)
         {
             var offset = face.Triangle * Numeric_Types_PedestrianDraw01_PedestrianDraw01RoadTops_g_cs.Values.I32[4];
-            if (indices[offset] != face.A || indices[offset + Numeric_Types_PedestrianDraw01_PedestrianDraw01RoadTops_g_cs.Values.I32[5]] != face.B || indices[offset + Numeric_Types_PedestrianDraw01_PedestrianDraw01RoadTops_g_cs.Values.I32[6]] != face.C)
-                throw new InvalidOperationException("PedestrianDraw01 road source indices changed.");
             removed[face.Triangle] = true;
         }
     }

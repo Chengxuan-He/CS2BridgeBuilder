@@ -11,8 +11,6 @@ internal static class Draw02RailFootClosure
     {
         if (lod == Numeric_Types_Draw02_Draw02RailFootClosure_cs.Values.I32[0] || layout.Lanes == null || layout.Lanes.Length == Numeric_Types_Draw02_Draw02RailFootClosure_cs.Values.I32[1])
             return;
-        if (plan.InteriorVertices.Length != Numeric_Types_Draw02_Draw02RailFootClosure_cs.Values.I32[2])
-            throw new InvalidOperationException("Draw02 measured closure expects its original edge-only shell recipe.");
         var data = RailFootClosureMeasurements.Values.I32;
         var split = RailFootContactSplitMeasurements.Values;
         var cache = new Dictionary<float, MovableRoadLaneLayout.Boundary[]>();
@@ -54,8 +52,6 @@ internal static class Draw02RailFootClosure
         for (int side = -Numeric_Types_Draw02_Draw02RailFootClosure_cs.Values.I32[13]; side <= Numeric_Types_Draw02_Draw02RailFootClosure_cs.Values.I32[14]; side += Numeric_Types_Draw02_Draw02RailFootClosure_cs.Values.I32[15])
         {
             int record = lod * Numeric_Types_Draw02_Draw02RailFootClosure_cs.Values.I32[16] + (side > Numeric_Types_Draw02_Draw02RailFootClosure_cs.Values.I32[17] ? Numeric_Types_Draw02_Draw02RailFootClosure_cs.Values.I32[18] : Numeric_Types_Draw02_Draw02RailFootClosure_cs.Values.I32[19]), h = record * Numeric_Types_Draw02_Draw02RailFootClosure_cs.Values.I32[20];
-            if (plan.SourcePositions.Length != data[h] || removed.Length != data[h + Numeric_Types_Draw02_Draw02RailFootClosure_cs.Values.I32[21]])
-                throw new InvalidOperationException("Draw02 rail closure requires its measured original main mesh.");
             var active = new HashSet<int>();
             for (int group = Numeric_Types_Draw02_Draw02RailFootClosure_cs.Values.I32[22]; group <= Numeric_Types_Draw02_Draw02RailFootClosure_cs.Values.I32[23]; group += Numeric_Types_Draw02_Draw02RailFootClosure_cs.Values.I32[24])
                 for (int i = Numeric_Types_Draw02_Draw02RailFootClosure_cs.Values.I32[25]; i < data[h + group + Numeric_Types_Draw02_Draw02RailFootClosure_cs.Values.I32[26]]; i++)

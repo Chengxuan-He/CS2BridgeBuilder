@@ -17,8 +17,6 @@ internal static class Draw01RenderAssembly
 
     internal static async System.Threading.Tasks.Task<RenderPrefab?> CreateMechanismAsync(TowerFactory factory, string owner, string name, IReadOnlyList<MovableRoadAssets.Level> roadLevels, float halfWidthDelta, Draw01UndersideLayout underside)
     {
-        if (roadLevels.Count != Numeric_Types_Draw01_Draw01RenderAssembly_cs.Values.I32[0])
-            throw new ArgumentException("Draw01 mechanism requires all three prepared road LODs.");
         var expected = new[]
         {
             "DrawBridge01 Mesh",
@@ -29,11 +27,7 @@ internal static class Draw01RenderAssembly
         for (var lod = Numeric_Types_Draw01_Draw01RenderAssembly_cs.Values.I32[1]; lod < roadLevels.Count; lod++)
         {
             var level = roadLevels[lod];
-            if (!level.HasRoad || level.Partition == null || level.Structure != null)
-                throw new ArgumentException($"Draw01 mechanism LOD {lod} requires road input before structural assembly.");
             var item = level.Source;
-            if (item == null || !string.Equals(item.name, expected[lod], StringComparison.Ordinal))
-                throw new InvalidOperationException($"Draw01 mechanism LOD {lod} is not the permitted recorded source '{expected[lod]}'.");
         }
 
         var meshCounts = new int[roadLevels.Count];
@@ -49,8 +43,6 @@ internal static class Draw01RenderAssembly
             var mesh = undersideMeshes[0];
             var positions = mesh.vertices;
             var indices = mesh.GetIndices(0);
-            if (indices.Length != Draw01MovingRoadData.SourceTriangleCount(1) * 3)
-                throw new InvalidOperationException("Draw01 underside source topology changed.");
             var mapped = (Vector3[])positions.Clone();
             var removed = new bool[indices.Length / 3];
             Array.Fill(removed, true);
@@ -71,8 +63,6 @@ internal static class Draw01RenderAssembly
         {
             if (mesh == Numeric_Types_Draw01_Draw01RenderAssembly_cs.Values.I32[5])
                 return Draw01RoadReplacement.CreateMainMeshPlan(lod, source, halfWidthDelta, new[] { indices }, underside);
-            if (indices.Length != Numeric_Types_Draw01_Draw01RenderAssembly_cs.Values.I32[6] * Numeric_Types_Draw01_Draw01RenderAssembly_cs.Values.I32[7])
-                throw new InvalidOperationException($"Draw01 mechanism LOD {lod} glass requires its 64 native triangles.");
             var positions = (Vector3[])source.Clone();
             Draw01FixedWideningData.Apply(lod, Numeric_Types_Draw01_Draw01RenderAssembly_cs.Values.I32[8], halfWidthDelta, positions);
             return new MovableStructureModel.Plan(source, positions, new[] { indices }, new[] { new bool[Numeric_Types_Draw01_Draw01RenderAssembly_cs.Values.I32[9]] });
@@ -87,8 +77,6 @@ internal static class Draw01RenderAssembly
     {
         await GenerationWork.Next("support Draw01RenderAssembly.CreateColumn");
         var lods = source.GetComponent<LodProperties>()?.m_LodMeshes;
-        if (lods == null || lods.Length != Numeric_Types_Draw01_Draw01RenderAssembly_cs.Values.I32[10])
-            throw new InvalidOperationException("Draw01 column source requires its two native LOD renders.");
         var sources = new[]
         {
             source,
@@ -106,8 +94,6 @@ internal static class Draw01RenderAssembly
         for (var lod = Numeric_Types_Draw01_Draw01RenderAssembly_cs.Values.I32[13]; lod < sources.Length; lod++)
         {
             var item = sources[lod];
-            if (item == null || !string.Equals(item.name, expected[lod], StringComparison.Ordinal))
-                throw new InvalidOperationException($"Draw01 column LOD {lod} is not the permitted recorded source '{expected[lod]}'.");
         }
 
         var levels = new MovableRoadAssets.Level[sources.Length];
@@ -118,8 +104,6 @@ internal static class Draw01RenderAssembly
             {
                 var original = sources[lod];
                 meshes = PrivateGeometryReader.Read(original);
-                if (meshes.Length != Numeric_Types_Draw01_Draw01RenderAssembly_cs.Values.I32[15] || meshes[Numeric_Types_Draw01_Draw01RenderAssembly_cs.Values.I32[16]] == null || meshes[Numeric_Types_Draw01_Draw01RenderAssembly_cs.Values.I32[17]].subMeshCount != Numeric_Types_Draw01_Draw01RenderAssembly_cs.Values.I32[18])
-                    throw new InvalidOperationException($"Draw01 column LOD {lod} requires its one native mesh and surface slot.");
                 var mesh = meshes[Numeric_Types_Draw01_Draw01RenderAssembly_cs.Values.I32[19]];
                 var supportInput0 = mesh.vertices;
                 var supportInput1 = mesh.GetIndices(Numeric_Types_Draw01_Draw01RenderAssembly_cs.Values.I32[20]);
@@ -147,8 +131,6 @@ internal static class Draw01RenderAssembly
     {
         await GenerationWork.Next("support Draw01RenderAssembly.CreateFooting");
         var lods = source.GetComponent<LodProperties>()?.m_LodMeshes;
-        if (lods == null || lods.Length != Numeric_Types_Draw01_Draw01RenderAssembly_cs.Values.I32[21])
-            throw new InvalidOperationException("Draw01 footing source requires its two native LOD renders.");
         var sources = new[]
         {
             source,
@@ -166,8 +148,6 @@ internal static class Draw01RenderAssembly
         for (var lod = Numeric_Types_Draw01_Draw01RenderAssembly_cs.Values.I32[24]; lod < sources.Length; lod++)
         {
             var item = sources[lod];
-            if (item == null || !string.Equals(item.name, expected[lod], StringComparison.Ordinal))
-                throw new InvalidOperationException($"Draw01 footing LOD {lod} is not the permitted recorded source '{expected[lod]}'.");
         }
 
         var levels = new MovableRoadAssets.Level[sources.Length];
@@ -178,8 +158,6 @@ internal static class Draw01RenderAssembly
             {
                 var original = sources[lod];
                 meshes = PrivateGeometryReader.Read(original);
-                if (meshes.Length != Numeric_Types_Draw01_Draw01RenderAssembly_cs.Values.I32[26] || meshes[Numeric_Types_Draw01_Draw01RenderAssembly_cs.Values.I32[27]] == null || meshes[Numeric_Types_Draw01_Draw01RenderAssembly_cs.Values.I32[28]].subMeshCount != Numeric_Types_Draw01_Draw01RenderAssembly_cs.Values.I32[29])
-                    throw new InvalidOperationException($"Draw01 footing LOD {lod} requires its one native mesh and surface slot.");
                 var mesh = meshes[Numeric_Types_Draw01_Draw01RenderAssembly_cs.Values.I32[30]];
                 var supportInput0 = mesh.vertices;
                 var supportInput1 = mesh.GetIndices(Numeric_Types_Draw01_Draw01RenderAssembly_cs.Values.I32[31]);

@@ -9,8 +9,6 @@ internal static class Lift03DetailedStructure
     // completed before this is used by the final render assembler.
     internal static MovableStructureModel.Plan Create(int lod, Vector3[] source, int[] indices, float structureDelta, float upperDelta, float lowerDelta)
     {
-        if (lod != Numeric_Types_Lift03_Lift03DetailedStructure_cs.Values.I32[0] && lod != Numeric_Types_Lift03_Lift03DetailedStructure_cs.Values.I32[1])
-            throw new ArgumentOutOfRangeException(nameof(lod));
         var positions = (Vector3[])source.Clone();
         Lift03RigidParts.Apply(lod, source, positions, structureDelta);
         Lift03DeckBases.Apply(lod, source, positions, upperDelta, lowerDelta);
@@ -57,10 +55,6 @@ internal static class Lift03DetailedStructure
             edgeOffset += part.AddedVertices.Length;
             interiorOffset += part.InteriorVertices.Length;
         }
-
-        foreach (var fragment in fragments)
-            if (removed[fragment.Triangle])
-                throw new InvalidOperationException("Lift03 structural fragments overlap an excluded source face.");
         return new MovableStructureModel.Plan(source, positions, new[] { indices }, new[] { removed }, addedVertices: edges, fragments: fragments.ToArray(), interiorVertices: interiors, constructedX: constructedX);
     }
 }

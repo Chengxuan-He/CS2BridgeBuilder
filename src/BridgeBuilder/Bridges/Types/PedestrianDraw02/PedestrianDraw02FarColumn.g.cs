@@ -9,8 +9,6 @@ internal static class PedestrianDraw02FarColumn
 {
     internal static MovableStructureModel.Plan CreatePlan(Vector3[] source, int[] indices, float delta)
     {
-        if (!float.IsFinite(delta) || source.Length != Numeric_Types_PedestrianDraw02_PedestrianDraw02FarColumn_g_cs.Values.I32[0] || indices.Length != Numeric_Types_PedestrianDraw02_PedestrianDraw02FarColumn_g_cs.Values.I32[1])
-            throw new InvalidOperationException("PedestrianDraw02 far column requires its recorded shell layout.");
         var positions = (Vector3[])source.Clone();
         AffineGeometry.Execute(RangePrograms.Data, 0, new[] { positions }, new[] { Weights }, new float[] { delta }, Numeric_Types_PedestrianDraw02_PedestrianDraw02FarColumn_g_cs.Values.I32[2], checked((positions.Length) - (Numeric_Types_PedestrianDraw02_PedestrianDraw02FarColumn_g_cs.Values.I32[2])));
         var x = new float[Edges.Length];

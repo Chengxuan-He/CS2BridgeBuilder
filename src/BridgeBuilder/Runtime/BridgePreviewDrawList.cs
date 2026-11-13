@@ -1,6 +1,7 @@
 using BridgeBuilder.Bridges;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using Game.Prefabs;
 using Game.Rendering;
 using Unity.Mathematics;
@@ -17,7 +18,7 @@ internal sealed class BridgePreviewDrawList : IDisposable
 {
     internal readonly struct Draw
     {
-        internal Draw(Mesh mesh, Material material, int subMesh, Matrix4x4 transform, MaterialPropertyBlock properties, Bounds? localBounds = null)
+        internal Draw(Mesh mesh, Material material, int subMesh, Matrix4x4 transform, MaterialPropertyBlock properties, Bounds? localBounds = null, string? source = null)
         {
             Mesh = mesh;
             Material = material;
@@ -25,7 +26,9 @@ internal sealed class BridgePreviewDrawList : IDisposable
             Transform = transform;
             Properties = properties;
             LocalBounds = localBounds ?? mesh.bounds;
+            Source = source ?? mesh.name;
         }
+        internal string Source { get; }
         internal Bounds LocalBounds { get; }
         internal Mesh Mesh { get; }
         internal Material Material { get; }
@@ -54,34 +57,46 @@ internal sealed class BridgePreviewDrawList : IDisposable
 
     internal void RefreshMaterialBindings() => _resources.RefreshMaterialBindings();
 
-    internal async System.Threading.Tasks.Task<bool> AddLanesAsync(BridgePreviewComposition.Piece[] pieces, NetCompositionData data,
-        Matrix4x4 deckTransform, float start, float length)
+    internal async System.Threading.Tasks.Task<bool> AddLanesAsync(BridgePreviewLanes.Lane[] lanes,
+        bool leftHandTraffic, Matrix4x4 deckTransform, float elevation)
     {
-        using var composition = new BridgePreviewLanes();
-        if (!composition.Build(pieces, data, length, out var lanes))
-        {
-            return false;
-        }
-        var matrix = deckTransform * Matrix4x4.Translate(new Vector3(0f, 0f, start));
+        var matrix = deckTransform * Matrix4x4.Translate(new Vector3(0f, -elevation, 0f));
         foreach (var lane in lanes)
         {
             await GenerationWork.Checkpoint("preview native lane draw");
-            if (!_lanes.Build(lane, composition.LeftHandTraffic, matrix, _resources, _draws)) return false;
+            if (!_lanes.Build(lane, leftHandTraffic, matrix, _resources, _draws)) return false;
         }
         return true;
     }
 
-    internal bool AddNetSpan(BridgePreviewComposition.Piece[] pieces, NetCompositionData data,
-        Matrix4x4 deckTransform, float start, float length)
+    internal bool AddNativeComposition(BridgePreviewComposition.Piece[] pieces, NetCompositionData data,
+        BatchDataHelpers.CompositionParameters parameters, Colossal.Mathematics.Bounds3 worldBounds,
+        Matrix4x4 deckTransform, float elevation)
     {
-        if (!_network.Build(pieces, data, _resources, length, out var mesh, out var materials, out var properties))
-            return false;
-        var matrix = deckTransform * Matrix4x4.Translate(new Vector3(0f, 0f, start + length * .5f));
-        for (var sub = 0; sub < mesh.subMeshCount; sub++)
-            if (mesh.GetIndexCount(sub) != 0)
-                _draws.Add(new Draw(mesh, materials[sub], sub, matrix, properties));
-        Encapsulate(mesh.bounds, matrix);
-        return true;
+        if (!Array.Exists(pieces, p => BridgePreviewNetMesh.Visible(p.Composition))) return true;
+        if (!_network.Build(pieces, data, _resources, Math.Max(data.m_Width, 1f), out var mesh, out var materials, out var properties)) return false;
+        var matrices = new[] { parameters.m_CompositionMatrix0, parameters.m_CompositionMatrix1,
+            parameters.m_CompositionMatrix2, parameters.m_CompositionMatrix3, parameters.m_CompositionMatrix4,
+            parameters.m_CompositionMatrix5, parameters.m_CompositionMatrix6, parameters.m_CompositionMatrix7 };
+        for (int i = 0; i < matrices.Length; i++) properties.SetMatrix("colossal_CompositionMatrix" + i, matrices[i]);
+        var sync = new[] { parameters.m_CompositionSync0, parameters.m_CompositionSync1, parameters.m_CompositionSync2, parameters.m_CompositionSync3 };
+        for (int i = 0; i < sync.Length; i++) properties.SetVector("colossal_CompositionSync" + i, sync[i]);
+        var t = parameters.m_TransformMatrix;
+        var nativeTransform = new Matrix4x4(new Vector4(t.c0.x,t.c0.y,t.c0.z,0), new Vector4(t.c1.x,t.c1.y,t.c1.z,0),
+            new Vector4(t.c2.x,t.c2.y,t.c2.z,0), new Vector4(t.c3.x,t.c3.y,t.c3.z,1));
+        var inverse = nativeTransform.inverse;
+        var bounds = new Bounds(inverse.MultiplyPoint3x4(worldBounds.min), Vector3.zero);
+        for (int corner = 0; corner < 8; corner++)
+            bounds.Encapsulate(inverse.MultiplyPoint3x4(new Vector3((corner & 1)==0?worldBounds.min.x:worldBounds.max.x,
+                (corner & 2)==0?worldBounds.min.y:worldBounds.max.y, (corner & 4)==0?worldBounds.min.z:worldBounds.max.z)));
+        mesh.bounds = bounds;
+        for(int sub=0;sub<mesh.subMeshCount;sub++){var descriptor=mesh.GetSubMesh(sub);descriptor.bounds=bounds;mesh.SetSubMesh(sub,descriptor,UnityEngine.Rendering.MeshUpdateFlags.DontRecalculateBounds);}
+        var matrix = deckTransform * Matrix4x4.Translate(new Vector3(0,-elevation,0)) * nativeTransform;
+        var source = "native-composition flags=" + data.m_Flags + " pieces="
+            + string.Join(" | ", pieces.Select(p => p.Prefab.name + ":" + p.Composition.m_PieceFlags));
+        for (int sub = 0; sub < mesh.subMeshCount; sub++)
+            if (mesh.GetIndexCount(sub) != 0) _draws.Add(new Draw(mesh, materials[sub], sub, matrix, properties, source: source));
+        Encapsulate(bounds, matrix); return true;
     }
 
     internal async System.Threading.Tasks.Task<bool> AddRenderPrefabAsync(RenderPrefab prefab, Matrix4x4 transform, BridgePreviewOpenPose? pose = null)
@@ -93,8 +108,6 @@ internal sealed class BridgePreviewDrawList : IDisposable
             return false;
         }
         var meshes = _resources.Meshes(prefab);
-        if (meshes.Length == 0)
-            throw new InvalidOperationException($"Preview render has no loaded geometry: {prefab.name}.");
         var materials = _resources.Materials(prefab);
         var properties = _resources.Properties(prefab);
         pose?.Bind(properties);
@@ -114,10 +127,6 @@ internal sealed class BridgePreviewDrawList : IDisposable
             }
             for (var subMesh = 0; subMesh < mesh.subMeshCount; subMesh++)
             {
-                if (materialIndex >= materials.Length || materials[materialIndex] == null)
-                {
-                    throw new InvalidOperationException($"Preview material slot {materialIndex} is missing for {prefab.name}; available={materials.Length}.");
-                }
                 _draws.Add(new Draw(mesh, materials[materialIndex++], subMesh, transform, properties, localBounds));
                 added = true;
             }
@@ -141,8 +150,6 @@ internal sealed class BridgePreviewDrawList : IDisposable
             // batching, not a complete tower to draw at its authored origin.
             var layoutFound = TryObjectLayout(prefab, out var layout);
             var movable = prefab.GetComponent<MoveableBridge>();
-            if (!layoutFound && (prefab.m_Meshes?.Length ?? 0) != 0)
-                throw new InvalidOperationException($"Preview object layout is invalid: {prefab.name}.");
             var tileCounts = new int3(1);
             var offsets = float3.zero;
             var scales = new float3(1f);

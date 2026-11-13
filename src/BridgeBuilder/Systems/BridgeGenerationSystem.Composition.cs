@@ -130,12 +130,6 @@ public partial class BridgeGenerationSystem
             // pylon hangs its second net above and its subway, train and tram variants hang theirs
             // below, so the question is about the variant and never about the style.
             var chosenWidth = BridgeGeneratorBase.WidthOf(upper.Prefab, upper.Width);
-            if (!float.IsFinite(chosenWidth))
-            {
-                report.Failed(exportName, new InvalidOperationException(
-                    "The selected road's initialized width is unavailable. Generation was stopped before cloning."));
-                return false;
-            }
             var stated = options.DoubleDeck
                 ? style.Select(chosenWidth, upper.IsRoad, doubleDeck: true).Variant?.LowerDeck
                 : null;
@@ -164,9 +158,6 @@ public partial class BridgeGenerationSystem
 
             if (composer.BuildsAuxiliaryDeck)
             {
-                if (!options.DoubleDeck || auxiliary == null)
-                    throw new InvalidOperationException(
-                        $"'{style.Id}' requires both selected networks for coordinated generation.");
                 var auxiliaryClone = CloneDeck(cloner, auxiliary,
                     BridgeNaming.CarriedDeckName(exportName, secondNetAbove), report);
                 if (auxiliaryClone == null) return false;
@@ -205,13 +196,6 @@ public partial class BridgeGenerationSystem
             // Never edit their unlock components as if the bridge owned them.
             var ownedNets = new HashSet<PrefabBase>(cloner.Nodes.Where(node => node.NeedsSave)
                 .Select(node => node.Target));
-            if ((clone.GetComponent<AuxiliaryNets>()?.m_AuxiliaryNets ?? Array.Empty<AuxiliaryNetInfo>())
-                .Any(entry => entry?.m_Prefab == null || !ownedNets.Contains(entry.m_Prefab)))
-            {
-                report.Failed(exportName, new InvalidOperationException(
-                    "The selected network contains an auxiliary prefab not owned by this bridge."));
-                return false;
-            }
             var nativeAssets = new List<PrefabBase>();
             if (preview == null && !composer.ApplyUnlocks(clone, variant, nativeAssets)) return false;
             // Preserve native piece/object fees from the selected networks and bridge prototype.
@@ -254,14 +238,6 @@ public partial class BridgeGenerationSystem
                 BridgeAssetCatalog.Attach(clone, new BridgeAssetInfo(clone.name,
                     BridgeNaming.BaseName(upper, chosen, style), upper.Id, options.DoubleDeck ? chosen?.Id : null,
                     style.Id, DateTime.UtcNow.ToString("O", CultureInfo.InvariantCulture)));
-            var unowned = nodes.Where(node => node.NeedsSave && !BridgeAssetInfo.MatchesOwner(node.Target.name, clone.name))
-                .Select(node => $"{node.Target.name} ({node.Target.GetType().Name})").ToArray();
-            if (unowned.Length != 0)
-            {
-                report.Failed(exportName, new InvalidOperationException(
-                    $"Bridge persistence refused assets missing owner '{clone.name}': {string.Join(", ", unowned)}"));
-                return false;
-            }
             foreach (var node in nodes.Where(n => n.NeedsSave))
             {
                 node.Target.Remove<BridgeConstructionCost>();
@@ -319,7 +295,6 @@ public partial class BridgeGenerationSystem
         if (deck.Prefab is RoadPrefab roadSource)
         {
             var road = cloner.CloneRoad(roadSource, exportName, string.Empty);
-            if (!IsPrivateDeck(roadSource, road, report)) return null;
             if (deck.Road != null) SpeedLimitFix.Apply(road, deck.Road, report);
             BridgeRoadGeneration.RegisterClone(roadSource, road);
             return road;
@@ -328,7 +303,6 @@ public partial class BridgeGenerationSystem
         if (deck.Prefab is NetPrefab netSource)
         {
             var clone = (NetGeometryPrefab)cloner.CloneNet(netSource, exportName);
-            if (!IsPrivateDeck(netSource, clone, report)) return null;
             BridgeRoadGeneration.RegisterClone(deck.Prefab, clone);
             return clone;
         }
@@ -364,8 +338,9 @@ public partial class BridgeGenerationSystem
             return;
         }
 
-        var prototypeUi = variant.Donor.components.OfType<UIObject>().FirstOrDefault();
-        targetUi.m_Icon = prototypeUi?.m_Icon ?? string.Empty;
+        targetUi.m_Icon = variant.RecordedIcon
+            ?? variant.Donor.components.OfType<UIObject>().FirstOrDefault()?.m_Icon
+            ?? string.Empty;
         if (string.IsNullOrWhiteSpace(targetUi.m_Icon))
             report.Warning($"Bridge prototype '{variant.Name}' does not expose a UI icon.");
     }

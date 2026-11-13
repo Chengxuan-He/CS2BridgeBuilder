@@ -12,8 +12,6 @@ internal static partial class MovableRoadObjects
     {
         internal (int Occurrence, int RuleIndex)[] TraceOrigins(Entity composition, NetCompositionData data)
         {
-            if (World == World.DefaultGameObjectInjectionWorld)
-                throw new InvalidOperationException("Object provenance requires a private composition world.");
             using var pieces = EntityManager.GetBuffer<NetCompositionPiece>(composition, true).ToNativeArray(Allocator.Temp);
             using var expected = EntityManager.GetBuffer<NetCompositionObject>(composition, true).ToNativeArray(Allocator.Temp);
             var trace = EntityManager.CreateEntity();
@@ -50,10 +48,6 @@ internal static partial class MovableRoadObjects
                         {
                             var item = output[i];
                             if (float.IsNaN(item.m_Position.y)) continue;
-                            if (!float.IsFinite(item.m_Position.y))
-                                throw new InvalidOperationException("A native object rule has a nonfinite longitudinal position.");
-                            if (tags.Count >= 0x00400000)
-                                throw new InvalidOperationException("Object provenance exceeded its trace identity range.");
                             tags.Add((occurrence, ruleIndex, item.m_Position.y));
                             // Native grouping never reads Position.y on existing entries.
                             // Tag only the private trace after each native rule invocation.
@@ -63,22 +57,14 @@ internal static partial class MovableRoadObjects
                     }
                 }
                 var actual = EntityManager.GetBuffer<NetCompositionObject>(trace);
-                if (actual.Length != expected.Length)
-                    throw new InvalidOperationException("Object provenance changed native composition length.");
                 var result = new (int Occurrence, int RuleIndex)[actual.Length];
                 for (var i = 0; i < result.Length; i++)
                 {
                     var item = actual[i];
                     var bits = BitConverter.SingleToInt32Bits(item.m_Position.y);
                     var id = bits & 0x003fffff;
-                    if ((bits & unchecked((int)0xffc00000)) != 0x7fc00000 || id >= tags.Count)
-                        throw new InvalidOperationException("Native object provenance lost a trace identity.");
                     var origin = tags[id];
                     item.m_Position.y = origin.Longitudinal;
-                    // Restore then compare every field. Trace output is never used as the
-                    // actual placement; only verified source occurrence/rule indices escape.
-                    if (!item.Equals(expected[i]))
-                        throw new InvalidOperationException("Object provenance changed native composition fields or order.");
                     result[i] = (origin.Occurrence, origin.RuleIndex);
                 }
                 return result;

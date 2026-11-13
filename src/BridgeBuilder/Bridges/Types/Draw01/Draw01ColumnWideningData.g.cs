@@ -12,17 +12,13 @@ internal static class Draw01ColumnWideningData
         {
             0 => (Vertices: Numeric_Types_Draw01_Draw01ColumnWideningData_g_cs.Values.I32[0], Triangles: Numeric_Types_Draw01_Draw01ColumnWideningData_g_cs.Values.I32[1]),
             1 => (Vertices: Numeric_Types_Draw01_Draw01ColumnWideningData_g_cs.Values.I32[2], Triangles: Numeric_Types_Draw01_Draw01ColumnWideningData_g_cs.Values.I32[3]),
-            2 => (Vertices: Numeric_Types_Draw01_Draw01ColumnWideningData_g_cs.Values.I32[4], Triangles: Numeric_Types_Draw01_Draw01ColumnWideningData_g_cs.Values.I32[5]),
-            _ => throw new ArgumentOutOfRangeException(nameof(lod))};
-        if (sourcePositions.Length != counts.Vertices || sourceIndices.Length != Numeric_Types_Draw01_Draw01ColumnWideningData_g_cs.Values.I32[6] || sourceIndices[Numeric_Types_Draw01_Draw01ColumnWideningData_g_cs.Values.I32[7]].Length != counts.Triangles * Numeric_Types_Draw01_Draw01ColumnWideningData_g_cs.Values.I32[8])
-            throw new ArgumentException("Draw01 column requires the recorded native mesh layout.");
+            2 => (Vertices: Numeric_Types_Draw01_Draw01ColumnWideningData_g_cs.Values.I32[4], Triangles: Numeric_Types_Draw01_Draw01ColumnWideningData_g_cs.Values.I32[5])};
         var positions = (Vector3[])sourcePositions.Clone();
         var groups = lod switch
         {
             0 => Near,
             1 => Middle,
-            2 => Far,
-            _ => throw new ArgumentOutOfRangeException(nameof(lod))};
+            2 => Far};
         foreach (var group in groups)
         {
             if (group.Weight == Numeric_Types_Draw01_Draw01ColumnWideningData_g_cs.Values.F32[0])

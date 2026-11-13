@@ -9,16 +9,11 @@ internal static class Draw02MovingShell
 {
     internal static MovableStructureModel.Plan Create(int lod, Vector3[] source, Vector3[] positions, int[] indices, float delta)
     {
-        if (!float.IsFinite(delta))
-            throw new InvalidOperationException("Draw02 selected width is non-finite.");
         var data = lod switch
         {
             0 => (Vertices: Numeric_Types_Draw02_Draw02MovingShell_g_cs.Values.I32[0], Faces: Numeric_Types_Draw02_Draw02MovingShell_g_cs.Values.I32[1], Removed: Removed0, Edges: Edges0, Interior: Interior0, Fragments: Fragments0, Weights: BoundaryWeights0, Left: Left0, Right: Right0),
             1 => (Vertices: Numeric_Types_Draw02_Draw02MovingShell_g_cs.Values.I32[2], Faces: Numeric_Types_Draw02_Draw02MovingShell_g_cs.Values.I32[3], Removed: Removed1, Edges: Edges1, Interior: Interior1, Fragments: Fragments1, Weights: BoundaryWeights1, Left: Left1, Right: Right1),
-            2 => (Vertices: Numeric_Types_Draw02_Draw02MovingShell_g_cs.Values.I32[4], Faces: Numeric_Types_Draw02_Draw02MovingShell_g_cs.Values.I32[5], Removed: Removed2, Edges: Edges2, Interior: Interior2, Fragments: Fragments2, Weights: BoundaryWeights2, Left: Left2, Right: Right2),
-            _ => throw new ArgumentOutOfRangeException(nameof(lod))};
-        if (source.Length != data.Vertices || positions.Length != data.Vertices || indices.Length != data.Faces * Numeric_Types_Draw02_Draw02MovingShell_g_cs.Values.I32[6])
-            throw new InvalidOperationException("Draw02 shell replacement requires its recorded main mesh.");
+            2 => (Vertices: Numeric_Types_Draw02_Draw02MovingShell_g_cs.Values.I32[4], Faces: Numeric_Types_Draw02_Draw02MovingShell_g_cs.Values.I32[5], Removed: Removed2, Edges: Edges2, Interior: Interior2, Fragments: Fragments2, Weights: BoundaryWeights2, Left: Left2, Right: Right2)};
         positions = (Vector3[])positions.Clone();
         Draw02RigidParts.Apply(lod, source, positions, delta);
         Draw02FixedBodies.Apply(lod, source, positions, delta);

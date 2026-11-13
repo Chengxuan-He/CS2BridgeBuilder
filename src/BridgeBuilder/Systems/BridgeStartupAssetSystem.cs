@@ -116,8 +116,6 @@ public partial class BridgeStartupAssetSystem : GameSystemBase
                 return;
             }
             BridgeDeferredRemoval.Resume();
-            var loadedIndex = new BridgeLoadedCidRecovery.LoadedIndex();
-            var recoveries = new Dictionary<string, HashSet<string>>(StringComparer.Ordinal);
             var failures = new Dictionary<string, string>(StringComparer.Ordinal);
             var system = World.GetOrCreateSystemManaged<PrefabSystem>();
             var assets = BridgeInspectionAssets.Read(owner => !_copiedOwners.Contains(owner) && !BridgeStartupRecovery.Retired.Contains(owner) && !BridgeDeferredRemoval.Excluded(owner)).ToArray();
@@ -193,19 +191,8 @@ public partial class BridgeStartupAssetSystem : GameSystemBase
                 }
                 // Availability can change after discovery; preserve rather than retire the owner.
                 if (!system.IsAvailable(prefab)) { unfinished.Add(asset.Owner); continue; }
-                if (BridgeNetworkValidation.IsInvalid(prefab, out reason))
-                {
-                    var result = BridgeLoadedCidRecovery.Inspect(prefab, out var cids, out var detail, loadedIndex);
-                    if (result == BridgeLoadedCidRecovery.Result.Recoverable && cids.Count != 0)
-                    {
-                        if (!recoveries.TryGetValue(asset.Owner, out var needed)) recoveries[asset.Owner] = needed = new(StringComparer.OrdinalIgnoreCase);
-                        needed.UnionWith(cids);
-                        continue;
-                    }
-                    reason += "; " + detail;
-                }
-                else if (system.TryGetEntity(prefab, out _)) continue;
-                else reason = "Loaded available prefab failed registration without recoverable null CID";
+                if (system.TryGetEntity(prefab, out _)) continue;
+                reason = "Loaded available prefab failed registration";
                 Mod.Log.Warn($"Bridge self-check invalid UUID={asset.Owner}, prefab={prefab.name}: {reason}");
                 failures[asset.Owner] = reason;
             }
@@ -213,24 +200,6 @@ public partial class BridgeStartupAssetSystem : GameSystemBase
             stageStart = timer.ElapsedMilliseconds;
             var backup = Path.Combine(BridgeRecoveryLocation.Path,
                 DateTime.UtcNow.ToString("yyyyMMdd-HHmmss-fffffff", System.Globalization.CultureInfo.InvariantCulture));
-            foreach (var recovery in recoveries.Where(p => !failures.ContainsKey(p.Key)))
-            {
-                var seeds = byOwner[recovery.Key].Select(a => a.Cid).Concat(recovery.Value);
-                if (!BridgeDependencyPersistence.Save(recovery.Key, seeds, dependencies[recovery.Key], out var count, out var copyError, out _))
-                {
-                    if (dependencies[recovery.Key].Unconfirmed)
-                    {
-                        unfinished.Add(recovery.Key);
-                        Mod.Log.Warn($"Bridge dependency recovery remains unfinished UUID={recovery.Key}: {copyError}");
-                        continue;
-                    }
-                    failures[recovery.Key] = "Dependency recovery copy failed: " + copyError; Mod.Log.Warn($"Bridge dependency recovery failed UUID={recovery.Key}; scheduling removal: {copyError}"); continue; }
-                _copiedOwners.Add(recovery.Key);
-                migrationCandidates.Add(recovery.Key);
-                Mod.Log.Info($"Bridge CID recovery copied UUID={recovery.Key}, dependencies={count}, recoveredCIDs={string.Join(",", recovery.Value)}; restart required; live references unchanged.");
-            }
-            var persistenceMs = timer.ElapsedMilliseconds - stageStart;
-            stageStart = timer.ElapsedMilliseconds;
             foreach (var pair in dependencies) scope.Paths(pair.Key).UnionWith(pair.Value.Files);
             // Recovered disk references are still null in memory until restart; never serialize them back.
             foreach (var owner in owners.Where(o => !unfinished.Contains(o) && !failures.ContainsKey(o) && !_copiedOwners.Contains(o)))
@@ -342,8 +311,8 @@ public partial class BridgeStartupAssetSystem : GameSystemBase
             completed = true;
             var retirementMs = timer.ElapsedMilliseconds - stageStart;
             var elapsedMs = timer.ElapsedMilliseconds;
-            var otherMs = elapsedMs - discoveryMs - dependencyMs - validationMs - persistenceMs - portableMs - namesMs - layoutMs - retirementMs;
-            Mod.Log.Info($"Bridge self-check result: elapsedMs={elapsedMs}, validationMs={validationMs}, persistenceMs={persistenceMs}, retirementMs={retirementMs}, discoveryMs={discoveryMs}, dependencyMs={dependencyMs}, portableMs={portableMs}, namesMs={namesMs}, layoutMs={layoutMs}, otherMs={otherMs}, owners={owners.Count}, cacheTraversals={scope.CacheTraversals}, cacheHeaders={scope.CacheHeaders}, removed={removed}, migrated={report.Count(BridgeSelfCheckReport.Outcome.Migrated)}, copiedAwaitingRestart={_copiedOwners.Count}, removalErrors={removalErrors}, migrationErrors={migrationErrors}; cached assets include registration failures; live-reference mutation disabled.");
+            var otherMs = elapsedMs - discoveryMs - dependencyMs - validationMs - portableMs - namesMs - layoutMs - retirementMs;
+            Mod.Log.Info($"Bridge self-check result: elapsedMs={elapsedMs}, validationMs={validationMs}, retirementMs={retirementMs}, discoveryMs={discoveryMs}, dependencyMs={dependencyMs}, portableMs={portableMs}, namesMs={namesMs}, layoutMs={layoutMs}, otherMs={otherMs}, owners={owners.Count}, cacheTraversals={scope.CacheTraversals}, cacheHeaders={scope.CacheHeaders}, removed={removed}, migrated={report.Count(BridgeSelfCheckReport.Outcome.Migrated)}, copiedAwaitingRestart={_copiedOwners.Count}, removalErrors={removalErrors}, migrationErrors={migrationErrors}; cached assets include registration failures; live-reference mutation disabled.");
         }
         finally
         {

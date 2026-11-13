@@ -139,8 +139,7 @@ public partial class BridgeOwnerCleanupSystem : GameSystemBase
                 retirement.Unregistered = true;
                 return;
             }
-            if(PrefabCatalog.GetAll(prefabs).Any(p=>OwnsPrefab(owner,p)))
-                throw new IOException("Target remains in the native prefab catalogue.");
+
             var result = BridgeDeferredRemoval.Result(owner);
             _retirements.Remove(owner);
             BridgeDeferredRemoval.Complete(owner,true);

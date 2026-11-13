@@ -10,10 +10,7 @@ internal static class Draw03EndStrips
         var data = lod switch
         {
             0 => (Count: Numeric_Types_Draw03_Draw03EndStrips_g_cs.Values.I32[0], Parts: Near),
-            1 => (Count: Numeric_Types_Draw03_Draw03EndStrips_g_cs.Values.I32[1], Parts: Middle),
-            _ => throw new ArgumentOutOfRangeException(nameof(lod))};
-        if (source.Length != data.Count || positions.Length != data.Count || !float.IsFinite(delta))
-            throw new InvalidOperationException("Draw03 end strips require their recorded main mesh.");
+            1 => (Count: Numeric_Types_Draw03_Draw03EndStrips_g_cs.Values.I32[1], Parts: Middle)};
         foreach (var part in data.Parts)
         {
             var span = part.Max - part.Min;

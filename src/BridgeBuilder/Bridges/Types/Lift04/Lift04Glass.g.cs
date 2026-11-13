@@ -14,8 +14,6 @@ internal static class Lift04Glass
     private static float[] MiddleWeights => GenerationParameters.Get<float[]>("BridgeBuilder.Bridges.Lift04Glass.MiddleWeights", () => Array.ConvertAll(MiddleSides, side => (float)side));
     internal static MovableStructureModel.Plan Create(int lod, Vector3[] source, int[] indices, float delta)
     {
-        if ((lod != Numeric_Types_Lift04_Lift04Glass_g_cs.Values.I32[32] && lod != Numeric_Types_Lift04_Lift04Glass_g_cs.Values.I32[33]) || source.Length != Numeric_Types_Lift04_Lift04Glass_g_cs.Values.I32[34] || indices.Length != Numeric_Types_Lift04_Lift04Glass_g_cs.Values.I32[35] || !float.IsFinite(delta))
-            throw new InvalidOperationException("Lift04 glass requires its recorded mesh-1 layout.");
         var positions = (Vector3[])source.Clone();
         var sides = lod == Numeric_Types_Lift04_Lift04Glass_g_cs.Values.I32[36] ? NearWeights : MiddleWeights;
         int first = Numeric_Types_Lift04_Lift04Glass_g_cs.Values.I32[37];

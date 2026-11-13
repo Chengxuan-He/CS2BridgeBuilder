@@ -20,10 +20,6 @@ internal sealed partial class MovableNetworkGeometry : SystemBase
     // All network entities and their referenced composition/prefab data belong to this World.
     internal void Calculate(TerrainHeightData terrain, bool loaded)
     {
-        if (World == World.DefaultGameObjectInjectionWorld)
-            throw new InvalidOperationException("Movable geometry requires a private network world.");
-        if (!terrain.isCreated)
-            throw new ArgumentException("Movable geometry requires initialized terrain height data.", nameof(terrain));
         EntityManager.CompleteAllTrackedJobs();
         using var fixedNodeOffsets = new MovableFixedNodeOffsets(EntityManager);
         using var edgesQuery = EntityManager.CreateEntityQuery(ComponentType.ReadWrite<EdgeGeometry>());

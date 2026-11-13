@@ -10,8 +10,6 @@ internal static class Draw02NetworkAssembly
     internal static void Apply(NetGeometryPrefab target, TowerFactory factory,
         StaticObjectPrefab pillar, StaticObjectPrefab mechanism)
     {
-        if (!factory.Created.Contains(pillar) || !factory.Created.Contains(mechanism))
-            throw new InvalidOperationException("Draw02 network assembly requires owned pillar and mechanism objects.");
         var sections = Draw02NetworkData.ConvertSections(target.name, target.m_Sections, out var created);
         // Native Draw02 Sidewalk 3.5 resolves Sidewalk Piece 3.5 - NoTram,
         // whose LevelCrossing producer uses this same bascule barrier placeholder.

@@ -38,8 +38,12 @@ an error shader is not successful rendered output. Native source shaders and
 shared game assets remain unchanged.
 
 The BBS1 package contains the complete container plus each generated HLSL vertex
-adapter and its declared program slots. Creation compiles those adapters with
-D3DCompile and installs equal-size program bytes into the recorded slots. Native
+adapter and the exact locations of its seed programs. Creation and startup compile
+those adapters with D3DCompile and rebuild the container using the complete output,
+which may be shorter or longer than the seed. The runtime updates each native program
+array, shader record table, literal-LZ4 segment, Shader field, serialized object/file,
+and UnityFS block/directory size and offset with native alignment. Declared seed
+locations remain integrity assertions, not reserved capacities. Native
 pixel programs are deliberately retained. A diagnostic fragment or clip-space
 probe is never a production shader.
 
@@ -48,6 +52,16 @@ Package version 1 describes vertex adapters with their fixed entry point. Versio
 program, allowing the decal's current-pose projection to be compiled for both
 stages. Only the supported D3D11 vertex/pixel profiles are admitted. This format
 extension does not certify the generated decal's rendering equivalence.
+
+Both existing package versions retain this rebuilding path; owner files need no migration.
+The supported authored container is UnityFS 8 with uncompressed streaming blocks,
+serialized-file 22 with type trees, and one literal-LZ4 shader segment. Unknown formats,
+out-of-range/overlapping declarations and mismatched seed bytes fail explicitly. Unchanged
+pass/reflection records and unrelated programs remain byte-identical. Compiler byte count
+is not a compatibility verdict. The source-linked `ShaderContainerCheck`, independent
+UnityPy parser and `VariableShaderLoadCheck.Editor.cs` cover shorter/longer compilation,
+multiple occurrences, deterministic rebuilding and actual Unity bundle/shader loading.
+These checks do not establish in-game drawing, motion or saved-city cold loading.
 
 ## Ownership and registration
 

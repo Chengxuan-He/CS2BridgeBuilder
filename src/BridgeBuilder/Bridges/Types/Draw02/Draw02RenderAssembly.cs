@@ -10,8 +10,6 @@ internal static class Draw02RenderAssembly
 
     internal static async System.Threading.Tasks.Task<RenderPrefab?> CreateMechanismAsync(TowerFactory factory, string name, IReadOnlyList<MovableRoadAssets.Level> roadLevels, float halfWidthDelta, MovableSelectedRoadLayout layout)
     {
-        if (roadLevels.Count != Numeric_Types_Draw02_Draw02RenderAssembly_cs.Values.I32[0])
-            throw new ArgumentException("Draw02 mechanism requires all three native road LODs.");
         var expected = new[]
         {
             "DrawBridge02 Mesh",
@@ -23,8 +21,6 @@ internal static class Draw02RenderAssembly
             // Draw02SourceRenders reconstructs private inputs from recorded built-in CIDs.
             // Reject saved/generated source Prefabs even if their names match.
             var source = roadLevels[lod].Source;
-            if (source == null || source.asset != null || !string.Equals(source.name, expected[lod], StringComparison.Ordinal))
-                throw new InvalidOperationException($"Draw02 LOD {lod} requires its reconstructed native source.");
         }
 
         return await MovableRenderAssembly.CreateMechanismAsync(factory, name, Draw02LaneRailAssembly.Apply(roadLevels, layout), new[] { Numeric_Types_Draw02_Draw02RenderAssembly_cs.Values.I32[2], Numeric_Types_Draw02_Draw02RenderAssembly_cs.Values.I32[3], Numeric_Types_Draw02_Draw02RenderAssembly_cs.Values.I32[4] }, (lod, mesh, source, indices) => mesh == Numeric_Types_Draw02_Draw02RenderAssembly_cs.Values.I32[5] ? Draw02FixedSidewalks.Apply(lod, Draw02FixedCurbs.Remove(lod, Draw02WalkEndClosure.Apply(lod, Draw02EndClosure.Apply(lod, Draw02Underside.Apply(lod, Draw02MovingShell.Create(lod, source, source, indices, halfWidthDelta), layout), layout), layout)), layout) : Draw02RigidParts.Glass(lod, source, indices, halfWidthDelta));

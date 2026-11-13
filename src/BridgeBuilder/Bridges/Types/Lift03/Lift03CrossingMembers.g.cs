@@ -10,10 +10,7 @@ internal static class Lift03CrossingMembers
         var data = lod switch
         {
             0 => (Count: Numeric_Types_Lift03_Lift03CrossingMembers_g_cs.Values.I32[0], Parts: Level0),
-            1 => (Count: Numeric_Types_Lift03_Lift03CrossingMembers_g_cs.Values.I32[1], Parts: Level1),
-            _ => throw new ArgumentOutOfRangeException(nameof(lod))};
-        if (source.Length != data.Count || positions.Length != data.Count || !float.IsFinite(upperDelta) || !float.IsFinite(lowerDelta))
-            throw new InvalidOperationException("Lift03 crossing-members require their recorded topology.");
+            1 => (Count: Numeric_Types_Lift03_Lift03CrossingMembers_g_cs.Values.I32[1], Parts: Level1)};
         foreach (var part in data.Parts)
             AffineGeometry.Execute(RangePrograms.Data, 0, new[] { source, positions }, Array.Empty<float[]>(), new float[] { part.HalfSpan, part.Domain == Numeric_Types_Lift03_Lift03CrossingMembers_g_cs.Values.I32[2] ? upperDelta : lowerDelta }, part.First, checked((checked((part.Last) + 1)) - (part.First)));
     }

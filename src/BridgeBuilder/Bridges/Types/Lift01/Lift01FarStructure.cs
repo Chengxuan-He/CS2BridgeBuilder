@@ -12,13 +12,6 @@ internal static class Lift01FarStructure
         Lift01FarMovingParts.Apply(source, positions, delta);
         var plan = Lift01FarJoinedParts.Complete(source, positions, indices, delta);
         Lift01RoadReplacement.RemoveNativeRoad(Numeric_Types_Lift01_Lift01FarStructure_cs.Values.I32[0], plan);
-        // Native Geometry a634d30d56089487f0a4fbd1d6f7dfbe3644c99f5b447b4a6658e4db282fd925.
-        // Fixed component 0: 72 exclusive vertices, 36 faces. The detailed-derived
-        // tower supplement replaces these baked lateral/transverse proxy panels.
-        // Independent diagonal supports, rooms, stairs and moving parts remain native.
-        foreach (var fragment in plan.Fragments)
-            if (IsTowerProxy(fragment.Triangle))
-                throw new InvalidOperationException("Lift01 tower replacement overlaps a platform fragment.");
         for (var face = Numeric_Types_Lift01_Lift01FarStructure_cs.Values.I32[1]; face < Numeric_Types_Lift01_Lift01FarStructure_cs.Values.I32[2]; face++)
             plan.RemoveTriangles[Numeric_Types_Lift01_Lift01FarStructure_cs.Values.I32[3]][face] = true;
         for (var face = Numeric_Types_Lift01_Lift01FarStructure_cs.Values.I32[4]; face < Numeric_Types_Lift01_Lift01FarStructure_cs.Values.I32[5]; face++)

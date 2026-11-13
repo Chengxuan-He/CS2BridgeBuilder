@@ -32,8 +32,6 @@ internal static class Lift03SectionRoles
         var result = new bool[sections.Length];
         for (var i = Numeric_Types_Lift03_Lift03SectionRoles_cs.Values.I32[2]; i < sections.Length; i++)
         {
-            if (sections[i] == null)
-                throw new InvalidOperationException("Lift03 selected network contains a missing section occurrence.");
             if (!context.AllowsLevel(sections[i].m_RequireAll, sections[i].m_RequireAny, sections[i].m_RequireNone))
                 continue;
             var layers = Read(sections[i].m_Section);
@@ -43,18 +41,12 @@ internal static class Lift03SectionRoles
         return result;
         (bool Any, bool OnlySide) Read(NetSectionPrefab section)
         {
-            if (section == null)
-                throw new InvalidOperationException("Lift03 selected network contains a missing section.");
             if (cache.TryGetValue(section, out var known))
                 return known;
-            if (!visiting.Add(section))
-                throw new InvalidOperationException("Lift03 selected network contains cyclic subsections.");
             var any = false;
             var onlySide = true;
             foreach (var piece in section.m_Pieces ?? Array.Empty<NetPieceInfo>())
             {
-                if (piece?.m_Piece == null)
-                    throw new InvalidOperationException("Lift03 selected section contains a missing piece.");
                 if (!context.AllowsLevel(piece.m_RequireAll, piece.m_RequireAny, piece.m_RequireNone))
                     continue;
                 any = true;
@@ -63,8 +55,6 @@ internal static class Lift03SectionRoles
 
             foreach (var child in section.m_SubSections ?? Array.Empty<NetSubSectionInfo>())
             {
-                if (child == null)
-                    throw new InvalidOperationException("Lift03 selected section contains a missing subsection.");
                 if (!context.AllowsLevel(child.m_RequireAll, child.m_RequireAny, child.m_RequireNone))
                     continue;
                 var layers = Read(child.m_Section);

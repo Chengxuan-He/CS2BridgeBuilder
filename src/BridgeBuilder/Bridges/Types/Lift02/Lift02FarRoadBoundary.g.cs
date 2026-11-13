@@ -7,14 +7,10 @@ internal static class Lift02FarRoadBoundary
 {
     internal static MovableStructureModel.Plan Apply(MovableStructureModel.Plan plan)
     {
-        if (plan.SourcePositions.Length != Numeric_Types_Lift02_Lift02FarRoadBoundary_g_cs.Values.I32[0] || plan.SourceIndices.Length != Numeric_Types_Lift02_Lift02FarRoadBoundary_g_cs.Values.I32[1] || plan.SourceIndices[Numeric_Types_Lift02_Lift02FarRoadBoundary_g_cs.Values.I32[2]].Length != Numeric_Types_Lift02_Lift02FarRoadBoundary_g_cs.Values.I32[3])
-            throw new InvalidOperationException("Lift02 far road boundary requires its recorded native layout.");
         var positions = (Vector3[])plan.Positions.Clone();
         foreach (var row in Vertices)
         {
             var source = plan.SourcePositions[row.Index];
-            if (source.y != row.SourceY || source.z != row.SourceZ)
-                throw new InvalidOperationException("Lift02 far road boundary source coordinates changed.");
             positions[row.Index].y = row.Y;
             positions[row.Index].z = row.Z;
         }

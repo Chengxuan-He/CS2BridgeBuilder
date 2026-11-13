@@ -14,11 +14,9 @@ internal static class PedestrianDraw02TrussMapping
 
     internal static MovableStructureModel.Plan Apply(int lod, MovableStructureModel.Plan plan, float delta)
     {
-        if ((uint)lod > 1 || !float.IsFinite(delta)) throw new ArgumentException("Invalid PedestrianDraw02 truss input.");
         int start = lod == 0 ? 0 : 3 + Data.I32[1] + Data.I32[2];
         int f = lod == 0 ? 0 : 1 + Data.I32[2];
         int count = Data.I32[start], assemblyCount = Data.I32[start + 1], ribCount = Data.I32[start + 2];
-        if (plan.SourcePositions.Length != count) throw new InvalidOperationException("PedestrianDraw02 truss source mismatch.");
         var positions = new Vector3[count];
         Array.Copy(plan.Positions, positions, count);
         float scale = (Data.F32[f] + delta) / Data.F32[f];

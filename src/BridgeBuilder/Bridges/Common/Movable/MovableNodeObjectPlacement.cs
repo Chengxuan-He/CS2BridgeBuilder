@@ -27,9 +27,6 @@ internal static class MovableNodeObjectPlacement
         EdgeGeometry edge, EdgeNodeGeometry geometry, NetCompositionData composition,
         NetGeometryData network, bool isEnd, ref Random random, ResolveCandidate resolve)
     {
-        if (!math.isfinite(network.m_EdgeLengthRange.max) || network.m_EdgeLengthRange.max <= 0f ||
-            !math.isfinite(composition.m_Width) || composition.m_Width <= 0f)
-            throw new ArgumentException("Node object placement requires initialized native network dimensions.");
         var lowered = ((composition.m_Flags.m_Left | composition.m_Flags.m_Right) & CompositionFlags.Side.Lowered) != 0;
         // Preserve the installed implementation's tangent choices, including its right
         // end-segment StartTangent; do not silently substitute a symmetric approximation.

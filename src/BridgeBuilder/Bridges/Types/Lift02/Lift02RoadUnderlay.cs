@@ -101,8 +101,6 @@ internal static class Lift02RoadUnderlay
     internal static MovableStructureModel.Plan Create(int lod, Vector3[] positions, int[] indices, Vector2[] uv, IReadOnlyList<MovableRoadGeometry.Triangle> road, float delta, string renderName, Colossal.IO.AssetDatabase.SurfaceAsset surface)
     {
         var recipe = Recipes[Math.Min(lod, Recipes.Length - Numeric_Types_Lift02_Lift02RoadUnderlay_cs.Values.I32[7])];
-        if (positions.Length != recipe.VertexCount || indices.Length != recipe.FaceCount * Numeric_Types_Lift02_Lift02RoadUnderlay_cs.Values.I32[8] || uv.Length != positions.Length)
-            throw new InvalidOperationException("Lift02 underlay source layout differs from its recorded native source.");
         var constructed = new List<Constructed>();
         var fragments = new List<MovableStructureModel.Fragment>();
         float bottom = Data.F32[Numeric_Types_Lift02_Lift02RoadUnderlay_cs.Values.I32[9]], oldTop = Data.F32[Numeric_Types_Lift02_Lift02RoadUnderlay_cs.Values.I32[10]];
@@ -113,8 +111,6 @@ internal static class Lift02RoadUnderlay
                 var polygon = new List<Corner>();
                 for (int i = Numeric_Types_Lift02_Lift02RoadUnderlay_cs.Values.I32[11]; i < face.Vertices.Length; i++)
                 {
-                    if (indices[face.Triangle * Numeric_Types_Lift02_Lift02RoadUnderlay_cs.Values.I32[12] + i] != face.Vertices[i])
-                        throw new InvalidOperationException("Lift02 underlay source triangle identity changed.");
                     var weight = Vector3.zero;
                     weight[i] = Numeric_Types_Lift02_Lift02RoadUnderlay_cs.Values.I32[13];
                     polygon.Add(new Corner(face.Parameters[i], weight));
@@ -492,9 +488,6 @@ internal static class Lift02RoadUnderlay
 
             recipes[lod] = recipe;
         }
-
-        if (ip != Data.I32.Length || fp != Data.F32.Length)
-            throw new InvalidOperationException("Lift02 underlay recipe has an invalid record layout.");
         return recipes;
     }
 }

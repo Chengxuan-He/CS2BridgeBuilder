@@ -26,18 +26,12 @@ internal static class Lift01SectionRoles
         return roles;
         (bool Any, bool OnlySide) Read(NetSectionPrefab section)
         {
-            if (section == null)
-                throw new InvalidOperationException("Lift01 selected network contains a missing section.");
             if (cache.TryGetValue(section, out var known))
                 return known;
-            if (!visiting.Add(section))
-                throw new InvalidOperationException("Lift01 selected network contains cyclic subsections.");
             var any = false;
             var side = true;
             foreach (var entry in section.m_Pieces ?? Array.Empty<NetPieceInfo>())
             {
-                if (entry?.m_Piece == null)
-                    throw new InvalidOperationException("Lift01 selected section contains a missing piece.");
                 if (!context.AllowsLevel(entry.m_RequireAll, entry.m_RequireAny, entry.m_RequireNone))
                     continue;
                 any = true;

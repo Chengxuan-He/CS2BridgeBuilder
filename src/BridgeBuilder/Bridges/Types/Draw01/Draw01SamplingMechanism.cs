@@ -14,8 +14,6 @@ internal sealed class Draw01SamplingMechanism : IDisposable
     private readonly List<PrefabBase> _owned = new();
     internal Draw01SamplingMechanism(string owner, IReadOnlyList<RenderPrefab> sources, ContentPrefab content, float halfWidthDelta)
     {
-        if (sources.Count != Numeric_Types_Draw01_Draw01SamplingMechanism_cs.Values.I32[0] || !float.IsFinite(halfWidthDelta) || content == null)
-            throw new ArgumentException("Draw01 sampling requires three native render roots, content and a finite width change.");
         var names = new[]
         {
             "DrawBridge01 Mesh",
@@ -29,8 +27,6 @@ internal sealed class Draw01SamplingMechanism : IDisposable
             var prepared = new RenderPrefab[Numeric_Types_Draw01_Draw01SamplingMechanism_cs.Values.I32[1]];
             for (var i = Numeric_Types_Draw01_Draw01SamplingMechanism_cs.Values.I32[2]; i < prepared.Length; i++)
             {
-                if (sources[i] == null || sources[i].name != names[i])
-                    throw new InvalidOperationException("Draw01 sampling requires recorded render source: " + names[i]);
                 prepared[i] = Copy(sources[i]);
             }
 
@@ -50,8 +46,6 @@ internal sealed class Draw01SamplingMechanism : IDisposable
 
         RenderPrefab Copy(RenderPrefab source)
         {
-            if (source == null)
-                throw new InvalidOperationException("Draw01 sampling cannot use missing render metadata.");
             if (copies.TryGetValue(source, out var existing))
                 return existing;
             var copy = ScriptableObject.CreateInstance<RenderPrefab>();

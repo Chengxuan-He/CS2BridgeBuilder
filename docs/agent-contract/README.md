@@ -117,6 +117,9 @@ ownership, UI errors and human acceptance. Implementation history is maintained 
 
 Use measured source geometry, assembly membership and LOD correspondence for fixed bridges. The general generation contract governs project requirements. Bridge-specific research records are maintained separately as implementation evidence.
 
+For static-object and other non-Network sources, follow the normative
+[virtual bridge prototype contract](NON_NETWORK_BRIDGES_CONTRACT.md) before actual Bridge Builder generation.
+
 ## Style registration and UI
 
 Bridge generation contract section 22 requires immediate UI synchronization and generator-router integration

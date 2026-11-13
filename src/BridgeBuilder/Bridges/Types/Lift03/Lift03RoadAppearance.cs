@@ -13,10 +13,6 @@ internal static class Lift03RoadAppearance
     internal static MovableRoadAppearance.Level ForLevel(Lift03RoadSampling.Deck deck,
         int lod, RenderPrefab source, Pose roadToObject, float halfDelta, MovableSelectedRoadLayout layout)
     {
-        if ((uint)lod >= 3u)
-            throw new ArgumentOutOfRangeException(nameof(lod));
-        if (deck != Lift03RoadSampling.Deck.Main && deck != Lift03RoadSampling.Deck.Auxiliary)
-            throw new ArgumentOutOfRangeException(nameof(deck));
         // Unknown source categories retain Original. Material correspondence is
         // selected per actual receiver by ForReceiver, independently of deck.
         return new MovableRoadAppearance.Level(source.GetSurfaceAsset(0),
@@ -27,7 +23,6 @@ internal static class Lift03RoadAppearance
     internal static MovableRoadAppearance.Level? ForReceiver(int lod, RenderPrefab source,
         Pose roadToObject, MovableSelectedRoadLayout layout, MovableRoadAppearance.Type receiver)
     {
-        if ((uint)lod >= 3u) throw new ArgumentOutOfRangeException(nameof(lod));
         // Mixed/unknown categories are not silently converted to one family.
         if (receiver == MovableRoadAppearance.Type.Asphalt ||
             receiver == (MovableRoadAppearance.Type.Asphalt | MovableRoadAppearance.Type.WheelTrack))

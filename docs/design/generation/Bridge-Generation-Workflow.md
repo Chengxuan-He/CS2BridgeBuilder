@@ -126,7 +126,9 @@ and [19](../../agent-contract/BRIDGE_GENERATION_CONTRACT.md#19-independent-nativ
 
 Native publication registers owned dependencies before the root and returns with
 publication pending. The normally scheduled native prefab pipeline must initialize the graph;
-do not recursively drive game systems to force readiness. Its later callback checks live native
+do not recursively drive game systems to force readiness. Completion runs in the main loop after
+the native `UnlockSystem` has propagated new dependency-group states, including while simulation
+is paused. A tail-of-`PrefabUpdate` callback is too early for that propagation. The callback checks live native
 entities, network archetypes/sections and menu registration. Only a ready result proceeds to
 asset-metadata commit, export-state recording and request completion. Create-and-build
 may then activate the native placement tool; it does not place a bridge automatically. Catalogue

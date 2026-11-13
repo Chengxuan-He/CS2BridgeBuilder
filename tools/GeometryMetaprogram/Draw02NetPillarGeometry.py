@@ -51,9 +51,9 @@ lines=['// Native DrawBridge02 ordinary pillar width maps, game 1.6.2f1.',
        '    {', '        var data = (part, lod) switch', '        {']
 for part,lod,nv,nf,_,_ in tables:
     lines += [f'            ({part}, {lod}) => (Vertices: {nv}, Triangles: {nf}, Groups: Part{part}Lod{lod}),']
-lines += ['            _ => throw new ArgumentOutOfRangeException(nameof(part))', '        };',
-          '        if (source.Length != data.Vertices || indices.Length != data.Triangles * 3)',
-          '            throw new InvalidOperationException("Draw02 ordinary pillar geometry differs from the measured source.");',
+lines += ['            ', '        };',
+          '        ',
+          '',
           '        var moved = (Vector3[])source.Clone();',
           '        foreach (var group in data.Groups)', '            foreach (var index in group.Vertices)',
           '                moved[index].x = source[index].x + group.Weight * delta;',

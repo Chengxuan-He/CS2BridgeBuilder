@@ -40,7 +40,6 @@ internal static class Lift05UvCharts
         {
             var numbers = HardcodedNumbers.Load("Lift05UvCharts");
             var data = numbers.I32;
-            if (data[0] != 1) throw new InvalidOperationException("Unsupported Lift05 native chart schema.");
             int streams = data[1], count = data[2];
             var charts = new MovableUvChart[count];
             for (int i = 0; i < count; i++) charts[i] = MovableUvChart.Read(data, numbers.F64, data[3 + streams + i]);

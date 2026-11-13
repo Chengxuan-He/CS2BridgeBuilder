@@ -52,7 +52,7 @@ internal sealed class BridgePrototypeSource
     // Stable ownership identity; localized display names must not decide which donor is selected.
     internal string Key => _modId != null ? "mod:" + _modId : _prerequisite != null ? "content:" + _prerequisite.name
         : _packs.Length > 0 ? "pack:" + string.Join("|", _packs.Select(pack => pack.name).Distinct().OrderBy(name => name, StringComparer.Ordinal))
-        : IsBaseGame ? "base" : Label;
+        : IsBaseGame ? "base" : _prefab != null ? "Mod: " + AssetSource(_prefab) : Label;
 
     internal bool HasSingleSource => _metadataReadable
         && (_modId != null || _prerequisite != null || _packs.Select(pack => pack.name).Distinct().Count() <= 1);
@@ -69,7 +69,7 @@ internal sealed class BridgePrototypeSource
             if (!_metadataReadable) return RuntimeUiText.Get("SourceUnreadable");
             if (_modId != null)
             {
-                var label = RuntimeUiText.Get("SourceMod", ModDisplayName(_modId));
+                var label = RuntimeUiText.Get("SourceMod", ModDisplayName(_modId, _prefab));
                 return _prerequisite?.GetComponent<DlcRequirement>() != null
                     ? label + " + " + RuntimeUiText.Get("SourceDlc", DeckCatalog.DisplayNameOf(_prerequisite))
                     : label;
@@ -80,7 +80,7 @@ internal sealed class BridgePrototypeSource
                     return RuntimeUiText.Get("SourceDlc", DeckCatalog.DisplayNameOf(_prerequisite));
                 var mod = _prerequisite.GetComponent<ModRequirement>();
                 if (mod != null && !string.IsNullOrWhiteSpace(mod.m_ModId))
-                    return RuntimeUiText.Get("SourceMod", mod.m_ModId);
+                    return RuntimeUiText.Get("SourceMod", ModDisplayName(mod.m_ModId, _prerequisite));
                 return RuntimeUiText.Get("SourceContent", DeckCatalog.DisplayNameOf(_prerequisite));
             }
             if (_packs.Length > 0)
@@ -88,7 +88,7 @@ internal sealed class BridgePrototypeSource
                     pack.isBuiltin ? "SourcePack" : "SourceMod", PackDisplayName(pack))).Distinct());
             // Label is constructed internally by Inspect, never supplied by the player.
             return Label == "Base game" ? RuntimeUiText.Get("BaseGame") :
-                RuntimeUiText.Get("SourceMod", Label.StartsWith("Mod: ", StringComparison.Ordinal) ? Label.Substring(5) : Label);
+                RuntimeUiText.Get("SourceMod", ModDisplayName(null, _prefab));
         }
     }
 
@@ -178,7 +178,7 @@ internal sealed class BridgePrototypeSource
             // In particular, a B&P bridge must not be admitted just because base BXP is enabled.
             if (!string.IsNullOrWhiteSpace(modId))
             {
-                var label = "Mod: " + ModDisplayName(modId!);
+                var label = "Mod: " + ModDisplayName(modId, prefab);
                 if (prerequisite != null) label += " + " + RequirementLabel(prerequisite);
                 return new BridgePrototypeSource(label, prerequisite, packs, modId: modId, prefab: prefab);
             }
@@ -196,7 +196,7 @@ internal sealed class BridgePrototypeSource
             if (prefab.isBuiltin)
                 return new BridgePrototypeSource("Base game", null, Array.Empty<AssetPackPrefab>(), prefab: prefab);
 
-            return new BridgePrototypeSource("Mod: " + AssetSource(prefab), null, Array.Empty<AssetPackPrefab>(), prefab: prefab);
+            return new BridgePrototypeSource("Mod: " + ModDisplayName(null, prefab), null, Array.Empty<AssetPackPrefab>(), prefab: prefab);
         }
         catch (Exception)
         {
@@ -213,7 +213,7 @@ internal sealed class BridgePrototypeSource
         if (dlc != null) return "DLC: " + DeckCatalog.DisplayNameOf(prerequisite);
 
         var mod = prerequisite.GetComponent<ModRequirement>();
-        if (mod != null && !string.IsNullOrWhiteSpace(mod.m_ModId)) return "Mod: " + mod.m_ModId;
+        if (mod != null && !string.IsNullOrWhiteSpace(mod.m_ModId)) return "Mod: " + ModDisplayName(mod.m_ModId, prerequisite);
 
         return "Content: " + DeckCatalog.DisplayNameOf(prerequisite);
     }
@@ -226,16 +226,39 @@ internal sealed class BridgePrototypeSource
 
     private static bool IsBxp(string? id) => id == BxpBaseId || id == BxpPortsId;
 
-    private static string ModDisplayName(string id) => id switch
+    // Titles are presentation only. Official-page evidence for recorded fallbacks is in
+    // docs/archive/audits/Source-Mod-Titles.md; author-published GO/B&P remain intact.
+    private static string ModDisplayName(string? id, PrefabBase? prefab = null)
     {
-        BxpBaseId => "Bridge Expansion Pack",
-        BxpPortsId => "Bridge Expansion Pack: B&P",
-        _ => id,
-    };
+        var meta = prefab?.asset?.GetMeta();
+        if (string.IsNullOrWhiteSpace(id)) id = meta?.platformID;
+        if (!string.IsNullOrWhiteSpace(id))
+        {
+            if (AssetDatabase<ParadoxMods>.instance.dataSource is ParadoxModsDataSource source)
+            {
+                var title = source.GetActiveMods().FirstOrDefault(mod => mod.id == id).displayName;
+                if (IsPublishedTitle(title, id!)) return title;
+            }
+            // Native ParadoxModsDataSource.GetMeta maps displayName from the owning Mod.
+            if (meta?.platformID == id && meta?.displayName is string assetTitle
+                && IsPublishedTitle(assetTitle, id!)) return assetTitle;
+            switch (id)
+            {
+                case BxpBaseId: return "Bridge Expansion Pack";
+                case BxpPortsId: return "Bridge Expansion Pack: B&P";
+                case "166012": return "GO 224m Viaduct Bridge";
+            }
+        }
+        return RuntimeUiText.Get("SourceModNameUnavailable");
+    }
 
-    private static string PackDisplayName(AssetPackPrefab pack) =>
-        pack.isSubscribedMod && IsBxp(pack.asset?.GetMeta().platformID)
-            ? ModDisplayName(pack.asset!.GetMeta().platformID) : DeckCatalog.DisplayNameOf(pack);
+    private static bool IsPublishedTitle(string? title, string id) =>
+        !string.IsNullOrWhiteSpace(title) && title != id && !title!.All(char.IsDigit);
+
+    private static string PackDisplayName(AssetPackPrefab pack) => pack.isBuiltin
+        ? DeckCatalog.DisplayNameOf(pack)
+        : ModDisplayName(pack.GetComponent<ContentPrerequisite>()?.m_ContentPrerequisite?
+            .GetComponent<ModRequirement>()?.m_ModId, pack);
 
     private static string AssetSource(PrefabBase prefab)
     {

@@ -10,13 +10,9 @@ internal static class Lift05NetworkAssembly
     internal static void Apply(NetGeometryPrefab target, TowerFactory factory,
         IReadOnlyList<Lift05NetworkData.Role> roles, StaticObjectPrefab mechanism)
     {
-        if (!factory.Created.Contains(mechanism))
-            throw new InvalidOperationException("Lift05 network assembly requires its owned mechanism.");
         // Native spawnable pillars register against this exact placeholder identity.
         // Cloning it would sever the game's reverse replacement references.
         var pillar = factory.ResolveOriginal<ObjectPrefab>("Pillar Placeholder");
-        if (!pillar.Has<PlaceholderObject>())
-            throw new InvalidOperationException("Lift05 requires the built-in pillar placeholder.");
 
         var sections = Lift05NetworkData.ConvertSections(target.name, target.m_Sections,
             roles, out var created);

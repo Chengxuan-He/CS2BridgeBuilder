@@ -59,8 +59,6 @@ internal sealed partial class MovableNetworkContext : IDisposable
         internal MechanismInput(StaticObjectPrefab prefab, OwnerIndex owner, Transform ownerTransform,
             NetSubObjectInfo placement, TrafficLights signalState, PseudoRandomSeed seed)
         {
-            if (placement.m_Object != prefab)
-                throw new ArgumentException("Mechanism placement must reference its prepared object.", nameof(placement));
             Prefab = prefab; Owner = owner; OwnerTransform = ownerTransform;
             Placement = placement; SignalState = signalState; Seed = seed;
         }
@@ -197,10 +195,8 @@ internal sealed partial class MovableNetworkContext : IDisposable
         {
             var piece = source[i];
             var prefab = (NetPiecePrefab)Prefabs.Original(piece.m_Piece);
-            Prefabs.CheckSource(prefab);
             piece.m_Piece = Entity.Null;
             var root = (NetSectionPrefab)Prefabs.Original(rootSections[rootIndices[i]].m_Section);
-            Prefabs.CheckSource(root);
             result[i] = new BridgePreviewComposition.Piece(prefab, piece,
                 $"composition/section[{rootIndices[i]}]/piece[{i}]", root);
         }

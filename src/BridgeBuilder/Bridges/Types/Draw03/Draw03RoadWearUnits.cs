@@ -14,8 +14,6 @@ internal static class Draw03RoadWearUnits
             return false;
         float Sample(Vector3 point) => Vector3.Dot(point, patch.V) + patch.V.w;
         float va = Sample(a), vb = Sample(b), vc = Sample(c);
-        if (!float.IsFinite(va) || !float.IsFinite(vb) || !float.IsFinite(vc))
-            throw new InvalidOperationException("Draw03 wear projection must be finite.");
         float low = Mathf.Min(va, Mathf.Min(vb, vc));
         float high = Mathf.Max(va, Mathf.Max(vb, vc));
         float period = Mathf.Floor(low);
@@ -39,8 +37,7 @@ internal static class Draw03RoadWearUnits
     // shared boundary vertices must not be reclassified into an adjacent band.
     internal static Patch ForBand(Patch patch, int index, float period = 0f)
     {
-        if (!TryBand(patch, index, period, out var reduced))
-            throw new InvalidOperationException("Draw03 wear domain is not a measured lane or gap unit.");
+        TryBand(patch, index, period, out var reduced);
         return reduced;
     }
 

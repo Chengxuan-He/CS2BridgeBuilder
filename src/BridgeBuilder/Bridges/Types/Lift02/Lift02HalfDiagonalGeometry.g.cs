@@ -12,10 +12,7 @@ internal static class Lift02HalfDiagonalGeometry
         {
             0 => Numeric_Types_Lift02_Lift02HalfDiagonalGeometry_g_cs.Values.I32[0],
             1 => Numeric_Types_Lift02_Lift02HalfDiagonalGeometry_g_cs.Values.I32[1],
-            2 => Numeric_Types_Lift02_Lift02HalfDiagonalGeometry_g_cs.Values.I32[2],
-            _ => throw new ArgumentOutOfRangeException(nameof(lod))};
-        if (source.Length != data || positions.Length != data || !float.IsFinite(delta))
-            throw new InvalidOperationException("Lift02 centre-reaching half diagonals require their native layout.");
+            2 => Numeric_Types_Lift02_Lift02HalfDiagonalGeometry_g_cs.Values.I32[2]};
         AffineGeometry.Execute(CoordinatePrograms.Data, lod, new[] { source, positions }, Array.Empty<float[]>(), new[] { delta });
     }
 

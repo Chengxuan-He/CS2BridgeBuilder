@@ -9,7 +9,6 @@ internal static class MovableRoadUv
     // This is the object-road encoder, not the NetMeshHelpers UV cache (x2 only).
     internal static float[] Encode(float[] values,out int dimension)
     {
-        if(values.Length%4!=0)throw new ArgumentException("Road UV input requires four components per vertex.");
         dimension=4;
         for(int i=0;i<values.Length;i+=4)
             if(values[i+2]!=0f || values[i+3]!=0f)return values;

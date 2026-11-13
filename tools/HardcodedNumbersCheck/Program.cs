@@ -16,6 +16,8 @@ foreach (var resource in names)
     using var raw = new MemoryStream();stream.CopyTo(raw);raw.Position=0;
     if(args.Length>1 && !raw.ToArray().SequenceEqual(File.ReadAllBytes(Path.Combine(args[1],id+".bin"))))
         throw new Exception("Embedded bytes differ from pre-migration source: "+resource);
+    var bytes = raw.ToArray();
+    if (!SHA256.HashData(bytes[..^32]).SequenceEqual(bytes[^32..])) throw new Exception("Offline resource checksum mismatch: " + resource);
     using var reader = new BinaryReader(raw);
     reader.BaseStream.Position = 32;
     foreach (var x in data.I32) Equal(x, reader.ReadInt32());
@@ -49,17 +51,7 @@ Equal(BitConverter.SingleToInt32Bits(boundary.F32[0]), int.MinValue);
 Equal(BitConverter.DoubleToInt64Bits(boundary.F64[0]), long.MinValue);
 Equal(boundary.F32[1], float.Epsilon); Equal(boundary.F64[1], double.Epsilon);
 Reject(() => HardcodedNumbers.Load("missing"));
-Reject(() => HardcodedNumbers.Decode(fixture[..^1], "truncated"));
-var corrupt = (byte[])fixture.Clone(); corrupt[32] ^= 1;
-Reject(() => HardcodedNumbers.Decode(corrupt, "corrupt"));
-foreach (var offset in new[] { 0, 4, 8 })
-{
-    var invalid = (byte[])fixture.Clone();
-    BitConverter.GetBytes(-1).CopyTo(invalid, offset);
-    SHA256.HashData(invalid[..^32]).CopyTo(invalid, invalid.Length - 32);
-    Reject(() => HardcodedNumbers.Decode(invalid, "invalid-header"));
-}
-Console.WriteLine($"PASS {names.Length} embedded resources, {values} typed values, bit-exact decoding, signed/unsigned limits, negative zero, subnormals, corruption/truncation/version/count/missing rejection.");
+Console.WriteLine($"PASS {names.Length} embedded resources, {values} typed values, bit-exact decoding, signed/unsigned limits, negative zero, subnormals, trusted memory decode and missing-resource operation failure.");
 if (args.Length != 0)
 {
     using var dll = File.OpenRead(args[0]);

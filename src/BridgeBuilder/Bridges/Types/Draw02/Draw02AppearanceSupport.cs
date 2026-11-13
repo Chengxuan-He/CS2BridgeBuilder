@@ -10,8 +10,6 @@ internal static class Draw02AppearanceSupport
 {
     internal static Type[] ForLod(int lod)
     {
-        if (lod < Numeric_Types_Draw02_Draw02AppearanceSupport_cs.Values.I32[0] || lod >= Numeric_Types_Draw02_Draw02RenderAssembly_cs.Values.I32[Numeric_Types_Draw02_Draw02AppearanceSupport_cs.Values.I32[1]])
-            throw new ArgumentOutOfRangeException(nameof(lod));
         // Same physical roles at every LOD. Mapping and Surface selection are
         // independent: this does not authorize near-LOD UVs on the far atlas.
         return new[]

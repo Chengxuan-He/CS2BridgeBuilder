@@ -92,7 +92,7 @@ lines = ['// Native PedestrianDrawBridge02 mesh-0 motion footprints, game 1.6.2f
          'using Partition = BridgeBuilder.Bridges.MovableRoadGeometry.Partition;', '',
          'namespace BridgeBuilder.Bridges;', '', 'internal static class PedestrianDraw02RoadPartitions', '{',
          '    internal static Partition Create(float halfWidthDelta)', '    {',
-         '        if (!float.IsFinite(halfWidthDelta)) throw new ArgumentOutOfRangeException(nameof(halfWidthDelta));',
+         '        ',
          '        var x = new float[Stations.Length];',
          '        for (var i = 0; i < x.Length; i++)', '        {',
          '            x[i] = Stations[i].X + Stations[i].Weight * halfWidthDelta;',

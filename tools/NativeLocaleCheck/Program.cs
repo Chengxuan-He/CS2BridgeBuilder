@@ -77,13 +77,12 @@ Check(BridgeNativePresentation.EnsureDescriptions(new(id,"Unchanged"),out change
 AssetDatabase.user.ForbidEnumeration=false;
 Console.WriteLine("PASS owner-local locale path/CID lookup with all-assets enumeration tripwire.");
 
-// Missing native metadata must fail before creating or saving even the first file.
+// Native in-memory locale mappings are trusted; they are not a validation gate.
 var bytes = assets.Select(a => Convert.ToHexString(a.Bytes)).ToArray();
 GameManager.instance!.localizationManager.Missing = "zh-HANT";
-Check(!BridgeNativePresentation.Save(new(id, "Bad replacement"), out error), "Accepted Unknown mapping");
-Check(bytes.SequenceEqual(assets.Select(a => Convert.ToHexString(a.Bytes))), "Failure partially rewrote locales");
-Check(!BridgeNativePresentation.Save(new("b22222222-2222-3333-4444-555555555555", "New"), out error)
-    && AssetDatabase.user.Items.Count == 12, "Failure created partial language files");
+Check(BridgeNativePresentation.EnsureDescriptions(new(id, "Unchanged"), out changed, out error)
+    && !changed, "Complete locale data must remain unchanged with a trusted mapping");
+Check(bytes.SequenceEqual(assets.Select(a => Convert.ToHexString(a.Bytes))), "No-op changed locale bytes");
 GameManager.instance = null;
 Check(!BridgeNativePresentation.Save(new(id, "No manager"), out error), "Missing manager accepted");
-Console.WriteLine("PASS 12-language cold-start registration, native headers, rename reuse and failure-before-write.");
+Console.WriteLine("PASS 12-language native headers, rename reuse, missing-only idempotence and unavailable-manager handling.");

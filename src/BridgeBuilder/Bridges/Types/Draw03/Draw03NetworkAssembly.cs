@@ -10,8 +10,6 @@ internal static class Draw03NetworkAssembly
     internal static void Apply(NetGeometryPrefab target, TowerFactory factory,
         StaticObjectPrefab pillar, StaticObjectPrefab mechanism)
     {
-        if (!factory.Created.Contains(pillar) || !factory.Created.Contains(mechanism))
-            throw new InvalidOperationException("Draw03 network assembly requires owned pillar and mechanism objects.");
         var sections = Draw03NetworkData.ConvertSections(target.name, target.m_Sections, out var created);
         // Recorded sidewalk 118596 uses native piece 120789. Its LevelCrossing
         // producer (72428) selects this bascule barrier, with selected-road placement.

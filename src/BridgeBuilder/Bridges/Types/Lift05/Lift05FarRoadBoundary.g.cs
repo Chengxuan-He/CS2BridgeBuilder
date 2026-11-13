@@ -10,15 +10,11 @@ internal static class Lift05FarRoadBoundary
     internal static MovableStructureModel.Plan Apply(MovableStructureModel.Plan plan, float delta)
     {
         int count = Numeric_Types_Lift05_Lift05FarRoadBoundary_g_cs.Values.I32[0];
-        if (plan.SourcePositions.Length != count || plan.SourceIndices.Length != Numeric_Types_Lift05_Lift05FarRoadBoundary_g_cs.Values.I32[1] || plan.SourceIndices[Numeric_Types_Lift05_Lift05FarRoadBoundary_g_cs.Values.I32[2]].Length != Numeric_Types_Lift05_Lift05FarRoadBoundary_g_cs.Values.I32[3] || plan.InteriorVertices.Length != Numeric_Types_Lift05_Lift05FarRoadBoundary_g_cs.Values.I32[4] || !float.IsFinite(delta))
-            throw new InvalidOperationException("Lift05 far road requires the measured native main mesh.");
         var removed = (bool[])plan.RemoveTriangles[Numeric_Types_Lift05_Lift05FarRoadBoundary_g_cs.Values.I32[5]].Clone();
         foreach (var face in Faces)
         {
             var i = face.Triangle * Numeric_Types_Lift05_Lift05FarRoadBoundary_g_cs.Values.I32[6];
             var indices = plan.SourceIndices[Numeric_Types_Lift05_Lift05FarRoadBoundary_g_cs.Values.I32[7]];
-            if (removed[face.Triangle] || indices[i] != face.A || indices[i + Numeric_Types_Lift05_Lift05FarRoadBoundary_g_cs.Values.I32[8]] != face.B || indices[i + Numeric_Types_Lift05_Lift05FarRoadBoundary_g_cs.Values.I32[9]] != face.C)
-                throw new InvalidOperationException("Lift05 far road source topology or fragment ownership changed.");
         }
 
         var offset = plan.AddedVertices.Length;

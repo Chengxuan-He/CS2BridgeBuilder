@@ -81,7 +81,9 @@ internal static class BridgePortableMigration
                     { error = "Original bridge icon unavailable; existing bridge retained"; return false; }
                     target.AddOrGetComponent<UIObject>().m_Icon = icon;
                 }
-                if (needsMetadata) target.AddOrGetComponent<UIObject>().name = BridgeAssetMetadata.Encode(metadata);
+                // Native Clone recreates components with their type names. Preserve the persisted
+                // root metadata even when another field (unlock, icon, pack or cleanup) caused this clone.
+                if (source == root) target.AddOrGetComponent<UIObject>().name = BridgeAssetMetadata.Encode(metadata);
                 if (needsPack) BridgeAssetPack.Assign(target, pack);
             }
             // Private non-network components can also come from a different historical version.
@@ -130,10 +132,7 @@ internal static class BridgePortableMigration
             foreach (var pair in identities)
             {
                 var expected = pair.Value;
-                var saved = nodes.First(n => ReferenceEquals(n.ReplacementAsset, pair.Key)).Target;
-                if (!ReferenceEquals(saved.asset, pair.Key) || pair.Key.id.guid.ToString() != expected.Cid
-                    || pair.Key.path != expected.Path || saved.name != expected.Name || saved.version != expected.Version
-                    || !BridgeSerializedReferences.TryRead(BridgeFileAccess.ReadText(expected.Path), out var document)
+                if (!BridgeSerializedReferences.TryRead(BridgeFileAccess.ReadText(expected.Path), out var document)
                     || document.Name != expected.Name
                     || (originals.TryGetValue(expected.Path + ".cid", out var cidBytes)
                         && !File.ReadAllBytes(BridgeFileAccess.Native(expected.Path + ".cid")).SequenceEqual(cidBytes)))

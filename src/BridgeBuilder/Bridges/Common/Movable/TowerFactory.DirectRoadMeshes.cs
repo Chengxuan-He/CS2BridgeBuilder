@@ -44,8 +44,6 @@ internal sealed partial class TowerFactory
     private PreparedRoadPlacements PrepareRoadPlacements(IReadOnlyList<ObjectSubObjectInfo> placements,
         Pose frame, IReadOnlyList<MovableRoadGeometry.Partition> partitions, ProceduralAnimationProperties skeleton)
     {
-        if (placements.Count != partitions.Count)
-            throw new ArgumentException("Road attachment partitions must match the placement list.");
         var moving = new bool[skeleton.m_Bones.Length];
         for (int i = 0; i < moving.Length; i++)
             for (int bone = i; bone >= 0; bone = skeleton.m_Bones[bone].parentId)

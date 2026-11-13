@@ -32,8 +32,7 @@ internal static class Draw01PillarData
         {
             Part.Top => (StackOrder)Numeric_Types_Draw01_Draw01PillarData_g_cs.Values.I32[4],
             Part.Column => (StackOrder)Numeric_Types_Draw01_Draw01PillarData_g_cs.Values.I32[5],
-            Part.Footing => (StackOrder)Numeric_Types_Draw01_Draw01PillarData_g_cs.Values.I32[6],
-            _ => throw new ArgumentOutOfRangeException(nameof(part))};
+            Part.Footing => (StackOrder)Numeric_Types_Draw01_Draw01PillarData_g_cs.Values.I32[6]};
         var stack = highest.AddComponent<StackProperties>();
         stack.m_Direction = (StackDirection)Numeric_Types_Draw01_Draw01PillarData_g_cs.Values.I32[7];
         stack.m_Order = order;

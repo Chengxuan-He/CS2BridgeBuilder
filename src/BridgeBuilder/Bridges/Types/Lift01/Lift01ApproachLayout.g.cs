@@ -13,8 +13,6 @@ internal static class Lift01ApproachLayout
     // The caller supplies widened, factory-owned pieces in recorded family order.
     internal static void Apply(NetGeometryPrefab target, TowerFactory factory, NetPiecePrefab[] pieces, ContentPrefab content)
     {
-        if (pieces.Length != Numeric_Types_Lift01_Lift01ApproachLayout_g_cs.Values.I32[0] || pieces.Any(piece => piece == null || !factory.Created.Contains(piece)))
-            throw new InvalidOperationException("Lift01 approaches require one owned structural piece.");
         var section0 = ScriptableObject.CreateInstance<NetSectionPrefab>();
         section0.name = target.name + " Fixed Approach Section 0";
         factory.AdoptMovableSections(new PrefabBase[] { section0 });

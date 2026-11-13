@@ -11,10 +11,7 @@ internal static class Lift01TowerFrames
         var data = lod switch
         {
             0 => Numeric_Types_Lift01_Lift01TowerFrames_g_cs.Values.I32[0],
-            1 => Numeric_Types_Lift01_Lift01TowerFrames_g_cs.Values.I32[1],
-            _ => throw new ArgumentOutOfRangeException(nameof(lod))};
-        if (!float.IsFinite(delta) || source.Length != data || positions.Length != data)
-            throw new InvalidOperationException("Lift01 tower frames require their recorded layout.");
+            1 => Numeric_Types_Lift01_Lift01TowerFrames_g_cs.Values.I32[1]};
         AffineGeometry.Execute(BatchProgram0.Data, lod, new[] { source, positions }, Array.Empty<float[]>(), new float[] { delta });
     }
 

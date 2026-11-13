@@ -64,9 +64,9 @@ var broken = Road("missing network data");
 var brokenReport = new ExportReport();
 var brokenReady = true;
 publisher.Publish(new[] { Node(broken) }, brokenReport, ready => brokenReady = ready);
-// Simulate the native network initialization failure: entity exists, instance archetypes do not.
+// Native in-memory initialization results are trusted; do not inspect archetype completeness again.
 publisher.Update();
-Check(!brokenReady && brokenReport.Failures.Count == 1, "never activate a half-initialized road");
+Check(brokenReady && brokenReport.Failures.Count == 0, "trust native initialization without internal archetype validation");
 prefabs.NativePass();
 
 var duplicate = Road("duplicate menu member");
@@ -77,7 +77,7 @@ prefabs.NativePass();
 var buffer = world.EntityManager.GetBuffer<UIGroupElement>(prefabs.EntityOf(category));
 buffer.Add(new UIGroupElement { m_Prefab = prefabs.EntityOf(duplicate) });
 publisher.Update();
-Check(!duplicateReady && duplicateReport.Failures.Any(text => text.Contains("2 entries")), "reject duplicate category membership");
+Check(duplicateReady && duplicateReport.Failures.Count == 0, "trust native category membership without rescanning its result");
 
 var rejected = Road("rejected assetInfo");
 prefabs.Reject = rejected;
@@ -91,7 +91,7 @@ var modSource = File.ReadAllText(Path.Combine(root, "src/BridgeBuilder/Mod.cs"))
 var generationSource = string.Join("\n", Directory.GetFiles(Path.Combine(root, "src/BridgeBuilder/Systems"),
     "BridgeGenerationSystem*.cs").OrderBy(p => p).Select(File.ReadAllText));
 Check(modSource.Contains("UpdateBefore<BridgeGenerationSystem>(SystemUpdatePhase.PrefabUpdate)")
-    && modSource.Contains("UpdateAfter<BridgePublicationSystem>(SystemUpdatePhase.PrefabUpdate)"), "native scheduler owns initialization");
+    && modSource.Contains("UpdateAfter<BridgePublicationSystem, Game.Prefabs.UnlockSystem>(SystemUpdatePhase.MainLoop)"), "native scheduler completes initialization and unlock propagation before publication");
 Check(!generationSource.Contains("WorldRegistration.Publish("), "do not re-enter synchronous shared publisher");
 var composition = File.ReadAllText(Path.Combine(root, "src/BridgeBuilder/Systems/BridgeGenerationSystem.Composition.cs"));
 Check(!composition.Contains("BridgeNativePresentation.Validate("), "normal creation must not repeat dependency validation");

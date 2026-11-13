@@ -128,6 +128,54 @@
     "payloadBytes": 72
   },
   {
+    "source": "src/BridgeBuilder/Bridges/Types/ArcPedestrian/ArcPedestrianConstruction.cs",
+    "resource": "ArcPedestrian/Types_ArcPedestrian_ArcPedestrianConstruction_cs.bin",
+    "originalSha256": "209A3C443F98A3A8E627D965A2B73A9399871B66FC74C9B2E46D2868D94F7F78",
+    "counts": [
+      5,
+      0,
+      0,
+      0,
+      30,
+      0
+    ],
+    "arrays": 0,
+    "payloadBytes": 204,
+    "verified": "Exact typed numerical bits and order against the unchunked original C# syntax"
+  },
+  {
+    "source": "src/BridgeBuilder/Bridges/Types/ArtDecoViaduct/ArtDecoViaductConstruction.cs",
+    "resource": "ArtDecoViaduct/Types_ArtDecoViaduct_ArtDecoViaductConstruction_cs.bin",
+    "originalSha256": "2A98FC57D0F9850D16E1486BFC45DC3036A3A0F4F720596AE85A67FA9313C9A1",
+    "counts": [
+      2,
+      0,
+      0,
+      0,
+      39,
+      0
+    ],
+    "arrays": 0,
+    "payloadBytes": 228,
+    "verified": "Exact typed numerical bits and order against the unchunked original C# syntax"
+  },
+  {
+    "source": "src/BridgeBuilder/Bridges/Types/CoveredPedestrian/CoveredPedestrianBridgeGenerator.cs",
+    "resource": "CoveredPedestrian/Types_CoveredPedestrian_CoveredPedestrianBridgeGenerator_cs.bin",
+    "originalSha256": "BB076B93884786A35FB55A0A376238466DEDAC04563678579789C4F7A9D171BD",
+    "counts": [
+      5,
+      0,
+      0,
+      0,
+      21,
+      0
+    ],
+    "arrays": 0,
+    "payloadBytes": 168,
+    "verified": "Exact typed numerical bits and order against the unchunked original C# syntax"
+  },
+  {
     "source": "src/BridgeBuilder/Bridges/Types/CoveredWood/CoveredWoodColumnData.cs",
     "resource": "CoveredWood/Types_CoveredWood_CoveredWoodColumnData_cs.bin",
     "originalSha256": "83CD196937BD77B3FD8AA5383F59A41EAD359485F0AC1D72910858D0D188BA0F",
@@ -6494,5 +6542,21 @@
     "arrays": 0,
     "verified": "Exact typed numerical bits and order against the unchunked original C# syntax",
     "payloadBytes": 76
+  },
+  {
+    "source": "src/BridgeBuilder/Bridges/Types/TrussViaduct/TrussViaductConstruction.cs",
+    "resource": "TrussViaduct/Types_TrussViaduct_TrussViaductConstruction_cs.bin",
+    "originalSha256": "7B0D8F59209FC0DE0F293D41C327231D56EC9FF98E41BFA27B3884F023AC5687",
+    "counts": [
+      65,
+      0,
+      0,
+      0,
+      32,
+      0
+    ],
+    "arrays": 0,
+    "payloadBytes": 452,
+    "verified": "Exact typed numerical bits and order against the unchunked original C# syntax"
   }
 ]

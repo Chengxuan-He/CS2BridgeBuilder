@@ -232,6 +232,13 @@ using its explicit source handoff and must not invoke the inspection-wide fallba
 
 ### Native presentation and startup registration
 
+Every file-only root migration must carry its persisted bridge metadata onto the replacement
+root, including migrations triggered only by unlocking, icon, pack or component cleanup.
+Native component cloning resets component names; an already complete source metadata field
+does not remove the need to assign it on the clone. Preserve the player's name, selected-road
+identities, style and creation history. A cold reread after a successful migration must require
+no further metadata or missing-description writes.
+
 `src/BridgeBuilder/Runtime/BridgeNativePresentation.cs` prepares native presentation, saves native
 locale data and validates existing/migrated serialized references for manager-dependent types and UI paths.
 Normal creation prepares native presentation before saving and does not call that additional

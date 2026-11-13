@@ -26,8 +26,7 @@ internal static class Draw01FixedFrontFragmentData
             new MovableStructureModel.EdgeVertex(Numeric_Types_Draw01_Draw01FixedFrontFragmentData_g_cs.Values.I32[26], Numeric_Types_Draw01_Draw01FixedFrontFragmentData_g_cs.Values.I32[27], Numeric_Types_Draw01_Draw01FixedFrontFragmentData_g_cs.Values.F32[13]),
             new MovableStructureModel.EdgeVertex(Numeric_Types_Draw01_Draw01FixedFrontFragmentData_g_cs.Values.I32[28], Numeric_Types_Draw01_Draw01FixedFrontFragmentData_g_cs.Values.I32[29], Numeric_Types_Draw01_Draw01FixedFrontFragmentData_g_cs.Values.F32[14]),
             new MovableStructureModel.EdgeVertex(Numeric_Types_Draw01_Draw01FixedFrontFragmentData_g_cs.Values.I32[30], Numeric_Types_Draw01_Draw01FixedFrontFragmentData_g_cs.Values.I32[31], Numeric_Types_Draw01_Draw01FixedFrontFragmentData_g_cs.Values.F32[15]),
-        },
-        _ => throw new ArgumentOutOfRangeException(nameof(lod))};
+        }};
     internal static MovableStructureModel.Fragment[] Faces(int lod, int firstAddedVertex) => lod switch
     {
         0 or 1 => Array.Empty<MovableStructureModel.Fragment>(),
@@ -41,8 +40,7 @@ internal static class Draw01FixedFrontFragmentData
             new MovableStructureModel.Fragment(Numeric_Types_Draw01_Draw01FixedFrontFragmentData_g_cs.Values.I32[63], Numeric_Types_Draw01_Draw01FixedFrontFragmentData_g_cs.Values.I32[64], Numeric_Types_Draw01_Draw01FixedFrontFragmentData_g_cs.Values.I32[65], firstAddedVertex + Numeric_Types_Draw01_Draw01FixedFrontFragmentData_g_cs.Values.I32[66], firstAddedVertex + Numeric_Types_Draw01_Draw01FixedFrontFragmentData_g_cs.Values.I32[67], Numeric_Types_Draw01_Draw01FixedFrontFragmentData_g_cs.Values.I32[68], firstAddedVertex + Numeric_Types_Draw01_Draw01FixedFrontFragmentData_g_cs.Values.I32[69], Numeric_Types_Draw01_Draw01FixedFrontFragmentData_g_cs.Values.I32[70]),
             new MovableStructureModel.Fragment(Numeric_Types_Draw01_Draw01FixedFrontFragmentData_g_cs.Values.I32[71], Numeric_Types_Draw01_Draw01FixedFrontFragmentData_g_cs.Values.I32[72], firstAddedVertex + Numeric_Types_Draw01_Draw01FixedFrontFragmentData_g_cs.Values.I32[73], Numeric_Types_Draw01_Draw01FixedFrontFragmentData_g_cs.Values.I32[74], Numeric_Types_Draw01_Draw01FixedFrontFragmentData_g_cs.Values.I32[75], firstAddedVertex + Numeric_Types_Draw01_Draw01FixedFrontFragmentData_g_cs.Values.I32[76], Numeric_Types_Draw01_Draw01FixedFrontFragmentData_g_cs.Values.I32[77], firstAddedVertex + Numeric_Types_Draw01_Draw01FixedFrontFragmentData_g_cs.Values.I32[78]),
             new MovableStructureModel.Fragment(Numeric_Types_Draw01_Draw01FixedFrontFragmentData_g_cs.Values.I32[79], Numeric_Types_Draw01_Draw01FixedFrontFragmentData_g_cs.Values.I32[80], Numeric_Types_Draw01_Draw01FixedFrontFragmentData_g_cs.Values.I32[81], firstAddedVertex + Numeric_Types_Draw01_Draw01FixedFrontFragmentData_g_cs.Values.I32[82], firstAddedVertex + Numeric_Types_Draw01_Draw01FixedFrontFragmentData_g_cs.Values.I32[83]),
-        },
-        _ => throw new ArgumentOutOfRangeException(nameof(lod))};
+        }};
 }
 
 // Embedded numerical arrays: Types_Draw01_Draw01FixedFrontFragmentData_g_cs

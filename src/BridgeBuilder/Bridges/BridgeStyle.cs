@@ -27,10 +27,21 @@ internal sealed class BridgeStyleVariant
         float? auxiliaryHeight = null)
     {
         if (!BridgeMeasurements.TryGet(name, out var roadWidth, out var structureWidth))
-            throw new ArgumentException("Recorded movable variant has no measured dimensions: " + name);
+            throw new ArgumentException("Recorded variant has no measured dimensions: " + name);
         _recordedName = name;
         _recordedRoad = road;
         _recordedAuxiliaryHeight = auxiliaryHeight;
+        RecordedIcon = icon;
+        Source = source;
+        Width = RoadWidth = roadWidth;
+        StructureWidth = structureWidth;
+    }
+
+    internal BridgeStyleVariant(string name, bool road, string icon, BridgePrototypeSource source,
+        float roadWidth, float structureWidth)
+    {
+        _recordedName = name;
+        _recordedRoad = road;
         RecordedIcon = icon;
         Source = source;
         Width = RoadWidth = roadWidth;
@@ -60,10 +71,10 @@ internal sealed class BridgeStyleVariant
     }
 
     internal NetGeometryPrefab Donor => _donor ?? throw new InvalidOperationException(
-        "Recorded movable variants must use their measured generator, not a live prototype network.");
+        "Recorded variants must use their measured generator, not a live prototype network.");
 
     internal Bridge Bridge => _bridge ?? throw new InvalidOperationException(
-        "Recorded movable variants reconstruct their Bridge component through the measured generator.");
+        "Recorded variants reconstruct their Bridge component through the measured generator.");
     internal bool IsRoad => IsRecorded ? _recordedRoad : Donor is RoadPrefab;
     internal bool IsBuiltin => IsRecorded || Donor.isBuiltin;
 
@@ -187,7 +198,7 @@ internal sealed class BridgeStyleVariant
     /// </summary>
     internal string DescribeTowers()
     {
-        if (IsRecorded) return $"recorded {Name}: {StructureWidth:0.#}m; assembled by the movable generator";
+        if (IsRecorded) return $"recorded {Name}: {StructureWidth:0.#}m; assembled by the measured generator";
         var parts = new List<string>();
 
         var overhead = Donor.GetComponent<OverheadNetSections>();
@@ -291,7 +302,7 @@ internal sealed class BridgeStyle
     /// Where the variants came from, so the UI can say what an export will depend on. Empty until a
     /// world has been scanned, since that is when donors are found.
     /// </summary>
-    internal string Source { get; set; } = string.Empty;
+    internal string Source => _variants.FirstOrDefault()?.Source.LocalizedLabel ?? string.Empty;
 
     /// <summary>
     /// False when the style is named here but nothing providing it is registered - either because no
@@ -315,7 +326,6 @@ internal sealed class BridgeStyle
         // silently switch the design to a third-party copy. This changes candidates, not assets.
         _variants.RemoveAll(variant => source == null || !variant.Source.HasSingleSource
             || !string.Equals(variant.Source.Key, source.Key, StringComparison.Ordinal));
-        Source = source?.Label ?? string.Empty;
     }
 
     /// <summary>

@@ -25,81 +25,31 @@ internal sealed class StructureCoordinateProgram
         internal Entry(HardcodedNumbers data,int offset)
         {
             int[] words=data.I32;
-            if(offset<3+words[2] || offset>words.Length-5)throw new InvalidDataException("Invalid structure entry offset.");
             Count=words[offset];Registers=words[offset+1];int instructions=words[offset+2];Width=words[offset+3];BlockRows=words[offset+4];offset+=5;
-            if(Count< -1 || Registers<0 || instructions<0 || Count!=0 && (Registers==0 || instructions==0) || Width is not (1 or 3) || BlockRows is not (0 or 512) || Count<0 && BlockRows!=0 || offset+(long)instructions*InstructionWords>words.Length)
-                throw new InvalidDataException("Invalid packed structure entry.");
             Code=new int[instructions][];var defined=new int[Registers];Writes=new int[Registers];Initialize=new bool[instructions];
-            void Indices(int start)
-            {
-                if(start==int.MinValue || start>=0 && (Count<0 || (long)start+Count>words.Length))throw new InvalidDataException("Invalid structure index range.");
-                if(start>=0)for(int row=0;row<Count;row++)if(words[start+row]<0)throw new InvalidDataException("Negative structure vertex index.");
-            }
-            void Values(int start,int step,int lanes)
-            {
-                if(start<0 || step<0 || Count<0 && step!=0 || (Count==0?start>data.F32.Length:start+(long)Math.Max(0,Count-1)*step+lanes>data.F32.Length))
-                    throw new InvalidDataException("Invalid packed coefficient range.");
-            }
             for(int i=0;i<instructions;i++)
             {
                 var c=new int[InstructionWords];Array.Copy(words,offset+i*InstructionWords,c,0,InstructionWords);Code[i]=c;
                 int op=c[0],dst=c[1],mask=c[2];
-                if(op<0 || op>12 || dst<0 || dst>=Registers || mask<=0 || (mask>>Width)!=0)
-                    throw new InvalidDataException("Invalid packed instruction.");
-                bool Register(int r)=>r>=0 && r<Registers && (defined[r]&mask)==mask;
-                if(op is >=4 and <=9 or 12)
-                {if(!Register(c[3]) || op<=7 && !Register(c[4]))throw new InvalidDataException("Undefined packed operand.");}
-                else if(op==1)Values(c[3],c[4],Width);
-                else if(op is 2 or 11)
+                if(op==11)Outputs.Add(c[3]);
+                if(op==10)for(int lane=0;lane<Width;lane++)
                 {
-                    if(Width!=3 || c[3]<0 || op==11 && !Register(dst))throw new InvalidDataException("Invalid packed record binding.");
-                    Indices(c[4]);if(op==11)Outputs.Add(c[3]);
-                }
-                else if(op==3)
-                {
-                    if(c[3]<0 || c[3]>=Registers || c[4]<0 || c[4]>=Width || c[5]<0 || c[5]>=Width || mask!=1<<c[5] || (defined[c[3]]&(1<<c[4]))==0)
-                        throw new InvalidDataException("Invalid packed lane transfer.");
-                }
-                else if(op is 0 or 10)
-                {
-                    if(op==10 && !Register(dst))throw new InvalidDataException("Undefined packed output.");
-                    for(int lane=0;lane<Width;lane++)
-                    {
-                        if((mask&(1<<lane))==0)continue;
-                        int p=5+5*lane,kind=c[p],a=c[p+1],b=c[p+2],map=c[p+3];
-                        if(a<0 || kind<0 || kind>3 || op==10 && kind<2 || kind==2 && (b<0 || b>2))throw new InvalidDataException("Invalid packed binding.");
-                        if(kind==0)Values(a,b,1);
-                        if(kind==2 || kind==3 && op==10)Indices(map);
-                        else if(kind==3)Indices(b);
-                        if(op==10 && kind==2)Outputs.Add(a);
-                    }
+                    if((mask&(1<<lane))==0)continue;
+                    int p=5+5*lane;
+                    if(c[p]==2)Outputs.Add(c[p+1]);
                 }
                 if(op is not (10 or 11)){Initialize[i]=defined[dst]==0;defined[dst]|=mask;Writes[dst]++;}
             }
         }
     }
-    private static class CoordinateLayout<T> where T:struct
-    {
-        internal static readonly bool Valid=Check();
-        private static bool Check()
-        {
-            var fields=typeof(T).GetFields(System.Reflection.BindingFlags.Instance|System.Reflection.BindingFlags.Public|System.Reflection.BindingFlags.NonPublic);
-            if(fields.Length!=3 || Marshal.SizeOf<T>()!=12)return false;
-            var offsets=new HashSet<long>();
-            foreach(var field in fields){if(field.FieldType!=typeof(float))return false;offsets.Add(Marshal.OffsetOf<T>(field.Name).ToInt64());}
-            return offsets.SetEquals(new long[]{0,4,8});
-        }
-    }
     private StructureCoordinateProgram(HardcodedNumbers data)
     {
         _data=data;int[] words=data.I32;
-        if(words.Length<3 || words[0]!=Magic || words[1]!=2 || words[2]<=0 || words[2]>words.Length-3)
-            throw new InvalidDataException("Unsupported packed structure program.");
-        _entries=new Entry[words[2]];for(int i=0;i<_entries.Length;i++)_entries[i]=new Entry(data,words[3+i]);
+        _entries=new Entry[words[2]];
+        for(int i=0;i<_entries.Length;i++)_entries[i]=new Entry(data,words[3+i]);
     }
     internal static void Execute<T>(HardcodedNumbers program,int entry,T[][] coordinates,float[][] scalars,float[] parameters,int first=0,int count=-1,int[][]? indices=null) where T:struct
     {
-        if(coordinates.Length!=0 && !CoordinateLayout<T>.Valid)throw new ArgumentException("Structure coordinates require packed XYZ floats.");
         Programs.GetValue(program,data=>new StructureCoordinateProgram(data)).Execute(entry,coordinates,scalars,parameters,first,count,indices);
     }
     private int Index(int offset,int row,int first,int[][]? indices)
@@ -107,9 +57,7 @@ internal sealed class StructureCoordinateProgram
     private void Execute<T>(int index,T[][] coordinates,float[][] scalars,float[] parameters,int first,int count,int[][]? indices) where T:struct
     {
         var entry=_entries[index];
-        if(entry.Count<0)
-        {if(first<0 || count<0 || (long)first+count>int.MaxValue)throw new ArgumentOutOfRangeException(nameof(count));}
-        else{if(first!=0 || count!= -1)throw new ArgumentException("Measured structure entries have fixed row ranges.");count=entry.Count;}
+        if(entry.Count>=0)count=entry.Count;
         if(count==0)return;
         int total=count,capacity=entry.BlockRows==0?count:Math.Min(count,entry.BlockRows);
         int stride=checked((checked(capacity*entry.Width)+3)/4*4),length=0;

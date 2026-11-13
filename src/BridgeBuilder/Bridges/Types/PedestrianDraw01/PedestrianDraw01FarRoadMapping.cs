@@ -59,8 +59,6 @@ internal static class PedestrianDraw01FarRoadMapping
     {
         static Data()
         {
-            if (Values.I32.Length != 26 || Values.I32[0] != 1 || Values.I32[1] != 8 || Values.F32.Length != 128)
-                throw new InvalidOperationException("Invalid PedestrianDraw01 far road mapping schema.");
         }
         internal static HardcodedNumbers Values => GenerationParameters.Get<HardcodedNumbers>("BridgeBuilder.Bridges.PedestrianDraw01FarRoadMapping.Data.Values", () => HardcodedNumbers.Load("Types_PedestrianDraw01_FarRoadMapping"));
     }

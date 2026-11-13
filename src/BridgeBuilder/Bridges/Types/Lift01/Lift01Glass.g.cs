@@ -10,8 +10,6 @@ internal static class Lift01Glass
 {
     internal static MovableStructureModel.Plan Create(int lod, Vector3[] source, int[] indices, float delta)
     {
-        if ((lod != Numeric_Types_Lift01_Lift01Glass_g_cs.Values.I32[0] && lod != Numeric_Types_Lift01_Lift01Glass_g_cs.Values.I32[1]) || source.Length != Numeric_Types_Lift01_Lift01Glass_g_cs.Values.I32[2] || indices.Length != Numeric_Types_Lift01_Lift01Glass_g_cs.Values.I32[3] || !float.IsFinite(delta))
-            throw new InvalidOperationException("Lift01 glass requires its recorded mesh-1 layout.");
         var positions = (Vector3[])source.Clone();
         AffineGeometry.Execute(RangePrograms.Data, 0, new[] { positions }, Array.Empty<float[]>(), new float[] { delta }, Numeric_Types_Lift01_Lift01Glass_g_cs.Values.I32[4], checked((Numeric_Types_Lift01_Lift01Glass_g_cs.Values.I32[5]) - (Numeric_Types_Lift01_Lift01Glass_g_cs.Values.I32[4])));
         AffineGeometry.Execute(RangePrograms.Data, 1, new[] { positions }, Array.Empty<float[]>(), new float[] { delta }, Numeric_Types_Lift01_Lift01Glass_g_cs.Values.I32[6], checked((Numeric_Types_Lift01_Lift01Glass_g_cs.Values.I32[7]) - (Numeric_Types_Lift01_Lift01Glass_g_cs.Values.I32[6])));

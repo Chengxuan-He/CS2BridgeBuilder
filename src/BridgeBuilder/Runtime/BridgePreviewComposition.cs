@@ -15,10 +15,13 @@ internal sealed class BridgePreviewComposition : IDisposable
     internal readonly struct Piece
     {
         internal Piece(NetPiecePrefab prefab, NetCompositionPiece composition, string sourcePath = "",
-            NetSectionPrefab? rootSection = null)
-        { Prefab = prefab; Composition = composition; SourcePath = sourcePath; RootSection = rootSection; }
+            NetSectionPrefab? rootSection = null, NetCompositionPiece? unpackedComposition = null)
+        { Prefab = prefab; Composition = composition; SourcePath = sourcePath; RootSection = rootSection;
+          UnpackedComposition = unpackedComposition ?? composition; }
         internal NetPiecePrefab Prefab { get; }
         internal NetCompositionPiece Composition { get; }
+        // Native initialization packs offsets in place; it must receive the pre-pack record.
+        internal NetCompositionPiece UnpackedComposition { get; }
         internal string SourcePath { get; }
         // Original top-level section occurrence, before native subsection selection.
         // Existing preview-only callers need no section provenance.
@@ -41,7 +44,7 @@ internal sealed class BridgePreviewComposition : IDisposable
 
     internal Piece[] Compose(NetGeometryPrefab prefab, CompositionFlags flags, out NetCompositionData data,
         bool priceComposition = false, bool includeOverhead = true,
-        BridgeBuilder.Bridges.BridgeRoadContext? selectedRoad = null)
+        BridgeBuilder.Bridges.BridgeRoadContext? selectedRoad = null, bool nodeComposition = false)
     {
         data = default;
         if (_disposed || prefab == null || _invalidGraph) return Array.Empty<Piece>();
@@ -49,9 +52,9 @@ internal sealed class BridgePreviewComposition : IDisposable
         if (selectedRoad != null) flags = selectedRoad.ApplyLevel(flags);
         // Auxiliary decks use the same edge composition path as the main deck.
         // A fixed segment's custom states must not turn it into a node preview.
-        if (!priceComposition) flags.m_General |= CompositionFlags.General.Edge;
+        if (!priceComposition && !nodeComposition) flags.m_General |= CompositionFlags.General.Edge;
         var setStates = default(CompositionFlags);
-        foreach (var source in priceComposition ? Array.Empty<NetEdgeStateInfo>() :
+        foreach (var source in priceComposition || nodeComposition ? Array.Empty<NetEdgeStateInfo>() :
             prefab.m_EdgeStates ?? Array.Empty<NetEdgeStateInfo>())
         {
             if (source == null) continue;
@@ -75,12 +78,16 @@ internal sealed class BridgePreviewComposition : IDisposable
         using var input = new NativeArray<NetGeometrySection>(geometry.ToArray(), Allocator.Temp);
         using var output = new NativeList<NetCompositionPiece>(Allocator.Temp);
         var helper = _world.GetOrCreateSystemManaged<CompositionSystem>();
-        data = helper.Compose(input, output, flags);
+        data = helper.Compose(input, output, flags, out var unpacked);
         var result = new List<Piece>();
-        foreach (var piece in output.AsArray())
+        for (var i = 0; i < output.Length; i++)
+        {
+            var piece = output[i];
             if (_prefabs.TryGetValue(piece.m_Piece, out var piecePrefab))
                 result.Add(new Piece(piecePrefab, piece,
-                    _occurrences.TryGetValue(piece.m_Piece, out var path) ? path : ""));
+                    _occurrences.TryGetValue(piece.m_Piece, out var path) ? path : "",
+                    unpackedComposition: unpacked[i]));
+        }
         return result.ToArray();
     }
 
@@ -191,6 +198,11 @@ internal sealed class BridgePreviewComposition : IDisposable
             m_WidthOffset = prefab.m_WidthOffset, m_NodeOffset = prefab.m_NodeOffset,
             m_SideConnectionOffset = prefab.m_SideConnectionOffset
         });
+        if (prefab.TryGet<MatchPieceVertices>(out var match))
+        {
+            manager.AddComponentData(entity, default(NetVertexMatchData));
+            match.Initialize(manager, entity);
+        }
         if (!_trackOccurrences) _pieces.Add(prefab, entity);
         _prefabs.Add(entity, prefab);
         if (_trackOccurrences) _occurrences.Add(entity, sourcePath);
@@ -243,10 +255,11 @@ internal sealed class BridgePreviewComposition : IDisposable
     {
         protected override void OnUpdate() { }
         internal NetCompositionData Compose(NativeArray<NetGeometrySection> sections,
-            NativeList<NetCompositionPiece> pieces, CompositionFlags flags)
+            NativeList<NetCompositionPiece> pieces, CompositionFlags flags, out NetCompositionPiece[] unpacked)
         {
             NetCompositionHelpers.GetCompositionPieces(pieces, sections, flags,
                 GetBufferLookup<NetSubSection>(true), GetBufferLookup<NetSectionPiece>(true));
+            unpacked = pieces.AsArray().ToArray();
             var data = new NetCompositionData { m_Flags = flags };
             NetCompositionHelpers.CalculateCompositionData(ref data, pieces.AsArray(),
                 GetComponentLookup<NetPieceData>(true), GetComponentLookup<NetVertexMatchData>(true));

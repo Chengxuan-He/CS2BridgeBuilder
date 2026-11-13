@@ -10,8 +10,6 @@ internal static class Lift01FarBaseProfile
 {
     internal static MovableStructureModel.Plan Apply(MovableStructureModel.Plan plan, float delta)
     {
-        if (plan.SourcePositions.Length != Numeric_Types_Lift01_Lift01FarBaseProfile_g_cs.Values.I32[0] || plan.SourceIndices.Length != Numeric_Types_Lift01_Lift01FarBaseProfile_g_cs.Values.I32[1] || plan.SourceIndices[Numeric_Types_Lift01_Lift01FarBaseProfile_g_cs.Values.I32[2]].Length != Numeric_Types_Lift01_Lift01FarBaseProfile_g_cs.Values.I32[3] || !float.IsFinite(delta))
-            throw new InvalidOperationException("Lift01 far base requires its recorded road boundaries.");
         var positions = plan.Positions.Take(Numeric_Types_Lift01_Lift01FarBaseProfile_g_cs.Values.I32[4]).ToArray();
         AffineGeometry.Execute(ScatterProgram.Data, 0, new[] { positions }, Array.Empty<float[]>(), new float[] { delta });
         return new MovableStructureModel.Plan(plan.SourcePositions, positions, plan.SourceIndices, plan.RemoveTriangles, plan.AddedVertices, plan.Fragments, plan.InteriorVertices, plan.Positions.Skip(Numeric_Types_Lift01_Lift01FarBaseProfile_g_cs.Values.I32[5]).Select(p => p.x).ToArray(), reconstructsAuthoredPositions: true, uvCorrections: plan.UvCorrections, preparedDomains: plan.PreparedDomains, frameTransforms: plan.FrameTransforms, sourceCopies: plan.SourceCopies);

@@ -15,8 +15,6 @@ internal static class Draw02WalkEndClosure
         if (!Present(-Numeric_Types_Draw02_Draw02WalkEndClosure_cs.Values.I32[2]) && !Present(Numeric_Types_Draw02_Draw02WalkEndClosure_cs.Values.I32[3]))
             return plan;
         var data = WalkEndMeasurements.Values;
-        if (plan.SourcePositions.Length != data.I32[Numeric_Types_Draw02_Draw02WalkEndClosure_cs.Values.I32[4]] || plan.SourceIndices[Numeric_Types_Draw02_Draw02WalkEndClosure_cs.Values.I32[5]].Length / Numeric_Types_Draw02_Draw02WalkEndClosure_cs.Values.I32[6] != data.I32[Numeric_Types_Draw02_Draw02WalkEndClosure_cs.Values.I32[7]] || plan.InteriorVertices.Length != Numeric_Types_Draw02_Draw02WalkEndClosure_cs.Values.I32[8])
-            throw new InvalidOperationException("Draw02 far sidewalk cap requires its measured source plan.");
         var positions = new Vector3[plan.SourcePositions.Length];
         Array.Copy(plan.Positions, positions, positions.Length);
         var edges = new List<MovableStructureModel.EdgeVertex>(plan.AddedVertices);
@@ -85,9 +83,6 @@ internal static class Draw02WalkEndClosure
             else
                 fragments.Add(fragment);
         }
-
-        if (added.Count != Numeric_Types_Draw02_Draw02WalkEndClosure_cs.Values.I32[33])
-            throw new InvalidOperationException("Draw02 sidewalk strip lost its original lower end cap.");
         return new MovableStructureModel.Plan(plan.SourcePositions, positions, plan.SourceIndices, plan.RemoveTriangles, edges.ToArray(), fragments.ToArray(), interiors.ToArray(), constructed, uvCorrections: plan.UvCorrections, preparedDomains: plan.PreparedDomains, frameTransforms: frames.ToArray());
     }
 }

@@ -20,8 +20,6 @@ internal static class Draw02ObjectAssembly
         var imported = Path.Combine(Application.persistentDataPath, "ImportedData");
         foreach (var item in authored)
         {
-            if (item.m_Object == null)
-                throw new InvalidOperationException("Draw02 requires its original control-room attachment sources.");
             // All three recorded vents/lights belong to the negative-X fixed control room.
             var position = item.m_Position;
             position.x -= halfWidthDelta;

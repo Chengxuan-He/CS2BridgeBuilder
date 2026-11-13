@@ -13,7 +13,6 @@ internal static class Draw02WalkAtlasAppearance
     internal static MovableRoadAppearance.Level Apply(int lod, MovableRoadAppearance.Level level,
         MovableSelectedRoadLayout layout, Pose pose)
     {
-        if (lod < 0 || lod > 1) throw new ArgumentOutOfRangeException(nameof(lod));
         var values = Numeric_Types_Draw02_Draw02WalkAtlasAppearance_cs.Values.F32;
         var transform = Matrix4x4.TRS(pose.position, pose.rotation, Vector3.one);
         var projection = transform.transpose;

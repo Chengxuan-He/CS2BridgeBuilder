@@ -18,18 +18,13 @@ internal static class PedestrianDraw02FootingWideningData
         var measured = lod switch
         {
             0 => Near,
-            1 => Far,
-            _ => throw new ArgumentOutOfRangeException(nameof(lod))};
+            1 => Far};
         var triangles = lod == Numeric_Types_PedestrianDraw02_PedestrianDraw02FootingWideningData_g_cs.Values.I32[0] ? Numeric_Types_PedestrianDraw02_PedestrianDraw02FootingWideningData_g_cs.Values.I32[1] : Numeric_Types_PedestrianDraw02_PedestrianDraw02FootingWideningData_g_cs.Values.I32[2];
-        if (!float.IsFinite(halfWidthDelta) || sourcePositions.Length != measured.Length || sourceIndices.Length != Numeric_Types_PedestrianDraw02_PedestrianDraw02FootingWideningData_g_cs.Values.I32[3] || sourceIndices[Numeric_Types_PedestrianDraw02_PedestrianDraw02FootingWideningData_g_cs.Values.I32[4]].Length != triangles * Numeric_Types_PedestrianDraw02_PedestrianDraw02FootingWideningData_g_cs.Values.I32[5])
-            throw new ArgumentException("PedestrianDraw02 footing requires its measured native layout and a finite width change.");
         var positions = (Vector3[])sourcePositions.Clone();
         for (int i = Numeric_Types_PedestrianDraw02_PedestrianDraw02FootingWideningData_g_cs.Values.I32[6]; i < measured.Length; i++)
         {
             var actual = sourcePositions[i];
             var expected = measured[i].Position;
-            if (actual.x != expected.x || actual.y != expected.y || actual.z != expected.z)
-                throw new InvalidOperationException($"PedestrianDraw02 footing LOD {lod} vertex {i} differs from its recorded source.");
         }
         var weights = lod == 0 ? Coefficients.Near : Coefficients.Far;
         int first = Numeric_Types_PedestrianDraw02_PedestrianDraw02FootingWideningData_g_cs.Values.I32[6];

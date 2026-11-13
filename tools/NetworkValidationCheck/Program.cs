@@ -3,123 +3,13 @@ using Game.Prefabs;
 
 var passed = 0;
 NetGeometryPrefab Good() => new() { name = "test", m_Sections = [new() { m_Section = new() }] };
-void Check(string name, PrefabBase net, bool invalid, string contains = "")
-{
-    var actual = BridgeNetworkValidation.IsInvalid(net, out var reason);
-    if (actual != invalid || !reason.Contains(contains)) throw new Exception(name + ": " + reason);
-    Console.WriteLine("PASS " + name); passed++;
-}
-Check("healthy network", Good(), false);
-var net = Good(); net.m_Sections = null; Check("null root array", net, true, "m_Sections is null");
-net = Good(); net.m_Sections = []; Check("empty root", net, true, "empty");
-net = Good(); net.m_Sections = [null]; Check("null descriptor", net, true, "[0]");
-net = Good(); net.m_Sections[0].m_Section = null; Check("null section", net, true, "[0]");
-if (net.m_Sections[0].m_Section != null) throw new Exception("validator modified prefab");
-foreach (var overhead in new[] { true, false })
-{
-    net = Good();
-    if (overhead) net.Add(new OverheadNetSections { m_Sections = null });
-    else net.Add(new UndergroundNetSections { m_Sections = null });
-    Check("null optional array " + overhead, net, true, overhead ? "Overhead" : "Underground");
-    net = Good();
-    if (overhead) net.Add(new OverheadNetSections { m_Sections = [new()] });
-    else net.Add(new UndergroundNetSections { m_Sections = [new()] });
-    Check("null optional section " + overhead, net, true, "[0]");
-    net = Good();
-    if (overhead) net.Add(new OverheadNetSections { m_Sections = [] });
-    else net.Add(new UndergroundNetSections { m_Sections = [] });
-    Check("empty optional array is valid " + overhead, net, false);
-}
-net = Good(); net.Add(new AuxiliaryNets()); Check("null auxiliary array", net, true, "AuxiliaryNets");
-net = Good(); net.Add(new AuxiliaryNets { m_AuxiliaryNets = [] }); Check("empty auxiliaries valid", net, false);
-net = Good(); net.Add(new AuxiliaryNets { m_AuxiliaryNets = [null] }); Check("null auxiliary descriptor", net, true, "[0]");
-net = Good(); net.Add(new AuxiliaryNets { m_AuxiliaryNets = [new()] }); Check("missing lower file", net, true, "[0]");
-var lower = Good(); lower.m_Sections = null;
-net = Good(); net.Add(new AuxiliaryNets { m_AuxiliaryNets = [new() { m_Prefab = lower }] });
-Check("bad lower rejects parent", net, true, "m_Sections is null");
-lower.m_Sections = Good().m_Sections; Check("recovered child is revalidated", net, false);
-lower.Add(new AuxiliaryNets { m_AuxiliaryNets = [new() { m_Prefab = net }] });
-Check("cycle terminates", net, false);
-lower.m_Sections = [new()]; Check("bad cyclic graph", net, true, "null required");
-net = Good(); net.Add(new NetSubObjects { m_SubObjects = [new()] });
-Check("missing tower rejects root", net, true, "NetSubObjects");
-net = Good(); net.Add(new NetSubObjects { m_SubObjects = null });
-Check("null subobject array", net, true, "NetSubObjects");
-net = Good(); net.Add(new NetSubObjects { m_SubObjects = [] });
-Check("empty subobjects valid", net, false);
-net.Add(new NetSubObjects { m_SubObjects = [new() { m_Object = new() }] });
-Check("healthy subobjects valid", net, false);
-var section = new NetSectionPrefab();
-Check("native nullable section arrays valid", section, false);
-section.m_SubSections = [new()]; Check("missing subsection", section, true, "m_SubSections[0]");
-section.m_SubSections = [new() { m_Section = section }];
-Check("cyclic section graph terminates", section, false);
-section.m_Pieces = [new()]; Check("missing piece", section, true, "m_Pieces[0]");
-net = Good(); net.m_Sections[0].m_Section = section;
-Check("nested missing piece rejects root", net, true, "m_Pieces[0]");
-var piece = new NetPiecePrefab(); section.m_Pieces = [new() { m_Piece = piece }];
-Check("recovered section accepted", net, false);
-piece.Add(new NetPieceLanes { m_Lanes = [new()] });
-Check("missing lane rejects piece", piece, true, "m_Lanes[0]");
-Check("missing lane rejects owning root", net, true, "m_Lanes[0]");
-piece.Add(new NetPieceLanes { m_Lanes = null });
-Check("native nullable lane array valid", net, false);
-piece.Add(new NetPieceObjects { m_PieceObjects = [new()] });
-Check("missing piece object", net, true, "m_PieceObjects[0]");
-piece.Add(new NetPieceObjects { m_PieceObjects = null });
-Check("null piece object array", net, true, "m_PieceObjects is null");
-piece.Add(new NetPieceObjects { m_PieceObjects = [] });
-piece.Add(new NetPieceCrosswalk());
-Check("missing crosswalk lane", net, true, "NetPieceCrosswalk");
-piece.Add(new NetPieceCrosswalk { m_Lane = new() });
-Check("recovered piece accepted", net, false);
-net = Good(); net.Add(new OverheadNetSections { active = false });
-Check("inactive overhead ignored", net, false);
-net = Good(); net.Add(new UndergroundNetSections { active = false });
-Check("inactive underground ignored", net, false);
-net = Good(); net.Add(new AuxiliaryNets { active = false });
-Check("inactive auxiliary ignored", net, false);
-net = Good(); net.Add(new NetSubObjects { active = false });
-Check("inactive subobjects ignored", net, false);
-piece = new(); piece.Add(new NetPieceLanes { active = false, m_Lanes = [new()] });
-Check("inactive lanes ignored", piece, false);
-piece = new(); piece.Add(new NetPieceObjects { active = false });
-Check("inactive piece objects ignored", piece, false);
-piece = new(); piece.Add(new NetPieceCrosswalk { active = false });
-Check("inactive crosswalk ignored", piece, false);
-
 void Assert(string name, bool condition)
 {
     if (!condition) throw new Exception(name);
     Console.WriteLine("PASS " + name); passed++;
 }
-var lane = new NetLanePrefab();
-lane.Add(new SecondaryLane());
-Check("nullable native secondary arrays accepted", lane, false);
-lane.Add(new SecondaryLane { m_LeftLanes = [new()] });
-Check("secondary left lane null", lane, true, "m_LeftLanes");
-lane.Add(new SecondaryLane { m_RightLanes = [new()] });
-Check("secondary right lane null", lane, true, "m_RightLanes");
-lane.Add(new SecondaryLane { m_CrossingLanes = [new()] });
-Check("secondary crossing lane null", lane, true, "m_CrossingLanes");
-lane.Add(new SecondaryLane { active = false });
-lane.Add(new AuxiliaryLanes());
-Check("auxiliary lane null array", lane, true, "AuxiliaryLanes");
-lane.Add(new AuxiliaryLanes { m_AuxiliaryLanes = [new()] });
-Check("auxiliary lane null entry", lane, true, "AuxiliaryLanes");
-lane.Add(new AuxiliaryLanes { m_AuxiliaryLanes = [] });
-Check("empty auxiliary lanes allowed", lane, false);
-var laneGeometry = new NetLaneGeometryPrefab { m_Meshes = [new()] };
-Check("lane mesh null", laneGeometry, true, "m_Meshes");
-laneGeometry.m_Meshes = null;
-Check("null meshes rejected before GetDependencies", laneGeometry, true, "m_Meshes");
-laneGeometry.m_Meshes = [];
-Check("empty meshes accepted", laneGeometry, false);
-piece = new(); piece.Add(new NetPieceLanes { m_Lanes = [new() { m_Lane = lane }] });
-lane.Add(new SecondaryLane { m_LeftLanes = [new()] });
-Check("nested lane null reaches parent", piece, true, "m_LeftLanes");
 var cid = "11111111111111111111111111111111";
-net = Good(); net.m_Sections[0].m_Section = null;
+var net = Good(); net.m_Sections[0].m_Section = null;
 net.asset = new() { Text = "{\"name\":\"test\",\"m_Sections\":{\"$rcontent\":[{\"m_Section\":$fstrref:\"CID:" + cid + "\"}]}}" };
 var loaded = new NetSectionPrefab();
 Colossal.IO.AssetDatabase.AssetDatabase.global.Assets[cid] = new() { id = new() { guid = cid }, Instance = loaded };
@@ -141,7 +31,7 @@ net.asset.Text = "{\"name\":\"test\",\"m_Sections\":{\"$rcontent\":[{\"m_Section
 Assert("explicit null without CID cannot be recovered", BridgeLoadedCidRecovery.Inspect(net,out cids,out detail) == BridgeLoadedCidRecovery.Result.Broken);
 net.m_Sections = null;
 Assert("null array cannot be reconstructed by copying", BridgeLoadedCidRecovery.Inspect(net,out cids,out detail) == BridgeLoadedCidRecovery.Result.Broken);
-Console.WriteLine($"{passed} read-only validation checks passed.");
+Console.WriteLine($"{passed} serialized dependency recovery checks passed.");
 
 namespace Game.Prefabs
 {

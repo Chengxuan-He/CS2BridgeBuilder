@@ -29,14 +29,9 @@ internal static class Draw03RoadWearDomains
             float previous = Numeric_Types_Draw03_Draw03RoadWearDomains_cs.Values.F32[0];
             for (int i = Numeric_Types_Draw03_Draw03RoadWearDomains_cs.Values.I32[1]; i < bands.Length; i++)
             {
-                if (bands[i].Start != previous || bands[i].End <= previous)
-                    throw new InvalidOperationException("Draw03 appearance bands must be contiguous.");
                 patches.Add(Draw03RoadWearUnits.ForBand(patch, i));
                 previous = bands[i].End;
             }
-
-            if (bands.Length == Numeric_Types_Draw03_Draw03RoadWearDomains_cs.Values.I32[2] || previous != Numeric_Types_Draw03_Draw03RoadWearDomains_cs.Values.F32[1])
-                throw new InvalidOperationException("Draw03 appearance bands must cover the selected surface.");
             Partition Build(int start, int end)
             {
                 if (end - start == Numeric_Types_Draw03_Draw03RoadWearDomains_cs.Values.I32[3])

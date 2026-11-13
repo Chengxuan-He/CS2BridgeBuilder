@@ -1,6 +1,5 @@
 using System;
 using System.IO;
-using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Text;
 
@@ -10,24 +9,10 @@ namespace BridgeBuilder.Bridges;
 // an owner-local bundle is discoverable by the game's native asset database.
 internal static class MovableCustomShaderProgram
 {
-    internal enum Kind { SkeletonDecal, WorldLayeredPbr }
-
-    private static string Read(string name)
-    {
-        using var stream = typeof(MovableCustomShaderProgram).Assembly.GetManifestResourceStream(
-            "BridgeBuilder.MaterialProgram." + name + ".hlsl")
-            ?? throw new InvalidDataException("Missing generated material source: " + name);
-        using var reader = new StreamReader(stream, Encoding.UTF8);
-        return reader.ReadToEnd();
-    }
-
-    internal static string MaterialFunction(Kind kind) => Read("MaterialFunctions") + "\n" +
-        Read("NativeInstanceSkeleton") + "\n" + Read("NativeDBuffer") + "\n" + Read(kind.ToString());
-
     // The authoring seed contains native reflection/pass records and complete HLSL
     // for each generated vertex adapter. Pixel programs retain the source shader's
-    // HDRP implementation. Runtime compilation replaces only declared equal-size
-    // program slots; an unknown container layout is an input error, not a fallback.
+    // HDRP implementation. Compilation replaces complete declared programs and
+    // rebuilds their containers; an unknown layout is an input error, not a fallback.
     internal static bool TryCompilePackage(Stream input, out byte[] bundle, out string? error)
     {
         bundle = Array.Empty<byte>(); error = null;
@@ -46,6 +31,7 @@ internal static class MovableCustomShaderProgram
                 return bytes;
             }
             var candidate = ReadBytes(64 * 1024 * 1024);
+            var replacements = new System.Collections.Generic.List<MovableShaderContainer.Replacement>();
             int programs = reader.ReadInt32();
             if (programs <= 0 || programs > 128)
             { error = "Invalid generated material program count."; return false; }
@@ -59,8 +45,6 @@ internal static class MovableCustomShaderProgram
                 { error = "Unsupported generated material program entry or stage."; return false; }
                 var expected = ReadBytes(1024 * 1024);
                 if (!TryCompile(source, entry, profile, out var compiled, out error)) return false;
-                if (compiled.Length != expected.Length)
-                { error = "Generated material program exceeds its serialized slot: " + i; return false; }
                 int copies = reader.ReadInt32();
                 if (copies <= 0 || copies > 1024)
                 { error = "Invalid generated material program slot count."; return false; }
@@ -72,12 +56,12 @@ internal static class MovableCustomShaderProgram
                     for (int j = 0; j < expected.Length; j++)
                         if (candidate[offset + j] != expected[j])
                         { error = "Generated material program seed does not match its slot."; return false; }
-                    Buffer.BlockCopy(compiled, 0, candidate, offset, compiled.Length);
+                    replacements.Add(new MovableShaderContainer.Replacement { Offset = offset, Expected = expected, Compiled = compiled });
                 }
             }
             if (input.ReadByte() != -1)
             { error = "Unexpected trailing material program data."; return false; }
-            bundle = candidate; return true;
+            bundle = MovableShaderContainer.Rebuild(candidate, replacements); return true;
         }
         catch (Exception exception)
         {

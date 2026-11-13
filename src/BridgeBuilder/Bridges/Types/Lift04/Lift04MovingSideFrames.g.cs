@@ -11,10 +11,7 @@ internal static class Lift04MovingSideFrames
         var data = lod switch
         {
             0 => Numeric_Types_Lift04_Lift04MovingSideFrames_g_cs.Values.I32[0],
-            1 => Numeric_Types_Lift04_Lift04MovingSideFrames_g_cs.Values.I32[1],
-            _ => throw new ArgumentOutOfRangeException(nameof(lod))};
-        if (source.Length != data || positions.Length != data || !float.IsFinite(delta))
-            throw new InvalidOperationException("Lift04 detailed moving side frames requires its recorded native topology.");
+            1 => Numeric_Types_Lift04_Lift04MovingSideFrames_g_cs.Values.I32[1]};
         AffineGeometry.Execute(BatchProgram0.Data, lod, new[] { source, positions }, Array.Empty<float[]>(), new float[] { delta });
     }
 

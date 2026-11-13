@@ -280,9 +280,6 @@ internal static class MovableRoadPreparation
     {
         var offset=pose.position;var q=pose.rotation;
         var lengthSquared=q.x*q.x+q.y*q.y+q.z*q.z+q.w*q.w;
-        if(!float.IsFinite(offset.x)||!float.IsFinite(offset.y)||!float.IsFinite(offset.z)||
-            !float.IsFinite(lengthSquared)||lengthSquared<=0f)
-            throw new InvalidOperationException("The measured road-to-object pose is invalid.");
         q=q.normalized;
         var bounds=new Bounds3(new float3(float.PositiveInfinity),new float3(float.NegativeInfinity));
         void Include(IReadOnlyList<MovableRoadGeometry.Triangle> triangles)

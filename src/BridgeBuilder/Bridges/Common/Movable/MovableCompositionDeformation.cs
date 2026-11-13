@@ -33,13 +33,9 @@ internal sealed class MovableCompositionDeformation
     internal MovableRoadGeometry.Vertex Evaluate(Vector3 position, Vector3 normal, Vector4 tangent,
         Vector4 texture, Color32 selector)
     {
-        if (selector.r > 7 || selector.g > 7 || selector.b != 0)
-            throw new InvalidOperationException("Composition vertex requires an unknown matrix or terrain-sampling path.");
         var left = _matrices[selector.r];
         var right = _matrices[selector.g];
         var p = (float3)position;
-        if (!math.all(math.isfinite(p)) || !math.all(math.isfinite((float4)texture)))
-            throw new InvalidOperationException("Composition vertex contains non-finite packed attributes.");
 
         // Alpha's low three bits select consecutive lateral synchronization groups. Its high
         // bit forces the endpoint-width blend. Intermediate bits do not affect this shader path.

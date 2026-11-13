@@ -12,8 +12,6 @@ internal static class PedestrianDraw02RoadPartitions
 {
     internal static Partition Create(float halfWidthDelta)
     {
-        if (!float.IsFinite(halfWidthDelta))
-            throw new ArgumentOutOfRangeException(nameof(halfWidthDelta));
         var x = new float[Stations.Length];
         for (var i = Numeric_Types_PedestrianDraw02_PedestrianDraw02RoadPartitions_g_cs.Values.I32[0]; i < x.Length; i++)
         {

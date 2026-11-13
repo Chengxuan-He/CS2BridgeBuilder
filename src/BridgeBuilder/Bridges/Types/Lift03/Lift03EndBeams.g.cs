@@ -10,10 +10,7 @@ internal static class Lift03EndBeams
         var data = lod switch
         {
             0 => (Count: Numeric_Types_Lift03_Lift03EndBeams_g_cs.Values.I32[0], IndexCount: Numeric_Types_Lift03_Lift03EndBeams_g_cs.Values.I32[1], Edges: Edges0, Interior: Interior0, ExtraWeights: ExtraWeights0, Fragments: Fragments0),
-            1 => (Count: Numeric_Types_Lift03_Lift03EndBeams_g_cs.Values.I32[2], IndexCount: Numeric_Types_Lift03_Lift03EndBeams_g_cs.Values.I32[3], Edges: Edges1, Interior: Interior1, ExtraWeights: ExtraWeights1, Fragments: Fragments1),
-            _ => throw new ArgumentOutOfRangeException(nameof(lod))};
-        if (source.Length != data.Count || positions.Length != data.Count || indices.Length != data.IndexCount || !float.IsFinite(delta))
-            throw new InvalidOperationException("Lift03 end beams require their recorded native layout.");
+            1 => (Count: Numeric_Types_Lift03_Lift03EndBeams_g_cs.Values.I32[2], IndexCount: Numeric_Types_Lift03_Lift03EndBeams_g_cs.Values.I32[3], Edges: Edges1, Interior: Interior1, ExtraWeights: ExtraWeights1, Fragments: Fragments1)};
         AffineGeometry.Execute(CoordinatePrograms.Data, lod, new[] { source, positions }, Array.Empty<float[]>(), new[] { delta });
         var x = new float[data.ExtraWeights.Length];
         AffineGeometry.Execute(InterpolationProgram0.Data, lod, new[] { source }, new[] { x }, new float[] { delta });

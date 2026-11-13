@@ -89,8 +89,8 @@ lines = ['// Native LiftBridge01_LOD2 fixed stairs, rooms, attachments and later
          'using System;', 'using UnityEngine;', '', 'namespace BridgeBuilder.Bridges;', '',
          'internal static class Lift01FarSideParts', '{',
          '    internal static void Apply(Vector3[] source, Vector3[] positions, float delta)', '    {',
-         '        if (source.Length != 1110 || positions.Length != 1110 || !float.IsFinite(delta))',
-         '            throw new InvalidOperationException("Lift01 far side parts require their measured source layout.");',
+         '        ',
+         '',
          '        foreach (var part in Parts)',
          '            for (var i = part.First; i <= part.Last; i++) positions[i].x = source[i].x + part.Direction * delta;',
          '    }', '', '    private static readonly (int First, int Last, int Direction)[] Parts =', '    {']

@@ -12,8 +12,6 @@ internal static class MovableAttachmentStations
     // This consumes authored motion domains; it does not infer seams from meshes.
     internal static float[] Ends(Vector3 row, Partition partition, Func<int, bool> moving, float clearance)
     {
-        if (!float.IsFinite(clearance))
-            throw new ArgumentException("Support clearance must be finite.");
         var ranges = new List<(float Min, float Max)>();
         void Visit(Partition region, float min, float max)
         {
@@ -26,8 +24,6 @@ internal static class MovableAttachmentStations
             var origin = new Vector3(row.x, row.y, 0f);
             var offset = region.ObjectToSeam.MultiplyPoint3x4(origin).z;
             var slope = region.ObjectToSeam.m22;
-            if (!float.IsFinite(offset) || !float.IsFinite(slope))
-                throw new InvalidOperationException("Invalid support partition frame.");
             if (slope == 0f)
             {
                 Visit(offset < 0f ? region.Negative! : region.Positive!, min, max);
@@ -44,8 +40,6 @@ internal static class MovableAttachmentStations
         var last = ranges[ranges.Count - 1];
         var start = first.Min + clearance;
         var end = last.Max - clearance;
-        if (!float.IsFinite(start) || !float.IsFinite(end))
-            throw new InvalidOperationException("Recorded support positions are non-finite.");
         return new[] { start, end };
     }
 
@@ -55,7 +49,6 @@ internal static class MovableAttachmentStations
         while(region.Bone<0 && !region.IsGap)
         {
             var distance=region.ObjectToSeam.MultiplyPoint3x4(point).z;
-            if(!float.IsFinite(distance)) throw new InvalidOperationException("Attachment mounting frame is not finite.");
             region=distance<0f?region.Negative!:region.Positive!;
         }
         return !region.IsGap;

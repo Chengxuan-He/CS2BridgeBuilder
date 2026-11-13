@@ -2,7 +2,7 @@
  * Cities: Skylines II UI Module
  * Id: BridgeBuilder
  * Author: BridgeBuilder
- * Version: 26.11.12a
+ * Version: 26.11.14
  * Dependencies:
  */
 const React = window.React;
@@ -98,6 +98,7 @@ const defaultText = {
     "FamilySuspension": "Suspension bridges",
     "FamilyCableStayed": "Cable-stayed bridges",
     "FamilyArch": "Arch bridges",
+    "FamilyViaduct": "Viaducts",
     "FamilyCovered": "Covered bridges",
     "FamilyBascule": "Bascule bridges",
     "FamilyLift": "Lift bridges",
@@ -203,6 +204,14 @@ function bindCardName(view, text, active) {
     };
 }
 
+function CardIcon({ source, ratio }) {
+    const [failed, setFailed] = React.useState(false);
+    const valid = !failed && source && ratio > 0;
+    const src = valid ? source : fallbackIcon;
+    return h("img", { key: src, src, alt: "", style: { height: "62rem", width: `${62 * (valid ? ratio : 1)}rem` },
+        onError: () => setFailed(true) });
+}
+
 function Card({ item, selected, onSelect, subtitle }) {
     const viewport = React.useRef(null), title = React.useRef(null);
     const [hovered, setHovered] = React.useState(false);
@@ -216,14 +225,14 @@ function Card({ item, selected, onSelect, subtitle }) {
         onMouseLeave: () => setHovered(false),
         onClick: () => onSelect(item),
         type: "button",
-        title: item.name,
+        title: subtitle ? `${item.name}\n${subtitle}` : item.name,
         "aria-pressed": selected
     },
-    h("img", { src: item.icon || fallbackIcon }),
+    h(CardIcon, { key: item.icon || fallbackIcon, source: item.icon, ratio: item.iconRatio }),
     h("span", { ref: viewport, className: "bb-card-name" },
         h("span", { className: "bb-card-name-area" },
             h("span", { ref: title, className: "bb-card-name-run" }, item.name))),
-    subtitle ? h("small", null, subtitle) : null);
+    subtitle ? h("small", { title: subtitle }, subtitle) : null);
 }
 
 function CardGrid({ items, selectedId, onSelect, emptyText }) {
@@ -328,11 +337,11 @@ function ModelPreview({ upperId = "", lowerId = "", styleId = "", prefabName = "
         let frame = null;
         const measure = () => {
             const width = frameRef.current?.getBoundingClientRect().width;
-            if (!(width > 0) || !Number.isFinite(width)) { setPhysicalWidth(0); return; }
+            if (!(width > 0)) { setPhysicalWidth(0); return; }
             // Cohtml resolves absolute percentage heights against the content
             // box, not the padding box. Give both frame and image a REAL height;
             // do not reserve space with height:0 + padding-top and a 100% image.
-            const ratio = Number.isFinite(window.devicePixelRatio) && window.devicePixelRatio > 0 ? window.devicePixelRatio : 1;
+            const ratio = window.devicePixelRatio;
             setPhysicalWidth(Math.max(64, Math.min(2048, Math.ceil(width * ratio / 2) * 2)));
             setImageSize(previous => previous.width === width ? previous :
                 { width, height: width * 512 / 1024 });

@@ -10,10 +10,7 @@ internal static class Lift03DeckRailings
         var data = lod switch
         {
             0 => (Count: Numeric_Types_Lift03_Lift03DeckRailings_g_cs.Values.I32[0], Parts: Level0),
-            1 => (Count: Numeric_Types_Lift03_Lift03DeckRailings_g_cs.Values.I32[1], Parts: Level1),
-            _ => throw new ArgumentOutOfRangeException(nameof(lod))};
-        if (source.Length != data.Count || positions.Length != data.Count || !float.IsFinite(upperDelta) || !float.IsFinite(lowerDelta))
-            throw new InvalidOperationException("Lift03 deck railings require their recorded native layout.");
+            1 => (Count: Numeric_Types_Lift03_Lift03DeckRailings_g_cs.Values.I32[1], Parts: Level1)};
         foreach (var part in data.Parts)
             AffineGeometry.Execute(RangePrograms.Data, 0, new[] { source, positions }, Array.Empty<float[]>(), new float[] { part.Sign, part.Upper ? upperDelta : lowerDelta }, part.First, checked((checked((part.Last) + 1)) - (part.First)));
     }

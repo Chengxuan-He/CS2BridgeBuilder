@@ -18,10 +18,7 @@ internal static class Lift01NetPillarGeometry
             (1, 2) => (Vertices: Numeric_Types_Lift01_Lift01NetPillarGeometry_g_cs.Values.I32[10], Triangles: Numeric_Types_Lift01_Lift01NetPillarGeometry_g_cs.Values.I32[11]),
             (2, 0) => (Vertices: Numeric_Types_Lift01_Lift01NetPillarGeometry_g_cs.Values.I32[12], Triangles: Numeric_Types_Lift01_Lift01NetPillarGeometry_g_cs.Values.I32[13]),
             (2, 1) => (Vertices: Numeric_Types_Lift01_Lift01NetPillarGeometry_g_cs.Values.I32[14], Triangles: Numeric_Types_Lift01_Lift01NetPillarGeometry_g_cs.Values.I32[15]),
-            (2, 2) => (Vertices: Numeric_Types_Lift01_Lift01NetPillarGeometry_g_cs.Values.I32[16], Triangles: Numeric_Types_Lift01_Lift01NetPillarGeometry_g_cs.Values.I32[17]),
-            _ => throw new ArgumentOutOfRangeException(nameof(part))};
-        if (source.Length != counts.Vertices || indices.Length != counts.Triangles * Numeric_Types_Lift01_Lift01NetPillarGeometry_g_cs.Values.I32[18] || !float.IsFinite(delta))
-            throw new InvalidOperationException("Lift01 ordinary pillar requires its measured layout.");
+            (2, 2) => (Vertices: Numeric_Types_Lift01_Lift01NetPillarGeometry_g_cs.Values.I32[16], Triangles: Numeric_Types_Lift01_Lift01NetPillarGeometry_g_cs.Values.I32[17])};
         var positions = (Vector3[])source.Clone();
         if (part == Numeric_Types_Lift01_Lift01NetPillarGeometry_g_cs.Values.I32[19])
             foreach (var range in CapRanges[lod])

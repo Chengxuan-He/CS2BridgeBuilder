@@ -33,28 +33,20 @@ internal static class Lift02UvSampling
         };
         if (route < 0) return 0;
         var values = Data.Items[route];
-        if ((uint)domain >= (uint)values.Length)
-            throw new ArgumentOutOfRangeException(nameof(domain), "Unrecorded Lift02 UV domain.");
         return values[domain];
     }
     private static int[][] Read()
     {
         var values = HardcodedNumbers.Load("Types_Lift02_Lift02UvSampling_cs").I32;
-        if (values.Length < 2 || values[0] != 2 || values[1] != 20)
-            throw new InvalidOperationException("Invalid Lift02 UV sampling resource.");
         var result = new int[values[1]][];
         int offset = 2;
         for (int route = 0; route < result.Length; route++)
         {
             int count = values[offset++];
-            if (count < 0 || count > values.Length - offset)
-                throw new InvalidOperationException("Invalid Lift02 UV sampling count.");
             var flags = new int[count];
             for (int domain = 0; domain < count; domain++)
             {
                 int value = values[offset++];
-                if (value < 0 || value > 3)
-                    throw new InvalidOperationException("Invalid Lift02 UV sampling flag.");
                 flags[domain] = value;
             }
             result[route] = flags;

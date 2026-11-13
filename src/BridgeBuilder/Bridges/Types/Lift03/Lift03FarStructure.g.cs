@@ -8,8 +8,6 @@ internal static class Lift03FarStructure
 {
     internal static MovableStructureModel.Plan Create(Vector3[] source, int[] indices, float delta)
     {
-        if (source.Length != Numeric_Types_Lift03_Lift03FarStructure_g_cs.Values.I32[0] || indices.Length != Numeric_Types_Lift03_Lift03FarStructure_g_cs.Values.I32[1] * Numeric_Types_Lift03_Lift03FarStructure_g_cs.Values.I32[2] || !float.IsFinite(delta))
-            throw new InvalidOperationException("Lift03 far structure requires its recorded native layout.");
         var positions = (Vector3[])source.Clone();
         Lift03RigidParts.Apply(Numeric_Types_Lift03_Lift03FarStructure_g_cs.Values.I32[3], source, positions, delta);
         AffineGeometry.Execute(CoordinatePrograms.Data, 0, new[] { source, positions }, Array.Empty<float[]>(), new[] { delta });

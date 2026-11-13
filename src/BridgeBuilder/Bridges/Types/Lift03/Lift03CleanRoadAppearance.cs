@@ -86,8 +86,6 @@ internal static class Lift03CleanRoadAppearance
         internal static HardcodedNumbers Values => GenerationParameters.Get<HardcodedNumbers>("BridgeBuilder.Bridges.Lift03CleanRoadAppearance.Numbers.Values", () => HardcodedNumbers.Load("Types_Lift03_CleanRoadAppearance"));
         static Numbers()
         {
-            if (Values.I32.Length != Numeric_Types_Lift03_Lift03CleanRoadAppearance_cs.Values.I32[43] || Values.I32[Numeric_Types_Lift03_Lift03CleanRoadAppearance_cs.Values.I32[44]] != Numeric_Types_Lift03_Lift03CleanRoadAppearance_cs.Values.I32[45] || Values.F32.Length != Numeric_Types_Lift03_Lift03CleanRoadAppearance_cs.Values.I32[46])
-                throw new InvalidOperationException("Invalid Lift03 clean road source profile.");
         }
     }
 }

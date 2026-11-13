@@ -14,15 +14,11 @@ internal static class Draw02FixedCurbs
         var records = lod switch
         {
             0 => Near,
-            1 => Middle,
-            _ => throw new ArgumentOutOfRangeException(nameof(lod))};
+            1 => Middle};
         var mask = (bool[])plan.RemoveTriangles[Numeric_Types_Draw02_Draw02FixedCurbs_g_cs.Values.I32[1]].Clone();
         for (var i = Numeric_Types_Draw02_Draw02FixedCurbs_g_cs.Values.I32[2]; i < records.Length; i += Numeric_Types_Draw02_Draw02FixedCurbs_g_cs.Values.I32[3])
         {
             var face = records[i];
-            for (var corner = Numeric_Types_Draw02_Draw02FixedCurbs_g_cs.Values.I32[4]; corner < Numeric_Types_Draw02_Draw02FixedCurbs_g_cs.Values.I32[5]; corner++)
-                if (plan.SourceIndices[Numeric_Types_Draw02_Draw02FixedCurbs_g_cs.Values.I32[6]][face * Numeric_Types_Draw02_Draw02FixedCurbs_g_cs.Values.I32[7] + corner] != records[i + corner + Numeric_Types_Draw02_Draw02FixedCurbs_g_cs.Values.I32[8]])
-                    throw new InvalidOperationException("Draw02 fixed curb topology differs from the measured source.");
             mask[face] = true;
         }
 

@@ -24,7 +24,6 @@ internal static class MovableLaneDeformation
     internal static MovableRoadGeometry.Vertex EvaluateInput(Input batch,
         MovableRoadGeometry.Vertex vertex, Func<Vector3,float>? projectedHeight)
     {
-        if (batch.Decal) throw new InvalidOperationException("A decal volume requires surface projection, not mesh export.");
         // Native LaneSystem already puts static cable sag into Curve.m_Bezier.
         // Evaluate its closed, neutral-wind pose just like other curved geometry:
         // SG_CurvedShader 570/10 adds HangingDistances only to control-point X/Z
@@ -97,8 +96,6 @@ internal static class MovableLaneDeformation
         position = basis.MultiplyPoint3x4(position);
         if (batch.Parameters.y != 0f)
         {
-            if (projectedHeight == null)
-                throw new InvalidOperationException("A projected lane requires the evaluated selected-road receiver surface.");
             position.y += (projectedHeight(center) - center.y) * batch.Parameters.y;
         }
         normal = basis.MultiplyVector(normal).normalized;

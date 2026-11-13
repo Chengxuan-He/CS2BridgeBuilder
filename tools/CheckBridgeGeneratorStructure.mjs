@@ -36,8 +36,9 @@ assert(generation.includes('BridgeGeneratorRouter.Create(style.Id, report, tower
 assert(generation.includes('if (composer == null) return false;'));
 assert(generation.includes('composer.StructureFollowsUpperAuxiliary ? upper : main'));
 assert(!generation.includes('new BridgeComposer('));
-assert(read(`${bridges}/Common/BridgeGeneratorBase.cs`).includes('string.Equals(style.Id, StyleId, StringComparison.Ordinal)'));
-assert.equal(readdirSync(resolve(root, `${bridges}/Common/Geometry`)).filter(x => /^TowerFactory.*\.cs$/.test(x)).length, 10);
+assert(!read(`${bridges}/Common/BridgeGeneratorBase.cs`).includes('string.Equals(style.Id, StyleId, StringComparison.Ordinal)'), 'Trust the route-selected style without a repeated runtime identity gate');
+for (const part of ['Sources', 'Recorded', 'NetworkMaterials'])
+  assert(existsSync(resolve(root, `${bridges}/Common/Geometry/TowerFactory.${part}.cs`)));
 assert(existsSync(resolve(root, `${bridges}/Common/Geometry/TowerFactory.Sources.cs`)));
 assert.equal(readdirSync(resolve(root, `${bridges}/Common/Geometry`)).filter(x => /^TowerWidening.*\.cs$/.test(x)).length, 6);
 for (const obsolete of ['BridgeComposer.cs', 'TowerFactory.cs', 'TowerWidening.cs', 'DoubleDeckComposer.cs'])

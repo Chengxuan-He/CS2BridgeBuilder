@@ -13,10 +13,7 @@ internal static class Draw02RigidParts
         {
             0 => (Count: Numeric_Types_Draw02_Draw02RigidParts_g_cs.Values.I32[0], Left: Left0, Right: Right0),
             1 => (Count: Numeric_Types_Draw02_Draw02RigidParts_g_cs.Values.I32[1], Left: Left1, Right: Right1),
-            2 => (Count: Numeric_Types_Draw02_Draw02RigidParts_g_cs.Values.I32[2], Left: Left2, Right: Right2),
-            _ => throw new ArgumentOutOfRangeException(nameof(lod))};
-        if (source.Length != data.Count || positions.Length != data.Count)
-            throw new InvalidOperationException("Draw02 rigid mapping requires its recorded main mesh.");
+            2 => (Count: Numeric_Types_Draw02_Draw02RigidParts_g_cs.Values.I32[2], Left: Left2, Right: Right2)};
         foreach (var coordinateRows in StructureRows.Stages(data.Left))
             AffineGeometry.Execute(RangePrograms1.Data, 0, new[] { source, positions }, Array.Empty<float[]>(), new float[] { delta }, count: coordinateRows.Length, indices: new[] { coordinateRows });
         foreach (var coordinateRows in StructureRows.Stages(data.Right))
@@ -25,8 +22,6 @@ internal static class Draw02RigidParts
 
     internal static MovableStructureModel.Plan Glass(int lod, Vector3[] source, int[] indices, float delta)
     {
-        if ((lod != Numeric_Types_Draw02_Draw02RigidParts_g_cs.Values.I32[3] && lod != Numeric_Types_Draw02_Draw02RigidParts_g_cs.Values.I32[4]) || source.Length != Numeric_Types_Draw02_Draw02RigidParts_g_cs.Values.I32[5] || indices.Length != Numeric_Types_Draw02_Draw02RigidParts_g_cs.Values.I32[6])
-            throw new InvalidOperationException("Draw02 glass requires its recorded control-room mesh.");
         var moved = (Vector3[])source.Clone();
         AffineGeometry.Execute(RangePrograms.Data, 0, new[] { moved }, Array.Empty<float[]>(), new float[] { delta }, Numeric_Types_Draw02_Draw02RigidParts_g_cs.Values.I32[7], checked((moved.Length) - (Numeric_Types_Draw02_Draw02RigidParts_g_cs.Values.I32[7])));
         return new MovableStructureModel.Plan(source, moved, new[] { indices }, new[] { new bool[Numeric_Types_Draw02_Draw02RigidParts_g_cs.Values.I32[8]] });

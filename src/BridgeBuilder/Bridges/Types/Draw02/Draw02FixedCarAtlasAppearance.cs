@@ -13,7 +13,6 @@ internal static class Draw02FixedCarAtlasAppearance
     internal static MovableRoadAppearance.Level Apply(int lod, MovableRoadAppearance.Level level,
         float halfDelta, Pose pose)
     {
-        if (lod < 0 || lod > 1) throw new ArgumentOutOfRangeException(nameof(lod));
         var values = Numeric_Types_Draw02_Draw02FixedCarAtlasAppearance_cs.Values.F32;
         var width = values[values.Length - 3];
         var scale = width / (width + halfDelta);

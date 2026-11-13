@@ -21,8 +21,6 @@ internal static class Lift03RenderData
         {
             case Part.Mechanism:
             {
-                if (levels.Length != Numeric_Types_Lift03_Lift03RenderData_g_cs.Values.I32[0])
-                    throw new ArgumentException("Lift03 Mechanism requires 3 prepared render levels.");
                 var c0_LodProperties = levels[Numeric_Types_Lift03_Lift03RenderData_g_cs.Values.I32[1]].AddComponent<LodProperties>();
                 c0_LodProperties.m_Bias = Numeric_Types_Lift03_Lift03RenderData_g_cs.Values.F32[0];
                 c0_LodProperties.m_ShadowBias = Numeric_Types_Lift03_Lift03RenderData_g_cs.Values.F32[1];
@@ -48,8 +46,6 @@ internal static class Lift03RenderData
 
             case Part.Column:
             {
-                if (levels.Length != Numeric_Types_Lift03_Lift03RenderData_g_cs.Values.I32[10])
-                    throw new ArgumentException("Lift03 Column requires 3 prepared render levels.");
                 var c0_LodProperties = levels[Numeric_Types_Lift03_Lift03RenderData_g_cs.Values.I32[11]].AddComponent<LodProperties>();
                 c0_LodProperties.m_Bias = Numeric_Types_Lift03_Lift03RenderData_g_cs.Values.F32[4];
                 c0_LodProperties.m_ShadowBias = Numeric_Types_Lift03_Lift03RenderData_g_cs.Values.F32[5];
@@ -75,8 +71,6 @@ internal static class Lift03RenderData
 
             case Part.Footing:
             {
-                if (levels.Length != Numeric_Types_Lift03_Lift03RenderData_g_cs.Values.I32[20])
-                    throw new ArgumentException("Lift03 Footing requires 3 prepared render levels.");
                 var c0_LodProperties = levels[Numeric_Types_Lift03_Lift03RenderData_g_cs.Values.I32[21]].AddComponent<LodProperties>();
                 c0_LodProperties.m_Bias = Numeric_Types_Lift03_Lift03RenderData_g_cs.Values.F32[8];
                 c0_LodProperties.m_ShadowBias = Numeric_Types_Lift03_Lift03RenderData_g_cs.Values.F32[9];

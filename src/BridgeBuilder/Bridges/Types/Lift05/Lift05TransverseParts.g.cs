@@ -12,10 +12,7 @@ internal static class Lift05TransverseParts
         {
             0 => (Count: Numeric_Types_Lift05_Lift05TransverseParts_g_cs.Values.I32[0], Parts: Parts0),
             1 => (Count: Numeric_Types_Lift05_Lift05TransverseParts_g_cs.Values.I32[1], Parts: Parts1),
-            2 => (Count: Numeric_Types_Lift05_Lift05TransverseParts_g_cs.Values.I32[2], Parts: Parts2),
-            _ => throw new ArgumentOutOfRangeException(nameof(lod))};
-        if (source.Length != data.Count || positions.Length != data.Count || !float.IsFinite(delta))
-            throw new InvalidOperationException("Lift05 transverse source layout changed.");
+            2 => (Count: Numeric_Types_Lift05_Lift05TransverseParts_g_cs.Values.I32[2], Parts: Parts2)};
         foreach (var part in data.Parts)
         {
             var span = part.Max - part.Min;

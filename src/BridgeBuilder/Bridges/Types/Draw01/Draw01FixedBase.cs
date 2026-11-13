@@ -67,8 +67,6 @@ internal static class Draw01FixedBase
                 try
                 {
                     meshes = PrivateGeometryReader.Read(sources[lod]);
-                    if (meshes.Length != Numeric_Types_Draw01_Draw01FixedBase_cs.Values.I32[8] || meshes[Numeric_Types_Draw01_Draw01FixedBase_cs.Values.I32[9]].subMeshCount != Numeric_Types_Draw01_Draw01FixedBase_cs.Values.I32[10])
-                        throw new InvalidOperationException("Draw01 fixed base requires its measured single-mesh layout.");
                     var supportInput0 = meshes[Numeric_Types_Draw01_Draw01FixedBase_cs.Values.I32[11]].vertices;
                     var supportInput1 = meshes[Numeric_Types_Draw01_Draw01FixedBase_cs.Values.I32[12]].GetIndices(Numeric_Types_Draw01_Draw01FixedBase_cs.Values.I32[13]);
                     var plan = await GenerationWork.Background("support structure plan", () => Draw01FixedBaseData.Plan(family, lod, supportInput0, supportInput1, halfDelta));
@@ -82,9 +80,6 @@ internal static class Draw01FixedBase
                     PrivateGeometryReader.Release(meshes);
                 }
             }
-
-            if (sources.Length != (family == Numeric_Types_Draw01_Draw01FixedBase_cs.Values.I32[14] ? Numeric_Types_Draw01_Draw01FixedBase_cs.Values.I32[15] : Numeric_Types_Draw01_Draw01FixedBase_cs.Values.I32[16]))
-                throw new InvalidOperationException("Draw01 fixed base is missing a measured LOD.");
             var result = await factory.CreateMovableRenderGraphAsync(target.name + " Fixed Base " + family, levels) as NetPiecePrefab ?? throw new InvalidOperationException("Draw01 fixed base network-piece creation failed.");
             if (family < Numeric_Types_Draw01_Draw01FixedBase_cs.Values.I32[17])
                 result.m_Width = source.m_Width + halfDelta;

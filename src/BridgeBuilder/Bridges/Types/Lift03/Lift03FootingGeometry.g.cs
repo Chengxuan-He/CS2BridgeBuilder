@@ -11,10 +11,7 @@ internal static class Lift03FootingGeometry
         {
             0 => (Count: Numeric_Types_Lift03_Lift03FootingGeometry_g_cs.Values.I32[0], Indices: Numeric_Types_Lift03_Lift03FootingGeometry_g_cs.Values.I32[1], Parts: Parts0),
             1 => (Count: Numeric_Types_Lift03_Lift03FootingGeometry_g_cs.Values.I32[2], Indices: Numeric_Types_Lift03_Lift03FootingGeometry_g_cs.Values.I32[3], Parts: Parts1),
-            2 => (Count: Numeric_Types_Lift03_Lift03FootingGeometry_g_cs.Values.I32[4], Indices: Numeric_Types_Lift03_Lift03FootingGeometry_g_cs.Values.I32[5], Parts: Parts2),
-            _ => throw new ArgumentOutOfRangeException(nameof(lod))};
-        if (source.Length != data.Count || indices.Length != data.Indices || !float.IsFinite(delta))
-            throw new InvalidOperationException("Lift03 footing requires its recorded native topology.");
+            2 => (Count: Numeric_Types_Lift03_Lift03FootingGeometry_g_cs.Values.I32[4], Indices: Numeric_Types_Lift03_Lift03FootingGeometry_g_cs.Values.I32[5], Parts: Parts2)};
         var positions = (Vector3[])source.Clone();
         foreach (var part in data.Parts)
         {

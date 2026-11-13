@@ -33,7 +33,7 @@
 .bb-panel .bb-card { box-sizing: border-box; width: 100%; min-width: 0; margin: 0; min-height: 120rem; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 8rem; overflow: hidden; background-color: var(--panelColorNormal); }
 .bb-panel .bb-card:hover { background-color: var(--selectableColor-hover); }
 .bb-panel .bb-card.bb-selected { border-color: var(--accentColorNormal); background-color: var(--selectedColor); }
-.bb-card img { width: 76rem; height: 62rem; object-fit: contain; margin-bottom: 6rem; }
+.bb-card img { height: 62rem; width: 62rem; flex-shrink: 0; margin-bottom: 6rem; }
 .bb-panel .bb-card { text-align: center; }
 .bb-card-name { display: flex; --bb-name-fade: 8%; justify-content: flex-start; align-self: stretch; width: 100%; min-width: 0; overflow: hidden; white-space: nowrap; }
 .bb-card-name.bb-name-overflow .bb-card-name-area { justify-content: flex-start; }

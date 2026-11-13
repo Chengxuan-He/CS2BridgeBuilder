@@ -4,6 +4,8 @@ Use the [project contracts](../agent-contract/README.md) for requirements. These
 
 ## Generation and geometry
 
+- [Native bridge longitudinal handling and complete installed source inventory](generation/Native-Bridge-Length-Handling.md)
+- [Deferred GO 224m Viaduct implementation and preserved originals](generation/Deferred-GO-Viaduct.md)
 - [Native bridge pricing and prototype unlocks](generation/Bridge-Economy-And-Unlocks.md)
 - [Bridge generation workflow design](generation/Bridge-Generation-Workflow.md)
 - [How Cities: Skylines II models a bridge](generation/BridgeModel.md)

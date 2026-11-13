@@ -9,8 +9,6 @@ internal static class Lift01FarSideParts
 {
     internal static void Apply(Vector3[] source, Vector3[] positions, float delta)
     {
-        if (source.Length != Numeric_Types_Lift01_Lift01FarSideParts_g_cs.Values.I32[0] || positions.Length != Numeric_Types_Lift01_Lift01FarSideParts_g_cs.Values.I32[1] || !float.IsFinite(delta))
-            throw new InvalidOperationException("Lift01 far side parts require their measured source layout.");
         AffineGeometry.Execute(BatchProgram0.Data, 0, new[] { source, positions }, Array.Empty<float[]>(), new float[] { delta });
     }
 

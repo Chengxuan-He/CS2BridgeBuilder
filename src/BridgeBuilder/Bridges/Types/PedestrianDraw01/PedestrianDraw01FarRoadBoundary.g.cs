@@ -7,15 +7,11 @@ internal static class PedestrianDraw01FarRoadBoundary
 {
     internal static MovableStructureModel.Plan Apply(MovableStructureModel.Plan plan)
     {
-        if (plan.SourcePositions.Length != Numeric_Types_PedestrianDraw01_PedestrianDraw01FarRoadBoundary_g_cs.Values.I32[0] || plan.SourceIndices.Length != Numeric_Types_PedestrianDraw01_PedestrianDraw01FarRoadBoundary_g_cs.Values.I32[1] || plan.SourceIndices[Numeric_Types_PedestrianDraw01_PedestrianDraw01FarRoadBoundary_g_cs.Values.I32[2]].Length != Numeric_Types_PedestrianDraw01_PedestrianDraw01FarRoadBoundary_g_cs.Values.I32[3])
-            throw new InvalidOperationException("PedestrianDraw01 far boundary source layout changed.");
         var positions = new Vector3[plan.SourcePositions.Length];
         Array.Copy(plan.Positions, positions, positions.Length);
         foreach (var row in Vertices)
         {
             var source = plan.SourcePositions[row.Index];
-            if (source.y != row.SourceY || source.z != row.SourceZ)
-                throw new InvalidOperationException("PedestrianDraw01 far boundary source coordinates changed.");
             positions[row.Index].y = row.Y;
             positions[row.Index].z = row.Z;
         }

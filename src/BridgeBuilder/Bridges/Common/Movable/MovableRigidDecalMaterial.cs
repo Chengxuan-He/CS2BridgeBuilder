@@ -24,10 +24,6 @@ internal static class MovableRigidDecalMaterial
             var from=library.GetMaterial(source.materialTemplateHash);
             if (!MovableCustomShaderAsset.TryPrepareBoneDecal(owner, preview, assets, rendererPriority, out var targetTemplate, out error)) return false;
             var target=library.GetMaterial(targetTemplate);
-            // Even an original static decal may need packed tangent metadata;
-            // derive a descriptor without changing its artwork or alpha rules.
-            if(from.FindPass("DBufferMesh")<0 || target.FindPass("DBufferMesh")<0)
-            {error="Native rigid decal requires a DBuffer mesh protocol.";return false;}
             byte[] data;
             using(var input=source.GetReadStream())using(var bytes=new MemoryStream())
             {input.CopyTo(bytes);data=bytes.ToArray();}

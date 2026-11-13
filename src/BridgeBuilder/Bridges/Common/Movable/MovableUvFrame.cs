@@ -31,8 +31,6 @@ internal readonly struct MovableUvFrame
             Math.Abs(targetX-x)>length*1e-7 || Math.Abs(targetY-y)>y*1e-7;
         _uvX = (uvB - uvA) / (float)length;
         _uvY = (uvC - uvA - _uvX * (float)x) / (float)y;
-        if (!Finite(_uvX) || !Finite(_uvY))
-            Error="A measured UV frame has non-finite source gradients.";
     }
 
     // Retain authored per-vertex residuals instead of replacing a quantized native
@@ -58,14 +56,11 @@ internal readonly struct MovableUvFrame
     {
         output=default;error=null;string? failure=frame.Error;
         if(failure!=null){error=failure;return false;}
-        if(source.Length<3||sourceUv.Length<3||target.Length<3||targetUv.Length<3){error="Tangent frame requires three source and target vertices.";return false;}
         Vector3 Derivative(Vector3[] p,Vector2[] uv,out double determinant)
         {
             double ux=(double)uv[1].x-uv[0].x,uy=(double)uv[1].y-uv[0].y;
             double vx=(double)uv[2].x-uv[0].x,vy=(double)uv[2].y-uv[0].y;
             determinant=ux*vy-uy*vx;
-            if(!double.IsFinite(determinant)||determinant==0)
-                {failure="Independent UV axes require a nonsingular final tangent basis.";return default;}
             return (Vector3)(((D3)p[1]-p[0])*(vy/determinant)-((D3)p[2]-p[0])*(uy/determinant));
         }
         var oldDirection=frame.Rotate(Derivative(source,sourceUv,out var oldDet));
@@ -73,8 +68,6 @@ internal readonly struct MovableUvFrame
         if(failure!=null){error=failure;return false;}
         oldDirection=(oldDirection-normal*Vector3.Dot(normal,oldDirection)).normalized;
         newDirection=(newDirection-normal*Vector3.Dot(normal,newDirection)).normalized;
-        if(oldDirection.sqrMagnitude==0||newDirection.sqrMagnitude==0)
-            {error="Independent UV tangent is parallel to its native normal.";return false;}
         float cosine=Vector3.Dot(oldDirection,newDirection);
         float sine=Vector3.Dot(normal,Vector3.Cross(oldDirection,newDirection));
         var result=(tangent*cosine+Vector3.Cross(normal,tangent)*sine+
@@ -112,8 +105,6 @@ internal readonly struct MovableUvFrame
         double xx=targetLength/sourceLength,xy=(targetX-xx*sourceX)/sourceY,yy=targetY/sourceY;
         double real=xx+yy,imaginary=-xy;
         double magnitude=Math.Sqrt(real*real+imaginary*imaginary);
-        if(!double.IsFinite(magnitude)||magnitude==0)
-            {error="A measured UV deformation requires a finite polar frame.";return false;}
         cosine=real/magnitude;sine=imaginary/magnitude;return true;
     }
 
@@ -128,7 +119,6 @@ internal readonly struct MovableUvFrame
         return new Vector2Int(Math.Max(4,4*Mathf.CeilToInt(x*scale/4)),Math.Max(4,4*Mathf.CeilToInt(y*scale/4)));
     }
 
-    private static bool Finite(Vector2 v) => float.IsFinite(v.x) && float.IsFinite(v.y);
     private static bool TryFrame(D3 a, D3 b, D3 c,
         out D3 xAxis, out D3 yAxis, out double length, out double x, out double y,out string? error)
     {
@@ -137,8 +127,6 @@ internal readonly struct MovableUvFrame
         length = edge.Length;
         var normal = D3.Cross(edge, other);
         var area = normal.Length;
-        if (!double.IsFinite(length) || !double.IsFinite(area) || length <= 0 || area <= 0)
-            {error="A measured UV frame requires a finite nondegenerate source and target plane.";return false;}
         xAxis = edge / length;
         yAxis = D3.Cross(normal / area, xAxis);
         x = D3.Dot(other, xAxis);

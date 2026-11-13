@@ -32,7 +32,7 @@ for lod in range(3):
  levels.append((digest,ranges))
  lines.append(f'            {lod} => (Count: {len(v)}, Indices: {f.size}, Parts: Parts{lod}),')
  print(f'LOD{lod}: {len(v)} vertices / {len(f)} unchanged triangles; side shape and seven-width signed mapping passed')
-lines+=['            _ => throw new ArgumentOutOfRangeException(nameof(lod))', '        };', '        if (!float.IsFinite(delta) || source.Length != data.Count || indices.Length != data.Indices)', '            throw new InvalidOperationException("Lift02 column requires its recorded layout.");', '        var positions = (Vector3[])source.Clone();', '        foreach (var part in data.Parts)', '            for (var i = part.First; i <= part.Last; i++) positions[i].x += part.Sign * delta;', '        return new MovableStructureModel.Plan(source, positions, new[] { indices }, new[] { new bool[indices.Length / 3] });', '    }', '']
+lines+=['            ', '        };', '        ', '', '        var positions = (Vector3[])source.Clone();', '        foreach (var part in data.Parts)', '            for (var i = part.First; i <= part.Last; i++) positions[i].x += part.Sign * delta;', '        return new MovableStructureModel.Plan(source, positions, new[] { indices }, new[] { new bool[indices.Length / 3] });', '    }', '']
 for lod,(digest,ranges) in enumerate(levels):
  lines+=['    // Geometry SHA-256: '+digest,f'    private static readonly (int First, int Last, int Sign)[] Parts{lod} =', '    {']
  lines +=[f'        ({a}, {b}, {s}),' for a,b,s in ranges]

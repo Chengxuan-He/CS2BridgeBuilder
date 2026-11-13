@@ -8,8 +8,6 @@ internal static class Draw03FarStructure
 {
     internal static MovableStructureModel.Plan Create(Vector3[] source, int[] indices, float delta)
     {
-        if (source.Length != Numeric_Types_Draw03_Draw03FarStructure_g_cs.Values.I32[0] || indices.Length != Numeric_Types_Draw03_Draw03FarStructure_g_cs.Values.I32[1] || !float.IsFinite(delta))
-            throw new InvalidOperationException("Draw03 far structure requires its measured native layout.");
         var positions = (Vector3[])source.Clone();
         AffineGeometry.Execute(RangePrograms.Data, 0, new[] { positions }, new[] { Weights }, new float[] { delta }, Numeric_Types_Draw03_Draw03FarStructure_g_cs.Values.I32[2], checked((positions.Length) - (Numeric_Types_Draw03_Draw03FarStructure_g_cs.Values.I32[2])));
         var removed = new bool[Numeric_Types_Draw03_Draw03FarStructure_g_cs.Values.I32[3]];

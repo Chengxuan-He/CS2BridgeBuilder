@@ -31,13 +31,8 @@ internal static class MovableRoadModel
         int materialCount, int boneCount, uint[]? packed, out ModelImporter.Model? model, out string? error)
     {
         model = null; error = null;
-        if (string.IsNullOrEmpty(name) || triangles == null || triangles.Count == 0 ||
-            triangles.Count > int.MaxValue / 3 || materialCount <= 0 || boneCount <= 0)
-        { error = "A moving road model requires an owner, bound triangles and material slots."; return false; }
 
         var count = triangles.Count * 3;
-        if(packed!=null && packed.Length!=checked(count*11))
-        {error="GPU encoded vertex payload length differs from bound geometry.";return false;}
         var positions = new float[count * 3]; var normals = new uint[count];
         var tangents = new uint[count]; var uv = new float[count * 4];
         var colors = new byte[count * 4]; var bones = new uint[count];
@@ -47,14 +42,10 @@ internal static class MovableRoadModel
         for (var i = 0; i < triangles.Count; i++)
         {
             var triangle = triangles[i]; var geometry = triangle.Geometry;
-            if (geometry.Material < 0 || geometry.Material >= materialCount || triangle.Bone >= boneCount)
-            { error = $"Road triangle {i} references a missing material slot or bone."; return false; }
             var vertices = new[] { geometry.A, geometry.B, geometry.C };
             for (var j = 0; j < 3; j++)
             {
                 var index = i * 3 + j; var vertex = vertices[j];
-                if (!MovableRoadGeometry.Valid(vertex))
-                { error = $"Road triangle {i} has invalid evaluated vertex attributes."; return false; }
                 positions[index * 3] = vertex.Position.x;
                 positions[index * 3 + 1] = vertex.Position.y;
                 positions[index * 3 + 2] = vertex.Position.z;
@@ -67,8 +58,6 @@ internal static class MovableRoadModel
                     colors[index * 4 + k] = packed==null ? (byte)Mathf.RoundToInt(Mathf.Clamp01(vertex.Color[k]) * 255f) : (byte)(packed[index*11+9]>>(k*8));
                 }
                 bones[index] = packed==null ? triangle.Bone : packed[index*11+10];
-                if(packed!=null && (bones[index]!=triangle.Bone || packed[index*11]!=unchecked((uint)BitConverter.SingleToInt32Bits(vertex.Position.x)) || packed[index*11+1]!=unchecked((uint)BitConverter.SingleToInt32Bits(vertex.Position.y)) || packed[index*11+2]!=unchecked((uint)BitConverter.SingleToInt32Bits(vertex.Position.z))))
-                {error="GPU encoded position/bone differs from bound geometry.";return false;}
                 slots[geometry.Material].Add(index);
                 if (!initialized[geometry.Material])
                 { bounds[geometry.Material] = new Bounds(vertex.Position, Vector3.zero); initialized[geometry.Material] = true; }

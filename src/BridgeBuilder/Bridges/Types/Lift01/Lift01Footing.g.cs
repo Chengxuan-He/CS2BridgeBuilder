@@ -10,10 +10,7 @@ internal static class Lift01Footing
         var data = lod switch
         {
             0 => (Count: Numeric_Types_Lift01_Lift01Footing_g_cs.Values.I32[0], Indices: Numeric_Types_Lift01_Lift01Footing_g_cs.Values.I32[1]),
-            1 => (Count: Numeric_Types_Lift01_Lift01Footing_g_cs.Values.I32[2], Indices: Numeric_Types_Lift01_Lift01Footing_g_cs.Values.I32[3]),
-            _ => throw new ArgumentOutOfRangeException(nameof(lod))};
-        if (!float.IsFinite(delta) || source.Length != data.Count || indices.Length != data.Indices)
-            throw new InvalidOperationException("Lift01 footing requires its measured layout.");
+            1 => (Count: Numeric_Types_Lift01_Lift01Footing_g_cs.Values.I32[2], Indices: Numeric_Types_Lift01_Lift01Footing_g_cs.Values.I32[3])};
         var positions = (Vector3[])source.Clone();
         AffineGeometry.Execute(BatchProgram0.Data, lod, new[] { positions }, Array.Empty<float[]>(), new float[] { delta });
         return new MovableStructureModel.Plan(source, positions, new[] { indices }, new[] { new bool[indices.Length / Numeric_Types_Lift01_Lift01Footing_g_cs.Values.I32[4]] });

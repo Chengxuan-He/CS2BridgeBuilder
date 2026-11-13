@@ -62,9 +62,9 @@ lines=['// Native LiftBridge05 disconnected side components; game 1.6.2f1.',
  '    internal static void Apply(int lod, Vector3[] source, Vector3[] positions, float delta)','    {',
  '        var data = lod switch','        {']
 for lod,(v,signs,digest,parts) in enumerate(levels):lines.append(f'            {lod} => (Count: {len(v)}, Parts: Parts{lod}),')
-lines+=['            _ => throw new ArgumentOutOfRangeException(nameof(lod))','        };',
- '        if (source.Length != data.Count || positions.Length != data.Count || !float.IsFinite(delta))',
- '            throw new InvalidOperationException("Lift05 side-part source layout changed.");',
+lines+=['            ','        };',
+ '        ',
+ '',
  '        foreach (var part in data.Parts)',
  '            for (var i = part.First; i <= part.Last; i++)',
  '                positions[i].x = source[i].x + part.Side * delta;','    }','']

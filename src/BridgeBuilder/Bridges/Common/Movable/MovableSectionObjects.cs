@@ -29,11 +29,7 @@ internal sealed class MovableSectionObjects
 
     internal NetSectionPrefab WithoutMovingObjects(NetSectionPrefab source)
     {
-        if (source == null) throw new InvalidOperationException("A moving road subsection is missing.");
-        CheckSource(source);
         if (_sections.TryGetValue(source, out var known)) return known;
-        if (!_visiting.Add(source))
-            throw new InvalidOperationException("Cyclic moving road subsection: " + source.name);
         try
         {
             var changed = false;
@@ -41,8 +37,6 @@ internal sealed class MovableSectionObjects
             for (var i = 0; pieces != null && i < pieces.Length; i++)
             {
                 var entry = source.m_Pieces![i];
-                if (entry?.m_Piece == null)
-                    throw new InvalidOperationException("Missing piece in moving road section: " + source.name);
                 var piece = WithoutMovingObjects(entry.m_Piece);
                 changed |= piece != entry.m_Piece;
                 pieces[i] = new NetPieceInfo { m_Piece = piece, m_Offset = entry.m_Offset,
@@ -53,8 +47,6 @@ internal sealed class MovableSectionObjects
             for (var i = 0; children != null && i < children.Length; i++)
             {
                 var entry = source.m_SubSections![i];
-                if (entry == null)
-                    throw new InvalidOperationException("Missing subsection in moving road section: " + source.name);
                 var section = WithoutMovingObjects(entry.m_Section);
                 changed |= section != entry.m_Section;
                 children[i] = new NetSubSectionInfo { m_Section = section,
@@ -76,7 +68,6 @@ internal sealed class MovableSectionObjects
 
     private NetPiecePrefab WithoutMovingObjects(NetPiecePrefab source)
     {
-        CheckSource(source);
         if (_pieces.TryGetValue(source, out var known)) return known;
         var result = source;
         if (source.TryGet<NetPieceObjects>(out var sourceObjects))
@@ -85,9 +76,6 @@ internal sealed class MovableSectionObjects
             var changed = false;
             foreach (var rule in sourceObjects.m_PieceObjects)
             {
-                if (rule?.m_Object == null)
-                    throw new InvalidOperationException("Missing object in moving road piece: " + source.name);
-                CheckSource(rule.m_Object);
                 if (IsNetworkSignal(rule.m_Object)) retained.Add(rule);
                 else if (rule.m_Object.Has<StreetLightObject>())
                 {
@@ -130,8 +118,6 @@ internal sealed class MovableSectionObjects
             for (var i = 0; i < lanes.Length; i++)
             {
                 var entry = sourceLanes.m_Lanes[i];
-                if (entry?.m_Lane == null)
-                    throw new InvalidOperationException("Missing lane in moving road piece: " + source.name);
                 var lane = WithoutTrackEndObject(entry.m_Lane);
                 changed |= lane != entry.m_Lane;
                 lanes[i] = new NetLaneInfo
@@ -149,12 +135,10 @@ internal sealed class MovableSectionObjects
 
     private NetLanePrefab WithoutTrackEndObject(NetLanePrefab source)
     {
-        CheckSource(source);
         if (_lanes.TryGetValue(source, out var known)) return known;
         var result = source;
         if (source.TryGet<TrackLane>(out var track) && track.m_EndObject != null)
         {
-            CheckSource(track.m_EndObject);
             // The original closed-network pass bakes this visual into the mechanism. Clear
             // only its stationary producer; keep pathfinding, fallback, track type and width.
             // Signals remain network-owned even when an input uses one as an end object.
@@ -166,12 +150,6 @@ internal sealed class MovableSectionObjects
         }
         _lanes.Add(source, result);
         return result;
-    }
-
-    private void CheckSource(PrefabBase source)
-    {
-        if (source == null)
-            throw new InvalidOperationException("Moving section source is missing.");
     }
 
     private PrefabBase Clone(PrefabBase source, string kind)

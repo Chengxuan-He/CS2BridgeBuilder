@@ -9,8 +9,6 @@ internal static class Lift04FarShoulders
     internal static MovableStructureModel.Plan Apply(MovableStructureModel.Plan plan, float delta)
     {
         int count = Numeric_Types_Lift04_Lift04FarShoulders_g_cs.Values.I32[0];
-        if (plan.SourcePositions.Length != count || plan.SourceIndices.Length != Numeric_Types_Lift04_Lift04FarShoulders_g_cs.Values.I32[1] || plan.SourceIndices[Numeric_Types_Lift04_Lift04FarShoulders_g_cs.Values.I32[2]].Length != Numeric_Types_Lift04_Lift04FarShoulders_g_cs.Values.I32[3] || plan.InteriorVertices.Length != Numeric_Types_Lift04_Lift04FarShoulders_g_cs.Values.I32[4])
-            throw new InvalidOperationException("Lift04 far shoulders require the recorded edge-only structure plan.");
         var positions = new Vector3[count];
         Array.Copy(plan.Positions, positions, count);
         var offset = plan.AddedVertices.Length;
@@ -30,8 +28,6 @@ internal static class Lift04FarShoulders
         {
             var indices = plan.SourceIndices[Numeric_Types_Lift04_Lift04FarShoulders_g_cs.Values.I32[7]];
             var i = face.Triangle * Numeric_Types_Lift04_Lift04FarShoulders_g_cs.Values.I32[8];
-            if (indices[i] != face.A || indices[i + Numeric_Types_Lift04_Lift04FarShoulders_g_cs.Values.I32[9]] != face.B || indices[i + Numeric_Types_Lift04_Lift04FarShoulders_g_cs.Values.I32[10]] != face.C)
-                throw new InvalidOperationException("Lift04 far road source topology changed.");
         }
 
         var fragments = Fragments.Select(f => new MovableStructureModel.Fragment(Numeric_Types_Lift04_Lift04FarShoulders_g_cs.Values.I32[11], f.Triangle, f.Indices.Select(i => i < count ? i : i + offset).ToArray())).ToArray();

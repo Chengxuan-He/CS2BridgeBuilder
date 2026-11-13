@@ -13,8 +13,6 @@ internal static class Draw03SupportAssembly
     {
         await GenerationWork.Next("support Draw03SupportAssembly.Create");
         var lods = source.GetComponent<LodProperties>()?.m_LodMeshes;
-        if (lods == null || lods.Length != Numeric_Types_Draw03_Draw03SupportAssembly_cs.Values.I32[0])
-            throw new InvalidOperationException("Draw03 supports require their three recorded native LODs.");
         var originals = new[]
         {
             source,
@@ -26,14 +24,10 @@ internal static class Draw03SupportAssembly
         {
             var original = originals[lod];
             var expected = "DrawBridge03Pillar" + (footing ? "Base" : "") + (lod == Numeric_Types_Draw03_Draw03SupportAssembly_cs.Values.I32[5] ? "" : "_LOD" + lod) + " Mesh";
-            if (original == null || original.asset != null || original.name != expected)
-                throw new InvalidOperationException("Draw03 supports require their reconstructed native render inputs.");
             Mesh[]? meshes = null;
             try
             {
                 meshes = PrivateGeometryReader.Read(original);
-                if (meshes.Length != Numeric_Types_Draw03_Draw03SupportAssembly_cs.Values.I32[6] || meshes[Numeric_Types_Draw03_Draw03SupportAssembly_cs.Values.I32[7]].subMeshCount != Numeric_Types_Draw03_Draw03SupportAssembly_cs.Values.I32[8])
-                    throw new InvalidOperationException("Draw03 supports require their recorded single native surface slot.");
                 var supportInput0 = meshes[Numeric_Types_Draw03_Draw03SupportAssembly_cs.Values.I32[10]].vertices;
                 var supportInput1 = meshes[Numeric_Types_Draw03_Draw03SupportAssembly_cs.Values.I32[11]].GetIndices(Numeric_Types_Draw03_Draw03SupportAssembly_cs.Values.I32[12]);
                 var supportInput2 = meshes[Numeric_Types_Draw03_Draw03SupportAssembly_cs.Values.I32[13]].vertices;

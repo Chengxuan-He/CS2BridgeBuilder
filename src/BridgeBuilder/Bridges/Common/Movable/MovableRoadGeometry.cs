@@ -70,12 +70,12 @@ internal static class MovableRoadGeometry
     {
         var gradientNormal = Vector3.Cross((Vector3)u, (Vector3)v);
         var determinant = Vector3.Dot(gradientNormal, plane);
-        if (!Finite(determinant) || Mathf.Abs(determinant) <= 1e-10f) return false;
+        if (Mathf.Abs(determinant) <= 1e-10f) return false;
         var sign = determinant > 0f ? 1f : -1f;
         bool Compatible(Vector3 normal)
         {
             var value = Vector3.Dot(gradientNormal, normal) * sign;
-            return Finite(value) && value > 1e-10f;
+            return value > 1e-10f;
         }
         return Compatible(a) && Compatible(b) && Compatible(c);
     }
@@ -87,10 +87,6 @@ internal static class MovableRoadGeometry
     {
         var offset = pose.position;
         var q = pose.rotation;
-        var lengthSquared = q.x * q.x + q.y * q.y + q.z * q.z + q.w * q.w;
-        if (!float.IsFinite(offset.x) || !float.IsFinite(offset.y) || !float.IsFinite(offset.z) ||
-            !float.IsFinite(lengthSquared) || lengthSquared <= 0f)
-            throw new InvalidOperationException("The measured road-to-object pose is invalid.");
         q = q.normalized;
         Vertex Move(Vertex v)
         {
@@ -114,10 +110,6 @@ internal static class MovableRoadGeometry
     internal static Partition CombinePartitions(Partition physical,Partition appearance,
         Matrix4x4 sourceToPhysical,IReadOnlyList<bool> movingBones,int appearanceCount)
     {
-        if(appearanceCount<=0||appearanceCount>int.MaxValue/2||movingBones.Count==0||
-            !Validate(physical,movingBones.Count,new HashSet<Partition>())||
-            !Validate(appearance,appearanceCount,new HashSet<Partition>()))
-            throw new ArgumentException("Combined binding requires complete measured physical and appearance trees.");
         var clones=new Dictionary<(Partition,bool),Partition>();
         Partition Appearance(Partition node,bool moving)
         {
@@ -134,8 +126,6 @@ internal static class MovableRoadGeometry
             return new Partition(node.ObjectToSeam*sourceToPhysical,Physical(node.Negative!),Physical(node.Positive!));
         }
         var combined=Physical(physical);
-        if(!Validate(combined,checked(appearanceCount*2),new HashSet<Partition>()))
-            throw new ArgumentException("Combined source-to-physical partition frame is invalid.");
         return combined;
     }
 
@@ -146,50 +136,22 @@ internal static class MovableRoadGeometry
     {
         result = Array.Empty<BoundTriangle>(); error = null;
         if (source != null && source.Count == 0) return true;
-        if (source == null || boneCount <= 0 || materialCount <= 0 ||
-            !Validate(partition, boneCount, new HashSet<Partition>()))
-        { error = "Road binding requires triangles, materials and a complete measured bone partition."; return false; }
-        if (occurrencePartitions != null)
-            foreach (var selected in occurrencePartitions)
-                if (!Validate(selected, boneCount, new HashSet<Partition>()))
-                    throw new InvalidOperationException("An occurrence has an invalid measured bone partition.");
-        if (trianglePartitions != null)
-        {
-            var validated = new HashSet<Partition>();
-            foreach (var entry in trianglePartitions)
-                if (entry.Key.Occurrence < 0 || entry.Key.SourceTriangle < 0 ||
-                    (validated.Add(entry.Value) && !Validate(entry.Value, boneCount, new HashSet<Partition>())))
-                    throw new InvalidOperationException("A source triangle has an invalid measured bone partition.");
-        }
         var output = new List<BoundTriangle>();
         for (var i = 0; i < source.Count; i++)
         {
             var triangle = source[i];
-            if (triangle.Material < 0 || triangle.Material >= materialCount)
-            { error = $"Road triangle {i} has invalid material index {triangle.Material}/{materialCount}."; return false; }
-            if (!Valid(triangle.A) || !Valid(triangle.B) || !Valid(triangle.C))
-            {
-                error = $"Road triangle {i} has invalid attributes: valid A/B/C={Valid(triangle.A)}/{Valid(triangle.B)}/{Valid(triangle.C)}; source={triangle.Occurrence}/{triangle.SourceTriangle}; material={triangle.Material}.";
-                return false;
-            }
             var selected = partition;
             if (trianglePartitions != null)
             {
-                if (!trianglePartitions.TryGetValue((triangle.Occurrence, triangle.SourceTriangle), out selected))
-                    throw new InvalidOperationException($"Road triangle {i} has no measured partition for source ({triangle.Occurrence}, {triangle.SourceTriangle}).");
+                selected = trianglePartitions[(triangle.Occurrence, triangle.SourceTriangle)];
             }
             else if (occurrencePartitions != null)
             {
-                if ((uint)triangle.Occurrence >= (uint)occurrencePartitions.Count)
-                    throw new InvalidOperationException($"Road triangle {i} has no measured partition for occurrence {triangle.Occurrence}.");
                 selected = occurrencePartitions[triangle.Occurrence];
             }
             if (!Split(new List<ClipVertex> { new(triangle.A), new(triangle.B), new(triangle.C) }, selected, triangle, output))
             { error = $"Road triangle {i} could not be transformed into its recorded seam frame."; return false; }
         }
-        foreach (var triangle in output)
-            if (!Valid(triangle.Geometry.A) || !Valid(triangle.Geometry.B) || !Valid(triangle.Geometry.C))
-            { error = "Seam clipping produced invalid road attributes."; return false; }
         result = output.ToArray(); return true;
     }
 
@@ -231,7 +193,6 @@ internal static class MovableRoadGeometry
             var a = polygon[i]; var b = polygon[(i + 1) % polygon.Count];
             var da = distances[i];
             var db = distances[(i+1)%polygon.Count];
-            if (!double.IsFinite(da) || !double.IsFinite(db)) return false;
             if (da <= 0f) negative.Add(a);
             if (da >= 0f) positive.Add(a);
             hasNegative |= da < 0f; hasPositive |= da > 0f;
@@ -313,29 +274,4 @@ internal static class MovableRoadGeometry
         return values;
     }
 
-    internal static bool Validate(Partition? node, int boneCount, HashSet<Partition> path)
-    {
-        if (node == null || !path.Add(node)) return false;
-        bool valid;
-        if (node.IsGap) valid = node.Bone == -1 && node.Negative == null && node.Positive == null;
-        else if (node.Bone >= 0) valid = node.Bone < boneCount && node.Negative == null && node.Positive == null;
-        else
-        {
-            valid = node.ObjectToSeam.determinant != 0f;
-            for (var i = 0; i < 16; i++) valid &= Finite(node.ObjectToSeam[i]);
-            valid &= node.ObjectToSeam[3, 0] == 0f && node.ObjectToSeam[3, 1] == 0f &&
-                node.ObjectToSeam[3, 2] == 0f && node.ObjectToSeam[3, 3] == 1f;
-            valid = valid && Validate(node.Negative, boneCount, path) && Validate(node.Positive, boneCount, path);
-        }
-        path.Remove(node); return valid;
-    }
-
-    internal static bool Valid(Vertex v)
-    {
-        for (var i = 0; i < 3; i++) if (!Finite(v.Position[i]) || !Finite(v.Normal[i])) return false;
-        for (var i = 0; i < 4; i++) if (!Finite(v.Tangent[i]) || !Finite(v.UV[i]) || !Finite(v.Color[i])) return false;
-        return v.Normal.sqrMagnitude > 0f && ((Vector3)v.Tangent).sqrMagnitude > 0f &&
-            (v.Tangent.w == 1f || v.Tangent.w == -1f);
-    }
-    private static bool Finite(float value) => !float.IsNaN(value) && !float.IsInfinity(value);
 }

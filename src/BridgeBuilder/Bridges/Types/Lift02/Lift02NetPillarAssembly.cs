@@ -32,8 +32,6 @@ internal static class Lift02NetPillarAssembly
     {
         await GenerationWork.Next("support Lift02NetPillarAssembly.CreatePart");
         var lods = source.GetComponent<LodProperties>()?.m_LodMeshes;
-        if (lods == null || lods.Length != Numeric_Types_Lift02_Lift02NetPillarAssembly_cs.Values.I32[5])
-            throw new InvalidOperationException("Lift02 ordinary pillars require their three recorded native LODs.");
         var originals = new[]
         {
             source,
@@ -48,17 +46,12 @@ internal static class Lift02NetPillarAssembly
             {
                 0 => "LiftBridge02NetPillarTop",
                 1 => "LiftBridge02NetPillar",
-                2 => "LiftBridge02NetPillarBase",
-                _ => throw new ArgumentOutOfRangeException(nameof(part))};
+                2 => "LiftBridge02NetPillarBase"};
             var expected = stem + (lod == Numeric_Types_Lift02_Lift02NetPillarAssembly_cs.Values.I32[10] ? "" : "_LOD" + lod) + " Mesh";
-            if (original == null || original.asset != null || original.name != expected)
-                throw new InvalidOperationException("Lift02 ordinary pillars require their reconstructed native render inputs.");
             Mesh[]? meshes = null;
             try
             {
                 meshes = PrivateGeometryReader.Read(original);
-                if (meshes.Length != Numeric_Types_Lift02_Lift02NetPillarAssembly_cs.Values.I32[11] || meshes[Numeric_Types_Lift02_Lift02NetPillarAssembly_cs.Values.I32[12]].subMeshCount != Numeric_Types_Lift02_Lift02NetPillarAssembly_cs.Values.I32[13])
-                    throw new InvalidOperationException("Lift02 ordinary pillars require their recorded single native surface slot.");
                 var supportInput0 = meshes[Numeric_Types_Lift02_Lift02NetPillarAssembly_cs.Values.I32[14]].vertices;
                 var supportInput1 = meshes[Numeric_Types_Lift02_Lift02NetPillarAssembly_cs.Values.I32[15]].GetIndices(Numeric_Types_Lift02_Lift02NetPillarAssembly_cs.Values.I32[16]);
                 var plan = await GenerationWork.Background("support structure plan", () => Lift02NetPillarGeometry.Create(part, lod, supportInput0, supportInput1, halfWidthDelta));

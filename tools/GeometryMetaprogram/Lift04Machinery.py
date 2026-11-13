@@ -46,7 +46,7 @@ for lod in range(3):
  lines.append(f'            {lod} => (Count: {len(v)}, Parts: Level{lod}),');tables.append(entries)
  np.savez(r/f'lift04-machinery-{lod}.npz',selected=selected,weights=weights)
  print(f'PASS LOD{lod}: {selected.sum()} vertices; original bone ownership, LOD correspondence, positive-span winding and seven signed widths')
-lines+=['            _ => throw new ArgumentOutOfRangeException(nameof(lod))','        };','        if (source.Length != data.Count || positions.Length != data.Count || !float.IsFinite(delta))','            throw new InvalidOperationException("Lift04 machinery require their recorded topology.");','        foreach (var part in data.Parts)','            for (var i = part.First; i <= part.Last; i++)','                positions[i].x = source[i].x + source[i].x / part.HalfSpan * delta;','    }','']
+lines+=['            ','        };','        ','','        foreach (var part in data.Parts)','            for (var i = part.First; i <= part.Last; i++)','                positions[i].x = source[i].x + source[i].x / part.HalfSpan * delta;','    }','']
 for lod,entries in enumerate(tables):
  lines+=['    // Geometry SHA-256: '+hashes[lod],f'    private static readonly (int First, int Last, float HalfSpan)[] Level{lod} =','    {']
  lines += [f'        ({a}, {b}, {w:.9g}f),' for a,b,w in entries]

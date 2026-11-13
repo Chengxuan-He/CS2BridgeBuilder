@@ -35,7 +35,6 @@ internal static class Lift03UvCharts
         };
         var data=Data.Values.I32;
         int table=data[stream+2];
-        if(domain<0 || domain>=data[table])throw new ArgumentOutOfRangeException(nameof(domain));
         return Data.Sets.GetOrAdd(data[table+domain+1],ReadSet);
     }
     private static MovableUvChart[] ReadSet(int offset)
@@ -53,7 +52,6 @@ internal static class Lift03UvCharts
     {
         static Data()
         {
-            if(Values.I32[0]!=1)throw new InvalidOperationException("Unsupported Lift03 chart schema.");
         }
         internal static HardcodedNumbers Values => GenerationParameters.Get<HardcodedNumbers>("BridgeBuilder.Bridges.Lift03UvCharts.Data.Values", () => HardcodedNumbers.Load("Types_Lift03_Lift03UvCharts_cs"));
         internal static ConcurrentDictionary<int,MovableUvChart> Charts => GenerationParameters.Get<ConcurrentDictionary<int,MovableUvChart>>("BridgeBuilder.Bridges.Lift03UvCharts.Data.Charts", () => new());

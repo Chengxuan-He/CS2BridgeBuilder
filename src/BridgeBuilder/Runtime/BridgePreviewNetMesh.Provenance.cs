@@ -43,14 +43,10 @@ internal sealed partial class BridgePreviewNetMesh
             for (var slot = 0; slot < materials.Length; slot++)
             {
                 var material = materials[slot];
-                if (material.m_IndexCount % 3 != 0)
-                    throw new InvalidOperationException("Native source provenance requires triangle topology.");
                 var start = outVertices.Length;
                 for (var index = 0; index < material.m_IndexCount; index += 3)
                 {
                     var identity = identities.Count;
-                    if (identity >= 1 << 30)
-                        throw new InvalidOperationException("Native source provenance exceeds its exact encoding range.");
                     identities.Add(new SourceFace(origin.Piece, origin.Mesh, slot, index / 3));
                     // Three exact half-float digit bands preserve 30 bits, independently
                     // of native winding changes. No source-position threshold is reproduced.
@@ -85,8 +81,6 @@ internal sealed partial class BridgePreviewNetMesh
             trace = new Mesh { name = "tmp_native_bridge_provenance", hideFlags = HideFlags.HideAndDontSave };
             Mesh.ApplyAndDisposeWritableMeshData(pending, trace, MeshUpdateFlags.DontRecalculateBounds);
             consumed = true;
-            if (trace.subMeshCount != original.subMeshCount)
-                throw new InvalidOperationException("Native provenance changed the material grouping.");
             var traceUVs = new List<Vector4>(); trace.GetUVs(0, traceUVs);
             var originalUVs = new List<Vector4>(); original.GetUVs(0, originalUVs);
             var tracePositions = trace.vertices; var originalPositions = original.vertices;
@@ -94,8 +88,6 @@ internal sealed partial class BridgePreviewNetMesh
             for (var slot = 0; slot < trace.subMeshCount; slot++)
             {
                 var traced = trace.GetIndices(slot); var rendered = original.GetIndices(slot);
-                if (traced.Length != rendered.Length)
-                    throw new InvalidOperationException("Native provenance changed the emitted triangle count.");
                 for (var triangle = 0; triangle < traced.Length; triangle += 3)
                 {
                     var identity = 0; var mask = 0;
@@ -103,19 +95,11 @@ internal sealed partial class BridgePreviewNetMesh
                     {
                         var t = traced[triangle + corner]; var o = rendered[triangle + corner];
                         var a = traceUVs[t]; var b = originalUVs[o];
-                        if (!tracePositions[t].Equals(originalPositions[o]) || a.y != b.y || a.z != b.z || a.w != b.w)
-                            throw new InvalidOperationException("Native provenance changed emitted positions or UV repetition.");
                         var value = (int)a.x;
-                        if (a.x != value || value < 0 || value > 4094)
-                            throw new InvalidOperationException("Native provenance lost an exact source digit.");
                         var band = value < 1024 ? 0 : value < 2048 ? 1 : 2;
-                        if ((mask & (1 << band)) != 0 || (band == 2 && (value & 1) != 0))
-                            throw new InvalidOperationException("Native provenance has an ambiguous source digit.");
                         mask |= 1 << band;
                         identity |= band == 0 ? value : band == 1 ? (value - 1024) << 10 : ((value - 2048) / 2) << 20;
                     }
-                    if (mask != 7 || (uint)identity >= (uint)identities.Count)
-                        throw new InvalidOperationException("Native provenance refers to an unknown source face.");
                     result.Add(identities[identity]);
                 }
             }

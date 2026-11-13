@@ -117,11 +117,11 @@ internal static class Lift03UvCharts
         int stream=(renderName,meshIndex) switch
         {
 CASES
-            _ => throw new InvalidOperationException("Unrecorded Lift03 chart source: "+renderName+"/"+meshIndex)
+
         };
         var data=Data.Values.I32;
         int table=data[stream+2];
-        if(domain<0 || domain>=data[table])throw new ArgumentOutOfRangeException(nameof(domain));
+
         return Data.Sets.GetOrAdd(data[table+domain+1],ReadSet);
     }
     private static MovableUvChart[] ReadSet(int offset)
@@ -139,7 +139,7 @@ CASES
     {
         static Data()
         {
-            if(Values.I32[0]!=1)throw new InvalidOperationException("Unsupported Lift03 chart schema.");
+
         }
         internal static readonly HardcodedNumbers Values=HardcodedNumbers.Load("Types_Lift03_Lift03UvCharts_cs");
         internal static readonly ConcurrentDictionary<int,MovableUvChart> Charts=new();

@@ -12,10 +12,7 @@ internal static class Lift03NetTopGeometry
         {
             0 => (Count: Numeric_Types_Lift03_Lift03NetTopGeometry_g_cs.Values.I32[0], IndexCount: Numeric_Types_Lift03_Lift03NetTopGeometry_g_cs.Values.I32[1], Edges: Edges0, Interior: Interior0, ExtraWeights: ExtraWeights0, Fragments: Fragments0),
             1 => (Count: Numeric_Types_Lift03_Lift03NetTopGeometry_g_cs.Values.I32[2], IndexCount: Numeric_Types_Lift03_Lift03NetTopGeometry_g_cs.Values.I32[3], Edges: Edges1, Interior: Interior1, ExtraWeights: ExtraWeights1, Fragments: Fragments1),
-            2 => (Count: Numeric_Types_Lift03_Lift03NetTopGeometry_g_cs.Values.I32[4], IndexCount: Numeric_Types_Lift03_Lift03NetTopGeometry_g_cs.Values.I32[5], Edges: Edges2, Interior: Interior2, ExtraWeights: ExtraWeights2, Fragments: Fragments2),
-            _ => throw new ArgumentOutOfRangeException(nameof(lod))};
-        if (source.Length != data.Count || positions.Length != data.Count || indices.Length != data.IndexCount || !float.IsFinite(delta))
-            throw new InvalidOperationException("Lift03 ordinary top requires its recorded native layout.");
+            2 => (Count: Numeric_Types_Lift03_Lift03NetTopGeometry_g_cs.Values.I32[4], IndexCount: Numeric_Types_Lift03_Lift03NetTopGeometry_g_cs.Values.I32[5], Edges: Edges2, Interior: Interior2, ExtraWeights: ExtraWeights2, Fragments: Fragments2)};
         AffineGeometry.Execute(CoordinatePrograms.Data, lod, new[] { source, positions }, Array.Empty<float[]>(), new[] { delta });
         var x = new float[data.ExtraWeights.Length];
         AffineGeometry.Execute(InterpolationProgram0.Data, lod, new[] { source }, new[] { x }, new float[] { delta });

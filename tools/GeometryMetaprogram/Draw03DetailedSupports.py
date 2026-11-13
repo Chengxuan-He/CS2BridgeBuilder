@@ -70,9 +70,9 @@ lines = ['// Measured DrawBridge03 detailed support panels and side bodies, game
          '    {', '        var data = (footing, lod) switch', '        {']
 for part, lod, count, indices, digest, ranges, minimum in tables:
     lines.append(f'            ({str(bool(part)).lower()}, {lod}) => (Count: {count}, Indices: {indices}, Minimum: {minimum:.9g}f, Parts: Parts{part}{lod}),')
-lines += ['            _ => throw new ArgumentOutOfRangeException(nameof(lod))', '        };',
-          '        if (!float.IsFinite(delta) || source.Length != data.Count || indices.Length != data.Indices)',
-          '            throw new InvalidOperationException("Draw03 detailed supports require their measured layout.");',
+lines += ['            ', '        };',
+          '        ',
+          '',
           '        var positions = (Vector3[])source.Clone();',
           '        foreach (var part in data.Parts)',
           '            for (var i = part.First; i <= part.Last; i++) positions[i].x += part.Sign * delta;',

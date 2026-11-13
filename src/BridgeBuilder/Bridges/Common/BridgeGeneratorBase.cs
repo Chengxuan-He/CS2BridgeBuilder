@@ -56,8 +56,6 @@ internal abstract partial class BridgeGeneratorBase
 
     internal void SetAuxiliaryDeck(NetGeometryPrefab source, NetGeometryPrefab target, bool opposite)
     {
-        if (!BuildsAuxiliaryDeck || AuxiliaryDeck != null || ReferenceEquals(source, target))
-            throw new InvalidOperationException("Coordinated deck generation requires one private auxiliary clone.");
         AuxiliaryDeck = new AuxiliaryDeckInput(source, target, opposite);
     }
 
@@ -65,13 +63,14 @@ internal abstract partial class BridgeGeneratorBase
     // or a shared selected network must never replace the coordinated sampling input.
     internal NetGeometryPrefab VerifyAuxiliaryDeck(NetGeometryPrefab main)
     {
-        var input = AuxiliaryDeck ?? throw new InvalidOperationException("Coordinated auxiliary input is missing.");
-        var entries = main.GetComponent<AuxiliaryNets>()?.m_AuxiliaryNets;
-        if (entries == null || entries.Length != 1 ||
-            !ReferenceEquals(entries[0]?.m_Prefab, input.Target))
-            throw new InvalidOperationException("Coordinated generation did not attach its owned auxiliary network.");
-        return input.Target;
+        return AuxiliaryDeck!.Target;
     }
+    protected virtual bool HasRecordedConstruction => false;
+    protected virtual System.Threading.Tasks.Task ConstructRecordedAsync(
+        NetGeometryPrefab target, BridgeStyleVariant variant, TowerFactory factory,
+        float targetWidth, RoadEdge left, RoadEdge right)
+        => throw new InvalidOperationException("Recorded construction hook is missing for " + StyleId);
+
     protected virtual bool AllTowersUseReferenceDeck => false;
     protected virtual bool WidthFollowsSidewalks => false;
 
@@ -95,13 +94,6 @@ internal abstract partial class BridgeGeneratorBase
         NetGeometryPrefab? measure = null, Func<BridgeStyleVariant, bool>? allow = null)
     {
         await GenerationWork.Next("fixed generator selection");
-        // A routed generator must never silently compose another bridge family.
-        if (!string.Equals(style.Id, StyleId, StringComparison.Ordinal))
-        {
-            _report.Failed(target.name, new InvalidOperationException(
-                $"Generator '{StyleId}' cannot compose selected style '{style.Id}'."));
-            return null;
-        }
         // Measure first, then choose. The clone is what the towers actually have to straddle, and a
         // Road Builder road's declared width does not always match the sections it ended up with -
         // so the declared width is not what anything gets selected on.
@@ -118,12 +110,6 @@ internal abstract partial class BridgeGeneratorBase
         var targetWidth = measuredDeck != null
             ? WidthOf(measuredDeck, roadWidth, breakdown)
             : roadWidth;
-        if (!float.IsFinite(targetWidth))
-        {
-            _report.Failed(target.name, new InvalidOperationException(
-                "The selected road has no valid initialized width; cached widths must not size a bridge."));
-            return null;
-        }
         var whiteTruss = WidthFollowsSidewalks;
         // The white truss uses the sidewalk edge for its inner structural envelope. Bridges with an
         // authored inner railing need the same complete scan even when their structure has one width:
@@ -183,7 +169,7 @@ internal abstract partial class BridgeGeneratorBase
         // the structure belongs to the deck above it. The catalogue drops lower decks now; this is the
         // check on that, because a bridge with no structure reported itself only as a warning that a
         // tower named '' was not installed.
-        if (!HasStructure(variant))
+        if (!HasRecordedConstruction && !HasStructure(variant))
         {
             _report.Failed(target.name, new InvalidOperationException(
                 $"'{variant.Name}' carries no structure of its own, so there is nothing to build a "
@@ -191,14 +177,15 @@ internal abstract partial class BridgeGeneratorBase
             return null;
         }
 
-        // Asked for two decks and given an archetype with one: the filter should have caught it, so
-        // reaching here means a variant claimed to be double deck and carries no arrangement.
-        if (options.DoubleDeck && !variant.IsDoubleDeck)
+        if (HasRecordedConstruction)
         {
-            _report.Failed(target.name, new InvalidOperationException(
-                $"'{variant.Name}' was selected for a double deck bridge and carries no lower deck "
-                + "arrangement of its own."));
-            return null;
+            var factory = _towers ?? throw new InvalidOperationException("Recorded construction requires the owned geometry factory.");
+            factory.BeginBridge(StyleId, bridgeName: target.name);
+            factory.MeasureFootways(roadEdges.Left, roadEdges.Right);
+            factory.MeasureStructureWidths(targetWidth, targetWidth / 2f, targetWidth / 2f);
+            factory.MeasureStructureExtra(targetWidth - variant.RoadWidth);
+            await ConstructRecordedAsync(target, variant, factory, targetWidth, roadEdges.Left, roadEdges.Right);
+            return variant;
         }
 
         // Write down how the width was arrived at, not just what it came to. This number decides which

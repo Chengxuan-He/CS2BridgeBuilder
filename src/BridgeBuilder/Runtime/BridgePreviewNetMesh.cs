@@ -34,7 +34,7 @@ internal sealed partial class BridgePreviewNetMesh : IDisposable
         mesh = null!;
         materials = Array.Empty<Material>();
         properties = new MaterialPropertyBlock();
-        if (_disposed || data.m_Width <= 0f || length <= 0f)
+        if (_disposed)
         {
             return false;
         }
@@ -64,20 +64,11 @@ internal sealed partial class BridgePreviewNetMesh : IDisposable
                 var partMaterials = resources.Materials(render, true);
                 var partSurfaces = resolvedSurfaces == null ? Array.Empty<SurfaceAsset>()
                     : render.surfaceAssets?.ToArray() ?? Array.Empty<SurfaceAsset>();
-                if (resolvedSurfaces != null && partSurfaces.Length != partMaterials.Length) return false;
                 var partMeshes = resources.Meshes(render);
-                if (partMeshes.Length == 0)
-                {
-                    return false;
-                }
                 for (var meshIndex = 0; meshIndex < partMeshes.Length; meshIndex++)
                 {
                     var source = partMeshes[meshIndex];
                     if (source == null) continue;
-                    if (materialIndex + source.subMeshCount > partMaterials.Length)
-                    {
-                        return false;
-                    }
                     var entity = manager.CreateEntity();
                     sources.Add(entity);
                     Cache(source, entity, manager, sourceMaterials.Count);

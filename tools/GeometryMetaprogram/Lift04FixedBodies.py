@@ -35,7 +35,7 @@ for lod,parts in enumerate(((269,880),(266,820),(83,165))):
  tables.append(ranges);lines.append(f'            {lod} => (Count: {len(v)}, Parts: Level{lod}),')
  np.savez(r/f'lift04-fixed-bodies-{lod}.npz',selected=mask,weights=signs)
  print(f'PASS LOD{lod}: {len(ids)} fixed body vertices, bone 0, four widths, original YZ and winding')
-lines+=['            _ => throw new ArgumentOutOfRangeException(nameof(lod))','        };','        if (source.Length != data.Count || positions.Length != data.Count || !float.IsFinite(delta))','            throw new InvalidOperationException("Lift04 fixed bodies requires its recorded native topology.");','        foreach (var part in data.Parts)','            for (var i = part.First; i <= part.Last; i++)','                positions[i].x = source[i].x + part.Sign * delta;','    }','']
+lines+=['            ','        };','        ','','        foreach (var part in data.Parts)','            for (var i = part.First; i <= part.Last; i++)','                positions[i].x = source[i].x + part.Sign * delta;','    }','']
 for lod,ranges in enumerate(tables):
  lines+=['    // Geometry SHA-256: '+hashes[lod],f'    private static readonly (int First, int Last, int Sign)[] Level{lod} =','    {']
  lines += [f'        ({a}, {b}, {w}),' for a,b,w in ranges];lines+=['    };','']

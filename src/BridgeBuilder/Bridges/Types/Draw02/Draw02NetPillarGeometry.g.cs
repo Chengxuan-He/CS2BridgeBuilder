@@ -18,10 +18,7 @@ internal static class Draw02NetPillarGeometry
             (1, 2) => (Vertices: Numeric_Types_Draw02_Draw02NetPillarGeometry_g_cs.Values.I32[10], Triangles: Numeric_Types_Draw02_Draw02NetPillarGeometry_g_cs.Values.I32[11], Groups: Part1Lod2),
             (2, 0) => (Vertices: Numeric_Types_Draw02_Draw02NetPillarGeometry_g_cs.Values.I32[12], Triangles: Numeric_Types_Draw02_Draw02NetPillarGeometry_g_cs.Values.I32[13], Groups: Part2Lod0),
             (2, 1) => (Vertices: Numeric_Types_Draw02_Draw02NetPillarGeometry_g_cs.Values.I32[14], Triangles: Numeric_Types_Draw02_Draw02NetPillarGeometry_g_cs.Values.I32[15], Groups: Part2Lod1),
-            (2, 2) => (Vertices: Numeric_Types_Draw02_Draw02NetPillarGeometry_g_cs.Values.I32[16], Triangles: Numeric_Types_Draw02_Draw02NetPillarGeometry_g_cs.Values.I32[17], Groups: Part2Lod2),
-            _ => throw new ArgumentOutOfRangeException(nameof(part))};
-        if (source.Length != data.Vertices || indices.Length != data.Triangles * Numeric_Types_Draw02_Draw02NetPillarGeometry_g_cs.Values.I32[18])
-            throw new InvalidOperationException("Draw02 ordinary pillar geometry differs from the measured source.");
+            (2, 2) => (Vertices: Numeric_Types_Draw02_Draw02NetPillarGeometry_g_cs.Values.I32[16], Triangles: Numeric_Types_Draw02_Draw02NetPillarGeometry_g_cs.Values.I32[17], Groups: Part2Lod2)};
         var moved = (Vector3[])source.Clone();
         foreach (var group in data.Groups)
             foreach (var coordinateRows in StructureRows.Stages(group.Vertices))

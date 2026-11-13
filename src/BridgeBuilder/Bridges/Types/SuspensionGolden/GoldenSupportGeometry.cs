@@ -28,8 +28,6 @@ internal static class GoldenSupportGeometry
         }
 
         int stride = sizeof(float) + Numeric_Types_SuspensionGolden_GoldenSupportGeometry_cs.Values.I32[0];
-        if (data.Length != source.Length * stride)
-            return false;
         moved = (float3[])source.Clone();
         protectedSupport = new bool[source.Length];
         if (!Rows.TryGetValue(name, out var rows))
@@ -40,7 +38,6 @@ internal static class GoldenSupportGeometry
             for (int i = 0; i < source.Length; i++)
             {
                 coefficients[i] = BitConverter.ToSingle(data, i * stride);
-                if (!float.IsFinite(coefficients[i])) return false;
                 protection[i] = data[i * stride + sizeof(float)] != 0;
                 // A zero row is an authored copy, including its signed zero bits.
                 if (coefficients[i] != 0f) selected.Add(i);

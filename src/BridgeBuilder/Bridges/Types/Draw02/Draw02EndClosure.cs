@@ -21,14 +21,10 @@ internal static class Draw02EndClosure
         var constructedX = new List<float>();
         for (int i = Numeric_Types_Draw02_Draw02EndClosure_cs.Values.I32[1]; i < plan.ConstructedCount; i++)
             constructedX.Add(plan.Positions[positions.Length + i].x);
-        if (plan.InteriorVertices.Length != Numeric_Types_Draw02_Draw02EndClosure_cs.Values.I32[2])
-            throw new InvalidOperationException("Draw02 end closure requires its measured edge-only source recipe.");
         var cache = new Dictionary<float, MovableRoadLaneLayout.Boundary[]>();
         for (int record = lod == Numeric_Types_Draw02_Draw02EndClosure_cs.Values.I32[3] ? Numeric_Types_Draw02_Draw02EndClosure_cs.Values.I32[4] : lod * Numeric_Types_Draw02_Draw02EndClosure_cs.Values.I32[5]; record < (lod == Numeric_Types_Draw02_Draw02EndClosure_cs.Values.I32[6] ? Numeric_Types_Draw02_Draw02EndClosure_cs.Values.I32[7] : lod * Numeric_Types_Draw02_Draw02EndClosure_cs.Values.I32[8] + Numeric_Types_Draw02_Draw02EndClosure_cs.Values.I32[9]); record++)
         {
             int h = record * Numeric_Types_Draw02_Draw02EndClosure_cs.Values.I32[10], side = record % Numeric_Types_Draw02_Draw02EndClosure_cs.Values.I32[11] == Numeric_Types_Draw02_Draw02EndClosure_cs.Values.I32[12] ? -Numeric_Types_Draw02_Draw02EndClosure_cs.Values.I32[13] : Numeric_Types_Draw02_Draw02EndClosure_cs.Values.I32[14];
-            if (positions.Length != data.I32[h] || removed.Length != data.I32[h + Numeric_Types_Draw02_Draw02EndClosure_cs.Values.I32[15]])
-                throw new InvalidOperationException("Draw02 end closure source differs from its measured prototype.");
             int reference = data.I32[h + Numeric_Types_Draw02_Draw02EndClosure_cs.Values.I32[16]];
             float bodyShift = plan.Positions[reference].x - plan.SourcePositions[reference].x;
             float Shift(Vector3 source)

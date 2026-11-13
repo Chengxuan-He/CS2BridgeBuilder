@@ -28,8 +28,6 @@ internal static class PedestrianDraw02AtlasAppearance
     {
         var integers = Data.I32;
         var values = Data.F32;
-        if (integers[0] != 1 || !float.IsFinite(halfWidthDelta))
-            throw new InvalidOperationException(nameof(PedestrianDraw02AtlasAppearance));
         int stations = integers[1], domains = integers[2], count = integers[3];
         int stationOffset = domains * 20, cellOffset = stationOffset + stations * 2;
         int cellIntegers = 4 + domains;

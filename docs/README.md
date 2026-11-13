@@ -19,6 +19,7 @@ replace them. Documentation updates do not establish runtime implementation or g
 | --- | --- |
 | Repository workflow, documentation and lifecycle | [Project contract](agent-contract/PROJECT_CONTRACT.md) and [AGENTS](../AGENTS.md) |
 | All fixed and movable bridge generation | [General bridge contract](agent-contract/BRIDGE_GENERATION_CONTRACT.md) |
+| Non-Network virtual prototypes before actual bridge generation | [Virtual bridge prototype preparation](agent-contract/NON_NETWORK_BRIDGES_CONTRACT.md) |
 | Source UV projection, tiling/stretching, every part/LOD/layer/axis | [General source-mapping rule](agent-contract/BRIDGE_GENERATION_CONTRACT.md#preserve-original-uv-projection-and-mapping-mode) |
 | Movable source roles, composition gate, mechanisms and markings | [Movable contract](agent-contract/MOVABLE_BRIDGES_CONTRACT.md) |
 | Material reuse, preparation, channels, budgets and verification | [Material contract](agent-contract/MATERIAL_GENERATION_CONTRACT.md) |

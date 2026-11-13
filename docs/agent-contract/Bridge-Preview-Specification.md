@@ -52,6 +52,22 @@ state independently. Respect native mesh states, stacked supports and placeholde
 A meshless parent can legitimately have visible children; an inactive mesh is not a missing asset.
 Missing required geometry or material data is an error, not permission to show a partial bridge.
 
+Root pillar placeholder selection uses the native network's `NetGeometryData.m_ElevatedWidth`,
+as native sub-object creation and alignment do. Composition width can include overhead structure;
+it is not the road width for ranking horizontal replacements or spacing paired vertical pillars.
+Use the actual sampled network value, preserving native candidates and requirements. Do not fix
+an incorrectly selected replacement by excluding a mod/name, hiding its children, or moving the
+prototype's support offset. Diagnose the selected parent and every child draw together.
+
+Traverse `NetPieceObjects` on every selected network piece, including overhead and meshless
+carrier pieces. Evaluate each occurrence's native requirements, probability, spacing, offsets,
+rotation and curve alignment in the corresponding edge/node context. Include the referenced
+objects and their visible descendants through the common object assembly path. A repeated
+piece object is distinct from a root `NetSubObjects` placement; do not omit it or draw either
+occurrence twice. Preserve selected conditional composition and authored placement semantics
+instead of adding a bridge-specific preview replacement. Snapshot native inputs on the main
+thread and prepare detached placement arithmetic on bounded workers before native assembly.
+
 For double-deck bridges, show both decks with their stored separation, offsets and direction.
 Use a real supported double-deck arrangement. Do not invent an extra deck or alter its height
 for presentation convenience.
@@ -59,6 +75,29 @@ for presentation convenience.
 The current illustrative course uses a main-deck elevation of 30 m above flat presentation ground.
 This is a preview setting, not a modification of the bridge's permitted construction elevations,
 terrain behavior or saved geometry. The preview is not a city simulation or an audit sample.
+
+Present fixed spans and movable approaches as continuing networks, not isolated dead-end roads.
+Their visible ends must not acquire rounded road caps merely because the presentation course
+stops there. Establish connected continuation context in the private native topology before
+composition and endpoint geometry are calculated. Do not draw continuation road surfaces or include
+those surfaces in camera bounds. Boundary object occurrences follow the visible-domain rule below.
+Keep the visible span's real native node/edge transforms, structural node
+pieces, supports and attachments; removing all node geometry or node objects is not a valid fix.
+This presentation topology does not modify the generated prefab, the city or saved bridge assets.
+
+Use one longitudinal placement and visible-domain convention for the selected road surface,
+lane meshes, paint, node composition and structural attachments. Derive both endpoint transforms
+from the same native course. Retain pre-pack piece records for native initialization: native
+composition packing mutates offsets and must not receive already packed records. Road rendering,
+lane adjacency/marking selection and object placement must use the same initialized composition
+and its presentation boundaries. Continuation context must not leak an extra
+road panel or marking segment into only one visible end. Include native structural object occurrences
+on adjacent context edges when their anchors belong to the visible course, including its endpoints;
+retain each whole object, including its authored extension beyond the presentation cut. Do not clip
+load-bearing members or fabricate dead-end requirements to fill a missing boundary occurrence.
+Preserve genuine prototype asymmetry
+and native endpoint requirements; do not mirror geometry or discard structural node pieces merely
+to make an image symmetric. Test both ends, reversed direction and successive visible spans.
 
 ## 4. Movable bridges
 
@@ -103,6 +142,14 @@ source-density tiled, unpainted materials as formal generation at every LOD. Def
 uses the same applicable measured mapping and original or prepared material as formal generation.
 Preserve normal selected-road paint and lane-aligned fixed-width wear. Unchanged UV values must not be used to justify stretched
 textures. Preview must not introduce additional approximations.
+
+Fixed-network previews retain the selected road's actual marking assets, conditional lane/submesh
+selection, colors, UV projection, native repeat length and phase, and decal/receiver rendering
+protocol. Include the native dashed/solid lines, arrows and other markings selected by that road
+and course state; do not replace them with generic lines or infer artwork from lane counts.
+Trace missing or incorrect markings through sampled lanes, native flags, geometry, materials and
+the isolated render path. Use the same visible course boundaries as the road surface. The movable
+road appearance exceptions above remain scoped to their existing generation rules.
 
 Perforated grating in an original bridge is not inherently damaged geometry. Distinguish it from
 missing triangles, stretching, overlapping surfaces and material errors using original and actual

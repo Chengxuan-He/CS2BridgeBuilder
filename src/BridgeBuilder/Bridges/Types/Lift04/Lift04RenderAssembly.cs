@@ -16,13 +16,9 @@ internal static class Lift04RenderAssembly
             "LiftBridge04_LOD1 Mesh",
             "LiftBridge04_LOD2 Mesh"
         };
-        if (roadLevels.Count != expected.Length)
-            throw new ArgumentException("Lift04 mechanism requires all three native road LODs.");
         for (var lod = Numeric_Types_Lift04_Lift04RenderAssembly_cs.Values.I32[0]; lod < expected.Length; lod++)
         {
             var source = roadLevels[lod].Source;
-            if (source == null || source.asset != null || !string.Equals(source.name, expected[lod], StringComparison.Ordinal))
-                throw new InvalidOperationException($"Lift04 LOD {lod} requires its reconstructed native source.");
         }
 
         return await MovableRenderAssembly.CreateMechanismAsync(factory, name, roadLevels, new[] { Numeric_Types_Lift04_Lift04RenderAssembly_cs.Values.I32[1], Numeric_Types_Lift04_Lift04RenderAssembly_cs.Values.I32[2], Numeric_Types_Lift04_Lift04RenderAssembly_cs.Values.I32[3] }, (lod, mesh, source, indices) => mesh == Numeric_Types_Lift04_Lift04RenderAssembly_cs.Values.I32[4] ? Lift04Glass.Create(lod, source, indices, halfWidthDelta) : Lift04StructurePlan.Create(lod, source, indices, halfWidthDelta));

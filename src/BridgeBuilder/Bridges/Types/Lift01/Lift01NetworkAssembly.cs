@@ -13,8 +13,6 @@ internal static class Lift01NetworkAssembly
         IReadOnlyList<Lift01NetworkData.Role> roles, StaticObjectPrefab pillar,
         StaticObjectPrefab mechanism)
     {
-        if (!factory.Created.Contains(pillar) || !factory.Created.Contains(mechanism))
-            throw new InvalidOperationException("Lift01 network assembly requires owned pillar and mechanism objects.");
         var sections = Lift01NetworkData.ConvertSections(target.name, target.m_Sections,
             roles, out var created);
         MovableBarrierRules.Apply(target.name, sections, ref created,

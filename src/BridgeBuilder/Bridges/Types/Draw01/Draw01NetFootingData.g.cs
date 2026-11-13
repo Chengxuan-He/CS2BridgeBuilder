@@ -14,10 +14,7 @@ internal static class Draw01NetFootingData
         {
             0 => Numeric_Types_Draw01_Draw01NetFootingData_g_cs.Values.I32[0],
             1 => Numeric_Types_Draw01_Draw01NetFootingData_g_cs.Values.I32[1],
-            2 => Numeric_Types_Draw01_Draw01NetFootingData_g_cs.Values.I32[2],
-            _ => throw new ArgumentOutOfRangeException(nameof(lod))};
-        if (source.Length != weights.Length || indices.Length != expectedTriangles * Numeric_Types_Draw01_Draw01NetFootingData_g_cs.Values.I32[3])
-            throw new InvalidOperationException("Draw01 ordinary footing differs from its recorded topology.");
+            2 => Numeric_Types_Draw01_Draw01NetFootingData_g_cs.Values.I32[2]};
         var positions = (Vector3[])source.Clone();
         AffineGeometry.Execute(RangePrograms.Data, 0, new[] { positions }, new[] { weights }, new float[] { halfWidthDelta }, Numeric_Types_Draw01_Draw01NetFootingData_g_cs.Values.I32[4], checked((positions.Length) - (Numeric_Types_Draw01_Draw01NetFootingData_g_cs.Values.I32[4])));
         return new MovableStructureModel.Plan(source, positions, new[] { indices }, new[] { new bool[expectedTriangles] });
@@ -573,8 +570,7 @@ internal static class Draw01NetFootingData
             Numeric_Types_Draw01_Draw01NetFootingData_g_cs.Values.F32[534],
             Numeric_Types_Draw01_Draw01NetFootingData_g_cs.Values.F32[535],
             Numeric_Types_Draw01_Draw01NetFootingData_g_cs.Values.F32[536],
-        },
-        _ => throw new ArgumentOutOfRangeException(nameof(lod))};
+        }};
     private static class RangePrograms
     {
         static RangePrograms()

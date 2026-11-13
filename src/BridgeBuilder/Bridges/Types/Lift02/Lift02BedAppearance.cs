@@ -20,7 +20,6 @@ internal static class Lift02BedAppearance
         var frame = Matrix4x4.TRS(roadToObject.position,roadToObject.rotation,Vector3.one).transpose;
         var offset = Data.I32[2];
         var halfWidth = Data.F32[offset+4] + halfDelta;
-        if (!float.IsFinite(halfWidth)) throw new System.InvalidOperationException("Lift02 bed width is non-finite.");
         var min = new Vector2(0,Data.F32[offset+7]);
         var max = new Vector2(1,Data.F32[offset+8]);
         var stripWidth = Data.F32[offset+9];
@@ -74,7 +73,6 @@ internal static class Lift02BedAppearance
             // A collapsed projection has no inverse; retain the original route.
             // Every nonzero width keeps its signed reciprocal without a clamp.
             var scale = width == 0 ? 1f : F(2) / width;
-            if (!float.IsFinite(scale)) throw new System.InvalidOperationException("Lift02 bed projection is non-finite.");
             var u = pose.transpose * new Vector4(F(7)*scale, 0, F(8), F(9));
             var v = pose.transpose * new Vector4(F(10)*scale, 0, F(11), F(12));
             patches[i] = new Patch(new Vector2(F(3),F(4)),new Vector2(F(5),F(6)),u,v,native.GetSurfaceAsset(0),sourceUv:true,

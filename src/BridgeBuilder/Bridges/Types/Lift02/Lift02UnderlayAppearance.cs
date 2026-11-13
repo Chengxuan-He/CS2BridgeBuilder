@@ -73,8 +73,6 @@ internal static class Lift02UnderlayAppearance
                 if (!HasArea(vertices))
                 {
                     var receiver = regions.Receivers.OrderBy(r => Distance(r, vertices[Numeric_Types_Lift02_Lift02UnderlayAppearance_cs.Values.I32[13]].Position)).ThenBy(r => r.Index).FirstOrDefault();
-                    if (receiver == null)
-                        throw new InvalidOperationException("Prepared underlay has no selected-road material receiver.");
                     Emit(vertices, receiver, kind, true, true);
                     continue;
                 }
@@ -159,8 +157,6 @@ internal static class Lift02UnderlayAppearance
                 {
                     var center = polygon.Aggregate(Vector3.zero, (sum, v) => sum + v.Position) / polygon.Length;
                     var receiver = regions.Receivers.OrderBy(r => Distance(r, center)).ThenBy(r => r.Index).FirstOrDefault();
-                    if (receiver == null)
-                        throw new InvalidOperationException("Prepared underlay has physical faces but no selected-road material receiver.");
                     uncovered++;
                     bool nativeField = receiver.Binding.ProjectionKind == MovableRoadAppearanceBinding.Projection.Corresponding || receiver.Binding.SourceDomain.HasValue;
                     Emit(polygon, receiver, kind, !nativeField);
@@ -383,8 +379,6 @@ internal static class Lift02UnderlayAppearance
                 v.Weights.z
             };
             double sum = weights.Sum();
-            if (weights.Any(w => w < Numeric_Types_Lift02_Lift02UnderlayAppearance_cs.Values.I32[96]) || !(sum > Numeric_Types_Lift02_Lift02UnderlayAppearance_cs.Values.I32[97]))
-                throw new InvalidOperationException($"Underlay material subdivision has invalid source weights: face={v.Face}; weights={v.Weights}.");
             int anchor = weights[Numeric_Types_Lift02_Lift02UnderlayAppearance_cs.Values.I32[98]] > weights[Numeric_Types_Lift02_Lift02UnderlayAppearance_cs.Values.I32[99]] ? Numeric_Types_Lift02_Lift02UnderlayAppearance_cs.Values.I32[100] : Numeric_Types_Lift02_Lift02UnderlayAppearance_cs.Values.I32[101];
             if (weights[Numeric_Types_Lift02_Lift02UnderlayAppearance_cs.Values.I32[102]] > weights[anchor])
                 anchor = Numeric_Types_Lift02_Lift02UnderlayAppearance_cs.Values.I32[103];
@@ -438,9 +432,6 @@ internal static class Lift02UnderlayAppearance
                 continue;
             prepared.Add(new MovableStructureModel.PreparedDomain(domain, group.Surface, used.Select(i => new KeyValuePair<int, Vector2>(Final(i), vertices[i].Uv)).ToArray(), used.Select(i => new KeyValuePair<int, MovableStructureModel.ProjectedUvFrame>(Final(i), vertices[i].Projection)).ToArray()));
         }
-
-        if (assigned.Count != byFace.Count)
-            throw new InvalidOperationException("An authored underlay face is missing from its UV-domain recipe.");
         var result = new MovableStructureModel.Plan(source.SourcePositions, source.SourcePositions, source.SourceIndices, source.RemoveTriangles.Select(m => Enumerable.Repeat(true, m.Length).ToArray()).ToArray(), addedVertices: edges.ToArray(), fragments: fragments.ToArray(), interiorVertices: interiors.ToArray(), reconstructsAuthoredPositions: true, preparedDomains: prepared.ToArray(), frameTransforms: vertices.Select((v, i) => new KeyValuePair<int, Matrix4x4>(Final(i), v.Frame)).ToArray(), sourceCopies: copies.ToArray());
         for (int i = Numeric_Types_Lift02_Lift02UnderlayAppearance_cs.Values.I32[130]; i < vertices.Length; i++)
             result.Positions[Final(i)] = vertices[i].Position;

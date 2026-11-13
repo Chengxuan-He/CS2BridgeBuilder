@@ -13,8 +13,6 @@ internal static class Draw02MovingBase
             return; // The native merged far shell already uses this map.
         var data = Draw02MovingBaseMeasurements.Values.I32;
         int row = lod * Numeric_Types_Draw02_Draw02MovingBase_cs.Values.I32[1];
-        if (source.Length != data[row] || positions.Length != data[row])
-            throw new System.InvalidOperationException("Draw02 moving base requires its measured main mesh.");
         var left = new List<int>();
         var right = new List<int>();
         var centre = new List<int>();

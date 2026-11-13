@@ -33,7 +33,6 @@ internal static class Lift04UvCharts
         {
             var data = HardcodedNumbers.Load("Lift04UvCharts");
             var i = data.I32;
-            if (i[0] != 1) throw new InvalidOperationException("Invalid Lift04 UV chart schema.");
             var charts = new MovableUvChart[i[1]];
             for (int c = 0; c < charts.Length; c++) charts[c] = MovableUvChart.Read(i, data.F64, i[2+c]);
             int at = 2+charts.Length;

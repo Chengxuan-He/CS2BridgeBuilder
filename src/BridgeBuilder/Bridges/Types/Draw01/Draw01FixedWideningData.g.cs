@@ -12,29 +12,20 @@ internal static class Draw01FixedWideningData
     {
         if (mesh == Numeric_Types_Draw01_Draw01FixedWideningData_g_cs.Values.I32[0] && (lod == Numeric_Types_Draw01_Draw01FixedWideningData_g_cs.Values.I32[1] || lod == Numeric_Types_Draw01_Draw01FixedWideningData_g_cs.Values.I32[2]))
         {
-            if (positions.Length != Numeric_Types_Draw01_Draw01FixedWideningData_g_cs.Values.I32[3])
-                throw new ArgumentException("Draw01 glass widening requires the original vertex layout.");
             foreach (var coordinateRows in StructureRows.Stages(Glass))
                 AffineGeometry.Execute(RangePrograms1.Data, 0, new[] { positions }, Array.Empty<float[]>(), new float[] { halfWidthDelta }, count: coordinateRows.Length, indices: new[] { coordinateRows });
             return;
         }
-
-        if (mesh != Numeric_Types_Draw01_Draw01FixedWideningData_g_cs.Values.I32[4])
-            throw new ArgumentOutOfRangeException(nameof(mesh));
         var expected = lod switch
         {
             0 => Numeric_Types_Draw01_Draw01FixedWideningData_g_cs.Values.I32[5],
             1 => Numeric_Types_Draw01_Draw01FixedWideningData_g_cs.Values.I32[6],
-            2 => Numeric_Types_Draw01_Draw01FixedWideningData_g_cs.Values.I32[7],
-            _ => throw new ArgumentOutOfRangeException(nameof(lod))};
-        if (positions.Length != expected)
-            throw new ArgumentException("Draw01 fixed widening requires the original main-mesh vertex layout.");
+            2 => Numeric_Types_Draw01_Draw01FixedWideningData_g_cs.Values.I32[7]};
         var groups = lod switch
         {
             0 => Near,
             1 => Middle,
-            2 => Far,
-            _ => throw new ArgumentOutOfRangeException(nameof(lod))};
+            2 => Far};
         foreach (var group in groups)
         {
             // Leave authored center stations unchanged.

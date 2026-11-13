@@ -516,6 +516,10 @@ internal static class RuntimeUiText
         {
             "Arch bridges", "拱桥", "拱橋", "Bogenbrücken", "Puentes de arco", "Ponts en arc", "Ponti ad arco", "アーチ橋", "아치교", "Mosty łukowe", "Pontes em arco", "Арочные мосты"
         },
+        ["FamilyViaduct"] = new[]
+        {
+            "Viaducts", "高架桥", "高架橋", "Viadukte", "Viaductos", "Viaducs", "Viadotti", "高架橋", "고가교", "Wiadukty", "Viadutos", "Виадуки"
+        },
         ["FamilyCovered"] = new[]
         {
             "Covered bridges", "廊桥", "廊橋", "Gedeckte Brücken", "Puentes cubiertos", "Ponts couverts", "Ponti coperti", "屋根付き橋", "지붕 다리", "Mosty kryte", "Pontes cobertas", "Крытые мосты"
@@ -1123,6 +1127,21 @@ internal static class RuntimeUiText
             "Mod: {0}",
             "Mod: {0}",
             "Мод: {0}"
+        },
+        ["SourceModNameUnavailable"] = new[]
+        {
+            "Mod name unavailable",
+            "模组名称不可用",
+            "模組名稱無法取得",
+            "Mod-Name nicht verfügbar",
+            "Nombre del mod no disponible",
+            "Nom du mod indisponible",
+            "Nome della mod non disponibile",
+            "Mod名を取得できません",
+            "모드 이름을 확인할 수 없음",
+            "Nazwa moda niedostępna",
+            "Nome do mod indisponível",
+            "Название мода недоступно"
         },
         ["SourceDlc"] = new[]
         {

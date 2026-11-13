@@ -120,13 +120,6 @@ internal sealed partial class BridgePreviewLanes : IDisposable
                     // export actual geometry lanes to the renderer.
                     if (source is not NetLaneGeometryPrefab prefab)
                     {
-                        // RequiredBatchesSystem does not draw lanes without a
-                        // SubMesh buffer. Do not, however, silently discard a
-                        // modded non-geometry lane with real render data.
-                        if (_source.HasBuffer<SubMesh>(original) && _source.GetBuffer<SubMesh>(original, true).Length != 0)
-                        {
-                            return false;
-                        }
                         continue;
                     }
                     output.Add(new Lane(prefab, manager.GetComponentData<Curve>(entity),

@@ -65,7 +65,6 @@ internal static class MovableMaterialCompatibility
                 && (source.isVTMaterial || source.textures.TryGetValue(p,out var value)&&value!=null));
             bool planar=albedo=="_WorldspaceAlbedo";
             float scale=planar?Scalar("_WorldspaceUVScale",1):1;
-            if(!float.IsFinite(scale)){error="Invalid source material coordinate scale.";return false;}
             var selected=new Dictionary<string,string>();
             if(albedo!=null)selected.Add("_BaseColorMap",albedo);
             void Channel(string target,params string[] names){var property=Select(names);if(property!=null)selected.Add(target,property);}

@@ -21,8 +21,6 @@ internal static class Lift03NetworkData
 
     internal static NetSectionInfo[] ConvertMainSections(string owner, NetSectionInfo[] source, IReadOnlyList<MainRole> roles, out PrefabBase[] created)
     {
-        if (roles.Count != source.Length)
-            throw new InvalidOperationException("Lift03 main mapping needs one role per source occurrence.");
         var rules = new MovableSectionConversion.Branch[source.Length][];
         for (var i = Numeric_Types_Lift03_Lift03NetworkData_g_cs.Values.I32[0]; i < source.Length; i++)
             rules[i] = roles[i] switch
@@ -54,8 +52,6 @@ internal static class Lift03NetworkData
 
     internal static NetSectionInfo[] ConvertAuxiliarySections(string owner, NetSectionInfo[] source, IReadOnlyList<AuxiliaryRole> roles, out PrefabBase[] created)
     {
-        if (roles.Count != source.Length)
-            throw new InvalidOperationException("Lift03 auxiliary mapping needs one role per source occurrence.");
         var rules = new MovableSectionConversion.Branch[source.Length][];
         for (var i = Numeric_Types_Lift03_Lift03NetworkData_g_cs.Values.I32[5]; i < source.Length; i++)
             rules[i] = roles[i] switch

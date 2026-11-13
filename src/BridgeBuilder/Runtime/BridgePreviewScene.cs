@@ -8,7 +8,7 @@ using UnityEngine;
 namespace BridgeBuilder.Runtime;
 
 /// <summary>A straight, isolated illustrative span assembled from the generated recipe.</summary>
-internal static class BridgePreviewScene
+internal static partial class BridgePreviewScene
 {
     // Presentation-only test course: deck at y=0, flat ground at y=-30.
     // Do not clamp this to a selected road's construction-tool elevation range.
@@ -60,10 +60,7 @@ internal static class BridgePreviewScene
             // ordinary edges are separate from the opened object and retain native
             // road composition and supports. NodeOffset is the native endpoint extent.
             var extent = mechanisms.Max(item =>
-                ((ObjectGeometryPrefab)item.m_Object).GetComponent<NetObject>()?.m_NodeOffset
-                ?? throw new InvalidOperationException("A movable preview has no native node offset."));
-            if (extent <= 0f || bridge.m_SegmentLength <= 0f)
-                throw new InvalidOperationException("A movable preview has invalid crossing/approach lengths.");
+                ((ObjectGeometryPrefab)item.m_Object).GetComponent<NetObject>().m_NodeOffset);
             NetCompositionHelpers.GetRequirementFlags(
                 new[] { NetPieceRequirements.Edge, NetPieceRequirements.Elevated }, out var approachFlags, out _);
             var approaches = new List<Span>
@@ -111,8 +108,6 @@ internal static class BridgePreviewScene
         }
         if (spans.Count == 0)
         {
-            if (bridge.m_SegmentLength <= 0f)
-                return false;
             spans.Add(new Span(0f, bridge.m_SegmentLength, -1, baseFlags));
         }
         using var composition = new BridgePreviewComposition();
@@ -132,35 +127,37 @@ internal static class BridgePreviewScene
         try
         {
             var deckWidth = 0f;
+            using var objectCourse = new BridgePreviewObjectCourse();
+            var courseSpans = new List<BridgePreviewObjectCourse.Snapshot>();
             foreach (var span in spans)
             {
-                await GenerationWork.Next("preview approach composition");
-                var pieces = composition.Compose(deck, span.Flags, out var data,
+                var packed = composition.Compose(deck, span.Flags, out var packedData,
                     selectedRoad: session.RoadContext(deck));
-                deckWidth = data.m_Width;
-                if (pieces.Length == 0)
-                    return false;
-                var deckDrawn = false;
-                foreach (var entry in pieces)
-                {
-                    var piece = entry.Composition;
-                    if ((piece.m_PieceFlags & NetPieceFlags.HasMesh) == 0 ||
-                        (piece.m_SectionFlags & NetSectionFlags.Hidden) != 0) continue;
-                    if (HiddenLayer(piece)) continue;
-                    if (piece.m_Size.z <= 0f)
-                        return false;
-                    deckDrawn |= (piece.m_SectionFlags & NetSectionFlags.Overhead) == 0;
-                }
-                if (!deckDrawn)
-                {
-                    return false;
-                }
-                if (!draws.AddNetSpan(pieces, data, transform, span.Start, span.Length))
-                    return false;
-                await GenerationWork.Next("preview approach lanes");
-                if (!await draws.AddLanesAsync(pieces, data, transform, span.Start, span.Length))
-                    return false;
+                courseSpans.Add(objectCourse.Add(deck, session.RoadContext(deck), packed, packedData,
+                    span.Start, span.Length, elevation));
             }
+            await objectCourse.CalculateAsync(deck);
+            for (var spanIndex = 0; spanIndex < spans.Count; spanIndex++)
+            {
+                await GenerationWork.Next("preview approach composition");
+                var course = courseSpans[spanIndex];
+                var pieces = course.Pieces;
+                var data = course.EdgeData;
+                // Native pillar ranking uses the elevated roadway, not the wider overhead envelope.
+                deckWidth = course.Network.m_ElevatedWidth;
+                // The visible network and its piece objects share the same native trimmed course.
+                Game.Rendering.BatchDataHelpers.CalculateEdgeParameters(course.Edge, false, out var edgeParameters);
+                if (!draws.AddNativeComposition(pieces, data, edgeParameters, course.Edge.m_Bounds, transform, elevation)) return false;
+                Game.Rendering.BatchDataHelpers.CalculateNodeParameters(course.Start, course.StartData, out var startParameters);
+                if (!draws.AddNativeComposition(course.StartPieces, course.StartData, startParameters, course.Start.m_Bounds, transform, elevation)) return false;
+                Game.Rendering.BatchDataHelpers.CalculateNodeParameters(course.End, course.EndData, out var endParameters);
+                if (!draws.AddNativeComposition(course.EndPieces, course.EndData, endParameters, course.End.m_Bounds, transform, elevation)) return false;
+            }
+            await GenerationWork.Next("preview native course lanes");
+            var leftHandTraffic = Unity.Entities.World.DefaultGameObjectInjectionWorld
+                .GetExistingSystemManaged<Game.City.CityConfigurationSystem>().leftHandTraffic;
+            if (!await draws.AddLanesAsync(objectCourse.Lanes(leftHandTraffic), leftHandTraffic, transform, elevation)) return false;
+            if (!await AddPieceObjectsAsync(objectCourse, transform, elevation, draws)) return false;
             if (deck.TryGet<NetSubObjects>(out var objects))
             {
                 foreach (var item in objects.m_SubObjects ?? Array.Empty<NetSubObjectInfo>())
@@ -208,8 +205,6 @@ internal static class BridgePreviewScene
                     var local = Matrix4x4.Translate(item.m_Position);
                     var childSpans = spans;
                     var childCrossingEnds = crossingEnds;
-                    var leftHandTraffic = Unity.Entities.World.DefaultGameObjectInjectionWorld
-                        .GetExistingSystemManaged<Game.City.CityConfigurationSystem>().leftHandTraffic;
                     if (Game.Net.NetUtils.ShouldInvert(item.m_InvertWhen, leftHandTraffic))
                     {
                         // CourseSplitSystem.GetAuxCourse reverses endpoints and
@@ -311,12 +306,6 @@ internal static class BridgePreviewScene
         }
         return result;
     }
-
-    private static bool HiddenLayer(NetCompositionPiece piece)
-        => ((piece.m_PieceFlags & NetPieceFlags.Surface) != 0 && (piece.m_SectionFlags & NetSectionFlags.HiddenSurface) != 0)
-        || ((piece.m_PieceFlags & NetPieceFlags.Bottom) != 0 && (piece.m_SectionFlags & NetSectionFlags.HiddenBottom) != 0)
-        || ((piece.m_PieceFlags & NetPieceFlags.Top) != 0 && (piece.m_SectionFlags & NetSectionFlags.HiddenTop) != 0)
-        || ((piece.m_PieceFlags & NetPieceFlags.Side) != 0 && (piece.m_SectionFlags & NetSectionFlags.HiddenSide) != 0);
 
     private static IEnumerable<float> Positions(NetSubObjectInfo item, List<Span> spans)
     {

@@ -48,22 +48,8 @@ internal static class MovableSectionConversion
         created = Array.Empty<PrefabBase>();
         occurrences = Array.Empty<Occurrence>();
         error = null;
-        if (string.IsNullOrWhiteSpace(owner) || source == null || rules == null || rules.Count != source.Length)
+        if (string.IsNullOrWhiteSpace(owner))
         { error = "Movable section conversion requires an owner and rules for every source occurrence."; return false; }
-
-        // Validate everything before allocating Unity objects. Missing rules are not a request
-        // to silently retain a stationary section inside the moving span.
-        for (var i = 0; i < source.Length; i++)
-        {
-            if (source[i]?.m_Section == null || rules[i] == null || rules[i].Length == 0)
-            { error = $"Section occurrence {i} has no source section or measured branch rules."; return false; }
-            for (var j = 0; j < rules[i].Length; j++)
-            {
-                var rule = rules[i][j];
-                if (rule == null || Contradicts(rule.All, rule.None))
-                { error = $"Section occurrence {i}, branch {j} has invalid requirements."; return false; }
-            }
-        }
 
         var result = new List<NetSectionInfo>();
         var wrappers = new List<PrefabBase>();
@@ -152,10 +138,5 @@ internal static class MovableSectionConversion
     private static string Key(NetPieceRequirements[] values)
         => string.Join(",", values.Distinct().OrderBy(value => value));
 
-    private static bool Contradicts(NetPieceRequirements[] all, NetPieceRequirements[] none)
-    {
-        foreach (var required in all)
-            if (Array.IndexOf(none, required) >= 0) return true;
-        return false;
-    }
+
 }

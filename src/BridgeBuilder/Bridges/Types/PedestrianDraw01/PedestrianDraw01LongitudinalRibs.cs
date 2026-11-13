@@ -14,8 +14,6 @@ internal static class PedestrianDraw01LongitudinalRibs
             cursor += 2 + data.I32[cursor + 1] * 3;
         var count = data.I32[cursor++];
         var parts = data.I32[cursor++];
-        if (source.Length != count || positions.Length != count || !float.IsFinite(delta))
-            throw new InvalidOperationException("PedestrianDraw01 longitudinal rib source layout changed.");
         for (var part = 0; part < parts; part++)
         {
             var first = data.I32[cursor++];

@@ -17,6 +17,10 @@ Bridge Builder combines available roads or tracks with supported bridge styles i
 
 ### Compatibility
 
+Bridge styles supplied by other mods become available only when the corresponding mods are installed and enabled.
+
+Bridges & Ports DLC is not required to use Bridge Builder. Only bridge styles that use its content require it.
+
 These integrations are optional; select only content you use.
 
 **Network creation**

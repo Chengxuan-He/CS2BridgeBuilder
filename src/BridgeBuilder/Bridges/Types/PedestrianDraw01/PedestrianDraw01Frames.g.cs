@@ -11,10 +11,7 @@ internal static class PedestrianDraw01Frames
         {
             0 => (Count: Numeric_Types_PedestrianDraw01_PedestrianDraw01Frames_g_cs.Values.I32[0], Faces: Numeric_Types_PedestrianDraw01_PedestrianDraw01Frames_g_cs.Values.I32[1], Edges: Edges0, Interior: Interior0, Fragments: Fragments0),
             1 => (Count: Numeric_Types_PedestrianDraw01_PedestrianDraw01Frames_g_cs.Values.I32[2], Faces: Numeric_Types_PedestrianDraw01_PedestrianDraw01Frames_g_cs.Values.I32[3], Edges: Edges1, Interior: Interior1, Fragments: Fragments1),
-            2 => (Count: Numeric_Types_PedestrianDraw01_PedestrianDraw01Frames_g_cs.Values.I32[4], Faces: Numeric_Types_PedestrianDraw01_PedestrianDraw01Frames_g_cs.Values.I32[5], Edges: Edges2, Interior: Interior2, Fragments: Fragments2),
-            _ => throw new ArgumentOutOfRangeException(nameof(lod))};
-        if (source.Length != data.Count || indices.Length != data.Faces * Numeric_Types_PedestrianDraw01_PedestrianDraw01Frames_g_cs.Values.I32[6] || !float.IsFinite(delta))
-            throw new InvalidOperationException("PedestrianDraw01 A-frame layout or finite delta is invalid.");
+            2 => (Count: Numeric_Types_PedestrianDraw01_PedestrianDraw01Frames_g_cs.Values.I32[4], Faces: Numeric_Types_PedestrianDraw01_PedestrianDraw01Frames_g_cs.Values.I32[5], Edges: Edges2, Interior: Interior2, Fragments: Fragments2)};
         var positions = (Vector3[])source.Clone();
         AffineGeometry.Execute(CoordinatePrograms.Data, lod, new[] { source, positions }, Array.Empty<float[]>(), new[] { delta });
         var edges = new MovableStructureModel.EdgeVertex[data.Edges.Length];

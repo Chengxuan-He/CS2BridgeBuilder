@@ -14,7 +14,6 @@ internal static class PedestrianDraw02LocalAppearance
     internal static Partition Create(Patch[] source, Pose roadToObject, float delta, out Patch[] compact)
     {
         var i=Data.I32;var f=Data.F32;
-        if(i[0]!=2)throw new InvalidOperationException(nameof(PedestrianDraw02LocalAppearance));
         compact=new Patch[i[4]];
         for(int n=0;n<compact.Length;n++)compact[n]=source[i[5+n]];
         return Build(roadToObject,delta,false);
@@ -28,7 +27,6 @@ internal static class PedestrianDraw02LocalAppearance
     private static Partition Build(Pose roadToObject,float delta,bool physical)
     {
         var i=Data.I32;var f=Data.F32;
-        if(i[0]!=2)throw new InvalidOperationException(nameof(PedestrianDraw02LocalAppearance));
         var pose=Matrix4x4.TRS(roadToObject.position,roadToObject.rotation,Vector3.one);
         Partition Plane(float nx,float nz,float c,Partition low,Partition high)
         {
@@ -46,7 +44,6 @@ internal static class PedestrianDraw02LocalAppearance
             float bx=f[offset+3]+f[offset+5]*delta,bz=f[offset+4];
             float nx=az-bz,nz=bx-ax;
             float length=MathF.Sqrt(nx*nx+nz*nz);
-            if(!float.IsFinite(length))throw new InvalidOperationException(nameof(PedestrianDraw02LocalAppearance));
             if(length==0f){nx=f[offset+6];nz=f[offset+7];}
             else {nx/=length;nz/=length;}
             if(nx*f[offset+6]+nz*f[offset+7]<0){nx=-nx;nz=-nz;}

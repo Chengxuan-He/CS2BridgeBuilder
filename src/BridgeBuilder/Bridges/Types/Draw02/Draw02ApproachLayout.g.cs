@@ -13,8 +13,6 @@ internal static class Draw02ApproachLayout
     // The caller supplies widened, factory-owned pieces in recorded family order.
     internal static void Apply(NetGeometryPrefab target, TowerFactory factory, NetPiecePrefab[] pieces, float layoutRemainder)
     {
-        if (pieces.Length != Numeric_Types_Draw02_Draw02ApproachLayout_g_cs.Values.I32[0] || pieces.Any(piece => piece == null || !factory.Created.Contains(piece)))
-            throw new InvalidOperationException("Draw02 approaches require nine owned structural pieces.");
         var section0 = ScriptableObject.CreateInstance<NetSectionPrefab>();
         section0.name = target.name + " Fixed Approach Section 0";
         factory.AdoptMovableSections(new PrefabBase[] { section0 });

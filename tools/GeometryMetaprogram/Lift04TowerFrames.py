@@ -37,7 +37,7 @@ for lod,parts in enumerate(((1,622),(1,583),(5,155))):
  tables.append(ranges);lines.append(f'            {lod} => (Count: {len(v)}, Parts: Level{lod}),')
  np.savez(r/f'lift04-tower-frames-{lod}.npz',selected=mask,weights=signs)
  print(f'PASS LOD{lod}: {len(ids)} tower vertices, bone 0, four widths, original YZ and winding')
-lines+=['            _ => throw new ArgumentOutOfRangeException(nameof(lod))','        };','        if (source.Length != data.Count || positions.Length != data.Count || !float.IsFinite(delta))','            throw new InvalidOperationException("Lift04 tower frames requires its recorded native topology.");','        foreach (var part in data.Parts)','            for (var i = part.First; i <= part.Last; i++)','                positions[i].x = source[i].x + part.Sign * delta;','    }','']
+lines+=['            ','        };','        ','','        foreach (var part in data.Parts)','            for (var i = part.First; i <= part.Last; i++)','                positions[i].x = source[i].x + part.Sign * delta;','    }','']
 for lod,ranges in enumerate(tables):
  lines+=['    // Geometry SHA-256: '+hashes[lod],f'    private static readonly (int First, int Last, int Sign)[] Level{lod} =','    {']
  lines += [f'        ({a}, {b}, {w}),' for a,b,w in ranges];lines+=['    };','']

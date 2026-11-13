@@ -23,15 +23,9 @@ internal static class Lift05StructuralRepeat
             return plan;
         var data = Lift05StructuralWrapData.For(lod);
         int count = plan.SourcePositions.Length;
-        if (count != data.VertexCount || plan.SourceIndices.Length != Numeric_Types_Lift05_Lift05StructuralRepeat_cs.Values.I32[1] || plan.SourceIndices[Numeric_Types_Lift05_Lift05StructuralRepeat_cs.Values.I32[2]].Length != data.IndexCount || plan.PreparedDomains.Length != Numeric_Types_Lift05_Lift05StructuralRepeat_cs.Values.I32[3])
-            throw new InvalidOperationException("Lift05 continuous repeat requires its measured original topology plan.");
         double Displacement(int v) => (double)plan.Positions[v].x - plan.SourcePositions[v].x;
         if (data.Faces.All(f => f.Indices.All(v => Displacement(v) == Numeric_Types_Lift05_Lift05StructuralRepeat_cs.Values.I32[4])))
             return plan;
-        if (finishedSurface == null)
-            throw new InvalidOperationException("Lift05 offline structural repeat dependency has not yet been bound.");
-        if (contentMin.x != Numeric_Types_Lift05_Lift05StructuralRepeat_cs.Values.I32[5] || contentMax.x != Numeric_Types_Lift05_Lift05StructuralRepeat_cs.Values.I32[6] || !(contentMin.y >= Numeric_Types_Lift05_Lift05StructuralRepeat_cs.Values.I32[7] && contentMax.y <= Numeric_Types_Lift05_Lift05StructuralRepeat_cs.Values.I32[8] && contentMax.y > contentMin.y))
-            throw new InvalidOperationException("Lift05 repeat requires one U period and measured finite V content bounds.");
         var offsets = new double[data.Profiles.Length];
         for (int i = Numeric_Types_Lift05_Lift05StructuralRepeat_cs.Values.I32[9]; i < offsets.Length; i++)
         {
@@ -52,11 +46,6 @@ internal static class Lift05StructuralRepeat
                 if (!faces.TryGetValue(triangle, out var face))
                     throw new InvalidOperationException("Lift05 derivative domain extends beyond measured repeating profiles.");
                 var profile = data.Profiles[face.Profile];
-                if (profile.MinU != bounds[Numeric_Types_Lift05_Lift05StructuralRepeat_cs.Values.I32[13]] || profile.MaxU != bounds[Numeric_Types_Lift05_Lift05StructuralRepeat_cs.Values.I32[14]])
-                    throw new InvalidOperationException("Lift05 prepared U period differs from the native profile.");
-                for (int k = Numeric_Types_Lift05_Lift05StructuralRepeat_cs.Values.I32[15]; k < Numeric_Types_Lift05_Lift05StructuralRepeat_cs.Values.I32[16]; k++)
-                    if (plan.SourceIndices[Numeric_Types_Lift05_Lift05StructuralRepeat_cs.Values.I32[17]][triangle * Numeric_Types_Lift05_Lift05StructuralRepeat_cs.Values.I32[18] + k] != face.Indices[k])
-                        throw new InvalidOperationException("Lift05 source face identity changed.");
                 var ids = fragments.TryGetValue(triangle, out var fragment) ? fragment.Indices : plan.RemoveTriangles[Numeric_Types_Lift05_Lift05StructuralRepeat_cs.Values.I32[19]][triangle] ? Array.Empty<int>() : face.Indices;
                 foreach (int vertex in ids)
                 {
@@ -66,8 +55,6 @@ internal static class Lift05StructuralRepeat
                         if (weight == Numeric_Types_Lift05_Lift05StructuralRepeat_cs.Values.I32[21])
                             return;
                         int local = Array.IndexOf(face.Indices, source);
-                        if (local < Numeric_Types_Lift05_Lift05StructuralRepeat_cs.Values.I32[22])
-                            throw new InvalidOperationException("Lift05 existing fragment leaves its original source face.");
                         weights[local] += weight;
                     }
 

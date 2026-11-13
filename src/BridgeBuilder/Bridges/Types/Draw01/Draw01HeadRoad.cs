@@ -53,8 +53,6 @@ internal static class Draw01HeadRoad
         {
             if (!mappings.TryGetValue(path, out var projection))
                 return piece.m_Piece;
-            if (projection.Source != piece.m_Piece)
-                throw new InvalidOperationException("Draw01 native head source path no longer identifies its measured piece.");
             if (replacements.TryGetValue(path, out var cached))
                 return cached;
             var sources = Sources(piece.m_Piece).ToArray();

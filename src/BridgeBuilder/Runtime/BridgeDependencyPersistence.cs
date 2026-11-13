@@ -321,8 +321,6 @@ internal sealed class BridgeCreationDependencies
         string cid = Record(surface);
         string[] edges = caches.Select(Record).Distinct(StringComparer.OrdinalIgnoreCase)
             .OrderBy(id => id, StringComparer.OrdinalIgnoreCase).ToArray();
-        if (_cacheEdges.TryGetValue(cid, out var previous) && !previous.SequenceEqual(edges))
-            return Fail("Conflicting generated Surface cache declarations: " + cid);
         _cacheEdges[cid] = edges;return true;
         }
         catch(Exception exception){return Fail("Material cache declaration: "+exception.Message);}

@@ -1,0 +1,5 @@
+- Fix shader compilation failures when compiled programs differ in size from the serialized seed.
+- Add Art Deco Viaduct, Truss Viaduct, Arc Pedestrian and Covered Pedestrian bridge styles.
+- Correct preview markings, span supports and pedestrian bridge pillar selection.
+- Fix Road Builder icons and preserve native icon proportions.
+- Preserve saved bridge metadata during migration and improve native unlock handling.

@@ -30,20 +30,15 @@ internal sealed class MovableUvChart
 
     internal static MovableUvChart Read(int[] integers,double[] coordinates,int offset)
     {
-        if(offset<0 || offset>=integers.Length)throw new ArgumentException("Invalid UV chart offset.");
         int count=integers[offset++];
-        if(count<0 || count>(integers.Length-offset)/2)throw new ArgumentException("Invalid UV chart loop table.");
         var loops=new Point[count][];
         for(int loop=0;loop<count;loop++)
         {
             int start=integers[offset++],length=integers[offset++];
-            if(start<0 || start>coordinates.Length || length<0 || length>(coordinates.Length-start)/2)
-                throw new ArgumentException("Invalid UV chart coordinate range.");
             var points=loops[loop]=new Point[length];
             for(int i=0;i<length;i++)
             {
                 double x=coordinates[start+i*2],y=coordinates[start+i*2+1];
-                if(!double.IsFinite(x) || !double.IsFinite(y))throw new ArgumentException("Non-finite UV chart coordinate.");
                 points[i]=new Point(x,y);
             }
         }
@@ -52,8 +47,6 @@ internal sealed class MovableUvChart
 
     internal bool ContainsTriangle(Vector2 a,Vector2 b,Vector2 c)
     {
-        if(!float.IsFinite(a.x) || !float.IsFinite(a.y) || !float.IsFinite(b.x) ||
-            !float.IsFinite(b.y) || !float.IsFinite(c.x) || !float.IsFinite(c.y))return false;
         var p=new Point(a.x,a.y);var q=new Point(b.x,b.y);var r=new Point(c.x,c.y);
         if(!Contains(p) || !Contains(q) || !Contains(r) ||
             !ContainsSegment(p,q) || !ContainsSegment(q,r) || !ContainsSegment(r,p))return false;

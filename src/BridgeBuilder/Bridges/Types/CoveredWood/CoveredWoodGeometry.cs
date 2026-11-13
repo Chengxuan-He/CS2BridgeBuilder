@@ -27,16 +27,7 @@ internal static class CoveredWoodGeometry
             default:
                 return false;
         }
-
-        if (source.Length != vertices || moved.Length != vertices)
-            return false;
         var ranges = CoveredWoodColumnData.Ranges[lod];
-        // Validate before modifying the output. Exact authored membership replaces the height-slice
-        // heuristic which gave the top and bottom of one upright different widths.
-        for (var r = Numeric_Types_CoveredWood_CoveredWoodGeometry_cs.Values.I32[6]; r < ranges.Length; r += Numeric_Types_CoveredWood_CoveredWoodGeometry_cs.Values.I32[7])
-            for (var i = ranges[r]; i < ranges[r + Numeric_Types_CoveredWood_CoveredWoodGeometry_cs.Values.I32[8]]; i++)
-                if (Math.Abs(source[i].x) != CoveredWoodColumnData.HalfSpan)
-                    return false;
         var left = new List<int>();
         var right = new List<int>();
         for (var r = Numeric_Types_CoveredWood_CoveredWoodGeometry_cs.Values.I32[9]; r < ranges.Length; r += Numeric_Types_CoveredWood_CoveredWoodGeometry_cs.Values.I32[10])

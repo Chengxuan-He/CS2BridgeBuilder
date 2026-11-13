@@ -114,7 +114,6 @@ internal static class BridgeMeshRetirement
             Member(typeof(GeometryAsset),"m_Instances").GetValue(geometry)!=null ||
             geometry.loading.m_AsyncLoadingStarted || geometry.loading.m_AsyncLoadingScheduled) return false;
         var bytes=(ulong)Read(info,"m_SizeInMemory")!;
-        if(bytes>meshes.totalSizeInMemory)throw new InvalidOperationException("Inconsistent resident mesh accounting for "+mesh);
         // The entity, and hence its ECS mesh buffers, are already destroyed. No generated mesh
         // or heap block exists. Finish the two remaining native piece-unload operations.
         typeof(BatchMeshSystem).GetProperty(nameof(BatchMeshSystem.totalSizeInMemory))!.SetValue(meshes,meshes.totalSizeInMemory-bytes);
@@ -162,7 +161,6 @@ internal static class BridgeMeshRetirement
             var count=(int)Read(child,"m_BatchCount")!;
             if(count>1){Member(child.GetType(),"m_BatchCount").SetValue(child,count-1);infos[piece]=child;continue;}
             var size=(ulong)Read(child,"m_SizeInMemory")!;
-            if(size>meshes.totalSizeInMemory)throw new InvalidOperationException("Invalid child mesh accounting: "+piece);
             typeof(BatchMeshSystem).GetMethod("UncacheMeshData",Fields)!.Invoke(meshes,new object[]{piece,batch.sourceType});
             typeof(BatchMeshSystem).GetProperty(nameof(BatchMeshSystem.totalSizeInMemory))!.SetValue(meshes,meshes.totalSizeInMemory-size);
             infos.Remove(piece);

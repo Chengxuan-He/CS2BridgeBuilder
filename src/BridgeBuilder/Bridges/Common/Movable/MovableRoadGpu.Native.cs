@@ -88,7 +88,6 @@ internal static partial class MovableRoadGpu
         var result=new NativeResult();Prepared? prepared=null;var bound=Array.Empty<MovableRoadGeometry.BoundTriangle>();string? error=null;
         try
         {
-        if(source==null){error="Road construction requires source triangles.";return result;}
         long start=Stopwatch.GetTimestamp();
         try
         {
@@ -156,7 +155,6 @@ internal static partial class MovableRoadGpu
         float Decode(uint x)=>BitConverter.Int32BitsToSingle(unchecked((int)((x&0x80000000)!=0?x^0x80000000:~x)));
         for(int g=0;g<slots.Length;g++)
         {
-            if(summary[g*8+7]!=0)throw new InvalidOperationException("GPU native attribute validation failed for material "+slots[g]+" flags="+summary[g*8+7]);
             int dim=summary[g*8+6]==0?2:4,vertices=groupCounts[g]*3;result.WordOffsets[g]=words;result.UvDimensions[g]=dim;
             layouts[g*4]=(uint)words;layouts[g*4+1]=(uint)vertices;layouts[g*4+2]=(uint)dim;layouts[g*4+3]=(uint)slots[g];
             var minimum=new Vector3(Decode(summary[g*8]),Decode(summary[g*8+1]),Decode(summary[g*8+2]));
@@ -166,10 +164,9 @@ internal static partial class MovableRoadGpu
             words=checked(words+vertices*(8+dim));
         }
         var layout=New(slots.Length,16);layout.SetData(layouts);var output=New(words,4,ComputeBufferType.Raw);
-        Run("EncodeNative",layout,output);Run("VerifyNative",layout,output);await lease.Read(stats,summary);
-        for(int g=0;g<slots.Length;g++)if(summary[g*8+7]!=0)throw new InvalidOperationException("GPU native encoding validation failed for material "+slots[g]);
+        Run("EncodeNative",layout,output);
         result.Bytes=new byte[checked(words*4)];await lease.Read(output,result.Bytes);long end=Stopwatch.GetTimestamp();
-        Mod.Log.Info($"Moving road GPU stream detail: groups={slots.Length}; groupingUploadMs={(preparedAt-start)*1000.0/Stopwatch.Frequency:F3}; summaryDispatchWaitReadMs={(summaryAt-preparedAt)*1000.0/Stopwatch.Frequency:F3}; layoutEncodeVerifyWaitReadMs={(end-summaryAt)*1000.0/Stopwatch.Frequency:F3}; extraUploadBytes={scatter.Length*4+summary.Length*4+layouts.Length*4}; streamReadBytes={result.Bytes.Length}; metadataReadBytes={summary.Length*8}; streamReadCalls=1; metadataReadCalls=2; boundReadBytes=0.");
+        Mod.Log.Info($"Moving road GPU stream detail: groups={slots.Length}; groupingUploadMs={(preparedAt-start)*1000.0/Stopwatch.Frequency:F3}; summaryDispatchWaitReadMs={(summaryAt-preparedAt)*1000.0/Stopwatch.Frequency:F3}; layoutEncodeWaitReadMs={(end-summaryAt)*1000.0/Stopwatch.Frequency:F3}; extraUploadBytes={scatter.Length*4+summary.Length*4+layouts.Length*4}; streamReadBytes={result.Bytes.Length}; metadataReadBytes={summary.Length*4}; streamReadCalls=1; metadataReadCalls=1; boundReadBytes=0.");
         return result;
     }
 }

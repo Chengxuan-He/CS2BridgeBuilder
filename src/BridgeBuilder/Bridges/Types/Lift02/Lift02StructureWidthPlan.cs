@@ -12,10 +12,7 @@ internal static class Lift02StructureWidthPlan
         {
             0 => Numeric_Types_Lift02_Lift02StructureWidthPlan_cs.Values.I32[0],
             1 => Numeric_Types_Lift02_Lift02StructureWidthPlan_cs.Values.I32[1],
-            2 => Numeric_Types_Lift02_Lift02StructureWidthPlan_cs.Values.I32[2],
-            _ => throw new ArgumentOutOfRangeException(nameof(lod))};
-        if (indices.Length != faceCount * Numeric_Types_Lift02_Lift02StructureWidthPlan_cs.Values.I32[3])
-            throw new InvalidOperationException("Lift02 structure requires its native LOD topology.");
+            2 => Numeric_Types_Lift02_Lift02StructureWidthPlan_cs.Values.I32[2]};
         var positions = (Vector3[])source.Clone();
         Lift02RigidParts.Apply(lod, source, positions, delta);
         Lift02CounterweightGeometry.Apply(lod, source, positions, delta);

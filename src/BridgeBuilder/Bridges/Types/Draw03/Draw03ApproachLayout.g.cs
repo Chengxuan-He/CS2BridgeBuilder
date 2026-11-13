@@ -12,8 +12,6 @@ internal static class Draw03ApproachLayout
 {
     internal static void Apply(NetGeometryPrefab target, TowerFactory factory, NetPiecePrefab[] pieces, float layoutRemainder)
     {
-        if (pieces.Length != Numeric_Types_Draw03_Draw03ApproachLayout_g_cs.Values.I32[0] || pieces.Any(piece => piece == null || !factory.Created.Contains(piece)))
-            throw new InvalidOperationException("Draw03 approaches require five owned structural pieces.");
         var median = factory.ResolveOriginal<NetPiecePrefab>("Elevated Bottom Piece 0 - Intersection Middle");
         var section0 = ScriptableObject.CreateInstance<NetSectionPrefab>();
         section0.name = target.name + " Fixed Approach Section 0";

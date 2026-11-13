@@ -21,9 +21,6 @@ internal static class BridgeCustomShaderPackage
         error = null;
         try
         {
-            if (sourceTemplate < 0 || package == null || package.Length < 8 || package.Length > MaximumPackageBytes ||
-                BitConverter.ToUInt32(package, 0) != 0x31534242u || !Version(package))
-            { error = "Generated material package header or source template is invalid."; return false; }
             using var writer = new StreamWriter(output, new UTF8Encoding(false), 4096, leaveOpen: true);
             writer.WriteLine(queues.Length == 0 ? Header : "BridgeBuilder.MaterialProgram/2");
             writer.WriteLine(sourceTemplate.ToString(CultureInfo.InvariantCulture));

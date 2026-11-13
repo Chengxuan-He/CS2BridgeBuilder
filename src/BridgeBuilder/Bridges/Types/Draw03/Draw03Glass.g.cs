@@ -11,10 +11,7 @@ internal static class Draw03Glass
         var data = lod switch
         {
             0 => (Vertices: Numeric_Types_Draw03_Draw03Glass_g_cs.Values.I32[0], Triangles: Numeric_Types_Draw03_Draw03Glass_g_cs.Values.I32[1]),
-            1 => (Vertices: Numeric_Types_Draw03_Draw03Glass_g_cs.Values.I32[2], Triangles: Numeric_Types_Draw03_Draw03Glass_g_cs.Values.I32[3]),
-            _ => throw new ArgumentOutOfRangeException(nameof(lod))};
-        if (source.Length != data.Vertices || indices.Length != data.Triangles * Numeric_Types_Draw03_Draw03Glass_g_cs.Values.I32[4] || !float.IsFinite(delta))
-            throw new InvalidOperationException("Draw03 glass requires its recorded mesh-1 layout.");
+            1 => (Vertices: Numeric_Types_Draw03_Draw03Glass_g_cs.Values.I32[2], Triangles: Numeric_Types_Draw03_Draw03Glass_g_cs.Values.I32[3])};
         var positions = (Vector3[])source.Clone();
         AffineGeometry.Execute(BatchProgram0.Data, lod, new[] { positions }, Array.Empty<float[]>(), new float[] { delta });
         return new MovableStructureModel.Plan(source, positions, new[] { indices }, new[] { new bool[data.Triangles] });

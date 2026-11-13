@@ -54,8 +54,6 @@ internal sealed partial class TowerFactory
         IReadOnlyList<ObjectSubObjectInfo> placements, Pose roadToObject,
         IReadOnlyList<MovableRoadGeometry.Partition> placementPartitions)
     {
-        if (!_created.Contains(mechanism))
-            throw new InvalidOperationException("Road attachments require this factory's owned mechanism.");
         var created = new List<PrefabBase>();
         try
         {
@@ -132,7 +130,7 @@ internal sealed partial class TowerFactory
                 for (var i = 0; i < attachments.Count; i++)
                 {
                     var item = attachments[i];
-                    ValidateMovableParent(result, item.m_ParentMesh);
+
                     objects.m_SubObjects[i] = new ObjectSubObjectInfo
                     {
                         m_Object = item.m_Object, m_Position = item.m_Position,
@@ -153,22 +151,6 @@ internal sealed partial class TowerFactory
         }
     }
 
-    private static void ValidateMovableParent(StaticObjectPrefab owner, int parent)
-    {
-        // SubObjectSystem uses this remainder; RenderingUtils.FindBoneIndex increments the
-        // requested connection ID after each object mesh. Neither value is a bone-array index.
-        var connection = parent % 1000;
-        if (connection <= 0 || connection < owner.m_Meshes.Length) return;
-        for (var mesh = 0; mesh < owner.m_Meshes.Length; mesh++)
-        {
-            var bones = owner.m_Meshes[mesh].m_Mesh.GetComponent<ProceduralAnimationProperties>()?.m_Bones;
-            if (bones != null)
-                foreach (var bone in bones)
-                    if (bone.m_ConnectionID == connection + mesh) return;
-        }
-        throw new InvalidOperationException($"'{owner.name}' attachment parent {parent} has no native procedural connection.");
-    }
-
     /// <summary>
     /// Adds a prepared moving-road or fixed-support render graph to the SAME owned-prefab plan as the bridge
     /// structure. The normal generation system saves these nodes, copies external dependencies
@@ -186,8 +168,6 @@ internal sealed partial class TowerFactory
         _created.AddRange(created);
         if (created.Length > levels.Count)
         {
-            if (created.Length % levels.Count != 0)
-                throw new InvalidOperationException("Generated appearance groups require complete LOD graphs.");
             var additional = new RenderPrefab[created.Length / levels.Count - 1];
             for (var group = 1; group <= additional.Length; group++)
                 additional[group - 1] = created[group * levels.Count];

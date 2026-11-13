@@ -17,6 +17,7 @@ namespace BridgeBuilder.Bridges;
 [DisableAutoCreation]
 internal sealed partial class MovableNodeObjects : SystemBase
 {
+    internal delegate ObjectSubObjectInfo? PreviewSelection(Candidate candidate, TrafficSignNeeds needs, ref Random random);
     internal readonly struct Result
     {
         internal readonly ObjectSubObjectInfo[] Placements;
@@ -33,7 +34,7 @@ internal sealed partial class MovableNodeObjects : SystemBase
     // Rules must include retained signals: their candidates affect native closest-sign selection.
     internal Result Resolve(Entity node, Func<Entity, IReadOnlyList<MovableRoadObjects.Rule>> rules,
         Func<Entity, ObjectPrefab> originalObject, Entity defaultTheme, bool leftHandTraffic,
-        ref Random random)
+        ref Random random, PreviewSelection? preview = null)
     {
         var nativeWorld = World.DefaultGameObjectInjectionWorld;
         var source = nativeWorld.EntityManager;
@@ -42,7 +43,7 @@ internal sealed partial class MovableNodeObjects : SystemBase
         var utilities = World.GetOrCreateSystemManaged<MovableNodeUtilities>();
         signs.Begin(leftHandTraffic);
         utilities.Begin();
-        var lights = new MovableNodeStreetLights(source, prefabs);
+        var lights = new MovableNodeStreetLights(source, prefabs, allowUnregistered: preview != null);
         var selection = new MovableRoadObjectSelection(source, prefabs, defaultTheme);
         var pendingSigns = new List<Candidate>();
         var utilityAnchors = new List<float3>();
@@ -54,11 +55,20 @@ internal sealed partial class MovableNodeObjects : SystemBase
         Entity Source(Candidate candidate)
         {
             if (!prefabs.TryGetEntity(candidate.Prefab, out var entity))
+            {
+                if (preview != null) return Entity.Null;
                 throw new InvalidOperationException("Node object has no native selection data: " + candidate.Prefab.name);
+            }
             return entity;
         }
         void Select(Candidate candidate, TrafficSignNeeds needs, ref Random state)
         {
+            if (preview != null)
+            {
+                var selected = preview(candidate, needs, ref state);
+                if (selected != null) { output.Add(selected); origins.Add(candidate.SourceRule); }
+                return;
+            }
             if (MovableSectionObjects.IsNetworkSignal(candidate.Prefab))
             {
                 // Preserve native randomization-group consumption for later visual objects,

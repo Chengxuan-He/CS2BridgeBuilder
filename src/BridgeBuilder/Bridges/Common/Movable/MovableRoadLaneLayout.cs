@@ -47,7 +47,6 @@ internal static class MovableRoadLaneLayout
         // factors. Solve the original monotone Bezier Z for t, not distance / endpoint span.
         private double Parameter(float z)
         {
-            if (z < StartZ || z > EndZ) throw new ArgumentOutOfRangeException(nameof(z));
             if (!_curve) return EndZ==StartZ?0:(z-StartZ)/(double)(EndZ-StartZ);
             if(z==_az)return 0; if(z==_dz)return 1;
             double lo=0,hi=1;

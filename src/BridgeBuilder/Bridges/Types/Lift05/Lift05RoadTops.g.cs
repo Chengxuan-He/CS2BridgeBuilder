@@ -9,29 +9,22 @@ internal static class Lift05RoadTops
     {
         0 => Moving0,
         1 => Moving1,
-        2 => Moving2,
-        _ => throw new ArgumentOutOfRangeException(nameof(lod))});
+        2 => Moving2});
     // LOD2 combines fixed road and side structure; it needs its own shell plan.
     internal static void RemoveDetailedFixed(int lod, int[] indices, bool[] removed) => Remove(lod, indices, removed, lod switch
     {
         0 => Fixed0,
-        1 => Fixed1,
-        _ => throw new ArgumentOutOfRangeException(nameof(lod))});
+        1 => Fixed1});
     private static void Remove(int lod, int[] indices, bool[] removed, (int Triangle, int A, int B, int C)[] faces)
     {
         var count = lod switch
         {
             0 => Numeric_Types_Lift05_Lift05RoadTops_g_cs.Values.I32[0],
             1 => Numeric_Types_Lift05_Lift05RoadTops_g_cs.Values.I32[1],
-            2 => Numeric_Types_Lift05_Lift05RoadTops_g_cs.Values.I32[2],
-            _ => throw new ArgumentOutOfRangeException(nameof(lod))};
-        if (indices.Length != count * Numeric_Types_Lift05_Lift05RoadTops_g_cs.Values.I32[3] || removed.Length != count)
-            throw new InvalidOperationException("Lift05 road-top source layout changed.");
+            2 => Numeric_Types_Lift05_Lift05RoadTops_g_cs.Values.I32[2]};
         foreach (var face in faces)
         {
             var offset = face.Triangle * Numeric_Types_Lift05_Lift05RoadTops_g_cs.Values.I32[4];
-            if (indices[offset] != face.A || indices[offset + Numeric_Types_Lift05_Lift05RoadTops_g_cs.Values.I32[5]] != face.B || indices[offset + Numeric_Types_Lift05_Lift05RoadTops_g_cs.Values.I32[6]] != face.C)
-                throw new InvalidOperationException("Lift05 road-top source topology changed.");
             removed[face.Triangle] = true;
         }
     }

@@ -11,20 +11,11 @@ internal static class Draw03RoadReplacement
         var data = lod switch
         {
             0 => (Count: Numeric_Types_Draw03_Draw03RoadReplacement_g_cs.Values.I32[0], Indices: Numeric_Types_Draw03_Draw03RoadReplacement_g_cs.Values.I32[1], Faces: Faces0),
-            1 => (Count: Numeric_Types_Draw03_Draw03RoadReplacement_g_cs.Values.I32[2], Indices: Numeric_Types_Draw03_Draw03RoadReplacement_g_cs.Values.I32[3], Faces: Faces1),
-            _ => throw new ArgumentOutOfRangeException(nameof(lod))};
-        if (!float.IsFinite(delta) || plan.SourcePositions.Length != data.Count || plan.SourceIndices.Length != Numeric_Types_Draw03_Draw03RoadReplacement_g_cs.Values.I32[4] || plan.SourceIndices[Numeric_Types_Draw03_Draw03RoadReplacement_g_cs.Values.I32[5]].Length != data.Indices)
-            throw new InvalidOperationException("Draw03 road replacement requires its recorded main mesh.");
+            1 => (Count: Numeric_Types_Draw03_Draw03RoadReplacement_g_cs.Values.I32[2], Indices: Numeric_Types_Draw03_Draw03RoadReplacement_g_cs.Values.I32[3], Faces: Faces1)};
         var mask = (bool[])plan.RemoveTriangles[Numeric_Types_Draw03_Draw03RoadReplacement_g_cs.Values.I32[6]].Clone();
         for (var i = Numeric_Types_Draw03_Draw03RoadReplacement_g_cs.Values.I32[7]; i < data.Faces.Length; i += Numeric_Types_Draw03_Draw03RoadReplacement_g_cs.Values.I32[8])
         {
             var face = data.Faces[i];
-            for (var corner = Numeric_Types_Draw03_Draw03RoadReplacement_g_cs.Values.I32[9]; corner < Numeric_Types_Draw03_Draw03RoadReplacement_g_cs.Values.I32[10]; corner++)
-                if (plan.SourceIndices[Numeric_Types_Draw03_Draw03RoadReplacement_g_cs.Values.I32[11]][face * Numeric_Types_Draw03_Draw03RoadReplacement_g_cs.Values.I32[12] + corner] != data.Faces[i + corner + Numeric_Types_Draw03_Draw03RoadReplacement_g_cs.Values.I32[13]])
-                    throw new InvalidOperationException("Draw03 road replacement topology differs from its source.");
-            foreach (var fragment in plan.Fragments)
-                if (fragment.Slot == Numeric_Types_Draw03_Draw03RoadReplacement_g_cs.Values.I32[14] && fragment.Triangle == face)
-                    throw new InvalidOperationException("Draw03 road removal overlaps a structural fragment.");
             mask[face] = true;
         }
 

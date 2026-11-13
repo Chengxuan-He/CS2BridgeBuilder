@@ -13,10 +13,7 @@ internal static class Lift01ApproachParts
         {
             0 => Numeric_Types_Lift01_Lift01ApproachParts_g_cs.Values.I32[0],
             1 => Numeric_Types_Lift01_Lift01ApproachParts_g_cs.Values.I32[1],
-            2 => Numeric_Types_Lift01_Lift01ApproachParts_g_cs.Values.I32[2],
-            _ => throw new ArgumentOutOfRangeException(nameof(lod))};
-        if (source.Length != count || positions.Length != count || !float.IsFinite(delta))
-            throw new InvalidOperationException("Lift01 fixed-span parts require the recorded layout.");
+            2 => Numeric_Types_Lift01_Lift01ApproachParts_g_cs.Values.I32[2]};
         foreach (var part in Rigid[lod])
             AffineGeometry.Execute(RangePrograms.Data, 0, new[] { source, positions }, Array.Empty<float[]>(), new float[] { part.Direction, delta }, part.First, checked((checked((part.Last) + 1)) - (part.First)));
         foreach (var part in Plates[lod])

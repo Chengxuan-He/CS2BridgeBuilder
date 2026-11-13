@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.InteropServices;
@@ -65,27 +65,16 @@ internal static class MovableStructureModel
         internal PreparedDomain(int domain, SurfaceAsset surface, KeyValuePair<int, Vector2>[] uvs,
             KeyValuePair<int, ProjectedUvFrame>[]? tangentProjections = null)
         {
-            if (domain < 0 || surface == null) throw new ArgumentException("Invalid prepared structural domain.");
             Domain = domain; Surface = surface;
             var values = new Dictionary<int, Vector2>();
             foreach (var pair in uvs)
             {
-                if (pair.Key < 0 || !float.IsFinite(pair.Value.x) || !float.IsFinite(pair.Value.y))
-                    throw new ArgumentException("Invalid prepared structural UV.");
                 values.Add(pair.Key, pair.Value);
             }
             Uvs = values;
             var projections = new Dictionary<int, ProjectedUvFrame>();
             if (tangentProjections != null)
-                foreach (var pair in tangentProjections)
-                {
-                    if (!values.ContainsKey(pair.Key))
-                        throw new ArgumentException("Prepared tangent projection requires its vertex UV.");
-                    for (int axis = 0; axis < 4; axis++)
-                        if (!float.IsFinite(pair.Value.U[axis]) || !float.IsFinite(pair.Value.V[axis]))
-                            throw new ArgumentException("Prepared tangent projection is non-finite.");
-                    projections.Add(pair.Key, pair.Value);
-                }
+                foreach (var pair in tangentProjections) projections.Add(pair.Key, pair.Value);
             TangentProjections = projections;
         }
     }
@@ -133,21 +122,10 @@ internal static class MovableStructureModel
         {
             NativeBoneFrames = nativeBoneFrames;
             SourceCopies = sourceCopies == null ? Array.Empty<int>() : (int[])sourceCopies.Clone();
-            foreach (int source in SourceCopies)
-                if (source < 0 || source >= sourcePositions.Length)
-                    throw new ArgumentException("Structural source copy must reference an original source vertex.");
             FrameTransforms = frameTransforms == null ? Array.Empty<KeyValuePair<int, Matrix4x4>>() :
                 (KeyValuePair<int, Matrix4x4>[])frameTransforms.Clone();
-            MovableStructureFrames.Validate(FrameTransforms, checked(sourcePositions.Length +
-                (addedVertices?.Length ?? 0) + (interiorVertices?.Length ?? 0) + SourceCopies.Length));
             PreparedDomains = preparedDomains == null ? Array.Empty<PreparedDomain>() : (PreparedDomain[])preparedDomains.Clone();
-            if (PreparedDomains.Select(d => d.Domain).Distinct().Count() != PreparedDomains.Length)
-                throw new ArgumentException("Duplicate prepared structural domain.");
             UvCorrections = uvCorrections == null ? Array.Empty<KeyValuePair<int, Vector2>>() : (KeyValuePair<int, Vector2>[])uvCorrections.Clone();
-            foreach (var correction in UvCorrections)
-                if (correction.Key < 0 || correction.Key >= sourcePositions.Length ||
-                    !float.IsFinite(correction.Value.x) || !float.IsFinite(correction.Value.y))
-                    throw new ArgumentException("Invalid measured structural UV correction.");
             ReconstructsAuthoredPositions = reconstructsAuthoredPositions;
             SourcePositions = (Vector3[])sourcePositions.Clone();
             SourceIndices = sourceIndices.Select(indices => (int[])indices.Clone()).ToArray();
@@ -158,8 +136,6 @@ internal static class MovableStructureModel
                 .Select(group => new Fragment(group.Key.Slot, group.Key.Triangle,
                     group.SelectMany(f => f.Indices).ToArray())).ToArray()
                 ?? Array.Empty<Fragment>();
-            if (positions.Length != sourcePositions.Length)
-                throw new ArgumentException("A structural plan must preserve every original vertex.");
             Positions = new Vector3[checked(positions.Length + ConstructedCount)];
             Array.Copy(positions, Positions, positions.Length);
             var edgeA = new int[AddedVertices.Length];
@@ -169,9 +145,6 @@ internal static class MovableStructureModel
             for (var i = 0; i < AddedVertices.Length; i++)
             {
                 var edge = AddedVertices[i];
-                if (edge.A < 0 || edge.A >= positions.Length || edge.B < 0 || edge.B >= positions.Length ||
-                    !float.IsFinite(edge.Fraction) || edge.Fraction <= 0f || edge.Fraction >= 1f)
-                    throw new ArgumentException($"Constructed structural vertex {i} has an invalid measured edge.");
                 edgeA[i] = edge.A; edgeB[i] = edge.B;
                 edgeOutput[i] = positions.Length + i; edgeWeight[i] = edge.Fraction;
             }
@@ -188,11 +161,6 @@ internal static class MovableStructureModel
             for (var i = 0; i < InteriorVertices.Length; i++)
             {
                 var vertex = InteriorVertices[i];
-                if (vertex.A < 0 || vertex.A >= positions.Length || vertex.B < 0 || vertex.B >= positions.Length ||
-                    vertex.C < 0 || vertex.C >= positions.Length || vertex.A == vertex.B || vertex.A == vertex.C || vertex.B == vertex.C ||
-                    !float.IsFinite(vertex.WeightB) || !float.IsFinite(vertex.WeightC) ||
-                    vertex.WeightB <= 0f || vertex.WeightC <= 0f || vertex.WeightB + vertex.WeightC >= 1f)
-                    throw new ArgumentException($"Interior structural vertex {i} has invalid measured barycentric data.");
                 interiorA[i] = vertex.A; interiorB[i] = vertex.B; interiorC[i] = vertex.C;
                 interiorOutput[i] = positions.Length + AddedVertices.Length + i;
                 weightB[i] = vertex.WeightB; weightC[i] = vertex.WeightC;
@@ -208,40 +176,13 @@ internal static class MovableStructureModel
             // of the old face's widened corners. Original vertices and new Y/Z stay intact.
             if (constructedX != null)
             {
-                if (constructedX.Length != ConstructedCount)
-                    throw new ArgumentException("Every subdivided structural vertex requires its measured X output.");
                 for (var i = 0; i < constructedX.Length; i++)
                 {
-                    if (!float.IsFinite(constructedX[i]))
-                        throw new ArgumentException("A subdivided structural X coordinate is non-finite.");
                     Positions[positions.Length + i].x = constructedX[i];
                 }
             }
             foreach (var fragment in Fragments)
             {
-                if (fragment.Slot < 0 || fragment.Slot >= SourceIndices.Length || fragment.Slot >= RemoveTriangles.Length ||
-                    fragment.Triangle < 0 || fragment.Triangle >= RemoveTriangles[fragment.Slot].Length ||
-                    fragment.Triangle >= SourceIndices[fragment.Slot].Length / 3 ||
-                    fragment.Indices.Length % 3 != 0)
-                    throw new ArgumentException("A measured road fragment has an invalid source triangle or incomplete index stream.");
-                var original = SourceIndices[fragment.Slot];
-                bool OnTriangle(int index) => index == original[fragment.Triangle * 3] ||
-                    index == original[fragment.Triangle * 3 + 1] || index == original[fragment.Triangle * 3 + 2];
-                foreach (var index in fragment.Indices)
-                {
-                    if (index < 0 || index >= Positions.Length)
-                        throw new ArgumentException("A measured road fragment references a missing vertex.");
-                    if (index < positions.Length)
-                    {
-                        if (!OnTriangle(index)) throw new ArgumentException("A road fragment references another source triangle.");
-                    }
-                    else
-                    {
-                        var vertex = Construction(index - positions.Length);
-                        if (!OnTriangle(vertex.A) || !OnTriangle(vertex.B) || !OnTriangle(vertex.C))
-                            throw new ArgumentException("A road fragment boundary is not on its measured source triangle.");
-                    }
-                }
                 RemoveTriangles[fragment.Slot][fragment.Triangle] = true;
             }
         }
@@ -251,49 +192,19 @@ internal static class MovableStructureModel
         out ModelImporter.Model? model, out string? error, bool compact = false, int? rigidBone = null, int? sourceSubMesh = null)
     {
         model = null; error = null;
-        // Native fixed supports have no skinning channel and legitimately use zero bones.
-        // Existing BlendIndices, when present, are still checked against this count below.
-        if (source == null || plan == null || source.vertexCount == 0 || boneCount < 0 ||
-            plan.SourcePositions.Length != source.vertexCount ||
-            plan.Positions.Length != source.vertexCount + plan.ConstructedCount ||
-            plan.SourceIndices.Length != (sourceSubMesh.HasValue ? 1 : source.subMeshCount) ||
-            plan.RemoveTriangles.Length != plan.SourceIndices.Length)
-        { error = "Structure replacement requires complete per-mesh, per-vertex and per-slot measurements."; return false; }
-        if (sourceSubMesh.HasValue && (sourceSubMesh.Value < 0 || sourceSubMesh.Value >= source.subMeshCount))
-        { error = "Rigid attachment source material slot is unavailable."; return false; }
-        if (rigidBone.HasValue && (rigidBone.Value < 0 || rigidBone.Value >= boneCount))
-        { error = "Rigid attachment requires an existing mechanism bone index."; return false; }
         var attributes = new List<ModelImporter.Model.VertexData>();
         NativeArray<int> nativeIndices = default;
         try
         {
             var positions = source.vertices;
             var outputCount = plan.Positions.Length;
-            if (positions.Length != plan.SourcePositions.Length)
-            { error = "The structural position channel does not match the measured vertex count."; return false; }
-            for (var i = 0; i < positions.Length; i++)
-            {
-                // Exact component comparisons, not Unity's approximate Vector3 equality. These
-                // are identity checks against recorded input, not spatial part classification.
-                for (var axis = 0; axis < 3; axis++)
-                    if (positions[i][axis] != plan.SourcePositions[i][axis] || !float.IsFinite(plan.Positions[i][axis]))
-                    { error = $"Structural vertex {i} does not match its measured source or has invalid output."; return false; }
-            }
-            for (var i = positions.Length; i < outputCount; i++)
-                if (!float.IsFinite(plan.Positions[i].x) || !float.IsFinite(plan.Positions[i].y) ||
-                    !float.IsFinite(plan.Positions[i].z))
-                { error = $"Constructed structural vertex {i} is non-finite."; return false; }
             var indices = new List<int>();
             var submeshes = new SubMeshDescriptor[plan.SourceIndices.Length];
             for (var slot = 0; slot < plan.SourceIndices.Length; slot++)
             {
-                var recorded = plan.SourceIndices[slot];
                 var removed = plan.RemoveTriangles[slot];
                 var sourceSlot = sourceSubMesh ?? slot;
                 var actual = source.GetIndices(sourceSlot);
-                if (source.GetTopology(sourceSlot) != MeshTopology.Triangles || actual.Length % 3 != 0 ||
-                    removed.Length != actual.Length / 3 || !actual.SequenceEqual(recorded))
-                { error = $"Structural slot {slot} does not match its measured triangle stream."; return false; }
                 var start = indices.Count;
                 var bounds = new Bounds(); var initialized = false;
                 var first = outputCount; var last = -1;
@@ -310,8 +221,6 @@ internal static class MovableStructureModel
                     for (var corner = 0; corner < 3; corner++)
                     {
                         var index = actual[triangle * 3 + corner];
-                        if (index < 0 || index >= positions.Length)
-                        { error = $"Structural slot {slot} has an invalid vertex index."; return false; }
                         if (removed[triangle]) continue;
                         Append(index);
                     }
@@ -340,15 +249,6 @@ internal static class MovableStructureModel
                 }
             }
             var declared = source.GetVertexAttributes();
-            if (!declared.Any(a => a.attribute == VertexAttribute.Position))
-            { error = "The structural mesh has no position channel."; return false; }
-            foreach (var attribute in declared)
-                if (Size(attribute.format) == 0 || attribute.dimension <= 0 ||
-                    (attribute.attribute == VertexAttribute.Position &&
-                     (attribute.format != VertexAttributeFormat.Float32 || attribute.dimension != 3)) ||
-                    (attribute.attribute == VertexAttribute.BlendIndices &&
-                     (attribute.format != VertexAttributeFormat.UInt32 || attribute.dimension != 1)))
-                { error = $"Unsupported structural attribute {attribute.attribute}:{attribute.format}x{attribute.dimension}."; return false; }
 
             using var read = Mesh.AcquireReadOnlyMeshData(source);
             foreach (var declaration in declared)
@@ -365,8 +265,6 @@ internal static class MovableStructureModel
                 var bytes = new byte[checked(size * outputCount)];
                 if (attribute.attribute == VertexAttribute.Position)
                 {
-                    if (Marshal.SizeOf<Vector3>() != 12 || bytes.Length != checked(outputCount * 12))
-                        throw new InvalidOperationException("Position output requires native packed Float32 XYZ.");
                     MemoryMarshal.AsBytes(plan.Positions.AsSpan(0, outputCount)).CopyTo(bytes);
                 }
                 else
@@ -375,9 +273,6 @@ internal static class MovableStructureModel
                     var stride = source.GetVertexBufferStride(attribute.stream);
                     var offset = source.GetVertexAttributeOffset(attribute.attribute);
                     var sourceSize=Size(declaration.format)*declaration.dimension;
-                    if (offset < 0 || stride < offset + sourceSize ||
-                        (long)(positions.Length - 1) * stride + offset + sourceSize > raw.Length)
-                    { error = $"Structural channel {attribute.attribute} has an incomplete raw buffer."; return false; }
                     for (var i = 0; i < positions.Length; i++)
                     {
                         if(!promote){NativeArray<byte>.Copy(raw,i*stride+offset,bytes,i*size,size);continue;}
@@ -390,8 +285,6 @@ internal static class MovableStructureModel
                     }
                     if (attribute.attribute == VertexAttribute.TexCoord0 && plan.UvCorrections.Length != 0)
                     {
-                        if (attribute.dimension < 2 || (attribute.format != VertexAttributeFormat.Float32 && attribute.format != VertexAttributeFormat.Float16))
-                            throw new InvalidOperationException("Measured UV correction requires a floating-point UV0 channel.");
                         var width = Size(attribute.format);
                         foreach (var correction in plan.UvCorrections.Where(c => c.Key < positions.Length))
                             for (var axis = 0; axis < 2; axis++)
@@ -416,11 +309,6 @@ internal static class MovableStructureModel
                         if (identical) { Buffer.BlockCopy(bytes, a, bytes, destination, size); continue; }
                         if (MovableStructureAttributes.TryInterpolate(attribute, bytes,
                             a, b, c, destination, vertex.WeightB, vertex.WeightC)) continue;
-                        // Other UVs retain the source format. Integer bone identities and unknown
-                        // encodings are never blended into a guessed native value.
-                        if (attribute.attribute < VertexAttribute.TexCoord0 || attribute.attribute > VertexAttribute.TexCoord7 ||
-                            (attribute.format != VertexAttributeFormat.Float16 && attribute.format != VertexAttributeFormat.Float32))
-                        { error = $"Constructed structural vertex {i} requires an explicit conversion for {attribute.attribute}."; return false; }
                         var width = Size(attribute.format);
                         for (var k = 0; k < attribute.dimension; k++)
                         {
@@ -435,8 +323,6 @@ internal static class MovableStructureModel
                                     : (float)new half { value = BitConverter.ToUInt16(bytes, c + k * width) };
                                 value += (third - start) * vertex.WeightC;
                             }
-                            if (!float.IsFinite(value))
-                            { error = $"Constructed structural vertex {i} has non-finite {attribute.attribute}."; return false; }
                             var encoded = attribute.format == VertexAttributeFormat.Float32 ? BitConverter.GetBytes(value)
                                 : BitConverter.GetBytes(new half(value).value);
                             Buffer.BlockCopy(encoded, 0, bytes, destination + k * width, width);
@@ -447,8 +333,6 @@ internal static class MovableStructureModel
                 if (attribute.attribute == VertexAttribute.TexCoord0)
                     foreach (var correction in plan.UvCorrections.Where(c => c.Key >= positions.Length))
                     {
-                        if (attribute.dimension < 2 || attribute.format is not (VertexAttributeFormat.Float32 or VertexAttributeFormat.Float16))
-                            throw new InvalidOperationException("Lift05 seam UV requires floating-point UV0.");
                         int width = Size(attribute.format);
                         for (int axis = 0; axis < 2; axis++)
                         {
@@ -457,10 +341,6 @@ internal static class MovableStructureModel
                             Buffer.BlockCopy(encoded, 0, bytes, correction.Key * size + axis * width, width);
                         }
                     }
-                if (attribute.attribute == VertexAttribute.BlendIndices)
-                    for (var i = 0; i < outputCount; i++)
-                        if (BitConverter.ToUInt32(bytes, i * 4) >= boneCount)
-                        { error = $"Structural vertex {i} references a missing procedural bone."; return false; }
                 if (used != null)
                 {
                     var packed = new byte[checked(used.Length * size)];

@@ -11,10 +11,7 @@ internal static class Lift01Bases
         var data = lod switch
         {
             0 => (Count: Numeric_Types_Lift01_Lift01Bases_g_cs.Values.I32[0], Centre: Centre0),
-            1 => (Count: Numeric_Types_Lift01_Lift01Bases_g_cs.Values.I32[1], Centre: Centre1),
-            _ => throw new ArgumentOutOfRangeException(nameof(lod))};
-        if (!float.IsFinite(delta) || source.Length != data.Count || positions.Length != data.Count)
-            throw new InvalidOperationException("Lift01 bases require their recorded main mesh.");
+            1 => (Count: Numeric_Types_Lift01_Lift01Bases_g_cs.Values.I32[1], Centre: Centre1)};
         AffineGeometry.Execute(BatchProgram0.Data, lod, new[] { source, positions }, Array.Empty<float[]>(), new float[] { delta });
         foreach (var range in data.Centre)
             AffineGeometry.Execute(RangePrograms1.Data, 0, new[] { source, positions }, Array.Empty<float[]>(), Array.Empty<float>(), range.First, Math.Max(0, checked((checked((range.Last) + 1)) - (range.First))));

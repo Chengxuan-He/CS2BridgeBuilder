@@ -84,6 +84,12 @@ human acceptance of every selected road, motion cycle, LOD or independent cold l
 See the [implementation record](docs/archive/implementation/Movable-Bridges-Implementation.md) for per-style evidence
 and [prepared materials](docs/design/materials/Prepared-Materials.md) for unfinished material migration.
 
+The fixed catalogue also includes Art Deco Viaduct, Truss Viaduct, Arched Pedestrian Bridge
+and Covered Pedestrian Bridge. Width and transport variants of the same design share one style.
+The covered pedestrian roof is separate from the wooden covered bridge. These four styles use
+single-deck measured construction plans; near/far appearance and persisted cold loading require
+in-game verification independently of offline geometry checks.
+
 Generated towers, cables and LODs are private derived assets owned by the bridge. Required native
 game/DLC resources remain prerequisites; external non-built-in dependencies are persisted as
 byte-identical copies with original CIDs under the bridge's UUID directory.
@@ -168,7 +174,7 @@ prefab(s)`, followed by one line per style, is the authoritative record of what 
 
 ## Generation flow
 
-All 30 generator routes (20 fixed and 10 movable styles) share the request lifecycle below.
+All 34 generator routes (24 fixed and 10 movable styles) share the request lifecycle below.
 Each selected network uses its elevated branch throughout generation; a double-deck bridge keeps
 one context for each selected network and follows the archetype's main/auxiliary arrangement.
 Fixed bridges retain the selected native road materials. Movable bridges also compose the road,

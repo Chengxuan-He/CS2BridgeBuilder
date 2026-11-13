@@ -30,7 +30,6 @@ internal sealed class BridgeInspectionCaches
     internal bool TryFind(string surface,string owner,out Entry[] entries,out string? error)
     {
         entries=Array.Empty<Entry>();error=null;
-        if(!_built){error="Cache inventory must be prepared before owner inspection.";return false;}
         if(_error!=null){error=_error;return false;}
         if(_members.TryGetValue(surface,out var found))
         {

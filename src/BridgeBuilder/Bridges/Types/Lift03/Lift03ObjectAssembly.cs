@@ -17,14 +17,10 @@ internal static class Lift03ObjectAssembly
     {
         await GenerationWork.Next("support Lift03ObjectAssembly.Create");
         var attachments = Lift03MechanismData.AuthoredAttachments(factory.ResolveOriginal<ObjectPrefab>);
-        if (attachments.Length != AttachmentSides.Length)
-            throw new InvalidOperationException("Lift03 requires its recorded 24 tower attachments.");
         var imported = Path.Combine(Application.persistentDataPath, "ImportedData");
         for (var i = Numeric_Types_Lift03_Lift03ObjectAssembly_cs.Values.I32[24]; i < attachments.Length; i++)
         {
             var item = attachments[i];
-            if (item.m_Object == null)
-                throw new InvalidOperationException("Lift03 requires its original tower light sources.");
             item.m_Position.x += AttachmentSides[i] * structureHalfDelta;
         }
 

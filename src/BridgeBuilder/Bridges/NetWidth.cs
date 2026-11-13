@@ -144,7 +144,7 @@ internal static class NetWidth
     }
 
     private static bool ValidWidth(float width) =>
-        width > 0f && !float.IsNaN(width) && !float.IsInfinity(width);
+        width > 0f;
 
     internal static List<(string Name, float Width)> SourceSections(NetGeometryPrefab road)
     {

@@ -26,8 +26,6 @@ internal sealed class BridgeRoadContext
         Flags = BridgeRoadWidthSystem.ElevatedFlags(source);
         var sections = new List<(string Name, float Width)>();
         Width = widths.Read(source, null, sections, selectedFlags: Flags);
-        if (!float.IsFinite(Width))
-            throw new InvalidOperationException("The selected elevated road has no valid native surface width.");
         Sections = sections.ToArray();
         ExtensionWidth = widths.Read(source, null, extensions: true, selectedFlags: Flags);
     }
@@ -101,8 +99,6 @@ internal sealed class BridgeRoadGeneration : IDisposable
     internal static BridgeRoadContext? ForSampling(Entity source)
     {
         var context = Find(source);
-        if (_current != null && context == null)
-            throw new InvalidOperationException("Native sampling source is outside the resolved elevated road context.");
         return context;
     }
     internal IReadOnlyDictionary<NetGeometryPrefab, BridgeRoadContext> Capture()
@@ -110,8 +106,6 @@ internal sealed class BridgeRoadGeneration : IDisposable
     internal static void RegisterClone(NetGeometryPrefab source, NetGeometryPrefab clone)
     {
         var context = Find(source);
-        if (_current != null && context == null)
-            throw new InvalidOperationException("A generated road clone has no resolved elevated source context.");
         if (context != null) _current!._sources[clone] = context;
     }
     public void Dispose() => _current = _previous;

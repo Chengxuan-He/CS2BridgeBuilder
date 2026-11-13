@@ -19,8 +19,6 @@ internal static class Draw01FixedBaseData
     private static int[][][] Seam => GenerationParameters.Get<int[][][]>("BridgeBuilder.Bridges.Draw01FixedBaseData.Seam", () => ReadPackedSeam());
     internal static MovableStructureModel.Plan Plan(int family, int lod, Vector3[] source, int[] indices, float halfDelta)
     {
-        if (lod >= Counts[family].Length || source.Length != Counts[family][lod] || indices.Length != Triangles[family][lod] * Numeric_Types_Draw01_Draw01FixedBaseData_g_cs.Values.I32[774])
-            throw new InvalidOperationException($"Draw01 fixed base {family} LOD {lod} differs from its measured geometry.");
         var positions = (Vector3[])source.Clone();
         if (family < Numeric_Types_Draw01_Draw01FixedBaseData_g_cs.Values.I32[775])
         {

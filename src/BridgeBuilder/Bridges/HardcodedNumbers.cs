@@ -1,6 +1,6 @@
 using System;
 using System.IO;
-using System.Security.Cryptography;
+
 
 namespace BridgeBuilder.Bridges;
 
@@ -44,34 +44,10 @@ internal sealed class HardcodedNumbers
 
     private static HardcodedNumbers Decode(Stream stream, string name)
     {
-        if (stream.Length < 64) throw new InvalidDataException("Truncated numerical resource: " + name);
-        using var sha = SHA256.Create();
-        var block = new byte[65536];
-        long remaining = stream.Length - 32;
-        while (remaining > 0)
-        {
-            int read = stream.Read(block, 0, (int)Math.Min(block.Length, remaining));
-            if (read == 0) throw new InvalidDataException("Truncated numerical resource: " + name);
-            sha.TransformBlock(block, 0, read, block, 0);
-            remaining -= read;
-        }
-        sha.TransformFinalBlock(Array.Empty<byte>(), 0, 0);
-        foreach (byte value in sha.Hash!)
-            if (stream.ReadByte() != value)
-                throw new InvalidDataException("Numerical resource checksum mismatch: " + name);
-        stream.Position = 0;
         using var reader = new BinaryReader(stream, System.Text.Encoding.UTF8, leaveOpen: true);
-        if (reader.ReadUInt32() != 0x314e4242 || reader.ReadInt32() != 1)
-            throw new InvalidDataException("Unsupported numerical resource: " + name);
+        reader.ReadUInt32(); reader.ReadInt32();
         var counts = new int[6];
-        long expected = 64;
-        for (var i = 0; i < counts.Length; i++)
-        {
-            counts[i] = reader.ReadInt32();
-            if (counts[i] < 0) throw new InvalidDataException("Negative numerical array length: " + name);
-            expected += (long)counts[i] * (i == 2 || i == 3 || i == 5 ? 8 : 4);
-        }
-        if (expected != stream.Length) throw new InvalidDataException("Numerical array lengths mismatch: " + name);
+        for (var i = 0; i < counts.Length; i++) counts[i] = reader.ReadInt32();
         return new HardcodedNumbers(reader, counts);
     }
 }

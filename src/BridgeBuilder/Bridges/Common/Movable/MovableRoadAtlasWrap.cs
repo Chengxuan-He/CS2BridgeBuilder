@@ -31,9 +31,6 @@ internal static class MovableRoadAtlasWrap
             Coordinate(patch.U,v.Position,patch.Min.x,patch.Max.x,patch.RepeatU),
             Coordinate(patch.V,v.Position,patch.Min.y,patch.Max.y,patch.RepeatV),edges);
         var original=new List<Point>{Convert(source.A,3),Convert(source.B,5),Convert(source.C,6)};
-        foreach(var p in original)
-            if(!double.IsFinite(p.U) || !double.IsFinite(p.V))
-                return Fail("Non-finite original-atlas projection.");
         var polygons=new List<(List<Point> Points,int U,int V)>{(original,0,0)};
         for(int axis=0;axis<2;axis++)
         {
@@ -92,7 +89,7 @@ internal static class MovableRoadAtlasWrap
         double x=(double)p.x*v.x,y=(double)p.y*v.y,z=(double)p.z*v.z;
         double projected=x+y+z+p.w,extent=(double)max-min;
         double q=(projected-min)/extent;
-        if(!repeat || !double.IsFinite(q))return q;
+        if(!repeat)return q;
         const double unitRoundoff=1.0/16777216.0;
         const double gamma6=6*unitRoundoff/(1-6*unitRoundoff);
         double error=gamma6*(Math.Abs(x)+Math.Abs(y)+Math.Abs(z)+Math.Abs(p.w));
@@ -107,8 +104,6 @@ internal static class MovableRoadAtlasWrap
         tangent=default;error=null;
         var direction=Vector3.Cross((Vector3)v,normal);
         float determinant=Vector3.Dot((Vector3)u,direction);
-        if(!float.IsFinite(determinant) || determinant==0f)
-            {error="Evidenced projected atlas tangent has a singular receiver frame.";return false;}
         direction=(direction/determinant).normalized;
         tangent=new Vector4(direction.x,direction.y,direction.z,determinant>0?1:-1);return true;
     }

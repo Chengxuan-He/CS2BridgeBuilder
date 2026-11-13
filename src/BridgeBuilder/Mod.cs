@@ -78,7 +78,9 @@ public sealed class Mod : IMod
         // Re-entering PrefabSystem/PrefabInitializeSystem from inside PrefabUpdate duplicates
         // UIGroupElement entries (UIObject.LateInitialize appends without a uniqueness check).
         updateSystem.UpdateBefore<BridgeGenerationSystem>(SystemUpdatePhase.PrefabUpdate);
-        updateSystem.UpdateAfter<BridgePublicationSystem>(SystemUpdatePhase.PrefabUpdate);
+        // PrefabUpdate runs inside PrefabSystem, before the native unlock pass. Complete only
+        // after that pass has settled newly registered dependency groups (also while paused).
+        updateSystem.UpdateAfter<BridgePublicationSystem, Game.Prefabs.UnlockSystem>(SystemUpdatePhase.MainLoop);
         updateSystem.UpdateAt<BridgeBuilderUISystem>(SystemUpdatePhase.UIUpdate);
         // Optional manager setting; persisted native conditions work without this system.
         updateSystem.UpdateAt<BridgeUnlockSystem>(SystemUpdatePhase.UIUpdate);

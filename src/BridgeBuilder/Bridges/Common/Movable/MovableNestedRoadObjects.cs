@@ -85,7 +85,6 @@ internal static class MovableNestedRoadObjects
 
     private static void CheckCycles(ObjectPrefab source, HashSet<ObjectPrefab> ancestry)
     {
-        if (source == null) throw new InvalidOperationException("Nested attachment references a missing object.");
         if (!ancestry.Add(source)) throw new InvalidOperationException("Nested attachment contains an ancestry cycle: " + source.name);
         try
         {
@@ -180,9 +179,7 @@ internal static class MovableNestedRoadObjects
         var state = new byte[bones.Length];
         void Evaluate(int index)
         {
-            if (index < 0 || index >= bones.Length) throw new InvalidOperationException("Static attachment bone parent is outside its skeleton.");
             if (state[index] == 2) return;
-            if (state[index] == 1) throw new InvalidOperationException("Static attachment skeleton has a parent cycle.");
             state[index] = 1; var bone = bones[index];
             if (bone.m_Type != BoneType.None) throw new InvalidOperationException("Independent animation cannot be evaluated as a static attachment.");
             var parent = Matrix4x4.identity;
@@ -207,9 +204,6 @@ internal static class MovableNestedRoadObjects
         int stream = hasIndices ? mesh.GetVertexAttributeStream(UnityEngine.Rendering.VertexAttribute.BlendIndices) : 0;
         int stride = hasIndices ? mesh.GetVertexBufferStride(stream) : 0;
         int offset = hasIndices ? mesh.GetVertexAttributeOffset(UnityEngine.Rendering.VertexAttribute.BlendIndices) : 0;
-        if (skin.Length != 0 && hasIndices && (mesh.GetVertexAttributeFormat(UnityEngine.Rendering.VertexAttribute.BlendIndices) != UnityEngine.Rendering.VertexAttributeFormat.UInt32 ||
-            mesh.GetVertexAttributeDimension(UnityEngine.Rendering.VertexAttribute.BlendIndices) != 1))
-            throw new InvalidOperationException("Static attachment requires the native single UInt32 bind-index channel.");
         for (int vertex = 0; vertex < original.Length; vertex++)
         {
             var matrix = transform;

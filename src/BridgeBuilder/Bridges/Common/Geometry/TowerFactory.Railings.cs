@@ -1,4 +1,4 @@
-﻿
+
 
 
 
@@ -207,7 +207,6 @@ internal sealed partial class TowerFactory
     private static bool[]? ApplyKerbPlans(
         IReadOnlyList<KerbPlan> plans, float3[] source, float3[] moved, bool[]? protectedSupport = null)
     {
-        if (source.Length != moved.Length) return null;
 
         var dropMask = new bool[source.Length];
         var groups = new List<int>[plans.Count];

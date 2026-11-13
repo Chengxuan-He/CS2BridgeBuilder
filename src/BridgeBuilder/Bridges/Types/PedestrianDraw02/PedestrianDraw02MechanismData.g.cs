@@ -42,8 +42,6 @@ internal static class PedestrianDraw02MechanismData
 
     internal static ObjectMeshInfo[] Meshes(RenderPrefab[] prepared)
     {
-        if (prepared.Length != Numeric_Types_PedestrianDraw02_PedestrianDraw02MechanismData_g_cs.Values.I32[5])
-            throw new ArgumentException("PedestrianDraw02 requires its main, pillar and pillar-base render graphs.");
         return new[]
         {
             new ObjectMeshInfo
@@ -424,8 +422,7 @@ internal static class PedestrianDraw02MechanismData
                     m_ConnectionID = Numeric_Types_PedestrianDraw02_PedestrianDraw02MechanismData_g_cs.Values.I32[56],
                     m_SourceID = Numeric_Types_PedestrianDraw02_PedestrianDraw02MechanismData_g_cs.Values.I32[57]
                 },
-            },
-            _ => throw new ArgumentOutOfRangeException(nameof(lod))};
+            }};
     }
 }
 

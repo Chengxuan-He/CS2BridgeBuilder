@@ -11,10 +11,7 @@ internal static class PedestrianDraw02JoinedSupports
         var data = lod switch
         {
             0 => (Count: Numeric_Types_PedestrianDraw02_PedestrianDraw02JoinedSupports_g_cs.Values.I32[0], Indices: Numeric_Types_PedestrianDraw02_PedestrianDraw02JoinedSupports_g_cs.Values.I32[1], Edges: Edges0, Fragments: Fragments0),
-            1 => (Count: Numeric_Types_PedestrianDraw02_PedestrianDraw02JoinedSupports_g_cs.Values.I32[2], Indices: Numeric_Types_PedestrianDraw02_PedestrianDraw02JoinedSupports_g_cs.Values.I32[3], Edges: Edges1, Fragments: Fragments1),
-            _ => throw new ArgumentOutOfRangeException(nameof(lod))};
-        if (!float.IsFinite(delta) || source.Length != data.Count || positions.Length != data.Count || indices.Length != data.Indices)
-            throw new InvalidOperationException("PedestrianDraw02 joined supports require their measured layout.");
+            1 => (Count: Numeric_Types_PedestrianDraw02_PedestrianDraw02JoinedSupports_g_cs.Values.I32[2], Indices: Numeric_Types_PedestrianDraw02_PedestrianDraw02JoinedSupports_g_cs.Values.I32[3], Edges: Edges1, Fragments: Fragments1)};
         AffineGeometry.Execute(CoordinatePrograms.Data, lod, new[] { source, positions }, Array.Empty<float[]>(), new[] { delta });
         var x = new float[data.Edges.Length];
         AffineGeometry.Execute(InterpolationProgram0.Data, lod, new[] { source }, new[] { x }, new float[] { delta });

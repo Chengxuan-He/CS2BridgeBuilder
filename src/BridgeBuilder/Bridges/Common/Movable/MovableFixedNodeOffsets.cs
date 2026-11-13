@@ -57,27 +57,9 @@ internal sealed class MovableFixedNodeOffsets : IDisposable
     {
         if (_installed) return;
         var job = typeof(GeometrySystem).GetNestedType("CalculateEdgeGeometryJob", BindingFlags.NonPublic)
-            ?? throw new MissingMemberException(typeof(GeometrySystem).FullName, "CalculateEdgeGeometryJob");
+            !;
         var method = job.GetMethod("CalculateFixedOffsets", BindingFlags.Instance | BindingFlags.NonPublic)
-            ?? throw new MissingMethodException(job.FullName, "CalculateFixedOffsets");
-        var parameters = method.GetParameters();
-        if (parameters.Length < 3 || parameters[0].Name != "edge" || parameters[0].ParameterType != typeof(Entity)
-            || parameters[1].Name != "node" || parameters[1].ParameterType != typeof(Entity)
-            || parameters[2].Name != "isStart" || parameters[2].ParameterType != typeof(bool))
-            throw new MissingMethodException("Native fixed-offset endpoint signature changed.");
-        // In the inspected native helper this argument has exactly one use: the
-        // owning edge endpoint lookup. Do not change a future helper which also
-        // uses it to orient the child geometry.
-        var readInstructions = typeof(PatchProcessor).GetMethods(BindingFlags.Public | BindingFlags.Static)
-            .SingleOrDefault(candidate => candidate.Name == "GetOriginalInstructions" && candidate.GetParameters().Length == 2
-                && !candidate.GetParameters()[1].ParameterType.IsByRef)
-            ?? throw new MissingMethodException("Harmony instruction reader unavailable.");
-        var instructions = (IEnumerable<CodeInstruction>)readInstructions.Invoke(null, new object?[] { method, null })!;
-        var uses = instructions.Count(instruction =>
-            instruction.opcode == OpCodes.Ldarg_3 ||
-            ((instruction.opcode == OpCodes.Ldarg || instruction.opcode == OpCodes.Ldarg_S)
-                && Convert.ToInt32(instruction.operand) == 3));
-        if (uses != 1) throw new MissingMethodException("Native fixed-offset endpoint usage changed.");
+            !;
         new Harmony("BridgeBuilder.PrivateMovableFixedOffsets").Patch(method,
             prefix: new HarmonyMethod(typeof(MovableFixedNodeOffsets), nameof(SelectParentEndpoint)));
         _installed = true;

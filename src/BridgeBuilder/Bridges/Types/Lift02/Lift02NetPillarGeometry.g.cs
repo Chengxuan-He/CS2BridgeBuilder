@@ -17,10 +17,7 @@ internal static class Lift02NetPillarGeometry
             (1, 2) => (Count: Numeric_Types_Lift02_Lift02NetPillarGeometry_g_cs.Values.I32[10], Faces: Numeric_Types_Lift02_Lift02NetPillarGeometry_g_cs.Values.I32[11], Motion: Motion12, Edges: Edges12, Fragments: Fragments12),
             (2, 0) => (Count: Numeric_Types_Lift02_Lift02NetPillarGeometry_g_cs.Values.I32[12], Faces: Numeric_Types_Lift02_Lift02NetPillarGeometry_g_cs.Values.I32[13], Motion: Motion20, Edges: Edges20, Fragments: Fragments20),
             (2, 1) => (Count: Numeric_Types_Lift02_Lift02NetPillarGeometry_g_cs.Values.I32[14], Faces: Numeric_Types_Lift02_Lift02NetPillarGeometry_g_cs.Values.I32[15], Motion: Motion21, Edges: Edges21, Fragments: Fragments21),
-            (2, 2) => (Count: Numeric_Types_Lift02_Lift02NetPillarGeometry_g_cs.Values.I32[16], Faces: Numeric_Types_Lift02_Lift02NetPillarGeometry_g_cs.Values.I32[17], Motion: Motion22, Edges: Edges22, Fragments: Fragments22),
-            _ => throw new ArgumentOutOfRangeException(nameof(part))};
-        if (source.Length != data.Count || indices.Length != data.Faces * Numeric_Types_Lift02_Lift02NetPillarGeometry_g_cs.Values.I32[18] || !float.IsFinite(delta))
-            throw new InvalidOperationException("Lift02 ordinary pillar requires its measured native layout.");
+            (2, 2) => (Count: Numeric_Types_Lift02_Lift02NetPillarGeometry_g_cs.Values.I32[16], Faces: Numeric_Types_Lift02_Lift02NetPillarGeometry_g_cs.Values.I32[17], Motion: Motion22, Edges: Edges22, Fragments: Fragments22)};
         var positions = (Vector3[])source.Clone();
         foreach (var range in data.Motion)
             AffineGeometry.Execute(RangePrograms.Data, 0, new[] { source, positions }, Array.Empty<float[]>(), new float[] { range.Weight, delta }, range.First, checked((checked((range.Last) + 1)) - (range.First)));
@@ -43,8 +40,7 @@ internal static class Lift02NetPillarGeometry
                 (1, 2) => 5,
                 (2, 0) => 6,
                 (2, 1) => 7,
-                (2, 2) => 8,
-                _ => throw new ArgumentOutOfRangeException()}, new[] { source }, new[] { x }, new float[] { delta });
+                (2, 2) => 8}, new[] { source }, new[] { x }, new float[] { delta });
         }
 
         return new MovableStructureModel.Plan(source, positions, new[] { indices }, new[] { new bool[data.Faces] }, addedVertices: edges, fragments: data.Fragments, constructedX: x);

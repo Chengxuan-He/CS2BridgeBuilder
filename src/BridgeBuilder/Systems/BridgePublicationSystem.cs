@@ -14,7 +14,7 @@ namespace BridgeBuilder.Systems;
 
 /// <summary>
 /// Registers a bridge without driving any game system recursively. Scheduled after the native
-/// PrefabUpdate pipeline; only then may the bridge be offered to the placement tool.
+/// PrefabUpdate pipeline and native UnlockSystem pass; only then may the bridge be offered to the placement tool.
 /// </summary>
 public partial class BridgePublicationSystem : GameSystemBase
 {
@@ -99,7 +99,7 @@ public partial class BridgePublicationSystem : GameSystemBase
                 return;
             }
             ready = waiting == null
-                ? ValidateInitialized(report)
+                ? RegistrationAvailable(report)
                 : NotReady(waiting, "the native prefab update did not replace its old entity", report);
         }
         catch (Exception exception)
@@ -126,7 +126,7 @@ public partial class BridgePublicationSystem : GameSystemBase
         if (ready) RefreshMenus(report);
     }
 
-    private bool ValidateInitialized(ExportReport report)
+    private bool RegistrationAvailable(ExportReport report)
     {
         foreach (var target in _targets)
         {
@@ -134,36 +134,6 @@ public partial class BridgePublicationSystem : GameSystemBase
                 || !EntityManager.Exists(entity) || EntityManager.HasComponent<Deleted>(entity))
                 return NotReady(target, "its live prefab entity is missing", report);
 
-            if (target is NetPrefab)
-            {
-                if (!EntityManager.HasComponent<NetData>(entity))
-                    return NotReady(target, "network data is missing", report);
-                var net = EntityManager.GetComponentData<NetData>(entity);
-                if (!net.m_NodeArchetype.Valid || !net.m_EdgeArchetype.Valid)
-                    return NotReady(target, "network instance archetypes are not initialized", report);
-            }
-
-            if (target is NetGeometryPrefab geometry && geometry.m_Sections?.Length > 0)
-            {
-                if (!EntityManager.HasBuffer<NetGeometrySection>(entity)
-                    || EntityManager.GetBuffer<NetGeometrySection>(entity, true).Length == 0)
-                    return NotReady(target, "network sections are not initialized", report);
-            }
-
-            var ui = target.components.OfType<UIObject>().FirstOrDefault();
-            if (ui?.m_Group == null || ui.m_IsDebugObject) continue;
-            if (!EntityManager.HasComponent<UIObjectData>(entity)
-                || !_prefabs.TryGetEntity(ui.m_Group, out var group)
-                || EntityManager.GetComponentData<UIObjectData>(entity).m_Group != group
-                || !EntityManager.HasBuffer<UIGroupElement>(group))
-                return NotReady(target, "its menu category is not initialized", report);
-
-            var entries = EntityManager.GetBuffer<UIGroupElement>(group, true);
-            var count = 0;
-            for (var index = 0; index < entries.Length; index++)
-                if (entries[index].m_Prefab == entity) count++;
-            if (count != 1)
-                return NotReady(target, $"its menu category contains {count} entries instead of one", report);
         }
         return true;
     }

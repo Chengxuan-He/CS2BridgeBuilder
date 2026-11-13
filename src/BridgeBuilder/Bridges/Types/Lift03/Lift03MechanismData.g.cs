@@ -42,8 +42,6 @@ internal static class Lift03MechanismData
 
     internal static ObjectMeshInfo[] Meshes(RenderPrefab[] prepared)
     {
-        if (prepared.Length != Numeric_Types_Lift03_Lift03MechanismData_g_cs.Values.I32[5])
-            throw new ArgumentException("Lift03 requires its main, pillar and pillar-base render graphs.");
         return new[]
         {
             new ObjectMeshInfo
@@ -689,8 +687,7 @@ internal static class Lift03MechanismData
                     m_ConnectionID = Numeric_Types_Lift03_Lift03MechanismData_g_cs.Values.I32[130],
                     m_SourceID = Numeric_Types_Lift03_Lift03MechanismData_g_cs.Values.I32[131]
                 },
-            },
-            _ => throw new ArgumentOutOfRangeException(nameof(lod))};
+            }};
     }
 }
 

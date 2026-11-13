@@ -6,14 +6,10 @@ internal static class Lift03SupportFaces
 {
     internal static void SelectMiddle(int[] indices, bool[] removed)
     {
-        if (indices.Length != Numeric_Types_Lift03_Lift03SupportFaces_g_cs.Values.I32[0] * Numeric_Types_Lift03_Lift03SupportFaces_g_cs.Values.I32[1] || removed.Length != Numeric_Types_Lift03_Lift03SupportFaces_g_cs.Values.I32[2])
-            throw new InvalidOperationException("Lift03 support source layout changed.");
         Array.Fill(removed, true);
         foreach (var face in Level1)
         {
             var offset = face.Triangle * Numeric_Types_Lift03_Lift03SupportFaces_g_cs.Values.I32[3];
-            if (indices[offset] != face.A || indices[offset + Numeric_Types_Lift03_Lift03SupportFaces_g_cs.Values.I32[4]] != face.B || indices[offset + Numeric_Types_Lift03_Lift03SupportFaces_g_cs.Values.I32[5]] != face.C)
-                throw new InvalidOperationException("Lift03 support source topology changed.");
             removed[face.Triangle] = false;
         }
     }
@@ -22,13 +18,9 @@ internal static class Lift03SupportFaces
     private static (int Triangle, int A, int B, int C)[] Level1 => GenerationParameters.Get<(int Triangle, int A, int B, int C)[]>("BridgeBuilder.Bridges.Lift03SupportFaces.Level1", () => ReadPackedLevel1());
     internal static void RemoveFar(int[] indices, bool[] removed)
     {
-        if (indices.Length != Numeric_Types_Lift03_Lift03SupportFaces_g_cs.Values.I32[9630] * Numeric_Types_Lift03_Lift03SupportFaces_g_cs.Values.I32[9631] || removed.Length != Numeric_Types_Lift03_Lift03SupportFaces_g_cs.Values.I32[9632])
-            throw new InvalidOperationException("Lift03 support source layout changed.");
         foreach (var face in Level2)
         {
             var offset = face.Triangle * Numeric_Types_Lift03_Lift03SupportFaces_g_cs.Values.I32[9633];
-            if (indices[offset] != face.A || indices[offset + Numeric_Types_Lift03_Lift03SupportFaces_g_cs.Values.I32[9634]] != face.B || indices[offset + Numeric_Types_Lift03_Lift03SupportFaces_g_cs.Values.I32[9635]] != face.C)
-                throw new InvalidOperationException("Lift03 support source topology changed.");
             removed[face.Triangle] = true;
         }
     }

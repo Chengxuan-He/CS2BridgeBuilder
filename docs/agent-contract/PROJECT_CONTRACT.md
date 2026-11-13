@@ -264,13 +264,13 @@ reports. For example, when Prefabs can be selected by string matching, using met
 is forbidden. Do not introduce extra abstractions, state, prerequisites or validation layers when
 the direct implementation is sufficient.
 
-Excessive defensive programming is prohibited. Defend boundaries involving external logic or data
-outside the mod's control, including generated bridge Prefabs that can subsequently be damaged.
-Validate such input and contain external failures where necessary. Internal mod logic should not
-fail during correct operation: actual data/API operation failures raise an explicit ERROR
-and preserve diagnostic context. Structural/appearance quality cannot gate generation under the bridge contract. Throw an exception for actual failed operations when appropriate; do not add special cases,
-silent returns, fallback values or exception swallowing merely to prevent an internal error from
-surfacing. Fix the underlying defect rather than hiding it.
+Follow [trusted internal execution](../../AGENTS.md#trusted-internal-execution). All non-IO steps
+and results, including memory and pure computation, are trusted. Runtime validation belongs only
+at actual external file/network IO boundaries; do not assert or recheck internal inputs, results,
+counts, ranges, finite values or invariants. Retain actual operation failure handling and normal
+business, native-rule, cancellation and lifetime control flow. Standalone offline development
+tests may verify results; runtime-consumed tool code follows the production rule. Do not report
+failed operations as success or treat this policy as a measured crash/performance diagnosis.
 The [complete material pipeline](MATERIAL_GENERATION_CONTRACT.md#complete-material-processing-without-propagated-exceptions)
 is explicitly non-throwing: contain native/external exceptions at operation boundaries,
 return diagnosed failure results and preserve complete support for valid unknown sources.

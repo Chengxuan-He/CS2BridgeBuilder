@@ -8,22 +8,16 @@ int Q(float v,float m){precise float a=clamp(v,-1,1)*m;precise float b=a+(v>=0?0
 [numthreads(64,1,1)]void Encode(uint3 id:SV_DispatchThreadID){uint i=id.x+VertexStart;if(i>=VertexCount)return;uint s=(i/3)*232+(i%3)*72;uint d=i*44;Encoded.Store3(d,Bound.Load3(s));float2 n=Oct(asfloat(Bound.Load3(s+12)));uint normal=(Q(n.x,32767)&65535)|((Q(n.y,32767)&65535)<<16);float4 t=asfloat(Bound.Load4(s+24));float2 o=Oct(t.xyz);uint tangent=(Q(o.x,16383)&32767)|((Q(o.y,16383)&32767)<<16)|(t.w<0?0x80000000:0);Encoded.Store(d+12,normal);Encoded.Store(d+16,tangent);Encoded.Store4(d+20,Bound.Load4(s+40));uint4 c=(uint4)round(saturate(asfloat(Bound.Load4(s+56)))*255);Encoded.Store(d+36,c.x|(c.y<<8)|(c.z<<16)|(c.w<<24));Encoded.Store(d+40,Bound.Load((i/3)*232+228));}
 #pragma kernel Summarize
 #pragma kernel EncodeNative
-#pragma kernel VerifyNative
 StructuredBuffer<uint2> Scatter;
 StructuredBuffer<uint4> Layouts;
 RWStructuredBuffer<uint> Summary;
 RWByteAddressBuffer NativeData;
 uint BoneCount; uint MaterialCount;
 uint Ordered(uint x){return (x&0x80000000)?~x:(x^0x80000000);}
-void Error(uint g,uint flag){InterlockedOr(Summary[g*8+7],flag);}
 [numthreads(64,1,1)]void Summarize(uint3 id:SV_DispatchThreadID)
 {
  uint i=id.x+VertexStart;if(i>=VertexCount)return;
  uint tri=i/3,s=tri*232+(i%3)*72,g=Scatter[tri].y;
- bool valid=true;for(uint k=0;k<18;k++)valid=valid&&isfinite(asfloat(Bound.Load(s+k*4)));
- float3 n=asfloat(Bound.Load3(s+12));float4 t=asfloat(Bound.Load4(s+24));
- if(!valid||dot(n,n)<=0||dot(t.xyz,t.xyz)<=0||(t.w!=1&&t.w!=-1))Error(g,1);
- if(Bound.Load(tri*232+216)>=MaterialCount||Bound.Load(tri*232+228)>=BoneCount)Error(g,2);
  for(uint axis=0;axis<3;axis++){uint v=Ordered(Bound.Load(s+axis*4));InterlockedMin(Summary[g*8+axis],v);InterlockedMax(Summary[g*8+3+axis],v);}
  float2 extra=asfloat(Bound.Load2(s+48));if(any(extra!=0))InterlockedOr(Summary[g*8+6],1);
 }
@@ -40,14 +34,6 @@ void Error(uint g,uint flag){InterlockedOr(Summary[g*8+7],flag);}
  NativeData.Store((b+(5+D)*N+v)*4,c.x|(c.y<<8)|(c.z<<16)|(c.w<<24));
  NativeData.Store((b+(6+D)*N+v)*4,Bound.Load(tri*232+228));
  NativeData.Store((b+(7+D)*N+v)*4,v);
-}
-[numthreads(64,1,1)]void VerifyNative(uint3 id:SV_DispatchThreadID)
-{
- uint i=id.x+VertexStart;if(i>=VertexCount)return;
- uint tri=i/3,s=tri*232+(i%3)*72;uint2 map=Scatter[tri];uint4 l=Layouts[map.y];uint v=map.x*3+i%3,N=l.y,D=l.z,b=l.x;
- if(any(NativeData.Load3((b+v*3)*4)!=Bound.Load3(s)))Error(map.y,4);
- for(uint k=0;k<D;k++)if(NativeData.Load((b+5*N+v*D+k)*4)!=Bound.Load(s+40+k*4))Error(map.y,8);
- if(NativeData.Load((b+(6+D)*N+v)*4)!=Bound.Load(tri*232+228)||NativeData.Load((b+(7+D)*N+v)*4)!=v)Error(map.y,16);
 }
 #pragma kernel TransformInput
 ByteAddressBuffer SourceInput;

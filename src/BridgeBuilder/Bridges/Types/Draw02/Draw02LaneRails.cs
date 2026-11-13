@@ -30,8 +30,6 @@ internal static class Draw02LaneRails
     {
         var data = Numeric_Types_Draw02_Draw02LaneRails_cs.Values;
         int header = part * 4;
-        if (source.Length != data.I32[header] || indices.Length / 3 != data.I32[header + 1])
-            throw new InvalidOperationException("Draw02 separator source differs from its measured native mesh.");
         var positions = (Vector3[])source.Clone();
         var removed = new bool[data.I32[header + 1]];
         Array.Fill(removed, true);

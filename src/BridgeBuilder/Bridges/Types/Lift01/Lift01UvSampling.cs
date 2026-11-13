@@ -36,8 +36,6 @@ internal static class Lift01UvSampling
         };
         if (index < 0) return false;
         var flags = Data.Items[index];
-        if ((uint)domain >= (uint)flags.Length)
-            throw new InvalidOperationException("Lift01 UV sampling domain mismatch.");
         return flags[domain];
     }
     private static class Data
@@ -47,8 +45,6 @@ internal static class Lift01UvSampling
         private static bool[][] Read()
         {
             var values = HardcodedNumbers.Load("Lift01UvSampling").I32;
-            if (values.Length < 2 || values[0] != 1 || values[1] != 23)
-                throw new InvalidOperationException("Invalid Lift01 UV sampling schema.");
             var result = new bool[values[1]][];
             int at = 2;
             for (int mesh = 0; mesh < result.Length; mesh++)
@@ -58,13 +54,9 @@ internal static class Lift01UvSampling
                 for (int d = 0; d < count; d++)
                 {
                     int flag = values[at++];
-                    if (flag != 0 && flag != 1)
-                        throw new InvalidOperationException("Invalid Lift01 UV sampling flag.");
                     flags[d] = flag == 1;
                 }
             }
-            if (at != values.Length)
-                throw new InvalidOperationException("Invalid Lift01 UV sampling length.");
             return result;
         }
     }

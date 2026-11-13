@@ -35,7 +35,7 @@ for row in records:
  lines.append(f'            ({str(bool(part)).lower()}, {lod}) => (Count: {len(v)}, IndexCount: {f.size}, Parts: {key}),')
  tables.append((key,digest,ranges))
  print('PASS',part,lod,len(v),len(f),'four widths, winding and shape rules')
-lines+=['            _ => throw new ArgumentOutOfRangeException(nameof(lod))','        };','        if (source.Length != data.Count || indices.Length != data.IndexCount || !float.IsFinite(delta))','            throw new InvalidOperationException("PedestrianDraw01 support requires its native topology and finite delta.");','        var positions = (Vector3[])source.Clone();','        foreach (var part in data.Parts)','            for (var i = part.First; i <= part.Last; i++)','                positions[i].x += (footing ? source[i].x / 4.0821533203125f : part.Sign) * delta;','        return new MovableStructureModel.Plan(source, positions, new[] { indices }, new[] { new bool[indices.Length / 3] });','    }','']
+lines+=['            ','        };','        ','','        var positions = (Vector3[])source.Clone();','        foreach (var part in data.Parts)','            for (var i = part.First; i <= part.Last; i++)','                positions[i].x += (footing ? source[i].x / 4.0821533203125f : part.Sign) * delta;','        return new MovableStructureModel.Plan(source, positions, new[] { indices }, new[] { new bool[indices.Length / 3] });','    }','']
 for key,digest,ranges in tables:
  lines+=['    // Geometry SHA-256: '+digest,f'    private static readonly (int First, int Last, float Sign)[] {key} =','    {']
  lines += [f'        ({a}, {b}, {w:g}f),' for a,b,w in ranges]

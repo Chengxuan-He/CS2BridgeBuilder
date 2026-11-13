@@ -55,10 +55,6 @@ internal static class MovableClosedRoad
         out Result? result, out string? error)
     {
         result = null; error = null;
-        if (selectedRoad == null || float.IsNaN(span) || float.IsInfinity(span) || span <= 0f ||
-            (flags.m_General & (CompositionFlags.General.Node | CompositionFlags.General.FixedNodeSize)) != 0 ||
-            (flags.m_General & CompositionFlags.General.Elevated) == 0)
-        { error = "Closed road compilation requires a selected road, finite positive span and ordinary elevated edge flags."; return false; }
         try
         {
             using var session = new BridgePreviewSession();
@@ -66,8 +62,6 @@ internal static class MovableClosedRoad
             using var composition = new BridgePreviewComposition(trackOccurrences: true);
             using var generator = new BridgePreviewNetMesh();
             var pieces = composition.Compose(selectedRoad, flags, out var data);
-            if (pieces.Length == 0 || data.m_Width <= 0f || float.IsNaN(data.m_Width) || float.IsInfinity(data.m_Width))
-            { error = "The selected closed road has no valid native composition."; return false; }
             var output = new List<MovableRoadGeometry.Triangle>();
             var surfaces = new List<SurfaceAsset>();
             var sourceFaces = new BridgePreviewNetMesh.SourceFace[pieces.Length][];
@@ -83,9 +77,6 @@ internal static class MovableClosedRoad
                 if (!generator.Build(new[] { piece }, data, resources, span, out var mesh,
                         out _, out _, slots, faces))
                 { error = $"Native mesh composition failed at '{piece.SourcePath}' ({piece.Prefab.name})."; return false; }
-                foreach (var surface in slots)
-                    if (surface == null || (surface.materialTemplateHash != 17 && surface.materialTemplateHash != 33))
-                    { error = $"'{piece.SourcePath}' uses a material outside the measured network composition shader path."; return false; }
                 if (!MovableStraightRoadEvaluation.TryEvaluate(mesh, data.m_Width, span, i,
                         out var triangles, out error))
                 { error = piece.SourcePath + ": " + error; return false; }
@@ -93,8 +84,6 @@ internal static class MovableClosedRoad
                 var firstSlot = surfaces.Count;
                 foreach (var triangle in triangles)
                 {
-                    if (triangle.Material >= slots.Count)
-                    { error = $"'{piece.SourcePath}' has no surface for material slot {triangle.Material}."; return false; }
                     output.Add(new MovableRoadGeometry.Triangle(triangle.A, triangle.B, triangle.C,
                         firstSlot + triangle.Material, triangle.Occurrence, triangle.SourceTriangle));
                 }

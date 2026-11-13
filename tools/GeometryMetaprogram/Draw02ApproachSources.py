@@ -96,8 +96,8 @@ layout = ['// Native DrawBridge02 structural approach layout, game 1.6.2f1.',
           '    // The caller supplies widened, factory-owned pieces in recorded family order.',
           '    internal static void Apply(NetGeometryPrefab target, TowerFactory factory, NetPiecePrefab[] pieces, float layoutRemainder)',
           '    {',
-          '        if (pieces.Length != 9 || pieces.Any(piece => piece == null || !factory.Created.Contains(piece)))',
-          '            throw new InvalidOperationException("Draw02 approaches require nine owned structural pieces.");']
+          '        ',
+          '']
 for i, identity in enumerate(section_ids):
     d = records[str(identity)]['data']
     structural = [p for p in d['m_Pieces'] if p['m_Piece']['m_PathID'] in roots]

@@ -31,8 +31,7 @@ internal static class Draw01FixedRearFragmentData
             new MovableStructureModel.EdgeVertex(Numeric_Types_Draw01_Draw01FixedRearFragmentData_g_cs.Values.I32[34], Numeric_Types_Draw01_Draw01FixedRearFragmentData_g_cs.Values.I32[35], Numeric_Types_Draw01_Draw01FixedRearFragmentData_g_cs.Values.F32[17]),
             new MovableStructureModel.EdgeVertex(Numeric_Types_Draw01_Draw01FixedRearFragmentData_g_cs.Values.I32[36], Numeric_Types_Draw01_Draw01FixedRearFragmentData_g_cs.Values.I32[37], Numeric_Types_Draw01_Draw01FixedRearFragmentData_g_cs.Values.F32[18]),
             new MovableStructureModel.EdgeVertex(Numeric_Types_Draw01_Draw01FixedRearFragmentData_g_cs.Values.I32[38], Numeric_Types_Draw01_Draw01FixedRearFragmentData_g_cs.Values.I32[39], Numeric_Types_Draw01_Draw01FixedRearFragmentData_g_cs.Values.F32[19]),
-        },
-        _ => throw new ArgumentOutOfRangeException(nameof(lod))};
+        }};
     // firstAddedVertex is the absolute index of this table's first appended vertex.
     internal static MovableStructureModel.Fragment[] Faces(int lod, int firstAddedVertex) => lod switch
     {
@@ -49,8 +48,7 @@ internal static class Draw01FixedRearFragmentData
             new MovableStructureModel.Fragment(Numeric_Types_Draw01_Draw01FixedRearFragmentData_g_cs.Values.I32[84], Numeric_Types_Draw01_Draw01FixedRearFragmentData_g_cs.Values.I32[85], firstAddedVertex + Numeric_Types_Draw01_Draw01FixedRearFragmentData_g_cs.Values.I32[86], Numeric_Types_Draw01_Draw01FixedRearFragmentData_g_cs.Values.I32[87], Numeric_Types_Draw01_Draw01FixedRearFragmentData_g_cs.Values.I32[88], firstAddedVertex + Numeric_Types_Draw01_Draw01FixedRearFragmentData_g_cs.Values.I32[89], Numeric_Types_Draw01_Draw01FixedRearFragmentData_g_cs.Values.I32[90], firstAddedVertex + Numeric_Types_Draw01_Draw01FixedRearFragmentData_g_cs.Values.I32[91]),
             new MovableStructureModel.Fragment(Numeric_Types_Draw01_Draw01FixedRearFragmentData_g_cs.Values.I32[92], Numeric_Types_Draw01_Draw01FixedRearFragmentData_g_cs.Values.I32[93], Numeric_Types_Draw01_Draw01FixedRearFragmentData_g_cs.Values.I32[94], firstAddedVertex + Numeric_Types_Draw01_Draw01FixedRearFragmentData_g_cs.Values.I32[95], firstAddedVertex + Numeric_Types_Draw01_Draw01FixedRearFragmentData_g_cs.Values.I32[96]),
             new MovableStructureModel.Fragment(Numeric_Types_Draw01_Draw01FixedRearFragmentData_g_cs.Values.I32[97], Numeric_Types_Draw01_Draw01FixedRearFragmentData_g_cs.Values.I32[98], firstAddedVertex + Numeric_Types_Draw01_Draw01FixedRearFragmentData_g_cs.Values.I32[99], Numeric_Types_Draw01_Draw01FixedRearFragmentData_g_cs.Values.I32[100], firstAddedVertex + Numeric_Types_Draw01_Draw01FixedRearFragmentData_g_cs.Values.I32[101]),
-        },
-        _ => throw new ArgumentOutOfRangeException(nameof(lod))};
+        }};
 }
 
 // Embedded numerical arrays: Types_Draw01_Draw01FixedRearFragmentData_g_cs

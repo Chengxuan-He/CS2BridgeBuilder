@@ -66,8 +66,6 @@ internal static class MovableStructureAttributes
 
     private static float3 Unit(float3 value)
     {
-        if (!math.all(math.isfinite(value)) || math.lengthsq(value) == 0f)
-            throw new InvalidDataException("A structural subdivision has no finite interpolated direction.");
         return math.normalize(value);
     }
 }

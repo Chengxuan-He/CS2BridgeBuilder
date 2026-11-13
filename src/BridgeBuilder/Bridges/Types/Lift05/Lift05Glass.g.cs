@@ -8,8 +8,6 @@ internal static class Lift05Glass
 {
     internal static MovableStructureModel.Plan Create(int lod, Vector3[] source, int[] indices, float delta)
     {
-        if ((lod != Numeric_Types_Lift05_Lift05Glass_g_cs.Values.I32[0] && lod != Numeric_Types_Lift05_Lift05Glass_g_cs.Values.I32[1]) || source.Length != Numeric_Types_Lift05_Lift05Glass_g_cs.Values.I32[2] || indices.Length != Numeric_Types_Lift05_Lift05Glass_g_cs.Values.I32[3] || !float.IsFinite(delta))
-            throw new InvalidOperationException("Lift05 glass requires its native layout.");
         var positions = (Vector3[])source.Clone();
         foreach (var part in lod == Numeric_Types_Lift05_Lift05Glass_g_cs.Values.I32[4] ? Parts0 : Parts1)
             if (part.Side == Numeric_Types_Lift05_Lift05Glass_g_cs.Values.I32[5])

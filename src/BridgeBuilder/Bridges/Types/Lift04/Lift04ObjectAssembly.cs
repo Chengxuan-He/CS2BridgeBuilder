@@ -19,8 +19,6 @@ internal static class Lift04ObjectAssembly
         var imported = Path.Combine(Application.persistentDataPath, "ImportedData");
         foreach (var item in attachments)
         {
-            if (item.m_Object == null)
-                throw new InvalidOperationException("Lift04 requires its original tower attachment sources.");
             item.m_Position.x += Math.Sign(item.m_Position.x) * halfWidthDelta;
         }
 

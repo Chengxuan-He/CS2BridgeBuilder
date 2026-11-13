@@ -36,8 +36,7 @@ internal static class Lift05NativeRoadAppearance
         {
             var d = HardcodedNumbers.Load("Types_Lift05_RoadProjection");
             int i = Numeric_Types_Lift05_Lift05NativeRoadAppearance_cs.Values.I32[0], j = Numeric_Types_Lift05_Lift05NativeRoadAppearance_cs.Values.I32[1];
-            if (d.I32[i++] != Numeric_Types_Lift05_Lift05NativeRoadAppearance_cs.Values.I32[2] || d.I32[i++] != Numeric_Types_Lift05_Lift05NativeRoadAppearance_cs.Values.I32[3])
-                throw new InvalidOperationException("Invalid Lift05 continuous road schema.");
+            i += 2;
             var levels = new LevelData[Numeric_Types_Lift05_Lift05NativeRoadAppearance_cs.Values.I32[4]];
             for (int lod = Numeric_Types_Lift05_Lift05NativeRoadAppearance_cs.Values.I32[5]; lod < levels.Length; lod++)
             {
@@ -76,9 +75,6 @@ internal static class Lift05NativeRoadAppearance
 
                 levels[lod] = new LevelData(roots, bands, units, children, patches, planes);
             }
-
-            if (i != d.I32.Length || j != d.F64.Length)
-                throw new InvalidOperationException("Unconsumed Lift05 continuous road metadata.");
             return levels;
         }
     }
@@ -95,8 +91,6 @@ internal static class Lift05NativeRoadAppearance
     // resolves the identical packaged graph on this existing main-thread native path.
     internal static MovableRoadAppearance.Level ForLod(int lod, RenderPrefab native, Pose roadToObject, float halfDelta, SurfaceAsset[]? finishedUnits = null)
     {
-        if (lod < Numeric_Types_Lift05_Lift05NativeRoadAppearance_cs.Values.I32[15] || lod >= Data.Levels.Length || !float.IsFinite(halfDelta))
-            throw new InvalidOperationException("Invalid Lift05 road arithmetic or LOD.");
         var data = Data.Levels[lod];
         var surface = native.GetSurfaceAsset(Numeric_Types_Lift05_Lift05NativeRoadAppearance_cs.Values.I32[16]);
         var pose = Matrix4x4.TRS(roadToObject.position, roadToObject.rotation, Vector3.one);

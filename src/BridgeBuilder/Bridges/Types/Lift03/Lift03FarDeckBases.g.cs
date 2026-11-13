@@ -7,13 +7,9 @@ internal static class Lift03FarDeckBases
 {
     internal static void Include(int[] indices, bool[] removed)
     {
-        if (indices.Length != Numeric_Types_Lift03_Lift03FarDeckBases_g_cs.Values.I32[0] * Numeric_Types_Lift03_Lift03FarDeckBases_g_cs.Values.I32[1] || removed.Length != Numeric_Types_Lift03_Lift03FarDeckBases_g_cs.Values.I32[2])
-            throw new InvalidOperationException("Lift03 far deck supplement requires its recorded middle layout.");
         foreach (var face in Faces)
         {
             var offset = face.Triangle * Numeric_Types_Lift03_Lift03FarDeckBases_g_cs.Values.I32[3];
-            if (indices[offset] != face.A || indices[offset + Numeric_Types_Lift03_Lift03FarDeckBases_g_cs.Values.I32[4]] != face.B || indices[offset + Numeric_Types_Lift03_Lift03FarDeckBases_g_cs.Values.I32[5]] != face.C)
-                throw new InvalidOperationException("Lift03 far deck supplement topology changed.");
             removed[face.Triangle] = false;
         }
 

@@ -14,32 +14,21 @@ internal static class PedestrianDraw02RoadReplacement
         var vertexCount = lod switch
         {
             0 => Numeric_Types_PedestrianDraw02_PedestrianDraw02RoadReplacement_g_cs.Values.I32[0],
-            1 => Numeric_Types_PedestrianDraw02_PedestrianDraw02RoadReplacement_g_cs.Values.I32[1],
-            _ => throw new ArgumentOutOfRangeException(nameof(lod))};
+            1 => Numeric_Types_PedestrianDraw02_PedestrianDraw02RoadReplacement_g_cs.Values.I32[1]};
         var triangleCount = lod == Numeric_Types_PedestrianDraw02_PedestrianDraw02RoadReplacement_g_cs.Values.I32[2] ? Numeric_Types_PedestrianDraw02_PedestrianDraw02RoadReplacement_g_cs.Values.I32[3] : Numeric_Types_PedestrianDraw02_PedestrianDraw02RoadReplacement_g_cs.Values.I32[4];
-        if (structure.SourcePositions.Length != vertexCount || structure.SourceIndices.Length != Numeric_Types_PedestrianDraw02_PedestrianDraw02RoadReplacement_g_cs.Values.I32[5] || structure.SourceIndices[Numeric_Types_PedestrianDraw02_PedestrianDraw02RoadReplacement_g_cs.Values.I32[6]].Length != triangleCount * Numeric_Types_PedestrianDraw02_PedestrianDraw02RoadReplacement_g_cs.Values.I32[7] || structure.RemoveTriangles.Length != Numeric_Types_PedestrianDraw02_PedestrianDraw02RoadReplacement_g_cs.Values.I32[8] || structure.RemoveTriangles[Numeric_Types_PedestrianDraw02_PedestrianDraw02RoadReplacement_g_cs.Values.I32[9]].Length != triangleCount)
-            throw new InvalidOperationException($"PedestrianDraw02 LOD {lod} main mesh does not match its measured layout.");
         var indices = structure.SourceIndices[Numeric_Types_PedestrianDraw02_PedestrianDraw02RoadReplacement_g_cs.Values.I32[10]];
         var removed = (bool[])structure.RemoveTriangles[Numeric_Types_PedestrianDraw02_PedestrianDraw02RoadReplacement_g_cs.Values.I32[11]].Clone();
         var topFaces = Faces(lod);
         foreach (var face in topFaces)
         {
             var offset = face.Triangle * Numeric_Types_PedestrianDraw02_PedestrianDraw02RoadReplacement_g_cs.Values.I32[12];
-            if (indices[offset] != face.A || indices[offset + Numeric_Types_PedestrianDraw02_PedestrianDraw02RoadReplacement_g_cs.Values.I32[13]] != face.B || indices[offset + Numeric_Types_PedestrianDraw02_PedestrianDraw02RoadReplacement_g_cs.Values.I32[14]] != face.C)
-                throw new InvalidOperationException($"PedestrianDraw02 LOD {lod} road triangle {face.Triangle} has changed topology.");
             removed[face.Triangle] = true;
         }
 
         foreach (var vertex in Vertices(lod))
         {
             var actual = structure.SourcePositions[vertex.Index];
-            if (actual.x != vertex.Position.x || actual.y != vertex.Position.y || actual.z != vertex.Position.z)
-                throw new InvalidOperationException($"PedestrianDraw02 LOD {lod} road vertex {vertex.Index} has changed position.");
         }
-
-        foreach (var fragment in structure.Fragments)
-            if (fragment.Slot == Numeric_Types_PedestrianDraw02_PedestrianDraw02RoadReplacement_g_cs.Values.I32[15] && Array.Exists(topFaces, face => face.Triangle == fragment.Triangle))
-                throw new InvalidOperationException($"PedestrianDraw02 LOD {lod} structure fragment would restore removed road triangle {fragment.Triangle}.");
         var positions = new Vector3[vertexCount];
         Array.Copy(structure.Positions, positions, vertexCount);
         // Subdivided coarse faces can have explicitly widened boundaries whose X
@@ -611,8 +600,7 @@ internal static class PedestrianDraw02RoadReplacement
             (Numeric_Types_PedestrianDraw02_PedestrianDraw02RoadReplacement_g_cs.Values.I32[2213], Numeric_Types_PedestrianDraw02_PedestrianDraw02RoadReplacement_g_cs.Values.I32[2214], Numeric_Types_PedestrianDraw02_PedestrianDraw02RoadReplacement_g_cs.Values.I32[2215], Numeric_Types_PedestrianDraw02_PedestrianDraw02RoadReplacement_g_cs.Values.I32[2216]),
             (Numeric_Types_PedestrianDraw02_PedestrianDraw02RoadReplacement_g_cs.Values.I32[2217], Numeric_Types_PedestrianDraw02_PedestrianDraw02RoadReplacement_g_cs.Values.I32[2218], Numeric_Types_PedestrianDraw02_PedestrianDraw02RoadReplacement_g_cs.Values.I32[2219], Numeric_Types_PedestrianDraw02_PedestrianDraw02RoadReplacement_g_cs.Values.I32[2220]),
             (Numeric_Types_PedestrianDraw02_PedestrianDraw02RoadReplacement_g_cs.Values.I32[2221], Numeric_Types_PedestrianDraw02_PedestrianDraw02RoadReplacement_g_cs.Values.I32[2222], Numeric_Types_PedestrianDraw02_PedestrianDraw02RoadReplacement_g_cs.Values.I32[2223], Numeric_Types_PedestrianDraw02_PedestrianDraw02RoadReplacement_g_cs.Values.I32[2224]),
-        },
-        _ => throw new ArgumentOutOfRangeException(nameof(lod))};
+        }};
     private static (int Index, Vector3 Position)[] Vertices(int lod) => lod switch
     {
         0 => new (int, Vector3)[]
@@ -1380,8 +1368,7 @@ internal static class PedestrianDraw02RoadReplacement
             (Numeric_Types_PedestrianDraw02_PedestrianDraw02RoadReplacement_g_cs.Values.I32[2982], new Vector3(Numeric_Types_PedestrianDraw02_PedestrianDraw02RoadReplacement_g_cs.Values.F32[2271], Numeric_Types_PedestrianDraw02_PedestrianDraw02RoadReplacement_g_cs.Values.F32[2272], -Numeric_Types_PedestrianDraw02_PedestrianDraw02RoadReplacement_g_cs.Values.F32[2273])),
             (Numeric_Types_PedestrianDraw02_PedestrianDraw02RoadReplacement_g_cs.Values.I32[2983], new Vector3(Numeric_Types_PedestrianDraw02_PedestrianDraw02RoadReplacement_g_cs.Values.F32[2274], Numeric_Types_PedestrianDraw02_PedestrianDraw02RoadReplacement_g_cs.Values.F32[2275], -Numeric_Types_PedestrianDraw02_PedestrianDraw02RoadReplacement_g_cs.Values.F32[2276])),
             (Numeric_Types_PedestrianDraw02_PedestrianDraw02RoadReplacement_g_cs.Values.I32[2984], new Vector3(Numeric_Types_PedestrianDraw02_PedestrianDraw02RoadReplacement_g_cs.Values.F32[2277], Numeric_Types_PedestrianDraw02_PedestrianDraw02RoadReplacement_g_cs.Values.F32[2278], -Numeric_Types_PedestrianDraw02_PedestrianDraw02RoadReplacement_g_cs.Values.F32[2279])),
-        },
-        _ => throw new ArgumentOutOfRangeException(nameof(lod))};
+        }};
 }
 
 // Embedded numerical arrays: Types_PedestrianDraw02_PedestrianDraw02RoadReplacement_g_cs

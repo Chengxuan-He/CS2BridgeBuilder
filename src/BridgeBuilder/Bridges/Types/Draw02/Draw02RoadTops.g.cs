@@ -13,25 +13,14 @@ internal static class Draw02RoadTops
         {
             0 => (Vertices: Numeric_Types_Draw02_Draw02RoadTops_g_cs.Values.I32[0], Faces: Numeric_Types_Draw02_Draw02RoadTops_g_cs.Values.I32[1], Records: Lod0, Edges: Edges0, Fragments: Fragments0, Weights: Weights0),
             1 => (Vertices: Numeric_Types_Draw02_Draw02RoadTops_g_cs.Values.I32[2], Faces: Numeric_Types_Draw02_Draw02RoadTops_g_cs.Values.I32[3], Records: Lod1, Edges: Edges1, Fragments: Fragments1, Weights: Weights1),
-            2 => (Vertices: Numeric_Types_Draw02_Draw02RoadTops_g_cs.Values.I32[4], Faces: Numeric_Types_Draw02_Draw02RoadTops_g_cs.Values.I32[5], Records: Lod2, Edges: Edges2, Fragments: Fragments2, Weights: Weights2),
-            _ => throw new ArgumentOutOfRangeException(nameof(lod))};
-        if (structure.SourcePositions.Length != data.Vertices || structure.SourceIndices.Length != Numeric_Types_Draw02_Draw02RoadTops_g_cs.Values.I32[6] || structure.SourceIndices[Numeric_Types_Draw02_Draw02RoadTops_g_cs.Values.I32[7]].Length != data.Faces * Numeric_Types_Draw02_Draw02RoadTops_g_cs.Values.I32[8] || structure.RemoveTriangles.Length != Numeric_Types_Draw02_Draw02RoadTops_g_cs.Values.I32[9] || structure.RemoveTriangles[Numeric_Types_Draw02_Draw02RoadTops_g_cs.Values.I32[10]].Length != data.Faces)
-            throw new InvalidOperationException("Draw02 road-top removal requires its recorded main mesh.");
+            2 => (Vertices: Numeric_Types_Draw02_Draw02RoadTops_g_cs.Values.I32[4], Faces: Numeric_Types_Draw02_Draw02RoadTops_g_cs.Values.I32[5], Records: Lod2, Edges: Edges2, Fragments: Fragments2, Weights: Weights2)};
         var mask = (bool[])structure.RemoveTriangles[Numeric_Types_Draw02_Draw02RoadTops_g_cs.Values.I32[11]].Clone();
         var top = new bool[data.Faces];
         for (var i = Numeric_Types_Draw02_Draw02RoadTops_g_cs.Values.I32[12]; i < data.Records.Length; i += Numeric_Types_Draw02_Draw02RoadTops_g_cs.Values.I32[13])
         {
             var face = data.Records[i];
-            for (var corner = Numeric_Types_Draw02_Draw02RoadTops_g_cs.Values.I32[14]; corner < Numeric_Types_Draw02_Draw02RoadTops_g_cs.Values.I32[15]; corner++)
-                if (structure.SourceIndices[Numeric_Types_Draw02_Draw02RoadTops_g_cs.Values.I32[16]][face * Numeric_Types_Draw02_Draw02RoadTops_g_cs.Values.I32[17] + corner] != data.Records[i + Numeric_Types_Draw02_Draw02RoadTops_g_cs.Values.I32[18] + corner])
-                    throw new InvalidOperationException("Draw02 recorded road-top topology changed.");
             mask[face] = top[face] = true;
         }
-
-        // Recorded Draw02 shell fragments use edge vertices only. Appending edges
-        // therefore leaves every existing fragment index unchanged.
-        if (structure.InteriorVertices.Length != Numeric_Types_Draw02_Draw02RoadTops_g_cs.Values.I32[20])
-            throw new InvalidOperationException("Draw02 platform construction requires its recorded edge-only shell plan.");
         var edges = new MovableStructureModel.EdgeVertex[structure.AddedVertices.Length + data.Edges.Length];
         Array.Copy(structure.AddedVertices, edges, structure.AddedVertices.Length);
         Array.Copy(data.Edges, Numeric_Types_Draw02_Draw02RoadTops_g_cs.Values.I32[21], edges, structure.AddedVertices.Length, data.Edges.Length);

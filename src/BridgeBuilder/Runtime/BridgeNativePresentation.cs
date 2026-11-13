@@ -72,8 +72,6 @@ internal static class BridgeNativePresentation
             var locales = Settings.UiStringCatalog.LocaleIds.Select(locale => (
                 Id: locale, Language: localization.LocaleIdToSystemLanguage(locale),
                 Name: localization.GetLocalizedName(locale))).ToArray();
-            if (locales.Any(locale => locale.Language == SystemLanguage.Unknown))
-            { error = "Native language mapping unavailable for bridge locales"; return false; }
             var prefabs = (knownPrefabs ?? AssetDatabase.user.GetAssets(SearchFilter<PrefabAsset>.ByCondition(a =>
                 BridgeAssetInfo.MatchesOwner(a.path, entry.PrefabName)))
                 .Select(a => a.GetInstance<PrefabBase>())).Where(p => p is NetGeometryPrefab).ToArray();

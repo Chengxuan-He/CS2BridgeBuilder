@@ -14,7 +14,7 @@ for (const file of readdirSync(resolve(root, runtime)).filter(x => /^BridgePrevi
         assert(source.includes('Mod.Log.Error('), 'Visible preview errors must be error');
     else
         assert(!/Log\.(?:Error)\(/.test(source), `Only preview result publication logs panel errors: ${file}`);
-    if (file !== 'BridgePreviewRenderer.cs')
+    if (!['BridgePreviewRenderer.cs', 'BridgePreviewMaterialCapture.cs'].includes(file))
         assert(!/Log\.Warn\(/.test(source), `Unexpected preview warning: ${file}`);
     assert(!/FailureException|_failureException/.test(source), `Unused exception propagation remains: ${file}`);
 }
@@ -28,7 +28,8 @@ assert(renderer.includes('Preview readback failed:') && renderer.includes('else 
     'Keep technical readback/render failure diagnostics without error popups');
 const deletion = generation.slice(generation.indexOf('private void FailDeletion('), generation.indexOf('private HashSet<string> LoadedExportNames'));
 assert.equal((deletion.match(/Log\.Error\(/g) || []).length, 2, 'Keep explicit deletion failure diagnostics');
-assert.equal((generation.match(/Log\.Error\(/g) || []).length, 7, 'Deletion, activation, preview exceptions and completed operations report error failures');
+for (const message of ['Bridge preview continuation failed.', 'Cancelled preview cleanup failed.', 'Material preparation failure callback failed;', 'Could not activate runtime bridge', 'could not save operation state or diagnostics.'])
+    assert(generation.includes(message), `Retain actual operation failure reporting: ${message}`);
 assert(generation.includes('report.FailureDetails'), 'Error logs must include the original failure reason');
 assert(generation.includes("report.FailedRoads != failuresBefore"), "Do not remove publication guards");
 assert(generation.includes("_previewReleasePending = true"), "Failed previews must release resources");

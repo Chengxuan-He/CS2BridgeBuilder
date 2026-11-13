@@ -62,10 +62,6 @@ internal sealed class BridgePreviewObjectLayout
                 bounds = MathUtils.Bounds(MathUtils.Box(bounds, part.m_Rotation, part.m_Position));
             if (render.TryGet<StackProperties>(out var stack) && stack.m_Direction != StackDirection.None)
             {
-                if (layout.HasStack && layout.StackData.m_Direction != stack.m_Direction)
-                {
-                    return false;
-                }
                 layout.HasStack = true;
                 layout.StackData.m_Direction = stack.m_Direction;
                 if (standing && stack.m_Direction == StackDirection.Up && stack.m_Order == StackOrder.Last)

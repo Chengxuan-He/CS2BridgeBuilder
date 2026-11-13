@@ -10,10 +10,7 @@ internal static class Draw03Truss
         var data = lod switch
         {
             0 => Numeric_Types_Draw03_Draw03Truss_g_cs.Values.I32[0],
-            1 => Numeric_Types_Draw03_Draw03Truss_g_cs.Values.I32[1],
-            _ => throw new ArgumentOutOfRangeException(nameof(lod))};
-        if (source.Length != data || positions.Length != data || !float.IsFinite(delta))
-            throw new InvalidOperationException("Draw03 truss requires its measured mesh.");
+            1 => Numeric_Types_Draw03_Draw03Truss_g_cs.Values.I32[1]};
         AffineGeometry.Execute(BatchProgram0.Data, lod, new[] { source, positions }, Array.Empty<float[]>(), new float[] { Numeric_Types_Draw03_Draw03Truss_g_cs.Values.F32[0], delta });
     }
 

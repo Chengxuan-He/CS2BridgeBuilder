@@ -1,0 +1,3 @@
+- Fix startup virtual-texture errors caused by prepared Bridges & Ports materials when required content is unavailable.
+- Isolate prepared materials from automatic discovery and register them on demand after native content checks.
+- Preserve saved bridges with unavailable content and defer inspection without an unnecessary restart notice.

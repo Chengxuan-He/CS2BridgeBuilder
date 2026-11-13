@@ -15,31 +15,12 @@ namespace BridgeBuilder.Bridges;
 // this applies its local direction Jacobian without changing UVs, colors or skinning.
 internal static class MovableStructureFrames
 {
-    internal static void Validate(KeyValuePair<int, Matrix4x4>[] transforms, int vertexCount)
-    {
-        var seen = new HashSet<int>();
-        foreach (var pair in transforms)
-        {
-            var m = pair.Value;
-            if (pair.Key < 0 || pair.Key >= vertexCount || !seen.Add(pair.Key))
-                throw new ArgumentException("Structural frame transform requires a unique final Plan vertex.");
-            for (int i = 0; i < 16; i++)
-                if (!float.IsFinite(m[i])) throw new ArgumentException("Structural frame transform is non-finite.");
-            if (m.m03 != 0 || m.m13 != 0 || m.m23 != 0 || m.m30 != 0 || m.m31 != 0 || m.m32 != 0 || m.m33 != 1 ||
-                !float.IsFinite(m.determinant))
-                throw new ArgumentException("Structural frame transform must be a finite direction Jacobian.");
-        }
-    }
-
     internal static void Apply(List<ModelImporter.Model.VertexData> attributes,
         KeyValuePair<int, Matrix4x4>[] transforms, int[]? used, int count, bool nativeBone = false)
     {
         if (transforms.Length == 0) return;
         var normal = attributes.SingleOrDefault(a => a.attribute == VertexAttribute.Normal);
         var tangent = attributes.SingleOrDefault(a => a.attribute == VertexAttribute.Tangent);
-        if (normal == null || tangent == null || normal.format != VertexAttributeFormat.SNorm16 || normal.dimension != 2 ||
-            tangent.format != VertexAttributeFormat.Float32 || tangent.dimension != 1)
-            throw new InvalidOperationException("Measured structural frame correction requires native octahedral N/T channels.");
         using var normals = new NativeArray<MeshNormal>(count, Allocator.Temp);
         using var tangents = new NativeArray<MeshTangent>(count, Allocator.Temp);
         MeshNormal.Unpack(new NativeSlice<byte>(normal.data), normals, count, normal.format, normal.dimension);
@@ -65,8 +46,6 @@ internal static class MovableStructureFrames
     {
         double length = Math.Sqrt((double)value.x * value.x + (double)value.y * value.y + (double)value.z * value.z);
         if (length == 0) return original;
-        if (!double.IsFinite(length))
-            throw new InvalidOperationException("Measured structural frame has no finite direction.");
         return new Vector3((float)(value.x / length), (float)(value.y / length), (float)(value.z / length));
     }
 

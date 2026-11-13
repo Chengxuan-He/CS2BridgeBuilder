@@ -97,9 +97,7 @@ internal static class Lift01FarBaseProfile
 {
     internal static MovableStructureModel.Plan Apply(MovableStructureModel.Plan plan, float delta)
     {
-        if (plan.SourcePositions.Length != 1110 || plan.SourceIndices.Length != 1 ||
-            plan.SourceIndices[0].Length != 2328 || !float.IsFinite(delta))
-            throw new InvalidOperationException("Lift01 far base requires its recorded road boundaries.");
+
         var positions = plan.Positions.Take(1110).ToArray();
         foreach (var point in Profile)
             positions[point.Index] = new Vector3(point.X + point.Direction * delta, point.Y, point.Z);

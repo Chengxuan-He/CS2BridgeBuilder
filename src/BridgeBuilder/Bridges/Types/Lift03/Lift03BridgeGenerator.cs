@@ -26,8 +26,6 @@ internal sealed class Lift03BridgeGenerator : MovableBridgeGeneratorBase<Lift03R
         get
         {
             var width = WidthOf(Lower.Source, Numeric_Types_Lift03_Lift03BridgeGenerator_cs.Values.F32[0]);
-            if (!float.IsFinite(width))
-                throw new InvalidOperationException("Lift03 auxiliary road has no initialized surface width.");
             return (width - BridgeMeasurements.Lift03AuxiliaryRoadWidth) * Numeric_Types_Lift03_Lift03BridgeGenerator_cs.Values.F32[1];
         }
     }

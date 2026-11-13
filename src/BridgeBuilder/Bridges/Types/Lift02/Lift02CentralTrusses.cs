@@ -10,8 +10,6 @@ internal static class Lift02CentralTrusses
     private static HardcodedNumbers Data => GenerationParameters.Get<HardcodedNumbers>("BridgeBuilder.Bridges.Lift02CentralTrusses.Data", () => HardcodedNumbers.Load("Types_Lift02_CentralTrusses"));
     internal static MovableStructureModel.Plan Complete(MovableStructureModel.Plan plan, int lod, float delta)
     {
-        if ((uint)lod >= (uint)(Numeric_Types_Lift02_Lift02CentralTrusses_cs.Values.I32[0]))
-            throw new ArgumentOutOfRangeException(nameof(lod));
         var positions = plan.Positions.Take(plan.SourcePositions.Length).ToArray();
         var frames = plan.FrameTransforms.ToDictionary(p => p.Key, p => p.Value);
         int assemblies = Data.F32.Length;

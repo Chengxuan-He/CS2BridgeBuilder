@@ -11,10 +11,7 @@ internal static class PedestrianDraw02ColumnWideningData
         var data = lod switch
         {
             0 => (Weights: Near, IndexCount: Numeric_Types_PedestrianDraw02_PedestrianDraw02ColumnWideningData_g_cs.Values.I32[0]),
-            1 => (Weights: Middle, IndexCount: Numeric_Types_PedestrianDraw02_PedestrianDraw02ColumnWideningData_g_cs.Values.I32[1]),
-            _ => throw new ArgumentOutOfRangeException(nameof(lod))};
-        if (!float.IsFinite(delta) || source.Length != data.Weights.Length || indices.Length != data.IndexCount)
-            throw new InvalidOperationException("PedestrianDraw02 column requires its recorded detailed mesh layout.");
+            1 => (Weights: Middle, IndexCount: Numeric_Types_PedestrianDraw02_PedestrianDraw02ColumnWideningData_g_cs.Values.I32[1])};
         var positions = (Vector3[])source.Clone();
         AffineGeometry.Execute(RangePrograms.Data, 0, new[] { positions }, new[] { data.Weights }, new float[] { delta }, Numeric_Types_PedestrianDraw02_PedestrianDraw02ColumnWideningData_g_cs.Values.I32[2], checked((positions.Length) - (Numeric_Types_PedestrianDraw02_PedestrianDraw02ColumnWideningData_g_cs.Values.I32[2])));
         return new MovableStructureModel.Plan(source, positions, new[] { indices }, new[] { new bool[indices.Length / Numeric_Types_PedestrianDraw02_PedestrianDraw02ColumnWideningData_g_cs.Values.I32[3]] });

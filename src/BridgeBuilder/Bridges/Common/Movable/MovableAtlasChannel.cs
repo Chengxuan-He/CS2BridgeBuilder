@@ -21,7 +21,6 @@ internal sealed class MovableAtlasChannel : IDisposable
         result=null!;error=null;var candidate=new MovableAtlasChannel{Channel=channel};
         try
         {
-            if(program==null||source==null){error="Atlas channel requires a compute program and source target.";return false;}
             candidate.Texture=new Texture2D(source.width,source.height,TextureFormat.BC7,true,channel!=0);
             candidate.Texture.wrapMode=tiled?TextureWrapMode.Repeat:TextureWrapMode.Clamp;
             candidate.Texture.anisoLevel=8;

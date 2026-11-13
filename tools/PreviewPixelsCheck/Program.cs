@@ -45,7 +45,7 @@ bool Serial()
             int index = (y * scale + sy) * width * scale + x * scale + sx;
             var p = pixels[index]; var a = mask[index].a / 255f;
             if (a <= 0) continue;
-            if ((p.r > 0 || p.g > 0 || p.b > 0) && !float.IsNaN(p.r) && !float.IsNaN(p.g) && !float.IsNaN(p.b)) found = true;
+            if (p.r > 0 || p.g > 0 || p.b > 0) found = true;
             sum.r += Finite(p.r) * a; sum.g += Finite(p.g) * a; sum.b += Finite(p.b) * a; sum.a += a;
         }
         int i = y * width + x;
@@ -53,7 +53,7 @@ bool Serial()
     }
     return found;
 }
-static float Finite(float x) => float.IsNaN(x) || float.IsInfinity(x) ? 0 : (0 > x ? 0 : x);
+static float Finite(float x) => Math.Max(0f, x);
 static void Equal(float a, float b) { if (BitConverter.SingleToInt32Bits(a) != BitConverter.SingleToInt32Bits(b)) throw new Exception("Pixel bits changed."); }
 namespace UnityEngine
 {

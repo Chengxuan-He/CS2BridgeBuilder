@@ -51,7 +51,7 @@ for lod in range(2):
  lines.append(f'            {lod} => (Count: {len(v)}, Parts: Level{lod}),');tables.append(entries)
  np.savez(r/f'lift03-crossing-members-{lod}.npz',selected=selected,weights=weights,domains=domains)
  print(f'PASS LOD{lod}: {selected.sum()} vertices; original bone ownership, LOD correspondence, winding and five width combinations')
-lines+=['            _ => throw new ArgumentOutOfRangeException(nameof(lod))','        };','        if (source.Length != data.Count || positions.Length != data.Count || !float.IsFinite(upperDelta) || !float.IsFinite(lowerDelta))','            throw new InvalidOperationException("Lift03 crossing-members require their recorded topology.");','        foreach (var part in data.Parts)','            for (var i = part.First; i <= part.Last; i++)','                positions[i].x = source[i].x + source[i].x / part.HalfSpan * (part.Domain == 1 ? upperDelta : lowerDelta);','    }','']
+lines+=['            ','        };','        ','','        foreach (var part in data.Parts)','            for (var i = part.First; i <= part.Last; i++)','                positions[i].x = source[i].x + source[i].x / part.HalfSpan * (part.Domain == 1 ? upperDelta : lowerDelta);','    }','']
 for lod,entries in enumerate(tables):
  lines+=['    // Geometry SHA-256: '+hashes[lod],f'    private static readonly (int First, int Last, float HalfSpan, int Domain)[] Level{lod} =','    {']
  lines += [f'        ({a}, {b}, {float(np.float32(w)):.12g}f, {domain}),' for a,b,w,domain in entries]

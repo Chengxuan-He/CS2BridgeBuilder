@@ -15,10 +15,7 @@ internal static class Lift04SupportGeometry
             (false, 2) => (Count: Numeric_Types_Lift04_Lift04SupportGeometry_g_cs.Values.I32[4], IndexCount: Numeric_Types_Lift04_Lift04SupportGeometry_g_cs.Values.I32[5], Parts: Parts02),
             (true, 0) => (Count: Numeric_Types_Lift04_Lift04SupportGeometry_g_cs.Values.I32[6], IndexCount: Numeric_Types_Lift04_Lift04SupportGeometry_g_cs.Values.I32[7], Parts: Parts10),
             (true, 1) => (Count: Numeric_Types_Lift04_Lift04SupportGeometry_g_cs.Values.I32[8], IndexCount: Numeric_Types_Lift04_Lift04SupportGeometry_g_cs.Values.I32[9], Parts: Parts11),
-            (true, 2) => (Count: Numeric_Types_Lift04_Lift04SupportGeometry_g_cs.Values.I32[10], IndexCount: Numeric_Types_Lift04_Lift04SupportGeometry_g_cs.Values.I32[11], Parts: Parts12),
-            _ => throw new ArgumentOutOfRangeException(nameof(lod))};
-        if (source.Length != data.Count || indices.Length != data.IndexCount || !float.IsFinite(delta))
-            throw new InvalidOperationException("Lift04 support requires its recorded topology.");
+            (true, 2) => (Count: Numeric_Types_Lift04_Lift04SupportGeometry_g_cs.Values.I32[10], IndexCount: Numeric_Types_Lift04_Lift04SupportGeometry_g_cs.Values.I32[11], Parts: Parts12)};
         var positions = (Vector3[])source.Clone();
         foreach (var part in data.Parts)
             if (footing)

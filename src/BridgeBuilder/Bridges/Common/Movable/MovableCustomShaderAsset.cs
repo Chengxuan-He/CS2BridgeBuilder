@@ -70,8 +70,6 @@ internal static class MovableCustomShaderAsset
             string identity = programIdentity + (renderQueue.HasValue ? ":queue=" + renderQueue.Value : ":native");
             if (dependencies.TryProgram(identity, out var previous, out var reused))
             {
-                if (!ReferenceEquals(previous.database, preview?.NativeAssets ?? AssetDatabase.user))
-                { error = "Generated material program belongs to another asset transaction."; return false; }
                 template = reused; return true;
             }
             if (!BridgeCustomShaderRegistry.TryRegisterConfiguredPackage(AssetDatabase.global.resources.materialLibrary,
@@ -80,8 +78,6 @@ internal static class MovableCustomShaderAsset
             int[] queues = Array.Empty<int>();
             if (dependencies.TryProgram(programIdentity, out var existing, out _))
             {
-                if (!ReferenceEquals(existing.database, database))
-                { error = "Generated program payload belongs to another asset transaction."; return false; }
                 using (var input = existing.GetReadStream())
                 using (var copy = new MemoryStream())
                 { input.CopyTo(copy); originalEnvelope = copy.ToArray(); }

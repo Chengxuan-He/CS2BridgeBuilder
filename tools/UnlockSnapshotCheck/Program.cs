@@ -153,4 +153,38 @@ Check(!BridgeUnlockSnapshot.CaptureRequirements(Array.Empty<PrefabBase>(),
     false, prefabs, manager, out _), "unavailable recorded unlock requirement fails capture");
 Check(recordedRule.Children.Length == 3 && ignoredRule.Children.Length == 2,
     "separate reconstructed bridges retain independent rule arrays");
+
+// GO retains the selected network's ordinary native gate (ignoreDependencies=false).
+// At the old PrefabUpdate callback its initialized entity still carried Created; taking a
+// portable snapshot incorrectly returned null. Availability must use the native buffer.
+var carried = new NetGeometryPrefab { name = "CarriedNativeGate" };
+carried.AddComponent<Unlockable>();
+var carriedEntity = Add(910, carried, true, Edge(eExplicit), Edge(eImplicit, 2), Edge(eAlternate, 2));
+manager.All[carriedEntity].Created = true;
+Check(!BridgeUnlockSnapshot.Capture(carried, prefabs, manager, out _),
+    "persistence still refuses a newly created source snapshot");
+for (var bits = 0; bits < 8; bits++)
+{
+    manager.All[eExplicit].Locked = (bits & 1) != 0;
+    manager.All[eImplicit].Locked = (bits & 2) != 0;
+    manager.All[eAlternate].Locked = (bits & 4) != 0;
+    var expected = (bits & 1) == 0 && ((bits & 2) == 0 || (bits & 4) == 0);
+    Check(BridgeNativeUnlock.Evaluate(carried, prefabs, manager) == expected,
+        "initialized carried gate follows native AND/OR state despite Created marker " + bits);
+}
+manager.All[carriedEntity].Requirements = new[] { Edge(carriedEntity) };
+Check(BridgeNativeUnlock.Evaluate(carried, prefabs, manager) == false,
+    "native locked self requirement is locked, not unavailable or forcibly unlocked");
+manager.All[carriedEntity].Requirements = new[] { Edge(new Entity(6)) };
+Check(BridgeNativeUnlock.Evaluate(carried, prefabs, manager) == false,
+    "native cyclic dependency remains locked without recursively snapshotting the cycle");
+manager.All[carriedEntity].Requirements = new[] { Edge(new Entity(99999)) };
+Check(BridgeNativeUnlock.Evaluate(carried, prefabs, manager) == null,
+    "missing native requirement entity remains a readiness failure");
+manager.All[carriedEntity].Requirements = null;
+Check(BridgeNativeUnlock.Evaluate(carried, prefabs, manager) == null,
+    "absent initialized native buffer remains a readiness failure");
+manager.All[carriedEntity].Requirements = Array.Empty<UnlockRequirement>();
+Check(BridgeNativeUnlock.Evaluate(carried, prefabs, manager) == true,
+    "initialized empty native requirement buffer matches native unlocked result");
 Console.WriteLine($"{count} snapshot/recovery checks passed using fake native buffers; game startup acceptance still required.");

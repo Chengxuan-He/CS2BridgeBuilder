@@ -12,10 +12,7 @@ internal static class Draw01FootingWideningData
         {
             0 => Near,
             1 => Middle,
-            2 => Far,
-            _ => throw new ArgumentOutOfRangeException(nameof(lod))};
-        if (source.Length != weights.Length || indices.Length % Numeric_Types_Draw01_Draw01FootingWideningData_g_cs.Values.I32[0] != Numeric_Types_Draw01_Draw01FootingWideningData_g_cs.Values.I32[1])
-            throw new InvalidOperationException("Draw01 footing source does not match recorded geometry.");
+            2 => Far};
         var positions = (Vector3[])source.Clone();
         AffineGeometry.Execute(RangePrograms.Data, 0, new[] { positions }, new[] { weights }, new float[] { delta }, Numeric_Types_Draw01_Draw01FootingWideningData_g_cs.Values.I32[2], checked((positions.Length) - (Numeric_Types_Draw01_Draw01FootingWideningData_g_cs.Values.I32[2])));
         return new MovableStructureModel.Plan(source, positions, new[] { indices }, new[] { new bool[indices.Length / Numeric_Types_Draw01_Draw01FootingWideningData_g_cs.Values.I32[3]] });

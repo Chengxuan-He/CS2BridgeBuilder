@@ -25,11 +25,9 @@ internal sealed class MovableRoadObjectSelection
     // Returned placements are still in the closed-road frame; MovableRoadObjects.Bind moves
     // them to the mechanism frame and assigns the actual parent connection.
     internal bool TryResolve(MovableRoadObjectPlacement.Candidate candidate, TrafficSignNeeds needs,
-        float ownerElevation, ref Random random, out ObjectSubObjectInfo? placement)
+        float ownerElevation, ref Random random, out ObjectSubObjectInfo? placement, bool preview = false)
     {
         placement = null;
-        if (MovableSectionObjects.IsNetworkSignal(candidate.Prefab))
-            throw new InvalidOperationException("Network signal rules must be resolved by native network ownership, not baked as mechanism children: " + candidate.Prefab.name);
         if (!_prefabs.TryGetEntity(candidate.Prefab, out var source))
             throw new InvalidOperationException($"Road object '{candidate.Prefab.name}' has no native selection data.");
         if (!TrySelect(source, needs, ref random, 0, candidate.Probability, out var selected)) return false;

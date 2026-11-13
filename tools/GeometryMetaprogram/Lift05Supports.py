@@ -67,9 +67,9 @@ lines = ['// Native LiftBridge05 side supports, game 1.6.2f1.',
          '    {', '        var data = (footing, lod) switch', '        {']
 for part, lod, count, indices, digest, ranges, minimum in tables:
     lines.append(f'            ({str(bool(part)).lower()}, {lod}) => (Count: {count}, Indices: {indices}, Parts: Parts{part}{lod}),')
-lines += ['            _ => throw new ArgumentOutOfRangeException(nameof(lod))', '        };',
-          '        if (!float.IsFinite(delta) || source.Length != data.Count || indices.Length != data.Indices)',
-          '            throw new InvalidOperationException("Lift05 support requires its measured layout.");',
+lines += ['            ', '        };',
+          '        ',
+          '',
           '        var positions = (Vector3[])source.Clone();',
           '        foreach (var part in data.Parts)',
           '            for (var i = part.First; i <= part.Last; i++) positions[i].x += part.Sign * delta;',

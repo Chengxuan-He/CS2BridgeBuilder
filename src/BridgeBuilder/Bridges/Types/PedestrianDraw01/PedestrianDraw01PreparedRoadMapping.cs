@@ -31,8 +31,6 @@ internal static class PedestrianDraw01PreparedRoadMapping
         {
             var at = index * 9;
             var halfWidth = values[at] + halfWidthDelta;
-            if (!float.IsFinite(halfWidth))
-                throw new InvalidOperationException("PedestrianDraw01 walking unit has invalid finite width.");
             var u = new Vector4((halfWidth == 0 ? 0 : values[at + 1] / halfWidth), 0, 0, values[at + 2]);
             var v = new Vector4(0, 0, values[at + 3], values[at + 4]);
             var tangent = Quaternion.Inverse(roadToObject.rotation) * new Vector3(values[at + 5], values[at + 6], values[at + 7]);
@@ -66,8 +64,6 @@ internal static class PedestrianDraw01PreparedRoadMapping
     {
         static Data()
         {
-            if (Values.I32.Length != 2 || Values.I32[0] != 1 || Values.I32[1] != Keys.Length || Values.F32.Length != Keys.Length * 9)
-                throw new InvalidOperationException("Invalid PedestrianDraw01 prepared walking mapping schema.");
         }
         internal static HardcodedNumbers Values => GenerationParameters.Get<HardcodedNumbers>("BridgeBuilder.Bridges.PedestrianDraw01PreparedRoadMapping.Data.Values", () => HardcodedNumbers.Load("Types_PedestrianDraw01_PreparedRoadMapping"));
     }

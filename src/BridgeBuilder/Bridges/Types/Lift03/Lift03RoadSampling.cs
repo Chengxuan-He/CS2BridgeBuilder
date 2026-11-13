@@ -131,8 +131,7 @@ internal sealed class Lift03RoadSampling : IMovableRoadSample
     internal async System.Threading.Tasks.Task<MovableClosedRoad.Result> CompileLodAsync(Deck deck, int lod) => lod == Numeric_Types_Lift03_Lift03RoadSampling_cs.Values.I32[33] ? deck switch
     {
         Deck.Main => MainRoad,
-        Deck.Auxiliary => AuxiliaryRoad,
-        _ => throw new ArgumentOutOfRangeException(nameof(deck))} : await CompileAsync(deck, lod);
+        Deck.Auxiliary => AuxiliaryRoad} : await CompileAsync(deck, lod);
     private System.Threading.Tasks.Task<MovableClosedRoad.Result> CompileAsync(Deck deck, int lod)
     {
         var index = DeckIndex(deck);
@@ -174,8 +173,7 @@ internal sealed class Lift03RoadSampling : IMovableRoadSample
     private static int DeckIndex(Deck deck) => deck switch
     {
         Deck.Main => Numeric_Types_Lift03_Lift03RoadSampling_cs.Values.I32[45],
-        Deck.Auxiliary => Numeric_Types_Lift03_Lift03RoadSampling_cs.Values.I32[46],
-        _ => throw new ArgumentOutOfRangeException(nameof(deck))};
+        Deck.Auxiliary => Numeric_Types_Lift03_Lift03RoadSampling_cs.Values.I32[46]};
     public void Dispose()
     {
         try

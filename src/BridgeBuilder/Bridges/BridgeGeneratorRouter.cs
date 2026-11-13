@@ -10,6 +10,10 @@ internal static class BridgeGeneratorRouter
     private static readonly IReadOnlyDictionary<string, Func<ExportReport, TowerFactory?, BridgeGeneratorBase>>
         Routes = new Dictionary<string, Func<ExportReport, TowerFactory?, BridgeGeneratorBase>>(StringComparer.Ordinal)
     {
+        ["ArtDecoViaduct"] = (report, towers) => new ArtDecoViaductBridgeGenerator(report, towers),
+        ["TrussViaduct"] = (report, towers) => new TrussViaductBridgeGenerator(report, towers),
+        ["ArcPedestrian"] = (report, towers) => new ArcPedestrianBridgeGenerator(report, towers),
+        ["CoveredPedestrian"] = (report, towers) => new CoveredPedestrianBridgeGenerator(report, towers),
         ["WoodenCovered"] = (report, towers) => new WoodenCoveredBridgeGenerator(report, towers),
         ["CoveredWood"] = (report, towers) => new CoveredWoodBridgeGenerator(report, towers),
         ["Suspension"] = (report, towers) => new SuspensionBridgeGenerator(report, towers),

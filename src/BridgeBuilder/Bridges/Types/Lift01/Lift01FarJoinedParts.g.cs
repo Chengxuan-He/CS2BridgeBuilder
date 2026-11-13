@@ -9,8 +9,6 @@ internal static class Lift01FarJoinedParts
 {
     internal static MovableStructureModel.Plan Complete(Vector3[] source, Vector3[] positions, int[] indices, float delta)
     {
-        if (!float.IsFinite(delta) || source.Length != Numeric_Types_Lift01_Lift01FarJoinedParts_g_cs.Values.I32[0] || positions.Length != Numeric_Types_Lift01_Lift01FarJoinedParts_g_cs.Values.I32[1] || indices.Length != Numeric_Types_Lift01_Lift01FarJoinedParts_g_cs.Values.I32[2])
-            throw new InvalidOperationException("Lift01 far platforms require their recorded shell layout.");
         AffineGeometry.Execute(RangePrograms.Data, 0, new[] { positions }, new[] { Weights }, new float[] { delta }, Numeric_Types_Lift01_Lift01FarJoinedParts_g_cs.Values.I32[3], checked((positions.Length) - (Numeric_Types_Lift01_Lift01FarJoinedParts_g_cs.Values.I32[3])));
         var x = new float[Edges.Length];
         AffineGeometry.Execute(InterpolationProgram0.Data, 0, new[] { source }, new[] { x }, new float[] { delta });

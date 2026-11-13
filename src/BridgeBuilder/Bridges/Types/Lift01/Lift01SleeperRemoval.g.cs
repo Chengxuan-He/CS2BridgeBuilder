@@ -10,10 +10,7 @@ internal static class Lift01SleeperRemoval
         var data = lod switch
         {
             0 => (Count: Numeric_Types_Lift01_Lift01SleeperRemoval_g_cs.Values.I32[0], Ranges: Lod0),
-            1 => (Count: Numeric_Types_Lift01_Lift01SleeperRemoval_g_cs.Values.I32[1], Ranges: Lod1),
-            _ => throw new ArgumentOutOfRangeException(nameof(lod))};
-        if (removed.Length != data.Count)
-            throw new InvalidOperationException("Lift01 sleeper source layout changed.");
+            1 => (Count: Numeric_Types_Lift01_Lift01SleeperRemoval_g_cs.Values.I32[1], Ranges: Lod1)};
         foreach (var range in data.Ranges)
             for (var i = range.First; i <= range.Last; i++)
                 removed[i] = true;

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using Colossal.Mathematics;
 
@@ -18,22 +18,14 @@ internal sealed class BridgePreviewLaneMesh : IDisposable
     internal bool Build(BridgePreviewLanes.Lane lane, bool leftHandTraffic, Matrix4x4 deckTransform,
         BridgePreviewRenderResources resources, List<BridgePreviewDrawList.Draw> draws)
     {
-        // A missing geometry prefab is an invalid draw request, not a logical
-        // lane to skip. Logical lanes are classified before constructing Lane.
-        if (lane.Prefab == null) return false;
         var world = World.DefaultGameObjectInjectionWorld;
         if (world == null || !world.IsCreated) return false;
         var prefabs = world.GetExistingSystemManaged<PrefabSystem>();
         if (prefabs == null) return false;
         foreach (var part in lane.Prefab.m_Meshes ?? Array.Empty<NetLaneMeshInfo>())
         {
-            if (part?.m_Mesh == null)
-                return false;
-            // This is an ordinary safe straight edge, not an editor marker,
-            // level crossing, track switch or intersection.
-            if (part.m_RequireEditor || part.m_RequireLevelCrossing ||
-                part.m_RequireTrackCrossing || (part.m_RequireLeftHandTraffic && !leftHandTraffic) ||
-                (part.m_RequireRightHandTraffic && leftHandTraffic)) continue;
+            // Edge and node lanes use their actual native safe/crossing/track/traffic flags.
+            if ((BridgeBuilder.Bridges.MovableLaneVisuals.Requirements(part) & lane.RejectedSubMeshes) != 0) continue;
             var render = part.m_Mesh;
             if (!prefabs.TryGetEntity(render, out var entity) || !world.EntityManager.HasComponent<MeshData>(entity))
             {
@@ -88,18 +80,9 @@ internal sealed class BridgePreviewLaneMesh : IDisposable
 
                 var materials = resources.Materials(render, lane: true);
                 var meshes = resources.Meshes(render);
-                if (meshes.Length == 0 || materials.Length == 0)
-                    return false;
                 var materialIndex = 0;
                 foreach (var source in meshes)
                 {
-                    if (source == null)
-                        return false;
-                    if (materialIndex + source.subMeshCount > materials.Length)
-                        return false;
-                    for (var sub = 0; sub < source.subMeshCount; sub++)
-                        if (materials[materialIndex + sub] == null)
-                            return false;
                     var mesh = UnityEngine.Object.Instantiate(source);
                     mesh.name = "tmp_native_lane_" + render.name;
                     mesh.hideFlags = HideFlags.HideAndDontSave;
@@ -116,7 +99,8 @@ internal sealed class BridgePreviewLaneMesh : IDisposable
                     }
                     var matrix = deckTransform * (Matrix4x4)native;
                     for (var sub = 0; sub < mesh.subMeshCount; sub++)
-                        draws.Add(new BridgePreviewDrawList.Draw(mesh, materials[materialIndex++], sub, matrix, properties));
+                        draws.Add(new BridgePreviewDrawList.Draw(mesh, materials[materialIndex++], sub, matrix, properties,
+                            source: "native-lane " + lane.Prefab.name + " render=" + render.name + " rejected=" + lane.RejectedSubMeshes));
                 }
             }
         }

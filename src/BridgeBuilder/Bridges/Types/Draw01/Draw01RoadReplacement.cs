@@ -12,11 +12,8 @@ internal static class Draw01RoadReplacement
         {
             0 => Numeric_Types_Draw01_Draw01RoadReplacement_cs.Values.I32[0],
             1 => Numeric_Types_Draw01_Draw01RoadReplacement_cs.Values.I32[1],
-            2 => Numeric_Types_Draw01_Draw01RoadReplacement_cs.Values.I32[2],
-            _ => throw new ArgumentOutOfRangeException(nameof(lod))};
+            2 => Numeric_Types_Draw01_Draw01RoadReplacement_cs.Values.I32[2]};
         var triangleCount = Draw01MovingRoadData.SourceTriangleCount(lod);
-        if (sourcePositions.Length != vertexCount || sourceIndices.Length != Numeric_Types_Draw01_Draw01RoadReplacement_cs.Values.I32[3] || sourceIndices[Numeric_Types_Draw01_Draw01RoadReplacement_cs.Values.I32[4]].Length != triangleCount * Numeric_Types_Draw01_Draw01RoadReplacement_cs.Values.I32[5])
-            throw new ArgumentException("Draw01 road replacement requires the measured main mesh 0 topology.");
         var widenedPositions = (Vector3[])sourcePositions.Clone();
         Draw01MovingWideningData.Apply(lod, halfWidthDelta, widenedPositions);
         Draw01FixedWideningData.Apply(lod, Numeric_Types_Draw01_Draw01RoadReplacement_cs.Values.I32[6], halfWidthDelta, widenedPositions);

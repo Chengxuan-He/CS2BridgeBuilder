@@ -22,15 +22,12 @@ internal static class MovableBoneDecalModel
         {
             int count = 0;
             foreach (var part in parts) count = checked(count + part.Triangles.Length * 3);
-            if (count == 0) { error = "Bone decal model has no projection volume."; return false; }
             var positions = new float[count * 3]; var tangent = new float[count * 4];
             var axes = new[] { new float[count * 4], new float[count * 4], new float[count * 4] };
             var areas = new float[count * 4]; var bones = new uint[count]; var indices = new int[count];
             Bounds bounds = default; int vertex = 0;
             foreach (var part in parts)
             {
-                if (part.Bone < 0 || part.Bone >= boneCount)
-                { error = "Bone decal references a missing mechanism bone."; return false; }
                 var x = part.Rotation * (Vector3.right * part.Size.x);
                 var y = part.Rotation * (Vector3.up * part.Size.y);
                 var z = part.Rotation * (Vector3.forward * part.Size.z);

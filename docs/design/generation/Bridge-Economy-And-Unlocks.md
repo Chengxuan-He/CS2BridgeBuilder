@@ -28,9 +28,18 @@ requirements, and `BridgeNativeUnlock` persists the nested AND/OR expression usi
 networks receive those conditions. Do not flatten them into a current unlocked flag or require the
 Bridge Builder assembly to evaluate them after a cold start.
 
+For non-Network source structures without a native network unlock graph, preserve the player's
+selected network's applicable native gate. Do not invent requirements for the virtual prototype.
+
 Create-and-build and Manage/Build check readiness before activating the construction tool in game
 mode. `BridgeUnlockPolicy.TryPrepareBuild` evaluates the persisted native rules and synchronizes
-the generated networks' locked state. Missing or unavailable requirements are a readiness failure;
+the generated networks' locked state. Explicit owned groups use their persisted expression; carried
+native gates with implicit dependencies use the initialized `UnlockRequirement` buffer and native
+current `Locked` bits. Do not use portable snapshot capture as a current-state query: its source
+readiness and cycle rules are intentionally stricter. Native self/cyclic locked requirements remain
+locked, and are not evidence of unavailable data. Publication completion follows the scheduled
+native unlock pass rather than preceding it at the end of prefab initialization.
+Missing or unavailable requirements are a readiness failure;
 they must not silently unlock the bridge. Editor placement is outside this game-mode guard.
 
 The optional manager setting to remove development restrictions operates while the mod is loaded;

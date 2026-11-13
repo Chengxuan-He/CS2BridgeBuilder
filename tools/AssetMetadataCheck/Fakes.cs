@@ -14,6 +14,12 @@ namespace BridgeBuilder
 }
 namespace BridgeBuilder.Runtime
 {
+    internal static class BridgeDeferredRemoval
+    {
+        internal static HashSet<string> Verified = new();
+        internal static bool Pending(string owner) => false;
+        internal static bool Excluded(string owner) => false;
+    }
     internal static class BridgeStartupRecovery { internal static HashSet<string> Retired = new(); }
 }
 namespace Game.Prefabs

@@ -51,7 +51,6 @@ internal static class MovablePackedFrame
     private static void Convert(byte[] source,Array target,int count,VertexAttributeFormat format,int dimension,int components,bool tangent)
     {
         int bytes=format==VertexAttributeFormat.Float32?4:2;
-        if(source.Length!=checked(count*dimension*bytes))throw new InvalidDataException("Packed frame length does not match its declared format.");
         var input=GCHandle.Alloc(source,GCHandleType.Pinned);var output=default(GCHandle);
         try
         {

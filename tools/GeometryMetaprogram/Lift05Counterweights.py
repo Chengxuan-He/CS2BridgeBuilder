@@ -82,9 +82,9 @@ lines=['// Native LiftBridge05 counterweights, game 1.6.2f1.',
        '    {', '        var data = lod switch', '        {']
 for lod,(count,digest,ranges) in enumerate(tables):
     lines.append(f'            {lod} => (Count: {count}, Parts: Parts{lod}),')
-lines+=['            _ => throw new ArgumentOutOfRangeException(nameof(lod))','        };',
-        '        if (source.Length != data.Count || positions.Length != data.Count || !float.IsFinite(delta))',
-        '            throw new InvalidOperationException("Lift05 counterweights require their native layout.");',
+lines+=['            ','        };',
+        '        ',
+        '',
         '        foreach (var part in data.Parts)',
         '            for (var i = part.First; i <= part.Last; i++)',
         '                positions[i].x = source[i].x + source[i].x / 6.0191650390625f * delta;',

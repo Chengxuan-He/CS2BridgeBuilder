@@ -1,12 +1,12 @@
 {
-  "editor": "C:/Program Files/Unity 2022.3.62f2/Editor/Unity.exe",
-  "bundleSha256": "C68D88F924A13BDA064445D29628C1101B129C5E75E2DD73842D64BF599D3105",
-  "target": "StandaloneWindows64",
-  "precision": "double seam construction; float attributes",
   "sources": {
-    "RoadGpuBuild.Editor.cs": "3F655D4C6C2848A8A81C97E6A3F6484D9015174C9AF1ECB84D5145F35ED914E3",
-    "RoadEncode.compute": "06D31A966EC42109C29E6979A7C3BC0D2ED7F42ADD889499343359E88DDAF234",
-    "RoadClip.compute": "5889D72E3E16F475E487FF1F76C70C6FE8A080C51509B07647A6B5F1BB9D98DA"
+    "RoadClip.compute": "9899DAB63D3DC54162EC030EDE0F1D39CC99924C095C7826B9F2F315539548EB",
+    "RoadEncode.compute": "39BDB0C5322A576BF10F2D868BC7BD60A163EC5084F53E724D1C3CF49C50E21D",
+    "RoadGpuBuild.Editor.cs": "3F655D4C6C2848A8A81C97E6A3F6484D9015174C9AF1ECB84D5145F35ED914E3"
   },
+  "precision": "double seam construction; float attributes",
+  "bundleSha256": "A06AFBA5C767D1704A8F000C80E3410C51B05BA6070B63DE262E281C1770F117",
+  "editor": "C:\\Program Files\\Unity 2022.3.62f2\\Editor\\Unity.exe",
+  "target": "StandaloneWindows64",
   "fxc": "enable_d3d11_debug_symbols"
 }

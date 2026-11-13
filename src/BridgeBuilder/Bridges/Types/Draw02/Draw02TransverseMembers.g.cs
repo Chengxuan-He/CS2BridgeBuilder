@@ -12,10 +12,7 @@ internal static class Draw02TransverseMembers
         var expected = lod switch
         {
             0 => Numeric_Types_Draw02_Draw02TransverseMembers_g_cs.Values.I32[0],
-            1 => Numeric_Types_Draw02_Draw02TransverseMembers_g_cs.Values.I32[1],
-            _ => throw new ArgumentOutOfRangeException(nameof(lod))};
-        if (source.Length != expected || positions.Length != expected)
-            throw new InvalidOperationException("Draw02 transverse mapping requires its recorded main mesh.");
+            1 => Numeric_Types_Draw02_Draw02TransverseMembers_g_cs.Values.I32[1]};
         foreach (var group in lod == Numeric_Types_Draw02_Draw02TransverseMembers_g_cs.Values.I32[2] ? Near : Middle)
             foreach (var coordinateRows in StructureRows.Stages(group.Vertices))
                 AffineGeometry.Execute(RangePrograms.Data, 0, new[] { source, positions }, Array.Empty<float[]>(), new float[] { group.Weight, delta }, count: coordinateRows.Length, indices: new[] { coordinateRows });

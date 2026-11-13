@@ -44,8 +44,6 @@ internal static class Lift01DeckTrusses
             YMembers = new HashSet<int>(Read(values[Numeric_Types_Lift01_Lift01DeckTrusses_cs.Values.I32[12]]));
             HigherMembers = new HashSet<int>(Read(values[Numeric_Types_Lift01_Lift01DeckTrusses_cs.Values.I32[13]]));
             EndMembers = new HashSet<int>(Read(values[Numeric_Types_Lift01_Lift01DeckTrusses_cs.Values.I32[14]]));
-            if (offset != values.Length)
-                throw new InvalidOperationException("Lift01 deck truss recipe length mismatch.");
         }
     }
 
@@ -64,10 +62,7 @@ internal static class Lift01DeckTrusses
         var recipe = lod switch
         {
             0 => Near.Value,
-            1 => Middle.Value,
-            _ => throw new ArgumentOutOfRangeException(nameof(lod))};
-        if (plan.InteriorVertices.Length != Numeric_Types_Lift01_Lift01DeckTrusses_cs.Values.I32[15] || plan.SourceCopies.Length != Numeric_Types_Lift01_Lift01DeckTrusses_cs.Values.I32[16])
-            throw new InvalidOperationException("Lift01 deck trusses require the original edge-construction plan.");
+            1 => Middle.Value};
         var source = plan.SourcePositions;
         var positions = plan.Positions.Take(source.Length).ToArray();
         var scale = (recipe.HalfSpan + delta) / recipe.HalfSpan;

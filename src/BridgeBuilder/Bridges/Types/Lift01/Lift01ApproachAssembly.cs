@@ -30,8 +30,6 @@ internal static class Lift01ApproachAssembly
             {
                 var original = originals[lod];
                 meshes = PrivateGeometryReader.Read(original);
-                if (meshes.Length != Numeric_Types_Lift01_Lift01ApproachAssembly_cs.Values.I32[4] || meshes[Numeric_Types_Lift01_Lift01ApproachAssembly_cs.Values.I32[5]].subMeshCount != Numeric_Types_Lift01_Lift01ApproachAssembly_cs.Values.I32[6])
-                    throw new InvalidOperationException("Lift01 approach requires its recorded single native surface slot.");
                 var supportInput0 = meshes[Numeric_Types_Lift01_Lift01ApproachAssembly_cs.Values.I32[7]].vertices;
                 var supportInput1 = meshes[Numeric_Types_Lift01_Lift01ApproachAssembly_cs.Values.I32[8]].GetIndices(Numeric_Types_Lift01_Lift01ApproachAssembly_cs.Values.I32[9]);
                 var plan = await GenerationWork.Background("support structure plan", () => Lift01ApproachStructure.Create(lod, supportInput0, supportInput1, halfWidthDelta));

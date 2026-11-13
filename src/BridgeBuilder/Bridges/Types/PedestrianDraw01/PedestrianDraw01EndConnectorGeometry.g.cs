@@ -11,10 +11,7 @@ internal static class PedestrianDraw01EndConnectorGeometry
         {
             0 => Numeric_Types_PedestrianDraw01_PedestrianDraw01EndConnectorGeometry_g_cs.Values.I32[0],
             1 => Numeric_Types_PedestrianDraw01_PedestrianDraw01EndConnectorGeometry_g_cs.Values.I32[1],
-            2 => Numeric_Types_PedestrianDraw01_PedestrianDraw01EndConnectorGeometry_g_cs.Values.I32[2],
-            _ => throw new ArgumentOutOfRangeException(nameof(lod))};
-        if (source.Length != data || positions.Length != data || !float.IsFinite(delta))
-            throw new InvalidOperationException("PedestrianDraw01 end connectors require their recorded layout and finite delta.");
+            2 => Numeric_Types_PedestrianDraw01_PedestrianDraw01EndConnectorGeometry_g_cs.Values.I32[2]};
         AffineGeometry.Execute(BatchProgram0.Data, lod, new[] { source, positions }, Array.Empty<float[]>(), new float[] { delta });
     }
 

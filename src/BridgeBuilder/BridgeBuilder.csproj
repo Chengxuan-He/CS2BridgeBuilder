@@ -6,10 +6,10 @@
     <AssemblyName>BridgeBuilder</AssemblyName>
     <RootNamespace>BridgeBuilder</RootNamespace>
     <!-- Public release version is specified by the user; CLR versions remain numeric. -->
-    <Version>26.11.12a</Version>
-    <PackageVersion>26.11.12-a</PackageVersion>
-    <AssemblyVersion>26.11.12.1</AssemblyVersion>
-    <FileVersion>26.11.12.1</FileVersion>
+    <Version>26.11.14</Version>
+    <PackageVersion>26.11.14</PackageVersion>
+    <AssemblyVersion>26.11.14.0</AssemblyVersion>
+    <FileVersion>26.11.14.0</FileVersion>
     <GenerateAssemblyInfo>true</GenerateAssemblyInfo>
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
     <RestoreIgnoreFailedSources>true</RestoreIgnoreFailedSources>
@@ -25,7 +25,6 @@
   <ItemGroup>
     <EmbeddedResource Include="..\..\assets\bridgebake" LogicalName="BridgeBuilder.GpuBake" />
     <EmbeddedResource Include="..\..\assets\roadgpu" LogicalName="BridgeBuilder.RoadGpu" />
-    <EmbeddedResource Include="..\..\tools\MaterialShaders\*.hlsl" LogicalName="BridgeBuilder.MaterialProgram.%(Filename)%(Extension)" />
     <EmbeddedResource Include="..\..\assets\MaterialPrograms\*.bbs1" LogicalName="BridgeBuilder.MaterialProgram.%(Filename)%(Extension)" />
     <EmbeddedResource Include="..\..\assets\BridgeBuilderPack.svg" LogicalName="BridgeBuilderPack.svg" />
     <EmbeddedResource Include="..\..\assets\HardcodedNumbers\**\*.bin" LogicalName="BridgeBuilder.Numbers.%(Filename)%(Extension)" WithCulture="false" />

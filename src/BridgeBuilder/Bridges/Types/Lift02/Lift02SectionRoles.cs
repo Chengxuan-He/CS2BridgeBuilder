@@ -11,8 +11,6 @@ internal static class Lift02SectionRoles
         for (var i = Numeric_Types_Lift02_Lift02SectionRoles_cs.Values.I32[0]; i < occurrences.Length; i++)
         {
             var item = occurrences[i];
-            if (item?.m_Section == null)
-                throw new InvalidOperationException("Lift02 selected network contains a missing section.");
             // The native exception is the intersection-only median occurrence.
             // Ordinary medians, shoulders and side sections retain the three span branches.
             var intersectionOnly = (item.m_RequireAll ?? Array.Empty<NetPieceRequirements>()).Contains(NetPieceRequirements.Intersection) || (item.m_RequireAny?.Length == Numeric_Types_Lift02_Lift02SectionRoles_cs.Values.I32[1] && item.m_RequireAny[Numeric_Types_Lift02_Lift02SectionRoles_cs.Values.I32[2]] == NetPieceRequirements.Intersection);

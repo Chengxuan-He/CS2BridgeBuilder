@@ -149,13 +149,6 @@ public partial class BridgeGenerationSystem
             text.Append($" skeleton={i},mesh={mesh.m_SubMesh},boneOffset={sk.m_BoneOffset},allocation={sk.m_BufferAllocation},updated={sk.m_CurrentUpdated};");
             if (!EntityManager.HasBuffer<ProceduralBone>(mesh.m_SubMesh)) continue;
             var procedural = EntityManager.GetBuffer<ProceduralBone>(mesh.m_SubMesh, true);
-            if (procedural.Length > 64 || sk.m_BoneOffset < 0 || sk.m_BoneOffset + procedural.Length > bones.Length)
-            { text.Append(" CPUskin=invalidRange;"); continue; }
-            var valid = true;
-            for (var b = 0; b < procedural.Length; b++)
-                valid &= procedural[b].m_ParentIndex < b && procedural[b].m_ParentIndex >= -1 &&
-                    procedural[b].m_BindIndex >= 0 && procedural[b].m_BindIndex < procedural.Length;
-            if (!valid) { text.Append(" CPUskin=invalidProvenance;"); continue; }
             using var matrices = new NativeList<float4x4>(procedural.Length * 2, Allocator.Temp);
             matrices.ResizeUninitialized(procedural.Length * 2);
             Game.Rendering.ProceduralSkeletonSystem.GetSkinMatrices(sk, in procedural, in bones, matrices);

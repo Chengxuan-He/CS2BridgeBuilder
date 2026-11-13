@@ -7,11 +7,7 @@ internal static class Draw03FarNetPillars
 {
     internal static MovableStructureModel.Plan Create(int part, Vector3[] source, int[] indices, float delta)
     {
-        if (part != Numeric_Types_Draw03_Draw03FarNetPillars_g_cs.Values.I32[0] && part != Numeric_Types_Draw03_Draw03FarNetPillars_g_cs.Values.I32[1])
-            throw new ArgumentOutOfRangeException(nameof(part));
         var data = part == Numeric_Types_Draw03_Draw03FarNetPillars_g_cs.Values.I32[2] ? (Count: Numeric_Types_Draw03_Draw03FarNetPillars_g_cs.Values.I32[3], Indices: Numeric_Types_Draw03_Draw03FarNetPillars_g_cs.Values.I32[4], Minimum: Numeric_Types_Draw03_Draw03FarNetPillars_g_cs.Values.F32[0], Weights: Weights1, Edges: Edges1, Fragments: Fragments1) : (Count: Numeric_Types_Draw03_Draw03FarNetPillars_g_cs.Values.I32[5], Indices: Numeric_Types_Draw03_Draw03FarNetPillars_g_cs.Values.I32[6], Minimum: Numeric_Types_Draw03_Draw03FarNetPillars_g_cs.Values.F32[1], Weights: Weights0, Edges: Edges0, Fragments: Fragments0);
-        if (!float.IsFinite(delta) || source.Length != data.Count || indices.Length != data.Indices)
-            throw new InvalidOperationException("Draw03 far ordinary pillars require their measured layout.");
         var positions = (Vector3[])source.Clone();
         AffineGeometry.Execute(RangePrograms.Data, 0, new[] { positions }, new[] { data.Weights }, new float[] { delta }, Numeric_Types_Draw03_Draw03FarNetPillars_g_cs.Values.I32[7], checked((positions.Length) - (Numeric_Types_Draw03_Draw03FarNetPillars_g_cs.Values.I32[7])));
         var x = new float[data.Edges.Length];

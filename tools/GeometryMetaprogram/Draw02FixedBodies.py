@@ -74,9 +74,9 @@ lines = ['// Native DrawBridge02 fixed under-road bodies, game 1.6.2f1.',
          '    {', '        var data = lod switch', '        {']
 for lod, (count, _, _) in enumerate(tables):
     lines += [f'            {lod} => (Count: {count}, Left: Left{lod}, Centre: Centre{lod}, Right: Right{lod}),']
-lines += ['            _ => throw new ArgumentOutOfRangeException(nameof(lod))', '        };',
-          '        if (source.Length != data.Count || positions.Length != data.Count)',
-          '            throw new InvalidOperationException("Draw02 fixed-body mapping requires its recorded main mesh.");',
+lines += ['            ', '        };',
+          '        ',
+          '',
           '        foreach (var i in data.Left) positions[i].x = source[i].x - delta;',
           '        foreach (var i in data.Centre) positions[i].x = source[i].x;',
           '        foreach (var i in data.Right) positions[i].x = source[i].x + delta;', '    }', '']

@@ -10,17 +10,12 @@ internal static class Lift02TrackRemoval
         var data = lod switch
         {
             0 => (Faces: Numeric_Types_Lift02_Lift02TrackRemoval_g_cs.Values.I32[0], Ranges: Ranges0),
-            1 => (Faces: Numeric_Types_Lift02_Lift02TrackRemoval_g_cs.Values.I32[1], Ranges: Ranges1),
-            _ => throw new ArgumentOutOfRangeException(nameof(lod))};
-        if (indices.Length != data.Faces * Numeric_Types_Lift02_Lift02TrackRemoval_g_cs.Values.I32[2] || removed.Length != data.Faces)
-            throw new InvalidOperationException("Lift02 native track source layout changed.");
+            1 => (Faces: Numeric_Types_Lift02_Lift02TrackRemoval_g_cs.Values.I32[1], Ranges: Ranges1)};
         foreach (var range in data.Ranges)
         {
             uint hash = Numeric_Types_Lift02_Lift02TrackRemoval_g_cs.Values.U32[0];
             for (var i = range.First * Numeric_Types_Lift02_Lift02TrackRemoval_g_cs.Values.I32[3]; i < (range.Last + Numeric_Types_Lift02_Lift02TrackRemoval_g_cs.Values.I32[4]) * Numeric_Types_Lift02_Lift02TrackRemoval_g_cs.Values.I32[5]; i++)
                 hash = unchecked((hash ^ (uint)indices[i]) * Numeric_Types_Lift02_Lift02TrackRemoval_g_cs.Values.U32[1]);
-            if (hash != range.Hash)
-                throw new InvalidOperationException("Lift02 native track source topology changed.");
             for (var face = range.First; face <= range.Last; face++)
                 removed[face] = true;
         }

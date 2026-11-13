@@ -14,7 +14,6 @@ internal static class MovableStreetLights
 {
     internal static ObjectPrefab CreateProducer(string owner, ObjectPrefab source, List<PrefabBase> created)
     {
-        CheckSource(owner, source);
         var result = (ObjectPrefab)Clone(owner, source, "Lighting Producer", created);
         // A private placeholder has no registered replacements. Native node/edge aggregation
         // still sees StreetLightData and sets IsLit/AlwaysLit, but emits no stationary object.
@@ -36,7 +35,6 @@ internal static class MovableStreetLights
         foreach (var placement in placements)
         {
             var source = placement.m_Object;
-            CheckSource(owner, source);
             if (!source.TryGet<StreetLightObject>(out var light)) continue;
             firstLight ??= light;
             if (source.Has<ObjectSubObjects>())
@@ -44,9 +42,6 @@ internal static class MovableStreetLights
             if (!source.TryGet<EffectSource>(out var lighting) || lighting.m_Effects == null) continue;
             foreach (var effect in lighting.m_Effects)
             {
-                if (effect?.m_Effect == null)
-                    throw new InvalidOperationException("Moving streetlight has a missing effect: " + source.name);
-                CheckSource(owner, effect.m_Effect);
                 if (effect.m_ParentMesh != 0 || effect.m_AnimationIndex != -1)
                     throw new NotSupportedException("Moving streetlight requires its own effect parent or animation mapping: " + source.name);
                 if (effect.m_Effect.TryGet<EffectColor>(out var color) && color.m_Source != EffectColorSource.Effect)
@@ -108,11 +103,5 @@ internal static class MovableStreetLights
         foreach (var component in result.components) component.prefab = result;
         result.isDirty = true;
         return result;
-    }
-
-    private static void CheckSource(string owner, PrefabBase source)
-    {
-        if (source == null)
-            throw new InvalidOperationException("Moving lighting cannot read a missing source.");
     }
 }

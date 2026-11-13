@@ -15,24 +15,25 @@ function files(path) {
 }
 for (const file of files(resolve(root, 'src/BridgeBuilder'))) {
     const source = readFileSync(file, 'utf8');
-    assert(!/\bm_(?:DefaultConstructionCost|DefaultUpkeepCost|ConstructionCost|ElevationCost|UpkeepCost)\s*(?:[+*/-]?=|\+\+|--)/.test(source),
+    const manager = !file.replaceAll('\\', '/').includes('/Bridges/Types/');
+    assert(!manager || !/\bm_(?:DefaultConstructionCost|DefaultUpkeepCost|ConstructionCost|ElevationCost|UpkeepCost)\s*(?:[+*/-]?=|\+\+|--)/.test(source),
         `Manager must not rewrite native fees: ${file}`);
     assert(!/BridgeNativePrice|BridgeBasePrice|BridgePriceSystem|new BridgeEconomy\b/.test(source), file);
     assert(!/Native (?:Piece|Section|Object) /.test(source), `Pricing-only copies returned: ${file}`);
 }
 const generation = read('src/BridgeBuilder/Systems/BridgeGenerationSystem.Composition.cs');
-assert(generation.includes('BridgeUnlockPolicy.Apply('), 'Independent unlocking must remain');
+assert(read('src/BridgeBuilder/Bridges/Common/BridgeGeneratorBase.cs').includes('BridgeUnlockPolicy.Apply(') && generation.includes('composer.ApplyUnlocks('), 'Independent unlocking must remain');
 assert(generation.includes('node.Target.Remove<BridgeConstructionCost>()'), 'Do not persist a manager-dependent cost component');
 const migration = read('src/BridgeBuilder/Runtime/BridgePortableMigration.cs');
 assert(!migration.includes('m_BaseConstructionCost') && !migration.includes('PlaceableNetData'),
     'Legacy conversion must not require historical or initialized total prices');
 assert(migration.includes('BridgeNativeUnlock.Apply(') && migration.includes('node.Target.Remove<BridgeConstructionCost>()'));
 assert(!/\.m_(?:Sections|Pieces|SubSections)\s*=/.test(migration), 'Migration must retain the existing native fee graph');
-assert(migration.includes('source.asset') && migration.includes('originals') && migration.includes('saved.version != expected.Version'),
+assert(migration.includes('source.asset') && migration.includes('originals') && migration.includes('BridgeFileAccess.ReadText'),
     'Preserve identities and transactional rollback');
 assert(read('src/BridgeBuilder/Bridges/BridgeConstructionCost.cs').includes('public uint m_BaseConstructionCost;'),
     'Old serialized field must remain readable');
 for (const path of ['src/BridgeBuilder/Runtime/BridgeNativePrice.cs', 'src/BridgeBuilder/Bridges/BridgeEconomy.cs',
     'src/BridgeBuilder/Bridges/BridgeBasePrice.cs', 'src/BridgeBuilder/Systems/BridgePriceSystem.cs'])
     assert(!existsSync(resolve(root, path)), `Unused pricing code remains: ${path}`);
-console.log('PASS native fees preserved, no pricing copies/overrides, legacy price independence and identity guards retained.');
+console.log('PASS native fees preserved, no pricing copies/overrides, legacy price independence and external identity verification retained.');

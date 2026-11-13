@@ -74,6 +74,8 @@ namespace Game.Prefabs
 }
 namespace BridgeBuilder.Runtime
 {
+    // These snapshot fixtures contain no player deletion requests.
+    internal static class BridgeDeletionIntent { internal static bool Contains(string root, string owner) => false; }
     internal static class BridgeSessionState { internal static bool Restart; internal static void RequireRestart() { Restart = true; } internal static void Start() { } }
 }
 namespace BridgeBuilder

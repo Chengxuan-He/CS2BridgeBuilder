@@ -11,8 +11,6 @@ internal static class Draw01NetworkAssembly
     internal static void Apply(NetGeometryPrefab target, TowerFactory factory,
         StaticObjectPrefab pillar, StaticObjectPrefab mechanism, Draw01ClosedRoad road)
     {
-        if (!factory.Created.Contains(pillar) || !factory.Created.Contains(mechanism))
-            throw new InvalidOperationException("Draw01 network assembly requires its owned pillar and mechanism objects.");
 
         var sections = Draw01NetworkData.ConvertSections(target.name, target.m_Sections, out var created);
         MovableBarrierRules.Apply(target.name, sections, ref created,

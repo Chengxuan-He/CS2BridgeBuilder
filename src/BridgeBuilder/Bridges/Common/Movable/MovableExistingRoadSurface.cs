@@ -49,13 +49,6 @@ internal static class MovableExistingRoadSurface
             bool preparedUnit = false, bool repeatU = false, bool repeatV = false, Vector4? tangent = null, bool sourceAtlasRepeat = false, bool projectTangent = false)
         {
             this=default;
-            if (preparedUnit && (surface == null || sourceUv || bands != null))
-                {Error="An offline unit requires its final Surface and explicit repeat axes.";return;}
-            if (sourceAtlasRepeat && (!sourceUv || surface == null || preparedUnit || bands != null ||
-                (!repeatU && !repeatV) || !(max.x > min.x && max.y > min.y)))
-                {Error="Original-atlas repetition requires one evidenced region, original Surface and explicit repeat axes.";return;}
-            if (projectTangent && ((!sourceUv && !preparedUnit) || tangent.HasValue))
-                {Error="Projected tangent requires an explicit source or prepared mapping without a constant tangent override.";return;}
             ProjectTangent = projectTangent;
             SourceTangent = null;
             SourceAtlasRepeat = sourceAtlasRepeat;
@@ -81,12 +74,6 @@ internal static class MovableExistingRoadSurface
         private Patch(Patch source,Vector4 x,Vector4 y,Vector4 z,float handedness)
         {
             this=source;if(Error!=null)return;
-            if (!source.SourceUv || source.SourceAtlasRepeat || source.PreparedUnit ||
-                source.Tangent.HasValue || source.ProjectTangent || (handedness!=1f && handedness!=-1f))
-                {Error="Source tangent field requires a finite source mapping, fixed handedness and no other tangent override.";return;}
-            for(int i=0;i<4;i++)
-                if(!float.IsFinite(x[i])||!float.IsFinite(y[i])||!float.IsFinite(z[i]))
-                    {Error="Source tangent field coefficients must be finite.";return;}
             var field=new Matrix4x4();field.SetRow(0,x);field.SetRow(1,y);field.SetRow(2,z);
             field.SetRow(3,new Vector4(0,0,0,handedness));
             this=source;SourceTangent=field;
@@ -97,12 +84,6 @@ internal static class MovableExistingRoadSurface
         private Patch(Patch source,Vector2 min,Vector2 max)
         {
             this=source;if(Error!=null)return;
-            if(!source.PreparedUnit){Error="Finite sampling guards require a completed offline material.";return;}
-            for(int axis=0;axis<2;axis++)
-                if(!float.IsFinite(source.Min[axis])||!float.IsFinite(source.Max[axis])||source.Min[axis]>=source.Max[axis]||
-                    !float.IsFinite(min[axis])||!float.IsFinite(max[axis])||min[axis]<0||max[axis]>1||
-                    min[axis]>=max[axis]||min[axis]>source.Min[axis]||max[axis]<source.Max[axis])
-                    {Error="Offline finite sampling bounds must contain the content window inside the native texture.";return;}
             this=source;FiniteSamplingMin=min;FiniteSamplingMax=max;
         }
 

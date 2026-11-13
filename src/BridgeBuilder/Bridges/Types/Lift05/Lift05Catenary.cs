@@ -8,13 +8,9 @@ internal static class Lift05Catenary
 {
     internal static void Remove(int lod, MovableStructureModel.Plan plan)
     {
-        if ((uint)lod >= Numeric_Types_Lift05_Lift05Catenary_cs.Values.U32[0])
-            throw new ArgumentOutOfRangeException(nameof(lod));
         var data = Data.Values.I32;
         var offset = lod * Numeric_Types_Lift05_Lift05Catenary_cs.Values.I32[0];
         var removed = plan.RemoveTriangles[Numeric_Types_Lift05_Lift05Catenary_cs.Values.I32[1]];
-        if (plan.SourcePositions.Length != data[offset] || removed.Length != data[offset + Numeric_Types_Lift05_Lift05Catenary_cs.Values.I32[2]])
-            throw new InvalidOperationException("Lift05 overhead source layout changed.");
         var first = data[offset + Numeric_Types_Lift05_Lift05Catenary_cs.Values.I32[3]];
         var count = data[offset + Numeric_Types_Lift05_Lift05Catenary_cs.Values.I32[4]];
         Array.Fill(removed, true, first, count);

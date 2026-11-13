@@ -28,7 +28,6 @@ internal sealed partial class MovableNetworkPrefabs
     internal MovableNetworkPrefabs(World target, string owner)
     {
         var source = World.DefaultGameObjectInjectionWorld;
-        if (target == source) throw new InvalidOperationException("Prefab import requires a private network world.");
         _source = source.EntityManager;
         _target = target.EntityManager;
         _prefabs = source.GetExistingSystemManaged<PrefabSystem>();
@@ -47,9 +46,6 @@ internal sealed partial class MovableNetworkPrefabs
         CheckGraph(prefab);
         var components = new List<ComponentBase>();
         prefab.GetComponents(components);
-        if (!components.Exists(component => component is MoveableBridge) ||
-            !components.Exists(component => component is NetObject))
-            throw new InvalidOperationException("A staged mechanism requires active native MoveableBridge and NetObject components.");
         if (prefab.m_Meshes != null)
             foreach (var mesh in prefab.m_Meshes) StageRender((RenderPrefab)mesh.m_Mesh);
         var types = new HashSet<ComponentType>();
@@ -86,7 +82,6 @@ internal sealed partial class MovableNetworkPrefabs
         Visit(prefab);
         void Visit(PrefabBase current)
         {
-            CheckSource(current);
             if (!visited.Add(current)) return;
             var parts = new List<ComponentBase>();
             current.GetComponents(parts);
@@ -103,7 +98,6 @@ internal sealed partial class MovableNetworkPrefabs
         if (_imported.TryGetValue(source, out var existing)) return existing;
         if (!_source.Exists(source) || !_prefabs.TryGetPrefab<PrefabBase>(source, out var prefab) || prefab == null)
             throw new InvalidOperationException("Network prefab import encountered an invalid source prefab entity.");
-        CheckSource(prefab);
         // Cache identity first so cycles preserve one private entity per source without recursion loops.
         var target = _target.CreateEntity();
         _imported.Add(source, target);
@@ -187,12 +181,6 @@ internal sealed partial class MovableNetworkPrefabs
         CopyBuffer<Game.Prefabs.SubLane>(source, target);
         _target.SetComponentEnabled<PrefabData>(target, _source.IsComponentEnabled<PrefabData>(source));
         return target;
-    }
-
-    internal void CheckSource(PrefabBase prefab)
-    {
-        if (prefab == null)
-            throw new InvalidOperationException("Network conversion cannot read a missing source.");
     }
 
     // All copied records have direct Entity/EntityArchetype fields. Numeric/nested geometric

@@ -14,9 +14,6 @@ internal static class MovableMaterialSlots
     // than moving a road part between renderers as structural slot counts change.
     internal static int[][][]? RoadRenderGroups(IReadOnlyList<int> totals, IReadOnlyList<int> roadStarts)
     {
-        if (totals.Count == 0 || totals.Count != roadStarts.Count ||
-            Enumerable.Range(0, totals.Count).Any(i => totals[i] <= 0 || roadStarts[i] < 0 || roadStarts[i] > totals[i]))
-            throw new ArgumentException("Road batch planning requires valid per-LOD structure boundaries.");
         if (totals.Sum() <= 16 || roadStarts.Sum() > 16 || totals.Sum() - roadStarts.Sum() > 16 ||
             Enumerable.Range(0, totals.Count).Any(i => roadStarts[i] == 0 || roadStarts[i] == totals[i]))
             return null;
@@ -31,9 +28,6 @@ internal static class MovableMaterialSlots
     // than one renderer. Supplemental slot ordinals are not physical part identities.
     internal static int[][][]? StructureRoadRenderGroups(int[][] surfaces, IReadOnlyList<int> roadStarts)
     {
-        if (surfaces.Length == 0 || surfaces.Length != roadStarts.Count ||
-            Enumerable.Range(0, surfaces.Length).Any(i => roadStarts[i] < 0 || roadStarts[i] > surfaces[i].Length))
-            throw new ArgumentException("Structure/road planning requires actual per-LOD append boundaries.");
         if (surfaces.Sum(x => x.Length) <= 16 || roadStarts.Sum() > 16 ||
             Enumerable.Range(0, surfaces.Length).Any(i => roadStarts[i] == 0 || roadStarts[i] == surfaces[i].Length))
             return null;
@@ -47,9 +41,6 @@ internal static class MovableMaterialSlots
     // A shared Surface only groups slots within a role; it never merges their geometry.
     internal static int[][][]? StableRoleGroups(int[][] roles, int[][] surfaces)
     {
-        if (roles.Length == 0 || roles.Length != surfaces.Length ||
-            roles.Where((r, i) => r.Length != surfaces[i].Length).Any())
-            throw new ArgumentException("Stable LOD roles require one identity per native slot.");
         var bundles = new List<int[][]>();
         foreach (int role in roles.SelectMany(x => x).Distinct().OrderBy(x => x))
         {
@@ -92,8 +83,6 @@ internal static class MovableMaterialSlots
     // independent ceiling in each LOD's balanced group slices.
     internal static int MinimumLodSlots(IReadOnlyList<int> totals)
     {
-        if(totals.Count==0 || totals.Count>16 || totals.Any(n=>n<=0))
-            throw new ArgumentException("Native LOD grouping requires 1..16 nonempty levels.");
         if(totals.Sum()<=16)return 1;
         for(int groups=(totals.Sum()+15)/16;groups<=totals.Max();groups++)
         {
@@ -112,10 +101,6 @@ internal static class MovableMaterialSlots
     // slots. Nothing is merged, dropped, resampled or duplicated by this plan.
     internal static int[][][] RenderGroups(IReadOnlyList<int> totals, IReadOnlyList<int> laneStarts)
     {
-        if (totals.Count == 0 || totals.Count != laneStarts.Count ||
-            totals.Any(count => count <= 0) ||
-            Enumerable.Range(0, totals.Count).Any(i => laneStarts[i] < 0 || laneStarts[i] > totals[i]))
-            throw new ArgumentException("Batch planning requires nonempty complete LODs and valid lane boundaries.");
         int total = totals.Sum();
         if (total <= 16)
             return new[] { totals.Select(count => Enumerable.Range(0, count).ToArray()).ToArray() };
@@ -150,10 +135,6 @@ internal static class MovableMaterialSlots
         var slots = (usedSlots ?? Enumerable.Range(0, surfaces.Count)).Distinct().OrderBy(slot => slot).ToArray();
         foreach (var slot in slots)
         {
-            if ((uint)slot >= (uint)surfaces.Count)
-                throw new ArgumentOutOfRangeException(nameof(usedSlots), "Moving geometry references a missing surface slot.");
-            if (surfaces[slot] == null)
-                throw new ArgumentException("Moving geometry has an unresolved surface slot.", nameof(surfaces));
             result[slot] = slot;
             for (var previous = 0; previous < slot; previous++)
                 if (result[previous] >= 0 && ReferenceEquals(surfaces[slot], surfaces[previous]))

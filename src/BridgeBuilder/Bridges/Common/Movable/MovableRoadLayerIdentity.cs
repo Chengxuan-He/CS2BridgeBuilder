@@ -16,7 +16,7 @@ internal static class MovableRoadLayerIdentity
         if (surface == "88df662f6bc8058d3ecf8f7a5d7f2239" &&
             baseColor == "b00176216b0ce36579bce6fc675cfb77" &&
             normal == "9f446790360787756b0e5909db12e200" && mask == "375b871b66aaf675dacef141eb2a9810" &&
-            float.IsFinite(minU) && float.IsFinite(maxU) && minU <= maxU)
+            minU <= maxU)
             return MovableRoadAppearance.Type.Asphalt;
         if (!builtin) return MovableRoadAppearance.Type.None;
         if (surface == "a3522ead5e61e02569f0884fb4607eec" && worldspace == MovableRoadAppearance.Type.Ballast &&

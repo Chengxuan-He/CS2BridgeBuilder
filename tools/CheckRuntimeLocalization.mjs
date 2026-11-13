@@ -348,7 +348,7 @@ for (const double of [false, true]) {
     assert.equal(render('CreateView({ decks, styles, status: "" })')
         .find(n => n.type === "native-checkbox").props.checked, true, "Clicking the label must also toggle the checkbox");
 }
-assert(uiSource.includes('[upperId, lowerId, styleId, prefabName, lowerDeckOpposite, ready]'));
+assert(uiSource.includes('[upperId, lowerId, styleId, prefabName, lowerDeckOpposite, ready, hasViewport]'));
 console.log("PASS direction toggle, preview selection invalidation and immutable creation recipes");
 
 // Optional Road Builder handoff must preserve both decks and the player's name.

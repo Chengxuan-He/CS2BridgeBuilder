@@ -207,8 +207,7 @@ internal static class Draw01FixedRoadData
             Numeric_Types_Draw01_Draw01FixedRoadData_g_cs.Values.I32[187],
             Numeric_Types_Draw01_Draw01FixedRoadData_g_cs.Values.I32[188],
             Numeric_Types_Draw01_Draw01FixedRoadData_g_cs.Values.I32[189]
-        },
-        _ => throw new ArgumentOutOfRangeException(nameof(lod))};
+        }};
     internal static int[] RemovalFaces(int lod) => lod switch
     {
         // Source OBJ SHA-256: 97215ED0B33145FB53737999961C3DA0E6859E433A89566BB1F7C2C04EE7F9E1
@@ -294,8 +293,7 @@ internal static class Draw01FixedRoadData
             Numeric_Types_Draw01_Draw01FixedRoadData_g_cs.Values.I32[259],
             Numeric_Types_Draw01_Draw01FixedRoadData_g_cs.Values.I32[260],
             Numeric_Types_Draw01_Draw01FixedRoadData_g_cs.Values.I32[261],
-        },
-        _ => throw new ArgumentOutOfRangeException(nameof(lod))};
+        }};
 }
 
 // Embedded numerical arrays: Types_Draw01_Draw01FixedRoadData_g_cs

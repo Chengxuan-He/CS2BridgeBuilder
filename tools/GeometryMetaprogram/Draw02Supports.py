@@ -97,10 +97,10 @@ for column,stem in [(True,'DrawBridge02Pillar'),(False,'DrawBridge02PillarBase')
         key=('Column' if column else 'Footing')+str(lod)
         records.append((key,v,faces,w,hashlib.sha256(path.read_bytes()).hexdigest()))
         out.append(f'            ({str(column).lower()}, {lod}) => ({key}, {len(faces)*3}),')
-out+=['            _ => throw new ArgumentOutOfRangeException(nameof(lod))', '        };',
+out+=['            ', '        };',
       '        var weights = data.Item1;',
-      '        if (source.Length != weights.Length || indices.Length != data.Item2)',
-      '            throw new InvalidOperationException("Draw02 support source does not match its recorded layout.");',
+      '        ',
+      '',
       '        var positions = (Vector3[])source.Clone();',
       '        for (var i = 0; i < positions.Length; i++) positions[i].x += weights[i] * delta;',
       '        return new MovableStructureModel.Plan(source, positions, new[] { indices },',

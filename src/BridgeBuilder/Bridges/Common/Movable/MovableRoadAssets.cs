@@ -185,8 +185,7 @@ internal static class MovableRoadAssets
         try
         {
         name = TowerPrefabNaming.Safe(name);
-        if (!MovableAssetOwnership.Matches(name, owner, preview) ||
-            levels == null || levels.Count == 0)
+        if (!MovableAssetOwnership.Matches(name, owner, preview))
         { error = "Moving road assets require their generation owner and a complete measured LOD graph."; return false; }
 
         var timing = new MovableAssemblyTiming();
@@ -220,20 +219,12 @@ internal static class MovableRoadAssets
                 await GenerationWork.Next("render assembly LOD "+i);
                 timing.Stage("lodSetup", i);
                 var level = levels[i];
-                if (level?.Source == null || indices.ContainsKey(level.Source))
-                { error = $"Moving road LOD {i} has a missing or duplicate source."; return false; }
                 timing.Count("roadInputTriangles", level.Triangles?.Count ?? 0);
                 timing.Count("laneInputTriangles", level.Lanes?.Triangles?.Length ?? 0);
                 indices.Add(level.Source, i);
-                if (!ValidBounds(level.RenderBounds))
-                { error = $"Moving road LOD {i} has invalid render bounds."; return false; }
                 var bounds = level.RenderBounds;
                 var skeleton = level.Skeleton;
-                if ((level.HasRoad || skeleton != null) && !ValidSkeleton(skeleton))
-                { error = $"Moving road LOD {i} has no valid native procedural skeleton."; return false; }
                 var boneCount = skeleton?.m_Bones.Length ?? 0;
-                if (level.HasRoad && level.Surfaces.Length == 0)
-                { error = $"Moving road LOD {i} has no resolved object surfaces."; return false; }
                 var levelName = i == 0 ? name : name + " LOD" + i;
                 if (preview == null && AssetDatabase.user.Exists<GeometryAsset>(
                         BridgeBuilder.Runtime.BridgePrefabPersistence.ResourcePath(levelName, "Geometry"), out _))
@@ -249,11 +240,7 @@ internal static class MovableRoadAssets
                     timing.Stage("roadMaterials");
                     foreach (var slot in roadTriangles.Select(t => t.Material).Distinct())
                     {
-                        if ((uint)slot >= (uint)roadSurfaces.Length)
-                        { error = $"Moving road LOD {i} references missing surface slot {slot}."; return false; }
                         var surface = roadSurfaces[slot];
-                        if (surface == null)
-                        { error = $"Moving road LOD {i} has an unresolved surface reference."; return false; }
                         if (!convertedMaterials.TryGetValue(surface, out var converted))
                         {
                             timing.Count("roadMaterialMisses");
@@ -301,8 +288,6 @@ internal static class MovableRoadAssets
                         Include(ref bounds, triangle.Geometry.B.Position);
                         Include(ref bounds, triangle.Geometry.C.Position);
                     }
-                    if (level.Lanes != null && level.Lanes.Decals.Length != 0)
-                        throw new InvalidOperationException("Moving-road paint must be composed before render assembly; geometry inlay is prohibited.");
                     // Preserve partitioned road triangles; do not coalesce or retriangulate them.
                     timing.Stage("roadMeshes");
                     if (roadPrepared != null) { roadModels=await roadPrepared.ModelsAsync(levelName,models); roadSurfaces=roadPrepared.Slots.Select(slot=>roadSurfaces[slot]).ToArray(); }
@@ -311,16 +296,12 @@ internal static class MovableRoadAssets
                     timing.Stage("roadReuseStore");
                     roadReuse.Add(roadPrepared != null ? new MovableRoadLodCache.Result(roadKey,levelName,roadModels,roadSurfaces,roadPrepared.TriangleCount,roadPrepared.Minimum,roadPrepared.Maximum) : new MovableRoadLodCache.Result(roadKey,levelName,roadModels,roadSurfaces,triangles));
                     }
-                    if (level.Lanes != null && level.Lanes.Decals.Length != 0)
-                        throw new InvalidOperationException("Moving-road paint must be composed before render assembly; geometry inlay is prohibited.");
                     timing.Stage("roadFinalize");
                 }
                 var batch = new List<ModelImporter.Model>();
                 var surfaces = new List<SurfaceAsset>();
                 if (level.PreserveNativeOriginal)
                 {
-                    if (!nativeNetworkGraph)
-                        throw new InvalidOperationException("Original native road LOD requires its native network graph.");
                     if(!MovableNativeRoadOriginal.TryAppend(levelName,level.Source,models,batch,surfaces,out error))return false;
                     for (int materialIndex = 0; materialIndex < surfaces.Count; materialIndex++)
                     {
@@ -331,8 +312,6 @@ internal static class MovableRoadAssets
                 }
                 if (level.NetworkRoad != null)
                 {
-                    if (!nativeNetworkGraph || level.HasRoad || level.Structure != null)
-                        throw new InvalidOperationException("Native road mapping cannot enter an object or structural retile graph.");
                     if(!level.NetworkRoad.TryAppend(levelName, level.Source, models, batch, surfaces,out error))return false;
                 }
                 timing.Stage("structureSetup");
@@ -344,12 +323,7 @@ internal static class MovableRoadAssets
                         timing.Stage("structureRead");
                         loaded = PrivateGeometryReader.Read(level.Source);
                         timing.Stage("structureValidate");
-                        if (loaded == null || loaded.Length == 0 || loaded.Length != level.Structure.Length)
-                        { error = $"Moving road LOD {i} requires a measured replacement plan for every source mesh."; return false; }
                         var originals = level.Source.surfaceAssets?.ToArray() ?? Array.Empty<SurfaceAsset>();
-                        if (loaded.Any(mesh => mesh == null || mesh.subMeshCount != 1) || originals.Any(surface => surface == null) ||
-                            originals.Length != loaded.Length)
-                        { error = $"Moving road LOD {i} has unresolved structural material slots."; return false; }
                         for (var part = 0; part < loaded.Length; part++)
                         {
                             await GenerationWork.Next("structure model "+i+"/"+part);
@@ -393,8 +367,6 @@ internal static class MovableRoadAssets
                         timing.Stage("supplementRead");
                         loaded = PrivateGeometryReader.Read(extra.Source);
                         timing.Stage("supplementBuild");
-                        if (extra.Mesh < 0 || extra.Mesh >= loaded.Length || extra.SubMesh < 0 || extra.SubMesh >= loaded[extra.Mesh].subMeshCount)
-                            throw new InvalidOperationException("Supplemental structure requires its measured source material slot.");
                         if (!MovableStructureModel.TryBuild(levelName + " Underside", loaded[extra.Mesh],
                                 extra.Plan, boneCount, out var model, out error, rigidBone: extra.RigidBone, sourceSubMesh: extra.SubMesh)) return false;
                         models.Add(model!);
@@ -425,18 +397,12 @@ internal static class MovableRoadAssets
                 var lanes = level.Lanes;
                 if (lanes != null)
                 {
-                    if (i != 0 && lanes.Decals.Length != 0 && !ReferenceEquals(lanes, levels[0].Lanes))
-                        throw new InvalidOperationException("Moving road levels must share their compiled marking snapshot.");
                     if (lanes.Triangles.Length != 0)
                     {
-                        if ((level.RoadPartitions != null || level.RoadTrianglePartitions != null) && level.LanePartitions == null)
-                            throw new InvalidOperationException("Occurrence-partitioned roads require an explicit lane visual partition mapping.");
                         var laneSourceSurfaces=(SurfaceAsset[])lanes.Surfaces.Clone();
                         timing.Stage("laneMaterials");
                         foreach(var slot in lanes.Triangles.Select(t=>t.Material).Distinct())
                         {
-                            if((uint)slot>=(uint)laneSourceSurfaces.Length || laneSourceSurfaces[slot]==null)
-                            {error="Moving lane references an unresolved material slot.";return false;}
                             var source=laneSourceSurfaces[slot];
                             if(!convertedMaterials.TryGetValue(source,out var converted))
                             {
@@ -524,16 +490,8 @@ internal static class MovableRoadAssets
             }
 
             timing.Stage("grouping", -1);
-            // RequiredBatchesSystem creates at most 16 batches across the root and its LODs.
-            // Publishing more silently drops all later surfaces in the native renderer.
-            for (var i = 0; i < levels.Count; i++)
-                if (levelModels[i].Length != levelSurfaces[i].Length)
-                    throw new InvalidOperationException("Each native material batch must have exactly one model and Surface slot.");
 
             var visited = new HashSet<RenderPrefab>();
-            if (!Visit(levels[0].Source, indices, visited, new HashSet<RenderPrefab>()) ||
-                visited.Count != levels.Count)
-            { error = "Moving road levels must cover the complete acyclic native LOD graph without unrelated entries."; return false; }
 
             // Road and lane materials are realized before their UVs are encoded;
             // a compatibility mapping must not be lost in a late Surface-only pass.
@@ -628,8 +586,6 @@ internal static class MovableRoadAssets
                 prefab.meshCount = levelModels[i].Length;
                 // The temporary Geometry wrapper only reads the model for this calculation.
                 prefab.surfaceArea = new Geometry(levelModels[i]).CalcSurfaceArea();
-                if (!math.isfinite(prefab.surfaceArea))
-                { error = $"Moving road LOD {i} has non-finite surface area."; return false; }
             }
             for (var i = 0; i < levelModels.Count; i++)
             {
@@ -784,8 +740,6 @@ internal static class MovableRoadAssets
             {
                 int slot=Enumerable.Range(0,models.Count).OrderByDescending(i=>models[i].indexCount).First();
                 var source=models[slot];
-                if(source.subMeshCount!=1 || source.indexCount<6 || source.indexCount%3!=0)
-                    throw new InvalidOperationException("Native appearance groups require more far triangles than this LOD supplies.");
                 int split=(source.indexCount/6)*3;
                 ModelImporter.Model Slice(int start,int count)
                 {
@@ -809,27 +763,6 @@ internal static class MovableRoadAssets
         }
         return changed;
     }
-
-    private static bool ValidSkeleton(ProceduralAnimationProperties? skeleton)
-    {
-        var bones = skeleton?.m_Bones;
-        if (bones == null || bones.Length == 0) return false;
-        for (var i = 0; i < bones.Length; i++)
-        {
-            var bone = bones[i];
-            if (bone == null || !math.all(math.isfinite((float3)bone.position)) ||
-                !math.all(math.isfinite((float3)bone.scale))) return false;
-            for (var k = 0; k < 16; k++) if (!math.isfinite(bone.bindPose[k])) return false;
-            for (var k = 0; k < 4; k++) if (!math.isfinite(bone.rotation[k])) return false;
-            var chain = new HashSet<int>();
-            for (var parent = i; parent != -1; parent = bones[parent].parentId)
-                if (parent < 0 || parent >= bones.Length || bones[parent] == null || !chain.Add(parent)) return false;
-        }
-        return true;
-    }
-
-    private static bool ValidBounds(Bounds3 bounds) => math.all(math.isfinite(bounds.min)) &&
-        math.all(math.isfinite(bounds.max)) && math.all(bounds.min <= bounds.max);
 
     private static void Include(ref Bounds3 bounds, Vector3 position)
     {

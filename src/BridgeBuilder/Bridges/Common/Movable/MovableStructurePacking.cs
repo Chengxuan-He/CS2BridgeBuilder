@@ -35,8 +35,7 @@ internal static class MovableStructurePacking
         {
             get
             {
-                if(RepeatOnly || Points.Count==0 || Points.Count%3!=0 || !Points.All(p =>
-                    float.IsFinite(p.x) && float.IsFinite(p.y)))return false;
+                if(RepeatOnly || Points.Count==0)return false;
                 if(Charts.Length==0 && !Points.All(p=>p.x>=0 && p.y>=0 &&
                     (Triangle ? (double)p.x+p.y<=1 : p.x<=1 && p.y<=1)))return false;
                 // Absolute atlas coordinates can quantize away the gradient of a
@@ -110,8 +109,6 @@ internal static class MovableStructurePacking
     }
     internal static List<Page> Pack(IEnumerable<Unit> units,IReadOnlyList<Vector2Int> channels,int limit)
     {
-        if(channels.Count==0 || channels.Any(s=>s.x<=0 || s.y<=0) || limit<4)
-            throw new ArgumentException("Structural repeats require valid source texture dimensions.");
         var pages=new List<Page>();
         foreach(var group in units.GroupBy(u=>(u.Triangle,u.Bounds,u.A,u.B,u.C)))
         {
@@ -131,8 +128,6 @@ internal static class MovableStructurePacking
             // units. Round upward for BC7 block alignment; never reduce density.
             int Size(float pixels)
             {
-                if(!float.IsFinite(pixels) || pixels<0)
-                    throw new InvalidOperationException("Invalid source structural texture footprint.");
                 return checked(Math.Max(4,4*(int)Math.Ceiling(pixels/4)));
             }
             var density=footprint.NativeDensity;

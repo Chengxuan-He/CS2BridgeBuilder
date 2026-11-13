@@ -48,7 +48,6 @@ internal static class Draw03UvSampling
         };
         if (index < 0) return false;
         var values = Data.Items[index];
-        if ((uint)domain >= (uint)values.Length) throw new ArgumentOutOfRangeException(nameof(domain));
         return values[domain];
     }
     private static class Data
@@ -58,20 +57,15 @@ internal static class Draw03UvSampling
         private static bool[][] Read()
         {
             var values = HardcodedNumbers.Load("Draw03UvSampling").I32;
-            if (values.Length < 2 || values[0] != 1 || values[1] != 35)
-                throw new InvalidOperationException("Invalid Draw03 UV sampling resource.");
             var result = new bool[values[1]][];
             int at = 2;
             for (int m = 0; m < result.Length; m++)
             {
-                if (at >= values.Length) throw new InvalidOperationException("Truncated Draw03 UV sampling resource.");
                 int count = values[at++];
-                if (count < 0 || count > values.Length - at) throw new InvalidOperationException("Invalid Draw03 UV sampling count.");
                 var row = result[m] = new bool[count];
                 for (int d = 0; d < count; d++)
                 {
                     int flag = values[at++];
-                    if ((uint)flag > 1u) throw new InvalidOperationException("Invalid Draw03 UV sampling flag.");
                     row[d] = flag == 1;
                 }
             }

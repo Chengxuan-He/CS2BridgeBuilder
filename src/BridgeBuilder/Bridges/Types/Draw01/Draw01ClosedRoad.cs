@@ -108,8 +108,6 @@ internal sealed class Draw01ClosedRoad : IMovableRoadSample
 
     internal async System.Threading.Tasks.Task<MovableRoadAssets.Level[]?> PrepareRenderLevelsAsync(IReadOnlyList<RenderPrefab> sources, float halfWidthDelta, Matrix4x4 closedWorld, MovableRoadMaterial roadMaterial)
     {
-        if (sources.Count != Numeric_Types_Draw01_Draw01ClosedRoad_cs.Values.I32[14] || !math.isfinite(halfWidthDelta))
-            throw new ArgumentException("Draw01 road preparation requires three render sources and a finite width delta.");
         var partition = Draw01RoadPartitions.Carriageway;
         var carriagewayAppearance = Draw01RoadPartitions.MaterialRegions(false, RoadToObject);
         var sidewalkAppearance = Draw01RoadPartitions.MaterialRegions(true, RoadToObject);

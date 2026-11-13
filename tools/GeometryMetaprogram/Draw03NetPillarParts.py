@@ -64,9 +64,9 @@ lines = ['// Native DrawBridge03 ordinary-pillar parts, game 1.6.2f1.',
          '    {', '        var data = (part, lod) switch', '        {']
 for part,lod,count,size,digest,minimum,weights in tables:
     lines.append(f'            ({part}, {lod}) => (Count: {count}, Indices: {size}, Minimum: {f(minimum)}, Weights: Weights{part}{lod}),')
-lines += ['            _ => throw new ArgumentOutOfRangeException(nameof(lod))', '        };',
-          '        if (!float.IsFinite(delta) || source.Length != data.Count || indices.Length != data.Indices)',
-          '            throw new InvalidOperationException("Draw03 ordinary pillar parts require their measured layout.");',
+lines += ['            ', '        };',
+          '        ',
+          '',
           '        var positions = (Vector3[])source.Clone();',
           '        for (var i = 0; i < positions.Length; i++) positions[i].x += data.Weights[i] * delta;',
           '        return new MovableStructureModel.Plan(source, positions, new[] { indices }, new[] { new bool[indices.Length / 3] });',

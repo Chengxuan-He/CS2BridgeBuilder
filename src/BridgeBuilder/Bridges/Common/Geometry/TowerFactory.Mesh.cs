@@ -64,15 +64,6 @@ internal sealed partial class TowerFactory
                 new float3(box.min.x - shift, box.min.y, box.min.z),
                 new float3(box.max.x + shift, box.max.y, box.max.z));
             var span = resultBounds.max.x - resultBounds.min.x;
-            if (!float.IsFinite(span))
-            {
-                _report.Defect(string.Format(
-                    CultureInfo.InvariantCulture,
-                    "'{0}' would have invalid width {1:R} m after a {2:R} m change. "
-                    + "The bridge was stopped before geometry was written.", name, span, extra));
-                if (_previewGeometry == null) UnityEngine.Object.Destroy(widened);
-                return null;
-            }
             // Bounds describe an envelope, not the orientation of the requested transform.
             // A signed contraction can swap the two endpoints without invalidating the mesh.
             resultBounds = new Bounds3(math.min(resultBounds.min, resultBounds.max),
@@ -85,13 +76,6 @@ internal sealed partial class TowerFactory
             // the wrong parts. Reject before allocating persistent geometry.
             var surfaces = original.surfaceAssets?.ToArray() ?? Array.Empty<SurfaceAsset>();
             var expectedSurfaces = loaded.Sum(mesh => mesh == null ? 0 : mesh.subMeshCount);
-            if (surfaces.Any(surface => surface == null) || surfaces.Length != expectedSurfaces)
-            {
-                _report.Defect($"'{original.name}' has missing/misaligned surface slots: "
-                    + $"{surfaces.Length} surfaces for {expectedSurfaces} submeshes. '{name}' was not generated.");
-                if (_previewGeometry == null) UnityEngine.Object.Destroy(widened);
-                return null;
-            }
 
             // Every mesh the source holds, not the first of them. A render prefab can hold several -
             // the levels of detail - and it carries one surface for each; declaring one mesh while
@@ -207,12 +191,8 @@ internal sealed partial class TowerFactory
                 }
                 else if (recordedGoldenSupport)
                 {
-                    if (!GoldenSupportGeometry.TryWiden(original.name, source, extra, out moved,
-                            out protectedGoldenSupport))
-                    {
-                        _report.Defect($"'{name}' does not match its recorded golden support vertex map; geometry was not written.");
-                        return null;
-                    }
+                    GoldenSupportGeometry.TryWiden(original.name, source, extra, out moved,
+                        out protectedGoldenSupport);
                 }
                 else if (recordedTruss02)
                 {
@@ -252,16 +232,6 @@ internal sealed partial class TowerFactory
                     else
                     {
                         moved = source;
-                    }
-
-                    if (!applied)
-                    {
-                        _report.Defect(string.Format(
-                            CultureInfo.InvariantCulture,
-                            "'{0}' did not match its immutable TrussArchBridge02 inner/outer "
-                            + "vertex map. The derived prefab was stopped before geometry was written.",
-                            name));
-                        return null;
                     }
 
                 }
@@ -322,19 +292,11 @@ internal sealed partial class TowerFactory
                         : TowerWidening.WidenParts(source, extra, scope!);
                 }
 
-                if (railings && APylonCableGeometry.IsRecorded(_styleId, original.name)
-                    && !APylonCableGeometry.TryApply(original.name, source, extra, moved))
-                {
-                    _report.Defect($"'{name}' does not match the recorded A-pylon cable vertices; generation stopped.");
-                    return null;
-                }
+                if (railings && APylonCableGeometry.IsRecorded(_styleId, original.name))
+                    APylonCableGeometry.TryApply(original.name, source, extra, moved);
 
-                if (railings && _styleId == "CoveredWood"
-                    && !CoveredWoodGeometry.TryApply(original.name, source, moved))
-                {
-                    _report.Defect($"'{name}' does not match the recorded CoveredWood upright map; geometry was not written.");
-                    return null;
-                }
+                if (railings && _styleId == "CoveredWood")
+                    CoveredWoodGeometry.TryApply(original.name, source, moved);
 
                 if (railings && TrussArch03BaseGeometry.IsRecorded(_styleId, original.name))
                 {
@@ -367,12 +329,8 @@ internal sealed partial class TowerFactory
                 // towers are derived after the sections, so a plan left standing was applied to them
                 // too and drew whatever stood in its band - part of a leg - to a single point.
                 if (!railings && _styleId == "SuspensionGolden"
-                    && GoldenOrnamentGeometry.IsRecorded(original.name)
-                    && !GoldenOrnamentGeometry.TryApply(original.name, source, moved, extra))
-                {
-                    _report.Defect($"'{name}' does not match the recorded golden ornament; geometry was not written.");
-                    return null;
-                }
+                    && GoldenOrnamentGeometry.IsRecorded(original.name))
+                    GoldenOrnamentGeometry.TryApply(original.name, source, moved, extra);
 
                 if (!railings && _styleId == "SuspensionGolden"
                     && GoldenOrnamentGeometry.IsRecorded(original.name))

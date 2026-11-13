@@ -94,11 +94,12 @@ internal static class BridgeStyleDefinitions
         "Suspension" or "SuspensionDouble" or "Suspension01" or "Suspension02" or "SuspensionGolden"
             or "GoldenGate" or "GoldenGateDouble" or "Grand" => "Suspension",
         "CableStayed" or "Extradosed01" or "Extradosed02" or "Extradosed03" or "ExtradosedLarge" => "CableStayed",
-        "TrussArch" or "TrussArch01" or "TrussArch02" or "TrussArch03" or "TiedArch" => "Arch",
-        "WoodenCovered" or "CoveredWood" => "Covered",
+        "TrussArch" or "TrussArch01" or "TrussArch02" or "TrussArch03" or "TiedArch" or "GOViaduct" => "Arch",
+        "WoodenCovered" or "CoveredWood" or "CoveredPedestrian" => "Covered",
+        "ArcPedestrian" => "Arch",
+        "ArtDecoViaduct" or "TrussViaduct" => "Viaduct",
         "Draw01" or "Draw02" or "Draw03" or "PedestrianDraw01" or "PedestrianDraw02" => "Bascule",
         "Lift01" or "Lift02" or "Lift03" or "Lift04" or "Lift05" => "Lift",
-        _ => throw new ArgumentOutOfRangeException(nameof(id),id,"Unclassified bridge style"),
     };
 
     internal static bool CanList(string? id) => IsMovable(id) || CanGenerate(id);
@@ -109,6 +110,10 @@ internal static class BridgeStyleDefinitions
     // Adding a definition, translation or donor alone must not enable generation.
     private static readonly HashSet<string> ImplementedStyles = new(StringComparer.Ordinal)
     {
+        "ArtDecoViaduct",
+        "TrussViaduct",
+        "ArcPedestrian",
+        "CoveredPedestrian",
         "WoodenCovered",
         "CoveredWood",
         "Suspension",
@@ -156,6 +161,7 @@ internal static class BridgeStyleDefinitions
     // The DLC landmark and BXP's genuine auxiliary-net archetypes are separate products.
     internal static bool SupportsDeckMode(string? styleId, bool doubleDeck) => styleId switch
     {
+        "ArtDecoViaduct" or "TrussViaduct" or "ArcPedestrian" or "CoveredPedestrian" or "GOViaduct" => !doubleDeck,
         "GoldenGate" => !doubleDeck,
         "GoldenGateDouble" => doubleDeck,
         "Lift03" => doubleDeck,
@@ -236,6 +242,11 @@ internal static class BridgeStyleDefinitions
     /// </summary>
     internal static IReadOnlyList<BridgeStyleDefinition> All => GenerationParameters.Get<IReadOnlyList<BridgeStyleDefinition>>("BridgeBuilder.Bridges.BridgeStyleDefinitions.All", () => new[]
     {
+        // These recorded constructions do not select a portal tower by clearance.
+        new BridgeStyleDefinition("ArtDecoViaduct", "Art Deco Viaduct", 0, "artdecoviaduct"),
+        new BridgeStyleDefinition("TrussViaduct", "Truss Viaduct", 0, "trussviaduct"),
+        new BridgeStyleDefinition("ArcPedestrian", "Arched Pedestrian Bridge", 0, "arcpedestrianbridge", "arcbikebridge"),
+        new BridgeStyleDefinition("CoveredPedestrian", "Covered Pedestrian Bridge", 0, "coveredpedestrianbridge", "coveredbikebridge"),
         new BridgeStyleDefinition("PedestrianDraw01", "Fan-Cable Pedestrian Bascule Bridge", Numeric_BridgeStyleDefinitions_cs.Values.I32[0], "pedestriandrawbridge01"),
         new BridgeStyleDefinition("PedestrianDraw02", "Overhead-Beam Pedestrian Bascule Bridge", Numeric_BridgeStyleDefinitions_cs.Values.I32[1], "pedestriandrawbridge02"),
         new BridgeStyleDefinition("Draw01", "Curved-Soffit Girder Bascule Bridge", Numeric_BridgeStyleDefinitions_cs.Values.I32[2], "drawbridge01"),
