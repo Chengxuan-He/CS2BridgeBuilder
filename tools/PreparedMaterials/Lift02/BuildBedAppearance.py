@@ -56,7 +56,7 @@ assert bounds[0][0][0]==0 and bounds[0][1][0]==1
 near_values.extend([bounds[0][0][1],bounds[0][1][1]])
 near_values.append(float(near['mesh0_positions'][near['mesh0_faces'][83248],0].max()-near['mesh0_positions'][near['mesh0_faces'][83248],0].min()))
 values=np.array(rows+near_values,dtype='<f4'); ints=np.array([3,13,39],dtype='<i4')
-raw=struct.pack('<II6i',0x314e4242,1,len(ints),0,0,0,len(values),0)+ints.tobytes()+values.tobytes()
+raw=struct.pack('<6i',len(ints),0,0,0,len(values),0)+ints.tobytes()+values.tobytes()
 dest=ROOT/'assets/HardcodedNumbers/Lift02/Types_Lift02_BedAppearance.bin';dest.write_bytes(raw+hashlib.sha256(raw).digest())
 out=ROOT/'artifacts/material-remap/Lift02/source-mapping/bed-appearance.json'
 out.write_text(json.dumps(dict(sourceSha256=hashlib.sha256(path.read_bytes()).hexdigest(),checks=checks,near=near_values,nearChecks=near_checks,resourceSha256=hashlib.sha256(dest.read_bytes()).hexdigest(),mapping='Near/mid: continuous U 4m period, no period cuts; finite V uses the measured offline unit content bounds. Candidate filtering acceptance remains pending. Far: three complete finite native atlas charts at existing detailed motion boundaries.'),indent=2))

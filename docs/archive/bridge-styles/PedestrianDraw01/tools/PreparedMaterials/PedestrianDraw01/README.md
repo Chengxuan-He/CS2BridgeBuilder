@@ -17,7 +17,7 @@ normal difference is 16.716 degrees. A private pre-BC7 export still measures
 unresolved issue, not simply BC7 compression. No tolerance was relaxed.
 
 The isolated continuous consumer ran 54 cases through the actual common
-`TryBind` and `Compose`: 1,368 triangles total, 22¨C24 per near/middle fixture,
+`TryBind` and `Compose`: 1,368 triangles total, 22-24 per near/middle fixture,
 30 per far fixture, no reversed or zero-area faces, preserved receiver attributes
 and no extra composition cuts. The initial mapping was fixture-supplied. A subsequent 54-case replay against
 DLL `3186193D1D06E8ABE8A712A4AF6E6A2635056701945F4875EE556C69B034EA39`

@@ -13,13 +13,6 @@ internal static class Program
 
     private static void Main()
     {
-        Check(!BridgeBuilder.Bridges.BridgeStyleDefinitions.CanList("GOViaduct"), "Deferred GO must not appear in creation");
-        Check(!BridgeBuilder.Bridges.BridgeStyleDefinitions.CanGenerate("GOViaduct"), "Deferred GO must not generate");
-        Check(BridgeBuilder.Bridges.BridgeStyleDefinitions.Match("GO-224m-ViaductBridge") == null, "Source discovery must not re-admit GO");
-        Check(BridgeBuilder.Bridges.BridgeStyleDefinitions.All.All(x => x.Id != "GOViaduct"), "Deferred GO excluded from active definitions");
-        Check(BridgeBuilder.Bridges.BridgeStyleDefinitions.Family("GOViaduct") == "Arch", "Saved GO retains display family");
-        foreach (var locale in RuntimeUiText.LocaleIds)
-            Check(UiStringCatalog.ForLocale(locale).StyleName("GOViaduct") != "GOViaduct", "Saved GO retains localized name: " + locale);
         foreach(var locale in RuntimeUiText.LocaleIds)
         {
             var success=RuntimeUiText.ForLocale(locale)["RemoveAllBridgesDone"];
@@ -128,7 +121,7 @@ internal static class Program
         foreach (var key in new[] { "CreatedActive", "CreatedManage", "CreatedLocked", "Activated", "ActivateLocked", "Renamed", "Deleted", "" })
             BridgeRuntimeRequests.Complete(key);
         Check(BridgeBuilder.Mod.Log.Messages.Count == 0, "Routine completions emitted error errors");
-        foreach (var key in new[] { "BridgeRestartRequired", "ActivateUnloaded", "ActivateNotReady", "ActivateToolFailed", "ActivateFailed", "NameRequired", "DeleteIncomplete", "UpperUnavailable" })
+        foreach (var key in new[] { "ActivateUnloaded", "ActivateNotReady", "ActivateToolFailed", "ActivateFailed", "NameRequired", "DeleteIncomplete", "UpperUnavailable" })
         {
             var count = BridgeBuilder.Mod.Log.Messages.Count;
             BridgeRuntimeRequests.Complete(key, "bridge-context");

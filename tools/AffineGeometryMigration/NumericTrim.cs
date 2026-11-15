@@ -26,13 +26,13 @@ internal static class NumericTrim
             }
             if(!supported || uses.Count==0)continue;
             string resource=Directory.GetFiles(Path.Combine(repository,"assets/HardcodedNumbers"),key+".bin",SearchOption.AllDirectories).Single();
-            byte[] original=File.ReadAllBytes(resource);int[] counts=new int[6],starts=new int[6];int offset=32;
-            for(int i=0;i<6;i++){counts[i]=BitConverter.ToInt32(original,8+i*4);starts[i]=offset;offset=checked(offset+counts[i]*sizes[i]);}
+            byte[] original=File.ReadAllBytes(resource);int[] counts=new int[6],starts=new int[6];int offset=24;
+            for(int i=0;i<6;i++){counts[i]=BitConverter.ToInt32(original,i*4);starts[i]=offset;offset=checked(offset+counts[i]*sizes[i]);}
             var selected=Enumerable.Range(0,6).Select(t=>uses.Where(u=>u.Type==t).Select(u=>u.Index).Distinct().Order().ToArray()).ToArray();
             if(selected.Select((a,i)=>a.Length==counts[i]).All(v=>v))continue;
             using var stream=new MemoryStream();using(var writer=new BinaryWriter(stream,Encoding.UTF8,true))
             {
-                writer.Write(0x314e4242u);writer.Write(1);foreach(var indices in selected)writer.Write(indices.Length);
+                foreach(var indices in selected)writer.Write(indices.Length);
                 for(int type=0;type<6;type++)foreach(int index in selected[type])
                 {
                     if(index<0 || index>=counts[type])throw new InvalidDataException("Invalid numeric trim reference.");

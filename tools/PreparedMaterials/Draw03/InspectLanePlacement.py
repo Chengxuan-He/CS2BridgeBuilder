@@ -64,7 +64,7 @@ def main():
     center=json.loads((ROOT/'artifacts/material-remap/Draw03/wear-centering/measurement.json').read_text())['visualCenterPixel']
     reference=(float(np.float32(mapping[2,1]*4096))-center)/float(np.float32(mapping[0,1]*4096))
     values=[mapping[0,1]*4096,mapping[2,1]*4096,reference,818,1194,802,834,4096,443.75,1581,1.5,7.5,scale,128]
-    payload=struct.pack('<8I',0x314e4242,1,0,0,0,0,len(values),0)+struct.pack('<14f',*values)
+    payload=struct.pack('<6i',0,0,0,0,len(values),0)+struct.pack('<14f',*values)
     payload+=hashlib.sha256(payload).digest()
     (ROOT/'assets/HardcodedNumbers/Draw03/Types_Draw03_Draw03LaneAppearance_cs.bin').write_bytes(payload)
     print(json.dumps(dict(centers=result['centersMetres'],placements=placements,uvAffineXZ=mapping.tolist()),indent=2))

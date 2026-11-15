@@ -5,5 +5,7 @@
     <Compile Include="../../src/BridgeBuilder/Runtime/BridgeFileAccess.cs" />
     <Compile Include="../../src/BridgeBuilder/Runtime/BridgeRemovalFiles.cs" />
     <Compile Include="../../src/BridgeBuilder/Runtime/BridgeUuidReservation.cs" />
+    <Compile Include="../../src/BridgeBuilder/Runtime/BridgeDeletionIntent.cs" />
+    <Compile Include="../../src/BridgeBuilder/Runtime/BridgeOwnedDirectoryRemoval.cs" />
   </ItemGroup>
 </Project>

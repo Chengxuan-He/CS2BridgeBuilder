@@ -58,7 +58,7 @@ for level in audit['levels']:
     assert union==[(-96.,-80.),(-79.849609375,79.849609375),(80.,96.)]
     checks.append(dict(lod=lod,physicalStrips=50,completeCells=100,roadFaces=200,retainedLowerFaces=184,maximumPixelError=maxerror,originalUvHalfBitsPreserved=True,authoredLongitudinalSeamDisplacementMetres=0,coverageBySide=union))
     allstrips.append(dict(lod=lod,strips=strips))
-payload=struct.pack('<II6i',0x314e4242,1,len(ints),0,0,0,len(floats),0)+np.asarray(ints,dtype='<i4').tobytes()+np.asarray(floats,dtype='<f4').tobytes()
+payload=struct.pack('<6i',len(ints),0,0,0,len(floats),0)+np.asarray(ints,dtype='<i4').tobytes()+np.asarray(floats,dtype='<f4').tobytes()
 target=ROOT/'assets/HardcodedNumbers/Lift04/Types_Lift04_NearAppearance.bin';target.write_bytes(payload+hashlib.sha256(payload).digest())
 (base/'near-interface-verification.json').write_text(json.dumps(dict(checks=checks,resourceSHA256=hashlib.sha256(target.read_bytes()).hexdigest(),materialPayloadStatus='Original atlas only; exact authored longitudinal road reset stations, finite U per complete source cell, independently repeating V. Native validation pending.'),indent=2))
 (base/'near-exact-cells.json').write_text(json.dumps(dict(levels=allstrips),indent=2))

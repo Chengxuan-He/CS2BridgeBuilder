@@ -38,7 +38,7 @@ for level in plan:
     integers[level['lod'] * 9:level['lod'] * 9 + 9] = [len(domains), len(slabs), len(intervals), dio, sio, iio, dfo, sfo, ifo]
 # Original full carriageway half width and the finite/repeating domain endpoints.
 floats.extend([6.0999755859375, 4., 76., 78.69921875])
-blob = struct.pack('<8I', 0x314e4242, 1, len(integers), 0, 0, 0, len(floats), 0)
+blob = struct.pack('<6i', len(integers), 0, 0, 0, len(floats), 0)
 blob += struct.pack('<%di' % len(integers), *integers) + struct.pack('<%df' % len(floats), *floats)
 blob += hashlib.sha256(blob).digest()
 target = ROOT / 'assets/HardcodedNumbers/Draw02/Types_Draw02_Draw02MovingAtlasAppearance_cs.bin'

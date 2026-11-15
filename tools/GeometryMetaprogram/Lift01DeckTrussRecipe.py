@@ -75,7 +75,7 @@ for lod in (0, 1):
     for parent, ix in fragments:
         ints += [parent,len(ix)]+ix
     ints += y_ids + sorted(higher) + end_ids
-    payload = struct.pack('<8i',0x314e4242,1,len(ints),0,0,0,4,0)
+    payload = struct.pack('<6i',len(ints),0,0,0,4,0)
     payload += struct.pack('<'+'i'*len(ints),*ints)+struct.pack('<4f',half,3.56268310546875,3.3919677734375,5.593505859375)
     payload += hashlib.sha256(payload).digest()
     name = f'Types_Lift01_DeckTruss{lod}'

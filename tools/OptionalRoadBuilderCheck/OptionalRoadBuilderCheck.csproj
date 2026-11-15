@@ -8,5 +8,11 @@
   <ItemGroup>
     <Compile Include="../../src/BridgeBuilder/Bridges/RoadBuilderCompatibility.cs" Link="RoadBuilderCompatibility.cs" />
     <Compile Include="../../src/BridgeBuilder/Bridges/DeckCatalog.cs" Link="DeckCatalog.cs" />
+    <Compile Include="../../vendor/CS2ModShared/src/Discovery/RoadBuilderDiscovery.cs" Link="RoadBuilderDiscovery.cs" />
+    <Compile Include="../../vendor/CS2ModShared/src/Discovery/RoadBuilderRoad.cs" Link="RoadBuilderRoad.cs" />
+    <Compile Include="../../vendor/CS2ModShared/src/Infrastructure/NameSanitizer.cs" Link="NameSanitizer.cs" />
+    <Compile Include="../../vendor/CS2ModShared/src/Infrastructure/RoadSelectionModel.cs" Link="RoadSelectionModel.cs" />
+    <Compile Include="../../vendor/CS2ModShared/src/Infrastructure/SelectionText.cs" Link="SelectionText.cs" />
+    <Compile Include="../../vendor/CS2ModShared/src/Export/RoadBuilderIconExporter.cs" Link="RoadBuilderIconExporter.cs" />
   </ItemGroup>
 </Project>

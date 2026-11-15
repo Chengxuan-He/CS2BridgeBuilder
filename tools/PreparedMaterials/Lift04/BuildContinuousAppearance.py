@@ -49,7 +49,7 @@ for level in levels:
             removedRightIntegerPhase=phase_right,sourcePixelError=errors,sourceHalfUlpFraction=budgets,
             identicalNativeTangent=True,centrePartitionRequired=False))
 ints=[1,2,10,13]
-payload=struct.pack('<II6i',0x314e4242,1,len(ints),0,0,0,len(rows),0)+np.asarray(ints,dtype='<i4').tobytes()+np.asarray(rows,dtype='<f4').tobytes()
+payload=struct.pack('<6i',len(ints),0,0,0,len(rows),0)+np.asarray(ints,dtype='<i4').tobytes()+np.asarray(rows,dtype='<f4').tobytes()
 target=ROOT/'assets/HardcodedNumbers/Lift04/Types_Lift04_ContinuousAppearance.bin'
 target.write_bytes(payload+hashlib.sha256(payload).digest())
 (BASE/'offline-road-unit/joint-centre-phase-proof.json').write_text(json.dumps(dict(checks=checks,

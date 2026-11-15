@@ -33,11 +33,6 @@ internal static class MovableMaterialConversion
 
             if (!MovableSurfaceAssets.TryReadSource(source, out _, out error)) return false;
             var library = AssetDatabase.global.resources.materialLibrary;
-            int existingProgram = -1;
-            if (BridgeCustomShaderRegistry.TryGetProgram(library, source.materialTemplateHash,
-                out var program, out var originalTemplate, out var programQueue) &&
-                !MovableCustomShaderAsset.TryPrepare(program, originalTemplate, owner, preview, assets,
-                    out existingProgram, out error, programQueue)) return false;
             if (geometry.UnchangedNetworkInputs) { material = source; return true; }
             if (MovableSurfaceAssets.IsObjectSurface(source))
             {
@@ -49,9 +44,8 @@ internal static class MovableMaterialConversion
             var sourceTemplate = library.GetMaterial(source.materialTemplateHash);
             // Compare the actual native protocol shader. A third-party template
             // identity is not an adapter selector. Alpha variants share this shader.
-            int target = existingProgram;
-            if (target >= 0) { stage = "registered-generated-program"; }
-            else if (sourceTemplate.shader == library.GetMaterial(16).shader)
+            int target = -1;
+            if (sourceTemplate.shader == library.GetMaterial(16).shader)
             {
                 try
                 {
@@ -69,7 +63,7 @@ internal static class MovableMaterialConversion
                 // Preserve this shader's complete original layered pixel programs.
                 // Only its evaluated geometry/current-skeleton vertex protocol changes.
                 stage = "generated-world-layered-program";
-                if (!MovableCustomShaderAsset.TryPrepareWorldLayered(owner, preview, assets, out target, out error)) return false;
+                if (!MovableCustomShaderAsset.TryPrepare(17, BridgeNativeProgramLayout.DefaultQueue(17), out target, out error)) return false;
             }
 
             if (target < 0)
@@ -120,6 +114,12 @@ internal static class MovableMaterialConversion
                     result.UnloadProperties(); propertiesHeld=false;
                     database.DeleteAsset(result); assets.Remove(result);
                     return MovableMaterialCompatibility.TryCreate(source,owner,styleId,preview,assets,reason??"Source protocol difference",out material,out mapping,out error,geometry.Projected);
+                }
+                if (BridgeNativeMaterialProgram.TryIdentify(target, BridgeNativeProgramLayout.DefaultQueue(17), out _))
+                {
+                    var programInts = new Dictionary<string, int>(result.ints)
+                    { [BridgeNativeMaterialProgram.QueueProperty] = BridgeNativeProgramLayout.DefaultQueue(17) };
+                    result.UpdateInts(programInts);
                 }
                 result.UpdateKeywords(new HashSet<string>(result.keywords) { "_TANGENTSPACE_OCTO" });
                 // SaveData preserves VT. Save(vt:false) rebuilds/clears the backing header.

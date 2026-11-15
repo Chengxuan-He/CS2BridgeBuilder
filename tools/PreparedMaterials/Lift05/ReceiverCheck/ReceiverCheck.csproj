@@ -9,7 +9,7 @@
     <Compile Include="../../../../src/BridgeBuilder/Bridges/Common/Movable/MovableParentUv.cs" Link="MovableParentUv.cs" />
     <Compile Include="../../../../src/BridgeBuilder/Bridges/Common/Movable/MovableTextureFootprint.cs" Link="MovableTextureFootprint.cs" />
     <Compile Include="../../../../src/BridgeBuilder/Bridges/Common/Movable/MovableStructurePacking.cs" Link="MovableStructurePacking.cs" />
-    <Compile Include="../../../../src/BridgeBuilder/Bridges/Common/Movable/MovableChartPartition.cs" Link="MovableChartPartition.cs" />
+    <Compile Include="../../../../tools/Common/MovableChartPartition.cs" Link="MovableChartPartition.cs" />
     <Compile Include="../../../../src/BridgeBuilder/Bridges/Common/Movable/MovableRoadUv.cs" Link="MovableRoadUv.cs" />
     <Compile Include="../../../../src/BridgeBuilder/Bridges/Common/Movable/MovableUvDomains.cs" Link="MovableUvDomains.cs" />
     <Compile Include="../../../../src/BridgeBuilder/Bridges/Common/Movable/MovableUvCatalogue.g.cs" Link="MovableUvCatalogue.g.cs" />

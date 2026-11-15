@@ -69,7 +69,6 @@ namespace BridgeBuilder.Bridges
         {
             using var stream = File.OpenRead(Path.Combine(Draw01AppearancePartitionCheck.Argument("-numbers"), name + ".bin"));
             using var r = new BinaryReader(stream);
-            if (r.ReadUInt32() != 0x314e4242 || r.ReadInt32() != 1) throw new InvalidDataException("BBN schema");
             var counts = Enumerable.Range(0, 6).Select(_ => r.ReadInt32()).ToArray();
             var result = new HardcodedNumbers { I32 = Enumerable.Range(0, counts[0]).Select(_ => r.ReadInt32()).ToArray() };
             stream.Position += counts[1] * 4L + counts[2] * 8L + counts[3] * 8L;

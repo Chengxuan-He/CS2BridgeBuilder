@@ -46,7 +46,7 @@ def main():
         counts.append(len(records)-start)
     ints=[1,*counts]+[n for r in records for n in [r['parent'],r['side']]]
     floats=[v for r in records for v in [r['z0'],r['z1'],r['halfWidth'],0.,*r['min'],*r['max'],*r['u'],*r['v'],*r['tangent']]]
-    raw=b'BBN1'+struct.pack('<7i',1,len(ints),0,0,0,len(floats),0)+struct.pack('<'+'i'*len(ints),*ints)+struct.pack('<'+'f'*len(floats),*floats)
+    raw=struct.pack('<6i',len(ints),0,0,0,len(floats),0)+struct.pack('<'+'i'*len(ints),*ints)+struct.pack('<'+'f'*len(floats),*floats)
     raw+=hashlib.sha256(raw).digest()
     (a.repository/'assets/HardcodedNumbers/PedestrianDraw01/Types_PedestrianDraw01_NativeRoadCells.bin').write_bytes(raw)
     a.output.mkdir(parents=True,exist_ok=True)

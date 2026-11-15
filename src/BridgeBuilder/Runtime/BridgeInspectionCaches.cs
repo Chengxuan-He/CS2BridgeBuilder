@@ -30,7 +30,6 @@ internal sealed class BridgeInspectionCaches
     internal bool TryFind(string surface,string owner,out Entry[] entries,out string? error)
     {
         entries=Array.Empty<Entry>();error=null;
-        if(_error!=null){error=_error;return false;}
         if(_members.TryGetValue(surface,out var found))
         {
             entries=found.GroupBy(x=>x.Cid,StringComparer.OrdinalIgnoreCase)
@@ -57,13 +56,15 @@ internal sealed class BridgeInspectionCaches
                     list.Add(entry);
                 }
             }
-            catch(Exception exception){_error??="Native cache inspection: "+entry.Cid+"; "+exception.Message;}
+            catch (Exception exception) when (exception is not UnauthorizedAccessException){_error??="Native cache inspection: "+entry.Cid+"; "+exception.Message;}
         }
         try
         {
             // One typed native-cache enumeration, not an all-asset index.
             foreach(var asset in _registered())
             {
+                try
+                {
                 var meta=asset.GetMeta();string path=meta.packaged?"":meta.path;
                 if(!string.IsNullOrEmpty(path))
                 {
@@ -71,9 +72,11 @@ internal sealed class BridgeInspectionCaches
                     if(!readPaths.Add(Path.GetFullPath(BridgeFileAccess.Logical(path))))continue;
                 }
                 Read(new Entry{Cid=asset.id.guid.ToString(),Asset=asset,Path=path},asset.GetReadStream);
+                }
+                catch (Exception exception) when (exception is not UnauthorizedAccessException){_error??="Native cache metadata unavailable: "+exception.Message;}
             }
         }
-        catch(Exception exception){_error??="Native cache registrations unavailable: "+exception.Message;}
+        catch (Exception exception) when (exception is not UnauthorizedAccessException){_error??="Native cache registrations unavailable: "+exception.Message;}
         // Reuse the existing inspection path inventory; no extra directory enumeration.
         foreach(string path in _paths().Where(p=>p.EndsWith(".MidMips",StringComparison.OrdinalIgnoreCase)).Distinct(StringComparer.OrdinalIgnoreCase))
         {
@@ -92,7 +95,7 @@ internal sealed class BridgeInspectionCaches
                 {_error??="Invalid native cache sidecar: "+path;continue;}
                 Read(new Entry{Cid=cid,Path=path},()=>BridgeFileAccess.OpenRead(path));
             }
-            catch(Exception exception){_error??="Owner cache inspection: "+path+"; "+exception.Message;}
+            catch (Exception exception) when (exception is not UnauthorizedAccessException){_error??="Owner cache inspection: "+path+"; "+exception.Message;}
         }
     }
 }

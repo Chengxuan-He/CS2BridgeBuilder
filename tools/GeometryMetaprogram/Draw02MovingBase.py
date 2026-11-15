@@ -82,7 +82,7 @@ for lod in range(3):
                   farTreatment='Existing merged shell signed displacement; no new detail' if lod == 2 else None)
     (O / f'lod{lod}-base-members.json').write_text(json.dumps(report, indent=2))
     reports.append(dict(lod=lod, supports=len(members), vertices=len(ids)))
-body = struct.pack('<8I', 0x314e4242, 1, len(ints), 0, 0, 0, 0, 0) + np.array(ints, dtype='<i4').tobytes()
+body = struct.pack('<6i', len(ints), 0, 0, 0, 0, 0) + np.array(ints, dtype='<i4').tobytes()
 body += hashlib.sha256(body).digest()
 (R / 'assets/HardcodedNumbers/Draw02/Types_Draw02_MovingBaseMeasurements.bin').write_bytes(body)
 print(json.dumps(reports))

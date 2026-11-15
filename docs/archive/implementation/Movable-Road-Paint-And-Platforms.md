@@ -109,7 +109,7 @@ The inspected original DrawBridge01 base-color atlas contains the yellow longitu
 paint inside its road islands (surface `97291ab7f7938fc35cc670b15f2bca36`). It is not a
 per-dash independent object. Native moving-node hidden composition suppresses ordinary lane
 rendering through the LaneSystem/SecondaryLaneSystem paths documented in
-[stationary lane-visual suppression](Movable-stationary-lane-visual-suppression.md).
+[stationary lane-visual suppression](movable-stationary-lane-visual-suppression.md).
 
 The selected road cannot inherit the prototype's fixed lane pattern. Its measured paint
 footprints still partition the receiver using existing object materials. Draw01 now performs

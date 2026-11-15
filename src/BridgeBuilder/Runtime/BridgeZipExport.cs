@@ -36,10 +36,10 @@ internal static class BridgeZipExport
         destination = Path.GetFullPath(destination);
         if (!destination.EndsWith(".zip", StringComparison.OrdinalIgnoreCase))
             throw new IOException("The destination must have a .zip extension.");
-        if (destination.StartsWith(source + Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase))
+        if (BridgeFileAccess.WithinTree(destination, source))
             throw new IOException("The destination cannot be inside the bridge directory.");
         if (File.Exists(destination)) throw new IOException("The destination already exists. Choose another filename.");
-        var files = Enumerate(source).ToArray();
+        var files = BridgeFileAccess.EnumerateFiles(source).ToArray();
         if (files.Length == 0) throw new IOException("The bridge directory is empty.");
         Directory.CreateDirectory(Path.GetDirectoryName(destination)!);
         var temporary = destination + "." + Guid.NewGuid().ToString("N") + ".tmp";
@@ -61,17 +61,4 @@ internal static class BridgeZipExport
         finally { if (File.Exists(temporary)) File.Delete(temporary); }
     }
 
-    private static IEnumerable<string> Enumerate(string directory)
-    {
-        if ((File.GetAttributes(directory) & FileAttributes.ReparsePoint) != 0)
-            throw new IOException("Linked bridge directories cannot be exported.");
-        foreach (var file in Directory.GetFiles(directory))
-        {
-            if ((File.GetAttributes(file) & FileAttributes.ReparsePoint) != 0)
-                throw new IOException("Linked bridge files cannot be exported.");
-            yield return file;
-        }
-        foreach (var child in Directory.GetDirectories(directory))
-            foreach (var file in Enumerate(child)) yield return file;
-    }
 }

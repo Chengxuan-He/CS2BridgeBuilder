@@ -18,12 +18,12 @@ RECIPE = "BridgeBuilder/RoadRepeat/1"
 
 def numbers(path):
     data = path.read_bytes()
-    if data[:8] != b"BBN1\x01\x00\x00\x00" or hashlib.sha256(data[:-32]).digest() != data[-32:]:
+    if hashlib.sha256(data[:-32]).digest() != data[-32:]:
         raise ValueError("Invalid measured numerical resource: " + str(path))
-    counts = struct.unpack_from("<6i", data, 8)
+    counts = struct.unpack_from("<6i", data, 0)
     if min(counts) < 0:
         raise ValueError("Negative typed-array count")
-    result, offset = {}, 32
+    result, offset = {}, 24
     for name, fmt, count in zip(("I32", "U32", "I64", "U64", "F32", "F64"), "iIqQfd", counts):
         result[name] = struct.unpack_from("<" + fmt * count, data, offset)
         offset += struct.calcsize(fmt) * count

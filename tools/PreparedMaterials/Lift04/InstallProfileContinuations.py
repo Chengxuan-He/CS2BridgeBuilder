@@ -8,12 +8,12 @@ ROOT=Path(__file__).resolve().parents[3]
 proof=json.loads((Path(__file__).parent/'profile-continuations.json').read_text())
 path=ROOT/'assets/HardcodedNumbers/Lift04/Types_Lift04_StructuralProfileRegions.bin'
 raw=path.read_bytes();assert hashlib.sha256(raw[:-32]).digest()==raw[-32:]
-counts=struct.unpack_from('<6i',raw,8);assert counts[:5]==(0,0,0,0,0) and counts[5] in (24,40)
-values=list(struct.unpack_from('<24d',raw,32))
+counts=struct.unpack_from('<6i', raw, 0);assert counts[:5]==(0,0,0,0,0) and counts[5] in (24,40)
+values=list(struct.unpack_from('<24d',raw,24))
 for bounds in proof['repeatCoveragePixels']:
     values.extend(v/4096 for v in proof['unitPixels'])
     values.extend(v/4096 for v in bounds)
-data=b'BBN1'+struct.pack('<7i',1,0,0,0,0,0,len(values))+struct.pack('<'+str(len(values))+'d',*values)
+data=struct.pack('<6i',0,0,0,0,0,len(values))+struct.pack('<'+str(len(values))+'d',*values)
 data+=hashlib.sha256(data).digest();path.write_bytes(data)
 source=ROOT/'src/BridgeBuilder/Bridges/Types/Lift04/Lift04RepeatUnits.cs'
 code=source.read_text();start='        // Native physical continuation regions.';end='        // End single-axis profiles.'

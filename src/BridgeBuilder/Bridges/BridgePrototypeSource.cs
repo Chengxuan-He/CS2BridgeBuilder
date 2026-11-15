@@ -227,7 +227,7 @@ internal sealed class BridgePrototypeSource
     private static bool IsBxp(string? id) => id == BxpBaseId || id == BxpPortsId;
 
     // Titles are presentation only. Official-page evidence for recorded fallbacks is in
-    // docs/archive/audits/Source-Mod-Titles.md; author-published GO/B&P remain intact.
+    // docs/archive/audits/source-mod-titles.md; author-published titles remain intact.
     private static string ModDisplayName(string? id, PrefabBase? prefab = null)
     {
         var meta = prefab?.asset?.GetMeta();
@@ -246,7 +246,6 @@ internal sealed class BridgePrototypeSource
             {
                 case BxpBaseId: return "Bridge Expansion Pack";
                 case BxpPortsId: return "Bridge Expansion Pack: B&P";
-                case "166012": return "GO 224m Viaduct Bridge";
             }
         }
         return RuntimeUiText.Get("SourceModNameUnavailable");

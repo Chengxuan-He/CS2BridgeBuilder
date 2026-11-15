@@ -15,13 +15,13 @@ def main():
     path = ROOT / 'artifacts/prepared-materials/Lift04/shared-sampling/native-charts.json'
     report = json.loads(path.read_text())
     binary = path.with_suffix('.bin').read_bytes()
-    assert binary[:8] == b'BBN1\x01\0\0\0'
+
     assert hashlib.sha256(binary[:-32]).digest() == binary[-32:]
-    counts = struct.unpack_from('<6i', binary, 8)
+    counts = struct.unpack_from('<6i', binary, 0)
     assert counts[1:4] == (0, 0, 0) and counts[5] == 0
-    ints = np.frombuffer(binary, '<i4', counts[0], 32)
-    floats = np.frombuffer(binary, '<f4', counts[4], 32 + counts[0] * 4)
-    assert len(binary) == 64 + 4 * (counts[0] + counts[4])
+    ints = np.frombuffer(binary, '<i4', counts[0],24)
+    floats = np.frombuffer(binary, '<f4', counts[4],24 + counts[0] * 4)
+    assert len(binary) == 56 + 4 * (counts[0] + counts[4])
     assert tuple(ints[:2]) == (-41, len(report['meshes']))
     at, ft = 2, 0
     for mesh in report['meshes']:
@@ -50,7 +50,7 @@ def main():
     # Duplicate uses of the same source triangle add aliases, not duplicate area.
     charts = extract(uv, np.vstack((full, full)))[1]
     assert len(charts) == 1 and charts[0]['exactRectangle'] and len(charts[0]['faces']) == 4
-    print('PASS Lift04 original UV charts: 11 meshes, 63303 faces, 525 mapped samplers; exact BBN1 roundtrip, incomplete-region rejection, no texture outputs.')
+    print('PASS Lift04 original UV charts: 11 meshes, 63303 faces, 525 mapped samplers; exact typed-array roundtrip, incomplete-region rejection, no texture outputs.')
 
 
 if __name__ == '__main__':

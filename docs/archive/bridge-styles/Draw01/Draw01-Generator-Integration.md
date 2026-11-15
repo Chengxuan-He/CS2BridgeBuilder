@@ -3,7 +3,7 @@
 ## Integration checkpoint, October 2026
 
 The user authorized deferring the known far-footing problem and continuing Draw01 on
-2026-10-16. This deferral applied only to that checkpoint. See the [current style routes and evidence guide](../../../README.md#reading-a-single-style-report).
+2026-10-16. This deferral applied only to that checkpoint. See the [current style routes and evidence guide](../../../contracts/documentation-contract.md#documentation-index-reading-a-single-style-report).
 
 Draw01 now has a connected generator route. The integrated build has passed compilation and
 has been installed. Actual preview, creation, native movement and cold-start persistence have
@@ -284,7 +284,7 @@ and bounded readback queues overlap evaluation with native saving. Constant text
 shared within the bridge, and road atlases group actual source surfaces and crop unused space.
 Native asset mutation remains thread-affine. No LOD or structural Z modification is introduced.
 
-See [performance and size evidence](../../audits/Movable-Bridge-Performance.md) for the measured old 132.134 s
+See [performance and size evidence](../../audits/movable-bridge-performance.md) for the measured old 132.134 s
 bake total, implementation details, final build/deployment verification and the unresolved
 complete dependency-size comparison. A successful pre-change preview was observed in the log;
 new-build timing, full permanent creation and size acceptance still need a human-created sample.

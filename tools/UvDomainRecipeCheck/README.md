@@ -5,7 +5,7 @@ The common Python API is `tools/GeometryMetaprogram/MovableUvDomainFormat.py`.
 legacy schema-2 layout. Existing offline readers call it after BBN checksum
 validation. Convert integer slices to ordinary lists where JSON or list semantics
 require them. `encode_arrays` emits schema-3; `read_bbn` and `write_bbn` handle
-the unchanged version-1 BBN1 container.
+the unchanged version-1 numerical `.bin` container.
 
 Schema-3 I32 begins `[-3, domainCount, faceCount, distinctBoundsCount]`. It then
 contains four domain-sized columns: consecutive anchor-A increments (initially

@@ -104,9 +104,9 @@ def main():
     profile_path=NUMBERS/'Types_Lift04_StructuralProfileRegions.bin'
     profile_raw=profile_path.read_bytes()
     assert hashlib.sha256(profile_raw[:-32]).digest()==profile_raw[-32:]
-    profile_counts=struct.unpack_from('<6i',profile_raw,8)
+    profile_counts=struct.unpack_from('<6i', profile_raw, 0)
     assert profile_counts==(0,0,0,0,0,40)
-    profile_regions=np.frombuffer(profile_raw,dtype='<f8',count=24,offset=32).reshape(-1,8)
+    profile_regions=np.frombuffer(profile_raw,dtype='<f8',count=24,offset=24).reshape(-1,8)
     continuation_path=Path(__file__).parent/'profile-continuations.json'
     continuation=json.loads(continuation_path.read_text())
     continuation_records={(r['render'],r['mesh'],r['domain']):r for r in continuation['records']}

@@ -15,7 +15,7 @@ namespace BridgeBuilder.Runtime;
 internal static class BridgePortableMigration
 {
     internal static bool Run(string owner, PrefabSystem system, string backup, out bool changed, out string error,
-        BridgeInspectionAssets.Entry[] knownAssets, BridgeCreationDependencies dependencies, ISet<string> paths)
+        BridgeInspectionAssets.Entry[] knownAssets, BridgeCreationDependencies dependencies, ISet<string> paths, bool diskReferencesRecovered = false)
     {
         changed = false; error = "";
         var originals = new Dictionary<string, byte[]>();
@@ -30,10 +30,10 @@ internal static class BridgePortableMigration
             var root = assets.Select(a => a.Prefab).OfType<NetGeometryPrefab>().FirstOrDefault(p => p.name == owner);
             if (root == null) { error = "Canonical bridge unavailable for independent migration"; return false; }
             var rootPath = assets.First(a => ReferenceEquals(a.Prefab, root)).Path;
-            var metadata = BridgeAssetMetadata.TryRead(BridgeFileAccess.ReadText(rootPath), out var stored) && stored.PrefabName == owner
+            var metadata = BridgeInspectionMetadata.TryReadHistorical(BridgeFileAccess.ReadText(rootPath), out var stored) && stored.PrefabName == owner
                 ? stored : new BridgeAssetInfo(owner, owner, "", null, "", "");
             // Dependency snapshots are byte-identical external assets, not conversion targets.
-            var privateAssets = assets.Where(a => !BridgeAssetInfo.IsDependencyPath(a.Path, owner)).ToArray();
+            var privateAssets = assets.Where(a => !BridgeInspectionPaths.IsDependencyPath(a.Path, owner)).ToArray();
             var networks = privateAssets.Select(a => a.Prefab).OfType<NetGeometryPrefab>().Distinct().ToArray();
             var pack = BridgeAssetPack.Ensure(system);
             if (pack == null) { error = "Native asset pack unavailable"; return false; }
@@ -50,6 +50,8 @@ internal static class BridgePortableMigration
                 var needsCleanup = source.components.Any(c => c is BridgeConstructionCost || c is ManualUnlockable
                     || (c != null && PrefabGraphCloner.ShouldStripComponent(c, false)));
                 if (!needsUnlock && !needsIcon && !needsMetadata && !needsPack && !needsCleanup) continue;
+                if (diskReferencesRecovered)
+                { error = "Current-format migration cannot safely serialize cached references after disk dependency recovery"; return false; }
                 if (source.asset == null || !BridgeAssetInfo.MatchesOwner(source.asset.path, owner))
                 { error = "Unowned migration target: " + source.name; return false; }
                 var target = (NetGeometryPrefab)source.Clone(source.name);
@@ -62,7 +64,7 @@ internal static class BridgePortableMigration
                     // Each network has its own missing fields. Never rebuild a valid sibling's rule.
                     BridgeUnlockExpression rule;
                     var read = source.GetComponent<ManualUnlockable>() != null
-                        ? BridgeUnlockSnapshot.Read(source, system, system.EntityManager, out rule)
+                        ? BridgeInspectionUnlock.Read(source, system, system.EntityManager, out rule)
                         : BridgeUnlockSnapshot.Capture(source, system, system.EntityManager, out rule);
                     if (!read) { error = "Unlock conditions unavailable: " + source.name; return false; }
                     var created = new List<PrefabBase>();
@@ -91,6 +93,8 @@ internal static class BridgePortableMigration
             {
                 if (!source.components.Any(c => c is BridgeConstructionCost
                     || (c != null && PrefabGraphCloner.ShouldStripComponent(c, false)))) continue;
+                if (diskReferencesRecovered)
+                { error = "Current-format migration cannot safely serialize cached references after disk dependency recovery"; return false; }
                 if (source.asset == null || !BridgeAssetInfo.MatchesOwner(source.asset.path, owner))
                 { error = "Unowned migration target: " + source.name; return false; }
                 var target = source.Clone(source.name);
@@ -115,14 +119,16 @@ internal static class BridgePortableMigration
             {
                 var assetPath = node.ReplacementAsset?.path ?? node.Target.asset?.path
                     ?? Path.Combine(Application.persistentDataPath, BridgePrefabPersistence.RelativePathFor(node.Target.name));
+                assetPath = BridgeFileAccess.LogicalUnder(assetPath, Path.Combine(Application.persistentDataPath,"ImportedData",owner));
                 if (!BridgeAssetInfo.MatchesOwner(assetPath, owner)) { error = "Unowned migration target"; return false; }
                 foreach (var path in new[] { assetPath, assetPath + ".cid" })
                 {
                     if (!BridgeFileAccess.Exists(path)) { newFiles.Add(path); continue; }
                     if (originals.ContainsKey(path)) continue;
-                    var bytes = File.ReadAllBytes(BridgeFileAccess.Native(path)); originals[path] = bytes;
+                    var bytes = BridgeFileAccess.ReadBytes(path); originals[path] = bytes;
                     var relative = BridgeFileAccess.Logical(path).Substring(BridgeFileAccess.Logical(Application.persistentDataPath).Length).TrimStart('\\', '/');
                     var saved = Path.Combine(backup, "Portable", relative);
+                    if (BridgeFileAccess.WithinAssetStorage(saved, Application.persistentDataPath)) throw new IOException("Backup aliases asset storage: " + saved);
                     Directory.CreateDirectory(BridgeFileAccess.Native(Path.GetDirectoryName(saved)!));
                     File.WriteAllBytes(BridgeFileAccess.Native(saved), bytes);
                 }
@@ -135,7 +141,7 @@ internal static class BridgePortableMigration
                 if (!BridgeSerializedReferences.TryRead(BridgeFileAccess.ReadText(expected.Path), out var document)
                     || document.Name != expected.Name
                     || (originals.TryGetValue(expected.Path + ".cid", out var cidBytes)
-                        && !File.ReadAllBytes(BridgeFileAccess.Native(expected.Path + ".cid")).SequenceEqual(cidBytes)))
+                        && !BridgeFileAccess.ReadBytes(expected.Path + ".cid").SequenceEqual(cidBytes)))
                 { error = "Migration changed an existing bridge identity; restoring original files"; return false; }
             }
             foreach (var node in nodes)
@@ -157,23 +163,23 @@ internal static class BridgePortableMigration
             changed = true;
             return true;
         }
-        catch (Exception exception) { error = exception.Message; return false; }
+        catch (Exception exception) when (exception is not UnauthorizedAccessException) { error = exception.Message; return false; }
         finally
         {
             // Restore cached instances: this pass changes files, never publishes replacement live networks.
             foreach (var pair in instances)
                 try { swap.Invoke(pair.Key, new object[] { pair.Value }); }
-                catch (Exception exception) { Mod.Log.Error("Could not restore cached bridge instance: " + exception); }
+                catch (Exception exception) when (exception is not UnauthorizedAccessException) { BridgeInspectionLog.Error("Could not restore cached bridge instance: " + exception); }
             if (!changed)
             {
                 foreach (var pair in originals)
                     try { File.WriteAllBytes(BridgeFileAccess.Native(pair.Key), pair.Value); }
-                    catch (Exception exception) { error += "; original restore failed: " + pair.Key + ": " + exception.Message; }
+                    catch (Exception exception) when (exception is not UnauthorizedAccessException) { error += "; original restore failed: " + pair.Key + ": " + exception.Message; }
                 // A failed migration must not leave orphan sections that next startup mistakes
                 // for a damaged bridge. Only remove paths absent before this transaction.
                 foreach (var path in newFiles)
                     try { File.Delete(BridgeFileAccess.Native(path)); }
-                    catch (Exception exception) { error += "; new file rollback failed: " + path + ": " + exception.Message; }
+                    catch (Exception exception) when (exception is not UnauthorizedAccessException) { error += "; new file rollback failed: " + path + ": " + exception.Message; }
                 foreach (var directory in newFiles.Select(Path.GetDirectoryName).Distinct())
                     try
                     {
@@ -181,7 +187,7 @@ internal static class BridgePortableMigration
                             && !Directory.EnumerateFileSystemEntries(BridgeFileAccess.Native(directory)).Any())
                             Directory.Delete(BridgeFileAccess.Native(directory));
                     }
-                    catch (Exception exception) { error += "; empty directory cleanup failed: " + exception.Message; }
+                    catch (Exception exception) when (exception is not UnauthorizedAccessException) { error += "; empty directory cleanup failed: " + exception.Message; }
             }
         }
     }

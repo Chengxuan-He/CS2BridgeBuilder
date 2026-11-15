@@ -96,7 +96,7 @@ def main():
         width_checks.append(dict(halfWidthDelta=delta,maximumUvError=max(errors),vertexChannelSamples=len(errors)))
     ints = [1,len(rows)] + [v for r in rows for v in [r['bone'], *r['faces']]]
     floats = [v for r in rows for v in r['bounds']+r['uvMin']+r['uvMax']+r['u']+r['v']]
-    payload = b'BBN1'+struct.pack('<i6i',1,len(ints),0,0,0,len(floats),0)
+    payload = struct.pack('<6i',len(ints),0,0,0,len(floats),0)
     payload += struct.pack('<'+'i'*len(ints),*ints)+struct.pack('<'+'f'*len(floats),*floats)
     payload += hashlib.sha256(payload).digest()
     resource = repo / 'assets/HardcodedNumbers/PedestrianDraw01/Types_PedestrianDraw01_FarRoadMapping.bin'

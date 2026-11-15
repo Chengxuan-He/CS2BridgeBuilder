@@ -50,7 +50,7 @@ for lod in (0,1):
                     candidates.append(dict(lod=lod,domain=domain,x=float(point[0]),z=float(point[2]),
                         u=float(point[0]*cu[0]+cu[1])))
 floats.extend([6.5999755859375,9.5,79.9453125,80.,82.,90.])
-blob=struct.pack('<8I',0x314e4242,1,0,0,0,0,len(floats),0)+struct.pack('<%df'%len(floats),*floats)
+blob=struct.pack('<6i',0,0,0,0,len(floats),0)+struct.pack('<%df'%len(floats),*floats)
 blob+=hashlib.sha256(blob).digest()
 (ROOT/'assets/HardcodedNumbers/Draw02/Types_Draw02_Draw02FixedWalkAtlasAppearance_cs.bin').write_bytes(blob)
 out=ROOT/'artifacts/material-remap/Draw02/near-cells'

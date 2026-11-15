@@ -4,7 +4,7 @@
 
 Report the complete compressed Paradox Mods content ZIP as the mod delivery size. Source files
 selected for Git and one generated bridge's complete physical assets are separate metrics under
-[bridge generation contract section 24](../agent-contract/BRIDGE_GENERATION_CONTRACT.md#24-movable-bridge-asset-size).
+[bridge generation contract section 24](../specs/generation-spec.md#generation-24-movable-bridge-asset-size).
 An unpacked build directory, installed directory, isolated texture subtotal or offline baking
 candidate is not the download package. A locally produced SDK package is not a published version.
 
@@ -41,4 +41,4 @@ sample means its footprint remains unmeasured. Listing covers and screenshots ar
 separately by ModPublisher and are not included in the installed content package.
 
 
-Recorded inputs, measurements and their acceptance limits are preserved in [the historical evidence](../archive/audits/Package-size-measurements.md).
+Recorded inputs, measurements and their acceptance limits are preserved in [the historical evidence](../archive/audits/package-size-measurements.md).

@@ -81,8 +81,8 @@ The router includes all ten Bridges & Ports movable styles: Draw01–Draw03, Lif
 and PedestrianDraw01/02. Registered styles use the same catalogue and operation behavior;
 missing native prerequisites still prevent generation. Routing and compilation do not establish
 human acceptance of every selected road, motion cycle, LOD or independent cold load.
-See the [implementation record](docs/archive/implementation/Movable-Bridges-Implementation.md) for per-style evidence
-and [prepared materials](docs/design/materials/Prepared-Materials.md) for unfinished material migration.
+See the [implementation record](docs/archive/implementation/movable-bridges-implementation.md) for per-style evidence
+and [prepared materials](docs/specs/material-spec.md) for current material requirements.
 
 The fixed catalogue also includes Art Deco Viaduct, Truss Viaduct, Arched Pedestrian Bridge
 and Covered Pedestrian Bridge. Width and transport variants of the same design share one style.
@@ -118,7 +118,7 @@ Material safety requirements cover missing virtual textures as well as missing D
 the complete dependency graph before reading or registering selected resources. Prepared inputs
 belong under `~Materials` for on-demand registration. Missing content must be reported as unavailable,
 without fabricated textures or removal of saved bridges; unchanged deferred assets do not require
-a recovery restart. See the [material availability contract](docs/agent-contract/MATERIAL_GENERATION_CONTRACT.md#prepared-material-discovery-boundary). These requirements do not certify every dependency path in the published release.
+a recovery restart. See the [material availability contract](docs/contracts/material-contract.md#material-prepared-material-discovery-boundary). These requirements do not certify every dependency path in the published release.
 
 Every bridge created there has two deliberately separate names:
 
@@ -142,7 +142,7 @@ existing bridges keep their saved display names and stable style IDs.
 The management tab lists these bridges and supports activation, display-name changes and deletion.
 Construction inputs are read-only after creation; changing them means creating another UUID-backed
 bridge. Confirm deletion in the management tab to remove that bridge and its placed instances.
-The settings action **Remove all bridges** removes local Bridge Builder bridges in the current session after confirmation. In a city or editor, it clears their placed instances first. See [Bridge deletion](docs/agent-contract/BRIDGE_DELETION.md) for the single and bulk workflows.
+The settings action **Remove all bridges** removes local Bridge Builder bridges in the current session after confirmation. In a city or editor, it clears their placed instances first. See [Bridge deletion](docs/contracts/reading-map.md#bridge-deletion) for the single and bulk workflows.
 
 It is the parallel of Road Prefab Exporter (`../CS2RoadPrefabExporter`, a separate checkout) and shares its code — see
 [Layout](#layout).
@@ -174,7 +174,7 @@ prefab(s)`, followed by one line per style, is the authoritative record of what 
 
 ## Generation flow
 
-All 34 generator routes (24 fixed and 10 movable styles) share the request lifecycle below.
+The admitted fixed and movable generator routes share the request lifecycle below.
 Each selected network uses its elevated branch throughout generation; a double-deck bridge keeps
 one context for each selected network and follows the archetype's main/auxiliary arrangement.
 Fixed bridges retain the selected native road materials. Movable bridges also compose the road,
@@ -212,7 +212,7 @@ Structural or appearance quality does not block a player's generation choice; re
 file and native-operation failures still report errors. Native initialization and offline checks
 do not establish in-game visual correctness.
 
-See the [bridge generation workflow design](docs/design/generation/Bridge-Generation-Workflow.md#end-to-end-generation-flow)
+See the [bridge generation workflow](docs/contracts/generation-contract.md#end-to-end-generation-flow)
 for scheduling, thread boundaries, persistence order, cancellation and cleanup.
 
 ### What generation actually builds
@@ -247,10 +247,10 @@ recorded transform/face recipes; all LODs are assembled before native publicatio
 
 The diagram summarizes a shared sequence, not identical part recipes for every style. Combined
 physical/appearance partitioning, fixed versus moving receivers, coordinated double decks and
-style-specific paint/support assembly are expanded in the workflow design:
-[generation core](docs/design/generation/Bridge-Generation-Workflow.md#generation-core-actual-sequence-and-branches),
-[movable workflow](docs/design/generation/Bridge-Generation-Workflow.md#movable-generation-sampling-geometry-and-material-realization)
-and [offline/runtime products](docs/design/generation/Bridge-Generation-Workflow.md#offline-inputs-and-runtime-products).
+style-specific paint/support assembly are expanded in the generation specification:
+[generation core](docs/specs/generation-spec.md#generation-core-actual-sequence-and-branches),
+[movable workflow](docs/specs/generation-spec.md#movable-generation-sampling-geometry-and-material-realization)
+and [offline/runtime products](docs/contracts/generation-contract.md#offline-inputs-and-runtime-products).
 Actual unavailable inputs or failed data/native operations exit to the failure lifecycle above;
 structural appearance is not an added rejection stage.
 
@@ -261,8 +261,8 @@ typed arrays and compact part recipes. Independent numerical batches and movable
 run on the CPU through `AffineGeometry`; native mesh access, materials and asset persistence
 remain on the main thread. Small batches execute serially to avoid scheduling overhead.
 This changes generation-time computation, not the runtime requirements of saved bridges.
-See the [affine execution contract](docs/agent-contract/BRIDGE_GENERATION_CONTRACT.md#cpu-affine-geometry-execution)
-and [contributor workflow](docs/guides/Adding-Bridge-Styles-With-Coding-Agents.md#affine-matrix-generation-step).
+See the [affine execution contract](docs/specs/generation-spec.md#generation-cpu-affine-geometry-execution)
+and [contributor workflow](docs/guides/adding-bridge-styles-with-coding-agents.md#affine-matrix-generation-step).
 End-to-end speed improvements require in-game measurements.
 
 ### Width
@@ -273,7 +273,7 @@ rigidly, subject to the documented complete-assembly rules for Lift01 and Lift02
 classification applies to every LOD. Actual missing inputs are reported; structural quality or a
 finite zero/reversed width does not block generation or select an arbitrary replacement design.
 
-The [material contract](docs/agent-contract/MATERIAL_GENERATION_CONTRACT.md#2-preserve-source-resolution-and-pattern-scale)
+The [material contract](docs/specs/material-spec.md#material-2-preserve-source-resolution-and-pattern-scale)
 allows verified non-tiling structural UV mappings to stretch with that geometry while retaining
 authored UVs, original textures, resolution, channels, mips and compatible material identity.
 This does not apply to processed movable-road materials: those use original-density tiling,
@@ -361,8 +361,8 @@ bridges keep independent copies. Built-in game/DLC assets remain native referenc
 must remain available. Persistence follows exact dependency CIDs and declared cache edges,
 without building a global asset or MidMips index.
 
-See the [persistence policy](docs/agent-contract/Bridge-Asset-Persistence.md) for naming and migration rules,
-and the [implementation overview](docs/design/persistence/Dependency-Persistence-Implementation.md) for lookup
+See the [persistence policy](docs/contracts/reading-map.md#bridge-asset-persistence) for naming and migration rules,
+and the [implementation overview](docs/specs/persistence-spec.md) for lookup
 and self-check behavior.
 
 ## Creation durability and recovery
@@ -381,8 +381,8 @@ live prefabs. See contract sections 17–19 for persistence, ownership and migra
 
 ## Documentation
 
-The rules generation is held to are in [AGENTS.md](AGENTS.md).
-Use the [documentation index](docs/README.md) to distinguish current contracts, native research
+The rules generation is held to are in [AGENTS.md](docs/contracts/reading-map.md#repository).
+Use the [documentation index](docs/contracts/reading-map.md#documentation-index) to distinguish current contracts, native research
 and recorded implementation evidence.
 
 Contributors can follow [Adding a bridge style with a coding agent](#adding-a-bridge-style-with-a-coding-agent)
@@ -452,13 +452,31 @@ third-party asset compatibility.
 flowchart TD
     A[Prepare a local checkout] --> B[Choose a suitable working branch]
     B --> C[Tell your agent the bridge source and desired design]
-    C --> F[Test the resulting build in game]
+    C --> D{Source representation?}
+    D -- Native Network --> N[Measure the existing network archetype]
+    D -- Static object or other non-Network --> V[Record source parameters and complete object graph]
+    V --> W[Prepare an immutable virtual-prototype recipe offline]
+    W --> X[Check spans, supports, endpoints and all LODs]
+    N --> E[Implement through the existing style generation path]
+    X --> E
+    E --> M{Moving structure?}
+    M -- Yes --> O[Integrate native motion under the movable contract]
+    M -- No --> P[Integrate UI, preview and independent persistence]
+    O --> P
+    P --> Q[Build and deploy after the user closes the game]
+    Q --> F[User starts the game and tests the generated bridge]
     F --> G{Acceptance checks pass?}
     G -- No --> H[Share logs, screenshots and reproduction steps with the agent]
-    H --> F
+    H --> E
     G -- Yes --> I[Review changes and deliver locally or as a patch]
     I -. Optional with explicit authorization .-> J[Publish a fork branch and open a pull request]
 ```
+
+The non-Network branch prepares construction data, not an intermediate playable network. Both
+branches join the same generation path; the player selects the actual road, track or pedestrian
+network there. Moving non-Network sources must also follow the movable branch. Use the
+[non-Network contract](docs/contracts/non-network-contract.md) and
+[paired specification](docs/specs/non-network-spec.md) for the governing scope.
 
 ### 1. Prepare the repository and evidence
 
@@ -477,6 +495,9 @@ Give the agent these inputs:
 - Measured road and structure boundaries, tower placement, cables, railings, lights, materials,
   unlock conditions and native cost components.
 - For double-deck styles, the real prototype's `AuxiliaryNets` arrangement and deck separation.
+- Identify whether the source is a native Network or a static object/other non-Network asset.
+  For non-Network sources, include version-matched description evidence, retrieval date, package
+  identities/hashes and documented units; distinguish total length, span and repeat length.
 
 Do not ask the agent to infer dimensions from a screenshot or borrow another family's constants.
 When evidence is missing, it should identify the missing data and complete independent work first.
@@ -510,13 +531,20 @@ say so rather than guessing. Include any additional required DLC or mods separat
 ```text
 Add support for <style ID> using <exact prototype Prefab> from <source and version>.
 Support <single deck / double deck>; use a suitable working branch (a style branch is optional).
+Source representation: <native Network / static object or other non-Network>.
+Motion: <fixed / moving mechanism and available evidence>.
 Evidence is available at <paths to anatomy, mesh/LOD exports and screenshots>.
 
 Read AGENTS.md, the complete project contract and applicable nested instructions.
+Read the complete generation contract and its paired specification. For a non-Network source,
+also read docs/contracts/non-network-contract.md and docs/specs/non-network-spec.md.
+Prepare only an existing-form immutable construction recipe; do not create or register an
+intermediate network asset, introduce a virtual-prototype runtime layer, or bind it to a road kind.
+For a moving source, also follow the movable contract and specification.
 Inspect the existing generation, preview, localization, persistence and migration paths.
 Use the simplest existing extension points. Record measured parameters for this archetype;
 do not copy another style's constants or infer part identity in runtime code.
-Keep each bridge’s persisted dependencies owner-local and preserve native pricing/unlocks; require Bridge Builder for generated-program registration.
+Keep each bridge’s persisted dependencies owner-local and preserve native pricing/unlocks; require Bridge Builder for mod-owned precompiled program registration; no shader program files are saved with a bridge.
 Do not use other bridges' ImportedData Prefabs as creation or copy sources.
 
 Follow contract section 12's optional branch policy and keep the style ID stable.
@@ -565,13 +593,13 @@ A working generator without its working UI entry is not a completed contribution
 
 #### Affine matrix generation step
 
-Use the [CPU affine execution contract](docs/agent-contract/BRIDGE_GENERATION_CONTRACT.md#cpu-affine-geometry-execution)
+Use the [CPU affine execution contract](docs/specs/generation-spec.md#generation-cpu-affine-geometry-execution)
 for every style's coordinate stage:
 
 1. Extract measured origins, coefficient rows, parameter domains and part membership offline.
    Each of X, Y and Z may depend on width; a constant axis has zero coefficients.
 2. Store numerical values in the existing DLL-embedded typed arrays. Sparse vertex weights and
-   part ranges are valid matrix representations; the BBN1 format need not change or expand to
+   part ranges are valid matrix representations; the numerical `.bin` format need not change or expand to
    dense matrices. Preserve float bits, anchors and evaluation order.
 3. Load only demanded binary resources into the current generation's parameter session. Reuse
    decoded arrays, membership records and SIMD programs within that request and its joined LOD
@@ -599,6 +627,40 @@ This stage changes computation only: preserve topology, native bone ownership, m
 semantics and independent asset persistence.
 
 ### 4. Measure geometry before implementing transforms
+
+#### Prepare a non-Network source before generation
+
+For a static-object or other non-Network source, complete this branch before implementing its
+normal style generator. Follow the [required sequence](docs/contracts/non-network-contract.md#non-network-1-scope-and-required-sequence)
+and record evidence in the appropriate bridge-style audit, rather than adding a separate design document.
+
+1. Check for an existing native or supported equivalent before proposing a new style ID; width
+   variants of the same design belong to one style. Record the exact installed source and compare
+   its documented dimensions with measured geometry. Resolve discrepancies explicitly; a number
+   in the asset name is not a measurement.
+2. Inventory the complete object graph, nested render parts and every LOD. Record coordinate
+   frames, accumulated transforms, running-surface versus structural membership, material references,
+   supports and endpoints using the [parameter meanings](docs/specs/non-network-spec.md#non-network-2-source-evidence-and-parameter-meanings).
+3. Measure span-local, repeating, endpoint and shared-boundary support roles. Establish adjacent-span
+   continuity and select the [native longitudinal behavior](docs/specs/non-network-spec.md#non-network-select-longitudinal-behavior-from-native-evidence)
+   from actual native evidence. Keep transverse width mapping separate; do not stretch rigid supports
+   or treat authored total length as an exact native course-length lock.
+4. Encode those measurements in the existing immutable recipe and embedded numerical-resource
+   form. The virtual prototype is only this construction data: emit no intermediate `.Prefab`,
+   `.cok`, network entities or registration, and add no separate schema, factory, cache or runtime
+   conversion pass. Do not choose a road/rail/pedestrian template for it or add a road-kind gate.
+5. Feed the recipe directly into the existing generation path. The player's selected elevated
+   network supplies composition, lanes and native network behavior. Map support roles into the final
+   native graph, including applicable piece objects and node subobjects, and inspect preview traversal
+   through nested objects and meshless carriers. Continue with the shared geometry, UI and persistence
+   steps below; an unchanged static bridge placed over an unrelated road is not a generated bridge.
+6. Record the [staged verification results](docs/specs/non-network-spec.md#non-network-5-staged-verification-and-acceptance)
+   separately for source evidence, recipe, final generation, preview/persistence and human acceptance.
+   Missing evidence remains explicit while independent work continues. Moving sources additionally
+   require native mechanism/bone/state integration under the movable contract; this preparation does
+   not implement motion or authorize a separate conversion UI.
+
+#### Apply the shared geometry workflow
 
 Identify authored parts offline using the highest-detail prototype. Record exact mesh/LOD identity
 and part membership as immutable data; runtime code consumes this data without rediscovering parts
@@ -681,6 +743,13 @@ Test the following in your local game and give the results to your agent:
 6. With Bridge Builder enabled, persisted bridges must cold-load and remain available and usable; retain required native
    game/DLC resources. Separately test any known rail-seam limitation.
 7. When applicable, legacy migration preserves identity and a second check makes no further changes.
+8. For non-Network sources, inspect reference, shorter and longer native courses, repeated spans,
+   endpoints, slopes/intersections and sequence boundaries. Check rigid support dimensions, adjacent
+   seams, duplicate/missing supports, zero/one/asymmetric sidewalks and usable lane connectivity.
+   Compare authored dimensions with realized dimensions rather than assuming they remain identical.
+   Verify preview coverage and cold loading of the final owned graph while source assets stay unchanged.
+   Keep these evidence checks separate from player eligibility: do not add appearance/clearance/width
+   rejection gates; genuine resource, native-operation and persistence failures remain explicit.
 
 ### 7. When the generated bridge does not match your expectations
 
@@ -702,7 +771,8 @@ The generated <style ID> bridge does not match the expected result.
 Prototype: <exact Prefab name>.
 Source and version: <base game + game version / DLC name + game version /
 Paradox Mods ID + mod name + mod version + game version>.
-Contribution branch: bridge/<bridge-name>.
+Contribution branch: <actual working branch>.
+Source representation: <native Network / static object or other non-Network>.
 
 Expected: <describe the correct appearance or behavior of the affected part>.
 Actual: <describe the difference, including which side, part or viewing distance is affected>.
@@ -746,6 +816,8 @@ merge and publish accepted contributions.
 Include the following in the local handoff or optional pull request:
 
 - The bridge style and supported deck modes, with required DLC or source assets.
+- For non-Network sources, the source-parameter record, reproducible recipe evidence, native
+  longitudinal/support mapping and staged verification results, including outstanding manual checks.
 - A short explanation of the implementation and any shared code it changes.
 - Prototype measurements and reproducible evidence, without redistributing assets you lack permission to share.
 - Near/far screenshots and results for creation, save/load and cold-start testing.
@@ -761,3 +833,7 @@ Address review feedback locally; update a remote pull request only if that optio
 
 This project's original code is available under the [MIT License](LICENSE).
 Game assets and third-party dependencies retain their respective licenses.
+
+## Precompiled programs and legacy custom-shader bridges
+
+The current requirement uses the mod's precompiled decal and layered-PBR programs with stable queue-specific references. New bridges and bridge ZIP exports contain no custom shader payload. Bridge Builder must remain installed and enabled. Compatibility with old owner-persisted custom-shader bridges is intentionally discontinued: only startup/manual self-check identifies their concrete obsolete program protocol and performs the existing owner-scoped backup/removal and restart handling. Healthy noncustom bridges remain preserved. Source implementation and automated checks do not establish in-game rendering or cold-load acceptance. See the [material requirements](docs/specs/material-spec.md#material-dynamically-generated-and-independently-persisted-material-shaders-part-2) and [self-check boundary](docs/contracts/self-check-contract.md#self-check-obsolete-custom-program-retirement).

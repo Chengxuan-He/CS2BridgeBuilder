@@ -240,7 +240,6 @@ public partial class BridgeGenerationSystem
                     style.Id, DateTime.UtcNow.ToString("O", CultureInfo.InvariantCulture)));
             foreach (var node in nodes.Where(n => n.NeedsSave))
             {
-                node.Target.Remove<BridgeConstructionCost>();
                 BridgeNativePresentation.Prepare(node.Target);
             }
             var saveStart = generationClock.ElapsedMilliseconds;
@@ -313,13 +312,6 @@ public partial class BridgeGenerationSystem
         return null;
     }
 
-    private static bool IsPrivateDeck(NetPrefab source, NetPrefab clone, ExportReport report)
-    {
-        if (!ReferenceEquals(source, clone)) return true;
-        report.Defect($"Network '{source.name}' could not be cloned into an owned native prefab. " +
-            "Generation stopped before modifying the shared source network.");
-        return false;
-    }
 
     /// <summary>
     /// The generated bridge is presented as the selected bridge design, not as another copy of its

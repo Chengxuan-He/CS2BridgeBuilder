@@ -49,7 +49,7 @@ for lod in range(3):
   assert not seen.intersection(ids);seen.update(ids);ids=sorted(ids);mask=np.isin(f,ids);assert np.all(mask.any(1)==mask.all(1))
   groups.append(ids);evidence.append(dict(lod=lod,group=g,halfSpan=spans[g],vertices=len(ids),faces=int(mask.all(1).sum()),members=members[g],geometrySha256=digest))
 ints=[len(x) for x in groups]+[i for x in groups for i in x]
-raw=struct.pack('<8i',0x314e4242,1,len(ints),0,0,0,len(spans),0)+np.array(ints,'<i4').tobytes()+np.array(spans,'<f4').tobytes();raw+=hashlib.sha256(raw).digest()
+raw=struct.pack('<6i',len(ints),0,0,0,len(spans),0)+np.array(ints,'<i4').tobytes()+np.array(spans,'<f4').tobytes();raw+=hashlib.sha256(raw).digest()
 (out/'Types_Lift02_CentralTrusses.bin').write_bytes(raw)
 (repo/'assets/HardcodedNumbers/Lift02/Types_Lift02_CentralTrusses.bin').write_bytes(raw)
 (out/'central-map-candidate.json').write_text(json.dumps(evidence,indent=2));print([(x['lod'],x['group'],x['vertices'],x['faces']) for x in evidence])

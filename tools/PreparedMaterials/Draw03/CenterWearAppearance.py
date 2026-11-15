@@ -26,5 +26,5 @@ for v,color,label in [(center,'green','Measured wear center'),(D[1]-4.5*D[0],'re
     x=(v-818)*2;draw.line((x,35,x,350),fill=color,width=2);draw.text((x+3,10 if color=='green' else 25 if color=='red' else 365),label,fill=color)
 im.save(out/'profile.png')
 path=ROOT/'assets/HardcodedNumbers/Draw03/Types_Draw03_Draw03LaneAppearance_cs.bin'
-raw=bytearray(path.read_bytes());struct.pack_into('<f',raw,32+2*4,reference);raw[-32:]=hashlib.sha256(raw[:-32]).digest();path.write_bytes(raw)
+raw=bytearray(path.read_bytes());struct.pack_into('<f',raw,24+2*4,reference);raw[-32:]=hashlib.sha256(raw[:-32]).digest();path.write_bytes(raw)
 print(json.dumps(report))

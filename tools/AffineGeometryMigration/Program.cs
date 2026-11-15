@@ -193,7 +193,7 @@ static byte[] WriteProgram(List<(int Index,float Weight)[]> entries)
     }
     using var stream=new MemoryStream();using(var writer=new BinaryWriter(stream,Encoding.UTF8,true))
     {
-        writer.Write(0x314e4242u);writer.Write(1);foreach(int count in new[]{words.Count,0,0,0,floats.Count,0})writer.Write(count);
+        foreach(int count in new[]{words.Count,0,0,0,floats.Count,0})writer.Write(count);
         foreach(int word in words)writer.Write(word);foreach(float value in floats)writer.Write(value);
     }
     byte[] payload=stream.ToArray();stream.Write(SHA256.HashData(payload));return stream.ToArray();

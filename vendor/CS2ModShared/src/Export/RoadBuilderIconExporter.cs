@@ -83,7 +83,7 @@ internal static class RoadBuilderIconExporter
             ExportPaths.EnsureIconsDirectory();
             var extension = Path.GetExtension(sourceFile);
             if (string.IsNullOrEmpty(extension)) extension = ".svg";
-            var fileName = IconBaseName(road.Name) + extension.ToLowerInvariant();
+            var fileName = IconBaseName(road.Id) + extension.ToLowerInvariant();
             var targetFile = Path.Combine(ExportPaths.IconsDirectory, fileName);
             File.Copy(sourceFile, targetFile, true);
             return $"coui://{IconHost}/{fileName}";

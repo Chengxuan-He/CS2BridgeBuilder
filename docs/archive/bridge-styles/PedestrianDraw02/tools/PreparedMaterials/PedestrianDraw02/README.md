@@ -38,7 +38,7 @@ road patch and the unused moving patch. These are measured sampling evidence,
 not independent pixel bake jobs. This style retains the selected moving-surface
 appearance (`PrototypeRoad` is false). `ExtractNativeCharts.py` and
 `GenerateUvCharts.py` produce reliable source-chart boundaries and the formal lazy
-BBN chart adapter. See [source mapping](SourceSampling.md) for coverage and limits.
+BBN chart adapter. See [source mapping](source-sampling.md) for coverage and limits.
 
 `PedestrianDraw02NativeSampling.cs` is an offline arithmetic experiment only.
 It adds zero eligible production cases and is not compiled into the mod.

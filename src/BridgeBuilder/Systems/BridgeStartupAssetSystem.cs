@@ -22,30 +22,52 @@ public partial class BridgeStartupAssetSystem : GameSystemBase
     private readonly HashSet<string> _copiedOwners = new(StringComparer.Ordinal);
 
     internal static bool IsStartupInspection { get; private set; }
+    internal static bool HasChangedOwnerFiles(string owner)
+        => BridgeStartupRecovery.Retired.Contains(owner) || (_active?._copiedOwners.Contains(owner) ?? false);
 
     protected override void OnCreate()
     {
+        try
+        {
         base.OnCreate();
         Enabled = false;
+
+        }
+        catch (Exception exception) when (exception is not UnauthorizedAccessException) { BridgeInspectionLog.Error("Inspection OnCreate: " + exception); }
     }
 
-    internal static bool CanCheck => _modLoaded && GameManager.instance != null
+    internal static bool CanCheck
+    {
+        get
+        {
+            try { return  _modLoaded && GameManager.instance != null
         && GameManager.instance.gameMode == GameMode.MainMenu
         && GameManager.instance.state == GameManager.State.WorldReady
-        && !GameManager.instance.isGameLoading && !IsStartupInspection && BridgeAssetLoading.Ready;
+        && !GameManager.instance.isGameLoading && !IsStartupInspection && BridgeAssetLoading.Ready; }
+            catch (Exception exception) when (exception is not UnauthorizedAccessException) { BridgeInspectionLog.Error("Inspection readiness: " + exception); return false; }
+        }
+    }
 
     internal void ScheduleInspectionAfterLoad()
     {
+        try
+        {
+        if (!BridgeInspectionPermissions.Ready) return;
         BridgeAssetLoading.Start(() => { _startupPending = true; Enabled = true; });
         _modLoaded = true;
         _active = this;
         _startupPending = true;
         Enabled = true;
-        Mod.Log.Info("Bridge self-check waiting for mod initialization + native prefab loading + PDX asset batches.");
+        BridgeInspectionLog.Info("Bridge self-check waiting for mod initialization + native prefab loading + PDX asset batches.");
+
+        }
+        catch (Exception exception) when (exception is not UnauthorizedAccessException) { BridgeInspectionLog.Error("Inspection ScheduleInspectionAfterLoad: " + exception); }
     }
 
     internal static void StopInspection()
     {
+        try
+        {
         if (_active != null)
         {
             _active.Enabled = false;
@@ -54,36 +76,56 @@ public partial class BridgeStartupAssetSystem : GameSystemBase
         BridgeAssetLoading.Stop();
         _active = null;
         _modLoaded = false;
+
+        }
+        catch (Exception exception) when (exception is not UnauthorizedAccessException) { BridgeInspectionLog.Error("Inspection StopInspection: " + exception); }
     }
 
     internal void RequestManualCheck()
     {
+        try
+        {
         if (!CanCheck) return;
         _manualRequested = true;
         Enabled = true;
+
+        }
+        catch (Exception exception) when (exception is not UnauthorizedAccessException) { BridgeInspectionLog.Error("Inspection RequestManualCheck: " + exception); }
     }
 
     protected override void OnGamePreload(Purpose purpose, GameMode mode)
     {
+        try
+        {
         base.OnGamePreload(purpose, mode);
         _manualRequested = false;
         Enabled = false;
+
+        }
+        catch (Exception exception) when (exception is not UnauthorizedAccessException) { BridgeInspectionLog.Error("Inspection OnGamePreload: " + exception); }
     }
 
     protected override void OnGameLoadingComplete(Purpose purpose, GameMode mode)
     {
+        try
+        {
         base.OnGameLoadingComplete(purpose, mode);
-        // Native loading may finish after Mod.OnLoad. Restore owner programs here,
+        // Native loading may finish after Mod.OnLoad. Register current mod-owned variants here,
         // before GameManager transitions to WorldReady and starts MeshSystem updates.
         if (_modLoaded && !BridgeCustomShaderRestoration.TryRestore(out _, out var materialError))
-            Mod.Log.Error("Generated material program loading: " + materialError);
+            BridgeInspectionLog.Error("Generated material program loading: " + materialError);
         // GameManager sets WorldReady only AFTER returning from this event.
         // Wake the next UI update; never move files inside the loading callback.
         Enabled = _modLoaded && mode == GameMode.MainMenu;
+
+        }
+        catch (Exception exception) when (exception is not UnauthorizedAccessException) { BridgeInspectionLog.Error("Inspection OnGameLoadingComplete: " + exception); }
     }
 
     protected override void OnUpdate()
     {
+        try
+        {
         if (!CanCheck) return;
         if (_startupPending || _manualRequested)
         {
@@ -93,11 +135,24 @@ public partial class BridgeStartupAssetSystem : GameSystemBase
             RunInspection(manual);
         }
         if (_pendingNotice == null) { Enabled = _startupPending; return; }
-        if (GameManager.instance.userInterface?.appBindings == null) return;
+        if (GameManager.instance.userInterface?.appBindings == null)
+        {
+            Enabled = false;
+            BridgeInspectionLog.Error("Inspection result UI unavailable; requesting restart for actual outcomes.");
+            BridgeInspectionLog.Run("missing result UI restart", BridgeGameRestart.Run);
+            return;
+        }
         var key = _pendingNotice;
-        _pendingNotice = null;
-        Enabled = _startupPending;
-        Mod.ShowRecoveryMessage(key.Message());
+        Enabled = false;
+        try { Mod.ShowRecoveryMessage(key.Message()); _pendingNotice = null; }
+        catch (Exception exception) when (exception is not UnauthorizedAccessException)
+        {
+            BridgeInspectionLog.Error("Inspection result formatting: " + exception);
+            BridgeInspectionLog.Run("result formatting restart", BridgeGameRestart.Run);
+        }
+
+        }
+        catch (Exception exception) when (exception is not UnauthorizedAccessException) { BridgeInspectionLog.Error("Inspection OnUpdate: " + exception); }
     }
 
     private void RunInspection(bool manual)
@@ -105,75 +160,84 @@ public partial class BridgeStartupAssetSystem : GameSystemBase
         var timer = System.Diagnostics.Stopwatch.StartNew();
         IsStartupInspection = true;
         var report = new BridgeSelfCheckReport();
+        var permissionFailed = false;
         _pendingNotice = null;
-        var completed = false;
-        Mod.Log.Info($"Bridge self-check started: {(manual ? "manual" : "mod initialized + all native asset batches complete")}");
+        BridgeInspectionLog.Info($"Bridge self-check started: {(manual ? "manual" : "mod initialized + all native asset batches complete")}");
         try
         {
-            if (!BridgeCustomShaderRestoration.TryRestore(out _, out var programError))
-            {
-                Mod.Log.Error("Bridge self-check retained owners: generated material registration failed; " + programError);
-                return;
-            }
-            BridgeDeferredRemoval.Resume();
+            // Configuration migration is part of self-check; normal readers accept JSON only.
+            // No bridge files change here. Generation reloads settings on the next world load.
+            if (!BridgeExportSettingsMigration.Run(out _, out var settingsError))
+                BridgeInspectionLog.Warn(settingsError);
+            BridgeInspectionRecoveryCopies.Run();
+            BridgeInspectionLog.Run("pending player deletion", BridgeDeferredRemoval.Resume);
             var failures = new Dictionary<string, string>(StringComparer.Ordinal);
             var system = World.GetOrCreateSystemManaged<PrefabSystem>();
             var assets = BridgeInspectionAssets.Read(owner => !_copiedOwners.Contains(owner) && !BridgeStartupRecovery.Retired.Contains(owner) && !BridgeDeferredRemoval.Excluded(owner)).ToArray();
             if (assets.Length != 0 && BridgeAssetPack.Ensure(system) == null)
-                Mod.Log.Error("Bridge pack icon could not be updated; existing bridge assets retained.");
+                BridgeInspectionLog.Error("Bridge pack icon could not be updated; existing bridge assets retained.");
             var owners = new HashSet<string>(assets.Select(a => a.Owner), StringComparer.Ordinal);
             var byOwner = assets.GroupBy(a => a.Owner).ToDictionary(g => g.Key, g => g.ToArray(), StringComparer.Ordinal);
-            var contentAvailable = BridgePreparedMaterials.RefreshContent(system);
-            var unfinished = new HashSet<string>(StringComparer.Ordinal);
-            foreach (var owner in owners.ToArray())
-            {
-                if (!byOwner[owner].Any(asset => asset.Prefab == null ? !contentAvailable : (!system.IsAvailable(asset.Prefab) || BridgePreparedMaterials.HasUnavailableRequirement(asset.Prefab)))) continue;
-                unfinished.Add(owner);
-                // No mutation occurred: restoring the DLC, not a restart loop, is required.
-                // Keep this deferred owner out of the repair-result notification.
-                owners.Remove(owner);
-                Mod.Log.Warn("Bridge inspection deferred; required content unavailable or unresolved UUID=" + owner);
-            }
+            // Availability is not an exemption: inspect the owner's persisted dependency graph.
             var scope = new BridgeInspectionScope(UnityEngine.Application.persistentDataPath, owners);
+            foreach (var owner in scope.UnreadableOwners)
+                failures[owner] = "Owner files could not be read to establish current format";
             var dependencies = new Dictionary<string, BridgeCreationDependencies>(StringComparer.Ordinal);
             foreach (var owner in owners)
             {
-                report.Set(owner, BridgeSelfCheckReport.Outcome.Unfinished);
                 foreach (var asset in byOwner[owner]) { scope.Paths(owner).Add(asset.Path); scope.Paths(owner).Add(asset.Path + ".cid"); }
-                try { dependencies.Add(owner, scope.Dependencies(owner, byOwner[owner])); }
-                catch (Exception exception) { failures[owner] = "Cache relation read failed: " + exception.Message; }
+                try
+                {
+                    if (BridgeLegacyShaderOwners.Identify(owner, scope.Paths(owner), out var obsoleteProgram))
+                    {
+                        failures[owner] = "Obsolete owner-persisted custom material program cannot be migrated: " + obsoleteProgram;
+                        report.Set(owner, BridgeSelfCheckReport.Outcome.Unfinished);
+                        continue;
+                    }
+                    dependencies.Add(owner, scope.Dependencies(owner, byOwner[owner]));
+                }
+                catch (Exception exception) when (exception is not UnauthorizedAccessException) { failures[owner] = "Owner dependency inputs could not be recovered: " + exception; BridgeInspectionLog.Warn(failures[owner]); }
             }
             if(owners.Count!=0 && !scope.PrepareCaches(out var cachePreparationError))
             {
-                Mod.Log.Error("Bridge self-check aborted before owner inspection: cache relation preparation failed; "+cachePreparationError);
-                return;
+                BridgeInspectionLog.Warn("Bridge self-check cache inputs partially unavailable; dependent reads skipped: " + cachePreparationError);
             }
             var discoveryMs = timer.ElapsedMilliseconds;
             var stageStart = timer.ElapsedMilliseconds;
             var migrationCandidates = new HashSet<string>(StringComparer.Ordinal);
+            var recoveredDiskOwners = new HashSet<string>(StringComparer.Ordinal);
             var migrationErrors = 0;
             // Missing material snapshots can be hidden by a currently installed source mod.
             // Traverse every owner's disk graph, even when its live references are healthy.
             foreach (var owner in owners)
             {
+                try
+                {
                 if (failures.ContainsKey(owner)) continue;
                 if (!BridgeDependencyPersistence.Save(owner, byOwner[owner].Select(a => a.Cid), dependencies[owner],
                     out _, out var migrationError, out var writtenFiles))
                 {
                     migrationErrors++;
-                    if (dependencies[owner].Unconfirmed)
-                    {
-                        unfinished.Add(owner);
-                        Mod.Log.Warn($"Bridge dependency inspection remains unfinished UUID={owner}: {migrationError}");
-                        continue;
-                    }
+                    if (writtenFiles != 0) { report.Changed(); _copiedOwners.Add(owner); }
+                    report.Set(owner, BridgeSelfCheckReport.Outcome.Unfinished);
                     failures[owner] = "Dependency migration failed: " + migrationError;
-                    Mod.Log.Error($"Bridge dependency migration failed UUID={owner}; scheduling removal: {migrationError}");
+                    BridgeInspectionLog.Error($"Bridge dependency migration failed UUID={owner}; scheduling removal: {migrationError}");
                 }
                 else if (writtenFiles != 0)
                 {
+                    report.Changed();
+                    recoveredDiskOwners.Add(owner);
                     migrationCandidates.Add(owner);
-                    Mod.Log.Info($"Bridge dependency snapshots supplemented UUID={owner}; writtenFiles={writtenFiles}; external material dependencies included; restart required; live references unchanged.");
+                    report.Set(owner, BridgeSelfCheckReport.Outcome.Unfinished);
+                    BridgeInspectionLog.Info($"Bridge dependency snapshots supplemented UUID={owner}; writtenFiles={writtenFiles}; external material dependencies included; restart required; live references unchanged.");
+                }
+
+                }
+                catch (Exception exception) when (exception is not UnauthorizedAccessException)
+                {
+                    failures[owner] = "Owner repair could not complete: " + exception;
+                    report.Set(owner, BridgeSelfCheckReport.Outcome.Unfinished);
+                    BridgeInspectionLog.Error(failures[owner]);
                 }
             }
             foreach (var pair in dependencies) scope.Paths(pair.Key).UnionWith(pair.Value.Files);
@@ -181,20 +245,31 @@ public partial class BridgeStartupAssetSystem : GameSystemBase
             stageStart = timer.ElapsedMilliseconds;
             foreach (var asset in assets)
             {
-                if (unfinished.Contains(asset.Owner) || failures.ContainsKey(asset.Owner)) continue;
+                try
+                {
+                if (failures.ContainsKey(asset.Owner) || recoveredDiskOwners.Contains(asset.Owner)) continue;
                 var prefab = asset.Prefab;
                 string reason;
                 if (prefab == null)
                 {
+                    report.Set(asset.Owner, BridgeSelfCheckReport.Outcome.Unfinished);
                     failures[asset.Owner] = "Prefab did not load: " + asset.Path;
                     continue;
                 }
-                // Availability can change after discovery; preserve rather than retire the owner.
-                if (!system.IsAvailable(prefab)) { unfinished.Add(asset.Owner); continue; }
-                if (system.TryGetEntity(prefab, out _)) continue;
+                // Non-network dependency registration is not a damage verdict; dependency IO above is authoritative.
+                if (prefab is not NetGeometryPrefab || system.TryGetEntity(prefab, out _)) continue;
                 reason = "Loaded available prefab failed registration";
-                Mod.Log.Warn($"Bridge self-check invalid UUID={asset.Owner}, prefab={prefab.name}: {reason}");
+                BridgeInspectionLog.Warn($"Bridge self-check invalid UUID={asset.Owner}, prefab={prefab.name}: {reason}");
+                report.Set(asset.Owner, BridgeSelfCheckReport.Outcome.Unfinished);
                 failures[asset.Owner] = reason;
+
+                }
+                catch (Exception exception) when (exception is not UnauthorizedAccessException)
+                {
+                    failures[asset.Owner] = "Owner inspection could not complete: " + exception;
+                    report.Set(asset.Owner, BridgeSelfCheckReport.Outcome.Unfinished);
+                    BridgeInspectionLog.Error(failures[asset.Owner]);
+                }
             }
             var validationMs = timer.ElapsedMilliseconds - stageStart;
             stageStart = timer.ElapsedMilliseconds;
@@ -202,44 +277,60 @@ public partial class BridgeStartupAssetSystem : GameSystemBase
                 DateTime.UtcNow.ToString("yyyyMMdd-HHmmss-fffffff", System.Globalization.CultureInfo.InvariantCulture));
             foreach (var pair in dependencies) scope.Paths(pair.Key).UnionWith(pair.Value.Files);
             // Recovered disk references are still null in memory until restart; never serialize them back.
-            foreach (var owner in owners.Where(o => !unfinished.Contains(o) && !failures.ContainsKey(o) && !_copiedOwners.Contains(o)))
+            foreach (var owner in owners.Where(o => !failures.ContainsKey(o) && !_copiedOwners.Contains(o)))
             {
-                if (!BridgePortableMigration.Run(owner, system, backup, out var converted, out var conversionError, byOwner[owner], dependencies[owner], scope.Paths(owner)))
+                try
+                {
+                if (!BridgePortableMigration.Run(owner, system, backup, out var converted, out var conversionError, byOwner[owner], dependencies[owner], scope.Paths(owner), recoveredDiskOwners.Contains(owner)))
                 {
                     migrationErrors++;
+                    report.Set(owner, BridgeSelfCheckReport.Outcome.Unfinished);
                     failures[owner] = "Independent migration failed: " + conversionError;
-                    Mod.Log.Error($"Independent bridge migration failed UUID={owner}; scheduling removal after rollback: {conversionError}");
+                    BridgeInspectionLog.Error($"Independent bridge migration failed UUID={owner}; scheduling removal after rollback: {conversionError}");
                 }
                 else if (converted)
                 {
                     _copiedOwners.Add(owner);
+                    report.Changed();
                     migrationCandidates.Add(owner);
-                    BridgeSessionState.RequireRestart();
-                    Mod.Log.Info($"Independent bridge migration completed UUID={owner}; native unlocks and presentation persisted; original native fees retained; restart required.");
+                    report.Set(owner, BridgeSelfCheckReport.Outcome.Unfinished);
+                    BridgeInspectionLog.Info($"Independent bridge migration completed UUID={owner}; native unlocks and presentation persisted; original native fees retained; restart required.");
+                }
+
+                }
+                catch (Exception exception) when (exception is not UnauthorizedAccessException)
+                {
+                    failures[owner] = "Owner repair could not complete: " + exception;
+                    report.Set(owner, BridgeSelfCheckReport.Outcome.Unfinished);
+                    BridgeInspectionLog.Error(failures[owner]);
                 }
             }
             var portableMs = timer.ElapsedMilliseconds - stageStart;
             long namesMs = 0, layoutMs = 0;
             // Conversion writes the current disk graph. Normalize that graph in this SAME pass,
             // including previously converted assets, before any next-session validation.
-            foreach (var owner in owners.Where(o => !unfinished.Contains(o) && !failures.ContainsKey(o)).ToArray())
+            foreach (var owner in owners.Where(o => !failures.ContainsKey(o)).ToArray())
             {
+                try
+                {
                 var selected = new[] { owner };
                 scope.Paths(owner).UnionWith(dependencies[owner].Files);
                 stageStart = timer.ElapsedMilliseconds;
                 if (!BridgeLegacyNames.Run(UnityEngine.Application.persistentDataPath,
                     selected, backup, out var renamed, out var renameError, BridgePrefabPersistence.RelativePathFor,
-                    byOwner[owner].Where(a => a.Prefab?.name == owner && !BridgeAssetInfo.IsDependencyPath(a.Path, owner)).Select(a => a.Path),
+                    byOwner[owner].Where(a => (a.Prefab?.name == owner || (a.Prefab == null && Path.GetFileName(a.Path) == "Bridge.Prefab")) && !BridgeInspectionPaths.IsDependencyPath(a.Path, owner)).Select(a => a.Path),
                     cid => scope.Find(cid, owner), scope.Paths(owner)))
                 {
                     migrationErrors++;
                     namesMs += timer.ElapsedMilliseconds - stageStart;
+                    report.Set(owner, BridgeSelfCheckReport.Outcome.Unfinished);
                     failures[owner] = "Legacy component migration failed: " + renameError;
-                    Mod.Log.Error($"Legacy bridge component migration failed UUID={owner}; scheduling removal: {renameError}");
+                    BridgeInspectionLog.Error($"Legacy bridge component migration failed UUID={owner}; scheduling removal: {renameError}");
                     continue;
                 }
                 namesMs += timer.ElapsedMilliseconds - stageStart;
                 stageStart = timer.ElapsedMilliseconds;
+                if (renamed.Count != 0) report.Changed();
                 _copiedOwners.UnionWith(renamed);
                 migrationCandidates.UnionWith(renamed);
                 if (!BridgeAssetLayout.Run(UnityEngine.Application.persistentDataPath, selected, backup,
@@ -249,17 +340,21 @@ public partial class BridgeStartupAssetSystem : GameSystemBase
                     layoutMs += timer.ElapsedMilliseconds - stageStart;
                     // Earlier writes do not make an incomplete layout a completed migration.
                     _copiedOwners.Add(owner);
-                    Mod.Log.Error($"Bridge file layout migration failed UUID={owner}; preserving assets for retry after restart: {layoutError}");
+                    report.Set(owner, BridgeSelfCheckReport.Outcome.Unfinished);
+                    failures[owner] = "Owner layout migration failed: " + layoutError;
+                    BridgeInspectionLog.Error($"Bridge file layout migration failed UUID={owner}; preserving assets for retry after restart: {layoutError}");
                     continue;
                 }
                 if(!BridgeCreationDependencies.RemoveObsoleteRelations(owner,backup,out var relationsRemoved,out var relationError))
                 {
                     report.Set(owner,BridgeSelfCheckReport.Outcome.Unfinished);migrationErrors++;_copiedOwners.Add(owner);
-                    Mod.Log.Error($"Bridge obsolete cache metadata cleanup failed UUID={owner}: {relationError}");
+                    failures[owner] = "Owner obsolete metadata migration failed: " + relationError;
+                    BridgeInspectionLog.Error($"Bridge obsolete cache metadata cleanup failed UUID={owner}: {relationError}");
                     continue;
                 }
                 if(relationsRemoved)migrationCandidates.Add(owner);
                 layoutMs += timer.ElapsedMilliseconds - stageStart;
+                if (relocated.Count != 0 || relationsRemoved) report.Changed();
                 _copiedOwners.UnionWith(relocated);
                 migrationCandidates.UnionWith(relocated);
                 if (migrationCandidates.Contains(owner))
@@ -268,6 +363,14 @@ public partial class BridgeStartupAssetSystem : GameSystemBase
                     _copiedOwners.Add(owner);
                 }
                 else report.Healthy(owner);
+
+                }
+                catch (Exception exception) when (exception is not UnauthorizedAccessException)
+                {
+                    failures[owner] = "Owner repair could not complete: " + exception;
+                    report.Set(owner, BridgeSelfCheckReport.Outcome.Unfinished);
+                    BridgeInspectionLog.Error(failures[owner]);
+                }
             }
             stageStart = timer.ElapsedMilliseconds;
             var removed = 0;
@@ -282,51 +385,60 @@ public partial class BridgeStartupAssetSystem : GameSystemBase
                     if (!audit.Complete)
                     {
                         removalErrors++;
-                        Mod.Log.Error($"Bridge removal failed UUID={failure.Key}: {audit.Error}");
+                        BridgeInspectionLog.Error($"Bridge removal failed UUID={failure.Key}: {audit.Error}");
                         continue;
                     }
-                    Mod.Log.Warn($"Bridge self-check retiring '{failure.Key}': {failure.Value}");
+                    BridgeInspectionLog.Warn($"Bridge self-check retiring '{failure.Key}': {failure.Value}");
                     // Retirement may move/delete some files before reporting failure. Cached assets
                     // for this owner are unsafe to read again until restart, even when it is not retired.
                     _copiedOwners.Add(failure.Key);
-                    if (!audit.RetireFiles(new HashSet<string>(verdict.Keys, StringComparer.Ordinal), backup, out var error))
+                    var retired = audit.RetireFiles(new HashSet<string>(verdict.Keys, StringComparer.Ordinal), backup, out var error);
+                    if (audit.Changed) report.Changed();
+                    if (!retired)
                     {
                         removalErrors++;
-                        Mod.Log.Error($"Bridge removal failed UUID={failure.Key}: {error}");
+                        BridgeInspectionLog.Error($"Bridge removal failed UUID={failure.Key}: {error}");
                         continue;
                     }
                     BridgeStartupRecovery.Retired.Add(failure.Key);
                     report.Set(failure.Key, error.Length == 0
                         ? BridgeSelfCheckReport.Outcome.RemovedBackedUp : BridgeSelfCheckReport.Outcome.RemovedWithoutBackup);
                     removed++;
-                    Mod.Log.Info($"Bridge retired UUID={failure.Key}; backup={backup}; backupComplete={error.Length == 0}");
-                    if (error.Length != 0) Mod.Log.Warn(error);
+                    BridgeInspectionLog.Info($"Bridge retired UUID={failure.Key}; backup={backup}; backupComplete={error.Length == 0}");
+                    if (error.Length != 0) BridgeInspectionLog.Warn(error);
                 }
-                catch (Exception exception)
+                catch (Exception exception) when (exception is not UnauthorizedAccessException)
                 {
                     removalErrors++;
-                    Mod.Log.Error($"Bridge removal failed UUID={failure.Key}: {exception}");
+                    BridgeInspectionLog.Error($"Bridge removal failed UUID={failure.Key}: {exception}");
                 }
             }
-            completed = true;
             var retirementMs = timer.ElapsedMilliseconds - stageStart;
             var elapsedMs = timer.ElapsedMilliseconds;
             var otherMs = elapsedMs - discoveryMs - dependencyMs - validationMs - portableMs - namesMs - layoutMs - retirementMs;
-            Mod.Log.Info($"Bridge self-check result: elapsedMs={elapsedMs}, validationMs={validationMs}, retirementMs={retirementMs}, discoveryMs={discoveryMs}, dependencyMs={dependencyMs}, portableMs={portableMs}, namesMs={namesMs}, layoutMs={layoutMs}, otherMs={otherMs}, owners={owners.Count}, cacheTraversals={scope.CacheTraversals}, cacheHeaders={scope.CacheHeaders}, removed={removed}, migrated={report.Count(BridgeSelfCheckReport.Outcome.Migrated)}, copiedAwaitingRestart={_copiedOwners.Count}, removalErrors={removalErrors}, migrationErrors={migrationErrors}; cached assets include registration failures; live-reference mutation disabled.");
+            BridgeInspectionLog.Info($"Bridge self-check result: elapsedMs={elapsedMs}, validationMs={validationMs}, retirementMs={retirementMs}, discoveryMs={discoveryMs}, dependencyMs={dependencyMs}, portableMs={portableMs}, namesMs={namesMs}, layoutMs={layoutMs}, otherMs={otherMs}, owners={owners.Count}, cacheTraversals={scope.CacheTraversals}, cacheHeaders={scope.CacheHeaders}, removed={removed}, migrated={report.Count(BridgeSelfCheckReport.Outcome.Migrated)}, copiedAwaitingRestart={_copiedOwners.Count}, removalErrors={removalErrors}, migrationErrors={migrationErrors}; cached assets include registration failures; live-reference mutation disabled.");
+        }
+        catch (UnauthorizedAccessException)
+        {
+            permissionFailed = true;
+            throw;
+        }
+        catch (Exception exception) when (exception is not UnauthorizedAccessException)
+        {
+            BridgeInspectionLog.Error("Bridge inspection unavailable scope; retaining completed outcomes: " + exception);
         }
         finally
         {
             // Keep completed owner outcomes; unresolved known owners remain unfinished.
-            report.Interrupted = !completed;
-            if (report.HasNotice)
+
+            if (!permissionFailed && report.HasNotice)
             {
-                BridgeSessionState.RequireRestart();
                 _pendingNotice = report;
             }
-            // Preserve exception propagation and always release the lifecycle gate.
+            // Finalize the normal outcome summary; never propagate to the game loop.
             IsStartupInspection = false;
             Enabled = _pendingNotice != null || _startupPending;
-            Mod.Log.Info($"Bridge self-check finished: results={report.Total}, interrupted={report.Interrupted}, restartRecommended={report.HasNotice}");
+            BridgeInspectionLog.Info($"Bridge self-check finished: results={report.Total}, restartRecommended={report.HasNotice}");
         }
     }
 }

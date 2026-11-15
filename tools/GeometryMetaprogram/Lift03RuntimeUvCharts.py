@@ -98,7 +98,7 @@ def main():
                             referencedCharts=len(used),acceptedCharts=len(offsets),rejected=rejected,
                             domainsWithCharts=sum(integers[o]>0 for o in domain_sets),
                             tableOffset=integers[2+si],nativeSourceCid=s['sourceCid']))
-    payload=bytearray(b'BBN1')+struct.pack('<7i',1,len(integers),0,0,0,0,len(doubles))
+    payload=bytearray(struct.pack('<6i',len(integers),0,0,0,0,len(doubles)))
     payload+=struct.pack('<'+'i'*len(integers),*integers)+struct.pack('<'+'d'*len(doubles),*doubles)
     payload+=hashlib.sha256(payload).digest()
     RESOURCE.write_bytes(payload)

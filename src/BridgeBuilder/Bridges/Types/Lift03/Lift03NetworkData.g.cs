@@ -147,7 +147,6 @@ internal static class Lift03NetworkData
         },
         MechanismPlacement(mechanism),
     };
-    internal static NetSubObjectInfo[] MainPlacements(ObjectPrefab pillar, ObjectPrefab mechanism, ObjectPrefab outsideConnection) => StructurePlacements(pillar, mechanism).Concat(new[] { new NetSubObjectInfo { m_Object = outsideConnection, m_Position = new float3(Numeric_Types_Lift03_Lift03NetworkData_g_cs.Values.F32[23], Numeric_Types_Lift03_Lift03NetworkData_g_cs.Values.F32[24], Numeric_Types_Lift03_Lift03NetworkData_g_cs.Values.F32[25]), m_Rotation = new quaternion(Numeric_Types_Lift03_Lift03NetworkData_g_cs.Values.F32[26], Numeric_Types_Lift03_Lift03NetworkData_g_cs.Values.F32[27], Numeric_Types_Lift03_Lift03NetworkData_g_cs.Values.F32[28], Numeric_Types_Lift03_Lift03NetworkData_g_cs.Values.F32[29]), m_Placement = (NetObjectPlacement)Numeric_Types_Lift03_Lift03NetworkData_g_cs.Values.I32[25], m_FixedIndex = Numeric_Types_Lift03_Lift03NetworkData_g_cs.Values.I32[26], m_Spacing = Numeric_Types_Lift03_Lift03NetworkData_g_cs.Values.F32[30], m_AnchorTop = false, m_AnchorCenter = false, m_RequireElevated = false, m_RequireOutsideConnection = true, m_RequireDeadEnd = false, m_RequireOrphan = false, }, }).ToArray();
     internal static NetSubObjectInfo MechanismPlacement(ObjectPrefab mechanism) => new()
     {
         m_Object = mechanism,
@@ -162,24 +161,6 @@ internal static class Lift03NetworkData
         m_RequireOutsideConnection = false,
         m_RequireDeadEnd = false,
         m_RequireOrphan = false,
-    };
-    internal static NetSubObjectInfo[] AuxiliaryPlacements(ObjectPrefab outsideConnection) => new[]
-    {
-        new NetSubObjectInfo
-        {
-            m_Object = outsideConnection,
-            m_Position = new float3(Numeric_Types_Lift03_Lift03NetworkData_g_cs.Values.F32[35], Numeric_Types_Lift03_Lift03NetworkData_g_cs.Values.F32[36], Numeric_Types_Lift03_Lift03NetworkData_g_cs.Values.F32[37]),
-            m_Rotation = new quaternion(Numeric_Types_Lift03_Lift03NetworkData_g_cs.Values.F32[38], Numeric_Types_Lift03_Lift03NetworkData_g_cs.Values.F32[39], Numeric_Types_Lift03_Lift03NetworkData_g_cs.Values.F32[40], Numeric_Types_Lift03_Lift03NetworkData_g_cs.Values.F32[41]),
-            m_Placement = (NetObjectPlacement)Numeric_Types_Lift03_Lift03NetworkData_g_cs.Values.I32[29],
-            m_FixedIndex = Numeric_Types_Lift03_Lift03NetworkData_g_cs.Values.I32[30],
-            m_Spacing = Numeric_Types_Lift03_Lift03NetworkData_g_cs.Values.F32[42],
-            m_AnchorTop = false,
-            m_AnchorCenter = false,
-            m_RequireElevated = false,
-            m_RequireOutsideConnection = true,
-            m_RequireDeadEnd = false,
-            m_RequireOrphan = false,
-        },
     };
     // The supplied auxiliary is the generated selected lower network, not the native track.
     internal static void ApplyAuxiliary(AuxiliaryNets target, NetPrefab auxiliary)

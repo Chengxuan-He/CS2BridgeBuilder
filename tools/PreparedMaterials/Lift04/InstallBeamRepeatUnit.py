@@ -31,7 +31,7 @@ def install(code,target):
         else:shutil.copyfile(path,destination)
     proof=json.loads((retained/'source-evidence.json').read_text())
     values=proof['min']+proof['max']+proof['coverageMin']+proof['coverageMax']
-    raw=b'BBN1'+struct.pack('<7i',1,0,0,0,0,0,len(values))+struct.pack('<8d',*values)
+    raw=struct.pack('<6i',0,0,0,0,0,len(values))+struct.pack('<8d',*values)
     (ROOT/'assets/HardcodedNumbers/Lift04/Types_Lift04_BeamRepeatRegions.bin').write_bytes(raw+hashlib.sha256(raw).digest())
     needle='            values[0], values[1], values[2], values[3]));'
     assert code.count(needle)==1

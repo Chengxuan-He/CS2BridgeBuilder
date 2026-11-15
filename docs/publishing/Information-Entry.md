@@ -19,9 +19,9 @@ See `Readiness.json` for the source commit and content hashes. This step prepare
 - Compatible game version: requires confirmation; keep `CONFIRM_BEFORE_PUBLISH` in the draft.
 - Visibility: Private in the draft; confirm before public publication.
 - ModId: leave empty for the first publication, then retain the assigned ID after success.
-- Description: `Mod-Description.md`, maintained in English under the documentation policy.
+- Description: `mod-description.md`, maintained in English under the documentation policy.
 - Cover: `Thumbnail.png`, the 800×800 Rajdhani version with a solid background.
-- Screenshots: use the final game version; see `Image-Brief.md`.
+- Screenshots: use the final game version; see `image-brief.md`.
 - Road Builder is optional compatibility, not a mandatory dependency.
 - Source: https://github.com/Chengxuan-He/CS2BridgeBuilder .
 - The user signs in through official tools. Do not put passwords or tokens in the repository.

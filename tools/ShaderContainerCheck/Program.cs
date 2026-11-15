@@ -1,83 +1,59 @@
 using BridgeBuilder.Bridges;
+using BridgeBuilder.Runtime;
 using System.Text;
-using System.Reflection;
-
-var output = args.Length == 0 ? "artifacts/shader-variable" : args[0];
-Directory.CreateDirectory(output);
-foreach (var name in new[]{"BoneDecal","WorldLayeredPbr"})
+foreach (var name in new[] { "BoneDecal", "WorldLayeredPbr" })
 {
-    var path="assets/MaterialPrograms/"+name+".bbs1";
-    using var input=File.OpenRead(path);
-    if(!MovableCustomShaderProgram.TryCompilePackage(input,out var actual,out var error))throw new Exception(name+": "+error);
-    File.WriteAllBytes(Path.Combine(output,name+"-actual.bundle"),actual);
-    using var reader=new BinaryReader(File.OpenRead(path));reader.ReadUInt32();int version=reader.ReadInt32();
-    byte[] Bytes()=>reader.ReadBytes(reader.ReadInt32());
-    var seed=Bytes();int count=reader.ReadInt32();var slots=new List<MovableShaderContainer.Replacement>();
-    var sources=new List<(string Source,string Entry,string Profile,int Copies)>();
-    for(int i=0;i<count;i++)
+    var native = File.ReadAllBytes("assets/MaterialPrograms/" + name + ".bundle");
+    if (native.Length < 8 || Encoding.ASCII.GetString(native, 0, 8) != "UnityFS\0") throw new Exception("Packaged program is not a native bundle");
+    int sourceTemplate = name == "BoneDecal" ? 18 : 17;
+    var allowed = new HashSet<int>();
+    foreach (int offset in new[] { BridgeNativeProgramLayout.HashOffset(sourceTemplate), BridgeNativeProgramLayout.QueueOffset(sourceTemplate) })
+        for (int i = 0; i < 4; i++) allowed.Add(offset + i);
+    foreach (int offset in BridgeNativeProgramLayout.IdentityOffsets(sourceTemplate))
+        for (int i = 0; i < 32; i++) allowed.Add(offset + i);
+    var identities = new HashSet<int>();
+    foreach (int queue in new[] { 1999, 2000, 2007, 2473 })
     {
-        string source=Encoding.UTF8.GetString(Bytes()),entry="BBNetworkVertex",profile="vs_5_0";
-        if(version==2){entry=Encoding.UTF8.GetString(Bytes());profile=Encoding.UTF8.GetString(Bytes());}var expected=Bytes();int copies=reader.ReadInt32();
-        sources.Add((source,entry,profile,copies));
-        for(int j=0;j<copies;j++)slots.Add(new(){Offset=reader.ReadInt32(),Expected=expected,Compiled=expected});
+        var configured = BridgeNativeMaterialProgram.Configure(native, sourceTemplate, queue);
+        if (!configured.SequenceEqual(BridgeNativeMaterialProgram.Configure(native, sourceTemplate, queue))) throw new Exception("Configuration is nondeterministic");
+        if (configured.Length != native.Length || configured.Where((value, i) => value != native[i] && !allowed.Contains(i)).Any()) throw new Exception("Configuration changed native graph content outside its scalar identity/queue fields");
+        if (BitConverter.ToInt32(configured, BridgeNativeProgramLayout.QueueOffset(sourceTemplate)) != queue) throw new Exception("Queue mismatch");
+        if (!identities.Add(BitConverter.ToInt32(configured, BridgeNativeProgramLayout.HashOffset(sourceTemplate)))) throw new Exception("Queue variants share a template identity");
+        if (args.Length > 0 && args[0] != "--verify-only") { Directory.CreateDirectory(args[0]); File.WriteAllBytes(Path.Combine(args[0], name + "-" + queue + ".bundle"), configured); }
     }
-    foreach(uint flags in new uint[]{0,4})
-    {
-        int slotIndex=0;
-        foreach(var source in sources)
-        {
-            var bytes=Encoding.UTF8.GetBytes(source.Source);
-            object?[] values={bytes,(UIntPtr)bytes.Length,"BridgeBuilder.GeneratedMaterial",IntPtr.Zero,IntPtr.Zero,source.Entry,source.Profile,flags,0u,IntPtr.Zero,IntPtr.Zero};
-            var type=typeof(MovableCustomShaderProgram);var binding=BindingFlags.Static|BindingFlags.NonPublic;
-            int status=(int)type.GetMethod("D3DCompile",binding)!.Invoke(null,values)!;
-            byte[] code;
-            try { if(status<0)throw new Exception("Alternate compiler settings failed");code=(byte[])type.GetMethod("ReadBlob",binding)!.Invoke(null,new[]{values[9]})!; }
-            finally { foreach(var index in new[]{9,10})type.GetMethod("ReleaseBlob",binding)!.Invoke(null,new[]{values[index]}); }
-            for(int copy=0;copy<source.Copies;copy++)slots[slotIndex++].Compiled=code;
-        }
-        var result=MovableShaderContainer.Rebuild(seed,slots);
-        File.WriteAllBytes(Path.Combine(output,name+"-compiler-"+flags+".bundle"),result);
-        Console.WriteLine($"PASS {name} actual compiler flags={flags}: {seed.Length} -> {result.Length}; changed-size occurrences={slots.Count(s=>s.Expected.Length!=s.Compiled.Length)}");
-        if(flags==4)
-        {
-            using var package=new MemoryStream();using var w=new BinaryWriter(package,Encoding.UTF8,true);
-            void WriteBytes(byte[] bytes){w.Write(bytes.Length);w.Write(bytes);}
-            w.Write(0x31534242u);w.Write(2);WriteBytes(result);w.Write(sources.Count);int index=0;
-            foreach(var source in sources)
-            {
-                WriteBytes(Encoding.UTF8.GetBytes(source.Source));WriteBytes(Encoding.UTF8.GetBytes(source.Entry));WriteBytes(Encoding.UTF8.GetBytes(source.Profile));
-                var code=slots[index].Compiled;index+=source.Copies;WriteBytes(code);var positions=new List<int>();
-                for(int at=0;at<=result.Length-code.Length;at++)if(result.AsSpan(at,code.Length).SequenceEqual(code)){positions.Add(at);at+=code.Length-1;}
-                if(positions.Count!=source.Copies)throw new Exception("Compiled occurrence identity mismatch");
-                w.Write(positions.Count);foreach(var at in positions)w.Write(at);
-            }
-            package.Position=0;
-            if(!MovableCustomShaderProgram.TryCompilePackage(package,out var shorter,out error))throw new Exception(error);
-            if(!shorter.SequenceEqual(actual))throw new Exception("Longer seed did not recompile to exact production bytes");
-            File.WriteAllBytes(Path.Combine(output,name+"-compiler-short.bundle"),shorter);
-            Console.WriteLine($"PASS {name} real shorter recompilation: {result.Length} -> {shorter.Length}");
-        }
-    }
-    foreach(var mode in new[]{"identity","short","long","mixed"})
-    {
-        for(int i=0;i<slots.Count;i++)
-        {
-            var slot=slots[i];int delta=mode=="identity"?0:mode=="short"?-16:mode=="long"?20:(i%2==0?-12:28);
-            var bytes=new byte[slot.Expected.Length+delta];Array.Copy(slot.Expected,bytes,Math.Min(bytes.Length,slot.Expected.Length));
-            BitConverter.GetBytes(bytes.Length).CopyTo(bytes,24);slot.Compiled=bytes;
-        }
-        var result=MovableShaderContainer.Rebuild(seed,slots);
-        var repeated=MovableShaderContainer.Rebuild(seed,slots);
-        if(!result.SequenceEqual(repeated))throw new Exception("Nondeterministic rebuild");
-        if(mode=="identity" && !result.SequenceEqual(seed))throw new Exception("Identity rebuild changed seed bytes");
-        File.WriteAllBytes(Path.Combine(output,name+"-"+mode+".bundle"),result);
-        Console.WriteLine($"PASS {name} {mode}: {slots.Count} occurrences; {seed.Length} -> {result.Length}");
-    }
-    void Reject(byte[] input,IReadOnlyList<MovableShaderContainer.Replacement> changes,string label)
-    {try{MovableShaderContainer.Rebuild(input,changes);throw new Exception(label+" accepted");}catch(InvalidDataException){}}
-    slots[0].Offset++;Reject(seed,slots,"Corrupt offset");slots[0].Offset--;
-    Reject(seed,slots.Concat(new[]{slots[0]}).ToArray(),"Overlapping declarations");
-    Reject(seed[..^1],slots,"Truncated bundle");
-    var saved=slots[0].Expected;slots[0].Expected=(byte[])saved.Clone();slots[0].Expected[0]^=1;Reject(seed,slots,"Mismatched seed");slots[0].Expected=saved;
-    Console.WriteLine($"PASS {name} real D3DCompile, repeated rebuild, four malformed-file cases; compiler output trusted");
+    Console.WriteLine($"PASS {name}: native graph scalar-only variants, exact other bytes, deterministic distinct identities");
 }
+foreach (int source in new[] {17,18})
+foreach (int queue in new[] {int.MinValue, -1, 0, 2000, 2007, int.MaxValue})
+{
+    int id=BridgeNativeMaterialProgram.TemplateId(source,queue);
+    if (!BridgeNativeMaterialProgram.TryIdentify(id,queue,out var resolved) || resolved!=source) throw new Exception("Stable family/queue identity failed");
+    var bytes=File.ReadAllBytes("assets/MaterialPrograms/"+(source==17?"WorldLayeredPbr":"BoneDecal")+".bundle");
+    bytes[bytes.Length-1]^=1;
+    var patched=BridgeNativeMaterialProgram.Configure(bytes,source,queue);
+    if(BitConverter.ToInt32(patched,BridgeNativeProgramLayout.HashOffset(source))!=id)throw new Exception("Identity changed with compiled bytes");
+    using var stream=new MemoryStream();using var w=new BinaryWriter(stream);
+    w.Write((ushort)1);w.Write(id);w.Write(false);
+    w.Write((byte)255);w.Write(1);w.Write("_DrawOrder");w.Write(7f);
+    w.Write((byte)255);w.Write(1);w.Write(BridgeNativeMaterialProgram.QueueProperty);w.Write(queue);w.Flush();
+    if(!BridgeCurrentProgramSurface.TryReadSurfaceIdentity(stream.ToArray(),out var template,out var actualQueue,out var order,out var error)||template!=id||actualQueue!=queue||order!=7f)throw new Exception("Native Surface identity: "+error);
+    if(BridgeCurrentProgramSurface.TryReadSurfaceIdentity(stream.ToArray()[..^1],out _,out _,out _,out _))throw new Exception("Truncated Surface accepted");
+}
+Console.WriteLine("PASS content-independent signed-queue identities and native Surface metadata without Material realization");
+
+foreach (bool vt in new[] {false,true})
+{
+    using var stream=new MemoryStream();using var w=new BinaryWriter(stream);
+    int id=BridgeNativeMaterialProgram.TemplateId(18,2007);
+    w.Write((ushort)1);w.Write(id);w.Write(vt);
+    if(vt){w.Write(1);w.Write(new byte[272]);w.Write((byte)255);w.Write(new byte[16]);}
+    w.Write((byte)0);w.Write((byte)255);w.Write(1);w.Write(BridgeNativeMaterialProgram.QueueProperty);w.Write(2007);w.Flush();
+    if(!BridgeCurrentProgramSurface.TryReadSurfaceIdentity(stream.ToArray(),out int template,out var queue,out var order,out var error)||template!=id||queue!=2007||order!=null)throw new Exception("VT/plain Surface queue: "+error);
+}
+foreach(var file in new[]{"src/BridgeBuilder/Bridges/Common/Movable/MovableCustomShaderAsset.cs","src/BridgeBuilder/Runtime/BridgeCustomShaderRestoration.cs"})
+{
+    string source=File.ReadAllText(file);
+    if(source.Contains("AddAsset<FileAsset>")||source.Contains("SearchFilter<FileAsset>")||source.Contains("TryPersist("))throw new Exception("Owner program IO returned: "+file);
+}
+if(File.ReadAllText("src/BridgeBuilder/Runtime/BridgeDependencyPersistence.cs").Contains("ProgramRoots"))throw new Exception("Owner program dependency roots returned");
+Console.WriteLine("PASS VT/plain Surface prefix, no program writer/reader or dependency roots");

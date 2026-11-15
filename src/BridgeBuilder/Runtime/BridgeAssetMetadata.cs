@@ -22,14 +22,13 @@ internal static class BridgeAssetMetadata
         {
             var v = Encoding.UTF8.GetString(Convert.FromBase64String(value.Substring(Prefix.Length))).Split('\n')
                 .Select(x => Encoding.UTF8.GetString(Convert.FromBase64String(x))).ToArray();
-            if (v.Length < 1 || v.Length > 7 || !BridgeAssetInfo.IsPrefabName(v[0])) return false;
+            if (v.Length != 7 || !BridgeAssetInfo.IsPrefabName(v[0])) return false;
             string Get(int index) => index < v.Length ? v[index] : "";
             entry = new BridgeAssetInfo(v[0], string.IsNullOrWhiteSpace(Get(1)) ? v[0] : Get(1),
                 Get(2), Get(3), Get(4), Get(5), Get(6) == "1"); return true;
         }
         catch (Exception) { return false; }
     }
-    private const string TypeName = "BridgeBuilder.Bridges.BridgeConstructionCost, BridgeBuilder";
     private static readonly UTF8Encoding Utf8 = new(false, true);
 
     internal static bool TryRead(string text, out BridgeAssetInfo entry)
@@ -40,14 +39,7 @@ internal static class BridgeAssetMetadata
         var native = document.Component(NativeType);
         if (native != null && native.Fields.TryGetValue("name", out var encoded)
             && Decode(encoded.Text, out entry) && entry.PrefabName == document.Name) return true;
-        var component = document.Component(TypeName);
-        if (component == null) return false;
-        string Get(string key) => component.Fields.TryGetValue(key, out var value) && value.Text != "null" ? value.Text : "";
-        var label = Get("m_BridgeDisplayName");
-        entry = new BridgeAssetInfo(document.Name, string.IsNullOrWhiteSpace(label) ? document.Name : label,
-            Get("m_BridgeUpperDeckId"), Get("m_BridgeLowerDeckId"), Get("m_BridgeStyleId"),
-            Get("m_BridgeCreatedUtc"), Get("m_BridgeCreationPending") == "true");
-        return true;
+        return false;
     }
 
     internal static bool Rewrite(string text, BridgeAssetInfo entry, out string updated)
@@ -55,33 +47,12 @@ internal static class BridgeAssetMetadata
         updated = text;
         if (!BridgeSerializedReferences.TryRead(text, out var document) || document.Name != entry.PrefabName) return false;
         var native = document.Component(NativeType);
-        if (native != null && native.Fields.TryGetValue("name", out var encoded) && encoded.Text.StartsWith(Prefix, StringComparison.Ordinal))
+        if (native != null && native.Fields.TryGetValue("name", out var encoded) && Decode(encoded.Text, out var current) && current.PrefabName == entry.PrefabName)
         {
             updated = text.Remove(encoded.Start, encoded.End - encoded.Start).Insert(encoded.Start, Quote(Encode(entry)));
             return true;
         }
-        var component = document.Component(TypeName);
-        if (component == null || component.End <= component.Start) return false;
-        var fields = new Dictionary<string, string>
-        {
-            ["m_BridgeDisplayName"] = Quote(entry.DisplayName),
-            ["m_BridgeUpperDeckId"] = Quote(entry.UpperDeckId),
-            ["m_BridgeLowerDeckId"] = Quote(entry.LowerDeckId ?? ""),
-            ["m_BridgeStyleId"] = Quote(entry.StyleId),
-            ["m_BridgeCreatedUtc"] = Quote(entry.CreatedUtc),
-            ["m_BridgeCreationPending"] = entry.Pending ? "true" : "false"
-        };
-        var edits = new List<(int Start, int Length, string Text)>();
-        var missing = new StringBuilder();
-        foreach (var pair in fields)
-            if (component.Fields.TryGetValue(pair.Key, out var value))
-                edits.Add((value.Start, value.End - value.Start, pair.Value));
-            else missing.Append(",\n                ").Append(Quote(pair.Key)).Append(": ").Append(pair.Value);
-        if (missing.Length != 0) edits.Add((component.End - 1, 0, missing.ToString() + "\n            "));
-        foreach (var edit in edits.OrderByDescending(e => e.Start))
-            updated = updated.Remove(edit.Start, edit.Length).Insert(edit.Start, edit.Text);
-        return TryRead(updated, out var check) && check.PrefabName == entry.PrefabName
-            && check.DisplayName == entry.DisplayName && check.Pending == entry.Pending;
+        return false;
     }
 
     internal static bool Write(string path, BridgeAssetInfo entry)

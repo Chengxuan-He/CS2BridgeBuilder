@@ -14,10 +14,10 @@ def main(repo,python_lib):
     base=repo/'artifacts/prepared-materials/Draw02/shared-source-migration'
     data=json.loads((base/'native-charts.json').read_text())
     raw=(repo/'assets/HardcodedNumbers/Draw02/Draw02_NativeUvCharts.bin').read_bytes()
-    assert raw[:4]==b'BBN1' and hashlib.sha256(raw[:-32]).digest()==raw[-32:]
-    version,ni,nu,nl,nul,nf,nd=struct.unpack_from('<7i',raw,4)
-    assert version==1 and nu==nl==nul==nf==0
-    ints=struct.unpack_from('<'+'i'*ni,raw,32);values=struct.unpack_from('<'+'d'*nd,raw,32+ni*4)
+    assert hashlib.sha256(raw[:-32]).digest()==raw[-32:]
+    ni,nu,nl,nul,nf,nd=struct.unpack_from('<6i',raw)
+    assert nu==nl==nul==nf==0
+    ints=struct.unpack_from('<'+'i'*ni,raw,24);values=struct.unpack_from('<'+'d'*nd,raw,24+ni*4)
     def read_chart(offset):
         loops=[]
         for n in range(ints[offset]):

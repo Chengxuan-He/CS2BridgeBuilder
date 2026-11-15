@@ -36,7 +36,7 @@ for p in incoming:
     dest=DEST/p.relative_to(source);dest.parent.mkdir(parents=True,exist_ok=True)
     if not dest.exists():dest.write_bytes(p.read_bytes())
 numbers=[v for u in manifest['units'] for v in u['bounds']]
-raw=struct.pack('<8i',0x314e4242,1,0,0,0,0,0,len(numbers))+struct.pack('<'+'d'*len(numbers),*numbers)
+raw=struct.pack('<6i',0,0,0,0,0,len(numbers))+struct.pack('<'+'d'*len(numbers),*numbers)
 raw+=hashlib.sha256(raw).digest()
 bbn=ROOT/'assets/HardcodedNumbers/Lift02/Types_Lift02_Lift02StructureRepeatUnits_cs.bin'
 bbn.write_bytes(raw)

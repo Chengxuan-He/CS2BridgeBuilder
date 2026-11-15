@@ -41,7 +41,7 @@ for name in ('wide-beam-profile', 'long-beam-profile', 'outer-flange'):
     values.extend(v/4096 for v in profiles[name]['coveragePixels'])
     i = len(values)-8
     bindings.append('        regions.Add(new Region("'+keys[unit_name]+'",\n            '+', '.join('profiles['+str(j)+']' for j in range(i,i+8))+', repeatU: false, repeatV: true));')
-raw = b'BBN1'+struct.pack('<7i',1,0,0,0,0,0,len(values))+struct.pack('<'+str(len(values))+'d',*values)
+raw = struct.pack('<6i',0,0,0,0,0,len(values))+struct.pack('<'+str(len(values))+'d',*values)
 (ROOT/'assets/HardcodedNumbers/Lift04/Types_Lift04_StructuralProfileRegions.bin').write_bytes(raw+hashlib.sha256(raw).digest())
 path = ROOT/'src/BridgeBuilder/Bridges/Types/Lift04/Lift04RepeatUnits.cs'
 code = path.read_text()

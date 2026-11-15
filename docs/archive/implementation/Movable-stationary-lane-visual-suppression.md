@@ -4,11 +4,11 @@
 
 The selected road must keep traffic lanes while its visible moving surface and markings are reconstructed on the mechanism. Hiding section geometry is not equivalent to deleting lane semantics. The native new-node-lane path supplies the required separation.
 
-1. `NetInitializeSystem` assigns each selected piece one of the native Surface, Bottom, Top or Side flags from its `NetPieceLayer` (around lines 1265每1279).
-2. `NetCompositionHelpers.GetCompositionPieces` converts hidden layer bits into a piece mask and adds `NetSectionFlags.Hidden` to matching composition pieces (around lines 650每710). A moving-node `m_HiddenLayers = -1` covers all four native layers.
-3. Composition layout adds `CompositionState.Hidden` for hidden pieces, but clears it when a visible ordinary piece remains (around lines 930每970). Therefore the whole resolved composition must be inspected; hiding one section is insufficient.
-4. On creating a node lane, `LaneSystem` checks the hidden state of either endpoint composition and removes `CullingInfo`, `MeshBatch` and `MeshColor` (around lines 7510每7518; set definition around 9278). It still writes the lane, curve and role-specific traffic data. This is rendering suppression, not removal of traffic connectivity or signals.
-5. `SecondaryLaneSystem` records hidden status when an existing primary lane has geometry but no `CullingInfo`, carries it through lane corners and crossing-lane requests, and removes the same three rendering components from newly created hidden secondary lanes (around lines 407每437, 551每580 and 1400每1406).
+1. `NetInitializeSystem` assigns each selected piece one of the native Surface, Bottom, Top or Side flags from its `NetPieceLayer` (around lines 1265-1279).
+2. `NetCompositionHelpers.GetCompositionPieces` converts hidden layer bits into a piece mask and adds `NetSectionFlags.Hidden` to matching composition pieces (around lines 650-710). A moving-node `m_HiddenLayers = -1` covers all four native layers.
+3. Composition layout adds `CompositionState.Hidden` for hidden pieces, but clears it when a visible ordinary piece remains (around lines 930-970). Therefore the whole resolved composition must be inspected; hiding one section is insufficient.
+4. On creating a node lane, `LaneSystem` checks the hidden state of either endpoint composition and removes `CullingInfo`, `MeshBatch` and `MeshColor` (around lines 7510-7518; set definition around 9278). It still writes the lane, curve and role-specific traffic data. This is rendering suppression, not removal of traffic connectivity or signals.
+5. `SecondaryLaneSystem` records hidden status when an existing primary lane has geometry but no `CullingInfo`, carries it through lane corners and crossing-lane requests, and removes the same three rendering components from newly created hidden secondary lanes (around lines 407-437, 551-580 and 1400-1406).
 
 ## Current implementation relationship
 

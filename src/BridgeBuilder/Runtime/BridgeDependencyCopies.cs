@@ -40,12 +40,13 @@ internal static class BridgeDependencyCopies
             if(!Regex.IsMatch(source.NativeFileName,@"\ATS[0-9]+_MB[0-9]+\.MidMips\z")){error="Missing native MidMips tag filename: "+cid;return false;}
             path=Path.Combine(folder,cid,source.NativeFileName);return true;
         }
-        catch(Exception exception){error="Dependency destination: "+exception.Message;return false;}
+        catch (Exception exception) when (exception is not UnauthorizedAccessException){error="Dependency destination: "+exception.Message;return false;}
     }
 
     internal static IEnumerable<string> References(Source source) => source.SerializedReferences
         ?? (source.Extension.Equals(".Prefab", StringComparison.OrdinalIgnoreCase)
             || source.Extension.Equals(".Material", StringComparison.OrdinalIgnoreCase)
+            || source.Extension.Equals(".json", StringComparison.OrdinalIgnoreCase)
             ? References(source.Bytes) : Array.Empty<string>());
 
     // Inspect serialized identifiers only. Never load, validate or repair a prefab instance.
@@ -158,7 +159,7 @@ internal static class BridgeDependencyCopies
             }
             return true;
         }
-        catch (Exception exception)
+        catch (Exception exception) when (exception is not UnauthorizedAccessException)
         {
             error = $"Dependency persistence failed: owner={owner}; CID={activeCid}; phase={phase}; {exception.Message}";
             failed?.Invoke(new IOException(error, exception));

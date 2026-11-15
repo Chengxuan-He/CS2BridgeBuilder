@@ -88,6 +88,6 @@ for n,rec in enumerate(records):
  row.extend([len(ints),len(rec['wholeFaces'])]);ints.extend(rec['wholeFaces'])
  row.extend([len(ints),len(rec['panelVertices'])]);ints.extend(rec['panelVertices'])
  ints[n*13:n*13+13]=row
-blob=struct.pack('<8I',0x314e4242,1,len(ints),0,0,0,len(floats),0)+np.array(ints,dtype='<i4').tobytes()+np.array(floats,dtype='<f4').tobytes();blob+=hashlib.sha256(blob).digest()
+blob=struct.pack('<6i',len(ints),0,0,0,len(floats),0)+np.array(ints,dtype='<i4').tobytes()+np.array(floats,dtype='<f4').tobytes();blob+=hashlib.sha256(blob).digest()
 (R/'assets/HardcodedNumbers/Draw02/Types_Draw02_EndClosureMeasurements.bin').write_bytes(blob)
 (O/'source-recipe.json').write_text(json.dumps(records,indent=2));print(len(blob),[(x['lod'],x['side'],len(x['source']),len(x['edges']),len(x['fragments']),len(x['wholeFaces'])) for x in records])

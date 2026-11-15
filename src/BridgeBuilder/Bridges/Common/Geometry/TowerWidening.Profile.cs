@@ -33,7 +33,7 @@ internal static partial class TowerWidening
     /// separately the end opens wider, because it carries the anchorage and not because its cables sit
     /// further apart, and the same pair of cables was scaled in one piece and carried in the other.
     /// </summary>
-    internal sealed class Profile
+    internal sealed partial class Profile
     {
         private readonly float _low;
         private readonly float _height;
@@ -227,7 +227,7 @@ internal static partial class TowerWidening
         internal float SpanAt(float y) => _span[Band(y)];
 
         /// <summary>How thick the outermost run of material is at this height, or zero if unknown.</summary>
-        internal float OuterThicknessAt(float y) => _outer[Band(y)];
+
 
         /// <summary>
         /// Whether material at this height and this distance from the centre belongs to a piece that

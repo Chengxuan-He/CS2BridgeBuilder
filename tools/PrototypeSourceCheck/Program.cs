@@ -63,10 +63,6 @@ Check(BridgePrototypeSource.Inspect(nativeDlc).IsAvailable, "Matching available 
 baseBridge.Put(new AssetPackItem { m_Packs = new AssetPackPrefab[] { null! } });
 Check(!BridgePrototypeSource.Inspect(baseBridge).IsAvailable, "null pack admitted");
 // Full publisher names, every source branch and name failure independent of ownership.
-var go = Donor("166012"); active.Active.Add("166012");
-var goSource = BridgePrototypeSource.Inspect(go);
-Check(goSource.LocalizedLabel.Contains("GO 224m Viaduct Bridge"), "GO official full title fallback");
-Check(goSource.Key == "mod:166012" && goSource.IsAvailable, "GO title changed technical binding");
 var unknown = Donor("987654"); active.Active.Add("987654");
 var unknownSource = BridgePrototypeSource.Inspect(unknown);
 Check(unknownSource.LocalizedLabel.Contains("SourceModNameUnavailable") && !unknownSource.LocalizedLabel.Contains("987654"), "numeric ID escaped into UI");

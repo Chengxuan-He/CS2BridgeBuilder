@@ -14,7 +14,6 @@ namespace CS2Mods.Shared.Infrastructure;
 internal sealed class ExportStateStore
 {
     private const string Header = "exportName\tfingerprint\tlastExportUtc";
-    private const string LegacyHeaderPrefix = "sourceId\t";
 
     private readonly Dictionary<string, ExportState> _states = new(StringComparer.Ordinal);
 
@@ -27,28 +26,14 @@ internal sealed class ExportStateStore
         var lines = File.ReadAllLines(ExportPaths.StateFile);
         if (lines.Length == 0) return store;
 
-        // The first format keyed rows by the Road Builder id and carried the asset name in column 3.
-        // Re-key those rows; their fingerprints predate the current canonical form and will simply read
-        // as "changed", which costs one overwrite and never produces a duplicate asset.
-        var legacy = lines[0].StartsWith(LegacyHeaderPrefix, StringComparison.Ordinal);
-        if (legacy) ModHost.Log.Info("Migrating the export state to name-based records.");
-
+        if (lines[0] != Header) throw new InvalidDataException("Unsupported export state format: " + ExportPaths.StateFile);
         foreach (var line in lines.Skip(1))
         {
             var fields = line.Split('\t');
-            if (legacy)
-            {
-                if (fields.Length < 4 || fields[2].Length == 0) continue;
-                store._states[fields[2]] = new ExportState(fields[1], fields[3]);
-            }
-            else
-            {
-                if (fields.Length < 3 || fields[0].Length == 0) continue;
-                store._states[fields[0]] = new ExportState(fields[1], fields[2]);
-            }
+            if (fields.Length != 3 || fields[0].Length == 0) continue;
+            store._states[fields[0]] = new ExportState(fields[1], fields[2]);
         }
 
-        if (legacy) store.Save();
         return store;
     }
 

@@ -11,6 +11,6 @@ for lod in range(2):
  hit=np.isin(faces,ids).sum(1);assert not np.any((hit>0)&(hit<3));ff=np.flatnonzero(hit==3).tolist()
  ints +=[len(v),len(ids)]+ids;floats += [hi]
  record.append(dict(lod=lod,parts=selected,vertices=ids,faces=ff,halfspan=hi,sourceHash=hashlib.sha256((r/f'pedestrian02-main-{lod}.npz').read_bytes()).hexdigest()))
-b=struct.pack('<8i',0x314e4242,1,len(ints),0,0,0,len(floats),0)+struct.pack('<%di'%len(ints),*ints)+struct.pack('<%df'%len(floats),*floats);b+=hashlib.sha256(b).digest()
+b=struct.pack('<6i',len(ints),0,0,0,len(floats),0)+struct.pack('<%di'%len(ints),*ints)+struct.pack('<%df'%len(floats),*floats);b+=hashlib.sha256(b).digest()
 p=root/'assets/HardcodedNumbers/PedestrianDraw02/Types_PedestrianDraw02_PedestrianDraw02UpperTruss_cs.bin';p.write_bytes(b);(out/'upper-membership.json').write_text(json.dumps(record,indent=2))
 print([(x['lod'],len(x['vertices']),len(x['faces']),x['halfspan']) for x in record])

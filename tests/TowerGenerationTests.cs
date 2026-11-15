@@ -4601,24 +4601,18 @@ internal static class TowerGenerationTests
         const float extra = 20f;
         var source = vertices.ToArray();
         var outline = triangles.ToArray();
-        var moved = TowerWidening.WidenOpenTruss(source, outline, extra, out var facts);
+        var moved = TowerWidening.WidenOpenTruss(source, outline, extra, false, TowerWidening.Profile.Of(new[] { source }, new IReadOnlyList<int>?[] { outline }));
 
+        var facts = OpenTrussMeasurements.Measure(source, moved, outline);
         check("[through arch] source topology finds both x=0-crossing parts",
             facts.SpanningPieces == 2, facts.SpanningPieces.ToString(CultureInfo.InvariantCulture));
-        check("[through arch] a diagnostic mismatch does not discard the requested transform",
-            !facts.ContractSatisfied && moved.Where((vertex, index) => !vertex.Equals(source[index])).Any(), null);
+        check("[through arch] requested transform changes the source vertices",
+            moved.Where((vertex, index) => !vertex.Equals(source[index])).Any(), null);
         check("[through arch] x=0 alone separates translated and stretched pieces",
-            facts.RigidPieces == 2 && facts.SpanningPieces == 2 && facts.FloatingPieces == 0,
-            $"rigid {facts.RigidPieces}, spanning {facts.SpanningPieces}, followers {facts.FloatingPieces}");
+            facts.RigidPieces == 2 && facts.SpanningPieces == 2,
+            $"rigid {facts.RigidPieces}, spanning {facts.SpanningPieces}");
 
         var ratio = (16f + extra) / 16f;
-        var forbiddenOverride = moved.ToArray();
-        forbiddenOverride[side].x = source[side].x * ratio;
-        var rejectedOverride = !TowerWidening.RequireCentrelineRule(
-            source, forbiddenOverride, outline, extra);
-        check("[through arch] an attempted override of the x=0 rule is refused without throwing",
-            rejectedOverride, null);
-
         // The authored 0.5 m separation between the two long sides remains 0.5 m at every station.
         var rectangular = true;
         for (var station = 0; station < 5; station++)
@@ -4663,7 +4657,8 @@ internal static class TowerGenerationTests
             new[] { greenSource }, new IReadOnlyList<int>?[] { greenTriangles });
         const float greenExtra = 32f;
         var greenMoved = TowerWidening.WidenOpenTruss(
-            greenSource, greenTriangles, greenExtra, true, greenProfile, out var greenFacts);
+            greenSource, greenTriangles, greenExtra, true, greenProfile);
+        var greenFacts = OpenTrussMeasurements.Measure(greenSource, greenMoved, greenTriangles);
         check("[through arch] green inner rail and outer arch translate by the same amount",
             Math.Abs(greenMoved[4].x - 23f) < 0.001f
                 && Math.Abs(greenMoved[5].x - 26f) < 0.001f
@@ -4697,7 +4692,8 @@ internal static class TowerGenerationTests
         };
         var lodPieces = TowerWidening.PiecesOf(greenLod, greenLodTriangles, out _);
         var greenLodMoved = TowerWidening.WidenOpenTruss(
-            greenLod, greenLodTriangles, greenExtra, true, greenProfile, out var greenLodFacts);
+            greenLod, greenLodTriangles, greenExtra, true, greenProfile);
+        var greenLodFacts = OpenTrussMeasurements.Measure(greenLod, greenLodMoved, greenLodTriangles);
         check("[through arch] regression LOD welds both outer arches through x=0",
             lodPieces.Length == 1 && lodPieces[0].Left <= -10f && lodPieces[0].Right >= 10f,
             $"{lodPieces.Length} connected pieces");

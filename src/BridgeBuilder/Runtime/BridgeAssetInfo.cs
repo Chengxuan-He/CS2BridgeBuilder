@@ -18,9 +18,8 @@ internal sealed class BridgeAssetInfo
     {
         var parts = path.Split('\\', '/');
         for (var i = 0; i < parts.Length; i++)
-            if (parts[i].Equals(owner + "_Dependencies", StringComparison.OrdinalIgnoreCase)
-                || (parts[i].Equals(owner, StringComparison.OrdinalIgnoreCase) && i + 1 < parts.Length
-                    && parts[i + 1].Equals("Dependencies", StringComparison.OrdinalIgnoreCase))) return true;
+            if (parts[i].Equals(owner, StringComparison.OrdinalIgnoreCase) && i + 1 < parts.Length
+                    && parts[i + 1].Equals("Dependencies", StringComparison.OrdinalIgnoreCase)) return true;
         return false;
     }
 
@@ -62,7 +61,7 @@ internal sealed class BridgeAssetInfo
     internal static bool IsOtherBridgeAsset(string? path, string owner, string importedRoot)
     {
         if (string.IsNullOrEmpty(path)) return false;
-        var full = Path.GetFullPath(BridgeFileAccess.Logical(path));
+        var full = BridgeFileAccess.LogicalUnder(path, importedRoot);
         var root = Path.GetFullPath(importedRoot).TrimEnd('\\', '/') + Path.DirectorySeparatorChar;
         if (!full.StartsWith(root, StringComparison.OrdinalIgnoreCase)) return false;
         foreach (Match match in AssetOwner.Matches(full.Substring(root.Length)))

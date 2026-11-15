@@ -11,121 +11,36 @@ using System.Text.RegularExpressions;
 
 namespace CS2Mods.Shared.Discovery;
 
-/// <summary>What a scan found, including what it had to leave out and why.</summary>
+/// <summary>Road Builder discovery uses registered prefab identifiers, independently of labels.</summary>
 internal sealed class RoadDiscoveryResult
 {
-    internal RoadDiscoveryResult(IReadOnlyList<RoadBuilderRoad> roads, int skippedBroken, int skippedNameConflicts)
-    {
-        Roads = roads;
-        SkippedBroken = skippedBroken;
-        SkippedNameConflicts = skippedNameConflicts;
-    }
-
+    internal RoadDiscoveryResult(IReadOnlyList<RoadBuilderRoad> roads) => Roads = roads;
     internal IReadOnlyList<RoadBuilderRoad> Roads { get; }
-    internal int SkippedBroken { get; }
-    internal int SkippedNameConflicts { get; }
 }
 
 internal static class RoadBuilderDiscovery
 {
     private const string RoadBuilderPrefabType = "RoadBuilder.Domain.Prefabs.RoadBuilderPrefab";
-
-    /// <summary>Bump when the canonical form changes, so old fingerprints are not trusted.</summary>
     private const string FingerprintVersion = "3";
-
-    /// <summary>Matches a Road Builder road id such as r03776e2c-574e-...-76561199197854251.</summary>
     private static readonly Regex RoadIdPattern = new(
         @"r[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}-\d+",
         RegexOptions.Compiled);
 
-    private static string _lastWarnings = string.Empty;
-
-    /// <summary>
-    /// Lists the roads that can be exported.
-    /// A road's name is its identity, so a name that is not unambiguously free is a hard stop rather
-    /// than something to work around: appending a discriminator would either put Road Builder's id back
-    /// into the asset name, or tie the name to the content and rename the asset on every edit.
-    /// </summary>
-    internal static RoadDiscoveryResult Find(PrefabSystem prefabSystem, ICollection<string> ownedExportNames)
+    internal static RoadDiscoveryResult Find(PrefabSystem prefabSystem)
     {
-        var candidates = PrefabCatalog.GetAll(prefabSystem).OfType<RoadPrefab>().Where(IsRoadBuilderRoad).ToList();
-
-        // A scan runs whenever the options page is on screen, so the same complaints would otherwise
-        // be logged once a second. Collect them and only write them out when the set actually changes.
-        var warnings = new List<string>();
-        var usable = new List<RoadBuilderRoad>(candidates.Count);
-        var broken = 0;
-        var unnameable = 0;
-        foreach (var prefab in candidates)
-        {
-            var road = Describe(prefab, warnings);
-            if (road == null)
-            {
-                unnameable++;
-                continue;
-            }
-
-            usable.Add(road);
-        }
-
-        var taken = new HashSet<string>(TakenNames(prefabSystem, ownedExportNames), StringComparer.Ordinal);
-        var byName = usable.GroupBy(road => road.Name, StringComparer.Ordinal).ToList();
-
-        var roads = new List<RoadBuilderRoad>(usable.Count);
-        var conflicts = unnameable;
-        foreach (var group in byName)
-        {
-            if (group.Count() > 1)
-            {
-                conflicts += group.Count();
-                warnings.Add(
-                    $"Skipping {group.Count()} roads all registered as '{group.Key}'. Their exported assets "
-                    + "would be indistinguishable; rename them in Road Builder first.");
-                continue;
-            }
-
-            if (taken.Contains(group.Key))
-            {
-                conflicts++;
-                warnings.Add(
-                    $"Skipping '{group.Key}': another road prefab already uses that name, and exporting would "
-                    + "shadow it. Rename the road in Road Builder first.");
-                continue;
-            }
-
-            roads.Add(group.First());
-        }
-
-        roads.Sort((left, right) => StringComparer.OrdinalIgnoreCase.Compare(left.Name, right.Name));
-        FlushWarnings(warnings);
-        return new RoadDiscoveryResult(roads, broken, conflicts);
+        var roads = PrefabCatalog.GetAll(prefabSystem).OfType<RoadPrefab>()
+            .Where(IsRoadBuilderRoad)
+            .GroupBy(prefab => prefab.name, StringComparer.Ordinal)
+            .Select(group => Describe(group.First()))
+            .OrderBy(road => road.Name, StringComparer.OrdinalIgnoreCase)
+            .ThenBy(road => road.Id, StringComparer.Ordinal)
+            .ToList();
+        return new RoadDiscoveryResult(roads);
     }
 
-    /// <summary>Writes the scan's complaints only when they differ from the previous scan's.</summary>
-    private static void FlushWarnings(List<string> warnings)
-    {
-        var signature = string.Join("\n", warnings);
-        if (string.Equals(signature, _lastWarnings, StringComparison.Ordinal)) return;
-        _lastWarnings = signature;
-        foreach (var warning in warnings) ModHost.Log.Warn(warning);
-    }
-
-    /// <summary>Cheap poll used while waiting for Road Builder: no naming, hashing or sorting.</summary>
+    /// <summary>Cheap poll used while waiting for Road Builder.</summary>
     internal static int CountRoads(PrefabSystem prefabSystem) =>
         PrefabCatalog.GetAll(prefabSystem).OfType<RoadPrefab>().Count(IsRoadBuilderRoad);
-
-    /// <summary>
-    /// Names that already belong to some other road prefab - vanilla, another mod, or a user asset this
-    /// exporter did not write. Names this exporter produced are excluded: a road keeps its own name.
-    /// </summary>
-    private static IEnumerable<string> TakenNames(PrefabSystem prefabSystem, ICollection<string> ownedExportNames)
-    {
-        return PrefabCatalog.GetAll(prefabSystem)
-            .OfType<RoadPrefab>()
-            .Where(prefab => !IsRoadBuilderRoad(prefab))
-            .Select(prefab => prefab.name)
-            .Where(name => !string.IsNullOrEmpty(name) && !ownedExportNames.Contains(name));
-    }
 
     private static bool IsRoadBuilderRoad(RoadPrefab prefab)
     {
@@ -137,24 +52,11 @@ internal static class RoadBuilderDiscovery
             && string.Equals(type.Name, "RoadBuilderPrefab", StringComparison.Ordinal);
     }
 
-    /// <summary>Null when the road has no usable name, which under name-as-identity means it cannot be exported.</summary>
-    private static RoadBuilderRoad? Describe(RoadPrefab prefab, List<string> warnings)
+    private static RoadBuilderRoad Describe(RoadPrefab prefab)
     {
-        var diagnosticId = string.IsNullOrWhiteSpace(prefab.name) ? "unnamed-road" : prefab.name;
         var config = GetConfig(prefab);
         var registeredName = GetStringProperty(config, "Name").Trim();
-        var name = NameSanitizer.MakeFileSystemSafe(registeredName);
-        if (name.Length == 0)
-        {
-            // No name means no identity, and a generated one would have to come from the Road Builder id.
-            warnings.Add(
-                $"Skipping Road Builder prefab '{diagnosticId}': it has no usable registered name. "
-                + "Give it a name in Road Builder to make it exportable.");
-            return null;
-        }
-
-        if (!string.Equals(registeredName, name, StringComparison.Ordinal))
-            warnings.Add($"The registered name '{registeredName}' cannot be used as a file name. Exporting it as '{name}'.");
+        var name = registeredName.Length == 0 ? prefab.name : registeredName;
 
         var registeredIcon = prefab.components.OfType<UIObject>().FirstOrDefault()?.m_Icon ?? string.Empty;
         var (width, modules) = DescribeComposition(config);
@@ -168,11 +70,7 @@ internal static class RoadBuilderDiscovery
             modules);
     }
 
-    /// <summary>
-    /// Hashes what the road *is*, never which id Road Builder happens to have given it. Road ids are
-    /// blanked out of the serialized config, so re-importing a road under a fresh id still counts as
-    /// the same road and a repeated export stays a no-op.
-    /// </summary>
+    /// <summary>Content fingerprint only; source identity is always RoadBuilderRoad.Id.</summary>
     private static string BuildFingerprint(RoadPrefab prefab, object? config, string name)
     {
         string canonical;

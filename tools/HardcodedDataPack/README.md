@@ -15,13 +15,11 @@ Every binary uses little-endian encoding:
 
 | Offset | Contents |
 | --- | --- |
-| 0 | UInt32 magic `0x314e4242` |
-| 4 | Int32 format version, currently 1 |
-| 8 | Six Int32 array lengths in the type order above |
-| 32 | The six tightly packed numerical arrays, in the same order |
+| 0 | Six Int32 array lengths in the type order above |
+| 24 | The six tightly packed numerical arrays, in the same order |
 | End minus 32 | SHA-256 of all preceding bytes |
 
-The loader verifies the header, checksum and exact total size before allocating typed arrays.
+Offline tools verify the checksum and exact total size. The runtime loader trusts embedded arrays and does not repeat these checks.
 IEEE bits, signedness and ordering are preserved. Unary minus and other recipe operations remain
 in the generated C# expressions. There is no runtime prototype lookup, geometry classification,
 file-system data lookup or resource dependency in exported bridge assets.

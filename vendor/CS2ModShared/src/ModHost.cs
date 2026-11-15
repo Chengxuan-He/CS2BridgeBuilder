@@ -33,14 +33,14 @@ internal static class ModHost
 
     /// <summary>
     /// What an exported asset is called, given the road it came from. Defaults to the road's own
-    /// name. The bridge exporter overrides it so that a road and the bridge made from that road can
+    /// registered identifier. The bridge exporter overrides it so that a road and the bridge made from that road can
     /// both exist in the asset database, and so that the same road can be exported in more than one
     /// bridge style.
     /// </summary>
     internal static Func<RoadBuilderRoad, string>? ExportNamePolicy { get; set; }
 
     internal static string ExportNameOf(RoadBuilderRoad road) =>
-        ExportNamePolicy?.Invoke(road) ?? road.Name;
+        ExportNamePolicy?.Invoke(road) ?? road.Id;
 
     /// <summary>Prefix for the generated dependency assets. Keeps two mods' dependencies apart.</summary>
     internal static string DefaultNamePrefix { get; set; } = "RBExport";

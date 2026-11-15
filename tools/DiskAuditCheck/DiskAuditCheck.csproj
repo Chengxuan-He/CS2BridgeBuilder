@@ -5,5 +5,6 @@
     <Compile Include="../../src/BridgeBuilder/Runtime/BridgeFileAccess.cs" Link="BridgeFileAccess.cs" />
     <Compile Include="../../src/BridgeBuilder/Runtime/BridgeAssetInfo.cs" Link="BridgeAssetInfo.cs" />
     <Compile Include="../../src/BridgeBuilder/Runtime/BridgeSerializedReferences.cs" Link="BridgeSerializedReferences.cs" />
-  </ItemGroup>
+    <Compile Include="../../src/BridgeBuilder/Runtime/BridgeInspectionPermissions.cs" Link="BridgeInspectionPermissions.cs" />
+  <Compile Include="../../src/BridgeBuilder/Runtime/BridgeRemovalFiles.cs"/></ItemGroup>
 </Project>

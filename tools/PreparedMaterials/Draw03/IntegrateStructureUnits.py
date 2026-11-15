@@ -17,8 +17,8 @@ def run():
     lib=json.loads(LIBRARY.read_bytes())
     assert 'PASS native source descriptors: 1 descriptors' in (out/'native-descriptor.log').read_text()
     bbn=(ROOT/'assets/HardcodedNumbers/Draw03/Types_Draw03_Draw03RoadAppearance_cs.bin').read_bytes()
-    ni,nl,nu,nul,nf,nd=struct.unpack_from('<6i',bbn,8)
-    floats=struct.unpack_from('<'+str(nf)+'f',bbn,32+4*ni+8*nl+4*nu+8*nul)
+    ni,nl,nu,nul,nf,nd=struct.unpack_from('<6i', bbn, 0)
+    floats=struct.unpack_from('<'+str(nf)+'f',bbn,24+4*ni+8*nl+4*nu+8*nul)
     assert list(floats[11:15])==unit['bounds']
     p=candidate/'RepeatUnits'/unit['bindingKey']/'Repeat.Surface'
     data=p.read_bytes(); cid=p.with_suffix('.Surface.cid').read_text().strip()

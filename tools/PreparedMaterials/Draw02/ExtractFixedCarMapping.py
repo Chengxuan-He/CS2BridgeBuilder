@@ -125,7 +125,7 @@ values.append(6.4000244140625)
 moving = json.loads((ROOT/'artifacts/material-remap/Draw02/near-cells/native-atlas-wrap-plan.json').read_text())
 for level in moving:
     values.append(max(s['absoluteZ'][1] for d in level['domains'] for s in d['stages']))
-blob = struct.pack('<8I', 0x314e4242, 1, 0, 0, 0, 0, len(values), 0)
+blob = struct.pack('<6i', 0, 0, 0, 0, len(values), 0)
 blob += struct.pack('<%df' % len(values), *values)
 blob += hashlib.sha256(blob).digest()
 (ROOT/'assets/HardcodedNumbers/Draw02/Types_Draw02_Draw02FixedCarAtlasAppearance_cs.bin').write_bytes(blob)

@@ -152,7 +152,7 @@ def main():
                             repeatedRegionFaces=int(repeated.sum()), uvMin=uv.min(0).tolist(), uvMax=uv.max(0).tolist(),
                             positionsSha256=report['positionsSha256'], uvSha256=report['uvSha256'], indicesSha256=report['indicesSha256']))
     assert len(records) == len(mapping) == 23
-    raw = b'BBN1' + struct.pack('<7i', 1, len(encoded), 0, 0, 0, 0, 0) + struct.pack('<' + 'i' * len(encoded), *encoded)
+    raw = struct.pack('<6i', len(encoded), 0, 0, 0, 0, 0) + struct.pack('<' + 'i' * len(encoded), *encoded)
     raw += hashlib.sha256(raw).digest()
     resource = ROOT / 'assets/HardcodedNumbers/Lift01/Lift01UvSampling.bin'
     resource.write_bytes(raw)

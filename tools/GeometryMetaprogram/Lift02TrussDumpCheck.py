@@ -2,8 +2,8 @@
 from pathlib import Path
 import json,struct,numpy as np,sys
 repo=Path(sys.argv[1]);out=repo/'artifacts/material-remap/Lift02/truss69'
-b=(repo/'assets/HardcodedNumbers/Lift02/Types_Lift02_CentralTrusses.bin').read_bytes();n=struct.unpack_from('<i',b,8)[0];ng=struct.unpack_from('<i',b,24)[0]
-recipe=np.frombuffer(b,'<i4',count=n,offset=32);h=np.frombuffer(b,'<f4',count=ng,offset=32+n*4)
+b=(repo/'assets/HardcodedNumbers/Lift02/Types_Lift02_CentralTrusses.bin').read_bytes();n=struct.unpack_from('<i',b,0)[0];ng=struct.unpack_from('<i',b,16)[0]
+recipe=np.frombuffer(b,'<i4',count=n,offset=24);h=np.frombuffer(b,'<f4',count=ng,offset=24+n*4)
 def read(path):return np.frombuffer(path.read_bytes(),'<f4',offset=4).reshape(-1,3)
 rows=[]
 for lod in range(3):

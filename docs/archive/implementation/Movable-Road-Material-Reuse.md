@@ -2,8 +2,8 @@
 
 ## Material selection
 
-Follow the [material generation contract](../../agent-contract/MATERIAL_GENERATION_CONTRACT.md)
-and [movable surface selection](../../agent-contract/MOVABLE_BRIDGES_CONTRACT.md#243-material-selection-order).
+Follow the [material generation contract](../../contracts/reading-map.md#material-generation-contract)
+and [movable surface selection](../../specs/movable-spec.md#movable-243-material-selection-order).
 Choose by actual surface type and physical motion domain, not by the containing section's name.
 All asphalt, including empty lanes and parking areas, is road surface. Only prototype-supported
 appearance types enter composition/precomposition (offline material baking outside the game) to use prototype appearance; other types bind
@@ -93,7 +93,7 @@ texture/VT/mip dependencies, preserve source files and never read a deleted brid
 Preview resources belong to the private preview lifetime; failed generation cleans only its own
 partial output. Persisted assets must operate without manager callbacks after a cold start.
 
-The required offline migration is not complete. [Prepared materials](../../design/materials/Prepared-Materials.md)
+The required offline migration is not complete. [Prepared materials](../../specs/material-spec.md)
 records packaging, actual resource availability and remaining runtime binding/baking work.
 This document specifies the target behavior and source evidence; it does not claim that every
 current material path already avoids runtime baking or that all styles passed visual acceptance.

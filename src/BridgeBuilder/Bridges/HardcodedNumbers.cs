@@ -45,7 +45,6 @@ internal sealed class HardcodedNumbers
     private static HardcodedNumbers Decode(Stream stream, string name)
     {
         using var reader = new BinaryReader(stream, System.Text.Encoding.UTF8, leaveOpen: true);
-        reader.ReadUInt32(); reader.ReadInt32();
         var counts = new int[6];
         for (var i = 0; i < counts.Length; i++) counts[i] = reader.ReadInt32();
         return new HardcodedNumbers(reader, counts);

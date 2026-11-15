@@ -14,15 +14,7 @@ internal static class BridgeAssetCatalog
     private static readonly ConcurrentDictionary<string, BridgeAssetInfo> Creating = new(StringComparer.Ordinal);
     private static readonly ConcurrentDictionary<string, PrefabBase> CreatingPrefabs = new(StringComparer.Ordinal);
     internal static string Root => Path.Combine(UnityEngine.Application.persistentDataPath, "ImportedData");
-    private static string PathFor(string owner)
-    {
-        var canonical = Path.Combine(Root, owner, "Prefabs", "Bridge.Prefab");
-        if (BridgeFileAccess.Exists(canonical) || !Directory.Exists(BridgeFileAccess.Native(Root))) return canonical;
-        return Directory.EnumerateFiles(BridgeFileAccess.Native(Root), "*.Prefab", SearchOption.AllDirectories)
-            .Select(BridgeFileAccess.Logical)
-            .FirstOrDefault(p => !BridgeAssetInfo.IsDependencyPath(p, owner)
-                && Path.GetFileName(p).Equals(owner + ".Prefab", StringComparison.OrdinalIgnoreCase)) ?? canonical;
-    }
+    private static string PathFor(string owner) => Path.Combine(Root, owner, "Prefabs", "Bridge.Prefab");
 
     internal static IReadOnlyList<BridgeAssetInfo> Load() => ReadAll().Where(e => !e.Pending)
         .OrderBy(e => e.DisplayName, StringComparer.OrdinalIgnoreCase).ToArray();
@@ -54,7 +46,7 @@ internal static class BridgeAssetCatalog
             var path = PathFor(owner);
             if (!BridgeFileAccess.Exists(path)) return null;
             return BridgeAssetMetadata.TryRead(BridgeFileAccess.ReadText(path), out var entry)
-                && entry.PrefabName == owner ? entry : new BridgeAssetInfo(owner, owner, "", null, "", "");
+                && entry.PrefabName == owner ? entry : null;
         }
         catch (Exception exception) { Mod.Log.Warn(exception, "Could not read bridge metadata: " + owner); return null; }
     }

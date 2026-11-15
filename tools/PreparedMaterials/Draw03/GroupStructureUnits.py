@@ -56,8 +56,8 @@ def run():
         source_digest = sources[mesh['surfaceCid']]
         path = ROOT/'assets/HardcodedNumbers/Draw03'/(item['resource']+'.bin')
         blob = path.read_bytes(); assert hashlib.sha256(blob).hexdigest() == item['sha256']
-        ni, _, _, _, _, nd = struct.unpack_from('<6i', blob, 8)
-        ints=np.frombuffer(blob, '<i4', ni, 32); ds=np.frombuffer(blob, '<f8', nd, 32+ni*4)
+        ni, _, _, _, _, nd = struct.unpack_from('<6i', blob, 0)
+        ints=np.frombuffer(blob, '<i4', ni,24); ds=np.frombuffer(blob, '<f8', nd,24+ni*4)
         ndom,ncharts=map(int,ints[:2]); charts=[]
         for c in range(ncharts):
             at=int(ints[2+ndom+c]); rings=[]

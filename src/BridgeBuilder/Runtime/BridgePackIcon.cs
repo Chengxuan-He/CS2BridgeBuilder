@@ -36,6 +36,8 @@ internal static class BridgePackIcon
             { error = "Pack icon field or serialized pack identity is invalid: " + full; return false; }
             if (updated == text) continue;
             var saved = Path.Combine(backup, full.Substring(root.Length + 1));
+            if (BridgeFileAccess.WithinAssetStorage(saved, Application.persistentDataPath))
+            { error = "Pack backup aliases asset storage: " + saved; return false; }
             Directory.CreateDirectory(BridgeFileAccess.Native(Path.GetDirectoryName(saved)!));
             File.Copy(BridgeFileAccess.Native(full), BridgeFileAccess.Native(saved));
             var temporary = full + "." + Guid.NewGuid().ToString("N") + ".tmp";

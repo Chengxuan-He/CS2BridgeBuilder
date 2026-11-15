@@ -10,9 +10,10 @@ internal sealed class BridgeSelfCheckReport
 {
     internal enum Outcome { Migrated, RemovedBackedUp, RemovedWithoutBackup, Unfinished }
     private readonly Dictionary<string, Outcome> _owners = new(StringComparer.Ordinal);
-    internal bool Interrupted { get; set; }
     internal int Total => _owners.Count;
-    internal bool HasNotice => Total != 0 || Interrupted;
+    private bool _changed;
+    internal void Changed() => _changed = true;
+    internal bool HasNotice => _changed || _owners.Values.Any(value => value != Outcome.Unfinished);
     internal void Set(string owner, Outcome outcome) => _owners[owner] = outcome;
     internal void Healthy(string owner) => _owners.Remove(owner);
     internal int Count(Outcome outcome) => _owners.Values.Count(value => value == outcome);
@@ -24,7 +25,6 @@ internal sealed class BridgeSelfCheckReport
         Add(Outcome.RemovedBackedUp, "BridgeSelfCheckRemoved");
         Add(Outcome.RemovedWithoutBackup, "BridgeSelfCheckRemovedWithoutBackup");
         Add(Outcome.Unfinished, "BridgeSelfCheckIncomplete");
-        if (Interrupted) lines.Add(RuntimeUiText.Get("BridgeSelfCheckInterrupted"));
         if (lines.Count != 0)
         {
             var restart = RuntimeUiText.Get("BridgeSelfCheckRestart");

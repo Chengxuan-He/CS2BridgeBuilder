@@ -22,7 +22,7 @@ internal static class MovableRigidDecalMaterial
             if(!MovableSurfaceAssets.TryReadSource(source,out _,out error))return false;
             var library=AssetDatabase.global.resources.materialLibrary;
             var from=library.GetMaterial(source.materialTemplateHash);
-            if (!MovableCustomShaderAsset.TryPrepareBoneDecal(owner, preview, assets, rendererPriority, out var targetTemplate, out error)) return false;
+            if (!MovableCustomShaderAsset.TryPrepare(18, checked(2000 + rendererPriority), out var targetTemplate, out error)) return false;
             var target=library.GetMaterial(targetTemplate);
             byte[] data;
             using(var input=source.GetReadStream())using(var bytes=new MemoryStream())
@@ -47,6 +47,9 @@ internal static class MovableRigidDecalMaterial
                     ["colossal_LodDistanceFactor"] = distanceFactor,
                     ["_DrawOrder"] = rendererPriority
                 };
+                var programInts = new Dictionary<string, int>(output.ints)
+                { [BridgeNativeMaterialProgram.QueueProperty] = checked(2000 + rendererPriority) };
+                output.UpdateInts(programInts);
                 output.UpdateVectors(vectors); output.UpdateFloats(floats);
             }
             output.SaveData(force:true);

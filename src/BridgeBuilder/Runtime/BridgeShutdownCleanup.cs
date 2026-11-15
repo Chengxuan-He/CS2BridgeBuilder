@@ -102,8 +102,6 @@ internal static class BridgeShutdownCleanup
                 try
                 {
                     BridgeDeletionIntent.Cleanup(_root,owner);
-                    try { BridgeLegacyRemoval.Finish(owner); }
-                    catch(Exception e) { Record(true,"Physical cleanup completed but legacy ticket remains; UUID="+owner+"; "+e); }
                     Record(false,"Verified normal-shutdown physical cleanup: "+owner);
                 }
                 catch(Exception e) { Record(true,"Shutdown cleanup failed; UUID="+owner+"; durable intent retained: "+e); }

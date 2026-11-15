@@ -91,7 +91,7 @@ def main():
         b['unitUScaleNumerator']=-(high[0]-low[0])
         b['unitUOffset']=low[0] if b['side']==0 else high[0]
     values=[v for b in bindings for v in [b['originalHalfWidth'],b['unitUScaleNumerator'],b['unitUOffset'],b['unitVScale'],b['unitVOffset'],*units[b['unit']]['normalFrameEvidence']['targetTangent']]]
-    raw=b'BBN1'+struct.pack('<7i',1,2,0,0,0,len(values),0)+struct.pack('<2i',1,len(keys))+struct.pack('<'+'f'*len(values),*values)
+    raw=struct.pack('<6i',2,0,0,0,len(values),0)+struct.pack('<2i',1,len(keys))+struct.pack('<'+'f'*len(values),*values)
     raw+=hashlib.sha256(raw).digest()
     (a.repository/'assets/HardcodedNumbers/PedestrianDraw01/Types_PedestrianDraw01_PreparedRoadMapping.bin').write_bytes(raw)
     code=SOURCE.replace('KEYS','\n'.join('        "'+key+'",' for key in keys))

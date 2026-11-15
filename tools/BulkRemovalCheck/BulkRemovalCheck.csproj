@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup><TargetFramework>net8.0</TargetFramework><OutputType>Exe</OutputType><ImplicitUsings>enable</ImplicitUsings><Nullable>enable</Nullable></PropertyGroup>
   <ItemGroup>
-    <Compile Include="../../src/BridgeBuilder/Runtime/BridgeLegacyRemoval.cs" />
+    <Compile Include="../../src/BridgeBuilder/Runtime/BridgeDeletionIntent.cs" />
     <Compile Include="../../src/BridgeBuilder/Runtime/BridgeRemovalFiles.cs" />
     <Compile Include="../../src/BridgeBuilder/Runtime/BridgeDeferredRemoval.cs" />
     <Compile Include="../../src/BridgeBuilder/Runtime/BridgeBulkRemoval.cs" Link="BridgeBulkRemoval.cs" />

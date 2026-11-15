@@ -153,7 +153,7 @@ for ci,loops in enumerate(chart_records):
     for ring in loops:
         i32.extend((len(f64),len(ring)))
         f64.extend(x for point in ring for x in point)
-body=b'BBN1'+struct.pack('<i6i',1,len(i32),0,0,0,0,len(f64))+struct.pack('<'+'i'*len(i32),*i32)+struct.pack('<'+'d'*len(f64),*f64)
+body=struct.pack('<6i',len(i32),0,0,0,0,len(f64))+struct.pack('<'+'i'*len(i32),*i32)+struct.pack('<'+'d'*len(f64),*f64)
 resource=root/'assets/HardcodedNumbers/PedestrianDraw02/PedestrianDraw02UvCharts.bin'
 resource.write_bytes(body+hashlib.sha256(body).digest())
 decoded=numbers(resource)

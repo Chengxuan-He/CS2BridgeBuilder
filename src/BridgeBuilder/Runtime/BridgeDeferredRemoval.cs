@@ -26,12 +26,6 @@ internal static class BridgeDeferredRemoval
         Silent.Clear(); ReadyOwners.Clear(); Verified.Clear(); Results.Clear();
         _game=GameManager.instance;
         _game.onGameSaveLoad+=SaveChanged;
-        foreach(string owner in BridgeLegacyRemoval.Load())
-        {
-            if(BridgeLegacyRemoval.IsDetached(owner,out _))
-            { SilentLog.Error("Legacy detached deletion requires separate recovery; files retained: "+owner); continue; }
-            try { Prepare(owner); } catch(Exception e) { SilentLog.Error("Legacy deletion intent migration failed: "+owner+"; "+e); }
-        }
         Resume();
     }
     internal static void Resume()

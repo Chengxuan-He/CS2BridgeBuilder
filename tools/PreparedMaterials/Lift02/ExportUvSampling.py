@@ -238,7 +238,7 @@ def main():
                             authoredAxes=['UV0.Y', 'UV0.Z'] if params[source['sourceCid']]['template'] == 2 else ['U', 'V'],
                             groups={k: dict(count=len(v), domainRanges=ranges(v)) for k, v in groups.items()}))
         print(render, mesh, dict(Counter({k: len(v) for k, v in groups.items()})), flush=True)
-    raw = struct.pack('<II6i', 0x314e4242, 1, len(payload), 0, 0, 0, 0, 0) + np.asarray(payload, dtype='<i4').tobytes()
+    raw = struct.pack('<6i', len(payload), 0, 0, 0, 0, 0) + np.asarray(payload, dtype='<i4').tobytes()
     raw += hashlib.sha256(raw).digest()
     resource_path = NUM / (RESOURCE + '.bin')
     resource_path.write_bytes(raw)

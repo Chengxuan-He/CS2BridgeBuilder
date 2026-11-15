@@ -3,6 +3,8 @@
 <ItemGroup>
 <Compile Include="../../src/BridgeBuilder/Runtime/BridgePortableMigration.cs" Link="BridgePortableMigration.cs"/>
 <Compile Include="../../src/BridgeBuilder/Runtime/BridgeAssetMetadata.cs" Link="BridgeAssetMetadata.cs"/>
+<Compile Include="../../src/BridgeBuilder/Runtime/BridgeInspectionMetadata.cs" Link="BridgeInspectionMetadata.cs"/>
+<Compile Include="../../src/BridgeBuilder/Runtime/BridgeInspectionPaths.cs" Link="BridgeInspectionPaths.cs"/>
 <Compile Include="../../src/BridgeBuilder/Runtime/BridgeAssetInfo.cs" Link="BridgeAssetInfo.cs"/>
 <Compile Include="../../src/BridgeBuilder/Runtime/BridgeSerializedReferences.cs" Link="BridgeSerializedReferences.cs"/>
 <Compile Include="../../src/BridgeBuilder/Runtime/BridgeFileAccess.cs" Link="BridgeFileAccess.cs"/>

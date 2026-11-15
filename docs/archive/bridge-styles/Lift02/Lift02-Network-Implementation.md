@@ -1,6 +1,6 @@
 # Lift02 support implementation
 
-[How to read this single-style implementation record](../../../README.md#reading-a-single-style-report).
+[How to read this single-style implementation record](../../../contracts/documentation-contract.md#documentation-index-reading-a-single-style-report).
 
 
 ## Measured side bodies (2026-10-20)

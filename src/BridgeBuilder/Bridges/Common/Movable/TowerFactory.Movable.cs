@@ -157,8 +157,6 @@ internal sealed partial class TowerFactory
     /// and validates manager independence. This does not admit a style without its measured
     /// structure replacement, network mapping and compatible road/marking conversion.
     /// </summary>
-    internal RenderPrefab? CreateMovableRenderGraph(string name, IReadOnlyList<MovableRoadAssets.Level> levels)
-        => GenerationWork.Synchronous(()=>CreateMovableRenderGraphAsync(name,levels));
     internal async System.Threading.Tasks.Task<RenderPrefab?> CreateMovableRenderGraphAsync(string name, IReadOnlyList<MovableRoadAssets.Level> levels)
     {
         var result=await MovableRoadAssets.CreateAsync(_bridgeName,name,

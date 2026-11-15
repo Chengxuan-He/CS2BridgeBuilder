@@ -11,12 +11,12 @@ repo, directory = map(Path, sys.argv[1:])
 record = json.loads((directory/'charts.json').read_text())
 raw = (directory/'Lift05NativeCharts.bin').read_bytes()
 assert hashlib.sha256(raw[:-32]).digest() == raw[-32:]
-magic, version, ni, nu, nl, nul, nf, nd = struct.unpack_from('<II6i', raw)
-assert (magic, version, nl, nul, nf) == (0x314e4242, 1, 0, 0, 0)
-assert len(raw) == 64+ni*4+nu*4+nd*8
-ints = list(struct.unpack_from(f'<{ni}i', raw, 32))
-words = list(struct.unpack_from(f'<{nu}I', raw, 32+ni*4))
-doubles = list(struct.unpack_from(f'<{nd}d', raw, 32+ni*4+nu*4))
+ni, nu, nl, nul, nf, nd = struct.unpack_from('<6i', raw)
+assert (nl, nul, nf) == (0, 0, 0)
+assert len(raw) == 56+ni*4+nu*4+nd*8
+ints = list(struct.unpack_from(f'<{ni}i', raw,24))
+words = list(struct.unpack_from(f'<{nu}I', raw,24+ni*4))
+doubles = list(struct.unpack_from(f'<{nd}d', raw,24+ni*4+nu*4))
 schema, ns, nr, nt = ints[:4]
 assert schema == 2 and ns == len(record['sources']) and nr == len(record['regions']) and nt == len(record['samplers'])
 for index, cid in enumerate(record['sourceOrder']):

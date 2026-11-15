@@ -54,7 +54,7 @@ def main():
             row.update(minimum=p.min((0,1)).tolist(), maximum=p.max((0,1)).tolist())
         rows.append(row)
     assert [r['count'] for r in rows] == [1472, 515, 0]
-    raw=b'BBN1'+struct.pack('<7i',1,len(values),0,0,0,0,0)+struct.pack('<%di'%len(values),*values)
+    raw=struct.pack('<6i',len(values),0,0,0,0,0)+struct.pack('<%di'%len(values),*values)
     raw += hashlib.sha256(raw).digest()
     (OUT/'Types_Lift05_Catenary.bin').write_bytes(raw)
     if '--install' in sys.argv:

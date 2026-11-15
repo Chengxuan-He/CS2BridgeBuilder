@@ -6,7 +6,7 @@ namespace CS2Mods.Shared.Infrastructure;
 internal static class ExportPaths
 {
     internal static string DataDirectory => Path.Combine(Application.persistentDataPath, "ModsData", ModHost.Id);
-    internal static string SettingsFile => Path.Combine(DataDirectory, "settings.ini");
+    internal static string SettingsFile => Path.Combine(DataDirectory, "settings.json");
     internal static string RequestFile => Path.Combine(DataDirectory, "export.request");
     internal static string ForceRequestFile => Path.Combine(DataDirectory, "force-export.request");
     internal static string StateFile => Path.Combine(DataDirectory, "export-state.tsv");

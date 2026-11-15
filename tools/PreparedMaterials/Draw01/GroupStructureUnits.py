@@ -183,7 +183,7 @@ def main():
     # Register only measured genuine-unit rectangles, not their chart bounding boxes.
     selected = [u for u in known if u['id'] in used]
     floats = [v for u in selected for v in u['bounds']]
-    raw = struct.pack('<II6i', 0x314e4242, 1, 0, 0, 0, 0, 0, len(floats)) + struct.pack('<' + 'd'*len(floats), *floats)
+    raw = struct.pack('<6i', 0, 0, 0, 0, 0, len(floats)) + struct.pack('<' + 'd'*len(floats), *floats)
     raw += hashlib.sha256(raw).digest()
     if not args.no_integrate:
         (ROOT / 'assets/HardcodedNumbers/Draw01/Draw01RepeatRegions.bin').write_bytes(raw)

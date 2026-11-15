@@ -1,6 +1,6 @@
 # Temporary bridge preview rendering
 
-For current requirements, read the [bridge preview specification](../../agent-contract/Bridge-Preview-Specification.md).
+For current requirements, read the [bridge preview specification](../../contracts/reading-map.md#bridge-preview-specification).
 This file is a chronological implementation and diagnosis record. Earlier settings may be superseded
 by later entries; implementation statements do not establish visual acceptance.
 

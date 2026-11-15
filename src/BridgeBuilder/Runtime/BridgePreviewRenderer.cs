@@ -233,13 +233,8 @@ internal sealed class BridgePreviewRenderer : IDisposable
             _materialCapture?.Write(_pass.Draws, _camera.Camera, _stage.Origin, pixels, coverage);
             _readbackMs += _timer.Elapsed.TotalMilliseconds - phase;
             phase = _timer.Elapsed.TotalMilliseconds;
-            bool visible = BridgePreviewPixels.Accumulate(linear, mask, _accumulated!, ImageWidth, ImageHeight, SampleScale);
+            BridgePreviewPixels.Accumulate(linear, mask, _accumulated!, ImageWidth, ImageHeight, SampleScale);
             _accumulateMs += _timer.Elapsed.TotalMilliseconds - phase;
-            if (!visible)
-            {
-                Finish(string.Empty, "RenderEmpty");
-                return;
-            }
             if (++_sampleIndex < SubpixelSamples)
             {
                 // The next sample is another submitted camera frame, not a second

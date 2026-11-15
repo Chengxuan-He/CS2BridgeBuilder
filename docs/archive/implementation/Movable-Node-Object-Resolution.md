@@ -55,7 +55,7 @@ the full bridge motion. Existing-instance replacement/lifecycle handling is not 
 Native secondary-object emission also writes instance Elevation/Lowered/OnGround flags. These are
 distinct from the returned transform and must be reconciled with native child instantiation before
 claiming equivalent persisted attachments; ObjectSubObjectInfo alone does not store those flags.
-The subsequent [attachment state audit](../audits/Movable-Attachment-State.md) also establishes that the
+The subsequent [attachment state audit](../audits/movable-attachment-state.md) also establishes that the
 native road streetlight update does not recurse into mechanism children, while removing network
 lamp producers clears IsLit. The returned lighting booleans do not resolve that persistence gap.
 

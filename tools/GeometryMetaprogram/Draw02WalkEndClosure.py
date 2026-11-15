@@ -37,7 +37,7 @@ for node in nodes:
  floats.extend([node['wB'],node['wC'],node['fraction']])
 ints[6]=len(ints)
 for rec in records:ints.extend([rec['face'],rec['side'],len(rec['indices']),*rec['indices']])
-blob=struct.pack('<8I',0x314e4242,1,len(ints),0,0,0,len(floats),0)+np.asarray(ints,dtype='<i4').tobytes()+np.asarray(floats,dtype='<f4').tobytes();blob+=hashlib.sha256(blob).digest()
+blob=struct.pack('<6i',len(ints),0,0,0,len(floats),0)+np.asarray(ints,dtype='<i4').tobytes()+np.asarray(floats,dtype='<f4').tobytes();blob+=hashlib.sha256(blob).digest()
 (R/'assets/HardcodedNumbers/Draw02/Types_Draw02_WalkEndMeasurements.bin').write_bytes(blob)
 (O/'far-source-strip.json').write_text(json.dumps(dict(nodes=nodes,records=records,references=references),indent=2))
 print(len(blob),'records',len(records),'nodes',len(nodes),'edges',sum(n['kind']==0 for n in nodes),'interior',sum(n['kind']==1 for n in nodes))

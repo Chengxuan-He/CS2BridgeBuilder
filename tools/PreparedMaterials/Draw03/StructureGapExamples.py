@@ -25,8 +25,8 @@ def run():
         name=f"NativeUvCharts_{r['name'].replace(' ','_')}_{r['mesh']}"
         if name not in data:
             b=(ROOT/'assets/HardcodedNumbers/Draw03'/(name+'.bin')).read_bytes()
-            ni,_,_,_,_,nd=struct.unpack_from('<6i',b,8)
-            data[name]=(np.frombuffer(b,'<i4',ni,32),np.frombuffer(b,'<f8',nd,32+ni*4))
+            ni,_,_,_,_,nd=struct.unpack_from('<6i', b, 0)
+            data[name]=(np.frombuffer(b,'<i4',ni,24),np.frombuffer(b,'<f8',nd,24+ni*4))
         ints,ds=data[name];at=int(ints[2+r['domain']]);loops=[];charts=[]
         for c in ints[at+1:at+1+ints[at]]:
             pos=int(ints[2+ints[0]+c]);rings=[]

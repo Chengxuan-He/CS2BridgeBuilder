@@ -43,7 +43,7 @@ for lod in (0, 1):
                 sourceMinimum=lo.tolist(),sourceMaximum=hi.tolist(),sourceX=[x0,x1],
                 finiteU=True,repeatVInterval=[4,76],period=4,terminalsFinite=True,profile=row))
 floats.extend([4.,76.])
-blob=struct.pack('<8I',0x314e4242,1,0,0,0,0,len(floats),0)+struct.pack('<%df'%len(floats),*floats)
+blob=struct.pack('<6i',0,0,0,0,len(floats),0)+struct.pack('<%df'%len(floats),*floats)
 blob+=hashlib.sha256(blob).digest()
 (ROOT/'assets/HardcodedNumbers/Draw02/Types_Draw02_Draw02WalkAtlasAppearance_cs.bin').write_bytes(blob)
 out=ROOT/'artifacts/material-remap/Draw02/near-cells'

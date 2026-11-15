@@ -23,4 +23,4 @@ and file hashes are recorded in the candidate's `PostProcess.log`, `ProcessedCon
 acceptance of the new animation remained pending.
 
 At the time of this record, uploading to Paradox Mods, creating a listing or publishing publicly had
-not been authorized. See `Information-Entry.md` for metadata entry.
+not been authorized. See `information-entry.md` for metadata entry.

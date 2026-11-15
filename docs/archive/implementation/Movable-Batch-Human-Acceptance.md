@@ -44,7 +44,7 @@ research fixture directory; the lane deformation check requires GameManagedDir.
 Initial invocations without those arguments were corrected and rerun successfully.
 
 Earlier source-resource and structural checks, with their precise limitations,
-are recorded in [implementation evidence](Movable-Bridges-Implementation.md).
+are recorded in [implementation evidence](movable-bridges-implementation.md).
 They cover 167 reconstructed render descriptors, 302 direct native resources,
 74 referenced native VT assets and 135 actual Surface payloads. Offline tests
 do not establish engine rendering or persisted output completeness.

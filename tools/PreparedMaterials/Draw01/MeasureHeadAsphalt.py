@@ -51,7 +51,7 @@ def main():
         offsets.append(len(values))
         values.extend([mesh['vertexCount'], mesh['triangleCount'], len(mesh['asphaltTriangles'])])
         values.extend(mesh['asphaltTriangles'])
-    raw = struct.pack('<II6i', 0x314e4242, 1, len(values), 0, 0, 0, 0, 0)
+    raw = struct.pack('<6i', len(values), 0, 0, 0, 0, 0)
     raw += struct.pack('<' + 'i' * len(values), *values)
     (OUT / 'Types_Draw01_HeadAsphaltFaces.bin').write_bytes(raw + hashlib.sha256(raw).digest())
     (OUT / 'native-asphalt-record-offsets.json').write_text(json.dumps(dict(

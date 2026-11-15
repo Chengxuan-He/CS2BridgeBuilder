@@ -1,4 +1,4 @@
-"""Measure complete original Lift04 internal rib components; emit immutable BBN map."""
+"""Measure complete original Lift04 internal rib components; emit immutable numerical .bin map."""
 from pathlib import Path
 import numpy as np,json,struct,hashlib
 R=Path(__file__).resolve().parents[2]; O=R/'artifacts/material-remap/Lift04/longitudinal72';O.mkdir(parents=True,exist_ok=True)
@@ -47,6 +47,6 @@ for lod in range(3):
    if ids:assert abs(np.ptp(q[ids,0])-np.ptp(v[ids,0]))<1e-5
   tests.append(dict(delta=delta,clearGap=gap+2*delta/5))
  reports.append(dict(lod=lod,sourceSha256=hashlib.sha256(path.read_bytes()).hexdigest(),vertices=len(selected),faces=int(mask[f].all(1).sum()),bands=bands,supportInnerEdges=[-support,support],entries=entries,tests=tests))
-raw=b'BBN1'+struct.pack('<7i',1,len(ints),0,0,0,len(floats),0)+struct.pack('<'+str(len(ints))+'i',*ints)+struct.pack('<'+str(len(floats))+'f',*floats)
+raw=struct.pack('<6i',len(ints),0,0,0,len(floats),0)+struct.pack('<'+str(len(ints))+'i',*ints)+struct.pack('<'+str(len(floats))+'f',*floats)
 (R/'assets/HardcodedNumbers/Lift04/Types_Lift04_LongitudinalRibMeasurements.bin').write_bytes(raw+hashlib.sha256(raw).digest())
 (O/'measurement.json').write_text(json.dumps(reports,indent=2));print([(r['lod'],r['vertices'],r['faces']) for r in reports])

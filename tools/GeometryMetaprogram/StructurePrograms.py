@@ -153,7 +153,7 @@ for i, p in enumerate(programs):
         if instruction[0] == 0: instruction[2] += len(values)
         words.extend(instruction)
     values.extend(p.values)
-payload = struct.pack('<8i', 0x314e4242, 1, len(words), 0, 0, 0, len(values), 0)
+payload = struct.pack('<6i', len(words), 0, 0, 0, len(values), 0)
 payload += struct.pack(f'<{len(words)}i', *words) + struct.pack(f'<{len(values)}f', *values)
 target = Path(sys.argv[1]) / 'assets/HardcodedNumbers/Shared/StructurePrograms.bin'
 target.parent.mkdir(parents=True, exist_ok=True)

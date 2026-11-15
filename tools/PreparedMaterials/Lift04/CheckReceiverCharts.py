@@ -50,9 +50,9 @@ def main():
     folder = ROOT/'artifacts/prepared-materials/Lift04/shared-sampling'
     raw = (ROOT/'assets/HardcodedNumbers/Lift04/Lift04UvCharts.bin').read_bytes()
     assert hashlib.sha256(raw[:-32]).digest()==raw[-32:]
-    counts = struct.unpack_from('<6i',raw,8)
-    ints = struct.unpack_from('<'+'i'*counts[0],raw,32)
-    values = struct.unpack_from('<'+'d'*counts[5],raw,32+4*counts[0])
+    counts = struct.unpack_from('<6i', raw, 0)
+    ints = struct.unpack_from('<'+'i'*counts[0],raw,24)
+    values = struct.unpack_from('<'+'d'*counts[5],raw,24+4*counts[0])
     loops=[]
     for at in ints[2:2+ints[1]]:
         assert ints[at]==1

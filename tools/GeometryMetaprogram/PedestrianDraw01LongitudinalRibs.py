@@ -1,4 +1,4 @@
-"""Measure exact native underside rib membership and emit its immutable BBN1 map.
+"""Measure exact native underside rib membership and emit its immutable numerical .bin map.
 
 Usage: script RESEARCH_DIRECTORY REPOSITORY_ROOT OUTPUT_DIRECTORY
 Seven original internal rib centres are -3..3 m. Quarter-width shifts preserve
@@ -53,7 +53,7 @@ for lod, ids in enumerate(groups):
     rows.append(dict(lod=lod,source=name,sha256=hashes[lod],start=start,members=members))
     fixtures.append(dict(lod=lod,positions=v.tolist(),indices=f.reshape(-1).tolist(),members=members))
 header=[len(ints),0,0,0,len(floats),0]
-data=struct.pack('<Ii6i',0x314e4242,1,*header)+np.array(ints,dtype='<i4').tobytes()+np.array(floats,dtype='<f4').tobytes()
+data=struct.pack('<6i',*header)+np.array(ints,dtype='<i4').tobytes()+np.array(floats,dtype='<f4').tobytes()
 resource=root/'assets/HardcodedNumbers/PedestrianDraw01/Types_PedestrianDraw01_PedestrianDraw01LongitudinalRibs_cs.bin'
 resource.write_bytes(data+hashlib.sha256(data).digest())
 (output/'membership.json').write_text(json.dumps(rows,indent=2))

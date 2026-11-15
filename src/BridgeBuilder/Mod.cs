@@ -40,6 +40,8 @@ public sealed class Mod : IMod
 
     public void OnLoad(UpdateSystem updateSystem)
     {
+        Runtime.BridgeInspectionPermissions.Start();
+        if (!Runtime.BridgeInspectionPermissions.Ready) return;
         ModHost.Initialize(Id, "BridgeBuilder", Log);
         ModHost.PageRebuilder = RebuildOptionsPage;
         RoadSelectionModel.Text = new BridgeSelectionText();
@@ -52,7 +54,7 @@ public sealed class Mod : IMod
         Log.Info($"{Id} loaded (build {BuildStamp()})");
         if (!Runtime.BridgeCustomShaderRestoration.TryRestore(out var materialPrograms, out var programError))
             Log.Error("Generated material program registration: " + programError);
-        else if (materialPrograms != 0) Log.Info("Generated material programs restored: " + materialPrograms);
+        else if (materialPrograms != 0) Log.Info("Mod material templates registered: " + materialPrograms);
         try
         {
             RoadBuilderIconExporter.RegisterHost();
@@ -63,7 +65,6 @@ public sealed class Mod : IMod
         }
 
         RegisterUiHost(this);
-        BridgeRecoveryLocation.MigrateLegacy();
 
         try
         {
@@ -99,7 +100,6 @@ public sealed class Mod : IMod
         BridgeStartupAssetSystem.StopInspection();
         BridgeBuilder.Runtime.BridgeStartupRecovery.Stop();
         BridgeBuilder.Runtime.BridgeRailSeamPatch.Stop();
-        BridgeBuilder.Runtime.BridgeSessionState.Stop();
         if(!BridgeBuilder.Runtime.BridgePreparedMaterials.TryStop(out var preparedError))Log.Error("Prepared material shutdown: "+preparedError);
         try
         {
@@ -188,20 +188,15 @@ public sealed class Mod : IMod
             var dialog = new ConfirmationDialog(
                 LocalizedString.Value(UiStringCatalog.Current.Title),
                 LocalizedString.Value(message),
-                LocalizedString.Value(RuntimeUiText.Get("RecoveryRestartLabel")),
-                null,
-                LocalizedString.Value(RuntimeUiText.Get("RecoveryOpenLabel")));
-            GameManager.instance?.userInterface?.appBindings?.ShowConfirmationDialog(dialog, result =>
-            {
-                if (result == 0) Runtime.BridgeGameRestart.Run();
-                // Native close/Esc returns 1; only the explicit buttons perform actions.
-                else if (result == 2) BridgeRecoveryLocation.Open();
-            });
+                LocalizedString.Value(RuntimeUiText.Get("RecoveryRestartLabel")), null, null);
+            GameManager.instance?.userInterface?.appBindings?.ShowConfirmationDialog(dialog, _ => { });
         }
-        catch (Exception exception)
+        catch (Exception exception) when (exception is not Runtime.BridgeRequiredFilePermissionException)
         {
-            Log.Warn(exception, "Could not show bridge recovery dialog");
+            Runtime.BridgeInspectionLog.Error("Could not show bridge recovery dialog: " + exception);
         }
+        // The files have changed: request the existing relaunch immediately, never wait for dismissal.
+        Runtime.BridgeGameRestart.Run();
     }
 
     internal static void ShowMessage(string title, string message) => TryShowMessage(title, message);

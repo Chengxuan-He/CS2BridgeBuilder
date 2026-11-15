@@ -12,7 +12,7 @@ internal static class AosPacking
         int checkedResources=0;
         foreach(string path in Directory.GetFiles(source,"*.bin",SearchOption.AllDirectories))
         {
-            var bytes=File.ReadAllBytes(path);if(bytes.Length<68 || BitConverter.ToInt32(bytes,32)!=OldMagic)continue;
+            var bytes=File.ReadAllBytes(path);if(bytes.Length<60 || BitConverter.ToInt32(bytes,24)!=OldMagic)continue;
             string target=Path.Combine(root,"assets/HardcodedNumbers",Path.GetRelativePath(source,path));
             if(!Convert(bytes).AsSpan().SequenceEqual(File.ReadAllBytes(target)))throw new InvalidDataException("AoS regeneration differs: "+target);
             checkedResources++;
@@ -26,10 +26,10 @@ internal static class AosPacking
         foreach(string path in Directory.GetFiles(Path.Combine(root,"assets/HardcodedNumbers"),"*.bin",SearchOption.AllDirectories))
         {
             byte[] bytes=File.ReadAllBytes(path);
-            if(bytes.Length<68 || BitConverter.ToInt32(bytes,8)==0)continue;
-            int magic=BitConverter.ToInt32(bytes,32);
+            if(bytes.Length<60 || BitConverter.ToInt32(bytes,0)==0)continue;
+            int magic=BitConverter.ToInt32(bytes,24);
             if(magic!=OldMagic && magic!=Magic)continue;
-            resources++;entries+=BitConverter.ToInt32(bytes,40);
+            resources++;entries+=BitConverter.ToInt32(bytes,32);
             if(magic==Magic)continue;
             if(!apply)throw new InvalidDataException("Unpacked structural program: "+path);
             byte[] packed=Convert(bytes);
@@ -44,7 +44,6 @@ internal static class AosPacking
     {
         if(!SHA256.HashData(bytes.AsSpan(0,bytes.Length-32)).AsSpan().SequenceEqual(bytes.AsSpan(bytes.Length-32)))throw new InvalidDataException("BBN checksum.");
         using var reader=new BinaryReader(new MemoryStream(bytes));
-        if(reader.ReadInt32()!=0x314e4242 || reader.ReadInt32()!=1)throw new InvalidDataException("BBN header.");
         int[] lengths=Enumerable.Range(0,6).Select(_=>reader.ReadInt32()).ToArray();
         if(lengths[1]!=0 || lengths[2]!=0 || lengths[3]!=0 || lengths[5]!=0)throw new InvalidDataException("Unexpected structure array.");
         int[] old=Enumerable.Range(0,lengths[0]).Select(_=>reader.ReadInt32()).ToArray();
@@ -229,7 +228,7 @@ internal static class AosPacking
         }
         using var stream=new MemoryStream();using(var writer=new BinaryWriter(stream,System.Text.Encoding.UTF8,true))
         {
-            writer.Write(0x314e4242);writer.Write(1);foreach(int length in new[]{words.Count,0,0,0,values.Count,0})writer.Write(length);
+            foreach(int length in new[]{words.Count,0,0,0,values.Count,0})writer.Write(length);
             foreach(int word in words)writer.Write(word);foreach(int bits in values)writer.Write(bits);
         }
         byte[] payload=stream.ToArray();stream.Write(SHA256.HashData(payload));return stream.ToArray();

@@ -116,7 +116,7 @@ for lod in (0, 1):
                     floats.extend(inverse.astype(np.float32).ravel().tolist())
             evidence.append(dict(lod=lod, component=part['component'], sourceCenter=center,
                                  start=z0, end=z1, bones=part['bones'], sourceFaces=types))
-raw = struct.pack('<8i', 0x314e4242, 1, len(ints), 0, 0, 0, len(floats), 0)
+raw = struct.pack('<6i', len(ints), 0, 0, 0, len(floats), 0)
 raw += np.array(ints, '<i4').tobytes() + np.array(floats, '<f4').tobytes()
 raw += hashlib.sha256(raw).digest()
 (output / 'boards.json').write_text(json.dumps(evidence, indent=2))

@@ -634,5 +634,5 @@ bridge, retaining a fixed-width far model, hiding the post or overriding the use
 The user explicitly instructed bypassing this issue to continue Draw01, while pausing other
 movable styles. The far-footing findings above remain unresolved; they no longer block integration
 work. No Z correction is permitted. The temporary runtime path and its limitations are recorded
-in [Draw01 generator integration](Draw01-Generator-Integration.md). This task decision does not
+in [Draw01 generator integration](draw01-generator-integration.md). This task decision does not
 convert rejected geometry candidates into verified general implementation guidance.

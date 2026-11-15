@@ -51,7 +51,7 @@ for face in ids:
                        tangentPacked=[f'{w:08x}' for w in words], tangentDecoded=decoded[0].tolist()))
 ints = np.array([len(checks), 17], dtype='<i4')
 floats = np.array(rows, dtype='<f4')
-raw = struct.pack('<II6i', 0x314e4242, 1, len(ints), 0, 0, 0, len(floats), 0) + ints.tobytes() + floats.tobytes()
+raw = struct.pack('<6i', len(ints), 0, 0, 0, len(floats), 0) + ints.tobytes() + floats.tobytes()
 target = ROOT / 'assets/HardcodedNumbers/Lift04/Types_Lift04_FarAppearance.bin'
 target.write_bytes(raw + hashlib.sha256(raw).digest())
 output = ROOT / 'artifacts/material-remap/Lift04/far-appearance-verification.json'

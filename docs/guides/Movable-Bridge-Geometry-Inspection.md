@@ -71,4 +71,4 @@ On 2026-10-16 the command decoded 88 actual geometry assets covering the ten aud
 movable owners, their object meshes and referenced LODs. All source files matched the hashes in
 the resource audit. Reports and raw inspection meshes were retained outside game asset roots.
 The tool built with zero warnings and zero errors. No visual-generation unit tests or game UI
-automation were performed. See [implementation status](../archive/implementation/Movable-Bridges-Implementation.md).
+automation were performed. See [implementation status](../archive/implementation/movable-bridges-implementation.md).

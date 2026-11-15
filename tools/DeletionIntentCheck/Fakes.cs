@@ -25,7 +25,6 @@ namespace BridgeBuilder.Settings {
     public static class BridgeRecoveryLocation { public static string Path = ""; }
 }
 namespace BridgeBuilder.Runtime {
-    public static class BridgeSessionState { public static bool Restart; public static void RequireRestart() => Restart = true; }
     public static class BridgeStartupRecovery { public static HashSet<string> Retired = new(); }
 }
 namespace BridgeBuilder {

@@ -53,7 +53,7 @@ is not fixed by this change. Do not falsify counts or use a manager runtime patc
 The latest user screenshot still exposes a yellow line on the underside. The previous
 coverage repair must not be described as visual acceptance. Near/middle geometry coverage
 passes, but the negative-Z leaf's original bottom UVs sample the painted asphalt atlas island.
-See [Bottom atlas-coordinate correction](Draw01-Underside-Restoration.md#bottom-atlas-coordinate-correction-2026-10-23)
+See [Bottom atlas-coordinate correction](draw01-underside-restoration.md#bottom-atlas-coordinate-correction-2026-10-23)
 for measured evidence and checks. The far supplement now receives the corrected LOD1 UV0
 before raw-channel compaction. Other attributes and the native surface remain unchanged.
 Existing bridges are preserved; new generation and human all-LOD inspection are required

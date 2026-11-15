@@ -19,7 +19,7 @@ foreach (var resource in names)
     var bytes = raw.ToArray();
     if (!SHA256.HashData(bytes[..^32]).SequenceEqual(bytes[^32..])) throw new Exception("Offline resource checksum mismatch: " + resource);
     using var reader = new BinaryReader(raw);
-    reader.BaseStream.Position = 32;
+    reader.BaseStream.Position = 24;
     foreach (var x in data.I32) Equal(x, reader.ReadInt32());
     foreach (var x in data.U32) Equal(x, reader.ReadUInt32());
     foreach (var x in data.I64) Equal(x, reader.ReadInt64());
@@ -33,7 +33,7 @@ byte[] Fixture()
 {
     using var s = new MemoryStream();
     using var w = new BinaryWriter(s);
-    w.Write(0x314e4242u); w.Write(1);
+    
     foreach (var count in new[] { 2, 2, 2, 2, 3, 3 }) w.Write(count);
     w.Write(int.MinValue); w.Write(int.MaxValue);
     w.Write(uint.MinValue); w.Write(uint.MaxValue);

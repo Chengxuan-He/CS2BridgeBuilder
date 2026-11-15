@@ -13,6 +13,7 @@ internal sealed class BridgeDiskAudit
     private readonly string _imported;
     private readonly string _geometry;
     private readonly string _virtual;
+    internal bool Changed { get; private set; }
     internal bool Complete { get; private set; }
     internal string Error { get; private set; } = string.Empty;
 
@@ -59,6 +60,7 @@ internal sealed class BridgeDiskAudit
             { audit.Error = "Invalid bridge owner: " + failure.Key; return audit; }
             audit.Failures.Add(failure.Key, failure.Value);
         }
+        var ancestry = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
         foreach (var root in new[] { audit._imported, audit._geometry, audit._virtual })
         {
             if (!Directory.Exists(BridgeFileAccess.Native(root))) continue;
@@ -66,6 +68,10 @@ internal sealed class BridgeDiskAudit
         }
         void Select(string directory)
         {
+            string physical = BridgeFileAccess.Physical(directory);
+            if (!ancestry.Add(physical)) throw new IOException("Directory mapping cycle: " + directory);
+            try
+            {
             foreach (var native in Directory.GetFileSystemEntries(BridgeFileAccess.Native(directory)))
             {
                 var path = BridgeFileAccess.Logical(native);
@@ -82,6 +88,7 @@ internal sealed class BridgeDiskAudit
                 audit.FileOwners[path] = owner;
                 if (failures == null) audit.Failures[owner] = "User requested removal of all bridges";
             }
+            } finally { ancestry.Remove(physical); }
         }
         foreach (var owner in audit.Failures.Keys)
             if (!audit.FileOwners.ContainsValue(owner))
@@ -111,10 +118,13 @@ internal sealed class BridgeDiskAudit
             {
                 if (!Below(path, _imported) && !Below(path, _geometry) && !Below(path, _virtual))
                 { errors.Add("Unsafe deletion path: " + path); continue; }
-                if (Directory.Exists(BridgeFileAccess.Native(path))) Directory.Delete(BridgeFileAccess.Native(path), true);
-                else File.Delete(BridgeFileAccess.Native(path));
+                BridgeRemovalFiles.RequireExclusive(Path.GetDirectoryName(_imported)!, path, pair.Value);
+                var existed = BridgeFileAccess.Exists(path);
+                BridgeFileAccess.DeletePayload(path, () => Changed = true);
+                if (existed && !BridgeFileAccess.Exists(path)) Changed = true;
                 if (BridgeFileAccess.Exists(path)) errors.Add("File remains: " + path);
             }
+            catch (UnauthorizedAccessException exception) { throw new BridgeRequiredFilePermissionException("delete", path, exception); }
             catch (Exception exception) { errors.Add(path + ": " + exception.Message); }
         }
         error = string.Join("; ", errors);
@@ -132,11 +142,14 @@ internal sealed class BridgeDiskAudit
         {
             backup = Path.GetFullPath(backup);
             var gameRoot = Path.GetDirectoryName(_imported)!;
-            if (string.Equals(backup, gameRoot, StringComparison.OrdinalIgnoreCase) || Below(backup, gameRoot))
-            { error = "Unsafe backup destination"; return DeleteAfterBackupFailure(owners, ref error); }
-            Directory.CreateDirectory(BridgeFileAccess.Native(backup));
+            if (BridgeFileAccess.WithinAssetStorage(backup, gameRoot))
+            { error = "Unsafe backup destination"; return false; }
+            foreach (var selected in FileOwners.Where(p => owners.Contains(p.Value)))
+                if (BridgeFileAccess.WithinTree(backup, selected.Key)) throw new IOException("Backup aliases selected payload: " + backup);
+            PrepareBackupDirectory(backup);
         }
-        catch (Exception e) { error = "Backup unavailable: " + e.Message; return DeleteAfterBackupFailure(owners, ref error); }
+        catch (UnauthorizedAccessException e) { error = "Backup destination permission denied: " + e.Message; return DeleteAfterBackupFailure(owners, ref error); }
+        catch (Exception e) { error = "Backup unavailable; sources retained: " + e.Message; return false; }
         var errors = new List<string>();
         foreach (var pair in FileOwners.Where(p => owners.Contains(p.Value)))
         {
@@ -146,22 +159,41 @@ internal sealed class BridgeDiskAudit
                 // Containment protects the move destination and source roots, not asset validity.
                 if (!Below(source, _imported) && !Below(source, _geometry) && !Below(source, _virtual))
                 { errors.Add("Source outside asset roots: " + source); continue; }
+                BridgeRemovalFiles.RequireExclusive(Path.GetDirectoryName(_imported)!, source, pair.Value);
                 var destinationRoot = Below(source, _geometry)
                     ? Path.Combine(backup, "BridgeBuilder")
                     : Below(source, _virtual) ? Path.Combine(backup, "VT") : backup;
-                Directory.CreateDirectory(BridgeFileAccess.Native(destinationRoot));
+                if (BridgeFileAccess.WithinAssetStorage(destinationRoot, Path.GetDirectoryName(_imported)!)) throw new IOException("Backup aliases asset storage: " + destinationRoot);
+                try { PrepareBackupDirectory(destinationRoot); }
+                catch (UnauthorizedAccessException e)
+                {
+                    errors.Add("Backup destination permission denied: " + e.Message);
+                    error = string.Join("; ", errors);
+                    return DeleteAfterBackupFailure(owners, ref error);
+                }
                 var destination = UniqueTarget(Path.Combine(destinationRoot, Path.GetFileName(source)));
-                // Directory.Move/File.Move are the native equivalent of mv; no parsing, hashes,
-                // tree snapshots or content inspection. Failed moves fall back to deletion.
-                if (Directory.Exists(BridgeFileAccess.Native(source)))
-                    Directory.Move(BridgeFileAccess.Native(source), BridgeFileAccess.Native(destination));
-                else File.Move(BridgeFileAccess.Native(source), BridgeFileAccess.Native(destination));
+                if (BridgeFileAccess.WithinAssetStorage(destination, Path.GetDirectoryName(_imported)!)) throw new IOException("Backup aliases asset storage: " + destination);
+                BridgeFileAccess.MovePayload(source, destination, () => Changed = true);
                 if (BridgeFileAccess.Exists(source)) errors.Add("Source remains after move: " + source);
             }
+            catch (UnauthorizedAccessException e) { throw new BridgeRequiredFilePermissionException("move", source, e); }
             catch (Exception e) { errors.Add("Move failed: " + source + ": " + e.Message); }
         }
         error = string.Join("; ", errors);
-        return errors.Count == 0 || DeleteAfterBackupFailure(owners, ref error);
+        return errors.Count == 0;
+    }
+
+    private static void PrepareBackupDirectory(string directory)
+    {
+        Directory.CreateDirectory(BridgeFileAccess.Native(directory));
+        var probe = BridgeFileAccess.Native(Path.Combine(directory, ".bb-write-" + Guid.NewGuid().ToString("N")));
+        // Existing directory creation is not evidence of destination write access.
+        var stream = new FileStream(probe, FileMode.CreateNew, FileAccess.Write, FileShare.None);
+        Exception? closeError = null;
+        try { stream.Dispose(); } catch (Exception error) { closeError = error; }
+        try { File.Delete(probe); }
+        catch (Exception error) { throw new IOException("Backup probe cleanup failed: " + probe, error); }
+        if (closeError != null) throw new IOException("Backup probe close failed: " + probe, closeError);
     }
 
     private bool DeleteAfterBackupFailure(ISet<string> owners, ref string error)

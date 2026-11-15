@@ -126,9 +126,9 @@ def underside_uv(path, prefix, uv, root):
     if lod is None:
         return uv
     blob = (root/'assets/HardcodedNumbers/Draw01/Types_Draw01_Draw01UndersideUv_cs.bin').read_bytes()
-    counts = struct.unpack_from('<6i', blob, 8)
-    ints = np.frombuffer(blob, '<i4', counts[0], 32)
-    float_offset = 32+4*(counts[0]+counts[1])+8*(counts[2]+counts[3])
+    counts = struct.unpack_from('<6i', blob)
+    ints = np.frombuffer(blob, '<i4', counts[0], 24)
+    float_offset = 24+4*(counts[0]+counts[1])+8*(counts[2]+counts[3])
     values = np.frombuffer(blob, '<f4', counts[4], float_offset)
     index, start, count = (2, 0, 176) if lod == 0 else (178, 352, 158)
     uv = uv.copy()

@@ -20,8 +20,7 @@ internal static class BridgeAssetLayout
         {
             gameRoot = Path.GetFullPath(BridgeFileAccess.Logical(gameRoot)).TrimEnd(Path.DirectorySeparatorChar);
             var backupRoot = Path.GetFullPath(Path.Combine(backup, "Layout"));
-            if (backupRoot.Equals(gameRoot, StringComparison.OrdinalIgnoreCase)
-                || backupRoot.StartsWith(gameRoot + Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase))
+            if (BridgeFileAccess.WithinAssetStorage(backupRoot, gameRoot))
                 throw new IOException("Layout backup must be outside game data");
             var selected = new HashSet<string>(owners, StringComparer.OrdinalIgnoreCase);
             var plan = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
@@ -44,7 +43,7 @@ internal static class BridgeAssetLayout
                     || !BridgeAssetInfo.TryFileOwner(relative, out var owner) || !selected.Contains(owner)) continue;
                 string destination;
                 // External snapshots are opaque: retain their entire relative path and CID filenames.
-                if (BridgeAssetInfo.IsDependencyPath(relative, owner))
+                if (BridgeInspectionPaths.IsDependencyPath(relative, owner))
                 {
                     var parts = relative.Split('\\', '/');
                     var oldIndex = Array.FindIndex(parts, p => p.Equals(owner + "_Dependencies", StringComparison.OrdinalIgnoreCase));
@@ -76,11 +75,11 @@ internal static class BridgeAssetLayout
                 if (!destination.StartsWith(gameRoot + Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase)
                     || !BridgeAssetInfo.MatchesOwner(destination.Substring(gameRoot.Length), owner))
                     throw new IOException("Unowned layout destination: " + destination);
-                if (source.Equals(destination, StringComparison.OrdinalIgnoreCase)) continue;
                 if (!BridgeFileAccess.Exists(source + ".cid")) throw new IOException("Missing CID sidecar: " + source);
                 // Compare the complete pair before accepting any duplicate destination.
                 if (BridgeFileAccess.Exists(destination) || BridgeFileAccess.Exists(destination + ".cid"))
                     RequireSamePair(source, destination);
+                if (BridgeFileAccess.SamePath(source, destination)) continue;
                 if (targets.TryGetValue(destination, out var previous)) RequireSamePair(source, previous);
                 else targets.Add(destination, source);
                 plan.Add(source, destination);
@@ -90,6 +89,8 @@ internal static class BridgeAssetLayout
             foreach (var source in plan.Keys)
             {
                 var copy = Path.Combine(backupRoot, source.Substring(gameRoot.Length + 1));
+                if (BridgeFileAccess.WithinAssetStorage(copy, gameRoot)) throw new IOException("Backup aliases asset storage: " + copy);
+                if (BridgeFileAccess.SamePath(source, copy)) throw new IOException("Backup aliases source: " + copy);
                 Directory.CreateDirectory(BridgeFileAccess.Native(Path.GetDirectoryName(copy)!));
                 if (BridgeFileAccess.Exists(copy))
                 {
@@ -103,13 +104,13 @@ internal static class BridgeAssetLayout
                 Directory.CreateDirectory(BridgeFileAccess.Native(Path.GetDirectoryName(pair.Value)!));
                 if (!BridgeFileAccess.Exists(pair.Value))
                 {
-                    File.Move(BridgeFileAccess.Native(pair.Key), BridgeFileAccess.Native(pair.Value));
+                    BridgeFileAccess.MovePayload(pair.Key, pair.Value);
                     created.Add(pair.Value);
                 }
                 else
                 {
                     if (!SameFile(pair.Key, pair.Value)) throw new IOException("Layout destination changed: " + pair.Value);
-                    File.Delete(BridgeFileAccess.Native(pair.Key));
+                    BridgeFileAccess.DeletePayload(pair.Key);
                 }
                 removed.Add(pair.Key);
             }
@@ -134,7 +135,7 @@ internal static class BridgeAssetLayout
             }
             return true;
         }
-        catch (Exception exception)
+        catch (Exception exception) when (exception is not UnauthorizedAccessException)
         {
             error = exception.Message;
             var restored = true;
@@ -144,11 +145,11 @@ internal static class BridgeAssetLayout
                     Directory.CreateDirectory(BridgeFileAccess.Native(Path.GetDirectoryName(source)!));
                     File.Copy(BridgeFileAccess.Native(saved[source]), BridgeFileAccess.Native(source), true);
                 }
-                catch (Exception rollback) { restored = false; error += "; restore failed: " + rollback.Message; }
+                catch (Exception rollback) when (rollback is not UnauthorizedAccessException) { restored = false; error += "; restore failed: " + rollback.Message; }
             // If restoration fails, retain all destination copies as recovery evidence.
             if (restored) foreach (var target in created)
                 try { File.Delete(BridgeFileAccess.Native(target)); }
-                catch (Exception rollback) { error += "; cleanup failed: " + rollback.Message; }
+                catch (Exception rollback) when (rollback is not UnauthorizedAccessException) { error += "; cleanup failed: " + rollback.Message; }
             changed.Clear(); return false;
         }
     }

@@ -44,7 +44,7 @@ and 3,447,552 complete mip bytes uploaded unchanged. The initially verified grap
 46 payload/CID files totaling 1,714,254 bytes. Its constant-control descriptors now
 share the verified Road transparent zero through Shared, removing four redundant
 control textures; the integrated repeat graph has 40 files totaling 1,713,959 bytes.
-See [control reuse and integration evidence](RepeatControlAudit.md). This measures
+See [control reuse and integration evidence](repeat-control-audit.md). This measures
 the repeat graph, not the complete
 mod or a generated bridge. Source-sized units are 968 by 164, 968 by 376, 296 by 376,
 and 296 by 32 pixels. The compressed native files preserve all mip payload bytes.
@@ -96,13 +96,13 @@ partitioning, not subdivision at every texture repeat. No new texture is needed.
 `Draw03RoadPreparation` collects actual bounds across all evaluated LODs, including
 far-LOD geometry outside the LOD0 span, and uses those same invocation-local inputs
 for preparation. Outer gap domains retain their continuous phase through boundary
-roundoff instead of restarting the complete layout. See [integration and evidence](Integration.md).
+roundoff instead of restarting the complete layout. See [integration and evidence](integration.md).
 
 The unpartitioned dynamic-band formula would make its height grow with road width,
 storing repeated gap pixels. That reference calculation is retained in the numerical
 report to detect reintroduction of such a path. It does not describe the new pure
 asphalt domain path. Mixed native masks still require separate integration review.
-The [native layer investigation](NativeLayers.md) records the installed 40-template,
+The [native layer investigation](native-layers.md) records the installed 40-template,
 26-shader interface audit and the measured limits of network, character-overlay and
 VT atlas mappings. No general shader-only selector inside an unchanged triangle was
 established; the implemented appearance-domain path uses the existing Default sampler.

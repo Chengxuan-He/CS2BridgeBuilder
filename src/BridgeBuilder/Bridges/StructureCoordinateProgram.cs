@@ -11,7 +11,7 @@ namespace BridgeBuilder.Bridges;
 // Offline-scheduled packed XYZ stages. There is no runtime expression recognition.
 internal sealed class StructureCoordinateProgram
 {
-    private const int Magic = 0x32465041, InstructionWords = 20;
+    private const int InstructionWords = 20;
     private readonly HardcodedNumbers _data;
     private readonly Entry[] _entries;
     private static ConditionalWeakTable<HardcodedNumbers, StructureCoordinateProgram> Programs => GenerationParameters.Get<ConditionalWeakTable<HardcodedNumbers, StructureCoordinateProgram>>("BridgeBuilder.Bridges.StructureCoordinateProgram.Programs", () => new());

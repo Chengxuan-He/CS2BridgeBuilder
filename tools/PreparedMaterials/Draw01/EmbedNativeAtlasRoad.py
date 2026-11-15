@@ -11,7 +11,7 @@ for r in d['lods'][0]['domains']:
   x=[p[0] for p in c['positions']]
   values.extend([names.index(r['domain']),int(r['right']),int(r['positive']),*c['zRange'],min(x),max(x),*c['uvMin'],*c['uvMax'],*c['affineAxes'][0]['affineXz1'],*c['affineAxes'][1]['affineXz1']])
 assert len(values)%17==0
-raw=struct.pack('<4s7i',b'BBN1',1,0,0,0,0,len(values),0)+struct.pack('<'+'f'*len(values),*values)
+raw=struct.pack('<6i',0,0,0,0,len(values),0)+struct.pack('<'+'f'*len(values),*values)
 p=ROOT/'assets/HardcodedNumbers/Draw01/Types_Draw01_NativeAtlasRoadMeasurements.bin'
 p.write_bytes(raw+hashlib.sha256(raw).digest())
 print(len(values)//17,'measured cells',len(raw)+32,'bytes')

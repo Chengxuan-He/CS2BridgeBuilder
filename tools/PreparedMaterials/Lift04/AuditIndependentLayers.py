@@ -16,10 +16,10 @@ def digest(path):
 def main():
     resource = ROOT / 'assets/HardcodedNumbers/Lift04/Types_Lift04_Lift04RoadAppearance_cs.bin'
     raw = resource.read_bytes()
-    assert raw[:4] == b'BBN1' and hashlib.sha256(raw[:-32]).digest() == raw[-32:]
-    assert struct.unpack_from('<6i', raw, 8) == (4, 0, 0, 0, 24, 0)
-    ints = struct.unpack_from('<4i', raw, 32)
-    f = np.array(struct.unpack_from('<24f', raw, 48), dtype=np.float32)
+    assert hashlib.sha256(raw[:-32]).digest() == raw[-32:]
+    assert struct.unpack_from('<6i', raw, 0) == (4, 0, 0, 0, 24, 0)
+    ints = struct.unpack_from('<4i', raw,24)
+    f = np.array(struct.unpack_from('<24f', raw, 40), dtype=np.float32)
     moving_length = np.float32(f[5] - f[4])
     # Exact identity-road-frame evaluation of Lift04RoadAppearance.Patches.
     arguments = [(-f[12], f[13], f[14], f[15]),

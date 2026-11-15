@@ -37,6 +37,6 @@ for n,rec in enumerate(out):
  row.extend([len(ints),len(rec['fragments'])])
  for f in rec['fragments']:ints.extend([f['face'],len(f['indices'])]+f['indices'])
  ints[n*4:n*4+4]=row
-blob=struct.pack('<8I',0x314e4242,1,len(ints),0,0,0,len(floats),0)+np.array(ints,dtype='<i4').tobytes()+np.array(floats,dtype='<f4').tobytes();blob+=hashlib.sha256(blob).digest()
+blob=struct.pack('<6i',len(ints),0,0,0,len(floats),0)+np.array(ints,dtype='<i4').tobytes()+np.array(floats,dtype='<f4').tobytes();blob+=hashlib.sha256(blob).digest()
 (R/'assets/HardcodedNumbers/Draw02/Types_Draw02_RailFootContactSplitMeasurements.bin').write_bytes(blob)
 print(len(blob),hashlib.sha256(blob).hexdigest())

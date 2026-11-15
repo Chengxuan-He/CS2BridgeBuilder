@@ -21,6 +21,14 @@ foreach (var bytes in new[] {
  new byte[]{0x7f}.Concat(Encoding.Unicode.GetBytes("CID:"+empty+" CID:"+b)).ToArray()
 }) Check(BridgeDependencyCopies.References(bytes).SequenceEqual(new[]{b}), "UTF-8/UTF-16/unaligned empty references excluded while real dependencies remain");
 Check(BridgeDependencyCopies.Save(root,owner,new[]{a},Resolve,out var count,out var err,out var written)&&count==2&&written==4, "recursive binary references, cycle termination, native boundary, per-CID dedup: "+err);
+var metadataOwner="b33333333-3333-3333-3333-333333333333";
+var metadataCid=new string('e',32); var texturePayloadCid=new string('f',32);
+sources[metadataCid]=new(){Owned=true,Extension=".json",Bytes=Encoding.UTF8.GetBytes("{\"TextureReference\":\"CID:"+texturePayloadCid+"\"}")};
+sources[texturePayloadCid]=new(){Extension=".Texture",Bytes=Encoding.ASCII.GetBytes("native texture fixture")};
+Check(BridgeDependencyCopies.Save(root,metadataOwner,new[]{metadataCid},Resolve,out _,out err,out written)&&written==2,"ordinary JSON metadata follows native texture CID: "+err);
+Check(BridgeDependencyCopies.Save(root,metadataOwner,new[]{metadataCid},Resolve,out _,out err,out written)&&written==0,"cold dependency traversal does not rewrite texture");
+sources.Remove(texturePayloadCid);
+Check(!BridgeDependencyCopies.Save(root,owner,new[]{metadataCid},Resolve,out _,out err,out _),"missing metadata texture is not accepted as complete");
 var folder=BridgeDependencyCopies.Folder(root,owner);
 Check(File.ReadAllBytes(Path.Combine(folder,b+".Prefab")).SequenceEqual(sources[b].Bytes),"byte-identical payload");
 Check(File.ReadAllText(Path.Combine(folder,b+".Prefab.cid"))==b,"original CID");

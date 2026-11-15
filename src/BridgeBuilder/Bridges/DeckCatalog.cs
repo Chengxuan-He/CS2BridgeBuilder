@@ -142,6 +142,8 @@ internal static class DeckCatalog
         }
 
         var ordered = decks
+            .GroupBy(deck => deck.Id, StringComparer.Ordinal)
+            .Select(group => group.First())
             .OrderBy(deck => deck.Kind)
             .ThenBy(deck => deck.DisplayName, StringComparer.OrdinalIgnoreCase)
             .ToList();
@@ -187,7 +189,7 @@ internal static class DeckCatalog
                 builderRoad);
         }
 
-        // A Road Builder road that discovery rejected - no usable name, broken configuration - must
+        // A Road Builder prefab absent from the current discovery result must
         // not come back through this door as an anonymous road prefab.
         if (RoadBuilderCompatibility.OwnsPrefab(road)) return null;
 

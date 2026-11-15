@@ -10,11 +10,11 @@ sys.path.insert(0, str(ROOT/'tools/GeometryMetaprogram'))
 from Lift04UvChartBindings import read_domains, reliable_loop
 
 raw = (ROOT/'assets/HardcodedNumbers/Lift04/Lift04UvCharts.bin').read_bytes()
-assert raw[:8] == b'BBN1\x01\0\0\0' and hashlib.sha256(raw[:-32]).digest() == raw[-32:]
-ni, nu, nl, nul, nf, nd = struct.unpack_from('<6i', raw, 8)
-assert (nu,nl,nul,nf) == (0,0,0,0) and len(raw) == 64+ni*4+nd*8
-ints = struct.unpack_from('<'+'i'*ni, raw, 32)
-values = struct.unpack_from('<'+'d'*nd, raw, 32+ni*4)
+assert hashlib.sha256(raw[:-32]).digest() == raw[-32:]
+ni, nu, nl, nul, nf, nd = struct.unpack_from('<6i', raw, 0)
+assert (nu,nl,nul,nf) == (0,0,0,0) and len(raw) == 56+ni*4+nd*8
+ints = struct.unpack_from('<'+'i'*ni, raw,24)
+values = struct.unpack_from('<'+'d'*nd, raw,24+ni*4)
 assert ints[0] == 1
 loops = []
 for offset in ints[2:2+ints[1]]:

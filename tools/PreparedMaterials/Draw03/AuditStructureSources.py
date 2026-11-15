@@ -12,7 +12,6 @@ ROOT = Path(__file__).resolve().parents[3]
 BASE = ROOT / 'artifacts/prepared-materials/Draw03'
 GAPS = BASE / 'repeat-units-v2/structure-groups/shared-gap-inputs.json'
 SOURCES = BASE / 'rebuild-native-v1/native-rebuild.json'
-CHECKER = ROOT / 'tools/PreparedMaterials/Draw03/ReceiverCheck/Program.cs'
 OUT = BASE / 'current-source-audit.json'
 
 
@@ -57,26 +56,23 @@ def main():
         for archive in archives.values():
             if archive is not None:
                 archive.close()
-    checker = CHECKER.read_text(encoding='utf-8-sig')
     report = {
         'schema': 'Draw03StructureSourceProvenance/1',
         'status': 'not-human-acceptance-ready',
         'scope': gaps['scope'],
         'limitations': [
             'Retained receiver corpus is historical; do not treat its counts as current runtime failures.',
-            'Legacy ReceiverCheck omits ExactCoordinates, ExactPoints and ExactSourceUvs when constructing chart Units.',
             'Original source channels are finite atlas data; shared channel identity does not prove repeatability.',
             'No new native representability or generated owner byte closure is established by this report.',
         ],
         'sourceDigestCount': len(result), 'channelFamilyCount': len(families),
         'historicalGroupCount': len(gaps['examples']),
         'historicalOutsideCount': sum(e['outsideCount'] for e in gaps['examples']),
-        'legacyCheckerExactFieldMentions': {name: name in checker for name in ('ExactCoordinates', 'ExactPoints', 'ExactSourceUvs')},
-        'inputs': {str(p.relative_to(ROOT)): sha(p.read_bytes()) for p in (GAPS, SOURCES, CHECKER)},
+        'inputs': {str(p.relative_to(ROOT)): sha(p.read_bytes()) for p in (GAPS, SOURCES)},
         'sources': result,
     }
     OUT.write_text(json.dumps(report, ensure_ascii=False, indent=2) + '\n', encoding='utf-8')
-    print(json.dumps({k: report[k] for k in ('sourceDigestCount', 'channelFamilyCount', 'historicalGroupCount', 'historicalOutsideCount', 'legacyCheckerExactFieldMentions')}))
+    print(json.dumps({k: report[k] for k in ('sourceDigestCount', 'channelFamilyCount', 'historicalGroupCount', 'historicalOutsideCount')}))
 
 
 if __name__ == '__main__':

@@ -1,4 +1,4 @@
-"""Extract Lift05 road repeat units from the measured BBN1 arrays and native material."""
+"""Extract Lift05 road repeat units from the measured typed arrays and native material."""
 import argparse
 import hashlib
 import json
@@ -10,11 +10,11 @@ from pathlib import Path
 
 def numbers(path):
     payload = path.read_bytes()
-    if payload[:8] != b'BBN1\x01\x00\x00\x00' or hashlib.sha256(payload[:-32]).digest() != payload[-32:]:
+    if hashlib.sha256(payload[:-32]).digest() != payload[-32:]:
         raise ValueError('Invalid immutable numerical resource: ' + str(path))
-    offset, result = 32, {}
+    offset, result = 24, {}
     for name, fmt, count in zip(('I32', 'U32', 'I64', 'U64', 'F32', 'F64'),
-                                ('i', 'I', 'q', 'Q', 'f', 'd'), struct.unpack_from('<6i', payload, 8)):
+                                ('i', 'I', 'q', 'Q', 'f', 'd'), struct.unpack_from('<6i', payload, 0)):
         if count < 0:
             raise ValueError('Negative numeric array length')
         result[name] = struct.unpack_from('<' + fmt * count, payload, offset)

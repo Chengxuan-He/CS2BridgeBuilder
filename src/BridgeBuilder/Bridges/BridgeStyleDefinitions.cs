@@ -94,7 +94,7 @@ internal static class BridgeStyleDefinitions
         "Suspension" or "SuspensionDouble" or "Suspension01" or "Suspension02" or "SuspensionGolden"
             or "GoldenGate" or "GoldenGateDouble" or "Grand" => "Suspension",
         "CableStayed" or "Extradosed01" or "Extradosed02" or "Extradosed03" or "ExtradosedLarge" => "CableStayed",
-        "TrussArch" or "TrussArch01" or "TrussArch02" or "TrussArch03" or "TiedArch" or "GOViaduct" => "Arch",
+        "TrussArch" or "TrussArch01" or "TrussArch02" or "TrussArch03" or "TiedArch" => "Arch",
         "WoodenCovered" or "CoveredWood" or "CoveredPedestrian" => "Covered",
         "ArcPedestrian" => "Arch",
         "ArtDecoViaduct" or "TrussViaduct" => "Viaduct",
@@ -161,7 +161,7 @@ internal static class BridgeStyleDefinitions
     // The DLC landmark and BXP's genuine auxiliary-net archetypes are separate products.
     internal static bool SupportsDeckMode(string? styleId, bool doubleDeck) => styleId switch
     {
-        "ArtDecoViaduct" or "TrussViaduct" or "ArcPedestrian" or "CoveredPedestrian" or "GOViaduct" => !doubleDeck,
+        "ArtDecoViaduct" or "TrussViaduct" or "ArcPedestrian" or "CoveredPedestrian" => !doubleDeck,
         "GoldenGate" => !doubleDeck,
         "GoldenGateDouble" => doubleDeck,
         "Lift03" => doubleDeck,

@@ -20,6 +20,8 @@ internal sealed class BridgeInspectionScope
         _caches=new BridgeInspectionCaches(()=>AssetDatabase.global.GetAssets(default(SearchFilter<MidMipCacheAsset>)),()=>_paths.Values.SelectMany(x=>x));
         foreach (string category in new[] { "ImportedData", "BridgeBuilder", "StreamingData~/VT" })
         {
+            try
+            {
             string folder = Path.Combine(root, category);
             if (!BridgeFileAccess.Exists(folder)) continue;
             // Historical owner files/directories live immediately below these native roots.
@@ -27,12 +29,21 @@ internal sealed class BridgeInspectionScope
             {
                 string path = BridgeFileAccess.Logical(native);
                 if (!BridgeAssetInfo.TryFileOwner(Path.GetFileName(path), out var owner) || !_paths.TryGetValue(owner, out var files)) continue;
-                if (Directory.Exists(native)) files.UnionWith(BridgeFileAccess.EnumerateFiles(path));
-                else files.Add(path);
+                try
+                {
+                    if (Directory.Exists(native)) files.UnionWith(BridgeFileAccess.EnumerateFiles(path));
+                    else files.Add(path);
+                }
+                catch (Exception error) when (error is not UnauthorizedAccessException)
+                { UnreadableOwners.Add(owner); BridgeInspectionLog.Error("Inspection inventory skipped: " + owner + ": " + error); }
             }
+            }
+            catch (Exception error) when (error is not UnauthorizedAccessException)
+            { UnreadableOwners.UnionWith(_paths.Keys); BridgeInspectionLog.Error("Inspection root inventory unavailable: " + category + ": " + error); }
         }
     }
 
+    internal readonly HashSet<string> UnreadableOwners = new(StringComparer.Ordinal);
     internal bool PrepareCaches(out string? error) => _caches.Prepare(out error);
 
     internal int CacheTraversals => _caches.Traversals;
@@ -58,7 +69,7 @@ internal sealed class BridgeInspectionScope
     internal BridgeCreationDependencies Dependencies(string owner, IEnumerable<BridgeInspectionAssets.Entry> assets)
     {
         var result = new BridgeCreationDependencies((AssetData asset, out IEnumerable<AssetData> caches, out string? error) => MovableLaneMidMips.TryRequiredCaches(asset, owner, out caches, out error),
-            BridgePreparedMaterialFiles.CacheFor, (AssetData asset,out string? path,out string? error) => MovableLaneMidMips.TryOwnedCachePath(asset, owner,out path,out error));
+            BridgePreparedMaterialFiles.CacheFor, (AssetData asset,out string? path,out string? error) => MovableLaneMidMips.TryOwnedCachePath(asset, owner,out path,out error), BridgeInspectionPaths.IsDependencyPath);
         result.Inspect(_caches,MovableLaneMidMips.TryCachesByIdentity);
         foreach (var entry in assets) result.Record(entry.Asset);
         return result;

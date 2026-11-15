@@ -16,7 +16,7 @@ def sha(p):return hashlib.sha256(p.read_bytes()).hexdigest()
 def main():
     raw=(ROOT/'assets/HardcodedNumbers/Lift04/Types_Lift04_StructuralProfileRegions.bin').read_bytes()
     # Original three accepted profile coverages remain the reference family.
-    profiles=np.frombuffer(raw,dtype='<f8',count=24,offset=32).reshape(-1,8)
+    profiles=np.frombuffer(raw,dtype='<f8',count=24,offset=24).reshape(-1,8)
     rectangles={(1956,2076,2027,3342),(1956,2076,2170,3342),(1910,2076,2176,3342)}
     records=[]
     for name in ('LiftBridge04 Mesh','LiftBridge04_LOD1 Mesh'):

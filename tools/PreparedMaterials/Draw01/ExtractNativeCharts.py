@@ -59,7 +59,7 @@ for u in units:
         sourceRegionCovered=bool(containing),float32Bits=u['float32Bits'],
         originalSampling=original))
 rectangles={r['chart'] for r in records if r['chart'] is not None and regions[r['chart']]['rectangle']}
-# BBN1 contains region boundaries and old sampler-to-region mapping only. These
+# The typed-array file contains region boundaries and old sampler-to-region mapping only. These
 # are numerical source facts; no triangulated image or new runtime texture exists.
 ints=[1,len(regions),len(records)];floats=[]
 for region in regions:
@@ -72,7 +72,7 @@ for region in regions:
 for record in records:ints.append(-1 if record['chart'] is None else record['chart'])
 # Intersections of authored half-float edges can have non-Float32 coordinates.
 # Retain the measured double result instead of moving the chart boundary.
-raw=struct.pack('<II6i',0x314e4242,1,len(ints),0,0,0,0,len(floats))
+raw=struct.pack('<6i',len(ints),0,0,0,0,len(floats))
 raw+=np.asarray(ints,dtype='<i4').tobytes()+np.asarray(floats,dtype='<f8').tobytes()
 raw+=hashlib.sha256(raw).digest()
 (out/'Draw01NativeCharts.bin').write_bytes(raw)

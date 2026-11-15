@@ -21,9 +21,8 @@ NUMBERS = ROOT / 'assets/HardcodedNumbers/Draw01'
 def read_bbn(path):
     raw = path.read_bytes()
     assert hashlib.sha256(raw[:-32]).digest() == raw[-32:]
-    magic, version, *counts = struct.unpack_from('<II6i', raw)
-    assert magic == 0x314e4242 and version == 1
-    arrays, offset = [], 32
+    counts = struct.unpack_from('<6i', raw)
+    arrays, offset = [], 24
     for count, dtype in zip(counts, ('<i4','<u4','<i8','<u8','<f4','<f8')):
         arrays.append(np.frombuffer(raw, dtype, count, offset))
         offset += count * np.dtype(dtype).itemsize
@@ -143,7 +142,7 @@ def main():
         for loop in loops:
             ints.extend((len(doubles), len(loop)))
             doubles.extend(v for point in loop for v in point)
-    raw = struct.pack('<II6i', 0x314e4242, 1, len(ints), 0, 0, 0, 0, len(doubles))
+    raw = struct.pack('<6i', len(ints), 0, 0, 0, 0, len(doubles))
     raw += np.asarray(ints, dtype='<i4').tobytes() + np.asarray(doubles, dtype='<f8').tobytes()
     raw += hashlib.sha256(raw).digest()
     resource = NUMBERS / 'Draw01UvCharts.bin'

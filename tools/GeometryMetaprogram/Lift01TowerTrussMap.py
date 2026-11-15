@@ -43,7 +43,7 @@ for lod in (0, 1):
     evidence.append(dict(lod=lod, crossing=cross_ids, side=side_ids,
                          vertices=len(ids), faces=int(mask.all(1).sum()), halfSpan=half))
 ints = [len(g) for g in groups] + [i for g in groups for i in g]
-payload = struct.pack('<8i', 0x314e4242, 1, len(ints), 0, 0, 0, 2, 0)
+payload = struct.pack('<6i', len(ints), 0, 0, 0, 2, 0)
 payload += struct.pack('<' + 'i'*len(ints), *ints) + struct.pack('<2f', half, upper_half)
 payload += hashlib.sha256(payload).digest()
 target = repo / 'assets/HardcodedNumbers/Lift01/Types_Lift01_TowerTrussMap.bin'

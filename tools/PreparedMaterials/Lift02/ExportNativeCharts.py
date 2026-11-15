@@ -113,7 +113,7 @@ def main():
         records.append({'render':name,'mesh':mesh,'domainCount':len(domains),'nativeSha256':hashlib.sha256(native.read_bytes()).hexdigest(),
                         'domainSha256':hashlib.sha256(path.read_bytes()).hexdigest(),**stats})
         face_charts[(name,mesh)]=(mapping,domains)
-    body=struct.pack('<8i',0x314e4242,1,len(ints),0,0,0,0,len(doubles))+np.array(ints,dtype='<i4').tobytes()+np.array(doubles,dtype='<f8').tobytes()
+    body=struct.pack('<6i',len(ints),0,0,0,0,len(doubles))+np.array(ints,dtype='<i4').tobytes()+np.array(doubles,dtype='<f8').tobytes()
     body+=hashlib.sha256(body).digest();resource='Types_Lift02_Lift02UvCharts_cs'
     (root/(resource+'.bin')).write_bytes(body)
     route='\n'.join(f'            ("{name}", {mesh}) => {offset},' for name,mesh,offset,n in routes)

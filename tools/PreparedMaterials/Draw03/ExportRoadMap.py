@@ -42,7 +42,7 @@ def main():
         values.extend([unit['finiteUvOffset'] + (low - unit['sourceBounds'][1]) / unit['textureSize'][1],
                        (high - low) / unit['textureSize'][1]])
     values.extend([296 / 968, 9.39990234375, 12.5])
-    payload = struct.pack('<8I', 0x314E4242, 1, 1, 0, 0, 0, len(values), 0)
+    payload = struct.pack('<6i', 1, 0, 0, 0, len(values), 0)
     payload += struct.pack('<i', len(rows))
     payload += struct.pack('<' + 'f' * len(values), *values)
     payload += hashlib.sha256(payload).digest()

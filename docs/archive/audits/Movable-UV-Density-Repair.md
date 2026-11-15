@@ -24,8 +24,8 @@ This is evidence of a resolution defect, not an acceptable quality/performance t
 
 ## Current implementation requirements
 
-Use the [general bridge UV rule](../../agent-contract/BRIDGE_GENERATION_CONTRACT.md#preserve-original-uv-projection-and-mapping-mode)
-and [material contract](../../agent-contract/MATERIAL_GENERATION_CONTRACT.md) as the current requirements.
+Use the [general bridge UV rule](../../specs/generation-spec.md#generation-preserve-original-uv-projection-and-mapping-mode)
+and [material contract](../../contracts/reading-map.md#material-generation-contract) as the current requirements.
 Non-road materials remain original. Only prototype-supported road types enter composition or
 precomposition (offline material baking outside the game); other road types use their original materials. Preserve original tiling/stretch
 behavior per part, LOD, layer and axis. Do not force finite mappings into density-preserving repeats.

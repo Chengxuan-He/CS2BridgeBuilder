@@ -22,7 +22,7 @@ for face in tri:
 g=np.array([max(v,key=lambda x:x[0])[1] if v else np.zeros(3) for v in candidates])
 out=root/'assets/HardcodedNumbers/ArtDecoViaduct';out.mkdir(parents=True,exist_ok=True)
 for key,values in [('PylonDisplacements',coef),('PylonFrameX',g[:,0]),('PylonFrameY',g[:,1]),('PylonFrameZ',g[:,2])]:
- values=np.asarray(values,dtype='<f4');data=struct.pack('<8i',0x314e4242,1,0,0,0,0,len(values),0)+values.tobytes();(out/f'Types_ArtDecoViaduct_{key}.bin').write_bytes(data+hashlib.sha256(data).digest())
+ values=np.asarray(values,dtype='<f4');data=struct.pack('<6i',0,0,0,0,len(values),0)+values.tobytes();(out/f'Types_ArtDecoViaduct_{key}.bin').write_bytes(data+hashlib.sha256(data).digest())
 for delta in [0.,-2.,5.,20.]:
  q=p.copy();q[:,0]+=coef*delta
  assert np.array_equal(q[:,1:],p[:,1:])

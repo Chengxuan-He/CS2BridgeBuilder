@@ -3,13 +3,7 @@ using System.Collections.Generic;
 
 namespace CS2Mods.Shared.Discovery;
 
-/// <summary>
-/// A Road Builder road that can be exported.
-/// Identity is <see cref="Name"/> - the sanitized registered name, which is also the name of the
-/// asset on disk. Road Builder's registration id is deliberately not part of it: the exported asset
-/// and the export state must stay meaningful once Road Builder is gone, and a re-issued id must not
-/// make an already exported road look new.
-/// </summary>
+/// <summary>A Road Builder source with separate registered identity and display label.</summary>
 internal sealed class RoadBuilderRoad
 {
     internal RoadBuilderRoad(
@@ -44,7 +38,10 @@ internal sealed class RoadBuilderRoad
 
     internal RoadPrefab Prefab { get; }
 
-    /// <summary>Identity: shown in the UI and used as the exported asset's name.</summary>
+    /// <summary>Registered prefab identifier; independent of the editable label.</summary>
+    internal string Id => Prefab.name;
+
+    /// <summary>Display label only.</summary>
     internal string Name { get; }
 
     internal string RegisteredIcon { get; }

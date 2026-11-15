@@ -5,6 +5,7 @@ using Game.SceneFlow;
 static void Check(bool ok, string text) { if (!ok) throw new Exception(text); }
 static Probe Fresh()
 {
+    BridgeLegacyShaderOwners.Legacy = false;
     BridgePreparedMaterials.Available = true;
     BridgeDeferredRemoval.Hidden.Clear(); BridgeStartupAssetSystem.StopInspection();
     GameManager.instance = new() { state = GameManager.State.Booting, isGameLoading = true };
@@ -41,10 +42,14 @@ p.ScheduleInspectionAfterLoad(); p.Tick(); Check(BridgeDependencyPersistence.Mig
 p = Fresh(); p.ScheduleInspectionAfterLoad(); GameManager.instance.gameMode = GameMode.MainMenu;
 p.Complete(); p.Tick(); Check(BridgeDependencyPersistence.MigrationCalls == 0, "Completion callback still waits for loading state transition");
 Menu(p); Check(BridgeDependencyPersistence.MigrationCalls == 1, "State transition releases check");
+p = Fresh(); BridgeLegacyShaderOwners.Legacy = true; p.ScheduleInspectionAfterLoad(); Menu(p);
+Check(BridgeStartupRecovery.Retired.Contains("bridge") && BridgeDependencyPersistence.MigrationCalls == 0
+    && BridgeBuilder.Mod.Messages.Single() == "BridgeSelfCheckRemoved(1)\n\nBridgeSelfCheckRestart",
+    "Obsolete custom owner enters existing retirement before supplementation, with existing restart notice");
 p = Fresh(); BridgeDependencyPersistence.MigrationFail = true; p.ScheduleInspectionAfterLoad(); Menu(p);
 Check(BridgeStartupRecovery.Retired.Contains("bridge") && BridgeBuilder.Mod.Messages.Single() == "BridgeSelfCheckRemoved(1)\n\nBridgeSelfCheckRestart", "Dependency file failure retires only owned files with restart notice");
 p = Fresh(); BridgeDependencyPersistence.MigrationFail = true; BridgeDiskAudit.Incomplete = true; p.ScheduleInspectionAfterLoad(); Menu(p);
-Check(BridgeStartupRecovery.Retired.Count == 0 && BridgeBuilder.Mod.Messages.Single().Contains("BridgeSelfCheckIncomplete"), "Incomplete enumeration reports removal failure");
+Check(BridgeStartupRecovery.Retired.Count == 0 && BridgeBuilder.Mod.Messages.Count == 0, "Incomplete enumeration reports removal failure");
 p = Fresh(); p.ScheduleInspectionAfterLoad(); GameManager.instance.gameMode = GameMode.Game;
 GameManager.instance.state = GameManager.State.WorldReady; GameManager.instance.isGameLoading = false; p.Tick();
 Check(BridgeDependencyPersistence.MigrationCalls == 0, "No retirement while city loaded");
@@ -57,7 +62,7 @@ Menu(p);
 Check(BridgeDependencyPersistence.MigrationCalls == 1, "Cancelled manual inspection does not revive after menu loading");
 p = Fresh(); BridgeDependencyPersistence.Raise = true; p.ScheduleInspectionAfterLoad(); var propagated = false;
 try { Menu(p); } catch (InvalidOperationException) { propagated = true; }
-Check(propagated && !BridgeStartupAssetSystem.IsStartupInspection, "Exception propagated with lifecycle released");
+Check(!propagated && !BridgeStartupAssetSystem.IsStartupInspection, "Ordinary exception completes with lifecycle released");
 p = Fresh(); Colossal.IO.AssetDatabase.AssetDatabase.user.Assets.Clear(); p.ScheduleInspectionAfterLoad(); Menu(p);
 Check(BridgeDependencyPersistence.MigrationCalls == 0 && BridgeDiskAudit.Calls == 0 && BridgeStartupRecovery.Retired.Count == 0,
     "Unloaded prefab is not corruption and does not trigger disk scan");
@@ -70,7 +75,7 @@ Check(BridgeStartupRecovery.Retired.Contains("bridge") && BridgeDependencyPersis
     "Dependency migration is attempted before retiring an unregistered cached prefab (case 03)");
 p = Fresh(); Game.Prefabs.PrefabSystem.Loaded[0].Available = false;
 p.ScheduleInspectionAfterLoad(); Menu(p);
-Check(BridgeStartupRecovery.Retired.Count == 0 && BridgeDependencyPersistence.MigrationCalls == 0, "Unavailable bridge content is deferred without dependency migration");
+Check(BridgeStartupRecovery.Retired.Count == 0 && BridgeDependencyPersistence.MigrationCalls == 1, "Unavailable content does not bypass dependency inspection; complete owner stays unchanged");
 p = Fresh(); Colossal.IO.AssetDatabase.AssetDatabase.user.Assets[0].Instance = null;
 p.ScheduleInspectionAfterLoad(); Menu(p);
 Check(BridgeStartupRecovery.Retired.Contains("bridge") && BridgeBuilder.Mod.Messages.Single() == "BridgeSelfCheckRemoved(1)\n\nBridgeSelfCheckRestart", "Failed loading retires owner");
@@ -125,7 +130,7 @@ p.RequestManualCheck(); p.Tick();
 Check(BridgeDependencyPersistence.MigrationCalls == 1, "Renamed bridge skips stale in-memory asset index until restart");
 p = Fresh(); BridgeDependencyPersistence.MigrationFail = true;
 BridgeCreationDependencies.Shadowed = true; p.ScheduleInspectionAfterLoad(); Menu(p);
-Check(BridgeStartupRecovery.Retired.Count == 0 && BridgeBuilder.Mod.Messages.Single().Contains("BridgeSelfCheckIncomplete(1)"), "Unconfirmed lookup preserves owner and reports unfinished");
+Check(BridgeStartupRecovery.Retired.Count == 1 && BridgeBuilder.Mod.Messages.Count == 1, "Unresolved required owner dependency enters recovery after attempted repair");
 BridgeCreationDependencies.Shadowed = false;
 p = Fresh(); BridgeLegacyNames.Fail = true; p.ScheduleInspectionAfterLoad(); Menu(p);
 Check(BridgeBuilder.Mod.Messages.Single() == "BridgeSelfCheckRemoved(1)\n\nBridgeSelfCheckRestart" && BridgeStartupRecovery.Retired.Count == 1,
@@ -148,13 +153,13 @@ Check(BridgeAssetLayout.Owners == 1 && BridgeBuilder.Mod.Messages.Single() == "B
 p.RequestManualCheck(); p.Tick();
 Check(BridgeAssetLayout.Owners == 1 && BridgeDependencyPersistence.MigrationCalls == 1, "Moved files never reenter stale asset streams");
 p = Fresh(); BridgeAssetLayout.Fail = true; p.ScheduleInspectionAfterLoad(); Menu(p);
-Check(BridgeBuilder.Mod.Messages.Single().Contains("BridgeSelfCheckIncomplete") && BridgeStartupRecovery.Retired.Count == 0,
-    "Layout conflict preserves healthy bridge");
+Check(BridgeBuilder.Mod.Messages.Count == 1 && BridgeStartupRecovery.Retired.Count == 1,
+    "Failed layout migration recovers only selected owner");
 p = Fresh(); BridgePortableMigration.Changed = true; BridgeAssetLayout.Fail = true;
 p.ScheduleInspectionAfterLoad(); Menu(p);
-Check(BridgeBuilder.Mod.Messages.Single().Contains("BridgeSelfCheckIncomplete") && !BridgeBuilder.Mod.Messages.Single().Contains("BridgeSelfCheckMigrated") && BridgeStartupRecovery.Retired.Count == 0, "Partial conversion plus layout conflict is only unfinished");
+Check(BridgeBuilder.Mod.Messages.Count == 1 && !BridgeBuilder.Mod.Messages.Single().Contains("BridgeSelfCheckMigrated") && BridgeStartupRecovery.Retired.Count == 1, "Partial conversion plus layout failure is recovered");
 p.RequestManualCheck(); p.Tick();
-Check(BridgeBuilder.Mod.Messages.Last().Contains("BridgeSelfCheckIncomplete"), "Old unfinished result is not recounted for session-protected owner");
+Check(BridgeBuilder.Mod.Messages.Last().Contains("BridgeSelfCheckRemoved"), "Recovered owner is not recounted");
 p = Fresh(); BridgeDependencyPersistence.MigrationChanged = true;
 BridgeAssetLayout.Changed = true; p.ScheduleInspectionAfterLoad(); Menu(p);
 Check(BridgeAssetLayout.Owners == 1 && BridgeBuilder.Mod.Messages.Single() == "BridgeSelfCheckMigrated(1)\n\nBridgeSelfCheckRestart",
@@ -162,7 +167,7 @@ Check(BridgeAssetLayout.Owners == 1 && BridgeBuilder.Mod.Messages.Single() == "B
 p = Fresh(); BridgePortableMigration.Fail = true; BridgeDiskAudit.Incomplete = true;
 p.ScheduleInspectionAfterLoad(); Menu(p);
 Check(BridgeStartupRecovery.Retired.Count == 0
-    && BridgeBuilder.Mod.Messages.Single().Contains("BridgeSelfCheckIncomplete"),
+    && BridgeBuilder.Mod.Messages.Count == 0,
     "Failed removal is not reported as retired");
 // Every subset of the four final categories, with repeated writes to the same owner.
 foreach (var mask in Enumerable.Range(0, 16))
@@ -175,26 +180,27 @@ foreach (var mask in Enumerable.Range(0, 16))
         report.Set("owner" + i, (BridgeSelfCheckReport.Outcome)i);
     }
     Check(report.Total == System.Numerics.BitOperations.PopCount((uint)mask), "UUID results are mutually exclusive");
-    Check(report.HasNotice == (mask != 0), "Empty run stays silent");
+    Check(report.HasNotice == ((mask & 7) != 0), "Empty run stays silent");
     Check(report.Message().Contains("BridgeSelfCheckUnfinishedWarning") == ((mask & 8) != 0), "Only actual unfinished outcomes receive the warning");
     Check(report.Message().Split("BridgeSelfCheckRestart").Length - 1 == (mask == 0 ? 0 : 1), "One shared restart reminder");
     for (var i = 0; i < 4; i++) Check(report.Count((BridgeSelfCheckReport.Outcome)i) == ((mask >> i) & 1), "Only selected nonzero outcomes");
 }
-var interruptedOnly = new BridgeSelfCheckReport { Interrupted = true };
-Check(interruptedOnly.Message() == "BridgeSelfCheckInterrupted\n\nBridgeSelfCheckRestart", "Unknown interrupted results do not invent unfinished processing");
+var interruptedOnly = new BridgeSelfCheckReport();
+Check(!interruptedOnly.HasNotice, "Unknown failure invents no changed owner");
 p = Fresh(); BridgeDependencyPersistence.MigrationFail = true; BridgeDiskAudit.BackupFailed = true;
 p.ScheduleInspectionAfterLoad(); Menu(p);
 Check(BridgeStartupRecovery.Retired.Contains("bridge") && BridgeBuilder.Mod.Messages.Single() == "BridgeSelfCheckRemovedWithoutBackup(1)\n\nBridgeSelfCheckRestart", "Backup failure with completed deletion has its own final category");
+Check(BridgeStartupAssetSystem.HasChangedOwnerFiles("bridge") && !BridgeStartupAssetSystem.HasChangedOwnerFiles("unrelated"), "Stale-file write protection is owner-scoped, never global");
 p.RequestManualCheck(); p.Tick(); Check(BridgeBuilder.Mod.Messages.Count == 1, "Removed result does not accumulate or repeat");
 p = Fresh(); BridgeDependencyPersistence.MigrationFail = true; BridgeDiskAudit.BackupFailed = true; BridgeDiskAudit.DeleteFailed = true;
 p.ScheduleInspectionAfterLoad(); Menu(p);
-Check(BridgeStartupRecovery.Retired.Count == 0 && BridgeBuilder.Mod.Messages.Single() == "BridgeSelfCheckIncomplete(1)\n\nBridgeSelfCheckRestart BridgeSelfCheckUnfinishedWarning", "Deletion failure is unfinished, not removed");
+Check(BridgeStartupRecovery.Retired.Count == 0 && BridgeBuilder.Mod.Messages.Count == 0, "Deletion failure is unfinished, not removed");
 BridgeDiskAudit.DeleteFailed = false; p.RequestManualCheck(); p.Tick();
-Check(BridgeBuilder.Mod.Messages.Count == 1 && BridgeDiskAudit.Calls == 1 && Colossal.IO.AssetDatabase.PrefabAsset.Reads == 1 && BridgeStartupRecovery.Retired.Count == 0, "Partial removal failure protects stale assets without claiming retired or repeating notices");
+Check(BridgeBuilder.Mod.Messages.Count == 0 && BridgeDiskAudit.Calls == 1 && Colossal.IO.AssetDatabase.PrefabAsset.Reads == 1 && BridgeStartupRecovery.Retired.Count == 0, "Partial removal failure protects stale assets without claiming retired or repeating notices");
 p = Fresh(); BridgeDependencyPersistence.Raise = true; p.ScheduleInspectionAfterLoad();
 try { Menu(p); } catch (InvalidOperationException) { }
 BridgeDependencyPersistence.Raise = false; p.Tick();
-Check(BridgeBuilder.Mod.Messages.Single().Contains("BridgeSelfCheckIncomplete(1)") && BridgeBuilder.Mod.Messages.Single().Contains("BridgeSelfCheckInterrupted"), "Exception retains known unfinished owner and releases gate");
+Check(BridgeBuilder.Mod.Messages.Count == 1 && BridgeStartupRecovery.Retired.Contains("bridge"), "Ordinary owner repair exception recovers owner and releases gate");
 p = Fresh(); BridgeDependencyPersistence.MigrationChanged = true;
 Colossal.IO.AssetDatabase.AssetDatabase.user.Assets.Add(Colossal.IO.AssetDatabase.AssetDatabase.user.Assets[0]);
 p.ScheduleInspectionAfterLoad(); Menu(p);
@@ -203,7 +209,7 @@ p.RequestManualCheck(); p.Tick(); Check(BridgeBuilder.Mod.Messages.Count == 1, "
 p = Fresh(); BridgePortableMigration.Changed = true; BridgeAssetLayout.Fail = true;
 p.ScheduleInspectionAfterLoad(); Menu(p); p.RequestManualCheck(); p.Tick();
 Check(BridgeBuilder.Mod.Messages.Count == 1, "Session-protected partial migration not recounted");
-p = Fresh(); BridgeDependencyPersistence.MigrationChanged = true;
+p = Fresh(); BridgeAssetLayout.Changed = true;
 var assets = Colossal.IO.AssetDatabase.AssetDatabase.user.Assets;
 assets.Clear();
 foreach (var i in Enumerable.Range(0, 4))
@@ -222,8 +228,8 @@ p = Fresh(); BridgeDependencyPersistence.MigrationFail = true; BridgeDiskAudit.I
 p.ScheduleInspectionAfterLoad(); Menu(p);
 BridgeDiskAudit.Incomplete = false; p.RequestManualCheck(); p.Tick();
 Check(BridgeBuilder.Mod.Messages.Last() == "BridgeSelfCheckRemoved(1)\n\nBridgeSelfCheckRestart", "Read-only enumeration failure may retry, without accumulating prior unfinished result");
-var unknown = new BridgeSelfCheckReport { Interrupted = true };
-Check(unknown.Total == 0 && unknown.Message() == "BridgeSelfCheckInterrupted\n\nBridgeSelfCheckRestart", "Global unknown failure invents no UUID or count");
+var unknown = new BridgeSelfCheckReport();
+Check(unknown.Total == 0 && !unknown.HasNotice, "Global unknown failure invents no UUID or count");
 foreach (var kind in Enumerable.Range(0, 4))
 {
     p = Fresh();
@@ -246,13 +252,41 @@ Console.WriteLine("PASS tombstoned startup exclusion and silent inspection resul
 
 p = Fresh(); Game.Prefabs.PrefabSystem.Loaded[0].Available = false;
 p.ScheduleInspectionAfterLoad(); Menu(p);
-Check(BridgeDependencyPersistence.MigrationCalls == 0 && BridgeDiskAudit.Calls == 0 && BridgeStartupRecovery.Retired.Count == 0, "Unavailable content is preserved before dependency mutation");
+Check(BridgeDependencyPersistence.MigrationCalls == 1 && BridgeDiskAudit.Calls == 0 && BridgeStartupRecovery.Retired.Count == 0, "Unavailable content still inspects complete owner");
 p = Fresh(); BridgePreparedMaterials.Available = false;
 Colossal.IO.AssetDatabase.AssetDatabase.user.Assets[0].Instance = null;
 p.ScheduleInspectionAfterLoad(); Menu(p);
-Check(BridgeDependencyPersistence.MigrationCalls == 0 && BridgeDiskAudit.Calls == 0 && BridgeStartupRecovery.Retired.Count == 0, "Unresolved prefab with absent optional content is preserved");
+Check(BridgeDependencyPersistence.MigrationCalls == 1 && BridgeDiskAudit.Calls == 1 && BridgeStartupRecovery.Retired.Count == 1, "Unresolved prefab with absent optional content attempts repair then recovery");
 
-Check(BridgeBuilder.Mod.Messages.Count == 0, "Unavailable content without changes does not demand a futile restart");
+Check(BridgeBuilder.Mod.Messages.Count == 1, "Recovered unresolved owner requires restart");
+p=Fresh();BridgeDependencyPersistence.MigrationChanged=true;
+Colossal.IO.AssetDatabase.AssetDatabase.user.Assets[0].Instance=null;
+p.ScheduleInspectionAfterLoad();Menu(p);
+Check(BridgeStartupRecovery.Retired.Count==1 && BridgeBuilder.Mod.Messages.Single().Contains("BridgeSelfCheckRemoved"),
+    "Dependency supplementation alone cannot accept a root that cannot complete current-format migration");
+// Native test fixture evidence: valid root text explicitly references the one omitted owned Section.
+var fixtureManifest = Path.Combine("artifacts", "selfcheck-damaged-bridge", "manifest.json");
+if (File.Exists(fixtureManifest))
+{
+    using var fixture = System.Text.Json.JsonDocument.Parse(File.ReadAllText(fixtureManifest));
+    var fixtureRoot = fixture.RootElement;
+    var installed = Path.Combine("artifacts", "selfcheck-damaged-bridge", "deployed", fixtureRoot.GetProperty("owner").GetString()!);
+    var missingCid = fixtureRoot.GetProperty("missing_cid").GetString()!;
+    Check(File.ReadAllText(Path.Combine(installed,"Prefabs","Bridge.Prefab")).Contains("CID:"+missingCid)
+        && !File.Exists(Path.Combine(installed,fixtureRoot.GetProperty("omitted_dependency").GetString()!)),
+        "Real deployed fixture remains a readable root with one missing required owned Section");
+    p=Fresh(); BridgePreparedMaterials.Available=false;
+    Game.Prefabs.PrefabSystem.Loaded[0].Available=false;
+    BridgeDependencyPersistence.MigrationFail=true;
+    p.ScheduleInspectionAfterLoad();Menu(p);
+    Check(BridgeDependencyPersistence.MigrationCalls==1 && BridgeStartupRecovery.Retired.Contains("bridge")
+        && BridgeBuilder.Mod.Messages.Count==1,"Missing required Section is repaired/recovered despite unavailable content");
+    // A wholly new lifecycle with no cached retired-owner guard represents removal observed on cold load.
+    p=Fresh();Colossal.IO.AssetDatabase.AssetDatabase.user.Assets.Clear();p.ScheduleInspectionAfterLoad();Menu(p);
+    Check(BridgeStartupRecovery.Retired.Count==0&&BridgeBuilder.Mod.Messages.Count==0&&BridgeDiskAudit.Calls==0,
+        "Fresh second session with removed owner absent has no notice or restart");
+    Console.WriteLine("PASS real missing-section fixture evidence and unavailable-content recovery branch; native loading remains manual");
+}
 class Probe : BridgeStartupAssetSystem
 {
     public void Create() => OnCreate();

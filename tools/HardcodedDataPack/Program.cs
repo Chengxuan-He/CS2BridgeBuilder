@@ -56,14 +56,13 @@ if (args.Contains("--check"))
         {
             var path = ResourceFiles.PathFor(output, name);
             var bytes = ResourceFiles.Read(path);
-            if (bytes.Length < 64 || BitConverter.ToUInt32(bytes, 0) != 0x314e4242u ||
-                BitConverter.ToInt32(bytes, 4) != 1 ||
+            if (bytes.Length < 56 ||
                 !SHA256.HashData(bytes[..^32]).SequenceEqual(bytes[^32..]))
                 throw new Exception("Invalid numerical resource: " + name);
-            long length = 64;
+            long length = 56;
             for (int i = 0; i < 6; i++)
             {
-                int count = BitConverter.ToInt32(bytes, 8 + i * 4);
+                int count = BitConverter.ToInt32(bytes, i * 4);
                 if (count < 0) throw new Exception("Negative array length: " + name);
                 length += (long)count * (i is 2 or 3 or 5 ? 8 : 4);
             }
@@ -363,7 +362,7 @@ sealed class Pack(string name, SemanticModel model) : CSharpSyntaxRewriter
     {
         using var stream = new MemoryStream();
         using var writer = new BinaryWriter(stream, Encoding.UTF8, true);
-        writer.Write(0x314e4242u); writer.Write(1);
+        
         foreach (var count in Counts) writer.Write(count);
         foreach (var values in Data) foreach (var v in values)
         {

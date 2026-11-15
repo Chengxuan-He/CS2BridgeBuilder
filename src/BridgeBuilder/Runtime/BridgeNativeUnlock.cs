@@ -96,7 +96,6 @@ internal static class BridgeNativeUnlock
                 { failure = "Unlock requirement unavailable: " + expression.Identity; return null; }
                 return leaf;
             }
-            if (expression.Kind != 0) { failure = "Unresolved legacy unlock rule"; return null; }
             var all = new List<PrefabBase>(); var any = new List<PrefabBase>();
             for (var i = 0; i < expression.Children.Length; i++)
             {

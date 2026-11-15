@@ -1,6 +1,6 @@
 # Movable Preview Framing and Material Follow-up
 
-Current appearance selection: [Existing Material Reuse](Movable-Road-Material-Reuse.md). Earlier
+Current appearance selection: [Existing Material Reuse](movable-road-material-reuse.md). Earlier
 baking/descriptor-generation descriptions below are historical and superseded by this revision.
 
 ## Preview correction implemented

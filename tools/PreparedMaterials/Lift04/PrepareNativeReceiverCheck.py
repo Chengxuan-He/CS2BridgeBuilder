@@ -12,7 +12,7 @@ group=ET.SubElement(project,'ItemGroup')
 reference=ET.SubElement(group,'Reference',Include='UnityEngine.CoreModule')
 ET.SubElement(reference,'HintPath').text='D:/Program Files (x86)/Steam/steamapps/common/Cities Skylines II/Cities2_Data/Managed/UnityEngine.CoreModule.dll'
 for filename in ('MovableUvChart','MovableUvFrame','MovableParentUv','MovableTextureFootprint','MovableStructurePacking','MovableChartPartition'):
-    ET.SubElement(group,'Compile',Include=str(root/'src/BridgeBuilder/Bridges/Common/Movable'/(filename+'.cs')))
+    ET.SubElement(group,'Compile',Include=str(root/('tools/Common' if filename == 'MovableChartPartition' else 'src/BridgeBuilder/Bridges/Common/Movable')/(filename+'.cs')))
 for filename in ('src/BridgeBuilder/Bridges/HardcodedNumbers.cs','src/BridgeBuilder/Bridges/Types/Lift04/Lift04UvCharts.cs','tools/PreparedMaterials/Lift04/NativeReceiverCheck.cs'):
     ET.SubElement(group,'Compile',Include=str(root/filename))
 ET.SubElement(group,'EmbeddedResource',Include=str(root/'assets/HardcodedNumbers/Lift04/Lift04UvCharts.bin'),LogicalName='BridgeBuilder.Numbers.Lift04UvCharts.bin',WithCulture='false')

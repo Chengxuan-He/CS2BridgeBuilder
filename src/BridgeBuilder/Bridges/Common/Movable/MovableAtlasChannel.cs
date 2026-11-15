@@ -75,7 +75,7 @@ internal sealed class MovableAtlasChannel : IDisposable
         if(_disposed){error="Atlas channel is already disposed.";return false;}
         try
         {
-            // Validate every request before exposing any copied mip through a success result.
+            // Await every request and report actual API errors before copying mip data.
             for(int mip=0;mip<_requests.Count;mip++)
             {
                 var request=_requests[mip];request.WaitForCompletion();

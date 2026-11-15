@@ -52,8 +52,8 @@ catalogue=json.loads((OUT/'catalogue.json').read_bytes());sources={}
 for item in catalogue['resources']:
     b=(ROOT/'assets/HardcodedNumbers/Draw03'/(item['resource']+'.bin')).read_bytes()
     assert hashlib.sha256(b).hexdigest()==item['sha256']
-    ni,_,_,_,_,nd=struct.unpack_from('<6i',b,8)
-    ints=np.frombuffer(b,'<i4',ni,32);ds=np.frombuffer(b,'<f8',nd,32+ni*4)
+    ni,_,_,_,_,nd=struct.unpack_from('<6i', b, 0)
+    ints=np.frombuffer(b,'<i4',ni,24);ds=np.frombuffer(b,'<f8',nd,24+ni*4)
     ndom,ncharts=map(int,ints[:2]);charts=[]
     for i in range(ncharts):
         at=int(ints[2+ndom+i]);rings=[]

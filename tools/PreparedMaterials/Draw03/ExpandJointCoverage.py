@@ -62,7 +62,7 @@ def main():
         fixture=struct.pack('<2i',len(v),f.size)+v.astype('<f4').tobytes()+f.astype('<i4').tobytes()
         for values in (left,right,car,[r[0] for r in rows]):fixture+=struct.pack('<i',len(values))+np.asarray(values,dtype='<i4').tobytes()
         fixtures.append(fixture)
-    payload=struct.pack('<8I',0x314e4242,1,len(ints),0,0,0,len(floats),0)+struct.pack('<'+'i'*len(ints),*ints)+struct.pack('<'+'f'*len(floats),*floats)
+    payload=struct.pack('<6i',len(ints),0,0,0,len(floats),0)+struct.pack('<'+'i'*len(ints),*ints)+struct.pack('<'+'f'*len(floats),*floats)
     RESOURCE.write_bytes(payload+hashlib.sha256(payload).digest())
     code=(backup/CODE.name).read_text().split('    // Geometry SHA-256:')[0]
     code=code.replace('0 => (Left: Left0, Right: Right0, Vertices: Vertices0)','0 => Near').replace('1 => (Left: Left1, Right: Right1, Vertices: Vertices1)','1 => Middle')

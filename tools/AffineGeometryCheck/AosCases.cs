@@ -50,7 +50,7 @@ internal static class AosCases
     {
         var words=new List<int>{0x31465041,1,1,4,count,registers,code.Count};foreach(var c in code)words.AddRange(c);
         using var stream=new MemoryStream();using(var writer=new BinaryWriter(stream,System.Text.Encoding.UTF8,true))
-        {writer.Write(0x314e4242);writer.Write(1);foreach(int length in new[]{words.Count,0,0,0,values.Length,0})writer.Write(length);foreach(int w in words)writer.Write(w);foreach(float v in values)writer.Write(v);}
+        {foreach(int length in new[]{words.Count,0,0,0,values.Length,0})writer.Write(length);foreach(int w in words)writer.Write(w);foreach(float v in values)writer.Write(v);}
         byte[] payload=stream.ToArray();stream.Write(SHA256.HashData(payload));return stream.ToArray();
     }
     static void Interpret(List<int[]> code,int registers,Point[][] coordinates,float[] parameters,float[] values,int first,int count)

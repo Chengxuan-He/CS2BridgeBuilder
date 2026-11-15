@@ -31,10 +31,10 @@ def f32(value):
 
 def numbers(path):
     data = path.read_bytes()
-    if data[:8] != b'BBN1\x01\x00\x00\x00' or hashlib.sha256(data[:-32]).digest() != data[-32:]:
+    if hashlib.sha256(data[:-32]).digest() != data[-32:]:
         raise ValueError('Invalid numerical resource: ' + str(path))
-    counts = struct.unpack_from('<6i', data, 8)
-    offset, result = 32, {}
+    counts = struct.unpack_from('<6i', data, 0)
+    offset, result = 24, {}
     for name, kind, count in zip(('I32', 'U32', 'I64', 'U64', 'F32', 'F64'), 'iIqQfd', counts):
         if count < 0:
             raise ValueError('Negative numerical array count')

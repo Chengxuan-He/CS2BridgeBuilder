@@ -139,7 +139,7 @@ def main():
             doubles.extend(np.array(patch['coefficients']).ravel().tolist()+patch['uvMin']+patch['uvMax'])
         for node in level['nodes']:
             integers.extend([node['negative'],node['positive']]);doubles.extend(node['lineXZ1'])
-    raw=b'BBN1'+struct.pack('<7i',1,len(integers),0,0,0,0,len(doubles))
+    raw=struct.pack('<6i',len(integers),0,0,0,0,len(doubles))
     raw+=struct.pack('<%di'%len(integers),*integers)+struct.pack('<%dd'%len(doubles),*doubles)
     raw+=hashlib.sha256(raw).digest()
     # Historical atlas-reset audit only; current continuous production metadata is

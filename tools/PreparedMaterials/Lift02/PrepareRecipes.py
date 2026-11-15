@@ -25,10 +25,10 @@ def repeat_key(unit):
 
 def numbers(path):
     raw = path.read_bytes()
-    if raw[:8] != b'BBN1\x01\x00\x00\x00' or hashlib.sha256(raw[:-32]).digest() != raw[-32:]:
-        raise ValueError('Invalid BBN resource: ' + str(path))
-    counts = struct.unpack_from('<6i', raw, 8)
-    arrays, offset = {}, 32
+    if hashlib.sha256(raw[:-32]).digest() != raw[-32:]:
+        raise ValueError('Invalid numerical resource: ' + str(path))
+    counts = struct.unpack_from('<6i', raw, 0)
+    arrays, offset = {}, 24
     for name, fmt, count in zip(('I32', 'U32', 'I64', 'U64', 'F32', 'F64'), ('i', 'I', 'q', 'Q', 'f', 'd'), counts):
         if count < 0:
             raise ValueError('Invalid array length')

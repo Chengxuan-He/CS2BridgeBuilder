@@ -25,7 +25,7 @@ for i,r in enumerate(records):
  ints[i*4:i*4+4]=[len(d['mesh0_positions']),len(f),len(ints),len(r['faces'])]
  ints.extend(r['faces']);floats.extend([r['anchorX'],r['minimum'][2],r['maximum'][2]])
  r['bone']=int(bones[0]);r['sourceSha256']=hashlib.sha256((ROOT/f'artifacts/layer-decoupling/Draw02/outputs/native-repeat-mechanism/lod{r["sourceLod"]}-native.npz').read_bytes()).hexdigest()
-blob=struct.pack('<8I',0x314e4242,1,len(ints),0,0,0,len(floats),0)+struct.pack(f'<{len(ints)}i',*ints)+struct.pack(f'<{len(floats)}f',*floats)
+blob=struct.pack('<6i',len(ints),0,0,0,len(floats),0)+struct.pack(f'<{len(ints)}i',*ints)+struct.pack(f'<{len(floats)}f',*floats)
 blob+=hashlib.sha256(blob).digest()
 path=ROOT/'assets/HardcodedNumbers/Draw02/Types_Draw02_Draw02LaneRails_cs.bin';path.write_bytes(blob)
 (DIR/'rail-runtime-records.json').write_text(json.dumps(records,indent=2),encoding='utf-8')

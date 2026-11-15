@@ -88,7 +88,7 @@ for lod in range(3):
         far='Retain native merged shell; no independent rib detail' if lod == 2 else None)
     (O / f'lod{lod}-rib-members.json').write_text(json.dumps(report, indent=2))
     print(lod, len(ids), len(report['componentFaces']))
-body = struct.pack('<8I', 0x314e4242, 1, len(ints), 0, 0, 0, len(floats), 0)
+body = struct.pack('<6i', len(ints), 0, 0, 0, len(floats), 0)
 body += np.array(ints, dtype='<i4').tobytes() + np.array(floats, dtype='<f4').tobytes()
 body += hashlib.sha256(body).digest()
 (R / 'assets/HardcodedNumbers/Draw02/Types_Draw02_LongitudinalRibMeasurements.bin').write_bytes(body)

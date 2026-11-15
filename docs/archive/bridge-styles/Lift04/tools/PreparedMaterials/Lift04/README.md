@@ -199,7 +199,7 @@ bindings and the original glass material omitted from the structural-sampler lis
 That complete native graph has seven Surface CIDs and ten texture resources:
 six VTTextures plus four ordinary glass textures, totalling 37,457,736 source-file
 bytes. All are built-in references and create zero packaged copies when compatible.
-See [native binding integration](NativeBindingIntegration.md) for the limited shared
+See [native binding integration](native-binding-integration.md) for the limited shared
 code handoff and its unresolved density-extension boundary. No claim is made that
 the old generated triangle-fold pattern is the prototype's authoritative behavior.
 
@@ -217,7 +217,7 @@ nine LOD renders. The binary chart candidate is 877,316 bytes, with 63,303 sourc
 faces and 4,164 chart instances. Verification checks exact binary32 UV round trips,
 complete face membership, source hashes, all sampler mappings, and rejects an
 incomplete rectangular region. It produces no textures. Read
-[chart schema](NativeChartSchema.md) before integrating the common consumer; this
+[chart schema](native-chart-schema.md) before integrating the common consumer; this
 authoring result does not establish full-mip rendering or package acceptance.
 
 ## Runtime domain bindings

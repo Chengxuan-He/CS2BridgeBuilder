@@ -103,7 +103,8 @@ try
         "same-CID cache conflict preserves both original payloads");
     File.Delete(conflictingCache);File.Delete(conflictingCache+".cid");
     Check(BridgeAssetInfo.IsDependencyPath(Path.Combine("ImportedData",owner,"Dependencies","x.Prefab"),owner)
-        && BridgeAssetInfo.IsDependencyPath(Path.Combine("ImportedData",owner+"_Dependencies","x.Prefab"),owner),
+        && !BridgeAssetInfo.IsDependencyPath(Path.Combine("ImportedData",owner+"_Dependencies","x.Prefab"),owner)
+        && BridgeInspectionPaths.IsDependencyPath(Path.Combine("ImportedData",owner+"_Dependencies","x.Prefab"),owner),
         "old and new dependency provenance recognized");
     var embeddedName = "GoldenGateDouble-38_5-"+owner;
     var embedded = Save(Path.Combine("ImportedData",owner,"Prefabs",embeddedName+".Prefab"),Doc(embeddedName));

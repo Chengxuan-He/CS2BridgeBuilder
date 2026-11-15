@@ -67,6 +67,9 @@ $sources = @(
     (Join-Path $projectRoot 'src\BridgeBuilder\Bridges\TowerPrefabNaming.cs'),
     (Join-Path $projectRoot 'src\BridgeBuilder\Bridges\PrototypeBridgeSizing.cs'),
     (Join-Path $projectRoot 'tests\TowerTests.cs'),
+    (Join-Path $projectRoot 'tests\SharedGeometryFixtures.cs'),
+    (Join-Path $projectRoot 'tests\OpenTrussMeasurements.cs'),
+    (Join-Path $projectRoot 'tests\TowerWidening.Spokes.cs'),
     (Join-Path $projectRoot 'tests\TowerGenerationTests.cs')
 )
 $sources += @(Get-ChildItem -LiteralPath (Join-Path $projectRoot 'src\BridgeBuilder\Bridges\Common\Geometry') -Filter 'TowerWidening*.cs' -File | Select-Object -ExpandProperty FullName)

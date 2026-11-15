@@ -13,10 +13,10 @@ def f32(v):
 
 def numbers(path):
     raw = path.read_bytes()
-    if raw[:8] != b'BBN1\x01\x00\x00\x00' or hashlib.sha256(raw[:-32]).digest() != raw[-32:]:
-        raise ValueError('Invalid BBN resource')
-    counts = struct.unpack_from('<6i', raw, 8)
-    offset, result = 32, {}
+    if hashlib.sha256(raw[:-32]).digest() != raw[-32:]:
+        raise ValueError('Invalid numerical resource')
+    counts = struct.unpack_from('<6i', raw, 0)
+    offset, result = 24, {}
     for name, fmt, count in zip(('I32','U32','I64','U64','F32','F64'), ('i','I','q','Q','f','d'), counts):
         result[name] = struct.unpack_from('<' + fmt * count, raw, offset)
         offset += count * struct.calcsize(fmt)

@@ -1,6 +1,6 @@
 # Movable bridge Prefab graph compaction
 
-The grouped-decal description below is retained historical evidence. The 2026-10-17 repair removes all independent marking objects; see [Movable road paint and fixed platforms](Movable-Road-Paint-And-Platforms.md). The real follow-up sample logged 75 serialized Prefabs and 720 ms through native publication before that repair.
+The grouped-decal description below is retained historical evidence. The 2026-10-17 repair removes all independent marking objects; see [Movable road paint and fixed platforms](movable-road-paint-and-platforms.md). The real follow-up sample logged 75 serialized Prefabs and 720 ms through native publication before that repair.
 
 ## Evidence and scope
 

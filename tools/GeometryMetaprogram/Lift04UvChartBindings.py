@@ -9,8 +9,8 @@ ROOT = Path(__file__).resolve().parents[2]
 
 def read_domains(path):
     raw = path.read_bytes()
-    assert raw[:4] == b'BBN1' and hashlib.sha256(raw[:-32]).digest() == raw[-32:]
-    counts = struct.unpack_from('<6i', raw, 8)
+    assert hashlib.sha256(raw[:-32]).digest() == raw[-32:]
+    counts = struct.unpack_from('<6i', raw)
     from MovableUvDomainFormat import decode_arrays, read_bbn
     data, _ = decode_arrays(*read_bbn(raw))
     assert data[0] == -2
@@ -91,7 +91,7 @@ def main():
         integers[2+index] = len(integers)
         integers.extend([1, len(doubles), len(loop)])
         doubles.extend(v for p in loop for v in p)
-    raw = b'BBN1'+struct.pack('<7i',1,len(integers),0,0,0,0,len(doubles))
+    raw = struct.pack('<6i',len(integers),0,0,0,0,len(doubles))
     raw += struct.pack('<'+'i'*len(integers),*integers)+struct.pack('<'+'d'*len(doubles),*doubles)
     raw += hashlib.sha256(raw).digest()
     (ROOT/'assets/HardcodedNumbers/Lift04/Lift04UvCharts.bin').write_bytes(raw)

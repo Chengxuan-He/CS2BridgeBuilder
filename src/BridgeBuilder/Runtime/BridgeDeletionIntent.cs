@@ -28,7 +28,6 @@ internal static class BridgeDeletionIntent
         var ledger = Ledger(root);
         if (Directory.Exists(ledger))
         {
-            BridgeRemovalFiles.RejectLink(ledger);
             foreach (var path in Directory.GetFileSystemEntries(ledger, "*.pending"))
             {
                 var owner = Path.GetFileNameWithoutExtension(path);
@@ -50,7 +49,7 @@ internal static class BridgeDeletionIntent
         var directory = BridgeRemovalFiles.Match(root, owner);
         var marker = Path.Combine(directory, Marker);
         var record = Record(root, owner);
-        if (File.Exists(marker)) VerifyRecord(marker);
+        if (Directory.Exists(directory) && File.Exists(marker)) VerifyRecord(marker);
         else if (File.Exists(record)) VerifyRecord(record);
         else throw new IOException("No valid durable bridge deletion intent: " + owner);
     }
@@ -59,9 +58,6 @@ internal static class BridgeDeletionIntent
     {
         BridgeRemovalFiles.Match(root, owner);
         string ledger = Ledger(root);
-        // Reject any existing linked parent before creating the outside record directory.
-        for (string? p = ledger; p != null && p.Length >= Path.GetFullPath(root).Length; p = Path.GetDirectoryName(p))
-            if (Directory.Exists(p)) BridgeRemovalFiles.RejectLink(p);
         Directory.CreateDirectory(ledger);
         CreateRecord(Record(root, owner));
     }
@@ -71,19 +67,11 @@ internal static class BridgeDeletionIntent
     {
         Verify(root,owner);
         string directory = BridgeRemovalFiles.Match(root,owner);
-        if(Directory.Exists(directory)) RejectTreeLinks(directory);
         CommitLedger(root,owner); // Survives deletion of the in-directory marker.
         BridgeRemovalFiles.Clear(root,owner);
         if(BridgeFileAccess.Exists(directory)) throw new IOException("Bridge directory remains: "+owner);
         File.Delete(Record(root,owner));
         if(BridgeFileAccess.Exists(Record(root,owner))) throw new IOException("Cleanup record remains: "+owner);
-    }
-
-    private static void RejectTreeLinks(string directory)
-    {
-        BridgeRemovalFiles.RejectLink(directory);
-        // Path safety only: do not enumerate/read payloads or perform per-file removal.
-        foreach(var child in Directory.EnumerateDirectories(directory)) RejectTreeLinks(child);
     }
 
     private static void CreateRecord(string path)

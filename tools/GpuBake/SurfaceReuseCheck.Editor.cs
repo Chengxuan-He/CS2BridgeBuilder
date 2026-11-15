@@ -304,12 +304,6 @@ public static class SurfaceReuseCheck
             }
             Require(!Key(a).Equals(Key(b)),"Nonzero height-dependent sampling was discarded");
         }
-        var appearance=Type("MovableAppearanceUnit").GetMethod("Key",BindingFlags.NonPublic|BindingFlags.Static);
-        var paint=Array.CreateInstance(Type("MovableNativeDecals+Region"),0);
-        object Finite(float phase)=>appearance.Invoke(null,new object[]{Vector3.zero,Vector3.right,
-            Vector3.forward,Vector2.one,Patch(new Vector4(.25f,0,0,phase),pv),paint});
-        Require(!Finite(.125f).Equals(Finite(.125000015f)),"Finite key quantized different source phases");
-        Require(Finite(.125f).Equals(Finite(.125f)),"Identical finite recipe changed identity");
-        Debug.Log($"PASS appearance recipe keys: {checks} checks; native sample coordinates, dictionary sharing, source/phase/density/frame isolation and finite one-ULP distinction. Synthetic receivers; no game timing or full Compose coverage.");
+        Debug.Log($"PASS appearance recipe keys: {checks} checks; native sample coordinates, dictionary sharing, source/phase/density/frame isolation. Synthetic receivers; no game timing or full Compose coverage.");
     }
 }

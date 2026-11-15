@@ -16,9 +16,9 @@ internal static class BridgeDependencyPersistence
         if(creation.ResolutionError!=null){error=creation.ResolutionError;return false;}
         var timing = new DependencySaveTimings();
         var footprint = new BridgeMaterialFootprint();
-        var result = BridgeDependencyCopies.Save(UnityEngine.Application.persistentDataPath, owner, seeds.Concat(creation.ProgramRoots),
+        var result = BridgeDependencyCopies.Save(UnityEngine.Application.persistentDataPath, owner, seeds,
             cid => creation.Resolve(cid, owner, timing), out count, out error, out writtenFiles,
-            (cid, source) => { footprint.Observe(cid, source); creation.ObservePath(owner, cid, source); }, exception => Mod.Log.Error(exception), timing);
+            (cid, source) => { footprint.Observe(cid, source); creation.ObservePath(owner, cid, source); }, exception => BridgeInspectionLog.Error(exception.ToString()), timing);
         if (!result && creation.ResolutionError != null) error = creation.ResolutionError;
         if(result)
         {
@@ -27,12 +27,12 @@ internal static class BridgeDependencyPersistence
             {
                 var report=footprint.Write(UnityEngine.Application.persistentDataPath,owner,
                     typeof(BridgeDependencyPersistence).Assembly.ManifestModule.ModuleVersionId.ToString());
-                Mod.Log.Info("Saved-owner material footprint: "+report);
+                BridgeInspectionLog.Info("Saved-owner material footprint: "+report);
             }
-            catch(Exception exception){Mod.Log.Warn("Saved-owner material measurement unavailable: "+exception.Message);}
+            catch (Exception exception) when (exception is not UnauthorizedAccessException){BridgeInspectionLog.Warn("Saved-owner material measurement unavailable: "+exception.Message);}
         }
         string stages = timing.Summary(out long elapsedMs);
-        Mod.Log.Info($"Bridge dependency persistence UUID={owner}: elapsedMs={elapsedMs}, copies={count}, writtenFiles={writtenFiles}, success={result}, {stages}");
+        BridgeInspectionLog.Info($"Bridge dependency persistence UUID={owner}: elapsedMs={elapsedMs}, copies={count}, writtenFiles={writtenFiles}, success={result}, {stages}");
         return result;
     }
 
@@ -47,7 +47,7 @@ internal static class BridgeDependencyPersistence
         return true;
     }
 
-    internal static bool TryRead(AssetData asset,string owner,out BridgeDependencyCopies.Source? source,out string? error,DependencySaveTimings? timing=null)
+    internal static bool TryRead(AssetData asset,string owner,out BridgeDependencyCopies.Source? source,out string? error,DependencySaveTimings? timing=null, Func<string,string,bool>? dependencyPath=null)
     {
         source=null;error=null;
         using var measure=timing?.Measure(Stage.SourceRead);
@@ -56,11 +56,11 @@ internal static class BridgeDependencyPersistence
             if(asset.isBuiltin){source=new BridgeDependencyCopies.Source{Builtin=true,Extension=asset.GetMeta().extension??""};return true;}
             var meta=asset.GetMeta();
             if(string.IsNullOrEmpty(meta.extension)){error="Required dependency has no native file metadata: "+asset.id.guid;return false;}
-            var owned=!meta.packaged && !BridgeAssetInfo.IsDependencyPath(meta.path,owner) &&
+            var owned=!meta.packaged && !(dependencyPath ?? BridgeAssetInfo.IsDependencyPath)(meta.path,owner) &&
                 (BridgeAssetInfo.MatchesOwner(meta.path,owner)||BridgeAssetInfo.MatchesOwner(meta.subPath,owner));
             using var stream=asset.GetReadStream();
             bool surface=meta.extension.Equals(".Surface",StringComparison.OrdinalIgnoreCase)||meta.extension.Equals(".Material",StringComparison.OrdinalIgnoreCase);
-            if(owned && !meta.extension.Equals(".Prefab",StringComparison.OrdinalIgnoreCase) && !surface && !meta.extension.Equals(".MidMips",StringComparison.OrdinalIgnoreCase))
+            if(owned && !meta.extension.Equals(".Prefab",StringComparison.OrdinalIgnoreCase) && !surface && !meta.extension.Equals(".MidMips",StringComparison.OrdinalIgnoreCase) && !meta.extension.Equals(".json",StringComparison.OrdinalIgnoreCase))
             {source=new BridgeDependencyCopies.Source{Owned=true,Extension=meta.extension,PhysicalPath=meta.path};return true;}
             using var bytes=new MemoryStream();stream.CopyTo(bytes);var payload=bytes.ToArray();
             if(timing!=null)timing.SourceBytesRead+=payload.LongLength;
@@ -72,7 +72,7 @@ internal static class BridgeDependencyPersistence
         }
         catch(FileNotFoundException){return true;}
         catch(DirectoryNotFoundException){return true;}
-        catch(Exception exception){error=$"Dependency source read failed: owner={owner}; {exception.Message}";source=null;return false;}
+        catch (Exception exception) when (exception is not UnauthorizedAccessException){error=$"Dependency source read failed: owner={owner}; {exception.Message}";source=null;return false;}
     }
 
     internal static bool TryReadSurfaceReferences(byte[] payload,out string[] references,out string? error)
@@ -94,16 +94,6 @@ internal static class BridgeDependencyPersistence
 // on disk, so their producers declare them in the forward direction here.
 internal sealed class BridgeCreationDependencies
 {
-    private readonly Dictionary<string, (FileAsset Asset, int Template)> _programs = new(StringComparer.Ordinal);
-    internal IEnumerable<string> ProgramRoots => _programs.Values.Select(entry => entry.Asset.id.guid.ToString()).Distinct(StringComparer.OrdinalIgnoreCase);
-    internal bool TryProgram(string identity, out FileAsset asset, out int template)
-    {
-        bool found = _programs.TryGetValue(identity, out var entry);
-        if (found && !entry.Asset.database.dataSource.Contains(entry.Asset.id))
-        { _programs.Remove(identity); _sources.Remove(entry.Asset.id.guid.ToString()); found = false; }
-        asset = found ? entry.Asset : null!; template = found ? entry.Template : -1; return found;
-    }
-    internal void Program(string identity, FileAsset asset, int template) { _programs[identity] = (asset, template); Record(asset); }
     private readonly Dictionary<string, AssetData> _sources = new(StringComparer.OrdinalIgnoreCase);
     private readonly Dictionary<string, string[]> _cacheEdges = new(StringComparer.OrdinalIgnoreCase);
     internal delegate bool NativeCacheLookup(AssetData asset, out IEnumerable<AssetData> caches, out string? error);
@@ -129,6 +119,7 @@ internal sealed class BridgeCreationDependencies
     private static string RelationsPath(string owner) => Path.Combine(UnityEngine.Application.persistentDataPath,
         "ImportedData", owner, "BridgeCacheEdges.txt");
 
+    private readonly Func<string,string,bool> _dependencyPath;
     private bool _inspectSnapshots;
     internal bool Unconfirmed { get; private set; }
 
@@ -145,7 +136,7 @@ internal sealed class BridgeCreationDependencies
                 !BridgeFileAccess.ReadText(path + ".cid").Trim().Equals(cid, StringComparison.OrdinalIgnoreCase))
                 {ResolutionError="Ambiguous or invalid owner dependency snapshot: "+path;return null;}
             using var measure = timing.Measure(Stage.SourceRead);
-            var bytes = File.ReadAllBytes(BridgeFileAccess.Native(path));
+            var bytes = BridgeFileAccess.ReadBytes(path);
             timing.SourceBytesRead += bytes.LongLength;
             string[]? references=null;
             if((extension==".Surface" || extension==".Material") && !BridgeDependencyPersistence.TryReadSurfaceReferences(bytes,out references,out var cause))
@@ -172,12 +163,14 @@ internal sealed class BridgeCreationDependencies
             string path=RelationsPath(owner);
             if(!BridgeFileAccess.Exists(path))return true;
             string destination=Path.Combine(backup,"ObsoleteCacheRelations",owner,"BridgeCacheEdges.txt");
+            if(BridgeFileAccess.WithinAssetStorage(destination,UnityEngine.Application.persistentDataPath))
+                throw new IOException("Obsolete relation backup aliases asset storage");
             Directory.CreateDirectory(BridgeFileAccess.Native(Path.GetDirectoryName(destination)!));
             if(BridgeFileAccess.Exists(destination))destination+="."+Guid.NewGuid().ToString("N");
             File.Copy(BridgeFileAccess.Native(path),BridgeFileAccess.Native(destination));
             File.Delete(BridgeFileAccess.Native(path));changed=true;return true;
         }
-        catch(Exception exception){error="Obsolete cache metadata cleanup: "+exception.Message;return false;}
+        catch (Exception exception) when (exception is not UnauthorizedAccessException){error="Obsolete cache metadata cleanup: "+exception.Message;return false;}
     }
 
     private bool InspectCacheEdges(string cid,string owner,out string[] caches)
@@ -266,9 +259,9 @@ internal sealed class BridgeCreationDependencies
         if (!BridgeFileAccess.ReadText(path + ".cid").Trim().Equals(cid, StringComparison.OrdinalIgnoreCase))
             {ResolutionError="Cache relation CID sidecar mismatch: "+cid;return null;}
         using var measure = timing.Measure(Stage.SourceRead);
-        var bytes = File.ReadAllBytes(BridgeFileAccess.Native(path)); timing.SourceBytesRead += bytes.LongLength;
+        var bytes = BridgeFileAccess.ReadBytes(path); timing.SourceBytesRead += bytes.LongLength;
         var source = new BridgeDependencyCopies.Source { Bytes = bytes, Extension = ".MidMips", PhysicalPath = path,
-            Owned = !BridgeAssetInfo.IsDependencyPath(path, owner), NativeFileName = Path.GetFileName(path) };
+            Owned = !_dependencyPath(path, owner), NativeFileName = Path.GetFileName(path) };
         if(!BridgeDependencyPersistence.TryValidateCacheName(cid,source,out var nameError)){ResolutionError=nameError;return null;}
         if(!ValidateMembership(cid, source))return null;
         return source;
@@ -286,19 +279,20 @@ internal sealed class BridgeCreationDependencies
     }
 
     internal BridgeCreationDependencies(Func<AssetData, IEnumerable<AssetData>> nativeCaches, Func<string, string?>? preparedCache = null,
-        LocalCacheLookup? localCache = null)
+        LocalCacheLookup? localCache = null, Func<string,string,bool>? dependencyPath = null)
     {
         _nativeCaches = (AssetData asset, out IEnumerable<AssetData> caches, out string? error) =>
         {
             caches = Array.Empty<AssetData>(); error = null;
             try { caches = nativeCaches(asset).ToArray(); return true; }
-            catch (Exception exception) { error = exception.ToString(); return false; }
+            catch (Exception exception) when (exception is not UnauthorizedAccessException) { error = exception.ToString(); return false; }
         };
         _preparedCache = preparedCache; _localCache = localCache;
+        _dependencyPath = dependencyPath ?? BridgeAssetInfo.IsDependencyPath;
     }
     internal BridgeCreationDependencies(NativeCacheLookup nativeCaches, Func<string, string?>? preparedCache = null,
-        LocalCacheLookup? localCache = null)
-    { _nativeCaches = nativeCaches; _preparedCache = preparedCache; _localCache = localCache; }
+        LocalCacheLookup? localCache = null, Func<string,string,bool>? dependencyPath = null)
+    { _nativeCaches = nativeCaches; _preparedCache = preparedCache; _localCache = localCache; _dependencyPath = dependencyPath ?? BridgeAssetInfo.IsDependencyPath; }
 
     internal void Relocate(string before, string after)
     {
@@ -323,7 +317,7 @@ internal sealed class BridgeCreationDependencies
             .OrderBy(id => id, StringComparer.OrdinalIgnoreCase).ToArray();
         _cacheEdges[cid] = edges;return true;
         }
-        catch(Exception exception){return Fail("Material cache declaration: "+exception.Message);}
+        catch (Exception exception) when (exception is not UnauthorizedAccessException){return Fail("Material cache declaration: "+exception.Message);}
     }
 
     internal BridgeDependencyCopies.Source? Resolve(string cid, string owner, DependencySaveTimings timing)
@@ -346,8 +340,8 @@ internal sealed class BridgeCreationDependencies
         {
             if (attempted.Any(previous => ReferenceEquals(previous, asset))) continue;
             attempted.Add(asset);
-            if(!BridgeDependencyPersistence.TryRead(asset,owner,out var source,out var sourceError,timing))
-            {ResolutionError=sourceError;return null;}
+            if(!BridgeDependencyPersistence.TryRead(asset,owner,out var source,out var sourceError,timing,_dependencyPath))
+            {Unconfirmed = _inspectSnapshots; ResolutionError=sourceError;return null;}
             if (source == null) { inaccessibleHandle = true; continue; }
             return Complete(source, asset);
         }
@@ -396,7 +390,7 @@ internal sealed class BridgeCreationDependencies
                     }
                     string? path=null;
                     if(asset!=null && !_cacheEdges.ContainsKey(cid) && _localCache!=null && !_localCache(asset,out path,out var localError))
-                    {ResolutionError=$"Historical material cache resolution: owner={owner}; CID={cid}; {localError}";return null;}
+                    {Unconfirmed = _inspectSnapshots; ResolutionError=$"Historical material cache resolution: owner={owner}; CID={cid}; {localError}";return null;}
                     if (path != null)
                     {
                         string cacheCid = BridgeFileAccess.ReadText(path + ".cid").Trim();
@@ -414,7 +408,7 @@ internal sealed class BridgeCreationDependencies
                             else
                             {
                                 ResolutionError ??= $"Dependency material resolution failed: owner={owner}; CID={cid}; {cause}";
-                                Mod.Log.Error(ResolutionError); return null;
+                                BridgeInspectionLog.Error(ResolutionError); return null;
                             }
                         }
                         if(!_cacheEdges.ContainsKey(cid) && !Material(asset,resolved))return null;
@@ -431,6 +425,6 @@ internal sealed class BridgeCreationDependencies
             return source;
         }
         }
-        catch(Exception exception){ResolutionError=$"Dependency resolution: owner={owner}; CID={cid}; {exception.Message}";return null;}
+        catch (Exception exception) when (exception is not UnauthorizedAccessException){Unconfirmed = _inspectSnapshots; ResolutionError=$"Dependency resolution: owner={owner}; CID={cid}; {exception.Message}";return null;}
     }
 }

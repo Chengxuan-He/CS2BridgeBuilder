@@ -35,10 +35,10 @@ internal static class BridgeAssetLoading
     private static Task Batch(IReadOnlyCollection<Colossal.Hash128> ids, bool active)
     {
         _batch = true;
-        _wake?.Invoke();
+        BridgeInspectionLog.Run("asset batch callback", () => _wake?.Invoke());
         return Task.CompletedTask;
     }
-    private static void Completed() { _batch = false; _wake?.Invoke(); }
+    private static void Completed() { _batch = false; BridgeInspectionLog.Run("asset batch callback", () => _wake?.Invoke()); }
     internal static bool Ready
     {
         get

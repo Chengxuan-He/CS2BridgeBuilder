@@ -52,7 +52,7 @@ def main():
         for loop in loops:
             ints.extend((len(doubles), len(loop)))
             doubles.extend(x for point in loop for x in point)
-    raw = b'BBN1'+struct.pack('<7i', 1, len(ints), 0, 0, 0, 0, len(doubles))
+    raw = struct.pack('<6i', len(ints), 0, 0, 0, 0, len(doubles))
     raw += struct.pack('<'+'i'*len(ints), *ints)+struct.pack('<'+'d'*len(doubles), *doubles)
     candidate_path = OUT/'UvCharts_PedestrianDraw01.bin'
     candidate_path.write_bytes(raw+hashlib.sha256(raw).digest())

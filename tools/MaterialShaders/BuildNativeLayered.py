@@ -221,25 +221,11 @@ for obj in env.objects:
     if obj.type.name=='Shader':obj.save_typetree(target)
 identify_container()
 bundle_bytes=next(iter(env.files.values())).save(packer='none')
-package=bytearray(b'BBS1')+struct.pack('<II',1,len(bundle_bytes))+bundle_bytes+struct.pack('<I',len(dynamic_programs))
-for source,program in dynamic_programs.values():
-    encoded=source.encode();positions=[];cursor=0
-    while (pos:=bundle_bytes.find(program,cursor))>=0:positions.append(pos);cursor=pos+len(program)
-    assert positions,hashlib.sha256(program).hexdigest()
-    package+=struct.pack('<I',len(encoded))+encoded+struct.pack('<I',len(program))+program+struct.pack('<I',len(positions))+struct.pack('<'+'I'*len(positions),*positions)
-(out/'native-layered-dynamic.seed').write_bytes(package)
-manifest = {
-    'schema': 1, 'program': 'WorldLayeredPbr',
-    'packageSha256': hashlib.sha256(package).hexdigest(),
-    'packageBytes': len(package),
-    'producerSha256': hashlib.sha256(Path(__file__).read_bytes()).hexdigest(),
-    'sources': {str(path.relative_to(root)).replace('\\','/'): hashlib.sha256(path.read_bytes()).hexdigest()
-                for path in [root/'tools/MaterialShaders'/name for name in
-                             ['MaterialFunctions.hlsl','NativeInstanceSkeleton.hlsl','NativeNetworkVertex.hlsl']]},
-    'nativeInputs': {label: hashlib.sha256(path.read_bytes()).hexdigest() for label,path in
-                     [('objectShader',args.object_shader),('layeredShader',args.layered_shader),('containerSeed',args.container_seed)]}
-}
-(out/'WorldLayeredPbr.manifest.json').write_text(json.dumps(manifest,indent=2)+'\n',encoding='utf-8')
+(out/'WorldLayeredPbr.bundle').write_bytes(bundle_bytes)
+inputs=[Path(__file__),root/'tools/MaterialShaders/MaterialFunctions.hlsl',root/'tools/MaterialShaders/NativeInstanceSkeleton.hlsl',root/'tools/MaterialShaders/NativeNetworkVertex.hlsl']
+manifest={'schema':2,'format':'UnityFS','program':'WorldLayeredPbr','producer':'BuildNativeLayered.py','producerSha256':hashlib.sha256(Path(__file__).read_bytes()).hexdigest(),'packageBytes':len(bundle_bytes),'packageSha256':hashlib.sha256(bundle_bytes).hexdigest(),'sources':{str(p.relative_to(root)).replace('\\','/'):hashlib.sha256(p.read_bytes()).hexdigest() for p in inputs}}
+(out/'WorldLayeredPbr.manifest.json').write_text(json.dumps(manifest,indent=2)+'\n')
+
 # Diagnostic-only fragment makes vertex/bone binding independently observable.
 # It is never used by the native-pixel-program integration bundle above.
 raw=b'float4 Main() : SV_Target0 { return float4(1,0.2,0.3,1); }'

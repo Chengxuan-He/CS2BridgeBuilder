@@ -39,8 +39,6 @@ function Find-GameDirectory {
         }
     }
 
-    $candidates.Add('D:\Program Files (x86)\Steam\steamapps\common\Cities Skylines II')
-    $candidates.Add('C:\Program Files (x86)\Steam\steamapps\common\Cities Skylines II')
     foreach ($candidate in $candidates | Select-Object -Unique) {
         if (Test-Path -LiteralPath (Join-Path $candidate 'Cities2_Data\Managed\Game.dll')) { return $candidate }
     }
@@ -162,6 +160,7 @@ $arguments = @(
     ('/resource:' + (Join-Path $projectRoot 'assets\bridgebake') + ',BridgeBuilder.GpuBake'),
     ('/resource:' + (Join-Path $projectRoot 'assets\roadgpu') + ',BridgeBuilder.RoadGpu'),
     '/deterministic+',
+    ('/pathmap:' + $projectRoot + '=.'),
     '/codepage:65001',
     '/optimize+',
     '/debug:portable',
@@ -169,7 +168,7 @@ $arguments = @(
     '/langversion:latest',
     ('/out:' + (Join-Path $output 'BridgeBuilder.dll'))
 ) + @(Get-ChildItem -LiteralPath (Join-Path $projectRoot 'assets\HardcodedNumbers') -Recurse -Filter '*.bin' |
-    Sort-Object Name | ForEach-Object { '/resource:' + $_.FullName + ',BridgeBuilder.Numbers.' + $_.Name }) + @(Get-ChildItem -LiteralPath (Join-Path $projectRoot 'assets\MaterialPrograms') -Filter '*.bbs1' |
+    Sort-Object Name | ForEach-Object { '/resource:' + $_.FullName + ',BridgeBuilder.Numbers.' + $_.Name }) + @(Get-ChildItem -LiteralPath (Join-Path $projectRoot 'assets\MaterialPrograms') -Filter '*.bundle' |
     Sort-Object Name | ForEach-Object { '/resource:' + $_.FullName + ',BridgeBuilder.MaterialProgram.' + $_.Name }) + $references + $sources
 
 # Source paths grow as bridge implementations are split into individual directories.
@@ -193,4 +192,6 @@ foreach ($fieldIcon in @('BridgeBuilderPack.svg', 'BridgeBuilderSearch.svg', 'Br
     Copy-Item -LiteralPath (Join-Path $projectRoot "assets\$fieldIcon") -Destination $output -Force
 }
 & (Join-Path $PSScriptRoot 'Copy-PreparedMaterials.ps1') -DestinationRoot $output
+& (Join-Path $PSScriptRoot 'CheckReleasePaths.ps1') -Files @(
+    (Join-Path $output 'BridgeBuilder.dll'), (Join-Path $output 'BridgeBuilder.pdb'))
 Write-Host "Built: $(Join-Path $output 'BridgeBuilder.dll')"

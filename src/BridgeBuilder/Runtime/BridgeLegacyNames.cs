@@ -78,7 +78,7 @@ internal static class BridgeLegacyNames
                 var owned = assets.Where(a => BridgeAssetInfo.MatchesOwner(a.Path, owner)).ToArray();
                 var reachable = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
                 var pending = new Stack<string>(owned.Where(a => a.Name == owner
-                    && !BridgeAssetInfo.IsDependencyPath(a.Path, owner)).Select(a => a.Cid));
+                    && !BridgeInspectionPaths.IsDependencyPath(a.Path, owner)).Select(a => a.Cid));
                 while (pending.Count != 0)
                 {
                     var cid = pending.Pop();
@@ -103,7 +103,7 @@ internal static class BridgeLegacyNames
                     var partName = part.Name.Length == 0 ? Path.GetFileNameWithoutExtension(part.Path) : part.Name;
                     var ownedGeometry = part.Path.EndsWith(".Geometry", StringComparison.OrdinalIgnoreCase)
                         && BridgeAssetInfo.MatchesOwner(part.Path, owner)
-                        && !BridgeAssetInfo.IsDependencyPath(part.Path, owner);
+                        && !BridgeInspectionPaths.IsDependencyPath(part.Path, owner);
                     // UUID-named external components are ordinary snapshots, not pre-UUID rename candidates.
                     if (!ownedGeometry && !BridgeAssetInfo.TryFileOwner(partName, out _)) components.Add(cid, part);
                     foreach (var child in BridgeDependencyCopies.References(part.Bytes))
@@ -129,7 +129,7 @@ internal static class BridgeLegacyNames
                         ? Path.Combine(gameRoot, prefabPath(name))
                         : Path.Combine(gameRoot, BridgeAssetInfo.OwnedDirectory(owner, "Geometry"),
                             BridgeAssetInfo.FileStem(name, owner) + extension);
-                    var bytes = asset.Text.Length == 0 ? File.ReadAllBytes(BridgeFileAccess.Native(asset.Path)) : asset.Bytes;
+                    var bytes = asset.Text.Length == 0 ? BridgeFileAccess.ReadBytes(asset.Path) : asset.Bytes;
                     if (asset.Text.Length != 0)
                     {
                         if (!BridgeSerializedReferences.TryRead(asset.Text, out var doc))
@@ -172,18 +172,19 @@ internal static class BridgeLegacyNames
             retire.RemoveWhere(path => assets.Any(a => a.Path == path && keep.Contains(a.Cid)));
             var retiredFiles = retire.SelectMany(p => new[] { p, p + ".cid" }).ToArray();
             var backupRoot = Path.GetFullPath(Path.Combine(backup, "LegacyNames"));
-            if (backupRoot.StartsWith(Path.GetFullPath(gameRoot).TrimEnd(Path.DirectorySeparatorChar) + Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase))
+            if (BridgeFileAccess.WithinAssetStorage(backupRoot, gameRoot))
             { error = "Legacy migration backup must be outside game data"; return false; }
             // Save all originals before any replacement. New copies may not overwrite unrelated assets.
             foreach (var path in writes.Keys.Concat(retiredFiles).Distinct(StringComparer.OrdinalIgnoreCase))
             {
                 if (!BridgeFileAccess.Exists(path)) continue;
-                var bytes = File.ReadAllBytes(BridgeFileAccess.Native(path));
+                var bytes = BridgeFileAccess.ReadBytes(path);
                 if (destinations.Contains(path))
                 { error = "Legacy migration destination exists: " + path; return false; }
                 originals[path] = bytes;
                 var relative = path.Substring(Path.GetFullPath(gameRoot).TrimEnd(Path.DirectorySeparatorChar).Length + 1);
                 var saved = Path.Combine(backupRoot, relative);
+                if (BridgeFileAccess.WithinAssetStorage(saved, gameRoot)) throw new IOException("Backup aliases asset storage: " + saved);
                 Directory.CreateDirectory(BridgeFileAccess.Native(Path.GetDirectoryName(saved)!));
                 using var stream = new FileStream(BridgeFileAccess.Native(saved), FileMode.CreateNew, FileAccess.Write);
                 stream.Write(bytes, 0, bytes.Length);
@@ -207,7 +208,7 @@ internal static class BridgeLegacyNames
                     Directory.Delete(BridgeFileAccess.Native(directory));
             return true;
         }
-        catch (Exception exception)
+        catch (Exception exception) when (exception is not UnauthorizedAccessException)
         {
             error = exception.Message;
             foreach (var pair in originals)
@@ -216,10 +217,10 @@ internal static class BridgeLegacyNames
                     Directory.CreateDirectory(BridgeFileAccess.Native(Path.GetDirectoryName(pair.Key)!));
                     File.WriteAllBytes(BridgeFileAccess.Native(pair.Key), pair.Value);
                 }
-                catch (Exception rollback) { error += "; rollback failed: " + rollback.Message; }
+                catch (Exception rollback) when (rollback is not UnauthorizedAccessException) { error += "; rollback failed: " + rollback.Message; }
             foreach (var path in created)
                 try { File.Delete(BridgeFileAccess.Native(path)); }
-                catch (Exception rollback) { error += "; copy cleanup failed: " + rollback.Message; }
+                catch (Exception rollback) when (rollback is not UnauthorizedAccessException) { error += "; copy cleanup failed: " + rollback.Message; }
             changed.Clear();
             return false;
         }

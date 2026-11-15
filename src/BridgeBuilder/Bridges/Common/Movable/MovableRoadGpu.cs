@@ -148,7 +148,7 @@ internal static partial class MovableRoadGpu
             { var b=Buffer(a.Length,stride);if(a.Length!=0)b.SetData(a);return b; }
             var sourceArray=source as MovableRoadGeometry.Triangle[] ?? source.ToArray();
             preparedAt=Stopwatch.GetTimestamp();
-            var input=Buffer(checked(source.Count*57),4,ComputeBufferType.Raw);
+            var input=Buffer((source.Count*57),4,ComputeBufferType.Raw);
             if(surfaces!=null)input.SetData(sourceArray);else input.SetData(Words(sourceArray,228));
             long coordinateUploadBytes=0;
             if(pose.HasValue)
@@ -159,7 +159,7 @@ internal static partial class MovableRoadGpu
                 encode.SetVector("Rotation1",new Vector4(xz,yz,wx,wy));
                 encode.SetVector("Rotation2",new Vector4(wz,0,0,0));encode.SetVector("FrameOffset",offset);
                 var mapValues=mappings.Select(m=>new Vector2(m.Planar?1:0,m.Scale)).ToArray();var map=Upload(mapValues,8);coordinateUploadBytes=mapValues.Length*8;
-                var transformed=Buffer(checked(source.Count*57),4,ComputeBufferType.Raw);int transform=encode.FindKernel("TransformInput");
+                var transformed=Buffer((source.Count*57),4,ComputeBufferType.Raw);int transform=encode.FindKernel("TransformInput");
                 encode.SetBuffer(transform,"SourceInput",input);encode.SetBuffer(transform,"Transformed",transformed);encode.SetBuffer(transform,"Mappings",map);encode.SetInt("VertexCount",source.Count*3);
                 for(int first=0;first<source.Count*3;first+=65536){encode.SetInt("VertexStart",first);encode.Dispatch(transform,(Math.Min(65536,source.Count*3-first)+63)/64,1,1);}
                 input=transformed;
@@ -177,11 +177,12 @@ internal static partial class MovableRoadGpu
                 {clip.SetInt("RowStart",first);clip.Dispatch(kernel,(Math.Min(DispatchRows,source.Count-first)+31)/32,1,1);}
             }
             Dispatch(clip.FindKernel("Count"),dummy);var cc=new uint[source.Count];await lease.Read(counts,cc);readCalls++;readBytes+=(long)cc.Length*4;countedAt=Stopwatch.GetTimestamp();
-            var oo=new uint[source.Count];uint sum=0;
-            for(int i=0;i<oo.Length;i++){oo[i]=sum;sum=checked(sum+cc[i]);}
-            if(sum>MaximumTriangles)throw new InvalidOperationException("GPU output working capacity exceeded.");
+            var oo=new uint[source.Count];long total=0;
+            for(int i=0;i<oo.Length;i++){oo[i]=(uint)total;total+=cc[i];}
+            if(total>MaximumTriangles)throw new InvalidOperationException("GPU output working capacity exceeded.");
+            int sum=(int)total;
             if(sum==0){result=Array.Empty<MovableRoadGeometry.BoundTriangle>();encoded=Array.Empty<uint>();return;}
-            offsets.SetData(oo);var bound=Buffer(checked((int)sum*58),4,ComputeBufferType.Raw);
+            offsets.SetData(oo);var bound=Buffer(((int)sum*58),4,ComputeBufferType.Raw);
             uploadBytes+=(long)oo.Length*4;prefixAt=Stopwatch.GetTimestamp();
             Dispatch(clip.FindKernel("Emit"),bound);emittedAt=Stopwatch.GetTimestamp();
             if(surfaces!=null)
@@ -197,15 +198,15 @@ internal static partial class MovableRoadGpu
                 Mod.Log.Info($"Moving road GPU pipeline detail: prepareMs={(preparedAt-phaseStart)*1000.0/Stopwatch.Frequency:F3}; uploadMs={(uploadedAt-preparedAt)*1000.0/Stopwatch.Frequency:F3}; countDispatchWaitReadMs={(countedAt-uploadedAt)*1000.0/Stopwatch.Frequency:F3}; prefixAllocateUploadMs={(prefixAt-countedAt)*1000.0/Stopwatch.Frequency:F3}; emitDispatchWaitReadMs={(emittedAt-prefixAt)*1000.0/Stopwatch.Frequency:F3}; inputUploadBytes={uploadBytes}; clippingReadBytes={readBytes}; clippingReadCalls={readCalls}; capture={capture}. Blocking read timings include preceding GPU work; native stream detail is separate.");
                 return;
             }
-            var packed=Buffer(checked((int)sum*33),4,ComputeBufferType.Raw);
-            var kernel=encode.FindKernel("Encode");var vertices=checked((int)sum*3);
+            var packed=Buffer(((int)sum*33),4,ComputeBufferType.Raw);
+            var kernel=encode.FindKernel("Encode");var vertices=((int)sum*3);
             encode.SetInt("VertexCount",vertices);encode.SetBuffer(kernel,"Bound",bound);encode.SetBuffer(kernel,"Encoded",packed);
             for(int first=0;first<vertices;first+=65536)
             {encode.SetInt("VertexStart",first);encode.Dispatch(kernel,(Math.Min(65536,vertices-first)+63)/64,1,1);}
-            encoded=new uint[checked((int)sum*33)];await lease.Read(packed,encoded);
-            var words=new uint[checked((int)sum*58)];await lease.Read(bound,words);
+            encoded=new uint[((int)sum*33)];await lease.Read(packed,encoded);
+            var words=new uint[((int)sum*58)];await lease.Read(bound,words);
             result=new MovableRoadGeometry.BoundTriangle[sum];var handle=GCHandle.Alloc(result,GCHandleType.Pinned);
-            try {var bytes=new byte[checked(words.Length*4)];System.Buffer.BlockCopy(words,0,bytes,0,bytes.Length);Marshal.Copy(bytes,0,handle.AddrOfPinnedObject(),bytes.Length);}
+            try {var bytes=new byte[(words.Length*4)];System.Buffer.BlockCopy(words,0,bytes,0,bytes.Length);Marshal.Copy(bytes,0,handle.AddrOfPinnedObject(),bytes.Length);}
             finally {handle.Free();}
 
         }
@@ -221,7 +222,7 @@ internal static partial class MovableRoadGpu
 
     private static uint[] Words(Array values,int stride)
     {
-        var bytes=new byte[checked(values.Length*stride)];var pin=GCHandle.Alloc(values,GCHandleType.Pinned);
+        var bytes=new byte[(values.Length*stride)];var pin=GCHandle.Alloc(values,GCHandleType.Pinned);
         try{Marshal.Copy(pin.AddrOfPinnedObject(),bytes,0,bytes.Length);}finally{pin.Free();}
         var words=new uint[bytes.Length/4];Buffer.BlockCopy(bytes,0,words,0,bytes.Length);return words;
     }

@@ -34,7 +34,9 @@ $content = Join-Path $destinationRoot 'content'
 foreach ($file in $files) { Copy-Item -LiteralPath (Join-Path $output $file) -Destination $content }
 & (Join-Path $PSScriptRoot 'Copy-PreparedMaterials.ps1') -Source (Join-Path $output '~Materials') -DestinationRoot $content
 Copy-Item -LiteralPath (Join-Path $projectRoot 'LICENSE') -Destination (Join-Path $content 'LICENSE.txt')
-foreach ($file in @('Mod-Description.md', 'PublishConfiguration.draft.xml', 'Thumbnail.png')) {
+& (Join-Path $PSScriptRoot 'CheckReleasePaths.ps1') -Files @(
+    Get-ChildItem -LiteralPath $content -Recurse -File | Select-Object -ExpandProperty FullName)
+foreach ($file in @('mod-description.md', 'PublishConfiguration.draft.xml', 'Thumbnail.png')) {
     Copy-Item -LiteralPath (Join-Path $docs $file) -Destination $destinationRoot
 }
 Copy-Item -LiteralPath (Join-Path $projectRoot 'assets/licenses/Rajdhani-OFL.txt') -Destination $destinationRoot
@@ -43,7 +45,7 @@ $sourceRoots = @((Join-Path $projectRoot 'src/BridgeBuilder'),
 $sourceHashes = @($sourceRoots | ForEach-Object { Get-ChildItem -LiteralPath $_ -Recurse -File } |
     Where-Object { $_.FullName -notmatch '[\\/](bin|obj)[\\/]' } |
     Sort-Object FullName | ForEach-Object {
-        @{ Path = $_.FullName; SHA256 = (Get-FileHash -LiteralPath $_.FullName -Algorithm SHA256).Hash }
+        @{ Path = [IO.Path]::GetRelativePath($projectRoot, $_.FullName); SHA256 = (Get-FileHash -LiteralPath $_.FullName -Algorithm SHA256).Hash }
     })
 $manifest = [ordered]@{
     Status = 'NOT_READY_TO_PUBLISH'

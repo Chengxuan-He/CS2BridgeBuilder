@@ -2,13 +2,13 @@
 
 ## 1. Normative scope and implementation assessment
 
-The generation scheme is specified in [movable section 17](../../agent-contract/MOVABLE_BRIDGES_CONTRACT.md#17-material-families-uv-density-and-texture-ownership)
-and the [material contract](../../agent-contract/MATERIAL_GENERATION_CONTRACT.md): reuse original
+The generation scheme is specified in [movable section 17](../../specs/movable-spec.md#movable-17-material-families-uv-density-and-texture-ownership)
+and the [material contract](../../contracts/reading-map.md#material-generation-contract): reuse original
 non-road materials; compose/precompose outside the game only road appearance types supported by the prototype;
 retain original input materials for other road types; preserve each
 source's original projection and tiling/stretch mode. This is a generation requirement, not
 an original-game finding or a claim that current code already complies. Source evidence remains
-in [native material repetition](Native-Movable-Material-Repetition.md).
+in [native material repetition](native-movable-material-repetition.md).
 
 Road composition has one entry condition: prototype support for the actual appearance type.
 Asphalt, sidewalks and wheel-track/rut effects are tested separately for each prototype.
@@ -33,7 +33,7 @@ Three questions must be evaluated separately:
    finite chart, repeat density, phase, orientation, normals and mip behavior?
 
 Changing width can require UV adaptation even when no texture pixel should change. Under the
-[general bridge source-mapping rule](../../agent-contract/BRIDGE_GENERATION_CONTRACT.md#preserve-original-uv-projection-and-mapping-mode),
+[general bridge source-mapping rule](../../specs/generation-spec.md#generation-preserve-original-uv-projection-and-mapping-mode),
 which covers both fixed and movable bridges, the actual appearance source retains its evidenced
 mapping mode per part, LOD and axis: tiling stays at source density; finite/stretch mapping retains
 or interpolates authored UVs. This includes a selected road's own evidenced mapping where its

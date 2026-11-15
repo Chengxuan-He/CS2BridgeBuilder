@@ -68,4 +68,4 @@ measurements of a newly saved generated bridge.
   Compilation and decoded prototype geometry do not establish those results.
 
 The movable generation contract now explicitly requires all non-moving parts to obey the
-[general bridge generation contract](../../../agent-contract/BRIDGE_GENERATION_CONTRACT.md).
+[general bridge generation contract](../../../contracts/reading-map.md#bridge-generation-contract).

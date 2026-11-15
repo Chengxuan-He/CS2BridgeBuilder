@@ -17,14 +17,12 @@ SOURCE_CID = "792a855e9d0c5c34d2c41d48b062139d"
 
 def numbers(path):
     data = path.read_bytes()
-    if data[:8] != struct.pack("<II", 0x314E4242, 1):
-        raise ValueError(f"Unsupported measured resource: {path}")
     if hashlib.sha256(data[:-32]).digest() != data[-32:]:
         raise ValueError(f"Measured resource checksum differs: {path}")
-    counts = struct.unpack_from("<6i", data, 8)
+    counts = struct.unpack_from("<6i", data, 0)
     if min(counts) < 0:
         raise ValueError("Negative typed-array length")
-    offset, result = 32, {}
+    offset, result = 24, {}
     for name, fmt, count in zip(("I32", "U32", "I64", "U64", "F32", "F64"), "iIqQfd", counts):
         result[name] = struct.unpack_from("<" + fmt * count, data, offset)
         offset += struct.calcsize(fmt) * count

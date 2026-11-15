@@ -1,6 +1,6 @@
 # Draw02 mechanism render configuration
 
-[How to read this single-style implementation record](../../../README.md#reading-a-single-style-report).
+[How to read this single-style implementation record](../../../contracts/documentation-contract.md#documentation-index-reading-a-single-style-report).
 
 
 The generated render-data class configures fresh private render graphs for the mechanism,

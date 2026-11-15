@@ -19,56 +19,7 @@ internal static partial class MovableRoadObjects
 {
     // The prepared owner includes the native endpoint and edge lanes, composition and geometry.
     // This reads that context; it does not create a road in the city or fabricate empty endpoints.
-    internal static ObjectSubObjectInfo[] ResolvePlacements(World laneWorld, Entity laneOwner,
-        IReadOnlyList<Rule> rules, NetGeometryData networkGeometry, Entity defaultTheme,
-        bool leftHandTraffic, float ownerElevation, Func<Entity, ObjectPrefab> originalObject,
-        ref Unity.Mathematics.Random random)
-    {
-        var sourceWorld = World.DefaultGameObjectInjectionWorld;
-        var source = sourceWorld.EntityManager;
-        var prefabs = sourceWorld.GetExistingSystemManaged<PrefabSystem>();
-        var manager = laneWorld.EntityManager;
-        var composition = manager.GetComponentData<Composition>(laneOwner);
-        var edge = manager.GetComponentData<EdgeGeometry>(laneOwner);
-        var data = manager.GetComponentData<NetCompositionData>(composition.m_Edge);
-        var start = manager.GetComponentData<NetCompositionData>(composition.m_StartNode);
-        var end = manager.GetComponentData<NetCompositionData>(composition.m_EndNode);
-        var startGeometry = manager.GetComponentData<StartNodeGeometry>(laneOwner).m_Geometry;
-        var endGeometry = manager.GetComponentData<EndNodeGeometry>(laneOwner).m_Geometry;
-        var needs = laneWorld.GetOrCreateSystemManaged<MovableRoadTrafficNeeds>();
-        needs.Begin(laneOwner, leftHandTraffic);
-        var selection = new MovableRoadObjectSelection(source, prefabs, defaultTheme);
-        var output = new List<ObjectSubObjectInfo>();
-        void Resolve(MovableRoadObjectPlacement.Candidate candidate, ref Unity.Mathematics.Random state)
-        {
-            if (!prefabs.TryGetEntity(candidate.Prefab, out var entity))
-                throw new InvalidOperationException($"Road object '{candidate.Prefab.name}' has no native traffic classification.");
-            var context = needs.Calculate(source.HasComponent<TrafficSignData>(entity),
-                source.HasComponent<LaneDirectionData>(entity), candidate.Object.m_Position);
-            Select(candidate, context, ref state);
-        }
-        void Select(MovableRoadObjectPlacement.Candidate candidate,
-            MovableRoadObjectSelection.TrafficSignNeeds context, ref Unity.Mathematics.Random state)
-        {
-            // Retain native selection/group consumption even though the saved network owns
-            // the live signal. Skipping selection changes all subsequent random placements.
-            if (MovableSectionObjects.IsNetworkSignal(candidate.Prefab))
-            {
-                if (!prefabs.TryGetEntity(candidate.Prefab, out var entity))
-                    throw new InvalidOperationException("Signal has no native selection data: " + candidate.Prefab.name);
-                selection.TrySelect(entity, context, ref state, 0, candidate.Probability, out _);
-                return;
-            }
-            if (selection.TryResolve(candidate, context, ownerElevation, ref state, out var placement))
-                output.Add(placement!);
-        }
-        void ResolveLane(MovableRoadObjectPlacement.Candidate candidate, ref Unity.Mathematics.Random state)
-            => Select(candidate, default, ref state);
-        MovableRoadObjectPlacement.Visit(rules, edge, data, networkGeometry, start, end,
-            startGeometry, endGeometry, ref random, Resolve);
-        MovableEdgeLaneObjects.Visit(manager, laneOwner, data, originalObject, ref random, ResolveLane);
-        return output.ToArray();
-    }
+
 
     // Input placements have already been resolved from the native object rules. Bind their
     // anchors to the SAME measured partition as the road triangles. Do not use prefab names,

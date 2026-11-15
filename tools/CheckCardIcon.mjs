@@ -56,7 +56,7 @@ const cardContext = vm.createContext({ fallbackIcon: 'fallback.svg', CardIcon() 
     React: { useRef: () => ({ current: null }), useState: () => [false, () => {}], useEffect() {} },
     h: (type, props, ...children) => ({ type, props, children }) });
 vm.runInContext(cardCode, cardContext);
-for (const subtitle of ['Mod: GO 224m Viaduct Bridge', 'Mod: Bridge Expansion Pack: B&P',
+for (const subtitle of ['Mod: Bridge Expansion Pack: B&P',
     'Mod: A Complete Published Title That Is Much Longer Than The Compact Card']) {
     const card = cardContext.Card({ item: { name: 'Bridge', icon: 'bridge.svg' }, subtitle, selected: false, onSelect() {} });
     assert.equal(card.props.title, `Bridge\n${subtitle}`);

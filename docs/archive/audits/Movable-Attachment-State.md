@@ -48,7 +48,7 @@ collision to negative-elevation objects; this flag is not merely cosmetic metada
 
 ## Implementation consequence
 
-Subsequent implementation adds a [native lighting representation](../implementation/Movable-Native-Lighting.md) using
+Subsequent implementation adds a [native lighting representation](../implementation/movable-native-lighting.md) using
 private network lighting placeholders and root-owned bone-bound effects. The mismatch below describes
 the previous unmodified child-effect representation and remains relevant to acceptance and unsupported
 attachment schemas. Initial state and full in-game behavior are not yet verified.

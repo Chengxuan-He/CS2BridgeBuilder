@@ -179,7 +179,6 @@ internal sealed partial class TowerFactory
                 var rigidBlueBase = IsBluePrototypeBase(original);
                 var bluePortal = IsBluePrototypeMainPier(original);
                 var blueSection = IsBluePrototypeSection(original);
-                TowerWidening.TrussWideningFacts trussFacts = default;
                 float3[] moved;
                 bool[]? dropped = null;
                 bool[]? protectedGoldenSupport = null;
@@ -287,8 +286,7 @@ internal sealed partial class TowerFactory
                         ? TowerWidening.WidenOpenTruss(
                             source, part.triangles, extra,
                             preserveOpenTrussSides,
-                            scope!,
-                            out trussFacts)
+                            scope!)
                         : TowerWidening.WidenParts(source, extra, scope!);
                 }
 

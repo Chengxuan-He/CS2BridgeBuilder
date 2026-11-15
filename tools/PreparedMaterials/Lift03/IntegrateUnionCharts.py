@@ -44,7 +44,7 @@ def main():
         modified[index]=set_cache[identity];ints[index]=set_cache[identity]
     assert all(v==ints[i] for i,v in enumerate(data['I32']) if i not in modified)
     assert coords[:len(data['F64'])]==list(data['F64'])
-    body=b'BBN1'+struct.pack('<7i',1,len(ints),0,0,0,0,len(coords))
+    body=struct.pack('<6i',len(ints),0,0,0,0,len(coords))
     body+=struct.pack('<'+'i'*len(ints),*ints)+struct.pack('<'+'d'*len(coords),*coords)
     raw=body+hashlib.sha256(body).digest()
     target=OUT/resource.name;target.write_bytes(raw)

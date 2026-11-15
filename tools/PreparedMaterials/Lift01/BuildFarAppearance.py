@@ -81,7 +81,7 @@ def main():
     rows.extend(fold)
     ints = np.array([5,13], dtype='<i4')
     floats = np.array(rows, dtype='<f4')
-    raw = struct.pack('<II6i',0x314e4242,1,len(ints),0,0,0,len(floats),0)+ints.tobytes()+floats.tobytes()
+    raw = struct.pack('<6i',len(ints),0,0,0,len(floats),0)+ints.tobytes()+floats.tobytes()
     target=ROOT/'assets/HardcodedNumbers/Lift01/Types_Lift01_FarAppearance.bin'
     target.write_bytes(raw+hashlib.sha256(raw).digest())
     report = ROOT/'artifacts/material-remap/Lift01/far-appearance-verification.json'

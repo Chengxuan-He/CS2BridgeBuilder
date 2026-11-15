@@ -179,7 +179,7 @@ def sampler_domains(render, mesh, uv, face_charts, surface, digest):
     return result
 
 
-def bbn(points, triangles, regions):
+def numbers(points, triangles, regions):
     # Version, vertex count, triangle count, chart count; chart offset/count pairs;
     # triangle indices and exact oriented boundary indices; original Float32 UVs.
     integers = [1, len(points), len(triangles), len(regions)]
@@ -190,7 +190,7 @@ def bbn(points, triangles, regions):
         records.extend(chart['triangles'])
         records.extend(v for edge in chart['boundary'] for v in edge)
     integers += triangles.reshape(-1).tolist() + records
-    raw = bytearray(b'BBN1') + struct.pack('<7i', 1, len(integers), 0, 0, 0, points.size, 0)
+    raw = bytearray(struct.pack('<6i', len(integers), 0, 0, 0, points.size, 0))
     raw += np.asarray(integers, dtype='<i4').tobytes() + points.astype('<f4').tobytes()
     return raw + hashlib.sha256(raw).digest()
 
@@ -208,7 +208,7 @@ def main():
         surface = surfaces[mesh]
         points, triangles, face_charts, regions, degenerates = charts(uv, faces, positions)
         name = render.replace(' ', '_')+'_'+str(mesh)
-        payload = bbn(points, triangles, regions)
+        payload = numbers(points, triangles, regions)
         (OUT/(name+'.bin')).write_bytes(payload)
         domains = sampler_domains(render, mesh, uv, face_charts, surface,
                                   mapping['sources'][surface]['sourceDigest'] if surface in mapping['sources'] else None)

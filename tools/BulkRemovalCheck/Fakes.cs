@@ -25,7 +25,6 @@ namespace BridgeBuilder.Settings {
     public static class BridgeRecoveryLocation { public static string Path = ""; }
 }
 namespace BridgeBuilder.Runtime {
-    public static class BridgeSessionState { public static bool Restart; public static void RequireRestart() => Restart = true; }
     public static class BridgeStartupRecovery { public static HashSet<string> Retired = new(); }
 }
 namespace BridgeBuilder {
@@ -47,7 +46,7 @@ namespace BridgeBuilder {
 
 namespace Game { [Flags] public enum GameMode { MainMenu=1, Game=2, Editor=4 } }
 namespace Unity.Entities { public class World { public static World? DefaultGameObjectInjectionWorld; public T? GetExistingSystemManaged<T>() where T:class => null; } }
-namespace Game.Prefabs { public class PrefabSystem {} public class PrefabBase { public string name=""; } }
+namespace Game.Prefabs { public class PrefabSystem {} public class PrefabBase { public string name=""; public FixtureAsset? asset; } public class FixtureAsset {public string path="";} }
 namespace CS2Mods.Shared.Infrastructure { public static class PrefabCatalog { public static IEnumerable<Game.Prefabs.PrefabBase> GetAll(Game.Prefabs.PrefabSystem s) => Array.Empty<Game.Prefabs.PrefabBase>(); } }
 namespace BridgeBuilder.Runtime {
 
@@ -60,3 +59,9 @@ namespace BridgeBuilder.Runtime {
 }
 
 namespace BridgeBuilder.UI {public static class BridgeBuilderUISystem {public static string[] Residual=Array.Empty<string>();public static string[] SyncVerifiedRemoval(string[] targets)=>Residual.Intersect(targets).ToArray();}}
+
+namespace Colossal.Logging {
+ public interface ILog { ILog SetShowsErrorsInUI(bool value); void Error(string message); }
+ public static class LogManager { public static ILog GetLogger(string name)=>new Quiet(); }
+ public class Quiet:ILog { public ILog SetShowsErrorsInUI(bool value)=>this; public void Error(string message) {} }
+}

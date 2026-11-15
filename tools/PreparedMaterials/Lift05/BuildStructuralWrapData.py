@@ -47,7 +47,7 @@ def main():
     assert sum(r['profiles'] for r in reports)==129
     assert sum(r['retileDomains'] for r in reports)==149
     assert sum(r['sourceFaces'] for r in reports)==237
-    raw=b'BBN1'+struct.pack('<7i',1,len(ints),0,0,0,len(floats),len(doubles))
+    raw=struct.pack('<6i',len(ints),0,0,0,len(floats),len(doubles))
     raw+=struct.pack('<%di'%len(ints),*ints)+struct.pack('<%df'%len(floats),*floats)+struct.pack('<%dd'%len(doubles),*doubles)
     raw+=hashlib.sha256(raw).digest()
     target=ROOT/'assets/HardcodedNumbers/Lift05/Types_Lift05_StructuralWrap.bin'

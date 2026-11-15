@@ -15,7 +15,7 @@ recipe = json.loads((OUT/'paint-composition-recipe.json').read_text())
 content = unit['channels'][0]
 assert all(c['contentMin'] == content['contentMin'] and c['contentMax'] == content['contentMax'] for c in unit['channels'])
 values = recipe['sourceRegion']['min']+recipe['sourceRegion']['max']+content['contentMin']+content['contentMax']+[.25]
-blob = struct.pack('<8I', 0x314e4242, 1, 0, 0, 0, 0, len(values), 0)+struct.pack('<%df' % len(values), *values)
+blob = struct.pack('<6i', 0, 0, 0, 0, len(values), 0)+struct.pack('<%df' % len(values), *values)
 blob += hashlib.sha256(blob).digest()
 (ROOT/'assets/HardcodedNumbers/Draw02/Types_Draw02_Draw02FixedCarPreparedAtlas_cs.bin').write_bytes(blob)
 source = OUT/'paint-output/Draw02'; destination = ROOT/'assets/Materials/Draw02'

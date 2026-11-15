@@ -18,17 +18,34 @@ internal static class BridgeInspectionAssets
 
     internal static IEnumerable<Entry> Read(Func<string, bool>? includeOwner = null)
     {
-        var root = Path.GetFullPath(BridgeAssetCatalog.Root).TrimEnd(Path.DirectorySeparatorChar);
-        foreach (var asset in AssetDatabase.user.GetAssets<PrefabAsset>())
+        var entries = new List<Entry>();
+
+        try
         {
-            var path = Path.GetFullPath(BridgeFileAccess.Logical(asset.path));
-            if (!path.StartsWith(root + Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase)) continue;
-            var relative = path.Substring(root.Length + 1);
-            if (!BridgeAssetInfo.TryFileOwner(relative, out var owner)
-                || BridgeStartupRecovery.Retired.Contains(owner)
-                || (includeOwner != null && !includeOwner(owner))) continue;
-            yield return new Entry { Owner = owner, Path = path, Cid = asset.id.guid.ToString(),
-                Asset = asset, Prefab = asset.GetInstance<PrefabBase>() };
+            var root = Path.GetFullPath(BridgeAssetCatalog.Root).TrimEnd(Path.DirectorySeparatorChar);
+            foreach (var asset in AssetDatabase.user.GetAssets<PrefabAsset>())
+            {
+                string owner = "";
+                Entry? entry = null;
+                try
+                {
+                    var meta = asset.GetMeta();
+                    var nativePath = AssetDataPath.Create(meta.subPath, meta.fileName, EscapeStrategy.None);
+                    var path = Path.GetFullPath(Path.Combine(asset.database.rootPath,
+                        nativePath.ToPath(new FileSystemDataSource.PathEscapePolicy()) + meta.extension));
+                    if (!path.StartsWith(root + Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase)) continue;
+                    if (!BridgeAssetInfo.TryFileOwner(path.Substring(root.Length + 1), out owner)
+                        || BridgeStartupRecovery.Retired.Contains(owner) || (includeOwner != null && !includeOwner(owner))) continue;
+                    entry = new Entry { Owner = owner, Path = path, Cid = asset.id.guid.ToString(), Asset = asset };
+                    entries.Add(entry);
+                    entry.Prefab = asset.GetInstance<PrefabBase>();
+                }
+                catch (Exception error) when (error is not UnauthorizedAccessException)
+                { BridgeInspectionLog.Error("Inspection asset unresolved; confirmed owner will enter repair: " + owner + ": " + error); }
+            }
         }
+        catch (Exception error) when (error is not UnauthorizedAccessException)
+        { BridgeInspectionLog.Error("Inspection discovery unavailable; known entries retained: " + error); }
+        return entries;
     }
 }

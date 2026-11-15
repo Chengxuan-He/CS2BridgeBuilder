@@ -1,6 +1,6 @@
 # Lift05 prepared road materials
 
-Read [the latest handoff](LATEST-HANDOFF.md) before using the historical preparation
+Read [the latest handoff](latest-handoff.md) before using the historical preparation
 records below. The formal payload is 84 files / 912,445 bytes; complete generated-owner
 material bytes remain unmeasured. The integrated exact source-chart recovery adds no
 pixels and still requires actual runtime coverage confirmation.

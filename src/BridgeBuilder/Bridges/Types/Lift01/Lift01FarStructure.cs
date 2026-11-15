@@ -18,8 +18,6 @@ internal static class Lift01FarStructure
             plan.RemoveTriangles[Numeric_Types_Lift01_Lift01FarStructure_cs.Values.I32[6]][face] = true;
         return Lift01FarBaseProfile.Apply(plan, delta);
     }
-
-    private static bool IsTowerProxy(int face) => face >= Numeric_Types_Lift01_Lift01FarStructure_cs.Values.I32[7] && face < Numeric_Types_Lift01_Lift01FarStructure_cs.Values.I32[8] || face >= Numeric_Types_Lift01_Lift01FarStructure_cs.Values.I32[9] && face < Numeric_Types_Lift01_Lift01FarStructure_cs.Values.I32[10];
 }
 
 // Embedded numerical arrays: Types_Lift01_Lift01FarStructure_cs

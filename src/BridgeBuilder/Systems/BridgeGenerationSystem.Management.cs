@@ -28,13 +28,6 @@ public partial class BridgeGenerationSystem
 {
     private void CreateRuntimeBridge(BridgeRuntimeRequest request, BridgeOptions? exportOptions = null)
     {
-        // Disk migration leaves live asset caches stale until a cold restart.
-        // Reject before UUID reservation or any asset creation, not after publication.
-        if (BridgeSessionState.RestartRequired)
-        {
-            BridgeRuntimeRequests.Complete("BridgeRestartRequired", request.UpperDeckId, request.StyleId);
-            return;
-        }
         if (BridgePreparedMaterials.RequestFiles == null && BridgeStyleCatalog.Find(request.StyleId) != null)
         {
             PrepareMaterialFiles(request.StyleId, () => CreateRuntimeBridge(request, exportOptions), FailMaterialCreation);
@@ -105,7 +98,7 @@ public partial class BridgeGenerationSystem
             LowerDeckOpposite = request.LowerDeckOpposite,
         };
 
-        string? prefabName;
+        string prefabName;
         try
         {
             var loaded = LoadedExportNames();
@@ -117,12 +110,6 @@ public partial class BridgeGenerationSystem
         catch (Exception e)
         {
             report.Failed("(runtime bridge)", e);
-            prefabName = null;
-        }
-        if (prefabName == null)
-        {
-            if (report.FailedRoads == 0)
-                report.Failed("(runtime bridge)", new IOException("A unique bridge UUID could not be allocated after 16 attempts."));
             Finish(report, state, "Create runtime bridge", showMessage: false);
             BridgeRuntimeRequests.Complete("UuidFailed");
             return;
@@ -220,7 +207,7 @@ public partial class BridgeGenerationSystem
         if (!BridgeAssetCatalog.EndCreation(prefabName)) return;
         // Keep live native indices and geometry allocated; retire audited disk files at boot.
         foreach (var prefab in PrefabCatalog.GetAll(_prefabSystem).OfType<NetGeometryPrefab>())
-            if (BridgeSessionState.TryOwner(prefab.name, out var owner) && owner == prefabName)
+            if (BridgeAssetInfo.TryFileOwner(prefab.name, out var owner) && owner == prefabName)
                 HideRemovedBridge(prefab);
         report.Warning($"Creation '{prefabName}' did not commit; owned files will be backed up and retired on restart.");
         BridgeRuntimeRequests.Complete("CreateFailed");
@@ -256,11 +243,6 @@ public partial class BridgeGenerationSystem
     {
         _activationLocked = false;
         _activationFailure = "ActivateFailed";
-        if (BridgeSessionState.RestartRequired)
-        {
-            _activationFailure = "BridgeRestartRequired";
-            return false;
-        }
         try
         {
             var prefab = PrefabCatalog.GetAll(_prefabSystem)

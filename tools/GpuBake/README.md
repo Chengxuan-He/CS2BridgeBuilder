@@ -4,10 +4,10 @@ BridgeBake.compute contains generation-only road and decal kernels. Unity 2022.3
 builds their Windows asset bundle; the normal mod build embeds assets/bridgebake in
 BridgeBuilder.dll. Generated bridge assets do not reference this bundle or its compute
 shader. Persisted surfaces use compatible native object templates under the
-[movable material rules](../../docs/agent-contract/MOVABLE_BRIDGES_CONTRACT.md#17-material-families-uv-density-and-texture-ownership).
+[movable material rules](../../docs/specs/movable-spec.md#movable-17-material-families-uv-density-and-texture-ownership).
 Moving paint uses the separate single-sided skinned Default path, not child DefaultDecal projectors.
 
-Follow the [material generation contract](../../docs/agent-contract/MATERIAL_GENERATION_CONTRACT.md):
+Follow the [material generation contract](../../docs/contracts/reading-map.md#material-generation-contract):
 reuse compatible originals directly, prepare constant converted resources offline, and restrict
 generation-time baking to genuinely variable nonperiodic content. Repeatable materials use
 source-density repeat units rather than full-span images.

@@ -180,7 +180,7 @@ original object behavior.
 
 The pass retains rules whose object has `TrafficLightObject`, including signal-capable placeholders.
 Streetlight rules now point to private empty native lighting placeholders, preserving IsLit/AlwaysLit
-without stationary lamp emission; see [native lighting representation](Movable-Native-Lighting.md).
+without stationary lamp emission; see [native lighting representation](movable-native-lighting.md).
 It removes the other object rules from the private copy. It removes `NetPieceObjects` only when no
 rules remain, reuses unchanged pieces, and copies only parent sections whose references change.
 Signal-rule entries retain their original requirements, transforms, ordering and object references.

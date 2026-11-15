@@ -12,7 +12,7 @@ group=ET.SubElement(project,'ItemGroup')
 reference=ET.SubElement(group,'Reference',Include='UnityEngine.CoreModule')
 ET.SubElement(reference,'HintPath').text='D:/Program Files (x86)/Steam/steamapps/common/Cities Skylines II/Cities2_Data/Managed/UnityEngine.CoreModule.dll'
 for name in ('MovableUvChart','MovableUvFrame','MovableParentUv','MovableTextureFootprint','MovableStructurePacking','MovableChartPartition','MovableRepeatUnits','MovableRepeatRegions'):
-    ET.SubElement(group,'Compile',Include=str(root/'src/BridgeBuilder/Bridges/Common/Movable'/(name+'.cs')))
+    ET.SubElement(group,'Compile',Include=str(root/('tools/Common' if name == 'MovableChartPartition' else 'src/BridgeBuilder/Bridges/Common/Movable')/(name+'.cs')))
 for file in ('src/BridgeBuilder/Bridges/HardcodedNumbers.cs','src/BridgeBuilder/Bridges/Types/Lift04/Lift04UvCharts.cs','src/BridgeBuilder/Bridges/Types/Lift04/Lift04RepeatUnits.cs','tools/PreparedMaterials/Lift04/RegionReceiverCheck.cs'):
     ET.SubElement(group,'Compile',Include=str(root/file))
 for name in ('Lift04UvCharts','Types_Lift04_Lift04RoadAppearance_cs','Types_Lift04_BeamRepeatRegions','Types_Lift04_StructuralProfileRegions'):

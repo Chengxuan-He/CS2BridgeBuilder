@@ -1,3 +1,5 @@
+using System.Security.AccessControl;
+using System.Security.Principal;
 using BridgeBuilder.Runtime;
 var root = Path.Combine(Path.GetTempPath(), "BridgeMove-" + Guid.NewGuid());
 var imported = Path.Combine(root, "ImportedData");
@@ -32,30 +34,43 @@ Check(Directory.Exists(other) && File.Exists(Path.Combine(geometry,"shared.Geome
 Check(File.ReadAllText(Path.Combine(backup,Path.GetFileName(source)))=="existing","backup collision does not overwrite");
 Directory.CreateDirectory(source); File.WriteAllText(Path.Combine(source,"remaining"),"keep");
 audit=BridgeDiskAudit.ForMemoryFailures(root,verdict);
-Check(audit.RetireFiles(new HashSet<string>{owner},Path.Combine(root,"Recovery"),out error)
- && !Directory.Exists(source) && error.Contains("without complete backup"),"unusable backup destination falls back to deletion");
-Directory.CreateDirectory(source); File.WriteAllText(Path.Combine(source,"remaining"),"remove");
-audit=BridgeDiskAudit.ForMemoryFailures(root,verdict);
+Check(!audit.RetireFiles(new HashSet<string>{owner},Path.Combine(root,"Recovery"),out error)
+ && Directory.Exists(source),"unsafe backup preserves source");
 var blocked=root+"-blocked"; File.WriteAllText(blocked,"file");
-Check(audit.RetireFiles(new HashSet<string>{owner},blocked,out error) && !Directory.Exists(source),"failed backup creation deletes source");
-Directory.CreateDirectory(source); File.WriteAllText(Path.Combine(source,"remaining"),"move");
-File.WriteAllText(mesh,"delete");
-var partial=root+"-partial"; Directory.CreateDirectory(partial);
-File.WriteAllText(Path.Combine(partial,"BridgeBuilder"),"block geometry destination");
 audit=BridgeDiskAudit.ForMemoryFailures(root,verdict);
-Check(audit.RetireFiles(new HashSet<string>{owner},partial,out error)
- && Directory.Exists(Path.Combine(partial,Path.GetFileName(source))) && !File.Exists(mesh)
- && error.Contains("without complete backup"),"partial move keeps successful backup and deletes remaining geometry");
-Directory.CreateDirectory(source); var locked=Path.Combine(source,"locked.Prefab"); File.WriteAllText(locked,"locked");
-File.WriteAllText(mesh,"delete even when another source is locked");
-audit=BridgeDiskAudit.ForMemoryFailures(root,verdict);
-using(var handle=new FileStream(locked,FileMode.Open,FileAccess.Read,FileShare.None))
- Check(!audit.RetireFiles(new HashSet<string>{owner},blocked,out error)
- && error.Contains("deletion failed") && error.Contains(source) && !File.Exists(mesh),
- "deletion failure reports residual path and continues other paths");
-Check(audit.RetireFiles(new HashSet<string>{owner},blocked,out error) && !Directory.Exists(source),"retry removes unlocked residual");
+Check(!audit.RetireFiles(new HashSet<string>{owner},blocked,out error) && Directory.Exists(source),"non-permission backup failure preserves source");
+Check(!audit.Changed,"no mutation does not request restart");
+var finalBackup=root+"-final";
+Check(audit.RetireFiles(new HashSet<string>{owner},finalBackup,out error)&&audit.Changed,"first session moves failed owner");
+var cold=BridgeDiskAudit.ForMemoryFailures(root,verdict);
+Check(cold.FileOwners.Count==0&&!cold.Changed,"cold second session sees no failed owner or mutation");
 Check(Directory.Exists(other) && File.Exists(Path.Combine(geometry,"shared.Geometry")),"fallback never removes unrelated assets");
 Check(!audit.RetireFiles(new HashSet<string>{healthy},backup,out error),"unselected owner refused");
 Check(BridgeAssetInfo.TryFileOwner("prefix"+owner+"suffix/file.cid",out var found) && found==owner,"regex has no token boundaries");
 Check(BridgeAssetInfo.MatchesOwner("prefix"+owner+"suffix",owner) && !BridgeAssetInfo.MatchesOwner(healthy,owner),"single owner uses literal substring");
 Check(!BridgeAssetInfo.TryFileOwner("BridgeBuilder normal road",out _),"labels and mod names alone do not imply ownership");
+
+var permissionRoot=Path.Combine(root,"permissions");Directory.CreateDirectory(permissionRoot);
+Check(BridgeInspectionPermissions.Check(new[]{permissionRoot})&&!Directory.EnumerateFileSystemEntries(permissionRoot).Any(),"startup read/write/move/delete probe cleans its files");
+var sid=WindowsIdentity.GetCurrent().User!;
+void Deny(string path,FileSystemRights rights,Action body) {
+ var info=new DirectoryInfo(path);var original=info.GetAccessControl();var denied=info.GetAccessControl();
+ var rule=new FileSystemAccessRule(sid,rights,InheritanceFlags.ContainerInherit|InheritanceFlags.ObjectInherit,PropagationFlags.None,AccessControlType.Deny);
+ denied.AddAccessRule(rule);
+ try{info.SetAccessControl(denied);body();}finally{var restored=info.GetAccessControl();restored.RemoveAccessRuleSpecific(rule);info.SetAccessControl(restored);}
+}
+Deny(permissionRoot,FileSystemRights.WriteData,()=>{
+ bool raised=false;try{BridgeInspectionPermissions.Check(new[]{permissionRoot});}catch(BridgeRequiredFilePermissionException){raised=true;}
+ Check(raised,"required startup write permission denial propagates");
+});
+var deniedBackup=root+"-denied";Directory.CreateDirectory(deniedBackup);
+Directory.CreateDirectory(source);File.WriteAllText(Path.Combine(source,"failed.Prefab"),"failed");
+Deny(deniedBackup,FileSystemRights.WriteData,()=>{
+ var deniedAudit=BridgeDiskAudit.ForMemoryFailures(root,verdict);
+ Check(deniedAudit.RetireFiles(new HashSet<string>{owner},deniedBackup,out var failure)&&deniedAudit.Changed&&!Directory.Exists(source),"existing backup destination write denial permits owner deletion");
+});
+var permissionFile=Path.Combine(permissionRoot,"owned");File.WriteAllText(permissionFile,"owner");
+Deny(permissionRoot,FileSystemRights.ReadData,()=>{
+ bool raised=false;try{BridgeFileAccess.ReadText(permissionFile);}catch(BridgeRequiredFilePermissionException){raised=true;}
+ Check(raised,"actual owner read permission denial propagates");
+});

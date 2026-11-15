@@ -173,7 +173,7 @@ def main():
         for loop in chart['loops']:
             assert len(loop)>=3 and loop[0]!=loop[-1]
             integers.extend([len(values),len(loop)]);values.extend(x for v in loop for x in v)
-    payload=b'BBN1'+struct.pack('<7i',1,len(integers),0,0,0,0,len(values))
+    payload=struct.pack('<6i',len(integers),0,0,0,0,len(values))
     payload+=struct.pack('<'+'i'*len(integers),*integers)+struct.pack('<'+'d'*len(values),*values)
     payload+=hashlib.sha256(payload).digest()
     destination=ROOT/'assets/HardcodedNumbers/Lift05/Lift05UvCharts.bin';destination.write_bytes(payload)

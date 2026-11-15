@@ -21,7 +21,7 @@ The builder preserves original material ordering and calculates bounds from emit
 Near and middle LODs return empty arrays because their road surfaces are already separate.
 
 Positive-X rear caps 317/646 are deliberately outside this table. Their retained control-
-building-side slope is supplied by [Draw01FixedRearSlopeData](Draw01-Fixed-Rear-Slopes.md),
+building-side slope is supplied by [Draw01FixedRearSlopeData](draw01-fixed-rear-slopes.md),
 including its measured interior construction points. Combine both tables for the rear caps.
 Front caps, inner returns and complete structural widening still need their measured plans.
 This table is a partial construction input, never a standalone completed bridge or permission

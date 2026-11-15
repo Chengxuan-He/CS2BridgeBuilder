@@ -28,14 +28,17 @@ internal enum ExporterRequest
 /// </summary>
 internal sealed class RoadListItem
 {
-    internal RoadListItem(string name, RoadExportStatus status, string detail)
+    internal RoadListItem(string id, string name, RoadExportStatus status, string detail)
     {
+        Id = id;
         Name = name;
         Status = status;
         Detail = detail;
     }
 
-    /// <summary>Identity and label in one: the road's name is also its exported asset's name.</summary>
+    internal string Id { get; }
+
+    /// <summary>Editable display label; never a selection key.</summary>
     internal string Name { get; }
 
     internal RoadExportStatus Status { get; }
@@ -54,7 +57,7 @@ internal sealed class RoadListItem
 internal static class RoadSelectionModel
 {
     private static readonly object Gate = new();
-    private static readonly HashSet<string> SelectedNames = new(StringComparer.Ordinal);
+    private static readonly HashSet<string> SelectedIds = new(StringComparer.Ordinal);
     private static IReadOnlyList<RoadListItem> _roads = Array.Empty<RoadListItem>();
     private static ExporterRequest _request = ExporterRequest.None;
     private static string _message = string.Empty;
@@ -127,7 +130,7 @@ internal static class RoadSelectionModel
         lock (Gate)
         {
             foreach (var road in _roads)
-                if (string.Equals(road.Name, name, StringComparison.Ordinal)) return road.Detail;
+                if (string.Equals(road.Id, name, StringComparison.Ordinal)) return road.Detail;
             return string.Empty;
         }
     }
@@ -222,15 +225,15 @@ internal static class RoadSelectionModel
 
     internal static bool IsSelected(string name)
     {
-        lock (Gate) return SelectedNames.Contains(name);
+        lock (Gate) return SelectedIds.Contains(name);
     }
 
     internal static void SetSelected(string name, bool selected)
     {
         lock (Gate)
         {
-            if (selected) SelectedNames.Add(name);
-            else SelectedNames.Remove(name);
+            if (selected) SelectedIds.Add(name);
+            else SelectedIds.Remove(name);
             _selectionVersion++;
         }
     }
@@ -241,25 +244,25 @@ internal static class RoadSelectionModel
 
     internal static void SelectPending() => ReplaceSelection(road => road.IsPending);
 
-    internal static void InvertSelection() => ReplaceSelection(road => !SelectedNames.Contains(road.Name));
+    internal static void InvertSelection() => ReplaceSelection(road => !SelectedIds.Contains(road.Id));
 
     private static void ReplaceSelection(Func<RoadListItem, bool> predicate)
     {
         lock (Gate)
         {
-            var keep = _roads.Where(predicate).Select(road => road.Name).ToList();
-            // Names not in the current list belong to another playset and are kept as-is.
-            foreach (var road in _roads) SelectedNames.Remove(road.Name);
-            foreach (var id in keep) SelectedNames.Add(id);
+            var keep = _roads.Where(predicate).Select(road => road.Id).ToList();
+            // Identifiers not in the current list belong to another playset and are kept as-is.
+            foreach (var road in _roads) SelectedIds.Remove(road.Id);
+            foreach (var id in keep) SelectedIds.Add(id);
             _selectionVersion++;
         }
     }
 
-    /// <summary>Names that are both selected and currently present, in list order.</summary>
-    internal static IReadOnlyList<string> SelectedRoadNames()
+    /// <summary>Identifiers that are both selected and currently present, in list order.</summary>
+    internal static IReadOnlyList<string> SelectedRoadIds()
     {
         lock (Gate)
-            return _roads.Where(road => SelectedNames.Contains(road.Name)).Select(road => road.Name).ToList();
+            return _roads.Where(road => SelectedIds.Contains(road.Id)).Select(road => road.Id).ToList();
     }
 
     internal static void PublishRoads(object owner, IReadOnlyList<RoadListItem> roads, string message)
@@ -299,9 +302,9 @@ internal static class RoadSelectionModel
     {
         var builder = new StringBuilder(_message);
         builder.Append('|').Append(_lastOperation);
-        // Only the set of names matters: statuses and details are read live by the widgets, and a
+        // Identities and labels affect the rows; statuses and details are read live, and a
         // rebuild would throw the player out of the page they are looking at.
-        foreach (var road in _roads) builder.Append('|').Append(road.Name);
+        foreach (var road in _roads) builder.Append('|').Append(road.Id).Append(':').Append(road.Name);
 
         var signature = builder.ToString();
         if (string.Equals(signature, _renderedSignature, StringComparison.Ordinal)) return false;
@@ -372,7 +375,7 @@ internal static class RoadSelectionModel
             roads = _roads.ToList();
             message = _message;
             lastOperation = _lastOperation;
-            selected = roads.Count(road => SelectedNames.Contains(road.Name));
+            selected = roads.Count(road => SelectedIds.Contains(road.Id));
         }
 
         if (message.Length > 0) builder.AppendLine(message);

@@ -28,7 +28,7 @@ internal static partial class MovableRoadGpu
             for(int g=0;g<Slots.Length;g++)
             {
                 await GenerationWork.Checkpoint("native attribute copy model "+g);
-                int vertices=checked(Counts[g]*3), offset=WordOffsets[g]*4;
+                int vertices=(Counts[g]*3), offset=WordOffsets[g]*4;
                 var attributes=new List<ModelImporter.Model.VertexData>();
                 NativeArray<int> indices=default;
                 try
@@ -131,11 +131,11 @@ internal static partial class MovableRoadGpu
         await GenerationWork.Background("GPU stable grouping arrays", () =>
         {
         for(int g=0;g<slots.Length;g++)for(int s=0;s<canonical.Length;s++)if(canonical[s]==slots[g])groupForSlot[s]=g;
-        for(int i=0;i<source.Length;i++)groupCounts[groupForSlot[source[i].Material]]=checked(groupCounts[groupForSlot[source[i].Material]]+(int)counts[i]);
+        for(int i=0;i<source.Length;i++)groupCounts[groupForSlot[source[i].Material]]=(groupCounts[groupForSlot[source[i].Material]]+(int)counts[i]);
         for(int i=0;i<source.Length;i++)
         {
             int g=groupForSlot[source[i].Material];
-            for(uint j=0;j<counts[i];j++){int d=checked((int)(offsets[i]+j)*2);scatter[d]=cursor[g]++;scatter[d+1]=(uint)g;}
+            for(uint j=0;j<counts[i];j++){int d=((int)(offsets[i]+j)*2);scatter[d]=cursor[g]++;scatter[d+1]=(uint)g;}
         }
         for(int g=0;g<slots.Length;g++)for(int k=0;k<3;k++){summary[g*8+k]=0xff800000;summary[g*8+3+k]=0x007fffff;}
         return true;
@@ -161,11 +161,11 @@ internal static partial class MovableRoadGpu
             var maximum=new Vector3(Decode(summary[g*8+3]),Decode(summary[g*8+4]),Decode(summary[g*8+5]));
             var bounds=new Bounds();bounds.SetMinMax(minimum,maximum);result.Bounds[g]=bounds;
             if(g==0){result.Minimum=minimum;result.Maximum=maximum;}else{result.Minimum=Vector3.Min(result.Minimum,minimum);result.Maximum=Vector3.Max(result.Maximum,maximum);}
-            words=checked(words+vertices*(8+dim));
+            words=(words+vertices*(8+dim));
         }
         var layout=New(slots.Length,16);layout.SetData(layouts);var output=New(words,4,ComputeBufferType.Raw);
         Run("EncodeNative",layout,output);
-        result.Bytes=new byte[checked(words*4)];await lease.Read(output,result.Bytes);long end=Stopwatch.GetTimestamp();
+        result.Bytes=new byte[(words*4)];await lease.Read(output,result.Bytes);long end=Stopwatch.GetTimestamp();
         Mod.Log.Info($"Moving road GPU stream detail: groups={slots.Length}; groupingUploadMs={(preparedAt-start)*1000.0/Stopwatch.Frequency:F3}; summaryDispatchWaitReadMs={(summaryAt-preparedAt)*1000.0/Stopwatch.Frequency:F3}; layoutEncodeWaitReadMs={(end-summaryAt)*1000.0/Stopwatch.Frequency:F3}; extraUploadBytes={scatter.Length*4+summary.Length*4+layouts.Length*4}; streamReadBytes={result.Bytes.Length}; metadataReadBytes={summary.Length*4}; streamReadCalls=1; metadataReadCalls=1; boundReadBytes=0.");
         return result;
     }

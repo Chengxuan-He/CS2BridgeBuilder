@@ -39,9 +39,9 @@ def main():
         ids=np.flatnonzero(inv==welded)
         if np.ptp(coeff[ids])>1e-6:seam_conflicts+=1
     assert seam_conflicts==0, seam_conflicts
-    body=struct.pack('<Ii6i',0x314e4242,1,0,0,0,0,len(coeff),0)+coeff.tobytes()
+    body=struct.pack('<6i',0,0,0,0,len(coeff),0)+coeff.tobytes()
     (out/'Types_ArcPedestrian_Coefficients.bin').write_bytes(body+hashlib.sha256(body).digest())
-    body=struct.pack('<Ii6i',0x314e4242,1,0,0,0,0,len(scales),0)+scales.tobytes()
+    body=struct.pack('<6i',0,0,0,0,len(scales),0)+scales.tobytes()
     (out/'Types_ArcPedestrian_Frames.bin').write_bytes(body+hashlib.sha256(body).digest())
     results=[]
     for width in (3,8,16,32):

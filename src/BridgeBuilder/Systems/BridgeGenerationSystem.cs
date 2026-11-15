@@ -281,7 +281,7 @@ public partial class BridgeGenerationSystem : GameSystemBase
         {
             generated = new HashSet<string>(ExportStateStore.Load().ExportNames(), StringComparer.Ordinal);
             if (RoadBuilderCompatibility.IsAvailable)
-                roads = RoadBuilderDiscovery.Find(_prefabSystem, generated).Roads;
+                roads = RoadBuilderDiscovery.Find(_prefabSystem).Roads;
         }
         catch (Exception exception)
         {

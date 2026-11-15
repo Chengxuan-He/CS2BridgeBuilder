@@ -28,7 +28,6 @@ internal static class BridgeUnlockPolicy
         EntityManager manager, out bool locked)
     {
         locked = true;
-        if (BridgeSessionState.RestartRequired) return false;
         try
         {
             manager.CompleteAllTrackedJobs();
@@ -59,33 +58,8 @@ internal static class BridgeUnlockPolicy
                 }
                 return true;
             }
-            if (!BridgeUnlockSnapshot.Read(bridge, prefabs, manager, out var rule))
-            { KeepLocked(bridge, prefabs, manager); return false; }
-            var ready = rule.Evaluate(id => BridgeUnlockSnapshot.IsUnlocked(id, prefabs, manager));
-            // Missing progression data keeps the gate locked; it is NOT a corrupt bridge.
-            locked = Mod.Setting?.RemoveDevelopmentRestrictions != true && ready != true;
-            var decks = new List<Entity>();
-            if (!prefabs.TryGetEntity(bridge, out var root) || !manager.Exists(root)) return false;
-            decks.Add(root);
-            foreach (var entry in bridge.GetComponent<AuxiliaryNets>()?.m_AuxiliaryNets ?? Array.Empty<AuxiliaryNetInfo>())
-            {
-                if (entry?.m_Prefab is not NetGeometryPrefab deck
-                    || !BridgeUnlockSnapshot.Read(deck, prefabs, manager, out var lowerRule)
-                    || lowerRule.Encode() != rule.Encode()
-                    || !prefabs.TryGetEntity(deck, out var entity) || !manager.Exists(entity))
-                { KeepLocked(bridge, prefabs, manager); return false; }
-                decks.Add(entity);
-            }
-            foreach (var entity in decks)
-            {
-                if (!manager.HasComponent<Locked>(entity)) manager.AddComponent<Locked>(entity);
-                if (manager.IsComponentEnabled<Locked>(entity) == locked) continue;
-                manager.SetComponentEnabled<Locked>(entity, locked);
-                if (locked) continue;
-                var notification = manager.CreateEntity(ComponentType.ReadWrite<Game.Common.Event>(), ComponentType.ReadWrite<Unlock>());
-                manager.SetComponentData(notification, new Unlock(entity));
-            }
-            return ready.HasValue || Mod.Setting?.RemoveDevelopmentRestrictions == true;
+            return false; // Current generated bridges persist native Unlockable rules.
+
         }
         catch (Exception exception)
         {
@@ -94,17 +68,4 @@ internal static class BridgeUnlockPolicy
         }
     }
 
-    private static void KeepLocked(NetGeometryPrefab bridge, PrefabSystem prefabs, EntityManager manager)
-    {
-        // A saved unlock flag must not bypass a rule whose progression assets are not ready yet.
-        if (prefabs.TryGetEntity(bridge, out var entity) && manager.Exists(entity)
-            && manager.HasComponent<Locked>(entity)) manager.SetComponentEnabled<Locked>(entity, true);
-        foreach (var entry in bridge.GetComponent<AuxiliaryNets>()?.m_AuxiliaryNets ?? Array.Empty<AuxiliaryNetInfo>())
-        {
-            if (entry?.m_Prefab is not NetGeometryPrefab deck
-                || !(deck.name == bridge.name + "_Lower" || deck.name == bridge.name + "_Upper")) continue;
-            if (prefabs.TryGetEntity(deck, out entity) && manager.Exists(entity)
-                && manager.HasComponent<Locked>(entity)) manager.SetComponentEnabled<Locked>(entity, true);
-        }
-    }
 }

@@ -273,18 +273,18 @@ internal static class RuntimeUiText
         },
         ["BridgeSelfCheckRestart"] = new[]
         {
-            "Restart the game before continuing.",
-            "请重启游戏后再继续。",
-            "請重新啟動遊戲後再繼續。",
-            "Starte das Spiel neu, bevor du fortfährst.",
-            "Reinicia el juego antes de continuar.",
-            "Redémarrez le jeu avant de continuer.",
-            "Riavvia il gioco prima di continuare.",
-            "続行する前にゲームを再起動してください。",
-            "계속하기 전에 게임을 다시 시작하세요.",
-            "Przed kontynuowaniem uruchom grę ponownie.",
-            "Reinicie o jogo antes de continuar.",
-            "Перезапустите игру перед продолжением."
+            "The game will restart shortly.",
+            "游戏即将重启。",
+            "遊戲即將重新啟動。",
+            "Das Spiel wird in Kürze neu gestartet.",
+            "El juego se reiniciará en breve.",
+            "Le jeu va bientôt redémarrer.",
+            "Il gioco si riavvierà a breve.",
+            "ゲームはまもなく再起動します。",
+            "게임이 곧 다시 시작됩니다.",
+            "Gra wkrótce uruchomi się ponownie.",
+            "O jogo será reiniciado em breve.",
+            "Игра скоро перезапустится."
         },
         ["BridgeSelfCheckUnfinishedWarning"] = new[]
         {
@@ -1413,21 +1413,6 @@ internal static class RuntimeUiText
             "A câmera de prévia não concluiu a renderização HDRP.",
             "Камера предпросмотра не завершила рендеринг HDRP."
         },
-        ["RenderEmpty"] = new[]
-        {
-            "Model built, but rendered image is empty. See the mod log.",
-            "模型已构建，但渲染结果为空；请查看模组日志。",
-            "模型已建構，但渲染結果為空；請查看模組日誌。",
-            "Modell erstellt, aber Renderbild leer. Siehe Mod-Protokoll.",
-            "Modelo creado, pero imagen vacía. Consulta el registro del mod.",
-            "Modèle créé, mais image vide. Consultez le journal du mod.",
-            "Modello creato, ma immagine vuota. Consulta il log del mod.",
-            "モデルは生成されましたが画像が空です。Mod のログを確認してください。",
-            "모델은 생성됐지만 렌더링 이미지가 비어 있습니다. 로그를 확인하세요.",
-            "Model gotowy, ale obraz jest pusty. Sprawdź log moda.",
-            "Modelo criado, mas a imagem está vazia. Consulte o log.",
-            "Модель создана, но изображение пустое. См. журнал мода."
-        },
         ["RenderReadFailed"] = new[]
         {
             "Could not read the bridge preview image.",
@@ -1535,18 +1520,18 @@ internal static class RuntimeUiText
         },
         ["UuidFailed"] = new[]
         {
-            "Creation failed: could not allocate a unique UUID.",
-            "创建失败：无法分配唯一 UUID。",
-            "建立失敗：無法分配唯一 UUID。",
-            "Erstellen fehlgeschlagen: Keine eindeutige UUID zugewiesen.",
-            "Error al crear: no se pudo asignar un UUID único.",
-            "Création impossible : échec d’attribution d’un UUID unique.",
-            "Creazione fallita: impossibile assegnare un UUID univoco.",
-            "作成失敗：一意の UUID を割り当てられませんでした。",
-            "생성 실패: 고유 UUID를 할당할 수 없습니다.",
-            "Tworzenie nie powiodło się: nie można nadać unikalnego UUID.",
-            "Falha ao criar: não foi possível atribuir um UUID único.",
-            "Ошибка создания: не удалось назначить уникальный UUID."
+            "Creation failed: could not reserve the bridge directory. See the Bridge Builder log.",
+            "创建失败：无法预留桥梁目录。请查看 Bridge Builder 日志。",
+            "建立失敗：無法保留橋梁目錄。請查看 Bridge Builder 記錄。",
+            "Erstellen fehlgeschlagen: Das Brückenverzeichnis konnte nicht reserviert werden. Siehe Bridge-Builder-Protokoll.",
+            "Error al crear: no se pudo reservar el directorio del puente. Consulta el registro de Bridge Builder.",
+            "Échec de création : impossible de réserver le dossier du pont. Consultez le journal de Bridge Builder.",
+            "Creazione fallita: impossibile riservare la cartella del ponte. Consulta il registro di Bridge Builder.",
+            "作成失敗：橋のディレクトリを確保できませんでした。Bridge Builder のログを確認してください。",
+            "생성 실패: 교량 디렉터리를 확보할 수 없습니다. Bridge Builder 로그를 확인하세요.",
+            "Tworzenie nie powiodło się: nie można zarezerwować katalogu mostu. Sprawdź dziennik Bridge Builder.",
+            "Falha ao criar: não foi possível reservar a pasta da ponte. Consulte o registro do Bridge Builder.",
+            "Ошибка создания: не удалось зарезервировать папку моста. См. журнал Bridge Builder."
         },
         ["CreatedActive"] = new[]
         {
@@ -1637,21 +1622,6 @@ internal static class RuntimeUiText
             "Włączono tryb budowania mostu.",
             "Modo de construção de ponte ativado.",
             "Включён режим строительства моста."
-        },
-        ["BridgeRestartRequired"] = new[]
-        {
-            "Bridge assets changed during this session. Restart the game before creating or building bridges.",
-            "本次运行中的桥梁资产已发生更改。请重启游戏后再创建或建造桥梁。",
-            "本次執行中的橋梁資產已變更。請重新啟動遊戲後再建立或建造橋梁。",
-            "Brücken-Assets wurden in dieser Sitzung geändert. Starte das Spiel vor dem Erstellen oder Bauen von Brücken neu.",
-            "Los recursos de puentes han cambiado en esta sesión. Reinicia el juego antes de crear o construir puentes.",
-            "Les ressources des ponts ont changé pendant cette session. Redémarrez le jeu avant de créer ou de construire des ponts.",
-            "Le risorse dei ponti sono cambiate durante questa sessione. Riavvia il gioco prima di creare o costruire ponti.",
-            "今回の起動中に橋のアセットが変更されました。橋を作成・建設する前にゲームを再起動してください。",
-            "이번 실행 중 교량 에셋이 변경되었습니다. 교량을 생성하거나 건설하기 전에 게임을 다시 시작하세요.",
-            "Zasoby mostów zmieniły się podczas tej sesji. Uruchom grę ponownie przed tworzeniem lub budowaniem mostów.",
-            "Os recursos de pontes foram alterados nesta sessão. Reinicie o jogo antes de criar ou construir pontes.",
-            "Ресурсы мостов изменились в этой сессии. Перезапустите игру перед созданием или строительством мостов."
         },
         ["ActivateNotReady"] = new[]
         {

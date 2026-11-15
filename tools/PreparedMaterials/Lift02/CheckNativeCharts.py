@@ -51,7 +51,7 @@ def main():
     meta=json.loads((OUT/'native-chart-integration.json').read_bytes())
     raw=(ROOT/'assets/HardcodedNumbers/Lift02/Types_Lift02_Lift02UvCharts_cs.bin').read_bytes()
     assert hashlib.sha256(raw).hexdigest()==meta['resourceSha256']
-    _,_,ni,nu,nl,nul,nf,nd=struct.unpack('<8i',raw[:32]);ints=np.frombuffer(raw,dtype='<i4',count=ni,offset=32);ds=np.frombuffer(raw,dtype='<f8',count=nd,offset=32+4*ni)
+    ni,nu,nl,nul,nf,nd=struct.unpack('<6i',raw[:24]);ints=np.frombuffer(raw,dtype='<i4',count=ni,offset=24);ds=np.frombuffer(raw,dtype='<f8',count=nd,offset=24+4*ni)
     chart_cache={};routes={};index={}
     for route in meta['routes']:
         key=(route['render'],route['mesh']);routes[key]=route

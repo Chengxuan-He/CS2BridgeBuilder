@@ -1,6 +1,6 @@
 # Movable Road Mesh Repair and Generation Performance
 
-Current appearance selection: [Existing Material Reuse](../implementation/Movable-Road-Material-Reuse.md). Earlier
+Current appearance selection: [Existing Material Reuse](../implementation/movable-road-material-reuse.md). Earlier
 baking/descriptor-generation descriptions below are historical and superseded by this revision.
 
 Date: 2026-10-17

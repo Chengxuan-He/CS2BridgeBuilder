@@ -127,7 +127,7 @@ def run():
             if prefix+'uv0' not in data: continue
             uv = data[prefix+'uv0'][:,:2]
             fc,records,ambiguous = charts(p,uv,f)
-            # BBN1: schema, face count, chart count; face->chart; each chart's
+            # typed-array: schema, face count, chart count; face->chart; each chart's
             # flags, boundary edge count, original vertex index pairs. Bounds
             # are independent F32 arrays. Source face geometry is not duplicated.
             ints = [1,len(fc),len(records),*fc.tolist()]
@@ -135,14 +135,14 @@ def run():
             for r in records:
                 ints.extend([int(r['rectangle']) | (int(r['zeroUvArea']) << 1),len(r['boundary'])//2,*r['boundary']])
                 floats.extend(r['bounds'])
-            blob = struct.pack('<II6i',0x314e4242,1,len(ints),0,0,0,len(floats),0)
+            blob = struct.pack('<6i',len(ints),0,0,0,len(floats),0)
             blob += np.asarray(ints,dtype='<i4').tobytes()+np.asarray(floats,dtype='<f4').tobytes()
             blob += hashlib.sha256(blob).digest()
             filename = name.replace(' ','_')+f'_{mi}.bin'
             (OUT/filename).write_bytes(blob)
             # Independently check serialized membership, flag and boundary offsets.
-            counts = struct.unpack_from('<6i',blob,8)
-            loaded = np.frombuffer(blob,'<i4',counts[0],32)
+            counts = struct.unpack_from('<6i', blob, 0)
+            loaded = np.frombuffer(blob,'<i4',counts[0],24)
             assert np.array_equal(loaded[3:3+len(fc)],fc)
             at = 3+len(fc)
             for r in records:

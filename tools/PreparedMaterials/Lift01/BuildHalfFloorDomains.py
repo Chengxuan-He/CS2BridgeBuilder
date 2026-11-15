@@ -65,7 +65,7 @@ def main():
             if not s['finite']:delta=(delta+.5)%1-.5
             error=float(abs(delta).max());assert error<1e-10,(lod,face['face'],error)
             phase_checks.append(dict(lod=lod,face=face['face'],finite=s['finite'],normalizedVError=error))
-    raw=struct.pack('<II6i',0x314e4242,1,0,0,0,0,len(values),0)+np.array(values,'<f4').tobytes()
+    raw=struct.pack('<6i',0,0,0,0,len(values),0)+np.array(values,'<f4').tobytes()
     target=ROOT/'assets/HardcodedNumbers/Lift01/Types_Lift01_HalfFloorDomains.bin'
     target.write_bytes(raw+hashlib.sha256(raw).digest())
     out=ROOT/'artifacts/material-remap/Lift01/half-floor-domains.json'

@@ -83,9 +83,9 @@ is established by this evidence.
 
 The generation scheme reuses non-road originals, composes/precompose outside the games only prototype-supported
 road appearance types, and retains original materials for unsupported road types. Its
-[implementation assessment](Movable-Nonroad-Material-Reuse-Assessment.md) is separate from the
+[implementation assessment](movable-nonroad-material-reuse-assessment.md) is separate from the
 native findings above and does not establish implementation acceptance. The
-[general source-mapping rule](../../agent-contract/BRIDGE_GENERATION_CONTRACT.md#preserve-original-uv-projection-and-mapping-mode)
+[general source-mapping rule](../../specs/generation-spec.md#generation-preserve-original-uv-projection-and-mapping-mode)
 applies to both fixed and movable bridges; the material contract supplements it.
 
 ## 7. Evidence and reproduction

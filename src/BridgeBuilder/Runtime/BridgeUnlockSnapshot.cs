@@ -99,33 +99,4 @@ internal static class BridgeUnlockSnapshot
         return !manager.HasComponent<Locked>(entity) || !manager.IsComponentEnabled<Locked>(entity);
     }
 
-    internal static bool Read(NetGeometryPrefab bridge, PrefabSystem prefabs, EntityManager manager,
-        out BridgeUnlockExpression rule)
-    {
-        rule = new();
-        var gate = bridge.GetComponent<ManualUnlockable>();
-        if (gate == null || !BridgeUnlockExpression.TryDecode(gate.name, out rule)) return false;
-        if (rule.Kind != 2) return true;
-        if (bridge.isBuiltin || bridge.isReadOnly) return false;
-        // Resolve only registered, initialized instances. Never call PrefabAsset.Load or GetEntity(null).
-        PrefabBase? prototype = null;
-        if (rule.Identity.StartsWith("CID:", StringComparison.Ordinal))
-        {
-            if (AssetDatabase.global.TryGetAsset(Colossal.Hash128.Parse(rule.Identity.Substring(4)),
-                out PrefabAsset asset)) prototype = asset.GetInstance<PrefabBase>();
-        }
-        else if (rule.Identity.StartsWith("UnityGUID:", StringComparison.Ordinal)
-            && AssetDatabase.global.resources.prefabsMap.TryGetObject(rule.Identity.Substring(10), out var value))
-            prototype = value as PrefabBase;
-        else if (rule.Identity.StartsWith("ID:", StringComparison.Ordinal))
-        {
-            var parts = rule.Identity.Substring(3).Split('/');
-            if (parts.Length < 2 || parts.Length > 3) return false;
-            prefabs.TryGetPrefab(new PrefabID(Uri.UnescapeDataString(parts[0]), Uri.UnescapeDataString(parts[1]),
-                parts.Length == 3 ? Colossal.Hash128.Parse(parts[2]) : default), out prototype);
-        }
-        if (prototype == null || !Capture(prototype, prefabs, manager, out var snapshot)) return false;
-        rule = snapshot;
-        return true;
-    }
 }

@@ -13,9 +13,9 @@ for r in a['groups']:
  f.extend(r['uvBounds'][0]+r['uvBounds'][1])
 # Existing measured high-detail motion boundaries; source references retained in audit.
 p=ROOT/'assets/HardcodedNumbers/Draw01/Types_Draw01_Draw01RoadPartitions_cs.bin'
-s=p.read_bytes();counts=struct.unpack_from('<6i',s,8);offset=32+sum(c*z for c,z in zip(counts[:4],[4,4,8,8]));near=struct.unpack_from('<'+'f'*counts[4],s,offset)
+s=p.read_bytes();counts=struct.unpack_from('<6i', s, 0);offset=24+sum(c*z for c,z in zip(counts[:4],[4,4,8,8]));near=struct.unpack_from('<'+'f'*counts[4],s,offset)
 f.extend([near[0],near[23],near[22],near[21],near[29],near[28],near[27]])
-raw=struct.pack('<4s7i',b'BBN1',1,0,0,0,0,len(f),0)+struct.pack('<'+'f'*len(f),*f)
+raw=struct.pack('<6i',0,0,0,0,len(f),0)+struct.pack('<'+'f'*len(f),*f)
 path=ROOT/'assets/HardcodedNumbers/Draw01/Types_Draw01_FarAppearanceMeasurements.bin'
 path.write_bytes(raw+hashlib.sha256(raw).digest())
 print(path,len(f))

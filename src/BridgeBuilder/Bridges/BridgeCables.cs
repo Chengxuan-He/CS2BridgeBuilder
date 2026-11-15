@@ -29,7 +29,7 @@ namespace BridgeBuilder.Bridges;
 /// pylon object instead. Those sections are narrower than their road and are right to be. Only the
 /// ones marked Outer are the envelope the road runs between, and only those have to stay outside it.
 /// </summary>
-internal static class BridgeCables
+internal static partial class BridgeCables
 {
     /// <summary>One measurement: the section a tower's bridge carries, and how wide it is.</summary>
     internal readonly struct Cables
@@ -78,11 +78,6 @@ internal static class BridgeCables
     }
 
     /// <summary>
-    /// How far a suspension or cable-stayed bridge's cables hang outside the carriageway, both sides
-    /// together. Constant across every size the game ships of both designs.
-    /// </summary>
-    internal static float Margin => Numeric_BridgeCables_cs.Values.F32[19];
-    /// <summary>
     /// How far the tower stands outside the carriageway, both sides together, for the blue suspension
     /// family - and the check that fixed a road width when its own measurement was unusable.
     ///
@@ -121,16 +116,6 @@ internal static class BridgeCables
     /// </summary>
     internal const bool PieceDisablesTextureTiling = true;
     /// <summary>
-    /// <c>NetPieceFlags.DisableTiling</c> and its neighbours, so the value above can be checked against
-    /// what the flag actually is rather than trusted.
-    /// </summary>
-    internal static int PieceFlagDisableTiling => Numeric_BridgeCables_cs.Values.I32[0];
-    internal static int PieceFlagPreserveShape => Numeric_BridgeCables_cs.Values.I32[1];
-    internal static int PieceFlagBlockTraffic => Numeric_BridgeCables_cs.Values.I32[2];
-    internal static int PieceFlagBlockCrosswalk => Numeric_BridgeCables_cs.Values.I32[3];
-    internal static int PieceFlagSurface => Numeric_BridgeCables_cs.Values.I32[4];
-    internal static int PieceFlagLowerBottomToTerrain => Numeric_BridgeCables_cs.Values.I32[5];
-    /// <summary>
     /// How far each part of a tower stands outside the cables, measured from the game's own bridges.
     ///
     /// The requirement, stated as data: a generated bridge puts its tower the same distance outside its
@@ -163,7 +148,7 @@ internal static class BridgeCables
     /// legs between. A tower of one part is a placeholder, and a placeholder carries the top alone:
     /// the archetype's placeholder mesh is its top mesh, same vertex count and same reach across.
     /// </summary>
-    internal static float TowerOutsideCables(int part, int parts) => Suspension.For(part, parts);
+
     /// <summary>The five lane suspension bridge, as a <see cref = "Spacing"/> - the family these came from.</summary>
     internal static Spacing Suspension => new("5LaneSuspensionBridgePillar Placeholder", TowerBaseOutsideCables, TowerLegOutsideCables, TowerTopOutsideCables);
     /// <summary>
@@ -300,15 +285,7 @@ internal static class BridgeCables
     /// So the floor is where the narrowest recorded structure runs out. Below it the answer is not a
     /// narrower bridge, it is a different design, and refusing says so.
     /// </summary>
-    internal static float NarrowestDeckFor(string towerName, float authoredRoad)
-    {
-        var cables = For(towerName);
-        if (cables == null || cables.Value.Width <= Numeric_BridgeCables_cs.Values.F32[33])
-            return Numeric_BridgeCables_cs.Values.F32[34];
-        // Losing the whole of it leaves nothing; a metre of margin keeps the result a structure rather
-        // than a seam.
-        return authoredRoad - cables.Value.Width + Numeric_BridgeCables_cs.Values.F32[35];
-    }
+
 
     private static Cables[] ReadPackedMeasured()
     {

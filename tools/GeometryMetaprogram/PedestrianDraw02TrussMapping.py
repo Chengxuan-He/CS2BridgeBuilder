@@ -16,7 +16,7 @@ for lod in range(2):
  lo=float(v[a,0].min());hi=float(v[a,0].max());assert lo==-hi
  ints += [len(v),len(a),len(b)]+a+b;floats += [hi]+w
  evidence.append(dict(lod=lod,assemblyParts=groups,ribParts=ribs,assemblyVertices=len(a),ribVertices=len(b),span=[lo,hi],sourceHash=hashlib.sha256((r/f'pedestrian02-main-{lod}.npz').read_bytes()).hexdigest()))
-b=struct.pack('<8i',0x314e4242,1,len(ints),0,0,0,len(floats),0)+struct.pack('<%di'%len(ints),*ints)+struct.pack('<%df'%len(floats),*floats);b+=hashlib.sha256(b).digest()
+b=struct.pack('<6i',len(ints),0,0,0,len(floats),0)+struct.pack('<%di'%len(ints),*ints)+struct.pack('<%df'%len(floats),*floats);b+=hashlib.sha256(b).digest()
 out=root/'assets/HardcodedNumbers/PedestrianDraw02/Types_PedestrianDraw02_PedestrianDraw02TrussMapping_cs.bin';out.parent.mkdir(parents=True,exist_ok=True);out.write_bytes(b)
 (output/'membership.json').write_text(json.dumps(evidence,indent=2))
 print([(e['assemblyVertices'],e['ribVertices'],e['span']) for e in evidence])

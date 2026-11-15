@@ -30,7 +30,7 @@ public static class HardcodedNumbersNativeCheck
                 using(var stream=File.OpenRead(Path.Combine(Arg("-numbersBaseline"),id+".bin")))
                 using(var reader=new BinaryReader(stream))
                 {
-                    stream.Position=32;
+                    stream.Position=24;
                     foreach(var tag in new[]{"I32","U32","I64","U64","F32","F64"})
                     {
                         var array=(Array)type.GetField(tag,BindingFlags.Instance|BindingFlags.NonPublic).GetValue(data);

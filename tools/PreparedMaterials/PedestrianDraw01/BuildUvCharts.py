@@ -111,7 +111,7 @@ def main():
         for loop in loops[key]:
             ints.extend((len(doubles), len(loop)))
             doubles.extend(value for point in loop for value in point)
-    raw = b'BBN1'+struct.pack('<7i', 1, len(ints), 0, 0, 0, 0, len(doubles))
+    raw = struct.pack('<6i', len(ints), 0, 0, 0, 0, len(doubles))
     raw += struct.pack('<'+'i'*len(ints), *ints)+struct.pack('<'+'d'*len(doubles), *doubles)
     target = root/'assets/HardcodedNumbers/PedestrianDraw01/UvCharts_PedestrianDraw01.bin'
     target.write_bytes(raw+hashlib.sha256(raw).digest())

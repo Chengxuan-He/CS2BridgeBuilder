@@ -40,6 +40,7 @@ namespace BridgeBuilder.Runtime {
  internal static class BridgeInspectionAssets {internal record Entry(PrefabBase? Prefab,string Path);}
  internal static class BridgeAssetPack {internal static object Pack=new();internal static object Ensure(PrefabSystem s)=>Pack;internal static void Assign(PrefabBase p,object pack)=>p.AddOrGetComponent<AssetPackItem>().m_Packs=[pack];}
  internal class BridgeUnlockExpression {}
+ internal static class BridgeInspectionUnlock {internal static bool Read(PrefabBase p,PrefabSystem s,object em,out BridgeUnlockExpression rule){rule=new();return true;}}
  internal static class BridgeUnlockSnapshot {internal static bool Read(PrefabBase p,PrefabSystem s,object em,out BridgeUnlockExpression rule){rule=new();return true;}internal static bool Capture(PrefabBase p,PrefabSystem s,object em,out BridgeUnlockExpression rule)=>Read(p,s,em,out rule);}
  internal static class BridgeNativeUnlock {internal static bool Apply(PrefabBase p,BridgeUnlockExpression rule,PrefabSystem s,List<PrefabBase> created,out string error,bool includeAuxiliary){error="";p.AddOrGetComponent<Unlockable>().m_IgnoreDependencies=true;return true;}}
  internal sealed class BridgeCreationDependencies {internal void Record(PrefabAsset? asset){}}

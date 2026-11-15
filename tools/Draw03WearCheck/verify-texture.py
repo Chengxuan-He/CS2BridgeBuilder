@@ -15,8 +15,8 @@ assert hashlib.sha256(source.read_bytes()).hexdigest() == '9dee2d00cb198ed250a16
 resource = Path(__file__).resolve().parents[2] / 'assets/HardcodedNumbers/Draw03/Types_Draw03_Draw03RoadWear_cs.bin'
 b = resource.read_bytes()
 assert hashlib.sha256(b[:-32]).digest() == b[-32:]
-counts = struct.unpack_from('<6i', b, 8)
-offset = 32 + sum(c * size for c, size in zip(counts[:4], (4, 4, 8, 8)))
+counts = struct.unpack_from('<6i', b, 0)
+offset = 24 + sum(c * size for c, size in zip(counts[:4], (4, 4, 8, 8)))
 values = struct.unpack_from('<' + 'f' * counts[4], b, offset)
 height = int(values[9])
 bottom = int(values[3] - height * values[11])

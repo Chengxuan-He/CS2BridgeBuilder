@@ -1,6 +1,6 @@
 # Lift05 network integration data
 
-[How to read this single-style implementation record](../../../README.md#reading-a-single-style-report).
+[How to read this single-style implementation record](../../../contracts/documentation-contract.md#documentation-index-reading-a-single-style-report).
 
 
 ## Lift05 incremental generator route (2026-10-20)

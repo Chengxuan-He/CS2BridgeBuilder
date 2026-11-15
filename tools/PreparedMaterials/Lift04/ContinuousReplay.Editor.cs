@@ -51,14 +51,6 @@ public static class Lift04ContinuousReplay
     [Serializable] public sealed class Guard { public int domain;public VertexFixture vertex;public Vector4 u,v;public Vector2 min,max;public float projectedU,projectedV;public Pose pose;public string failure; }
     [Serializable] public sealed class Tiny { public float area;public int sourceTriangle;public Vector3[] objectPositions;public Vector4[] uv; }
     [Serializable] public sealed class VertexFixture { public Vector3 position,normal;public Vector4 uv,tangent;public Color color; }
-    [Serializable] public sealed class WrapFixture
-    {
-        public string candidateSha256,source;public int domain,sourceTriangle,occurrence,material;
-        public VertexFixture[] triangle;public Vector4 u,v,tangent;public Vector2 min,max;
-        public bool repeatU,repeatV,sourceUv,sourceAtlasRepeat;public Pose pose;
-        public float sourceZMin,sourceZMax,centerSlope,centerOffset,inputArea,smallestOutputArea;
-        public Tiny[] output;
-    }
     [Serializable] public sealed class Report { public string candidateSha256,scope,limitations;public Case[] cases; }
     public static void Run()
     {
@@ -150,29 +142,6 @@ public static class Lift04ContinuousReplay
                     var call=new object[]{ArrayOf(input,new[]{sourceInput}),owner,paint,null};
                     var output=(Array)((Array)T("MovableSurfaceAtlas").GetMethod("Compose",S).Invoke(null,call)).GetValue(0);var slots=(Array)((Array)call[3]).GetValue(0);
                     row.outputFaces=output.Length;row.outputArea=output.Cast<object>().Sum(t=>(double)Area(t));
-                    if(false)
-                    {
-                        WrapFixture best=null;var wrap=T("MovableRoadAtlasWrap").GetMethod("Apply",S);
-                        foreach(var b in bound)
-                        {
-                            var t=Get(b,"Geometry");if(delta==0&&Area(t)<1f)continue;
-                            int domain=(int)(uint)Get(b,"Bone");var p=patches.GetValue(domain);var wrapped=(Array)wrap.Invoke(null,new[]{t,p});
-                            if(wrapped.Length<=1)continue;
-                            if(delta==8)
-                            {
-                                bool RebindFailed(object q){var args=new object[]{Frame(ArrayOf(triangle,new[]{q}),pose),physical,3,1,null,null,false,null,null};return !(bool)bind.Invoke(null,args);}
-                                if(RebindFailed(t)||!wrapped.Cast<object>().Any(RebindFailed))continue;
-                            }
-                            float smallest=wrapped.Cast<object>().Min(Area);if(best!=null&&smallest>=best.smallestOutputArea)continue;
-                            int at=(domain/2)*counts[3];
-                            best=new WrapFixture{candidateSha256=digest,source="Actual Lift04 ForLod/Create + physical/appearance TryBind; Types_Lift04_NearAppearance schema2, strip=domain/2, side=domain%2. Pose is recorded below; half-width delta is "+delta+".",domain=domain,sourceTriangle=(int)Get(t,"SourceTriangle"),occurrence=(int)Get(t,"Occurrence"),material=(int)Get(t,"Material"),
-                                triangle=new[]{"A","B","C"}.Select(c=>{var q=Get(t,c);return new VertexFixture{position=Position(q),normal=(Vector3)Get(q,"Normal"),uv=(Vector4)Get(q,"UV"),tangent=(Vector4)Get(q,"Tangent"),color=(Color)Get(q,"Color")};}).ToArray(),
-                                u=(Vector4)Get(p,"U"),v=(Vector4)Get(p,"V"),min=(Vector2)Get(p,"Min"),max=(Vector2)Get(p,"Max"),tangent=(Vector4)Get(p,"Tangent"),repeatU=(bool)Get(p,"RepeatU"),repeatV=(bool)Get(p,"RepeatV"),sourceUv=(bool)Get(p,"SourceUv"),sourceAtlasRepeat=(bool)Get(p,"SourceAtlasRepeat"),pose=pose,
-                                sourceZMin=numbers[at],sourceZMax=numbers[at+1],centerSlope=numbers[at+2],centerOffset=numbers[at+3],inputArea=Area(t),smallestOutputArea=smallest,
-                                output=wrapped.Cast<object>().Select(q=>new Tiny{area=Area(q),sourceTriangle=(int)Get(q,"SourceTriangle"),objectPositions=new[]{"A","B","C"}.Select(c=>Position(Get(q,c))).ToArray(),uv=new[]{"A","B","C"}.Select(c=>(Vector4)Get(Get(q,c),"UV")).ToArray()}).ToArray()};
-                        }
-                        File.WriteAllText(Path.Combine(Path.GetDirectoryName(Arg("-report")),delta==0?"minimal-wrap-repro.json":"wide-wrap-rebind-repro.json"),JsonUtility.ToJson(best,true));
-                    }
                     row.smallestFaces=output.Cast<object>().OrderBy(Area).Take(8).Select(t=>new Tiny{area=Area(t),sourceTriangle=(int)Get(t,"SourceTriangle"),objectPositions=new[]{"A","B","C"}.Select(c=>matrix.MultiplyPoint3x4(Position(Get(t,c)))).ToArray(),uv=new[]{"A","B","C"}.Select(c=>(Vector4)Get(Get(t,c),"UV")).ToArray()}).ToArray();
                     if(delta==0&&lod<2)row.extraFacesAtOriginalWidth=output.Length-bound.Length;
                     foreach(var t in output)

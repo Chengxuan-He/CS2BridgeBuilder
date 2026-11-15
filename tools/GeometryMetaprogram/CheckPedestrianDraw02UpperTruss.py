@@ -5,8 +5,8 @@ import numpy as np
 root,research,out=map(Path,sys.argv[1:]);out.mkdir(parents=True,exist_ok=True)
 def read(name):
  b=(root/'assets/HardcodedNumbers/PedestrianDraw02'/('Types_PedestrianDraw02_'+name+'_cs.bin')).read_bytes();assert hashlib.sha256(b[:-32]).digest()==b[-32:]
- c=struct.unpack_from('<6i',b,8)
- return np.frombuffer(b,'<i4',c[0],32),np.frombuffer(b,'<f4',c[4],32+4*c[0])
+ c=struct.unpack_from('<6i',b)
+ return np.frombuffer(b,'<i4',c[0],24),np.frombuffer(b,'<f4',c[4],24+4*c[0])
 a,f=read('PedestrianDraw02TrussMapping');u,uf=read('PedestrianDraw02UpperTruss');ip=fp=up=0;fixture=[];reports=[]
 for lod in range(2):
  d=np.load(research/f'pedestrian02-main-{lod}.npz');v=d['positions'];faces=d['indices'];parts=json.loads((research/f'pedestrian02-main-{lod}-parts.json').read_text())

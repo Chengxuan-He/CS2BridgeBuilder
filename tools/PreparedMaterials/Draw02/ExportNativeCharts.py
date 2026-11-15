@@ -13,9 +13,8 @@ from MovableUvDomainFormat import decode_arrays, read_bbn
 
 def domains(path):
     data=path.read_bytes()
-    assert data[:4]==b'BBN1' and hashlib.sha256(data[:-32]).digest()==data[-32:]
-    version,*counts=struct.unpack_from('<7i',data,4)
-    assert version==1
+    assert hashlib.sha256(data[:-32]).digest()==data[-32:]
+    counts=struct.unpack_from('<6i',data)
     ints,_=decode_arrays(*read_bbn(data))
     ints=ints.tolist()
     assert ints[0]==-2
@@ -131,7 +130,7 @@ def main(repo,python_lib):
             integers.extend((len(values),len(loop)));values.extend(v for point in loop for v in point)
     for start,ids in pending:
         for i,chart in enumerate(ids):integers[start+1+i]=chart_offsets[chart]
-    raw=b'BBN1'+struct.pack('<7i',1,len(integers),0,0,0,0,len(values))
+    raw=struct.pack('<6i',len(integers),0,0,0,0,len(values))
     raw+=struct.pack('<'+'i'*len(integers),*integers)+struct.pack('<'+'d'*len(values),*values)
     raw+=hashlib.sha256(raw).digest()
     binary=repo/'assets/HardcodedNumbers/Draw02/Draw02_NativeUvCharts.bin';binary.write_bytes(raw)

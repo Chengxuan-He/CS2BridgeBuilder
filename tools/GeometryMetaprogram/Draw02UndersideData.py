@@ -17,5 +17,5 @@ for lod in range(2):
  outer=json.loads((R/f'artifacts/material-remap/Draw02/edge55/lod{lod}-outer-members.json').read_text())['removedFaces']
  row.extend([len(ints),len(outer)]);ints.extend(outer)
  assert len(row)==16;ints[lod*16:(lod+1)*16]=row
-body=struct.pack('<8I',0x314e4242,1,len(ints),0,0,0,len(floats),0)+np.array(ints,dtype='<i4').tobytes()+np.array(floats,dtype='<f4').tobytes();body+=hashlib.sha256(body).digest()
+body=struct.pack('<6i',len(ints),0,0,0,len(floats),0)+np.array(ints,dtype='<i4').tobytes()+np.array(floats,dtype='<f4').tobytes();body+=hashlib.sha256(body).digest()
 p=R/'assets/HardcodedNumbers/Draw02/Types_Draw02_Draw02Underside_cs.bin';p.write_bytes(body);print(len(body),hashlib.sha256(body).hexdigest())

@@ -171,7 +171,7 @@ def main():
     for mesh in meshes:
         ints.append(mesh['faces'])
         ints.extend(chart_indices[key] for key in mesh['faceCharts'])
-    raw = b'BBN1' + struct.pack('<7i', 1, len(ints), 0, 0, 0, len(floats), 0)
+    raw = struct.pack('<6i', len(ints), 0, 0, 0, len(floats), 0)
     raw += struct.pack('<' + 'i' * len(ints), *ints)
     raw += struct.pack('<' + 'f' * len(floats), *floats)
     binary = args.output.with_suffix('.bin')
@@ -179,7 +179,7 @@ def main():
     index = dict(schema='BridgeBuilder/NativeUvCharts/1', binarySHA256=sha(binary.read_bytes()),
         sourceJsonSHA256=sha(args.output.read_bytes()), chartKeys=ordered,
         meshKeys=[dict(render=m['render'], mesh=m['mesh'], sourceCid=m['sourceCid']) for m in meshes],
-        layout='I32: [1, chartCount, meshCount], [exactRectangle, boundaryEdgeCount] per chart, [faceCount, chartIndex per source face] per mesh. F32: [minU,minV,maxU,maxV] then boundary [aU,aV,bU,bV] per chart. Names/CIDs remain in this index. BBN1 checksum covers all preceding bytes.',
+        layout='I32: [1, chartCount, meshCount], [exactRectangle, boundaryEdgeCount] per chart, [faceCount, chartIndex per source face] per mesh. F32: [minU,minV,maxU,maxV] then boundary [aU,aV,bU,bV] per chart. Names/CIDs remain in this index. The file checksum covers all preceding bytes.',
         productionIntegrated=False)
     args.output.with_name('native-chart-index.json').write_text(json.dumps(index, indent=2)+'\n', encoding='utf-8')
     print(json.dumps(result['summary']))

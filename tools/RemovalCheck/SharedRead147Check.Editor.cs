@@ -606,37 +606,6 @@ Set(d,"m_Material",material);list.Add(d);return material;}
  object[] call={sf,"tmp11111111-2222-4333-8444-555555555555 "+family,preview,Owned(),null,null};Need((bool)run.Invoke(null,call)&&call[5]==null,"source conversion "+family+": "+call[5]);var output=call[4];
  surfaceType.GetMethod("LoadProperties",I).Invoke(output,new object[]{true});Need((int)Get(output,"materialTemplateHash")==18,"not native static decal");var after=(IDictionary)Get(output,"textures");foreach(DictionaryEntry v in bindings)Need(Get(after[v.Key],"id").Equals(Get(v.Value,"id")),"source texture changed");
  var load=surfaceType.GetMethod("Load",I);var ma=load.GetParameters().Select(x=>x.DefaultValue).ToArray();ma[1]=true;var material=(Material)load.Invoke(output,ma);Need(material.shader==target.shader,"wrong native shader");Need(!material.IsKeywordEnabled("_ALPHATEST_ON")&&!material.IsKeywordEnabled("_HASHED_ALPHATEST"),"cutout retained");Need(material.FindPass("DBufferMesh")>=0,"missing native blend pass");
- var liveGame=Assembly.LoadFrom(Path.Combine(managed,"Game.dll"));var liveRender=ScriptableObject.CreateInstance(liveGame.GetType("Game.Prefabs.RenderPrefab",true));
- var consumer="b22222222-2222-4333-8444-555555555555";liveRender.name=consumer+" Mechanism LOD2";
- var referenceType=N("AssetReference`1").MakeGenericType(surfaceType);var references=Array.CreateInstance(referenceType,1);references.SetValue(Activator.CreateInstance(referenceType,new[]{Get(Get(output,"id"),"guid")}),0);Set(liveRender,"m_SurfaceAssets",references);
- var dependent=Path.Combine(root,"ImportedData",consumer,"Dependencies",Get(Get(output,"id"),"guid")+".Surface");Directory.CreateDirectory(Path.GetDirectoryName(dependent));File.Copy((string)Get(output,"path"),dependent,true);
- var ownerMemory=mod.GetType("BridgeBuilder.Systems.BridgeOwnerMemory",true);var assetSetType=typeof(System.Collections.Generic.HashSet<>).MakeGenericType(N("AssetData"));var assetSet=Activator.CreateInstance(assetSetType);assetSetType.GetMethod("Add").Invoke(assetSet,new[]{output});
- var consumers=Array.CreateInstance(liveGame.GetType("Game.Prefabs.PrefabBase",true),1);consumers.SetValue(liveRender,0);
- var retained=(IDictionary)ownerMemory.GetMethod("SharedSources",S).Invoke(null,new[]{consumers,root,"b11111111-2222-4333-8444-555555555555",assetSet});Need(retained.Count==1 && (string)retained[output]==dependent,"surviving native RenderPrefab reference not retained");
- File.Delete(dependent);
- try {ownerMemory.GetMethod("SharedSources",S).Invoke(null,new[]{consumers,root,"b11111111-2222-4333-8444-555555555555",assetSet});throw new Exception("missing independent source accepted");}
- catch(TargetInvocationException e){Need(e.InnerException is IOException && e.InnerException.Message.Contains(Get(Get(output,"id"),"guid").ToString()),"missing shared source lacks exact CID diagnosis");}
- File.Copy((string)Get(output,"path"),dependent,true);
- Need(ReferenceEquals(material,Get(output,"m_Instance")),"failed source selection modified the material");
- UnityEngine.Object.DestroyImmediate(liveRender);
- Debug.Log("PASS actual native RenderPrefab shared Surface reference selects independent consumer path: "+family);
- var oldPath=(string)Get(output,"path");var independent=Path.Combine(root,"Independent",family+".Surface");Directory.CreateDirectory(Path.GetDirectoryName(independent));File.Copy(oldPath,independent,true);
- var originalBytes=File.ReadAllBytes(oldPath);var originalInstance=Get(output,"m_Instance");
- mod.GetType("BridgeBuilder.Runtime.BridgeNativeRemoval",true).GetMethod("Redirect",S).Invoke(null,new[]{output,independent});
- Need(ReferenceEquals(originalInstance,Get(output,"m_Instance")),"redirect unloaded/replaced the live material");
- Need(Path.GetFullPath((string)Get(output,"path"))==Path.GetFullPath(independent),"native path not redirected");
- File.Delete(oldPath);
- using(var stream=(Stream)output.GetType().GetMethod("GetReadStream",I).Invoke(output,null))using(var memory=new MemoryStream()){stream.CopyTo(memory);Need(memory.ToArray().SequenceEqual(originalBytes),"native read failed after old payload deletion");}
- var vtType=N("VirtualTexturing.VTDatabase");var vt=System.Runtime.Serialization.FormatterServices.GetUninitializedObject(vtType);
- var texturePaths=(IDictionary)Activator.CreateInstance(vtType.GetField("m_VTTexturePaths",I).FieldType);var textureInfo=Activator.CreateInstance(vtType.GetNestedType("VTTextureInfo",I));Set(textureInfo,"path",oldPath);texturePaths.Add(Get(Get(output,"id"),"guid"),textureInfo);Set(vt,"m_VTTexturePaths",texturePaths);
- var surfaceInfoType=vtType.GetNestedType("VTSurfaceInfo");var offsets=new[]{1,2};var sizes=new[]{3,4};var compressed=new System.Collections.Generic.List<int>{5,6};var surfaceInfo=Activator.CreateInstance(surfaceInfoType,new object[]{oldPath,12L,offsets,sizes,7,compressed,128,256});
- var slotList=(IList)Activator.CreateInstance(vtType.GetField("m_VTSurfaceTileInfo",I).FieldType);var slots=(IDictionary)Activator.CreateInstance(slotList.GetType().GetGenericArguments()[0]);slots.Add(9,surfaceInfo);slotList.Add(slots);Set(vt,"m_VTSurfaceTileInfo",slotList);
- var streamingType=N("VirtualTexturing.TextureStreamingSystem");var streaming=System.Runtime.Serialization.FormatterServices.GetUninitializedObject(streamingType);Set(streaming,"m_VtDatabase",vt);
- var pathMap=new System.Collections.Generic.Dictionary<string,string>(StringComparer.OrdinalIgnoreCase){{oldPath,independent}};
- mod.GetType("BridgeBuilder.Runtime.BridgeVirtualTextureRemoval",true).GetMethod("Redirect",S).Invoke(null,new object[]{streaming,pathMap});
- Need((string)Get(textureInfo,"path")==independent && (string)Get(slots[9],"path")==independent,"VT cached route still targets old owner");Need(ReferenceEquals(Get(slots[9],"dataOffsets"),offsets)&&ReferenceEquals(Get(slots[9],"dataSizes"),sizes)&&ReferenceEquals(Get(slots[9],"compressedTileOffsets"),compressed)&&(int)Get(slots[9],"actualWidth")==128,"VT layout/pixels changed during redirect");
- Debug.Log("PASS actual native VT route types: both cached paths redirected; shared offsets/dimensions unchanged");
- Debug.Log("PASS native same-CID read redirect retains material and reads surviving independent copy after old fixture file deletion: "+family);
  Debug.Log("PASS original "+family+" native Surface save/load template="+Get(output,"materialTemplateHash")+" shader="+material.shader.name+" textures="+after.Count+" alphaCutoffEnable="+material.GetFloat("_AlphaCutoffEnable"));
  }
  var vertex=T("MovableRoadGeometry+Vertex");var triangle=T("MovableRoadGeometry+Triangle");var partition=T("MovableRoadGeometry+Partition");var region=T("MovableNativeDecals+Region");

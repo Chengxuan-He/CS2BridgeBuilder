@@ -12,9 +12,9 @@ repo=Path(sys.argv[1]);out=repo/'artifacts/material-remap/Lift02/truss69'
 baseline=sys.argv[2] if len(sys.argv)>2 else 'old68'
 stem=sys.argv[3] if len(sys.argv)>3 else 'surface-connections'
 actual_folder=sys.argv[4] if len(sys.argv)>4 else 'new69r3'
-def bbn(path):
- b=path.read_bytes();n=struct.unpack_from('<i',b,8)[0];a=np.frombuffer(b,dtype='<i4',count=n,offset=32);h=np.frombuffer(b,dtype='<f4',count=struct.unpack_from("<i",b,24)[0],offset=32+4*n);return a,h
-recipe,h=bbn(repo/'assets/HardcodedNumbers/Lift02/Types_Lift02_CentralTrusses.bin')
+def numbers(path):
+ b=path.read_bytes();n=struct.unpack_from('<i',b,0)[0];a=np.frombuffer(b,dtype='<i4',count=n,offset=24);h=np.frombuffer(b,dtype='<f4',count=struct.unpack_from("<i",b,16)[0],offset=24+4*n);return a,h
+recipe,h=numbers(repo/'assets/HardcodedNumbers/Lift02/Types_Lift02_CentralTrusses.bin')
 def coords(path):
  b=path.read_bytes();return np.frombuffer(b,dtype='<f4',offset=4).reshape(-1,3).copy()
 def closest(p,tri):

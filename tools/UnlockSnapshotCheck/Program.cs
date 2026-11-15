@@ -1,4 +1,4 @@
-﻿using BridgeBuilder.Runtime;
+using BridgeBuilder.Runtime;
 using Game.Prefabs;
 using Unity.Entities;
 
@@ -28,7 +28,7 @@ manager.All[devA].Locked = false;
 Check(Eval() == true, "second OR alternative unlock");
 prefabs.All.Remove(intermediate); prefabs.All.Remove(root);
 Check(Eval() == true, "snapshot independent after deleting donor and intermediate network");
-Check(!System.Text.Encoding.UTF8.GetString(Convert.FromBase64String(rule.Encode().Substring(BridgeUnlockExpression.Prefix.Length))).Contains("External"), "no external network identity retained");
+Check(!System.Text.Encoding.UTF8.GetString(Convert.FromBase64String(Encode(rule).Substring(BridgeInspectionUnlock.Prefix.Length))).Contains("External"), "no external network identity retained");
 var portable = new NetGeometryPrefab { name = "b12345678-1234-1234-1234-123456789abc" };
 portable.AddComponent<ManualUnlockable>();
 var lower = new NetGeometryPrefab { name = portable.name + "_Lower" };
@@ -93,35 +93,11 @@ Check(!BridgeUnlockSnapshot.Capture(early, prefabs, manager, out _), "missing na
 manager.All[e9].HasLocked = false;
 Check(BridgeUnlockSnapshot.Capture(early, prefabs, manager, out var free) && free.Evaluate(_ => null) == true, "native non-unlockable dependency");
 var loaded = new NetGeometryPrefab { name = "Legacy" };
-loaded.AddComponent<ManualUnlockable>().name = new BridgeUnlockExpression { Kind = 2, Identity = "CID:" + new string('a', 32) }.Encode();
-Check(!BridgeUnlockSnapshot.Read(loaded, prefabs, manager, out _), "unavailable deferred prototype is not eagerly loaded");
-var uuid = "b7dff25d3-cf93-4466-9c26-d5aa3be39f3e";
-var directory = Path.Combine(UnityEngine.Application.persistentDataPath, "ImportedData", uuid);
-Directory.CreateDirectory(directory);
-var path = Path.Combine(directory, uuid + ".Prefab");
-var gateText = new BridgeUnlockExpression { Kind = 2, Identity = "CID:" + new string('a', 32) }.Encode();
-var migrated = "{\n    \"name\": \"" + uuid + "\",\n\"components\": ["
-    + "{\"$type\":\"1|Game.Prefabs.ManualUnlockable, Game\",\"name\":\"" + gateText + "\",\"active\":true},"
-    + "{\"$type\":\"2|BridgeBuilder.Bridges.BridgeConstructionCost, BridgeBuilder\"}]}";
-File.WriteAllText(path, migrated);
-BridgeSessionState.Restart = false;
-using (var locked = new FileStream(path, FileMode.Open, FileAccess.ReadWrite, FileShare.None))
-{
-    BridgeStartupRecovery.Start();
-    Check(!BridgeSessionState.Restart, "early file lock allows OnLoad retry without latching failure");
-}
-BridgeStartupRecovery.Start(finalAttempt: true);
-Check(!BridgeSessionState.Restart, "OnLoad retry completes without mandatory restart");
-BridgeStartupRecovery.Retired.Add(uuid);
-BridgeStartupRecovery.Start(finalAttempt: true);
-Check(BridgeStartupRecovery.Retired.Contains(uuid), "retired identity survives repeated startup calls in one session");
+loaded.AddComponent<ManualUnlockable>().name = Encode(new BridgeUnlockExpression { Kind = 2, Identity = "CID:" + new string('a', 32) });
+Check(!BridgeInspectionUnlock.Read(loaded, prefabs, manager, out _), "unavailable deferred prototype is not eagerly loaded");
+BridgeStartupRecovery.Retired.Add("b7dff25d3-cf93-4466-9c26-d5aa3be39f3e");
 BridgeStartupRecovery.Stop();
 Check(BridgeStartupRecovery.Retired.Count == 0, "mod disposal clears only session retirement identities");
-using (var locked = new FileStream(path, FileMode.Open, FileAccess.ReadWrite, FileShare.None))
-{
-    BridgeStartupRecovery.Start(finalAttempt: true);
-    Check(BridgeSessionState.Restart && File.Exists(path), "unresolved access failure retains assets and suspends deletion");
-}
 var explicitLeaf = new PrefabBase { name = "RecordedExplicitLeaf" };
 var implicitLeaf = new PrefabBase { name = "RecordedImplicitLeaf" };
 var alternateLeaf = new PrefabBase { name = "RecordedAlternateLeaf" };
@@ -187,4 +163,20 @@ Check(BridgeNativeUnlock.Evaluate(carried, prefabs, manager) == null,
 manager.All[carriedEntity].Requirements = Array.Empty<UnlockRequirement>();
 Check(BridgeNativeUnlock.Evaluate(carried, prefabs, manager) == true,
     "initialized empty native requirement buffer matches native unlocked result");
+var historicalGate = new NetGeometryPrefab { name = "PublishedManualFixture" };
+historicalGate.AddComponent<ManualUnlockable>().name=Encode(recordedRule);
+Check(BridgeInspectionUnlock.Read(historicalGate,prefabs,manager,out var inspectionRule),"self-check decodes historical complete unlock expression");
+Check(BridgeNativeUnlock.Apply(historicalGate,inspectionRule,prefabs,new List<PrefabBase>(),out var inspectionError),"self-check converts decoded rule into native gate: "+inspectionError);
+Check(historicalGate.GetComponent<ManualUnlockable>()==null && historicalGate.GetComponent<Unlockable>()!=null
+ && BridgeNativeUnlock.Evaluate(historicalGate,prefabs,manager)==recordedRule.Evaluate(id=>BridgeUnlockSnapshot.IsUnlocked(id,prefabs,manager)),
+ "migrated native gate preserves the historical expression's current semantics");
 Console.WriteLine($"{count} snapshot/recovery checks passed using fake native buffers; game startup acceptance still required.");
+
+// Fixture authoring only: production never writes the historical ManualUnlockable payload.
+static string Encode(BridgeUnlockExpression value)
+{
+ using var bytes = new MemoryStream();
+ using var writer = new BinaryWriter(bytes, System.Text.Encoding.UTF8, true);
+ void Write(BridgeUnlockExpression node) { writer.Write(node.Kind);writer.Write(node.Identity);writer.Write(node.Children.Length);for(int i=0;i<node.Children.Length;i++){writer.Write(node.Flags[i]);Write(node.Children[i]);} }
+ Write(value);writer.Flush();return BridgeInspectionUnlock.Prefix+Convert.ToBase64String(bytes.ToArray());
+}

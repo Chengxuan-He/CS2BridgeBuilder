@@ -2,7 +2,7 @@
 
 These are retained build-specific records, not the current installation manifest.
 Measurements and unfinished acceptance apply only to the named candidates. See
-[dependency persistence implementation](../../design/persistence/Dependency-Persistence-Implementation.md)
+[dependency persistence implementation](../../specs/persistence-spec.md)
 for the active dependency and self-check path.
 
 ## Candidate78 installation evidence

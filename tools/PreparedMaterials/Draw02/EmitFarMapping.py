@@ -68,7 +68,7 @@ def main():
     # no repeat period or full-span raster is introduced.
     profiles += [8.,60.,78.69921875,78.7421875,90.,77.970703125,78.072265625,89.7265625,
                  .030002355575561523,.030005931854248047,.030022144317626953]
-    payload=struct.pack('<8I',0x314e4242,1,0,0,0,0,len(profiles),0)+struct.pack('<%df'%len(profiles),*profiles)
+    payload=struct.pack('<6i',0,0,0,0,len(profiles),0)+struct.pack('<%df'%len(profiles),*profiles)
     payload+=hashlib.sha256(payload).digest()
     output=ROOT/'assets/HardcodedNumbers/Draw02/Types_Draw02_Draw02FarAppearance_cs.bin'
     output.write_bytes(payload)

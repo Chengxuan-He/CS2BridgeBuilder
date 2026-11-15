@@ -4,7 +4,7 @@ from pathlib import Path
 import numpy as np
 root,r,out=map(Path,sys.argv[1:]);out.mkdir(parents=True,exist_ok=True)
 b=(root/'assets/HardcodedNumbers/PedestrianDraw02/Types_PedestrianDraw02_PedestrianDraw02TrussMapping_cs.bin').read_bytes(); assert hashlib.sha256(b[:-32]).digest()==b[-32:]
-c=struct.unpack_from('<6i',b,8);a=np.frombuffer(b,dtype='<i4',count=c[0],offset=32);f=np.frombuffer(b,dtype='<f4',count=c[4],offset=32+4*c[0]);ip=fp=0;reports=[]
+c=struct.unpack_from('<6i',b);a=np.frombuffer(b,dtype='<i4',count=c[0],offset=24);f=np.frombuffer(b,dtype='<f4',count=c[4],offset=24+4*c[0]);ip=fp=0;reports=[]
 for lod in range(2):
  d=np.load(r/f'pedestrian02-main-{lod}.npz');v=d['positions'];faces=d['indices'];parts=json.loads((r/f'pedestrian02-main-{lod}-parts.json').read_text());n,na,nr=map(int,a[ip:ip+3]);ids=a[ip+3:ip+3+na];rids=a[ip+3+na:ip+3+na+nr];h=f[fp];weights=f[fp+1:fp+1+nr];assert len(v)==n
  selected=set(map(int,ids));rset=set(map(int,rids));assert not selected&rset

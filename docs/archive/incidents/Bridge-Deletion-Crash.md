@@ -1,6 +1,6 @@
 # Bridge deletion native crash (2026-09-19)
 
-**Historical investigation, September 2026.** The repair and verification below describe that revision. For current behavior, follow [Bridge deletion](../../agent-contract/BRIDGE_DELETION.md).
+**Historical investigation, September 2026.** The repair and verification below describe that revision. For current behavior, follow [Bridge deletion](../../contracts/reading-map.md#bridge-deletion).
 
 ## Evidence and limits
 

@@ -1,4 +1,4 @@
-"""Exact measured UV-domain recipes inside ordinary, uncompressed BBN1 arrays.
+"""Exact measured UV-domain recipes inside ordinary, uncompressed numerical .bin arrays.
 
 Schema -3 I32: [-3, domains, faces, distinctBounds], followed by domain columns
 A increments, B-A, C-A, signed face counts; rectangular-domain bounds indexes;
@@ -80,15 +80,15 @@ def encode_arrays(ints, floats):
 
 
 def read_bbn(raw):
-    if len(raw)<64 or raw[:8]!=struct.pack('<II',0x314e4242,1) or hashlib.sha256(raw[:-32]).digest()!=raw[-32:]:
-        raise ValueError('Invalid UV-domain BBN1 resource')
-    counts=struct.unpack_from('<6i',raw,8)
-    if min(counts)<0 or any(counts[i] for i in (1,2,3,5)) or len(raw)!=64+4*(counts[0]+counts[4]):
-        raise ValueError('Invalid UV-domain BBN1 arrays')
-    return np.frombuffer(raw,dtype='<i4',count=counts[0],offset=32),np.frombuffer(raw,dtype='<f4',count=counts[4],offset=32+counts[0]*4)
+    if len(raw)<56 or hashlib.sha256(raw[:-32]).digest()!=raw[-32:]:
+        raise ValueError('Invalid UV-domain numerical .bin resource')
+    counts=struct.unpack_from('<6i',raw)
+    if min(counts)<0 or any(counts[i] for i in (1,2,3,5)) or len(raw)!=56+4*(counts[0]+counts[4]):
+        raise ValueError('Invalid UV-domain numerical .bin arrays')
+    return np.frombuffer(raw,dtype='<i4',count=counts[0],offset=24),np.frombuffer(raw,dtype='<f4',count=counts[4],offset=24+counts[0]*4)
 
 
 def write_bbn(ints, floats):
     ints,floats=np.asarray(ints,dtype='<i4'),np.asarray(floats,dtype='<f4')
-    raw=struct.pack('<II6i',0x314e4242,1,len(ints),0,0,0,len(floats),0)+ints.tobytes()+floats.tobytes()
+    raw=struct.pack('<6i',len(ints),0,0,0,len(floats),0)+ints.tobytes()+floats.tobytes()
     return raw+hashlib.sha256(raw).digest()

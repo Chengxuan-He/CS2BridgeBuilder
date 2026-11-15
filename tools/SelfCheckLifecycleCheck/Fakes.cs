@@ -62,12 +62,15 @@ namespace CS2Mods.Shared.Infrastructure
 namespace UnityEngine { public static class Application { public static string persistentDataPath = "unused"; } }
 namespace Colossal.IO.AssetDatabase
 {
-    public class PrefabAsset { public static int Reads; public string path = ""; public AssetId id = new(); public Game.Prefabs.PrefabBase? Instance;
+    public class PrefabAsset { public AssetDatabase database = new(); public Meta GetMeta()=>new(){subPath=System.IO.Path.GetDirectoryName(path)!,fileName=System.IO.Path.GetFileNameWithoutExtension(path),extension=System.IO.Path.GetExtension(path)}; public static int Reads; public string path = ""; public AssetId id = new(); public Game.Prefabs.PrefabBase? Instance;
         public T? GetInstance<T>() where T : class { Reads++; return Instance as T; } }
+    public class Meta { public string subPath="",fileName="",extension=""; }
+    public enum EscapeStrategy { None }
+    public class AssetDataPath { string value=""; public static AssetDataPath Create(string p,string n,EscapeStrategy e)=>new(){value=System.IO.Path.Combine(p,n)}; public string ToPath(object p)=>value; }
     public class AssetId { public string guid = "01234567890123456789012345678901"; }
     public class ParadoxMods { }
     public class AssetDatabase<T> { public static AssetDatabase<T> instance = new(); public object dataSource = new ParadoxModsDataSource(); }
-    public class FileSystemDataSource { public bool Cached; protected bool IsDataCached(bool priorityData) => Cached; }
+    public class FileSystemDataSource { public class PathEscapePolicy { } public bool Cached; protected bool IsDataCached(bool priorityData) => Cached; }
     public class ParadoxModsDataSource : FileSystemDataSource
     {
         public event Func<IReadOnlyCollection<Colossal.Hash128>, bool, System.Threading.Tasks.Task>? onEntryIsInActivePlaysetChanged;
@@ -78,7 +81,7 @@ namespace Colossal.IO.AssetDatabase
     public class GeometryAsset { public object database = new(); public string path = ""; }
     public class AssetDatabase
     {
-        public static AssetDatabase global = new(), user = new();
+        public string rootPath=""; public static AssetDatabase global = new(), user = new();
         public List<PrefabAsset> Assets = new();
         public IEnumerable<T> GetAssets<T>() => Assets.Cast<T>();
         public bool TryGetAsset<T>(string cid, out GeometryAsset g) { g = new(); return true; }
@@ -102,17 +105,17 @@ namespace BridgeBuilder.Settings
 }
 namespace BridgeBuilder.Runtime
 {
-    public static class BridgeSessionState { public static void RequireRestart() { } public static bool TryOwner(string n, out string owner) { owner = n; return n == "bridge"; } }
     public static class BridgeStartupRecovery { public static HashSet<string> Retired = new(); }
     public static class BridgeAssetCatalog
     { public static string Root => System.IO.Path.GetFullPath("unused/ImportedData");  }
-    public static class BridgeFileAccess { public static string Logical(string p) => p; }
+    public static class BridgeFileAccess { public static int ReadFailures; public static string Logical(string p) => p; public static string LogicalUnder(string p,string root) => p; }
     public static class BridgeAssetInfo { public static bool IsDependencyPath(string p,string o)=>false; public static bool TryFileOwner(string n, out string owner) { owner = n.Split(System.IO.Path.DirectorySeparatorChar, System.IO.Path.AltDirectorySeparatorChar).FirstOrDefault(part => part == "bridge" || part.StartsWith("bridge-")) ?? ""; return owner.Length != 0; } public static bool IsPrefabName(string? n) => n?.StartsWith("b") == true; }
     public class BridgeDiskAudit
     {
+        public bool Changed {get;private set;}
         public static int Calls; public static bool Incomplete, Raise, BackupFailed, DeleteFailed;
         public static Func<string, (bool Removed, bool Backup)>? Retirement;
-        public bool RetireFiles(ISet<string> owners, string backup, out string error) { var result = Retirement?.Invoke(owners.Single()) ?? (!DeleteFailed, !BackupFailed && !DeleteFailed); error = result.Item2 ? "" : "fixture file failure"; return result.Item1; }
+        public bool RetireFiles(ISet<string> owners, string backup, out string error) { var result = Retirement?.Invoke(owners.Single()) ?? (!DeleteFailed, !BackupFailed && !DeleteFailed); error = result.Item2 ? "" : "fixture file failure"; Changed = result.Item1; return result.Item1; }
         public bool Complete => !Incomplete; public string Error => "fixture failure";
         public Dictionary<string, string> Failures = new();
         public static BridgeDiskAudit ForMemoryFailures(string p, IDictionary<string,string> failures, IEnumerable<string>? paths=null)
@@ -124,8 +127,8 @@ namespace BridgeBuilder.Runtime
 {
     public static class BridgePortableMigration {
         public static bool Fail, Changed;
-        internal static bool Run(string owner, Game.Prefabs.PrefabSystem system, string backup, out bool changed, out string error, BridgeInspectionAssets.Entry[]? assets=null, BridgeCreationDependencies? deps=null, ISet<string>? paths=null) {
-            changed = Changed; error = "fixture"; return !Fail;
+        internal static bool Run(string owner, Game.Prefabs.PrefabSystem system, string backup, out bool changed, out string error, BridgeInspectionAssets.Entry[]? assets=null, BridgeCreationDependencies? deps=null, ISet<string>? paths=null, bool diskReferencesRecovered=false) {
+            changed = Changed; error = "fixture"; return !Fail && (assets == null || assets.Any(a=>a.Prefab?.name==owner));
         }
     }
     public static class BridgeLegacyNames {
@@ -170,7 +173,7 @@ namespace BridgeBuilder.Runtime {
   internal readonly HashSet<string> Files=new(); internal void SaveRelations(string owner) {} internal void Relocate(string a,string b) {}
  }
  internal sealed class BridgeInspectionScope {
-  internal int CacheTraversals=>1;internal int CacheHeaders=>0;internal bool PrepareCaches(out string error){error="";return true;} private readonly Dictionary<string,HashSet<string>> paths=new();
+  internal HashSet<string> UnreadableOwners = new(); internal int CacheTraversals=>1;internal int CacheHeaders=>0;internal bool PrepareCaches(out string error){error="";return true;} private readonly Dictionary<string,HashSet<string>> paths=new();
   internal BridgeInspectionScope(string root,IEnumerable<string> owners) {foreach(var owner in owners) paths[owner]=new();}
   internal HashSet<string> Paths(string owner)=>paths[owner]; internal string? Find(string cid,string owner)=>null;
   internal BridgeCreationDependencies Dependencies(string owner,IEnumerable<BridgeInspectionAssets.Entry> assets)=>new();
@@ -182,3 +185,17 @@ namespace BridgeBuilder.Runtime { internal static class BridgeDeferredRemoval { 
 namespace BridgeBuilder.Runtime { internal static class BridgePreparedMaterials { internal static bool HasUnavailableRequirement(Game.Prefabs.PrefabBase prefab)=>!prefab.Available; internal static bool Available=true; internal static bool RefreshContent(Game.Prefabs.PrefabSystem system)=>Available; } }
 
 namespace BridgeBuilder.Runtime { internal static class BridgeCustomShaderRestoration { internal static bool TryRestore(out int restored,out string? error) {restored=0;error=null;return true;} } }
+
+namespace BridgeBuilder.Runtime {
+ internal static class BridgeInspectionPermissions { internal static bool Ready => true; internal static bool Check(IEnumerable<string> roots)=>true; }
+ internal static class BridgeInspectionLog { internal static void Info(object value){} internal static void Warn(object value){} internal static void Error(object value){} internal static void Run(string stage,Action action){try{action();}catch(Exception e) when(e is not UnauthorizedAccessException){}} }
+ internal static class BridgeGameRestart { internal static int Calls; internal static void Run(){Calls++;} }
+}
+
+namespace BridgeBuilder.Runtime { internal static class BridgeInspectionPaths { internal static bool IsDependencyPath(string p,string o)=>BridgeAssetInfo.IsDependencyPath(p,o); } internal static class BridgeInspectionRecoveryCopies {internal static void Run(){} } }
+namespace BridgeBuilder.Runtime { internal static class BridgeExportSettingsMigration { internal static bool Run(out bool changed,out string error){changed=false;error="";return true;} } }
+
+namespace BridgeBuilder.Runtime { internal static class BridgeLegacyShaderOwners {
+ internal static bool Legacy;
+ internal static bool Identify(string owner,IEnumerable<string> paths,out string? evidence){evidence=Legacy?"old program":null;return Legacy;}
+} }

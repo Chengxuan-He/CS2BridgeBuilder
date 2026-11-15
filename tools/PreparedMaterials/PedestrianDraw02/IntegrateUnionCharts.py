@@ -97,7 +97,7 @@ def main():
         for ring in chart:
             ints.extend((len(coords), len(ring)))
             coords.extend(x for point in ring for x in point)
-    body = b"BBN1" + struct.pack("<i6i", 1, len(ints), 0, 0, 0, 0, len(coords))
+    body = struct.pack('<6i', len(ints), 0, 0, 0, 0, len(coords))
     body += struct.pack("<"+"i"*len(ints), *ints) + struct.pack("<"+"d"*len(coords), *coords)
     raw = body + hashlib.sha256(body).digest()
     candidate = candidate_dir / "PedestrianDraw02UvCharts.bin"

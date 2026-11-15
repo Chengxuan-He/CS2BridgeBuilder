@@ -184,16 +184,8 @@ for i in parameter_indices:
   cursor=field+4
  modified[i]=bytes(e)
 bundle=save(target,modified,'BoneDecal')
-package=bytearray(b'BBS1')+struct.pack('<II',2,len(bundle))+bundle+struct.pack('<I',len(dynamic))
-for source,entry,profile,code in dynamic.values():
- for text in [source,entry,profile]:
-  encoded=text.encode();package+=struct.pack('<I',len(encoded))+encoded
- positions=[];cursor=0
- while(pos:=bundle.find(code,cursor))>=0:positions.append(pos);cursor=pos+len(code)
- assert positions
- package+=struct.pack('<I',len(code))+code+struct.pack('<I',len(positions))+struct.pack('<'+'I'*len(positions),*positions)
-(out/'BoneDecal.bbs1').write_bytes(package)
+(out/'BoneDecal.bundle').write_bytes(bundle)
 inputs=[Path(__file__),root/'tools/MaterialShaders/NativeDecalTranscription.py',root/'tools/MaterialShaders/NativeDecalVertex.hlsl',root/'tools/MaterialShaders/MaterialFunctions.hlsl',root/'tools/MaterialShaders/NativeInstanceSkeleton.hlsl']
-manifest={'schema':1,'program':'BoneDecal','producer':'BuildNativeDecal.py','producerSha256':hashlib.sha256(Path(__file__).read_bytes()).hexdigest(),'packageBytes':len(package),'packageSha256':hashlib.sha256(package).hexdigest(),'sources':{str(p.relative_to(root)).replace('\\','/'):hashlib.sha256(p.read_bytes()).hexdigest() for p in inputs},'nativeInputs':{k:hashlib.sha256(p.read_bytes()).hexdigest() for k,p in [('objectShader',args.object_shader),('decalShader',args.decal_shader),('containerSeed',args.container_seed)]}}
+manifest={'schema':2,'format':'UnityFS','program':'BoneDecal','producer':'BuildNativeDecal.py','producerSha256':hashlib.sha256(Path(__file__).read_bytes()).hexdigest(),'packageBytes':len(bundle),'packageSha256':hashlib.sha256(bundle).hexdigest(),'sources':{str(p.relative_to(root)).replace('\\','/'):hashlib.sha256(p.read_bytes()).hexdigest() for p in inputs},'nativeInputs':{k:hashlib.sha256(p.read_bytes()).hexdigest() for k,p in [('objectShader',args.object_shader),('decalShader',args.decal_shader),('containerSeed',args.container_seed)]}}
 (out/'BoneDecal.manifest.json').write_text(json.dumps(manifest,indent=2)+'\n')
 print('PASS current-bone vertex and four original fragment variants compile')

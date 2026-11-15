@@ -19,8 +19,8 @@ unpack = namespace['dll'].math_array_oct15_to_fp32tangents
 unpack.argtypes = [ct.c_void_p, ct.c_int, ct.c_void_p]
 unpack.restype = None
 data = (ROOT/'assets/HardcodedNumbers/Lift04/Types_Lift04_Lift04RoadTops_g_cs.bin').read_bytes()
-counts = struct.unpack_from('<6i', data, 8)
-ints = np.frombuffer(data, '<i4', counts[0], 32)
+counts = struct.unpack_from('<6i', data, 0)
+ints = np.frombuffer(data, '<i4', counts[0],24)
 result=[]
 for lod in (0,1):
     original=research/'movable-skin'/('LiftBridge04'+('_LOD1' if lod else '')+' Mesh.Geometry')

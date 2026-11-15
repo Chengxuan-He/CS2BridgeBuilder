@@ -498,7 +498,7 @@ No new UI labels were needed: the registered localized Lift05 entry now reaches
 its concrete generator. Earlier status entries below are historical increments.
 
 
-Current appearance selection: [Existing Material Reuse](Movable-Road-Material-Reuse.md). Earlier
+Current appearance selection: [Existing Material Reuse](movable-road-material-reuse.md). Earlier
 baking/descriptor-generation descriptions below are historical and superseded by this revision.
 
 ## Lift01 increment deployment (2026-10-20)
@@ -539,7 +539,7 @@ levels already retain those same authored parts. Far base profile reconstruction
 now replaces destructive seam trimming: native caps and underside remain, with
 the inner rim and end stations matching the detailed road envelope. Full
 selected-layout compatibility and native persistence verification remain
-unfinished. See [Lift01 integration](../bridge-styles/Lift01/Lift01-Network-Implementation.md); this is not
+unfinished. See [Lift01 integration](../bridge-styles/Lift01/lift01-network-implementation.md); this is not
 an additional accepted style or evidence of successful native generation.
 
 ## Current implementation status (2026-10-19)
@@ -927,7 +927,7 @@ Outstanding geometry prerequisites remain substantive:
 - Draw02: finish fixed-platform surface/curb side closure and selected sidewalk geometry;
   resolve the recorded central-linkage narrowing limit and verify the integrated native path.
   Its measured structure maps, fixed approaches, supports and appearance/motion regions are
-  now connected; see [the current stage record](../bridge-styles/Draw02/Draw02-Network-Implementation.md).
+  now connected; see [the current stage record](../bridge-styles/Draw02/draw02-network-implementation.md).
 - Draw03: complete original-part widening maps, replacement surface/curb membership,
   far-LOD shell closure, fixed approaches and source-specific appearance/motion regions.
 - Lift01/02/04/05: complete rail/deck versus structure membership at every LOD, deck/weight/pulley
@@ -1030,9 +1030,9 @@ The shared offline geometry reader also supports a native rigid-skin inspection 
 decoded 88 real geometry files covering the ten mechanisms' object meshes and LODs. This is
 implemented metaprogramming support, not a runtime movable-bridge generator.
 
-The [project contract](../../agent-contract/PROJECT_CONTRACT.md) and
-[bridge generation contract](../../agent-contract/BRIDGE_GENERATION_CONTRACT.md) and
-[movable bridge contract](../../agent-contract/MOVABLE_BRIDGES_CONTRACT.md) remain normative.
+The [project contract](../../contracts/reading-map.md#project-contract) and
+[bridge generation contract](../../contracts/reading-map.md#bridge-generation-contract) and
+[movable bridge contract](../../contracts/reading-map.md#movable-bridges-contract) remain normative.
 This record describes progress, not exceptions to either contract.
 
 ## 2. Independent mechanisms
@@ -1188,7 +1188,7 @@ Native mechanism surface headers reference object material templates, while sour
 can use network templates and network-dependent inputs. Matching textures or a template number
 does not prove that the source appearance survives object skinning. Establish the exact material,
 UV, packed-normal/tangent and deformation conversion for each supported source path.
-Follow the normative [asset persistence policy](../../agent-contract/Bridge-Asset-Persistence.md): reuse compatible
+Follow the normative [asset persistence policy](../../contracts/reading-map.md#bridge-asset-persistence): reuse compatible
 original surfaces and textures; snapshot unchanged external dependencies. Only a demonstrated
 resource change requires a new private material/surface asset. Moving marking geometry or native
 placement does not automatically require new marking textures or materials.
@@ -1619,7 +1619,7 @@ in the task's `work/bridge-research/all-movable-audit.json`; decompiled native c
 beside them. These local paths are research provenance, not portable implementation asset paths.
 Resource-file path IDs must not become runtime identity constants.
 
-See [geometry inspection workflow](../../guides/Movable-Bridge-Geometry-Inspection.md) for the new offline
+See [geometry inspection workflow](../../guides/movable-bridge-geometry-inspection.md) for the new offline
 command, its native format assumptions and the distinction between measurement and classification.
 
 ## Draw01 road-top boundary evidence (2026-10-16)
@@ -1785,7 +1785,7 @@ full generator routing or human acceptance. See the per-style Render-Implementat
 Closed-road compilation now extracts native object-placement rules through the installed
 composition job in a disposable world. A shared attachment binder maps resolved placements
 to the measured road partition using native connection IDs, retaining prefab/group/probability
-and leaving inverse-bind conversion to the game. See [Movable road objects](Movable-Road-Objects.md).
+and leaving inverse-bind conversion to the game. See [Movable road objects](movable-road-objects.md).
 
 The code was built/deployed with original-file backups and payload hash verification. Native
 spacing/theme/traffic-sign resolution and the final binder caller remain unfinished; these
@@ -2009,12 +2009,12 @@ The final generator routes and full in-game acceptance remain incomplete.
 
 ## Native curve parameter ownership audit (2026-10-16)
 
-[The native parameter-path audit](../audits/Movable-Decal-Native-Parameter-Path.md) confirms that ordinary object batches cannot acquire LaneProperty curve buffers merely by adding CurveProperties. It also separates saved surface properties from native template registration. These paths must not be used as unproven shortcuts around the measured distance-fade mismatch. No runtime changes or asset deletion were made in this audit.
+[The native parameter-path audit](../audits/movable-decal-native-parameter-path.md) confirms that ordinary object batches cannot acquire LaneProperty curve buffers merely by adding CurveProperties. It also separates saved surface properties from native template registration. These paths must not be used as unproven shortcuts around the measured distance-fade mismatch. No runtime changes or asset deletion were made in this audit.
 
 
 ## All-style main-mechanism topology evidence (2026-10-16)
 
-[The topology inventory](../audits/Movable-Mechanism-Topology-Inventory.md) covers 49 actual native mesh
+[The topology inventory](../audits/movable-mechanism-topology-inventory.md) covers 49 actual native mesh
 streams and 1,917,588 triangles for all ten styles and their exported main-mechanism LODs.
 Exact face sets, bones, bounds and source hashes are retained for indexed-edge and exact-position
 edge connectivity. The stark LOD differences show why raw connectivity IDs cannot substitute for
@@ -2029,7 +2029,7 @@ code changed in this investigation, so no deployment or bridge cleanup was perfo
 
 ## Draw01 rigid control buildings across LODs (2026-10-16)
 
-[Control-building face metadata](../bridge-styles/Draw01/Draw01-Control-Building-Mapping.md) now records 2176/1006/62
+[Control-building face metadata](../bridge-styles/Draw01/draw01-control-building-mapping.md) now records 2176/1006/62
 main-mesh faces and the complete 64-face glass mesh in both near and middle LODs. Offline top,
 side and end views confirm the retained positive-X building, platforms, stairs and support feet.
 All are rigid side structures; they must not stretch with the road. Data was developed on
@@ -2039,7 +2039,7 @@ structural plan and generator caller remain absent, so existing bridges were pre
 
 ## Draw01 moving road solids across LODs (2026-10-16)
 
-[Moving road replacement data](../bridge-styles/Draw01/Draw01-Moving-Road-Replacement.md) now records 1888/1472/72
+[Moving road replacement data](../bridge-styles/Draw01/draw01-moving-road-replacement.md) now records 1888/1472/72
 removal faces for the two moving leaves in main mesh 0. Near and middle data include complete
 carriageway and sidewalk slabs, raised profiles and closures, rather than only the top planes.
 The far representation retains 44 shared underbody faces and all 84 reviewed lateral-envelope
@@ -2057,7 +2057,7 @@ complete widening/partition plans, generator assembly and native in-game accepta
 
 ## Draw01 fixed approach road faces (2026-10-16)
 
-[Fixed road replacement data](../bridge-styles/Draw01/Draw01-Fixed-Road-Replacement.md) adds 124/102/36 explicit
+[Fixed road replacement data](../bridge-styles/Draw01/draw01-fixed-road-replacement.md) adds 124/102/36 explicit
 bone-0 road faces for main mesh 0. With the moving-road sets, the per-LOD removal totals
 are 2012/1574/108 faces. Actual native end/plan projections were inspected; all previously
 recorded road tops are covered and no control-building faces overlap. The coarse walls
@@ -2099,7 +2099,7 @@ vertices copy identical edge channels and interpolate UVs in their existing layo
 triangles remain in their original material slot; bounds and vertex ranges include the new
 vertices. No runtime part classification or cut-plane discovery is introduced.
 
-[Draw01 fragment data](../bridge-styles/Draw01/Draw01-Road-Fragments.md), integrated as dev commit `50c45a7` from
+[Draw01 fragment data](../bridge-styles/Draw01/draw01-road-fragments.md), integrated as dev commit `50c45a7` from
 bridge/draw-01 `2b7c25a`, supplies four far moving-end replacements. Direct application of these
 records to the native exported mesh produces 1122 vertices from 1118 originals. Faces
 24/193/351/516 keep their winding and lower structure; the new upper edge is Y=9.419189453125.
@@ -2175,7 +2175,7 @@ is not completion of Draw01 or of the other nine movable generators.
 
 ## Draw01 fixed rear cap fragments (2026-10-16)
 
-[Measured rear fragments](../bridge-styles/Draw01/Draw01-Fixed-Rear-Fragments.md) now replace ten far main-mesh cap
+[Measured rear fragments](../bridge-styles/Draw01/draw01-fixed-rear-fragments.md) now replace ten far main-mesh cap
 triangles at both ends with fourteen retained triangles and twenty explicitly measured edge
 vertices. The center and negative-X rear caps retain their high-detail structural upper boundary
 Y=9.199951171875. Native edge channels confirm equal normal/tangent/bone bytes; new UVs use the
@@ -2191,7 +2191,7 @@ This data increment does not establish full generation or native in-game accepta
 
 ## Draw01 rear control-building slope fragments (2026-10-16)
 
-[Rear slope records](../bridge-styles/Draw01/Draw01-Fixed-Rear-Slopes.md) complete the measured rear-cap tables for
+[Rear slope records](../bridge-styles/Draw01/draw01-fixed-rear-slopes.md) complete the measured rear-cap tables for
 far faces 317/646. Native high-detail faces 3755/3756/3757 and 4641/4642 establish the retained
 sloped support and upward building wall at positive X; the negative-Z end has the same logical
 arrangement. The recorded profile retains the coarse outer corner where it enters the building.
@@ -2212,7 +2212,7 @@ changed, so no bridges were removed. Offline native-fragment inspection is not i
 
 ## Draw01 central front cap fragments (2026-10-16)
 
-[Central front records](../bridge-styles/Draw01/Draw01-Fixed-Front-Fragments.md) replace eight far main-mesh faces
+[Central front records](../bridge-styles/Draw01/draw01-fixed-front-fragments.md) replace eight far main-mesh faces
 with twelve retained triangles and sixteen measured edge vertices. The structural ceiling is
 the high/middle carriageway underside at Y=9.5; the far pier's own +/-83.708984375 Z planes
 are preserved. The taller sidewalk inner walls are separate from this center-cap operation.
@@ -2230,7 +2230,7 @@ open; none of the ten movable styles is claimed complete.
 
 ## Draw01 inner approach-wall fragments (2026-10-16)
 
-[Inner-wall records](../bridge-styles/Draw01/Draw01-Fixed-Inner-Fragments.md) replace far faces 119/282/447/606,
+[Inner-wall records](../bridge-styles/Draw01/draw01-fixed-inner-fragments.md) replace far faces 119/282/447/606,
 retaining the high/middle wall-top elevation Y=9.800048828125. Four measured edge vertices
 replace only the old raised road-facing corners; the original lower and opposite corners stay.
 Adjoining lower faces 118/281/446/605 remain, and separate curb faces are already included in
@@ -2246,7 +2246,7 @@ selected-road partition, final generator assembly and native in-game acceptance 
 
 ## Draw01 assembled main-mesh road replacement (2026-10-16)
 
-[Road replacement assembly](../bridge-styles/Draw01/Draw01-Road-Replacement-Assembly.md) adds the remaining measured
+[Road replacement assembly](../bridge-styles/Draw01/draw01-road-replacement-assembly.md) adds the remaining measured
 sidewalk front caps while preserving their outer structural lips, and combines all six fragment
 tables with both whole-road masks through Draw01RoadReplacement.CreateMainMeshPlan. Source
 identity resolution and complete structural widening remain the caller's responsibilities.
@@ -2267,13 +2267,13 @@ assembly/routing, all other movable variants and native acceptance remain outsta
 
 ## Draw01 main-mesh widening assembly (2026-10-16)
 
-[Moving-frame widening](../bridge-styles/Draw01/Draw01-Moving-Frame-Widening.md) records 32326 moving vertices across
+[Moving-frame widening](../bridge-styles/Draw01/draw01-moving-frame-widening.md) records 32326 moving vertices across
 the three LODs, with 88 reviewed high/middle transverse-member pairs. The own-span mapping
 of the 0.40000152587890625 m central half-span rejects a nonpositive resulting span; a full
 width reduction of 4 m exposed inversion in offline native inspection and is not supported
 by that mapping. This is not unrestricted narrower-road support.
 
-[Fixed-frame widening](../bridge-styles/Draw01/Draw01-Fixed-Frame-Widening.md) now covers 10530 original fixed
+[Fixed-frame widening](../bridge-styles/Draw01/draw01-fixed-frame-widening.md) now covers 10530 original fixed
 main-mesh vertices and 128 glass vertices at each of the two detailed LODs. Fixed buildings
 share 28/24 original vertices with the other frame faces; the unified mapping moves each
 vertex once. Native fixed-frame projections and an actual-source +8 m widening were inspected.
@@ -2296,7 +2296,7 @@ acceptance remain incomplete. These are implementation increments, not completed
 
 ## Draw01 stacked column and unskinned structural export (2026-10-16)
 
-[Mechanism column widening](../bridge-styles/Draw01/Draw01-Mechanism-Column-Widening.md) now supplies a complete
+[Mechanism column widening](../bridge-styles/Draw01/draw01-mechanism-column-widening.md) now supplies a complete
 per-LOD structural plan for the 288/259/131-vertex native DrawBridge01Pillar meshes. These
 are the mechanism's stacked middle renders, not the ordinary DrawBridge01NetPillar. The
 far mesh has interior stations created by simplification; its nine displacement coefficients
@@ -2341,7 +2341,7 @@ require a deployment or remove any bridge. The full ten-style objective remains 
 
 ## Fixed render graphs use the existing ownership path (2026-10-16)
 
-[Fixed render graph construction](Movable-Fixed-Render-Graphs.md) adds an explicit structure-only
+[Fixed render graph construction](movable-fixed-render-graphs.md) adds an explicit structure-only
 Level constructor to the shared builder. It skips road baking/binding while retaining source
 mesh validation, original surfaces, native components, LOD remapping, bounds/counts, geometry
 serialization, preview capture and failure rollback. Native unskinned support renders receive
@@ -2359,7 +2359,7 @@ and the full ten-style objective remain incomplete.
 
 ## Draw01 column assembly enters owned resource construction (2026-10-16)
 
-[Draw01 render assembly](../bridge-styles/Draw01/Draw01-Render-Assembly.md) now resolves the native column's two LOD
+[Draw01 render assembly](../bridge-styles/Draw01/draw01-render-assembly.md) now resolves the native column's two LOD
 references, preflights all three source names and foreign-bridge ownership before reading any
 geometry, prepares the recorded per-LOD plans and passes all three levels to the shared factory.
 Private geometry reads are released on success or failure. Authored Y/Z stacking bounds and
@@ -2370,7 +2370,7 @@ and LOD order. Comparison with decoded native geometry exposed small original bo
 differences. Static supports no longer run the procedural motion-envelope containment test;
 their actual submesh bounds are still computed from emitted geometry, while their authored
 stacking bounds remain preserved. Procedural renders retain the full motion-envelope check.
-See [fixed render graphs](Movable-Fixed-Render-Graphs.md) for exact source evidence.
+See [fixed render graphs](movable-fixed-render-graphs.md) for exact source evidence.
 
 Style commit `2be2d63` was integrated as `cebebb5`; the shared bounds adjustment remains in the
 development working tree. Release compilation passed with the existing nine CS0649 warnings.
@@ -2445,7 +2445,7 @@ script. The complete movable-generator objective remains unfinished.
 Native LOD2 uses a distinct baked VTSurface rather than the detailed albedo layout.
 The original UV and triangle audit identifies a concrete central-post displacement mismatch
 inside far triangle 287: resolving nearest-face ties does not make the candidate compatible
-with the detailed own-span mapping. See [the material/UV review](../bridge-styles/Draw01/Draw01-Footing-Far-Material-Review.md).
+with the detailed own-span mapping. See [the material/UV review](../bridge-styles/Draw01/draw01-footing-far-material-review.md).
 No runtime footing mapping, structural topology change, new material or shader was introduced.
 The current structural position-only constraint still requires a representation decision for
 merged far-detail parts. Other generator integration work remains available.
@@ -2456,7 +2456,7 @@ merged far-detail parts. Other generator integration work remains available.
 Native extraction inspected all nine ordinary-pillar renders, separately from the crossing
 mechanism. The middle column is a single centred cylinder at each LOD. Its three-level owned
 render graph is now implemented in `Draw01NetPillarAssembly.CreateColumn`; see
-[ordinary-column evidence and scope](../bridge-styles/Draw01/Draw01-Ordinary-Pillar-Column.md).
+[ordinary-column evidence and scope](../bridge-styles/Draw01/draw01-ordinary-pillar-column.md).
 Style commit `f5a8a64` was integrated into `dev` as `75ea203`. Release compilation passed
 with the nine existing TrafficSignNeeds CS0649 warnings. Deployment backed up and verified
 18 original installed files at `artifacts/backups/draw01-ordinary-column-20261016-061244`,
@@ -2470,7 +2470,7 @@ No in-game acceptance was performed.
 
 Native inspection confirms the crossing-node owner uses CreateSecondaryNodeObjects, not ordinary
 edge repetition. Shared MovableNodeObjectPlacement now implements its candidate transform arithmetic;
-[scope and evidence](Movable-Node-Attachment-Placement.md) distinguish that from still-missing node
+[scope and evidence](movable-node-attachment-placement.md) distinguish that from still-missing node
 selection/aggregation and full endpoint context. Release compilation and 12-file deployment passed;
 18 original files were backed up at artifacts/backups/movable-node-object-placement-20261016-061447.
 No final generator calls the new method and no existing bridge output changed or was removed.
@@ -2480,7 +2480,7 @@ No final generator calls the new method and no existing bridge output changed or
 
 MovableNodeStreetLights now calls the node candidate-placement stage and preserves native duplicate
 rejection, layer ordering, spacing count, four-contribution correction, distance/priority arbitration,
-swap-back removal, hasStreetLights and AlwaysLit semantics. See [scope and native evidence](Movable-Node-Streetlights.md).
+swap-back removal, hasStreetLights and AlwaysLit semantics. See [scope and native evidence](movable-node-streetlights.md).
 The final generator still lacks prepared node context and does not call this chain. Native sign/light
 and utility handling remain incomplete; ordinary edge traffic needs are not equivalent.
 Final Release deployment verified 18 originals and 12 payloads at
@@ -2491,7 +2491,7 @@ No existing bridges were removed and no visual acceptance is claimed.
 ## Native node sign and signal needs (2026-10-16)
 
 MovableNodeSignNeeds now calculates native contribution masks, connected-edge target records,
-node lane sign requests and vehicle/pedestrian signal-group needs. See [scope and native evidence](Movable-Node-Sign-Needs.md).
+node lane sign requests and vehicle/pedestrian signal-group needs. See [scope and native evidence](movable-node-sign-needs.md).
 Final Release compilation passed without warnings; no suppressions were added. Deployment verified
 18 original backup files and 12 payloads at artifacts/backups/movable-node-sign-filter-20261016-062013.
 Final generator calls, prepared node context, utility dispatch and persistent signal initialization
@@ -2502,7 +2502,7 @@ remain outstanding. No existing bridges were removed and no in-game acceptance i
 
 Native source inspection establishes that node-owned TrafficLight instances receive group masks
 from SecondaryObjectSystem and are updated through the node's direct SubObject buffer. Persisting
-them as mechanism children does not preserve those relationships. See [signal ownership evidence](Movable-Signal-Ownership.md).
+them as mechanism children does not preserve those relationships. See [signal ownership evidence](movable-signal-ownership.md).
 The generic object binder and hidden-node strip-all policy must distinguish network-owned signal
 producers from moving visual attachments before final routing. No blanket retention or custom
 controller was implemented. This read-only audit changed documentation only; no bridges were removed.
@@ -2514,7 +2514,7 @@ placeholders, instead of deleting every NetPieceObjects entry. Retained entries 
 conditions, transforms, ordering and references. Only changed pieces/sections are cloned. The
 selected-road attachment resolver excludes those retained rules, while direct misuse of its selector
 raises ERROR. TrafficSignObject alone does not retain a rule because marking placeholders carry it.
-See [signal ownership](Movable-Signal-Ownership.md) and [road object handling](Movable-Road-Objects.md).
+See [signal ownership](movable-signal-ownership.md) and [road object handling](movable-road-objects.md).
 
 Release compilation passed without warnings. Deployment verified 18 original files and 12 payloads
 at `artifacts/backups/movable-native-signal-producers-20261016-062949`. All ten network adapters use
@@ -2529,7 +2529,7 @@ streetlight arbitration, sign needs, concrete selection and MovableNodeUtilities
 preserves the native connected-edge, isolated-node and node-lane aggregation rules. Signal candidates
 participate in native nearest selection and randomization but remain network-owned. Utility emission
 uses its supplied world transform rather than composing its local elevation a second time.
-See [node object resolution](Movable-Node-Object-Resolution.md) for caller requirements and limits.
+See [node object resolution](movable-node-object-resolution.md) for caller requirements and limits.
 
 Release compilation passed without warnings; 18 backup originals and 12 deployed payloads were
 verified at `artifacts/backups/movable-node-object-resolution-20261016-063341`. No existing bridge
@@ -2542,7 +2542,7 @@ The native road lighting update visits direct objects only; nested mechanism lam
 road StreetLight state through that path. Removing network lamp producers also clears Road.IsLit.
 An actual resource scan found 81 native StreetLightObject static prefabs with 110 direct effect
 entries, all using forbidden LightsOff, not an independent Night requirement. See the
-[attachment state audit](../audits/Movable-Attachment-State.md), which also traces Lowered elevation to collision
+[attachment state audit](../audits/movable-attachment-state.md), which also traces Lowered elevation to collision
 behavior. The present child-binding representation does not yet preserve these native relationships.
 This evidence rules out simply treating the node resolver's returned lighting booleans as completed
 persistence. No runtime code, assets or installed files changed during this audit.
@@ -2553,7 +2553,7 @@ MovableStreetLights now creates private empty lighting placeholders for native n
 production, retains selected lamp geometry as bone-bound children, and transfers unchanged effect
 references to the road-owned mechanism root with native bone connection IDs and StreetLightObject.
 Private lamp copies remove original SpawnableObject membership to prevent effect-free replacements
-from entering ordinary road placeholder selection. See [native lighting representation](Movable-Native-Lighting.md).
+from entering ordinary road placeholder selection. See [native lighting representation](movable-native-lighting.md).
 
 Release builds passed without warnings; final deployment verified 18 originals and 12 payloads at
 `artifacts/backups/movable-private-lamp-membership-20261016-064228`. Existing bridge output is unchanged
@@ -2565,7 +2565,7 @@ and cold-start lighting state, power transitions, motion and final generator int
 `MovableNetworkGeometry` now binds and invokes all nine installed native GeometrySystem jobs in
 their dependency order, including both node-calculation iterations, in a prepared private world.
 It borrows explicit initialized terrain data, preserves native lookup access modes and disposes
-temporary intersection/height buffers. See [network geometry context](../../design/generation/Movable-Network-Geometry.md).
+temporary intersection/height buffers. See [network geometry context](../../contracts/movable-contract.md).
 
 The native field inventory was audited and Release compilation passed without warnings. Deployment
 verified 18 original files and 12 payloads at
@@ -2579,7 +2579,7 @@ final generator integration remain outstanding; this increment does not establis
 skipped-connection repair and master/slave lane ordering inside a prepared private world. It
 preserves native SubLane path methods instead of constructing references with default flags.
 All five native job field declarations were audited. See
-[network geometry context](../../design/generation/Movable-Network-Geometry.md#primary-node-and-edge-lanes).
+[network geometry context](../audits/movable-network-geometry-development-record.md#primary-node-and-edge-lanes).
 
 Release compilation passed without warnings. Deployment verified 18 originals and 12 payloads at
 `artifacts/backups/movable-native-primary-lanes-20261016-065155`. No existing generator calls the new
@@ -2591,7 +2591,7 @@ generation routes and human acceptance remain outstanding.
 `MovableNetworkLanes` now exposes full-context native overlap calculation and secondary lane creation
 with native reference maintenance. Seven job declarations were audited, including the exact native
 full-query mode and container ownership. See
-[overlaps and secondary lanes](../../design/generation/Movable-Network-Geometry.md#overlaps-and-secondary-lanes).
+[overlaps and secondary lanes](../audits/movable-network-geometry-development-record.md#overlaps-and-secondary-lanes).
 
 Release compilation passed without warnings; 18 originals and 12 payloads were verified at
 `artifacts/backups/movable-native-secondary-lanes-20261016-065329`. No final generator calls these
@@ -2605,7 +2605,7 @@ The private network calculation now has one entry point connecting geometry, pri
 references, overlaps, native signal initialization and secondary lanes. The signal job's 25 fields
 and native mechanism-detection path were audited. It retains native TrafficLights/LaneSignal state;
 no custom signal controller or persisted mod component was introduced. See
-[signal initialization](../../design/generation/Movable-Network-Geometry.md#signal-initialization-and-calculation-entry-point).
+[signal initialization](../audits/movable-network-geometry-development-record.md#signal-initialization-and-calculation-entry-point).
 
 Release compilation passed without warnings. Deployment verified 18 originals and 12 payloads at
 `artifacts/backups/movable-native-network-sequence-20261016-065457`. The caller must still construct
@@ -2617,7 +2617,7 @@ There is no final generator caller or in-game acceptance yet; no existing bridge
 `MovableNetworkPrefabs` now imports 47 explicit native component/buffer record types, remapping
 prefab entity references and rebuilding archetypes in the temporary world. It preserves cyclic
 graphs, original-prefab provenance and PrefabData enabled state, and excludes foreign bridge paths
-before reading payloads. See [private prefab import](../../design/generation/Movable-Network-Geometry.md#private-prefab-import).
+before reading payloads. See [private prefab import](../audits/movable-network-geometry-development-record.md#private-prefab-import).
 
 Release compilation passed without warnings. Deployment verified 18 originals and 12 payloads at
 `artifacts/backups/movable-network-prefab-import-20261016-065648`. This is temporary preparation, not
@@ -2630,7 +2630,7 @@ The private pipeline now creates node and edge compositions using the imported n
 requested state flags and native section selection. Before geometry, it initializes all pending
 compositions through the installed NetCompositionSystem job, retaining native lanes, carriageways,
 crosswalks, objects, areas and road/track/terrain attributes. The explicit prefab import inventory
-now contains 58 records. See [composition construction](../../design/generation/Movable-Network-Geometry.md#native-node-and-edge-composition-construction).
+now contains 58 records. See [composition construction](../audits/movable-network-geometry-development-record.md#native-node-and-edge-composition-construction).
 
 Release compilation passed without warnings. Deployment verified 18 originals and 12 payloads at
 `artifacts/backups/movable-native-composition-context-20261016-065850`. Complete topology, mechanism
@@ -2643,7 +2643,7 @@ The shared network pipeline now creates native-archetype nodes, edges and mechan
 maintains endpoint/middle connectivity and initial Owner/SubNet/SubObject relationships, and runs
 native NetComponentsSystem after geometry. This supplies native signal-component derivation before
 lane/signal initialization. ObjectData import brings the explicit record count to 59. See
-[private topology](../../design/generation/Movable-Network-Geometry.md#private-network-topology-and-required-components).
+[private topology](../audits/movable-network-geometry-development-record.md#private-network-topology-and-required-components).
 
 Release compilation passed without warnings. Deployment verified 18 originals and 12 payloads at
 `artifacts/backups/movable-native-network-topology-20261016-070105`. Measured style arrangements,
@@ -2655,7 +2655,7 @@ unfinished. No existing bridge output changed and no bridges were removed.
 MovableLaneVisuals can now consume actual private node/edge lane entities, their overlap-derived
 render state and a common closed-pose origin. MovableRoadObjects can consume the same context's
 initialized NetCompositionObject rules. Both use imported-prefab provenance and reject foreign
-sources. See [context consumers](../../design/generation/Movable-Network-Geometry.md#consuming-the-calculated-context).
+sources. See [context consumers](../audits/movable-network-geometry-development-record.md#consuming-the-calculated-context).
 
 Release builds passed without warnings. The final deployment verified 18 originals and 12 payloads
 at `artifacts/backups/movable-context-object-rules-20261016-070314`. Existing preview behavior is
@@ -2668,7 +2668,7 @@ StageMechanism can prepare an assembled generated mechanism without publishing i
 resolving a live DLC prototype. Its archetype comes from its own native components; native NetObject
 and MoveableBridge initialization supplies network/movement records. The caller must provide the
 generated geometry and complete placement records. See
-[unregistered mechanisms](../../design/generation/Movable-Network-Geometry.md#unregistered-generated-mechanisms).
+[unregistered mechanisms](../audits/movable-network-geometry-development-record.md#unregistered-generated-mechanisms).
 
 Release compilation passed without warnings. Deployment verified 18 originals and 12 payloads at
 `artifacts/backups/movable-unregistered-mechanism-context-20261016-070538`. This metadata stage is not
@@ -2681,7 +2681,7 @@ bridges were removed.
 Added private RenderPrefab metadata staging and native scalar MeshData calculation to the shared
 movable network context. The calculation uses the generated bounds and surface area, preserves
 native LOD/flag behavior and stages LOD dependencies without creating GPU batches or new materials.
-See [network geometry](../../design/generation/Movable-Network-Geometry.md) for source evidence, ownership and scope.
+See [network geometry](../../contracts/movable-contract.md) for source evidence, ownership and scope.
 
 Release compilation and deployment passed: 18 original files and 12 payloads verified under
 `artifacts/backups/movable-render-metadata-20261016-071524`. Existing bridge outputs are unchanged.
@@ -2708,7 +2708,7 @@ Added MovableNetworkContext to execute explicit per-archetype topology through t
 mechanism, geometry, composition, lane and signal helpers. The same context exposes lane visuals,
 object rules and composition pieces to the surface compiler. BuildingConfigurationData entity
 references and theme identity are remapped into the private world; constructor failures dispose it.
-See [network geometry](../../design/generation/Movable-Network-Geometry.md) for the sequence and lifetime requirements.
+See [network geometry](../../contracts/movable-contract.md) for the sequence and lifetime requirements.
 
 Release builds passed. Final deployment verified 18 originals and 12 payloads at
 `artifacts/backups/movable-context-configuration-20261016-072220`; the initial orchestration deployment
@@ -3027,7 +3027,7 @@ outstanding. This increment does not establish complete support for any movable 
 
 Fresh extraction of the installed resources.assets covers all 21 Draw01 root section
 entries, four unique root sections and 64 decoded prefab/component objects. See
-[Draw01 section role evidence](../bridge-styles/Draw01/Draw01-section-role-evidence.md).
+[Draw01 section role evidence](../bridge-styles/Draw01/draw01-section-role-evidence.md).
 
 The sidewalk's Boarding Lane 0 uses ParkingLane with zero slot dimensions. Native
 NetInitializeSystem marks it Virtual as well as Parking; a ParkingLane component is
@@ -3120,7 +3120,7 @@ bits, node connection matching can replace the selected node-composition index w
 edge lane index, and secondary lanes receive fresh secondary-marked IDs without persisted
 left/right source-lane references in the inspected creation path. Therefore the new
 composition provenance arrays cannot be indexed directly by arbitrary path-node or visual
-batch numbers. See [native lane correspondence](../audits/Movable-native-lane-path-correspondence.md).
+batch numbers. See [native lane correspondence](../audits/movable-native-lane-path-correspondence.md).
 
 Projected decals already retain actual receiver bones through MovableDecalReceivers; that
 path remains appropriate for attachment provenance. Non-decal secondary geometry still
@@ -3134,7 +3134,7 @@ Decoded binary32 positions and index buffers for mesh 0 of all five lift styles 
 three LODs. Each index buffer matches the previous native bone-group OBJ extraction.
 The reproducible intermediate script is work/bridge-research/lift_surface_candidates.py;
 its candidate membership is retained in lift-native-road-plane-candidates.json.
-See [lift surface candidates](../audits/Lift-native-surface-candidates.md) for source hashes,
+See [lift surface candidates](../audits/lift-native-surface-candidates.md) for source hashes,
 counts and bounds. This is native geometry inspection, not a visual-generation unit test.
 
 The data rules out a universal flat-height or largest-area classifier. Lift03 retains
@@ -3155,7 +3155,7 @@ triangles 342, 343, 730 and 731 form the inner top, sloping from Y=10.240234375 
 center to Y=10.2001953125 at its ends. The preceding horizontal-candidate instrument
 excluded them because their stored Y span is 0.0400390625. This resolves that instrument's
 missing-road-plane observation without treating missing candidates as missing geometry.
-See [Lift01 cross-section review](../bridge-styles/Lift01/Lift01-native-deck-cross-section-review.md).
+See [Lift01 cross-section review](../bridge-styles/Lift01/lift01-native-deck-cross-section-review.md).
 
 The far shell meets this higher proxy surface, so replacement with near-datum road geometry
 requires explicitly owned transition/closure geometry rather than a four-face deletion
@@ -3196,7 +3196,7 @@ is claimed by this class.
 
 Also inspected all five pedestrian main-mesh LODs: PedestrianDraw01 has three, while
 PedestrianDraw02 has two. Exact native binary indices match the bone-group OBJ exports.
-See [pedestrian surface candidates](../audits/Pedestrian-native-surface-candidates.md). PedestrianDraw01
+See [pedestrian surface candidates](../audits/pedestrian-native-surface-candidates.md). PedestrianDraw01
 far moving tops occur at Y=10.10009765625 versus near/middle Y=10, while PedestrianDraw02
 retains Y=10 candidates at both LODs. Those groups still need semantic/UV review and are
 not accepted removal masks.
@@ -3215,7 +3215,7 @@ near positive start is Z=59.3623046875, X=+-1.9114990234375, while the moving wi
 Z=64.470703125 with inner boundaries X=+-1.9168701171875. The moving central end is
 Z=59.3564453125. Therefore one longitudinal hinge cut cannot classify this road surface;
 measured two-dimensional boundaries and gaps are required. See the
-[PedestrianDraw02 top-region review](../bridge-styles/PedestrianDraw02/PedestrianDraw02-native-top-region-review.md).
+[PedestrianDraw02 top-region review](../bridge-styles/PedestrianDraw02/pedestrian-draw02-native-top-region-review.md).
 
 Both LODs were inspected; the exact-horizontal plot intentionally excludes nonhorizontal
 faces and is not a hole detector. No guessed rectangular partition was emitted. This pass
@@ -3227,7 +3227,7 @@ Extracted exact-position boundary loops for fixed and both moving Y=10 candidate
 at both main LODs. Near moving leaves each form one 32-edge loop; near fixed candidates
 form two 26-edge platform loops and two separate eight-edge islands. Every boundary vertex
 has degree two and no candidate edge has more than two incident faces. Ordered native
-coordinates are recorded in [top boundary loops](../bridge-styles/PedestrianDraw02/PedestrianDraw02-top-boundary-loops.md).
+coordinates are recorded in [top boundary loops](../bridge-styles/PedestrianDraw02/pedestrian-draw02-top-boundary-loops.md).
 
 This replaces extrema-only reasoning with complete candidate outlines but does not classify
 excluded sloped faces or establish authored-part widening. Far horizontal-filter outlines
@@ -3241,7 +3241,7 @@ and UV0. The moving Y=10 candidates share one atlas rectangle, but that rectangl
 contains vertical platform/end closures. Its near selection includes 64 nonhorizontal
 faces; LOD1 includes 68. Thus neither material identity nor a UV rectangle can be promoted
 wholesale to a deletion mask. The main template is opaque; old top faces cannot be retained
-on an assumed transparent cutout. See [material and UV review](../bridge-styles/PedestrianDraw02/PedestrianDraw02-material-uv-review.md).
+on an assumed transparent cutout. See [material and UV review](../bridge-styles/PedestrianDraw02/pedestrian-draw02-material-uv-review.md).
 
 No runtime code or installed resources changed. Full face classification, measured widening,
 road-owned closures, generator assembly and human acceptance remain unfinished.
@@ -3260,7 +3260,7 @@ include raised vertices at Y=10.050048828125; omitting them would create artific
 holes. Separate control-building atlas islands are not road surfaces. Shared-atlas
 vertical end faces remain outside this top-face membership and require explicit
 closure ownership before removal. Native height variation is preserved, not flattened.
-See [complete membership](../bridge-styles/PedestrianDraw02/PedestrianDraw02-complete-road-membership.md).
+See [complete membership](../bridge-styles/PedestrianDraw02/pedestrian-draw02-complete-road-membership.md).
 
 The exact triangle IDs, source hashes and cross-LOD correspondence are retained in the
 intermediate measurement. This is offline evidence, not a runtime UV/height classifier.
@@ -3278,7 +3278,7 @@ Of twenty edges without identical endpoint neighbours, sixteen fixed-platform ed
 are fully covered by exact collinear non-road edge intervals with different subdivisions.
 They are not evidence of holes. Four moving-tip side edges retain uncovered intervals
 in this edge-only check; interior contact, bevels, overlap and other mesh entries still
-require inspection. See [road edge adjacency](../bridge-styles/PedestrianDraw02/PedestrianDraw02-road-edge-adjacency.md).
+require inspection. See [road edge adjacency](../bridge-styles/PedestrianDraw02/pedestrian-draw02-road-edge-adjacency.md).
 No runtime or deployed payload changed. This resolves an incorrect possible closure
 assumption but does not complete structural replacement or any final generator route.
 
@@ -3290,7 +3290,7 @@ not solely along matching edges. Near residual intervals are approximately 13–
 LOD1 residuals are approximately 0.03467 m. These are authored mesh-0 differences and must
 not trigger automatic source welding or filler geometry. Other mesh entries remain outside
 this contact check. Exact intervals and triangle references are retained in the extraction;
-[road edge adjacency](../bridge-styles/PedestrianDraw02/PedestrianDraw02-road-edge-adjacency.md) now includes the results.
+[road edge adjacency](../bridge-styles/PedestrianDraw02/pedestrian-draw02-road-edge-adjacency.md) now includes the results.
 
 The shared road partition API already accepts arbitrary seam transforms and binary trees,
 so the measured nonrectangular interface requires style data and assembly, not a new generic
@@ -3333,7 +3333,7 @@ Implemented both footing LOD widening plans and their native render graph assemb
 recorded per vertex; the LOD1 bevel midpoint inherits the near boundary rule. Raw channels,
 indices, surfaces, components and Y/Z coordinates are preserved. The existing asset factory
 handles derived geometry, remapped LOD references and owned output collection. Source ownership
-is checked before geometry access. See [support implementation](../bridge-styles/PedestrianDraw02/PedestrianDraw02-support-implementation.md).
+is checked before geometry access. See [support implementation](../bridge-styles/PedestrianDraw02/pedestrian-draw02-support-implementation.md).
 
 Release build/deployment passed, with eighteen original installed files backed up and twelve
 payload hashes verified. Backup: `artifacts/backups/pedestrian02-footing-render-20261016-090411`.
@@ -3353,7 +3353,7 @@ own span, not a brace's span. LOD1 has newly reduced vertex positions in some pa
 LOD2 consists of two merged shells (48 and 44 triangles). Its connectivity does not
 supply a new widening decision. Detailed per-height spans and far-proxy correspondence
 remain necessary before column code is emitted. See
-[column part correspondence](../bridge-styles/PedestrianDraw02/PedestrianDraw02-column-part-correspondence.md).
+[column part correspondence](../bridge-styles/PedestrianDraw02/pedestrian-draw02-column-part-correspondence.md).
 No runtime code, installed payload or saved bridge changed in this inspection.
 
 ## PedestrianDraw02 column LOD2 surface evidence (2026-10-16)
@@ -3363,7 +3363,7 @@ layer texture IDs are zero; pixel data is stored in its native VTSurface. Extrac
 512-by-512 original BC7 albedo and decoded all 121 native UV0 entries, then rendered an
 orthographic original-mesh diagnostic with RGB and alpha shown separately. This does
 not emulate the native shader or establish generated visual acceptance. See
-[far material review](../bridge-styles/PedestrianDraw02/PedestrianDraw02-column-far-material-review.md).
+[far material review](../bridge-styles/PedestrianDraw02/pedestrian-draw02-column-far-material-review.md).
 
 A question about permitting necessary subdivision of merged LOD triangles is pending;
 no authorization has been inferred and no topology has changed. Exact per-face conflict
@@ -3379,7 +3379,7 @@ Subway Sleepers Lod and Train Sleepers Lod do not actually have zero smoothing a
 ManagedBatchSystem and BatchDataSystem forward that initialized value; the current lane
 batch extractor already preserves it correctly. Eight audited decal renders and their
 serialized/effective values are recorded in the
-[native parameter-path audit](../audits/Movable-Decal-Native-Parameter-Path.md).
+[native parameter-path audit](../audits/movable-decal-native-parameter-path.md).
 This rules out a proposed shortcut before implementation. No runtime code, deployment or
 bridge removal occurred; no marking was omitted and complete generator work remains open.
 
@@ -3391,7 +3391,7 @@ components while retaining lane/curve/traffic data. This supports the existing v
 sampling followed by hidden moving-node composition, without blanket renderless lane copies.
 The whole composition must be hidden; visible ordinary pieces clear the aggregate flag.
 Existing-lane reuse, upgrades and reconnections remain distinct acceptance cases.
-See [stationary lane-visual suppression](Movable-stationary-lane-visual-suppression.md).
+See [stationary lane-visual suppression](movable-stationary-lane-visual-suppression.md).
 No runtime source, installed payload or bridge asset changed. Full generator assembly and
 marking conversion remain outstanding; this is native path evidence, not runtime acceptance.
 
@@ -3848,7 +3848,7 @@ execution, final per-placement partition selection and complete generator routin
 
 ## Native object producer rule indices (2026-10-16)
 
-The shared object provenance replay now retains the exact original NetPieceObject rule index as well as the source piece occurrence. It replays native rules in their native order, including inversion, and verifies the restored output against whole-composition native output. Both extraction entry points and selected node-object source records retain this identity. See [road-object evidence](Movable-Road-Objects.md#exact-source-rule-indices-2026-10-16).
+The shared object provenance replay now retains the exact original NetPieceObject rule index as well as the source piece occurrence. It replays native rules in their native order, including inversion, and verifies the restored output against whole-composition native output. Both extraction entry points and selected node-object source records retain this identity. See [road-object evidence](movable-road-objects.md#exact-source-rule-indices-2026-10-16).
 
 Release build and deployment succeeded; backup `artifacts/backups/movable-object-rule-indices-20261016-110633`, 18 originals and 12 installed payload files verified. No existing bridge was removed. The new provenance is not yet exercised by a complete movable generator. Per-placement motion mapping, unresolved far footing geometry, final routing and human acceptance remain incomplete; this increment does not claim a completed bridge.
 
@@ -3865,7 +3865,7 @@ producers still require explicit measurement; this does not establish all-road s
 Utility-lane node objects retain native network ownership. They are no longer also
 baked into the moving mechanism, while native utility selection/group consumption
 is preserved. The native producer remains active after mesh hiding and piece-object
-suppression. See [attachment and utility evidence](Movable-Road-Objects.md#measured-attachment-partitions-and-native-utility-ownership-2026-10-16).
+suppression. See [attachment and utility evidence](movable-road-objects.md#measured-attachment-partitions-and-native-utility-ownership-2026-10-16).
 
 Three Release deployments passed, with 18 original files and 12 installed payload
 files verified each time. Latest backup:
@@ -3992,7 +3992,7 @@ Draw01 now has a connected generator route through selected-road sampling, mecha
 render construction, native object assembly and network conversion, returning to the existing
 preview and persistence paths. The far-footing defect is deferred by the user's latest instruction;
 its retained vertex-coefficient mapping preserves native topology and Y/Z but is not accepted
-geometry. Other movable styles are paused. See [Draw01 generator integration](../bridge-styles/Draw01/Draw01-Generator-Integration.md)
+geometry. Other movable styles are paused. See [Draw01 generator integration](../bridge-styles/Draw01/draw01-generator-integration.md)
 for the exact temporary behavior, deployment evidence and pending human verification. Release build
 passed; 18 originals backed up and 12 installed payload files hash-verified. No Draw01 UUID exists
 in the current export state, so no existing bridge was removed. Connected code is not yet a verified
@@ -4005,7 +4005,7 @@ provenance calculation read the edge-only NetCompositionLane buffer from a node 
 Removed the unused LanePieces/LaneOccurrences data chain; native SubLane visual extraction,
 marking compilation and source-face correspondence remain active. Release build and deployment
 passed, with 18 originals backed up and 12 installed files hash-verified. No existing Draw01
-UUID was present for cleanup. See [integration and repair evidence](../bridge-styles/Draw01/Draw01-Generator-Integration.md).
+UUID was present for cleanup. See [integration and repair evidence](../bridge-styles/Draw01/draw01-generator-integration.md).
 A new in-game preview is pending; this is not complete movable-bridge acceptance.
 
 ## Small Road / Draw01 surface selection repair (2026-10-16)
@@ -4015,7 +4015,7 @@ structure in the road bake. Draw01 now explicitly excludes those replacement lay
 surface geometry and native lane extraction. Also added measured ordinary Sidewalk Piece 3.5 sign
 and streetlight producer mappings, whose indices differ from NoTram. Release build and final deployment
 passed; 18 originals backed up and 12 payload files verified. See
-[the repair evidence](../bridge-styles/Draw01/Draw01-Generator-Integration.md). In-game retest remains pending.
+[the repair evidence](../bridge-styles/Draw01/draw01-generator-integration.md). In-game retest remains pending.
 
 ## Draw01 underground lane visual separation (2026-10-16)
 
@@ -4024,7 +4024,7 @@ visible moving-road batch. Native resource and MeshSystem/RequiredBatchesSystem 
 Pipeline/SubPipeline rendering. The shared extractor now omits those render parts from the moving
 road bake while retaining native network utilities. Names and geometry thresholds are not used.
 Release build and deployment passed; 18 originals backed up and 12 installed files verified.
-See [integration repair evidence](../bridge-styles/Draw01/Draw01-Generator-Integration.md). Human retest remains pending.
+See [integration repair evidence](../bridge-styles/Draw01/draw01-generator-integration.md). Human retest remains pending.
 
 ## Draw01 deterioration-decal repair (2026-10-16)
 
@@ -4032,7 +4032,7 @@ The latest failure reached road appearance assembly and rejected native template
 (CarLane / CurvedDecalDeterioration). Fresh-lane zero-wear conversion is now admitted
 from native shader evidence. Road-page matrix calculations are hoisted out of the
 pixel loop and decal receiver pages use the requested density instead of allocating
-maximum-size pages for every triangle. See [Draw01 integration](../bridge-styles/Draw01/Draw01-Generator-Integration.md)
+maximum-size pages for every triangle. See [Draw01 integration](../bridge-styles/Draw01/draw01-generator-integration.md)
 for evidence and limits. Release build and 12-file deployment verification passed;
 preview timing and complete in-game creation remain unverified. Other styles remain paused.
 
@@ -4043,7 +4043,7 @@ The compute bundle is generation-only and embedded in the manager DLL; saved ass
 native materials. Readback, native compression and serialization remain synchronous. The user
 approved native longitudinal mounting stations for selected-road lamps, resolving the reported
 central-gap placement without changing structural Z or bypassing the gap check. See
-[Draw01 integration](../bridge-styles/Draw01/Draw01-Generator-Integration.md) for implementation and verification limits.
+[Draw01 integration](../bridge-styles/Draw01/draw01-generator-integration.md) for implementation and verification limits.
 Draw01 has not yet passed human creation/animation/persistence acceptance; other styles remain paused.
 
 ## Performance and footprint revision (2026-10-16)
@@ -4055,7 +4055,7 @@ and bounded readback queues overlap evaluation with native saving. Constant text
 shared within the bridge, and road atlases group actual source surfaces and crop unused space.
 Native asset mutation remains thread-affine. No LOD or structural Z modification is introduced.
 
-See [performance and size evidence](../audits/Movable-Bridge-Performance.md) for the measured old 132.134 s
+See [performance and size evidence](../audits/movable-bridge-performance.md) for the measured old 132.134 s
 bake total, implementation details, final build/deployment verification and the unresolved
 complete dependency-size comparison. A successful pre-change preview was observed in the log;
 new-build timing, full permanent creation and size acceptance still need a human-created sample.
@@ -4067,22 +4067,22 @@ Bridge generation contract section 24 now requires comparable total size includi
 All extracted moving marking batches now use original texture references and native segmented
 object decals. The user approved curve approximation and endpoint-fade differences. The old
 marking-page bake is removed from the generation graph; road-surface baking is unchanged.
-See [native marking reuse](Movable-Native-Marking-Reuse.md) for native evidence, persistence,
+See [native marking reuse](movable-native-marking-reuse.md) for native evidence, persistence,
 deployment and outstanding human acceptance. No new runtime speed or visual result is claimed.
 
 ## Fixed platform and generation-cost increment (2026-10-17)
 
 Implemented opaque fixed-platform material regions at every generated road LOD, grouped native
-paint volumes and generation-stage timings. See [evidence and pending acceptance](../audits/Movable-Fixed-Platforms-And-Generation-Cost.md).
+paint volumes and generation-stage timings. See [evidence and pending acceptance](../audits/movable-fixed-platforms-and-generation-cost.md).
 
 ## Prefab graph compaction (2026-10-17)
 
-Removed per-occurrence mechanism condition wrappers and retained native root-entry conditions and shared section references. Together with the preceding marking grouping, the recorded input is expected to decrease from 523 to 76 owned Prefabs; a new saved sample is required to measure the result. Structural render hierarchy is preserved, but native decal children remain an explicit difference from the prototype. See [graph evidence and limits](Movable-Prefab-Graph-Compaction.md).
+Removed per-occurrence mechanism condition wrappers and retained native root-entry conditions and shared section references. Together with the preceding marking grouping, the recorded input is expected to decrease from 523 to 76 owned Prefabs; a new saved sample is required to measure the result. Structural render hierarchy is preserved, but native decal children remain an explicit difference from the prototype. See [graph evidence and limits](movable-prefab-graph-compaction.md).
 
 
 ## 2026-10-17: road paint inlay and native fixed platforms
 
-Independent marking object creation has been removed. All LODs now partition road receiver triangles into painted and unpainted surfaces using existing native bridge materials. Fixed sidewalk platforms retain their native geometry and UVs. See [repair evidence and remaining in-game verification](Movable-Road-Paint-And-Platforms.md). Release build and 12-file deployment checks passed; visual acceptance remains pending.
+Independent marking object creation has been removed. All LODs now partition road receiver triangles into painted and unpainted surfaces using existing native bridge materials. Fixed sidewalk platforms retain their native geometry and UVs. See [repair evidence and remaining in-game verification](movable-road-paint-and-platforms.md). Release build and 12-file deployment checks passed; visual acceptance remains pending.
 
 
 The fixed carriageway cap now uses measured native concrete coverage. Converted road UVs now follow prototype object-space scale, orientation and sidewalk origins, rather than the selected network shader UV convention. See the follow-up section in `Movable-Road-Paint-And-Platforms.md`. Build and deployment passed; new in-game verification remains pending.
@@ -4096,9 +4096,9 @@ Prototype UV inspection now separates left/right carriageway orientation and pos
 
 ## 2026-10-17: persistence reader compatibility and original asset recovery
 
-The user confirms normal bridge appearance. Startup retirement was caused by the text index rejecting native typed anonymous Vector3/Quaternion entries in ProceduralAnimationProperties, not an invalid write format. The reader is fixed, complete saved-graph layout checks pass, and the original 202 files for the affected UUID have been restored unchanged. See [persistence evidence](../incidents/Movable-Persistence-Odin-Compatibility.md). Cold-start game confirmation is pending.
+The user confirms normal bridge appearance. Startup retirement was caused by the text index rejecting native typed anonymous Vector3/Quaternion entries in ProceduralAnimationProperties, not an invalid write format. The reader is fixed, complete saved-graph layout checks pass, and the original 202 files for the affected UUID have been restored unchanged. See [persistence evidence](../incidents/movable-persistence-odin-compatibility.md). Cold-start game confirmation is pending.
 
 
 ## Network and unlock persistence audit
 
-All 12 private sections, 28 pieces and 5 unlock groups in the restored sample were reviewed. Network conversion retains unchanged references and copies only changed producers and their parent sections. Equivalent native unlock groups now share an owned node, and the outer gate is embedded directly on each network. See [per-file audit and verification limits](../audits/Movable-Network-Unlock-Persistence-Audit.md). Existing saved files were not rewritten.
+All 12 private sections, 28 pieces and 5 unlock groups in the restored sample were reviewed. Network conversion retains unchanged references and copies only changed producers and their parent sections. Equivalent native unlock groups now share an owned node, and the outer gate is embedded directly on each network. See [per-file audit and verification limits](../audits/movable-network-unlock-persistence-audit.md). Existing saved files were not rewritten.

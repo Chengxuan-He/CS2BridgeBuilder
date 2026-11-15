@@ -36,7 +36,7 @@ def packed_charts(meshes):
             integers.extend(chart['faces'])
             integers.extend(v for face in chart['sourceTriangles'] for v in face)
             integers.extend(v for edge in chart['boundaryEdges'] for v in edge)
-    payload = b'BBN1' + struct.pack('<7i', 1, len(integers), 0, 0, 0, len(values), 0)
+    payload = struct.pack('<6i', len(integers), 0, 0, 0, len(values), 0)
     payload += struct.pack('<' + 'i' * len(integers), *integers)
     payload += struct.pack('<' + 'f' * len(values), *values)
     return payload + hashlib.sha256(payload).digest()
@@ -160,7 +160,7 @@ def main():
     args.output.write_text(json.dumps(report, separators=(',', ':')) + '\n')
     binary = packed_charts(meshes)
     args.output.with_suffix('.bin').write_bytes(binary)
-    print('BBN1 bytes=' + str(len(binary)))
+    print('.bin bytes=' + str(len(binary)))
     print(json.dumps(report['summary'], indent=2))
 
 

@@ -44,7 +44,7 @@ producer invokes the same `--pack-aos` compiler. `--check` rejects an unpacked
 resource. `--verify-aos-from INPUT_NUMBERS_DIRECTORY` compares deterministic
 compilation of retained intermediate inputs with the complete current resources.
 
-APF2 keeps BBN1's checksum and typed arrays. Its I32 header contains magic, version,
+APF2 keeps numerical `.bin`'s checksum and typed arrays. Its I32 header contains magic, version,
 entry count and absolute entry offsets. Each entry specifies row count, register
 count, instruction count, lane width (three for coordinates, one for explicit
 scalar results) and an offline-proven block size. Each twenty-word instruction

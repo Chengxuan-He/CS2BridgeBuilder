@@ -18,13 +18,31 @@ third-party asset compatibility.
 flowchart TD
     A[Prepare a local checkout] --> B[Choose a suitable working branch]
     B --> C[Tell your agent the bridge source and desired design]
-    C --> F[Test the resulting build in game]
+    C --> D{Source representation?}
+    D -- Native Network --> N[Measure the existing network archetype]
+    D -- Static object or other non-Network --> V[Record source parameters and complete object graph]
+    V --> W[Prepare an immutable virtual-prototype recipe offline]
+    W --> X[Check spans, supports, endpoints and all LODs]
+    N --> E[Implement through the existing style generation path]
+    X --> E
+    E --> M{Moving structure?}
+    M -- Yes --> O[Integrate native motion under the movable contract]
+    M -- No --> P[Integrate UI, preview and independent persistence]
+    O --> P
+    P --> Q[Build and deploy after the user closes the game]
+    Q --> F[User starts the game and tests the generated bridge]
     F --> G{Acceptance checks pass?}
     G -- No --> H[Share logs, screenshots and reproduction steps with the agent]
-    H --> F
+    H --> E
     G -- Yes --> I[Review changes and deliver locally or as a patch]
     I -. Optional with explicit authorization .-> J[Publish a fork branch and open a pull request]
 ```
+
+The non-Network branch prepares construction data, not an intermediate playable network. Both
+branches join the same generation path; the player selects the actual road, track or pedestrian
+network there. Moving non-Network sources must also follow the movable branch. Use the
+[non-Network contract](../contracts/non-network-contract.md) and
+[paired specification](../specs/non-network-spec.md) for the governing scope.
 
 ## 1. Prepare the repository and evidence
 
@@ -43,6 +61,9 @@ Give the agent these inputs:
 - Measured road and structure boundaries, tower placement, cables, railings, lights, materials,
   unlock conditions and native cost components.
 - For double-deck styles, the real prototype's `AuxiliaryNets` arrangement and deck separation.
+- Identify whether the source is a native Network or a static object/other non-Network asset.
+  For non-Network sources, include version-matched description evidence, retrieval date, package
+  identities/hashes and documented units; distinguish total length, span and repeat length.
 
 Do not ask the agent to infer dimensions from a screenshot or borrow another family's constants.
 When evidence is missing, it should identify the missing data and complete independent work first.
@@ -76,13 +97,20 @@ say so rather than guessing. Include any additional required DLC or mods separat
 ```text
 Add support for <style ID> using <exact prototype Prefab> from <source and version>.
 Support <single deck / double deck>; use a suitable working branch (a style branch is optional).
+Source representation: <native Network / static object or other non-Network>.
+Motion: <fixed / moving mechanism and available evidence>.
 Evidence is available at <paths to anatomy, mesh/LOD exports and screenshots>.
 
 Read AGENTS.md, the complete project contract and applicable nested instructions.
+Read the complete generation contract and its paired specification. For a non-Network source,
+also read docs/contracts/non-network-contract.md and docs/specs/non-network-spec.md.
+Prepare only an existing-form immutable construction recipe; do not create or register an
+intermediate network asset, introduce a virtual-prototype runtime layer, or bind it to a road kind.
+For a moving source, also follow the movable contract and specification.
 Inspect the existing generation, preview, localization, persistence and migration paths.
 Use the simplest existing extension points. Record measured parameters for this archetype;
 do not copy another style's constants or infer part identity in runtime code.
-Keep each bridge’s persisted dependencies owner-local and preserve native pricing/unlocks; require Bridge Builder for generated-program registration.
+Keep each bridge’s persisted dependencies owner-local and preserve native pricing/unlocks; require Bridge Builder for mod-owned precompiled program registration; no shader program files are saved with a bridge.
 Do not use other bridges' ImportedData Prefabs as creation or copy sources.
 
 Follow contract section 12's optional branch policy and keep the style ID stable.
@@ -131,13 +159,13 @@ A working generator without its working UI entry is not a completed contribution
 
 ### Affine matrix generation step
 
-Use the [CPU affine execution contract](../agent-contract/BRIDGE_GENERATION_CONTRACT.md#cpu-affine-geometry-execution)
+Use the [CPU affine execution contract](../specs/generation-spec.md#generation-cpu-affine-geometry-execution)
 for every style's coordinate stage:
 
 1. Extract measured origins, coefficient rows, parameter domains and part membership offline.
    Each of X, Y and Z may depend on width; a constant axis has zero coefficients.
 2. Store numerical values in the existing DLL-embedded typed arrays. Sparse vertex weights and
-   part ranges are valid matrix representations; the BBN1 format need not change or expand to
+   part ranges are valid matrix representations; the numerical `.bin` format need not change or expand to
    dense matrices. Preserve float bits, anchors and evaluation order.
 3. Load only demanded binary resources into the current generation's parameter session. Reuse
    decoded arrays, membership records and SIMD programs within that request and its joined LOD
@@ -165,6 +193,40 @@ This stage changes computation only: preserve topology, native bone ownership, m
 semantics and independent asset persistence.
 
 ## 4. Measure geometry before implementing transforms
+
+### Prepare a non-Network source before generation
+
+For a static-object or other non-Network source, complete this branch before implementing its
+normal style generator. Follow the [required sequence](../contracts/non-network-contract.md#non-network-1-scope-and-required-sequence)
+and record evidence in the appropriate bridge-style audit, rather than adding a separate design document.
+
+1. Check for an existing native or supported equivalent before proposing a new style ID; width
+   variants of the same design belong to one style. Record the exact installed source and compare
+   its documented dimensions with measured geometry. Resolve discrepancies explicitly; a number
+   in the asset name is not a measurement.
+2. Inventory the complete object graph, nested render parts and every LOD. Record coordinate
+   frames, accumulated transforms, running-surface versus structural membership, material references,
+   supports and endpoints using the [parameter meanings](../specs/non-network-spec.md#non-network-2-source-evidence-and-parameter-meanings).
+3. Measure span-local, repeating, endpoint and shared-boundary support roles. Establish adjacent-span
+   continuity and select the [native longitudinal behavior](../specs/non-network-spec.md#non-network-select-longitudinal-behavior-from-native-evidence)
+   from actual native evidence. Keep transverse width mapping separate; do not stretch rigid supports
+   or treat authored total length as an exact native course-length lock.
+4. Encode those measurements in the existing immutable recipe and embedded numerical-resource
+   form. The virtual prototype is only this construction data: emit no intermediate `.Prefab`,
+   `.cok`, network entities or registration, and add no separate schema, factory, cache or runtime
+   conversion pass. Do not choose a road/rail/pedestrian template for it or add a road-kind gate.
+5. Feed the recipe directly into the existing generation path. The player's selected elevated
+   network supplies composition, lanes and native network behavior. Map support roles into the final
+   native graph, including applicable piece objects and node subobjects, and inspect preview traversal
+   through nested objects and meshless carriers. Continue with the shared geometry, UI and persistence
+   steps below; an unchanged static bridge placed over an unrelated road is not a generated bridge.
+6. Record the [staged verification results](../specs/non-network-spec.md#non-network-5-staged-verification-and-acceptance)
+   separately for source evidence, recipe, final generation, preview/persistence and human acceptance.
+   Missing evidence remains explicit while independent work continues. Moving sources additionally
+   require native mechanism/bone/state integration under the movable contract; this preparation does
+   not implement motion or authorize a separate conversion UI.
+
+### Apply the shared geometry workflow
 
 Identify authored parts offline using the highest-detail prototype. Record exact mesh/LOD identity
 and part membership as immutable data; runtime code consumes this data without rediscovering parts
@@ -247,6 +309,13 @@ Test the following in your local game and give the results to your agent:
 6. With Bridge Builder enabled, persisted bridges must cold-load and remain available and usable; retain required native
    game/DLC resources. Separately test any known rail-seam limitation.
 7. When applicable, legacy migration preserves identity and a second check makes no further changes.
+8. For non-Network sources, inspect reference, shorter and longer native courses, repeated spans,
+   endpoints, slopes/intersections and sequence boundaries. Check rigid support dimensions, adjacent
+   seams, duplicate/missing supports, zero/one/asymmetric sidewalks and usable lane connectivity.
+   Compare authored dimensions with realized dimensions rather than assuming they remain identical.
+   Verify preview coverage and cold loading of the final owned graph while source assets stay unchanged.
+   Keep these evidence checks separate from player eligibility: do not add appearance/clearance/width
+   rejection gates; genuine resource, native-operation and persistence failures remain explicit.
 
 ## 7. When the generated bridge does not match your expectations
 
@@ -268,7 +337,8 @@ The generated <style ID> bridge does not match the expected result.
 Prototype: <exact Prefab name>.
 Source and version: <base game + game version / DLC name + game version /
 Paradox Mods ID + mod name + mod version + game version>.
-Contribution branch: bridge/<bridge-name>.
+Contribution branch: <actual working branch>.
+Source representation: <native Network / static object or other non-Network>.
 
 Expected: <describe the correct appearance or behavior of the affected part>.
 Actual: <describe the difference, including which side, part or viewing distance is affected>.
@@ -312,6 +382,8 @@ merge and publish accepted contributions.
 Include the following in the local handoff or optional pull request:
 
 - The bridge style and supported deck modes, with required DLC or source assets.
+- For non-Network sources, the source-parameter record, reproducible recipe evidence, native
+  longitudinal/support mapping and staged verification results, including outstanding manual checks.
 - A short explanation of the implementation and any shared code it changes.
 - Prototype measurements and reproducible evidence, without redistributing assets you lack permission to share.
 - Near/far screenshots and results for creation, save/load and cold-start testing.

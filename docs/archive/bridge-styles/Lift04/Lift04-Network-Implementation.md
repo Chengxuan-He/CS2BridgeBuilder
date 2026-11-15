@@ -1,6 +1,6 @@
 # Lift04 network integration data
 
-[How to read this single-style implementation record](../../../README.md#reading-a-single-style-report).
+[How to read this single-style implementation record](../../../contracts/documentation-contract.md#documentation-index-reading-a-single-style-report).
 
 
 The independently measured LiftBridge04 network contains nineteen section entries: six span occurrences with three conditional branches each and one intersection-only median. Every occurrence was checked before emission; this is not an unverified application of another bridge's mapping.

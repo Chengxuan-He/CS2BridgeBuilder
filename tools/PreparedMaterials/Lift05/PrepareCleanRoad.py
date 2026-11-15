@@ -168,7 +168,7 @@ def main():
         i += nodes * 2
         j += nodes * 3
     assert i == len(integers) and j == len(doubles)
-    raw = b'BBN1' + struct.pack('<7i', 1, len(integers), 0, 0, 0, 0, len(doubles))
+    raw = struct.pack('<6i', len(integers), 0, 0, 0, 0, len(doubles))
     raw += struct.pack('<%di' % len(integers), *integers) + struct.pack('<%dd' % len(doubles), *doubles)
     (OUT / original.name).write_bytes(raw + hashlib.sha256(raw).digest())
     report = dict(recipe=RECIPE, sourceNearHashes=source_hashes,

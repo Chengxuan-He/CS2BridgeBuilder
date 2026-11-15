@@ -291,7 +291,7 @@ def main():
     for ci, record in enumerate(chart_records):
         encoded[2+ci] = len(encoded)
         encoded.extend(record)
-    raw = b'BBN1'+struct.pack('<7i', 1, len(encoded), 0, 0, 0, 0, len(doubles))
+    raw = struct.pack('<6i', len(encoded), 0, 0, 0, 0, len(doubles))
     raw += struct.pack('<'+'i'*len(encoded), *encoded)+struct.pack('<'+'d'*len(doubles), *doubles)
     candidate_path = OUT / ('UvCharts_'+STYLE+'.bin')
     candidate_path.write_bytes(raw+hashlib.sha256(raw).digest())

@@ -52,7 +52,7 @@ payload changed; complete generator and human acceptance remain outstanding.
 Intermediate script: `work/bridge-research/lift01_cross_sections.py`.
 Numeric cross-section evidence: `work/bridge-research/lift01-native-deck-cross-sections.json`.
 The source geometry hashes and full mesh counts are in
-[Lift native surface candidates](../../audits/Lift-native-surface-candidates.md).
+[Lift native surface candidates](../../audits/lift-native-surface-candidates.md).
 
 ## Exact inner-top rim and retained neighbors
 

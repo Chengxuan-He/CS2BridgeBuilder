@@ -126,7 +126,7 @@ def main():
                      native_face['face'] if native_face is not None else -1])
         ints.append(len(record['chartIds']))
         ints.extend(record['chartIds'])
-    data = struct.pack('<II6i', 0x314e4242, 1, len(ints), len(words), 0, 0, 0, len(doubles))
+    data = struct.pack('<6i', len(ints), len(words), 0, 0, 0, len(doubles))
     data += np.asarray(ints, dtype='<i4').tobytes()+np.asarray(words, dtype='<u4').tobytes()+np.asarray(doubles, dtype='<f8').tobytes()
     data += hashlib.sha256(data).digest()
     a.output.mkdir(parents=True)

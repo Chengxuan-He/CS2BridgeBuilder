@@ -134,13 +134,7 @@ internal static class BridgeSpec
     /// <summary><c>NetObjectPlacement.EdgeMiddle</c>, as its number so this file needs nothing from the game.</summary>
     internal static int PlacementEdgeMiddle => Numeric_BridgeSpec_cs.Values.I32[2];
 
-    /// <summary>Where a bridge draws its cables: centred, and marked as a median section.</summary>
-    internal static class CablePlacement
-    {
-        internal static float Offset => Numeric_BridgeSpec_cs.Values.F32[11];
 
-        internal const bool Median = true;
-    }
 }
 
 // Embedded numerical arrays: BridgeSpec_cs

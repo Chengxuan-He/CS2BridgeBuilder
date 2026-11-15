@@ -2,7 +2,7 @@
 
 ## Priorities and measurement
 
-Follow the [material generation contract](../../agent-contract/MATERIAL_GENERATION_CONTRACT.md).
+Follow the [material generation contract](../../contracts/reading-map.md#material-generation-contract).
 First eliminate duplicate original materials and runtime work on constant derived appearances.
 Use source-density repeat units rather than full-span baked images. Prepare reusable constant
 resources offline and package them by style; generation copies their native bytes without
@@ -95,4 +95,4 @@ Use fresh game logs for cold/warm comparisons with identical styles, roads and o
 Report source preparation separately from runtime cost and avoid counting nested stages twice.
 Human checks cover all channels, LODs, motion, preview disposal, permanent creation and cold loading.
 Offline tests and microbenchmarks do not establish game speed, visual equivalence or completion of
-the remaining migration documented in [prepared materials](../../design/materials/Prepared-Materials.md).
+the remaining migration documented in [prepared materials](../../specs/material-spec.md).

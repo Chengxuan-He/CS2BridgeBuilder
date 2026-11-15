@@ -193,8 +193,8 @@ public partial class BridgeGenerationSystem
             _previewRenderer.Start((image, error) =>
             {
                 if (revision != BridgePreviewState.Revision || BridgePreviewState.Selection == null || renderWidth != BridgePreviewState.ViewportWidth) return;
-                if (error.Length != 0 || string.IsNullOrEmpty(image))
-                    FailPreview(revision, error.Length != 0 ? error : "RenderEmpty");
+                if (error.Length != 0)
+                    FailPreview(revision, error);
                 else
                     BridgePreviewState.Publish(revision, image, "PreviewReady");
             });

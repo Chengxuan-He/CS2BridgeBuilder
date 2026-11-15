@@ -42,7 +42,7 @@ coincident={}
 for i,v in enumerate(p):coincident.setdefault(tuple(v),[]).append(i)
 assert all(np.ptp(c[ids])==0 for ids in coincident.values())
 for name,v in [('Membership',c),('Frames',der)]:
- blob=struct.pack('<8i',0x314e4242,1,0,0,0,0,len(v),0)+v.tobytes()
+ blob=struct.pack('<6i',0,0,0,0,len(v),0)+v.tobytes()
  (O/f'Types_CoveredPedestrian_{name}.bin').write_bytes(blob+hashlib.sha256(blob).digest())
 checks=[]
 for extra in (0,2,10,-2):

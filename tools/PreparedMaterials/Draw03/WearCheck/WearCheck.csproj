@@ -4,7 +4,7 @@
   <ItemGroup>
     <Compile Include="../../../../src/BridgeBuilder/Bridges/Types/Draw03/Draw03RoadWear.cs" Link="Draw03RoadWear.cs" />
     <Compile Include="../../../../src/BridgeBuilder/Bridges/Types/Draw03/Draw03RoadWearUnits.cs" Link="Draw03RoadWearUnits.cs" />
-    <Compile Include="../../../../src/BridgeBuilder/Bridges/Types/Draw03/Draw03RoadWearDomains.cs" Link="Draw03RoadWearDomains.cs" />
+    <EmbeddedResource Include="Types_Draw03_Draw03RoadWearDomains_cs.bin" LogicalName="BridgeBuilder.Numbers.Types_Draw03_Draw03RoadWearDomains_cs.bin" WithCulture="false" />
     <Compile Include="../../../../src/BridgeBuilder/Bridges/Common/Movable/MovableRoadGeometry.cs" Link="MovableRoadGeometry.cs" />
     <Compile Include="../../../../src/BridgeBuilder/Bridges/Common/Movable/MovableExistingRoadSurface.cs" Link="MovableExistingRoadSurface.cs" />
     <Compile Include="../../../../src/BridgeBuilder/Bridges/Common/Movable/MovableRepeatKey.cs" Link="MovableRepeatKey.cs" />

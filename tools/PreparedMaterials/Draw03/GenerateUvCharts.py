@@ -15,8 +15,8 @@ OUT=ROOT/'artifacts/prepared-materials/Draw03/native-charts'
 
 def arrays(blob):
     assert hashlib.sha256(blob[:-32]).digest()==blob[-32:]
-    counts=struct.unpack_from('<6i',blob,8)
-    return np.frombuffer(blob,'<i4',counts[0],32),np.frombuffer(blob,'<f4',counts[4],32+4*counts[0])
+    counts=struct.unpack_from('<6i', blob, 0)
+    return np.frombuffer(blob,'<i4',counts[0],24),np.frombuffer(blob,'<f4',counts[4],24+4*counts[0])
 
 
 def loops(boundary,positions,uv):
@@ -89,7 +89,7 @@ def run():
             for ring in rings:
                 ints.extend((len(doubles),len(ring)))
                 doubles.extend(v for point in ring for v in point)
-        blob=struct.pack('<II6i',0x314e4242,1,len(ints),0,0,0,0,len(doubles))
+        blob=struct.pack('<6i',len(ints),0,0,0,0,len(doubles))
         blob+=np.asarray(ints,dtype='<i4').tobytes()+np.asarray(doubles,dtype='<f8').tobytes()
         blob+=hashlib.sha256(blob).digest()
         name=recipe_name.replace('UvDomain_','NativeUvCharts_')

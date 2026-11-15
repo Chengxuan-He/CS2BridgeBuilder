@@ -9,9 +9,9 @@ root, originals, output = map(Path, sys.argv[1:])
 def arrays(path):
     raw = path.read_bytes()
     assert hashlib.sha256(raw[:-32]).digest() == raw[-32:]
-    counts = struct.unpack_from('<6i', raw, 8)
+    counts = struct.unpack_from('<6i', raw, 0)
     result = []
-    offset = 32
+    offset = 24
     for count, size in zip(counts, [4, 4, 8, 8, 4, 8]):
         result.append([raw[offset+i*size:offset+(i+1)*size] for i in range(count)])
         offset += count*size

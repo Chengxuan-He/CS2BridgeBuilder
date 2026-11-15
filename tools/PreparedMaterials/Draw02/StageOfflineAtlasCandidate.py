@@ -17,7 +17,7 @@ for evidence,product in zip(plan['consolidatedUnits'],report['units']):
     channel=product['channels'][0]
     assert all(c['contentMin']==channel['contentMin'] and c['contentMax']==channel['contentMax'] for c in product['channels'])
     values+=evidence['minimum']+evidence['maximum']+channel['contentMin']+channel['contentMax']
-blob=struct.pack('<8I',0x314e4242,1,0,0,0,0,len(values),0)+struct.pack('<%df'%len(values),*values)
+blob=struct.pack('<6i',0,0,0,0,len(values),0)+struct.pack('<%df'%len(values),*values)
 blob+=hashlib.sha256(blob).digest()
 target=ROOT/'assets/HardcodedNumbers/Draw02/Types_Draw02_Draw02PreparedAtlas_cs.bin'
 target.write_bytes(blob)

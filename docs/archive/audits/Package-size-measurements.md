@@ -5,7 +5,7 @@
 The later fixed-base identity-repair package is recorded as **52,486,998 bytes**, with SHA-256
 `B9CADFFC393440FDF965FEAA95DE8BBC9F0FCC8DFF44319F0134EF3080438254`.
 Its package and deployment evidence is retained under
-`artifacts/draw01-fixedbase-fix/shared/outputs/`; see the [shared handoff](../../../tools/PreparedMaterials/SharedCurrent.md).
+`artifacts/draw01-fixedbase-fix/shared/outputs/`; see the [shared handoff](../implementation/shared-material-integration-20261028.md).
 This is a prior measured build, not a fresh measurement of documentation changes or proof of
 compliance with the new material scheme. Historical package and library counts below belong to
 their named artifacts. The complete generated-owner material measurement remains a separate gate.
@@ -65,7 +65,7 @@ All 299 descriptors pass the installed game's binary readers, including 270 VT d
 All ten style graphs pass source-linked independent-owner snapshot and deletion checks.
 Standard compilation, hardcoded-data validation and localization checks pass. Native parsing
 and persistence tests do not establish correct region-repeat sampling or rendered appearance.
-See [current requirements and retained implementation evidence](../../design/materials/Prepared-Materials.md#current-requirements-and-evidence-scope).
+See [current requirements and retained implementation evidence](../../specs/material-spec.md#road-and-non-road-appearance-routing).
 
 The production code can bind real source-chart-contained mappings and converted native object
 descriptors. Out-of-chart structural receivers need a valid original-material mapping under the current contract; the deleted

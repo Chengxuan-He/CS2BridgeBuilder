@@ -18,6 +18,6 @@ for idx,cid in enumerate(ids):
    scale=2/(max(xs)-min(xs));d.extend(x*scale for x in xs);f.extend([scale]*len(xs))
   else:d.extend([0]*len(xs));f.extend([0]*len(xs))
  for label,values in [('Displacement',d),('Frames',f)]:
-  b=struct.pack('<8i',0x314e4242,1,len(counts),0,0,0,len(values),0)+struct.pack('<'+'i'*len(counts),*counts)+struct.pack('<'+'f'*len(values),*values);b+=hashlib.sha256(b).digest();(out/f'Types_TrussViaduct_{idx}_{label}.bin').write_bytes(b)
+  b=struct.pack('<6i',len(counts),0,0,0,len(values),0)+struct.pack('<'+'i'*len(counts),*counts)+struct.pack('<'+'f'*len(values),*values);b+=hashlib.sha256(b).digest();(out/f'Types_TrussViaduct_{idx}_{label}.bin').write_bytes(b)
  print(idx,cid,counts)
 

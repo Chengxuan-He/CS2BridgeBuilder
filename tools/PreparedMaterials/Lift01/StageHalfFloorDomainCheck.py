@@ -16,7 +16,7 @@ internal sealed class HardcodedNumbers {
  internal static string Root;internal int[] I32;internal float[] F32;
  internal static HardcodedNumbers Load(string name) {
  var path=Directory.GetFiles(Path.Combine(Root,"assets/HardcodedNumbers/Lift01"),name+".bin").Single();
- using var r=new BinaryReader(File.OpenRead(path));if(r.ReadUInt32()!=0x314e4242||r.ReadInt32()!=1)throw new Exception("BBN");
+ using var r=new BinaryReader(File.OpenRead(path));
  var c=new int[6];for(int i=0;i<6;i++)c[i]=r.ReadInt32();var d=new HardcodedNumbers();d.I32=new int[c[0]];
  for(int i=0;i<c[0];i++)d.I32[i]=r.ReadInt32();r.BaseStream.Position+=c[1]*4+c[2]*8+c[3]*8;
  d.F32=new float[c[4]];for(int i=0;i<c[4];i++)d.F32[i]=r.ReadSingle();return d;

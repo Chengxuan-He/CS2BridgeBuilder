@@ -8,7 +8,7 @@ r=json.loads((src/'composition.json').read_text())
 a=np.asarray(Image.open(src/'LanePattern-alpha.png'));weight=1-a.mean(0)/255
 q=float(np.sum((np.arange(a.shape[1])+.5)/a.shape[1]*weight)/weight.sum())
 values=[3.,4.,q,r['units'][1]['physicalSize'][0]]
-blob=struct.pack('<8I',0x314e4242,1,0,0,0,0,len(values),0)+struct.pack('<4f',*values);blob+=hashlib.sha256(blob).digest()
+blob=struct.pack('<6i',0,0,0,0,len(values),0)+struct.pack('<4f',*values);blob+=hashlib.sha256(blob).digest()
 (ROOT/'assets/HardcodedNumbers/Draw02/Types_Draw02_Draw02LaneAppearance_cs.bin').write_bytes(blob)
 for p in (src/'Materials/Draw02').rglob('*'):
  if not p.is_file():continue

@@ -1,6 +1,6 @@
 # Lift03 main and auxiliary network integration data
 
-[How to read this single-style implementation record](../../../README.md#reading-a-single-style-report).
+[How to read this single-style implementation record](../../../contracts/documentation-contract.md#documentation-index-reading-a-single-style-report).
 
 
 ## Dual-network assembly stage (2026-10-20)

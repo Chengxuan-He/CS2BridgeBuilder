@@ -15,8 +15,8 @@ Its total ends before `CreateMovableRenderGraph`, so retain separate material, p
 and preview-render timings. Compare the same style, roads, LODs and cold/warm cache state.
 No measured end-to-end acceleration is established by the affine migration alone.
 
-See the [authoritative execution rules](../../agent-contract/BRIDGE_GENERATION_CONTRACT.md#cpu-affine-geometry-execution)
-and [contributor generation step](../../guides/Adding-Bridge-Styles-With-Coding-Agents.md#affine-matrix-generation-step).
+See the [authoritative execution rules](../../specs/generation-spec.md#generation-cpu-affine-geometry-execution)
+and [contributor generation step](../../guides/adding-bridge-styles-with-coding-agents.md#affine-matrix-generation-step).
 The sections below record the 2026-10-16 optimization and its measurements; their paused-style
 status and historical material/paint pipeline are not the current implementation specification.
 
@@ -121,4 +121,4 @@ replace that measurement with the successful build or the native render-only sub
 
 ## Material reuse update
 
-See [Native Road Material Reuse](../implementation/Movable-Road-Material-Reuse.md) for the implemented direct-material and zero-world-blend texture reuse paths, their limits, deployment evidence and pending runtime measurements. Earlier baking timings remain historical measurements, not measurements of this increment.
+See [Native Road Material Reuse](../implementation/movable-road-material-reuse.md) for the implemented direct-material and zero-world-blend texture reuse paths, their limits, deployment evidence and pending runtime measurements. Earlier baking timings remain historical measurements, not measurements of this increment.

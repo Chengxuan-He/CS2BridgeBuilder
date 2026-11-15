@@ -36,10 +36,10 @@ def f32(value):
 
 def numbers(path):
     payload = path.read_bytes()
-    if payload[:8] != b'BBN1\x01\x00\x00\x00' or hashlib.sha256(payload[:-32]).digest() != payload[-32:]:
+    if hashlib.sha256(payload[:-32]).digest() != payload[-32:]:
         raise ValueError('Invalid immutable numerical resource: ' + str(path))
-    counts = struct.unpack_from('<6i', payload, 8)
-    offset = 32
+    counts = struct.unpack_from('<6i', payload, 0)
+    offset = 24
     values = {}
     for name, fmt, count in zip(('I32', 'U32', 'I64', 'U64', 'F32', 'F64'), ('i', 'I', 'q', 'Q', 'f', 'd'), counts):
         if count < 0:

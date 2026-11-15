@@ -82,9 +82,8 @@ internal static class BridgeAssetPack
 
     internal static void RefreshExisting(PrefabSystem prefabs, EntityManager entities, IEnumerable<string> roots)
     {
-        // A cached legacy root must never overwrite its newly migrated file before restart.
-        if (BridgeSessionState.RestartRequired) return;
-        var owned = new HashSet<string>(roots, StringComparer.Ordinal);
+        // Protect only changed owners from stale cached writes; unrelated pack management continues.
+        var owned = new HashSet<string>(roots.Where(owner => !Systems.BridgeStartupAssetSystem.HasChangedOwnerFiles(owner)), StringComparer.Ordinal);
         if (owned.Count == 0) return;
         // Only exact persisted ownership records and the generator's exact carried-deck names.
         // Never classify ownership from a UUID prefix or walk into shared prototype references.

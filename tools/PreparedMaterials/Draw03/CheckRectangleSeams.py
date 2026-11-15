@@ -16,9 +16,9 @@ representative_area=0.
 for mesh in manifest['meshes']:
     blob=(OUT/mesh['file']).read_bytes()
     assert hashlib.sha256(blob).hexdigest()==mesh['sha256']
-    ni,_,_,_,nf,_=struct.unpack_from('<6i',blob,8)
-    ints=np.frombuffer(blob,'<i4',ni,32)
-    fs=np.frombuffer(blob,'<f4',nf,32+4*ni).reshape(-1,4)
+    ni,_,_,_,nf,_=struct.unpack_from('<6i', blob, 0)
+    ints=np.frombuffer(blob,'<i4',ni,24)
+    fs=np.frombuffer(blob,'<f4',nf,24+4*ni).reshape(-1,4)
     count,charts=ints[1:3]
     fc=ints[3:3+count]
     flags=[];at=3+count
