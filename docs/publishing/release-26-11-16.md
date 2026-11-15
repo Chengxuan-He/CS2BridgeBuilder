@@ -1,9 +1,8 @@
 # Bridge Builder 26.11.16
 
-## Release preparation
+## Release
 
-User-authorized public version: **26.11.16**. Target CLR assembly/file version: **26.11.16.0**.
-This is a preparation record, not evidence that publication or installation has completed.
+Public version: **26.11.16**. CLR assembly/file version: **26.11.16.0**.
 
 ## Changelog
 
@@ -13,7 +12,7 @@ This is a preparation record, not evidence that publication or installation has 
 
 ## Verification and publication status
 
-Status: **Prepared; not published**. The integration handoff identifies these official postprocessed candidate artifacts:
+Status: **Published and installed from the official download**. Paradox Mods listing `160320` reports public, published revision **21**, version **26.11.16**, with `Updating=false`. The remote changelog matches the three entries above after normalization.
 
 | Artifact | Identity |
 | --- | --- |
@@ -22,6 +21,10 @@ Status: **Prepared; not published**. The integration handoff identifies these of
 | Official SDK ZIP | 77,788,081 bytes |
 | ZIP SHA-256 | `A52EBF073D99D1F0470EEB94BEE0EA7499A34C41A5BA47342C9F1B9324AC6941` |
 
-GitHub branch publication, Paradox Mods revision verification and installation from the downloaded published package are pending. Publication identifiers will be recorded after verification.
+The official SDK `DownloadAndInstallMod` installed revision 21 into native cache directory `160320_21`. All **965 payload files** match the uploaded SDK ZIP by hash. Native local data confirms revision 21 is subscribed and enabled in the active playset. The game was absent during installation.
+
+All **2,907 files** in the previous revision 17/18/20 cache directories remained unchanged. The original-only revision-20 backup contains **969 files**, totaling **275,413,534 bytes**, under `E:/unused/CS2BridgeBuilder-release-26.11.16/installed/160320_20`.
+
+Release source commit `a53b10636ef21a4a09cbd383c2a205d4d4fc04b9` and changelog correction `ad9865e` were synchronized to all **18 existing GitHub branches**. Verification receipts are retained under `work/release-26.11.16/verified/` and `work/release-26.11.16/amendment-readback/`.
 
 The [short changelog](Changelog-26.11.16.txt) is the upload text.

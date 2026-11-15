@@ -12,7 +12,7 @@ before publication; report unavailable environments and obtain the required expl
 - [Bridge Builder — publishing information entry](information-entry.md)
 - [Bridge Builder](mod-description.md)
 - [Paradox Mods Package Size](paradox-package-size.md)
-- [Bridge Builder 26.11.16 — release preparation](release-26-11-16.md)
+- [Bridge Builder 26.11.16](release-26-11-16.md)
 - [Bridge Builder 26.11.14](release-26-11-14.md)
 - [Bridge Builder 26.11.12a](release-26-11-12a.md)
 - [Bridge Builder 26.11.12](release-26-11-12.md)
