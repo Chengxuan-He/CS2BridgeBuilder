@@ -10,8 +10,6 @@ This is a preparation record, not evidence that publication or installation has 
 - Use mod-owned precompiled material programs with stable queue-specific Surface references; new bridges and exports contain no shader program payloads. Bridge Builder must remain enabled.
 - Discontinue compatibility with legacy owner-persisted custom-shader bridges. Only the existing self-check flow identifies their obsolete protocol and performs owner-scoped backup/removal and restart handling; healthy noncustom bridges remain preserved.
 - Correct mapped-directory handling for persistence, backup and removal while retaining ownership and permission boundaries.
-- Remove GO 224m Viaduct Bridge support.
-- Consolidate documentation, preserve the complete contributor guide, and remove obsolete code and probes.
 
 ## Verification and publication status
 
