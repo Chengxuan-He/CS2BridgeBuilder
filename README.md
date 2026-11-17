@@ -97,12 +97,10 @@ from the corresponding source mods. These three styles use single-deck generatio
 | San Francisco Set DLC | GoldenGate |
 | [Bridge Expansion Pack](https://mods.paradoxplaza.com/mods/92245/Windows) | TrussViaduct, SuspensionDouble; ArtDecoViaduct and GoldenGateDouble additionally require San Francisco Set DLC |
 | [GO 224m Viaduct Bridge](https://mods.paradoxplaza.com/mods/166012/Windows) | GOViaduct |
-| [Shanghai Nanpu Bridge](https://mods.paradoxplaza.com/mods/162995/Windows) | Nanpu |
-| [Lupu Bridge](https://mods.paradoxplaza.com/mods/151335/Windows) | Lupu |
+| [上海南浦大桥](https://mods.paradoxplaza.com/mods/162995/Windows) | Nanpu |
+| [卢浦大桥](https://mods.paradoxplaza.com/mods/151335/Windows) | Lupu |
 
-The linked Nanpu and Lupu names above are English descriptions. Their exact published
-source titles are `上海南浦大桥` (Shanghai Nanpu Bridge) and `卢浦大桥` (Lupu Bridge),
-respectively; these literal source identifiers are retained to identify the official listings.
+Mod links retain the authors' exact published names in their original language.
 Each listed requirement must be installed, enabled and natively available for new creation.
 Base-game styles do not require Bridges & Ports. The source array is maintained in
 [BridgeStyleSources.cs](src/BridgeBuilder/Bridges/BridgeStyleSources.cs); source names are not binding keys.

@@ -81,16 +81,7 @@ this prohibition with another UI automation tool.
 
 ## Immutable mod metadata name
 
-The mod metadata name must always be exactly `Bridge Builder`. It must never be changed,
-translated, replaced, or extended with any prefix, suffix or additional language. Publishing
-metadata and any page or field using the metadata title, including the mod description heading,
-must use this exact English name. Non-English translations must not replace or accompany the
-name in these title positions. Before publishing or updating metadata or descriptions, verify
-that both the metadata name and the description heading satisfy this requirement.
-
-Localized in-game UI names remain permitted and must not be copied into metadata title fields
-or metadata-based page headings. The documentation-language rule below requires
-repository publishing descriptions and other documentation to be written in English.
+The metadata name remains exactly `Bridge Builder`. Follow the complete [publishing metadata specification](specs/metadata-spec.md) for title, version, changelog, description languages, official mod-link titles and incremental template maintenance.
 
 <a id="project-all-documentation-is-written-in-english"></a>
 <a id="metaprogram-english-documentation-maintenance"></a>
@@ -99,7 +90,9 @@ repository publishing descriptions and other documentation to be written in Engl
 
 ## All documentation is written in English
 
-All project documentation must use English descriptions and examples. Non-English explanatory prose and illustrative text are prohibited, including localized UI-message examples; describe their meaning and placeholders in English instead. This documentation rule does not change runtime translations or their required language coverage.
+Internal project documentation must use English descriptions and examples. Non-English explanatory prose and illustrative text are prohibited, including localized UI-message examples; describe their meaning and placeholders in English instead. This documentation rule does not change runtime translations or their required language coverage.
+
+Player-facing publishing descriptions and exact official mod-link titles follow the [metadata specification](specs/metadata-spec.md#description-languages-and-official-mod-titles). This scoped exception does not relax internal English documentation or change runtime localization.
 
 Retain a non-English identifier, path, exact diagnostic or source quotation only when its exact spelling is necessary to preserve identifiable evidence. Mark it as a literal source record and explain its role or meaning in English. This narrow evidence exception must not be used for general examples or copied localization strings. Third-party license text remains unchanged. Follow the [documentation standards](documentation-standards.md#language-and-presentation) for presentation and evidence handling.
 

@@ -193,7 +193,7 @@ The current requirements are defined in the numbered contract sections:
   handling, identifying the style and missing route. No silent return or substitute generator.
 - Self-check and historical migration follow the [self-check contract](reading-map.md#bridge-self-check-contract).
 - [Section 20](../constitution.md#project-20-immutable-mod-metadata-name): the mod metadata name and any metadata-based heading are exactly `Bridge Builder`.
-  Localized in-game labels remain permitted. Documentation and publishing drafts are in English.
+  Localized in-game labels remain permitted. Internal documentation remains English; player-facing publishing descriptions retain all three required languages under the constitution.
 - Section 16: preserve native construction, elevation and upkeep fees. No manager-defined totals,
   fee rewrites, multipliers, offsets, floors or pricing-only copies. Legacy conversion removes the
   custom cost component without guessing original fees or deleting referenced native copies.
@@ -252,7 +252,7 @@ strings or treat English fallback text as completed multilingual support. Check 
 and alternate/error paths, preserve format placeholders, and run the applicable localization checks
 before delivery. Changes with no user-visible text must still verify that existing localization
 behavior is preserved. Keep technical identifiers and asset identities unlocalized; project
-documentation remains in English as required above.
+internal documentation remains in English, with the constitution's multilingual publishing and official-title exceptions.
 
 Source-mod display follows [full published source names](../specs/ui-spec.md#generation-full-published-source-mod-names): use the complete Paradox Mods title, verify it through web search and the official page/API, and retain technical IDs only for binding. Apply this to every source, localize the prefix, preserve access to the full long title, and never replace a missing name with a numeric ID or guessed abbreviation.
 
@@ -317,7 +317,7 @@ Verify shorter and longer outputs, multiple slots and repeated compilation as we
 
 Generation section 24 requires complete-Prefab size comparison, including dependencies. Material owner bytes are informational without a ceiling; the complete SDK ZIP is reported separately without a hard ceiling. A prepared directory or root-only size proves neither.
 
-Follow root localization and cross-codebase compatibility review for every change. Documentation remains English. Build/deploy coherent increments under sections 13 and 23, preserving healthy assets. Never close or launch the player's game: deploy only after confirming it is absent, backing up installed originals and verifying hashes. Documentation-only changes need no build/deployment. Report native motion, near/far, mod-enabled cold-load and visual acceptance separately from automated checks; continue unblocked work while human checks remain pending.
+Follow root localization and cross-codebase compatibility review for every change. Internal documentation remains English; preserve the constitution's publishing-language exceptions. Build/deploy coherent increments under sections 13 and 23, preserving healthy assets. Never close or launch the player's game: deploy only after confirming it is absent, backing up installed originals and verifying hashes. Documentation-only changes need no build/deployment. Report native motion, near/far, mod-enabled cold-load and visual acceptance separately from automated checks; continue unblocked work while human checks remain pending.
 
 <a id="metaprogram-iteration-and-deployment"></a>
 

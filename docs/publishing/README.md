@@ -2,6 +2,10 @@
 
 Publishing instructions, package reporting and historical release notes. Changelog text, thumbnail and SDK draft settings remain beside the publication documents.
 
+## Publishing description languages
+
+Read the complete [metadata specification](../specs/metadata-spec.md) before preparing or changing a release or online description. It owns formats, language coverage, exact official titles and incremental template preservation.
+
 ## Preparation and release records
 
 Complete the [manual pre-release cross-environment round](../contracts/reading-map.md#cross-environment-testing-contract)

@@ -63,6 +63,7 @@ are the maintained library locations. Keep topic inventories in their README ind
 |   |   `-- <topic>-contract.md        Interfaces, ownership and lifecycle obligations
 |   |-- specs/
 |   |   |-- README.md                 Specification topic index
+|   |   |-- metadata-spec.md           Publishing metadata and template rules
 |   |   |-- lod-spec.md                Canonical LOD behavior and acceptance
 |   |   `-- <topic>-spec.md            Behavior, algorithms, formats and acceptance criteria
 |   |-- guides/
@@ -116,7 +117,7 @@ anchor destinations or update every known referring link. Keep mandatory-reading
 
 ## Language and presentation
 
-Follow the constitution's [English-only documentation rule](constitution.md#project-all-documentation-is-written-in-english), including documents delivered outside the repository. Translate existing non-English descriptions and examples into English and consolidate equivalent translations without losing unique facts or requirements. Record any necessary exact-source exception and its English explanation; preserve runtime translations, third-party licenses and evidence under that rule.
+Follow the constitution's [documentation language and publishing-description rules](constitution.md#project-all-documentation-is-written-in-english), including documents delivered outside the repository. Keep internal descriptions and examples in English; publishing language, official titles and template preservation follow the [metadata specification](specs/metadata-spec.md). Translate other non-English descriptions and examples into English and consolidate equivalent translations without losing unique facts or requirements. Record any necessary exact-source exception and its English explanation; preserve runtime translations, third-party licenses and evidence under that rule.
 
 Use Markdown unless explicitly required otherwise. Use one H1 title and logically ordered H2
 sections. Keep headings descriptive and order content by responsibility and dependency; order

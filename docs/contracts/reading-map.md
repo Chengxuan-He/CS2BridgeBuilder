@@ -8,6 +8,8 @@ This navigation preserves the complete reading scopes of the original instructio
 
 ## docs/agent-contract/project-contract.md
 
+For publishing metadata, versions, changelogs or descriptions, also read the complete [metadata specification](../specs/metadata-spec.md).
+
 - [Development and release procedures](../guides/development-release-procedures.md)
 
 - [Bridge implementation policy](generation-contract.md#project-bridge-implementation-policy)

@@ -6,13 +6,15 @@ User-authorized version: **26.11.18**. Use the current officially postprocessed 
 
 ## Metadata and content
 
+Required reading: the complete [metadata specification](../specs/metadata-spec.md).
+
 - Metadata name and description heading: exactly `Bridge Builder`.
 - Existing Paradox Mods listing: `160320`; update it rather than creating a new listing.
 - Version: `26.11.18`; verify the final assembly and uploaded package match.
-- Description: [maintained English text](mod-description.md), including current source-mod requirements.
+- Description: [maintained English, Simplified Chinese and Traditional Chinese text](mod-description.md), including current source-mod requirements and exact official titles in every mod link.
 - Changelog: [26.11.18 upload text](Changelog-26.11.18.txt).
 - Cover: `Thumbnail.png`; retain the established image unless the user requests replacement.
-- Compatible game version and final visibility: verify against the official publishing configuration; the XML remains a draft.
+- Supported game version: `1.6.*`, derived from the current native game log version `1.6.4f1 (1097.158a) [6360.18886]`; retain that range in the draft and verify the final online field. Verify final visibility through official publishing configuration.
 - Road Builder and other optional integrations are not global required dependencies. Each bridge style checks its own registered source content.
 - Source: [GitHub](https://github.com/Chengxuan-He/CS2BridgeBuilder).
 - Authenticate through official tools; never store credentials in repository content.

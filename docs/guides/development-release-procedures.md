@@ -7,7 +7,7 @@ Relocation preserves mandatory order and all existing prerequisites; it introduc
 
 ## Release workflow
 
-The release version is specified by the user. Never invent or automatically increment it.
+Read the complete [metadata specification](../specs/metadata-spec.md) before release preparation or metadata changes. Apply its publication-date version and same-day suffix rules within the user-authorized release scope; never increment a version merely for a build or metadata correction.
 When the user requests a release, complete these four steps in order:
 
 1. Remove redundant and dead code, then build and run the applicable checks using the user's version,

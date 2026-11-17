@@ -5,6 +5,7 @@ Contracts define boundaries and obligations. Specifications define required beha
 | Topic | Contract | Specification |
 | --- | --- | --- |
 | Development | [Contract](../contracts/development-contract.md) | See topic scope map |
+| Publishing metadata | [Development contract](../contracts/development-contract.md) | [Spec](metadata-spec.md) |
 | General generation | [Contract](../contracts/generation-contract.md) | [Spec](generation-spec.md) |
 | LOD selection and representation | [Generation contract](../contracts/generation-contract.md) | [Spec](lod-spec.md) |
 | Generator organization | [Contract](../contracts/generator-contract.md) | [Spec](generator-spec.md) |

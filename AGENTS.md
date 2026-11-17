@@ -37,6 +37,7 @@ and every instruction document being changed before editing.
 | Non-Network virtual bridge prototypes | The complete project and bridge generation contracts and [virtual prototype preparation before generation](docs/contracts/reading-map.md#non-network-bridges-contract) |
 | Movable bridge work (draw, lift, pedestrian or other mechanisms) | The complete project and bridge generation contracts and [movable-bridges-contract.md](docs/contracts/reading-map.md#movable-bridges-contract) |
 | Cross-environment testing or a requested release | [Cross-environment testing contract](docs/contracts/reading-map.md#cross-environment-testing-contract); one manually triggered/pre-release round, with one independent agent per concrete environment |
+| Publishing metadata, versions, changelogs or descriptions | Complete [metadata specification](docs/specs/metadata-spec.md) and release workflow |
 | Git, branching, commit or integration work | Contract section 12 before changing files or branches |
 | Build, install or generated-asset cleanup after a source update | Contract sections 6 and 13 |
 | Self-check, historical migration or recovery notices | [Self-check contract](docs/contracts/reading-map.md#bridge-self-check-contract) |
