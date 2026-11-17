@@ -10,6 +10,7 @@ Project-wide rules are defined in
 [Project-wide reading scope](docs/contracts/reading-map.md#project-contract). All bridge generation rules and
 their specialist routing are defined separately in
 [Complete generation reading scope](docs/contracts/reading-map.md#bridge-generation-contract).
+The complete [LOD specification](docs/specs/lod-spec.md) is mandatory for bridge generation, geometry and LOD work.
 Both are normative. The summaries here do not replace their detailed requirements. Numbered
 technical references below retain their original numbers in the [complete generation reading map](docs/contracts/reading-map.md#bridge-generation-contract); [project section 20](docs/constitution.md#project-20-immutable-mod-metadata-name) is the metadata rule.
 

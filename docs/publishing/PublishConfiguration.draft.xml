@@ -3,25 +3,84 @@
      Relative paths are intended to be used with this directory as the working directory.
      Do not store credentials in this file. Schema follows the installed official template. -->
 <Publish>
-  <ModId Value="" />
+  <ModId Value="160320" />
   <DisplayName Value="Bridge Builder" />
   <ShortDescription Value="Create custom bridges from available roads and tracks, with 3D previews and supported double-deck styles." />
-  <LongDescription>
-Bridge Builder combines available roads and tracks with supported bridge styles.
+  <LongDescription><![CDATA[
+# Bridge Builder
 
-- Isometric 3D previews before creation.
-- Independent upper and lower networks for supported double-deck styles.
-- Search, filter, rename and manage generated bridges.
-- Road Builder compatibility is optional, not a required dependency.
+## English
 
-Back up your save before deleting a generated bridge: deletion also removes its placed instances.
-Available styles depend on installed content and supported prototypes.
+Bridge Builder combines available roads or tracks with supported bridge styles in Cities: Skylines II. Choose a network and bridge style, inspect the live 3D preview, then save your bridge or place it with the game's network construction tool.
 
-Source: https://github.com/Chengxuan-He/CS2BridgeBuilder
-  </LongDescription>
+### Features
+
+- 37 registered bridge styles, including fixed suspension, cable-stayed, arch, viaduct and covered designs, depending on the selected source content.
+- GO 224m Viaduct Bridge, Nanpu Bridge and Lupu Bridge styles from their respective source mods.
+- Custom movable bridges: drawbridges, lift bridges and pedestrian movable styles from Bridges & Ports.
+- Independent upper and lower roads or tracks on supported double-deck styles, including opposite deck directions.
+- Search and filter networks and bridge styles. Use Create to save a bridge, or Create and build to enter construction mode when it is unlocked.
+- Preview, rename, export, build and delete saved bridges from the management panel.
+- Continuous asynchronous preview generation and viewport-sized rendering with antialiasing. Actual waiting time depends on the selected content and hardware.
+- Native-material-based shaders with current-skeleton binding for supported movable surfaces and decals, with owner-local persisted dependencies.
+- A multilingual interface and configurable shortcut (Ctrl+B by default). Bridges normally inherit their source unlock requirements; the settings can bypass development-point restrictions.
+
+### Compatibility
+
+Bridge styles become available when every source registered for that style is installed, enabled and natively available. Missing content hides only the affected styles.
+
+Bridges & Ports DLC is not required to use Bridge Builder. Only bridge styles that use its content require it.
+
+These integrations are optional; select only content you use.
+
+**Network creation**
+
+- [Road Builder](https://mods.paradoxplaza.com/mods/87190/Windows)
+- [Street Studio Public V2](https://mods.paradoxplaza.com/mods/165677/Windows)
+
+**Bridge content**
+
+- [Bridge Expansion Pack](https://mods.paradoxplaza.com/mods/92245/Windows)
+- [GO 224m Viaduct Bridge](https://mods.paradoxplaza.com/mods/166012/Windows)
+- [Shanghai Nanpu Bridge](https://mods.paradoxplaza.com/mods/162995/Windows)
+- [Lupu Bridge](https://mods.paradoxplaza.com/mods/151335/Windows)
+
+The exact published source titles of the last two listings are `上海南浦大桥` (Shanghai Nanpu Bridge)
+and `卢浦大桥` (Lupu Bridge). These literal source names identify the linked assets; the descriptions here are English.
+
+Bridge Expansion Pack supplies Truss Viaduct, double-deck Suspension, Art Deco Viaduct and
+double-deck Golden Gate styles. Art Deco Viaduct and double-deck Golden Gate also require
+San Francisco Set DLC. [Bridge Expansion Pack: B&P](https://mods.paradoxplaza.com/mods/124160/Windows)
+remains optional compatible content, not a registered prerequisite for these 37 styles.
+
+**Bridge generation**
+
+- [Bridge Engineer](https://mods.paradoxplaza.com/mods/164700/Windows)
+
+**Node editing**
+
+- [Node Controller](https://mods.paradoxplaza.com/mods/138523/Windows)
+
+### Notes
+
+Follow Street Studio’s own guidance: disable Road Builder when using its independent fork.
+
+Install the game/DLC and optional mod content required by the roads or supported bridge styles you select. The double-deck Golden Gate style comes from Bridge Expansion Pack, not the base single-deck Golden Gate prototype.
+
+Keep Bridge Builder installed and enabled. Mod-owned precompiled material programs require its startup registration; operation after disabling or uninstalling the mod is not supported. Required game/DLC and third-party material resources remain prerequisites, including virtual textures. A resource available on the author's machine is not necessarily installed on every player's machine. Saved bridges have their own dependency snapshots; updating the mod does not regenerate their geometry.
+
+There is no reliable fully automatic importer for arbitrary custom bridge assets. Supporting a new style requires bridge-specific measurements, implementation and visual checks. A coding agent does not guarantee a correct result in one attempt. See [Adding a bridge style with a coding agent](https://github.com/Chengxuan-He/CS2BridgeBuilder#adding-a-bridge-style-with-a-coding-agent). Compatibility with every third-party asset or network/style combination is not promised.
+
+- Back up your city before removing a bridge. **Deleting a generated bridge also removes its placed instances.**
+- If a self-check reports changes and requests a restart, restart the game before continuing.
+- Recreate older bridges affected by a generation fix when needed; preserve unaffected bridges and back up your save first.
+- Report the game/mod versions, bridge style, selected networks, screenshots and relevant logs when something goes wrong. Rendering and motion can require further verification for particular combinations.
+
+Source: [GitHub](https://github.com/Chengxuan-He/CS2BridgeBuilder). Original project code is MIT-licensed; game and third-party assets retain their respective licenses.
+]]></LongDescription>
   <Thumbnail Value="Thumbnail.png" />
   <!-- Proposed project version; confirm against the final release assembly. -->
-  <ModVersion Value="26.11.16" />
+  <ModVersion Value="26.11.18" />
   <!-- User-selected suggested game-version range; confirm before a future release. -->
   <GameVersion Value="1.6.*" />
   <!-- Do not add Road Builder as a required dependency. Audit other requirements before release. -->

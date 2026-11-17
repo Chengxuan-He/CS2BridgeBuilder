@@ -36,6 +36,7 @@ internal sealed class BridgeStyleDefinition
 
     /// <summary>Stored in the settings file and never translated.</summary>
     internal string Id { get; }
+    internal string[] Sources => BridgeStyleSources.For(Id);
     /// <summary>
     /// What an exported asset is called after the road name. Deliberately not the translated name:
     /// an asset that renamed itself when the player switched language would stop matching its own
@@ -93,8 +94,8 @@ internal static class BridgeStyleDefinitions
     {
         "Suspension" or "SuspensionDouble" or "Suspension01" or "Suspension02" or "SuspensionGolden"
             or "GoldenGate" or "GoldenGateDouble" or "Grand" => "Suspension",
-        "CableStayed" or "Extradosed01" or "Extradosed02" or "Extradosed03" or "ExtradosedLarge" => "CableStayed",
-        "TrussArch" or "TrussArch01" or "TrussArch02" or "TrussArch03" or "TiedArch" => "Arch",
+        "CableStayed" or "Extradosed01" or "Extradosed02" or "Extradosed03" or "ExtradosedLarge" or "Nanpu" => "CableStayed",
+        "TrussArch" or "TrussArch01" or "TrussArch02" or "TrussArch03" or "TiedArch" or "GOViaduct" or "Lupu" => "Arch",
         "WoodenCovered" or "CoveredWood" or "CoveredPedestrian" => "Covered",
         "ArcPedestrian" => "Arch",
         "ArtDecoViaduct" or "TrussViaduct" => "Viaduct",
@@ -110,6 +111,8 @@ internal static class BridgeStyleDefinitions
     // Adding a definition, translation or donor alone must not enable generation.
     private static readonly HashSet<string> ImplementedStyles = new(StringComparer.Ordinal)
     {
+        "GOViaduct",
+        "Nanpu", "Lupu",
         "ArtDecoViaduct",
         "TrussViaduct",
         "ArcPedestrian",
@@ -144,9 +147,6 @@ internal static class BridgeStyleDefinitions
             return "the selected bridge style does not support this deck count";
         if (IsMovable(styleId))
             return null;
-        var deferred = DeferredReason(styleId);
-        if (deferred != null)
-            return deferred;
         if (!ImplementedStyles.Contains(styleId!) || !All.Any(item => item.Id == styleId))
             return "no bridge generator is implemented for this style";
         // Check the Chinese translation independently of the active UI locale.
@@ -161,7 +161,7 @@ internal static class BridgeStyleDefinitions
     // The DLC landmark and BXP's genuine auxiliary-net archetypes are separate products.
     internal static bool SupportsDeckMode(string? styleId, bool doubleDeck) => styleId switch
     {
-        "ArtDecoViaduct" or "TrussViaduct" or "ArcPedestrian" or "CoveredPedestrian" => !doubleDeck,
+        "ArtDecoViaduct" or "TrussViaduct" or "ArcPedestrian" or "CoveredPedestrian" or "GOViaduct" or "Nanpu" or "Lupu" => !doubleDeck,
         "GoldenGate" => !doubleDeck,
         "GoldenGateDouble" => doubleDeck,
         "Lift03" => doubleDeck,
@@ -247,6 +247,9 @@ internal static class BridgeStyleDefinitions
         new BridgeStyleDefinition("TrussViaduct", "Truss Viaduct", 0, "trussviaduct"),
         new BridgeStyleDefinition("ArcPedestrian", "Arched Pedestrian Bridge", 0, "arcpedestrianbridge", "arcbikebridge"),
         new BridgeStyleDefinition("CoveredPedestrian", "Covered Pedestrian Bridge", 0, "coveredpedestrianbridge", "coveredbikebridge"),
+        new BridgeStyleDefinition("GOViaduct", "GO 224m Viaduct Bridge", 0, "go224mviaductbridge"),
+        new BridgeStyleDefinition("Nanpu", "Nanpu Bridge", 0, "nanpudaqiao", "上海南浦大桥"),
+        new BridgeStyleDefinition("Lupu", "Lupu Bridge", 0, "lupudaqiao", "卢浦大桥"),
         new BridgeStyleDefinition("PedestrianDraw01", "Fan-Cable Pedestrian Bascule Bridge", Numeric_BridgeStyleDefinitions_cs.Values.I32[0], "pedestriandrawbridge01"),
         new BridgeStyleDefinition("PedestrianDraw02", "Overhead-Beam Pedestrian Bascule Bridge", Numeric_BridgeStyleDefinitions_cs.Values.I32[1], "pedestriandrawbridge02"),
         new BridgeStyleDefinition("Draw01", "Curved-Soffit Girder Bascule Bridge", Numeric_BridgeStyleDefinitions_cs.Values.I32[2], "drawbridge01"),
@@ -257,7 +260,6 @@ internal static class BridgeStyleDefinitions
         new BridgeStyleDefinition("Lift03", "Double-Deck Lift Bridge", Numeric_BridgeStyleDefinitions_cs.Values.I32[7], "liftbridge03"),
         new BridgeStyleDefinition("Lift04", "Straight-Tower Truss Lift Bridge", Numeric_BridgeStyleDefinitions_cs.Values.I32[8], "liftbridge04"),
         new BridgeStyleDefinition("Lift05", "Curved-Brace Tower Lift Bridge", Numeric_BridgeStyleDefinitions_cs.Values.I32[9], "liftbridge05"),
-        new BridgeStyleDefinition("PedestrianDraw", "Pedestrian Bascule Bridge", Numeric_BridgeStyleDefinitions_cs.Values.I32[10], "pedestriandrawbridge"),
         new BridgeStyleDefinition("WoodenCovered", "Wooden Covered Bridge", Numeric_BridgeStyleDefinitions_cs.Values.I32[11], "woodencoveredbridge"),
         new BridgeStyleDefinition("CoveredWood", "Covered Wooden Bridge", Numeric_BridgeStyleDefinitions_cs.Values.I32[12], -Numeric_BridgeStyleDefinitions_cs.Values.F32[1], // 0xC0000000
  "pedestrianbridgecoveredwood", "coveredwood"),
@@ -327,10 +329,6 @@ internal static class BridgeStyleDefinitions
  "tiedarch"),
         new BridgeStyleDefinition("Grand", "Extra-Large Suspension Bridge", Numeric_BridgeStyleDefinitions_cs.Values.I32[30], // 23.2 over 2
  "grandbridge"),
-        // Moveable bridges lift their deck instead of standing over it, so no sample of either had a
-        // structure wider than its road. Demanding a margin would rule out every variant they have.
-        new BridgeStyleDefinition("Draw", "Bascule Bridge", Numeric_BridgeStyleDefinitions_cs.Values.I32[31], "drawbridge", "bascule"),
-        new BridgeStyleDefinition("Lift", "Lift Bridge", Numeric_BridgeStyleDefinitions_cs.Values.I32[32], "liftbridge"),
     });
     /// <summary>The style a prefab belongs to, or null when it is not one of the named styles.</summary>
     internal static BridgeStyleDefinition? Match(string prefabName)
@@ -382,31 +380,7 @@ internal static class BridgeStyleDefinitions
     /// rather than a duplicate of it.
     /// </summary>
     internal static bool IsSupersededPack(string? name) => name != null && name.StartsWith(SupersededPackPrefix, StringComparison.Ordinal);
-    /// <summary>
-    /// Styles whose generation is deferred, and why.
-    ///
-    /// A bascule bridge and a lift bridge are not a deck with structure over it: the deck itself is the
-    /// mechanism, split into leaves that rotate or a span that rises between towers, and widening it
-    /// means widening a machine whose parts have to keep meeting each other through the whole of their
-    /// travel. That is a different problem from widening a portal, and none of it has been measured.
-    ///
-    /// They are refused rather than attempted. A bridge that is not generated is a bridge the player
-    /// still has; a bridge generated from an arrangement nobody has measured is one that looks built
-    /// and behaves as something else.
-    /// </summary>
-    private static readonly Dictionary<string, string> Deferred = new(StringComparer.Ordinal)
-    {
-        ["Draw"] = "a bascule bridge's deck is its mechanism - leaves that rotate - and widening " + "one has not been worked out",
-        ["PedestrianDraw"] = "a bascule bridge's deck is its mechanism - leaves that rotate - and " + "widening one has not been worked out",
-        ["Lift"] = "a lift bridge's deck is its mechanism - a span that rises between towers - and " + "widening one has not been worked out",
-    };
-    /// <summary>Why a style is deferred, or null when it is not.</summary>
-    internal static string? DeferredReason(string? styleId)
-    {
-        if (styleId == null)
-            return null;
-        return Deferred.TryGetValue(styleId, out var reason) ? reason : null;
-    }
+
 }
 
 // Embedded numerical arrays: BridgeStyleDefinitions_cs

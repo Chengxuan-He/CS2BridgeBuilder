@@ -34,10 +34,11 @@ This is an iterative development and verification workflow, not a plug-and-play 
 
 ## What you can pick
 
-Each bridge style binds to a single content source for both display and generation. Base-game
-variants take precedence over DLC variants, then mod variants; ties use stable source identifiers,
-not translated labels. A selected unavailable prerequisite does not trigger a fallback to another
-owner. The V-pylon double-deck cable-stayed bridge (`Extradosed01`) accepts base-game variants only,
+Each bridge style declares an ordered array of required sources for display and generation, with
+the direct source first and an empty array for base-game styles. Every listed source must be
+available; missing content does not trigger a fallback to another owner. See the
+[source availability rules](docs/specs/cross-environment-spec.md#dlc-and-mod-compatibility).
+The V-pylon double-deck cable-stayed bridge (`Extradosed01`) accepts base-game variants only,
 never the duplicate Bridge Expansion Pack version. Existing bridge assets are unchanged.
 
 The DLC landmark `GoldenGate` supports **single-deck generation only**. The separate Bridge Expansion
@@ -84,6 +85,28 @@ human acceptance of every selected road, motion cycle, LOD or independent cold l
 See the [implementation record](docs/archive/implementation/movable-bridges-implementation.md) for per-style evidence
 and [prepared materials](docs/specs/material-spec.md) for current material requirements.
 
+The fixed catalogue also includes the GO 224m Viaduct Bridge, Nanpu Bridge and Lupu Bridge
+from the corresponding source mods. These three styles use single-deck generation.
+
+### Source content for the 37 registered styles
+
+| Source content | Registered bridge styles |
+| --- | --- |
+| Base game (no external source entry) | ArcPedestrian, CoveredPedestrian, WoodenCovered, Suspension, Extradosed01, ExtradosedLarge, CableStayed, TrussArch01, TrussArch, TiedArch, Grand |
+| Bridges & Ports DLC | PedestrianDraw01/02, Draw01–03, Lift01–05, CoveredWood, Suspension01/02, SuspensionGolden, Extradosed02/03, TrussArch02/03 |
+| San Francisco Set DLC | GoldenGate |
+| [Bridge Expansion Pack](https://mods.paradoxplaza.com/mods/92245/Windows) | TrussViaduct, SuspensionDouble; ArtDecoViaduct and GoldenGateDouble additionally require San Francisco Set DLC |
+| [GO 224m Viaduct Bridge](https://mods.paradoxplaza.com/mods/166012/Windows) | GOViaduct |
+| [Shanghai Nanpu Bridge](https://mods.paradoxplaza.com/mods/162995/Windows) | Nanpu |
+| [Lupu Bridge](https://mods.paradoxplaza.com/mods/151335/Windows) | Lupu |
+
+The linked Nanpu and Lupu names above are English descriptions. Their exact published
+source titles are `上海南浦大桥` (Shanghai Nanpu Bridge) and `卢浦大桥` (Lupu Bridge),
+respectively; these literal source identifiers are retained to identify the official listings.
+Each listed requirement must be installed, enabled and natively available for new creation.
+Base-game styles do not require Bridges & Ports. The source array is maintained in
+[BridgeStyleSources.cs](src/BridgeBuilder/Bridges/BridgeStyleSources.cs); source names are not binding keys.
+
 The fixed catalogue also includes Art Deco Viaduct, Truss Viaduct, Arched Pedestrian Bridge
 and Covered Pedestrian Bridge. Width and transport variants of the same design share one style.
 The covered pedestrian roof is separate from the wooden covered bridge. These four styles use
@@ -110,15 +133,11 @@ its independent editing and connections remain subject to the game's auxiliary-n
 The floating BridgeBuilder button opens the runtime builder in a loaded game. Roads are shown as
 icon-and-name cards (three per row); double-deck mode provides independent upper and lower network
 lists. Bridge styles are likewise selected from prototype cards, and unavailable styles are omitted
-when their providing DLC or mod is not installed. Creating a bridge publishes it into the running
+when any registered required DLC or mod is unavailable. Creating a bridge publishes it into the running
 prefab world. Create-and-build also activates the ordinary network construction tool; neither action
 places a bridge automatically.
 
-Material safety requirements cover missing virtual textures as well as missing DLC or mods: validate
-the complete dependency graph before reading or registering selected resources. Prepared inputs
-belong under `~Materials` for on-demand registration. Missing content must be reported as unavailable,
-without fabricated textures or removal of saved bridges; unchanged deferred assets do not require
-a recovery restart. See the [material availability contract](docs/contracts/material-contract.md#material-prepared-material-discovery-boundary). These requirements do not certify every dependency path in the published release.
+Check every entry in the style's ordered required-source array before using dependent resources. Normally functioning source mods are trusted to supply their own valid resources; development must first trace actual prototype references recursively offline and register the evidenced sources. Runtime catalogue selection checks the fixed declaration hardcoded in code or a data file, without index traversal, a resource-graph or corruption scan, or dynamically inferred dependencies; offline audit tools and evidence are excluded from the release package. Bridge Builder-owned prepared and persisted inputs retain their existing IO and dependency boundaries. Prepared inputs belong under `~Materials` for on-demand registration. See the [material availability contract](docs/contracts/material-contract.md#material-missing-optional-content-and-virtual-textures) and [DLC/mod compatibility rules](docs/specs/cross-environment-spec.md#dlc-and-mod-compatibility). Missing external content creates no new deletion authority; saved owners follow the existing [self-check workflow](docs/contracts/self-check-contract.md#self-check-unavailable-optional-content).
 
 Every bridge created there has two deliberately separate names:
 
@@ -432,6 +451,7 @@ retain their operation diagnostics.
 These checks and a successful build do not establish in-game visual correctness or save compatibility.
 
 <!-- BEGIN BRIDGE STYLE CONTRIBUTOR GUIDE -->
+
 ## Adding a bridge style with a coding agent
 
 This guide helps contributors extend Bridge Builder with a measured bridge archetype. A new style
@@ -489,8 +509,9 @@ save your work before that step. Intermediate source edits do not require shutdo
 Give the agent these inputs:
 
 - A stable English style ID and the intended single-deck or double-deck capability.
-- Exact prototype Prefab names and their source: base game, named DLC, or mod ID, with the
-  corresponding game/mod version and any available CID evidence.
+- Exact prototype Prefab names and the ordered required-source array: direct source first, then
+  each explicitly required DLC/mod; use an empty array for base-game styles. Include verified
+  provider identities, corresponding game/mod versions and any available CID evidence.
 - Prefab anatomy, mesh and LOD data, plus screenshots of the prototype at near and far distances.
 - Measured road and structure boundaries, tower placement, cables, railings, lights, materials,
   unlock conditions and native cost components.
@@ -526,7 +547,15 @@ formats; do not provide only the bridge's display name:
 | Mod | `Paradox Mods ID: <numeric mod ID>; mod name: <name>; mod version: <version>; game version: <game version>` |
 
 For mod-provided prototypes, include the mod page link when available. If a version is unknown,
-say so rather than guessing. Include any additional required DLC or mods separately.
+say so rather than guessing. Register additional required DLC or mods after the direct source in
+the same ordered array. Follow the [source availability rules](docs/specs/cross-environment-spec.md#dlc-and-mod-compatibility);
+Recursively trace the prototype's actual references offline, record provider/version and reference-path
+evidence, and complete the registered array before implementation. Then verify each missing-entry
+case separately. Hardcode the reviewed ordered declaration in code or a packaged data file.
+Keep recursive tools, asset/provider indexes, reference graphs and closure evidence in development
+records, outside the release package and runtime resources. Check the package file list and compiled
+resources: runtime only checks each registered source's availability, never invokes the offline
+scanner, traverses its indexes or dynamically calculates dependencies.
 
 ```text
 Add support for <style ID> using <exact prototype Prefab> from <source and version>.
@@ -536,7 +565,7 @@ Motion: <fixed / moving mechanism and available evidence>.
 Evidence is available at <paths to anatomy, mesh/LOD exports and screenshots>.
 
 Read AGENTS.md, the complete project contract and applicable nested instructions.
-Read the complete generation contract and its paired specification. For a non-Network source,
+Read the complete generation contract, its paired specification and docs/specs/lod-spec.md. For a non-Network source,
 also read docs/contracts/non-network-contract.md and docs/specs/non-network-spec.md.
 Prepare only an existing-form immutable construction recipe; do not create or register an
 intermediate network asset, introduce a virtual-prototype runtime layer, or bind it to a road kind.
@@ -579,6 +608,11 @@ A small style generator can reuse `BridgeGeneratorBase`, as existing wrappers do
 archetype behavior is already supported and measured. A matching name or successful discovery does
 not establish that. Register the route and supported deck modes consistently; unsupported designs
 must fail explicitly rather than silently generating a different family.
+
+Use a concrete standard style ID under the [style registration rules](docs/specs/generation-spec.md#generation-22-new-bridge-styles-require-immediate-ui-synchronization-generator-routing-and-multilingual-names).
+Do not register a bridge-family placeholder or turn it into an implicit alias. Preserve existing
+standard IDs and healthy saved owners; historical migration requires published-record and
+unambiguous prototype evidence at the existing self-check boundary.
 
 Provide labels in every supported UI language. The current admission rule also checks for a Chinese
 display name independently of the active locale. Keep style IDs unlocalized and the mod metadata
@@ -638,7 +672,7 @@ and record evidence in the appropriate bridge-style audit, rather than adding a 
    variants of the same design belong to one style. Record the exact installed source and compare
    its documented dimensions with measured geometry. Resolve discrepancies explicitly; a number
    in the asset name is not a measurement.
-2. Inventory the complete object graph, nested render parts and every LOD. Record coordinate
+2. Inventory the complete object graph, nested render parts and every LOD. Disclose source and generated per-level triangle counts under the [LOD evidence rule](docs/specs/lod-spec.md#per-level-triangle-disclosure-and-reference-scope), with part/variant/instance scope explicit. Record coordinate
    frames, accumulated transforms, running-surface versus structural membership, material references,
    supports and endpoints using the [parameter meanings](docs/specs/non-network-spec.md#non-network-2-source-evidence-and-parameter-meanings).
 3. Measure span-local, repeating, endpoint and shared-boundary support roles. Establish adjacent-span
@@ -827,6 +861,7 @@ Include the following in the local handoff or optional pull request:
 Have your agent help summarize the changes, but review the code and verify its claims before
 delivery. A successful build is not evidence that a bridge looks correct or survives a restart.
 Address review feedback locally; update a remote pull request only if that optional workflow was chosen.
+
 <!-- END BRIDGE STYLE CONTRIBUTOR GUIDE -->
 
 ## License

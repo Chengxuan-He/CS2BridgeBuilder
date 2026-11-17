@@ -1,7 +1,7 @@
 using BridgeBuilder.Runtime;
 namespace BridgeBuilder.Runtime
 {
-    internal static class BridgePreparedMaterials { internal static string SourceRoot = "";internal static bool TrySourceRoot(out string root,out string? error){root=SourceRoot;error=null;return true;} internal static BridgeMaterialFileSnapshot? RequestFiles; }
+    internal static class BridgePreparedMaterials { internal static string SourceRoot = "";internal static bool TrySourceRoot(string style,out string root,out string? error){root=SourceRoot;error=null;return true;} internal static BridgeMaterialFileSnapshot? RequestFiles; }
     internal static class BridgePreviewState { internal static int Revision; }
     internal static class BridgeRuntimeRequests { internal static void Complete(string text) { } }
 }

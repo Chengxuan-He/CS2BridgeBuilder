@@ -39,6 +39,7 @@ internal abstract partial class BridgeGeneratorBase
     protected readonly TowerFactory? _towers;
 
     internal abstract string StyleId { get; }
+    internal virtual bool SelectedRoadUnlocks => false;
     internal virtual bool ApplyUnlocks(NetGeometryPrefab target, BridgeStyleVariant variant,
         List<PrefabBase> created) => BridgeUnlockPolicy.Apply(target, variant, _report, created);
     internal virtual bool StructureFollowsUpperAuxiliary => false;

@@ -146,6 +146,13 @@ invented; missing required information must produce an explicit migration failur
 Use the same native persistence helpers and naming/layout rules as generation. Repeated migration
 must make no changes after successful completion; report it as migration and require restart.
 
+Preserve current bridge-specific icons whose exact canonical URI resolves to a packaged file in the
+registered UI host. A shared URI prefix is not evidence of an obsolete manager-only icon. Apply the
+same icon decision to migration eligibility and serialized presentation checks. Legacy manager-only
+icons still migrate to an available supported icon; unknown or missing required icon resources retain
+the ordinary repair-failure policy. Register packaged availability once at the UI-host IO boundary,
+without a per-owner directory scan or changing healthy bridge files merely to inspect them.
+
 <a id="self-check-legacy-naming-migration-exception"></a>
 
 ## Legacy naming migration exception

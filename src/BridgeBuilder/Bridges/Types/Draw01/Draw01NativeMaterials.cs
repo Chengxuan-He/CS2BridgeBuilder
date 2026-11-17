@@ -1,9 +1,8 @@
-using System;
 using Colossal.IO.AssetDatabase;
 
 namespace BridgeBuilder.Bridges;
 
-// Offline descriptor-only conversion preserves the original texture identities.
+// Native network sampling retains source materials in the fixed NetPiece graph.
 internal static class Draw01NativeMaterials
 {
     // BEGIN generated native network sampling gate
@@ -33,31 +32,5 @@ internal static class Draw01NativeMaterials
     }
     // END generated native network sampling gate
 
-    internal static string? ObjectDescriptor(string sourceCid) => sourceCid switch
-    {
-        "16b28f9bc6abc54fd73acbdfa5f14978" or "45f6fe14df0150267b86e281c8d17ec2"
-            or "8f424eb10e5caa7edce9770e4350d542" => "1d6c92d008a952b1db4e1cc6cf7a1160",
-        _ => null
-    };
-
-    internal static MovableExistingRoadSurface.SurfaceResult Resolve(SurfaceAsset original, Func<string, MovableExistingRoadSurface.SurfaceResult> load)
-    {
-        try
-        {
-        var cid = ObjectDescriptor(original.id.guid.ToString());
-        if (cid == null) return original;
-        original.LoadHeader();
-        if (original.materialTemplateHash is not 17)
-            return new MovableExistingRoadSurface.SurfaceResult(null,"Draw01 native network surface identity or template differs: " + original.id);
-        var loaded=load(cid);
-        if(!loaded.Success)return loaded;
-        var converted=loaded.Value;
-        if(converted==null)return new MovableExistingRoadSurface.SurfaceResult(null,"Required native object descriptor is absent.");
-        converted.LoadHeader();
-        if (converted.id.guid.ToString() != cid || converted.materialTemplateHash is not 0 || converted.isVTMaterial)
-            return new MovableExistingRoadSurface.SurfaceResult(null,"Draw01 native object descriptor differs: " + cid);
-        return converted;
-            }
-        catch(Exception exception){return new MovableExistingRoadSurface.SurfaceResult(null,"Native prototype descriptor: "+exception.Message);}
-    }
+    internal static MovableExistingRoadSurface.SurfaceResult Resolve(SurfaceAsset original) => original;
 }

@@ -1,6 +1,6 @@
 # Recorded material implementation evidence
 
-Historical evidence relocated from linked source documents; no new audit or game test was performed. Statements describe only their recorded revision and inspection scope, not current acceptance. Unspecified original revision/artifact provenance remains unspecified. Current requirements remain in the originating contracts and specifications.
+The historical sections below retain evidence relocated from linked source documents; relocation performed no new audit or game test. The dated regression section records its separate verification scope. Statements describe only their recorded revision and inspection scope, not current acceptance. Unspecified original revision/artifact provenance remains unspecified. Current requirements remain in the originating contracts and specifications.
 
 ## Native118 through native121
 
@@ -89,3 +89,25 @@ Recorded excerpt (historical wording; governing requirements remain in the sourc
 > Asphalt, sidewalks and wheel-track/rut effects are classified separately per prototype/domain.
 > The original source mapping rule applies to non-movable bridges too. Report the complete package size without a hard ceiling. Complete owner material bytes are measured separately
 > for information, without a per-owner ceiling.
+
+## Non-Network native VT regression, 2026-11-17
+
+This regression exercises the [native-template conversion scope](../../specs/material-spec.md#non-network-native-material-template-conversion).
+The [final receipt](../../../work/landmark-preview-20261117/native-vt-final-receipt.json)
+binds the results to DLL SHA-256
+`64E34EEA12E2643605607ADCE18400CC4304599695DF50A4F66C33744AB0B0F1`.
+The test used actual installed COK bytes, native PipelinePlugin decompression and the production
+CPU mip parser. It did not execute native game rendering.
+
+| Installed source | Complete BC7 mip pyramids checked | Recorded output |
+| --- | --- | --- |
+| Lupu, `151335_2` | 15 | [Source channel hashes](../../../work/landmark-preview-20261117/lupu-vt.log) |
+| Nanpu, `162995_1` | 13 | [Source channel hashes](../../../work/landmark-preview-20261117/162995_1-vt.log) |
+| GO, `166012_1` | 15 | [Source channel hashes](../../../work/landmark-preview-20261117/166012_1-vt.log) |
+
+All 43 recorded channel checks passed without filtering or recompression. Nanpu's far source
+records three active channels, while its near and middle sources each record five; the total
+is not evidence of dropped channels. The receipt confirms that the previous GO fifteen-carrier
+output hash multiset is unchanged and records 240,475,350 generated carrier bytes for the checked
+outputs. These are source-reader/carrier regression results, not complete generated-owner sizes
+or proof of rendered appearance. User preview, placement and cold-load acceptance remain pending.

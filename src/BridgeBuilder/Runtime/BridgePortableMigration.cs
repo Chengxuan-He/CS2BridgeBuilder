@@ -42,8 +42,7 @@ internal static class BridgePortableMigration
                 var ui = source.GetComponent<UIObject>();
                 var gate = source.GetComponent<Unlockable>();
                 var needsUnlock = gate == null || !gate.m_IgnoreDependencies;
-                var needsIcon = source == root && (string.IsNullOrWhiteSpace(ui?.m_Icon)
-                    || ui!.m_Icon.IndexOf("coui://bridgebuilder", StringComparison.OrdinalIgnoreCase) >= 0);
+                var needsIcon = source == root && BridgePresentationIcons.Unavailable(ui?.m_Icon);
                 var needsMetadata = source == root && ui?.name != BridgeAssetMetadata.Encode(metadata);
                 var packs = source.GetComponent<AssetPackItem>()?.m_Packs;
                 var needsPack = packs == null || packs.Length != 1 || packs[0] != pack;
@@ -79,9 +78,9 @@ internal static class BridgePortableMigration
                     var variant = BridgeStyleCatalog.Find(metadata.StyleId)?.Select(NetWidth.RoadSurfaceOf(root),
                         forRoad: root is RoadPrefab, doubleDeck: root.GetComponent<AuxiliaryNets>() != null).Variant;
                     var icon = variant?.RecordedIcon ?? variant?.Donor.GetComponent<UIObject>()?.m_Icon;
-                    if (string.IsNullOrWhiteSpace(icon) || icon.IndexOf("coui://bridgebuilder", StringComparison.OrdinalIgnoreCase) >= 0)
+                    if (BridgePresentationIcons.Unavailable(icon))
                     { error = "Original bridge icon unavailable; existing bridge retained"; return false; }
-                    target.AddOrGetComponent<UIObject>().m_Icon = icon;
+                    target.AddOrGetComponent<UIObject>().m_Icon = icon!;
                 }
                 // Native Clone recreates components with their type names. Preserve the persisted
                 // root metadata even when another field (unlock, icon, pack or cleanup) caused this clone.

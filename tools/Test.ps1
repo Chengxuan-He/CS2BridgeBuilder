@@ -56,6 +56,7 @@ $sources = @(
     (Join-Path $projectRoot 'src\BridgeBuilder\Bridges\GoldenBridgeRailings.cs'),
     (Join-Path $projectRoot 'src\BridgeBuilder\Bridges\BridgeTowers.cs'),
     (Join-Path $projectRoot 'src\BridgeBuilder\Bridges\BridgeStyleDefinitions.cs'),
+    (Join-Path $projectRoot 'src\BridgeBuilder\Bridges\BridgeStyleSources.cs'),
     (Join-Path $projectRoot 'src\BridgeBuilder\Bridges\DeckArrangement.cs'),
     (Join-Path $projectRoot 'src\BridgeBuilder\Bridges\SectionNames.cs'),
     (Join-Path $projectRoot 'src\BridgeBuilder\Bridges\BridgeMeasurements.cs'),

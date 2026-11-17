@@ -16,5 +16,5 @@
     <Compile Include="../../src/BridgeBuilder/Runtime/BridgeFileAccess.cs" />
     <Compile Include="../../src/BridgeBuilder/Runtime/BridgePreviewState.cs" />
     <Compile Include="../../src/BridgeBuilder/Bridges/BridgeStyleDefinitions.cs" />
-  </ItemGroup>
+  <Compile Include="../../src/BridgeBuilder/Bridges/BridgeStyleSources.cs" Link="BridgeStyleSources.cs" /></ItemGroup>
 </Project>

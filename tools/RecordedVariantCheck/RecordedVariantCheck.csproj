@@ -3,5 +3,6 @@
   <ItemGroup>
     <Compile Include="../../src/BridgeBuilder/Bridges/BridgeStyle.cs" Link="BridgeStyle.cs" />
     <Compile Include="../../src/BridgeBuilder/Bridges/BridgeMeasurements.cs" Link="BridgeMeasurements.cs" />
+    <Compile Include="../../src/BridgeBuilder/Bridges/BridgeStyleSources.cs" Link="BridgeStyleSources.cs" />
   </ItemGroup>
 </Project>

@@ -28,7 +28,11 @@ internal sealed partial class TowerFactory
         Bounds3? placementBounds = null, float[][]? xShearYCoefficients = null,
         float[][]? xShearZCoefficients = null, float3[][]? recordedOrigins = null,
         Matrix4x4? sourceFrame = null, bool[][]? omittedTriangles = null,
-        int[][]? sourceVertexIndices = null, int[][]? recordedCornerIndices = null, Type? renderType = null, SurfaceAsset[]? receivingSurfaces = null) where T : RenderPrefab
+        int[][]? sourceVertexIndices = null, int[][]? recordedCornerIndices = null, Type? renderType = null, SurfaceAsset[]? receivingSurfaces = null,
+        int[]? sourceMeshIndices = null, int[][]? sourceTriangleVertices = null,
+        float[][]? sourceTriangleWeights = null, int[][]? explicitTriangleIndices = null,
+        int[][]? sourceFaceIndices = null, Vector2[][]? recordedUv0 = null,
+        Matrix4x4[][]? recordedFrameTransforms = null) where T : RenderPrefab
     {
         name = TowerPrefabNaming.Safe(name);
         var meshes = PrivateGeometryReader.Read(source)
@@ -40,11 +44,15 @@ internal sealed partial class TowerFactory
         result.name = name;
         try
         {
-            var surfaces = receivingSurfaces ?? source.surfaceAssets?.ToArray() ?? Array.Empty<SurfaceAsset>();
+            var sourceSurfaces = receivingSurfaces ?? source.surfaceAssets?.ToArray() ?? Array.Empty<SurfaceAsset>();
+            // Measured roles can omit entire internal meshes. Keep source-indexed recipe
+            // arrays while emitting their matching surfaces in the selected model order.
+            var selectedMeshes = sourceMeshIndices ?? Enumerable.Range(0, meshes.Length).ToArray();
+            var surfaces = sourceMeshIndices == null ? sourceSurfaces : selectedMeshes.Select(i => sourceSurfaces[i]).ToArray();
             var bounds = new Bounds3(new float3(float.PositiveInfinity), new float3(float.NegativeInfinity));
             var vertices = 0;
             var indices = 0;
-            for (var i = 0; i < meshes.Length; i++)
+            foreach (var i in selectedMeshes)
             {
                 var points = recordedOrigins == null ? ToPoints(meshes[i].vertices) : recordedOrigins[i].ToArray();
                 var prepared = await GenerationWork.Background("recorded structure coordinates and frames", () =>
@@ -58,17 +66,20 @@ internal sealed partial class TowerFactory
                         localBounds.max = math.max(localBounds.max, point);
                     }
                     var frames = new List<KeyValuePair<int, Matrix4x4>>();
-                    if (sourceFrame.HasValue || xScaleCoefficients != null || xShearYCoefficients != null || xShearZCoefficients != null)
+                    if (sourceFrame.HasValue || recordedFrameTransforms != null || xScaleCoefficients != null || xShearYCoefficients != null || xShearZCoefficients != null)
                     {
                         for (var vertex = 0; vertex < points.Length; vertex++)
                         {
                             var coefficient = xScaleCoefficients?[i][vertex] ?? 0f;
                             var shearY = xShearYCoefficients?[i][vertex] ?? 0f;
                             var shearZ = xShearZCoefficients?[i][vertex] ?? 0f;
-                            if (!sourceFrame.HasValue && ((coefficient == 0f && shearY == 0f && shearZ == 0f) || halfDelta == 0f)) continue;
+                            if (!sourceFrame.HasValue && recordedFrameTransforms == null && ((coefficient == 0f && shearY == 0f && shearZ == 0f) || halfDelta == 0f)) continue;
                             var frame = Matrix4x4.Scale(new Vector3(1f + halfDelta * coefficient, 1f, 1f));
                             frame.m01 = halfDelta * shearY;
                             frame.m02 = halfDelta * shearZ;
+                            // The recorded Jacobian acts in construction coordinates, after
+                            // source-frame mapping and before the ordinary width Jacobian.
+                            if (recordedFrameTransforms != null) frame *= recordedFrameTransforms[i][vertex];
                             if (sourceFrame.HasValue) frame *= sourceFrame.Value;
                             frames.Add(new KeyValuePair<int, Matrix4x4>(vertex, frame));
                         }
@@ -79,11 +90,13 @@ internal sealed partial class TowerFactory
                 bounds.max = math.max(bounds.max, prepared.Bounds.max);
                 var model = BuildModel(name + " Mesh " + i, meshes[i], points, out var error,
                     frameTransforms: prepared.Frames, omittedTriangles: omittedTriangles?[i],
-                    sourceVertexIndices: sourceVertexIndices?[i], recordedCornerIndices: recordedCornerIndices?[i])
+                    sourceVertexIndices: sourceVertexIndices?[i], recordedCornerIndices: recordedCornerIndices?[i],
+                    sourceTriangleVertices: sourceTriangleVertices?[i], sourceTriangleWeights: sourceTriangleWeights?[i],
+                    explicitTriangleIndices: explicitTriangleIndices?[i], sourceFaceIndices: sourceFaceIndices?[i], recordedUv0: recordedUv0?[i])
                     ?? throw new InvalidOperationException(error);
                 models.Add(model);
                 vertices += points.Length;
-                indices += omittedTriangles == null ? checked((int)CountIndices(meshes[i]))
+                indices += explicitTriangleIndices != null ? explicitTriangleIndices[i].Length : omittedTriangles == null ? checked((int)CountIndices(meshes[i]))
                     : checked(omittedTriangles[i].Count(omit => !omit) * 3);
             }
             if (_previewGeometry != null)

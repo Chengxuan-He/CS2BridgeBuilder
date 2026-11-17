@@ -82,7 +82,9 @@ internal sealed class BridgeStyleVariant
     internal BridgePrototypeSource Source { get; }
 
     /// <summary>False when the donor's declared DLC/mod prerequisite is not currently available.</summary>
-    internal bool IsAvailable => Source.IsAvailable;
+    private BridgePrototypeSource[] _requiredSources = Array.Empty<BridgePrototypeSource>();
+    internal void BindSources(BridgePrototypeSource[] sources) => _requiredSources = sources;
+    internal bool IsAvailable => Source.IsAvailable && _requiredSources.All(source => source.IsAvailable);
 
     /// <summary>Metres. 0 when the donor's sections could not be measured.</summary>
     internal float Width { get; }
@@ -302,7 +304,10 @@ internal sealed class BridgeStyle
     /// Where the variants came from, so the UI can say what an export will depend on. Empty until a
     /// world has been scanned, since that is when donors are found.
     /// </summary>
-    internal string Source => _variants.FirstOrDefault()?.Source.LocalizedLabel ?? string.Empty;
+    internal string[] Sources => BridgeStyleSources.For(Id);
+    private BridgePrototypeSource[] _requiredSources = Array.Empty<BridgePrototypeSource>();
+    internal string Source => Sources.Length == 0 ? Settings.RuntimeUiText.Get("BaseGame")
+        : string.Join(" + ", _requiredSources.Select(source => source.LocalizedLabel));
 
     /// <summary>
     /// False when the style is named here but nothing providing it is registered - either because no
@@ -314,18 +319,14 @@ internal sealed class BridgeStyle
 
     internal void Add(BridgeStyleVariant variant) => _variants.Add(variant);
 
-    /// <summary>Bind all width variants to one owner before exposing this catalogue to consumers.</summary>
-    internal void BindSingleSource()
+    /// <summary>Bind the declared direct source and every explicit required source, in order.</summary>
+    internal void BindSources(PrefabBase[] resources)
     {
-        var source = _variants.Select(variant => variant.Source)
-            .Where(candidate => candidate.HasSingleSource)
-            .OrderBy(candidate => candidate.Priority)
-            .ThenBy(candidate => candidate.Key, StringComparer.Ordinal)
-            .FirstOrDefault();
-        // Prefer the canonical base/DLC owner even if unavailable: an absent prerequisite must not
-        // silently switch the design to a third-party copy. This changes candidates, not assets.
-        _variants.RemoveAll(variant => source == null || !variant.Source.HasSingleSource
-            || !string.Equals(variant.Source.Key, source.Key, StringComparison.Ordinal));
+        var keys = Sources;
+        var directKey = keys.Length == 0 ? "base" : keys[0];
+        _variants.RemoveAll(variant => !string.Equals(variant.Source.Key, directKey, StringComparison.Ordinal));
+        _requiredSources = keys.Select(key => BridgePrototypeSource.Required(key, resources)).ToArray();
+        foreach (var variant in _variants) variant.BindSources(_requiredSources);
     }
 
     /// <summary>

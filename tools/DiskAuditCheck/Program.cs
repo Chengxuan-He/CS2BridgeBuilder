@@ -54,10 +54,10 @@ var permissionRoot=Path.Combine(root,"permissions");Directory.CreateDirectory(pe
 Check(BridgeInspectionPermissions.Check(new[]{permissionRoot})&&!Directory.EnumerateFileSystemEntries(permissionRoot).Any(),"startup read/write/move/delete probe cleans its files");
 var sid=WindowsIdentity.GetCurrent().User!;
 void Deny(string path,FileSystemRights rights,Action body) {
- var info=new DirectoryInfo(path);var original=info.GetAccessControl();var denied=info.GetAccessControl();
+ var info=new DirectoryInfo(path);var original=info.GetAccessControl().GetSecurityDescriptorSddlForm(AccessControlSections.Access);var denied=info.GetAccessControl();
  var rule=new FileSystemAccessRule(sid,rights,InheritanceFlags.ContainerInherit|InheritanceFlags.ObjectInherit,PropagationFlags.None,AccessControlType.Deny);
  denied.AddAccessRule(rule);
- try{info.SetAccessControl(denied);body();}finally{var restored=info.GetAccessControl();restored.RemoveAccessRuleSpecific(rule);info.SetAccessControl(restored);}
+ try{info.SetAccessControl(denied);body();}finally{var restored=new DirectorySecurity();restored.SetSecurityDescriptorSddlForm(original,AccessControlSections.Access);info.SetAccessControl(restored);if(info.GetAccessControl().GetAccessRules(true,false,typeof(SecurityIdentifier)).Cast<FileSystemAccessRule>().Any(r=>r.AccessControlType==AccessControlType.Deny && r.IdentityReference.Equals(sid)))throw new Exception("Deny rule remains after restoration");var probe=Path.Combine(path,"restoration-"+Guid.NewGuid());File.WriteAllText(probe,"restored");if(File.ReadAllText(probe)!="restored")throw new Exception("Restored read failed");File.Delete(probe);}
 }
 Deny(permissionRoot,FileSystemRights.WriteData,()=>{
  bool raised=false;try{BridgeInspectionPermissions.Check(new[]{permissionRoot});}catch(BridgeRequiredFilePermissionException){raised=true;}

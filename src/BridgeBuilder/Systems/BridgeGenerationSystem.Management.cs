@@ -28,11 +28,6 @@ public partial class BridgeGenerationSystem
 {
     private void CreateRuntimeBridge(BridgeRuntimeRequest request, BridgeOptions? exportOptions = null)
     {
-        if (BridgePreparedMaterials.RequestFiles == null && BridgeStyleCatalog.Find(request.StyleId) != null)
-        {
-            PrepareMaterialFiles(request.StyleId, () => CreateRuntimeBridge(request, exportOptions), FailMaterialCreation);
-            return;
-        }
         var state = ExportStateStore.Load();
         var report = new ExportReport(logIssues: false);
         var upper = DeckCatalog.Find(request.UpperDeckId);
@@ -56,6 +51,15 @@ public partial class BridgeGenerationSystem
                 "The selected bridge prototype is no longer installed."));
             Finish(report, state, "Create runtime bridge", showMessage: false);
             BridgeRuntimeRequests.Complete("StyleUnavailable");
+            return;
+        }
+
+        // Fixed generators use their selected source directly. Only the current movable
+        // routes consume packaged materials; their native content guard is not global.
+        // This source check also runs again when asynchronous preparation resumes.
+        if (BridgeStyleDefinitions.IsMovable(style.Id) && BridgePreparedMaterials.RequestFiles == null)
+        {
+            PrepareMaterialFiles(style.Id, () => CreateRuntimeBridge(request, exportOptions), FailMaterialCreation);
             return;
         }
 
@@ -84,7 +88,6 @@ public partial class BridgeGenerationSystem
 
         string DefaultLabel()
         {
-            if (!BridgeStyleDefinitions.IsMovable(style.Id)) return BridgeNaming.BaseName(upper, lower, style);
             string RoadName(Deck deck) => deck.Road?.Name ?? DeckCatalog.DisplayNameOf(deck.Prefab);
             string name = style.DisplayName + "·" + RoadName(upper);
             return lower == null ? name : name + "·" + RoadName(lower) + "·"
@@ -116,7 +119,8 @@ public partial class BridgeGenerationSystem
         }
 
         // Keep pending metadata until publication or failure. The claimed directory fences concurrent writers.
-        if (!BridgeAssetCatalog.Begin(new BridgeAssetInfo(prefabName, displayName,
+        if (!BridgeAssetCatalog.Begin(new BridgeAssetInfo(prefabName,
+            displayName,
             upper.Id, lower?.Id, style.Id, DateTime.UtcNow.ToString("O", CultureInfo.InvariantCulture), pending: true)))
         {
             report.Failed(prefabName, new InvalidOperationException("Could not reserve the bridge UUID for creation."));

@@ -63,6 +63,7 @@ are the maintained library locations. Keep topic inventories in their README ind
 |   |   `-- <topic>-contract.md        Interfaces, ownership and lifecycle obligations
 |   |-- specs/
 |   |   |-- README.md                 Specification topic index
+|   |   |-- lod-spec.md                Canonical LOD behavior and acceptance
 |   |   `-- <topic>-spec.md            Behavior, algorithms, formats and acceptance criteria
 |   |-- guides/
 |   |   |-- README.md                 Contributor/operator guide index
@@ -125,6 +126,18 @@ split diagrams along module boundaries and keep their ordering consistent with e
 Use consistent descriptive filenames and avoid names that misrepresent the document type.
 
 ## Evidence and normative text
+
+Every documented native LOD formula must cite its verified native source: the inspected local
+Game.dll version and SHA-256, fully qualified class and method, and an audit location with
+the relevant IL offsets or decompiled lines and their extraction identity. Place the citation
+beside the formula or route it to that exact evidence record. A method name, plausible result
+or passing reconstruction test alone is insufficient. Do not label algebraic inversions,
+fitted relationships or project-authored compensation as native formulas. An explicitly
+authorized mod-defined LOD formula must instead be labelled as a project derivation, cite
+its native premises and applicable authorization scope, and state its tradeoffs and evidence
+limits. Remove an LOD formula without the applicable provenance from maintained documentation,
+including audits, retaining supported observations and original-file backups separately.
+This requirement concerns LOD formulas; it makes no claim that formulas in other domains are native.
 
 Keep audit evidence traceable to its sources, inspected inputs, implementation identity, conditions
 and verification limits. Distinguish observed facts, derived conclusions, unverified hypotheses and

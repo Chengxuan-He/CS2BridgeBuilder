@@ -6,7 +6,8 @@ Bridge Builder combines available roads or tracks with supported bridge styles i
 
 ### Features
 
-- Fixed suspension, cable-stayed, truss-arch, tied-arch and covered wooden styles, depending on installed content and supported prototypes.
+- 37 registered bridge styles, including fixed suspension, cable-stayed, arch, viaduct and covered designs, depending on the selected source content.
+- GO 224m Viaduct Bridge, Nanpu Bridge and Lupu Bridge styles from their respective source mods.
 - Custom movable bridges: drawbridges, lift bridges and pedestrian movable styles from Bridges & Ports.
 - Independent upper and lower roads or tracks on supported double-deck styles, including opposite deck directions.
 - Search and filter networks and bridge styles. Use Create to save a bridge, or Create and build to enter construction mode when it is unlocked.
@@ -17,7 +18,7 @@ Bridge Builder combines available roads or tracks with supported bridge styles i
 
 ### Compatibility
 
-Bridge styles supplied by other mods become available only when the corresponding mods are installed and enabled.
+Bridge styles become available when every source registered for that style is installed, enabled and natively available. Missing content hides only the affected styles.
 
 Bridges & Ports DLC is not required to use Bridge Builder. Only bridge styles that use its content require it.
 
@@ -31,7 +32,17 @@ These integrations are optional; select only content you use.
 **Bridge content**
 
 - [Bridge Expansion Pack](https://mods.paradoxplaza.com/mods/92245/Windows)
-- [Bridge Expansion Pack: B&P](https://mods.paradoxplaza.com/mods/124160/Windows)
+- [GO 224m Viaduct Bridge](https://mods.paradoxplaza.com/mods/166012/Windows)
+- [Shanghai Nanpu Bridge](https://mods.paradoxplaza.com/mods/162995/Windows)
+- [Lupu Bridge](https://mods.paradoxplaza.com/mods/151335/Windows)
+
+The exact published source titles of the last two listings are `上海南浦大桥` (Shanghai Nanpu Bridge)
+and `卢浦大桥` (Lupu Bridge). These literal source names identify the linked assets; the descriptions here are English.
+
+Bridge Expansion Pack supplies Truss Viaduct, double-deck Suspension, Art Deco Viaduct and
+double-deck Golden Gate styles. Art Deco Viaduct and double-deck Golden Gate also require
+San Francisco Set DLC. [Bridge Expansion Pack: B&P](https://mods.paradoxplaza.com/mods/124160/Windows)
+remains optional compatible content, not a registered prerequisite for these 37 styles.
 
 **Bridge generation**
 
@@ -47,7 +58,7 @@ Follow Street Studio’s own guidance: disable Road Builder when using its indep
 
 Install the game/DLC and optional mod content required by the roads or supported bridge styles you select. The double-deck Golden Gate style comes from Bridge Expansion Pack, not the base single-deck Golden Gate prototype.
 
-Keep Bridge Builder installed and enabled. Generated shader programs require its startup registration; operation after disabling or uninstalling the mod is not supported. Required game/DLC and third-party material resources remain prerequisites, including virtual textures. A resource available on the author's machine is not necessarily installed on every player's machine. Saved bridges have their own dependency snapshots; updating the mod does not regenerate their geometry.
+Keep Bridge Builder installed and enabled. Mod-owned precompiled material programs require its startup registration; operation after disabling or uninstalling the mod is not supported. Required game/DLC and third-party material resources remain prerequisites, including virtual textures. A resource available on the author's machine is not necessarily installed on every player's machine. Saved bridges have their own dependency snapshots; updating the mod does not regenerate their geometry.
 
 There is no reliable fully automatic importer for arbitrary custom bridge assets. Supporting a new style requires bridge-specific measurements, implementation and visual checks. A coding agent does not guarantee a correct result in one attempt. See [Adding a bridge style with a coding agent](https://github.com/Chengxuan-He/CS2BridgeBuilder#adding-a-bridge-style-with-a-coding-agent). Compatibility with every third-party asset or network/style combination is not promised.
 

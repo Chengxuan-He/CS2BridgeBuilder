@@ -283,95 +283,46 @@ internal sealed class Lift02UnderlayRegions
         return cached;
     }
 
-    internal bool CoversUv(Receiver receiver, Vector2[] uv)
-    {
-        var polygon = uv.Select(p => new Point(p.x, p.y)).ToArray();
-        if (Area(polygon) == Numeric_Types_Lift02_Lift02UnderlayRegions_cs.Values.I32[52])
-            return true;
-        if (Area(polygon) < Numeric_Types_Lift02_Lift02UnderlayRegions_cs.Values.I32[53])
-            Array.Reverse(polygon);
-        var remaining = new List<Point[]>
-        {
-            polygon
-        };
-        var binding = receiver.Binding;
-        foreach (var candidate in Receivers)
-        {
-            var b = candidate.Binding;
-            if (b.Surface.id.guid != binding.Surface.id.guid || b.SourceSurface.id.guid != binding.SourceSurface.id.guid || b.ReceiverType != binding.ReceiverType || b.ProjectionKind != binding.ProjectionKind || b.AppearanceDomain != binding.AppearanceDomain)
-                continue;
-            var triangle = new[]
-            {
-                b.Receiver.A.UV,
-                b.Receiver.B.UV,
-                b.Receiver.C.UV
-            }.Select(p => new Point(p.x, p.y)).ToArray();
-            double area = Area(triangle);
-            if (area == Numeric_Types_Lift02_Lift02UnderlayRegions_cs.Values.I32[54])
-                continue;
-            if (area < Numeric_Types_Lift02_Lift02UnderlayRegions_cs.Values.I32[55])
-                Array.Reverse(triangle);
-            var edges = Lines(triangle);
-            var next = new List<Point[]>();
-            foreach (var piece in remaining)
-            {
-                if (!Overlap(piece, triangle))
-                {
-                    next.Add(piece);
-                    continue;
-                }
-
-                next.AddRange(Subtract(piece, edges));
-            }
-
-            remaining = next;
-            if (remaining.Count == Numeric_Types_Lift02_Lift02UnderlayRegions_cs.Values.I32[56])
-                return true;
-        }
-
-        return false;
-    }
-
     internal static double Area(IReadOnlyList<Point> polygon)
     {
-        double area = Numeric_Types_Lift02_Lift02UnderlayRegions_cs.Values.I32[57];
-        for (int i = Numeric_Types_Lift02_Lift02UnderlayRegions_cs.Values.I32[58]; i < polygon.Count; i++)
+        double area = Numeric_Types_Lift02_Lift02UnderlayRegions_cs.Values.I32[52];
+        for (int i = Numeric_Types_Lift02_Lift02UnderlayRegions_cs.Values.I32[53]; i < polygon.Count; i++)
         {
             var a = polygon[i];
-            var b = polygon[(i + Numeric_Types_Lift02_Lift02UnderlayRegions_cs.Values.I32[59]) % polygon.Count];
+            var b = polygon[(i + Numeric_Types_Lift02_Lift02UnderlayRegions_cs.Values.I32[54]) % polygon.Count];
             area += a.X * b.Z - a.Z * b.X;
         }
 
-        return area / Numeric_Types_Lift02_Lift02UnderlayRegions_cs.Values.I32[60];
+        return area / Numeric_Types_Lift02_Lift02UnderlayRegions_cs.Values.I32[55];
     }
 
     internal static Line[] Lines(IReadOnlyList<Point> polygon)
     {
         var result = new Line[polygon.Count];
-        for (int i = Numeric_Types_Lift02_Lift02UnderlayRegions_cs.Values.I32[61]; i < result.Length; i++)
+        for (int i = Numeric_Types_Lift02_Lift02UnderlayRegions_cs.Values.I32[56]; i < result.Length; i++)
         {
             var a = polygon[i];
-            var b = polygon[(i + Numeric_Types_Lift02_Lift02UnderlayRegions_cs.Values.I32[62]) % polygon.Count];
+            var b = polygon[(i + Numeric_Types_Lift02_Lift02UnderlayRegions_cs.Values.I32[57]) % polygon.Count];
             result[i] = new Line(a.Z - b.Z, b.X - a.X, (b.Z - a.Z) * a.X - (b.X - a.X) * a.Z);
         }
 
         // Repeated exact polygon points do not define a half-plane. Keeping
         // their zero equation would put the whole polygon in both halves.
-        return result.Where(line => line.X != Numeric_Types_Lift02_Lift02UnderlayRegions_cs.Values.I32[63] || line.Z != Numeric_Types_Lift02_Lift02UnderlayRegions_cs.Values.I32[64]).ToArray();
+        return result.Where(line => line.X != Numeric_Types_Lift02_Lift02UnderlayRegions_cs.Values.I32[58] || line.Z != Numeric_Types_Lift02_Lift02UnderlayRegions_cs.Values.I32[59]).ToArray();
     }
 
     private static bool Overlap(IReadOnlyList<Point> a, IReadOnlyList<Point> b) => a.Min(p => p.X) < b.Max(p => p.X) && b.Min(p => p.X) < a.Max(p => p.X) && a.Min(p => p.Z) < b.Max(p => p.Z) && b.Min(p => p.Z) < a.Max(p => p.Z);
     private static Point[] Clip(IReadOnlyList<Point> polygon, Line line)
     {
         var result = new List<Point>();
-        for (int i = Numeric_Types_Lift02_Lift02UnderlayRegions_cs.Values.I32[65]; i < polygon.Count; i++)
+        for (int i = Numeric_Types_Lift02_Lift02UnderlayRegions_cs.Values.I32[60]; i < polygon.Count; i++)
         {
             var a = polygon[i];
-            var b = polygon[(i + Numeric_Types_Lift02_Lift02UnderlayRegions_cs.Values.I32[66]) % polygon.Count];
+            var b = polygon[(i + Numeric_Types_Lift02_Lift02UnderlayRegions_cs.Values.I32[61]) % polygon.Count];
             double av = line.At(a), bv = line.At(b);
-            if (av >= Numeric_Types_Lift02_Lift02UnderlayRegions_cs.Values.I32[67])
+            if (av >= Numeric_Types_Lift02_Lift02UnderlayRegions_cs.Values.I32[62])
                 result.Add(a);
-            if ((av < Numeric_Types_Lift02_Lift02UnderlayRegions_cs.Values.I32[68] && bv > Numeric_Types_Lift02_Lift02UnderlayRegions_cs.Values.I32[69]) || (av > Numeric_Types_Lift02_Lift02UnderlayRegions_cs.Values.I32[70] && bv < Numeric_Types_Lift02_Lift02UnderlayRegions_cs.Values.I32[71]))
+            if ((av < Numeric_Types_Lift02_Lift02UnderlayRegions_cs.Values.I32[63] && bv > Numeric_Types_Lift02_Lift02UnderlayRegions_cs.Values.I32[64]) || (av > Numeric_Types_Lift02_Lift02UnderlayRegions_cs.Values.I32[65] && bv < Numeric_Types_Lift02_Lift02UnderlayRegions_cs.Values.I32[66]))
             {
                 double t = av / (av - bv);
                 result.Add(new Point(a.X + (b.X - a.X) * t, a.Z + (b.Z - a.Z) * t));
@@ -387,10 +338,10 @@ internal sealed class Lift02UnderlayRegions
         foreach (var line in cut)
         {
             var outside = Clip(remaining, line.Reverse);
-            if (Area(outside) != Numeric_Types_Lift02_Lift02UnderlayRegions_cs.Values.I32[72])
+            if (Area(outside) != Numeric_Types_Lift02_Lift02UnderlayRegions_cs.Values.I32[67])
                 yield return outside;
             remaining = Clip(remaining, line);
-            if (Area(remaining) == Numeric_Types_Lift02_Lift02UnderlayRegions_cs.Values.I32[73])
+            if (Area(remaining) == Numeric_Types_Lift02_Lift02UnderlayRegions_cs.Values.I32[68])
                 yield break;
         }
     }

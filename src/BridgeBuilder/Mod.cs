@@ -113,6 +113,7 @@ public sealed class Mod : IMod
         try
         {
             UIManager.defaultUISystem.RemoveHostLocation("bridgebuilderui");
+            Runtime.BridgePresentationIcons.Clear();
         }
         catch (Exception exception)
         {
@@ -252,6 +253,7 @@ public sealed class Mod : IMod
             }
             Runtime.BridgePreparedMaterials.Initialize(directory);
             UIManager.defaultUISystem.AddHostLocation("bridgebuilderui", directory, false, 0);
+            Runtime.BridgePresentationIcons.Register(directory);
             Runtime.BridgeDeferredRemoval.Initialize(directory);
         }
         catch (Exception exception)

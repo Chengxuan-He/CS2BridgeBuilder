@@ -98,6 +98,10 @@ Style-specific measurements, implementation stages, historical decisions and too
 
 - [BXP-GoldenGate-Double.md](GoldenGateDouble/bxp-golden-gate-double.md)
 
+## GOViaduct
+
+- [GO 224 m Arch Viaduct source and implementation evidence](GOViaduct/implementation.md)
+
 ## Grand
 
 - [GRAND_REFERENCE_WIDTH.md](Grand/grand-reference-width.md)
@@ -168,6 +172,14 @@ Style-specific measurements, implementation stages, historical decisions and too
 - [docs/archive/bridge-styles/Lift05/tools/PreparedMaterials/Lift05/Task65-Guard-Audit.md](Lift05/tools/PreparedMaterials/Lift05/task65-guard-audit.md)
 - [docs/archive/bridge-styles/Lift05/tools/PreparedMaterials/Lift05/Task73-Rail-Contamination.md](Lift05/tools/PreparedMaterials/Lift05/task73-rail-contamination.md)
 - [docs/archive/bridge-styles/Lift05/tools/PreparedMaterials/Lift05/Task74-Prototype-Catenary.md](Lift05/tools/PreparedMaterials/Lift05/task74-prototype-catenary.md)
+
+## Lupu
+
+- [Lupu Bridge source and construction evidence](Lupu/source-audit.md)
+
+## Nanpu
+
+- [Nanpu Bridge source and generation evidence](Nanpu/source-and-generation.md)
 
 ## PedestrianDraw01
 

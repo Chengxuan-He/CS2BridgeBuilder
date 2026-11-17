@@ -188,7 +188,7 @@ Copy-Item -LiteralPath $uiModule -Destination $output -Force
 Copy-Item -LiteralPath (Join-Path $projectRoot 'src\BridgeBuilder\UI\BridgeBuilder.css') -Destination $output -Force
 Copy-Item -LiteralPath (Join-Path $projectRoot 'assets\BridgeBuilder.svg') -Destination $output -Force
 Copy-Item -LiteralPath (Join-Path $projectRoot 'assets\BridgeBuilderToolbar.svg') -Destination $output -Force
-foreach ($fieldIcon in @('BridgeBuilderPack.svg', 'BridgeBuilderSearch.svg', 'BridgeBuilderFilter.svg', 'BridgeBuilderArrowDown.svg')) {
+foreach ($fieldIcon in @('BridgeBuilderPack.svg', 'BridgeBuilderSearch.svg', 'BridgeBuilderFilter.svg', 'BridgeBuilderArrowDown.svg', 'BridgeNanpu.svg', 'BridgeLupu.svg')) {
     Copy-Item -LiteralPath (Join-Path $projectRoot "assets\$fieldIcon") -Destination $output -Force
 }
 & (Join-Path $PSScriptRoot 'Copy-PreparedMaterials.ps1') -DestinationRoot $output

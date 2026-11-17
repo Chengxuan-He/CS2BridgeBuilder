@@ -8,6 +8,8 @@ var scratch=Path.Combine(sandbox,"game");
 UnityEngine.Application.persistentDataPath=scratch;
 var count=0;
 void Check(bool value,string label){if(!value)throw new Exception(label);count++;}
+var packaged=Path.GetFullPath(Path.Combine(AppContext.BaseDirectory,"../../../../../assets"));
+BridgePresentationIcons.Register(packaged);
 foreach(var cause in new[]{"unlock","icon","pack","cleanup","metadata","legacy-component","short-v2-1","short-v2-2","short-v2-3","short-v2-4","short-v2-5","short-v2-6"}) {
  var owner="b"+Guid.NewGuid();
  var path=Path.Combine(scratch,"ImportedData",owner,"Prefabs","Bridge.Prefab");
@@ -67,6 +69,38 @@ foreach(var cause in new[]{"unlock","icon","pack","cleanup","metadata","legacy-c
  BridgeBuilder.Bridges.BridgeStyleCatalog.Absent=false;
  Check(BridgePrefabPersistence.Saves==saves&&File.ReadAllText(path)==migrated,cause+" second run no writes");
  Check(next.GetComponent<Unlockable>()!.m_IgnoreDependencies,cause+" native unlock retained");
+}
+// Fresh generation already persists the independent unlock representation. Its first
+// cold inspection must not require a repair merely to reach the current format.
+foreach(var style in new[]{"GOViaduct","Nanpu","Lupu"}) {
+ var owner="b"+Guid.NewGuid();
+ var path=Path.Combine(scratch,"ImportedData",owner,"Prefabs","Bridge.Prefab");
+ Directory.CreateDirectory(Path.GetDirectoryName(path)!);
+ var current=new RoadPrefab{name=owner,asset=new PrefabAsset{path=path}};
+ current.asset.id=(new FakeHash{value=Guid.NewGuid().ToString("N")},0);
+ current.AddOrGetComponent<UIObject>().name=BridgeAssetMetadata.Encode(new(owner,"Selected road","selected-road",null,style,"2026-11-16T15:00:00Z"));
+ current.GetComponent<UIObject>()!.m_Icon=style=="GOViaduct"?"assetdb://global/original":"coui://bridgebuilderui/Bridge"+style+".svg";
+ current.AddOrGetComponent<Unlockable>().m_IgnoreDependencies=true;
+ current.AddOrGetComponent<AssetPackItem>().m_Packs=[BridgeAssetPack.Pack];
+ BridgePrefabPersistence.Write(current);File.WriteAllText(path+".cid",current.asset.id.guid.ToString());
+ var baseline=File.ReadAllBytes(path);var saves=BridgePrefabPersistence.Saves;
+ for(var cold=0;cold<2;cold++) {
+  var loaded=BridgePrefabPersistence.Reload(current.asset);
+  Check(BridgePortableMigration.Run(owner,new PrefabSystem(),Path.Combine(sandbox,"backup",owner),out var changed,out var error,
+   [new(loaded,path)],new BridgeCreationDependencies(),new HashSet<string>{path,path+".cid"})&&!changed,
+   style+" fresh cold inspection has no migration/restart change: "+error);
+  Check(BridgePrefabPersistence.Saves==saves&&File.ReadAllBytes(path).SequenceEqual(baseline),style+" fresh cold inspection writes no prefab");
+ }
+ Check(!Directory.Exists(Path.Combine(sandbox,"backup",owner)),style+" fresh current owner needs no migration backup");
+ if(style!="GOViaduct") {
+  BridgeBuilder.Bridges.BridgeStyleCatalog.NextIcon=current.GetComponent<UIObject>()!.m_Icon;
+  BridgePresentationIcons.Register(Path.Combine(sandbox,"missing-package"));
+  Check(!BridgePortableMigration.Run(owner,new PrefabSystem(),Path.Combine(sandbox,"backup",owner),out var changed,out var error,
+   [new(current,path)],new BridgeCreationDependencies(),new HashSet<string>{path,path+".cid"})&&!changed&&error.Contains("icon unavailable"),style+" missing packaged icon remains a real repair failure");
+  Check(BridgePrefabPersistence.Saves==saves&&File.ReadAllBytes(path).SequenceEqual(baseline),style+" failed missing icon repair changes no original");
+  BridgePresentationIcons.Register(packaged);
+  BridgeBuilder.Bridges.BridgeStyleCatalog.NextIcon="assetdb://global/repaired";
+ }
 }
 Console.WriteLine($"PASS {count} production portable migration assertions: current repairs, legacy component and short Data.v2 migration, current-reader rejection before migration, UUID/CID preservation and unchanged second cold reread. Native API/serialization test doubles; scratch={scratch}");
 Directory.Delete(sandbox,true);

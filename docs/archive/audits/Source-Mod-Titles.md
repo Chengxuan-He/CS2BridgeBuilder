@@ -57,3 +57,26 @@ publisher titles are not translated or abbreviated by Bridge Builder.
 The [build log](../../../artifacts/source-mod-names/build.log) and
 [deployment receipt](../../../artifacts/source-mod-names/deployment.json) retain delivery evidence.
 No release or version bump is performed. Game startup/shutdown remains manual.
+
+## 26.11.18 publication source-title refresh
+
+Fresh official-page HTTP retrieval on 2026-11-18 confirmed the following complete titles.
+The Nanpu and Lupu titles are literal published identifiers retained with English meanings,
+not non-English documentation examples. Raw retrieved pages are development evidence under
+`work/release-26.11.18/official-<id>.html`. The web reader could retrieve only the Bridge
+Expansion Pack page; direct official-page HTTP metadata supplied the other three titles.
+
+| Mod ID | Exact published title | English meaning / official page |
+| --- | --- | --- |
+| 162995 | `上海南浦大桥` | [Shanghai Nanpu Bridge](https://mods.paradoxplaza.com/mods/162995/Windows) |
+| 151335 | `卢浦大桥` | [Lupu Bridge](https://mods.paradoxplaza.com/mods/151335/Windows) |
+| 166012 | GO 224m Viaduct Bridge | [Official listing](https://mods.paradoxplaza.com/mods/166012/Windows) |
+| 92245 | Bridge Expansion Pack | [Official listing](https://mods.paradoxplaza.com/mods/92245/Windows) |
+
+The current fixed source declarations contain 37 styles: 11 base-game, 18 Bridges & Ports,
+one San Francisco Set, four Bridge Expansion Pack and the three individual landmark-source
+mods above. ArtDecoViaduct and GoldenGateDouble additionally register San Francisco Set;
+TrussViaduct and SuspensionDouble do not. The seven source groups count styles by direct
+source, not mutually exclusive required-content sets. Bridge Expansion Pack: B&P is not a
+registered requirement in this declaration. This inspection establishes source bindings and
+published titles, not native visual or cold-load acceptance.

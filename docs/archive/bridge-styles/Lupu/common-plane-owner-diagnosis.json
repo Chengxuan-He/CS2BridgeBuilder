@@ -1,0 +1,17 @@
+{
+  "owner": "b5221d87f-a745-4138-80d2-deef1bb71f7e",
+  "generatedUtc": "2026-11-17T03:26:17.5750140Z",
+  "loadedBuild": "57e340d04a7e",
+  "installedMvid": "57e340d0-4a7e-4e39-95fa-2b2dec336da8",
+  "actualGeometry": "actual-vs-recipe.json",
+  "actualRoadTopDelta": 0,
+  "actualSelectedRoadWidth": 22.5,
+  "rootCause": "Native running geometry uses NetPieceLayer.Surface (0); old collector selected Bottom (1) and Top (2), excluding running surface and falling back to datum 0. Old fixture incorrectly assigned native mesh to Top.",
+  "verifiedSourceSkin": -0.2,
+  "verifiedOuterBottom": -1,
+  "sourcePackedOffsetY": 0,
+  "nativeDescriptor": "native-descriptors.json",
+  "correctedVerification": "point-check-final.log",
+  "assertions": 50,
+  "status": "Shared fix implemented. Dedicated common-plane recipe and final build/install pending."
+}

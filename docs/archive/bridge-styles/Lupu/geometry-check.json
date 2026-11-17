@@ -1,0 +1,40 @@
+{
+  "checks": "all faces once, original corner attributes, measured independent interface frames, rigid spandrel bearing translations, source-world orientation, rigid longitudinal dimensions, individual tower collision domains, signed width mapping, full width allowance",
+  "lods": [
+    {
+      "lod": 0,
+      "allFaces": 46789,
+      "maxReferenceWorldError": 0.0,
+      "sourceWidth": 43.0341796875,
+      "widenedWidth": 59.0341796875
+    },
+    {
+      "lod": 1,
+      "allFaces": 15138,
+      "maxReferenceWorldError": 0.0,
+      "sourceWidth": 42.998046875,
+      "widenedWidth": 58.998046875
+    },
+    {
+      "lod": 2,
+      "allFaces": 1510,
+      "maxReferenceWorldError": 0.0,
+      "sourceWidth": 42.998046875,
+      "widenedWidth": 58.998046875
+    }
+  ],
+  "topOnlyEdgeContactCases": 144,
+  "bearingCases": 432,
+  "minimumBearing": 1.20361328125,
+  "maximumBearing": 1.3429145812988281,
+  "widths": [
+    15.35693359375,
+    22.5,
+    40.0
+  ],
+  "bottomDepths": [
+    1,
+    2,
+    3
+  ]
+}

@@ -26,7 +26,7 @@ def main():
     evidence_path = ROOT / 'artifacts/prepared-materials/Draw03/non-tiling/evidence.json'
     evidence = json.loads(evidence_path.read_text())
     source_path = ROOT / 'src/BridgeBuilder/Bridges/Types/Draw03/Draw03NativeMaterials.cs'
-    source = source_path.read_text().split('internal static string? ObjectDescriptor')[0]
+    source = source_path.read_text().split('internal static MovableExistingRoadSurface.SurfaceResult Resolve')[0]
     bindings = dict(re.findall(r'"([^"]+ Mesh)" => "([0-9a-f]{32})"', source))
     assert len(bindings) == 15
     reconstruct = (ROOT / 'src/BridgeBuilder/Bridges/Types/Draw03/Draw03ApproachSources.g.cs').read_text()

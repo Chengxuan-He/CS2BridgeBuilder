@@ -69,24 +69,6 @@ internal static class MovableRoadAssets
             }
         }
         internal readonly MovableNetworkRoadMapping? NetworkRoad;
-        internal readonly bool PreserveNativeOriginal;
-
-        // A no-match is local to this LOD. It preserves every native material slot
-        // and raw channel without entering structure retile or road composition.
-        internal static Level NativeOriginal(RenderPrefab source, Bounds3 bounds)
-            => new Level(source, bounds);
-
-        private Level(RenderPrefab source, Bounds3 bounds)
-        {
-            Decals = Array.Empty<MovablePaintDeck>();
-            Source = source; RenderBounds = bounds; PreserveNativeOriginal = true;
-            Skeleton = source.GetComponent<ProceduralAnimationProperties>();
-            Triangles = Array.Empty<MovableRoadGeometry.Triangle>();
-            Surfaces = Array.Empty<SurfaceAsset>();
-            ClosedWorld = Matrix4x4.identity;
-            RoadToObject = new Pose(Vector3.zero, Quaternion.identity);
-        }
-
         internal Level(RenderPrefab source, Bounds3 bounds, MovableNetworkRoadMapping mapping)
         {
             Decals = Array.Empty<MovablePaintDeck>();
@@ -300,16 +282,6 @@ internal static class MovableRoadAssets
                 }
                 var batch = new List<ModelImporter.Model>();
                 var surfaces = new List<SurfaceAsset>();
-                if (level.PreserveNativeOriginal)
-                {
-                    if(!MovableNativeRoadOriginal.TryAppend(levelName,level.Source,models,batch,surfaces,out error))return false;
-                    for (int materialIndex = 0; materialIndex < surfaces.Count; materialIndex++)
-                    {
-                        if (!MovableMaterialConversion.TryCreate(surfaces[materialIndex], MovableMaterialConversion.GeometryInput.NativeNetwork,
-                                name, styleId, preview, assets, out var originalMaterial, out error)) return false;
-                        surfaces[materialIndex] = originalMaterial;
-                    }
-                }
                 if (level.NetworkRoad != null)
                 {
                     if(!level.NetworkRoad.TryAppend(levelName, level.Source, models, batch, surfaces,out error))return false;

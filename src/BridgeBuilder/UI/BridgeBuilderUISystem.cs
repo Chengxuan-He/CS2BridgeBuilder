@@ -319,9 +319,10 @@ public partial class BridgeBuilderUISystem : UISystemBase
                     {
                         Id = style.Id,
                         Name = style.DisplayName,
+                        IsMovable = BridgeStyleDefinitions.IsMovable(style.Id),
                         Family = BridgeStyleDefinitions.Family(style.Id),
                         Icon = preview == null ? string.Empty : preview.RecordedIcon ?? ImageSystem.GetIcon(preview.Donor) ?? string.Empty,
-                        Source = preview?.Source.LocalizedLabel ?? string.Empty,
+                        Source = style.Source,
                         SupportsSingle = style.Variants.Any(variant => variant.IsAvailable && !variant.IsDoubleDeck),
                         SupportsDouble = style.Variants.Any(variant => variant.IsAvailable && variant.IsDoubleDeck),
                     };
@@ -406,6 +407,7 @@ internal sealed class BridgeStyleUiItem : IJsonWritable
     internal string Source { get; set; } = string.Empty;
     internal bool SupportsSingle { get; set; }
     internal bool SupportsDouble { get; set; }
+    internal bool IsMovable { get; set; }
 
     public void Write(IJsonWriter writer)
     {
@@ -418,6 +420,7 @@ internal sealed class BridgeStyleUiItem : IJsonWritable
         Property(writer, "source", Source);
         writer.PropertyName("supportsSingle"); writer.Write(SupportsSingle);
         writer.PropertyName("supportsDouble"); writer.Write(SupportsDouble);
+        writer.PropertyName("isMovable"); writer.Write(IsMovable);
         writer.TypeEnd();
     }
 

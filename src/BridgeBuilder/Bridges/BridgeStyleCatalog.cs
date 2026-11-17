@@ -101,7 +101,6 @@ internal static class BridgeStyleCatalog
         var recorded = new HashSet<string>(StringComparer.Ordinal);
         var movableContent = PrefabCatalog.GetAll(prefabSystem).OfType<ContentPrefab>()
             .FirstOrDefault(content => content.name == "BridgesAndPorts" && content.isBuiltin);
-        Runtime.BridgePreparedMaterials.SetContent(movableContent);
         if (movableContent != null)
         {
             var source = BridgePrototypeSource.RecordedContent(movableContent);
@@ -124,6 +123,12 @@ internal static class BridgeStyleCatalog
         // These fixed generators reconstruct their network and geometry plans from measured data.
         // An available native resource supplies provenance; the original network is not needed.
         var resources = PrefabCatalog.GetAll(prefabSystem).ToArray();
+        AddRecordedFixed("GOViaduct", true, GOViaductConstruction.NativeName, GOViaductConstruction.ResourceAnchorName,
+            GOViaductConstruction.Icon, GOViaductConstruction.RoadWidth, GOViaductConstruction.StructureWidth);
+        AddRecordedFixed("Nanpu", true, NanpuConstruction.NativeName, NanpuConstruction.ResourceAnchorName,
+            NanpuConstruction.Icon, NanpuConstruction.RoadWidth, NanpuConstruction.StructureWidth);
+        AddRecordedFixed("Lupu", true, LupuConstruction.NativeName, LupuConstruction.ResourceAnchorName,
+            LupuConstruction.Icon, LupuConstruction.RoadWidth, LupuConstruction.StructureWidth);
         AddRecordedFixed("ArtDecoViaduct", true, ArtDecoViaductConstruction.NativeName, ArtDecoViaductConstruction.ResourceAnchorName,
             ArtDecoViaductConstruction.Icon, ArtDecoViaductConstruction.RoadWidth, ArtDecoViaductConstruction.StructureWidth);
         AddRecordedFixed("TrussViaduct", false, TrussViaductConstruction.NativeName, TrussViaductConstruction.ResourceAnchorName,
@@ -234,7 +239,7 @@ internal static class BridgeStyleCatalog
         var ordered = named;
         foreach (var style in ordered)
         {
-            style.BindSingleSource();
+            style.BindSources(resources);
         }
         donors = ordered.Sum(style => style.Variants.Count(variant => variant.IsAvailable));
 

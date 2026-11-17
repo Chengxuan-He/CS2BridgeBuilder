@@ -6,10 +6,10 @@
     <AssemblyName>BridgeBuilder</AssemblyName>
     <RootNamespace>BridgeBuilder</RootNamespace>
     <!-- Public release version is specified by the user; CLR versions remain numeric. -->
-    <Version>26.11.16</Version>
-    <PackageVersion>26.11.16</PackageVersion>
-    <AssemblyVersion>26.11.16.0</AssemblyVersion>
-    <FileVersion>26.11.16.0</FileVersion>
+    <Version>26.11.18</Version>
+    <PackageVersion>26.11.18</PackageVersion>
+    <AssemblyVersion>26.11.18.0</AssemblyVersion>
+    <FileVersion>26.11.18.0</FileVersion>
     <GenerateAssemblyInfo>true</GenerateAssemblyInfo>
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
     <RestoreIgnoreFailedSources>true</RestoreIgnoreFailedSources>
@@ -29,6 +29,8 @@
     <EmbeddedResource Include="..\..\assets\MaterialPrograms\*.bundle" LogicalName="BridgeBuilder.MaterialProgram.%(Filename)%(Extension)" />
     <EmbeddedResource Include="..\..\assets\BridgeBuilderPack.svg" LogicalName="BridgeBuilderPack.svg" />
     <EmbeddedResource Include="..\..\assets\HardcodedNumbers\**\*.bin" LogicalName="BridgeBuilder.Numbers.%(Filename)%(Extension)" WithCulture="false" />
+    <None Include="..\..\assets\BridgeNanpu.svg" Link="BridgeNanpu.svg" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="..\..\assets\BridgeLupu.svg" Link="BridgeLupu.svg" CopyToOutputDirectory="PreserveNewest" />
     <None Include="..\..\assets\BridgeBuilder.svg" Link="BridgeBuilder.svg" CopyToOutputDirectory="PreserveNewest" />
     <None Include="..\..\assets\BridgeBuilderToolbar.svg" Link="BridgeBuilderToolbar.svg" CopyToOutputDirectory="PreserveNewest" />
     <None Include="..\..\assets\BridgeBuilderPack.svg" Link="BridgeBuilderPack.svg" CopyToOutputDirectory="PreserveNewest" />

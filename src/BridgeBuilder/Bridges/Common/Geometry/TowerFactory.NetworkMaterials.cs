@@ -16,24 +16,48 @@ namespace BridgeBuilder.Bridges;
 internal sealed partial class TowerFactory
 {
     // Explicit native vertex-protocol conversion; source appearance channels are unchanged.
-    internal async Task<SurfaceAsset[]> CreateRecordedNetworkSurfacesAsync(RenderPrefab source, string name, Color[] colors)
+    internal async Task<SurfaceAsset[]> CreateRecordedNetworkSurfacesAsync(RenderPrefab source, string name, Color[] colors, int[]? sourceMeshIndices = null)
     {
-        var result = new List<SurfaceAsset>();
-        foreach (var original in source.surfaceAssets)
+        var originals = source.surfaceAssets.ToArray();
+        var result = new SurfaceAsset[originals.Length];
+        foreach (var slot in sourceMeshIndices ?? Enumerable.Range(0, result.Length).ToArray())
         {
+            var original = originals[slot];
             original.LoadProperties(true);
             try
             {
                 var library = AssetDatabase.global.resources.materialLibrary;
                 var from = library.GetMaterial(original.materialTemplateHash);
                 var to = library.GetMaterial(library.GetMaterialHash("NetCompositionMeshLit"));
-                if (from == null || to == null || !original.hasVTSurfaceAsset)
+                if (from == null || to == null)
                     throw new InvalidOperationException("Recorded native network material input is unavailable.");
-                byte[] input; using (var stream = original.vtSurfaceAsset.GetReadStream()) using (var buffer = new MemoryStream())
-                { stream.CopyTo(buffer); input = buffer.ToArray(); }
-                int tile = BitConverter.ToInt32(input, 18);
-                if (!BridgeMidMipReferences.TryRequiredLevels(new MemoryStream(input, false), true, out var levels, out var error))
+                byte[] Read(AssetData asset)
+                {
+                    using var stream = asset.GetReadStream(); using var buffer = new MemoryStream();
+                    stream.CopyTo(buffer); return buffer.ToArray();
+                }
+                var individual = new Dictionary<(int Stack, int Layer), byte[]>();
+                byte[]? input = original.hasVTSurfaceAsset ? Read(original.vtSurfaceAsset) : null;
+                int tile = input == null ? 0 : BitConverter.ToInt32(input, 18), levels = 0;
+                string? error;
+                if (input != null && !BridgeMidMipReferences.TryRequiredLevels(new MemoryStream(input, false), true, out levels, out error))
                     throw new InvalidDataException(error);
+                int ordinal = 0;
+                foreach (var cid in original.preProcessedTextureGuids)
+                {
+                    int stack = ordinal / 4, layer = ordinal++ % 4;
+                    // Follow SurfaceAsset.LoadTexturesVT: packed layers take precedence.
+                    if (input != null && stack < BitConverter.ToInt32(input, 490) &&
+                        layer < BitConverter.ToInt32(input, 26 + stack * 40 + 24) && input[106 + (stack * 4 + layer) * 48] != 0) continue;
+                    if (!cid.isValid) continue;
+                    if (!original.database.TryGetAsset(cid, out VTTextureAsset asset)) asset = AssetDatabase.global.GetAsset<VTTextureAsset>(cid);
+                    var bytes = Read(asset);
+                    tile = BitConverter.ToUInt16(bytes, 21);
+                    if (!BridgeMidMipReferences.TryRequiredLevels(new MemoryStream(bytes, false), false, out var required, out error))
+                        throw new InvalidDataException(error);
+                    levels = Math.Max(levels, required);
+                    individual.Add((stack, layer), bytes);
+                }
                 byte[]? subset = null;
                 if (levels > 0)
                 {
@@ -49,7 +73,14 @@ internal sealed partial class TowerFactory
                     }
                 }
                 var channels = await GenerationWork.Background("native network material mip blocks", () =>
-                    NativeVtMipPyramid.Convert(input, subset, Colossal.Compression.CompressionUtils.DecompressZstdWithMarker));
+                {
+                    var extracted = input == null ? new Dictionary<(int Stack, int Layer), byte[]>() :
+                        NativeVtMipPyramid.Convert(input, subset, Colossal.Compression.CompressionUtils.DecompressZstdWithMarker);
+                    foreach (var entry in individual)
+                        extracted.Add(entry.Key, NativeVtMipPyramid.ConvertTexture(entry.Value, subset, entry.Key.Stack, entry.Key.Layer,
+                            Colossal.Compression.CompressionUtils.DecompressZstdWithMarker));
+                    return extracted;
+                });
                 var database = _previewGeometry?.NativeAssets ?? AssetDatabase.user;
                 var textures = new Dictionary<string, TextureAsset>();
                 var created = new List<AssetData>();
@@ -98,7 +129,7 @@ internal sealed partial class TowerFactory
                         _previewGeometry?.RetainSurfaceProperties(surface);
                         if (BridgeRoadGeneration.CurrentDependencies is { } dependencies && !dependencies.Material(surface, Array.Empty<AssetData>()))
                             throw new InvalidOperationException(dependencies.ResolutionError);
-                        result.Add(surface); complete = true;
+                        result[slot] = surface; complete = true;
                     }
                     finally { surface.UnloadProperties(); }
                 }
@@ -109,6 +140,6 @@ internal sealed partial class TowerFactory
             }
             finally { original.UnloadProperties(); }
         }
-        return result.ToArray();
+        return result;
     }
 }

@@ -24,11 +24,21 @@ preview, creation, regeneration and export. Geometry and native behavior remain 
 Persistence follows the [asset persistence policy](reading-map.md#bridge-asset-persistence).
 
 Road appearance processing (prototype composition, source-density tiling, embedded-marking
-removal and derived wear/background placement) applies only to movable bridges whose roads need
+removal and derived wear/background placement) applies only to movable bridges whose road and rail running surfaces need
 that processing. Fixed/non-movable bridges retain the selected native road materials, UVs and
 markings; they require no prototype road-support table, road-material replacement or marking
 cleanup under these rules. Structural source-UV/density rules still apply to every bridge.
-A fixed running cap within a movable bridge remains part of that movable road-processing scope.
+A fixed running cap within a movable bridge remains part of that movable-bridge road and rail running-surface processing scope.
+
+Bridge Builder custom materials/programs are limited to movable-bridge road and rail running
+surfaces; tracks are included and non-running structure is excluded. Original prototype materials
+remain the default for static bridges, including Nanpu and Lupu. The generation/material owner
+may perform a necessary [non-Network native-template conversion](../specs/material-spec.md#non-network-native-material-template-conversion)
+for native network rendering, preserving the specified appearance and complete native dependency
+closure. That exception changes native Surface/template representation, not the permission to use
+Bridge Builder custom shaders. Native geometry/deformation/instance adaptation alone grants no
+further material replacement. Preserve source assets, owner snapshot obligations and the prohibition
+on owner shader copies; do not add runtime geometry classification.
 
 <a id="material-complete-material-processing-without-propagated-exceptions"></a>
 
@@ -192,20 +202,11 @@ Ship offline preparation inputs under `~Materials`, never the automatically disc
 
 ## Missing optional content and virtual textures
 
-Never assume that virtual textures referenced by shipped or saved materials are installed on a
-player's machine. DLC ownership, a known CID, a prepared descriptor, or success on the developer's
-machine does not prove runtime availability. Before reading or registering a selected material,
-validate its complete required dependency closure against the currently available native databases,
-including Surface, VT texture, MidMips/cache and any required DLC or third-party mod resources.
-Resolve native identity and content requirements rather than guessing from filenames; distinguish
-an unavailable dependency from a database that can legitimately be loaded on demand. If a required
-dependency cannot be resolved, report the material or operation as unavailable before native loading.
-Do not fabricate textures, silently substitute appearance, swallow loading exceptions, or mark the
-operation successful. Apply this boundary to startup discovery, preview, creation and saved-asset
-inspection. Unselected resources remain unregistered under the discovery boundary above.
+Follow the [ordered required-source contract](../specs/cross-environment-spec.md#dlc-and-mod-compatibility) before accessing dependent materials. The material owner must establish availability of every entry in the selected style's declared source array through existing native state, not only its first/direct source. Normally functioning source mods supply complete, valid own resources; this trust does not waive explicitly registered additional requirements. Do not add UI/catalogue dependency-graph scans or internal-corruption defenses for functioning source mods.
 
-Resolve availability through the native ContentPrefab requirements, active state and its DlcRequirement database identity before reading or registering prepared movable materials. Ownership alone is insufficient when the corresponding content database is absent. Do not infer availability from paths or cached geometry. Saved-bridge inspection and recovery follow the
-[self-check contract](self-check-contract.md#self-check-unavailable-optional-content).
+Bridge Builder-owned shipped/prepared and persisted inputs retain their existing external-input checks and complete dependency handling at preparation, registration, persistence and self-check boundaries, including Surface, VT texture and MidMips/cache relationships. These obligations do not expand into an exhaustive source-mod integrity audit. Distinguish an absent external provider from its permitted on-demand database loading. Report actual file/native IO failures through the existing operation result contract; do not fabricate textures, silently substitute appearance, swallow errors or claim success. Unselected prepared resources remain unregistered under the discovery boundary above.
+
+Resolve each registered source using its native identity and active state, including explicit DLC requirements on a mod-sourced style and the same array for prepared movable materials. Follow the actual native content requirement, including its DLC ownership check and conditional database requirement. A DLC whose native requirement does not require a separate database must not be rejected solely because no same-named database exists. Where the native requirement does require that database, its absence still makes the source unavailable; do not bypass native ownership or active-state checks. Do not infer availability from paths or cached geometry. Actual missing material resources remain operation failures at their existing IO boundaries, not a universal extra database gate for every DLC. At runtime, do not infer a recursive dependency graph or add gates from unrelated styles. The development owner must first complete the offline actual-reference/provider tracing required by the linked source contract, including material and native cache dependencies, and register its evidenced sources. Saved-bridge inspection and recovery follow the [self-check contract](self-check-contract.md#self-check-unavailable-optional-content).
 
 <a id="repository-post-load-self-check-part-2"></a>
 

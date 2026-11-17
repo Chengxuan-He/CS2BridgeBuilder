@@ -20,11 +20,10 @@ internal static class Lift01NativeMaterials
             _ => false
         };
 
-    // The shared caller retains this signature while migrating the other styles.
     // A prepared object descriptor is not original non-road material reuse.
     // Native network graphs bypass this object-only resolver through the exact
     // render/slot/CID predicate above; rejecting leakage preserves that boundary.
-    internal static MovableExistingRoadSurface.SurfaceResult Resolve(SurfaceAsset original, Func<string, MovableExistingRoadSurface.SurfaceResult> load)
+    internal static MovableExistingRoadSurface.SurfaceResult Resolve(SurfaceAsset original)
     {
         try
         {

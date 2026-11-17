@@ -14,7 +14,7 @@ Read [Documentation standards](documentation-standards.md) before creating, edit
 
 ## Specifications
 
-[Specifications](specs/README.md) define required behavior, algorithms, formats and acceptance details. They are normative, not optional implementation suggestions. Read each topic with its paired contract.
+[Specifications](specs/README.md) define required behavior, algorithms, formats and acceptance details. They are normative, not optional implementation suggestions. Read each topic with its governing contract. The [LOD specification](specs/lod-spec.md) is mandatory for bridge generation and uses the existing generation contract.
 
 ## Architecture and contributor guidance
 

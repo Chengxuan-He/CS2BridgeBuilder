@@ -30,8 +30,10 @@ namespace BridgeBuilder.Bridges
     {
         internal bool IsAvailable = true;
         internal string Label => "Test DLC";
-        internal string Key => "content:test";
-        internal bool HasSingleSource => true;
+        internal string Key = "content:BridgesAndPorts";
+        internal string LocalizedLabel => Label;
+        internal static readonly Dictionary<string, BridgePrototypeSource> Requirements = new();
+        internal static BridgePrototypeSource Required(string key, Game.Prefabs.PrefabBase[] resources) => Requirements.GetValueOrDefault(key) ?? new();
         internal int Priority => 1;
         internal static BridgePrototypeSource Inspect(Game.Prefabs.PrefabBase prefab, bool pack) => new();
     }
@@ -51,3 +53,5 @@ namespace BridgeBuilder.Bridges
         internal static float RoadOf(string id) => 0;
     }
 }
+
+namespace BridgeBuilder.Settings { internal static class RuntimeUiText { internal static string Get(string key) => key; } }

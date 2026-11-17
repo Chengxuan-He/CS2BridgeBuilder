@@ -90,17 +90,8 @@ public partial class BridgeOwnerCleanupSystem : GameSystemBase
                 var plan = BridgeInstanceRemoval.Collect(EntityManager,retirement.Prefabs);
                 if(!plan.CanApply(EntityManager,out var error)) throw new IOException(error);
                 retirement.Map = plan;
-                var netTool = World.GetExistingSystemManaged<Game.Tools.NetToolSystem>();
-                if(netTool != null && ((netTool.prefab != null && OwnsPrefab(owner,netTool.prefab))
-                    || (netTool.lane != null && OwnsPrefab(owner,netTool.lane))))
-                {
-                    var replacement = PrefabCatalog.GetAll(system).OfType<RoadPrefab>()
-                        .FirstOrDefault(p=>p.isBuiltin && system.TryGetEntity(p,out _));
-                    if(replacement == null) throw new IOException("No registered built-in road can replace the retained tool selection.");
-                    netTool.prefab = replacement;
-                }
+                ReleaseOwnerTools(owner, system);
                 var tools = World.GetOrCreateSystemManaged<Game.Tools.ToolSystem>();
-                if(tools.activePrefab != null && OwnsPrefab(owner,tools.activePrefab)) tools.ActivatePrefabTool(null);
                 if(plan.DeletedEntities.Contains(tools.selected)) tools.selected = Entity.Null;
                 plan.Apply(EntityManager);
             }
@@ -115,6 +106,7 @@ public partial class BridgeOwnerCleanupSystem : GameSystemBase
             if(!retirement.Unregistered)
             {
                 if(!BridgePrefabRetirement.Ready(EntityManager,prefabs)) return;
+                ReleaseOwnerTools(owner, prefabs);
                 BridgeDeferredRemoval.SilentLog.Info("Unregistering initialized bridge prefabs; UUID="+owner+"; mode="+GameManager.instance.gameMode);
                 // Native removal notifications own resource retirement. Do not unload shared
                 // Surface/VT/geometry allocations or detach physical asset registrations here.
@@ -164,6 +156,13 @@ public partial class BridgeOwnerCleanupSystem : GameSystemBase
             (silent ? BridgeDeferredRemoval.SilentLog : Mod.Log).Error("Bridge logical deletion incomplete; UUID="+owner+"; stage=map-or-unregister; remainingCount=1; "+e);
         }
     }
+
+    private void ReleaseOwnerTools(string owner, PrefabSystem prefabs) =>
+        BridgeToolRetirement.Release(World.GetOrCreateSystemManaged<Game.Tools.ToolSystem>(),
+            World.GetExistingSystemManaged<Game.Tools.NetToolSystem>(), p => OwnsPrefab(owner, p),
+            () => PrefabCatalog.GetAll(prefabs).OfType<RoadPrefab>()
+                .FirstOrDefault(p => p.isBuiltin && prefabs.TryGetEntity(p, out _))
+                ?? throw new IOException("No registered built-in road can replace the retained tool selection."));
 
     // One plan lets shared junctions see all retiring bridge prefabs before choosing a surviving road.
     private int FinishMapRemoval()

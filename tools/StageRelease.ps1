@@ -24,7 +24,7 @@ if ($assemblyVersion -ne $expectedAssemblyVersion -or $uiVersion -ne $version -o
     throw "Release versions differ: project=$version, assembly=$assemblyVersion, UI=$uiVersion, draft=$($draft.Publish.ModVersion.Value)"
 }
 $files = @('BridgeBuilder.dll', 'BridgeBuilder.pdb', '0Harmony.dll', 'Harmony-LICENSE.txt', 'BridgeBuilder.mjs', 'BridgeBuilder.css', 'BridgeBuilder.svg',
-    'BridgeBuilderToolbar.svg', 'BridgeBuilderPack.svg', 'BridgeBuilderSearch.svg',
+    'BridgeNanpu.svg', 'BridgeLupu.svg', 'BridgeBuilderToolbar.svg', 'BridgeBuilderPack.svg', 'BridgeBuilderSearch.svg',
     'BridgeBuilderFilter.svg', 'BridgeBuilderArrowDown.svg')
 foreach ($file in $files) {
     if (-not (Test-Path -LiteralPath (Join-Path $output $file) -PathType Leaf)) { throw "Missing build output: $file" }

@@ -98,6 +98,69 @@ internal static class NativeVtMipPyramid
         return result;
     }
 
+    // Standalone native VTTexture uses the same bordered BC7 tiles and Surface-indexed
+    // middle cache as a packed VTSurface; retain every authored mip without decoding pixels.
+    internal static byte[] ConvertTexture(byte[] texture, byte[]? midSubset, int stack, int layer, Func<byte[], byte[]> decompress)
+    {
+        using var input = new MemoryStream(texture, false); using var reader = new BinaryReader(input);
+        if (reader.ReadUInt16() != 1 || reader.ReadByte() != 255) throw new InvalidDataException("Unsupported native VT texture header.");
+        reader.ReadBytes(16);
+        if (reader.ReadUInt16() != 0) throw new InvalidDataException("Unsupported native VT texture preprocessing.");
+        int tile = reader.ReadUInt16(), width = reader.ReadUInt16(), height = reader.ReadUInt16(), levels = reader.ReadUInt16();
+        int mipCount = reader.ReadByte(), format = reader.ReadByte();
+        byte filter = reader.ReadByte(), wrap = reader.ReadByte(), aniso = reader.ReadByte();
+        int tailSize = reader.ReadInt32(), tail = checked((int)input.Position);
+        if (width != height || tile < 16 || width < tile || width % tile != 0 || (format != 108 && format != 109))
+            throw new InvalidDataException("Unsupported native VT texture dimensions or format.");
+        input.Position = checked(tail + tailSize);
+        int count = reader.ReadInt32();
+        if (count < 1 || count > (input.Length - input.Position) / 4) throw new InvalidDataException("Invalid native VT texture tile count.");
+        var offsets = new int[count]; for (int i = 0; i < count; i++) offsets[i] = reader.ReadInt32();
+        int start = checked((int)input.Position), index = 0;
+        var chain = new List<byte[]>(); byte[]? half = null;
+        for (int side = width; side >= tile; side >>= 1)
+        {
+            var mip = new byte[Blocks(side)];
+            for (int y = 0; y < side / tile; y++) for (int x = 0; x < side / tile; x++)
+            {
+                if (index >= count) throw new InvalidDataException("Missing native VT texture tile.");
+                int first = index == 0 ? 0 : offsets[index - 1], last = offsets[index++];
+                var bytes = decompress(Slice(texture, checked(start + first), last - first));
+                if (bytes.Length != Blocks(tile + 16) * 5 / 4) throw new InvalidDataException("Native VT texture tile size mismatch.");
+                int pitch = (tile + 16) / 4 * 16;
+                for (int row = 0; row < tile / 4; row++)
+                    Buffer.BlockCopy(bytes, (row + 2) * pitch + 32, mip, ((y * tile / 4 + row) * (side / 4) + x * tile / 4) * 16, tile * 4);
+                if (side == tile)
+                {
+                    half = new byte[Blocks(tile / 2)];
+                    for (int row = 0; row < tile / 8; row++)
+                        Buffer.BlockCopy(bytes, Blocks(tile + 16) + (row + 1) * (pitch / 2) + 16, half, row * tile * 2, tile * 2);
+                }
+            }
+            chain.Add(mip);
+        }
+        if (index != count) throw new InvalidDataException("Unexpected native VT texture tile count.");
+        if (levels > 0)
+        {
+            var middle = midSubset == null ? new Dictionary<(int,int),byte[][]>() : ReadMid(midSubset, tile);
+            if (!middle.TryGetValue((stack, layer), out var mips) || mips.Length != levels || !mips[0].SequenceEqual(half!))
+                throw new InvalidDataException("Missing or conflicting authored standalone native middle mips.");
+            chain.AddRange(mips);
+        }
+        int offset = tail;
+        while (chain.Count < mipCount)
+        {
+            int size = Blocks(Math.Max(1, width >> chain.Count)); chain.Add(Slice(texture, offset, size)); offset += size;
+        }
+        if (offset != tail + tailSize || mipCount != 1 + (int)Math.Log(width, 2)) throw new InvalidDataException("Native VT texture mip tail mismatch.");
+        using var output = new MemoryStream(); using var writer = new BinaryWriter(output);
+        writer.Write((ushort)5); writer.Write((ushort)width); writer.Write((ushort)height); writer.Write((ushort)1);
+        writer.Write((byte)mipCount); writer.Write((byte)format); writer.Write((byte)2);
+        writer.Write(filter); writer.Write(wrap); writer.Write(aniso); writer.Write(-1);
+        foreach (var mip in chain) writer.Write(mip);
+        return output.ToArray();
+    }
+
     private static Dictionary<(int,int),byte[][]> ReadMid(byte[] bytes, int tile)
     {
         using var stream = new MemoryStream(bytes, false); using var r = new BinaryReader(stream);

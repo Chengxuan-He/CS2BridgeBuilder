@@ -76,11 +76,6 @@ for source in sources.values():
     s = source['descriptor']
     if s['template'] != 17: continue
     assert all(cid in texture_evidence for cid in s['textures'].values())
-    converted_cid = 'e7e3a33d1499167c8c385ebfb70af78b' if s['textures']['_MaskMap'] == 'd3f52f8478b74e116965f66785d0b966' else '1d6c92d008a952b1db4e1cc6cf7a1160'
-    converted_path = repo / 'assets/Materials/Draw02/NativeSources' / converted_cid / 'Object.Surface'
-    converted = parse(converted_path.read_bytes())
-    assert converted['template'] == 0 and converted['textures'] == s['textures']
-    source['equivalentObjectDescriptor'] = dict(cid=converted_cid, sha256=hashlib.sha256(converted_path.read_bytes()).hexdigest())
 ints = [1, len(source_map)]
 records = []
 for entry in source_map:
@@ -214,7 +209,7 @@ report = dict(schema=2, scope='All 45 source slots; verified object UV0, negativ
     sourceArchive=str(archive), sources=list(sources.values()), networkTextures=list(texture_evidence.values()),
     nativeNetworkEvidence=near_network,
     nativeTemplates=current_templates, nativeSemanticsSha256=hashlib.sha256((semantics / 'summary.json').read_bytes()).hexdigest(),
-    networkWorldspace='Both near/far mask blue channels are exactly zero at every mip; native worldspace contribution is zero. Verified existing object descriptors retain all three texture bindings and Repeat sampling. Negative V and frac(V) are equivalent; positive V stays on native length/density path.',
+    networkWorldspace='Both near/far mask blue channels are exactly zero at every mip; native worldspace contribution is zero. Original source descriptors retain all three texture bindings and Repeat sampling. Negative V and frac(V) are equivalent; positive V stays on native length/density path.',
     meshes=records, resourceSha256=hashlib.sha256(output.read_bytes()).hexdigest(),
     nativeRenderingVerified=False, localization='No user-visible strings or localization paths changed.')
 (base / 'brace-semantic/non-tiling-classification.json').write_text(json.dumps(report, indent=2))

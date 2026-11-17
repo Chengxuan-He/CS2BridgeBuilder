@@ -18,6 +18,14 @@ For a placed, map-only owner with no directory, persist its confirmed intent in 
 
 Once recorded, the target must be unavailable in both the management list and road-creation/placement catalogues. Stop its active placement and preview. All discovery and catalogue rebuild paths must exclude an owner if its marker **or** outside ledger entry exists. Retained files must never make a logically deleted bridge selectable again. UUID allocation must continue to treat the retained directory, marker or pending outside record as occupied.
 
+## Tool-reference release before unregistration
+
+Before any target prefab is unregistered, stop its active placement and release all target-owner references retained by native tools, including the actual cached prefab used by tool and Tool UI queries. Public selection and the internal consumed prefab may have different update lifetimes: changing the public selection, switching to another visible road or disabling the tool alone does not establish cache release. Establish the relevant native setters, update paths and consumers from implementation evidence; do not generalize one observed field layout to every tool. Complete the normal tool switch and any necessary target-scoped cache release before invalidating native prefab registration. Preserve unrelated selected roads, other owners, original sources and shared resources.
+
+Apply the same guarantee to single deletion, the whole-batch unregistration phase and startup tombstone retirement, including a tool that is inactive but still retains the target. Honor pending prefab initialization/replacement and safe world-transition boundaries; do not force native update systems to advance merely to delete. Keep work pending through the existing lifecycle when its preconditions are not yet met. Do not add a per-frame scan, suppress lookup exceptions, disable Tool UI or fabricate registration entries to hide stale references. This rule does not authorize live unregistration during ordinary self-check migration or alter its existing recovery workflow.
+
+Acceptance must exercise deletion while the target is selected, after switching to an unrelated road, and after deactivating a tool that retains target state. Cover single, bulk and startup-resumed unregistration, active/paused city and editor contexts, and pending registration/replacement. Continue native Tool UI snapping-mask and underground-mode queries across subsequent updates after deletion; no query may consume an unregistered target prefab, while unrelated tool use remains functional. A changed public selection or one successful delete callback is insufficient evidence. Keep isolated native/lifecycle tests distinct from human in-game acceptance.
+
 <a id="deletion-completion-errors-and-verification"></a>
 
 ## Completion, errors and verification

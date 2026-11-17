@@ -22,7 +22,8 @@ internal sealed partial class TowerFactory
 {
     /// <summary>
     /// One mesh turned into one model: the widened positions, and every other channel carried across
-    /// byte for byte in the format the source declared it in.
+    /// byte for byte in the format the source declared it in. Explicit offline clipping recipes
+    /// interpolate newly introduced corners from their recorded source triangle and weights.
     ///
     /// The formats are the point, and getting them wrong is what drew the cables as shards lying over
     /// the deck. A net piece declares:
@@ -45,7 +46,8 @@ internal sealed partial class TowerFactory
         string name, Mesh mesh, float3[] vertices, out string? error,
         bool[]? dropped = null, KeyValuePair<int, Matrix4x4>[]? frameTransforms = null,
         bool[]? omittedTriangles = null, int[]? sourceVertexIndices = null,
-        int[]? recordedCornerIndices = null)
+        int[]? recordedCornerIndices = null, int[]? sourceTriangleVertices = null,
+        float[]? sourceTriangleWeights = null, int[]? explicitTriangleIndices = null, int[]? sourceFaceIndices = null, Vector2[]? recordedUv0 = null)
     {
         error = null;
         var attributes = new List<ModelImporter.Model.VertexData>();
@@ -113,13 +115,18 @@ internal sealed partial class TowerFactory
                 }
                 else
                 {
-                    for (var index = 0; index < vertices.Length; index++)
+                    if (sourceTriangleVertices != null)
+                        bytes = RecordedVertexChannels.Interpolate(attribute, stream, stride, offset, mesh.vertexCount, sourceTriangleVertices, sourceTriangleWeights!);
+                    else for (var index = 0; index < vertices.Length; index++)
                     {
                     var from = ((sourceVertexIndices?[index] ?? index) * stride) + offset;
                         if (from + size > stream.Length) break;
                         Buffer.BlockCopy(stream, from, bytes, index * size, size);
                     }
                 }
+
+                if (attribute.attribute == VertexAttribute.TexCoord0 && recordedUv0 != null)
+                    RecordedVertexChannels.WriteUv0(bytes, attribute.format, attribute.dimension, recordedUv0);
 
                 attributes.Add(new ModelImporter.Model.VertexData(
                     attribute.attribute,
@@ -173,7 +180,13 @@ internal sealed partial class TowerFactory
             // All three corners, so that a triangle bridging the railing and what it stands on is
             // kept and the surface it belongs to is not left with a hole in it.
             var corners = mesh.GetTriangles(sub);
-            for (var corner = 0; corner + 2 < corners.Length; corner += 3)
+            if (explicitTriangleIndices != null)
+            {
+                int end = sourceTriangle + corners.Length / 3;
+                RecordedVertexChannels.AppendTriangles(indices, explicitTriangleIndices, sourceFaceIndices!, sourceTriangle, end);
+                sourceTriangle = end;
+            }
+            else for (var corner = 0; corner + 2 < corners.Length; corner += 3)
             {
                 var triangle = sourceTriangle++;
                 if (omittedTriangles != null && omittedTriangles[triangle]) continue;

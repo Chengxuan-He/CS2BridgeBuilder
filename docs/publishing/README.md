@@ -5,13 +5,14 @@ Publishing instructions, package reporting and historical release notes. Changel
 ## Preparation and release records
 
 Complete the [manual pre-release cross-environment round](../contracts/reading-map.md#cross-environment-testing-contract)
-before publication; report unavailable environments and obtain the required explicit release decision.
+before publication, completing all locally testable cases. Unavailable external coverage does not block publication or GitHub upload; see [local coverage and delivery](../specs/cross-environment-spec.md#local-coverage-and-delivery).
 
 - [Paradox Mods publishing environment](environment-readiness.md)
 - [Bridge Builder — publishing image brief](image-brief.md)
 - [Bridge Builder — publishing information entry](information-entry.md)
 - [Bridge Builder](mod-description.md)
 - [Paradox Mods Package Size](paradox-package-size.md)
+- [Bridge Builder 26.11.18](release-26-11-18.md)
 - [Bridge Builder 26.11.16](release-26-11-16.md)
 - [Bridge Builder 26.11.14](release-26-11-14.md)
 - [Bridge Builder 26.11.12a](release-26-11-12a.md)

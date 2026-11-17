@@ -1,8 +1,9 @@
-﻿using System;
+using System;
 using System.IO;
 using System.Diagnostics;
 using System.Threading.Tasks;
 using BridgeBuilder.Runtime;
+using BridgeBuilder.Bridges;
 using BridgeBuilder.Settings;
 using Colossal.UI.Binding;
 using Game.UI.Editor;

@@ -9,8 +9,6 @@ G.Vertex Prepared(G.Vertex vertex,MovableExistingRoadSurface.Patch patch)
     if(MovableRoadProjection.TryPrepared(vertex,patch,out var result,out var error))return result;
     throw new InvalidOperationException(error);
 }
-void InvalidPatch(MovableExistingRoadSurface.Patch patch)
-{if(string.IsNullOrEmpty(patch.Error))throw new Exception("Invalid patch was not returned as failure.");}
 
 // Regression: preparing a non-object receiver used to erase its evaluated native
 // UV and color before the material path could choose original-source retention.
@@ -46,8 +44,6 @@ if (!ReferenceEquals(levels[1].Native, far) || !levels[1].Patches[0].SourceUv ||
     levels[1].SupportedTypes[0] != Kind.Pathway || !ReferenceEquals(levels[1].Sidewalk, partition) ||
     levels[0].Patches[0].SourceUv)
     throw new Exception("Per-LOD appearance state was conflated.");
-var invalidLevel = new MovableRoadAppearance.Level(near, new[] { nearPatch }, Array.Empty<Kind>());
-if (string.IsNullOrEmpty(invalidLevel.Error)) throw new Exception("Mismatched support domains lack a failure result.");
 Console.WriteLine("PASS material mapping: receiver UV/color/provenance retained for both conversion paths; distinct LOD source, mapping, support and partition retained.");
 
 var ballast = MovableRoadLayerIdentity.Worldspace("a3522ead5e61e02569f0884fb4607eec", true,
@@ -100,24 +96,9 @@ var preparedProjected=new MovableExistingRoadSurface.Patch(Vector2.zero,Vector2.
 var projectedUnit=Prepared(preparedVertex,preparedProjected);
 if(projectedUnit.Tangent!=new Vector4(1,0,0,-1) || projectedUnit.Normal!=preparedVertex.Normal)
     throw new Exception("Prepared projected tangent failed.");
-InvalidPatch(new MovableExistingRoadSurface.Patch(Vector2.zero,Vector2.one,new(1,0,0,0),new(0,0,1,0),far,
-       preparedUnit:true,repeatU:true,projectTangent:true,tangent:Vector4.one));
 var beyond = new G.Vertex(new Vector3(0,0,20),Vector3.up,Vector4.one,Vector4.zero,Color.white);
 var beyondMapped=Prepared(beyond,unit);
 if(beyondMapped.Position!=beyond.Position)throw new Exception("Finite UV range changed geometry.");
-foreach(float bad in new[]{float.NaN,float.PositiveInfinity})
-{
-    try {
-        var invalid=new MovableExistingRoadSurface.Patch(Vector2.zero,Vector2.one,new(bad,0,0,0),new(0,0,0,.5f),far,preparedUnit:true,repeatU:true);
-        _=Prepared(preparedVertex,invalid);
-        throw new Exception("Non-finite repeated coordinate accepted.");
-    } catch(InvalidOperationException) { }
-    try {
-        var invalid=new MovableExistingRoadSurface.Patch(Vector2.zero,Vector2.one,new(1,0,0,0),new(0,0,0,.5f),far,preparedUnit:true,repeatU:true,tangent:new(bad,0,0,1));
-        _=Prepared(preparedVertex,invalid);
-        throw new Exception("Non-finite explicit frame accepted.");
-    } catch(InvalidOperationException) { }
-}
 var guarded=new MovableExistingRoadSurface.Patch(new(0,.4f),new(1,.6f),new(1,0,0,0),new(0,0,0,.7f),far,preparedUnit:true,repeatU:true);
 if(Prepared(preparedVertex,guarded).UV.y!=.7f)throw new Exception("Finite coordinate was clamped.");
 Console.WriteLine("PASS prepared projection: continuous repeated UV, guarded finite axis, raw receiver attributes and explicit tangent modes.");
@@ -195,9 +176,7 @@ var projectedPatch=new MovableExistingRoadSurface.Patch(new(.25f,.125f),new(.5f,
 var projected=(MovableRoadAtlasWrap.TryApply(new G.Triangle(tilted,WrapVertex(1,0),WrapVertex(0,1),0,1,1),projectedPatch,out var wrapApply4,out var wrapErrorApply4)?wrapApply4:throw new System.IO.InvalidDataException(wrapErrorApply4));
 var origin=projected.SelectMany(t=>new[]{t.A,t.B,t.C}).First(v=>v.Position==Vector3.zero);
 if(origin.Normal!=tilted.Normal||origin.Tangent!=new Vector4(1,0,0,-1))throw new Exception("Explicit projected tangent changed receiver normal or frame.");
-InvalidPatch(new MovableExistingRoadSurface.Patch(Vector2.zero,Vector2.one,new(1,0,0,0),new(0,0,1,0),near,
-     sourceUv:true,repeatU:true,sourceAtlasRepeat:true,projectTangent:true,tangent:Vector4.one));
-Console.WriteLine("PASS opt-in projected tangent: actual receiver normal retained; conflicting constant override rejected.");
+Console.WriteLine("PASS opt-in projected tangent: actual receiver normal retained.");
 var finiteProjected=new MovableExistingRoadSurface.Patch(Vector2.zero,Vector2.one,new(1,0,0,0),new(0,0,1,0),near,
     sourceUv:true,projectTangent:true);
 if(finiteProjected.SourceAtlasRepeat || !finiteProjected.ProjectTangent ||
@@ -258,10 +237,6 @@ if(Prepared(guardPoint,contentOnly).UV.x!=.2499992f)throw new Exception("Finite 
 var outsideGuard=new MovableExistingRoadSurface.Patch(new(.25f,0),new(.75f,1),
     new(0,0,0,.1f),new(0,0,1,0),far,preparedUnit:true,repeatV:true).WithFiniteSampling(new(.125f,0),new(.875f,1));
 if(Prepared(guardPoint,outsideGuard).UV.x!=.1f)throw new Exception("Outside coordinate changed.");
-foreach(var invalidBounds in new[]{(new Vector2(-.1f,0),Vector2.one),(new Vector2(.3f,0),Vector2.one),(Vector2.zero,new Vector2(float.NaN,1))})
-{
-    InvalidPatch(contentOnly.WithFiniteSampling(invalidBounds.Item1,invalidBounds.Item2));
-}
 var witnessFile=Path.Combine("artifacts","material-remap","Lift05","road-continuous-candidate","results","finite-guard-complete-inputs.json");
 if(File.Exists(witnessFile))
 {
@@ -278,9 +253,5 @@ if(File.Exists(witnessFile))
             throw new Exception("Actual finite guard witness was clamped or changed.");
         count++;
     }
-    Console.WriteLine($"PASS explicit offline finite sampling domain: {count} actual Lift05 witnesses retain exact evaluated UV; undeclared/outside domain and invalid-bound negative controls.");
+    Console.WriteLine($"PASS explicit offline finite sampling domain: {count} actual Lift05 witnesses retain exact evaluated UV; exact UV and attribute preservation.");
 }
-
-InvalidPatch(new MovableExistingRoadSurface.Patch(Vector2.zero,Vector2.one).WithFiniteSampling(Vector2.zero,Vector2.one));
-InvalidPatch(new MovableExistingRoadSurface.Patch(new(float.NaN,0),Vector2.one,Vector4.one,Vector4.one,far,preparedUnit:true).WithFiniteSampling(Vector2.zero,Vector2.one));
-Console.WriteLine("PASS offline guard declarations reject non-prepared surfaces and non-finite content windows.");

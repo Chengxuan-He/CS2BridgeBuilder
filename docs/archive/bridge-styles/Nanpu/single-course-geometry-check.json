@@ -1,0 +1,422 @@
+{
+  "referenceLength": 400.78076171875,
+  "anchorTranslation": 3.316650390625,
+  "results": [
+    {
+      "lod": 0,
+      "parts": [
+        {
+          "part": 0,
+          "triangles": 2784,
+          "vertices": 8352
+        },
+        {
+          "part": 1,
+          "triangles": 35,
+          "vertices": 105
+        },
+        {
+          "part": 2,
+          "triangles": 35,
+          "vertices": 105
+        },
+        {
+          "part": 3,
+          "triangles": 32,
+          "vertices": 96
+        },
+        {
+          "part": 4,
+          "triangles": 33,
+          "vertices": 99
+        },
+        {
+          "part": 5,
+          "triangles": 33,
+          "vertices": 99
+        },
+        {
+          "part": 6,
+          "triangles": 1290,
+          "vertices": 3870
+        },
+        {
+          "part": 7,
+          "triangles": 59,
+          "vertices": 177
+        },
+        {
+          "part": 8,
+          "triangles": 59,
+          "vertices": 177
+        }
+      ],
+      "sourceCoverageError": 5.505201960964712e-08,
+      "maximumSourcePoseError": 9.41423058975488e-06,
+      "anchorContact": [
+        {
+          "lengthFactor": 0.6,
+          "slope": -0.2,
+          "anchorVertices": 320,
+          "allInsideActualTower": true
+        },
+        {
+          "lengthFactor": 0.6,
+          "slope": 0,
+          "anchorVertices": 320,
+          "allInsideActualTower": true
+        },
+        {
+          "lengthFactor": 0.6,
+          "slope": 0.2,
+          "anchorVertices": 320,
+          "allInsideActualTower": true
+        },
+        {
+          "lengthFactor": 1,
+          "slope": -0.2,
+          "anchorVertices": 320,
+          "allInsideActualTower": true
+        },
+        {
+          "lengthFactor": 1,
+          "slope": 0,
+          "anchorVertices": 320,
+          "allInsideActualTower": true
+        },
+        {
+          "lengthFactor": 1,
+          "slope": 0.2,
+          "anchorVertices": 320,
+          "allInsideActualTower": true
+        },
+        {
+          "lengthFactor": 1.4,
+          "slope": -0.2,
+          "anchorVertices": 320,
+          "allInsideActualTower": true
+        },
+        {
+          "lengthFactor": 1.4,
+          "slope": 0,
+          "anchorVertices": 320,
+          "allInsideActualTower": true
+        },
+        {
+          "lengthFactor": 1.4,
+          "slope": 0.2,
+          "anchorVertices": 320,
+          "allInsideActualTower": true
+        }
+      ],
+      "nativeOrientedBoxFixtures": [
+        {
+          "halfWidthDelta": -6,
+          "actualMemberFixtures": 4,
+          "emptyOpeningFixtures": 3,
+          "roadCrossSectionSamples": 38,
+          "passed": true
+        },
+        {
+          "halfWidthDelta": 0,
+          "actualMemberFixtures": 4,
+          "emptyOpeningFixtures": 3,
+          "roadCrossSectionSamples": 38,
+          "passed": true
+        },
+        {
+          "halfWidthDelta": 8,
+          "actualMemberFixtures": 4,
+          "emptyOpeningFixtures": 3,
+          "roadCrossSectionSamples": 38,
+          "passed": true
+        },
+        {
+          "halfWidthDelta": 20,
+          "actualMemberFixtures": 4,
+          "emptyOpeningFixtures": 3,
+          "roadCrossSectionSamples": 38,
+          "passed": true
+        }
+      ]
+    },
+    {
+      "lod": 1,
+      "parts": [
+        {
+          "part": 0,
+          "triangles": 652,
+          "vertices": 1956
+        },
+        {
+          "part": 1,
+          "triangles": 35,
+          "vertices": 105
+        },
+        {
+          "part": 2,
+          "triangles": 35,
+          "vertices": 105
+        },
+        {
+          "part": 3,
+          "triangles": 28,
+          "vertices": 84
+        },
+        {
+          "part": 4,
+          "triangles": 33,
+          "vertices": 99
+        },
+        {
+          "part": 5,
+          "triangles": 33,
+          "vertices": 99
+        },
+        {
+          "part": 6,
+          "triangles": 1290,
+          "vertices": 3870
+        },
+        {
+          "part": 7,
+          "triangles": 59,
+          "vertices": 177
+        },
+        {
+          "part": 8,
+          "triangles": 59,
+          "vertices": 177
+        }
+      ],
+      "sourceCoverageError": 5.505201960964712e-08,
+      "maximumSourcePoseError": 9.41423058975488e-06,
+      "anchorContact": [
+        {
+          "lengthFactor": 0.6,
+          "slope": -0.2,
+          "anchorVertices": 320,
+          "allInsideActualTower": true
+        },
+        {
+          "lengthFactor": 0.6,
+          "slope": 0,
+          "anchorVertices": 320,
+          "allInsideActualTower": true
+        },
+        {
+          "lengthFactor": 0.6,
+          "slope": 0.2,
+          "anchorVertices": 320,
+          "allInsideActualTower": true
+        },
+        {
+          "lengthFactor": 1,
+          "slope": -0.2,
+          "anchorVertices": 320,
+          "allInsideActualTower": true
+        },
+        {
+          "lengthFactor": 1,
+          "slope": 0,
+          "anchorVertices": 320,
+          "allInsideActualTower": true
+        },
+        {
+          "lengthFactor": 1,
+          "slope": 0.2,
+          "anchorVertices": 320,
+          "allInsideActualTower": true
+        },
+        {
+          "lengthFactor": 1.4,
+          "slope": -0.2,
+          "anchorVertices": 320,
+          "allInsideActualTower": true
+        },
+        {
+          "lengthFactor": 1.4,
+          "slope": 0,
+          "anchorVertices": 320,
+          "allInsideActualTower": true
+        },
+        {
+          "lengthFactor": 1.4,
+          "slope": 0.2,
+          "anchorVertices": 320,
+          "allInsideActualTower": true
+        }
+      ],
+      "nativeOrientedBoxFixtures": [
+        {
+          "halfWidthDelta": -6,
+          "actualMemberFixtures": 4,
+          "emptyOpeningFixtures": 3,
+          "roadCrossSectionSamples": 38,
+          "passed": true
+        },
+        {
+          "halfWidthDelta": 0,
+          "actualMemberFixtures": 4,
+          "emptyOpeningFixtures": 3,
+          "roadCrossSectionSamples": 38,
+          "passed": true
+        },
+        {
+          "halfWidthDelta": 8,
+          "actualMemberFixtures": 4,
+          "emptyOpeningFixtures": 3,
+          "roadCrossSectionSamples": 38,
+          "passed": true
+        },
+        {
+          "halfWidthDelta": 20,
+          "actualMemberFixtures": 4,
+          "emptyOpeningFixtures": 3,
+          "roadCrossSectionSamples": 38,
+          "passed": true
+        }
+      ]
+    },
+    {
+      "lod": 2,
+      "parts": [
+        {
+          "part": 0,
+          "triangles": 354,
+          "vertices": 1062
+        },
+        {
+          "part": 1,
+          "triangles": 18,
+          "vertices": 54
+        },
+        {
+          "part": 2,
+          "triangles": 18,
+          "vertices": 54
+        },
+        {
+          "part": 3,
+          "triangles": 20,
+          "vertices": 60
+        },
+        {
+          "part": 4,
+          "triangles": 15,
+          "vertices": 45
+        },
+        {
+          "part": 5,
+          "triangles": 14,
+          "vertices": 42
+        },
+        {
+          "part": 6,
+          "triangles": 76,
+          "vertices": 228
+        },
+        {
+          "part": 7,
+          "triangles": 17,
+          "vertices": 51
+        },
+        {
+          "part": 8,
+          "triangles": 18,
+          "vertices": 54
+        }
+      ],
+      "sourceCoverageError": 5.463437169339613e-08,
+      "maximumSourcePoseError": 7.62939453125e-06,
+      "anchorContact": [
+        {
+          "lengthFactor": 0.6,
+          "slope": -0.2,
+          "anchorVertices": 160,
+          "allInsideActualTower": true
+        },
+        {
+          "lengthFactor": 0.6,
+          "slope": 0,
+          "anchorVertices": 160,
+          "allInsideActualTower": true
+        },
+        {
+          "lengthFactor": 0.6,
+          "slope": 0.2,
+          "anchorVertices": 160,
+          "allInsideActualTower": true
+        },
+        {
+          "lengthFactor": 1,
+          "slope": -0.2,
+          "anchorVertices": 160,
+          "allInsideActualTower": true
+        },
+        {
+          "lengthFactor": 1,
+          "slope": 0,
+          "anchorVertices": 160,
+          "allInsideActualTower": true
+        },
+        {
+          "lengthFactor": 1,
+          "slope": 0.2,
+          "anchorVertices": 160,
+          "allInsideActualTower": true
+        },
+        {
+          "lengthFactor": 1.4,
+          "slope": -0.2,
+          "anchorVertices": 160,
+          "allInsideActualTower": true
+        },
+        {
+          "lengthFactor": 1.4,
+          "slope": 0,
+          "anchorVertices": 160,
+          "allInsideActualTower": true
+        },
+        {
+          "lengthFactor": 1.4,
+          "slope": 0.2,
+          "anchorVertices": 160,
+          "allInsideActualTower": true
+        }
+      ],
+      "nativeOrientedBoxFixtures": [
+        {
+          "halfWidthDelta": -6,
+          "actualMemberFixtures": 4,
+          "emptyOpeningFixtures": 3,
+          "roadCrossSectionSamples": 38,
+          "passed": true
+        },
+        {
+          "halfWidthDelta": 0,
+          "actualMemberFixtures": 4,
+          "emptyOpeningFixtures": 3,
+          "roadCrossSectionSamples": 38,
+          "passed": true
+        },
+        {
+          "halfWidthDelta": 8,
+          "actualMemberFixtures": 4,
+          "emptyOpeningFixtures": 3,
+          "roadCrossSectionSamples": 38,
+          "passed": true
+        },
+        {
+          "halfWidthDelta": 20,
+          "actualMemberFixtures": 4,
+          "emptyOpeningFixtures": 3,
+          "roadCrossSectionSamples": 38,
+          "passed": true
+        }
+      ]
+    }
+  ],
+  "nativeGameAcceptance": "Not run",
+  "slopeScope": "Straight graded course: vertical tower rotation follows native GetNodeRotation; upper cap small-Z slope offsets sampled independently. Native composed curve execution remains a separate integration check."
+}

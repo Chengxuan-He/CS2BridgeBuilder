@@ -3601,35 +3601,17 @@ internal static class TowerGenerationTests
         check("[scope] the test is by name alone, so the caller can weigh capability against it",
             BridgeStyleDefinitions.IsSupersededPack("BXP Double Deck Suspension Bridge - Highway"), null);
 
-        // Deferred: the deck is the mechanism, and widening a machine whose parts must keep meeting
-        // each other through their whole travel is a different problem from widening a portal.
         foreach (var style in new[] { "Draw", "PedestrianDraw", "Lift" })
-        {
-            check($"[scope] {style} is deferred with a reason",
-                !string.IsNullOrEmpty(BridgeStyleDefinitions.DeferredReason(style)), null);
-        }
+            check($"[scope] historical group {style} is not selectable",
+                !BridgeStyleDefinitions.All.Any(definition => definition.Id == style)
+                && !BridgeStyleDefinitions.CanList(style), null);
+        foreach (var definition in BridgeStyleDefinitions.All)
+            check($"[scope] registered style {definition.Id} is selectable",
+                BridgeStyleDefinitions.CanList(definition.Id), null);
+        check("[scope] concrete movable mechanisms remain available",
+            BridgeStyleDefinitions.All.Count(definition => BridgeStyleDefinitions.IsMovable(definition.Id)) == 10, null);
+        check("[scope] unknown style is not selectable", !BridgeStyleDefinitions.CanList("no such style"), null);
 
-        foreach (var style in new[]
-        {
-            "Suspension", "SuspensionDouble", "Suspension01", "Suspension02", "SuspensionGolden",
-            "GoldenGate", "CableStayed", "Extradosed03", "TrussArch", "TrussArch01", "TrussArch02",
-            "TrussArch03", "TiedArch", "Grand", "CoveredWood",
-        })
-        {
-            check($"[scope] {style} is generated", BridgeStyleDefinitions.DeferredReason(style) == null, null);
-        }
-
-        check("[scope] an unknown style is not deferred",
-            BridgeStyleDefinitions.DeferredReason("no such style") == null, null);
-        check("[scope] nothing is not deferred", BridgeStyleDefinitions.DeferredReason(null) == null, null);
-
-        // Every deferred style is one the definitions list, or the refusal names something the player
-        // could not have chosen in the first place.
-        foreach (var style in new[] { "Draw", "PedestrianDraw", "Lift" })
-        {
-            check($"[scope] {style} is a style the player can pick",
-                BridgeStyleDefinitions.All.Any(definition => definition.Id == style), null);
-        }
     }
 
     /// <summary>
@@ -3906,7 +3888,7 @@ internal static class TowerGenerationTests
         foreach (var style in new[] { "TrussArch", "TrussArch01", "TrussArch03" })
         {
             check($"[split] {style} is generated",
-                BridgeStyleDefinitions.DeferredReason(style) == null
+                BridgeStyleDefinitions.CanList(style)
                 && BridgeStyleDefinitions.All.Any(definition => definition.Id == style), null);
         }
     }

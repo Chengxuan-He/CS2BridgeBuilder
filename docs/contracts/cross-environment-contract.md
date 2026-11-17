@@ -84,12 +84,7 @@ for every other status. API fakes, a different GPU or an unavailable cloud sessi
 Blocked/NotRun row into Passed. State tested and untested combinations, rather than claiming
 universal compatibility or that all environments passed.
 
-Before publication, complete one round of the applicable declared matrix and present its results.
-If any required case failed or remains Blocked/NotRun, obtain the user's explicit decision whether
-to release with those disclosed gaps; the original release request alone is not that decision.
-Continue independent preparation while awaiting it, but do not publish first and seek acceptance
-afterward. Subsequent official package download and installation verification remain mandatory
-under the existing four-step release workflow.
+The test owner completes every locally testable applicable case under the [local coverage and delivery rule](../specs/cross-environment-spec.md#local-coverage-and-delivery) and records the results. Unavailable hosts or external combinations remain Blocked/NotRun; those coverage gaps must not block GitHub upload or publication and require no separate release approval. Actual failed product behavior remains subject to diagnosis and repair under the development contract; it is not an unavailable-environment gap. The release owner retains the existing authorization and four-step release workflow, including official package download and installation verification.
 
 This rule governs subsequent release decisions. It does not retroactively revoke or relabel a
 release already completed before the rule was requested. Historical tests remain evidence only

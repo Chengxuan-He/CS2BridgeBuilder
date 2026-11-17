@@ -30,9 +30,9 @@ namespace BridgeBuilder.Bridges {
  public static class NetWidth {public static float RoadSurfaceOf(NetGeometryPrefab p)=>12;}
  public static class BridgeStyleCatalog {
   public static bool Scanned=true;public static void Rebuild(PrefabSystem s,string[] names){}
-  public static bool Absent;
+  public static bool Absent; public static string NextIcon="assetdb://global/repaired";
   public static Style? Find(string id)=>Absent?null:new();public class Style{public (Variant Variant,int unused) Select(float w,bool forRoad,bool doubleDeck)=>(new(),0);}
-  public class Variant{public string RecordedIcon="assetdb://global/repaired";public PrefabBase Donor=new();}
+  public class Variant{public string RecordedIcon=NextIcon;public PrefabBase Donor=new();}
  }
 }
 namespace BridgeBuilder {public static class Mod {public static Logger Log=new();}public class Logger{public void Error(string text){}public void Warn(string text){}public void Warn(Exception e,string text){}}}

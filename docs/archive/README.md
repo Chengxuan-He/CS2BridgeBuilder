@@ -6,6 +6,11 @@ Historical package-gate and owner-ceiling statements describe the policy at the 
 
 ## Audits and measurements
 
+- [Native LOD formula source record](audits/native-lod-formula-sources.md)
+
+- [Installed non-mod bridge LOD inventory](audits/native-bridge-lod-inventory.md)
+- [Lupu native LOD investigation and superseded decisions](audits/lupu-native-lod-transitions.md)
+
 - [Material routing fixture history](audits/material-routing-fixture-history.md)
 
 - [Historical structural repeat-unit protocol](audits/structural-repeat-unit-protocol.md)

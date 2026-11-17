@@ -84,7 +84,10 @@ internal static partial class BridgePreviewScene
         for (var index = 0; index < fixedSegments.Length; index++)
         {
             var segment = fixedSegments[index];
-            if (segment == null || segment.m_Length <= 0f) continue;
+            if (segment == null) continue;
+            // Native NetInitializeSystem gives <= 0.1 m entries the ordinary
+            // bridge edge range. Show its nominal length, not an omitted span.
+            var length = segment.m_Length > 0.1f ? segment.m_Length : bridge.m_SegmentLength;
             NetCompositionHelpers.GetRequirementFlags(segment.m_SetState, out var set, out _);
             NetCompositionHelpers.GetRequirementFlags(segment.m_UnsetState, out var unset, out _);
             // CompositionSelectSystem.GetEdgeFlags starts fresh for EACH edge.
@@ -102,8 +105,8 @@ internal static partial class BridgePreviewScene
             var count = Math.Max(1, segment.m_CountRange.x);
             for (var i = 0; i < count; i++)
             {
-                spans.Add(new Span(cursor, segment.m_Length, index, flags));
-                cursor += segment.m_Length;
+                spans.Add(new Span(cursor, length, index, flags));
+                cursor += length;
             }
         }
         if (spans.Count == 0)

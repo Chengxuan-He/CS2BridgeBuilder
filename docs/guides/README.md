@@ -13,3 +13,7 @@ Use these guides to add a measured bridge type or inspect source geometry.
 - [Geometry identification procedure](geometry-identification.md)
 
 - [Runtime UI verification](runtime-ui-verification.md)
+
+## Source evidence
+
+- [Bridge-style source and implementation records](../archive/bridge-styles/README.md) — consult each record's measured scope and acceptance limits alongside the contributor workflow.

@@ -170,6 +170,29 @@ Check(BridgeNativeUnlock.Apply(historicalGate,inspectionRule,prefabs,new List<Pr
 Check(historicalGate.GetComponent<ManualUnlockable>()==null && historicalGate.GetComponent<Unlockable>()!=null
  && BridgeNativeUnlock.Evaluate(historicalGate,prefabs,manager)==recordedRule.Evaluate(id=>BridgeUnlockSnapshot.IsUnlocked(id,prefabs,manager)),
  "migrated native gate preserves the historical expression's current semantics");
+// Capture the selected initialized road rather than the unregistered generated clone.
+World.DefaultGameObjectInjectionWorld = new World { EntityManager = manager, Prefabs = prefabs };
+var selectedRoad = new NetGeometryPrefab { name = "SelectedRoad" };
+var sourceGate = selectedRoad.AddComponent<Unlockable>();
+sourceGate.m_IgnoreDependencies = false;
+var selectedEntity = Add(701, selectedRoad, false, Edge(devA), Edge(devB, 2));
+var generated = new NetGeometryPrefab { name = "GeneratedGO" };
+var createdGroups = new List<PrefabBase>();
+var generationReport = new CS2Mods.Shared.Infrastructure.ExportReport();
+Check(BridgeBuilder.Bridges.BridgeUnlockPolicy.Apply(generated, selectedRoad, generationReport, createdGroups),
+    "selected-road policy captures initialized original before new clone registration");
+Check(!sourceGate.m_IgnoreDependencies && generated.GetComponent<Unlockable>()!.m_IgnoreDependencies,
+    "selected road unchanged while generated root already has current independent gate");
+for (var bits = 0; bits < 4; bits++)
+{
+    manager.All[devA].Locked = (bits & 1) != 0;
+    manager.All[devB].Locked = (bits & 2) != 0;
+    Check(BridgeNativeUnlock.Evaluate(generated, prefabs, manager) == BridgeNativeUnlock.Evaluate(selectedRoad, prefabs, manager),
+        "selected-road generation preserves native AND/OR semantics " + bits);
+}
+prefabs.All.Remove(selectedEntity);
+Check(BridgeNativeUnlock.Evaluate(generated, prefabs, manager).HasValue,
+    "generated gate retains no selected road dependency");
 Console.WriteLine($"{count} snapshot/recovery checks passed using fake native buffers; game startup acceptance still required.");
 
 // Fixture authoring only: production never writes the historical ManualUnlockable payload.

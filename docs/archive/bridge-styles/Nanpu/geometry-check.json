@@ -1,0 +1,150 @@
+{
+  "source": "7d2dc6a610141291d5146effd2d899bc8d32d95adfadf99241f035f69aa69e11",
+  "results": [
+    {
+      "lod": 0,
+      "parts": [
+        {
+          "part": 0,
+          "triangles": 968,
+          "attributeVertices": 2264,
+          "sourceFaces": 648
+        },
+        {
+          "part": 1,
+          "triangles": 1556,
+          "attributeVertices": 4340,
+          "sourceFaces": 1392
+        },
+        {
+          "part": 2,
+          "triangles": 1556,
+          "attributeVertices": 4340,
+          "sourceFaces": 1392
+        },
+        {
+          "part": 3,
+          "triangles": 1516,
+          "attributeVertices": 4548,
+          "sourceFaces": 1516
+        }
+      ],
+      "sourceFaceAreaCoverageError": 5.556711890619681e-08,
+      "maximumNativeCourseError": 7.271766662597656e-06,
+      "allSourceFacesRetained": true,
+      "windingPreserved": true,
+      "sharedBoundaryCoordinatesAndWidthCoefficients": true,
+      "minimumAffineJacobian": 0.1795734167098999,
+      "clippedVertexBarycentricProvenance": true,
+      "widthDeltas": [
+        -16,
+        0,
+        16,
+        40
+      ],
+      "flankLengthFactors": [
+        0.6,
+        1,
+        1.4
+      ]
+    },
+    {
+      "lod": 1,
+      "parts": [
+        {
+          "part": 0,
+          "triangles": 968,
+          "attributeVertices": 2264,
+          "sourceFaces": 648
+        },
+        {
+          "part": 1,
+          "triangles": 490,
+          "attributeVertices": 1142,
+          "sourceFaces": 326
+        },
+        {
+          "part": 2,
+          "triangles": 490,
+          "attributeVertices": 1142,
+          "sourceFaces": 326
+        },
+        {
+          "part": 3,
+          "triangles": 1512,
+          "attributeVertices": 4536,
+          "sourceFaces": 1512
+        }
+      ],
+      "sourceFaceAreaCoverageError": 5.556711890619681e-08,
+      "maximumNativeCourseError": 7.271766662597656e-06,
+      "allSourceFacesRetained": true,
+      "windingPreserved": true,
+      "sharedBoundaryCoordinatesAndWidthCoefficients": true,
+      "minimumAffineJacobian": 0.1795734167098999,
+      "clippedVertexBarycentricProvenance": true,
+      "widthDeltas": [
+        -16,
+        0,
+        16,
+        40
+      ],
+      "flankLengthFactors": [
+        0.6,
+        1,
+        1.4
+      ]
+    },
+    {
+      "lod": 2,
+      "parts": [
+        {
+          "part": 0,
+          "triangles": 514,
+          "attributeVertices": 1222,
+          "sourceFaces": 354
+        },
+        {
+          "part": 1,
+          "triangles": 268,
+          "attributeVertices": 616,
+          "sourceFaces": 174
+        },
+        {
+          "part": 2,
+          "triangles": 280,
+          "attributeVertices": 640,
+          "sourceFaces": 180
+        },
+        {
+          "part": 3,
+          "triangles": 132,
+          "attributeVertices": 396,
+          "sourceFaces": 132
+        }
+      ],
+      "sourceFaceAreaCoverageError": 4.793830354898887e-08,
+      "maximumNativeCourseError": 7.271766662597656e-06,
+      "allSourceFacesRetained": true,
+      "windingPreserved": true,
+      "sharedBoundaryCoordinatesAndWidthCoefficients": true,
+      "minimumAffineJacobian": 0.18086141347885132,
+      "clippedVertexBarycentricProvenance": true,
+      "widthDeltas": [
+        -16,
+        0,
+        16,
+        40
+      ],
+      "flankLengthFactors": [
+        0.6,
+        1,
+        1.4
+      ]
+    }
+  ],
+  "nativeGameAcceptance": "Not run",
+  "courseScope": "Valid straight mixed courses: measured rigid core plus two variable flanks; malformed or below-minimum native courses are not acceptance evidence.",
+  "coreLength": 13.719970703125,
+  "flankReference": 196.8470458984375
+}

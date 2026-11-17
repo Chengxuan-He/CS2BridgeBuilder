@@ -19,6 +19,8 @@ must not redirect a selection or change its source identity. Display-name text s
 remain presentation behavior and do not determine identity or eligibility. Generated bridges retain
 their independent owner UUIDs. Published historical identity migration belongs only to self-check.
 
+All styles use the [common candidate and saved-asset naming rules](../specs/ui-spec.md#candidate-saved-asset-and-map-names); prototype proper names affect only native map labels and never override the submitted asset display name.
+
 <a id="project-bridge-implementation-policy"></a>
 
 ## Bridge implementation policy
@@ -125,6 +127,11 @@ the dependency writer to persist the reachable native dependencies with their
 required identities. Native resource contents must be initialized and successfully written and
 closed before any subsequent read, unload/reload or dependency consumer relies on the file.
 Missing files, failed writes and failed native operations are errors, not successful generation.
+
+The generation owner must finish [current native unlock serialization](../specs/persistence-spec.md#native-unlocking-and-persistence)
+for every newly owned network before its first permanent save. This includes non-Network source
+styles: preserving the selected network's native gate does not defer its current-format conversion
+to startup self-check. Keep historical migration and the existing self-check workflow separate.
 
 This call's successful dependency persistence is the dependency guarantee for its newly saved
 graph. Do not repeat the dependency-index traversal through a second dependency validation pass

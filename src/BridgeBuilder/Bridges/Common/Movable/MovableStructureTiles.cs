@@ -62,18 +62,17 @@ internal sealed class MovableStructureTiles
 
     internal bool TryNativeSurface(SurfaceAsset source,out SurfaceAsset result,out string? error)
     {
-        result=null!;error=null;string? lookupError=null;
+        result=null!;error=null;
         try
         {
-        MovableExistingRoadSurface.SurfaceResult Load(string cid)=>BridgePreparedMaterials.NativeSource(_style,cid);
         if(!_nativeSurfaces.TryGetValue(source,out result))
         {
             MovableExistingRoadSurface.SurfaceResult resolved=_style switch
             {
-                "Draw01"=>Draw01NativeMaterials.Resolve(source,Load),
-                "Draw02"=>Draw02NativeMaterials.Resolve(source,Load),
-                "Draw03"=>Draw03NativeMaterials.Resolve(source,Load),
-                "Lift01"=>Lift01NativeMaterials.Resolve(source,Load),
+                "Draw01"=>Draw01NativeMaterials.Resolve(source),
+                "Draw02"=>Draw02NativeMaterials.Resolve(source),
+                "Draw03"=>Draw03NativeMaterials.Resolve(source),
+                "Lift01"=>Lift01NativeMaterials.Resolve(source),
                 _=>source
             };
             if(!resolved.Success||resolved.Value==null){error=resolved.Error??"Required native structural Surface is absent.";result=null!;return false;}
@@ -83,7 +82,7 @@ internal sealed class MovableStructureTiles
         }
         return true;
         }
-        catch(System.Exception exception){result=null!;error=lookupError??("Native structural material: "+exception);return false;}
+        catch(System.Exception exception){result=null!;error="Native structural material: "+exception;return false;}
     }
 
 }

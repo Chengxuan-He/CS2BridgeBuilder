@@ -483,6 +483,27 @@ Bridge Builder assembly to evaluate them after a cold start.
 For non-Network source structures without a native network unlock graph, preserve the player's
 selected network's applicable native gate. Do not invent requirements for the virtual prototype.
 
+Every newly generated permanent bridge must save the current native unlock representation on
+its first write, including non-Network source styles and each owned auxiliary network. Preserving
+the selected network's gate means preserving its effective native AND/OR requirements, including
+applicable implicit requirements, rather than retaining a source component layout that the current
+self-check treats as needing conversion. Materialize those requirements through the shared native
+unlock writer before persistence. In the current explicit representation, owned network gates use
+`Unlockable.m_IgnoreDependencies = true` with the complete equivalent native conditions; setting
+that flag alone without carrying the effective requirements is prohibited. Do not invent virtual
+prototype requirements, flatten a rule to its current unlocked state, mutate the source network,
+or alter native fees.
+
+A successful new owner must already satisfy the same current-format criteria used by self-check.
+Generation must not depend on the next startup to finish its unlock conversion, add missing owned
+unlock groups or repair its first save. Verify this in offline creation-to-inspection fixtures using
+fresh persisted reads, not production post-save validation or an in-memory migration guard. The first
+cold inspection and a second unchanged cold inspection must require no conversion, file rewrite,
+migration notice or restart for that complete current owner. Check effective locked/unlocked native
+behavior separately, including nested AND/OR requirements and owned auxiliary networks. Actual
+external corruption, missing dependencies and historical-owner migration retain the existing
+[self-check workflow](../contracts/self-check-contract.md#self-check-3-additive-migration-and-owner-scoped-recovery).
+
 Create-and-build and Manage/Build check readiness before activating the construction tool in game
 mode. `BridgeUnlockPolicy.TryPrepareBuild` evaluates the persisted native rules and synchronizes
 the generated networks' locked state. Explicit owned groups use their persisted expression; carried

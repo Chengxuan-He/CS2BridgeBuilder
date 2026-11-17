@@ -19,6 +19,13 @@ internal static class Program
             Check(!string.IsNullOrWhiteSpace(success) && !success.Contains('\n'),"Concise bulk success: "+locale);
         }
         Check(RuntimeUiText.ForLocale("zh-HANS")["RemoveAllBridgesDone"]=="清理成功","Exact requested bulk success text");
+        Check(UiStringCatalog.ForLocale("en-US").StyleName("Nanpu")=="Nanpu Bridge"&&UiStringCatalog.ForLocale("en-US").StyleName("Lupu")=="Lupu Bridge","Exact English landmark names");
+        Check(UiStringCatalog.ForLocale("zh-HANS").StyleName("Nanpu")=="南浦大桥"&&UiStringCatalog.ForLocale("zh-HANS").StyleName("Lupu")=="卢浦大桥","Exact Chinese landmark names");
+        foreach(var id in new[]{"Nanpu","Lupu"}) {
+            Check(BridgeBuilder.Bridges.BridgeStyleDefinitions.CanList(id)&&BridgeBuilder.Bridges.BridgeStyleDefinitions.SupportsDeckMode(id,false)&&!BridgeBuilder.Bridges.BridgeStyleDefinitions.SupportsDeckMode(id,true),"Named bridge single-deck admission");
+            foreach(var locale in RuntimeUiText.LocaleIds) Check(UiStringCatalog.ForLocale(locale).StyleName(id)!=id,"Named bridge translation: "+locale+"/"+id);
+        }
+        Check(BridgeBuilder.Bridges.BridgeStyleDefinitions.Match("上海南浦大桥")?.Id=="Nanpu"&&BridgeBuilder.Bridges.BridgeStyleDefinitions.Match("卢浦大桥")?.Id=="Lupu","Named bridge source identities");
         foreach(var id in new[]{"Extradosed01","Extradosed02","Extradosed03","ExtradosedLarge","CableStayed"})
             Check(BridgeBuilder.Bridges.BridgeStyleDefinitions.Family(id)=="CableStayed","Shared cable-stayed family: "+id);
         var names=new[]{(Name:"波",Id:"b"),(Name:"阿",Id:"z"),(Name:"阿",Id:"a")};
@@ -29,6 +36,23 @@ internal static class Program
             var key="Family"+BridgeBuilder.Bridges.BridgeStyleDefinitions.Family(definition.Id);
             foreach(var locale in RuntimeUiText.LocaleIds) Check(RuntimeUiText.ForLocale(locale).ContainsKey(key),"Missing family: "+key+"/"+locale);
         }
+        Check(BridgeBuilder.Bridges.BridgeStyleDefinitions.All.Count == 37, "Only 37 concrete style definitions");
+        foreach (var id in new[] { "PedestrianDraw", "Draw", "Lift" })
+        {
+            Check(!BridgeBuilder.Bridges.BridgeStyleDefinitions.All.Any(x => x.Id == id), "Historical group is not a style: " + id);
+            Check(!BridgeBuilder.Bridges.BridgeStyleDefinitions.CanList(id), "Historical group cannot be selected: " + id);
+            Check(BridgeBuilder.Bridges.BridgeStyleDefinitions.GenerationUnsupportedReason(id) != null, "Historical group cannot be generated: " + id);
+            var unregistered = false;
+            try { BridgeBuilder.Bridges.BridgeStyleSources.For(id); }
+            catch (ArgumentOutOfRangeException) { unregistered = true; }
+            Check(unregistered, "Historical group cannot become base-game source: " + id);
+            foreach (var locale in RuntimeUiText.LocaleIds)
+                Check(UiStringCatalog.ForLocale(locale).StyleName(id) == id, "Historical group translation removed: " + locale + "/" + id);
+        }
+        foreach (var nativeName in new[] { "PedestrianDrawBridge", "DrawBridge", "Bascule", "LiftBridge" })
+            Check(BridgeBuilder.Bridges.BridgeStyleDefinitions.Match(nativeName) == null, "Generic root must not guess a numbered archetype: " + nativeName);
+        foreach (var definition in BridgeBuilder.Bridges.BridgeStyleDefinitions.All)
+            _ = definition.Sources;
         foreach (var family in new[] { ("Draw", "DrawBridge", 3), ("Lift", "LiftBridge", 5), ("PedestrianDraw", "PedestrianDrawBridge", 2) })
         for (var i = 1; i <= family.Item3; i++)
         {
@@ -48,6 +72,7 @@ internal static class Program
             }
         }
         foreach (var item in new[] {
+            ("GOViaduct", "GO 224m Viaduct Bridge"),
             ("ArtDecoViaduct", "BXP Art Deco Viaduct - 6 Lanes"),
             ("ArtDecoViaduct", "BXP Art Deco Viaduct - Train - 4 Tracks"),
             ("TrussViaduct", "BXP Truss Viaduct - Highway Twoway - 2 lanes"),
@@ -60,6 +85,7 @@ internal static class Program
             Check(BridgeBuilder.Bridges.BridgeStyleDefinitions.Match(item.Item2)?.Id == item.Item1,
                 "Same-style variant grouping: " + item.Item2);
             Check(BridgeBuilder.Bridges.BridgeStyleDefinitions.CanGenerate(item.Item1), "Fixed generation entry: " + item.Item1);
+            Check(BridgeBuilder.Bridges.BridgeStyleDefinitions.CanList(item.Item1), "Fixed catalogue entry: " + item.Item1);
             Check(!BridgeBuilder.Bridges.BridgeStyleDefinitions.SupportsDeckMode(item.Item1, true), "No invented second deck: " + item.Item1);
             foreach (var locale in RuntimeUiText.LocaleIds)
                 Check(UiStringCatalog.ForLocale(locale).StyleName(item.Item1) != item.Item1, "Missing fixed name: " + locale + "/" + item.Item1);

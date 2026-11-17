@@ -22,7 +22,7 @@ foreach (var (id, name, road, width) in new[] {
     var variant = new BridgeStyleVariant(name, road, icon, source);
     var style = new BridgeStyle(id, id, () => "Localized name", 0);
     style.Add(variant);
-    style.BindSingleSource();
+    style.BindSources(Array.Empty<PrefabBase>());
     Check(variant.IsRecorded && variant.IsBuiltin && variant.IsRoad == road, "Recorded type metadata");
     Check(variant.Name == name && variant.RoadWidth == width, "Measured identity and width");
     Check(variant.Overhead == null && variant.SubObjects == null && variant.LowerDeck == null && !variant.IsDoubleDeck,
@@ -59,4 +59,22 @@ Check(!original.IsRecorded && ReferenceEquals(original.Donor, native) && Referen
     "Existing native variants retain their references");
 Check(original.RecordedIcon == null && original.Width == 20.2f && original.RoadWidth == 19,
     "Existing native width and icon behavior");
+var direct = new BridgePrototypeSource { Key = "mod:92245" };
+var mod = new BridgePrototypeSource { Key = "mod:92245" };
+var dlc = new BridgePrototypeSource { Key = "content:SanFranciscoSet" };
+BridgePrototypeSource.Requirements[mod.Key]=mod; BridgePrototypeSource.Requirements[dlc.Key]=dlc;
+var ordered = new BridgeStyle("GoldenGateDouble", "test", () => "test");
+var registered = new BridgeStyleVariant("test", true, "icon", direct, 25f,39f);
+ordered.Add(registered); ordered.BindSources(Array.Empty<PrefabBase>());
+Check(ordered.Sources.SequenceEqual(new[]{mod.Key,dlc.Key}), "explicit source order retained");
+foreach(var donorOn in new[]{false,true}) foreach(var modOn in new[]{false,true}) foreach(var dlcOn in new[]{false,true}) {
+ direct.IsAvailable=donorOn;mod.IsAvailable=modOn;dlc.IsAvailable=dlcOn;
+ Check(ordered.IsInstalled==(donorOn&&modOn&&dlcOn), "all source entries and donor gate style");
+ Check(registered.IsAvailable==(donorOn&&modOn&&dlcOn), "variant repeats complete availability after state change");
+}
+var wrongOwner = new BridgeStyle("GoldenGateDouble", "test", () => "test");
+wrongOwner.Add(new BridgeStyleVariant("wrong",true,"icon",new BridgePrototypeSource {Key="mod:124160"},25f,39f));
+wrongOwner.BindSources(Array.Empty<PrefabBase>());Check(!wrongOwner.IsInstalled,"B&P mod cannot replace declared base BEP owner");
+var empty = new BridgeStyle("Grand","test",()=>"test");empty.BindSources(Array.Empty<PrefabBase>());
+Check(empty.Sources.Length==0&&!empty.IsInstalled,"base empty requirements do not invent unregistered donor");
 Console.WriteLine($"PASS {checks} recorded-variant checks; native availability is a test boundary, not game acceptance.");

@@ -237,14 +237,6 @@
   },
   {
     "style": "Draw01",
-    "path": "NativeSources/1d6c92d008a952b1db4e1cc6cf7a1160/Object.Surface",
-    "role": "NonRoad",
-    "consumer": "Measured native object descriptor conversion",
-    "surfaceSha256": "1d6c92d008a952b1db4e1cc6cf7a11603ab61760b05252f5e86805278d1c8904",
-    "local": {}
-  },
-  {
-    "style": "Draw01",
     "path": "NativeSources/3aaa84602734568f9f0909f01c8527f0/Object.Surface",
     "role": "Road",
     "consumer": "MovableCompatibleRoad.CompatibleBase",
@@ -545,14 +537,6 @@
   },
   {
     "style": "Draw02",
-    "path": "NativeSources/1d6c92d008a952b1db4e1cc6cf7a1160/Object.Surface",
-    "role": "NonRoad",
-    "consumer": "Measured native object descriptor conversion",
-    "surfaceSha256": "1d6c92d008a952b1db4e1cc6cf7a11603ab61760b05252f5e86805278d1c8904",
-    "local": {}
-  },
-  {
-    "style": "Draw02",
     "path": "NativeSources/3aaa84602734568f9f0909f01c8527f0/Object.Surface",
     "role": "Road",
     "consumer": "MovableCompatibleRoad.CompatibleBase",
@@ -565,14 +549,6 @@
     "role": "NonRoad",
     "consumer": "Measured native object descriptor conversion",
     "surfaceSha256": "d765f1348645cc68318b5ac29c61abdea9d8c90c663a2e62a056b8019c05519f",
-    "local": {}
-  },
-  {
-    "style": "Draw02",
-    "path": "NativeSources/e7e3a33d1499167c8c385ebfb70af78b/Object.Surface",
-    "role": "NonRoad",
-    "consumer": "Measured native object descriptor conversion",
-    "surfaceSha256": "e7e3a33d1499167c8c385ebfb70af78bad6a93b124e02c81d03512b516e77510",
     "local": {}
   },
   {
@@ -889,14 +865,6 @@
   },
   {
     "style": "Draw03",
-    "path": "NativeSources/1b7d44bbf84bd6c880f2dde840b638f6/Object.Surface",
-    "role": "NonRoad",
-    "consumer": "Measured native object descriptor conversion",
-    "surfaceSha256": "1b7d44bbf84bd6c880f2dde840b638f63f56b183a377b3c1ceeaeadcf2f41afd",
-    "local": {}
-  },
-  {
-    "style": "Draw03",
     "path": "NativeSources/3aaa84602734568f9f0909f01c8527f0/Object.Surface",
     "role": "Road",
     "consumer": "MovableCompatibleRoad.CompatibleBase",
@@ -905,34 +873,10 @@
   },
   {
     "style": "Draw03",
-    "path": "NativeSources/a6b3efae98e0fc2f3056ec517bb949cb/Object.Surface",
-    "role": "NonRoad",
-    "consumer": "Measured native object descriptor conversion",
-    "surfaceSha256": "a6b3efae98e0fc2f3056ec517bb949cbdc44aeffca47d2dd8da07dde13b4f54d",
-    "local": {}
-  },
-  {
-    "style": "Draw03",
-    "path": "NativeSources/b2e79001615c2697a6448f909f6ad7f3/Object.Surface",
-    "role": "NonRoad",
-    "consumer": "Measured native object descriptor conversion",
-    "surfaceSha256": "b2e79001615c2697a6448f909f6ad7f3d7089cd1dadd7a62ae8f5dc5a4effcb9",
-    "local": {}
-  },
-  {
-    "style": "Draw03",
     "path": "NativeSources/d765f1348645cc68318b5ac29c61abde/Object.Surface",
     "role": "NonRoad",
     "consumer": "Measured native object descriptor conversion",
     "surfaceSha256": "d765f1348645cc68318b5ac29c61abdea9d8c90c663a2e62a056b8019c05519f",
-    "local": {}
-  },
-  {
-    "style": "Draw03",
-    "path": "NativeSources/eb26a16316548f7db386fdf96b019862/Object.Surface",
-    "role": "NonRoad",
-    "consumer": "Measured native object descriptor conversion",
-    "surfaceSha256": "eb26a16316548f7db386fdf96b019862bd4aec1b354d0bf3a72491cf8da37d67",
     "local": {}
   },
   {

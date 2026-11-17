@@ -44,24 +44,11 @@ public partial class BridgeGenerationSystem
             return removed;
         }
         var tools = World.GetOrCreateSystemManaged<ToolSystem>();
-        if (roots.Contains(tools.activePrefab)) tools.ActivatePrefabTool(null);
-        // Deactivating NetToolSystem does not clear its selected prefab. OnGamePreload
-        // reads that selection even while inactive; replace it before removing registration.
-        var netTool = World.GetExistingSystemManaged<NetToolSystem>();
-        if (netTool != null && (BridgeAssetInfo.MatchesOwner(netTool.prefab?.name, exportName)
-            || BridgeAssetInfo.MatchesOwner(netTool.lane?.name, exportName)))
-        {
-            var replacement = loaded.OfType<RoadPrefab>().FirstOrDefault(p => p.isBuiltin
-                && !BridgeAssetInfo.MatchesOwner(p.name, exportName) && _prefabSystem.TryGetEntity(p, out _));
-            if (replacement == null)
-            {
-                report.Warning("Cannot clear bridge tool selection: no registered built-in road is available.");
-                return removed;
-            }
-            // The native setter cannot accept null: it directly looks up its dictionary key.
-            netTool.prefab = replacement;
-            Mod.Log.Info("Bridge deletion replaced retained NetTool selection with: " + replacement.name);
-        }
+        BridgeToolRetirement.Release(tools, World.GetExistingSystemManaged<NetToolSystem>(),
+            p => BridgeAssetInfo.MatchesOwner(p.name, exportName),
+            () => loaded.OfType<RoadPrefab>().FirstOrDefault(p => p.isBuiltin
+                && _prefabSystem.TryGetEntity(p, out _))
+                ?? throw new InvalidOperationException("No registered built-in road can replace the retained tool selection."));
         // Native serialization and streaming may still read these prefabs after ECS deletion.
         // Keep their instances and files intact until the verified late normal-shutdown boundary.
         ClearPreview();

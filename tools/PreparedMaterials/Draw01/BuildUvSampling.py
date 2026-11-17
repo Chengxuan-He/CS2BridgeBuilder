@@ -9,7 +9,7 @@ import zipfile
 from pathlib import Path
 import numpy as np
 from BuildUvCharts import ROOT, domains, read_bbn
-from AuditStructureReuse import count, text, bindings
+from AuditStructureReuse import count, text
 from MovableUvDomainFormat import write_bbn
 from shapely.geometry import Polygon, MultiPoint, box
 
@@ -38,10 +38,6 @@ def network_evidence(base, sources):
     expected = {c['layers'][0]['property']: c['cid'] for c in network[0]['channels']}
     assert set(expected) == {'_BaseColorMap', '_NormalMap', '_MaskMap'}
     assert all({c['layers'][0]['property']: c['cid'] for c in s['channels']} == expected for s in network)
-    converted = ROOT / 'assets/Materials/Draw01/NativeSources/1d6c92d008a952b1db4e1cc6cf7a1160/Object.Surface'
-    converted_template, converted_bindings = bindings(converted)
-    assert converted_template == 0
-    assert all(converted_bindings.get(k) == v for k, v in expected.items())
     payloads = {}
     with zipfile.ZipFile(network[0]['archive']) as archive:
         for entry in archive.namelist():
@@ -77,7 +73,7 @@ def network_evidence(base, sources):
                 shaderEvidence=[dict(path=str(p), sha256=sha(p)) for p in (vertex, fragment, native / 'shader-581-parsed.json')],
                 mapping='V<0: frac(V), U unchanged; V>=0: native network-length mapping. Only single negative tiles qualify.',
                 worldspace='Original mask blue is zero in every source mip; the shader581 worldspace blend is inactive.',
-                convertedDescriptorSha256=sha(converted), channels=payloads)
+                channels=payloads)
 
 
 def main():

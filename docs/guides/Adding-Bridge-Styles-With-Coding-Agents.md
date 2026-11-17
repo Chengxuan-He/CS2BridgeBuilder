@@ -55,8 +55,9 @@ save your work before that step. Intermediate source edits do not require shutdo
 Give the agent these inputs:
 
 - A stable English style ID and the intended single-deck or double-deck capability.
-- Exact prototype Prefab names and their source: base game, named DLC, or mod ID, with the
-  corresponding game/mod version and any available CID evidence.
+- Exact prototype Prefab names and the ordered required-source array: direct source first, then
+  each explicitly required DLC/mod; use an empty array for base-game styles. Include verified
+  provider identities, corresponding game/mod versions and any available CID evidence.
 - Prefab anatomy, mesh and LOD data, plus screenshots of the prototype at near and far distances.
 - Measured road and structure boundaries, tower placement, cables, railings, lights, materials,
   unlock conditions and native cost components.
@@ -92,7 +93,15 @@ formats; do not provide only the bridge's display name:
 | Mod | `Paradox Mods ID: <numeric mod ID>; mod name: <name>; mod version: <version>; game version: <game version>` |
 
 For mod-provided prototypes, include the mod page link when available. If a version is unknown,
-say so rather than guessing. Include any additional required DLC or mods separately.
+say so rather than guessing. Register additional required DLC or mods after the direct source in
+the same ordered array. Follow the [source availability rules](../specs/cross-environment-spec.md#dlc-and-mod-compatibility);
+Recursively trace the prototype's actual references offline, record provider/version and reference-path
+evidence, and complete the registered array before implementation. Then verify each missing-entry
+case separately. Hardcode the reviewed ordered declaration in code or a packaged data file.
+Keep recursive tools, asset/provider indexes, reference graphs and closure evidence in development
+records, outside the release package and runtime resources. Check the package file list and compiled
+resources: runtime only checks each registered source's availability, never invokes the offline
+scanner, traverses its indexes or dynamically calculates dependencies.
 
 ```text
 Add support for <style ID> using <exact prototype Prefab> from <source and version>.
@@ -102,7 +111,7 @@ Motion: <fixed / moving mechanism and available evidence>.
 Evidence is available at <paths to anatomy, mesh/LOD exports and screenshots>.
 
 Read AGENTS.md, the complete project contract and applicable nested instructions.
-Read the complete generation contract and its paired specification. For a non-Network source,
+Read the complete generation contract, its paired specification and docs/specs/lod-spec.md. For a non-Network source,
 also read docs/contracts/non-network-contract.md and docs/specs/non-network-spec.md.
 Prepare only an existing-form immutable construction recipe; do not create or register an
 intermediate network asset, introduce a virtual-prototype runtime layer, or bind it to a road kind.
@@ -145,6 +154,11 @@ A small style generator can reuse `BridgeGeneratorBase`, as existing wrappers do
 archetype behavior is already supported and measured. A matching name or successful discovery does
 not establish that. Register the route and supported deck modes consistently; unsupported designs
 must fail explicitly rather than silently generating a different family.
+
+Use a concrete standard style ID under the [style registration rules](../specs/generation-spec.md#generation-22-new-bridge-styles-require-immediate-ui-synchronization-generator-routing-and-multilingual-names).
+Do not register a bridge-family placeholder or turn it into an implicit alias. Preserve existing
+standard IDs and healthy saved owners; historical migration requires published-record and
+unambiguous prototype evidence at the existing self-check boundary.
 
 Provide labels in every supported UI language. The current admission rule also checks for a Chinese
 display name independently of the active locale. Keep style IDs unlocalized and the mod metadata
@@ -204,7 +218,7 @@ and record evidence in the appropriate bridge-style audit, rather than adding a 
    variants of the same design belong to one style. Record the exact installed source and compare
    its documented dimensions with measured geometry. Resolve discrepancies explicitly; a number
    in the asset name is not a measurement.
-2. Inventory the complete object graph, nested render parts and every LOD. Record coordinate
+2. Inventory the complete object graph, nested render parts and every LOD. Disclose source and generated per-level triangle counts under the [LOD evidence rule](../specs/lod-spec.md#per-level-triangle-disclosure-and-reference-scope), with part/variant/instance scope explicit. Record coordinate
    frames, accumulated transforms, running-surface versus structural membership, material references,
    supports and endpoints using the [parameter meanings](../specs/non-network-spec.md#non-network-2-source-evidence-and-parameter-meanings).
 3. Measure span-local, repeating, endpoint and shared-boundary support roles. Establish adjacent-span

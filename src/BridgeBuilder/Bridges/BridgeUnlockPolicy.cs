@@ -10,11 +10,14 @@ namespace BridgeBuilder.Bridges;
 internal static class BridgeUnlockPolicy
 {
     internal static bool Apply(NetGeometryPrefab root, BridgeStyleVariant variant, ExportReport report, List<PrefabBase> created)
+        => Apply(root, variant.Donor, report, created);
+
+    internal static bool Apply(NetGeometryPrefab root, PrefabBase source, ExportReport report, List<PrefabBase> created)
     {
         var world = World.DefaultGameObjectInjectionWorld;
         var prefabs = world?.GetExistingSystemManaged<PrefabSystem>();
-        if (prefabs == null || variant.Donor == null || ReferenceEquals(root, variant.Donor)
-            || !BridgeUnlockSnapshot.Capture(variant.Donor, prefabs, world!.EntityManager, out var rule))
+        if (prefabs == null || source == null || ReferenceEquals(root, source)
+            || !BridgeUnlockSnapshot.Capture(source, prefabs, world!.EntityManager, out var rule))
         {
             report.Failed(root.name, new InvalidOperationException("Original bridge unlock rules are not ready for an independent snapshot."));
             return false;

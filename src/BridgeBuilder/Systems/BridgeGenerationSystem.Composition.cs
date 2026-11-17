@@ -88,6 +88,12 @@ public partial class BridgeGenerationSystem
         Action<bool>? onPublished = null)
     {
         using var parameters = GenerationParameters.Begin();
+        // Recheck the complete declared source set at the shared async construction boundary.
+        if (!style.IsInstalled)
+        {
+            report.Failed(exportName, new InvalidOperationException("The selected bridge prototype is no longer installed."));
+            return false;
+        }
         var unsupported = BridgeStyleDefinitions.GenerationUnsupportedReason(style.Id, options.DoubleDeck);
         if (unsupported != null)
         {
@@ -178,6 +184,8 @@ public partial class BridgeGenerationSystem
             // replace them with another read from the original network Prefab here.
             if (!BridgeStyleDefinitions.IsMovable(style.Id))
                 ApplyPrototypeIcon(clone, variant, report);
+            if (BridgeProperName.Applies(style.Id))
+                BridgeProperName.CreateAggregate(clone, towers);
             if (composer.BuildsAuxiliaryDeck)
             {
                 var carried = composer.VerifyAuxiliaryDeck(clone);
@@ -197,7 +205,9 @@ public partial class BridgeGenerationSystem
             var ownedNets = new HashSet<PrefabBase>(cloner.Nodes.Where(node => node.NeedsSave)
                 .Select(node => node.Target));
             var nativeAssets = new List<PrefabBase>();
-            if (preview == null && !composer.ApplyUnlocks(clone, variant, nativeAssets)) return false;
+            if (preview == null && !(composer.SelectedRoadUnlocks
+                ? BridgeUnlockPolicy.Apply(clone, main.Prefab, report, nativeAssets)
+                : composer.ApplyUnlocks(clone, variant, nativeAssets))) return false;
             // Preserve native piece/object fees from the selected networks and bridge prototype.
             // Native initialization and construction calculate the resulting cost, including auxiliary decks.
             if (preview == null)

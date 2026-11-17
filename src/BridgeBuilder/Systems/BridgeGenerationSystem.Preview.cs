@@ -79,8 +79,16 @@ public partial class BridgeGenerationSystem
     {
         try
         {
-            if (string.IsNullOrEmpty(request.PrefabName) && BridgePreparedMaterials.RequestFiles == null &&
-                BridgeStyleCatalog.Find(request.StyleId) != null)
+            var style = string.IsNullOrEmpty(request.PrefabName) ? BridgeStyleCatalog.Find(request.StyleId) : null;
+            // Saved previews borrow their owner graph and do not require the original source.
+            // New previews must reject an unavailable provider before any dependent file IO,
+            // including when the material-preparation continuation resumes a stale request.
+            if (string.IsNullOrEmpty(request.PrefabName) && (style == null || !style.IsInstalled))
+            {
+                FailPreview(revision, "PreviewInvalid");
+                return;
+            }
+            if (style != null && BridgeStyleDefinitions.IsMovable(style.Id) && BridgePreparedMaterials.RequestFiles == null)
             {
                 PrepareMaterialFiles(request.StyleId, () => BuildPreview(request, revision), exception =>
                 {

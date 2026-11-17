@@ -5,6 +5,21 @@ using UnityEngine;
 
 static void Check(bool condition, string error) { if (!condition) throw new Exception(error); }
 var id = "b11111111-2222-3333-4444-555555555555";
+BridgePresentationIcons.Register(Path.GetFullPath(Path.Combine(AppContext.BaseDirectory,"../../../../../assets")));
+var persisted=new Game.Prefabs.NetGeometryPrefab { asset=new PrefabAsset { path="ImportedData/"+id+"/Prefabs/Bridge.Prefab",id=(Colossal.Hash128.Parse("fixture"),0) } };
+var inputs=new BridgeCreationDependencies();
+foreach(var uri in new[]{"coui://bridgebuilderui/BridgeNanpu.svg","coui://bridgebuilderui/BridgeLupu.svg","coui://bridgebuilder/old","coui://bridgebuilderui/BridgeBuilder.svg","coui://bridgebuilderui/BridgeNanpu.svg.missing","coui://bridgebuilderui/Missing.svg"}) {
+ inputs.Source=new(){Bytes=System.Text.Encoding.UTF8.GetBytes("{\"m_Icon\":\""+uri+"\"}")};
+ var expected=uri.EndsWith("/BridgeNanpu.svg")||uri.EndsWith("/BridgeLupu.svg");
+ Check(BridgeNativePresentation.Validate(id,[persisted],out var validationError,inputs)==expected,"Serialized icon policy: "+uri+": "+validationError);
+}
+inputs.Source=new(){Bytes=System.Text.Encoding.UTF8.GetBytes("{\"m_Icon\":\"coui://bridgebuilderui/BridgeNanpu.svg\",\"$type\":\"Legacy, BridgeBuilder\"}")};
+Check(!BridgeNativePresentation.Validate(id,[persisted],out _,inputs),"Packaged icon must not whitelist legacy runtime components");
+BridgePresentationIcons.Clear();
+inputs.Source=new(){Bytes=System.Text.Encoding.UTF8.GetBytes("{\"m_Icon\":\"coui://bridgebuilderui/BridgeNanpu.svg\"}")};
+Check(!BridgeNativePresentation.Validate(id,[persisted],out _,inputs),"Unregistered packaged URI accepted");
+BridgePresentationIcons.Register(Path.GetFullPath(Path.Combine(AppContext.BaseDirectory,"../../../../../assets")));
+Console.WriteLine("PASS serialized presentation: exact packaged icons, manager/unknown/missing URIs and legacy components.");
 var bridge = new Game.Prefabs.NetGeometryPrefab();
 var icon = new Game.Prefabs.UIObject { m_Icon = "Media/Game/Icons/FourLaneSuspension.svg" };
 bridge.components.Add(icon);
@@ -83,6 +98,32 @@ GameManager.instance!.localizationManager.Missing = "zh-HANT";
 Check(BridgeNativePresentation.EnsureDescriptions(new(id, "Unchanged"), out changed, out error)
     && !changed, "Complete locale data must remain unchanged with a trusted mapping");
 Check(bytes.SequenceEqual(assets.Select(a => Convert.ToHexString(a.Bytes))), "No-op changed locale bytes");
+foreach(var style in new[]{"Nanpu","Lupu","Grand","GoldenGate","GoldenGateDouble"}) {
+ var owner="b"+Guid.NewGuid();
+ var named=new Game.Prefabs.NetGeometryPrefab{name=owner};
+ var factory=new BridgeBuilder.Bridges.TowerFactory();
+ var random=factory.Source.AddComponent<Game.Prefabs.RandomLocalization>();random.m_LocalizationID="Random.Bridge";
+ BridgeBuilder.Bridges.BridgeProperName.CreateAggregate(named,factory);
+ Check(!ReferenceEquals(named.m_AggregateType,factory.Source)&&factory.Source.components.Contains(random),"Shared native Bridge aggregate changed");
+ Check(named.m_AggregateType!.components.OfType<Game.Prefabs.RandomLocalization>().Count()==0&&factory.Created.Single()==named.m_AggregateType,"Named aggregate lifetime or random pool retained");
+ var key=BridgeBuilder.Bridges.BridgeProperName.Key(owner);
+ Check(named.m_AggregateType.components.OfType<Game.Prefabs.Localization>().Single().m_LocalizationID==key,"Wrong native naming key");
+ var info=new BridgeAssetInfo(owner,"Selected road display name",style);
+ Check(BridgeNativePresentation.Save(info,out error),error);
+ var own=AssetDatabase.user.Items.OfType<LocaleAsset>().Where(a=>a.name.StartsWith(owner)).ToArray();
+ Check(own.Length==12,"Named bridge locale count");
+ foreach(var asset in own) Check(asset.Data.entries[key]==BridgeBuilder.Bridges.BridgeProperName.Label(style,asset.Data.localeId)
+  &&asset.Data.entries["Assets.NAME["+owner+"]"]==info.DisplayName,"Asset candidate and placed proper name must remain separate");
+ foreach(var asset in own) Check(asset.database.onAssetDatabaseChanged.Dictionaries[asset.Data.localeId][key]==BridgeBuilder.Bridges.BridgeProperName.Label(style,asset.Data.localeId),"Saved locale did not reach active native-event consumer");
+ var saved=own.Sum(a=>a.Saves);
+ Check(BridgeNativePresentation.EnsureDescriptions(info,out changed,out error)&&!changed&&own.Sum(a=>a.Saves)==saved,"Named bridge first cold inspection rewrites locales");
+ info.DisplayName="Player chosen name";
+ Check(BridgeNativePresentation.Save(info,out error),error);
+ Check(own.All(a=>a.Data.entries["Assets.NAME["+owner+"]"]=="Player chosen name"&&a.Data.entries[key]==BridgeBuilder.Bridges.BridgeProperName.Label(style,a.Data.localeId)),"Player asset rename or native proper name lost");
+}
+Check(BridgeNativePresentation.EnsureDescriptions(new(id,"Unchanged","Grand"),out changed,out error)&&!changed,error);
+Check(assets.All(a=>!a.Data.entries.ContainsKey(BridgeBuilder.Bridges.BridgeProperName.Key(id))),"Existing native-named bridge gained an unused private map key");
+Console.WriteLine("PASS private native aggregate ownership, localized proper-name entries, no random pool, cold no-op and player rename preservation.");
 GameManager.instance = null;
 Check(!BridgeNativePresentation.Save(new(id, "No manager"), out error), "Missing manager accepted");
 Console.WriteLine("PASS 12-language native headers, rename reuse, missing-only idempotence and unavailable-manager handling.");

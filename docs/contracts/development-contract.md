@@ -21,7 +21,7 @@ contributors without publishing permissions can complete development through loc
 Authorized releases additionally require one pre-release round under the
 [cross-environment testing contract](reading-map.md#cross-environment-testing-contract). Explicit testing requests
 trigger the same manual workflow; it is not an every-startup test. One independent agent owns each
-concrete environment, and unresolved required cases need an explicit user release decision.
+concrete environment. Complete all locally testable cases; unavailable external coverage does not block GitHub upload or publication under the [local coverage rule](../specs/cross-environment-spec.md#local-coverage-and-delivery).
 The manual game-start rule and trusted internal execution policy remain unchanged.
 
 The [release workflow](#repository-release-workflow) applies only to authorized releases. Historical publication
@@ -293,7 +293,7 @@ Follow [Optional GitHub publication](#project-optional-github-publication) for o
 
 ## Release workflow
 
-The release owner must use the user-specified version and complete the authorized release in the prescribed order: verified code and cross-environment checks, all-branch publication, verified Paradox Mods publication, then installation of the downloaded published package. Unresolved required checks need an explicit user release decision.
+The release owner must use the user-specified version and complete the authorized release in the prescribed order: verified code and cross-environment checks, all-branch publication, verified Paradox Mods publication, then installation of the downloaded published package. Apply the [local coverage rule](../specs/cross-environment-spec.md#local-coverage-and-delivery): complete locally testable cases without making unavailable external coverage a publication or upload gate.
 
 The [required procedure](../guides/development-release-procedures.md#repository-release-workflow) retains the complete steps and acceptance checklist.
 
@@ -531,7 +531,7 @@ identify the affected style IDs and UUID-owned artifacts, follow the existing ba
 procedure, verify the result and preserve unrelated assets. This changes no self-check, migration,
 explicit deletion or ownership semantics. Deployment is not in-game visual acceptance. Requested releases additionally require one
 [cross-environment test round](reading-map.md#cross-environment-testing-contract), with independent environment
-agents, explicit evidence tiers and a user decision for unresolved required cases. This is not a
+agents and explicit evidence tiers, with all locally testable cases completed and unavailable external coverage handled under the [local coverage rule](../specs/cross-environment-spec.md#local-coverage-and-delivery). This is not a
 normal-startup probe or permission to start/close the game, and does not add runtime internal checks.
 
 <a id="generation-current-repository-checklist"></a>

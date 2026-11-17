@@ -480,22 +480,6 @@
     "verified": "Exact typed numerical bits and order against the unchunked original C# syntax"
   },
   {
-    "source": "src/BridgeBuilder/Bridges/Types/Draw01/Draw01HeadSections.cs",
-    "resource": "Draw01/Types_Draw01_Draw01HeadSections_cs.bin",
-    "originalSha256": "0EF3BE2D109314E3FCD3034FA7E80C3A3B905FBFF996BCF173AA942E2756395E",
-    "counts": [
-      5,
-      0,
-      0,
-      0,
-      0,
-      0
-    ],
-    "arrays": 0,
-    "payloadBytes": 76,
-    "verified": "Exact typed numerical bits and order against the unchunked original C# syntax"
-  },
-  {
     "source": "src/BridgeBuilder/Bridges/Types/Draw01/Draw01MechanismData.g.cs",
     "resource": "Draw01/Types_Draw01_Draw01MechanismData_g_cs.bin",
     "originalSha256": "9BACFED3EE2A8EBF47FCEF1CE5AA2597EFD8935A2632E1D7C88093637EA31A3E",
@@ -2096,6 +2080,22 @@
     "payloadBytes": 64
   },
   {
+    "source": "src/BridgeBuilder/Bridges/Types/GOViaduct/GOViaductBridgeGenerator.cs",
+    "resource": "GOViaduct/Types_GOViaduct_GOViaductBridgeGenerator_cs.bin",
+    "originalSha256": "0361EB2F346B0BCEC211FFD1E7E11FAA5442415198DDA07EC590B3282506AE14",
+    "counts": [
+      33,
+      0,
+      0,
+      0,
+      13,
+      0
+    ],
+    "arrays": 0,
+    "payloadBytes": 240,
+    "verified": "Exact typed numerical bits and order against the unchunked original C# syntax"
+  },
+  {
     "source": "src/BridgeBuilder/Bridges/Types/Lift01/Lift01ApproachAssembly.cs",
     "resource": "Lift01/Types_Lift01_Lift01ApproachAssembly_cs.bin",
     "originalSha256": "87FF708B1BFB23B262A6D882524F6FB410C668686B8D54FE7D858FED25D8EE73",
@@ -3684,7 +3684,7 @@
     "resource": "Lift02/Types_Lift02_Lift02UnderlayRegions_cs.bin",
     "originalSha256": "5B76915714F6B1D6A8EDCC8D289E880F0F7CF11EBB5AA4DF563181F10C2AA26C",
     "counts": [
-      74,
+      69,
       0,
       0,
       0,
@@ -3692,7 +3692,7 @@
       0
     ],
     "arrays": 0,
-    "payloadBytes": 352,
+    "payloadBytes": 332,
     "verified": "Exact typed numerical bits and order against the unchunked original C# syntax"
   },
   {
@@ -5454,6 +5454,22 @@
     "arrays": 2,
     "verified": "Exact typed numerical bits and order against the unchunked original C# syntax",
     "payloadBytes": 2932
+  },
+  {
+    "source": "src/BridgeBuilder/Bridges/Types/Nanpu/NanpuBridgeGenerator.cs",
+    "resource": "Nanpu/Types_Nanpu_NanpuBridgeGenerator_cs.bin",
+    "originalSha256": "9107B66AEFA89F9A8BC67D2A33471BCF4A5BE06C25B4ED255BB0654BB4685829",
+    "counts": [
+      40,
+      0,
+      0,
+      0,
+      17,
+      0
+    ],
+    "arrays": 0,
+    "payloadBytes": 284,
+    "verified": "Exact typed numerical bits and order against the unchunked original C# syntax"
   },
   {
     "source": "src/BridgeBuilder/Bridges/Types/PedestrianDraw01/PedestrianDraw01BridgeGenerator.cs",

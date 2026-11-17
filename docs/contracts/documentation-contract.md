@@ -73,8 +73,7 @@ The paired [self-check contract and specification](reading-map.md#bridge-self-ch
 historical migration/recovery, normal completion, result UI and mandatory full-process restart.
 
 [Cross-environment testing](reading-map.md#cross-environment-testing-contract) governs explicit manual requests
-and one round before a requested release, with one independent agent per environment and explicit
-release decisions for unresolved required cases. It does not run on every game startup.
+and one round before a requested release, with one independent agent per environment. Apply the [local coverage and delivery rule](../specs/cross-environment-spec.md#local-coverage-and-delivery): complete locally testable cases without blocking upload or publication on unavailable external coverage. It does not run on every game startup.
 
 See [Scope and authority](material-contract.md#material-scope-and-authority).
 

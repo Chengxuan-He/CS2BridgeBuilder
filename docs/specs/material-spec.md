@@ -6,6 +6,50 @@ This document is normative within its stated scope. Responsibility-based placeme
 change requirement strength, existing specialist exceptions or explicit user authorizations.
 Specifications are equally normative; this separation introduces no new precedence hierarchy.
 
+<a id="custom-materials-are-limited-to-movable-bridge-roads"></a>
+
+## Custom materials are limited to movable-bridge road and rail running surfaces
+
+Only movable-bridge road and rail running surfaces may use custom materials, within the existing running-surface processing
+scope (including its measured fixed running caps and intended road markings). In this scope, road-surface processing includes rail running surfaces; it must not be read as
+excluding tracks. Non-running structural members remain outside this permission. Every other
+bridge component retains its original prototype material by default, subject only to the native-template exception below: source Surface, shader/template,
+parameters and texture bindings at each LOD. Static bridges such as Nanpu and Lupu do not enter Bridge Builder custom-program creation; their selected native road retains its own source materials. Necessary non-Network native-template conversion follows the exception below.
+Native Default, DefaultCutout and Glass shaders are original native shaders, not custom programs.
+Geometry/deformation/instance-input adaptation alone is not permission for arbitrary material replacement; necessary native-template conversion is governed separately below.
+
+Preserve the complete original native dependency graph through [independent owner snapshots](../contracts/persistence-contract.md#generation-17-persist-external-dependencies-as-identical-cid-copies-owned-by-each-bridge): byte-identical non-built-in resources keep their CIDs, while built-ins remain references.
+A VT-bearing Surface header and its native cache/mip dependencies are not interchangeable with a
+raw Texture file; retain the actual resource types and relationships. Do not persist shader copies,
+program bundles or registration recipes per owner. The authorized movable-bridge road and rail custom programs
+remain mod-owned under [program registration](#material-dynamically-generated-and-independently-persisted-material-shaders-part-2).
+
+## Non-Network native material-template conversion
+
+A non-Network prototype integrated into native network rendering may use a necessary conversion
+from its original native object material template to the compatible native network template.
+This is an explicit exception to retaining the original Surface/template identity; it is not
+permission to create or substitute a Bridge Builder custom shader. The authorized GO route from
+source Default to native NetCompositionMeshLit (template 17) falls within this exception; do not
+apply that template blindly to other appearance protocols or require original-template reuse
+as the only permitted implementation.
+
+Preserve complete source appearance: actual texture/channel bindings and native dependencies,
+property defaults/overrides, UV projection and sampling, alpha/cutout/blending, normals/tangents,
+PBR and required keywords at every LOD. Match the target's actual vertex, deformation and instance
+protocol. Keep compatible original references where conversion is unnecessary. A packed VTSurface
+is not a prerequisite: standalone VTTexture dependencies are also valid. Preserve their actual
+native headers, channel relationships and cache/mip dependencies rather than flattening them into
+raw Texture files or rejecting their representation.
+
+Changed Surface descriptors receive distinct generated identities and persist with their complete
+native dependency closure; unchanged external dependencies retain byte-identical owner snapshots
+and original CIDs, while built-ins remain references. Never copy shader programs into an owner,
+mutate source assets, or infer authorization for arbitrary custom shaders. Compare source/output
+bindings, appearance properties, native vertex decoding and all LODs offline, then record native
+network rendering, ordinary preview and cold-load acceptance separately. A serialized descriptor
+or isolated shader test is not in-game visual acceptance.
+
 <a id="repository-offline-source-atlas-repeat-materials"></a>
 
 ## Offline source-atlas repeat materials
@@ -41,7 +85,7 @@ walkable sidewalk paving, running grating, running caps and selected-road paint
 qualify only on their measured road-facing domains. A structural platform, curb
 sidewall, truss, cable or underside uses its original game or DLC texture references.
 This requirement also applies when a road and a structural face share the same atlas.
-A descriptor conversion needed for native rendering may bind original native channels.
+A descriptor conversion within the movable-bridge road and rail running-surface scope or the [non-Network native-template exception](#non-network-native-material-template-conversion) may bind original native channels.
 It must never give a non-road consumer a dependency on a packaged texture.
 
 Retain valid native UV projection, sampling and mip identities. A local repeating
@@ -154,6 +198,8 @@ bound resource count does not prove the intended visible part actually uses that
 
 Related requirements: [Material Contract](../contracts/material-contract.md#material-complete-material-processing-without-propagated-exceptions), [Material Contract](../contracts/material-contract.md#material-complete-material-processing-without-propagated-exceptions-part-3).
 
+This conversion plan applies only to movable-bridge road and rail running-surface materials under the [scope boundary](../contracts/material-contract.md#material-scope-and-authority). Static bridge and non-running structural source materials retain their original references except for the separately scoped [non-Network native-template conversion](#non-network-native-material-template-conversion); native geometry/instance adaptation is separate.
+
 The set of valid selected-road materials is open-ended. Resolve actual source graphs,
 shader/property semantics, receiver inputs and native capabilities through one common plan:
 compatible original reuse first, evidenced equivalent conversion second, and a visible native
@@ -179,8 +225,8 @@ substitute. The mechanism asphalt normalization rule below deliberately omits it
 color overlay; that requested appearance replacement is not an unsupported-material fallback. Avoid full-span texture baking, large GPU composition, arbitrary downsampling,
 repeated coplanar receiver faces and unbounded per-pixel work. Preserve bones, LODs and ownership.
 
-Every selected-road, lane, cable and Original material uses the same realization
-entry. The caller supplies the actual geometry state: unchanged native network
+Every selected-road, lane and Original material within that movable-bridge road and rail running-surface conversion scope uses the same realization
+entry. Non-road cables and static structures retain direct original material references. The caller supplies the actual geometry state: unchanged native network
 inputs, or evaluated object-local positions/UVs with rigid procedural bones. A
 Surface alone is insufficient to choose a renderer. Metadata-only prototype-source
 reads do not certify that the source can render on an object.
@@ -315,7 +361,7 @@ Only repeated segments of the same source occurrence share receiver-coverage boo
 
 ## Non-road materials and road composition are separate
 
-Retain original prototype materials for carried structure, towers, trusses, underside,
+Except for the [non-Network native-template conversion](#non-network-native-material-template-conversion), retain original prototype materials for carried structure, towers, trusses, underside,
 railings, mechanisms and other non-road components, at their corresponding LODs. Retain
 original shader/template, parameters, keywords, texture bindings, channels and dependencies.
 Do not recolor, clone, rebake, extract replacement structure textures or assign a new Surface
@@ -324,7 +370,7 @@ a failed UV eligibility test alone does not authorize a replacement. Retain the 
 and attributes when no corresponding representation is available. Record appearance limitations
 without blocking generation; actual resource or native API failures remain errors.
 
-Classify road appearance by actual source type and measured target physical part. Only their
+Within the movable-bridge road and rail running-surface processing scope, classify road appearance by actual source type and measured target physical part. Only their
 verified correspondence enters prototype composition/precomposition. All other road types use
 compatible input or corresponding native object road materials under [section 4](material-spec.md#material-4-persist-constant-reusable-materials-before-runtime). Asphalt, sidewalk surfacing and wheel-track/rut effects are
 independent examples, not names for one blanket road category. Fixed structural platforms remain
@@ -408,6 +454,17 @@ encoded longitudinal rates/selectors are not ordinary mesh UVs. Preserve the res
 base UV derivatives, offsets and any actually consumed texture transforms. An identity
 Texture ST does not establish equal physical density; nor does equal texture resolution.
 Do not activate an ST property that the source shader ignores.
+
+A measured native packing/shader boundary discontinuity may require a narrowly recorded
+UV representation adaptation prepared offline. For the [GO source case](../archive/bridge-styles/GOViaduct/implementation.md), only network parts 0/1/2 at source V == 1
+may substitute the binary16 predecessor 0.99951171875; retain every other original UV
+and leave object parts 3/4 unchanged. Record the affected source, part, LOD and vertex
+membership, actual native packing/decoding and shader branch, and before/after sampling
+error across all LODs. Shared generation consumes the explicit recorded UV data; it must
+not rediscover membership or apply a runtime clamp. This limited representation correction
+does not authorize global clamping, wrapping, atlas remapping, texture changes or mutation
+of source assets. Preserve unrelated channels and report quantization separately from
+native in-game appearance acceptance.
 
 For evidenced base/worldspace layer protocols, retain each layer's own coordinate
 field and the source blend mask. A base-only descriptor is processed compatibility

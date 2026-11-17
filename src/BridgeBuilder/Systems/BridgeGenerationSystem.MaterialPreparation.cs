@@ -23,7 +23,7 @@ public partial class BridgeGenerationSystem
         }
         try
         {
-            if(!BridgePreparedMaterials.TrySourceRoot(out var root,out var cause)){NotifyMaterialFailure(failed,new InvalidOperationException(cause),revision);return;}
+            if(!BridgePreparedMaterials.TrySourceRoot(style,out var root,out var cause)){NotifyMaterialFailure(failed,new InvalidOperationException(cause),revision);return;}
             var cancellation = new CancellationTokenSource();
             _materialCancellation = cancellation;
             _materialReady = ready;

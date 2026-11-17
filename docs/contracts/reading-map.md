@@ -98,6 +98,8 @@ This navigation preserves the complete reading scopes of the original instructio
 
 ## docs/agent-contract/non-network-bridges-contract.md
 
+Read the complete [non-Network specification](../specs/non-network-spec.md) and [non-Network contract](non-network-contract.md), together with the complete [general bridge generation scope](#bridge-generation-contract). This includes the full general generation specification and contract and their applicable routed requirements; the topic links below do not narrow that reading obligation.
+
 - [1. Scope and required sequence](non-network-contract.md#non-network-1-scope-and-required-sequence)
 - [2. Source evidence and parameter meanings](../specs/non-network-spec.md#non-network-2-source-evidence-and-parameter-meanings)
 - [3. Describe the virtual bridge prototype](../specs/non-network-spec.md#non-network-3-describe-the-virtual-bridge-prototype)
@@ -225,7 +227,7 @@ Read the complete [persistence contract](persistence-contract.md) and [persisten
 
 ## docs/agent-contract/bridge-generation-contract.md
 
-Read the complete [generation contract](generation-contract.md) and [generation specification](../specs/generation-spec.md) for this scope, including integrated topic details. The section routes below preserve earlier entry points.
+Read the complete [generation contract](generation-contract.md), [generation specification](../specs/generation-spec.md) and [LOD specification](../specs/lod-spec.md) for this scope, including integrated topic details. The section routes below preserve earlier entry points.
 
 - [Generation implementation methods](../specs/movable-spec.md)
 

@@ -9,6 +9,10 @@ namespace Unity.Entities
     public class Buffer<T>(T[] items) { public int Length => items.Length; public T this[int i] => items[i]; }
     public class EntityManager
     {
+        public void CompleteAllTrackedJobs() { }
+        public void SetComponentEnabled<T>(Entity e, bool value) => All[e].Locked = value;
+        public Entity CreateEntity(params ComponentType[] types) => new(-1);
+        public void SetComponentData<T>(Entity e, T value) { }
         public Dictionary<Entity, State> All = new();
         public bool Exists(Entity e) => All.ContainsKey(e);
         public bool HasComponent<T>(Entity e) => typeof(T) == typeof(Game.Common.Created) ? All[e].Created : All[e].HasLocked;
@@ -16,8 +20,16 @@ namespace Unity.Entities
         public bool IsComponentEnabled<T>(Entity e) => All[e].Locked;
         public Buffer<T> GetBuffer<T>(Entity e, bool readOnly) => new((T[])(object)All[e].Requirements!);
     }
+    public struct ComponentType { public static ComponentType ReadWrite<T>() => new(); }
+    public class World
+    {
+        public static World? DefaultGameObjectInjectionWorld;
+        public EntityManager EntityManager = null!;
+        public Game.Prefabs.PrefabSystem Prefabs = null!;
+        public T? GetExistingSystemManaged<T>() where T : class => Prefabs as T;
+    }
 }
-namespace Game.Common { public struct Created { } }
+namespace Game.Common { public struct Created { } public struct Event { } }
 namespace Colossal { public record struct Hash128(string Text) { public static Hash128 Parse(string text) => new(text); } }
 namespace Colossal.IO.AssetDatabase
 {
@@ -69,6 +81,7 @@ namespace Game.Prefabs
         { prefab = All.Values.FirstOrDefault(p => p.GetPrefabID() == id); return prefab != null; }
     }
     public struct Locked { }
+    public record struct Unlock(Unity.Entities.Entity Entity);
     public enum UnlockFlags : uint { RequireAll = 1, RequireAny = 2 }
     public struct UnlockRequirement { public Unity.Entities.Entity m_Prefab; public UnlockFlags m_Flags; }
 }
@@ -79,8 +92,14 @@ namespace BridgeBuilder.Runtime
 }
 namespace BridgeBuilder
 {
-    internal static class Mod { internal static TestLog Log = new(); }
+    internal static class Mod { internal static TestLog Log = new(); internal static TestSetting? Setting; }
+    internal class TestSetting { internal bool RemoveDevelopmentRestrictions; }
     internal class TestLog { internal void Warn(string message) { } internal void Info(string message) { } }
+}
+namespace BridgeBuilder.Bridges { internal class BridgeStyleVariant { internal Game.Prefabs.PrefabBase Donor = null!; } }
+namespace CS2Mods.Shared.Infrastructure
+{
+    internal class ExportReport { internal int Failures; internal void Failed(string name, Exception error) => Failures++; }
 }
 namespace UnityEngine
 {

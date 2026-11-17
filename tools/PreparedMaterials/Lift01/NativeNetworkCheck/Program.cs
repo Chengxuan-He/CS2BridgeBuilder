@@ -36,8 +36,7 @@ foreach (var source in sources.Values)
         isVTMaterial = bytes[6] != 0
     };
     original.id.guid = Str(source, "cid");
-    var result=Lift01NativeMaterials.Resolve(original,
-        _=>throw new InvalidDataException("Non-road reuse invoked a replacement descriptor loader."));
+    var result=Lift01NativeMaterials.Resolve(original);
     bool rejected=!result.Success;
     if(rejected)Require(result.Value==null && result.Error!.Contains("native NetPiece render context"),"Missing native context diagnostic");
     else Require(ReferenceEquals(result.Value,original),"Non-road material identity was replaced.");
@@ -61,7 +60,17 @@ foreach (var use in uses)
     Require(!Lift01NativeMaterials.IsNativeNetwork("LiftBridge01 Mesh", mesh, cid), "Mechanism object admitted.");
     predicates += 3;
     var code = File.ReadAllText(PathIn("src/BridgeBuilder/Bridges/Types/Lift01/" + Str(use, "code")));
-    Require(Sha(File.ReadAllBytes(PathIn("src/BridgeBuilder/Bridges/Types/Lift01/" + Str(use, "code")))) == Str(use, "codeSha256"), "Reconstructed source definition changed.");
+    // Numeric-resource extraction changes file bytes without changing material routing.
+    // Check the complete current render/geometry/slot binding against the native fixture.
+    var bindings = System.Text.RegularExpressions.Regex.Matches(code,
+        "Create(?:<\\w+>)?\\(\"([^\"]+)\", \"([a-f0-9]+)\", new\\[\\] \\{ ([^}]+) \\}");
+    var binding = bindings.Cast<System.Text.RegularExpressions.Match>().Single(m => m.Groups[1].Value == render);
+    var slots = System.Text.RegularExpressions.Regex.Matches(binding.Groups[3].Value, "\"([a-f0-9]+)\"")
+        .Cast<System.Text.RegularExpressions.Match>().Select(m => m.Groups[1].Value).ToArray();
+    Require(binding.Groups[2].Value == Str(use, "meshCid") && mesh < slots.Length && slots[mesh] == cid,
+        "Reconstructed render/geometry/material-slot binding changed.");
+    Require(slots.Length == uses.Count(u => Str(u,"code") == Str(use,"code") && Str(u,"render") == render),
+        "Reconstructed material slot count changed.");
     if (expected)
     {
         Require(code.Contains('"' + render + '"') && code.Contains('"' + cid + '"'), "Source construction lacks the recorded identity.");

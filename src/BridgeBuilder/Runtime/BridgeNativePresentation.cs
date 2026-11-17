@@ -6,6 +6,7 @@ using Colossal.IO.AssetDatabase;
 using Game.SceneFlow;
 using Game.Prefabs;
 using UnityEngine;
+using BridgeBuilder.Bridges;
 
 namespace BridgeBuilder.Runtime;
 
@@ -38,7 +39,7 @@ internal static class BridgeNativePresentation
                     && !extension.Equals(".Surface", StringComparison.OrdinalIgnoreCase)) continue;
                 var contents = source.Bytes;
                 var text = System.Text.Encoding.UTF8.GetString(contents);
-                if (text.Contains(", BridgeBuilder\"") || text.IndexOf("coui://bridgebuilder", StringComparison.OrdinalIgnoreCase) >= 0)
+                if (text.Contains(", BridgeBuilder\"") || BridgePresentationIcons.HasUnavailableReference(text))
                 { error = "Saved prefab still requires Bridge Builder: " + id; return false; }
                 foreach (var cid in BridgeDependencyCopies.References(source))
                 {
@@ -85,6 +86,11 @@ internal static class BridgeNativePresentation
                 var existing = asset?.data;
                 var entries = existing == null ? new Dictionary<string, string>() : new Dictionary<string, string>(existing.entries);
                 var description = Settings.RuntimeUiText.Format(locale.Id, "BridgeAssetDescription");
+                if (BridgeProperName.Applies(entry.StyleId) && (!missingOnly
+                    || entries.ContainsKey(BridgeProperName.Key(entry.PrefabName))
+                    || prefabs.OfType<NetGeometryPrefab>().Any(p => p.m_AggregateType != null
+                        && p.m_AggregateType.components.OfType<Game.Prefabs.Localization>().Any(l => l.m_LocalizationID == BridgeProperName.Key(entry.PrefabName)))))
+                    entries[BridgeProperName.Key(entry.PrefabName)] = BridgeProperName.Label(entry.StyleId, locale.Id);
                 var tags = new[] { "", "_Lower", "_Upper" }.Select(s => entry.PrefabName + s)
                     .Concat(prefabs.Select(p => p!.uiTag)).Distinct();
                 foreach (var tag in tags)
@@ -96,14 +102,20 @@ internal static class BridgeNativePresentation
                         entries[descriptionKey] = description;
                 }
                 if (existing != null && entries.Count == existing.entries.Count
-                    && entries.All(p => existing.entries.TryGetValue(p.Key, out var value) && value == p.Value)) continue;
+                    && entries.All(p => existing.entries.TryGetValue(p.Key, out var value) && value == p.Value))
+                {
+                    asset!.database.onAssetDatabaseChanged.Notify(new AssetChangedEventArgs(asset.database, asset, ChangeType.AssetUpdated));
+                    continue;
+                }
                 asset ??= AssetDatabase.user.AddAsset<LocaleAsset>(BridgePrefabPersistence.ResourcePath(name, "Locales"));
                 asset.SetData(new LocaleData(locale.Id, entries, existing == null
                     ? new Dictionary<string, int>() : new Dictionary<string, int>(existing.indexCounts)), locale.Language, locale.Name);
                 asset.Save(true);
                 paths?.Add(asset.path); paths?.Add(asset.path + ".cid");
                 changed = true;
-                // Native asset change notifications register this source; startup discovers it globally.
+                // SetData/Save do not publish a populated LocaleAsset notification. Send it only
+                // after completed native persistence; native locale replacement/deletion owns lifetime.
+                asset.database.onAssetDatabaseChanged.Notify(new AssetChangedEventArgs(asset.database, asset, ChangeType.AssetUpdated));
             }
             return true;
         }

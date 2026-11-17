@@ -31,8 +31,22 @@ namespace Colossal
 }
 namespace Colossal.IO.AssetDatabase
 {
+    public enum ChangeType { AssetUpdated, AssetDeleted }
+    public record AssetChangedEventArgs(Database database, AssetData asset, ChangeType change);
+    // Native event contract: completed LocaleAsset replaces a dictionary source; Save alone does not.
+    public class Broadcaster {
+        public int Notifications;
+        public Dictionary<string,Dictionary<string,string>> Dictionaries = new();
+        public void Notify(AssetChangedEventArgs args) {
+            var asset=(LocaleAsset)args.asset;
+            if(asset.Bytes.Length==0)throw new Exception("Locale event before completed Save");
+            Notifications++;
+            Dictionaries[asset.Data.localeId]=new(asset.Data.entries);
+        }
+    }
     public class AssetData
     {
+        public Database database = null!;
         public string path = "", name = "";
         public bool isBuiltin;
         public (Colossal.Hash128 guid, int unused) id;
@@ -75,8 +89,9 @@ namespace Colossal.IO.AssetDatabase
     public class Database
     {
         public List<AssetData> Items = new();
+        public Broadcaster onAssetDatabaseChanged = new();
         public bool ForbidEnumeration; public IEnumerable<T> GetAssets<T>(SearchFilter<T> filter) { if(ForbidEnumeration)throw new Exception("All-assets enumeration forbidden");return Items.OfType<T>().Where(filter.Predicate); }
-        public T AddAsset<T>(AssetDataPath path) where T : AssetData, new() { var a = new T { name = path.Name, path = path.Path }; Items.Add(a); return a; }
+        public T AddAsset<T>(AssetDataPath path) where T : AssetData, new() { var a = new T { name = path.Name, path = path.Path, database = this }; Items.Add(a); return a; }
         public bool TryGetAsset<T>(Colossal.Hash128 id, out T asset) where T:AssetData { asset=Items.OfType<T>().FirstOrDefault(a=>a.id.guid.Value==id.Value)!;return asset!=null; }
     }
     public static class AssetDatabase { public static Database user = new(), global = new(); }
@@ -85,14 +100,20 @@ namespace Game.Prefabs
 {
     public class ComponentBase { }
     public class UIObject : ComponentBase { public string m_Icon = ""; }
+    public class Localization : ComponentBase { public string m_LocalizationID = ""; }
+    public class RandomLocalization : Localization { }
+    public class AggregateNetPrefab : PrefabBase { }
     public class PrefabBase
     {
         public Colossal.IO.AssetDatabase.PrefabAsset? asset;
         public string uiTag = "";
+        public string name = "";
         public List<ComponentBase> components = new();
+        public T AddComponent<T>() where T : ComponentBase, new() { var value=new T();components.Add(value);return value; }
+        public PrefabBase Clone(string name) => new AggregateNetPrefab { name=name, components=new(components) };
         public bool TryGet<T>(out T item) { item = components.OfType<T>().FirstOrDefault()!; return item != null; }
     }
-    public class NetGeometryPrefab : PrefabBase { }
+    public class NetGeometryPrefab : PrefabBase { public AggregateNetPrefab? m_AggregateType; }
 }
 namespace BridgeBuilder.Settings
 {
@@ -101,19 +122,29 @@ namespace BridgeBuilder.Settings
         internal static string[] LocaleIds = Game.SceneFlow.Localization.Languages.Keys.ToArray();
         internal static string Resolve(string? locale) => LocaleIds.Contains(locale) ? locale! : "en-US";
         internal static UiStrings Current = new();
+        internal static UiStrings ForLocale(string? locale) => new(){LocaleId=Resolve(locale)};
     }
-    internal class UiStrings { internal string LocaleId = "en-US"; }
+    internal class UiStrings { internal string LocaleId = "en-US"; internal string StyleName(string style)=>LocaleId=="en-US"?style+" Bridge":LocaleId+"/"+style; }
 }
 namespace BridgeBuilder.Runtime
 {
-    internal class BridgeAssetInfo(string id, string name)
+    internal class BridgeAssetInfo(string id, string name, string style = "")
     {
         internal string PrefabName = id, DisplayName = name;
+        internal string StyleId = style;
         internal static bool IsPrefabName(string name) => name.Length == 37 && name[0] == 'b' && Guid.TryParse(name[1..], out _);
         internal static string FileStem(string name,string owner)=>name.Replace(owner+"-", "");
         internal static bool MatchesOwner(string path, string owner) => path.Contains(owner);
     }
     internal static class BridgeDependencyCopies { internal sealed class Source { internal bool Builtin; internal string Extension=".Prefab"; internal byte[] Bytes=[]; } internal static IEnumerable<string> References(Source source) => Array.Empty<string>(); }
+}
+namespace BridgeBuilder.Bridges {
+ internal class TowerFactory {
+  internal Game.Prefabs.AggregateNetPrefab Source = new();
+  internal List<Game.Prefabs.PrefabBase> Created = new();
+  internal T ResolveOriginal<T>(string name) where T : Game.Prefabs.PrefabBase => (T)(object)Source;
+  internal void AdoptMovableSections(Game.Prefabs.PrefabBase[] values)=>Created.AddRange(values);
+ }
 }
 namespace CS2Mods.Shared.Conversion { public static class PrefabGraphCloner { public static bool ShouldStripComponent(Game.Prefabs.ComponentBase c, bool root) => false; } }
 namespace BridgeBuilder.Runtime {
@@ -123,7 +154,7 @@ namespace BridgeBuilder.Runtime {
 
 namespace BridgeBuilder.Runtime {
  internal sealed class DependencySaveTimings {}
- internal sealed class BridgeCreationDependencies { internal BridgeDependencyCopies.Source? Resolve(string id,string owner,DependencySaveTimings t)=>null; }
+ internal sealed class BridgeCreationDependencies { internal BridgeDependencyCopies.Source? Source; internal BridgeDependencyCopies.Source? Resolve(string id,string owner,DependencySaveTimings t)=>Source; }
  internal static class BridgeFileAccess {internal static bool Exists(string p)=>File.Exists(p);internal static string ReadText(string p)=>File.ReadAllText(p);}
  internal static class BridgePrefabPersistence {internal static Colossal.IO.AssetDatabase.AssetDataPath ResourcePath(string name,string category)=>Colossal.IO.AssetDatabase.AssetDataPath.Create(name,name);}
 }

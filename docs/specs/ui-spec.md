@@ -53,6 +53,11 @@ Popup padding and borders sit outside the seven-row viewport.
 
 ## Full published source mod names
 
+Display the style's [ordered required-source array](cross-environment-spec.md#dlc-and-mod-compatibility)
+in its declared order: direct source first, normally a source mod before its required DLC. Show
+all registered sources, not only the direct source; an empty array represents base-game content.
+Catalogue admission and preview/creation eligibility use the same all-sources decision.
+
 Every user-visible source-mod label must use the full official title published on Paradox Mods.
 This applies to all bridge styles and source assets, including native-network and non-Network
 prototypes, catalogue cards, details/settings, saved-bridge source presentation and alternate/error
@@ -127,6 +132,36 @@ Remove the legacy operation-status subscription and its props in both views; ret
 - Filtering changes the visible list only. It preserves selected IDs and edited names, does not publish preview requests or generate/delete assets, and resets only the list scroll position. Upper/lower picker state is independent. All lists keep three explicit card cells per row.
 - The preview frame contains no text in idle, loading, success or failure states. A CSS spinner uses an explicit backend loading flag rather than comparing localized strings. Decode errors or failed assembly stop it; existing error dialogs and logging are retained. The create/manage panel error footer and its preview-error callback are permanently removed; do not restore inline error text below the action buttons. Image alt text is empty to prevent a broken-image text fallback; the frame retains an accessibility label.
 - Names that fit the normal text area between the two outer fade bands stay centered, including exact fits. The layout is strictly outer left fade band, left text baseline, normal text area, right text baseline, outer right fade band. Both bands occupy 8% of the measured label viewport width. Set the inner area width and side margins from that same measurement in pixels, rather than relying on percentage flex margins. An overflowing name starts at the left text baseline with the entire left fade band reserved as empty margin; it must not start at the outer viewport edge. Hovering or selecting an overflowing name starts travel toward the right endpoint immediately, without an initial pause, smoothly entering the left fade band as it moves. Its last glyph aligns with the right edge of the normal text area. Each arrival at either end pauses for three seconds before reversing; only the outer bands fade. The same name treatment applies to road pickers, bridge styles and saved bridges; the button retains its full-name tooltip. Search/filter labels, options and empty results use the same 12-language dictionary and stable, nonlocalized filter IDs.
+
+## Candidate, saved asset and map names
+
+All bridge styles use the same suggested Prefab display-name formula, with no fixed, movable,
+landmark or prototype exceptions:
+
+- Single deck: `{localized prototype}·{localized road}`.
+- Double deck: `{localized prototype}·{localized upper road}·{localized lower road}·{localized same/opposite direction}`.
+
+Use the selected prototype/style's localized display label, the actual selected network display
+names and the existing localized direction label. Preserve Road Builder and player-authored network
+display names. The middle-dot separator is `·`; do not omit the prototype, a selected deck or the
+double-deck direction, and do not substitute a forced landmark-only or road-only name.
+
+The player can edit the suggestion. Preview, Create and Create-and-build use the same current
+draft, and permanent saving preserves the submitted display name through the existing native
+locale/presentation path. Do not replace a manual draft with a suggested formula or map name.
+Later rename and language behavior follow the common rules below; stable internal Prefab IDs
+and owner UUIDs remain independent of display text.
+
+A prototype proper name applies only to the placed bridge's native map/street name. This includes
+localized landmark or bridge names such as Golden Gate Bridge or Grand Bridge, and the
+[Nanpu and Lupu map-name rule](non-network-spec.md#non-network-prototype-proper-name-exception).
+Do not propagate that map-name choice into candidate text, saved asset display names or internal
+Prefab identities. Map naming uses the native localization lifecycle and preserves player map
+renames; it does not authorize hardcoded language-specific suffixes.
+
+Acceptance checks the complete single-deck and double-deck formulas for every style, edited-name
+preservation through preview and both creation actions, saved/renamed asset names and localized
+map names as separate outcomes. No named prototype may bypass the common asset-naming path.
 
 ## Creation and placement actions
 

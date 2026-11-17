@@ -21,6 +21,21 @@ The lifecycle graph's Compose node expands as follows. This is a workflow with c
 sequences, not a requirement to run every operation for every style. In particular, fixed bridges
 do not run movable road sampling or bake their selected-road materials.
 
+Select the material branch before realization at every LOD, following the
+[custom-material boundary](material-spec.md#custom-materials-are-limited-to-movable-bridge-roads):
+
+- Movable-bridge road and rail running surface: use only the permitted running-surface processing/custom-material route; tracks are explicitly included.
+- Every other component, including all static bridge structure: retain the original prototype
+  Surface, shader/template and texture bindings; selected native roads retain their own materials.
+  For a non-Network source requiring native network rendering, apply only the necessary
+  [native-template conversion exception](material-spec.md#non-network-native-material-template-conversion), preserving source appearance and dependencies. This is distinct from a Bridge Builder custom shader.
+  Geometry/deformation/instance adaptation alone grants no additional replacement permission.
+
+Before permanent publication, persist the actual native dependency closure through independent
+owner snapshots, preserving VT headers/cache relationships and built-in references. Do not copy
+shaders or program bundles into the owner. Check these postconditions offline for both branches;
+they do not add a runtime validation pass.
+
 ```mermaid
 flowchart TD
     Entry["Create private cloning and geometry owners; select the explicit style generator"] --> Context["Resolve elevated source contexts"]
@@ -363,7 +378,7 @@ Material matching within it is noexcept: a corresponding match selects that rout
 selects the original source-material route, without selecting a different road branch.
 The [complete material pipeline](../contracts/material-contract.md#material-complete-material-processing-without-propagated-exceptions) must return explicit outcomes through
 resolution, adaptation, assembly, persistence, preview and creation without propagated exceptions.
-Valid unknown materials use compatible originals, equivalent conversion, or a visible processed
+Within the movable-bridge road and rail running-surface conversion scope, valid unknown materials use compatible originals, equivalent conversion, or a visible processed
 native compatibility material with non-blocking difference diagnostics. Compatibility gaps must
 not reject valid input. Name/CID whitelist adapters, incompatible blind shader binding and
 unreported appearance losses are prohibited; genuine resource/IO failures remain explicit.
@@ -670,7 +685,8 @@ do not merely move the same Boolean operation behind a helper or a hardcoded tri
 
 ## A generated bridge differs from its archetype in geometry and road structure alone
 
-Except for the native representation, UV-density, LOD and persistence changes explicitly
+Except for the native representation, UV-density, LOD, persistence and
+[structural water-placement changes](#generation-structural-parts-must-not-block-placement-in-water) explicitly
 required by this contract and its specialist contracts, preserve the components and their fields, the bridge behaviour, how the tower is
 anchored, where the cables are drawn, the placement flags. Two things are allowed to differ, and they
 are the two the mod exists to change —
@@ -696,9 +712,9 @@ Compute every submesh bound from its generated indexed vertices and retain their
 For carried structural meshes, preserve raw channels, formats, indices, submeshes and material
 semantics by default. The explicit movable LOD and selected-road conversion rules permit their
 scoped changes. Preserve tiling density through evidenced UV mapping where geometry deformation changes a
-tiling source. For movable non-road parts retain original material/texture identities by default; only the
-[offline source-atlas repeat rule](generation-spec.md#generation-offline-source-atlas-repeat-materials) permits a narrowly
-scoped derived material to avoid new period-wrap seams. Road composition is limited
+tiling source. All non-running structural parts retain original prototype material/texture identities except for the
+[non-Network native-template conversion](material-spec.md#non-network-native-material-template-conversion), which retains source appearance and texture dependencies. The
+[offline source-atlas repeat rule](generation-spec.md#generation-offline-source-atlas-repeat-materials) permits eligible movable-bridge road and rail running-surface derivatives only; it grants no structural material exception. Road composition is limited
 to prototype-supported appearance types under [movable material families](movable-spec.md#movable-17-material-families-uv-density-and-texture-ownership); other types use compatible original or corresponding native object road materials under material [section 4](material-spec.md#material-4-persist-constant-reusable-materials-before-runtime). Preserve the actual appearance source's
 applicable mapping under [the general source-mapping rule](generation-spec.md#generation-preserve-original-uv-projection-and-mapping-mode):
 prototype-supported road surfaces tile without stretching at source density; non-road and
@@ -848,11 +864,12 @@ per prototype and physical domain. Other road types reuse compatible input mater
 animated-object road material under [material contract section 4](material-spec.md#material-4-persist-constant-reusable-materials-before-runtime); this replacement must preserve complete network-layer blending and dynamic worldspace projection, together with the actual
 appearance category, sampling density and tiling/stretch behavior. Prototype-supported road surfaces instead follow mandatory fixed-density tiling and
 all-LOD embedded-marking removal; non-road source modes remain unchanged. This is a generation rule, not a reverse-engineering finding or proof that the
-current implementation complies. Authorized compatibility output must disclose lost layer/blend semantics and is not a full repair. The custom multilayer program is the active implementation direction, with mod-enabled registration and unresolved independent loading disclosed. Road processing must not mutate a shared structural Surface.
+current implementation complies. Authorized compatibility output must disclose lost layer/blend semantics and is not a full repair. Custom multilayer materials follow the current [mod-owned program and loading policy](material-spec.md#material-dynamically-generated-and-independently-persisted-material-shaders-part-2). Road processing must not mutate a shared structural Surface.
 
 Follow the [material generation contract](../contracts/reading-map.md#material-generation-contract). Fully compatible
 original materials remain direct references without new descriptors or texture payloads. Required
-native object-template conversions preserve source appearance and dependencies; known, preparable constant derived
+native template conversions within the movable-bridge road and rail running-surface scope or the
+[non-Network exception](material-spec.md#non-network-native-material-template-conversion) preserve source appearance and dependencies; known, preparable constant derived
 materials are prepared offline and packaged per style. Runtime generation only copies and binds
 those finished resources. Repeatable units retain original per-axis texel density and pattern
 scale. Preserve evidenced non-road or unsupported-input stretching with authored UVs, native textures and material identity
@@ -1218,6 +1235,33 @@ including nested tower replacements, and verify that their bridge-specific light
 non-width fields match. Compilation is not evidence of a lighting match. Final validation is a human
 in-game comparison at night in near and far views; the Agent must not open or control the game.
 
+<a id="generation-structural-parts-must-not-block-placement-in-water"></a>
+
+## Structural parts must not block placement in water
+
+For every generated bridge, structural parts other than its constituent road/track network
+meshes must not cause the native `InWater` construction blocker. This includes bridge-owned
+supports, arches, towers and other structural objects, including structural parts at approach
+ends. Preserve those parts and their required placement; do not omit geometry or attachments
+to avoid the blocker. Apply this requirement consistently to generated and persisted placement
+behavior, independently of the visual LOD selected.
+
+The constituent road/track network meshes retain their actual native water-placement rules.
+Do not globally suppress `InWater`, change the selected network's water rules or bypass other
+legitimate native construction constraints. Establish the relevant native placement behavior
+from game implementation evidence before changing fields; this requirement does not prescribe
+an unevidenced flag or enum value. This is a scoped exception to archetype placement preservation.
+
+Water-placement permission must preserve structural collision identity and native shipping-lane
+collision/network clearance. For non-Network supports, apply the [structural collision and navigable-clearance rules](non-network-spec.md#structural-collision-identity-and-navigable-clearance);
+do not disable those native constraints to repair InWater rejection.
+
+Acceptance must distinguish structural water contact from road/track water contact: structural
+parts alone must not block construction, while the selected network's native water restrictions
+and unrelated construction failures remain effective. Verify approach structures at both ends
+and near/far geometry separately; offline field checks or a successful build do not establish
+native in-game construction acceptance.
+
 <a id="generation-16-preserve-native-construction-and-upkeep-pricing"></a>
 
 ## Preserve native construction and upkeep pricing
@@ -1263,14 +1307,31 @@ an incomplete style implementation; UI integration must not be deferred to anoth
   management labels and language changes together. Run the existing relevant localization checks;
   record any pending human UI verification explicitly. Compilation alone is not UI acceptance.
 
+Bridge-family labels are not generatable style IDs. `Draw`, `Lift` and `PedestrianDraw`
+are generic placeholders, not aliases for a numbered style. Normal catalogue registration,
+selection, preview, creation, prepared-resource routing and new persisted style metadata use
+only the explicit standard IDs: `Draw01`–`Draw03`, `Lift01`–`Lift05` and
+`PedestrianDraw01`–`PedestrianDraw02` for these families. Do not register the three generic
+placeholders, silently redirect them to `01`, or choose a variant from a family label.
+This does not remove any standard style or change ordinary availability/completeness policy.
+
+Historical normalization belongs only to the existing
+[self-check migration boundary](../contracts/self-check-contract.md#self-check-3-additive-migration-and-owner-scoped-recovery),
+with evidence of a previously published record and an unambiguous actual prototype/style mapping.
+A historical disabled placeholder or shared family name proves neither. Do not invent a migration
+for it, add ordinary-runtime alias adapters or rewrite healthy saved owners.
+
 A bridge network is a `RoadPrefab`, `TrackPrefab` or `PathwayPrefab` derived from
 `NetGeometryPrefab`. `BridgeBuildStyle` describes ground treatment (`Elevated`, `Raised`, `Quay`),
 not a suspension, arch or cable-stayed design.
 
 Bridge Builder uses explicit stable style IDs, supported deck modes and generator routes.
 Runtime discovery supplies available prototype variants; an installed prefab alone does not enable
-an unsupported generator. Source binding prioritizes base game, DLC, then mod content and preserves
-the selected source's prerequisites. Generated bridges are excluded from source selection.
+an unsupported generator. Register each style's ordered required-source array under the
+[DLC and mod compatibility rules](cross-environment-spec.md#dlc-and-mod-compatibility). Bind the
+first entry as the direct source, retain every additional requirement and use the complete array
+for catalogue admission, preview and both creation actions, including direct and queued requests.
+Base-game styles declare an empty array. Generated bridges are excluded from source selection.
 
 | Component | Responsibility |
 | --- | --- |

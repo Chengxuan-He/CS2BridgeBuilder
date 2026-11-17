@@ -6,6 +6,7 @@ Contracts define boundaries and obligations. Specifications define required beha
 | --- | --- | --- |
 | Development | [Contract](../contracts/development-contract.md) | See topic scope map |
 | General generation | [Contract](../contracts/generation-contract.md) | [Spec](generation-spec.md) |
+| LOD selection and representation | [Generation contract](../contracts/generation-contract.md) | [Spec](lod-spec.md) |
 | Generator organization | [Contract](../contracts/generator-contract.md) | [Spec](generator-spec.md) |
 | Movable bridges | [Contract](../contracts/movable-contract.md) | [Spec](movable-spec.md) |
 | Non-Network prototypes | [Contract](../contracts/non-network-contract.md) | [Spec](non-network-spec.md) |
