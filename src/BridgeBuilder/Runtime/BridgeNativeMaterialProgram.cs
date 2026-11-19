@@ -16,14 +16,28 @@ internal static class BridgeNativeMaterialProgram
     }
 
     internal const string QueueProperty = "BridgeBuilder_RenderQueue";
+    // Internal family selector, not the native Default material template hash.
+    internal const int NetworkPalette = 0;
+
+    internal static string ProgramName(int family) => family == NetworkPalette ? "NetworkPalette" :
+        family == 17 ? "WorldLayeredPbr" : "BoneDecal";
+
+    internal static int DefaultQueue(int family) => family == NetworkPalette ?
+        BridgeNativePaletteLayout.DefaultQueue : BridgeNativeProgramLayout.DefaultQueue(family);
+    internal static int HashOffset(int family) => family == NetworkPalette ?
+        BridgeNativePaletteLayout.HashOffset : BridgeNativeProgramLayout.HashOffset(family);
+    internal static int QueueOffset(int family) => family == NetworkPalette ?
+        BridgeNativePaletteLayout.QueueOffset : BridgeNativeProgramLayout.QueueOffset(family);
+    internal static int[] IdentityOffsets(int family) => family == NetworkPalette ?
+        BridgeNativePaletteLayout.IdentityOffsets : BridgeNativeProgramLayout.IdentityOffsets(family);
 
     internal static string LogicalIdentity(int sourceTemplate, int queue) =>
-        "BridgeBuilder/" + (sourceTemplate == 17 ? "WorldLayeredPbr" : "BoneDecal")
+        "BridgeBuilder/" + ProgramName(sourceTemplate)
         + ":queue=" + queue.ToString(CultureInfo.InvariantCulture);
 
     internal static int TemplateId(int sourceTemplate, int? renderQueue = null)
     {
-        string identity = LogicalIdentity(sourceTemplate, renderQueue ?? BridgeNativeProgramLayout.DefaultQueue(sourceTemplate));
+        string identity = LogicalIdentity(sourceTemplate, renderQueue ?? DefaultQueue(sourceTemplate));
         uint hash = 2166136261;
         foreach (char c in identity) hash = unchecked((hash ^ c) * 16777619);
         return (int)(hash & 0x1fffffff) | 0x20000000;
@@ -31,22 +45,22 @@ internal static class BridgeNativeMaterialProgram
 
     internal static bool TryIdentify(int template, int queue, out int sourceTemplate)
     {
-        foreach (int candidate in new[] { 17, 18 })
+        foreach (int candidate in new[] { NetworkPalette, 17, 18 })
             if (TemplateId(candidate, queue) == template) { sourceTemplate = candidate; return true; }
         sourceTemplate = 0; return false;
     }
 
     internal static byte[] Configure(byte[] source, int sourceTemplate, int? renderQueue)
     {
-        int queue = renderQueue ?? BridgeNativeProgramLayout.DefaultQueue(sourceTemplate);
+        int queue = renderQueue ?? DefaultQueue(sourceTemplate);
         string identity = LogicalIdentity(sourceTemplate, queue);
         int template = TemplateId(sourceTemplate, queue);
         var bytes = (byte[])source.Clone();
-        Put(bytes, BridgeNativeProgramLayout.HashOffset(sourceTemplate), template);
-        Put(bytes, BridgeNativeProgramLayout.QueueOffset(sourceTemplate), queue);
+        Put(bytes, HashOffset(sourceTemplate), template);
+        Put(bytes, QueueOffset(sourceTemplate), queue);
         string bundleIdentity = Identity(Encoding.UTF8.GetBytes(identity)).Substring(0, 32).ToLowerInvariant();
         var name = Encoding.ASCII.GetBytes(bundleIdentity);
-        foreach (int offset in BridgeNativeProgramLayout.IdentityOffsets(sourceTemplate))
+        foreach (int offset in IdentityOffsets(sourceTemplate))
             Buffer.BlockCopy(name, 0, bytes, offset, name.Length);
         return bytes;
     }

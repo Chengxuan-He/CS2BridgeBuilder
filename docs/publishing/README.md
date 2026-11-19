@@ -16,6 +16,8 @@ before publication, completing all locally testable cases. Unavailable external 
 - [Bridge Builder — publishing information entry](information-entry.md)
 - [Bridge Builder](mod-description.md)
 - [Paradox Mods Package Size](paradox-package-size.md)
+- [Bridge Builder 26.11.19](release-26-11-19.md)
+- [Bridge Builder 26.11.18a](release-26-11-18a.md)
 - [Bridge Builder 26.11.18](release-26-11-18.md)
 - [Bridge Builder 26.11.16](release-26-11-16.md)
 - [Bridge Builder 26.11.14](release-26-11-14.md)

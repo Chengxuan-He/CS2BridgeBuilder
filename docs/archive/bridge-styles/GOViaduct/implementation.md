@@ -256,7 +256,7 @@ independent cold load require manual game verification. No game or launcher was 
 no healthy generated bridge was removed, and no version or publication was changed.
 
 
-## November 17 crossbar and railing-atlas repair
+## November 17 crossbar and railing-atlas repair (incomplete grate exclusion)
 
 This addresses the subsequent three user screenshots, independently of the earlier orientation
 repair. Source package and all three Geometry identities remain those recorded above. The latest
@@ -264,6 +264,10 @@ reported owner b03e92284-89be-411c-9c49-6ee9f17878e5 had already been deleted by
 no retained Geometry/Surface payload was available for a latest-owner UV comparison. The evidence
 below compares actual decoded source data with the current emitted recipe and the inspected native
 consumer. It is not a claimed dump of that deleted owner or a new in-game rendering result.
+
+The following grate exclusion was incomplete: it removed the upper sheets but missed the
+separate lower rods. The November 18 investigation below supersedes its full-detail exclusion
+and triangle total. The outer-fascia and railing-atlas observations remain applicable.
 
 The first transverse member is a recessed original roadway grate: source |X|=88.1640625..91,
 Y=9.449951171875..9.5, Z=+-11.199951171875. Its relief lies below the exact planar-road
@@ -316,3 +320,51 @@ These are decoded-source/offline output plots, not game screenshots. Near/far ap
 newly generated owner and cold loading still require user-performed native game acceptance.
 Original changed files were preserved under E:/unused/CS2BridgeBuilder-go-crossbars-20261117/originals;
 checksum evidence is outside that backup subtree. No game or launcher was started or closed.
+
+## November 18 omitted lower-grate rods
+
+The newly reported joint grille was verified against actual owner
+`bef93defc-5630-456c-9450-356253dd82f7`, written on November 18 at 01:45:10 local time.
+Its full-detail center Geometry had 90,635 vertices and 57,336 triangles. Every decoded
+position matched the preceding recorded recipe exactly, at width half-increment
+2.300048828125 m (maximum error zero). This establishes a current recipe omission,
+not a presumed stale owner or an LOD substitution.
+
+The retained lower rods are source LOD0 faces 48812..49315 and 50868..51371 inclusive,
+504 per end. Their measured source envelopes are X=-90.59765625..-88.59765625 and
+X=88.59765625..90.59765625 respectively, Y=9.340087890625..9.449951171875,
+Z=-10.800048828125..10.800048828125. Actual owner triangles corresponding to all
+1,008 source faces were present. These rods sit below the previously excluded upper
+sheets; a test derived only from the old exclusion list could not detect that incomplete
+semantic selection.
+
+`GOViaduct.py` now excludes those exact additional source face IDs offline, regenerating
+the recorded full-detail center recipe. No runtime geometric predicate, transparency,
+LOD adjustment or source-material change is used. Exactly 1,008 triangles and their
+1,272 exclusive attribute vertices are removed: center counts become 56,328 triangles
+and 89,363 vertices. Whole-style triangle totals are now 56,736 / 12,996 / 544.
+All other source faces remain represented. All retained full-detail center face corners
+have bit-identical source-vertex identity, position, displacement, differential frame
+and UV values. Nine center resources change; the other 134 numerical resources remain
+byte-identical, including every approach, foundation and reduced-LOD recipe.
+
+The regression independently identifies the complete source assembly within measured
+|X|=88.1..91, Y=9.3..9.5 and |Z|<11.21, then requires both ends' 146 upper-sheet plus
+504 lower-rod faces to be absent. That domain is an offline test oracle, not a runtime
+selection rule. Middle-LOD faces 3432/3433 and 3704/3705 and the far-LOD planar running
+sheet remain absent. All-LOD source provenance, signed width mappings, orientation,
+outer-wall clipping, source UV preservation and rigid-foundation checks still pass.
+The unchanged retained corner data also preserves the side rails; no broad transverse
+slab or abutment has been removed.
+
+Receipts are [actual owner correspondence](../../../../work/go-grates-20261118/actual-owner-comparison.json),
+[exact retained-face comparison](../../../../work/go-grates-20261118/retained-face-proof.json),
+[resource hashes and byte counts](../../../../work/go-grates-20261118/resource-changes.json),
+[the all-LOD check](../../../../work/go-grates-20261118/regression.json), and
+[both-joint before/after source-space views](../../../../work/go-grates-20261118/joint-before-after.png).
+The plot uses decoded source faces and the owner-verified old recipe; it is not a game
+render. Original tools, changed resources and this record are preserved under
+`E:/unused/CS2BridgeBuilder-go-grates-20261118/originals`. No player owner was edited,
+no game was started or closed, and no in-game acceptance of a newly generated owner is
+claimed. The proportional graph, water and collision components, native material conversion,
+unlock finalization and aggregate naming are unchanged.

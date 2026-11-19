@@ -78,6 +78,13 @@ requests restart. Required permission exceptions propagate without automatic ret
 
 ## Bounded discovery
 
+```mermaid
+flowchart TD
+    A[List immediate storage-root children once] --> B[Retain confirmed owner candidates including failed live instances]
+    B --> C[Reuse inventory and exact dependency lookups]
+    C --> D[Normalize path aliases before layout comparison]
+```
+
 Retain confirmed owner/path entries even when obtaining a live instance fails. List immediate children of relevant storage roots and enter only selected owner directories; reuse this inventory for backup, layout and retirement. Normalize physical path aliases before layout comparison so an already-correct destination is not deleted as a duplicate.
 
 Startup self-check and historical migration follow each bridge's serialized dependency chain and the native cache provenance described below. Use current-owner direct paths, exact CID lookups and the selected native material's indexed cache provenance. A once-per-inspection discovery of registered bridge prefab identities and historical owner-file locations may establish roots and migration candidates. Reuse those candidates throughout the pass. Do not build a global all-asset/CID index, reread every Prefab per owner, or repeatedly scan all owner directories. The bounded inspection-only MidMips fallback below is the sole cache-index exception. Retain unowned shared legacy sources when their other consumers cannot be proven without a global reverse scan; migrate only the selected bridge closure. Preserve the separate discovery and handling of orphaned legacy components and the existing migration-first recovery and retirement semantics. Do not persist cache relations or an inspection index. Include dependency, validation, portable migration, name/layout migration and retirement costs in the self-check timings.
@@ -86,11 +93,33 @@ Startup self-check and historical migration follow each bridge's serialized depe
 
 ## Exact owner snapshot resolution during inspection
 
+```mermaid
+flowchart TD
+    A[Prepare shared cache relations] --> B[Resolve exact owner dependency]
+    B --> C{Native handle available?}
+    C -->|No| D[Read canonical CID snapshot and sidecar]
+    C -->|Yes| E[Use permitted direct source]
+    D --> F[Attempt owner repair with available evidence]
+    E --> F
+    F -->|Unrepairable| G[Owner-scoped recovery]
+```
+
 When a native database cannot supply a dependency handle for the current owner, check its canonical CID-named snapshot and matching sidecar before classifying the bridge. Parse saved Surface/VT bytes and resolve cache membership from exact native/prepared provenance or the one-per-inspection ephemeral cache fallback defined below. No cache-edge file or additional persisted self-check data is allowed. Foreign-owner handles alone cannot establish that a dependency has disappeared. Complete shared cache-relation preparation before owner dependency migration and structural inspection; shared preparation failure is not a global owner verdict; attempt each confirmed owner using available direct sources and recover an owner whose required inputs cannot be repaired. Confirmed corruption and genuinely missing dependencies retain the [section 3](../contracts/self-check-contract.md#self-check-3-additive-migration-and-owner-scoped-recovery) migration policy.
 
 <a id="self-check-inspection-cache-relationships"></a>
 
 ## Inspection cache relationships
+
+```mermaid
+flowchart TD
+    A[Native loading complete] --> B[Use exact native or prepared cache provenance]
+    B --> C{Inspection fallback necessary?}
+    C -->|Yes| D[Read relevant MidMips headers once into ephemeral map]
+    C -->|No| E[Inspect owner closures]
+    D --> E
+    E --> F[Discard ephemeral map after inspection]
+    E -->|Owner inspection succeeds| G[Back up then remove obsolete relationship file]
+```
 
 `BridgeCacheEdges.txt` must not be read or written by current dependency resolution.
 Remove an existing obsolete file only after that owner's complete inspection and migration
@@ -121,6 +150,16 @@ using its explicit source handoff and must not invoke the inspection-wide fallba
 
 ## External snapshot supplementation
 
+```mermaid
+flowchart TD
+    A[Inspect owner including healthy live references] --> B[Run creation dependency traversal]
+    B --> C{Local copies complete?}
+    C -->|Yes| D[Keep unchanged]
+    C -->|No| E[Supplement missing payloads and sidecars]
+    E -->|Success| F[Report migration and require restart]
+    E -->|Missing source or conflicting bytes| G[Migration failure policy]
+```
+
 Startup/manual self-check runs the creation dependency
 traversal for every inspected bridge before validating live references, including healthy bridges
 whose installed source mod currently hides a missing local copy. Supplement missing payloads and
@@ -134,6 +173,15 @@ Existing checks for unintended generated-asset collisions remain separate.
 <a id="self-check-field-by-field-migration"></a>
 
 ## Field-by-field migration
+
+```mermaid
+flowchart TD
+    A[Inspect root and owned networks field by field] --> B[Preserve valid values and identities]
+    B --> C[Write only missing required current-format data]
+    C -->|Success| D[Report migration; restart]
+    C -->|Required information unavailable| E[Explicit migration failure and recovery]
+    D --> F[Repeated inspection makes no changes]
+```
 
 Version migration must complete missing fields individually, because legacy bridges may originate from different versions and lack different fields.
 After migration, bridges must use the same file structure and naming conventions as bridges generated by the current version.
@@ -157,6 +205,17 @@ without a per-owner directory scan or changing healthy bridge files merely to in
 
 ## Legacy naming migration exception
 
+```mermaid
+flowchart TD
+    A[Follow canonical root CID graph to pre-UUID sections] --> B[Create private named copies and new private CIDs]
+    B --> C[Back up originals and rewrite disk references]
+    C --> D{Old files have remaining local references?}
+    D -->|Yes| E[Retain old files]
+    D -->|No| F[Retire old files]
+    E --> G[Keep live prefabs unchanged; require restart]
+    F --> G
+```
+
 Legacy naming migration exception: self-check must replace reachable
 pre-UUID sections reached through the canonical bridge root's CID dependency graph, plus their
 derived pieces/LODs/geometry (never use section-name regexes or child-name prefixes)
@@ -168,6 +227,15 @@ these pre-UUID files during explicit rename migration; ordinary snapshots remain
 <a id="self-check-unified-file-layout-and-truthful-migration-notices"></a>
 
 ## Unified file layout and truthful migration notices
+
+```mermaid
+flowchart TD
+    A[Select current shared layout] --> B[Back up before relocation]
+    B --> C{Collision with unrelated owner?}
+    C -->|Yes| D[Preserve other owner; report failed migration]
+    C -->|No| E[Persist matching naming and sidecar conventions]
+    E --> F[Repeat migration unchanged]
+```
 
 After successful self-check migration or repair, an old bridge must use the same directory layout,
 file naming rules, CID sidecars and dependency-copy layout as a newly generated bridge. Generation
@@ -186,6 +254,15 @@ native cold-load acceptance remains separate.
 <a id="self-check-cold-session-idempotence-and-no-restart-loop"></a>
 
 ## Cold-session idempotence and no restart loop
+
+```mermaid
+flowchart TD
+    A[Migrate published-format fixture] --> B[Persist current representation]
+    B --> C[Fresh process reads current-format files]
+    C --> D{Further persistent changes?}
+    D -->|No| E[No repeated notice or restart]
+    D -->|Yes| F[Report actual changes and restart]
+```
 
 Published-format fixtures enter self-check migration, persist the complete current representation,
 and then pass current-format-only runtime readers. A fresh second process must not invoke historical
@@ -207,6 +284,15 @@ self-check ledger is needed to suppress repeat notices.
 <a id="self-check-self-check-result-summary"></a>
 
 ## Self-check result summary
+
+```mermaid
+flowchart TD
+    A[Fresh per-run reporting state] --> B[Finalize one mutually exclusive outcome per UUID]
+    B --> C{Actual persistent file changes?}
+    C -->|No| D[Diagnostics only]
+    C -->|Yes| E[Display nonzero localized categories in prescribed order]
+    E --> F[Immediately request restart; retain unfinished-path diagnostics]
+```
 
 Automatic and manual self-checks report only this run's final result per bridge UUID, exactly once
 in one mutually exclusive category: migrated to the latest format; removed with a complete backup;

@@ -1,0 +1,1 @@
+- Remove leftover roadway grating rods at both joints of newly generated GO 224m Viaduct bridges.

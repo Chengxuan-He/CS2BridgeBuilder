@@ -25,6 +25,16 @@ Specifications are equally normative; this separation introduces no new preceden
 
 ## Preview identity and entry points
 
+```mermaid
+flowchart TD
+    A[Preview request] --> B{Creation or management?}
+    B -->|Creation| C[Selected options through formal generator route]
+    B -->|Management| D[Borrow exact stored UUID graph read-only]
+    C --> E[Publish only if request identity remains current]
+    D --> E
+    A -->|Selection changes| F[Invalidate earlier request]
+```
+
 - Creation previews use the selected road or track, bridge style, supported deck arrangement and
   direction through the same recipe and generator route as formal creation. A catalogue icon or
   generic road model is not a substitute for the requested bridge.
@@ -41,6 +51,15 @@ Specifications are equally normative; this separation introduces no new preceden
 <a id="preview-3-complete-bridge-assembly"></a>
 
 ## Complete bridge assembly
+
+```mermaid
+flowchart TD
+    A[Snapshot selected native graph] --> B[Establish private connected continuation context]
+    B --> C[Initialize pre-pack composition and native course]
+    C --> D[Evaluate segment states and selected pieces]
+    D --> E[Assemble root objects and each selected piece-object occurrence]
+    E --> F[Include anchored endpoint attachments; omit continuation road surfaces]
+```
 
 The preview must show a coherent bridge, including its road surface, markings, structural members,
 supports and visible attachments. Assemble native conditional pieces and actual object graphs;
@@ -101,6 +120,14 @@ to make an image symmetric. Test both ends, reversed direction and successive vi
 <a id="preview-4-movable-bridges"></a>
 
 ## Movable bridges
+
+```mermaid
+flowchart TD
+    A[Resolve native mechanism and approach arrangement] --> B[Assemble both approaches and complete mechanism]
+    B --> C[Evaluate native skeleton and attachment relationships]
+    C --> D[Pose moving parts open; keep fixed parts stationary]
+    D --> E[Expand bounds without changing persisted or city state]
+```
 
 A movable preview must simultaneously show:
 
@@ -168,6 +195,14 @@ persisted bridge. Conversely, diagnose preview-only failures independently from 
 
 ## Rendering, framing and performance
 
+```mermaid
+flowchart TD
+    A[Frame complete posed assembly] --> B[Render isolated transparent viewport]
+    B --> C[Wait for actual render and GPU completion]
+    C --> D[Read back current request image]
+    D --> E[Reuse current preview for unchanged inputs]
+```
+
 - Frame the complete bridge with its open moving parts and both ends visible. Include attachments
   and deformed bounds; normalized network bounds are insufficient. Do not crop required geometry.
 - Use an isolated presentation scene and camera, with a transparent background and readable colors.
@@ -185,6 +220,16 @@ persisted bridge. Conversely, diagnose preview-only failures independently from 
 <a id="preview-ready-work-budget-and-detached-background-computation"></a>
 
 ## Ready-work budget and detached background computation
+
+```mermaid
+flowchart TD
+    A[Acquire request leases and main-thread snapshots] --> B[Batch bounded detached CPU stages]
+    B --> C[Continue dependent CPU work without frame round trip]
+    C --> D[Asynchronously dispatch required native work]
+    D --> E[Publish current results on native thread]
+    B -->|Cancellation| F[Reject publication immediately; retain worker-owned arrays until completion]
+    F --> G[Observe completion and dispose through reachable native cleanup]
+```
 
 Preview uses the same [complete three-LOD road/lane reuse contract](generation-spec.md#generation-reuse-identical-selected-road-computation-across-lods)
 as formal generation, independently within each request rather than sharing mutable results
@@ -261,6 +306,15 @@ native preparation/publication remains explicit, rather than claimed as backgrou
 
 ## Viewport-sized capture
 
+```mermaid
+flowchart TD
+    A[Measure CSS width and pixel ratio] --> B[Debounce physical width; use bounded fallback before measurement]
+    B --> C[Round and bound width; derive half-height]
+    C --> D[Release old targets and camera]
+    D --> E[Rerender existing draw list with supersampling]
+    E --> F[Discard obsolete sizes and respect frame completion]
+```
+
 Render only the isolated preview viewport. Measure its visible CSS width and device pixel ratio in the UI and report a debounced physical-pixel width to the native renderer. The existing viewport aspect is 2:1. Round width upward to an even pixel and bound it to 64–2048 pixels; derive height as half the width. Before measurement use a bounded 768x384 fallback. Do not allocate a full-screen capture or crop away bridge geometry. Retain full posed camera framing and the existing 2x spatial supersampling plus four subpixel projections, including matching transparent coverage. Resolution changes rerender the existing request-owned draw list without regenerating the bridge. Release the old camera, render targets and stage before replacing them; discard obsolete sizes and preserve cancellation, panel closure and native frame ordering. Report output and raster sizes in render diagnostics. No global city rendering or antialiasing settings may change.
 
 <a id="preview-posed-camera-bounds"></a>
@@ -272,6 +326,14 @@ For procedural moving geometry, camera framing must use indexed vertices transfo
 <a id="preview-8-ui-and-errors"></a>
 
 ## UI and errors
+
+```mermaid
+flowchart TD
+    A[Current request loading] --> B{Operation outcome?}
+    B -->|Success| C[Display current image without frame text]
+    B -->|Failure| D[Stop loading; localized dialog and contextual ERROR]
+    B -->|Superseded| E[Reject stale result without false success]
+```
 
 The preview frame contains no text in idle, loading, success or failure states. Loading uses the
 explicit loading state. Stop it on failure and reject stale results. Keep the image accessibility

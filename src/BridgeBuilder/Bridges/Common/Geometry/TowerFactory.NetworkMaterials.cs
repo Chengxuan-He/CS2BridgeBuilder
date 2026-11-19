@@ -15,7 +15,7 @@ namespace BridgeBuilder.Bridges;
 
 internal sealed partial class TowerFactory
 {
-    // Explicit native vertex-protocol conversion; source appearance channels are unchanged.
+    // Native vertex-protocol conversion preserves source appearance, including fixed instance colors.
     internal async Task<SurfaceAsset[]> CreateRecordedNetworkSurfacesAsync(RenderPrefab source, string name, Color[] colors, int[]? sourceMeshIndices = null)
     {
         var originals = source.surfaceAssets.ToArray();
@@ -28,7 +28,12 @@ internal sealed partial class TowerFactory
             {
                 var library = AssetDatabase.global.resources.materialLibrary;
                 var from = library.GetMaterial(original.materialTemplateHash);
-                var to = library.GetMaterial(library.GetMaterialHash("NetCompositionMeshLit"));
+                int template = library.GetMaterialHash("NetCompositionMeshLit");
+                bool palette = colors.Any(color => color.r != 1f || color.g != 1f || color.b != 1f || color.a != 1f);
+                int queue = BridgeNativeMaterialProgram.DefaultQueue(BridgeNativeMaterialProgram.NetworkPalette);
+                if (palette && !MovableCustomShaderAsset.TryPrepare(BridgeNativeMaterialProgram.NetworkPalette, queue, out template, out var programError))
+                    throw new InvalidOperationException(programError);
+                var to = library.GetMaterial(template);
                 if (from == null || to == null)
                     throw new InvalidOperationException("Recorded native network material input is unavailable.");
                 byte[] Read(AssetData asset)
@@ -82,12 +87,12 @@ internal sealed partial class TowerFactory
                     return extracted;
                 });
                 var database = _previewGeometry?.NativeAssets ?? AssetDatabase.user;
+                var description = library.GetMaterialDescription(original.materialTemplateHash);
                 var textures = new Dictionary<string, TextureAsset>();
                 var created = new List<AssetData>();
                 bool complete = false;
                 try
                 {
-                    var description = library.GetMaterialDescription(original.materialTemplateHash);
                     foreach (var channel in channels)
                     {
                         var property = description.m_Stacks[channel.Key.Stack].m_PropertyNames[channel.Key.Layer];
@@ -99,6 +104,7 @@ internal sealed partial class TowerFactory
                     using var data = new Surface(name + " " + original.id, "NetCompositionMeshLit");
                     var surface = database.AddAsset(BridgePrefabPersistence.ResourcePath(data.name, "Appearance"), data);
                     created.Add(surface);
+                    surface.SetMaterialHash(template);
                     try
                     {
                         var floats = new Dictionary<string, float>(); var ints = new Dictionary<string, int>();
@@ -120,6 +126,13 @@ internal sealed partial class TowerFactory
                             }
                         }
                         for (int i = 0; i < colors.Length; i++) tint["_ColorMask" + i] = colors[i];
+                        if (palette)
+                        {
+                            // Native instance palettes are linear RGBA. Vectors avoid a second
+                            // Color-property conversion; texture pixels and authored mips stay intact.
+                            for (int i = 0; i < colors.Length; i++) vectors["_BridgeBuilderPalette" + i] = colors[i].linear;
+                            ints[BridgeNativeMaterialProgram.QueueProperty] = queue;
+                        }
                         surface.UpdateFloats(floats); surface.UpdateInts(ints); surface.UpdateVectors(vectors); surface.UpdateColors(tint);
                         surface.UpdateTextures(textures);
                         var keywords = new HashSet<string>(from.shaderKeywords.Concat(original.keywords).Where(k => to.shader.keywordSpace.FindKeyword(k).isValid)) { "_TANGENTSPACE_OCTO" };

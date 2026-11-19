@@ -37,6 +37,18 @@ alternative implementation of this requirement.
 
 ## General generation flow
 
+```mermaid
+flowchart TD
+    A["Resolve selected road"] --> C["Convert closed surfaces"]
+    B["Prepare measured mechanism"] --> C
+    C --> D["Assign appearance"] --> E["Assemble all LODs"] --> F["Build native network graph"]
+    F --> G{"Output mode"}
+    G -->|Preview| H["Temporary assembly"]
+    G -->|Save| I["Registered owned native assets"]
+    H --> J["Verify claimed style and input"]
+    I --> J
+```
+
 | Stage | Inputs and output | Required invariant |
 | --- | --- | --- |
 | Resolve | Selected road and supported native state to sections, pieces, lanes and evaluated closed geometry | Preserve conditional alternatives and selected layout; no prototype-section whitelist. |
@@ -708,6 +720,11 @@ Required behavior and acceptance obligations derived from those cases remain nor
 <a id="movable-16-generation-pipeline-and-source-map"></a>
 
 ## Generation pipeline and source map
+
+```mermaid
+flowchart TD
+    A["Measure exact prototype offline"] --> B["Resolve elevated road and evaluate closed pose"] --> C["Define measured transforms and domains"] --> D["Prepare each road LOD and bind original skeleton"] --> E["Bind structural and road appearance"] --> F["Append separate marking mesh"] --> G["Assemble network and mechanism references"] --> H["Complete dependencies and VT mid-mips"] --> I["Preview or persist the same graph; verify"]
+```
 
 Follow this dependency order for a new mechanism:
 

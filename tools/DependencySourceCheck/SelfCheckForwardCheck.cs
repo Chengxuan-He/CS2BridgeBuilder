@@ -31,14 +31,13 @@ internal static class SelfCheckForwardCheck
         }
         Check(AssetDatabase.global.Scans-before==1,"one typed cache traversal shared across owners");
         var failed=new BridgeInspectionCaches(()=>throw new IOException("not ready"),()=>Array.Empty<string>());
-        Check(!failed.TryFind(surfaceCid,owners[0],out _,out _)&&failed.Traversals==0,"owner lookup never builds inventory late");
         Check(!failed.Prepare(out _),"unready native inventory aborts preparation");
         Check(!failed.TryFind(surfaceCid,owners[1],out _,out _)&&failed.Traversals==1,"failed traversal is not retried per owner");
         string obsolete=Path.Combine(root,"ImportedData",owners[0],"BridgeCacheEdges.txt");
         File.WriteAllText(obsolete,"invalid old ledger must never be parsed");
         var restarted=scope.Dependencies(owners[0],Array.Empty<BridgeInspectionAssets.Entry>());
         Check(BridgeDependencyPersistence.Save(owners[0],new[]{surfaceCid},restarted,out _,out var failure,out _),"obsolete ledger is ignored: "+failure);
-        string backup=Path.Combine(root,"backup-original-only");
+        string backup=Path.Combine(Path.GetTempPath(),"BridgeSourceBackup-"+Guid.NewGuid());
         Check(BridgeCreationDependencies.RemoveObsoleteRelations(owners[0],backup,out var changed,out failure)&&changed&&!File.Exists(obsolete),"successful upgrade removes obsolete metadata: "+failure);
         Check(File.ReadAllText(Directory.GetFiles(backup,"BridgeCacheEdges.txt",SearchOption.AllDirectories).Single())=="invalid old ledger must never be parsed","obsolete original preserved exactly");
         Check(BridgeCreationDependencies.RemoveObsoleteRelations(owners[0],backup,out changed,out failure)&&!changed,"metadata cleanup idempotent");

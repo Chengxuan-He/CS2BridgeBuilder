@@ -122,8 +122,13 @@ Follow the constitution's [documentation language and publishing-description rul
 Use Markdown unless explicitly required otherwise. Use one H1 title and logically ordered H2
 sections. Keep headings descriptive and order content by responsibility and dependency; order
 workflow descriptions by execution. Use CommonMark lists and tables with consistent whitespace.
-Use code blocks for literal commands, formulas and diagrams. Use Mermaid for workflow diagrams;
-split diagrams along module boundaries and keep their ordering consistent with execution.
+Use code blocks for literal commands, formulas and diagrams. Mermaid flowcharts belong only in
+genuine workflow sections of specifications under `docs/specs/`. Every such section must include a
+flowchart reflecting its actual sequence, branches and exceptions. Flowcharts are prohibited in all
+non-specification documents and in non-workflow specification sections. Parameters, constraints,
+reference tables and unordered obligations must not be relabelled or rearranged as workflows to
+justify a diagram. Split oversized workflow diagrams at coherent phase or module boundaries,
+with explicit handoffs and ordering consistent with execution.
 Use consistent descriptive filenames and avoid names that misrepresent the document type.
 
 ## Evidence and normative text

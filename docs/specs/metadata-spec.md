@@ -39,6 +39,15 @@ authored qualifiers. The same exact-title requirement applies to README and inte
 
 ## Incremental template maintenance
 
+```mermaid
+flowchart TD
+    A["Recover verified complete published template"] --> B
+    B["Apply only necessary incremental edits"] --> C
+    C["Compare all languages and official links"] --> D
+    D["Freeze matching canonical and upload fields"] --> E
+    E["Verify remote readback"]
+```
+
 Use the existing published description as the template. Make only the necessary incremental
 additions, removals and corrections; do not replace it with a newly written or retranslated
 article. Preserve unchanged structure, paragraphs and wording, including all three languages.

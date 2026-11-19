@@ -30,7 +30,7 @@ When the user requests a release, complete these four steps in order:
    leave visual acceptance pending; continue independent implementation without claiming a fix.
 3. Work on a suitable branch using offline identification and immutable measured construction data.
    Apply each visual change consistently to the full-detail mesh and every LOD. Follow the
-   [generation material branch](../specs/generation-spec.md#generation-core-actual-sequence-and-branches): custom materials only for movable-bridge road and rail running surfaces; otherwise retain prototype materials, subject to the necessary [non-Network native-template exception](../specs/material-spec.md#non-network-native-material-template-conversion).
+   [generation material branch](../specs/generation-spec.md#generation-core-actual-sequence-and-branches): select original or authorized custom programs through the [custom shader table](../specs/custom-shader-spec.md#custom-shader-table), including the non-Network native conversion scope without runtime material baking.
 4. Build/deploy coherent code increments under [bridge generation contract section 13](../contracts/development-contract.md#generation-13-deploy-coherent-increments-and-preserve-healthy-assets), backing up
    installed originals and verifying hashes. Preserve healthy assets; scope recovery to demonstrated
    incompatibilities. Documentation-only work requires no build, shutdown or deployment.
@@ -44,7 +44,7 @@ When the user requests a release, complete these four steps in order:
    require another player to possess the developer's original prototype files.
 2. Supply the necessary resource graph through permitted sources and independent persistence.
 3. Generate the selected road, native motion, attachments and all LODs with correct part transforms.
-4. Preserve native attributes, [material contract section 2](../specs/material-spec.md#material-2-preserve-source-resolution-and-pattern-scale)'s mapping-specific density and original road bones; do not cut receivers for paint. Check the [custom-material boundary](../specs/material-spec.md#custom-materials-are-limited-to-movable-bridge-roads): only movable-bridge road and rail running-surface materials may be customized, other prototype materials are retained or use the scoped non-Network native-template conversion with source appearance preserved, native dependency snapshots are complete, and owners contain no shader copies.
+4. Preserve native attributes, [material contract section 2](../specs/material-spec.md#material-2-preserve-source-resolution-and-pattern-scale)'s mapping-specific density and original road bones; do not cut receivers for paint. Check the [custom-material boundary](../specs/material-spec.md#custom-materials-are-limited-to-movable-bridge-roads): prototype materials are retained unless the [custom shader table](../specs/custom-shader-spec.md#custom-shader-table) and scoped conversion rules require a different representation; non-Network conversion preserves appearance without runtime baking, native dependency snapshots are complete, and owners contain no shader copies.
 5. Integrate routing, UI and all supported languages; preserve fees, unlocks and identities.
 6. Build/deploy coherent increments and scope any necessary recovery to affected owned assets.
 7. Verify actual geometry, saved references and native behavior; label pending visual/cold-load checks.

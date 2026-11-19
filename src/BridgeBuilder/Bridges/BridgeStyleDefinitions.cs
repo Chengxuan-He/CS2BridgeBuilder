@@ -195,7 +195,7 @@ internal static class BridgeStyleDefinitions
         // Road Side 0 is node-only in these road prototypes. TrussArchBridge01/03 are track
         // prototypes, and TrussArchBridge02 has its own structural outer railing instead.
         "Suspension01" or "SuspensionGolden" or "GoldenGate" or "GoldenGateDouble" or "Extradosed01" or "Extradosed02" or "Extradosed03" or "ExtradosedBridge" or // the separately discovered ExtradosedBridge04 family
- "TrussArch01" or "TrussArch02" or "TrussArch03" or "Grand" => RoadRailingPolicy.EndsAndNodesOnly,
+ "TrussArch01" or "TrussArch02" or "TrussArch03" or "Grand" or "GOViaduct" => RoadRailingPolicy.EndsAndNodesOnly,
         // Suspension, Suspension02, ExtradosedLarge, CableStayed, TrussArch, TiedArch and CoveredWood expose
         // an ordinary span-side section in their measured archetypes. Deferred mechanism styles and
         // unknown third-party styles also take the non-destructive default.

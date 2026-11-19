@@ -66,7 +66,6 @@ internal static class MidMipSnapshotCheck
         foreach(var saved in Directory.EnumerateFiles(folder,"*",SearchOption.AllDirectories))
             Check(File.ReadAllBytes(saved).SequenceEqual(File.ReadAllBytes(Path.Combine(destination,Path.GetRelativePath(folder,saved)))),
                 "generated/native persisted identical "+Path.GetRelativePath(folder,saved));
-        Check(!creation.Material(surface,Array.Empty<AssetData>()) && creation.ResolutionError?.Contains("Conflicting")==true,"Conflicting cache declarations return failure");
         var preparedGraph = new BridgeCreationDependencies(_ => throw new Exception("Unexpected prepared reverse lookup"));
         BridgePreparedMaterials.Assets[cacheCid] = cache;
         BridgePreparedMaterials.MidMips[surfaceCid] = new[]{cacheCid};

@@ -6,10 +6,10 @@
     <AssemblyName>BridgeBuilder</AssemblyName>
     <RootNamespace>BridgeBuilder</RootNamespace>
     <!-- Public release version is specified by the user; CLR versions remain numeric. -->
-    <Version>26.11.18</Version>
-    <PackageVersion>26.11.18</PackageVersion>
-    <AssemblyVersion>26.11.18.0</AssemblyVersion>
-    <FileVersion>26.11.18.0</FileVersion>
+    <Version>26.11.19</Version>
+    <PackageVersion>26.11.19</PackageVersion>
+    <AssemblyVersion>26.11.19.0</AssemblyVersion>
+    <FileVersion>26.11.19.0</FileVersion>
     <GenerateAssemblyInfo>true</GenerateAssemblyInfo>
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
     <RestoreIgnoreFailedSources>true</RestoreIgnoreFailedSources>

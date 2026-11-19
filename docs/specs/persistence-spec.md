@@ -8,6 +8,18 @@ Specifications are equally normative; this separation introduces no new preceden
 
 ## Operational configuration
 
+```mermaid
+flowchart TD
+A[Startup self-check] --> B{JSON settings already exist?}
+B -->|Yes| C[Preserve existing JSON]
+B -->|No| D{Published INI present?}
+D -->|Yes| E[Migrate values atomically while preserving INI]
+D -->|No| F[Leave settings absent]
+C --> G[Normal loading reads JSON or in-memory defaults]
+E --> G
+F --> G
+```
+
 Configuration uses `.json`; export settings are stored as `settings.json` under the game-derived
 mod data directory. Normal settings readers accept only JSON and use in-memory defaults when the
 file is absent. Startup self-check migrates published `settings.ini` values before subsequent world
@@ -71,6 +83,15 @@ The following paths are relative to the repository root; concrete inspections ar
 
 ## Owned Prefab graph
 
+```mermaid
+flowchart TD
+A[Construct selective owned graph] --> B{Preview request?}
+B -->|Yes| C[Return temporary preview without permanent writes]
+B -->|No| D[Save owned nodes and presentation]
+D --> E[Complete required dependency persistence]
+E --> F[Publish without duplicate validation traversal]
+```
+
 The [recorded creation-path inspection](../archive/audits/persistence-implementation-records.md#owned-prefab-creation-path) documents selective graph construction. Preview must return before permanent persistence; permanent creation saves required owned nodes and completes presentation/dependencies before publication. Trust successful persistence within this creation call without a second graph traversal; preserve real save failures and write completion. This trust never exempts old or other-owner assets.
 
 <a id="persistence-generated-geometry-with-original-surfaces"></a>
@@ -86,6 +107,24 @@ See the [geometry source-reference inspection](../archive/audits/persistence-imp
 Creation and post-load self-check pass an explicit `BridgeCreationDependencies` context to the saver. Material producers record generated cache handles and resolve selected native cache entries through exact metadata or package URI.
 
 #### Forward dependency handoff for new bridges
+
+```mermaid
+flowchart TD
+A[Generator hands off actual roots sources and implicit edges] --> B[Resolve exact referenced CID]
+B --> C{Built-in provenance?}
+C -->|Yes| D[Stop copying this built-in branch]
+C -->|No| E[Traverse serialized forward references and required native cache edges]
+E --> F{Already copied or current-owner payload?}
+F -->|Yes| G[Continue uncrawled dependencies without duplicate copy]
+F -->|No| H[Preflight conflicts and copy unchanged bytes with CID]
+G --> I[Deduplicate identities within this owner]
+H --> I
+I --> J{Unvisited required dependency?}
+J -->|Yes| B
+J -->|No| K[Return successful dependency-save result]
+B -->|Missing or invalid required resource| L[Persistence failure]
+H -->|Conflicting bytes| L
+```
 
 During permanent creation the generator supplies the saver with the bridge roots and the actual sources and implicit dependency edges established while building that bridge. Traverse serialized forward CIDs recursively. Follow each prepared Surface's declared MidMips CIDs and each generated Surface's explicitly created owner cache. An explicitly empty cache set represents a Surface with no cache requirement. For an external material, follow its serialized texture and VT references and resolve required native cache membership using the selected material's exact provenance. Missing required sources, positive-level cache memberships or conflicting bytes are persistence errors.
 
@@ -151,6 +190,15 @@ There is no blanket requirement to create new material, texture, marking or anim
 <a id="persistence-resource-decision-procedure"></a>
 
 ## Resource decision procedure
+
+```mermaid
+flowchart TD
+A[Inspect native representability and required changes] --> B{Compatible unchanged reference?}
+B -->|Yes| C[Reuse reference and snapshot external dependencies]
+B -->|No| D{Native equivalent representation possible?}
+D -->|Yes| E[Save only necessary geometry or native changes]
+D -->|No| F[Use only authorized persistable compatibility output]
+```
 
 For each visual resource, apply this sequence:
 
@@ -333,6 +381,20 @@ legacy UUID-bearing names, previous short locale IDs and the exact new filename.
 
 ## Bridge ZIP export
 
+```mermaid
+flowchart TD
+A[Select bridge and Export] --> B[Edit ZIP path and top-level folder in native dialog]
+B --> C{Confirmed and valid?}
+C -->|Cancel| D[No output]
+C -->|Invalid| E[Export failure popup without archive]
+C -->|Yes| F[File-only worker writes temporary archive from owner directory]
+F --> G{Complete and destination unoccupied?}
+G -->|No| H[Clean accessible temporary file and report export failure]
+G -->|Yes| I[Move completed archive and show success]
+I --> J{Open folder requested?}
+J -->|Yes| K[Open backend-held parent path; report opening failure separately]
+```
+
 Export is an action button named **Export** inside **Manage bridges**, alongside Build
 and Delete. There is no separate export tab or page. Select a bridge and click Export,
 then confirm its editable absolute ZIP path and top-level archive folder before any output
@@ -384,6 +446,13 @@ Follow [mod-owned precompiled program requirements](../contracts/material-contra
 <a id="movable-native-serialization-and-reader-compatibility"></a>
 
 ## Native serialization and reader compatibility
+
+```mermaid
+flowchart TD
+    A["Register complete owned graph"] --> B
+    B["Save native Prefabs Geometry and locales with sidecars"] --> C
+    C["Read native serialization through compatible readers"]
+```
 
 Related requirements: [Movable Contract](../contracts/movable-contract.md#movable-native-serialization-and-reader-compatibility-part-2), [Persistence Spec](persistence-spec.md#movable-native-serialization-and-reader-compatibility-part-3).
 
@@ -438,6 +507,19 @@ native payloads and CID sidecars, separately from packaged-resource size.
 
 ## Missing bridge save repair
 
+```mermaid
+flowchart TD
+A[City load completes] --> B[Match exact supported missing bridge IDs against native obsolete IDs]
+B --> C[Preserve live prefabs and unrelated assets]
+C --> D[Collect target descendants and mark native Deleted]
+D --> E[Track removal including late descendants]
+E --> F{All tracked entities gone?}
+F -->|No| G[Continue tracking; diagnose exceptions or timeout as CRITICAL]
+G --> E
+F -->|Yes| H[Show one localized repair dialog]
+H --> I[User chooses to save repaired city]
+```
+
 At the city loading-complete callback, `BridgeMissingAssetSystem` checks placed
 network references against the game's obsolete prefab IDs. It does not use the local bridge
 registry as proof of absence. A live prefab is always preserved.
@@ -473,6 +555,15 @@ before loading another city. No save file is overwritten: the user must save the
 Compilation does not establish these runtime outcomes. In-game acceptance is still required.
 
 ## Native unlocking and persistence
+
+```mermaid
+flowchart TD
+    A["Capture actual prototype or selected-network native requirements"] --> B
+    B["Materialize equivalent AND-OR groups on owned networks"] --> C
+    C["Persist current explicit unlock representation on first save"] --> D
+    D["Complete scheduled native unlock pass"] --> E
+    E["Evaluate game-mode readiness before tool activation"]
+```
 
 The selected bridge prototype supplies the unlock policy. `BridgeUnlockSnapshot` captures its
 requirements, and `BridgeNativeUnlock` persists the nested AND/OR expression using native

@@ -49,6 +49,29 @@ A local environment cannot cover every user's hardware, operating system, DLC/mo
 
 ## DLC and mod compatibility
 
+```mermaid
+flowchart TD
+    A[Offline authoring: select actual prototype] --> B[Trace consumed prefab LOD surface texture and cache references]
+    B --> C{Required references resolved?}
+    C -->|No| D[Record unresolved evidence; do not claim complete closure]
+    C -->|Yes| E[Record deduplicated ordered required sources with direct source first]
+    E --> F[Hardcode reviewed declaration]
+    F --> G[Verify release excludes audit tools indexes and closure artifacts]
+```
+
+```mermaid
+flowchart TD
+    A[Catalogue preview or creation request] --> B{All declared sources natively available?}
+    B -->|No| C[Hide new-selection entry or fail request before dependent loads]
+    B -->|Yes| D[Use selected dependent resources]
+    D --> E{Asynchronous preparation completed?}
+    E -->|Yes| F[Recheck the same finite required-source array]
+    F --> G{All still available?}
+    G -->|No| C
+    G -->|Yes| H[Continue requested operation]
+    E -->|Not applicable| H
+```
+
 Players may install and enable different DLC and asset-mod combinations. The project must continue normal operation for available supported content when some required external DLC or mods are absent or disabled; missing content must not cause unrelated features to fail or trigger native missing-reference errors. Partial availability includes an incomplete set of registered required sources for one style, as well as unavailable sources elsewhere in the catalogue. It does not mean corrupt or incomplete internals of a normally functioning source mod.
 
 Distinguish ownership/subscription or files installed on disk from content enabled and successfully loaded in the active playset. Check every registered source through its existing native identity and content state. Assume an installed, enabled and normally functioning source mod supplies complete, valid own resources; do not add a full resource-graph scan to the UI/catalogue or defensive checks for hypothetical source-mod internal corruption. Cached Prefabs and known CIDs alone do not establish that their external provider is active. Optional integrations must not become global mandatory dependencies.
@@ -102,6 +125,15 @@ loading, rendering or vendor-driver certification. Preserve these limits in ever
 <a id="cross-environment-5-candidate-and-end-to-end-cases"></a>
 
 ## Candidate and end-to-end cases
+
+```mermaid
+flowchart TD
+    A["Record candidate and environment identity"] --> B
+    B["Run ordinary-permission baseline"] --> C
+    C["Exercise comparable isolated fault variations"] --> D
+    D["Record user-performed native placement and cold load separately"] --> E
+    E["Preserve evidence and restore fixtures"]
+```
 
 Record for every environment:
 

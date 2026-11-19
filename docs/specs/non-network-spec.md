@@ -51,6 +51,14 @@ continue independent work, but do not fabricate a usable recipe from a plausible
 
 ## Describe the virtual bridge prototype
 
+```mermaid
+flowchart TD
+    A["Inspect complete source prefab and LOD graph"] --> B
+    B["Record transforms and measured part roles"] --> C
+    C["Derive interfaces and placement rules"] --> D
+    D["Verify adjacent-span continuity offline"]
+```
+
 Inspect the real prefab graph and all reachable structural objects, render parts and LODs. Record
 local and accumulated transforms, authored member membership, material slots, geometry identities,
 attachment/stacking behavior and end interfaces. Check that dumps cover the entire graph. Preserve
@@ -125,9 +133,12 @@ workflow and does not authorize deleting healthy assets.
 Default to original prototype materials. When the source's native object template cannot provide
 the required native network rendering, use the necessary [native-template conversion](material-spec.md#non-network-native-material-template-conversion)
 with unchanged source appearance, all-LOD coverage and complete native Surface dependencies.
-This permits a compatible native network template, not an arbitrary Bridge Builder custom shader.
+Use a compatible native network shader where sufficient; otherwise use the scoped mod-owned
+precompiled appearance program under the [custom shader table](custom-shader-spec.md#custom-shader-table).
+Runtime material baking is prohibited for all non-Network styles, while necessary descriptor/template
+and appearance-preserving native VT resource conversion remain permitted under that material rule.
 Both packed VTSurface and standalone VTTexture sources are valid; select from the actual native
-protocol and preserve its dependency form. Record the source/target protocol and verify generated
+protocol and preserve unchanged dependency forms. Apply the [native consumer and instance-palette requirements](material-spec.md#native-material-consumers-and-instance-palette-preservation) before selecting a representation, including their bounded conversion and acceptance scope. Record the source/target protocol and verify generated
 geometry, material bindings and owner snapshots together. Keep ordinary preview, native placed
 rendering and cold-load acceptance distinct from offline conversion checks.
 
@@ -272,6 +283,15 @@ the prototype proper name. Implementation and native acceptance evidence remain 
 <a id="non-network-5-staged-verification-and-acceptance"></a>
 
 ## Staged verification and acceptance
+
+```mermaid
+flowchart TD
+    A["Record source evidence"] --> B
+    B["Verify existing-form virtual recipe"] --> C
+    C["Check actual generated native composition"] --> D
+    D["Verify preview and persisted closure"] --> E
+    E["Record human game acceptance separately"]
+```
 
 | Stage | Required evidence |
 | --- | --- |

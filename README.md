@@ -673,6 +673,13 @@ and record evidence in the appropriate bridge-style audit, rather than adding a 
 2. Inventory the complete object graph, nested render parts and every LOD. Disclose source and generated per-level triangle counts under the [LOD evidence rule](docs/specs/lod-spec.md#per-level-triangle-disclosure-and-reference-scope), with part/variant/instance scope explicit. Record coordinate
    frames, accumulated transforms, running-surface versus structural membership, material references,
    supports and endpoints using the [parameter meanings](docs/specs/non-network-spec.md#non-network-2-source-evidence-and-parameter-meanings).
+   Before necessary native material conversion, trace actual shader variants, instance producers
+   and palette/control inputs under [native consumer and palette preservation](docs/specs/material-spec.md#native-material-consumers-and-instance-palette-preservation). Record per-LOD/slot evidence, preserved channels, native cold reads,
+   GPU/color-space checks, identity-bypass regression, filtering limits and resource costs; report
+   actual game appearance separately from texel or serialization checks. Select a compatible native
+   shader or an authorized mod-owned precompiled program from the [custom shader table](docs/specs/custom-shader-spec.md#custom-shader-table);
+   retain necessary descriptor/VT conversion without runtime palette baking, pixel readback or
+   appearance recompression. Verify this boundary in every non-Network caller.
 3. Measure span-local, repeating, endpoint and shared-boundary support roles. Establish adjacent-span
    continuity and select the [native longitudinal behavior](docs/specs/non-network-spec.md#non-network-select-longitudinal-behavior-from-native-evidence)
    from actual native evidence. Keep transverse width mapping separate; do not stretch rigid supports
@@ -869,4 +876,4 @@ Game assets and third-party dependencies retain their respective licenses.
 
 ## Precompiled programs and legacy custom-shader bridges
 
-The current requirement uses the mod's precompiled decal and layered-PBR programs with stable queue-specific references. New bridges and bridge ZIP exports contain no custom shader payload. Bridge Builder must remain installed and enabled. Compatibility with old owner-persisted custom-shader bridges is intentionally discontinued: only startup/manual self-check identifies their concrete obsolete program protocol and performs the existing owner-scoped backup/removal and restart handling. Healthy noncustom bridges remain preserved. Source implementation and automated checks do not establish in-game rendering or cold-load acceptance. See the [material requirements](docs/specs/material-spec.md#material-dynamically-generated-and-independently-persisted-material-shaders-part-2) and [self-check boundary](docs/contracts/self-check-contract.md#self-check-obsolete-custom-program-retirement).
+The [custom shader table](docs/specs/custom-shader-spec.md#custom-shader-table) records the mod's decal, layered and NetworkPalette programs, their native alternatives and stable-reference ownership. New bridges and bridge ZIP exports contain no custom shader payload. Bridge Builder must remain installed and enabled. Compatibility with old owner-persisted custom-shader bridges is intentionally discontinued: only startup/manual self-check identifies their concrete obsolete program protocol and performs the existing owner-scoped backup/removal and restart handling. Healthy noncustom bridges remain preserved. Source implementation and automated checks do not establish in-game rendering or cold-load acceptance. See the [material requirements](docs/specs/material-spec.md#material-dynamically-generated-and-independently-persisted-material-shaders-part-2) and [self-check boundary](docs/contracts/self-check-contract.md#self-check-obsolete-custom-program-retirement).

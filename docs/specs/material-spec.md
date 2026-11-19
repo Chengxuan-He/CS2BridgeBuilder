@@ -8,39 +8,51 @@ Specifications are equally normative; this separation introduces no new preceden
 
 <a id="custom-materials-are-limited-to-movable-bridge-roads"></a>
 
-## Custom materials are limited to movable-bridge road and rail running surfaces
+## Synthesized material scope
 
-Only movable-bridge road and rail running surfaces may use custom materials, within the existing running-surface processing
-scope (including its measured fixed running caps and intended road markings). In this scope, road-surface processing includes rail running surfaces; it must not be read as
-excluding tracks. Non-running structural members remain outside this permission. Every other
-bridge component retains its original prototype material by default, subject only to the native-template exception below: source Surface, shader/template,
-parameters and texture bindings at each LOD. Static bridges such as Nanpu and Lupu do not enter Bridge Builder custom-program creation; their selected native road retains its own source materials. Necessary non-Network native-template conversion follows the exception below.
-Native Default, DefaultCutout and Glass shaders are original native shaders, not custom programs.
-Geometry/deformation/instance-input adaptation alone is not permission for arbitrary material replacement; necessary native-template conversion is governed separately below.
+Only non-Network material conversion and movable-bridge road and rail running surfaces may
+require or use synthesized materials. This is eligibility, not a requirement to synthesize every
+material: reuse compatible original prototype materials whenever they satisfy the requirements.
+Movable running-surface scope includes
+measured fixed running caps and intended road markings; tracks are included. Other components
+retain original prototype materials by default. The separate non-Network conversion below permits
+a mod-owned precompiled custom program only where the compatible native network shader cannot
+preserve required source appearance semantics. It does not authorize arbitrary structural
+recoloring or changing the selected native road's materials. Native Default, DefaultCutout and
+Glass are native shaders, not custom programs. Geometry adaptation alone grants no additional
+replacement permission. Read the complete [custom shader specification](custom-shader-spec.md)
+for the two classes, reuse order, program table and lifecycle requirements.
 
 Preserve the complete original native dependency graph through [independent owner snapshots](../contracts/persistence-contract.md#generation-17-persist-external-dependencies-as-identical-cid-copies-owned-by-each-bridge): byte-identical non-built-in resources keep their CIDs, while built-ins remain references.
 A VT-bearing Surface header and its native cache/mip dependencies are not interchangeable with a
 raw Texture file; retain the actual resource types and relationships. Do not persist shader copies,
-program bundles or registration recipes per owner. The authorized movable-bridge road and rail custom programs
+program bundles or registration recipes per owner. All authorized custom programs
 remain mod-owned under [program registration](#material-dynamically-generated-and-independently-persisted-material-shaders-part-2).
 
 ## Non-Network native material-template conversion
 
+
+
 A non-Network prototype integrated into native network rendering may use a necessary conversion
 from its original native object material template to the compatible native network template.
-This is an explicit exception to retaining the original Surface/template identity; it is not
-permission to create or substitute a Bridge Builder custom shader. The authorized GO route from
-source Default to native NetCompositionMeshLit (template 17) falls within this exception; do not
-apply that template blindly to other appearance protocols or require original-template reuse
-as the only permitted implementation.
+This is an explicit exception to retaining the original Surface/template identity. Prefer a
+compatible native shader; when it lacks required source appearance semantics, use the scoped
+mod-owned precompiled program under the [instance-palette rule](#native-material-consumers-and-instance-palette-preservation). Select the target from the
+actual source and target rendering protocols; do not apply one template blindly to every source
+or require original-template reuse as the only permitted implementation.
 
 Preserve complete source appearance: actual texture/channel bindings and native dependencies,
 property defaults/overrides, UV projection and sampling, alpha/cutout/blending, normals/tangents,
 PBR and required keywords at every LOD. Match the target's actual vertex, deformation and instance
 protocol. Keep compatible original references where conversion is unnecessary. A packed VTSurface
 is not a prerequisite: standalone VTTexture dependencies are also valid. Preserve their actual
-native headers, channel relationships and cache/mip dependencies rather than flattening them into
-raw Texture files or rejecting their representation.
+native headers, channel relationships and cache/mip dependencies for unchanged channels, rather
+than rejecting their representation. Runtime descriptor/template and necessary native VT resource
+conversion remain permitted when they preserve original compressed texels, all mips and appearance.
+Native container decompression/repacking and header/dependency adaptation are not material baking;
+per-pixel appearance evaluation into replacement texture payloads, texture resampling and lossy
+codec recompression are. Ordinary shader evaluation during drawing is rendering, not baking. Do not
+confuse this permission with arbitrary VT flattening or source-pixel modification.
 
 Changed Surface descriptors receive distinct generated identities and persist with their complete
 native dependency closure; unchanged external dependencies retain byte-identical owner snapshots
@@ -50,9 +62,84 @@ bindings, appearance properties, native vertex decoding and all LODs offline, th
 network rendering, ordinary preview and cold-load acceptance separately. A serialized descriptor
 or isolated shader test is not in-game visual acceptance.
 
+## Native material consumers and instance-palette preservation
+
+
+
+Establish source and target support from the actual native producers and consumers, not a Surface
+property table, successful serialization or a familiar shader name. Inspect every applicable
+pass/keyword and DOTS/non-DOTS variant, including referenced extra compiled parameter blobs and
+instance-buffer bindings. Trace the native producer of each consumed instance value. A persisted
+`_ColorMask` property does not establish consumption of `colossal_ColorMask` instance data.
+Record source resource hashes, shader names, variant/record locations and producer methods;
+extraction-local numeric IDs are locators, never stable protocol identities.
+
+Resolve the actual authored palette, including alpha, its native color-space conversion (including
+`Color.linear` where consumed), effective ControlMask, defaults and overrides for every material
+slot and LOD. Preserve transparency, cutout/blending, normals and all PBR channels. For the native
+Default palette protocol, palette alpha controls smoothness and coating, not surface transparency
+or metallic: preserve BaseColor alpha, Mask metallic/R and Mask B while applying the evidenced
+smoothness/A and coating/G operations. Do not infer another source's semantics from these channel
+names. Follow the complete source shader through final saturation, snow/weather and infoview
+branches in their actual context; an intermediate expression alone cannot establish HDR output
+or the required storage range. Do not freeze dynamic native effects into a fixed texture.
+
+When a necessary non-Network conversion cannot consume source instance-palette semantics,
+preserve them in a mod-owned precompiled custom shader that uses the native network geometry
+protocol and evaluates the complete source appearance on the original sampled textures.
+Persist the three linear RGBA palette vectors as `_BridgeBuilderPalette0`,
+`_BridgeBuilderPalette1` and `_BridgeBuilderPalette2` on native Surfaces. Apply native `Color.linear`
+once when converting authored colors to these vectors; do not linearize them again when binding
+or sampling. The stable family is `BridgeBuilder/NetworkPalette`, with its native queue included
+in the existing family/queue identity. Persist ordinary appearance inputs; do not save shader
+copies. Retain native shaders when they already express the required behavior. A pure-white
+palette with every RGBA component equal to one is an identity bypass for the evidenced protocol;
+an empty palette qualifies only when the actual native producer supplies that default. Neither
+case needs a palette shader. Unknown valid sources require their own consumer evidence, not a
+style-name whitelist, assumed white palette or another source's shader recipe.
+
+Non-Network material conversion must not bake appearance at runtime: no per-pixel palette/color
+evaluation into new texture pixels, GPU readback for baking, mip regeneration, resampling or
+texture recompression during startup, loading, preview, generation, regeneration or export.
+A CPU implementation, first-use cache, background worker or renamed conversion helper is still
+runtime baking. Do not retain a baking fallback when the required shader is unavailable; use the
+existing explicit operation-failure contract. Offline tools may prepare permitted native resources
+and precompile programs, but runtime loads/binds programs and converts only the necessary native
+representation while preserving source texture signals. This restriction applies to all
+non-Network bridge conversions; it does not replace the separately scoped movable-road rules.
+
+Keep the original textures, complete mips, color spaces, native sampling/filtering and dynamic
+weather/infoview evaluation. Do not approximate nonlinear source sampling by filtering precolored
+texels: filtering and palette evaluation need not commute. Preserve BaseColor alpha, Mask
+metallic/R and B and unrelated channels while the shader applies the evidenced smoothness/coating
+semantics. Compare every affected LOD and slot in ordinary preview and native placed rendering.
+Keep existing saved-owner observations separate from newly generated output.
+
+Offline acceptance records per-LOD/slot/channel mip and pixel counts, dimensions, color space,
+numeric error and unchanged-component/channel checks, including the white/default-white bypass.
+Exercise actual native save, unload and cold read of the complete dependency graph. Verify GPU
+codec/color-space interpretation separately from serialization and CPU arithmetic. Compare actual
+source and generated-owner resources and rendering; isolated Unity/GPU checks are not native game
+visual acceptance. Report serialized/package/owner byte changes, GPU resident memory and measured
+processing/rendering costs separately, with unmeasured performance explicit. Neither a smaller
+file nor an offline PASS establishes acceptable appearance or performance. These are development
+evidence obligations, not runtime internal-result validation or new self-check/migration gates.
+
+The [native palette conversion audit](../archive/audits/native-palette-conversion.md) records a
+superseded baking experiment and its evidence limits; it supplies no current runtime permission or universal palette constants.
+
+## Custom shader table
+
+Read the complete [custom shader specification](custom-shader-spec.md), including its
+[two classes and reuse order](custom-shader-spec.md#two-shader-classes-and-reuse-order) and
+[canonical program table](custom-shader-spec.md#custom-shader-table).
+
 <a id="repository-offline-source-atlas-repeat-materials"></a>
 
 ## Offline source-atlas repeat materials
+
+
+
 
 Apply [prototype-supported road tiling](#material-prototype-supported-road-surfaces-must-tile), [all-LOD marking removal](#material-remove-embedded-road-markings-at-every-lod), and [source-atlas derivation and producer format](#material-offline-source-atlas-repeat-materials). [Non-road reuse](#material-non-road-materials-and-road-composition-are-separate) governs structural sources; [verification](#material-verification-requirements) and [package reporting](../contracts/material-contract.md#material-5-per-bridge-material-directory-and-mod-packaging) govern acceptance and measurements. Documentation changes establish neither implementation nor visual acceptance and do not change runtime strings.
 
@@ -106,6 +193,8 @@ families and LODs without changing historical dependency recovery.
 <a id="material-scope-and-authority-part-2"></a>
 
 ## Road and non-road appearance routing
+
+
 
 Related requirements: [Material Contract](../contracts/material-contract.md#material-scope-and-authority).
 
@@ -196,6 +285,22 @@ bound resource count does not prove the intended visible part actually uses that
 
 ## Open-ended source material handling
 
+```mermaid
+flowchart TD
+A[Read complete source graph and defaults] --> B[Compare actual receiving vertex and instance protocol]
+B --> C{Compatible original reuse?}
+C -->|Yes| D[Reuse original representation]
+C -->|No| E{Equivalent conversion available?}
+E -->|Yes| F[Convert with complete source semantics]
+E -->|No| G[Construct authorized compatibility output with diagnosed differences]
+D --> H[Realize once and finish native writes before consumers]
+F --> H
+G --> H
+H --> I[Verify persistence and separately native rendering]
+H -->|Actual operation failure| J[Report failure and clean owned partial output]
+```
+
+
 Related requirements: [Material Contract](../contracts/material-contract.md#material-complete-material-processing-without-propagated-exceptions), [Material Contract](../contracts/material-contract.md#material-complete-material-processing-without-propagated-exceptions-part-3).
 
 This conversion plan applies only to movable-bridge road and rail running-surface materials under the [scope boundary](../contracts/material-contract.md#material-scope-and-authority). Static bridge and non-running structural source materials retain their original references except for the separately scoped [non-Network native-template conversion](#non-network-native-material-template-conversion); native geometry/instance adaptation is separate.
@@ -253,6 +358,21 @@ reads do not certify that the source can render on an object.
 <a id="material-total-material-routing-by-part-and-actual-source"></a>
 
 ## Total material routing by part and actual source
+
+```mermaid
+flowchart TD
+A[Resolve one elevated road context] --> B[Select actual physical and rendering part]
+B --> C[Match source type and whole receiver domain]
+C --> D{Measured prototype correspondence?}
+D -->|Yes| E[Select matched prototype route]
+D -->|No| F[Select Original source route]
+E --> G[Realize in the part-specific native renderer]
+F --> G
+G --> H{Native operation outcome}
+H -->|Success| I[Use in preview creation and export]
+H -->|Failure| J[Return diagnosed failure without partial success]
+```
+
 
 Material matching/classification is a **noexcept decision**: when a measured corresponding
 material route matches the actual source type, complete receiver domain and target part, select
@@ -320,6 +440,9 @@ Preview, generation and export use this same routing policy at every LOD.
 
 ## Source-preserving selected-road decals
 
+
+
+
 Every retained selected-road decal retains its source appearance identity: markings remain
 markings and rail graphics remain rail graphics. Mechanism asphalt normalization deliberately
 omits the selected road's albedo-only lane-color overlay; external native approaches retain it.
@@ -365,7 +488,7 @@ Except for the [non-Network native-template conversion](#non-network-native-mate
 railings, mechanisms and other non-road components, at their corresponding LODs. Retain
 original shader/template, parameters, keywords, texture bindings, channels and dependencies.
 Do not recolor, clone, rebake, extract replacement structure textures or assign a new Surface
-merely because geometry dimensions or the generated owner changed. Structural texture derivation is prohibited. Fix unrelated mapping and native render-context problems separately;
+merely because geometry dimensions or the generated owner changed. Outside that native-template exception, structural texture derivation is prohibited. Fix unrelated mapping and native render-context problems separately;
 a failed UV eligibility test alone does not authorize a replacement. Retain the source material
 and attributes when no corresponding representation is available. Record appearance limitations
 without blocking generation; actual resource or native API failures remain errors.
@@ -410,6 +533,8 @@ No full-span baking, period cuts or arbitrary structural derivatives are authori
 <a id="material-2-preserve-source-resolution-and-pattern-scale"></a>
 
 ## Preserve source resolution and pattern scale
+
+
 
 Follow the general bridge contract's [original UV projection and mapping rule](generation-spec.md#generation-preserve-original-uv-projection-and-mapping-mode).
 That rule applies to fixed/non-movable and movable bridges, every part, material domain, LOD,
@@ -494,6 +619,8 @@ from physical-density errors and from unsupported source shader features.
 
 ## Reuse source mapping before producing pixels
 
+
+
 Keep the original atlas and native material where they express the required mapping. Original
 mesh panels may reuse an internal region through duplicated seam vertices and finite UV traversals.
 This does not require a new texture. Do not infer a global period from repeated UV triangles,
@@ -513,6 +640,8 @@ rule below is the only multiple-period storage exception. Record reconstruction/
 <a id="material-prototype-supported-road-surfaces-must-tile"></a>
 
 ## Prototype-supported road surfaces must tile
+
+
 
 For a movable bridge requiring road-material processing, a road appearance type supported by the corresponding
 prototype must use that prototype's appearance through composition/precomposition, with tiling
@@ -551,6 +680,8 @@ texture copies or period-driven geometry cuts are permitted.
 <a id="material-remove-embedded-road-markings-at-every-lod"></a>
 
 ## Remove embedded road markings at every LOD
+
+
 
 Draw02 moving-leaf exception: remove embedded markings, but do not add selected-road paint on moving leaves. Keep intended paint on fixed running caps and external approaches. This paint-only exception preserves receivers, bones and other styles. See the movable integrated-paint section.
 
@@ -603,6 +734,17 @@ automatic quality acceptance is implied.
 
 ## Offline source-atlas repeat materials
 
+```mermaid
+flowchart TD
+A[Establish eligible road content and source evidence] --> B[Prepare necessary unit once offline]
+B --> C[Validate channels alpha normals seams and every mip]
+C --> D[Assign independent identities to changed resources]
+D --> E[Package complete finished native graph]
+E --> F[Runtime copies and binds without baking]
+F --> G[Verify native loading and report complete sizes]
+```
+
+
 Do not cut movable road or structural triangles, or add seam vertices, solely to reset a repeated
 atlas coordinate. Where such new seams would otherwise be necessary, bake an independent tiling
 material from original road content only for an eligible running surface. Structural domains use their native material and authored atlas mapping.
@@ -640,6 +782,9 @@ route; it does not assert current feasibility, implementation or acceptance.
 
 
 ### Repeat-unit producer format and sampling
+
+
+
 
 A native full-atlas Repeat sampler cannot express local repetition `a + w * frac(x / P)` inside one atlas rectangle. The extracted true-unit format below is limited to eligible road content under the source-atlas requirements above.
 
@@ -797,6 +942,8 @@ valid mapping. Preserve independently measured source quantization rather than f
 
 ## Corresponding native road materials for movable objects
 
+
+
 When an actual road appearance type is absent from the prototype domain, reuse a
 compatible original material or replace the incompatible network material with the
 corresponding native animated-object road material. This replacement is required
@@ -848,93 +995,34 @@ The loading limitation is bounded to the investigated current game interfaces, n
 possible future engine implementation.
 
 <a id="material-dynamically-generated-and-independently-persisted-material-shaders-part-2"></a>
-
 <a id="historical-program-identity-and-native-containers"></a>
 
-## Native program graphs, stable identity and registration
+## Native program graphs and registration
 
-The mod ships complete precompiled native AssetDatabaseResources / MaterialLibrary / MaterialDescription / Material / Shader graphs in UnityFS bundles. Runtime loads those packaged programs; it never compiles HLSL, launches a compiler, reads an owner shader package or reconstructs a historical registration recipe. Native GPU-driver translation/cache activity is separate.
-
-Surface template identities use a stable deterministic hash of the logical program family and the full native signed integer render queue. The queue is retained explicitly as an ordinary integer Surface property; the template hash is not a reversible encoding. Identity is independent of owner UUID, process order, source-template hash and compiled bundle bytes. BoneDecal preserves the native calculation queue = 2000 + rendererPriority. Do not invent a bounded priority/queue domain, bit-pack a truncated queue, clamp it or reject a native integer solely to fit the identity scheme. Startup recognizes a current template by recomputing the logical family/queue hash from the persisted queue property, then registers that variant from the mod bundle. Distinct queues retain their native material descriptions; unrelated hash collisions must never overwrite a registration. Preserve source PBR/alpha/VT inputs, defaults, overrides, enabled passes and lighting/instancing flags.
-
-Runtime may specialize only the packaged graph's permitted native identity, queue and bundle identity fields in memory. Preserve compiled Shader bytes, object sizes, property sheets, references and all other fields. Do not append Materials to a bundle or reserve a fixed compiled-program slot. Registration is idempotent, collision-safe and retains graphs while native consumers use them. Source and built-in assets remain unchanged.
-
-Startup discovers the new stable template references and explicit integer queue properties from current persisted Surface headers and registers their required queue variants from the mod bundles before Surface/material realization. Generation and preview use the same registry. No owner program file, CID sidecar, registration recipe, explicit program dependency root or program ZIP entry is written. Ordinary Surface, texture, VT and mip persistence remains unchanged. Bridge Builder is therefore a required installed and enabled runtime dependency. An already-cached shared fallback must not be modified in place; creation, startup order and native consumer realization require separate verification.
-
-Legacy owner-persisted custom shader bridges are not migrated or restored. Only [self-check](../contracts/self-check-contract.md#self-check-obsolete-custom-program-retirement) classifies their concrete old protocol and retires their owned files through the established backup/removal/restart flow. Noncustom healthy bridges are preserved. Normal generation, preview, UI and export do not perform this compatibility deletion.
-
-Offline compilation accepts complete variable-length outputs and rebuilds native program arrays, compressed segments, serialized lengths, offsets and alignment. Never truncate, disguise a length mismatch with padding or retain stale bytecode as fallback. Test shorter/longer outputs, multiple occurrences, queue variants, repeated registration and foreign identity collisions. Verify stable identities, exact native queue behavior, new-owner output without program files, mod-enabled fresh-process registration, ordinary preview and DOTS rendering. File parsing, property readback and isolated Editor tests do not establish native game rendering.
-
-`tools/MaterialShaders/BuildNativeLayered.py` accepts extracted native object and
-layered Shader type trees, a compatible Unity container, and an output directory.
-UnityPy is an offline authoring dependency. The tool preserves the source layered
-pixel programs and their pass states. It replaces the evaluated-geometry vertex
-protocol for six native passes, with separate DOTS/non-DOTS variants. The selected
-native network program consumes packed normals and tangents in every inspected
-keyword variant, including variants without `_TANGENTSPACE_OCTO`. Preserve that
-input protocol for the encoded road meshes; do not invent an unpacked interpretation
-from the absence of that keyword. It retains the original UnityPerMaterial property offsets and
-appends the current bone-range field; competing partial constant buffers are not
-an interchangeable representation.
-
-Authoring tools compile with D3DCompile before distribution. `BuildNativeMaterialGraph.py`
-combines the shader-only adapter outputs with the captured game-native MaterialDescription and
-Material objects. The distributed `assets/MaterialPrograms/WorldLayeredPbr.bundle` and
-`BoneDecal.bundle` contain complete native graphs. Generated HLSL remains an offline input.
-Runtime loads the graph through `AssetBundle.LoadFromMemory` without compiling or rebuilding
-its Shader or Material. `BuildNativeDecal.py` produces the decal shader input.
-
-| Authoring script | Adapter inputs under `tools/MaterialShaders` | Intermediate shader-only output |
-| --- | --- | --- |
-| `BuildNativeLayered.py` | `NativeNetworkVertex.hlsl`, `NativeInstanceSkeleton.hlsl`, `MaterialFunctions.hlsl` | `WorldLayeredPbr.bundle` in the authoring output directory |
-| `BuildNativeDecal.py` | `NativeDecalVertex.hlsl`, `NativeDecalTranscription.py`, `NativeInstanceSkeleton.hlsl`, `MaterialFunctions.hlsl` | `BoneDecal.bundle` in the authoring output directory |
-
-The adjacent `.manifest.json` files record offline provenance: producer/source hashes,
-container format and output hash/size. `VerifyPrograms.ps1` checks these build inputs;
-the manifests are not runtime dependencies. The project and `tools/Build.ps1` embed
-only the native `.bundle` payloads as `BridgeBuilder.MaterialProgram.<name>.bundle`.
-
-
+Read [native graphs, identity and registration](custom-shader-spec.md#native-program-graphs-stable-identity-and-registration) in the complete custom shader specification.
 
 <a id="material-dynamically-generated-and-independently-persisted-material-shaders-part-4"></a>
 
 ## Decal and layered program behavior
 
-Related requirements: [Material Contract](../contracts/material-contract.md#material-dynamically-generated-and-independently-persisted-material-shaders), [Material Spec](material-spec.md#material-dynamically-generated-and-independently-persisted-material-shaders-part-2), [Material Contract](../contracts/material-contract.md#material-dynamically-generated-and-independently-persisted-material-shaders-part-3).
-
-The decal program consumes the same current procedural skeleton addressing as its mechanism. Preserve source alpha blending, PBR, priority, texture identities and evaluated UVs; no hard/hashed cutout substitution. The multilayer program samples base UV and world coordinates independently and blends corresponding PBR channels by the original mask. Use source defaults and overrides through semantic recipes, not name/CID exceptions. Persist Surface references to the mod-owned program/queue identities; do not save program files per owner.
-
-Treat each custom program as its native source shader plus the necessary current-skeleton
-binding. Preserve the native material computation, fragment programs, pass behavior and
-vertex-channel decoding; change position, direction and projection inputs only as required
-to bind the evaluated geometry to that skeleton. A keyword name alone does not establish
-an alternative vertex layout. Verify the actual source variants and generated mesh format,
-including packed normal and tangent channels. Test finite tangent frames and shaded output
-at closed and opened poses through both native batching and the ordinary preview renderer.
-
-Sources with different color or scalar overrides must not silently inherit a prepared cable's color. Compatible native object materials return directly without a prepared replacement.
-
-Original Surface bytes and appearance properties remain unchanged. Private preview materials require actual draw-instance geometry modes, bone inputs, VT binding and offscreen depth state. Only a native lane or enabled CurveProperties tiling mode selects curve keywords; a plain object must not gain lane-default mode merely because it has bones. Procedural mode requires actual nonempty bone data. Preserve unrelated source appearance keywords. A footprint alone does not justify a substitute projected-color surface.
-
-Simple static utility visuals can enter the mechanism's skinned model assembly
-while a private native utility carrier retains functional placement. Do not empty
-the object's mesh list: native object initialization derives its bounds from those
-entries. A metadata-only render preserves each source bound, surface area, local
-transform and relevant components, but has no geometry, material slots or indices.
-It must not retain an LOD reference to visible source geometry. Sources with native
-`BaseProperties` require their separately generated foundation visual to be handled
-first; a zero-submesh render with that component would still generate a base batch.
-
-Ordinary nested visuals require recursive native selection and accumulated local transforms,
-with one shared plan for merged visuals and retained native branches. Conditional visibility,
-actual independent animation, instance color and emissive attachments deliberately retain their
-existing native attachment path under movable contract section 19. Derived utility-network
-rendering still requires its functional native consumers. Native utility topology and native light
-positioning are not replaced by a per-frame Bridge Builder synchronizer.
+Read [decal and layered behavior](custom-shader-spec.md#decal-and-layered-program-behavior) in the complete custom shader specification.
 
 <a id="material-prototype-appearance-composition"></a>
 
 ## Prototype appearance composition
+
+```mermaid
+flowchart TD
+A[Resolve measured supported appearance and domains] --> B{Identical native or descriptor-only result sufficient?}
+B -->|Yes| C[Reuse or bind descriptor result]
+B -->|No| D{Known constant inputs?}
+D -->|Yes| E[Bind once-prepared eligible road result]
+D -->|No| F[Apply only authorized bounded local conversion]
+C --> G[Preserve unsupported neighboring types and complete dependencies]
+E --> G
+F --> G
+```
+
 
 First dispatch each appearance type/domain by the prototype's measured support and actual source
 coverage. A no-match returns the original-source route without throwing. Realize that route by
@@ -986,6 +1074,8 @@ no copied payload. Per-style and per-owner copies retain identical bytes/CIDs an
 <a id="material-native-resource-implementation"></a>
 
 ## Native resource implementation
+
+
 
 Resolve the complete Surface/Texture/VTTexture/VTSurface/MidMips graph by verified identities.
 Preserve ordered stacks, channel bindings, implicit Surface-to-MidMips membership and matching
@@ -1058,6 +1148,8 @@ Sharing storage must not resample or rebake the texture.
 <a id="material-shared-immutable-midmips-source-cache"></a>
 
 ## Shared immutable MidMips source cache
+
+
 
 The retained historical paint package contains three byte-identical channels in
 `~Materials/Shared/Paint/<cid>.Texture` and the native cache in
@@ -1167,7 +1259,7 @@ This reading scope connects the following canonical requirements for movable mat
 - [Supported-road tiling](#material-prototype-supported-road-surfaces-must-tile), [embedded-marking removal](#material-remove-embedded-road-markings-at-every-lod), and [selected-road decals](#material-source-preserving-selected-road-decals) govern every LOD, stationary running cap and finite terminal.
 - [Lane-aligned wheel tracks](#material-lane-aligned-wheel-track-appearance) and [mechanism wear](#material-prototype-owned-mechanism-wear-including-fixed-ends) govern source/background identity, measured centers and lane eligibility.
 - [Source resolution and mapping](#material-2-preserve-source-resolution-and-pattern-scale), [no full-road pattern expansion](#material-no-full-road-pattern-expansion), and [source-atlas derivation](#material-offline-source-atlas-repeat-materials) govern quality and period cuts.
-- [Authorized custom programs and attachment exceptions](../contracts/material-contract.md#material-dynamically-generated-and-independently-persisted-material-shaders-part-3) and [decal/layered behavior](#material-dynamically-generated-and-independently-persisted-material-shaders-part-4) retain the two-program boundary and existing native attachment/BoneHistory exceptions.
+- [Authorized custom programs and attachment exceptions](../contracts/material-contract.md#material-dynamically-generated-and-independently-persisted-material-shaders-part-3) and [decal/layered behavior](#material-dynamically-generated-and-independently-persisted-material-shaders-part-4) retain the movable-program boundary and existing native attachment/BoneHistory exceptions; the [custom shader table](#custom-shader-table) owns the complete program scope.
 
 <a id="documentation-index-current-requirements-part-2"></a>
 
@@ -1187,12 +1279,14 @@ Compatibility scope, release provenance and current-format consumption follow th
 
 ## Material verification requirements
 
+
+
 Compare the actual original and generated material assignments by part, road/structure role,
 LOD and axis. Do not certify the entire output from one preview, a material name, a reused
 texture count or an eligibility flag. Required evidence includes:
 
-1. **Non-road reuse:** original Surface identities, templates, parameters, textures and complete
-   dependencies retained under [non-road retention](#material-non-road-materials-and-road-composition-are-separate).
+1. **Non-road reuse and necessary native conversion:** apply [consumer and instance-palette acceptance](#native-material-consumers-and-instance-palette-preservation) to any native-template conversion; otherwise preserve original Surface identities, templates, parameters, textures and complete
+   dependencies under [non-road retention](#material-non-road-materials-and-road-composition-are-separate).
    Structural repeat derivatives are prohibited. Record
    byte-identical external ownership copies separately from conversions. Confirm changing road
    composition leaves structural bindings and source assets unchanged.

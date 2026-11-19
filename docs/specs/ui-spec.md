@@ -135,6 +135,17 @@ Remove the legacy operation-status subscription and its props in both views; ret
 
 ## Candidate, saved asset and map names
 
+```mermaid
+flowchart TD
+A[Selected style and decks supply localized suggestion] --> B{Player edits draft?}
+B -->|Yes| C[Preserve manual draft]
+B -->|No| D[Use common suggested-name formula]
+C --> E[Preview and creation consume current draft]
+D --> E
+E --> F[Save submitted asset display name through native presentation]
+G[Placed map naming] --> H[Apply separate native proper-name localization and preserve player map renames]
+```
+
 All bridge styles use the same suggested Prefab display-name formula, with no fixed, movable,
 landmark or prototype exceptions:
 
@@ -164,6 +175,19 @@ preservation through preview and both creation actions, saved/renamed asset name
 map names as separate outcomes. No named prototype may bypass the common asset-naming path.
 
 ## Creation and placement actions
+
+```mermaid
+flowchart TD
+A[Submit current selections and name] --> B{Requested action}
+B -->|Create only| C[Create and register formal bridge; retain panel and tool]
+B -->|Create and build| D[Carry BuildAfterCreate intent through queue]
+D --> E[Complete native initialization and display-name registration]
+E --> F[Activate formal construction prefab]
+G[Manage Build existing UUID] --> F
+F --> H{Activation succeeds?}
+H -->|Yes| I[Close panel idempotently and clear preview]
+H -->|No| J[Report failure and retain UI]
+```
 
 - Management retains prefab UUIDs as opaque action/selection keys only. The detail
   panel and create/rename success messages no longer display them.

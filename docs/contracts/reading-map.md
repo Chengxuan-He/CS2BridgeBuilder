@@ -328,6 +328,8 @@ Read the complete [generation contract](generation-contract.md), [generation spe
 
 ## docs/agent-contract/material-generation-contract.md
 
+Read the complete [custom shader specification](../specs/custom-shader-spec.md) for material/shader work, including its two classes, reuse order, program table and lifecycle requirements.
+
 Read the complete [material contract](material-contract.md) and [material specification](../specs/material-spec.md) for this scope, including integrated topic details. The section routes below preserve earlier entry points.
 
 - [Material Generation Contract](material-contract.md#material-material-generation-contract)

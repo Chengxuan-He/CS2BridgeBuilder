@@ -1,0 +1,1 @@
+Remove leftover metal grating across the GO 224m bridge roadway and redundant elevated-road railings. Preserve prototype colors when converting non-network bridge materials without runtime texture baking.

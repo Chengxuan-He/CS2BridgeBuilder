@@ -25,20 +25,6 @@ offline development/build utilities, not the player's startup pipeline.
 
 ## Startup and lifetime
 
-```mermaid
-flowchart TD
-    A[Mod.OnLoad] --> B[Startup filesystem permission prerequisite]
-    B -->|Ready| C[Host, cleanup hooks and mod program registration]
-    B -->|Ordinary IO unavailable| X[Return without normal initialization]
-    B -->|Required permission denied| E[Explicit permission exception]
-    C --> D[UI hosts, settings and localization]
-    D --> F[Register scheduled systems and schedule inspection]
-    F --> G[Native assets and world/menu readiness]
-    G --> H[Main-menu owner inspection]
-    F --> I[Gameplay UI, preview and bridge requests]
-    I --> J[Mod.OnDispose cleanup]
-```
-
 [BridgeInspectionPermissions](../src/BridgeBuilder/Runtime/BridgeInspectionPermissions.cs) probes
 isolated temporary files once per startup across the configured asset root and profile working
 locations, including virtual-texture storage. It performs write/read/move/delete IO. A successful root
@@ -55,19 +41,6 @@ cleanup. These are source-level lifetime decisions, not a promise that every thi
 cannot fail.
 
 ## Preview and permanent creation
-
-```mermaid
-flowchart LR
-    A[Selected road, optional second deck and bridge style] --> B[Generation request]
-    B --> C[Shared BuildBridgeCoreAsync composition]
-    C --> P[Preview session: temporary owned graph]
-    P --> R[Preview draws and renderer]
-    R --> Q[Selection revision change: cancel and dispose]
-    C --> S[Permanent graph: native presentation and ownership]
-    S --> T[Save prefabs and dependency snapshots]
-    T --> U[Publish through native prefab pipeline]
-    U --> V[Scheduled readiness and completion or activation]
-```
 
 Preview and creation share composition, not asset identity or publication. A create request generates
 a fresh graph; it does not promote the preview objects. Preview work uses selection revisions and
@@ -125,23 +98,27 @@ responsibility boundary; source audits and cold migration tests establish its im
 
 ## Material build and runtime boundary
 
+[BuildNativePalette.py](../tools/MaterialShaders/BuildNativePalette.py),
 [BuildNativeLayered.py](../tools/MaterialShaders/BuildNativeLayered.py) and
 [BuildNativeDecal.py](../tools/MaterialShaders/BuildNativeDecal.py) compile the programs offline.
-[BuildNativeMaterialGraph.py](../tools/MaterialShaders/BuildNativeMaterialGraph.py) produces the
+[BuildNativeMaterialGraph.py](../tools/MaterialShaders/BuildNativeMaterialGraph.py) and
+[BuildNativePaletteGraph.py](../tools/MaterialShaders/BuildNativePaletteGraph.py) produce the
 native Shader/Material/AssetDatabaseResources graphs embedded in the mod. Runtime imports their
 serialized material descriptions into the active MaterialLibrary; it does not rebuild a Material
 from a separate recipe or compile HLSL.
 
 [MovableCustomShaderAsset](../src/BridgeBuilder/Bridges/Common/Movable/MovableCustomShaderAsset.cs)
-loads the embedded BoneDecal and WorldLayeredPbr graphs. The
+loads the embedded BoneDecal, WorldLayeredPbr and NetworkPalette graphs. The
 [program identity helper](../src/BridgeBuilder/Runtime/BridgeNativeMaterialProgram.cs) hashes the
 logical family and full signed-int render queue independently of bundle bytes. Queue identity is
 also stored as the Surface integer property `BridgeBuilder_RenderQueue`. Runtime configuration
 changes the recorded native identity/queue fields, not compiled shader bytecode.
 
-[Startup registration](../src/BridgeBuilder/Runtime/BridgeCustomShaderRestoration.cs) registers the
-default programs, reads owned current Surface headers, identifies their explicit queue/template
-pairs and registers each referenced variant before native realization. The registry retains the
+[Startup registration](../src/BridgeBuilder/Runtime/BridgeCustomShaderRestoration.cs) runs from
+`Mod.OnLoad` and game-load completion. Each pass registers default programs, reads currently
+discovered owned current Surface headers and registers their explicit queue/template variants.
+Generation and preview prepare the required family/queue on demand through the same registry
+before creating dependent consumers. The [loading workflow](specs/custom-shader-spec.md#custom-shader-loading-workflow) defines this ordering. The registry retains the
 owning native bundles while published descriptions remain in use. New bridges and exports contain
 Surface references but no owner-local program payload; Bridge Builder remains required.
 

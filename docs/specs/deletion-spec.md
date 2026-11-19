@@ -10,6 +10,15 @@ Specifications are equally normative; this separation introduces no new preceden
 
 ## Confirmation and durable intent
 
+```mermaid
+flowchart TD
+    A[Await confirmation] --> B[Record owner marker or map-only outside intent]
+    B --> C{Durable record verified?}
+    C -->|No| D[Report failure without logical changes]
+    C -->|Yes| E[Exclude target and stop placement and preview]
+    E --> F[Keep outside ledger through deferred physical cleanup]
+```
+
 Before confirmation, change neither the map, availability nor files. Confirmation identifies one bridge UUID. For an existing owner directory, create its zero-byte `.bridgebuilderdeleted` file, close the writer and verify that the marker exists as the expected zero-byte file **before** removing placed instances or unregistering the bridge. A normal owner has no marker. An existing valid marker makes a repeated request idempotent; do not truncate an unexpected file to manufacture a valid marker. If creation, durable completion, closing or verification fails, report an error and make no logical changes.
 
 Two records have different roles: the per-owner marker records confirmed logical deletion, while an external cleanup ledger protects intent once recursive deletion could remove that marker. Keep the ledger outside **all** target owner directories. The implementation stores zero-byte per-owner records at `ModsData/BridgeBuilder/DeletionPending/b{uuid}.pending` under the game user-data root. Before starting recursive deletion for an owner, durably record its exact UUID in this ledger; if that write fails, abort physical deletion for that owner. Do not require normal, unmarked owners to have marker files or cleanup entries.
@@ -20,6 +29,16 @@ Once recorded, the target must be unavailable in both the management list and ro
 
 ## Tool-reference release before unregistration
 
+```mermaid
+flowchart TD
+    A[Target-owner retirement pending] --> B{Safe native phase and initialization complete?}
+    B -->|No| C[Keep pending]
+    B -->|Yes| D[Switch tool and release target selections and consumed caches]
+    D --> E{Target references released?}
+    E -->|No| C
+    E -->|Yes| F[Unregister target; preserve unrelated tool state]
+```
+
 Before any target prefab is unregistered, stop its active placement and release all target-owner references retained by native tools, including the actual cached prefab used by tool and Tool UI queries. Public selection and the internal consumed prefab may have different update lifetimes: changing the public selection, switching to another visible road or disabling the tool alone does not establish cache release. Establish the relevant native setters, update paths and consumers from implementation evidence; do not generalize one observed field layout to every tool. Complete the normal tool switch and any necessary target-scoped cache release before invalidating native prefab registration. Preserve unrelated selected roads, other owners, original sources and shared resources.
 
 Apply the same guarantee to single deletion, the whole-batch unregistration phase and startup tombstone retirement, including a tool that is inactive but still retains the target. Honor pending prefab initialization/replacement and safe world-transition boundaries; do not force native update systems to advance merely to delete. Keep work pending through the existing lifecycle when its preconditions are not yet met. Do not add a per-frame scan, suppress lookup exceptions, disable Tool UI or fabricate registration entries to hide stale references. This rule does not authorize live unregistration during ordinary self-check migration or alter its existing recovery workflow.
@@ -29,6 +48,17 @@ Acceptance must exercise deletion while the target is selected, after switching 
 <a id="deletion-completion-errors-and-verification"></a>
 
 ## Completion, errors and verification
+
+```mermaid
+flowchart TD
+    A[Evaluate captured logical deletion result] --> B{Failed?}
+    B -->|Yes| C[Retain intent and exclusion; diagnose remaining targets]
+    B -->|No| D{Confirmed bulk request?}
+    D -->|Yes| E[Show one localized success notice]
+    D -->|No| F[Complete silently]
+    E --> G[Retain deferred physical-cleanup state]
+    F --> G
+```
 
 Keep the user's **pre-deletion confirmation**. Successful single deletion and startup
 resumption remain silent, including pending-normal-exit state. A confirmed **remove-all**

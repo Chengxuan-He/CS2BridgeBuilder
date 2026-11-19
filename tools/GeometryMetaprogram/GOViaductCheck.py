@@ -102,6 +102,23 @@ def main():
             assert int(road.sum())==(8,12,6)[lod]
             road[list(REMOVED[lod])]=True
             assert np.all(coverage[road]==0) and np.all(coverage[~road]==1)
+            # Independent spatial oracle for the complete recessed roadway assembly.
+            # The earlier upper-sheet-only exclusion passed face accounting while leaving
+            # 504 actual metal-rod faces at each joint. Identify this source domain here,
+            # not from REMOVED, so restoring that incomplete list fails the regression.
+            q=mesh['positions'][mesh['faces']]
+            if lod==0:
+                rods=(np.abs(q[:,:,0]).min(1)>88.1)&(np.abs(q[:,:,0]).max(1)<=91)&\
+                     (q[:,:,1].min(1)>9.3)&(q[:,:,1].max(1)<=9.5)&\
+                     (np.abs(q[:,:,2]).max(1)<11.21)
+                assert int(rods.sum())==1300
+                for side in (-1,1):
+                    end=rods&(q[:,:,0].mean(1)*side>0)
+                    assert int(end.sum())==146+504 and np.all(coverage[end]==0)
+            elif lod==1:
+                assert np.all(coverage[[3432,3433,3704,3705]]==0)
+            else:
+                assert np.all(coverage[np.all(q[:,:,1]==np.float32(9.5),axis=1)]==0)
             results.append(dict(lod=lod,sourceFaces=len(coverage),omittedRoadFaces=int(road.sum()),parts=parts))
     print(json.dumps(results,indent=2));print('PASS all LOD exact disjoint source-face coverage, channel provenance, seams, native-oriented per-vertex source correspondence, exterior closure placement, and rigid foundation frames at scales .6/.8/1/1.2/1.4, reference identity, signed widths and affine frames')
 

@@ -10,8 +10,10 @@ ENTRIES = [
     'GO-224m-ViaductBridge_LOD2_a6f76703a31e05a2191b3a98095cba46.Geometry',
 ]
 
-# Source-face evidence: two recessed roadway grates and the outer road-sheet fascia.
-REMOVED = (tuple(range(47924,48070))+tuple(range(49980,50126))+(42,44,204,205),
+# Each recessed roadway grate includes both its upper sheet and the separate lower rods.
+# LOD1/2 represent these assemblies in the planar Y=9.5 road faces removed below.
+GRATE_RODS = (tuple(range(48812,49316))+tuple(range(50868,51372)), (), ())
+REMOVED = (tuple(range(47924,48070))+tuple(range(49980,50126))+GRATE_RODS[0]+(42,44,204,205),
            (158,160,288,289), ())
 CLIPPED_FAR = (14,17,22,25)
 

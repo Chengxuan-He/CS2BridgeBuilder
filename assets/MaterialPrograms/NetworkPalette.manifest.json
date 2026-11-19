@@ -1,0 +1,26 @@
+{
+  "schema": 2,
+  "program": "NetworkPalette",
+  "producer": "BuildNativePaletteGraph.py",
+  "producerSha256": "f25305242be904cb0810d8bc706c4c8780c7bfb75c392ee544b1855f279fcebf",
+  "packageBytes": 681515,
+  "packageSha256": "ceed3055ead86a39f09f6e1cc905b37e57a5caaf9e12ba9009fc43f38c495967",
+  "format": "UnityFS",
+  "sources": {
+    "tools/MaterialShaders/BuildNativePalette.py": "529b31c970bdd4576d73a815e25e475a5c8c5f9ca5f14a8d6a91677e8f81f292",
+    "tools/MaterialShaders/NativePaletteTranscription.py": "d80a5136e5bab7fcb11426ba622b2a31dce634b07f6c73e5b8143d581c02dba9",
+    "tools/MaterialShaders/NativeDecalTranscription.py": "0eae148c076222ad4b732ccd8b27ffdea77c3fc2b94aba8e8964a26bce6ba9a1",
+    "tools/MaterialShaders/BuildNativePaletteGraph.py": "f25305242be904cb0810d8bc706c4c8780c7bfb75c392ee544b1855f279fcebf",
+    "tools/MaterialShaders/NativeGraphSeed.bundle": "7c60930596a98b40566cf27e7d4e1ff81e73e36dffd26495ee1a462b040a4ab6"
+  },
+  "nativeInputs": {
+    "upstreamShaderBundle": "d323a608df4856c202fadb04274082988a62ac2566543d934f9735b82de7e4a3",
+    "gameResources": "3840f65ca2b0bfae1bcb4e38369e24851dca670b656f3a7bcf6c6c33369e10e6",
+    "upstream": {
+      "networkShader": "6804ad98a135a2e40a5fa417ff0a3f0abbe6c1390979c38c554c178ed29dd66f",
+      "containerSeed": "7c60930596a98b40566cf27e7d4e1ff81e73e36dffd26495ee1a462b040a4ab6"
+    }
+  },
+  "sourceTemplate": 17,
+  "programFamily": 0
+}

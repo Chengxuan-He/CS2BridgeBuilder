@@ -10,7 +10,7 @@ internal static class MovableCustomShaderAsset
 {
     private static byte[] Package(int sourceTemplate) => GenerationParameters.Get("ModMaterialProgram:" + sourceTemplate, () =>
     {
-        string name = sourceTemplate == 17 ? "WorldLayeredPbr" : "BoneDecal";
+        string name = BridgeNativeMaterialProgram.ProgramName(sourceTemplate);
         using var input = typeof(MovableCustomShaderAsset).Assembly.GetManifestResourceStream("BridgeBuilder.MaterialProgram." + name + ".bundle");
         using var bytes = new MemoryStream(); input!.CopyTo(bytes); return bytes.ToArray();
     });
@@ -18,8 +18,8 @@ internal static class MovableCustomShaderAsset
     internal static bool TryRegisterCurrent(out string? error)
     {
         error = null;
-        foreach (int source in new[] { 17, 18 })
-            if (!TryPrepare(source, BridgeNativeProgramLayout.DefaultQueue(source), out _, out var cause))
+        foreach (int source in new[] { BridgeNativeMaterialProgram.NetworkPalette, 17, 18 })
+            if (!TryPrepare(source, BridgeNativeMaterialProgram.DefaultQueue(source), out _, out var cause))
                 error = (error == null ? "" : error + "\n") + cause;
         return error == null;
     }

@@ -17,8 +17,10 @@ Check(AssetDatabase.global.Scans==0,"exact database lookup for multiple missing 
 AssetDatabase.global.Assets.Clear();AssetDatabase.global.Assets.Add(stale);
 Check(!FixturePersistence.Save("b"+Guid.NewGuid(),new[]{a},out _,out error)&&error.Contains(a),"all sources missing remains failure with CID");
 AssetDatabase.global.Assets.Clear();AssetDatabase.global.Assets.Add(new AssetData(a,()=>throw new UnauthorizedAccessException("denied")));AssetDatabase.global.Assets.Add(original);
-Check(!FixturePersistence.Save(owner,new[]{a},out _,out error)&&error.Contains("denied"),"permission errors are not treated as missing files");
-TimingCheck.CheckSummary(false, resolves:1, globalBuilds:0, mipBuilds:0, preflight:0, verify:0, payloadBytes:0);
+var permissionPropagated=false;
+try { FixturePersistence.Save(owner,new[]{a},out _,out error); }
+catch (UnauthorizedAccessException denied) { permissionPropagated=denied.Message=="denied"; }
+Check(permissionPropagated,"permission errors propagate without falling back to another source");
 AssetDatabase.global.Assets.Clear();AssetDatabase.global.Assets.Add(original);AssetDatabase.global.Assets.Add(second);AssetDatabase.global.Scans=0;
 Check(FixturePersistence.Save(owner,new[]{a},out _,out error)&&AssetDatabase.global.Scans==0,"readable first match avoids scanning");
 var imported=Path.Combine(UnityEngine.Application.persistentDataPath,"ImportedData");

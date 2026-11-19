@@ -30,15 +30,27 @@ markings; they require no prototype road-support table, road-material replacemen
 cleanup under these rules. Structural source-UV/density rules still apply to every bridge.
 A fixed running cap within a movable bridge remains part of that movable-bridge road and rail running-surface processing scope.
 
-Bridge Builder custom materials/programs are limited to movable-bridge road and rail running
-surfaces; tracks are included and non-running structure is excluded. Original prototype materials
-remain the default for static bridges, including Nanpu and Lupu. The generation/material owner
-may perform a necessary [non-Network native-template conversion](../specs/material-spec.md#non-network-native-material-template-conversion)
-for native network rendering, preserving the specified appearance and complete native dependency
-closure. That exception changes native Surface/template representation, not the permission to use
-Bridge Builder custom shaders. Native geometry/deformation/instance adaptation alone grants no
-further material replacement. Preserve source assets, owner snapshot obligations and the prohibition
-on owner shader copies; do not add runtime geometry classification.
+The generation/material owner selects only the authorized [custom material scope and programs](../specs/custom-shader-spec.md#custom-shader-table).
+Original prototype materials remain the default. Necessary non-Network conversion may use a
+compatible native shader or the scoped mod-owned precompiled appearance program when native
+semantics are insufficient, while preserving complete native dependencies and source assets.
+This grants no runtime material baking, arbitrary recoloring, owner shader copies or runtime
+geometry classification. Selected native road materials retain their existing scope.
+
+## Native conversion responsibility
+
+The material producer owns source/target consumer evidence and the complete per-slot/LOD
+appearance result under [native consumers and instance palettes](../specs/material-spec.md#native-material-consumers-and-instance-palette-preservation).
+It must supply the persistence owner with the complete native dependency graph and distinct
+identities for changed resources, retaining unchanged sources and the no-owner-shader boundary.
+The verification owner records native cold-read, GPU and visual evidence separately, including
+preserved-channel checks, identity bypasses, approximation limits and storage/performance costs.
+Serialized property presence alone does not fulfill this postcondition. Actual native/IO failures
+retain the non-throwing result and cleanup obligations below; add no runtime internal checks.
+Use the existing generation/preview operation boundary to contain and report failures. This
+conversion does not require an unrelated generator API redesign, replacing every helper return
+with null propagation, or changing successful-call interfaces. Never silently return an unchanged
+incompatible material, omit a part or invoke baking as a failure fallback.
 
 <a id="material-complete-material-processing-without-propagated-exceptions"></a>
 
@@ -105,21 +117,21 @@ otherwise produce the authorized compatibility representation with explicit diff
 motion, every LOD and mod-enabled cold loading for this implementation. Record the startup-registration dependency, missing equivalence and evidence limits without converting compatibility shortcomings into generation failure. An
 approximation is not completion of exact original-material fidelity.
 The earlier independent-loading experiment is historical evidence, not a current acceptance gate;
-the [authorized two-program implementation](material-contract.md#material-dynamically-generated-and-independently-persisted-material-shaders) is now active. These constraints do not relax the open-ended source-material
+the [authorized movable-program implementation](material-contract.md#material-dynamically-generated-and-independently-persisted-material-shaders) is now active. These constraints do not relax the open-ended source-material
 and non-throwing pipeline requirements above.
 
 <a id="material-dynamically-generated-and-independently-persisted-material-shaders"></a>
 
 ## Mod-owned precompiled material programs
 
-The mod owns and distributes the precompiled native program bundles. The [program specification](../specs/material-spec.md#material-dynamically-generated-and-independently-persisted-material-shaders-part-2) defines stable identities and queue variants. Bridges persist Surface references and ordinary appearance resources, never a program payload or registration recipe.
+The mod owns and distributes the precompiled native program bundles. The [program specification](../specs/custom-shader-spec.md#native-program-graphs-stable-identity-and-registration) defines stable identities and queue variants. Bridges persist Surface references and ordinary appearance resources, never a program payload or registration recipe.
 
 | Responsible boundary | Input | Postconditions and failure obligations |
 | --- | --- | --- |
-| Offline authoring and package | Authorized source semantics, complete native graph | Precompiles the two program families; variable-length outputs and matching layouts are packaged with the mod. No runtime compiler fallback. |
+| Offline authoring and package | Authorized source semantics, complete native graph | Precompiles only the families in the [custom shader table](../specs/custom-shader-spec.md#custom-shader-table); variable-length outputs and matching layouts are packaged with the mod. No runtime compiler fallback. |
 | Program/queue registry | Packaged program family, full native integer queue and deterministic logical-family/queue hash | Loads the packaged native graph on the main thread; specializes permitted queue/identity fields in memory, preserves source semantics, reuses identical registrations and never overwrites unrelated descriptions. Retains loaded resources while native consumers reference them. |
 | Generation and preview | Actual source descriptor and native renderer priority | Bind the stable program/queue identity. BoneDecal uses queue 2000 + native rendererPriority. Do not create an owner program FileAsset, CID, dependency root or export payload. |
-| Startup registration | Current Surface headers carrying the new template hash and explicit integer queue property and embedded mod bundles | Read the explicit integer Surface queue, recognize its current logical-family/template hash and register the variant before Surface/mesh realization. Reading current headers is not legacy shader restoration. Do not read owner shader bundles or restore historical hash identities. |
+| Mod.OnLoad and game-load completion restoration | Currently discovered owned current Surface headers, explicit integer queues and embedded mod bundles | Both lifecycle boundaries own restoration under the [custom shader loading workflow](../specs/custom-shader-spec.md#custom-shader-loading-workflow): defaults and every discovered referenced family/queue variant are registered before dependent realization. Game-load completion includes Surfaces discovered during loading. No owner shader bundles or historical hash restoration. |
 | Self-check | Confirmed owner and concrete obsolete custom-program protocol evidence | Applies [scoped retirement](self-check-contract.md#self-check-obsolete-custom-program-retirement), not shader migration. Shared registration failures do not select all bridges for removal. |
 
 Native API and IO failures follow the existing non-throwing result contract. No HLSL compilation, Shader/Material recipe reconstruction, new external bootstrap or per-frame synchronization is introduced. Existing native attachment exceptions remain unchanged.
@@ -130,7 +142,7 @@ Native API and IO failures follow the existing non-throwing result contract. No 
 
 Related requirements: [Material Contract](material-contract.md#material-dynamically-generated-and-independently-persisted-material-shaders), [Material Spec](../specs/material-spec.md#material-dynamically-generated-and-independently-persisted-material-shaders-part-2), [Material Spec](../specs/material-spec.md#material-dynamically-generated-and-independently-persisted-material-shaders-part-4).
 
-The mod provides two precompiled custom material programs: direct-skeleton decals preserving source continuous alpha and PBR, and multilayer base-UV/world-coordinate PBR preserving independent coordinates and mask semantics. Ordinary moving mesh attachments, including recursively selected nested meshes, join the mechanism render graph with unit-weight mounting bones. Conditional visibility, actual independent animation, instance-color and emissive attachments, and native light effects explicitly retain their existing native attachment/BoneHistory behavior. These exceptions do not authorize a new Bridge Builder transform-tracking controller or per-frame synchronization service. Mere presence of an animation component does not establish actual independent motion.
+The [custom shader table](../specs/custom-shader-spec.md#custom-shader-table) is the single authority for program purpose, required consumers, native alternatives, implementation status and ownership. Ordinary moving mesh attachments, including recursively selected nested meshes, join the mechanism render graph with unit-weight mounting bones. Conditional visibility, actual independent animation, instance-color and emissive attachments, and native light effects explicitly retain their existing native attachment/BoneHistory behavior. These exceptions do not authorize a new Bridge Builder transform-tracking controller or per-frame synchronization service. Mere presence of an animation component does not establish actual independent motion.
 
 Bridge Builder must remain installed and enabled to supply and register the packaged programs and referenced queue variants. Do not persist shader programs per bridge, mutate shared game resources, add an external bootstrap or synchronize transforms per frame. Verify creation, preview and cold loading separately; shader-function tests alone are not acceptance. Legacy owner-persisted custom-program bridges follow self-check retirement, not compatibility migration.
 

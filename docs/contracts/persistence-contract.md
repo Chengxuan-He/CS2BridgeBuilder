@@ -493,7 +493,7 @@ Deployment recovery remains limited to demonstrated incompatibility under
 
 ## Mod program reference persistence boundary
 
-The bridge writer saves the stable logical-family/full-integer-queue template hash and the ordinary integer Surface queue property referencing mod-owned precompiled variants; it must not save, copy, relocate or export a custom shader program, native graph bundle, program CID or registration recipe under an owner. This is an explicit exception to external-dependency snapshots for the mod's two precompiled programs, not a waiver for ordinary source materials, textures, VT or mip dependencies.
+The bridge writer saves the stable logical-family/full-integer-queue template hash and the ordinary integer Surface queue property referencing mod-owned precompiled variants; it must not save, copy, relocate or export a custom shader program, native graph bundle, program CID or registration recipe under an owner. This is an explicit exception to external-dependency snapshots for the mod-owned programs authorized by the [custom shader table](../specs/custom-shader-spec.md#custom-shader-table), not a waiver for ordinary source materials, textures, VT or mip dependencies.
 
 The mod registry owns packaged program loading and in-memory lifetime. Cross-owner Surface copies preserve the stable reference and ordinary appearance dependencies without copying program bytes. Preview uses the same mod programs with private temporary drawing state, not a preview program FileAsset.
 

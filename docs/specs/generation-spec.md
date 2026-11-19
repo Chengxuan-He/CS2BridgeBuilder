@@ -28,13 +28,16 @@ Select the material branch before realization at every LOD, following the
 - Every other component, including all static bridge structure: retain the original prototype
   Surface, shader/template and texture bindings; selected native roads retain their own materials.
   For a non-Network source requiring native network rendering, apply only the necessary
-  [native-template conversion exception](material-spec.md#non-network-native-material-template-conversion), preserving source appearance and dependencies. This is distinct from a Bridge Builder custom shader.
+  [native-template conversion exception](material-spec.md#non-network-native-material-template-conversion), preserving source appearance and dependencies; select native or scoped precompiled custom programs through the [custom shader table](custom-shader-spec.md#custom-shader-table).
+  Follow [native consumer and instance-palette acceptance](material-spec.md#native-material-consumers-and-instance-palette-preservation) for that conversion; property persistence alone cannot prove appearance support.
   Geometry/deformation/instance adaptation alone grants no additional replacement permission.
 
 Before permanent publication, persist the actual native dependency closure through independent
 owner snapshots, preserving VT headers/cache relationships and built-in references. Do not copy
 shaders or program bundles into the owner. Check these postconditions offline for both branches;
 they do not add a runtime validation pass.
+
+**Input preparation; hands the owned reference deck to style generation.**
 
 ```mermaid
 flowchart TD
@@ -45,12 +48,30 @@ flowchart TD
     Coordinated -->|Yes| Aux["Clone auxiliary now and provide both owned inputs"]
     Coordinated -->|No| Apply["Generate against the chosen structural reference deck"]
     Aux --> Apply
+    Measure -.-> Error["Actual unavailable source, invalid data or failed native operation: report failure"]
+```
+
+**Style generation; hands fixed or movable products to graph assembly.**
+
+```mermaid
+flowchart TD
+    Apply["Generate against the chosen structural reference deck"]
     Apply --> Family{"Generator implementation"}
     Family -->|Fixed common path| FixedMeasure["Measure footways and structure edges; select actual variant"]
     FixedMeasure --> Behavior["Apply recorded bridge, placement and movement behavior; initialize fitting state"]
     Behavior --> FixedParts["Measure fitting targets; derive overhead structure and deck props"]
     FixedParts --> Fit["Remove replaced deck railings; fit towers and derive private LOD geometry"]
     Family -->|Movable override| Moving["Resolve render roots; sample selected road; build mechanism; assemble network"]
+    Apply -.-> Error["Actual unavailable source, invalid data or failed native operation: report failure"]
+```
+
+**Graph assembly; hands private output to preview or persistence.**
+
+```mermaid
+flowchart TD
+    Moving["Resolve render roots; sample selected road; build mechanism; assemble network"]
+    Fit["Remove replaced deck railings; fit towers and derive private LOD geometry"]
+    Error["Actual unavailable source, invalid data or failed native operation: report failure"]
     Fit --> Attach{"Coordinated auxiliary generator"}
     Moving --> Attach
     Attach -->|Yes| Verify["Verify the already attached private auxiliary clone"]
@@ -58,8 +79,6 @@ flowchart TD
     Verify --> Graph["Collect cloned and factory-created nodes; normalize private identities"]
     Second --> Graph
     Graph --> Exit["Return preview result OR prepare owned graph for persistence"]
-    Measure -.-> Error["Actual unavailable source, invalid data or failed native operation: report failure"]
-    Apply -.-> Error
     Graph -.-> Error
 ```
 
@@ -86,6 +105,8 @@ This overview connects movable construction to its consumers. The next diagram e
 and material realization. Native simulation consumes the generated graph; it is not a per-frame
 Bridge Builder regeneration loop. Each style supplies measured skeleton, part and motion data.
 
+**Construction; hands the assembled native mechanism to its consumer.**
+
 ```mermaid
 flowchart TD
     Input["Selected network and movable style"] --> Evidence["Immutable measured mechanism data and source resources"]
@@ -94,6 +115,13 @@ flowchart TD
     Bind --> Appearance["Resolve per-part road materials; retain structural appearance"]
     Appearance --> Assemble["Assemble structure, road, attachments and complete LOD groups"]
     Assemble --> Native["Install native skeleton, mechanism and network behavior"]
+```
+
+**Consumers; preview disposal, permanent publication and native motion.**
+
+```mermaid
+flowchart TD
+    Native["Install native skeleton, mechanism and network behavior"]
     Native --> Kind{"Consumer"}
     Kind -->|New preview| Preview["Private open-pose draw graph; render current revision"]
     Preview --> Release["Selection change or cancellation: release private resources"]
@@ -128,6 +156,8 @@ the bridge network and objects. These stages are specialized by style. The share
 assembly path below includes Draw01; coordinated decks supply their own road frames and LOD inputs.
 Do not interpret the diagram as a claim that every style has identical partitions or supports.
 
+**Sampling and partition binding; hands classified LOD receivers to material realization.**
+
 ```mermaid
 flowchart TD
     Roots["Resolve recorded source render graph and required content"] --> Sample["Sample native selected composition in the closed pose"]
@@ -141,6 +171,13 @@ flowchart TD
     Joint --> Hook["Optional style reassignment of evidenced part domains only"]
     Separate --> Hook
     Hook --> Route["Process all LOD inputs: classify actual source and match target physical part"]
+```
+
+**Material realization; hands visible road triangles and slots to assembly.**
+
+```mermaid
+flowchart TD
+    Route["Process all LOD inputs: classify actual source and match target physical part"]
     Route --> Match{"Material route for this receiver"}
     Match -->|Prototype or corresponding| Project["Resolve measured patch or corresponding native object Surface and UV frame"]
     Match -->|Original| Original["Retain original or supported same-source native representation"]
@@ -150,6 +187,14 @@ flowchart TD
     Original --> Visible["Output visible road triangles and per-LOD material slots"]
     Direct --> Visible
     Bake --> Visible
+```
+
+**Structural and native assembly; returns the owned variant.**
+
+```mermaid
+flowchart TD
+    Visible["Output visible road triangles and per-LOD material slots"]
+    Route["Process all LOD inputs: classify actual source and match target physical part"]
     Visible --> Plans["Read source meshes on main thread; detached arrays build measured structural Plans"]
     Plans --> Frames["Apply positions, face recipes, source copies and affine frames for each source LOD"]
     Frames --> Append["Build native structural models and material regions; append supplements, road and lanes"]
@@ -318,6 +363,16 @@ Existing saved assets are not rewritten merely because generation code changes.
 
 ## Select one road-level branch before generation
 
+```mermaid
+flowchart TD
+A["Selected network; each deck independently"] --> B["Resolve elevated branch once"]
+B --> C{"Elevated source available and valid"}
+C -->|No| D["Report input or native-realization failure; no branch fallback"]
+C -->|Yes| E["Capture immutable context and actual native states/upgrades"]
+E --> F["Resolve selected lateral slots and measure full physical width"]
+F --> G["All generation stages and LODs consume the same context"]
+```
+
 Every fixed and movable bridge uses the selected road's **elevated branch**. Resolve it once
 at the common generation entry before width measurement, cloning or style construction. Do not
 enumerate or rank ground/other road-level alternatives or use them as a fallback. An unavailable
@@ -453,7 +508,9 @@ prepare supported-road repeats outside the game under [material contract section
 bounded authored repeats from original pure road grain. Such new periods must be identified as
 authored derivatives, not claimed as original prototype evidence. Preserve base texel density,
 channel alignment and complete native periodic mips; no arbitrary downsampling or budget increase.
-Non-road texture derivatives are prohibited, including the recorded Lift05 profile domains.
+This repeat-material route prohibits non-road texture derivatives, including the recorded Lift05
+profile domains; the separate [native-template conversion](material-spec.md#non-network-native-material-template-conversion)
+has its own bounded permission and does not authorize structural repeat textures.
 
 Keep existing seams and necessary actual shape, motion and material-domain boundaries. No new
 cuts solely to reset periods, prototype-triangle Boolean operations, per-use texture copies or
@@ -496,6 +553,16 @@ also ship compressed duplicates or a monolithic archive of all bridge arrays. Co
 to the complete Paradox Mods package; do not add per-resource compression when the final package
 sizes are similar. Compare identical publication file lists after official postprocessing.
 
+### Request-local numerical resource lifecycle
+
+```mermaid
+flowchart TD
+A["Construction begins; request acquires parameter scope"] --> B["Demand-read only required embedded arrays"]
+B --> C["Reuse decoded records across stages and joined LOD workers"]
+C --> D["Copy required slices into output-owned storage before handoff"]
+D --> E["On success, failure or cancellation: release request cache and captured scratch pool"]
+```
+
 Load each resource only when its owning bridge/data class actually needs it.
 Do not load all resources at startup, catalogue enumeration or style selection. Prevent
 eager static initialization of unused numerical resource holders. Read the trusted embedded
@@ -519,6 +586,8 @@ an installed prototype, a network request, or runtime geometry inspection to rec
 Use bounded loops to reconstruct compound records from the numerical arrays; do not regenerate
 huge static initializer methods. Ordinary algorithmic constants, enum values, array indices and
 compile-time language requirements are code, not prototype measurements.
+
+### Numerical preservation and authoring checks
 
 Migrate every existing recorded numerical table and parameter, including non-movable bridge data,
 without changing geometry, transformation rules, material references, bones, identity or behavior.
@@ -555,6 +624,15 @@ retains the paired evidence.
 <a id="generation-cpu-affine-geometry-execution"></a>
 
 ## CPU affine geometry execution
+
+```mermaid
+flowchart TD
+A["Offline lower measured transforms into ordered packed XYZ stages"] --> B["Main thread snapshots native mesh channels"]
+B --> C["Request decodes and reuses measured coefficient data"]
+C --> D["Execute authored stages on owned packed coordinates"]
+D --> E["Join bounded workers; preserve ordered dependent writes"]
+E --> F["Main thread constructs native geometry from owned AoS output"]
+```
 
 Express measured coordinate transformations as affine parameter matrices:
 `position = origin + C0*p0 + C1*p1 + C2*p2`. X, Y and Z each have their own row;
@@ -870,8 +948,9 @@ Follow the [material generation contract](../contracts/reading-map.md#material-g
 original materials remain direct references without new descriptors or texture payloads. Required
 native template conversions within the movable-bridge road and rail running-surface scope or the
 [non-Network exception](material-spec.md#non-network-native-material-template-conversion) preserve source appearance and dependencies; known, preparable constant derived
-materials are prepared offline and packaged per style. Runtime generation only copies and binds
-those finished resources. Repeatable units retain original per-axis texel density and pattern
+materials follow their applicable preparation rules. Movable-road precomposition is prepared
+offline and packaged per style; runtime copies and binds those finished resources. The separate
+[native instance-palette conversion](material-spec.md#native-material-consumers-and-instance-palette-preservation) permits necessary representation changes and shader binding but prohibits runtime material baking. Repeatable units retain original per-axis texel density and pattern
 scale. Preserve evidenced non-road or unsupported-input stretching with authored UVs, native textures and material identity
 under [the general source-mapping rule](generation-spec.md#generation-preserve-original-uv-projection-and-mapping-mode); record the actual selected appearance source and its part/LOD/axis
 evidence, including mixed mappings. Selected-road/track inputs follow their own source mapping,
@@ -1351,6 +1430,21 @@ required geometry. Fixed segments require compatible section states and placemen
 
 ## Generation-only double-precision GPU road construction
 
+```mermaid
+flowchart TD
+A["Prepare source inputs"] --> B{"Double-capable GPU path available"}
+B -->|Yes| C["Count and prefix allocation"]
+C --> D["Emit bound triangles; encode resident attributes and group bounds"]
+D --> E["Read back owned native streams and compact metadata"]
+B -->|No| F["Diagnostic and complete CPU reconstruction"]
+C -.->|GPU operation failure or working limit| F
+D -.->|GPU operation failure or working limit| F
+E -.->|Readback failure| F
+E --> G["Normal native publication"]
+F --> G
+G --> H["Release temporary computation resources"]
+```
+
 The selected-road and lane path uses generation-only GPU computation for seam clipping,
 rigid bone assignment and native vertex encoding. Run count, prefix allocation, emission
 and attribute encoding as one connected operation: the encoder consumes the GPU's bound
@@ -1385,6 +1479,18 @@ Remove unnecessary texture/material generation and redundant Prefab wrappers bef
 <a id="generation-reuse-identical-selected-road-computation-across-lods"></a>
 
 ## Reuse identical selected-road computation across LODs
+
+```mermaid
+flowchart TD
+A["Resolve actual source representation and consumed stage inputs"] --> B{"Equivalent request-local stage already present"}
+B -->|Completed| C["Share immutable completed result"]
+B -->|In flight| D["Await the same computation"]
+B -->|Absent| E["Compute this distinct stage input once"]
+D --> C
+E --> C
+C --> F["Each LOD retains its own skeleton and genuinely distinct later stages"]
+F --> G["Publication owns required data before consumers release request resources"]
+```
 
 Preview and formal generation must reuse the complete selected-road and lane pipeline across
 LOD0, LOD1 and LOD2 when its actual inputs and consumed semantics are identical. Reuse starts
@@ -1451,6 +1557,16 @@ cases and final publication still require the stated checks, including manual ga
 <a id="generation-generation-input-coordinate-stage"></a>
 
 ## Generation input coordinate stage
+
+```mermaid
+flowchart TD
+A["CPU prepares normalized quaternion products with original rounding boundaries"] --> B["Upload original triangles once"]
+B --> C["GPU maps planar coordinates and road-to-object frames"]
+C --> D["Resident transformed records enter FP64 clipping and binding"]
+B -.->|GPU failure| E["Complete CPU mapping and frame conversion"]
+C -.->|GPU failure| E
+E --> F["CPU binding of transformed inputs"]
+```
 
 Selected-road planar material coordinates and the measured road-to-object pose are evaluated in the same generation-only GPU pipeline before FP64 clipping. Prepare the normalized quaternion float products once on the CPU. Preserve Unity/Mono expression ordering with double intermediate evaluation and the original float store boundaries for each position, normal and tangent. Preserve untouched UV channels and tangent handedness. Upload original triangle records once and keep transformed records resident. The complete CPU fallback performs the same mapping and frame conversion before binding; it must never bind untransformed input after a GPU failure. The strict cross-LOD reuse key continues to compare original inputs, mappings and pose.
 

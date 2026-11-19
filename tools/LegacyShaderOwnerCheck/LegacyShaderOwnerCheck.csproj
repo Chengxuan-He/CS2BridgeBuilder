@@ -5,4 +5,5 @@
 <Compile Include="../../src/BridgeBuilder/Runtime/BridgeCurrentProgramSurface.cs" Link="BridgeCurrentProgramSurface.cs" />
 <Compile Include="../../src/BridgeBuilder/Runtime/BridgeNativeMaterialProgram.cs" Link="BridgeNativeMaterialProgram.cs" />
 <Compile Include="../../src/BridgeBuilder/Runtime/BridgeNativeProgramLayout.g.cs" Link="BridgeNativeProgramLayout.g.cs" />
+<Compile Include="../../src/BridgeBuilder/Runtime/BridgeNativePaletteLayout.g.cs" Link="BridgeNativePaletteLayout.g.cs" />
 </ItemGroup></Project>

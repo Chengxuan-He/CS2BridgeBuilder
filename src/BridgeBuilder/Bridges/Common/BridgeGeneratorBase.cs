@@ -186,6 +186,7 @@ internal abstract partial class BridgeGeneratorBase
             factory.MeasureStructureWidths(targetWidth, targetWidth / 2f, targetWidth / 2f);
             factory.MeasureStructureExtra(targetWidth - variant.RoadWidth);
             await ConstructRecordedAsync(target, variant, factory, targetWidth, roadEdges.Left, roadEdges.Right);
+            if (target is RoadPrefab recordedRoadTarget) RemoveDeckRailings(recordedRoadTarget, style.Id);
             return variant;
         }
 

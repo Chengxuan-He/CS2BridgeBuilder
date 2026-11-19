@@ -206,7 +206,7 @@ Bridge Expansion Pack 的 Art Deco 高架橋和雙層金門大橋還需要 San F
 ]]></LongDescription>
   <Thumbnail Value="Thumbnail.png" />
   <!-- Proposed project version; confirm against the final release assembly. -->
-  <ModVersion Value="26.11.18" />
+  <ModVersion Value="26.11.19" />
   <!-- Verified current native game version 1.6.4f1; metadata uses its first two numeric components. -->
   <GameVersion Value="1.6.*" />
   <!-- Do not add Road Builder as a required dependency. Audit other requirements before release. -->

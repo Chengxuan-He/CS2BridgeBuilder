@@ -6,6 +6,8 @@ Historical package-gate and owner-ceiling statements describe the policy at the 
 
 ## Audits and measurements
 
+- [Custom shader authoring and loading inspection](audits/custom-shader-authoring-and-loading.md)
+
 - [Native LOD formula source record](audits/native-lod-formula-sources.md)
 
 - [Installed non-mod bridge LOD inventory](audits/native-bridge-lod-inventory.md)
@@ -134,3 +136,5 @@ Historical package-gate and owner-ceiling statements describe the policy at the 
 - [Generation workflow scope record](audits/generation-workflow-scope-record.md)
 - [generated material programs evidence](audits/generated-material-programs-evidence.md)
 - [Bridge management verification](audits/bridge-management-verification.md)
+
+- [OnLoad program startup null-reference investigation](incidents/onload-program-startup-null-reference.md)
