@@ -2,7 +2,7 @@
 
 ## Status
 
-Release candidate prepared on 2026-11-19. Paradox Mods publication and installation are pending; the official publisher reports no active cached login. The previous confirmed published release is 26.11.18, revision 22. The 26.11.18a preparation was never published.
+Published on 2026-11-19 as Paradox Mods revision 23, version 26.11.19. The official SDK confirmed availability with Updating=false, downloaded the published revision and installed it after confirming that the game was absent. All 953 payload files matched the reviewed candidate by SHA-256. The previous published release was 26.11.18, revision 22; the 26.11.18a preparation was never published. Source commit db1ac96 was fast-forwarded atomically to all 18 remote GitHub branches and verified by remote readback.
 
 ## Changes
 
@@ -19,3 +19,8 @@ The current native Player.log reports game version `1.6.4f1 (1097.158a) [6360.18
 - Raw evidence and candidate/source binding: `work/release-26.11.19/`. Managed harnesses are not native gameplay acceptance. AMD rendering, GeForce NOW and other unavailable hosts remain untested; no game or launcher was started by agents.
 
 The existing three-stage custom-program registration is retained: OnLoad restoration, loading-complete restoration and generation/preview on demand. This release does not claim to have diagnosed or fixed the intermittent startup crash.
+## Publication and installation evidence
+
+The live title is Bridge Builder, the game range is 1.6.*, and the English changelog matches the candidate. The English, Simplified Chinese and Traditional Chinese description and original mod-link titles match after normalizing server Markdown escaping, HTML entities and whitespace.
+
+The SDK download initially hit its cross-volume move restriction when targeting E:. Downloading to a C: work directory succeeded; no production code was changed. Original installed files from revisions 17, 18 and 20 were backed up and hash-verified under E:/unused/release-26.11.19-installed-originals. Revision 22 was already absent at installation time. Revision 23 was installed by the official SDK and every candidate payload hash was verified again. No old installation directory was deleted.
