@@ -1,0 +1,1 @@
+Correct the GO 224m far-view abutment color, Lupu under-deck braces and visibility bounds, and Nanpu bridge lettering. Stabilize three-column lists, title alignment and scrolling, and seven-row dropdowns. Refresh generated bridge names and management renames in native asset lists, including Find It.

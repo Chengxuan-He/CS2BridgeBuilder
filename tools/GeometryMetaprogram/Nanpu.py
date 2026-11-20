@@ -19,9 +19,10 @@ def measure(v,faces):
  for y,left,right in [(39.48828125,-14.6474609375,14.607421875),(46,-15.605712890625,15.61279296875)]:
   mask=(v[:,1]==np.float32(y))&(v[:,0]>=left)&(v[:,0]<=right)&(np.abs(v[:,2])<7)
   coeff[mask]=v[mask,0]/np.where(v[mask,0]<0,-left,right)
- mask=(v[:,1]>=np.float32(104.36328125))&(v[:,1]<=np.float32(112.001953125))&(v[:,0]>=np.float32(-9.78173828125))&(v[:,0]<=np.float32(9.7509765625))&(np.abs(v[:,2])<np.float32(3.364))
- # Raised name lettering is an independent authored side member, not the beam.
- mask &= (v[:,2]!=np.float32(-3.32794189453125))&(v[:,2]!=np.float32(3.3936767578125))
+ mask=(v[:,1]>=np.float32(104.36328125))&(v[:,1]<=np.float32(112.001953125))&(v[:,0]>=np.float32(-9.78173828125))&(v[:,0]<=np.float32(9.7509765625))&(np.abs(v[:,2])<np.float32(3.4))
+ # Include both authored lettering planes with their supporting crossbeam.
+ # Excluding those planes leaves sign(x) translation and tears the inscription
+ # into two independently moving halves. LOD2 carries only the beam.
  coeff[mask]=v[mask,0]/np.where(v[mask,0]<0,np.float32(9.78173828125),np.float32(9.7509765625))
  return origin,coeff,tower
 

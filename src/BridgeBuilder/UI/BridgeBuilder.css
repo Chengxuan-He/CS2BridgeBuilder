@@ -25,20 +25,23 @@
 /* Bounded slots prevent long lists expanding the panel. Native Scrollable owns
    wheel/drag handling, overflow and the visible track/thumb. */
 .bb-scroll-slot { position: relative; flex: 1 1 0; min-height: 0; min-width: 0; overflow: hidden; }
-.bb-scroll { position: absolute; top: 0; right: 0; bottom: 0; left: 0; height: 100%; --scrollbarThumbSize: 6rem; --scrollbarSize: 18rem; }
-.bb-grid { display: flex; flex-direction: column; padding: 2rem; }
-.bb-card-row { display: flex; flex-direction: row; flex-wrap: nowrap; width: 100%; margin-bottom: 10rem; }
-.bb-card-cell { display: flex; flex-grow: 1; flex-shrink: 1; flex-basis: 0; min-width: 0; overflow: hidden; }
-.bb-card-cell + .bb-card-cell { margin-left: 8rem; }
+.bb-scroll { position: absolute; top: 0; right: 0; bottom: 0; left: 0; height: 100%; --scrollbarThumbSize: 6rem; --scrollbarSize: 18rem; --scrollbarPadding: 18rem; }
+/* Native Scrollable puts its content first. Reserve both its custom track padding
+   and its overflow viewport even when the track/thumb is hidden. */
+.bb-scroll.bb-scroll > div:first-child { padding-right: var(--scrollbarPadding); overflow-y: scroll; opacity: 1; }
+.bb-grid { display: flex; flex-direction: row; flex-wrap: wrap; padding: 2rem; }
+.bb-card-cell { box-sizing: border-box; display: flex; flex: 1 1 0; min-width: 0; overflow: hidden; padding: 0 4rem; margin-bottom: 10rem; }
+.bb-card-break { flex: 0 0 auto; width: 100%; height: 0; }
 .bb-panel .bb-card { box-sizing: border-box; width: 100%; min-width: 0; margin: 0; min-height: 120rem; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 8rem; overflow: hidden; background-color: var(--panelColorNormal); }
 .bb-panel .bb-card:hover { background-color: var(--selectableColor-hover); }
 .bb-panel .bb-card.bb-selected { border-color: var(--accentColorNormal); background-color: var(--selectedColor); }
 .bb-card img { height: 62rem; width: 62rem; flex-shrink: 0; margin-bottom: 6rem; }
 .bb-panel .bb-card { text-align: center; }
-.bb-card-name { display: flex; --bb-name-fade: 8%; justify-content: flex-start; align-self: stretch; width: 100%; min-width: 0; overflow: hidden; white-space: nowrap; }
-.bb-card-name.bb-name-overflow .bb-card-name-area { justify-content: flex-start; }
-.bb-card-name-area { display: flex; justify-content: center; flex: 0 0 auto; min-width: 0; width: 84%; margin: 0 8%; overflow: visible; text-align: left; }
-.bb-card-name-run { flex: 0 0 auto; }
+.bb-card-name { display: block; --bb-name-fade: 8%; align-self: stretch; width: 100%; min-width: 0; overflow: hidden; white-space: nowrap; text-align: left; mask-image: linear-gradient(90deg, white 0%, white 92%, transparent 100%); }
+/* Center intrinsic short runs; a constrained long run fills the normal region
+   and lays its overflowing glyphs out from the left before any JS measurement. */
+.bb-card-name-area { display: block; width: 84%; margin: 0 8%; overflow: visible; text-align: center; }
+.bb-card-name-run { display: inline-block; max-width: 100%; white-space: nowrap; text-align: left; vertical-align: top; }
 .bb-card-name.bb-fade-right { mask-image: linear-gradient(90deg, white 0%, white calc(100% - var(--bb-name-fade)), transparent 100%); }
 .bb-card-name.bb-fade-left { mask-image: linear-gradient(90deg, transparent 0%, white var(--bb-name-fade), white 100%); }
 .bb-card-name.bb-fade-left.bb-fade-right { mask-image: linear-gradient(90deg, transparent 0%, white var(--bb-name-fade), white calc(100% - var(--bb-name-fade)), transparent 100%); }

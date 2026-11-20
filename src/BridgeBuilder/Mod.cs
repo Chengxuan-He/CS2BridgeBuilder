@@ -50,6 +50,7 @@ public sealed class Mod : IMod
         ModHost.DefaultNamePrefix = "RBBridge";
         Runtime.BridgeShutdownCleanup.Start();
         BridgeBuilder.Runtime.BridgeRailSeamPatch.Start();
+        Runtime.BridgeRenderBounds.Start();
 
         Log.Info($"{Id} loaded (build {BuildStamp()})");
         if (!Runtime.BridgeCustomShaderRestoration.TryRestore(out var materialPrograms, out var programError))
@@ -100,6 +101,7 @@ public sealed class Mod : IMod
         BridgeStartupAssetSystem.StopInspection();
         BridgeBuilder.Runtime.BridgeStartupRecovery.Stop();
         BridgeBuilder.Runtime.BridgeRailSeamPatch.Stop();
+        Runtime.BridgeRenderBounds.Stop();
         if(!BridgeBuilder.Runtime.BridgePreparedMaterials.TryStop(out var preparedError))Log.Error("Prepared material shutdown: "+preparedError);
         try
         {

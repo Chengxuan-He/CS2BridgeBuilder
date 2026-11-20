@@ -58,13 +58,30 @@ def main():
      cap=np.isin(ids,list(capSources));expected[cap,1]=-.5
      assert np.max(abs(orig[cap,1]+.5))==0.
     if part and slot==0:expected[np.isin(ids,sr['balconySourceVertices']),1]-=.5
+    for brace in sr.get('braces',[]):
+     selected=np.isin(ids,brace['centralVertices'])
+     expected[selected,0]=v[ids[selected],1]-np.float32(brace['center'])
     maxerror=max(maxerror,float(abs(expected-restored).max()));assert maxerror<4e-5
-    assert np.array_equal(dc,np.sign(v[ids,1]-P[4]))
+    expectedDisplacement=np.sign(v[ids,1]-P[4])
+    for brace in sr.get('braces',[]):
+     selected=np.isin(ids,np.unique(f[brace['faces']]))
+     x=v[ids[selected],1]-np.float32(brace['center'])
+     expectedDisplacement[selected]=np.where(np.isin(ids[selected],brace['centralVertices']),0,np.sign(x))
+    assert np.array_equal(dc,expectedDisplacement)
     if part:assert np.all(v[ids,1]<P[4]) if part<3 else np.all(v[ids,1]>P[4])
     grad=np.column_stack([get(k)[1] for k in ('Frames','ShearY','ShearZ')])
     for width in (float(P[0]),12.,22.5,30.5,40.):
      half=(width-P[0])/2;output=orig.copy();output[:,0]+=dc*half
      if part==0 and slot==0:
+      assert len(sr['braces'])==8
+      for brace in sr['braces']:
+       selected=np.isin(ids,np.unique(f[brace['faces']]))
+       ends=np.isin(ids,brace['endVertices']);central=np.isin(ids,brace['centralVertices'])
+       sourceX=v[ids,1]-P[4]
+       assert np.max(abs(output[ends,0]-(sourceX[ends]+np.sign(sourceX[ends])*half)))<4e-6
+       assert np.array_equal(output[central,0],orig[central,0])
+       assert abs(float(orig[central,0].min()+orig[central,0].max()))<.0005
+       assert np.array_equal(output[selected,1:],orig[selected,1:])
       for group,item in enumerate(sr.get('columnMoves',[])):
        sourceVertices=np.unique(f[item['faces']]);selected=np.flatnonzero(np.isin(ids,sourceVertices)&np.isin(ids,list(capSources)))
        error=float(np.max(abs(output[selected,1]+.5)));assert error==0.
@@ -93,5 +110,5 @@ def main():
      else:positions[key]=dc[i]
    assert np.all(ownership==1)
   results.append(dict(lod=lod,faces=count,maxSourceFrameError=maxerror))
- print(json.dumps(dict(checks='All source faces and source corner attributes retained; unified source frame; signed vertex displacement; four separate rigid towers; fixed y=-0.5 construction plane; flat column caps and lower balcony bottom coplanar; unchanged feet and tower body; complete balcony assemblies translated down 0.5; no runtime road-height sampling; analytical face Jacobians; original upper hanger anchors; lower hanger shoes at full road edges and fixed plane; all hanger solids outside road through construction height 1 m',lods=results,contactCases=len(contacts),maxJacobianError=maxDerivative,hangerChecks=hangerChecks,maxCapPlaneError=max(x['maximumCapPlaneError'] for x in contacts),contacts=contacts,limitations='User-authorized fixed construction plane y=-0.5. Previous actual-owner diagnostic establishes the superseded behavior; no candidate owner has yet been generated for this revision. Native in-game appearance and cold loading remain unverified.'),indent=2))
+ print(json.dumps(dict(checks='All source faces and source corner attributes retained; centred chevron joints and complete end-section translation at both ends and both LODs; side-part displacement; four separate rigid towers; fixed y=-0.5 construction plane; flat column caps and lower balcony bottom coplanar; unchanged feet and tower body; complete balcony assemblies translated down 0.5; no runtime road-height sampling; analytical face Jacobians; original upper hanger anchors; lower hanger shoes at full road edges and fixed plane; all hanger solids outside road through construction height 1 m',lods=results,contactCases=len(contacts),maxJacobianError=maxDerivative,hangerChecks=hangerChecks,maxCapPlaneError=max(x['maximumCapPlaneError'] for x in contacts),contacts=contacts,limitations='User-authorized fixed construction plane y=-0.5. Previous actual-owner diagnostic establishes the superseded behavior; no candidate owner has yet been generated for this revision. Native in-game appearance and cold loading remain unverified.'),indent=2))
 if __name__=='__main__':main()

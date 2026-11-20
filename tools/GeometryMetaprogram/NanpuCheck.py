@@ -25,6 +25,16 @@ def main():
  with zipfile.ZipFile(a.archive) as z,tempfile.TemporaryDirectory() as tmp:
   for lod,e in enumerate(ENTRIES):
    path=Path(tmp)/e;path.write_bytes(z.read(e));m=native.read(path)[0];v=m['positions'].astype('f8');faces=m['faces'];original,coeff,tower=measure(v.copy(),faces);coverage=np.zeros(len(faces));maxerr=0;parts=[]
+   # Independent source-plane oracle: both inscriptions follow the continuous
+   # upper beam mapping, not a sign-based split at the bridge centre.
+   lettering=(v[:,2]==-3.32794189453125)|(v[:,2]==3.3936767578125)
+   lettering &= (v[:,1]>=104.36328125)&(v[:,1]<=112.001953125)&(abs(v[:,0])<10)
+   assert np.count_nonzero(lettering)==(1188 if lod<2 else 0)
+   for half in [-6,0,8,20]:
+    x=v[lettering,0];actual=x+coeff[lettering]*half
+    expected=x*(1+half/np.where(x<0,9.78173828125,9.7509765625))
+    assert np.max(abs(actual-expected),initial=0)<2e-6,(lod,half,'lettering split')
+
    for part in range(9):
     def read(k):return data(root/f'Types_Nanpu_{lod}_{part}_{k}.bin')
     ids=read('SourceTriangles')[0].reshape(-1,3);weights=read('Weights')[1].reshape(-1,3).astype('f8');tri=read('Triangles')[0].reshape(-1,3);sf=read('SourceFaces')[0];origin=read('Origins')[1].reshape(-1,3);c=read('Displacement')[1]

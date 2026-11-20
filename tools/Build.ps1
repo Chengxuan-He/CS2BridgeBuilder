@@ -127,6 +127,7 @@ foreach ($assembly in @(
     'UnityEngine.CoreModule.dll',
     'UnityEngine.AssetBundleModule.dll',
     'UnityEngine.ImageConversionModule.dll',
+    'UnityEngine.JSONSerializeModule.dll',
     'UnityEngine.PhysicsModule.dll',
     'Unity.RenderPipelines.Core.Runtime.dll',
     'Unity.RenderPipelines.HighDefinition.Runtime.dll',

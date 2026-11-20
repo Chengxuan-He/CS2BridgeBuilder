@@ -6,10 +6,10 @@
     <AssemblyName>BridgeBuilder</AssemblyName>
     <RootNamespace>BridgeBuilder</RootNamespace>
     <!-- Public release version is specified by the user; CLR versions remain numeric. -->
-    <Version>26.11.19</Version>
-    <PackageVersion>26.11.19</PackageVersion>
-    <AssemblyVersion>26.11.19.0</AssemblyVersion>
-    <FileVersion>26.11.19.0</FileVersion>
+    <Version>26.11.20</Version>
+    <PackageVersion>26.11.20</PackageVersion>
+    <AssemblyVersion>26.11.20.0</AssemblyVersion>
+    <FileVersion>26.11.20.0</FileVersion>
     <GenerateAssemblyInfo>true</GenerateAssemblyInfo>
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
     <RestoreIgnoreFailedSources>true</RestoreIgnoreFailedSources>
@@ -59,6 +59,7 @@
     <Reference Include="UnityEngine.AssetBundleModule"><HintPath>$(GameManagedDir)\UnityEngine.AssetBundleModule.dll</HintPath><Private>false</Private></Reference>
     <Reference Include="UnityEngine.CoreModule"><HintPath>$(GameManagedDir)\UnityEngine.CoreModule.dll</HintPath><Private>false</Private></Reference>
     <Reference Include="UnityEngine.ImageConversionModule"><HintPath>$(GameManagedDir)\UnityEngine.ImageConversionModule.dll</HintPath><Private>false</Private></Reference>
+    <Reference Include="UnityEngine.JSONSerializeModule"><HintPath>$(GameManagedDir)\UnityEngine.JSONSerializeModule.dll</HintPath><Private>false</Private></Reference>
     <Reference Include="UnityEngine.PhysicsModule"><HintPath>$(GameManagedDir)\UnityEngine.PhysicsModule.dll</HintPath><Private>false</Private></Reference>
     <Reference Include="Unity.RenderPipelines.Core.Runtime"><HintPath>$(GameManagedDir)\Unity.RenderPipelines.Core.Runtime.dll</HintPath><Private>false</Private></Reference>
     <Reference Include="Unity.RenderPipelines.HighDefinition.Runtime"><HintPath>$(GameManagedDir)\Unity.RenderPipelines.HighDefinition.Runtime.dll</HintPath><Private>false</Private></Reference>

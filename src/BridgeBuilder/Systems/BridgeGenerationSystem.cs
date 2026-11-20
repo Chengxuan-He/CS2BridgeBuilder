@@ -64,6 +64,7 @@ public partial class BridgeGenerationSystem : GameSystemBase
     {
         base.OnCreate();
         _prefabSystem = World.GetOrCreateSystemManaged<PrefabSystem>();
+        InitializeNativeNames();
         Enabled = false;
     }
 
@@ -81,6 +82,7 @@ public partial class BridgeGenerationSystem : GameSystemBase
     {
         CancelMaterialPreparation();
         base.OnGameLoadingComplete(purpose, mode);
+        QueueNativeNames();
         _motionSnapshots.Clear();
         _lift03Snapshots.Clear();
         _lift03Reports.Clear();
@@ -114,6 +116,7 @@ public partial class BridgeGenerationSystem : GameSystemBase
 
     protected override void OnDestroy()
     {
+        ReleaseNativeNames();
         CancelMaterialPreparation();
         ReleaseRoadBufferDiagnostics();
         ClearPreview();
@@ -135,6 +138,7 @@ public partial class BridgeGenerationSystem : GameSystemBase
 
     protected override void OnUpdate()
     {
+        RefreshNativeNames();
         if (UpdatePreviewWork()) return;
         InspectPlacedRoadMaterials();
         InspectPlacedMotion();

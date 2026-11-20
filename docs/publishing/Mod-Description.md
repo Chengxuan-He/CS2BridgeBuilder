@@ -48,6 +48,11 @@ Art Deco Viaduct and double-deck Golden Gate from Bridge Expansion Pack also req
 
 *   [Node Controller](https://mods.paradoxplaza.com/mods/138523/Windows)
 
+**Asset browsing and road markings**
+
+*   [Find It](https://mods.paradoxplaza.com/mods/77240/Windows) displays saved bridge names, including changes made in Bridge Builder’s management panel.
+*   [The Curbside Mod](https://mods.paradoxplaza.com/mods/165355/Windows) can draw markings on Bridge Builder bridges. It cannot change markings on the movable sections of movable bridges.
+
 ### Notes
 
 Follow Street Studio’s own guidance: disable Road Builder when using its independent fork.
@@ -113,6 +118,11 @@ Bridge Expansion Pack 的 Art Deco 高架桥和双层金门大桥还需要 San F
 
 *   [Node Controller](https://mods.paradoxplaza.com/mods/138523/Windows)
 
+**资产浏览与道路标线**
+
+*   [Find It](https://mods.paradoxplaza.com/mods/77240/Windows) 显示已保存的桥梁名称，包括在 Bridge Builder 管理面板中修改后的名称。
+*   [The Curbside Mod](https://mods.paradoxplaza.com/mods/165355/Windows) 可以在 Bridge Builder 桥梁上绘制标线，但不能更改活动桥可活动部分的标线。
+
 ### 注意事项
 
 请遵循 Street Studio 的官方说明：使用其独立分支时停用 Road Builder。
@@ -177,6 +187,11 @@ Bridge Expansion Pack 的 Art Deco 高架橋和雙層金門大橋還需要 San F
 **節點編輯**
 
 *   [Node Controller](https://mods.paradoxplaza.com/mods/138523/Windows)
+
+**資產瀏覽與道路標線**
+
+*   [Find It](https://mods.paradoxplaza.com/mods/77240/Windows) 顯示已儲存的橋梁名稱，包括在 Bridge Builder 管理面板中修改後的名稱。
+*   [The Curbside Mod](https://mods.paradoxplaza.com/mods/165355/Windows) 可以在 Bridge Builder 橋梁上繪製標線，但不能更改活動橋可活動部分的標線。
 
 ### 注意事項
 

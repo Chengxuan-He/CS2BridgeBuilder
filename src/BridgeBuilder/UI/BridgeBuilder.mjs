@@ -2,7 +2,7 @@
  * Cities: Skylines II UI Module
  * Id: BridgeBuilder
  * Author: BridgeBuilder
- * Version: 26.11.19
+ * Version: 26.11.20
  * Dependencies:
  */
 const React = window.React;
@@ -128,9 +128,12 @@ const h = React.createElement;
 const fallbackIcon = "coui://bridgebuilderui/BridgeBuilder.svg";
 
 // Cohtml needs the game's scrollbar, not only browser overflow styling.
-function ScrollArea({ className = "", style, children }) {
+function ScrollArea({ className = "", style, children, filterKey }) {
     const viewport = React.useRef(null);
     const sensitivity = api.useValue(scrollSensitivityBinding);
+    React.useEffect(() => {
+        if (viewport.current) viewport.current.scrollTop = 0;
+    }, [filterKey]);
     React.useEffect(() => {
         const element = viewport.current;
         if (!element) return;
@@ -142,65 +145,85 @@ function ScrollArea({ className = "", style, children }) {
     }, [sensitivity]);
     return h("div", { className: `bb-scroll-slot ${className}`, style },
         h(ui.Scrollable, { ref: viewport, className: "bb-scroll", vertical: true,
-            horizontal: false, trackVisibility: "always" }, children));
+            horizontal: false, trackVisibility: "reserve" }, children));
 }
 
 // Measure the same glyph run the player sees, including custom names and the current locale.
 function bindCardName(view, text, active) {
-    let frame = 0, started = null, travel = 0, leg = 0;
+    let frame = 0, settleFrame = 0, disposed = false, started = null, travel = 0, leg = 0;
+    let measuredWidth = -1, measuredTextWidth = -1, measuredTextHeight = -1;
     const pause = 3000;
     const position = x => {
         text.style.transform = x ? `translateX(-${x}px)` : "";
         view.classList.toggle("bb-fade-left", x > 0.5);
         view.classList.toggle("bb-fade-right", travel - x > 0.5);
     };
-    const animate = now => {
-        if (started === null) started = now;
-        const phase = (now - started) % (2 * (pause + leg));
-        const distance = phase < leg ? phase / leg : phase < leg + pause ? 1 :
-            phase < 2 * leg + pause ? 1 - (phase - leg - pause) / leg : 0;
-        position(travel * distance);
-        frame = requestAnimationFrame(animate);
+    const clear = () => {
+        text.style.transform = "";
+        view.classList.remove("bb-fade-left");
+        view.classList.remove("bb-fade-right");
+        view.classList.remove("bb-name-overflow");
     };
+    clear();
+    // Static placement is entirely CSS-owned, including newly inserted items and
+    // late fonts. A non-active card never measures or writes a text position.
+    if (!active) return clear;
     const measure = () => {
-        // Use one measured coordinate system for the text baselines and fade bands.
-        // Cohtml flex percentage margins must not decide the reserved outer space.
-        const viewportWidth = Math.max(0, view.getBoundingClientRect().width);
-        const inset = viewportWidth * 0.08;
-        const width = viewportWidth - 2 * inset;
-        const area = text.parentElement;
-        area.style.width = `${width}px`;
-        area.style.marginLeft = `${inset}px`;
-        area.style.marginRight = `${inset}px`;
-        const bounds = text.getBoundingClientRect();
-        const excess = width > 0 ? Math.max(0, bounds.width - width) : 0;
-        if (frame) cancelAnimationFrame(frame);
-        frame = 0;
+        // The viewport owns the clipping width. Do not infer it from a
+        // flex/inline text ancestor which may grow to the text width in Cohtml.
+        const width = view.clientWidth * 0.84;
+        const textWidth = Math.max(text.offsetWidth, text.scrollWidth), textHeight = text.offsetHeight;
+        if (width === measuredWidth && textWidth === measuredTextWidth && textHeight === measuredTextHeight) return;
+        measuredWidth = width;
+        measuredTextWidth = textWidth;
+        measuredTextHeight = textHeight;
+        travel = width > 0 && textWidth > 0 ? Math.max(0, textWidth - width) : 0;
+        leg = Math.max(700, 1000 * travel / Math.max(1, textHeight * 1.15));
         started = null;
-        travel = excess;
-        leg = Math.max(700, 1000 * travel / Math.max(1, bounds.height * 1.15));
-        view.classList.toggle("bb-name-overflow", travel > 0);
         position(0);
-        if (active && travel) frame = requestAnimationFrame(animate);
     };
-    // Cohtml may report the previous layout until the following frame.
-    const resize = () => {
-        if (frame) cancelAnimationFrame(frame);
-        frame = requestAnimationFrame(measure);
+    const animate = now => {
+        frame = 0;
+        measure();
+        if (started === null) started = now;
+        if (travel) {
+            const phase = (now - started) % (2 * (pause + leg));
+            const distance = phase < leg ? phase / leg : phase < leg + pause ? 1 :
+                phase < 2 * leg + pause ? 1 - (phase - leg - pause) / leg : 0;
+            position(travel * distance);
+        }
+        if (travel) frame = requestAnimationFrame(animate);
     };
-    const observer = typeof window.ResizeObserver === "function" ? new window.ResizeObserver(resize) : null;
+    const refresh = () => {
+        if (disposed) return;
+        measure();
+        if (travel && !frame) frame = requestAnimationFrame(animate);
+    };
+    const observer = typeof window.ResizeObserver === "function" ? new window.ResizeObserver(refresh) : null;
     observer?.observe(view);
     observer?.observe(text);
-    window.addEventListener("resize", resize);
-    measure();
-    resize();
+    window.addEventListener("resize", refresh);
+    const fonts = window.document?.fonts;
+    fonts?.addEventListener?.("loadingdone", refresh);
+    fonts?.ready?.then(refresh);
+    // Cohtml can defer the inserted text's first layout. Retry a bounded number
+    // of frames; static titles never need a polling loop to remain readable.
+    let settling = 8;
+    const settle = () => {
+        settleFrame = 0;
+        refresh();
+        if (--settling > 0) settleFrame = requestAnimationFrame(settle);
+    };
+    refresh();
+    settleFrame = requestAnimationFrame(settle);
     return () => {
+        disposed = true;
         if (frame) cancelAnimationFrame(frame);
+        if (settleFrame) cancelAnimationFrame(settleFrame);
         observer?.disconnect();
-        window.removeEventListener("resize", resize);
-        travel = 0;
-        position(0);
-        view.classList.remove("bb-name-overflow");
+        window.removeEventListener("resize", refresh);
+        fonts?.removeEventListener?.("loadingdone", refresh);
+        clear();
     };
 }
 
@@ -216,7 +239,8 @@ function Card({ item, selected, onSelect, subtitle }) {
     const viewport = React.useRef(null), title = React.useRef(null);
     const [hovered, setHovered] = React.useState(false);
     const active = hovered || selected;
-    React.useEffect(() => {
+    // Newly inserted cards must get their text baseline before the first paint.
+    React.useLayoutEffect(() => {
         if (viewport.current && title.current) return bindCardName(viewport.current, title.current, active);
     }, [item.name, active]);
     return h("button", {
@@ -238,25 +262,27 @@ function Card({ item, selected, onSelect, subtitle }) {
 function CardGrid({ items, selectedId, onSelect, emptyText }) {
     const loading = api.useValue(catalogLoadingBinding);
     const t = useText();
-    if (loading) return h("div", { className: "bb-list-loading", role: "status", "aria-label": t("Scanning"), "aria-busy": true },
+    // Only a cold catalogue replaces content with a spinner. A background refresh
+    // retains the current binding; genuine empty/filter/delete results remain empty.
+    const published = React.useRef(false);
+    if (!loading || items.length) published.current = true;
+    if (!published.current) return h("div", { className: "bb-list-loading", role: "status", "aria-label": t("Scanning"), "aria-busy": true },
         h("div", { className: "bb-spinner", "aria-hidden": true }));
     if (!items.length) return h("div", { className: "bb-empty" }, emptyText);
-    // Explicit rows avoid relying on CSS grid or percentage-based flex wrapping
-    // in Cohtml. Empty cells keep the final row the same width as every other row.
-    const rows = [];
-    for (let start = 0; start < items.length; start += 3) {
-        const cells = [];
-        for (let column = 0; column < 3; column++) {
-            const item = items[start + column];
-            cells.push(h("div", { className: "bb-card-cell", key: column },
-                item ? h(Card, { item,
-                    selected: (item.id || item.prefabName) === selectedId,
-                    onSelect, subtitle: item.networkType ? t("Type" + item.networkType) : item.source || "" }) : null));
-        }
-        rows.push(h("div", { className: "bb-card-row",
-            key: items[start].id || items[start].prefabName }, cells));
+    // Keep every card under the same parent so reordering across rows preserves
+    // its DOM/image/focus. Explicit breaks give exactly three flex cells per row
+    // without measuring the scroll viewport or depending on percentage cell widths.
+    const cells = [];
+    for (let index = 0; index < Math.ceil(items.length / 3) * 3; index++) {
+        if (index && index % 3 === 0)
+            cells.push(h("div", { className: "bb-card-break", key: `break:${index}`, "aria-hidden": true }));
+        const item = items[index];
+        cells.push(h("div", { className: "bb-card-cell", key: item ? `item:${item.id || item.prefabName}` : `empty:${index}`,
+            "aria-hidden": item ? undefined : true }, item ?
+            h(Card, { item, selected: (item.id || item.prefabName) === selectedId,
+                onSelect, subtitle: item.networkType ? t("Type" + item.networkType) : item.source || "" }) : null));
     }
-    return h("div", { className: "bb-grid" }, rows);
+    return h("div", { className: "bb-grid", "aria-busy": loading }, cells);
 }
 
 function matchesSearch(query, ...values) {
@@ -280,14 +306,35 @@ const dropdownMaxRows = 7;
 
 function FilterBox({ value, onChange, options, label }) {
     const [open, setOpen] = React.useState(false);
+    const popup = React.useRef(null);
+    React.useLayoutEffect(() => {
+        const element = popup.current;
+        if (!open || !element) return;
+        const place = () => {
+            element.style.top = "100%";
+            const box = element.getBoundingClientRect();
+            const trigger = element.parentElement.getBoundingClientRect();
+            const scale = element.offsetHeight ? box.height / element.offsetHeight : 1;
+            if (box.bottom > window.innerHeight) {
+                const top = trigger.top >= box.height ? trigger.top - box.height :
+                    Math.max(0, window.innerHeight - box.height);
+                element.style.top = `${(top - trigger.top) / scale}px`;
+            }
+        };
+        place();
+        window.addEventListener("resize", place);
+        const observer = typeof window.ResizeObserver === "function" ? new window.ResizeObserver(place) : null;
+        observer?.observe(element);
+        return () => { window.removeEventListener("resize", place); observer?.disconnect(); };
+    }, [open, options.length]);
     let menu = null;
     if (open) {
         const list = h("div", { role: "listbox", "aria-label": label }, options.map(option => h("button", {
-            key: option.id, type: "button", role: "option", "aria-selected": value === option.id,
+            key: option.id, type: "button", role: "option", title: option.name, "aria-selected": value === option.id,
             className: value === option.id ? "bb-active" : "", style: { height: `${dropdownRowRem}rem` },
             onClick: () => { onChange(option.id); setOpen(false); }
         }, option.name)));
-        menu = h("div", { className: "bb-filter-menu" }, options.length <= dropdownMaxRows ? list :
+        menu = h("div", { ref: popup, className: "bb-filter-menu" }, options.length <= dropdownMaxRows ? list :
             h(ScrollArea, { className: "bb-dropdown-viewport", style: { height: `${dropdownMaxRows * dropdownRowRem}rem` } }, list));
     }
     return h("div", { className: "bb-filter", onBlur: event => {
@@ -317,7 +364,7 @@ function NetworkPicker({ decks, selectedId, onSelect, title, onOpenRoadBuilder }
         h("div", { className: "bb-filters" },
             h(SearchBox, { value: query, onChange: setQuery, label: t("SearchNetworks") }),
             h(FilterBox, { value: type, onChange: setType, options, label: t("AllTypes") })),
-        h(ScrollArea, { key: `${query}\n${type}` }, h(CardGrid, { items: filtered, selectedId, onSelect,
+        h(ScrollArea, { filterKey: `${query}\n${type}` }, h(CardGrid, { items: filtered, selectedId, onSelect,
             emptyText: t(decks.length ? "NoMatches" : "NoNetworks") })));
 }
 
@@ -475,7 +522,7 @@ function CreateView({ decks, styles, draft, onSaveDraft = () => {} }) {
                 h(SearchBox, { value: styleQuery, onChange: setStyleQuery, label: t("SearchStyles") }),
                 h(FilterBox, { value: activeFamily, onChange: setStyleFamily, label: t("AllBridgeTypes"),
                     options: [{ id: "", name: t("AllBridgeTypes") }, ...families.map(id => ({ id, name: t("Family" + id) }))] })),
-            h(ScrollArea, { className: "bb-style-list", key: `${doubleDeck}\n${styleQuery}\n${activeFamily}` },
+            h(ScrollArea, { className: "bb-style-list", filterKey: `${doubleDeck}\n${styleQuery}\n${activeFamily}` },
                 h(CardGrid, { items: visibleStyles, selectedId: styleId,
                     onSelect: item => setStyleId(item.id), emptyText: t(availableStyles.length ? "NoMatches" : "NoStyles") })),
             h("div", { className: "bb-create-bar" },
@@ -529,7 +576,7 @@ function ManageView({ bridges, styles = [] }) {
                 h(FilterBox, { value: style, onChange: setStyle, label: t("AllStyles"), options: [
                     { id: "", name: t("AllStyles") }, ...Array.from(new Set(bridges.map(item => item.styleId)))
                         .map(id => ({ id, name: styleName(id) }))] })),
-            h(ScrollArea, { key: `${query}\n${mode}\n${availability}\n${style}` },
+            h(ScrollArea, { filterKey: `${query}\n${mode}\n${availability}\n${style}` },
                 h(CardGrid, { items: filtered, selectedId: selected?.prefabName,
                     onSelect: item => setSelectedId(item.prefabName), emptyText: t(bridges.length ? "NoMatches" : "NoBridges") }))),
         h("section", { className: "bb-manage-right" },

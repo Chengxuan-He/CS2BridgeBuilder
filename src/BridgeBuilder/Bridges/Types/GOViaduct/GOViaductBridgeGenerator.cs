@@ -37,7 +37,12 @@ internal sealed class GOViaductBridgeGenerator : BridgeGeneratorBase
             {
                 var source = factory.ResolveOriginal<RenderPrefab>(lod == Numeric_Types_GOViaduct_GOViaductBridgeGenerator_cs.Values.I32[8] ? GOViaductConstruction.ResourceAnchorName : "GO-224m-ViaductBridge_LOD" + lod + " Mesh");
                 var name = target.name + " GOArch-" + part + "-LOD" + lod;
-                var materials = part < 3 ? networkMaterials[lod] ??= await factory.CreateRecordedNetworkSurfacesAsync(source, name, new[] { Color.white, new Color(Numeric_Types_GOViaduct_GOViaductBridgeGenerator_cs.Values.F32[1], Numeric_Types_GOViaduct_GOViaductBridgeGenerator_cs.Values.F32[2], Numeric_Types_GOViaduct_GOViaductBridgeGenerator_cs.Values.F32[3], Numeric_Types_GOViaduct_GOViaductBridgeGenerator_cs.Values.F32[4]), Color.white }) : null;
+                // This concrete abutment's authored LOD2 control atlas overlaps red and green,
+                // unlike its neutral LOD0/LOD1 walls. Preserve their concrete identity and PBR
+                // channels without applying the arch's brown palette to the erroneous mask.
+                var materials = part == 2 && lod == 2
+                    ? await factory.CreateRecordedNetworkSurfacesAsync(source, name, new[] { Color.white, Color.white, Color.white })
+                    : part < 3 ? networkMaterials[lod] ??= await factory.CreateRecordedNetworkSurfacesAsync(source, name, new[] { Color.white, new Color(Numeric_Types_GOViaduct_GOViaductBridgeGenerator_cs.Values.F32[1], Numeric_Types_GOViaduct_GOViaductBridgeGenerator_cs.Values.F32[2], Numeric_Types_GOViaduct_GOViaductBridgeGenerator_cs.Values.F32[3], Numeric_Types_GOViaduct_GOViaductBridgeGenerator_cs.Values.F32[4]), Color.white }) : null;
                 var omitted = new bool[source.indexCount / Numeric_Types_GOViaduct_GOViaductBridgeGenerator_cs.Values.I32[10]];
                 foreach (var face in GOViaductConstruction.Data(lod, part, "Omitted").I32)
                     omitted[face] = true;

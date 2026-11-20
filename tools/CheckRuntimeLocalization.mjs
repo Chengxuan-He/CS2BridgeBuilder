@@ -72,7 +72,7 @@ const context = vm.createContext({ window: {
             if (state[index] === undefined) state[index] = initial;
             return [state[index], value => { state[index] = typeof value === "function" ? value(state[index]) : value; }];
         },
-        useEffect: () => {}, useRef: () => ({ current: null })
+        useEffect: () => {}, useLayoutEffect: () => {}, useRef: () => ({ current: null })
     },
     "cs2/ui": {},
     "cs2/input": { FOCUS_DISABLED: "focus-disabled" },
@@ -409,69 +409,37 @@ const importedCard=render('CardGrid({items:[importedHighway],selectedId:"",onSel
 assert.equal(importedCard.props.subtitle,activeTexts.TypeHighway);
 console.log("PASS combined bridge family, search, deck mode and Road Builder native road category");
 
-// Drive the production card name effect with measured glyph widths and deterministic frame times.
-const cardFrames=new Map(), cardEvents=new Map();
-let nextFrame=0;
+// Exercise production marquee timing without a browser layout substitute.
+const cardFrames=new Map(), cardEvents=new Map();let nextFrame=0;
 context.requestAnimationFrame=fn=>{cardFrames.set(++nextFrame,fn);return nextFrame;};
 context.cancelAnimationFrame=id=>cardFrames.delete(id);
 context.window.addEventListener=(event,fn)=>cardEvents.set(event,fn);
 context.window.removeEventListener=event=>cardEvents.delete(event);
-function cardTick(time){const pending=Array.from(cardFrames.values());cardFrames.clear();for(const fn of pending)fn(time);}
-const masks=new Set();
-let cardWidth=120, nameWidth=300;
-const nameView={getBoundingClientRect:()=>({width:cardWidth}),classList:{
-    toggle:(name,on)=>on?masks.add(name):masks.delete(name), remove:name=>masks.delete(name)}};
-const nameArea={style:{}};
-const nameRun={parentElement:nameArea,style:{},getBoundingClientRect:()=>({width:nameWidth,height:20})};
+function cardTick(time){const pending=[...cardFrames.values()];cardFrames.clear();pending.forEach(fn=>fn(time));}
+const masks=new Set();let available=100,nameWidth=300;
+const view={get clientWidth(){return available/0.84;},classList:{toggle:(k,on)=>on?masks.add(k):masks.delete(k),remove:(...keys)=>keys.forEach(k=>masks.delete(k))}};
+const area={style:{},get clientWidth(){return available;}};
+const text={style:{},parentElement:area,get offsetWidth(){return nameWidth;},get scrollWidth(){return nameWidth;},offsetHeight:20};
 const bindName=vm.runInContext("bindCardName",context);
-let stopName=bindName(nameView,nameRun,false);
-cardTick(0);
-assert.deepEqual([...masks],["bb-name-overflow","bb-fade-right"]);
-assert.equal(cardFrames.size,0,"idle overflow has no animation loop");
-assert.equal(parseFloat(nameArea.style.marginLeft),cardWidth*0.08,"idle long name reserves the full left fade band");
-assert.equal(parseFloat(nameArea.style.width),cardWidth*0.84);
-stopName();
-stopName=bindName(nameView,nameRun,true);
-cardTick(0);cardTick(100);
-const travel=nameWidth-cardWidth*0.84, leg=1000*travel/23;
-const offset=()=>-parseFloat(nameRun.style.transform.slice(11))||0;
-cardTick(116);
-assert(offset()>0,"starts moving on the first elapsed frame");
-cardTick(100+leg/2);
-assert(Math.abs(offset()-travel/2)<0.01);
-assert(masks.has("bb-fade-left") && masks.has("bb-fade-right"));
-cardTick(100+leg+2999);
-assert.equal(offset(),travel,"last glyph holds at the inner right baseline");
-assert(Math.abs(parseFloat(nameArea.style.marginLeft)+nameWidth-offset()-cardWidth*0.92)<0.001);
-assert(masks.has("bb-fade-left") && !masks.has("bb-fade-right"));
-cardTick(100+3000+1.5*leg);
-assert(Math.abs(offset()-travel/2)<0.01,"returns toward the left baseline");
-cardTick(100+2*leg+5999);
-assert.equal(offset(),0,"left endpoint holds three seconds after returning");
-cardTick(100+2*leg+6016);
-assert(offset()>0,"next traversal begins");
-nameWidth=cardWidth-10;
-cardEvents.get("resize")();cardTick(30000);
-assert(masks.has("bb-name-overflow"),"fits outer viewport but exceeds the normal text area");
-nameWidth=cardWidth*0.84;
-cardEvents.get("resize")();cardTick(31000);
-assert.equal(masks.size,0);assert.equal(cardFrames.size,0);assert.equal(nameRun.style.transform,"");
-stopName();assert.equal(cardEvents.size,0);
-for(const scale of [0.5,1,1.25,2,3]) {
-    cardWidth=237*scale;
-    for(const extra of [-40,0,0.125,200]) {
-        nameWidth=cardWidth*0.84+extra;
-        stopName=bindName(nameView,nameRun,false);cardTick(0);
-        const left=parseFloat(nameArea.style.marginLeft), width=parseFloat(nameArea.style.width);
-        assert(Math.abs(left-cardWidth*0.08)<1e-9);
-        assert(Math.abs(left+width-cardWidth*0.92)<1e-9);
-        assert.equal(masks.has('bb-name-overflow'),extra>0);
-        assert.equal(nameRun.style.transform,'');
-        assert.equal(cardFrames.size,0);
-        stopName();
-    }
-}
-assert(read('src/BridgeBuilder/UI/BridgeBuilder.css').includes('flex: 0 0 auto; min-width: 0; width: 84%; margin: 0 8%;'),
-    'inner area must not flex-shrink or lose the reserved margins');
-assert(uiSource.includes("const active = hovered || selected"));
-console.log("PASS measured card labels, endpoint holds, two-edge fades, reverse travel, resize and idle cleanup");
+const offset=()=>-parseFloat((text.style.transform||"").slice(11))||0;
+let stop=bindName(view,text,false);
+assert.equal(cardFrames.size,0);assert.equal(cardEvents.size,0);assert.equal(text.style.transform,"");assert.deepEqual(area.style,{});
+stop();stop=bindName(view,text,true);cardTick(0);
+let last=0;
+for(let now=100;now<=2000;now+=100){cardEvents.get("resize")();cardTick(now);assert(offset()>last);last=offset();}
+const travel=200,leg=1000*travel/23;
+cardTick(leg);assert.equal(offset(),travel);
+cardTick(leg+2999);assert.equal(offset(),travel);
+cardTick(3000+1.5*leg);assert(Math.abs(offset()-travel/2)<.01);
+cardTick(2*leg+5999);assert.equal(offset(),0);
+stop();assert.equal(cardFrames.size,0);assert.equal(cardEvents.size,0);assert.equal(text.style.transform,"");assert.equal(masks.size,0);
+// Missing initial layout and absent ResizeObserver: bounded settlement observes
+// a late font, but a fitting active name does not leave a permanent polling loop.
+available=0;nameWidth=0;stop=bindName(view,text,true);cardTick(0);cardTick(16);
+available=100;nameWidth=300;cardTick(32);cardTick(48);cardTick(64);assert(offset()>0);
+stop();available=100;nameWidth=90;stop=bindName(view,text,true);
+for(let t=0;t<20;t++)cardTick(t*16);
+assert.equal(cardFrames.size,0);assert.equal(text.style.transform,"");assert.deepEqual(area.style,{});
+stop();nameWidth=300;stop=bindName(view,text,false);
+assert.equal(text.style.transform,"");assert.equal(cardFrames.size,0);assert.deepEqual(area.style,{});stop();
+console.log("PASS CSS-owned static title baseline; active endpoint timing, unchanged refresh, late layout, bounded retry and cleanup");

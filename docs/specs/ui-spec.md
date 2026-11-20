@@ -44,10 +44,24 @@ reset it to All. An admitted style contributes its family in every compatible mo
 Extradosed styles retain their display names and share the cable-stayed filter. Filtering
 the visible list must not change the selected asset or the player's custom bridge name.
 
-Every mod-owned dropdown viewport fits its available options up to seven complete rows, including
-the All option where present. Short lists shrink to their contents; longer lists use the game scroll
-container to reach all remaining options. Row and viewport dimensions use the same scaling units.
-Popup padding and borders sit outside the seven-row viewport.
+## Dropdown dimensions and interaction
+
+Every mod-owned filter dropdown, including network type, bridge family and management mode,
+availability and style, shows exactly seven complete options at its maximum height when at least
+seven options exist. With fewer options, it fits precisely the available count without blank rows.
+All counts include All where present. No eighth partial option or clipped seventh option may be
+visible at either scroll boundary. Use uniform border-box row heights; count padding, borders,
+inter-row spacing and scrollbar space explicitly. Popup padding and borders belong outside the
+option viewport. Row and viewport dimensions must use the same layout/scaling coordinate system.
+
+Longer lists retain native vertical scrolling and access to every option. Both scroll limits
+align to complete rows. Preserve this behavior at fractional UI scales and with translated labels.
+The popup shares the trigger's width, keeps its full visible rows inside the screen and opens above
+the trigger when the lower edge cannot accommodate it. Position the popup within the viewport
+rather than clipping rows to resolve an edge collision. Selection updates only the corresponding
+filter and closes the menu; leaving its focus scope or pressing Escape closes it. The trigger
+exposes its expanded state and the list exposes its selected option. Long option text retains
+access to its full localized label.
 
 <a id="generation-full-published-source-mod-names"></a>
 
@@ -128,10 +142,91 @@ Remove the legacy operation-status subscription and its props in both views; ret
 
 - Each upper/lower network picker has independent name/ID search and a stable network-type filter. The backend classifies RoadPrefab by HighwayRules / PublicTransport, PathwayPrefab as pedestrian, and the existing track catalogue by train/subway/tram. It does not infer a network type from a localized name or confuse RoadBuilder provenance with a transport type.
 - The creation lists sort by localized display name and use the stable ID to break ties. Bridge-style search matches the name or ID within the selected deck mode. The family filter offers only families represented in those results and returns to All if its selection disappears. Low-tower cable-stayed styles belong to the cable-stayed family. Management combines name, UUID or style search with deck count, style and availability.
-- The shared filter menu fits up to seven complete options, including All. Short lists fit their contents. Longer lists use the native vertical scroll control.
-- Filtering changes the visible list only. It preserves selected IDs and edited names, does not publish preview requests or generate/delete assets, and resets only the list scroll position. Upper/lower picker state is independent. All lists keep three explicit card cells per row.
+- All filter menus follow [Dropdown dimensions and interaction](#dropdown-dimensions-and-interaction).
+- Filtering changes the visible list only. It preserves selected IDs and edited names, does not publish preview requests or generate/delete assets, and resets only the list scroll position. Upper/lower picker state is independent. List layout follows [List layout and refresh](#list-layout-and-refresh).
 - The preview frame contains no text in idle, loading, success or failure states. A CSS spinner uses an explicit backend loading flag rather than comparing localized strings. Decode errors or failed assembly stop it; existing error dialogs and logging are retained. The create/manage panel error footer and its preview-error callback are permanently removed; do not restore inline error text below the action buttons. Image alt text is empty to prevent a broken-image text fallback; the frame retains an accessibility label.
-- Names that fit the normal text area between the two outer fade bands stay centered, including exact fits. The layout is strictly outer left fade band, left text baseline, normal text area, right text baseline, outer right fade band. Both bands occupy 8% of the measured label viewport width. Set the inner area width and side margins from that same measurement in pixels, rather than relying on percentage flex margins. An overflowing name starts at the left text baseline with the entire left fade band reserved as empty margin; it must not start at the outer viewport edge. Hovering or selecting an overflowing name starts travel toward the right endpoint immediately, without an initial pause, smoothly entering the left fade band as it moves. Its last glyph aligns with the right edge of the normal text area. Each arrival at either end pauses for three seconds before reversing; only the outer bands fade. The same name treatment applies to road pickers, bridge styles and saved bridges; the button retains its full-name tooltip. Search/filter labels, options and empty results use the same 12-language dictionary and stable, nonlocalized filter IDs.
+- Search/filter labels, options and empty results use the same 12-language dictionary and stable, nonlocalized filter IDs.
+
+## Panel content and navigation
+
+The toolbar opens and closes the Bridge Builder interface and indicates its open state. The header
+provides Create and Manage tabs and an accessible close control. Keep the native window lifecycle
+specified above. Two bounded content regions preserve access to the game toolbars and allow map
+interaction through their intervening gap. They use game-scaled dimensions; long localized header
+labels must not displace the tabs or close control and retain full tooltips.
+
+Creation presents road selection on the left and preview, deck mode, bridge selection, name and
+actions on the right. Single-deck mode shows one road picker; double-deck mode shows independent
+upper and lower pickers and the direction control. The Custom road action preserves the current
+creation draft across the Road Builder handoff. Management presents the searchable saved list on
+the left and the selected bridge's preview, editable name and fixed action row on the right.
+Selection is keyed by stable identity, never by visible position or translated text.
+
+Search uses every whitespace-separated term against the documented name/identity fields, ignores
+case, and Escape clears only that search. Distinguish an empty catalogue from a search/filter with
+no matches using the corresponding localized empty state. Keep the preview, naming, source,
+image and action rules in their dedicated sections below rather than adding separate per-list rules.
+
+## List layout and refresh
+
+Upper roads, lower roads, bridge styles and managed bridges share exactly three equal card cells
+per row. A partial final row retains the same column widths and positions with empty cell space.
+Do not switch to two columns after loading, scrolling, resizing or toggling scrollbar visibility.
+Reserve the same scrollbar gutter permanently: the track may hide, but its space and the content
+width remain unchanged. Native wheel and thumb interaction remain available; list wheel travel is
+twice the native sensitivity-scaled delta. Bound each list to its panel slot rather than allowing
+content to enlarge the panel. Preserve these rules across resolution, DPI and game UI scaling.
+
+A background catalogue refresh retains published content while its replacement is pending. It must
+not replace populated lists with a loading spinner, empty data or recreated cards. The first load
+may show the localized loading indicator. Real deletion, a committed empty result or a filter with
+no matches takes effect immediately; retaining content while loading does not authorize stale rows.
+
+Use stable asset identities for cards independently of row boundaries. Insertion, deletion,
+sorting, new binding objects and unchanged periodic refreshes preserve surviving card and image
+nodes, focus, selection and list scroll. Unchanged image URLs must not be cache-busted or reloaded.
+A changed icon source or actual image error still takes the documented update/fallback path.
+Only a user change to that list's search, filter or deck mode resets its scroll to the top; ordinary
+refresh does not. Do not remount a list to implement scroll reset. Real removal may transfer focus
+away from the removed element without disturbing surviving controls.
+
+## Card names and animation
+
+All four card lists use the same title treatment and retain a full-name tooltip, including custom
+names and translated names. The label viewport has two outer fade bands, each 8% of its width,
+and an unobscured central text region occupying the remaining 84%. Calculate fit against that
+central region, not the entire viewport. Short and exactly fitting titles are centered in it.
+Long titles begin at its left boundary, with the entire left fade band reserved before the first
+glyph. The resting first glyph and the final glyph at the opposite endpoint must remain outside
+the faded bands; fade only text passing through an outer band during motion.
+
+New cards have their correct static alignment on their first visible frame. Locale, font loading,
+resizing and transitions between short and long text update alignment without exposing a clipped
+left prefix. Static placement must not depend on a late effect, stale measured width or a zero-size
+first measurement. Keep the clipping viewport independent of the intrinsic text width; measuring
+text must not enlarge its container or feed back into card/grid width. Use layout coordinates
+consistently rather than applying screen-scaled rectangles as CSS pixel widths or translations.
+
+Hovering or selecting an overflowing title starts smooth travel immediately toward the endpoint
+where its last glyph meets the right boundary of the central region. Pause for three seconds at
+each arrival, then reverse. Continue while either hovered or selected; short titles never animate.
+When both states end, clear all animation displacement and restore the appropriate centered or
+left-aligned baseline. Unchanged bindings, same-size observer events and background refresh must
+not restart motion. Genuine text/font/size changes recompute overflow. Cancel animation frames,
+observers and listeners on replacement or unmount; do not introduce permanent idle polling merely
+to establish static alignment. Preserve access to the complete name through the tooltip even if
+animation is unavailable.
+
+## Export and directory dialogs
+
+Export acts on the selected saved bridge and disables repeated submission while busy. The native
+confirmation dialog contains the editable destination and top-level folder name, a native browse
+action and localized validation. Reject empty/invalid destination or folder input; preserve the
+existing folder-name length, reserved-device-name and invalid-character restrictions. Native folder
+browsing uses the focus/navigation hierarchy described above and returns to the export form without
+losing its draft. Cancellation does not export. Successful export displays the actual path with
+Open folder and Close actions; long paths wrap within the native dialog. Directory options publish
+the title of the interacted field, without overwriting unrelated native picker titles.
 
 ## Candidate, saved asset and map names
 

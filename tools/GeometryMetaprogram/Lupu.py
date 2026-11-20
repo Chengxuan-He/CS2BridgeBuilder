@@ -26,14 +26,14 @@ def main():
  anchors=np.array([0,-270.48046875,270.50390625,-206.033203125,206.060546875],dtype='<f4');cx=np.float32((anchors[1]+anchors[2])/2);length=np.float32(anchors[2]-anchors[1])
  constants=[roadhi-roadlo,np.float32(21.580078125)-np.float32(-21.4541015625),length,datum,cy,cx,np.float32(77.560546875)-datum]+anchors.tolist()+[spanhi-spanlo,spancy,towerdatum,np.float32(34.6201171875)]
  write(out/'Types_Lupu_Parameters.bin',constants)
- records=[];keys=[]
+ records=[];keys=[];braceProfiles=[]
  with zipfile.ZipFile(a.archive) as z,tempfile.TemporaryDirectory(dir=ev) as td:
   for lod,entry in enumerate(ENTRIES):
    raw=z.read(entry);p=Path(td)/entry;p.write_bytes(raw);meshes=reader.read(p);rec={'lod':lod,'entry':entry,'sha256':hashlib.sha256(raw).hexdigest(),'slots':[]}
    for slot,m in enumerate(meshes):
     np.savez(ev/(Path(entry).stem+'_'+str(slot)+'.npz'),**m)
     v=m['positions'];faces=m['faces'];q=v[faces];_,inv=np.unique(v,axis=0,return_inverse=True);g=inv[faces];e=np.concatenate((g[:,[0,1]],g[:,[1,2]],g[:,[2,0]]));_,labels=connected_components(coo_matrix((np.ones(len(e)),(e[:,0],e[:,1])),shape=(inv.max()+1,)*2),directed=False);vl=labels[inv];fl=vl[faces[:,0]]
-    ownership=np.zeros(len(faces),dtype='i4');coeff=np.zeros((len(faces),3),dtype='f4');columnshift=np.zeros(len(v),dtype='f4');columnheight=np.zeros(len(v),dtype='f4');supportgroup=np.full(len(v),-1,dtype='i4');columnmoves=[];supportweight=np.zeros(len(v),dtype='f4');balcony=np.zeros(len(v),dtype=bool);hangerShift=np.zeros(len(v),dtype="f4");hangerRise=np.zeros(len(v),dtype="f4");hangers=[]
+    ownership=np.zeros(len(faces),dtype='i4');coeff=np.zeros((len(faces),3),dtype='f4');columnshift=np.zeros(len(v),dtype='f4');columnheight=np.zeros(len(v),dtype='f4');supportgroup=np.full(len(v),-1,dtype='i4');columnmoves=[];supportweight=np.zeros(len(v),dtype='f4');balcony=np.zeros(len(v),dtype=bool);hangerShift=np.zeros(len(v),dtype="f4");hangerRise=np.zeros(len(v),dtype="f4");hangers=[];braces=[];braceFaces=set()
     for c in np.unique(fl):
      fi=np.flatnonzero(fl==c);vv=v[np.unique(faces[fi])];lo=vv.min(0);hi=vv.max(0)
      # Independent source columns keep their lower vertices fixed. Only measured
@@ -102,15 +102,35 @@ def main():
       assert hi[1]<cy or lo[1]>cy, 'Terminal island crosses the open roadway'
       if lo[1]>cy:ownership[fi]+=2
      coeff[fi]=np.sign(q[fi,:,1]-cy)
+     # Every chevron end section follows its side by the full half-width delta.
+     # Keep the central joint centred; original triangles bridge the two anchors.
+     if slot==0 and lo[1]<cy<hi[1] and hi[2]<datum:
+      bounds=np.concatenate((lo,hi)).tolist()
+      if lod==0:braceProfiles.append(bounds)
+      else:assert bounds in braceProfiles, 'Chevron LOD differs from measured LOD0 assembly'
+      center=np.float32((lo[1]+hi[1])/2);span=np.float32(hi[1]-lo[1])
+      vertices=np.unique(faces[fi]);distance=abs(v[vertices,1]-center)
+      # The source has central joint rings and distinct outer end rings. The
+      # largest measured transverse gap separates those authored domains.
+      levels=np.sort(np.unique(distance));cut=(levels[np.argmax(np.diff(levels))]+levels[np.argmax(np.diff(levels))+1])/2
+      central=vertices[distance<cut];ends=vertices[distance>=cut]
+      coeff[fi]=np.where(np.isin(faces[fi],central),0,np.sign(q[fi,:,1]-center))
+      hangerShift[central]=cy-center
+      braceFaces.update(fi.tolist())
+      braces.append(dict(component=int(c),faces=fi.tolist(),center=float(center),span=float(span),bounds=bounds,centralVertices=central.tolist(),endVertices=ends.tolist()))
     # Shallow welded arch-root wedges belong to the continuous arch shell.
     # Separating them rigidly would break their finite shared interface under length adaptation.
     parts=[]
     for part in range(5):
      base=np.column_stack((v[:,1]-(spancy if part==0 else cy),v[:,2]-(datum if part==0 else towerdatum),v[:,0]-cx)).astype('<f4')
-     if part==0:base[:,0]+=columnshift;base[:,1]+=columnheight
+     if part==0:
+      base[:,0]+=columnshift;base[:,1]+=columnheight
      member=ownership==part;lookup={};ids=[];orig=[];dc=[];grad=[];supportframes=[];corners=np.zeros(faces.shape,dtype='<i4');res=0.
      for fi in np.flatnonzero(member):
       face=faces[fi];points=base[face];d=coeff[fi];mat=points[1:].astype('f8')-points[0];b=d[1:].astype('f8')-d[0];df=np.linalg.lstsq(mat,b,rcond=None)[0];res=max(res,float(np.max(abs(mat@df-b))));df=df.astype('f4');sw=supportweight[face];flatten=sw*(datum-np.float32(.5)-v[face,2])+hangerRise[face];fg=np.linalg.lstsq(mat,flatten[1:].astype('f8')-flatten[0],rcond=None)[0].astype('f4');hs=hangerShift[face];hg=np.linalg.lstsq(mat,hs[1:].astype('f8')-hs[0],rcond=None)[0].astype('f4')
+      if fi in braceFaces:
+       shifted=points.copy();shifted[:,0]+=hs
+       df=np.linalg.lstsq(shifted[1:].astype('f8')-shifted[0],b,rcond=None)[0].astype('f4')
       for j,vi in enumerate(face):
        k=(int(vi),d[j].tobytes(),df.tobytes(),fg.tobytes(),hg.tobytes())
        if k not in lookup:
@@ -128,9 +148,9 @@ def main():
       key=f'Types_Lupu_{lod}_{slot}_SupportFrames';keys.append(key);write(out/(key+'.bin'),supportframes)
      parts.append(dict(part=part,faces=int(member.sum()),vertices=len(ids),frameResidual=res))
     assert sum(p['faces'] for p in parts)==len(faces)
-    rec['slots'].append(dict(slot=slot,vertices=len(v),faces=len(faces),bounds=[v.min(0).tolist(),v.max(0).tolist()],parts=parts,columnMoves=columnmoves,balconySourceVertices=np.flatnonzero(balcony).tolist(),hangers=hangers))
+    rec['slots'].append(dict(slot=slot,vertices=len(v),faces=len(faces),bounds=[v.min(0).tolist(),v.max(0).tolist()],parts=parts,columnMoves=columnmoves,balconySourceVertices=np.flatnonzero(balcony).tolist(),hangers=hangers,braces=braces))
    records.append(rec)
- report={'sourceMod':151335,'revision':2,'publishedDimensions':None,'referenceMeaning':'Measured terminal-tower centre interval; selected-road outer edges match main arch outer edges at the inward slab bottom datum. Unified source frame; signed vertex width displacement and column caps and inward lower-slab bottoms meet at the fixed construction plane y=-0.5; all height adaptation is baked offline; no source roadway mesh.','parameters':[float(x) for x in constants],'lods':records}
+ report={'sourceMod':151335,'revision':2,'publishedDimensions':None,'referenceMeaning':'Measured terminal-tower centre interval; selected-road outer edges match main arch outer edges at the inward slab bottom datum. Unified source frame; centred chevron joints with fully translated outer end sections, side-part width displacement and column caps and inward lower-slab bottoms meet at the fixed construction plane y=-0.5; all height adaptation is baked offline; no source roadway mesh.','parameters':[float(x) for x in constants],'lods':records}
  (ev/'measurements.json').write_text(json.dumps(report,indent=2));(ev/'resource-keys.json').write_text(json.dumps(keys,indent=2));print(json.dumps(report))
 if __name__=='__main__':main()
 

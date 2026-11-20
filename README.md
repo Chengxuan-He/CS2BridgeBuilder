@@ -72,6 +72,16 @@ keeps a generated bridge out of the list it came from, which would otherwise let
 become the next run's input and compound the error each time. For the same reason a generated bridge
 is not offered as a *style* donor either.
 
+## Compatibility
+
+Optional integrations are described in the [publishing description](docs/publishing/mod-description.md#compatibility).
+[Find It](https://mods.paradoxplaza.com/mods/77240/Windows) displays saved bridge names, including
+changes made in the Bridge Builder management panel. Names remain available after cold loading;
+renaming does not change UUID identity or player-assigned names of placed city objects.
+
+[The Curbside Mod](https://mods.paradoxplaza.com/mods/165355/Windows) can draw markings on
+Bridge Builder bridges. It cannot change markings on the movable sections of movable bridges.
+
 ## Bridge styles
 
 Styles use stable IDs and localized labels. Discovery binds installed prototype variants, while
