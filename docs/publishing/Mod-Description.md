@@ -6,9 +6,7 @@ Bridge Builder combines available roads or tracks with supported bridge styles i
 
 ### Features
 
-*   Added GO 224m Viaduct Bridge, Nanpu Bridge and Lupu Bridge styles from their corresponding source mods.
-
-*   Fixed suspension, cable-stayed, truss-arch, tied-arch and covered wooden styles, depending on installed content and supported prototypes.
+*   Non-movable suspension, cable-stayed, truss-arch, tied-arch and covered wooden styles, depending on installed content and supported prototypes.
 *   Custom movable bridges: drawbridges, lift bridges and pedestrian movable styles from Bridges &amp; Ports.
 *   Independent upper and lower roads or tracks on supported double-deck styles, including opposite deck directions.
 *   Search and filter networks and bridge styles. Use Create to save a bridge, or Create and build to enter construction mode when it is unlocked.
@@ -19,41 +17,40 @@ Bridge Builder combines available roads or tracks with supported bridge styles i
 
 ### Compatibility
 
+* Road creation and editing
+  * [Road Builder [BETA]](https://mods.paradoxplaza.com/mods/87190/Windows)
+  * [Street Studio Public V2](https://mods.paradoxplaza.com/mods/165677/Windows)
+
+* Bridge assets
+  * [Bridge Expansion Pack](https://mods.paradoxplaza.com/mods/92245/Windows)
+  * [Bridge Expansion Pack: B&P](https://mods.paradoxplaza.com/mods/124160/Windows)
+  * [GO 224m Viaduct Bridge](https://mods.paradoxplaza.com/mods/166012/Windows)
+  * [上海南浦大桥](https://mods.paradoxplaza.com/mods/162995/Windows)
+  * [卢浦大桥](https://mods.paradoxplaza.com/mods/151335/Windows)
+
+* Bridge generation and node editing
+  * [Bridge Engineer](https://mods.paradoxplaza.com/mods/164700/Windows)
+  * [Node Controller](https://mods.paradoxplaza.com/mods/138523/Windows)
+
+* Asset search
+  * [Find It](https://mods.paradoxplaza.com/mods/77240/Windows)
+
+* Road markings
+  * [The Curbside Mod](https://mods.paradoxplaza.com/mods/165355/Windows)
+
+### Notes
+
 Every source registered for a style must be installed, enabled and natively available. Missing required content hides only the affected styles.
 
 Bridges &amp; Ports DLC is not required to use Bridge Builder. Only bridge styles that use its content require it.
 
 These integrations are optional; select only content you use.
 
-**Network creation**
-
-*   [Road Builder [BETA]](https://mods.paradoxplaza.com/mods/87190/Windows)
-*   [Street Studio Public V2](https://mods.paradoxplaza.com/mods/165677/Windows)
-
-**Bridge content**
-
-*   [Bridge Expansion Pack](https://mods.paradoxplaza.com/mods/92245/Windows)
-*   [Bridge Expansion Pack: B&P](https://mods.paradoxplaza.com/mods/124160/Windows)
-*   [GO 224m Viaduct Bridge](https://mods.paradoxplaza.com/mods/166012/Windows)
-*   [上海南浦大桥](https://mods.paradoxplaza.com/mods/162995/Windows)
-*   [卢浦大桥](https://mods.paradoxplaza.com/mods/151335/Windows)
-
 Art Deco Viaduct and double-deck Golden Gate from Bridge Expansion Pack also require San Francisco Set DLC. Bridge Expansion Pack: B&P remains optional compatible content, not a registered prerequisite for the current styles.
 
-**Bridge generation**
+Find It displays saved bridge names, including changes made in Bridge Builder’s management panel.
 
-*   [Bridge Engineer](https://mods.paradoxplaza.com/mods/164700/Windows)
-
-**Node editing**
-
-*   [Node Controller](https://mods.paradoxplaza.com/mods/138523/Windows)
-
-**Asset browsing and road markings**
-
-*   [Find It](https://mods.paradoxplaza.com/mods/77240/Windows) displays saved bridge names, including changes made in Bridge Builder’s management panel.
-*   [The Curbside Mod](https://mods.paradoxplaza.com/mods/165355/Windows) can draw markings on Bridge Builder bridges. It cannot change markings on the movable sections of movable bridges.
-
-### Notes
+The Curbside Mod can draw markings on Bridge Builder bridges. It cannot change markings on the movable sections of movable bridges.
 
 Follow Street Studio’s own guidance: disable Road Builder when using its independent fork.
 
@@ -76,8 +73,6 @@ Bridge Builder 可在《城市：天际线 II》中将可用道路或轨道与�
 
 ### 功能
 
-*   新增 GO 224m Viaduct Bridge、南浦大桥及卢浦大桥桥型，使用对应来源模组。
-
 *   提供已支持的悬索桥、斜拉桥、桁架拱桥、系杆拱桥及木廊桥；可用桥型取决于已安装内容和支持的原型。
 *   自定义活动桥梁：支持 Bridges &amp; Ports 的开启桥、升降桥和行人活动桥型。
 *   支持的双层桥可以分别选择上下层道路或轨道，并设置相反方向。
@@ -89,41 +84,40 @@ Bridge Builder 可在《城市：天际线 II》中将可用道路或轨道与�
 
 ### 兼容性
 
+* 道路创建与编辑
+  * [Road Builder [BETA]](https://mods.paradoxplaza.com/mods/87190/Windows)
+  * [Street Studio Public V2](https://mods.paradoxplaza.com/mods/165677/Windows)
+
+* 桥梁资产
+  * [Bridge Expansion Pack](https://mods.paradoxplaza.com/mods/92245/Windows)
+  * [Bridge Expansion Pack: B&P](https://mods.paradoxplaza.com/mods/124160/Windows)
+  * [GO 224m Viaduct Bridge](https://mods.paradoxplaza.com/mods/166012/Windows)
+  * [上海南浦大桥](https://mods.paradoxplaza.com/mods/162995/Windows)
+  * [卢浦大桥](https://mods.paradoxplaza.com/mods/151335/Windows)
+
+* 桥梁生成与节点编辑
+  * [Bridge Engineer](https://mods.paradoxplaza.com/mods/164700/Windows)
+  * [Node Controller](https://mods.paradoxplaza.com/mods/138523/Windows)
+
+* 资产搜索
+  * [Find It](https://mods.paradoxplaza.com/mods/77240/Windows)
+
+* 道路标线
+  * [The Curbside Mod](https://mods.paradoxplaza.com/mods/165355/Windows)
+
+### 注意事项
+
 桥型登记的每个来源均须已安装、启用且原生可用。缺失所需内容只会隐藏相关桥型。
 
 使用 Bridge Builder 不需要 Bridges &amp; Ports DLC；只有使用该 DLC 内容的桥梁样式才需要安装它。
 
-以下为可选兼容模组，按所需内容选择。
-
-**路网创建**
-
-*   [Road Builder [BETA]](https://mods.paradoxplaza.com/mods/87190/Windows)
-*   [Street Studio Public V2](https://mods.paradoxplaza.com/mods/165677/Windows)
-
-**桥梁内容**
-
-*   [Bridge Expansion Pack](https://mods.paradoxplaza.com/mods/92245/Windows)
-*   [Bridge Expansion Pack: B&P](https://mods.paradoxplaza.com/mods/124160/Windows)
-*   [GO 224m Viaduct Bridge](https://mods.paradoxplaza.com/mods/166012/Windows)
-*   [上海南浦大桥](https://mods.paradoxplaza.com/mods/162995/Windows)
-*   [卢浦大桥](https://mods.paradoxplaza.com/mods/151335/Windows)
+上述模组为可选兼容内容，按所需内容选择。
 
 Bridge Expansion Pack 的 Art Deco 高架桥和双层金门大桥还需要 San Francisco Set DLC。Bridge Expansion Pack: B&P 仍为可选兼容内容，不是当前桥型登记的前置要求。
 
-**桥梁生成**
+Find It 显示已保存的桥梁名称，包括在 Bridge Builder 管理面板中修改后的名称。
 
-*   [Bridge Engineer](https://mods.paradoxplaza.com/mods/164700/Windows)
-
-**节点编辑**
-
-*   [Node Controller](https://mods.paradoxplaza.com/mods/138523/Windows)
-
-**资产浏览与道路标线**
-
-*   [Find It](https://mods.paradoxplaza.com/mods/77240/Windows) 显示已保存的桥梁名称，包括在 Bridge Builder 管理面板中修改后的名称。
-*   [The Curbside Mod](https://mods.paradoxplaza.com/mods/165355/Windows) 可以在 Bridge Builder 桥梁上绘制标线，但不能更改活动桥可活动部分的标线。
-
-### 注意事项
+The Curbside Mod 可以在 Bridge Builder 桥梁上绘制标线，但不能更改活动桥可活动部分的标线。
 
 请遵循 Street Studio 的官方说明：使用其独立分支时停用 Road Builder。
 
@@ -146,8 +140,6 @@ Bridge Builder 可在《Cities: Skylines II》中將可用道路或軌道與已�
 
 ### 功能
 
-*   新增 GO 224m Viaduct Bridge、南浦大橋及盧浦大橋橋型，使用對應來源模組。
-
 *   提供已支援的懸索橋、斜張橋、桁架拱橋、繫桿拱橋及木廊橋；可用橋型取決於已安裝內容和支援的原型。
 *   自訂活動橋梁：支援 Bridges &amp; Ports 的開啟橋、升降橋和行人活動橋型。
 *   支援的雙層橋可以分別選擇上下層道路或軌道，並設定相反方向。
@@ -159,41 +151,40 @@ Bridge Builder 可在《Cities: Skylines II》中將可用道路或軌道與已�
 
 ### 相容性
 
+* 道路建立與編輯
+  * [Road Builder [BETA]](https://mods.paradoxplaza.com/mods/87190/Windows)
+  * [Street Studio Public V2](https://mods.paradoxplaza.com/mods/165677/Windows)
+
+* 橋梁資產
+  * [Bridge Expansion Pack](https://mods.paradoxplaza.com/mods/92245/Windows)
+  * [Bridge Expansion Pack: B&P](https://mods.paradoxplaza.com/mods/124160/Windows)
+  * [GO 224m Viaduct Bridge](https://mods.paradoxplaza.com/mods/166012/Windows)
+  * [上海南浦大桥](https://mods.paradoxplaza.com/mods/162995/Windows)
+  * [卢浦大桥](https://mods.paradoxplaza.com/mods/151335/Windows)
+
+* 橋梁生成與節點編輯
+  * [Bridge Engineer](https://mods.paradoxplaza.com/mods/164700/Windows)
+  * [Node Controller](https://mods.paradoxplaza.com/mods/138523/Windows)
+
+* 資產搜尋
+  * [Find It](https://mods.paradoxplaza.com/mods/77240/Windows)
+
+* 道路標線
+  * [The Curbside Mod](https://mods.paradoxplaza.com/mods/165355/Windows)
+
+### 注意事項
+
 橋型登記的每個來源均須已安裝、啟用且原生可用。缺少所需內容只會隱藏相關橋型。
 
 使用 Bridge Builder 不需要 Bridges &amp; Ports DLC；只有使用該 DLC 內容的橋梁樣式才需要安裝它。
 
-以下為選用相容模組，依所需內容選擇。
-
-**路網建立**
-
-*   [Road Builder [BETA]](https://mods.paradoxplaza.com/mods/87190/Windows)
-*   [Street Studio Public V2](https://mods.paradoxplaza.com/mods/165677/Windows)
-
-**橋梁內容**
-
-*   [Bridge Expansion Pack](https://mods.paradoxplaza.com/mods/92245/Windows)
-*   [Bridge Expansion Pack: B&P](https://mods.paradoxplaza.com/mods/124160/Windows)
-*   [GO 224m Viaduct Bridge](https://mods.paradoxplaza.com/mods/166012/Windows)
-*   [上海南浦大桥](https://mods.paradoxplaza.com/mods/162995/Windows)
-*   [卢浦大桥](https://mods.paradoxplaza.com/mods/151335/Windows)
+上述模組為選用相容內容，依所需內容選擇。
 
 Bridge Expansion Pack 的 Art Deco 高架橋和雙層金門大橋還需要 San Francisco Set DLC。Bridge Expansion Pack: B&P 仍為選用相容內容，不是目前橋型登記的前置要求。
 
-**橋梁生成**
+Find It 顯示已儲存的橋梁名稱，包括在 Bridge Builder 管理面板中修改後的名稱。
 
-*   [Bridge Engineer](https://mods.paradoxplaza.com/mods/164700/Windows)
-
-**節點編輯**
-
-*   [Node Controller](https://mods.paradoxplaza.com/mods/138523/Windows)
-
-**資產瀏覽與道路標線**
-
-*   [Find It](https://mods.paradoxplaza.com/mods/77240/Windows) 顯示已儲存的橋梁名稱，包括在 Bridge Builder 管理面板中修改後的名稱。
-*   [The Curbside Mod](https://mods.paradoxplaza.com/mods/165355/Windows) 可以在 Bridge Builder 橋梁上繪製標線，但不能更改活動橋可活動部分的標線。
-
-### 注意事項
+The Curbside Mod 可以在 Bridge Builder 橋梁上繪製標線，但不能更改活動橋可活動部分的標線。
 
 請遵循 Street Studio 的官方說明：使用其獨立分支時停用 Road Builder。
 

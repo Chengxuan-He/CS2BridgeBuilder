@@ -25,6 +25,37 @@ prefix or suffix. Changelog text is English only and describes actual player-fac
 and fixes. Do not put internal documentation cleanup, unsupported acceptance claims or removal
 of never-published functionality into a public changelog.
 
+## Description purpose and sections
+
+The mod description presents current, stable functionality and usage. Do not include release
+announcements, update summaries, narratives about newly added features or bridges, or bug-fix accounts in it;
+maintain actual version-specific changes in the English changelog instead. Judge content by its
+meaning, selection and origin, not by the presence of update-related words. Replacing an addition
+or fix verb with a support verb, or dropping the verb, does not turn a release-selected group of
+features or bridges into a stable product catalogue. Remove such isolated release highlights from
+the description even when their individual capabilities remain supported.
+
+A maintained catalogue must be complete within its stated scope or use a consistent functional
+classification independent of release membership; recent additions must not receive a separate
+feature bullet by being relabelled as catalogue content. Official source-mod entries in the
+purpose-grouped compatibility list and necessary ongoing usage restrictions retain their roles.
+Preserve historical changelogs and publication records when reorganizing the maintained description.
+
+Review each description item against relevant publication history and metadata diffs to distinguish
+ongoing functionality, catalogue information and usage cautions from release-specific selections.
+Record the semantic decisions and their evidence separately from structural checks. Matching
+translations, valid lists, correct links and synchronized upload fields do not establish compliance
+with the description's content rules; a structural pass must not be reported as semantic approval.
+
+The Compatibility section uses a two-level list grouped by the mods' actual purposes. First-level
+items are localized purpose categories; second-level items contain only each mod's exact official
+published title and official link. List each compatible mod once, retaining equivalent categories
+and membership across all description languages. Use valid CommonMark nested-list indentation.
+Put integration behavior, optional-content
+status, prerequisites, supported scope, restrictions and compatibility cautions in Notes, not in
+Compatibility paragraphs or annotations on list entries. Preserve every applicable caution and
+its meaning consistently across all description languages when moving it.
+
 ## Description languages and official mod titles
 
 The player-facing description contains complete sections in this order: English, Simplified
@@ -45,7 +76,7 @@ flowchart TD
     B["Apply only necessary incremental edits"] --> C
     C["Compare all languages and official links"] --> D
     D["Freeze matching canonical and upload fields"] --> E
-    E["Verify remote readback"]
+    E["Verify remote readback when publication is authorized"]
 ```
 
 Use the existing published description as the template. Make only the necessary incremental
@@ -54,5 +85,6 @@ article. Preserve unchanged structure, paragraphs and wording, including all thr
 If a local draft has lost content, recover the last complete published metadata or its verified
 receipt before applying changes. Record the template revision/hash and itemized changes; compare
 all language sections and official links before freezing the result. Keep the canonical source
-and upload field synchronized, then verify the remote readback. Publication facts require actual
+and upload field synchronized; for an authorized publication, verify the remote readback. Local-only
+description maintenance does not publish metadata or change a release version. Publication facts require actual
 receipts; a prepared draft or accepted request is not proof of publication.
