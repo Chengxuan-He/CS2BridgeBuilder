@@ -2,7 +2,7 @@
 
 ## Status
 
-Prepared candidate; GitHub upload, Paradox Mods publication and installation of the downloaded published package are pending. The current verified publication is version 26.11.19, revision 23.
+Published on 2026-11-20 as [Paradox Mods revision 24](https://mods.paradoxplaza.com/mods/160320/Windows), version 26.11.20. The official SDK confirmed public availability with Updating=false, downloaded that revision and installed it after the game process was verified absent. All 953 payload files match the reviewed candidate by SHA-256. Source commit `95309cd777b5d4999495549aad45cfba653e3632` was fast-forwarded atomically to all 18 existing remote branches and verified by readback. The previous release was 26.11.19, revision 23.
 
 ## Changes
 
@@ -29,4 +29,8 @@ Automatic approval review rejected deletion of the disposable local environment 
 
 ## Publication and installation evidence
 
-Pending. Final evidence must identify the verified remote commit, available revision, metadata readback, original-installation backup and downloaded-package installation hash comparison.
+Official readback confirms the title Bridge Builder, version 26.11.20, public revision 24, game range 1.6.* and the matching English changelog. All three description languages match after normalizing server Markdown escaping, HTML entities and whitespace, including the new compatibility entries and movable-section marking limitation.
+
+Original installed files from revisions 17, 18, 20 and 23 were backed up to `E:/unused/release-26.11.20-installed-originals`: 3,864 files, each verified by SHA-256. The official SDK downloaded revision 24 into the task's C: work directory and installed it at the native `.cache/Mods/pdx_mods/160320_24` location. Every one of the 953 downloaded and installed payload files matches the candidate. Additional files are only SDK `.cpatch` manifests and its `.metadata/thumbnail.png`. No previous installation directory or healthy saved bridge was deleted.
+
+Installed DLL SHA-256 is `3FC89B903C046E2CF58E6AFB253D8B6D7E2737256503708CEBB025A75B575ECC`; installed PDB SHA-256 is `55F485D5F7E47BF7170275FADABE38CBA22D2BB756EA4C9C3E6CA4B021F295D8`. Publication, metadata, backup, download and installation receipts are retained under the release work directory. This record update is synchronized to the same 18 remote branches after the package publication; it changes no payload.
